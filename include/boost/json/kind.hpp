@@ -11,7 +11,7 @@
 #define BOOST_JSON_KIND_HPP
 
 #include <boost/json/detail/config.hpp>
-#include <boost/beast/core/detail/static_const.hpp>
+#include <boost/json/detail/static_const.hpp>
 #include <cstddef>
 
 namespace boost {
@@ -27,7 +27,7 @@ enum class kind
     null
 };
 
-BOOST_BEAST_INLINE_VARIABLE(null, std::nullptr_t)
+BOOST_JSON_INLINE_VARIABLE(null, std::nullptr_t)
 
 } // json
 } // boost

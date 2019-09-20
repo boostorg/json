@@ -11,7 +11,6 @@
 #define BOOST_JSON_IMPL_NUMBER_IPP
 
 #include <boost/json/number.hpp>
-#include <boost/beast/core/static_string.hpp>
 #include <algorithm>
 #include <cmath>
 #include <cstdint>

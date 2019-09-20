@@ -11,9 +11,9 @@
 #define BOOST_JSON_ITERATOR_HPP
 
 #include <boost/json/detail/config.hpp>
-#include <boost/beast/core/detail/static_const.hpp>
 #include <boost/json/value.hpp>
 #include <boost/json/detail/stack.hpp>
+#include <boost/json/detail/static_const.hpp>
 #include <iterator>
 #include <new>
 
@@ -24,7 +24,7 @@ struct end_t
 {
 };
 
-BOOST_BEAST_INLINE_VARIABLE(end, end_t)
+BOOST_JSON_INLINE_VARIABLE(end, end_t)
 
 /** A generator to perform a depth-first traversal of a JSON value.
 */
