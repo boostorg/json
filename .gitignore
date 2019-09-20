@@ -1,0 +1,5 @@
+bin/
+build/
+*.*#
+static/log.txt
+tags

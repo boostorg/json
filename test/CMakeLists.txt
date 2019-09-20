@@ -1,0 +1,40 @@
+#
+# Copyright (c) 2018-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+#
+# Distributed under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+#
+# Official repository: https://github.com/boostorg/json
+#
+
+source_group (json FILES ${PROJECT_SOURCE_DIR}/include/boost/json.hpp)
+source_group (TREE ${PROJECT_SOURCE_DIR}/include/boost/json PREFIX json FILES ${PROJECT_FILES})
+
+GroupSources(test "/")
+
+add_executable (json-tests
+    ${BEAST_FILES}
+    ${PROJECT_FILES}
+    Jamfile
+    lib.cpp
+    _detail_stack.cpp
+    allocator.cpp
+    array.cpp
+    assign_string.cpp
+    assign_vector.cpp
+    basic_parser.cpp
+    error.cpp
+    iterator.cpp
+    json.cpp
+    kind.cpp
+    number.cpp
+    object.cpp
+    parse_file.cpp
+    parser.cpp
+    serializer.cpp
+    storage.cpp
+    string.cpp
+    value.cpp
+)
+
+add_test(json-tests json-tests)
