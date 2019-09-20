@@ -36,7 +36,7 @@ class value;
 */
 template<class T>
 struct value_exchange final
-#ifndef BOOST_BEAST_DOXYGEN
+#ifndef GENERATING_DOCUMENTATION
     : detail::primary_template
 #endif
 {
@@ -59,7 +59,7 @@ struct value_exchange final
 */
 template<class T>
 using has_from_json =
-#ifdef BOOST_BEAST_DOXYGEN
+#ifdef GENERATING_DOCUMENTATION
     __see_below__;
 #else
     std::integral_constant<bool,
@@ -75,7 +75,7 @@ using has_from_json =
 */
 template<class T>
 using has_to_json =
-#ifdef BOOST_BEAST_DOXYGEN
+#ifdef GENERATING_DOCUMENTATION
     __see_below__;
 #else
     std::integral_constant<bool,
@@ -398,7 +398,7 @@ public:
     /// Construct a value from another type
     template<
         class T
-    #ifndef BOOST_BEAST_DOXYGEN
+    #ifndef GENERATING_DOCUMENTATION
         ,class = typename std::enable_if<
             has_to_json<T>::value>::type
     #endif
@@ -411,7 +411,7 @@ public:
     /// Construct a value from another type using the specified storage
     template<
         class T
-    #ifndef BOOST_BEAST_DOXYGEN
+    #ifndef GENERATING_DOCUMENTATION
         ,class = typename std::enable_if<
             has_to_json<T>::value>::type
     #endif
@@ -427,7 +427,7 @@ public:
     /// Assign a value from another type
     template<
         class T
-    #ifndef BOOST_BEAST_DOXYGEN
+    #ifndef GENERATING_DOCUMENTATION
         ,class = typename std::enable_if<
             has_to_json<T>::value>::type
     #endif

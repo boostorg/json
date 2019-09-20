@@ -29,7 +29,7 @@ namespace json {
 /** A parser for serialized JSON
 */
 class basic_parser
-#ifndef BOOST_BEAST_DOXYGEN
+#ifndef GENERATING_DOCUMENTATION
     : private detail::parser_base
 #endif
 {
@@ -74,7 +74,7 @@ public:
 
     template<
         class ConstBufferSequence
-#ifndef BOOST_BEAST_DOXYGEN
+#ifndef GENERATING_DOCUMENTATION
         ,class = typename std::enable_if<
             ! std::is_convertible<
                 ConstBufferSequence,
@@ -94,7 +94,7 @@ public:
 
     template<
         class ConstBufferSequence
-#ifndef BOOST_BEAST_DOXYGEN
+#ifndef GENERATING_DOCUMENTATION
         ,class = typename std::enable_if<
             ! std::is_convertible<
                 ConstBufferSequence,
