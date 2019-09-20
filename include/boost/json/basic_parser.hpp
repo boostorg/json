@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_BASIC_PARSER_HPP
 #define BOOST_JSON_BASIC_PARSER_HPP
 
-#include <boost/beast/core/detail/config.hpp>
+#include <boost/json/detail/config.hpp>
 #include <boost/json/number.hpp>
 #include <boost/json/detail/basic_parser.hpp>
 #include <boost/json/detail/stack.hpp>
@@ -46,14 +46,14 @@ class basic_parser
     bool n_exp_neg_;
     bool is_key_;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     static
     bool
     append_digit(
         number::mantissa_type* value,
         char digit);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     static
     bool
     append_digit(
@@ -62,13 +62,13 @@ class basic_parser
 
 public:
     /// Returns `true` if the parser has completed without error
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     bool
     is_done() const noexcept;
 
     /** Reset the state, to parse a new document.
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     reset();
 
@@ -86,7 +86,7 @@ public:
         ConstBufferSequence const& buffers,
         error_code& ec);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     std::size_t
     write_some(
         net::const_buffer buffer,
@@ -106,19 +106,19 @@ public:
         ConstBufferSequence const& buffers,
         error_code& ec);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     std::size_t
     write(
         net::const_buffer buffer,
         error_code& ec);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     write_eof(error_code& ec);
 
 protected:
     /// Constructor (default)
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     basic_parser();
 
     virtual
@@ -183,7 +183,7 @@ protected:
 } // boost
 
 #include <boost/json/impl/basic_parser.hpp>
-#if BOOST_BEAST_HEADER_ONLY
+#if BOOST_JSON_HEADER_ONLY
 #include <boost/json/impl/basic_parser.ipp>
 #endif
 

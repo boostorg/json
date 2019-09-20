@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_ITERATOR_HPP
 #define BOOST_JSON_ITERATOR_HPP
 
-#include <boost/beast/core/detail/config.hpp>
+#include <boost/json/detail/config.hpp>
 #include <boost/beast/core/detail/static_const.hpp>
 #include <boost/json/value.hpp>
 #include <boost/json/detail/stack.hpp>
@@ -42,18 +42,18 @@ class const_iterator
         string_view  key;
         bool         it;
 
-        BOOST_BEAST_DECL
+        BOOST_JSON_DECL
         ~node();
 
-        BOOST_BEAST_DECL
+        BOOST_JSON_DECL
         node(
             value const& v_,
             bool it_) noexcept;
 
-        BOOST_BEAST_DECL
+        BOOST_JSON_DECL
         node(node const& other) noexcept;
 
-        BOOST_BEAST_DECL
+        BOOST_JSON_DECL
         bool
         last() const noexcept;
     };
@@ -76,16 +76,16 @@ public:
         }
     };
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     explicit
     const_iterator(
         value const& jv);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value_type
     operator*() const noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     const_iterator&
     operator++() noexcept;
 
@@ -142,7 +142,7 @@ public:
 } // beast
 } // boost
 
-#if BOOST_BEAST_HEADER_ONLY
+#if BOOST_JSON_HEADER_ONLY
 #include <boost/json/impl/iterator.ipp>
 #endif
 

@@ -31,11 +31,11 @@ namespace boost {
 namespace beast {
 namespace json {
 
-BOOST_BEAST_DECL
+BOOST_JSON_DECL
 error_code
 make_error_code(error e);
 
-BOOST_BEAST_DECL
+BOOST_JSON_DECL
 error_condition
 make_error_condition(condition c);
 

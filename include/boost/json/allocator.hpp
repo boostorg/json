@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_ALLOCATOR_HPP
 #define BOOST_JSON_ALLOCATOR_HPP
 
-#include <boost/beast/core/detail/config.hpp>
+#include <boost/json/detail/config.hpp>
 #include <boost/json/storage.hpp>
 #include <type_traits>
 

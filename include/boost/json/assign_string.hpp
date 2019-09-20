@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_ASSIGN_STRING_HPP
 #define BOOST_JSON_ASSIGN_STRING_HPP
 
-#include <boost/beast/core/detail/config.hpp>
+#include <boost/json/detail/config.hpp>
 #include <boost/json/error.hpp>
 #include <boost/json/value.hpp>
 #include <string>

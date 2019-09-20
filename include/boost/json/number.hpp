@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_NUMBER_HPP
 #define BOOST_JSON_NUMBER_HPP
 
-#include <boost/beast/core/detail/config.hpp>
+#include <boost/json/detail/config.hpp>
 #include <boost/beast/core/string.hpp>
 #include <cstdint>
 #include <iosfwd>
@@ -73,69 +73,69 @@ public:
 
     /** Construct a number from mantissa, exponent, and sign
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     number(
         mantissa_type mant,
         exponent_type exp,
         bool sign) noexcept;
 
     /// Construct a number from a signed integer
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     number(short v) noexcept;
 
     /// Construct a number from a signed integer
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     number(int v) noexcept;
 
     /// Construct a number from a signed integer
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     number(long v) noexcept;
 
     /// Construct a number from a signed integer
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     number(long long v) noexcept;
 
     /// Construct a number from an unsigned integer
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     number(unsigned short v) noexcept;
 
     /// Construct a number from an unsigned integer
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     number(unsigned int v) noexcept;
 
     /// Construct a number from an unsigned integer
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     number(unsigned long v) noexcept;
 
     /// Construct a number from an unsigned integer
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     number(unsigned long long v) noexcept;
 
     /// Construct a number from a floating point value
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     number(float v) noexcept;
 
     /// Construct a number from a floating point value
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     number(double v) noexcept;
 
     /// Return true if the number is negative
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     bool
     is_negative() const noexcept;
 
     /// Return true if the number is integral
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     bool
     is_integral() const noexcept;
 
     /// Return true if the number can be represented with a signed 64-bit integer
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     bool
     is_int64() const noexcept;
 
     /// Return true if the number can be represented with an unsigned 64-bit integer
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     bool
     is_uint64() const noexcept;
 
@@ -143,7 +143,7 @@ public:
 
         The return value is undefined unless @ref is_int64 returns `true`.
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     std::int_least64_t
     get_int64() const noexcept;
 
@@ -151,13 +151,13 @@ public:
 
         The return value is undefined unless @ref is_uint64 returns `true`.
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     std::uint_least64_t
     get_uint64() const noexcept;
 
     /** Return the number as floating point
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     double
     get_double() const noexcept;
 
@@ -169,7 +169,7 @@ public:
         @return A string view representing the number as
         as string. Storage for the view comes from `dest`.
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     string_view
     print(
         char* buf,
@@ -178,17 +178,17 @@ public:
 private:
     struct pow10;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     assign_signed(
         long long i) noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     assign_unsigned(
         unsigned long long i) noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     assign_double(double f) noexcept;
 
@@ -210,19 +210,19 @@ private:
 
 };
 
-BOOST_BEAST_DECL
+BOOST_JSON_DECL
 bool
 operator==(
     number const& lhs,
     number const& rhs) noexcept;
 
-BOOST_BEAST_DECL
+BOOST_JSON_DECL
 bool
 operator!=(
     number const& lhs,
     number const& rhs) noexcept;
 
-BOOST_BEAST_DECL
+BOOST_JSON_DECL
 std::ostream&
 operator<<(std::ostream& os, number const& n);
 
@@ -230,7 +230,7 @@ operator<<(std::ostream& os, number const& n);
 } // beast
 } // boost
 
-#ifdef BOOST_BEAST_HEADER_ONLY
+#ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/impl/number.ipp>
 #endif
 

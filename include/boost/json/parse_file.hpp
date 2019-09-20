@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_PARSE_FILE_HPP
 #define BOOST_JSON_PARSE_FILE_HPP
 
-#include <boost/beast/core/detail/config.hpp>
+#include <boost/json/detail/config.hpp>
 #include <boost/json/basic_parser.hpp>
 #include <boost/beast/core/error.hpp>
 
@@ -20,7 +20,7 @@ namespace json {
 
 /** Parse the contents of a file as JSON.
 */
-BOOST_BEAST_DECL
+BOOST_JSON_DECL
 void
 parse_file(
     char const* path,
@@ -31,7 +31,7 @@ parse_file(
 } // beast
 } // boost
 
-#ifdef BOOST_BEAST_HEADER_ONLY
+#ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/impl/parse_file.ipp>
 #endif
 

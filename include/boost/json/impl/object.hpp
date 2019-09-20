@@ -38,7 +38,7 @@ struct object::element
     value v_;
     element* local_next_;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     string_view
     key() const noexcept;
 
@@ -85,7 +85,7 @@ struct object::element
         return reinterpret_cast<element*>(p);
     }
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     static
     void
     destroy(
@@ -102,7 +102,7 @@ private:
     {
     }
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     static
     std::unique_ptr<char, cleanup>
     prepare_allocate(
@@ -114,20 +114,20 @@ private:
 
 class object::hasher
 {
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     static
     std::pair<
         std::uint64_t, std::uint64_t>
     init(std::true_type) noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     static
     std::pair<
         std::uint32_t, std::uint32_t>
     init(std::false_type) noexcept;
 
 public:
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     std::size_t
     operator()(key_type key) const noexcept;
 };

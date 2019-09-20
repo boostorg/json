@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_PARSER_HPP
 #define BOOST_JSON_PARSER_HPP
 
-#include <boost/beast/core/detail/config.hpp>
+#include <boost/json/detail/config.hpp>
 #include <boost/json/value.hpp>
 #include <boost/json/basic_parser.hpp>
 #include <boost/json/storage.hpp>
@@ -36,10 +36,10 @@ class parser : public basic_parser
     bool obj_;
 
 public:
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     parser();
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     parser(storage_ptr const& store);
 
     /** Returns the maximum allowed depth of input JSON.
@@ -58,11 +58,11 @@ public:
         max_depth_ = levels;
     }
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value const&
     get() const noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value
     release() noexcept;
 
@@ -71,72 +71,72 @@ private:
     void
     assign(T&& t);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     reset();
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     on_document_begin(
         error_code& ec) override;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     on_object_begin(
         error_code& ec) override;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     on_object_end(
         error_code& ec) override;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     on_array_begin(
         error_code& ec) override;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     on_array_end(
         error_code& ec) override;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     on_key_data(
         string_view s,
         error_code& ec) override;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     on_key_end(
         string_view s,
         error_code& ec) override;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     on_string_data(
         string_view s,
         error_code& ec) override;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     on_string_end(
         string_view s,
         error_code& ec) override;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     on_number(
         number n,
         error_code& ec) override;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     on_bool(
         bool b,
         error_code& ec) override;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     on_null(error_code&) override;
 };
@@ -146,7 +146,7 @@ private:
 } // boost
 
 #include <boost/json/impl/parser.hpp>
-#ifdef BOOST_BEAST_HEADER_ONLY
+#ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/impl/parser.ipp>
 #endif
 

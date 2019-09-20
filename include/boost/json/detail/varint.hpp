@@ -19,15 +19,15 @@ namespace beast {
 namespace json {
 namespace detail {
 
-BOOST_BEAST_DECL
+BOOST_JSON_DECL
 int
 varint_size(std::uint64_t value);
 
-BOOST_BEAST_DECL
+BOOST_JSON_DECL
 std::pair<std::uint64_t, int>
 varint_read(void const* src);
 
-BOOST_BEAST_DECL
+BOOST_JSON_DECL
 int
 varint_write(
     void* dest,
@@ -38,7 +38,7 @@ varint_write(
 } // beast
 } // boost
 
-#ifdef BOOST_BEAST_HEADER_ONLY
+#ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/detail/varint.ipp>
 #endif
 

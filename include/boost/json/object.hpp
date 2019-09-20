@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_OBJECT_HPP
 #define BOOST_JSON_OBJECT_HPP
 
-#include <boost/beast/core/detail/config.hpp>
+#include <boost/json/detail/config.hpp>
 #include <boost/beast/core/string.hpp>
 #include <boost/json/storage.hpp>
 #include <cstdlib>
@@ -68,104 +68,104 @@ public:
     //
     //--------------------------------------------------------------------------
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     ~object();
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     object();
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     object(
         size_type capacity);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     object(
         storage_ptr store);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     object(
         size_type capacity,
         storage_ptr store);
 
     template<class InputIt>
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     object(
         InputIt first,
         InputIt last);
 
     template<class InputIt>
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     object(
         InputIt first,
         InputIt last,
         size_type capacity);
 
     template<class InputIt>
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     object(
         InputIt first,
         InputIt last,
         storage_ptr store);
 
     template<class InputIt>
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     object(
         InputIt first,
         InputIt last,
         size_type capacity,
         storage_ptr store);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     object(object&& other) noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     object(
         object&& other,
         storage_ptr store) noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     object(
         object const& other);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     object(
         object const& other,
         storage_ptr store);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     object(
         std::initializer_list<value_type> list);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     object(
         std::initializer_list<value_type> list,
         size_type capacity);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     object(
         std::initializer_list<value_type> list,
         storage_ptr store);
         
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     object(
         std::initializer_list<value_type> list,
         size_type capacity,
         storage_ptr store);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     object&
     operator=(object&& other);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     object&
     operator=(object const& other);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     object&
     operator=(
         std::initializer_list<value_type> list);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     storage_ptr const&
     get_storage() const noexcept;
 
@@ -175,27 +175,27 @@ public:
     //
     //--------------------------------------------------------------------------
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     iterator
     begin() noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     const_iterator
     begin() const noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     const_iterator
     cbegin() const noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     iterator
     end() noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     const_iterator
     end() const noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     const_iterator
     cend() const noexcept;
 
@@ -205,15 +205,15 @@ public:
     //
     //--------------------------------------------------------------------------
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     bool
     empty() const noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     size_type
     size() const noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     size_type
     max_size() const noexcept;
 
@@ -223,7 +223,7 @@ public:
     //
     //--------------------------------------------------------------------------
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     clear() noexcept;
 
@@ -253,16 +253,16 @@ public:
     void
     insert(InputIt first, InputIt last);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     insert(std::initializer_list<
         value_type> list);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     insert_return_type
     insert(node_type&& nh);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     insert_return_type
     insert(
         const_iterator before,
@@ -290,37 +290,37 @@ public:
         const_iterator before,
         key_type key, Arg&& arg);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     iterator
     erase(const_iterator pos);
     
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     iterator
     erase(
         const_iterator first,
         const_iterator last);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     size_type
     erase(key_type key);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     swap(object& other) noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     node_type
     extract(const_iterator pos);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     node_type
     extract(key_type key);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     merge(object& source);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     merge(object&& source);
 
@@ -330,57 +330,57 @@ public:
     //
     //--------------------------------------------------------------------------
     
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value&
     at(key_type key);
     
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value const&
     at(key_type key) const;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value&
     operator[](key_type key);
     
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value const&
     operator[](key_type key) const;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     size_type
     count(key_type key) const;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     size_type
     count(
         key_type key,
         std::size_t hash) const;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     iterator
     find(key_type key);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     iterator
     find(
         key_type key,
         std::size_t hash);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     const_iterator
     find(key_type key) const;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     const_iterator
     find(
         key_type key,
         std::size_t hash) const;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     bool
     contains(key_type key) const;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     bool
     contains(
         key_type key,
@@ -392,43 +392,43 @@ public:
     //
     //--------------------------------------------------------------------------
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     local_iterator
     begin(size_type n) noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     const_local_iterator
     begin(size_type n) const noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     const_local_iterator
     cbegin(size_type n) noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     local_iterator
     end(size_type n)  noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     const_local_iterator
     end(size_type n) const noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     const_local_iterator
     cend(size_type n) noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     size_type
     bucket_count() const noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     size_type
     max_bucket_count() const noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     size_type
     bucket_size(size_type n) const noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     size_type
     bucket(key_type key) const noexcept;
 
@@ -438,23 +438,23 @@ public:
     //
     //--------------------------------------------------------------------------
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     float
     load_factor() const noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     float
     max_load_factor() const;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     max_load_factor(float ml);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     rehash(size_type count);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     reserve(size_type count);
 
@@ -464,11 +464,11 @@ public:
     //
     //--------------------------------------------------------------------------
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     hasher
     hash_function() const;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     key_equal
     key_eq() const;
 
@@ -516,34 +516,34 @@ private:
         key_type key,
         Arg&& arg);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     static
     size_type
     constrain_hash(
         std::size_t hash,
         size_type bucket_count) noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     element*
     find_element(
         key_type key,
         std::size_t hash) const noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     element*
     prepare_insert(
         const_iterator* before,
         key_type key,
         std::size_t hash);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     finish_insert(
         const_iterator before,
         element* e,
         std::size_t hash);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     remove(element* e);
 };

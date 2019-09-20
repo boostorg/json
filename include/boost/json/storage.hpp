@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_STORAGE_HPP
 #define BOOST_JSON_STORAGE_HPP
 
-#include <boost/beast/core/detail/config.hpp>
+#include <boost/json/detail/config.hpp>
 #include <cstddef>
 #include <cstdlib>
 #include <type_traits>
@@ -87,20 +87,20 @@ class storage_ptr
 public:
     storage_ptr() = default;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     ~storage_ptr();
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     storage_ptr(storage_ptr&&) noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     storage_ptr(storage_ptr const&) noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     storage_ptr&
     operator=(storage_ptr&&) noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     storage_ptr&
     operator=(storage_ptr const&) noexcept;
 
@@ -109,12 +109,12 @@ public:
         @param p A pointer to a storage object. Ownership of the
         object is transferred; the reference count is not adjusted.
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     storage_ptr(storage* p) noexcept;
 
     /** Return ownership of the managed storage object.
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     storage*
     release() noexcept;
 
@@ -195,7 +195,7 @@ make_storage_ptr(Allocator const& a);
 
 /** Return a pointer to the current default storage
 */
-BOOST_BEAST_DECL
+BOOST_JSON_DECL
 storage_ptr
 default_storage();
 
@@ -204,7 +204,7 @@ default_storage();
     This function may not be called concurrently,
     or concurrent with @ref default_storage.
 */
-BOOST_BEAST_DECL
+BOOST_JSON_DECL
 void
 default_storage(storage_ptr sp);
 
@@ -213,7 +213,7 @@ default_storage(storage_ptr sp);
 } // boost
 
 #include <boost/json/impl/storage.hpp>
-#ifdef BOOST_BEAST_HEADER_ONLY
+#ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/impl/storage.ipp>
 #endif
 

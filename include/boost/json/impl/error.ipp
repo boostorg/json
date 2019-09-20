@@ -27,7 +27,7 @@ public:
         return "boost.beast.json";
     }
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     std::string
     message(int ev) const override
     {
@@ -79,7 +79,7 @@ public:
         }
     }
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     error_condition
     default_error_condition(int ev) const noexcept override
     {
@@ -110,14 +110,14 @@ public:
 class error_conditions : public error_category
 {
 public:
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     const char*
     name() const noexcept override
     {
         return "boost.beast";
     }
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     std::string
     message(int cv) const override
     {

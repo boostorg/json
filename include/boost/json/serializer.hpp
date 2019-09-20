@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_SERIALIZER_HPP
 #define BOOST_JSON_SERIALIZER_HPP
 
-#include <boost/beast/core/detail/config.hpp>
+#include <boost/json/detail/config.hpp>
 #include <boost/json/iterator.hpp>
 #include <boost/json/number.hpp>
 #include <boost/json/value.hpp>
@@ -57,24 +57,24 @@ class serializer
         bool last_;
 
     public:
-        BOOST_BEAST_DECL
+        BOOST_JSON_DECL
         impl(value const& jv);
 
-        BOOST_BEAST_DECL
+        BOOST_JSON_DECL
         bool
         is_done() const noexcept override;
 
-        BOOST_BEAST_DECL
+        BOOST_JSON_DECL
         std::size_t
         next(net::mutable_buffer) override;
 
     private:
-        BOOST_BEAST_DECL
+        BOOST_JSON_DECL
         void
         append(char c,
             net::mutable_buffer& b);
 
-        BOOST_BEAST_DECL
+        BOOST_JSON_DECL
         void
         append(
             char const* s, std::size_t n,
@@ -99,10 +99,10 @@ class serializer
     }
 
 public:
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     ~serializer();
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     explicit
     serializer(value const& jv);
 
@@ -136,7 +136,7 @@ public:
 } // beast
 } // boost
 
-#ifdef BOOST_BEAST_HEADER_ONLY
+#ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/impl/serializer.ipp>
 #endif
 

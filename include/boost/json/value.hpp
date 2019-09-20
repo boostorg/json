@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_VALUE_HPP
 #define BOOST_JSON_VALUE_HPP
 
-#include <boost/beast/core/detail/config.hpp>
+#include <boost/json/detail/config.hpp>
 #include <boost/json/array.hpp>
 #include <boost/json/kind.hpp>
 #include <boost/json/number.hpp>
@@ -123,35 +123,35 @@ public:
     //--------------------------------------------------------------------------
 
     /// Destroy a value and all of its contents
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     ~value();
 
     /// Move constructor
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value(value&& other) noexcept;
 
     /// Move construct a value, using the specified storage
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value(
         value&& other,
         storage_ptr store);
 
     /// Construct a copy of a value
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value(value const& other);
 
     /// Construct a copy of a value using the specified storage
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value(
         value const& other,
         storage_ptr store);
 
     /// Move-assign a value
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value& operator=(value&& other);
 
     /// Assign a copy of a value
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value& operator=(value const& other);
 
     //--------------------------------------------------------------------------
@@ -162,7 +162,7 @@ public:
 
     /** Construct a null value using the default storage.
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value() noexcept;
 
     /** Construct a null value using the specified storage.
@@ -170,7 +170,7 @@ public:
         The value and all of its contents will use the
         specified storage object.
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     explicit
     value(storage_ptr store) noexcept;
 
@@ -179,7 +179,7 @@ public:
         The value and all of its contents will use the
         specified storage object.
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value(json::kind k) noexcept;
 
     /** Construct a value using the specified storage.
@@ -191,91 +191,91 @@ public:
 
         @param store The storage to use.
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value(
         json::kind k,
         storage_ptr store) noexcept;
 
     /** Construct a value from an object.
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value(object obj) noexcept;
 
     /** Construct a value from an object using the specified storage
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value(object obj, storage_ptr store);
 
     /** Construct a value from an array.
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value(array arr) noexcept;
 
     /** Construct a value from an array using the specified storage
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value(array arr, storage_ptr store);
 
     /** Construct a value from a string.
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value(string str) noexcept;
 
     /** Construct a value from a string using the specified storage
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value(string str, storage_ptr store);
 
     /** Construct a value from a nujmber
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value(number num);
 
     /** Construct a value from a nujmber using the specified storage
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value(number num, storage_ptr store);
 
     /** Construct an object from an initializer list.
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value(std::initializer_list<
         std::pair<string_view, value>> init);
 
     /** Construct an object from an initializer list using the specified storage
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value(std::initializer_list<
         std::pair<string_view, value>> init,
         storage_ptr store);
 #if 0
     /** Construct an array from an initializer list.
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value(std::initializer_list<value> init);
 
     /** Construct an array from an initializer list using the specified storage.
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value(std::initializer_list<value> init,
         storage_ptr store);
 #endif
 
     /** Assign a value from an object
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value&
     operator=(object obj);
 
     /** Assign a value from an array
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value&
     operator=(array arr);
 
     /** Assign a value from a string
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value&
     operator=(string str);
 
@@ -295,7 +295,7 @@ public:
         empty. Otherwise, the value will be in an undefined,
         valid state.
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     reset(json::kind k = json::kind::null) noexcept;
 
@@ -309,7 +309,7 @@ public:
         empty. Otherwise, the value will be in an undefined,
         valid state.
     */
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value&
     operator=(json::kind k) noexcept
     {
@@ -581,7 +581,7 @@ public:
     //
     //--------------------------------------------------------------------------
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     storage_ptr
     get_storage() const noexcept;
 
@@ -702,11 +702,11 @@ public:
     // Capacity
     //
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     bool
     empty() const;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     size_type
     size() const;
 
@@ -714,51 +714,51 @@ public:
     // Iterators
     //
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     iterator
     begin();
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     const_iterator
     begin() const;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     const_iterator
     cbegin();
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     iterator
     end();
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     const_iterator
     end() const;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     const_iterator
     cend();
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     reverse_iterator
     rbegin();
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     const_reverse_iterator
     rbegin() const;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     const_reverse_iterator
     crbegin();
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     reverse_iterator
     rend();
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     const_reverse_iterator
     rend() const;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     const_reverse_iterator
     crend();
 
@@ -766,35 +766,35 @@ public:
     // Lookup
     //
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value&
     at(key_type key);
     
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value const&
     at(key_type key) const;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value&
     operator[](key_type key);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value const&
     operator[](key_type key) const;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     size_type
     count(key_type key) const;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     iterator
     find(key_type key);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     const_iterator
     find(key_type key) const;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     bool
     contains(key_type key) const;
 
@@ -802,41 +802,41 @@ public:
     // Elements
     //
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     reference
     at(size_type pos);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     const_reference
     at(size_type pos) const;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value&
     operator[](size_type i);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     value const&
     operator[](size_type i) const;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     reference
     front();
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     const_reference
     front() const;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     reference
     back();
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     const_reference
     back() const;
 
     // Modifiers
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     clear() noexcept;
 
@@ -868,15 +868,15 @@ public:
         const_iterator before,
         Arg&& arg);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     size_type
     erase(key_type key);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     iterator
     erase(const_iterator pos);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     iterator
     erase(
         const_iterator first,
@@ -886,7 +886,7 @@ public:
     value&
     emplace_back(Arg&& arg);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     pop_back();
 
@@ -897,7 +897,7 @@ private:
     struct op_move;
     struct op_copy;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     storage_ptr
     release_storage() noexcept;
 
@@ -917,24 +917,24 @@ private:
                 >::value, string>::type
     construct(S& str, storage_ptr& store);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     construct(
         json::kind, storage_ptr) noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     clear_impl() noexcept;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     move(storage_ptr, value&&);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     void
     copy(storage_ptr, value const&);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     friend
     std::ostream&
     operator<<(
@@ -948,14 +948,14 @@ private:
 
 #include <boost/json/impl/array.hpp>
 #include <boost/json/impl/object.hpp>
-#ifdef BOOST_BEAST_HEADER_ONLY
+#ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/impl/array.ipp>
 #include <boost/json/impl/object.ipp>
 #endif
 
 // These must come after array and object
 #include <boost/json/impl/value.hpp>
-#ifdef BOOST_BEAST_HEADER_ONLY
+#ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/impl/value.ipp>
 #endif
 

@@ -1047,7 +1047,7 @@ get_primes(std::true_type) noexcept
             decltype(list)>::value] };
 }
 
-BOOST_BEAST_DECL
+BOOST_JSON_DECL
 primes
 get_primes() noexcept
 {

@@ -11,6 +11,7 @@
 #include <boost/json/value.hpp>
 
 #include <boost/beast/_experimental/unit_test/suite.hpp>
+#include <boost/static_assert.hpp>
 #include <memory>
 #include <vector>
 

@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_DETAIL_STORAGE_ADAPTOR_HPP
 #define BOOST_JSON_DETAIL_STORAGE_ADAPTOR_HPP
 
-#include <boost/beast/core/detail/config.hpp>
+#include <boost/json/detail/config.hpp>
 #include <boost/beast/core/detail/allocator.hpp>
 #include <boost/json/storage.hpp>
 #include <boost/align/align_up.hpp>

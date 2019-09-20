@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_ERROR_HPP
 #define BOOST_JSON_ERROR_HPP
 
-#include <boost/beast/core/detail/config.hpp>
+#include <boost/json/detail/config.hpp>
 #include <boost/beast/core/error.hpp>
 
 namespace boost {
@@ -74,7 +74,7 @@ enum class condition
 } // boost
 
 #include <boost/json/impl/error.hpp>
-#ifdef BOOST_BEAST_HEADER_ONLY
+#ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/impl/error.ipp>
 #endif
 

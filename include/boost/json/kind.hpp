@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_KIND_HPP
 #define BOOST_JSON_KIND_HPP
 
-#include <boost/beast/core/detail/config.hpp>
+#include <boost/json/detail/config.hpp>
 #include <boost/beast/core/detail/static_const.hpp>
 #include <cstddef>
 

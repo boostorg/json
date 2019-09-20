@@ -12,7 +12,6 @@
 
 #include <boost/json/value.hpp>
 #include <boost/core/exchange.hpp>
-#include <boost/static_assert.hpp>
 #include <algorithm>
 #include <type_traits>
 
@@ -30,10 +29,10 @@ class array::table
         value unused_; // for alignment
     };
 
-    BOOST_STATIC_ASSERT(
-        sizeof(value) >= sizeof(std::size_t));
+    static_assert(
+        sizeof(value) >= sizeof(std::size_t), "");
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     ~table();
 
 public:
@@ -64,14 +63,14 @@ public:
         return begin() + size;
     }
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     static
     table*
     create(
         size_type capacity,
         storage_ptr const& sp);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     static
     void
     destroy(
@@ -87,12 +86,12 @@ struct array::cleanup_assign
     table* tab;
     bool ok = false;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     explicit
     cleanup_assign(
         array& self);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     ~cleanup_assign();
 };
 
@@ -106,13 +105,13 @@ struct array::cleanup_insert
     size_type valid = 0;
     bool ok = false;
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     cleanup_insert(
         size_type pos_,
         size_type n_,
         array& self_);
 
-    BOOST_BEAST_DECL
+    BOOST_JSON_DECL
     ~cleanup_insert();
 };
 
