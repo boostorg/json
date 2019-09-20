@@ -11,23 +11,38 @@
 #define BOOST_JSON_DETAIL_STORAGE_ADAPTOR_HPP
 
 #include <boost/json/detail/config.hpp>
-#include <boost/beast/core/detail/allocator.hpp>
 #include <boost/json/storage.hpp>
 #include <boost/align/align_up.hpp>
-#include <boost/assert.hpp>
 #include <boost/core/empty_value.hpp>
+#include <boost/config.hpp>
+#include <boost/assert.hpp>
 #include <atomic>
 #include <cstddef>
+
+#ifdef BOOST_NO_CXX11_ALLOCATOR
+#include <boost/container/allocator_traits.hpp>
+#else
+#include <memory>
+#endif
 
 namespace boost {
 namespace beast {
 namespace json {
 namespace detail {
 
+#ifdef BOOST_NO_CXX11_ALLOCATOR
 template<class Allocator>
 using allocator_of_char =
-    typename beast::detail::allocator_traits<
+    typename boost::container::allocator_traits<
         Allocator>::template rebind_alloc<char>;
+
+#else
+template<class Allocator>
+using allocator_of_char =
+    typename std::allocator_traits<
+        Allocator>::template rebind_alloc<char>;
+
+#endif
 
 template<class Allocator>
 struct storage_adaptor
