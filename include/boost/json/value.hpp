@@ -893,9 +893,29 @@ public:
     //--------------------------------------------------------------------------
 
 private:
+    struct op_assign;
+    struct op_move;
+    struct op_copy;
+
     BOOST_BEAST_DECL
     storage_ptr
     release_storage() noexcept;
+
+    template<class S>
+    static
+    typename std::enable_if<
+        ! std::is_constructible<S, string,
+            typename string::allocator_type
+                >::value, string>::type
+    construct(S& str, storage_ptr& store);
+
+    template<class S>
+    static
+    typename std::enable_if<
+        std::is_constructible<S, string,
+            typename string::allocator_type
+                >::value, string>::type
+    construct(S& str, storage_ptr& store);
 
     BOOST_BEAST_DECL
     void

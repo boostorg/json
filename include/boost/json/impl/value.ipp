@@ -207,31 +207,44 @@ value(string str) noexcept
 {
 }
 
-#if defined(BOOST_LIBSTDCXX_VERSION)
-// workaround for missing std::string
-// ctors in some stdlib versions
 value::
 value(
     string str,
     storage_ptr store)
-    : str_(string::allocator_type(
-        std::move(store)))
+    : str_(construct(str, store))
     , kind_(json::kind::string)
 {
-    str_ = std::move(str);
 }
-#else
+
+template<class S>
+typename std::enable_if<
+    ! std::is_constructible<S, string,
+        typename string::allocator_type
+            >::value, string>::type
 value::
-value(
-    string str,
-    storage_ptr store)
-    : str_(std::move(str),
+construct(S& str, storage_ptr& store)
+{
+    // workaround for missing std::string
+    // ctors in some stdlib versions
+    auto s = string(typename
         string::allocator_type(
-            std::move(store)))
-    , kind_(json::kind::string)
-{
+            std::move(store)));
+    s = std::move(str);
+    return s;
 }
-#endif
+
+template<class S>
+typename std::enable_if<
+    std::is_constructible<S, string,
+        typename string::allocator_type
+            >::value, string>::type
+value::
+construct(S& str, storage_ptr& store)
+{
+    return {std::move(str), typename
+        string::allocator_type(
+            std::move(store))};
+}
 
 value::
 value(number num)
@@ -319,27 +332,52 @@ operator=(array arr)
     return *this;
 }
 
+struct value::op_assign
+{
+    value& this_;
+
+    template<class S>
+    typename std::enable_if<
+        ! std::is_constructible<S, string,
+            typename string::allocator_type
+                >::value>::type
+    operator()(S& str)
+    {
+        // workaround for missing std::string
+        // ctors in some stdlib versions
+        auto tmp = S(typename
+            string::allocator_type(
+                this_.get_storage()));
+        tmp = std::move(str);
+        this_.clear_impl();
+        ::new(&this_.str_) string(
+            std::move(tmp));
+        this_.kind_ = json::kind::string;
+    }
+
+    template<class S>
+    typename std::enable_if<
+        std::is_constructible<S, string,
+            typename string::allocator_type
+                >::value>::type
+    operator()(S& str)
+    {
+        auto tmp = S(
+            std::move(str), typename
+            string::allocator_type(
+                this_.get_storage()));
+        this_.clear_impl();
+        ::new(&this_.str_) string(
+            std::move(tmp));
+        this_.kind_ = json::kind::string;
+    }
+};
+
 value&
 value::
 operator=(string str)
 {
-#if defined(BOOST_LIBSTDCXX_VERSION)
-    // workaround for missing std::string
-    // ctors in some stdlib versions
-    auto tmp = string(
-        string::allocator_type(
-            get_storage()));
-    tmp = std::move(str);
-#else
-    auto tmp = string(
-        std::move(str),
-        string::allocator_type(
-            get_storage()));
-#endif
-    clear_impl();
-    ::new(&str_) string(
-        std::move(tmp));
-    kind_ = json::kind::string;
+    op_assign{*this}(str);
     return *this;
 }
 
@@ -876,6 +914,39 @@ clear_impl() noexcept
     }
 }
 
+struct value::op_move
+{
+    value& this_;
+    storage_ptr& sp_;
+
+    template<class S>
+    typename std::enable_if<
+        ! std::is_constructible<S, string,
+            typename string::allocator_type
+                >::value>::type
+    operator()(S& str)
+    {
+        // workaround for missing std::string
+        // ctors in some stdlib versions
+        auto tmp = S(typename
+            string::allocator_type(sp_));
+        tmp = std::move(str);
+        ::new(&this_.str_) string(std::move(tmp));
+    }
+
+    template<class S>
+    typename std::enable_if<
+        std::is_constructible<S, string,
+            typename string::allocator_type
+                >::value>::type
+    operator()(S& str)
+    {
+        ::new(&this_.str_) string(
+            std::move(str), typename
+            string::allocator_type(sp_));
+    }
+};
+
 // unchecked
 void
 value::
@@ -936,18 +1007,7 @@ move(
         try
     #endif
         {
-        // workaround for missing std::string
-        // ctors in some stdlib versions
-        #if defined(BOOST_LIBSTDCXX_VERSION)
-            auto tmp = string(typename
-                string::allocator_type(sp));
-            tmp = std::move(other.str_);
-            ::new(&str_) string(std::move(tmp));
-        #else
-            ::new(&str_) string(
-                std::move(other.str_), typename
-                string::allocator_type(sp));
-        #endif
+            op_move{*this, sp}(other.str_);
         } 
     #ifndef BOOST_NO_EXCEPTIONS
         catch(...)
@@ -985,6 +1045,38 @@ move(
     kind_ = other.kind_;
     other.kind_ = json::kind::null;
 }
+
+struct value::op_copy
+{
+    value& this_;
+    storage_ptr& sp_;
+
+    template<class S>
+    typename std::enable_if<
+        ! std::is_constructible<S, string,
+            typename string::allocator_type
+                >::value>::type
+    operator()(S const& str)
+    {
+        // workaround for missing std::string
+        // ctors in some stdlib versions
+        auto tmp = string(typename
+            string::allocator_type(sp_));
+        tmp = str;
+        ::new(&this_.str_) string(std::move(tmp));
+    }
+
+    template<class S>
+    typename std::enable_if<
+        std::is_constructible<S, string,
+            typename string::allocator_type
+                >::value>::type
+    operator()(S const& str)
+    {
+        ::new(&this_.str_) string(str,
+            typename string::allocator_type(sp_));
+    }
+};
 
 // unchecked
 void
@@ -1039,18 +1131,7 @@ copy(
         try
         {
     #endif
-        #if defined(BOOST_LIBSTDCXX_VERSION)
-            // workaround for missing std::string
-            // ctors in some stdlib versions
-            auto tmp = string(typename
-                string::allocator_type(sp));
-            tmp = other.str_;
-            ::new(&str_) string(std::move(tmp));
-        #else
-            ::new(&str_) string(
-                other.str_, typename
-                string::allocator_type(sp));
-        #endif
+            op_copy{*this, sp}(other.str_);
     #ifndef BOOST_NO_EXCEPTIONS
         } 
         catch(...)
