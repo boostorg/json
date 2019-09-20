@@ -198,7 +198,7 @@ public:
        
         {
             std::initializer_list<std::pair<
-                beast::string_view, value>> init = {
+                string_view, value>> init = {
                     {"a", 1},
                     {"b", true},
                     {"c", "hello"}};
@@ -585,7 +585,7 @@ public:
         // insert(InputIt, InputIt)
         {
             std::initializer_list<std::pair<
-                beast::string_view, value>> init = {
+                string_view, value>> init = {
                     {"a", 1},
                     {"b", true},
                     {"c", "hello"}};

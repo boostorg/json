@@ -14,6 +14,7 @@
 #include <boost/json/detail/varint.hpp>
 #include <boost/core/exchange.hpp>
 #include <boost/core/ignore_unused.hpp>
+#include <boost/utility/string_view.hpp>
 #include <algorithm>
 #include <type_traits>
 
@@ -139,8 +140,8 @@ class object::key_equal
 public:
     bool
     operator()(
-        beast::string_view lhs,
-        beast::string_view rhs) const noexcept
+        string_view lhs,
+        string_view rhs) const noexcept
     {
         return lhs == rhs;
     }
@@ -601,7 +602,7 @@ class object::node_type
     }
 
 public:
-    using key_type = beast::string_view;
+    using key_type = string_view;
     using mapped_type = json::value;
 
     node_type() = default;

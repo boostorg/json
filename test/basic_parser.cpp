@@ -14,7 +14,6 @@
 
 #include <boost/beast/core/buffers_range.hpp>
 #include <boost/beast/core/error.hpp>
-#include <boost/beast/core/string.hpp>
 #include <boost/asio/buffer.hpp>
 
 namespace boost {

@@ -15,8 +15,8 @@
 #include <boost/json/detail/basic_parser.hpp>
 #include <boost/json/detail/stack.hpp>
 #include <boost/beast/core/error.hpp>
-#include <boost/beast/core/string.hpp>
 #include <boost/asio/buffer.hpp>
+#include <boost/utility/string_view.hpp>
 #include <cstdint>
 
 #include <string>

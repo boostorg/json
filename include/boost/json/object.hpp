@@ -11,8 +11,8 @@
 #define BOOST_JSON_OBJECT_HPP
 
 #include <boost/json/detail/config.hpp>
-#include <boost/beast/core/string.hpp>
 #include <boost/json/storage.hpp>
+#include <boost/utility/string_view.hpp>
 #include <cstdlib>
 #include <initializer_list>
 #include <iterator>
@@ -43,7 +43,7 @@ class object
     float mf_ = 1.0;
 
 public:
-    using key_type = beast::string_view;
+    using key_type = string_view;
     using mapped_type = value;
     using value_type = std::pair<key_type, value>;
     using size_type = std::size_t;

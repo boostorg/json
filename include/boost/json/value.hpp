@@ -20,6 +20,7 @@
 #include <boost/json/detail/is_specialized.hpp>
 #include <boost/json/detail/value.hpp>
 #include <boost/type_traits/make_void.hpp>
+#include <boost/utility/string_view.hpp>
 #include <cstdlib>
 #include <initializer_list>
 #include <iosfwd>
@@ -682,7 +683,7 @@ public:
     //
     //--------------------------------------------------------------------------
     
-    using key_type = beast::string_view;
+    using key_type = string_view;
     using mapped_type = value;
     using value_type = std::pair<key_type, value>;
     using size_type = std::size_t;
