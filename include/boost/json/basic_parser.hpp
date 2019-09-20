@@ -78,7 +78,7 @@ public:
         ,class = typename std::enable_if<
             ! std::is_convertible<
                 ConstBufferSequence,
-                net::const_buffer>::value>::type
+                boost::asio::const_buffer>::value>::type
 #endif
     >
     std::size_t
@@ -89,7 +89,7 @@ public:
     BOOST_JSON_DECL
     std::size_t
     write_some(
-        net::const_buffer buffer,
+        boost::asio::const_buffer buffer,
         error_code& ec);
 
     template<
@@ -98,7 +98,7 @@ public:
         ,class = typename std::enable_if<
             ! std::is_convertible<
                 ConstBufferSequence,
-                net::const_buffer>::value>::type
+                boost::asio::const_buffer>::value>::type
 #endif
     >
     std::size_t
@@ -109,7 +109,7 @@ public:
     BOOST_JSON_DECL
     std::size_t
     write(
-        net::const_buffer buffer,
+        boost::asio::const_buffer buffer,
         error_code& ec);
 
     BOOST_JSON_DECL

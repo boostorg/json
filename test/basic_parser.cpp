@@ -118,12 +118,12 @@ public:
             {
                 test_parser p;
                 auto used = p.write_some(
-                    net::const_buffer(s.data(), i), ec);
+                    boost::asio::const_buffer(s.data(), i), ec);
                 BEAST_EXPECT(used == i);
                 BEAST_EXPECT(! p.is_done());
                 if(! BEAST_EXPECTS(! ec, ec.message()))
                     continue;
-                used = p.write_some(net::const_buffer(
+                used = p.write_some(boost::asio::const_buffer(
                     s.data() + i, s.size() - i), ec);
                 BEAST_EXPECT(used == s.size() - i);
                 if(! BEAST_EXPECTS(! ec, ec.message()))
@@ -136,7 +136,7 @@ public:
             {
                 test_parser p;
                 std::array<
-                    net::const_buffer, 2> b;
+                    boost::asio::const_buffer, 2> b;
                 b[0] = {s.data(), i};
                 b[1] = {s.data()+i, s.size()-i};
                 auto used = p.write_some(b, ec);
@@ -149,7 +149,7 @@ public:
             {
                 test_parser p;
                 std::array<
-                    net::const_buffer, 2> b;
+                    boost::asio::const_buffer, 2> b;
                 b[0] = {s.data(), i};
                 b[1] = {s.data()+i, s.size()-i};
                 auto used = p.write(b, ec);

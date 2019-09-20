@@ -10,8 +10,6 @@
 #ifndef BOOST_JSON_IMPL_BASIC_PARSER_HPP
 #define BOOST_JSON_IMPL_BASIC_PARSER_HPP
 
-#include <boost/beast/core/buffers_range.hpp>
-
 namespace boost {
 namespace beast {
 namespace json {
@@ -24,15 +22,21 @@ write_some(
     error_code& ec)
 {
     static_assert(
-        net::is_const_buffer_sequence<ConstBufferSequence>::value,
+        boost::asio::is_const_buffer_sequence<ConstBufferSequence>::value,
         "ConstBufferSequence type requirements not met");
 
+    ec = {};
     std::size_t bytes_used = 0;
-    for(auto const b : beast::buffers_range_ref(buffers))
+    auto it =
+        boost::asio::buffer_sequence_begin(buffers);
+    auto end =
+        boost::asio::buffer_sequence_end(buffers);
+    for(;it != end; ++it)
     {
-        bytes_used += write_some(b, ec);
+        bytes_used +=
+            write_some(*it, ec);
         if(ec)
-            break;
+            return bytes_used;
     }
     return bytes_used;
 }
@@ -45,27 +49,26 @@ write(
     error_code& ec)
 {
     static_assert(
-        net::is_const_buffer_sequence<ConstBufferSequence>::value,
+        boost::asio::is_const_buffer_sequence<ConstBufferSequence>::value,
         "ConstBufferSequence type requirements not met");
 
+    ec = {};
     std::size_t bytes_used = 0;
     auto it =
-        net::buffer_sequence_begin(buffers);
+        boost::asio::buffer_sequence_begin(buffers);
     auto end =
-        net::buffer_sequence_end(buffers);
-    if(it == end)
+        boost::asio::buffer_sequence_end(buffers);
+    if(it != end)
     {
-        ec = {};
-        return 0;
+        for(--end; it != end; ++it)
+        {
+            bytes_used +=
+                write_some(*it, ec);
+            if(ec)
+                return bytes_used;
+        }
+        bytes_used += write(*it, ec);
     }
-    for(--end; it != end; ++it)
-    {
-        bytes_used +=
-            write_some(*it, ec);
-        if(ec)
-            return bytes_used;
-    }
-    bytes_used += write(*it, ec);
     return bytes_used;
 }
 

@@ -184,7 +184,7 @@ write_eof(error_code& ec)
         case state::number_exp_digits2:
             stack_.front() = state::number_end;
             write_some(
-                net::const_buffer{}, ec);
+                boost::asio::const_buffer{}, ec);
             if(ec)
                 return;
             break;
@@ -205,7 +205,7 @@ write_eof(error_code& ec)
 std::size_t
 basic_parser::
 write_some(
-    net::const_buffer buffer,
+    boost::asio::const_buffer buffer,
     error_code& ec)
 {
     auto p = static_cast<
@@ -950,7 +950,7 @@ finish:
 std::size_t
 basic_parser::
 write(
-    net::const_buffer buffer,
+    boost::asio::const_buffer buffer,
     error_code& ec)
 {
     auto bytes_used =

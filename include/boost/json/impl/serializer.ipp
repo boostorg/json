@@ -35,7 +35,7 @@ is_done() const noexcept
 std::size_t
 serializer::
 impl::
-next(net::mutable_buffer b)
+next(boost::asio::mutable_buffer b)
 {
     auto const p0 =
         reinterpret_cast<char*>(b.data());
@@ -220,7 +220,7 @@ void
 serializer::
 impl::
 append(char c,
-    net::mutable_buffer& b)
+    boost::asio::mutable_buffer& b)
 {
     BOOST_ASSERT(b.size() >= 1);
     *reinterpret_cast<char*>(b.data()) = c;
@@ -232,7 +232,7 @@ serializer::
 impl::
 append(
     char const* s, std::size_t n,
-    net::mutable_buffer& b)
+    boost::asio::mutable_buffer& b)
 {
     BOOST_ASSERT(b.size() >= n);
     std::memcpy(b.data(), s, n);
