@@ -16,7 +16,6 @@
 #include <utility>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 //------------------------------------------------------------------------------
@@ -1224,7 +1223,6 @@ operator<<(std::ostream& os, value const& jv)
 }
 
 } // json
-} // beast
 } // boost
 
 #endif

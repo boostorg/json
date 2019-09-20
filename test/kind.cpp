@@ -15,10 +15,9 @@
 #include <type_traits>
 
 namespace boost {
-namespace beast {
 namespace json {
 
-class kind_test : public unit_test::suite
+class kind_test : public beast::unit_test::suite
 {
 public:
     BOOST_STATIC_ASSERT(
@@ -39,5 +38,4 @@ public:
 BEAST_DEFINE_TESTSUITE(beast,json,kind);
 
 } // json
-} // beast
 } // boost

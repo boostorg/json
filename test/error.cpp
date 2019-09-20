@@ -14,10 +14,9 @@
 #include <memory>
 
 namespace boost {
-namespace beast {
 namespace json {
 
-class error_test : public unit_test::suite
+class error_test : public beast::unit_test::suite
 {
 public:
     void check(error e)
@@ -66,5 +65,4 @@ public:
 BEAST_DEFINE_TESTSUITE(beast,json,error);
 
 } // json
-} // beast
 } // boost

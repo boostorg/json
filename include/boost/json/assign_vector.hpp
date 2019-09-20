@@ -17,7 +17,6 @@
 #include <vector>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 template<class T, class A
@@ -43,7 +42,6 @@ from_json(
 }
 
 } // json
-} // beast
 } // boost
 
 #endif

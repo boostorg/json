@@ -16,7 +16,6 @@
 #include <vector>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 namespace value_test_ns {
@@ -56,7 +55,7 @@ struct value_exchange<value_test_ns::T3>
 
 //------------------------------------------------------------------------------
 
-class value_test : public unit_test::suite
+class value_test : public beast::unit_test::suite
 {
 public:
     struct unique_storage : storage
@@ -721,6 +720,5 @@ public:
 BEAST_DEFINE_TESTSUITE(beast,json,value);
 
 } // json
-} // beast
 } // boost
 

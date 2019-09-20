@@ -13,10 +13,9 @@
 #include <boost/beast/_experimental/unit_test/suite.hpp>
 
 namespace boost {
-namespace beast {
 namespace json {
 
-class string_test : public unit_test::suite
+class string_test : public beast::unit_test::suite
 {
 public:
     void
@@ -29,5 +28,4 @@ public:
 BEAST_DEFINE_TESTSUITE(beast,json,string);
 
 } // json
-} // beast
 } // boost

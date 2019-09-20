@@ -15,10 +15,9 @@
 #include <type_traits>
 
 namespace boost {
-namespace beast {
 namespace json {
 
-class object_test : public unit_test::suite
+class object_test : public beast::unit_test::suite
 {
 public:
     struct unique_storage : storage
@@ -1057,5 +1056,4 @@ public:
 BEAST_DEFINE_TESTSUITE(beast,json,object);
 
 } // json
-} // beast
 } // boost

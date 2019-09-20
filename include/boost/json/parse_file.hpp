@@ -12,10 +12,9 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/basic_parser.hpp>
-#include <boost/beast/core/error.hpp>
+#include <boost/json/error.hpp>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 /** Parse the contents of a file as JSON.
@@ -28,7 +27,6 @@ parse_file(
     error_code& ec);
 
 } // json
-} // beast
 } // boost
 
 #ifdef BOOST_JSON_HEADER_ONLY

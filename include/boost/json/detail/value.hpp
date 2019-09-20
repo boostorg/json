@@ -10,12 +10,11 @@
 #ifndef BOOST_JSON_DETAIL_VALUE_HPP
 #define BOOST_JSON_DETAIL_VALUE_HPP
 
-#include <boost/beast/core/error.hpp>
+#include <boost/json/error.hpp>
 #include <boost/type_traits/make_void.hpp>
 #include <type_traits>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 class value;
@@ -144,7 +143,6 @@ call_from_json(
 
 } // detail
 } // json
-} // beast
 } // boost
 
 #endif

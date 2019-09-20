@@ -17,7 +17,6 @@
 #include <type_traits>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 template<class Allocator>
@@ -37,7 +36,6 @@ from_json(
 }
 
 } // json
-} // beast
 } // boost
 
 #endif

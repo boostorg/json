@@ -15,7 +15,6 @@
 #include <type_traits>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 template<typename T>
@@ -82,7 +81,6 @@ public:
 };
 
 } // json
-} // beast
 } // boost
 
 #include <boost/json/impl/allocator.hpp>

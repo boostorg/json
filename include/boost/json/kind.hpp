@@ -15,7 +15,6 @@
 #include <cstddef>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 enum class kind
@@ -31,7 +30,6 @@ enum class kind
 BOOST_BEAST_INLINE_VARIABLE(null, std::nullptr_t)
 
 } // json
-} // beast
 } // boost
 
 #endif

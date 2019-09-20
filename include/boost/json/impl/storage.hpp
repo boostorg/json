@@ -13,7 +13,6 @@
 #include <boost/json/detail/storage_adaptor.hpp>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 template<class Allocator>
@@ -25,7 +24,6 @@ make_storage_ptr(Allocator const& a)
 }
 
 } // json
-} // beast
 } // boost
 
 #endif

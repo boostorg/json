@@ -11,7 +11,6 @@
 #define BOOST_JSON_IMPL_BASIC_PARSER_HPP
 
 namespace boost {
-namespace beast {
 namespace json {
 
 template<class ConstBufferSequence, class>
@@ -73,7 +72,6 @@ write(
 }
 
 } // json
-} // beast
 } // boost
 
 #endif

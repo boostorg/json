@@ -13,7 +13,6 @@
 #include <boost/json/serializer.hpp>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 serializer::
@@ -254,7 +253,6 @@ serializer(value const& jv)
 }
 
 } // json
-} // beast
 } // boost
 
 #endif

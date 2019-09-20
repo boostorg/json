@@ -13,11 +13,9 @@
 #include <boost/beast/_experimental/unit_test/suite.hpp>
 
 #include <boost/beast/core/buffers_range.hpp>
-#include <boost/beast/core/error.hpp>
 #include <boost/asio/buffer.hpp>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 class basic_parser_test : public beast::unit_test::suite
@@ -317,5 +315,4 @@ public:
 BEAST_DEFINE_TESTSUITE(beast,json,basic_parser);
 
 } // json
-} // beast
 } // boost

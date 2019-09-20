@@ -28,7 +28,6 @@
 #include <utility>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 class value;
@@ -944,7 +943,6 @@ private:
 };
 
 } // json
-} // beast
 } // boost
 
 #include <boost/json/impl/array.hpp>

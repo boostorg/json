@@ -11,7 +11,6 @@
 #define BOOST_JSON_IMPL_PARSER_HPP
 
 namespace boost {
-namespace beast {
 namespace json {
 
 template<class T>
@@ -41,7 +40,6 @@ assign(T&& t)
 }
 
 } // json
-} // beast
 } // boost
 
 #endif

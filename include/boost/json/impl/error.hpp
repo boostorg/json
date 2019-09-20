@@ -15,12 +15,12 @@
 namespace boost {
 namespace system {
 template<>
-struct is_error_code_enum<::boost::beast::json::error>
+struct is_error_code_enum<::boost::json::error>
 {
     static bool const value = true;
 };
 template<>
-struct is_error_condition_enum<::boost::beast::json::condition>
+struct is_error_condition_enum<::boost::json::condition>
 {
     static bool const value = true;
 };
@@ -28,7 +28,6 @@ struct is_error_condition_enum<::boost::beast::json::condition>
 } // boost
 
 namespace boost {
-namespace beast {
 namespace json {
 
 BOOST_JSON_DECL
@@ -40,7 +39,6 @@ error_condition
 make_error_condition(condition c);
 
 } // json
-} // beast
 } // boost
 
 #endif

@@ -14,10 +14,9 @@
 #include <vector>
 
 namespace boost {
-namespace beast {
 namespace json {
 
-class allocator_test : public unit_test::suite
+class allocator_test : public beast::unit_test::suite
 {
 public:
     void
@@ -47,5 +46,4 @@ public:
 BEAST_DEFINE_TESTSUITE(beast,json,allocator);
 
 } // json
-} // beast
 } // boost

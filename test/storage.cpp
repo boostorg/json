@@ -14,10 +14,9 @@
 #include <boost/json/detail/storage_adaptor.hpp>
 
 namespace boost {
-namespace beast {
 namespace json {
 
-class storage_test : public unit_test::suite
+class storage_test : public beast::unit_test::suite
 {
 public:
     struct unique_storage : storage
@@ -187,5 +186,4 @@ public:
 BEAST_DEFINE_TESTSUITE(beast,json,storage);
 
 } // json
-} // beast
 } // boost

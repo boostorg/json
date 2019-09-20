@@ -19,7 +19,6 @@
 #include <type_traits>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 class parser : public basic_parser
@@ -142,7 +141,6 @@ private:
 };
 
 } // json
-} // beast
 } // boost
 
 #include <boost/json/impl/parser.hpp>

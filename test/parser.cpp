@@ -15,10 +15,9 @@
 #include <sstream>
 
 namespace boost {
-namespace beast {
 namespace json {
 
-class parser_test : public unit_test::suite
+class parser_test : public beast::unit_test::suite
 {
 public:
     void
@@ -80,5 +79,4 @@ R"xx({
 BEAST_DEFINE_TESTSUITE(beast,json,parser);
 
 } // json
-} // beast
 } // boost

@@ -16,7 +16,6 @@
 #include <type_traits>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 /** Abstract interface to a memory resource used with JSON.
@@ -209,7 +208,6 @@ void
 default_storage(storage_ptr sp);
 
 } // json
-} // beast
 } // boost
 
 #include <boost/json/impl/storage.hpp>

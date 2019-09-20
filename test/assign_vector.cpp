@@ -14,10 +14,9 @@
 #include <type_traits>
 
 namespace boost {
-namespace beast {
 namespace json {
 
-class assign_vector_test : public unit_test::suite
+class assign_vector_test : public beast::unit_test::suite
 {
 public:
     void
@@ -54,5 +53,4 @@ public:
 BEAST_DEFINE_TESTSUITE(beast,json,assign_vector);
 
 } // json
-} // beast
 } // boost

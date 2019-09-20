@@ -24,7 +24,6 @@
 #include <type_traits>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 //------------------------------------------------------------------------------
@@ -1262,7 +1261,6 @@ remove(element* e)
 }
 
 } // json
-} // beast
 } // boost
 
 #endif

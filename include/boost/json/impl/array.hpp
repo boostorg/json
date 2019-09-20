@@ -16,7 +16,6 @@
 #include <type_traits>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 //------------------------------------------------------------------------------
@@ -255,7 +254,6 @@ emplace_impl(
 }
 
 } // json
-} // beast
 } // boost
 
 #endif

@@ -14,7 +14,6 @@
 #include <utility>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 template<typename T>
@@ -93,7 +92,6 @@ operator!=(allocator const& other) const noexcept
 }
 
 } // json
-} // beast
 } // boost
 
 #endif

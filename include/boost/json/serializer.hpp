@@ -17,7 +17,6 @@
 #include <boost/asio/buffer.hpp>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 class serializer
@@ -133,7 +132,6 @@ public:
 };
 
 } // json
-} // beast
 } // boost
 
 #ifdef BOOST_JSON_HEADER_ONLY

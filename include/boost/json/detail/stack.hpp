@@ -17,7 +17,6 @@
 #include <vector>
 
 namespace boost {
-namespace beast {
 namespace json {
 namespace detail {
 
@@ -184,7 +183,6 @@ public:
 
 } // detail
 } // json
-} // beast
 } // boost
 
 #endif

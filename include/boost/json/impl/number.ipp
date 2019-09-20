@@ -21,7 +21,6 @@
 #include <vector>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 //------------------------------------------------------------------------------
@@ -448,7 +447,6 @@ operator!=(
 }
 
 } // json
-} // beast
 } // boost
 
 #endif

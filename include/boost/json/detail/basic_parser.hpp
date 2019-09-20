@@ -11,7 +11,6 @@
 #define BOOST_JSON_DETAIL_BASIC_PARSER_HPP
 
 namespace boost {
-namespace beast {
 namespace json {
 namespace detail {
 
@@ -43,7 +42,6 @@ struct parser_base
 
 } // detail
 } // json
-} // beast
 } // boost
 
 #endif

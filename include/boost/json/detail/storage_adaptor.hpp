@@ -26,7 +26,6 @@
 #endif
 
 namespace boost {
-namespace beast {
 namespace json {
 namespace detail {
 
@@ -121,7 +120,6 @@ struct storage_adaptor
 
 } // detail
 } // json
-} // beast
 } // boost
 
 #endif

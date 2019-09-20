@@ -15,7 +15,6 @@
 #include <string>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 class value;
@@ -29,7 +28,6 @@ using string =
         allocator<char>>;
 
 } // json
-} // beast
 } // boost
 
 #endif

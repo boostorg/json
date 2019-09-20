@@ -16,7 +16,6 @@
 #include <type_traits>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 //------------------------------------------------------------------------------
@@ -568,7 +567,6 @@ from_json(T& t, value const& v)
 }
 
 } // json
-} // beast
 } // boost
 
 #endif

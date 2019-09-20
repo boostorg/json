@@ -14,7 +14,6 @@
 #include <utility>
 
 namespace boost {
-namespace beast {
 namespace json {
 namespace detail {
 
@@ -69,7 +68,6 @@ varint_write(
 
 } // detail
 } // json
-} // beast
 } // boost
 
 #endif

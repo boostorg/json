@@ -22,7 +22,6 @@
 #include <utility>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 //------------------------------------------------------------------------------
@@ -740,7 +739,6 @@ move(
 }
 
 } // json
-} // beast
 } // boost
 
 #endif

@@ -13,7 +13,6 @@
 #include <boost/json/iterator.hpp>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 const_iterator::
@@ -208,7 +207,6 @@ operator++() noexcept
 }
 
 } // json
-} // beast
 } // boost
 
 #endif

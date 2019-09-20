@@ -11,10 +11,10 @@
 #define BOOST_JSON_BASIC_PARSER_HPP
 
 #include <boost/json/detail/config.hpp>
+#include <boost/json/error.hpp>
 #include <boost/json/number.hpp>
 #include <boost/json/detail/basic_parser.hpp>
 #include <boost/json/detail/stack.hpp>
-#include <boost/beast/core/error.hpp>
 #include <boost/asio/buffer.hpp>
 #include <boost/utility/string_view.hpp>
 #include <cstdint>
@@ -23,7 +23,6 @@
 #include <vector>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 /** A parser for serialized JSON
@@ -179,7 +178,6 @@ protected:
 };
 
 } // json
-} // beast
 } // boost
 
 #include <boost/json/impl/basic_parser.hpp>

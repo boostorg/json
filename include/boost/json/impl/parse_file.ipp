@@ -15,7 +15,6 @@
 #include <boost/beast/core/detail/clamp.hpp>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 void
@@ -24,11 +23,11 @@ parse_file(
     basic_parser& parser,
     error_code& ec)
 {
-    file f;
+    beast::file f;
     f.open(path, beast::file_mode::scan, ec);
     if(ec)
         return;
-    flat_buffer b;
+    beast::flat_buffer b;
     auto remain = f.size(ec);
     if(ec)
         return;
@@ -55,7 +54,6 @@ parse_file(
 }
 
 } // json
-} // beast
 } // boost
 
 #endif

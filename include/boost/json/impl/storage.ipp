@@ -17,7 +17,6 @@
 #include <memory>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 storage_ptr::
@@ -107,7 +106,6 @@ default_storage(storage_ptr sp)
 
 
 } // json
-} // beast
 } // boost
 
 #endif

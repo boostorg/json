@@ -13,10 +13,9 @@
 #include <boost/beast/_experimental/unit_test/suite.hpp>
 
 namespace boost {
-namespace beast {
 namespace json {
 
-class array_test : public unit_test::suite
+class array_test : public beast::unit_test::suite
 {
 public:
     struct unique_storage : storage
@@ -828,5 +827,4 @@ public:
 BEAST_DEFINE_TESTSUITE(beast,json,array);
 
 } // json
-} // beast
 } // boost

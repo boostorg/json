@@ -18,7 +18,6 @@
 #include <new>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 struct end_t
@@ -139,7 +138,6 @@ public:
 };
 
 } // json
-} // beast
 } // boost
 
 #if BOOST_JSON_HEADER_ONLY

@@ -17,7 +17,6 @@
 #include <type_traits>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 /** The representation of parsed numbers.
@@ -227,7 +226,6 @@ std::ostream&
 operator<<(std::ostream& os, number const& n);
 
 } // json
-} // beast
 } // boost
 
 #ifdef BOOST_JSON_HEADER_ONLY

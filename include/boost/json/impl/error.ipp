@@ -13,7 +13,6 @@
 #include <boost/json/error.hpp>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 namespace detail {
@@ -151,7 +150,6 @@ make_error_condition(condition c)
 }
 
 } // json
-} // beast
 } // boost
 
 #endif

@@ -14,11 +14,10 @@
 #include <string>
 
 namespace boost {
-namespace beast {
 namespace json {
 namespace detail {
 
-class stack_test : public unit_test::suite
+class stack_test : public beast::unit_test::suite
 {
 public:
     void
@@ -51,5 +50,4 @@ BEAST_DEFINE_TESTSUITE(beast,json,stack);
 
 } // detail
 } // json
-} // beast
 } // boost

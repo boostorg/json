@@ -16,7 +16,6 @@
 #include <boost/assert.hpp>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 parser::
@@ -267,7 +266,6 @@ on_null(error_code&)
 }
 
 } // json
-} // beast
 } // boost
 
 #endif

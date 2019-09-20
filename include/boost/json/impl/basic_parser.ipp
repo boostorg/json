@@ -16,7 +16,6 @@
 #include <boost/assert.hpp>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 /*  References:
@@ -213,7 +212,7 @@ write_some(
     auto n = buffer.size();
     auto const p0 = p;
     auto const p1 = p0 + n;
-    static_string<4096> temp;
+    beast::static_string<4096> temp;
     ec.assign(0, ec.category());
     BOOST_ASSERT(stack_.front() != state::end);
     auto const maybe_flush =
@@ -961,7 +960,6 @@ write(
 }
 
 } // json
-} // beast
 } // boost
 
 #endif

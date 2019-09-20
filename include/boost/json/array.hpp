@@ -18,7 +18,6 @@
 #include <iterator>
 
 namespace boost {
-namespace beast {
 namespace json {
 
 class value;
@@ -429,7 +428,6 @@ private:
 };
 
 } // json
-} // beast
 } // boost
 
 // Must be included here for this file to stand alone

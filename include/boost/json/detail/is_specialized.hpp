@@ -13,7 +13,6 @@
 #include <type_traits>
 
 namespace boost {
-namespace beast {
 namespace json {
 namespace detail {
 
@@ -33,7 +32,6 @@ using remove_cr =
 
 } // detail
 } // json
-} // beast
 } // boost
 
 #endif
