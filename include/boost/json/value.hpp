@@ -105,6 +105,9 @@ class value
         storage_ptr sp_;
     };
 
+#ifndef GENERATING_DOCUMENTATION
+    // docca scripts don't yet understand
+    // that these members are private
     union
     {
         object    obj_;
@@ -112,6 +115,7 @@ class value
         string    str_;
         native    nat_;
     };
+#endif
 
     json::kind kind_;
 
