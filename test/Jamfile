@@ -4,7 +4,7 @@
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
-# Official repository: https://github.com/boostorg/json
+# Official repository: https://github.com/vinniefalco/json
 #
 
 local SOURCES =
@@ -32,7 +32,7 @@ local RUN_TESTS ;
 
 for local f in $(SOURCES)
 {
-    RUN_TESTS += [ run $(f) lib.cpp ] ;
+    RUN_TESTS += [ run $(f) lib.cpp main.cpp ] ;
 }
 
 alias run-tests : $(RUN_TESTS) ;
@@ -40,6 +40,7 @@ alias run-tests : $(RUN_TESTS) ;
 exe fat-tests :
     $(SOURCES)
     lib.cpp
+    main.cpp
     ;
 
 explicit fat-tests ;

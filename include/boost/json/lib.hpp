@@ -4,11 +4,11 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
-// Official repository: https://github.com/boostorg/json
+// Official repository: https://github.com/vinniefalco/json
 //
 
-#ifndef BOOST_BEAST_SRC_EXTRA_HPP
-#define BOOST_BEAST_SRC_EXTRA_HPP
+#ifndef BOOST_JSON_LIB_HPP
+#define BOOST_JSON_LIB_HPP
 
 /*
 
@@ -17,12 +17,12 @@ the program, with the macro BOOST_BEAST_SPLIT_COMPILATION defined.
 
 */
 
-#define BOOST_BEAST_SOURCE
+#define BOOST_JSON_SOURCE
 
-#include <boost/beast/core/detail/config.hpp>
+#include <boost/json/detail/config.hpp>
 
-#if defined(BOOST_BEAST_HEADER_ONLY)
-# error Do not compile Beast library source with BOOST_BEAST_HEADER_ONLY defined
+#if defined(BOOST_JSON_HEADER_ONLY)
+# error Do not compile library source with the header only macro defined
 #endif
 
 #include <boost/json/detail/varint.ipp>
