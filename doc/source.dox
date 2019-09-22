@@ -1,10 +1,24 @@
 #---------------------------------------------------------------------------
 # Configuration options related to the input files
 #---------------------------------------------------------------------------
-#INPUT = $(LIB_DIR)/include/boost/beast/_experimental/http/icy_stream.hpp
 
 INPUT = \
         $(LIB_DIR)/include/boost/json
+
+#        $(LIB_DIR)/include/boost/json/allocator.hpp \
+#        $(LIB_DIR)/include/boost/json/array.hpp \
+#        $(LIB_DIR)/include/boost/json/basic_parser.hpp \
+#        $(LIB_DIR)/include/boost/json/error.hpp \
+#        $(LIB_DIR)/include/boost/json/iterator.hpp \
+#        $(LIB_DIR)/include/boost/json/kind.hpp \
+#        $(LIB_DIR)/include/boost/json/number.hpp \
+#        $(LIB_DIR)/include/boost/json/object.hpp \
+#        $(LIB_DIR)/include/boost/json/parser.hpp \
+#        $(LIB_DIR)/include/boost/json/serializer.hpp \
+#        $(LIB_DIR)/include/boost/json/storage.hpp \
+#        $(LIB_DIR)/include/boost/json/string.hpp \
+#        $(LIB_DIR)/include/boost/json/value.hpp
+
 
 ALIASES               += esafe="@par Exception Safety"
 
@@ -37,7 +51,9 @@ INCLUDE_FILE_PATTERNS  =
 
 PREDEFINED             = \
                         GENERATING_DOCUMENTATION \
-                        BOOST_JSON_DECL
+                        BOOST_JSON_DECL \
+                        "BOOST_JSON_INLINE_VARIABLE(v, t)= "
+
 EXPAND_AS_DEFINED      =
 SKIP_FUNCTION_MACROS   = YES
 

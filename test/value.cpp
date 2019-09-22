@@ -721,4 +721,3 @@ BEAST_DEFINE_TESTSUITE(beast,json,value);
 
 } // json
 } // boost
-

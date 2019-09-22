@@ -89,12 +89,14 @@ using has_to_json =
 
 //------------------------------------------------------------------------------
 
-/** A JSON value.
+/** The type used to represent any JSON value
 */
 class value
 {
     friend class value_test;
 
+#ifndef GENERATING_DOCUMENTATION
+    // XSL scripts have trouble with private anon unions
     struct native
     {
         union
@@ -105,9 +107,6 @@ class value
         storage_ptr sp_;
     };
 
-#ifndef GENERATING_DOCUMENTATION
-    // docca scripts don't yet understand
-    // that these members are private
     union
     {
         object    obj_;

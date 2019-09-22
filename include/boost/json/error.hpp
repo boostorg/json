@@ -32,6 +32,7 @@ using error_condition = boost::system::error_condition;
 /// Error codes returned by JSON operations
 enum class error
 {
+    /// The serialized JSON object contains a syntax error
     syntax = 1,
 
     /// Unexpected extra data encountered while parsing

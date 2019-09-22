@@ -30,8 +30,10 @@ BOOST_JSON_INLINE_VARIABLE(end, end_t)
 */
 class const_iterator
 {
+#ifndef GENERATING_DOCUMENTATION
     struct node
     {
+        // The XSLT has trouble with private anonymous unions
         union
         {
             array::const_iterator arr_it;
@@ -56,6 +58,7 @@ class const_iterator
         bool
         last() const noexcept;
     };
+#endif
 
     detail::stack<node, 50> stack_;
 

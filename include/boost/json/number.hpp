@@ -39,6 +39,8 @@ class number
         type_ieee
     };
 
+#ifndef GENERATING_DOCUMENTATION
+    // The XSLT has problems with private anon unions
     union
     {
         unsigned
@@ -47,17 +49,23 @@ class number
         double      double_;
         base10_ieee ieee_;
     };
+#endif
 
     kind k_;
 
 public:
     static std::size_t constexpr
         max_string_chars =
-            1 +     // '-'
+        #ifdef GENERATING_DOCUMENTATION
+            27
+        #else
+             1 +    // '-'
             19 +    // unsigned 64-bit mantissa
-            1 +     // 'e'
-            1 +     // '-'
-            5;      // unsigned 16-bit exponent
+             1 +    // 'e'
+             1 +    // '-'
+             5      // unsigned 16-bit exponent
+        #endif
+            ;
 
     using mantissa_type =
         unsigned long long;

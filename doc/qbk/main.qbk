@@ -30,6 +30,12 @@
 [template include_file[path][^<'''<ulink url="../../../../'''[path]'''">'''[path]'''</ulink>'''>]]
 [template issue[n] '''<ulink url="https://github.com/boostorg/beast/issues/'''[n]'''">#'''[n]'''</ulink>''']
 
+[/ C++ Named Requirements ]
+
+[def __Allocator__              [@https://en.cppreference.com/w/cpp/named_req/Allocator ['Allocator]]]
+[def __ConstBufferSequence__    [@boost:/doc/html/boost_asio/reference/ConstBufferSequence.html ['ConstBufferSequence]]]
+[def __MutableBufferSequence__  [@boost:/doc/html/boost_asio/reference/MutableBufferSequence.html ['MutableBufferSequence]]]
+
 [/-----------------------------------------------------------------------------]
 
 [section Introduction]
@@ -49,6 +55,7 @@ others. These properties make JSON an ideal data-interchange language.
 
 [section Motivation]
 
+JSON 
 A survey of existing JSON libraries shows impressive diversity and features.
 However, no library is known to meet all of the design goals mentioned here.
 In particular, we know of no library that supports incremental parsing and
@@ -60,7 +67,11 @@ serialization, and also supports custom allocators robustly.
 
 [section Design Goals]
 
-The design of the library achieves these goals:
+The library recognizes that
+`json::value`
+should be crafted to be generally useful as a vocabulary type.
+
+The design of the library also achieves these goals:
 
 * Robust support for custom allocators throughout.
 * Array and object interfaces closely track their
@@ -69,6 +80,186 @@ The design of the library achieves these goals:
 * Minimize use of templates for reduced compilation times.
 * Parsers and serializers work incrementally (['online algorithms]).
 * Elements in objects may also be iterated in insertion order.
+
+[endsect]
+
+[/-----------------------------------------------------------------------------]
+
+[section Design]
+
+[heading Terminology]
+
+Lorem ipsum.
+
+[heading Allocators]
+
+Lorem ipsum.
+
+[endsect]
+
+[/-----------------------------------------------------------------------------]
+
+[section:comparison Comparison to Other Libraries]
+
+We use these criteria for evaluating a library's JSON container (the
+"value type") for suitability as a vocabulary type:
+
+* The value type declaration is completely decoupled
+  from other facilities such as parsing and serialization.
+
+* The value type is not a class template
+
+
+
+[/-----------------------------------------------------------------------------]
+
+https://github.com/cierelabs/json_spirit/blob/master/ciere/json/value.hpp
+
+
+```
+   typedef std::string                                  string_t;
+   typedef std::map<std::string, value>                 object_t;
+   typedef std::pair<std::string, value>                object_member_t;
+   typedef boost::container::stable_vector<value>       array_t;
+
+   class value : public boost::spirit::extended_variant<
+        null_t, bool_t, string_t, int_t, double_t, object_t, array_t>
+        { ... };
+
+```
+
+[/-----------------------------------------------------------------------------]
+
+https://github.com/nlohmann/json
+
+```
+template<
+    template<typename, typename, typename...> class ObjectType,
+    template<typename, typename...> class ArrayType,
+    class StringType,
+    class BooleanType,
+    class NumberIntegerType,
+    class NumberUnsignedType,
+    class NumberFloatType,
+    template<typename> class AllocatorType,
+    template<typename, typename = void> class JSONSerializer
+    >
+class basic_json
+{
+  private:
+    ....
+    friend ::nlohmann::detail::parser<basic_json>;
+    friend ::nlohmann::detail::serializer<basic_json>;
+...
+
+```
+
+* The value type is a class template.
+
+* Massive template parameter list for the value type
+
+[/-----------------------------------------------------------------------------]
+
+https://github.com/lemire/simdjson
+
+```
+class ParsedJson;
+```
+
+This is quite an interesting data structure, which is optimized to work well
+with the SIMD parser. It makes very good design choices for the intended
+use-case. However it is not well suited as a vocabulary type due to the
+necessary limitations.
+
+* Read-only
+* Sequential access only, via `ParsedJson::BasicIterator`
+* Can only be realistically populated by the provided SIMD JSON parser.
+
+[/-----------------------------------------------------------------------------]
+
+https://github.com/Tencent/rapidjson
+
+```
+template <typename Encoding, typename Allocator = MemoryPoolAllocator<> > 
+class GenericValue;
+
+template <bool Const, typename ValueT>
+class GenericArray;
+
+template <bool Const, typename ValueT>
+class GenericObject;
+```
+
+* The value type is a class template.
+
+* The value type is not copyable
+
+* The interface of the array and object types is radically different
+  from their standard library equivalents
+
+[/-----------------------------------------------------------------------------]
+
+https://github.com/taocpp/json
+
+```
+template< template< typename... > class Traits >
+class basic_value
+{
+    ...
+public:
+    using array_t = std::vector< basic_value >;
+    using object_t = std::map< std::string, basic_value, std::less<> >;
+...
+```
+
+The `basic_value` type uses the `Traits` as a template parameter, where the
+traits provide specializations to convert each supported native or user defined
+type to and from JSON. This makes the value type unsuitable as a vocabulary
+type because the traits for a `basic_value` exported by two different
+libraries which each has added support for their own types, are not the same.
+
+* The value type is a class template.
+
+* The array and object container interfaces change depending
+  on which version of the standard C++ library is used.
+
+* No allocator support
+
+[/-----------------------------------------------------------------------------]
+
+https://github.com/breese/trial.protocol
+
+```
+template <template <typename> class Allocator>
+class basic_variable
+{
+    ....
+public:
+```
+
+* The value type is a class template.
+
+* Allocators may only be default-constructed
+
+[/-----------------------------------------------------------------------------]
+
+https://github.com/Julien-Blanc-tgcm/jbc-json
+
+```
+template<typename traits_>
+class basic_item
+```
+
+[/-----------------------------------------------------------------------------]
+
+
+[/-----------------------------------------------------------------------------]
+
+
+[/-----------------------------------------------------------------------------]
+
+
+
 
 [endsect]
 

@@ -25,7 +25,7 @@ class value;
 
 //------------------------------------------------------------------------------
 
-/** The native type of object values
+/** The container used to represent JSON values of object type.
 
     This copies the interface of `std::unordered_map` with
     one important distinction: the order of insertions is
@@ -50,7 +50,27 @@ public:
     using reference = std::pair<key_type, value&>;
     using const_reference = std::pair<key_type, value const&>;
 
-    class hasher;
+    /// hasher
+    class hasher
+    {
+        BOOST_JSON_DECL
+        static
+        std::pair<
+            std::uint64_t, std::uint64_t>
+        init(std::true_type) noexcept;
+
+        BOOST_JSON_DECL
+        static
+        std::pair<
+            std::uint32_t, std::uint32_t>
+        init(std::false_type) noexcept;
+
+    public:
+        BOOST_JSON_DECL
+        std::size_t
+        operator()(key_type key) const noexcept;
+    };
+
     class key_equal;
     class pointer;
     class const_pointer;

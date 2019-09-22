@@ -17,6 +17,7 @@
 namespace boost {
 namespace json {
 
+/// Constants for identifying the type of a JSON value
 enum class kind
 {
     object,
