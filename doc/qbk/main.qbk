@@ -30,16 +30,56 @@
 [template include_file[path][^<'''<ulink url="../../../../'''[path]'''">'''[path]'''</ulink>'''>]]
 [template issue[n] '''<ulink url="https://github.com/boostorg/beast/issues/'''[n]'''">#'''[n]'''</ulink>''']
 
-[section:quickref Reference]
+[/-----------------------------------------------------------------------------]
 
-[xinclude quickref.xml]
+[section Introduction]
+
+This library provides containers and algorithms which implement JSON
+("JavaScript Object Notation"), a lightweight data-interchange format.
+This format is easy for humans to read and write, and easy for machines
+to parse and generate. It is based on a subset of the Javascript Programming
+Language, Standard ECMA-262. JSON is a text format that is language-indepdent
+but uses conventions that are familiar to programmers of the C-family of
+languages, including C, C++, C#, Java, JavaScript, Perl, Python, and many
+others. These properties make JSON an ideal data-interchange language.
+
 [endsect]
+
+[/-----------------------------------------------------------------------------]
+
+[section Motivation]
+
+A survey of existing JSON libraries shows impressive diversity and features.
+However, no library is known to meet all of the design goals mentioned here.
+In particular, we know of no library that supports incremental parsing and
+serialization, and also supports custom allocators robustly.
+
+[endsect]
+
+[/-----------------------------------------------------------------------------]
+
+[section Design Goals]
+
+The design of the library achieves these goals:
+
+* Robust support for custom allocators throughout.
+* Array and object interfaces closely track their
+  corresponding C++20 container equivalents.
+* Use `std::basic_string` for strings.
+* Minimize use of templates for reduced compilation times.
+* Parsers and serializers work incrementally (['online algorithms]).
+* Elements in objects may also be iterated in insertion order.
+
+[endsect]
+
+[/-----------------------------------------------------------------------------]
+
+[include quickref.qbk]
+
 [block'''<reference id="json_hidden"><title>This Page Intentionally Left Blank 1/2</title>''']
 [section:ref This Page Intentionally Left Blank 2/2]
 [include reference.qbk]
 [endsect]
 [block'''</reference>''']
-
-This is the main file
 
 [xinclude index.xml]
