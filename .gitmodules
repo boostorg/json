@@ -1,3 +1,6 @@
 [submodule "doc/docca"]
 	path = doc/docca
 	url = https://github.com/vinniefalco/docca.git
+[submodule "bench/lib/nlohmann"]
+	path = bench/lib/nlohmann
+	url = https://github.com/nlohmann/json.git

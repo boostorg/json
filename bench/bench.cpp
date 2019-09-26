@@ -14,6 +14,8 @@
 #include <iostream>
 #include <random>
 
+#include "lib/nlohmann/single_include/nlohmann/json.hpp"
+
 namespace beast = boost::beast;
 namespace json = boost::json;
 
@@ -38,7 +40,6 @@ public:
 class boost_writer : public any_writer
 {
     json::value root_;
-    std::vector<json::value*> v_;
 
 public:
     boost_writer()
@@ -52,6 +53,27 @@ public:
         int value) override
     {
         root_.as_object().insert_or_assign(key, value);
+    }
+};
+
+//------------------------------------------------------------------------------
+
+class nlohmann_writer : public any_writer
+{
+    nlohmann::json root_;
+
+public:
+    nlohmann_writer()
+        //: root_(nlohmann::json::object{})
+    {
+    }
+
+    void
+    insert(
+        boost::string_view key,
+        int value) override
+    {
+        root_[key.data()] = value;
     }
 };
 
@@ -142,7 +164,7 @@ testInsertObject(
     {
         factory f;
         auto const when = clock_type::now();
-        for(auto i = 0; i < 1000000; ++i)
+        for(auto i = 0; i < 4000000; ++i)
             w.insert(f.key(), f.integer());
 
         auto const elapsed =
@@ -160,8 +182,14 @@ main(int argc, char** argv)
     boost::ignore_unused(argc);
     boost::ignore_unused(argv);
 
-    boost_writer w;
-    testInsertObject("boost::json", w);
-
+    {
+        boost_writer w;
+        testInsertObject("boost.json", w);
+    }
+    {
+        nlohmann_writer w;
+        testInsertObject("nlohmann", w);
+    }
+    
     return 0;
 }
