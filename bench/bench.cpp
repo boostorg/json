@@ -7,6 +7,8 @@
 // Official repository: https://github.com/vinniefalco/json
 //
 
+#include "lib/nlohmann/single_include/nlohmann/json.hpp"
+
 #include <boost/json.hpp>
 #include <boost/beast/_experimental/unit_test/dstream.hpp>
 #include <boost/beast/core/static_string.hpp>
@@ -14,7 +16,15 @@
 #include <iostream>
 #include <random>
 
-#include "lib/nlohmann/single_include/nlohmann/json.hpp"
+/*
+
+References
+
+https://github.com/nst/JSONTestSuite
+
+http://seriot.ch/parsing_json.php
+
+*/
 
 namespace beast = boost::beast;
 namespace json = boost::json;
@@ -23,28 +33,42 @@ boost::beast::unit_test::dstream dout{std::cerr};
 
 //------------------------------------------------------------------------------
 
-class any_writer
+class any_impl
 {
 public:
-    virtual ~any_writer() = default;
+    virtual ~any_impl() = default;
 
-    virtual
-    void
-    insert(
-        boost::string_view key,
-        int value) = 0;
+    virtual boost::string_view name() const noexcept = 0;
+    virtual void parse(boost::string_view s) = 0;
+    virtual void insert(boost::string_view key, int value) = 0;
+    virtual bool lookup(boost::string_view key) = 0;
 };
 
 //------------------------------------------------------------------------------
 
-class boost_writer : public any_writer
+class boost_impl : public any_impl
 {
     json::value root_;
 
 public:
-    boost_writer()
+    boost_impl()
         : root_(json::object{})
     {
+    }
+
+    boost::string_view
+    name() const noexcept override
+    {
+        return "Boost.JSON";
+    }
+
+    void
+    parse(
+        boost::string_view s) override
+    {
+        json::parser p;
+        boost::system::error_code ec;
+        p.write({s.data(), s.size()}, ec);
     }
 
     void
@@ -54,18 +78,37 @@ public:
     {
         root_.as_object().insert_or_assign(key, value);
     }
+
+    bool
+    lookup(
+        boost::string_view key) override
+    {
+        return root_.find(key) != root_.end();
+    }
 };
 
 //------------------------------------------------------------------------------
 
-class nlohmann_writer : public any_writer
+class nlohmann_impl : public any_impl
 {
     nlohmann::json root_;
 
 public:
-    nlohmann_writer()
-        //: root_(nlohmann::json::object{})
+    nlohmann_impl()
     {
+    }
+
+    boost::string_view
+    name() const noexcept override
+    {
+        return "nlohmann";
+    }
+
+    void
+    parse(
+        boost::string_view s) override
+    {
+        auto jv = nlohmann::json::parse(s.begin(), s.end());
     }
 
     void
@@ -75,14 +118,25 @@ public:
     {
         root_[key.data()] = value;
     }
+
+    bool
+    lookup(
+        boost::string_view key) override
+    {
+        return root_.find(key.data()) != root_.end();
+    }
 };
 
 //------------------------------------------------------------------------------
 
 class factory
 {
+    std::string s_;
     std::mt19937 g_;
     beast::static_string<445> lorem_;
+    int depth_;
+    int indent_ = 4;
+    int max_depth_ = 6;
 
     std::size_t
     rand(std::size_t n)
@@ -140,7 +194,8 @@ public:
     {
         return {
             lorem_.data(),
-            1 + rand(lorem_.size()) };
+            //1 + rand(lorem_.size()) };
+            1 + rand(20) };
     }
 
     int
@@ -148,32 +203,212 @@ public:
     {
         return rand(std::numeric_limits<int>::max());
     }
+
+    //---
+
+private:
+    void
+    append_key() noexcept
+    {
+        auto const append =
+            [this]()
+            {
+                s_.push_back(
+                    "0123456789"
+                    "abcdefghijklmnopqrstuvwxyz"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[
+                        rand(62)]);
+            };
+        s_.push_back('"');
+        append();
+        append();
+        for(;;)
+        {
+            append();
+            if(! rand(5))
+                break;
+        }
+        s_.append("\" : ", 4);
+    }
+
+    void
+    append_object()
+    {
+        s_.append("{\n", 2);
+        ++depth_;
+
+        s_.append(depth_ * indent_, ' ');
+        append_key();
+        append_value();
+        while(rand(40))
+        {
+            s_.append(",\n", 2);
+            s_.append(depth_ * indent_, ' ');
+            append_key();
+            append_value();
+        }
+        s_.push_back('\n');
+
+        --depth_;
+        s_.append(depth_ * indent_, ' ');
+        s_.push_back('}');
+    }
+
+    void
+    append_array()
+    {
+        s_.append("[\n", 2);
+        ++depth_;
+
+        s_.append(depth_ * indent_, ' ');
+        append_value();
+        while(rand(20))
+        {
+            s_.append(",\n", 2);
+            s_.append(depth_ * indent_, ' ');
+            append_value();
+        }
+        s_.push_back('\n');
+
+        --depth_;
+        s_.append(depth_ * indent_, ' ');
+        s_.push_back(']');
+    }
+
+    void
+    append_string()
+    {
+        auto const v = string();
+        s_.reserve(
+            s_.size() + 1 + v.size() + 1);
+        s_.push_back('\"');
+        s_.append(v.data(), v.size());
+        s_.push_back('\"');
+    }
+
+    void
+    append_integer()
+    {
+        auto const ns = beast::to_static_string(
+            rand(std::numeric_limits<int>::max()));
+        s_.append(ns.c_str(), ns.size());
+    }
+
+    void
+    append_boolean()
+    {
+        if(rand(2))
+            s_.append("true", 4);
+        else
+            s_.append("false", 5);
+    }
+
+    void
+    append_null()
+    {
+        s_.append("null", 4);
+    }
+
+    void
+    append_value()
+    {
+        switch(rand(depth_ < max_depth_ ? 6 : 4))
+        {
+        case 5: return append_object();
+        case 4: return append_array();
+        case 3: return append_string();
+        case 2: return append_integer();
+        case 1: return append_boolean();
+        case 0: return append_null();
+        }
+    }
+
+public:
+    void
+    max_depth(int n)
+    {
+        max_depth_ = n;
+    }
+
+    boost::string_view
+    make_document()
+    {
+        s_.clear();
+        depth_ = 0;
+        append_array();
+        return s_;
+    }
 };
 
 //------------------------------------------------------------------------------
 
+// parse random documents
+void
+benchParse(
+    boost::string_view doc,
+    any_impl& impl)
+{
+    for(int i = 0; i < 3; ++i)
+    {
+        using clock_type = std::chrono::steady_clock;
+        auto const when = clock_type::now();
+        dout << impl.name();
+        impl.parse(doc);
+        auto const elapsed =
+            std::chrono::duration_cast<
+                std::chrono::milliseconds>(
+                    clock_type::now() - when);
+        dout <<
+            " parse " <<
+            doc.size() << " bytes"
+            " in " << elapsed.count() << "ms" <<
+            "\n";
+        dout.flush();
+    }
+}
+
 // insert a bunch of key/value into an object
 void
 testInsertObject(
-    boost::string_view name,
-    any_writer& w)
+    any_impl& impl)
 {
     using clock_type = std::chrono::steady_clock;
+    dout << impl.name() << " ";
 
-    //for(int j = 0; j < 5; ++j)
+    // insert
     {
-        factory f;
         auto const when = clock_type::now();
+
+        factory f;
         for(auto i = 0; i < 4000000; ++i)
-            w.insert(f.key(), f.integer());
+            impl.insert(f.key(), f.integer());
+
+        auto const elapsed =
+            std::chrono::duration_cast<
+                std::chrono::milliseconds>(
+                    clock_type::now() - when);
+        dout << "insert: " << elapsed.count() << "ms";
+    }
+
+    // lookup
+    {
+        auto const when = clock_type::now();
+
+        factory f;
+        for(auto i = 0; i < 4000000; ++i)
+            impl.lookup(f.key());
 
         auto const elapsed =
             std::chrono::duration_cast<
                 std::chrono::milliseconds>(
                     clock_type::now() - when);
 
-        dout << name << ": " << elapsed.count() << "ms\n";
+        dout << ", lookup: " << elapsed.count() << "ms";
     }
+
+    dout << "\n";
+
+    dout.flush();
 }
 
 int
@@ -181,15 +416,32 @@ main(int argc, char** argv)
 {
     boost::ignore_unused(argc);
     boost::ignore_unused(argv);
+   
+#if 0
+    {
+        boost_impl impl;
+        testInsertObject("boost.json", impl);
+    }
+    {
+        nlohmann_impl impl;
+        testInsertObject("nlohmann", impl);
+    }
+#endif
 
+    for(int i = 5; i < 7; ++i)
     {
-        boost_writer w;
-        testInsertObject("boost.json", w);
+        factory f;
+        f.max_depth(i);
+        auto const doc = f.make_document();
+        {
+            boost_impl impl;
+            benchParse(doc, impl);
+        }
+        {
+            nlohmann_impl impl;
+            benchParse(doc, impl);
+        }
     }
-    {
-        nlohmann_writer w;
-        testInsertObject("nlohmann", w);
-    }
-    
+
     return 0;
 }
