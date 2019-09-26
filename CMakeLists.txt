@@ -144,4 +144,5 @@ file (GLOB_RECURSE PROJECT_FILES
     ${PROJECT_SOURCE_DIR}/include/boost/json/*.ipp
 )
 
+add_subdirectory (bench)
 add_subdirectory (test)
