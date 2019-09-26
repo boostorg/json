@@ -9,6 +9,10 @@
 
 #include "lib/nlohmann/single_include/nlohmann/json.hpp"
 
+#include "lib/rapidjson/include/rapidjson/document.h"
+#include "lib/rapidjson/include/rapidjson/writer.h"
+#include "lib/rapidjson/include/rapidjson/stringbuffer.h"
+
 #include <boost/json.hpp>
 #include <boost/beast/_experimental/unit_test/dstream.hpp>
 #include <boost/beast/core/static_string.hpp>
@@ -40,22 +44,13 @@ public:
 
     virtual boost::string_view name() const noexcept = 0;
     virtual void parse(boost::string_view s) = 0;
-    virtual void insert(boost::string_view key, int value) = 0;
-    virtual bool lookup(boost::string_view key) = 0;
 };
 
 //------------------------------------------------------------------------------
 
 class boost_impl : public any_impl
 {
-    json::value root_;
-
 public:
-    boost_impl()
-        : root_(json::object{})
-    {
-    }
-
     boost::string_view
     name() const noexcept override
     {
@@ -69,21 +64,6 @@ public:
         json::parser p;
         boost::system::error_code ec;
         p.write({s.data(), s.size()}, ec);
-    }
-
-    void
-    insert(
-        boost::string_view key,
-        int value) override
-    {
-        root_.as_object().insert_or_assign(key, value);
-    }
-
-    bool
-    lookup(
-        boost::string_view key) override
-    {
-        return root_.find(key) != root_.end();
     }
 };
 
@@ -110,20 +90,25 @@ public:
     {
         auto jv = nlohmann::json::parse(s.begin(), s.end());
     }
+};
 
-    void
-    insert(
-        boost::string_view key,
-        int value) override
+//------------------------------------------------------------------------------
+
+class rapidjson_impl : public any_impl
+{
+public:
+    boost::string_view
+    name() const noexcept override
     {
-        root_[key.data()] = value;
+        return "rapidjson";
     }
 
-    bool
-    lookup(
-        boost::string_view key) override
+    void
+    parse(
+        boost::string_view s) override
     {
-        return root_.find(key.data()) != root_.end();
+        rapidjson::Document d;
+        d.Parse(s.data(), s.size());
     }
 };
 
@@ -220,6 +205,9 @@ private:
                         rand(62)]);
             };
         s_.push_back('"');
+        append();
+        append();
+        append();
         append();
         append();
         for(;;)
@@ -367,72 +355,21 @@ benchParse(
     }
 }
 
-// insert a bunch of key/value into an object
-void
-testInsertObject(
-    any_impl& impl)
-{
-    using clock_type = std::chrono::steady_clock;
-    dout << impl.name() << " ";
-
-    // insert
-    {
-        auto const when = clock_type::now();
-
-        factory f;
-        for(auto i = 0; i < 4000000; ++i)
-            impl.insert(f.key(), f.integer());
-
-        auto const elapsed =
-            std::chrono::duration_cast<
-                std::chrono::milliseconds>(
-                    clock_type::now() - when);
-        dout << "insert: " << elapsed.count() << "ms";
-    }
-
-    // lookup
-    {
-        auto const when = clock_type::now();
-
-        factory f;
-        for(auto i = 0; i < 4000000; ++i)
-            impl.lookup(f.key());
-
-        auto const elapsed =
-            std::chrono::duration_cast<
-                std::chrono::milliseconds>(
-                    clock_type::now() - when);
-
-        dout << ", lookup: " << elapsed.count() << "ms";
-    }
-
-    dout << "\n";
-
-    dout.flush();
-}
-
 int
 main(int argc, char** argv)
 {
     boost::ignore_unused(argc);
     boost::ignore_unused(argv);
-   
-#if 0
-    {
-        boost_impl impl;
-        testInsertObject("boost.json", impl);
-    }
-    {
-        nlohmann_impl impl;
-        testInsertObject("nlohmann", impl);
-    }
-#endif
 
     for(int i = 5; i < 7; ++i)
     {
         factory f;
         f.max_depth(i);
         auto const doc = f.make_document();
+        {
+            rapidjson_impl impl;
+            benchParse(doc, impl);
+        }
         {
             boost_impl impl;
             benchParse(doc, impl);
