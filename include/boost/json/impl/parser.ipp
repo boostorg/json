@@ -172,8 +172,8 @@ on_key_end(
     if(jv.is_object())
     {
         stack_.push_front(
-            &jv.as_object().emplace(s,
-                kind::null).first->second);
+            &jv.as_object().insert_or_assign(
+                s, kind::null).first->second);
     }
     else if(stack_.front()->is_array())
     {
