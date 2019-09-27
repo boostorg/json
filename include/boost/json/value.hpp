@@ -927,7 +927,7 @@ private:
 
     BOOST_JSON_DECL
     void
-    clear_impl() noexcept;
+    destroy() noexcept;
 
     BOOST_JSON_DECL
     void

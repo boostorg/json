@@ -27,7 +27,7 @@ namespace json {
 value::
 ~value()
 {
-    clear_impl();
+    destroy();
 }
 
 value::
@@ -109,7 +109,7 @@ value::
 operator=(value&& other)
 {
     auto sp = release_storage();
-    clear_impl();
+    destroy();
     move(std::move(sp), std::move(other));
     return *this;
 }
@@ -121,7 +121,7 @@ operator=(value const& other)
     if(this != &other)
     {
         auto sp = release_storage();
-        clear_impl();
+        destroy();
         copy(std::move(sp), other);
     }
     return *this;
@@ -310,7 +310,7 @@ operator=(object obj)
     object tmp(
         std::move(obj),
         get_storage());
-    clear_impl();
+    destroy();
     ::new(&obj_) object(
         std::move(tmp));
     kind_ = json::kind::object;
@@ -324,7 +324,7 @@ operator=(array arr)
     array tmp(
         std::move(arr),
         get_storage());
-    clear_impl();
+    destroy();
     ::new(&arr_) array(
         std::move(tmp));
     kind_ = json::kind::array;
@@ -348,7 +348,7 @@ struct value::op_assign
             string::allocator_type(
                 this_.get_storage()));
         tmp = std::move(str);
-        this_.clear_impl();
+        this_.destroy();
         ::new(&this_.str_) string(
             std::move(tmp));
         this_.kind_ = json::kind::string;
@@ -365,7 +365,7 @@ struct value::op_assign
             std::move(str), typename
             string::allocator_type(
                 this_.get_storage()));
-        this_.clear_impl();
+        this_.destroy();
         ::new(&this_.str_) string(
             std::move(tmp));
         this_.kind_ = json::kind::string;
@@ -391,7 +391,7 @@ value::
 reset(json::kind k) noexcept
 {
     auto sp = release_storage();
-    clear_impl();
+    destroy();
     construct(k, std::move(sp));
 }
 
@@ -887,7 +887,7 @@ construct(
 // doesn't set kind_
 void
 value::
-clear_impl() noexcept
+destroy() noexcept
 {
     switch(kind_)
     {
