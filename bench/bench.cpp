@@ -336,7 +336,7 @@ benchParse(
     boost::string_view doc,
     any_impl& impl)
 {
-    for(int i = 0; i < 3; ++i)
+    for(int i = 0; i < 10; ++i)
     {
         using clock_type = std::chrono::steady_clock;
         auto const when = clock_type::now();
@@ -366,19 +366,48 @@ main(int argc, char** argv)
         factory f;
         f.max_depth(i);
         auto const doc = f.make_document();
+#if 0
         {
             rapidjson_impl impl;
-            benchParse(doc, impl);
-        }
-        {
-            boost_impl impl;
             benchParse(doc, impl);
         }
         {
             nlohmann_impl impl;
             benchParse(doc, impl);
         }
+#endif
+        {
+            boost_impl impl;
+            benchParse(doc, impl);
+        }
     }
 
     return 0;
 }
+
+/*
+
+Full addref/release
+Boost.JSON parse 24280238 bytes in 230ms
+Boost.JSON parse 24280238 bytes in 231ms
+Boost.JSON parse 24280238 bytes in 231ms
+Boost.JSON parse 24280238 bytes in 232ms
+Boost.JSON parse 24280238 bytes in 252ms
+Boost.JSON parse 24280238 bytes in 232ms
+Boost.JSON parse 24280238 bytes in 233ms
+
+Boost.JSON parse 224689801 bytes in 1739ms
+Boost.JSON parse 224689801 bytes in 1752ms
+Boost.JSON parse 224689801 bytes in 1753ms
+Boost.JSON parse 224689801 bytes in 1754ms
+Boost.JSON parse 224689801 bytes in 1756ms
+Boost.JSON parse 224689801 bytes in 1763ms
+Boost.JSON parse 224689801 bytes in 1765ms
+Boost.JSON parse 224689801 bytes in 1767ms
+Boost.JSON parse 224689801 bytes in 1765ms
+Boost.JSON parse 224689801 bytes in 1763ms
+
+
+
+No addref/release
+*/
