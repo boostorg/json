@@ -80,8 +80,11 @@ struct object::element
         p[sizeof(element) +
             n + key.size()] = '\0';
         boost::ignore_unused(e);
+#if 0
+        // VFALCO This causes unnecessary addref/release
         BOOST_ASSERT(
             *e->v_.get_storage() == *sp);
+#endif
         return reinterpret_cast<element*>(p);
     }
 

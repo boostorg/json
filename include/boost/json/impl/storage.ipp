@@ -12,25 +12,11 @@
 
 #include <boost/json/storage.hpp>
 #include <boost/json/detail/storage_adaptor.hpp>
-#include <boost/core/exchange.hpp>
 #include <boost/assert.hpp>
 #include <memory>
 
 namespace boost {
 namespace json {
-
-storage_ptr::
-~storage_ptr()
-{
-    if(p_)
-        p_->release();
-}
-
-storage_ptr::
-storage_ptr(storage_ptr&& other) noexcept
-    : p_(boost::exchange(other.p_, nullptr))
-{
-}
 
 storage_ptr::
 storage_ptr(storage_ptr const& other) noexcept

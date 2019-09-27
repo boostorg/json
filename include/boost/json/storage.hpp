@@ -11,6 +11,7 @@
 #define BOOST_JSON_STORAGE_HPP
 
 #include <boost/json/detail/config.hpp>
+#include <boost/core/exchange.hpp>
 #include <cstddef>
 #include <cstdlib>
 #include <type_traits>
@@ -86,11 +87,17 @@ class storage_ptr
 public:
     storage_ptr() = default;
 
-    BOOST_JSON_DECL
-    ~storage_ptr();
+    ~storage_ptr()
+    {
+        if(p_)
+            p_->release();
+    }
 
-    BOOST_JSON_DECL
-    storage_ptr(storage_ptr&&) noexcept;
+    storage_ptr(storage_ptr&& other) noexcept
+        : p_(boost::exchange(
+            other.p_, nullptr))
+    {
+    }
 
     BOOST_JSON_DECL
     storage_ptr(storage_ptr const&) noexcept;
