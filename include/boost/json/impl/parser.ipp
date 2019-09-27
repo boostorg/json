@@ -169,22 +169,10 @@ on_key_end(
         s_.append(s.data(), s.size());
         s = {s_.data(), s_.size()};
     }
-    if(jv.is_object())
-    {
-        stack_.push_front(
-            &jv.as_object().insert_or_assign(
-                s, kind::null).first->second);
-    }
-    else if(stack_.front()->is_array())
-    {
-        BOOST_ASSERT(s_.empty());
-        jv.as_array().emplace_back(kind::null);
-    }
-    else
-    {
-        BOOST_ASSERT(jv.is_null());
-        // nothing to do
-    }
+    BOOST_ASSERT(jv.is_object());
+    stack_.push_front(
+        &jv.as_object().insert_or_assign(
+            s, kind::null).first->second);
     s_.clear();
 }
 
