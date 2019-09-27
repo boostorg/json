@@ -50,7 +50,14 @@ public:
 
 class boost_impl : public any_impl
 {
+    json::parser* p_;
+
 public:
+    boost_impl()
+        : p_(new json::parser)
+    {
+    }
+
     boost::string_view
     name() const noexcept override
     {
@@ -61,9 +68,8 @@ public:
     parse(
         boost::string_view s) override
     {
-        json::parser p;
         boost::system::error_code ec;
-        p.write({s.data(), s.size()}, ec);
+        p_->write({s.data(), s.size()}, ec);
     }
 };
 
@@ -337,23 +343,20 @@ benchParse(
     boost::string_view doc,
     any_impl& impl)
 {
-    for(int i = 0; i < 10; ++i)
-    {
-        using clock_type = std::chrono::steady_clock;
-        auto const when = clock_type::now();
-        dout << impl.name();
-        impl.parse(doc);
-        auto const elapsed =
-            std::chrono::duration_cast<
-                std::chrono::milliseconds>(
-                    clock_type::now() - when);
-        dout <<
-            " parse " <<
-            doc.size() << " bytes"
-            " in " << elapsed.count() << "ms" <<
-            "\n";
-        dout.flush();
-    }
+    using clock_type = std::chrono::steady_clock;
+    auto const when = clock_type::now();
+    dout << impl.name();
+    impl.parse(doc);
+    auto const elapsed =
+        std::chrono::duration_cast<
+            std::chrono::milliseconds>(
+                clock_type::now() - when);
+    dout <<
+        " parse " <<
+        doc.size() << " bytes"
+        " in " << elapsed.count() << "ms" <<
+        "\n";
+    dout.flush();
 }
 
 int
@@ -368,15 +371,18 @@ main(int argc, char** argv)
         f.max_depth(i);
         auto const doc = f.make_document();
 #if 0
+        for(int j = 0; j < 10; ++j)
         {
             rapidjson_impl impl;
             benchParse(doc, impl);
         }
+        for(int j = 0; j < 10; ++j)
         {
             nlohmann_impl impl;
             benchParse(doc, impl);
         }
 #endif
+        for(int j = 0; j < 10; ++j)
         {
             boost_impl impl;
             benchParse(doc, impl);

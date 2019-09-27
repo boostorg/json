@@ -13,6 +13,7 @@
 #include <boost/json/array.hpp>
 #include <boost/core/exchange.hpp>
 #include <boost/assert.hpp>
+#include <boost/pilfer.hpp>
 #include <algorithm>
 #include <cstdlib>
 #include <limits>
@@ -217,6 +218,14 @@ array(array&& other) noexcept
     : tab_(boost::exchange(
         other.tab_, nullptr))
     , sp_(other.sp_)
+{
+}
+
+array::
+array(pilfered<array> other) noexcept
+    : tab_(boost::exchange(
+        other.get().tab_, nullptr))
+    , sp_(other.get().sp_)
 {
 }
 
@@ -497,10 +506,12 @@ reserve(size_type new_capacity)
     }
 
     for(size_type i = 0; i < tab_->size; ++i)
-        ::new(&tab->begin()[i]) value_type(
-            std::move(tab_->begin()[i]));
+        relocate(
+            &tab->begin()[i],
+            tab_->begin()[i]);
     tab->size = tab_->size;
     std::swap(tab, tab_);
+    tab->size = 0; // VFALCO Hack
     table::destroy(tab, sp_);
 }
 

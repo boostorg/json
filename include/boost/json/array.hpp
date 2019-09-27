@@ -13,6 +13,7 @@
 #include <boost/json/detail/config.hpp>
 #include <boost/json/allocator.hpp>
 #include <boost/json/storage.hpp>
+#include <boost/pilfer.hpp>
 #include <cstdlib>
 #include <initializer_list>
 #include <iterator>
@@ -104,6 +105,9 @@ public:
 
     BOOST_JSON_DECL
     array(array&& other) noexcept;
+
+    BOOST_JSON_DECL
+    array(pilfered<array> other) noexcept;
 
     BOOST_JSON_DECL
     array(

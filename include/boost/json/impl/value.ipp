@@ -83,6 +83,48 @@ value(value&& other) noexcept
 }
 
 value::
+value(pilfered<value> p) noexcept
+{
+    auto& other = p.get();
+    switch(other.kind_)
+    {
+    case json::kind::object:
+        ::new(&obj_) object(
+            pilfer(other.obj_));
+        break;
+
+    case json::kind::array:
+        ::new(&arr_) array(
+            std::move(other.arr_));
+        break;
+
+    case json::kind::string:
+        ::new(&str_) string(
+            std::move(other.str_));
+        break;
+
+    case json::kind::number:
+        ::new(&nat_.sp_) storage_ptr(
+            std::move(other.nat_.sp_));
+        ::new(&nat_.num_) number(
+            std::move(other.nat_.num_));
+        break;
+
+    case json::kind::boolean:
+        ::new(&nat_.sp_) storage_ptr(
+            std::move(other.nat_.sp_));
+        nat_.bool_ = other.nat_.bool_;
+        break;
+
+    case json::kind::null:
+        ::new(&nat_.sp_) storage_ptr(
+            std::move(other.nat_.sp_));
+        break;
+    }
+    kind_ = other.kind_;
+}
+
+value::
 value(
     value&& other,
     storage_ptr store)

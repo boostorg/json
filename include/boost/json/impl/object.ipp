@@ -328,6 +328,14 @@ object(object&& other) noexcept
 }
 
 object::
+object(pilfered<object> other) noexcept
+    : sp_(std::move(other.get().sp_))
+    , tab_(boost::exchange(
+        other.get().tab_, nullptr))
+{
+}
+
+object::
 object(
     object&& other,
     storage_ptr store) noexcept

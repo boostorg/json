@@ -13,6 +13,7 @@
 #include <boost/json/detail/config.hpp>
 #include <boost/json/storage.hpp>
 #include <boost/utility/string_view.hpp>
+#include <boost/pilfer.hpp>
 #include <cstdlib>
 #include <initializer_list>
 #include <iterator>
@@ -138,6 +139,9 @@ public:
 
     BOOST_JSON_DECL
     object(object&& other) noexcept;
+
+    BOOST_JSON_DECL
+    object(pilfered<object> other) noexcept;
 
     BOOST_JSON_DECL
     object(

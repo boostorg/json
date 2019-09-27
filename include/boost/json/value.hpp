@@ -21,6 +21,7 @@
 #include <boost/json/detail/value.hpp>
 #include <boost/type_traits/make_void.hpp>
 #include <boost/utility/string_view.hpp>
+#include <boost/pilfer.hpp>
 #include <cstdlib>
 #include <initializer_list>
 #include <iosfwd>
@@ -132,6 +133,10 @@ public:
     /// Move constructor
     BOOST_JSON_DECL
     value(value&& other) noexcept;
+
+    /// Pilfer constructor
+    BOOST_JSON_DECL
+    value(pilfered<value> other) noexcept;
 
     /// Move construct a value, using the specified storage
     BOOST_JSON_DECL
