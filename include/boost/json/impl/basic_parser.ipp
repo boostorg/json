@@ -64,7 +64,7 @@ enum class basic_parser::state : char
 
     object1, object2, object3, object4, colon,
     array1,  array2,  array3,  array4,
-    string1, string2, string3,
+    string1, string2, string3, string4,
     true1,   true2,   true3,   true4,
     false1,  false2,  false3,  false4,  false5,
     null1,   null2,   null3,   null4,
@@ -213,7 +213,7 @@ write_some(
     auto const p0 = p;
     auto const p1 = p0 + n;
     beast::static_string<4096> temp;
-    ec.assign(0, ec.category());
+    ec = {};
     BOOST_ASSERT(stack_.front() != state::end);
     auto const maybe_flush =
         [&]
@@ -226,6 +226,7 @@ write_some(
             else
                 this->on_string_data(
                     {temp.data(), temp.size()}, ec);
+            temp.clear();
         };
 loop:
     switch(stack_.front())
@@ -500,21 +501,85 @@ loop:
         }
         ++p;
         stack_.front() = state::string2;
-        goto loop;
+        BOOST_FALLTHROUGH;
+        //goto loop;
 
     // characters
+    // No copies here
     case state::string2:
+    {
+        auto const start = p;
         while(p < p1)
         {
             if(*p == '\"')
             {
+                if(is_key_)
+                    this->on_key_end({start,
+                        static_cast<std::size_t>(
+                            p - start)}, ec);
+                else
+                    this->on_string_end({start,
+                        static_cast<std::size_t>(
+                            p - start)}, ec);
                 ++p;
+                if(ec)
+                    goto finish;
+                is_key_ = false;
+                stack_.pop_front();
+                goto loop;
+            }
+            if(*p == '\\')
+            {
+                if(is_key_)
+                    this->on_key_data({start,
+                        static_cast<std::size_t>(
+                            p - start)}, ec);
+                else
+                    this->on_string_data({start,
+                        static_cast<std::size_t>(
+                            p - start)}, ec);
+                ++p;
+                if(ec)
+                    goto finish;
+                stack_.front() = state::string4;
+                goto loop;
+            }
+            if(is_control(*p))
+            {
+                ec = error::syntax;
+                goto finish;
+            }
+            // TODO UTF-8?
+            ++p;
+        }
+        if(is_key_)
+            this->on_key_data({start,
+                static_cast<std::size_t>(
+                    p - start)}, ec);
+        else
+            this->on_string_data({start,
+                static_cast<std::size_t>(
+                    p - start)}, ec);
+        if(ec)
+            goto finish;
+        break;
+    }
+
+    // characters, including escapes
+    // This algorithm copies unescaped chars to a buffer
+    case state::string3:
+    {
+        while(p < p1)
+        {
+            if(*p == '\"')
+            {
                 if(is_key_)
                     this->on_key_end({temp.data(),
                         temp.size()}, ec);
                 else
                     this->on_string_end({temp.data(),
                         temp.size()}, ec);
+                ++p;
                 if(ec)
                     goto finish;
                 temp.clear();
@@ -525,7 +590,7 @@ loop:
             if(*p == '\\')
             {
                 ++p;
-                stack_.front() = state::string3;
+                stack_.front() = state::string4;
                 goto loop;
             }
             if(is_control(*p))
@@ -538,9 +603,10 @@ loop:
             temp.push_back(*p++);
         }
         break;
+    }
 
     // escape
-    case state::string3:
+    case state::string4:
         if(p >= p1)
            break;
         switch(*p)
@@ -594,7 +660,7 @@ loop:
             goto finish;
         }
         ++p;
-        stack_.front()=state::string2;
+        stack_.front() = state::string3;
         goto loop;
 
     //--------------------------------------------------------------------------

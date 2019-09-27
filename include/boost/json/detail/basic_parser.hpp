@@ -34,7 +34,7 @@ struct parser_base
 
     static
     bool
-    is_control(char c)
+    is_control(char c) noexcept
     {
         return static_cast<unsigned char>(c) < 32;
     }
