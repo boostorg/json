@@ -183,10 +183,11 @@ public:
             1 + rand(20) };
     }
 
-    int
+    std::size_t
     integer() noexcept
     {
-        return rand(std::numeric_limits<int>::max());
+        return rand(std::numeric_limits<
+            std::size_t>::max());
     }
 
     //---
