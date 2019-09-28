@@ -373,7 +373,7 @@ operator=(array arr)
     return *this;
 }
 
-struct value::op_assign
+struct value::op_assign_string
 {
     value& this_;
 
@@ -418,7 +418,7 @@ value&
 value::
 operator=(string str)
 {
-    op_assign{*this}(str);
+    op_assign_string{*this}(str);
     return *this;
 }
 
@@ -955,7 +955,7 @@ destroy() noexcept
     }
 }
 
-struct value::op_move
+struct value::op_move_string
 {
     value& this_;
     storage_ptr& sp_;
@@ -1048,7 +1048,7 @@ move(
         try
     #endif
         {
-            op_move{*this, sp}(other.str_);
+            op_move_string{*this, sp}(other.str_);
         } 
     #ifndef BOOST_NO_EXCEPTIONS
         catch(...)
@@ -1087,7 +1087,7 @@ move(
     other.kind_ = json::kind::null;
 }
 
-struct value::op_copy
+struct value::op_copy_string
 {
     value& this_;
     storage_ptr& sp_;
@@ -1172,7 +1172,7 @@ copy(
         try
         {
     #endif
-            op_copy{*this, sp}(other.str_);
+            op_copy_string{*this, sp}(other.str_);
     #ifndef BOOST_NO_EXCEPTIONS
         } 
         catch(...)

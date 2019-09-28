@@ -307,24 +307,6 @@ public:
     void
     reset(json::kind k = json::kind::null) noexcept;
 
-    /** Reset the json to the specified type.
-
-        This changes the value to hold a value of the
-        specified type. Any previous contents are cleared.
-
-        @param k The kind to set. If the new kind is an
-        object, array, or string the resulting value will be
-        empty. Otherwise, the value will be in an undefined,
-        valid state.
-    */
-    BOOST_JSON_DECL
-    value&
-    operator=(json::kind k) noexcept
-    {
-        reset(k);
-        return *this;
-    }
-
     /** Set the value to an empty object, and return it.
 
         This calls `reset(json::kind::object)` and returns
@@ -901,9 +883,9 @@ public:
     //--------------------------------------------------------------------------
 
 private:
-    struct op_assign;
-    struct op_move;
-    struct op_copy;
+    struct op_assign_string;
+    struct op_move_string;
+    struct op_copy_string;
 
     BOOST_JSON_DECL
     storage_ptr
