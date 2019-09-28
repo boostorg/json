@@ -238,7 +238,25 @@ void
 parser::
 on_number(number n, error_code&)
 {
-    assign(n);
+    auto& jv = *stack_.front();
+    BOOST_ASSERT(! jv.is_object());
+    if(obj_)
+    {
+        BOOST_ASSERT(jv.is_null());
+        jv.emplace_number() = std::move(n);
+        stack_.pop_front();
+    }
+    else if(stack_.front()->is_array())
+    {
+        BOOST_ASSERT(s_.empty());
+        jv.as_array().emplace_back(
+            std::move(n));
+    }
+    else
+    {
+        BOOST_ASSERT(jv.is_null());
+        jv.emplace_number() = std::move(n);
+    }
 }
 
 void

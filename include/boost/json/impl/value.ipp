@@ -95,7 +95,7 @@ value(pilfered<value> p) noexcept
 
     case json::kind::array:
         ::new(&arr_) array(
-            std::move(other.arr_));
+            pilfer(other.arr_));
         break;
 
     case json::kind::string:

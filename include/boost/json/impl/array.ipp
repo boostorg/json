@@ -228,7 +228,8 @@ array::
 array(pilfered<array> other) noexcept
     : tab_(boost::exchange(
         other.get().tab_, nullptr))
-    , sp_(other.get().sp_)
+    , sp_(boost::exchange(
+        other.get().sp_, nullptr))
 {
 }
 

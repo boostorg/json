@@ -13,6 +13,7 @@ source_group (TREE ${PROJECT_SOURCE_DIR}/include/boost/json PREFIX json FILES ${
 
 GroupSources(bench "/")
 
+add_definitions("-DBOOST_JSON_TRACK_STORAGE")
 add_executable (bench
     ${BEAST_FILES}
     ${PROJECT_FILES}
