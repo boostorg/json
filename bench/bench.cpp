@@ -58,6 +58,11 @@ public:
     {
     }
 
+    ~boost_impl()
+    {
+        delete p_;
+    }
+
     boost::string_view
     name() const noexcept override
     {
@@ -185,8 +190,8 @@ public:
     {
         return {
             lorem_.data(),
-            //1 + rand(lorem_.size()) };
-            1 + rand(20) };
+            1 + rand(lorem_.size()) };
+            //1 + rand(20) };
     }
 
     std::size_t
@@ -311,8 +316,7 @@ private:
         {
         case 5: return append_object();
         case 4: return append_array();
-        //case 3: return append_string();
-        case 3: return append_integer();
+        case 3: return append_string();
         case 2: return append_integer();
         case 1: return append_boolean();
         case 0: return append_null();
@@ -371,19 +375,17 @@ main(int argc, char** argv)
         factory f;
         f.max_depth(i);
         auto const doc = f.make_document();
-#if 0
-        for(int j = 0; j < 10; ++j)
+        for(int j = 0; j < 3; ++j)
         {
             rapidjson_impl impl;
             benchParse(doc, impl);
         }
-        for(int j = 0; j < 10; ++j)
+        for(int j = 0; j < 3; ++j)
         {
             nlohmann_impl impl;
             benchParse(doc, impl);
         }
-#endif
-        for(int j = 0; j < 10; ++j)
+        for(int j = 0; j < 3; ++j)
         {
             boost_impl impl;
             benchParse(doc, impl);
@@ -392,30 +394,3 @@ main(int argc, char** argv)
 
     return 0;
 }
-
-/*
-
-Full addref/release
-Boost.JSON parse 24280238 bytes in 230ms
-Boost.JSON parse 24280238 bytes in 231ms
-Boost.JSON parse 24280238 bytes in 231ms
-Boost.JSON parse 24280238 bytes in 232ms
-Boost.JSON parse 24280238 bytes in 252ms
-Boost.JSON parse 24280238 bytes in 232ms
-Boost.JSON parse 24280238 bytes in 233ms
-
-Boost.JSON parse 224689801 bytes in 1739ms
-Boost.JSON parse 224689801 bytes in 1752ms
-Boost.JSON parse 224689801 bytes in 1753ms
-Boost.JSON parse 224689801 bytes in 1754ms
-Boost.JSON parse 224689801 bytes in 1756ms
-Boost.JSON parse 224689801 bytes in 1763ms
-Boost.JSON parse 224689801 bytes in 1765ms
-Boost.JSON parse 224689801 bytes in 1767ms
-Boost.JSON parse 224689801 bytes in 1765ms
-Boost.JSON parse 224689801 bytes in 1763ms
-
-
-
-No addref/release
-*/
