@@ -16,6 +16,8 @@
 #include <boost/json.hpp>
 #include <boost/beast/_experimental/unit_test/dstream.hpp>
 #include <boost/beast/core/static_string.hpp>
+#include <boost/container/pmr/global_resource.hpp>
+#include <boost/container/pmr/unsynchronized_pool_resource.hpp>
 #include <chrono>
 #include <iostream>
 #include <random>
@@ -37,6 +39,46 @@ boost::beast::unit_test::dstream dout{std::cerr};
 
 //------------------------------------------------------------------------------
 
+class pool_storage : public json::storage
+{
+    boost::container::pmr::unsynchronized_pool_resource pr_;
+
+public:
+    virtual
+    ~pool_storage() = default;
+
+    pool_storage()
+        : pr_(boost::container::pmr::new_delete_resource())
+    {
+    }
+
+    void*
+    allocate(
+        std::size_t n,
+        std::size_t align) override
+    {
+        return pr_.allocate(n, align);
+    }
+
+    void
+    deallocate(
+        void* p,
+        std::size_t n,
+        std::size_t align) noexcept override
+    {
+        pr_.deallocate(p, n, align);
+    }
+
+    bool
+    is_equal(storage const& other) const noexcept override
+    {
+       return this == dynamic_cast<
+            pool_storage const*>(&other);
+    }
+};
+
+//------------------------------------------------------------------------------
+
 class any_impl
 {
 public:
@@ -55,6 +97,12 @@ class boost_impl : public any_impl
 public:
     boost_impl()
         : p_(new json::parser)
+    {
+    }
+
+    explicit
+    boost_impl(json::storage_ptr sp)
+        : p_(new json::parser(std::move(sp)))
     {
     }
 
@@ -387,6 +435,7 @@ main(int argc, char** argv)
         }
         for(int j = 0; j < 3; ++j)
         {
+            //boost_impl impl(json::make_storage<pool_storage>());
             boost_impl impl;
             benchParse(doc, impl);
         }
