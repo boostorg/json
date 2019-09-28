@@ -12,6 +12,7 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/allocator.hpp>
+#include <boost/json/kind.hpp>
 #include <boost/json/storage.hpp>
 #include <boost/pilfer.hpp>
 #include <cstdlib>

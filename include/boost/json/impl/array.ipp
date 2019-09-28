@@ -45,7 +45,7 @@ create(
 {
     return ::new(sp->allocate(
         sizeof(table) +
-            capacity * sizeof(value_type),
+            capacity * sizeof(value),
         sizeof(value))) table(capacity);
 }
 
@@ -60,7 +60,7 @@ destroy(
     tab->~table();
     sp->deallocate(tab,
         sizeof(table) +
-            capacity * sizeof(value_type),
+            capacity * sizeof(value),
         sizeof(value));
 }
 
@@ -162,7 +162,8 @@ array::
 array(
     size_type count)
     : array(
-        count, kind::null,
+        count,
+        value(kind::null),
         default_storage())
 {
 }
@@ -172,7 +173,8 @@ array(
     size_type count,
     storage_ptr store)
     : array(
-        count, kind::null,
+        count,
+        value(kind::null),
         std::move(store))
 {
 }
@@ -180,9 +182,10 @@ array(
 array::
 array(
     size_type count,
-    value_type const& v)
+    value const& v)
     : array(
-        count, v,
+        count,
+        v,
         default_storage())
 {
 }
@@ -190,7 +193,7 @@ array(
 array::
 array(
     size_type count,
-    value_type const& v,
+    value const& v,
     storage_ptr store)
     : sp_(std::move(store))
 {
@@ -240,7 +243,7 @@ array(
 
 array::
 array(
-    std::initializer_list<value_type> list)
+    std::initializer_list<value> list)
     : sp_(default_storage())
 {
     *this = list;
@@ -248,7 +251,7 @@ array(
 
 array::
 array(
-    std::initializer_list<value_type> list,
+    std::initializer_list<value> list,
     storage_ptr store)
     : sp_(std::move(store))
 {
@@ -288,7 +291,7 @@ operator=(array const& other)
 array&
 array::
 operator=(
-    std::initializer_list<value_type> list)
+    std::initializer_list<value> list)
 {
     cleanup_assign c(*this);
     reserve(list.size());
@@ -353,7 +356,7 @@ operator[](size_type pos) const ->
 auto
 array::
 data() noexcept ->
-    value_type*
+    value*
 {
     if(! tab_)
         return nullptr;
@@ -363,7 +366,7 @@ data() noexcept ->
 auto
 array::
 data() const noexcept ->
-    value_type const*
+    value const*
 {
     if(! tab_)
         return nullptr;
@@ -485,7 +488,7 @@ max_size() const noexcept ->
     size_type
 {
     return (std::numeric_limits<
-        size_type>::max)() / sizeof(value_type);
+        size_type>::max)() / sizeof(value);
 }
 
 void
@@ -550,7 +553,7 @@ shrink_to_fit() noexcept
         return;
     auto tab = table::create(tab_->size, sp_);
     for(size_type i = 0; i < tab_->size; ++i)
-        ::new(&tab->begin()[i]) value_type(
+        ::new(&tab->begin()[i]) value(
             std::move(tab_->begin()[i]));
     tab->size = tab_->size;
     std::swap(tab, tab_);
@@ -577,7 +580,7 @@ auto
 array::
 insert(
     const_iterator before,
-    value_type const& v) ->
+    value const& v) ->
         iterator
 {
     return emplace_impl(before, v);
@@ -587,7 +590,7 @@ auto
 array::
 insert(
     const_iterator before,
-    value_type&& v) ->
+    value&& v) ->
         iterator
 {
     return emplace_impl(
@@ -599,7 +602,7 @@ array::
 insert(
     const_iterator before,
     size_type count,
-    value_type const& v) ->
+    value const& v) ->
         iterator
 {
     auto pos = before - begin();
@@ -608,7 +611,7 @@ insert(
     while(count--)
     {
         ::new(&begin()[pos++])
-            value_type(v, sp_);
+            value(v, sp_);
         ++c.valid;
     }
     c.ok = true;
@@ -619,7 +622,7 @@ auto
 array::
 insert(
     const_iterator before,
-    std::initializer_list<value_type> list) ->
+    std::initializer_list<value> list) ->
         iterator
 {
     auto pos = before - begin();
@@ -629,7 +632,7 @@ insert(
     for(auto it = list.begin();
         it != list.end(); ++it)
     {
-        ::new(&begin()[pos++]) value_type(
+        ::new(&begin()[pos++]) value(
             std::move(*it), sp_);
         ++c.valid;
     }
@@ -666,14 +669,14 @@ erase(
 
 void
 array::
-push_back(value_type const& v)
+push_back(value const& v)
 {
     emplace_impl(end(), v);
 }
 
 void
 array::
-push_back(value_type&& v)
+push_back(value&& v)
 {
     emplace_impl(end(), std::move(v));
 }
@@ -690,14 +693,16 @@ void
 array::
 resize(size_type count)
 {
-    resize(count, kind::null);
+    resize(
+        count,
+        value(kind::null));
 }
 
 void
 array::
 resize(
     size_type count,
-    value_type const& v)
+    value const& v)
 {
     if(count > size())
     {
@@ -761,7 +766,7 @@ move(
         from += n;
         while(n--)
         {
-            ::new(&*--to) value_type(
+            ::new(&*--to) value(
                 std::move(*--from));
             from->~value();
         }
@@ -770,7 +775,7 @@ move(
     {
         while(n--)
         {
-            ::new(&*to++) value_type(
+            ::new(&*to++) value(
                 std::move(*from));
             (*from++).~value();
         }

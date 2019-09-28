@@ -81,7 +81,7 @@ public:
 
         // array(size_type, value)
         {
-            array arr(3, kind::boolean);
+            array arr(3, value(kind::boolean));
             BEAST_EXPECT(arr.size() == 3);
             for(auto const& v : arr)
                 BEAST_EXPECT(v.is_bool());
@@ -89,7 +89,7 @@ public:
 
         // array(size_type, value, storage)
         {
-            array arr(3, kind::boolean, sp);
+            array arr(3, value(kind::boolean), sp);
             BEAST_EXPECT(arr.size() == 3);
             for(auto const& v : arr)
                 BEAST_EXPECT(v.get_storage() == sp);
@@ -180,7 +180,7 @@ public:
         {
             {
                 array arr1({1, true, "hello"});
-                array arr2({nullptr, kind::object, 1.f});
+                array arr2({nullptr, object{}, 1.f});
                 arr2 = std::move(arr1);
                 BEAST_EXPECT(arr1.empty());
                 BEAST_EXPECT(
@@ -190,7 +190,7 @@ public:
             }
             {
                 array arr1({1, true, "hello"});
-                array arr2({nullptr, kind::object, 1.f}, sp);
+                array arr2({nullptr, object{}, 1.f}, sp);
                 arr2 = std::move(arr1);
                 BEAST_EXPECT(! arr1.empty());
                 BEAST_EXPECT(
@@ -204,14 +204,14 @@ public:
         {
             {
                 array arr1({1, true, "hello"});
-                array arr2({nullptr, kind::object, 1.f});
+                array arr2({nullptr, object{}, 1.f});
                 arr2 = arr1;
                 BEAST_EXPECT(! arr1.empty());
                 check(arr2, sp0);
             }
             {
                 array arr1({1, true, "hello"});
-                array arr2({nullptr, kind::object, 1.f}, sp);
+                array arr2({nullptr, object{}, 1.f}, sp);
                 arr2 = arr1;
                 BEAST_EXPECT(! arr1.empty());
                 BEAST_EXPECT(
@@ -226,14 +226,14 @@ public:
             {
                 std::initializer_list<value> list =
                     { 1, true, "hello" };
-                array arr({nullptr, kind::object, 1.f});
+                array arr({nullptr, object{}, 1.f});
                 arr = list;
                 check(arr, sp0);
             }
             {
                 std::initializer_list<value> list =
                     { 1, true, "hello" };
-                array arr({nullptr, kind::object, 1.f}, sp);
+                array arr({nullptr, object{}, 1.f}, sp);
                 arr = list;
                 check(arr, sp);
             }
@@ -621,7 +621,7 @@ public:
                 {
                     array arr({1, true}, sp);
                     arr.insert(arr.begin() + 1,
-                        3, kind::null);
+                        3, value(kind::null));
                     arr1 = arr;
                     break;
                 }

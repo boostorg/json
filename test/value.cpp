@@ -448,32 +448,6 @@ public:
             BEAST_EXPECT(jv.is_null());
         }
 
-        // assign
-        {
-            value jv;
-
-            jv = kind::object;
-            BEAST_EXPECT(jv.is_object());
-
-            jv = kind::null;
-            BEAST_EXPECT(jv.is_null());
-
-            jv = kind::array;
-            BEAST_EXPECT(jv.is_array());
-
-            jv = kind::string;
-            BEAST_EXPECT(jv.is_string());
-
-            jv = kind::number;
-            BEAST_EXPECT(jv.is_number());
-
-            jv = kind::boolean;
-            BEAST_EXPECT(jv.is_bool());
-
-            jv = kind::null;
-            BEAST_EXPECT(jv.is_null());
-        }
-
         // emplace
         {
             {
@@ -561,13 +535,13 @@ public:
         value jv;
         value const& jc(jv);
         {
-            jv = kind::object;
+            jv.emplace_object();
             BEAST_EXPECT(
                 jv.as_object().size() == 0);
             jc.as_object();
         }
         {
-            jv = kind::array;
+            jv.emplace_array();
             BEAST_EXPECT(
                 jv.as_array().size() == 0);
             jc.as_array();
@@ -600,22 +574,22 @@ public:
     {
         // empty()
         {
-            value v;
-            v = kind::object;
-            BEAST_EXPECT(v.empty());
-            v = kind::array;
-            BEAST_EXPECT(v.empty());
+            value jv;
+            jv.emplace_object();
+            BEAST_EXPECT(jv.empty());
+            jv.emplace_array();
+            BEAST_EXPECT(jv.empty());
         }
 
         // size()
         {
-            value v;
-            v = kind::object;
-            v.as_object().emplace("x", 1);
-            BEAST_EXPECT(v.size() == 1);
-            v = kind::array;
-            v.as_array().emplace_back(1);
-            BEAST_EXPECT(v.size() == 1);
+            value jv;
+            jv.emplace_object();
+            jv.as_object().emplace("x", 1);
+            BEAST_EXPECT(jv.size() == 1);
+            jv.emplace_array();
+            jv.as_array().emplace_back(1);
+            BEAST_EXPECT(jv.size() == 1);
         }
     }
 

@@ -79,7 +79,7 @@ on_object_begin(error_code& ec)
     else
     {
         BOOST_ASSERT(jv.is_null());
-        jv = kind::object;
+        jv.emplace_object();
     }
     obj_ = true;
 }
@@ -127,7 +127,7 @@ on_array_begin(error_code& ec)
     else
     {
         BOOST_ASSERT(jv.is_null());
-        jv = kind::array;
+        jv.emplace_array();
     }
     obj_ = false;
 }
@@ -169,10 +169,12 @@ on_key_end(
         s_.append(s.data(), s.size());
         s = {s_.data(), s_.size()};
     }
-    BOOST_ASSERT(jv.is_object());
-    stack_.push_front(
-        &jv.as_object().insert_or_assign(
-            s, kind::null).first->second);
+    auto const result = jv.as_object().emplace(
+        s, kind::null);
+    // overwrite duplicate keys
+    if(! result.second)
+        result.first->second.emplace_null();
+    stack_.push_front(&result.first->second);
     s_.clear();
 }
 

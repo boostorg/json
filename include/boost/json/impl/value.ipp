@@ -630,7 +630,7 @@ operator[](key_type key)
 {
     // implicit conversion to object
     if(this->is_null())
-        *this = json::kind::object;
+        this->emplace_object();
     BOOST_ASSERT(this->is_object());
     return obj_[key];
 }

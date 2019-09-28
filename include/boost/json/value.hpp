@@ -188,6 +188,7 @@ public:
         specified storage object.
     */
     BOOST_JSON_DECL
+    explicit
     value(json::kind k) noexcept;
 
     /** Construct a value using the specified storage.
