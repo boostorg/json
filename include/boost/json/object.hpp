@@ -98,10 +98,12 @@ public:
     object() noexcept;
 
     BOOST_JSON_DECL
+    explicit
     object(
         storage_ptr store) noexcept;
 
     BOOST_JSON_DECL
+    explicit
     object(
         size_type capacity);
 

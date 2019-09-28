@@ -69,6 +69,7 @@ public:
     array(storage_ptr store);
 
     BOOST_JSON_DECL
+    explicit
     array(
         size_type count);
 
