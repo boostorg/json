@@ -24,6 +24,10 @@ public:
     void
     run() override
     {
+#ifdef BOOST_JSON_TRACK_STORAGE
+        basic_storage_ptr<storage> sp =
+            make_storage<fail_storage>();
+#endif
         pass();
     }
 };

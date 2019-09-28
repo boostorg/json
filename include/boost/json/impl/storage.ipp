@@ -12,7 +12,6 @@
 
 #include <boost/json/storage.hpp>
 #include <boost/json/detail/storage_adaptor.hpp>
-#include <boost/assert.hpp>
 #include <memory>
 
 namespace boost {
@@ -43,7 +42,6 @@ default_storage(storage_ptr sp)
 {
     detail::raw_default_storage() = std::move(sp);
 }
-
 
 } // json
 } // boost

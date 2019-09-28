@@ -25,8 +25,7 @@ public:
     testExceptions()
     {
         string s1 = "Hello, world!";
-        auto sp =
-            std::make_shared<fail_storage>();
+        auto sp = make_storage<fail_storage>();
         string s2;
         while(sp->fail < 200)
         {

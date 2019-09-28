@@ -59,8 +59,7 @@ public:
     void
     testSpecial()
     {
-        auto sp =
-            std::make_shared<unique_storage>();
+        auto sp = make_storage<unique_storage>();
         storage_ptr sp0 =
             default_storage();
         BEAST_EXPECT(*sp != *sp0);
@@ -869,8 +868,7 @@ public:
                 { "a", 1 },
                 { "b", true },
                 { "c", "hello" }});
-            auto sp =
-                std::make_shared<fail_storage>();
+            auto sp = make_storage<fail_storage>();
             object obj1;
             while(sp->fail < 200)
             {
@@ -891,8 +889,7 @@ public:
 
         // operator=(object&&)
         {
-            auto sp =
-                std::make_shared<fail_storage>();
+            auto sp = make_storage<fail_storage>();
             object obj1;
             while(sp->fail < 200)
             {
@@ -917,8 +914,7 @@ public:
 
         // operator=(init_list)
         {
-            auto sp =
-                std::make_shared<fail_storage>();
+            auto sp = make_storage<fail_storage>();
             object obj1;
             while(sp->fail < 200)
             {

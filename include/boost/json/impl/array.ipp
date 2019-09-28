@@ -485,18 +485,25 @@ void
 array::
 reserve(size_type new_capacity)
 {
-    // minimum size is 3
-    if( new_capacity > 0 &&
-        new_capacity < 3)
+    // this is a no-op
+    if(new_capacity == 0)
+        return;
+
+    // a reasonable minimum
+    if( new_capacity < 3)
         new_capacity = 3;
 
-    // don't shrink
-    if( tab_ &&
-        new_capacity <= tab_->capacity())
-        return;
-    new_capacity = (std::max<size_type>)(
-        tab_ ? ((tab_->capacity() * 3 + 1) / 2) : 0,
-        new_capacity);
+    if(tab_)
+    {
+        // can only grow
+        if(new_capacity <= tab_->capacity())
+            return;
+
+        // grow at least 50%
+        new_capacity = (std::max<size_type>)(
+            (tab_->capacity() * 3 + 1) / 2,
+            new_capacity);
+    }
 
     auto tab = table::create(new_capacity, sp_);
     if(! tab_)
@@ -511,8 +518,10 @@ reserve(size_type new_capacity)
             tab_->begin()[i]);
     tab->size = tab_->size;
     std::swap(tab, tab_);
-    tab->size = 0; // VFALCO Hack
-    table::destroy(tab, sp_);
+    {
+        tab->size = 0; // VFALCO hack to make it work
+        table::destroy(tab, sp_);
+    }
 }
 
 auto

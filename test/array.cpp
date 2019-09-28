@@ -44,8 +44,7 @@ public:
     void
     testSpecial()
     {
-        auto sp =
-            std::make_shared<unique_storage>();
+        auto sp = make_storage<unique_storage>();
         storage_ptr sp0 =
             default_storage();
         BEAST_EXPECT(*sp != *sp0);
@@ -567,8 +566,7 @@ public:
         {
             array arr0({1, true, "hello"});
             {
-                auto sp =
-                    std::make_shared<fail_storage>();
+                auto sp = make_storage<fail_storage>();
                 {
                     array arr1;
                     while(sp->fail < 200)
@@ -594,8 +592,7 @@ public:
         {
             std::initializer_list<value> list(
                 {1, true, "hello"});
-            auto sp =
-                std::make_shared<fail_storage>();
+            auto sp = make_storage<fail_storage>();
             array arr1;
             while(sp->fail < 200)
             {
@@ -616,7 +613,7 @@ public:
 
         // insert(before, count, value_type const&)
         {
-            auto sp = std::make_shared<fail_storage>();
+            auto sp = make_storage<fail_storage>();
             array arr1;
             while(sp->fail < 200)
             {
@@ -645,7 +642,7 @@ public:
         {
             std::initializer_list<value> list(
                 {1, true, "hello"});
-            auto sp = std::make_shared<fail_storage>();
+            auto sp = make_storage<fail_storage>();
             array arr1;
             while(sp->fail < 200)
             {
@@ -667,7 +664,7 @@ public:
 
         // emplace(before, arg)
         {
-            auto sp = std::make_shared<fail_storage>();
+            auto sp = make_storage<fail_storage>();
             array arr1;
             while(sp->fail < 200)
             {
@@ -691,7 +688,7 @@ public:
     #if _ITERATOR_DEBUG_LEVEL == 0
         // emplace(before, arg)
         {
-            auto sp = std::make_shared<fail_storage>();
+            auto sp = make_storage<fail_storage>();
             array arr1;
             while(sp->fail < 200)
             {
