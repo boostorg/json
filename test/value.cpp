@@ -93,8 +93,8 @@ public:
     void
     testConstruct()
     {
-        unique_storage us;
-        storage_ptr sp(&us);
+        auto sp =
+            std::make_shared<unique_storage>();
         storage_ptr sp0 =
             default_storage();
 

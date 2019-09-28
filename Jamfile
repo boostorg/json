@@ -31,6 +31,7 @@ local defines =
     <toolset>msvc-14.1:<cxxflags>"/permissive-"
     <toolset>msvc-14.2:<cxxflags>"/permissive-"
     <toolset>msvc,<variant>release:<cxxflags>"/Ob2 /Oi /Ot"
+    <toolset>msvc:<cxxflags>"/D_ITERATOR_DEBUG_LEVEL=0"
     <target-os>windows:<define>_WIN32_WINNT=0x0601
     ;
 

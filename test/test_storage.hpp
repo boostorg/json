@@ -22,16 +22,6 @@ struct fail_storage : storage
     std::size_t fail_max = 1;
     std::size_t fail = 0;
 
-    void
-    addref() noexcept override
-    {
-    }
-
-    void
-    release() noexcept override
-    {
-    }
-
     void*
     allocate(
         std::size_t n,
@@ -73,16 +63,6 @@ struct fail_storage : storage
 
 struct unique_storage : storage
 {
-    void
-    addref() noexcept override
-    {
-    }
-
-    void
-    release() noexcept override
-    {
-    }
-
     void*
     allocate(
         std::size_t n,

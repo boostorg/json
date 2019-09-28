@@ -44,8 +44,8 @@ public:
     void
     testSpecial()
     {
-        unique_storage us;
-        storage_ptr sp(&us);
+        auto sp =
+            std::make_shared<unique_storage>();
         storage_ptr sp0 =
             default_storage();
         BEAST_EXPECT(*sp != *sp0);
@@ -566,34 +566,38 @@ public:
         // operator=(array const&)
         {
             array arr0({1, true, "hello"});
-            fail_storage fs;
-            storage_ptr sp(&fs);
-            array arr1;
-            while(fs.fail < 200)
             {
-                try
+                auto sp =
+                    std::make_shared<fail_storage>();
                 {
-                    array arr(sp);
-                    arr.emplace_back(nullptr);
-                    arr = arr0;
-                    arr1 = arr;
-                    break;
-                }
-                catch(std::bad_alloc const&)
-                {
+                    array arr1;
+                    while(sp->fail < 200)
+                    {
+                        try
+                        {
+                            array arr(sp);
+                            arr.emplace_back(nullptr);
+                            arr = arr0;
+                            arr1 = arr;
+                            break;
+                        }
+                        catch(std::bad_alloc const&)
+                        {
+                        }
+                    }
+                    check(arr1);
                 }
             }
-            check(arr1);
         }
 
         // operator=(init_list)
         {
             std::initializer_list<value> list(
                 {1, true, "hello"});
-            fail_storage fs;
-            storage_ptr sp(&fs);
+            auto sp =
+                std::make_shared<fail_storage>();
             array arr1;
-            while(fs.fail < 200)
+            while(sp->fail < 200)
             {
                 try
                 {
@@ -612,10 +616,9 @@ public:
 
         // insert(before, count, value_type const&)
         {
-            fail_storage fs;
-            storage_ptr sp(&fs);
+            auto sp = std::make_shared<fail_storage>();
             array arr1;
-            while(fs.fail < 200)
+            while(sp->fail < 200)
             {
                 try
                 {
@@ -642,10 +645,9 @@ public:
         {
             std::initializer_list<value> list(
                 {1, true, "hello"});
-            fail_storage fs;
-            storage_ptr sp(&fs);
+            auto sp = std::make_shared<fail_storage>();
             array arr1;
-            while(fs.fail < 200)
+            while(sp->fail < 200)
             {
                 try
                 {
@@ -665,10 +667,9 @@ public:
 
         // emplace(before, arg)
         {
-            fail_storage fs;
-            storage_ptr sp(&fs);
+            auto sp = std::make_shared<fail_storage>();
             array arr1;
-            while(fs.fail < 200)
+            while(sp->fail < 200)
             {
                 try
                 {
@@ -690,10 +691,9 @@ public:
     #if _ITERATOR_DEBUG_LEVEL == 0
         // emplace(before, arg)
         {
-            fail_storage fs;
-            storage_ptr sp(&fs);
+            auto sp = std::make_shared<fail_storage>();
             array arr1;
-            while(fs.fail < 200)
+            while(sp->fail < 200)
             {
                 try
                 {

@@ -11,9 +11,9 @@
 #define BOOST_JSON_STORAGE_HPP
 
 #include <boost/json/detail/config.hpp>
-#include <boost/core/exchange.hpp>
 #include <cstddef>
 #include <cstdlib>
+#include <memory>
 #include <type_traits>
 
 namespace boost {
@@ -21,21 +21,14 @@ namespace json {
 
 /** Abstract interface to a memory resource used with JSON.
 */
-struct storage
+class storage
 {
+public:
     static std::size_t constexpr max_align =
         sizeof(max_align_t);
 
     virtual
     ~storage() = default;
-
-    virtual
-    void
-    addref() noexcept = 0;
-
-    virtual
-    void
-    release() noexcept = 0;
 
     virtual
     void*
@@ -80,124 +73,21 @@ struct storage
 
 /** Manages a type-erased storage object and options for a set of JSON values.
 */
-class storage_ptr
-{
-    storage* p_ = nullptr;
-
-public:
-    storage_ptr() = default;
-
-    ~storage_ptr()
-    {
-        if(p_)
-            p_->release();
-    }
-
-    storage_ptr(storage_ptr&& other) noexcept
-        : p_(boost::exchange(
-            other.p_, nullptr))
-    {
-    }
-
-    BOOST_JSON_DECL
-    storage_ptr(storage_ptr const&) noexcept;
-
-    BOOST_JSON_DECL
-    storage_ptr&
-    operator=(storage_ptr&&) noexcept;
-
-    BOOST_JSON_DECL
-    storage_ptr&
-    operator=(storage_ptr const&) noexcept;
-
-    /** Constructor
-
-        @param p A pointer to a storage object. Ownership of the
-        object is transferred; the reference count is not adjusted.
-    */
-    BOOST_JSON_DECL
-    storage_ptr(storage* p) noexcept;
-
-    /** Return ownership of the managed storage object.
-    */
-    BOOST_JSON_DECL
-    storage*
-    release() noexcept;
-
-    explicit
-    operator bool() const noexcept
-    {
-        return p_ != nullptr;
-    }
-
-    storage*
-    get() const noexcept
-    {
-        return p_;
-    }
-
-    storage*
-    operator->() const noexcept
-    {
-        return p_;
-    }
-
-    storage&
-    operator*() const noexcept
-    {
-        return *p_;
-    }
-};
-
-inline
-bool
-operator==(storage_ptr const& lhs, storage_ptr const& rhs) noexcept
-{
-    return lhs.get() == rhs.get();
-}
-
-inline
-bool
-operator==(storage* lhs, storage_ptr const& rhs) noexcept
-{
-    return lhs == rhs.get();
-}
-
-inline
-bool
-operator==(storage_ptr const& lhs, storage* rhs) noexcept
-{
-    return lhs.get() == rhs;
-}
-
-inline
-bool
-operator!=(storage_ptr const& lhs, storage_ptr const& rhs) noexcept
-{
-    return lhs.get() != rhs.get();
-}
-
-inline
-bool
-operator!=(storage* lhs, storage_ptr const& rhs) noexcept
-{
-    return lhs != rhs.get();
-}
-
-inline
-bool
-operator!=(storage_ptr const& lhs, storage* rhs) noexcept
-{
-    return lhs.get() != rhs;
-}
+using storage_ptr = std::shared_ptr<storage>;
 
 //------------------------------------------------------------------------------
 
-/** Construct a storage pointer to the specified allocator
+/** Construct a new storage object
+*/
+template<class Storage, class... Args>
+storage_ptr
+make_storage_ptr(Args&&... args);
+
+/** Construct a storage adaptor for the specified allocator
 */
 template<class Allocator>
 storage_ptr
-make_storage_ptr(Allocator const& a);
+make_storage_adaptor(Allocator const& a);
 
 /** Return a pointer to the current default storage
 */

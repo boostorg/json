@@ -22,7 +22,7 @@ public:
     void
     testAllocator()
     {
-        auto a1 = make_storage_ptr(
+        auto a1 = make_storage_adaptor(
             std::allocator<void>{});
         auto a2 = a1;
         auto a3 = std::move(a2);
@@ -30,7 +30,7 @@ public:
         a3 = std::move(a2);
 
         std::vector<char, allocator<char>> v(
-            allocator<char>(make_storage_ptr(
+            allocator<char>(make_storage_adaptor(
                 std::allocator<void>{})));
         v.resize(100);
         BEAST_EXPECT(v.capacity() >= 100);

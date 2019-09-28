@@ -45,9 +45,9 @@ using allocator_of_char =
 
 template<class Allocator>
 struct storage_adaptor
-    : boost::empty_value<
+    : storage
+    , boost::empty_value<
         allocator_of_char<Allocator>>
-    , storage
 {
     // VFALCO This is all public because msvc friend bugs
 
@@ -60,24 +60,6 @@ struct storage_adaptor
                 boost::empty_init_t{}, alloc)
         , count_(1)
     {
-    }
-
-    ~storage_adaptor()
-    {
-    }
-
-    void
-    addref() noexcept override
-    {
-        ++count_;
-    }
-
-    void
-    release() noexcept override
-    {
-        if(--count_ > 0)
-            return;
-        delete this;
     }
 
     void*
