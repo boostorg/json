@@ -180,7 +180,7 @@ public:
         {
             {
                 array arr1({1, true, "hello"});
-                array arr2({nullptr, object{}, 1.f});
+                array arr2({nullptr, value(kind::object), 1.f});
                 arr2 = std::move(arr1);
                 BEAST_EXPECT(arr1.empty());
                 BEAST_EXPECT(
@@ -190,7 +190,7 @@ public:
             }
             {
                 array arr1({1, true, "hello"});
-                array arr2({nullptr, object{}, 1.f}, sp);
+                array arr2({nullptr, value(kind::object), 1.f}, sp);
                 arr2 = std::move(arr1);
                 BEAST_EXPECT(! arr1.empty());
                 BEAST_EXPECT(
@@ -204,14 +204,14 @@ public:
         {
             {
                 array arr1({1, true, "hello"});
-                array arr2({nullptr, object{}, 1.f});
+                array arr2({nullptr, value(kind::object), 1.f});
                 arr2 = arr1;
                 BEAST_EXPECT(! arr1.empty());
                 check(arr2, sp0);
             }
             {
                 array arr1({1, true, "hello"});
-                array arr2({nullptr, object{}, 1.f}, sp);
+                array arr2({nullptr, value(kind::object), 1.f}, sp);
                 arr2 = arr1;
                 BEAST_EXPECT(! arr1.empty());
                 BEAST_EXPECT(
@@ -226,14 +226,14 @@ public:
             {
                 std::initializer_list<value> list =
                     { 1, true, "hello" };
-                array arr({nullptr, object{}, 1.f});
+                array arr({nullptr, value(kind::object), 1.f});
                 arr = list;
                 check(arr, sp0);
             }
             {
                 std::initializer_list<value> list =
                     { 1, true, "hello" };
-                array arr({nullptr, object{}, 1.f}, sp);
+                array arr({nullptr, value(kind::object), 1.f}, sp);
                 arr = list;
                 check(arr, sp);
             }

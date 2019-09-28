@@ -996,7 +996,6 @@ move(
     storage_ptr sp,
     value&& other)
 {
-    auto const k = other.kind_;
     switch(other.kind_)
     {
     case json::kind::object:
