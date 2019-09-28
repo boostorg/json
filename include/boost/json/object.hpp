@@ -37,6 +37,7 @@ class object
     struct list_hook;
     struct element;
     class table;
+    friend class value;
 
     storage_ptr sp_;
     table* tab_ = nullptr;
@@ -94,15 +95,15 @@ public:
     ~object();
 
     BOOST_JSON_DECL
-    object();
+    object() noexcept;
+
+    BOOST_JSON_DECL
+    object(
+        storage_ptr store) noexcept;
 
     BOOST_JSON_DECL
     object(
         size_type capacity);
-
-    BOOST_JSON_DECL
-    object(
-        storage_ptr store);
 
     BOOST_JSON_DECL
     object(
@@ -540,6 +541,10 @@ private:
         const_iterator before,
         key_type key,
         Arg&& arg);
+
+    BOOST_JSON_DECL
+    storage_ptr
+    release_storage() noexcept;
 
     BOOST_JSON_DECL
     static

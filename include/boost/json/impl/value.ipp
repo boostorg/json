@@ -150,9 +150,7 @@ value&
 value::
 operator=(value&& other)
 {
-    auto sp = release_storage();
-    destroy();
-    move(std::move(sp), std::move(other));
+    move(destroy(), std::move(other));
     return *this;
 }
 
@@ -161,11 +159,7 @@ value::
 operator=(value const& other)
 {
     if(this != &other)
-    {
-        auto sp = release_storage();
-        destroy();
-        copy(std::move(sp), other);
-    }
+        copy(destroy(), other);
     return *this;
 }
 
@@ -252,39 +246,9 @@ value::
 value(
     string str,
     storage_ptr store)
-    : str_(construct(str, store))
+    : str_(move_string(str, store))
     , kind_(json::kind::string)
 {
-}
-
-template<class S>
-typename std::enable_if<
-    ! std::is_constructible<S, string,
-        typename string::allocator_type
-            >::value, string>::type
-value::
-construct(S& str, storage_ptr& store)
-{
-    // workaround for missing std::string
-    // ctors in some stdlib versions
-    auto s = string(typename
-        string::allocator_type(
-            std::move(store)));
-    s = std::move(str);
-    return s;
-}
-
-template<class S>
-typename std::enable_if<
-    std::is_constructible<S, string,
-        typename string::allocator_type
-            >::value, string>::type
-value::
-construct(S& str, storage_ptr& store)
-{
-    return {std::move(str), typename
-        string::allocator_type(
-            std::move(store))};
 }
 
 value::
@@ -351,8 +315,7 @@ operator=(object obj)
 {
     object tmp(
         std::move(obj),
-        get_storage());
-    destroy();
+        destroy());
     ::new(&obj_) object(
         std::move(tmp));
     kind_ = json::kind::object;
@@ -365,8 +328,7 @@ operator=(array arr)
 {
     array tmp(
         std::move(arr),
-        get_storage());
-    destroy();
+        destroy());
     ::new(&arr_) array(
         std::move(tmp));
     kind_ = json::kind::array;
@@ -432,9 +394,59 @@ void
 value::
 reset(json::kind k) noexcept
 {
-    auto sp = release_storage();
-    destroy();
-    construct(k, std::move(sp));
+    if(kind_ != k)
+    {
+        construct(k, destroy());
+    }
+    else
+    {
+        switch(kind_)
+        {
+        case json::kind::object:
+            obj_.clear();    
+            break;
+
+        case json::kind::array:
+            arr_.clear();
+            break;
+
+        case json::kind::string:
+            str_.clear();
+            break;
+
+        case json::kind::number:
+        case json::kind::boolean:
+        case json::kind::null:
+            break;
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+//
+// Accessors
+//
+//------------------------------------------------------------------------------
+
+storage_ptr
+value::
+get_storage() const noexcept
+{
+    switch(kind_)
+    {
+    case json::kind::object:
+        return obj_.get_storage();
+
+    case json::kind::array:
+        return arr_.get_storage();
+
+    case json::kind::string:
+        return str_.get_allocator().get_storage();
+
+    default:
+        break;
+    }
+    return nat_.sp_;
 }
 
 //------------------------------------------------------------------------------
@@ -839,46 +851,69 @@ pop_back()
 
 // private
 
-storage_ptr
+template<class S>
+typename std::enable_if<
+    ! std::is_constructible<S, string,
+        typename string::allocator_type
+            >::value, string>::type
 value::
-get_storage() const noexcept
+move_string(S& str, storage_ptr& store)
 {
-    switch(kind_)
-    {
-    case json::kind::object:
-        return obj_.get_storage();
+    // workaround for missing std::string
+    // ctors in some stdlib versions
+    auto s = string(typename
+        string::allocator_type(
+            std::move(store)));
+    s = std::move(str);
+    return s;
+}
 
-    case json::kind::array:
-        return arr_.get_storage();
-
-    case json::kind::string:
-        return str_.get_allocator().get_storage();
-
-    default:
-        break;
-    }
-    return nat_.sp_;
+template<class S>
+typename std::enable_if<
+    std::is_constructible<S, string,
+        typename string::allocator_type
+            >::value, string>::type
+value::
+move_string(S& str, storage_ptr& store)
+{
+    return {std::move(str), typename
+        string::allocator_type(
+            std::move(store))};
 }
 
 storage_ptr
 value::
-release_storage() noexcept
+destroy() noexcept
 {
+    storage_ptr sp;
     switch(kind_)
     {
     case json::kind::object:
-        return obj_.get_storage();
+        sp = obj_.release_storage();
+        obj_.~object();
+        break;
 
     case json::kind::array:
-        return arr_.get_storage();
+        sp = arr_.release_storage();
+        arr_.~array();
+        break;
 
     case json::kind::string:
-        return str_.get_allocator().get_storage();
+        sp = str_.get_allocator().get_storage();
+        str_.~string();
+        break;
 
-    default:
+    case json::kind::number:
+        nat_.num_.~number();
+        BOOST_FALLTHROUGH;
+
+    case json::kind::boolean:
+    case json::kind::null:
+        sp = std::move(nat_.sp_);
+        nat_.sp_.~storage_ptr();
         break;
     }
-    return std::move(nat_.sp_);
+    return sp;
 }
 
 void
@@ -913,46 +948,12 @@ construct(
         break;
 
     case json::kind::boolean:
-        ::new(&nat_.bool_) bool{};
-        ::new(&nat_.sp_)
-            storage_ptr(std::move(sp));
-        break;
-
     case json::kind::null:
         ::new(&nat_.sp_)
             storage_ptr(std::move(sp));
         break;
     }
     kind_ = k;
-}
-
-// doesn't set kind_
-void
-value::
-destroy() noexcept
-{
-    switch(kind_)
-    {
-    case json::kind::object:
-        obj_.~object();
-        break;
-
-    case json::kind::array:
-        arr_.~array();
-        break;
-
-    case json::kind::string:
-        str_.~string();
-        break;
-
-    case json::kind::number:
-        nat_.num_.~number();
-
-    case json::kind::boolean:
-    case json::kind::null:
-        nat_.sp_.~storage_ptr();
-        break;
-    }
 }
 
 struct value::op_move_string
@@ -995,6 +996,7 @@ move(
     storage_ptr sp,
     value&& other)
 {
+    auto const k = other.kind_;
     switch(other.kind_)
     {
     case json::kind::object:
@@ -1014,10 +1016,12 @@ move(
             throw;
         }
     #endif
-        sp = other.get_storage();
+        kind_ = other.kind_;
+        sp = other.obj_.release_storage();
         other.obj_.~object();
-        ::new(&other.nat_.sp_)
+        ::new(&other.nat_.sp_) 
             storage_ptr(std::move(sp));
+        other.kind_ = json::kind::null;
         break;
 
     case json::kind::array:
@@ -1037,10 +1041,12 @@ move(
             throw;
         }
     #endif
-        sp = other.get_storage();
+        kind_ = other.kind_;
+        sp = other.arr_.release_storage();
         other.arr_.~array();
-        ::new(&other.nat_.sp_)
+        ::new(&other.nat_.sp_) 
             storage_ptr(std::move(sp));
+        other.kind_ = json::kind::null;
         break;
 
     case json::kind::string:
@@ -1059,32 +1065,39 @@ move(
             throw;
         }
     #endif
-        sp = other.get_storage();
+        kind_ = other.kind_;
+        sp = other.str_.get_allocator().get_storage();
         other.str_.~string();
-        ::new(&other.nat_.sp_)
+        ::new(&other.nat_.sp_) 
             storage_ptr(std::move(sp));
+        other.kind_ = json::kind::null;
         break;
 
     case json::kind::number:
         ::new(&nat_.sp_)
             storage_ptr(std::move(sp));
         ::new(&nat_.num_) number(
-            other.nat_.num_);
+            std::move(other.nat_.num_));
+        kind_ = other.kind_;
+        nat_.num_.~number();
+        other.kind_ = json::kind::null;
         break;
 
     case json::kind::boolean:
         ::new(&nat_.sp_)
             storage_ptr(std::move(sp));
         nat_.bool_ = other.nat_.bool_;
+        kind_ = other.kind_;
+        other.kind_ = json::kind::null;
         break;
 
     case json::kind::null:
         ::new(&nat_.sp_)
             storage_ptr(std::move(sp));
+        kind_ = other.kind_;
+        other.kind_ = json::kind::null;
         break;
     }
-    kind_ = other.kind_;
-    other.kind_ = json::kind::null;
 }
 
 struct value::op_copy_string

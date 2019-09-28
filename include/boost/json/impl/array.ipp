@@ -299,6 +299,13 @@ operator=(
     return *this;
 }
 
+storage_ptr const&
+array::
+get_storage() const noexcept
+{
+    return sp_;
+}
+
 //------------------------------------------------------------------------------
 //
 // Elements
@@ -717,6 +724,18 @@ swap(array& other) noexcept
 }
 
 //------------------------------------------------------------------------------
+
+storage_ptr
+array::
+release_storage() noexcept
+{
+    if(tab_)
+    {
+        table::destroy(tab_, sp_);
+        tab_ = nullptr;
+    }
+    return std::move(sp_);
+}
 
 void
 array::

@@ -293,20 +293,20 @@ object::
 }
 
 object::
-object()
-    : object(0, default_storage())
+object() noexcept
+    : sp_(default_storage())
+{
+}
+
+object::
+object(storage_ptr store) noexcept
+    : sp_(std::move(store))
 {
 }
 
 object::
 object(size_type capacity)
     : object(capacity, default_storage())
-{
-}
-
-object::
-object(storage_ptr store)
-    : object(0, std::move(store))
 {
 }
 
@@ -1144,6 +1144,19 @@ reserve(size_type count)
 }
 
 //------------------------------------------------------------------------------
+
+storage_ptr
+object::
+release_storage() noexcept
+{
+    if(tab_)
+    {
+        table::destroy_list(tab_, sp_);
+        table::destroy(tab_, sp_);
+        tab_ = nullptr;
+    }
+    return std::move(sp_);
+}
 
 auto
 object::

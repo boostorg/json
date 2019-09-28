@@ -311,7 +311,8 @@ private:
         {
         case 5: return append_object();
         case 4: return append_array();
-        case 3: return append_string();
+        //case 3: return append_string();
+        case 3: return append_integer();
         case 2: return append_integer();
         case 1: return append_boolean();
         case 0: return append_null();

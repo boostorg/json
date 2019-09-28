@@ -28,6 +28,7 @@ class value;
 class array
 {
     class table;
+    friend class value;
 
     table* tab_ = nullptr;
     storage_ptr sp_;
@@ -138,10 +139,7 @@ public:
 
     BOOST_JSON_DECL
     storage_ptr const&
-    get_storage() const noexcept
-    {
-        return sp_;
-    }
+    get_storage() const noexcept;
 
     //--------------------------------------------------------------------------
     //
@@ -416,6 +414,10 @@ private:
     emplace_impl(
         const_iterator before,
         Arg&& arg);
+
+    BOOST_JSON_DECL
+    storage_ptr
+    release_storage() noexcept;
 
     BOOST_JSON_DECL
     void

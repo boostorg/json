@@ -887,17 +887,13 @@ private:
     struct op_move_string;
     struct op_copy_string;
 
-    BOOST_JSON_DECL
-    storage_ptr
-    release_storage() noexcept;
-
     template<class S>
     static
     typename std::enable_if<
         ! std::is_constructible<S, string,
             typename string::allocator_type
                 >::value, string>::type
-    construct(S& str, storage_ptr& store);
+    move_string(S& str, storage_ptr& store);
 
     template<class S>
     static
@@ -905,16 +901,16 @@ private:
         std::is_constructible<S, string,
             typename string::allocator_type
                 >::value, string>::type
-    construct(S& str, storage_ptr& store);
+    move_string(S& str, storage_ptr& store);
+
+    BOOST_JSON_DECL
+    storage_ptr
+    destroy() noexcept;
 
     BOOST_JSON_DECL
     void
     construct(
         json::kind, storage_ptr) noexcept;
-
-    BOOST_JSON_DECL
-    void
-    destroy() noexcept;
 
     BOOST_JSON_DECL
     void
