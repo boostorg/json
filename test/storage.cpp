@@ -13,57 +13,14 @@
 #include <boost/beast/_experimental/unit_test/suite.hpp>
 #include <boost/json/detail/storage_adaptor.hpp>
 
+#include "test_storage.hpp"
+
 namespace boost {
 namespace json {
 
 class storage_test : public beast::unit_test::suite
 {
 public:
-    struct unique_storage : storage
-    {
-        void
-        addref() noexcept override
-        {
-        }
-
-        void
-        release() noexcept override
-        {
-        }
-
-        void*
-        allocate(
-            std::size_t n,
-            std::size_t) override
-        {
-            return std::allocator<
-                char>{}.allocate(n);
-        }
-
-        void
-        deallocate(
-            void* p,
-            std::size_t n,
-            std::size_t) noexcept override
-        {
-            auto cp =
-                reinterpret_cast<char*>(p);
-            return std::allocator<
-                char>{}.deallocate(cp, n);
-        }
-        bool
-        is_equal(
-            storage const& other
-                ) const noexcept override
-        {
-            auto p = dynamic_cast<
-                unique_storage const*>(&other);
-            if(! p)
-                return false;
-            return this == p;
-        }
-    };
-
     void
     testStoragePtr()
     {

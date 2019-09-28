@@ -19,6 +19,7 @@ add_executable (json-tests
     ${PROJECT_SOURCE_DIR}/include/boost/json.hpp
     ${PROJECT_SOURCE_DIR}/include/boost/pilfer.hpp
     Jamfile
+    test_storage.hpp
     lib.cpp
     main.cpp
     _detail_stack.cpp
