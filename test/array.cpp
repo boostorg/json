@@ -189,6 +189,17 @@ public:
                 check(arr2, sp0);
             }
             {
+                array arr0({nullptr, value(kind::object), 1.f, 1.f}, sp);
+                array arr1({nullptr, value(kind::object), 1.f, 1.f, 1.f}, sp);
+                array arr2({nullptr, value(kind::object), 1.f, 1.f, 1.f, 1.f}, sp);
+
+                array arr3({value(kind::object), nullptr, 1.f}, sp);
+
+                array arr4({nullptr, 1.f, value(kind::object)}, sp);
+                array arr5({nullptr, 1.f, value(kind::object), 1.f}, sp);
+                array arr6({nullptr, 1.f, value(kind::object), 1.f, 1.f}, sp);
+            }
+            {
                 array arr1({1, true, "hello"});
                 array arr2({nullptr, value(kind::object), 1.f}, sp);
                 arr2 = std::move(arr1);

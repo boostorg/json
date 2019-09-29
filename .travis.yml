@@ -125,6 +125,8 @@ jobs:
         - cd $BOOST_ROOT/libs/$SELF
         - ci/travis/codecov.sh
 
+    - { os: "linux", env: [ "B2_TOOLSET=clang-8",     "B2_CXXSTD=17,2a"    ], addons: *clang-8   }
+
     - os: linux
       env:
         - COMMENT=asan
@@ -187,7 +189,7 @@ jobs:
     - { os: "linux", env: [ "B2_TOOLSET=clang-5.0",   "B2_CXXSTD=11,14"    ], addons: *clang-5   }
     - { os: "linux", env: [ "B2_TOOLSET=clang-6.0",   "B2_CXXSTD=14,17"    ], addons: *clang-6   }
     - { os: "linux", env: [ "B2_TOOLSET=clang-7",     "B2_CXXSTD=17,2a"    ], addons: *clang-7   }
-    - { os: "linux", env: [ "B2_TOOLSET=clang-8",     "B2_CXXSTD=17,2a"    ], addons: *clang-8   }
+#   - { os: "linux", env: [ "B2_TOOLSET=clang-8",     "B2_CXXSTD=17,2a"    ], addons: *clang-8   }
 
     # libc++
     - { os: "linux", env: [ "B2_TOOLSET=clang-6.0",   "B2_CXXSTD=11,14",
