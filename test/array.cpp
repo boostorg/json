@@ -190,14 +190,13 @@ public:
             }
             {
                 array arr0({nullptr, value(kind::object), 1.f, 1.f}, sp);
-                array arr1({nullptr, value(kind::object), 1.f, 1.f, 1.f}, sp);
-                array arr2({nullptr, value(kind::object), 1.f, 1.f, 1.f, 1.f}, sp);
-
-                array arr3({value(kind::object), nullptr, 1.f}, sp);
-
-                array arr4({nullptr, 1.f, value(kind::object)}, sp);
-                array arr5({nullptr, 1.f, value(kind::object), 1.f}, sp);
-                array arr6({nullptr, 1.f, value(kind::object), 1.f, 1.f}, sp);
+                array arr1({nullptr, value(kind::object), 1.f, 1.f}, sp);
+                array arr2({nullptr, value(kind::object), 1.f, 1.f, 1.f}, sp);
+                array arr3({nullptr, value(kind::object), 1.f, 1.f, 1.f, 1.f}, sp);
+                array arr4({value(kind::object), nullptr, 1.f}, sp);
+                array arr5({nullptr, 1.f, value(kind::object)}, sp);
+                array arr6({nullptr, 1.f, value(kind::object), 1.f}, sp);
+                array arr7({nullptr, 1.f, value(kind::object), 1.f, 1.f}, sp);
             }
             {
                 array arr1({1, true, "hello"});

@@ -116,7 +116,7 @@ struct array::cleanup_insert
 
 //------------------------------------------------------------------------------
 
-template<class InputIt>
+template<class InputIt, class>
 array::
 array(
     InputIt first, InputIt last)
@@ -126,7 +126,7 @@ array(
 {
 }
 
-template<class InputIt>
+template<class InputIt, class>
 array::
 array(
     InputIt first, InputIt last,

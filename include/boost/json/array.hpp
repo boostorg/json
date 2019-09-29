@@ -89,11 +89,25 @@ public:
         value_type const& v,
         storage_ptr store);
 
-    template<class InputIt>
+    template<
+        class InputIt
+    #ifndef GENERATING_DOCUMENTATION
+        ,class = typename std::enable_if<
+            ! std::is_convertible<
+                InputIt, storage_ptr>::value>::type
+    #endif
+    >
     array(
         InputIt first, InputIt last);
 
-    template<class InputIt>
+    template<
+        class InputIt
+    #ifndef GENERATING_DOCUMENTATION
+        ,class = typename std::enable_if<
+            ! std::is_convertible<
+                InputIt, storage_ptr>::value>::type
+    #endif
+    >
     array(
         InputIt first, InputIt last,
         storage_ptr store);

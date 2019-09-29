@@ -235,12 +235,12 @@ public:
     BOOST_JSON_DECL
     value(string str, storage_ptr store);
 
-    /** Construct a value from a nujmber
+    /** Construct a value from a number
     */
     BOOST_JSON_DECL
     value(number num);
 
-    /** Construct a value from a nujmber using the specified storage
+    /** Construct a value from a number using the specified storage
     */
     BOOST_JSON_DECL
     value(number num, storage_ptr store);

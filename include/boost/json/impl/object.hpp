@@ -667,7 +667,7 @@ struct object::insert_return_type
 
 //------------------------------------------------------------------------------
 
-template<class InputIt>
+template<class InputIt, class>
 object::
 object(
     InputIt first,
@@ -678,7 +678,7 @@ object(
         iter_cat<InputIt>{});
 }
 
-template<class InputIt>
+template<class InputIt, class>
 object::
 object(
     InputIt first,
@@ -690,7 +690,7 @@ object(
         iter_cat<InputIt>{});
 }
 
-template<class InputIt>
+template<class InputIt, class>
 object::
 object(
     InputIt first,
@@ -702,7 +702,7 @@ object(
         iter_cat<InputIt>{});
 }
 
-template<class InputIt>
+template<class InputIt, class>
 object::
 object(
     InputIt first,
