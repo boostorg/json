@@ -190,21 +190,21 @@ public:
 
     BOOST_JSON_DECL
     object(
-        std::initializer_list<value_type> list);
+        std::initializer_list<value> init);
 
     BOOST_JSON_DECL
     object(
-        std::initializer_list<value_type> list,
+        std::initializer_list<value> init,
         size_type capacity);
 
     BOOST_JSON_DECL
     object(
-        std::initializer_list<value_type> list,
+        std::initializer_list<value> init,
         storage_ptr store);
         
     BOOST_JSON_DECL
     object(
-        std::initializer_list<value_type> list,
+        std::initializer_list<value> init,
         size_type capacity,
         storage_ptr store);
 
@@ -219,7 +219,7 @@ public:
     BOOST_JSON_DECL
     object&
     operator=(
-        std::initializer_list<value_type> list);
+        std::initializer_list<value> init);
 
     BOOST_JSON_DECL
     storage_ptr const&
@@ -311,8 +311,8 @@ public:
 
     BOOST_JSON_DECL
     void
-    insert(std::initializer_list<
-        value_type> list);
+    insert(
+        std::initializer_list<value> list);
 
     BOOST_JSON_DECL
     insert_return_type

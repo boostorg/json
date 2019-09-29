@@ -133,11 +133,11 @@ public:
 
     BOOST_JSON_DECL
     array(
-        std::initializer_list<value_type> list);
+        std::initializer_list<value> list);
 
     BOOST_JSON_DECL
     array(
-        std::initializer_list<value_type> list,
+        std::initializer_list<value> list,
         storage_ptr store);
 
     BOOST_JSON_DECL
@@ -151,7 +151,7 @@ public:
     BOOST_JSON_DECL
     array&
     operator=(
-        std::initializer_list<value_type> list);
+        std::initializer_list<value> list);
 
     BOOST_JSON_DECL
     storage_ptr const&
@@ -346,7 +346,7 @@ public:
     iterator
     insert(
         const_iterator before,
-        std::initializer_list<value_type> list);
+        std::initializer_list<value> list);
 
     template<class Arg>
     iterator

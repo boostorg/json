@@ -619,7 +619,15 @@ public:
     BOOST_STATIC_ASSERT(
         detail::is_range<std::initializer_list<int>>::value);
 
-    void run() override
+    void
+    testInitList()
+    {
+        value({});
+        value({ 1, 2, 3 });
+    }
+
+    void
+    run() override
     {
         log <<
             "sizeof(value)  == " <<
@@ -644,6 +652,7 @@ public:
         testAccessors();
         testStructured();
         testCustomization();
+        testInitList();
     }
 };
 

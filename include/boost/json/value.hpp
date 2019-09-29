@@ -245,19 +245,23 @@ public:
     BOOST_JSON_DECL
     value(number num, storage_ptr store);
 
+#if 0
     /** Construct an object from an initializer list.
     */
     BOOST_JSON_DECL
-    value(std::initializer_list<
-        std::pair<string_view, value>> init);
+    value(
+        std::initializer_list<std::pair<
+            string_view, value>> init);
 
     /** Construct an object from an initializer list using the specified storage
     */
     BOOST_JSON_DECL
-    value(std::initializer_list<
-        std::pair<string_view, value>> init,
+    value(
+        std::initializer_list<std::pair<
+            string_view, value>> init,
         storage_ptr store);
-#if 0
+#endif
+
     /** Construct an array from an initializer list.
     */
     BOOST_JSON_DECL
@@ -268,7 +272,6 @@ public:
     BOOST_JSON_DECL
     value(std::initializer_list<value> init,
         storage_ptr store);
-#endif
 
     /** Assign a value from an object
     */
@@ -565,6 +568,20 @@ public:
     {
         return kind_ == json::kind::number;
     }
+
+    /** Returns `true` if this is an array with just a key and value
+    */
+    BOOST_JSON_DECL
+    bool
+    is_key_value_pair() const noexcept;
+
+    /** Returns `true` if the init list consists only of key-value pairs
+    */
+    static
+    BOOST_JSON_DECL
+    bool
+    maybe_object(
+        std::initializer_list<value> init) noexcept;
 
     //--------------------------------------------------------------------------
     //

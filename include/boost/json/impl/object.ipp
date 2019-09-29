@@ -13,6 +13,7 @@
 #include <boost/json/object.hpp>
 #include <boost/core/exchange.hpp>
 #include <boost/core/ignore_unused.hpp>
+#include <boost/throw_exception.hpp>
 #include <boost/assert.hpp>
 #include <algorithm>
 #include <cstdlib>
@@ -361,20 +362,20 @@ object(
 
 object::
 object(
-    std::initializer_list<value_type> list)
+    std::initializer_list<value> init)
     : object(
-        list,
-        list.size(),
+        init,
+        init.size(),
         default_storage())
 {
 }
 
 object::
 object(
-    std::initializer_list<value_type> list,
+    std::initializer_list<value> init,
     size_type capacity)
     : object(
-        list,
+        init,
         capacity,
         default_storage())
 {
@@ -382,28 +383,35 @@ object(
 
 object::
 object(
-    std::initializer_list<value_type> list,
+    std::initializer_list<value> init,
     storage_ptr store)
     : object(
-        list,
-        list.size(),
+        init,
+        init.size(),
         std::move(store))
 {
 }      
         
 object::
 object(
-    std::initializer_list<value_type> list,
+    std::initializer_list<value> init,
     size_type capacity,
     storage_ptr store)
     : sp_(std::move(store))
 {
     reserve(std::max<size_type>(
-        capacity, list.size()));
-    for(auto it = list.begin();
-        it != list.end(); ++it)
-        emplace_impl(end(), it->first,
-            std::move(it->second));
+        capacity, init.size()));
+    for(auto& e : init)
+    {
+        if(! e.is_key_value_pair())
+            BOOST_THROW_EXCEPTION(
+                std::invalid_argument(
+                    "expected key/value pair"));
+        emplace_impl(
+            end(),
+            e.as_array()[0].as_string(),
+            std::move(e.as_array()[1]));
+    }
 }
 
 object&
@@ -444,14 +452,21 @@ operator=(object const& other)
 object&
 object::
 operator=(
-    std::initializer_list<value_type> list)
+    std::initializer_list<value> init)
 {
     cleanup_replace c(*this);
-    reserve(list.size());
-    for(auto it = list.begin();
-        it != list.end(); ++it)
-        emplace_impl(end(), it->first,
-            std::move(it->second));
+    reserve(init.size());
+    for(auto& e : init)
+    {
+        if(! e.is_key_value_pair())
+            BOOST_THROW_EXCEPTION(
+                std::invalid_argument(
+                    "expected key/value pair"));
+        emplace_impl(
+            end(),
+            e.as_array()[0].as_string(),
+            std::move(e.as_array()[1]));
+    }
     c.ok = true;
     return *this;
 }
@@ -582,12 +597,20 @@ clear() noexcept
 void
 object::
 insert(
-    std::initializer_list<value_type> list)
+    std::initializer_list<value> init)
 {
-    reserve(size() + list.size());
-    for(auto&& v : list)
-        emplace_impl(end(), v.first,
-            std::move(v.second));
+    reserve(size() + init.size());
+    for(auto& e : init)
+    {
+        if(! e.is_key_value_pair())
+            BOOST_THROW_EXCEPTION(
+                std::invalid_argument(
+                    "expected key/value pair"));
+        emplace_impl(
+            end(),
+            e.as_array()[0].as_string(),
+            std::move(e.as_array()[1]));
+    }
 }
 
 auto

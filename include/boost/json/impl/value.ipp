@@ -269,45 +269,58 @@ value(
         std::move(store));
 }
 
+#if 0
 value::
-value(std::initializer_list<
-    std::pair<string_view, value>> init)
-    : value(init,
+value(
+    std::initializer_list<std::pair<
+        string_view, value>> init)
+    : value(
+        init,
         default_storage())
 {
 }
 
 value::
-value(std::initializer_list<
-    std::pair<string_view, value>> init,
+value(
+    std::initializer_list<std::pair<
+        string_view, value>> init,
     storage_ptr store)
-    : value(json::kind::object, std::move(store))
+    : value(
+        json::kind::object,
+        std::move(store))
 {
     for(auto& e : init)
         obj_.emplace(e.first,
             std::move(e.second));
 }
+#endif
 
-#if 0
 value::
 value(std::initializer_list<value> init)
-    : value(init,
+    : value(
+        init,
         default_storage())
 {
 }
 
 value::
-value(std::initializer_list<
-    std::pair<string_view, value>> init,
+value(
+    std::initializer_list<value> init,
     storage_ptr store)
-    : value(json::kind::array, std::move(store))
 {
-    for(auto& e : init)
-        arr_.emplace_back(
-            std::move(e),
-            get_storage());
+    if(maybe_object(init))
+    {
+        kind_ = json::kind::object;
+        ::new(&obj_) object(
+            init, std::move(store));
+    }
+    else
+    {
+        kind_ = json::kind::array;
+        ::new(&arr_) array(
+            init, std::move(store));
+    }
 }
-#endif
 
 value&
 value::
@@ -420,6 +433,30 @@ reset(json::kind k) noexcept
             break;
         }
     }
+}
+
+bool
+value::
+is_key_value_pair() const noexcept
+{
+    if(kind_ != json::kind::array)
+        return false;
+    if(arr_.size() != 2)
+        return false;
+    if(arr_[0].kind_ != json::kind::string)
+        return false;
+    return true;
+}
+
+bool
+value::
+maybe_object(
+    std::initializer_list<value> init) noexcept
+{
+    for(auto const& v : init)
+        if(! v.is_key_value_pair())
+            return false;
+    return true;
 }
 
 //------------------------------------------------------------------------------

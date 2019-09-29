@@ -723,6 +723,30 @@ public:
     }
 
     void
+    testInitList()
+    {
+        auto const ci =
+            []( int n,
+                std::initializer_list<value> init)
+            {
+                array a(init);
+                BEAST_EXPECT(a.size() == n);
+                return a[0];
+            };
+        BEAST_EXPECT(array({}).size() == 0);
+
+           array({ nullptr
+        });array({ 1
+        });array({ "x"
+        });array({ {nullptr}
+        });array({ {nullptr, 1}
+        });array({ {nullptr, 1, "x"}
+        });array({ {"x", nullptr}
+        });array({ {"x", nullptr}, {"y", nullptr}
+        });
+    }
+
+    void
     run() override
     {
         testSpecial();
@@ -731,6 +755,7 @@ public:
         testCapacity();
         testModifiers();
         testExceptions();
+        testInitList();
     }
 };
 
