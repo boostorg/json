@@ -57,14 +57,12 @@ public:
     {
         BOOST_JSON_DECL
         static
-        constexpr
         std::pair<
             std::uint64_t, std::uint64_t>
         init(std::true_type) noexcept;
 
         BOOST_JSON_DECL
         static
-        constexpr
         std::pair<
             std::uint32_t, std::uint32_t>
         init(std::false_type) noexcept;
@@ -312,7 +310,7 @@ public:
     BOOST_JSON_DECL
     void
     insert(
-        std::initializer_list<value> list);
+        std::initializer_list<value> init);
 
     BOOST_JSON_DECL
     insert_return_type

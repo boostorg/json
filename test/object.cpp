@@ -886,7 +886,7 @@ public:
                     obj1 = obj;
                     break;
                 }
-                catch(std::bad_alloc const&)
+                catch(test_failure const&)
                 {
                 }
             }
@@ -911,7 +911,7 @@ public:
                     obj1 = obj;
                     break;
                 }
-                catch(std::bad_alloc const&)
+                catch(test_failure const&)
                 {
                 }
             }
@@ -935,7 +935,7 @@ public:
                     obj1 = obj;
                     break;
                 }
-                catch(std::bad_alloc const&)
+                catch(test_failure const&)
                 {
                 }
             }
@@ -958,7 +958,7 @@ public:
     }
 };
 
-BEAST_DEFINE_TESTSUITE(beast,json,object);
+BEAST_DEFINE_TESTSUITE(boost,json,object);
 
 } // json
 } // boost

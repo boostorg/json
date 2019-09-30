@@ -12,6 +12,7 @@
 
 #include <boost/json/value.hpp>
 #include <boost/core/exchange.hpp>
+#include <boost/static_assert.hpp>
 #include <algorithm>
 #include <type_traits>
 
@@ -20,46 +21,38 @@ namespace json {
 
 //------------------------------------------------------------------------------
 
-class array::table
+struct array::table
 {
-    union
+    struct data
     {
-        std::size_t capacity_;
-        value unused_; // for alignment
+        size_type size;
+        size_type capacity;
     };
 
-    static_assert(
-        sizeof(value) >= sizeof(std::size_t), "");
+    union
+    {
+        data d;
+        value unused; // for alignment
+    };
 
-    BOOST_JSON_DECL
-    ~table();
+    ~table() = delete;
 
-public:
-    size_type size = 0;
-
-    explicit
-    table(size_type capacity)
-        : capacity_(capacity)
+    table()
     {
     }
 
-    size_type
-    capacity() const noexcept
-    {
-        return capacity_;
-    }
-
-    value_type*
+    value*
     begin() noexcept
     {
         return reinterpret_cast<
-            value_type*>(this + 1);
+            value*>(this + 1);
     }
 
-    value_type*
+    value*
     end() noexcept
     {
-        return begin() + size;
+        return reinterpret_cast<
+            value*>(this + 1) + d.size;
     }
 
     BOOST_JSON_DECL
@@ -74,7 +67,22 @@ public:
     void
     destroy(
         table* tab,
-        storage_ptr const& sp);
+        storage_ptr const& sp) noexcept;
+
+    BOOST_JSON_DECL
+    static
+    void
+    destroy(
+        value* first,
+        value* last) noexcept;
+
+    BOOST_JSON_DECL
+    static
+    void
+    relocate(
+        value* dest,
+        value* first,
+        value* last) noexcept;
 };
 
 //------------------------------------------------------------------------------
@@ -124,6 +132,10 @@ array(
         first, last,
         default_storage())
 {
+    static_assert(
+        std::is_constructible<value,
+            decltype(*first)>::value,
+        "json::value is not constructible from the iterator's value type");
 }
 
 template<class InputIt, class>
@@ -136,17 +148,25 @@ array(
         std::move(store),
         iter_cat<InputIt>{})
 {
+    static_assert(
+        std::is_constructible<value,
+            decltype(*first)>::value,
+        "json::value is not constructible from the iterator's value type");
 }
 
 template<class InputIt>
 auto
 array::
 insert(
-    const_iterator before,
+    const_iterator pos,
     InputIt first, InputIt last) ->
         iterator
 {
-    return insert(before, first, last,
+    static_assert(
+        std::is_constructible<value,
+            decltype(*first)>::value,
+        "json::value is not constructible from the iterator's value type");
+    return insert(pos, first, last,
         iter_cat<InputIt>{});
 }
 
@@ -154,12 +174,12 @@ template<class Arg>
 auto
 array::
 emplace(
-    const_iterator before,
+    const_iterator pos,
     Arg&& arg) ->
         iterator
 {
     return emplace_impl(
-        before, std::forward<Arg>(arg));
+        pos, std::forward<Arg>(arg));
 }
 
 template<class Arg>
@@ -202,33 +222,33 @@ template<class InputIt>
 auto
 array::
 insert(
-    const_iterator before,
+    const_iterator pos,
     InputIt first, InputIt last,
     std::input_iterator_tag) ->
         iterator
 {
-    auto pos = before - begin();
+    auto d = pos - begin();
     while(first != last)
-        before = insert(before, *first++) + 1;
-    return begin() + pos;
+        pos = insert(pos, *first++) + 1;
+    return begin() + d;
 }
 
 template<class InputIt>
 auto
 array::
 insert(
-    const_iterator before,
+    const_iterator pos,
     InputIt first, InputIt last,
     std::forward_iterator_tag) ->
         iterator
 {
     auto count = std::distance(first, last);
-    auto pos = before - begin();
+    auto d = pos - begin();
     reserve(size() + count);
-    cleanup_insert c(pos, count, *this);
+    cleanup_insert c(d, count, *this);
     while(count--)
     {
-        ::new(&begin()[pos++]) value_type(
+        ::new(&begin()[d++]) value(
             *first++, sp_);
         ++c.valid;
     }
@@ -240,17 +260,17 @@ template<class Arg>
 auto
 array::
 emplace_impl(
-    const_iterator before,
+    const_iterator pos,
     Arg&& arg) ->
         iterator
 {
-    auto const pos = before - begin();
+    auto const d = pos - begin();
     reserve(size() + 1);
-    cleanup_insert c(pos, 1, *this);
-    ::new(&tab_->begin()[pos]) value_type(
+    cleanup_insert c(d, 1, *this);
+    ::new(&tab_->begin()[d]) value(
         std::forward<Arg>(arg), sp_);
     c.ok = true;
-    return begin() + pos;
+    return begin() + d;
 }
 
 } // json

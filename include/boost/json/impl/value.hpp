@@ -362,6 +362,33 @@ public:
 
 //------------------------------------------------------------------------------
 
+struct value::undo
+{
+    union
+    {
+        value old;
+    };
+    value* cur;
+    bool commit = false;
+
+    explicit
+    undo(value* cur_)
+        : cur(cur_)
+    {
+        relocate(&old, *cur);
+    }
+
+    ~undo()
+    {
+        if(commit)
+            old.~value();
+        else
+            relocate(cur, old);
+    }
+};
+
+//------------------------------------------------------------------------------
+
 template<class M>
 auto
 value::

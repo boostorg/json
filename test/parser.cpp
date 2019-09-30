@@ -76,7 +76,7 @@ R"xx({
     }
 };
 
-BEAST_DEFINE_TESTSUITE(beast,json,parser);
+BEAST_DEFINE_TESTSUITE(boost,json,parser);
 
 } // json
 } // boost

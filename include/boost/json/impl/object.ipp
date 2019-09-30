@@ -189,7 +189,6 @@ public:
 
 //------------------------------------------------------------------------------
 
-constexpr
 std::pair<
     std::uint64_t,
     std::uint64_t>
@@ -203,7 +202,6 @@ init(std::true_type) noexcept
     };
 }
 
-constexpr
 std::pair<
     std::uint32_t,
     std::uint32_t>

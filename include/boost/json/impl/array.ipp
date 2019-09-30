@@ -27,14 +27,6 @@ namespace json {
 
 //------------------------------------------------------------------------------
 
-array::
-table::
-~table()
-{
-    while(size > 0)
-        begin()[--size].~value();
-}
-
 auto
 array::
 table::
@@ -43,10 +35,19 @@ create(
     storage_ptr const& sp) ->
         table*
 {
-    return ::new(sp->allocate(
+    // a reasonable minimum
+    if( capacity < 3)
+        capacity = 3;
+
+    BOOST_STATIC_ASSERT(
+        sizeof(table) == sizeof(value));
+    auto const p = ::new(sp->allocate(
         sizeof(table) +
             capacity * sizeof(value),
-        sizeof(value))) table(capacity);
+        alignof(value))) table;
+    p->d.size = 0;
+    p->d.capacity = capacity;
+    return p;
 }
 
 void
@@ -54,15 +55,51 @@ array::
 table::
 destroy(
     table* tab,
-    storage_ptr const& sp)
+    storage_ptr const& sp) noexcept
 {
-    auto const capacity = tab->capacity();
-    tab->~table();
+    destroy(tab->begin(), tab->end());
     sp->deallocate(tab,
         sizeof(table) +
-            capacity * sizeof(value),
-        sizeof(value));
+            tab->d.capacity * sizeof(value),
+        alignof(value));
 }
+
+void
+array::
+table::
+destroy(
+    value* first,
+    value* last) noexcept
+{
+    while(last != first)
+        (*--last).~value();
+}
+
+void
+array::
+table::
+relocate(
+    value* dest,
+    value* first,
+    value* last) noexcept
+{
+    while(first != last)
+        boost::relocate(dest++, *first++);
+}
+
+//------------------------------------------------------------------------------
+
+struct array::undo
+{
+    table* tab;
+    storage_ptr const& sp;
+
+    ~undo()
+    {
+        if(tab)
+            table::destroy(tab, sp);
+    }
+};
 
 //------------------------------------------------------------------------------
 
@@ -118,7 +155,7 @@ cleanup_insert::
 {
     if(ok)
     {
-        self.tab_->size += n;
+        self.tab_->d.size += n;
     }
     else
     {
@@ -147,35 +184,14 @@ array::
 }
 
 array::
-array()
+array() noexcept
     : sp_(default_storage())
 {
 }
 
 array::
-array(storage_ptr store)
-    : sp_(std::move(store))
-{
-}
-
-array::
-array(
-    size_type count)
-    : array(
-        count,
-        value(kind::null),
-        default_storage())
-{
-}
-
-array::
-array(
-    size_type count,
-    storage_ptr store)
-    : array(
-        count,
-        value(kind::null),
-        std::move(store))
+array(storage_ptr sp) noexcept
+    : sp_(std::move(sp))
 {
 }
 
@@ -194,34 +210,56 @@ array::
 array(
     size_type count,
     value const& v,
-    storage_ptr store)
-    : sp_(std::move(store))
+    storage_ptr sp)
+    : sp_(std::move(sp))
 {
-    resize(count, v);
+    if(count > 0)
+    {
+        undo u{table::create(
+            count, sp_), sp_};
+        while(count--)
+        {
+            ::new(u.tab->end()) value(v, sp_);
+            ++u.tab->d.size;
+        }
+        std::swap(tab_, u.tab);
+    }
+}
+
+array::
+array(
+    size_type count)
+    : array(
+        count,
+        value(kind::null),
+        default_storage())
+{
+}
+
+array::
+array(
+    size_type count,
+    storage_ptr sp)
+    : array(
+        count,
+        value(kind::null),
+        std::move(sp))
+{
 }
 
 array::
 array(array const& other)
-    : sp_(other.get_storage())
+    : array(other, other.sp_)
 {
-    *this = other;
 }
 
 array::
 array(
     array const& other,
-    storage_ptr store)
-    : sp_(std::move(store))
+    storage_ptr sp)
+    : sp_(std::move(sp))
 {
-    *this = other;
-}
-
-array::
-array(array&& other) noexcept
-    : tab_(boost::exchange(
-        other.tab_, nullptr))
-    , sp_(other.sp_)
-{
+    copy(other);
 }
 
 array::
@@ -234,72 +272,77 @@ array(pilfered<array> other) noexcept
 }
 
 array::
+array(array&& other) noexcept
+    : tab_(boost::exchange(
+        other.tab_, nullptr))
+    , sp_(other.sp_)
+{
+}
+
+array::
 array(
     array&& other,
-    storage_ptr store)
-    : sp_(std::move(store))
+    storage_ptr sp)
+    : sp_(std::move(sp))
 {
-    *this = std::move(other);
+    if(*sp_ != *other.sp_)
+        copy(other);
+    else
+        std::swap(tab_, other.tab_);
 }
 
 array::
 array(
-    std::initializer_list<value> list)
-    : sp_(default_storage())
+    std::initializer_list<value> init)
+    : array(
+        init,
+        default_storage())
 {
-    *this = list;
 }
 
 array::
 array(
-    std::initializer_list<value> list,
-    storage_ptr store)
-    : sp_(std::move(store))
+    std::initializer_list<value> init,
+    storage_ptr sp)
+    : sp_(std::move(sp))
 {
-    *this = list;
+    assign(init);
+}
+
+//------------------------------------------------------------------------------
+
+array&
+array::
+operator=(array const& other)
+{
+    copy(other);
+    return *this;
 }
 
 array&
 array::
 operator=(array&& other)
 {
-    if(*sp_ == *other.sp_)
+    if(*sp_ != *other.sp_)
+    {
+        copy(other);
+    }
+    else
     {
         if(tab_)
             table::destroy(tab_, sp_);
         tab_ = boost::exchange(
             other.tab_, nullptr);
     }
-    else
-    {
-        *this = other;
-    }
-    return *this;
-}
-
-array&
-array::
-operator=(array const& other)
-{
-    cleanup_assign c(*this);
-    reserve(other.size());
-    for(auto const& v : other)
-        emplace_impl(end(), v);
-    c.ok = true;
     return *this;
 }
 
 array&
 array::
 operator=(
-    std::initializer_list<value> list)
+    std::initializer_list<value> init)
 {
-    cleanup_assign c(*this);
-    reserve(list.size());
-    for(auto it = list.begin();
-            it != list.end(); ++it)
-        emplace_impl(end(), std::move(*it));
-    c.ok = true;
+    assign(init);
     return *this;
 }
 
@@ -312,7 +355,7 @@ get_storage() const noexcept
 
 //------------------------------------------------------------------------------
 //
-// Elements
+// Element access
 //
 //------------------------------------------------------------------------------
 
@@ -322,8 +365,8 @@ at(size_type pos) ->
     reference
 {
     if(pos >= size())
-        throw std::out_of_range(
-            "json::array index out of bounds");
+        BOOST_THROW_EXCEPTION(std::out_of_range(
+            "json::array index out of bounds"));
     return tab_->begin()[pos];
 }
 
@@ -333,8 +376,8 @@ at(size_type pos) const ->
     const_reference
 {
     if(pos >= size())
-        throw std::out_of_range(
-            "json::array index out of bounds");
+        BOOST_THROW_EXCEPTION(std::out_of_range(
+            "json::array index out of bounds"));
     return tab_->begin()[pos];
 }
 
@@ -470,7 +513,7 @@ bool
 array::
 empty() const noexcept
 {
-    return ! tab_ || tab_->size == 0;
+    return ! tab_ || tab_->d.size == 0;
 }
 
 auto
@@ -480,7 +523,7 @@ size() const noexcept ->
 {
     if(! tab_)
         return 0;
-    return tab_->size;
+    return tab_->d.size;
 }
 
 auto
@@ -500,39 +543,33 @@ reserve(size_type new_capacity)
     if(new_capacity == 0)
         return;
 
-    // a reasonable minimum
-    if( new_capacity < 3)
-        new_capacity = 3;
-
     if(tab_)
     {
-        // can only grow
-        if(new_capacity <= tab_->capacity())
+        // never shrink
+        if(new_capacity <= tab_->d.capacity)
             return;
 
         // grow at least 50%
         new_capacity = (std::max<size_type>)(
-            (tab_->capacity() * 3 + 1) / 2,
+            (tab_->d.capacity * 3 + 1) / 2,
             new_capacity);
     }
 
-    auto tab = table::create(new_capacity, sp_);
+    auto tab =
+        table::create(new_capacity, sp_);
     if(! tab_)
     {
         tab_ = tab;
         return;
     }
 
-    for(size_type i = 0; i < tab_->size; ++i)
-        relocate(
-            &tab->begin()[i],
-            tab_->begin()[i]);
-    tab->size = tab_->size;
+    table::relocate(
+        tab->begin(),
+        tab_->begin(), tab_->end());
+    tab->d.size = tab_->d.size;
+    tab_->d.size = 0;
     std::swap(tab, tab_);
-    {
-        tab->size = 0; // VFALCO hack to make it work
-        table::destroy(tab, sp_);
-    }
+    table::destroy(tab, sp_);
 }
 
 auto
@@ -542,21 +579,44 @@ capacity() const noexcept ->
 {
     if(! tab_)
         return 0;
-    return tab_->capacity();
+    return tab_->d.capacity;
 }
 
 void
 array::
 shrink_to_fit() noexcept
 {
-    if(! tab_ ||
-        tab_->capacity() <= tab_->size)
+    if(capacity() <= size())
         return;
-    auto tab = table::create(tab_->size, sp_);
-    for(size_type i = 0; i < tab_->size; ++i)
-        ::new(&tab->begin()[i]) value(
-            std::move(tab_->begin()[i]));
-    tab->size = tab_->size;
+    table* tab;
+    if(tab_->d.size == 0)
+    {
+        table::destroy(tab_, sp_);
+        tab_ = nullptr;
+        return;
+    }
+    if( size() < 3 &&
+        capacity() <= 3)
+        return;
+
+#ifndef BOOST_NO_EXCEPTIONS
+    try
+#endif
+    {
+        tab = table::create(tab_->d.size, sp_);
+    }
+#ifndef BOOST_NO_EXCEPTIONS
+    catch(...)
+    {
+        return;
+    }
+#endif
+
+    table::relocate(
+        tab->begin(),
+        tab_->begin(), tab_->end());
+    tab->d.size = tab_->d.size;
+    tab_->d.size = 0;
     std::swap(tab, tab_);
     table::destroy(tab, sp_);
 }
@@ -573,45 +633,47 @@ clear() noexcept
 {
     if(! tab_)
         return;
-    destroy(begin(), end());
-    tab_->size = 0;
+    table::destroy(
+        tab_->begin(),
+        tab_->end());
+    tab_->d.size = 0;
 }
 
 auto
 array::
 insert(
-    const_iterator before,
+    const_iterator pos,
     value const& v) ->
         iterator
 {
-    return emplace_impl(before, v);
+    return emplace_impl(pos, v);
 }
 
 auto
 array::
 insert(
-    const_iterator before,
+    const_iterator pos,
     value&& v) ->
         iterator
 {
     return emplace_impl(
-        before, std::move(v));
+        pos, std::move(v));
 }
 
 auto
 array::
 insert(
-    const_iterator before,
+    const_iterator pos,
     size_type count,
     value const& v) ->
         iterator
 {
-    auto pos = before - begin();
+    auto p = pos - begin();
     reserve(size() + count);
-    cleanup_insert c(pos, count, *this);
+    cleanup_insert c(p, count, *this);
     while(count--)
     {
-        ::new(&begin()[pos++])
+        ::new(&begin()[p++])
             value(v, sp_);
         ++c.valid;
     }
@@ -622,18 +684,18 @@ insert(
 auto
 array::
 insert(
-    const_iterator before,
-    std::initializer_list<value> list) ->
+    const_iterator pos,
+    std::initializer_list<value> init) ->
         iterator
 {
-    auto pos = before - begin();
-    reserve(size() + list.size());
+    auto p = pos - begin();
+    reserve(size() + init.size());
     cleanup_insert c(
-        pos, list.size(), *this);
-    for(auto it = list.begin();
-        it != list.end(); ++it)
+        p, init.size(), *this);
+    for(auto it = init.begin();
+        it != init.end(); ++it)
     {
-        ::new(&begin()[pos++]) value(
+        ::new(&begin()[p++]) value(
             std::move(*it), sp_);
         ++c.valid;
     }
@@ -643,29 +705,29 @@ insert(
 
 auto
 array::
-erase(const_iterator pos) ->
+erase(const_iterator pos) noexcept ->
     iterator
 {
-    auto it = data() + (pos - begin());
-    destroy(it, it + 1);
-    move(it, it + 1, 1);
-    --tab_->size;
-    return it;
+    auto p = data() + (pos - begin());
+    table::destroy(p, p + 1);
+    move(p, p + 1, 1);
+    --tab_->d.size;
+    return p;
 }
 
 auto
 array::
 erase(
     const_iterator first,
-    const_iterator last) ->
+    const_iterator last) noexcept ->
         iterator
 {
     auto const n = last - first;
-    auto it = data() + (first - begin());
-    destroy(it, it + n);
-    move(it, it + n, n);
-    tab_->size -= n;
-    return it;
+    auto p = data() + (first - begin());
+    table::destroy(p, p + n);
+    move(p, p + n, n);
+    tab_->d.size -= n;
+    return p;
 }
 
 void
@@ -684,19 +746,33 @@ push_back(value&& v)
 
 void
 array::
-pop_back()
+pop_back() noexcept
 {
     back().~value();
-    --tab_->size;
+    --tab_->d.size;
 }
 
 void
 array::
 resize(size_type count)
 {
-    resize(
-        count,
-        value(kind::null));
+    if(count <= size())
+    {
+        table::destroy(
+            tab_->begin() + count,
+            tab_->end());
+        tab_->d.size = count;
+        return;
+    }
+
+    reserve(count);
+    auto first = tab_->end();
+    auto const last =
+        tab_->begin() + count;
+    while(first != last)
+        ::new(first++) value(
+            json::kind::null, sp_);
+    tab_->d.size = count;
 }
 
 void
@@ -705,20 +781,40 @@ resize(
     size_type count,
     value const& v)
 {
-    if(count > size())
+    if(count <= size())
     {
-        reserve(count);
-        while(count--)
-            emplace_impl(end(), v);
+        table::destroy(
+            tab_->begin() + count,
+            tab_->end());
+        tab_->d.size = count;
+        return;
     }
-    else if(count < size())
+
+    reserve(count);
+
+    struct revert
     {
-        tab_->size = count;
-        count = size() - count;
-        for(size_type i = size() - 1;
-            count-- > 0; --i)
-            tab_->begin()[i].~value();
+        value* it;
+        table* tab;
+
+        ~revert()
+        {
+            if(it != tab->end())
+                table::destroy(
+                    tab->end(), it);
+        }
+    };
+
+    revert r{tab_->end(), tab_};
+    auto const last =
+        tab_->begin() + count;
+    do
+    {
+        ::new(r.it) value(v, sp_);
+        ++r.it;
     }
+    while(r.it != last);
+    tab_->d.size = count;
 }
 
 void
@@ -745,12 +841,26 @@ release_storage() noexcept
 
 void
 array::
-destroy(
-    value* first,
-    value* last)
+copy(array const& other)
 {
-    while(first != last)
-        (*first++).~value();
+    if(other.empty())
+    {
+        if(tab_)
+        {
+            table::destroy(tab_, sp_);
+            tab_ = nullptr;
+        }
+        return;
+    }
+
+    undo u{table::create(
+        other.size(), sp_), sp_};
+    for(auto const& v : other)
+    {
+        ::new(u.tab->end()) value(v, sp_);
+        ++u.tab->d.size;
+    }
+    std::swap(tab_, u.tab);
 }
 
 void
@@ -766,21 +876,39 @@ move(
         to += n;
         from += n;
         while(n--)
-        {
-            ::new(&*--to) value(
-                std::move(*--from));
-            from->~value();
-        }
+            boost::relocate(
+                --to, *--from);
     }
     else
     {
         while(n--)
-        {
-            ::new(&*to++) value(
-                std::move(*from));
-            (*from++).~value();
-        }
+            boost::relocate(
+                to++, *from++);
     }
+}
+
+void
+array::
+assign(std::initializer_list<value> init)
+{
+    if(init.size() == 0)
+    {
+        if(tab_)
+        {
+            table::destroy(tab_, sp_);
+            tab_ = nullptr;
+        }
+        return;
+    }
+
+    undo u{table::create(
+        init.size(), sp_), sp_};
+    for(auto const& v : init)
+    {
+        ::new(u.tab->end()) value(v, sp_);
+        ++u.tab->d.size;
+    }
+    std::swap(tab_, u.tab);
 }
 
 } // json

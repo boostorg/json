@@ -35,7 +35,7 @@ public:
     }
 };
 
-BEAST_DEFINE_TESTSUITE(beast,json,kind);
+BEAST_DEFINE_TESTSUITE(boost,json,kind);
 
 } // json
 } // boost

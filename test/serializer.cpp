@@ -60,7 +60,7 @@ public:
     }
 };
 
-BEAST_DEFINE_TESTSUITE(beast,json,serializer);
+BEAST_DEFINE_TESTSUITE(boost,json,serializer);
 
 } // json
 } // boost

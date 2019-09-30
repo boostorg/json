@@ -94,6 +94,7 @@ using has_to_json =
 */
 class value
 {
+    struct undo;
     friend class value_test;
 
 #ifndef GENERATING_DOCUMENTATION
@@ -134,15 +135,15 @@ public:
     BOOST_JSON_DECL
     value(value&& other) noexcept;
 
-    /// Pilfer constructor
-    BOOST_JSON_DECL
-    value(pilfered<value> other) noexcept;
-
-    /// Move construct a value, using the specified storage
+    /// Storage-extended move constructor
     BOOST_JSON_DECL
     value(
         value&& other,
-        storage_ptr store);
+        storage_ptr sp);
+
+    /// Pilfer constructor
+    BOOST_JSON_DECL
+    value(pilfered<value> other) noexcept;
 
     /// Construct a copy of a value
     BOOST_JSON_DECL
@@ -152,7 +153,7 @@ public:
     BOOST_JSON_DECL
     value(
         value const& other,
-        storage_ptr store);
+        storage_ptr sp);
 
     /// Move-assign a value
     BOOST_JSON_DECL
@@ -180,7 +181,7 @@ public:
     */
     BOOST_JSON_DECL
     explicit
-    value(storage_ptr store) noexcept;
+    value(storage_ptr sp) noexcept;
 
     /** Construct a value using the default storage
 
@@ -203,7 +204,7 @@ public:
     BOOST_JSON_DECL
     value(
         json::kind k,
-        storage_ptr store) noexcept;
+        storage_ptr sp) noexcept;
 
     /** Construct a value from an object.
     */
@@ -213,7 +214,7 @@ public:
     /** Construct a value from an object using the specified storage
     */
     BOOST_JSON_DECL
-    value(object obj, storage_ptr store);
+    value(object obj, storage_ptr sp);
 
     /** Construct a value from an array.
     */
@@ -223,7 +224,7 @@ public:
     /** Construct a value from an array using the specified storage
     */
     BOOST_JSON_DECL
-    value(array arr, storage_ptr store);
+    value(array arr, storage_ptr sp);
 
     /** Construct a value from a string.
     */
@@ -233,7 +234,7 @@ public:
     /** Construct a value from a string using the specified storage
     */
     BOOST_JSON_DECL
-    value(string str, storage_ptr store);
+    value(string str, storage_ptr sp);
 
     /** Construct a value from a number
     */
@@ -243,24 +244,7 @@ public:
     /** Construct a value from a number using the specified storage
     */
     BOOST_JSON_DECL
-    value(number num, storage_ptr store);
-
-#if 0
-    /** Construct an object from an initializer list.
-    */
-    BOOST_JSON_DECL
-    value(
-        std::initializer_list<std::pair<
-            string_view, value>> init);
-
-    /** Construct an object from an initializer list using the specified storage
-    */
-    BOOST_JSON_DECL
-    value(
-        std::initializer_list<std::pair<
-            string_view, value>> init,
-        storage_ptr store);
-#endif
+    value(number num, storage_ptr sp);
 
     /** Construct an array from an initializer list.
     */
@@ -271,7 +255,7 @@ public:
     */
     BOOST_JSON_DECL
     value(std::initializer_list<value> init,
-        storage_ptr store);
+        storage_ptr sp);
 
     /** Assign a value from an object
     */
@@ -383,6 +367,14 @@ public:
         reset(json::kind::null);
     }
 
+    /** Swap this value with another value.
+
+
+    */
+    BOOST_JSON_DECL
+    void
+    swap(value& other) noexcept;
+
     //--------------------------------------------------------------------------
     //
     // Exchange
@@ -410,8 +402,8 @@ public:
             has_to_json<T>::value>::type
     #endif
     >
-    value(T const& t, storage_ptr store)
-        : value(std::move(store))
+    value(T const& t, storage_ptr sp)
+        : value(std::move(sp))
     {
         value_exchange<
             detail::remove_cr<T>
@@ -932,11 +924,7 @@ private:
 
     BOOST_JSON_DECL
     void
-    move(storage_ptr, value&&);
-
-    BOOST_JSON_DECL
-    void
-    copy(storage_ptr, value const&);
+    move(value&&, storage_ptr);
 
     BOOST_JSON_DECL
     friend

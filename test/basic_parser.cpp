@@ -312,7 +312,7 @@ public:
     }
 };
 
-BEAST_DEFINE_TESTSUITE(beast,json,basic_parser);
+BEAST_DEFINE_TESTSUITE(boost,json,basic_parser);
 
 } // json
 } // boost

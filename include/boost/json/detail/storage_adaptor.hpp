@@ -51,14 +51,11 @@ struct storage_adaptor
 {
     // VFALCO This is all public because msvc friend bugs
 
-    std::atomic<unsigned> count_;
-
     explicit
     storage_adaptor(Allocator const& alloc)
         : boost::empty_value<
             allocator_of_char<Allocator>>(
                 boost::empty_init_t{}, alloc)
-        , count_(1)
     {
     }
 

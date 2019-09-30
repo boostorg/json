@@ -43,7 +43,7 @@ public:
     }
 };
 
-BEAST_DEFINE_TESTSUITE(beast,json,allocator);
+BEAST_DEFINE_TESTSUITE(boost,json,allocator);
 
 } // json
 } // boost

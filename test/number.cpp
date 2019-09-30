@@ -316,7 +316,7 @@ public:
     }
 };
 
-BEAST_DEFINE_TESTSUITE(beast,json,number);
+BEAST_DEFINE_TESTSUITE(boost,json,number);
 
 } // json
 } // boost

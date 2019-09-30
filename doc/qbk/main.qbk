@@ -30,9 +30,11 @@
 [template include_file[path][^<'''<ulink url="../../../../'''[path]'''">'''[path]'''</ulink>'''>]]
 [template issue[n] '''<ulink url="https://github.com/boostorg/beast/issues/'''[n]'''">#'''[n]'''</ulink>''']
 
-[/ C++ Named Requirements ]
+[/ Named Requirements ]
 
 [def __Allocator__              [@https://en.cppreference.com/w/cpp/named_req/Allocator ['Allocator]]]
+[def __InputIterator__          [@https://en.cppreference.com/w/cpp/named_req/InputIterator ['InputIterator]]]
+
 [def __ConstBufferSequence__    [@boost:/doc/html/boost_asio/reference/ConstBufferSequence.html ['ConstBufferSequence]]]
 [def __MutableBufferSequence__  [@boost:/doc/html/boost_asio/reference/MutableBufferSequence.html ['MutableBufferSequence]]]
 

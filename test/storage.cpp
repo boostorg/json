@@ -32,7 +32,7 @@ public:
     }
 };
 
-BEAST_DEFINE_TESTSUITE(beast,json,storage);
+BEAST_DEFINE_TESTSUITE(boost,json,storage);
 
 } // json
 } // boost

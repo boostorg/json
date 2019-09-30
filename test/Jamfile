@@ -8,24 +8,24 @@
 #
 
 local SOURCES =
-    _detail_stack.cpp
-    allocator.cpp
+    #_detail_stack.cpp
+    #allocator.cpp
     array.cpp
-    assign_string.cpp
-    assign_vector.cpp
-    basic_parser.cpp
-    error.cpp
-    iterator.cpp
-    json.cpp
-    kind.cpp
-    number.cpp
-    object.cpp
-    parse_file.cpp
-    parser.cpp
-    serializer.cpp
-    storage.cpp
-    string.cpp
-    value.cpp
+    #assign_string.cpp
+    #assign_vector.cpp
+    #basic_parser.cpp
+    #error.cpp
+    #iterator.cpp
+    #json.cpp
+    #kind.cpp
+    #number.cpp
+    #object.cpp
+    #parse_file.cpp
+    #parser.cpp
+    #serializer.cpp
+    #storage.cpp
+    #string.cpp
+    #value.cpp
     ;
 
 local RUN_TESTS ;

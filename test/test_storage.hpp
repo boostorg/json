@@ -10,56 +10,15 @@
 #ifndef BOOST_JSON_TEST_STORAGE_HPP
 #define BOOST_JSON_TEST_STORAGE_HPP
 
+#include <boost/json/value.hpp>
 #include <boost/json/storage.hpp>
+#include <boost/beast/_experimental/unit_test/suite.hpp>
+#include <boost/core/lightweight_test.hpp>
 #include <cstddef>
 #include <memory>
 
 namespace boost {
 namespace json {
-
-struct fail_storage : storage
-{
-    std::size_t fail_max = 1;
-    std::size_t fail = 0;
-
-    void*
-    allocate(
-        std::size_t n,
-        std::size_t) override
-    {
-        if(++fail == fail_max)
-        {
-            ++fail_max;
-            fail = 0;
-            throw std::bad_alloc{};
-        }
-        return std::allocator<
-            char>{}.allocate(n);
-    }
-
-    void
-    deallocate(
-        void* p,
-        std::size_t n,
-        std::size_t) noexcept override
-    {
-        auto cp =
-            reinterpret_cast<char*>(p);
-        return std::allocator<
-            char>{}.deallocate(cp, n);
-    }
-    bool
-    is_equal(
-        storage const& other
-            ) const noexcept override
-    {
-        auto p = dynamic_cast<
-            fail_storage const*>(&other);
-        if(! p)
-            return false;
-        return this == p;
-    }
-};
 
 struct unique_storage : storage
 {
@@ -85,16 +44,172 @@ struct unique_storage : storage
     }
     bool
     is_equal(
-        storage const& other
-            ) const noexcept override
+        storage const&) const noexcept override
     {
-        auto p = dynamic_cast<
-            unique_storage const*>(&other);
-        if(! p)
-            return false;
-        return this == p;
+        return false;
     }
 };
+
+struct test_failure : std::exception
+{
+    virtual
+    char const*
+    what() const noexcept override
+    {
+        return "test failure";
+    }
+};
+
+struct fail_storage : storage
+{
+    std::size_t fail_max = 1;
+    std::size_t fail = 0;
+
+    ~fail_storage()
+    {
+    }
+
+    void*
+    allocate(
+        std::size_t n,
+        std::size_t) override
+    {
+        if(++fail == fail_max)
+        {
+            ++fail_max;
+            fail = 0;
+            throw test_failure{};
+        }
+        return std::allocator<
+            char>{}.allocate(n);
+    }
+
+    void
+    deallocate(
+        void* p,
+        std::size_t n,
+        std::size_t) noexcept override
+    {
+        auto cp =
+            reinterpret_cast<char*>(p);
+        return std::allocator<
+            char>{}.deallocate(cp, n);
+    }
+    bool
+    is_equal(
+        storage const&) const noexcept override
+    {
+        return false;
+    }
+};
+
+class scoped_fail_storage
+{
+    storage_ptr sp_;
+
+public:
+    scoped_fail_storage()
+        : sp_(default_storage())
+    {
+        default_storage(
+            make_storage<fail_storage>());
+    }
+
+    ~scoped_fail_storage()
+    {
+        default_storage(sp_);
+    }
+};
+
+template<class F>
+void
+fail_loop(F&& f)
+{
+    auto sp = make_storage<fail_storage>();
+    while(sp->fail < 200)
+    {
+        try
+        {
+            f(sp);
+        }
+        catch(test_failure const&)
+        {
+            continue;
+        }
+        break;
+    }
+    BEAST_EXPECT(sp->fail < 200);
+}
+
+inline
+bool
+equal_storage(
+    value const& v,
+    storage_ptr const& sp);
+
+inline
+bool
+equal_storage(
+    array const& a,
+    storage_ptr const& sp)
+{
+    if(*a.get_storage() != *sp)
+        return false;
+    for(auto const& v : a)
+        if(! equal_storage(v, sp))
+            return false;
+    return true;
+}
+
+bool
+equal_storage(
+    value const& v,
+    storage_ptr const& sp)
+{
+    switch(v.kind())
+    {
+    case json::kind::object:
+        if(*v.as_object().get_storage() != *sp)
+            return false;
+        for(auto const& e : v)
+            if(! equal_storage(e.second, sp))
+                return false;
+        return true;
+
+    case json::kind::array:
+        if(*v.as_array().get_storage() != *sp)
+            return false;
+        return equal_storage(v.as_array(), sp);
+
+    case json::kind::string:
+        return *v.as_string().get_allocator().get_storage() == *sp;
+
+    case json::kind::number:
+    case json::kind::boolean:
+    case json::kind::null:
+    break;
+    }
+
+    return *v.get_storage() == *sp;
+}
+
+inline
+void
+check_storage(
+    array const& a,
+    storage_ptr const& sp)
+{
+    BEAST_EXPECT(equal_storage(a, sp));
+}
+
+inline
+void
+check_storage(
+    value const& v,
+    storage_ptr const& sp)
+{
+    BEAST_EXPECT(equal_storage(v, sp));
+}
 
 } // json
 } // boost

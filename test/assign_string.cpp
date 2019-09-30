@@ -41,7 +41,7 @@ public:
     }
 };
 
-BEAST_DEFINE_TESTSUITE(beast,json,assign_string);
+BEAST_DEFINE_TESTSUITE(boost,json,assign_string);
 
 } // json
 } // boost

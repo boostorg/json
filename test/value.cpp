@@ -656,7 +656,37 @@ public:
     }
 };
 
-BEAST_DEFINE_TESTSUITE(beast,json,value);
+BEAST_DEFINE_TESTSUITE(boost,json,value);
 
 } // json
 } // boost
+
+#if 0
+
+    /** {brief}
+
+        {description}
+
+        @par Constraints
+
+        {constraints}
+
+        @par Requires
+
+        {requires}
+
+        @par Complexity
+
+        {complexity}
+
+        @par Exception Safety
+
+        Strong guarantee.
+        Calls to @ref storage::allocate may throw.
+
+        @param {name} {desc}
+
+        @tparam {type} {desc}
+    */
+
+#endif

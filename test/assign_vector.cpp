@@ -50,7 +50,7 @@ public:
     }
 };
 
-BEAST_DEFINE_TESTSUITE(beast,json,assign_vector);
+BEAST_DEFINE_TESTSUITE(boost,json,assign_vector);
 
 } // json
 } // boost
