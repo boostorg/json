@@ -121,53 +121,9 @@ class value
     json::kind kind_;
 
 public:
-    //--------------------------------------------------------------------------
-    //
-    // Special members
-    //
-    //--------------------------------------------------------------------------
-
     /// Destroy a value and all of its contents
     BOOST_JSON_DECL
     ~value();
-
-    /// Move constructor
-    BOOST_JSON_DECL
-    value(value&& other) noexcept;
-
-    /// Storage-extended move constructor
-    BOOST_JSON_DECL
-    value(
-        value&& other,
-        storage_ptr sp);
-
-    /// Pilfer constructor
-    BOOST_JSON_DECL
-    value(pilfered<value> other) noexcept;
-
-    /// Construct a copy of a value
-    BOOST_JSON_DECL
-    value(value const& other);
-
-    /// Construct a copy of a value using the specified storage
-    BOOST_JSON_DECL
-    value(
-        value const& other,
-        storage_ptr sp);
-
-    /// Move-assign a value
-    BOOST_JSON_DECL
-    value& operator=(value&& other);
-
-    /// Assign a copy of a value
-    BOOST_JSON_DECL
-    value& operator=(value const& other);
-
-    //--------------------------------------------------------------------------
-    //
-    // Construction and Assignment
-    //
-    //--------------------------------------------------------------------------
 
     /** Construct a null value using the default storage.
     */
@@ -206,70 +162,110 @@ public:
         json::kind k,
         storage_ptr sp) noexcept;
 
-    /** Construct a value from an object.
+    /// Copy constructor
+    BOOST_JSON_DECL
+    value(value const& other);
+
+    /// Storage-extended copy constructor
+    BOOST_JSON_DECL
+    value(
+        value const& other,
+        storage_ptr sp);
+
+    /// Pilfer constructor
+    BOOST_JSON_DECL
+    value(pilfered<value> other) noexcept;
+
+    /// Move constructor
+    BOOST_JSON_DECL
+    value(value&& other) noexcept;
+
+    /// Storage-extended move constructor
+    BOOST_JSON_DECL
+    value(
+        value&& other,
+        storage_ptr sp);
+
+    /// Move assignment
+    BOOST_JSON_DECL
+    value& operator=(value&& other);
+
+    /// Copy assignment
+    BOOST_JSON_DECL
+    value& operator=(value const& other);
+
+    //--------------------------------------------------------------------------
+    //
+    // Conversion
+    //
+    //--------------------------------------------------------------------------
+
+    /** Construct an object
     */
     BOOST_JSON_DECL
     value(object obj) noexcept;
 
-    /** Construct a value from an object using the specified storage
+    /** Construct an object
     */
     BOOST_JSON_DECL
     value(object obj, storage_ptr sp);
 
-    /** Construct a value from an array.
+    /** Construct an array
     */
     BOOST_JSON_DECL
     value(array arr) noexcept;
 
-    /** Construct a value from an array using the specified storage
+    /** Construct an array
     */
     BOOST_JSON_DECL
     value(array arr, storage_ptr sp);
 
-    /** Construct a value from a string.
+    /** Construct a string
     */
     BOOST_JSON_DECL
     value(string str) noexcept;
 
-    /** Construct a value from a string using the specified storage
+    /** Construct a string
     */
     BOOST_JSON_DECL
     value(string str, storage_ptr sp);
 
-    /** Construct a value from a number
+    /** Construct a number
     */
     BOOST_JSON_DECL
     value(number num);
 
-    /** Construct a value from a number using the specified storage
+    /** Construct a number
     */
     BOOST_JSON_DECL
     value(number num, storage_ptr sp);
 
-    /** Construct an array from an initializer list.
+    /** Construct an object or array
     */
     BOOST_JSON_DECL
-    value(std::initializer_list<value> init);
+    value(
+        std::initializer_list<value> init);
 
-    /** Construct an array from an initializer list using the specified storage.
+    /** Construct an object or array
     */
     BOOST_JSON_DECL
-    value(std::initializer_list<value> init,
+    value(
+        std::initializer_list<value> init,
         storage_ptr sp);
 
-    /** Assign a value from an object
+    /** Assign an object
     */
     BOOST_JSON_DECL
     value&
     operator=(object obj);
 
-    /** Assign a value from an array
+    /** Assign an array
     */
     BOOST_JSON_DECL
     value&
     operator=(array arr);
 
-    /** Assign a value from a string
+    /** Assign a string
     */
     BOOST_JSON_DECL
     value&
@@ -381,7 +377,7 @@ public:
     //
     //--------------------------------------------------------------------------
 
-    /// Construct a value from another type
+    /// Construct from another type
     template<
         class T
     #ifndef GENERATING_DOCUMENTATION
@@ -394,7 +390,7 @@ public:
     {
     }
 
-    /// Construct a value from another type using the specified storage
+    /// Construct from another type using the specified storage
     template<
         class T
     #ifndef GENERATING_DOCUMENTATION
@@ -893,26 +889,6 @@ public:
     //--------------------------------------------------------------------------
 
 private:
-    struct op_assign_string;
-    struct op_move_string;
-    struct op_copy_string;
-
-    template<class S>
-    static
-    typename std::enable_if<
-        ! std::is_constructible<S, string,
-            typename string::allocator_type
-                >::value, string>::type
-    move_string(S& str, storage_ptr& store);
-
-    template<class S>
-    static
-    typename std::enable_if<
-        std::is_constructible<S, string,
-            typename string::allocator_type
-                >::value, string>::type
-    move_string(S& str, storage_ptr& store);
-
     BOOST_JSON_DECL
     storage_ptr
     destroy() noexcept;
@@ -922,9 +898,23 @@ private:
     construct(
         json::kind, storage_ptr) noexcept;
 
-    BOOST_JSON_DECL
-    void
-    move(value&&, storage_ptr);
+    template<class S>
+    auto
+    construct_string(
+        S&& str, storage_ptr store) ->
+            typename std::enable_if<
+                ! std::is_constructible<S, string,
+                    typename string::allocator_type
+                        >::value>::type;
+
+    template<class S>
+    auto
+    construct_string(
+        S&& str, storage_ptr store) ->
+            typename std::enable_if<
+                std::is_constructible<S, string,
+                    typename string::allocator_type
+                        >::value>::type;
 
     BOOST_JSON_DECL
     friend
