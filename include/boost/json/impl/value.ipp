@@ -21,7 +21,29 @@ namespace json {
 value::
 ~value()
 {
-    destroy();
+    switch(kind_)
+    {
+    case json::kind::object:
+        obj_.~object();
+        break;
+
+    case json::kind::array:
+        arr_.~array();
+        break;
+
+    case json::kind::string:
+        str_.~string();
+        break;
+
+    case json::kind::number:
+        nat_.num_.~number();
+        BOOST_FALLTHROUGH;
+
+    case json::kind::boolean:
+    case json::kind::null:
+        nat_.sp_.~storage_ptr();
+        break;
+    }
 }
 
 value::
@@ -931,41 +953,6 @@ pop_back()
 //------------------------------------------------------------------------------
 
 // private
-
-storage_ptr
-value::
-destroy() noexcept
-{
-    storage_ptr sp;
-    switch(kind_)
-    {
-    case json::kind::object:
-        sp = obj_.release_storage();
-        obj_.~object();
-        break;
-
-    case json::kind::array:
-        sp = arr_.release_storage();
-        arr_.~array();
-        break;
-
-    case json::kind::string:
-        sp = str_.get_allocator().get_storage();
-        str_.~string();
-        break;
-
-    case json::kind::number:
-        nat_.num_.~number();
-        BOOST_FALLTHROUGH;
-
-    case json::kind::boolean:
-    case json::kind::null:
-        sp = std::move(nat_.sp_);
-        nat_.sp_.~storage_ptr();
-        break;
-    }
-    return sp;
-}
 
 template<class S>
 auto

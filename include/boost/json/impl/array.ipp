@@ -104,70 +104,51 @@ struct array::undo
 //------------------------------------------------------------------------------
 
 array::
-cleanup_assign::
-cleanup_assign(
-    array& self_)
-    : self(self_)
-    , tab(boost::exchange(
-        self_.tab_, nullptr))
-{
-}
-
-array::
-cleanup_assign::
-~cleanup_assign()
-{
-    if(ok)
-    {
-        if(tab)
-            table::destroy(tab, self.sp_);
-    }
-    else
-    {
-        if(self.tab_)
-            table::destroy(
-                self.tab_, self.sp_);
-        self.tab_ = tab;
-    }
-}
-
-//------------------------------------------------------------------------------
-
-array::
-cleanup_insert::
-cleanup_insert(
-    size_type pos_,
+undo_insert::
+undo_insert(
+    value const* pos_,
     size_type n_,
     array& self_)
     : self(self_)
-    , pos(pos_)
+    , pos(pos_ - self_.begin())
     , n(n_)
 {
+    self.reserve(self.size() + n);
+    // (iterators invalidated now)
+    it = self.begin() + pos;
     self.move(
-        self.data() + pos + n,
-        self.data() + pos,
+        it + n, it,
         self.size() - pos);
+    self.tab_->d.size += n;
 }
 
 array::
-cleanup_insert::
-~cleanup_insert()
+undo_insert::
+~undo_insert()
 {
-    if(ok)
+    if(! commit)
     {
-        self.tab_->d.size += n;
-    }
-    else
-    {
-        for(size_type i = n;
-            valid--; ++i)
-            self[i].~value();
-
+        table::destroy(
+            self.begin() + pos, it);
+        self.tab_->d.size -= n;
+        auto const first =
+            self.begin() + pos;
         self.move(
-            self.data() + pos,
-            self.data() + pos + n,
+            first, first + n,
             self.size() - pos);
     }
+}
+
+template<class Arg>
+void
+array::
+undo_insert::
+emplace(Arg&& arg)
+{
+    ::new(it) value(
+        std::forward<Arg>(arg),
+        self.sp_);
+    ++it;
 }
 
 //------------------------------------------------------------------------------
@@ -213,17 +194,17 @@ array(
     storage_ptr sp)
     : sp_(std::move(sp))
 {
-    if(count > 0)
+    if(count == 0)
+        return;
+
+    undo u{table::create(
+        count, sp_), sp_};
+    while(count--)
     {
-        undo u{table::create(
-            count, sp_), sp_};
-        while(count--)
-        {
-            ::new(u.tab->end()) value(v, sp_);
-            ++u.tab->d.size;
-        }
-        std::swap(tab_, u.tab);
+        ::new(u.tab->end()) value(v, sp_);
+        ++u.tab->d.size;
     }
+    std::swap(tab_, u.tab);
 }
 
 array::
@@ -588,26 +569,27 @@ shrink_to_fit() noexcept
 {
     if(capacity() <= size())
         return;
-    table* tab;
     if(tab_->d.size == 0)
     {
         table::destroy(tab_, sp_);
         tab_ = nullptr;
         return;
     }
-    if( size() < 3 &&
-        capacity() <= 3)
+    if(size() < 3 && capacity() <= 3)
         return;
 
+    table* tab;
 #ifndef BOOST_NO_EXCEPTIONS
     try
-#endif
     {
-        tab = table::create(tab_->d.size, sp_);
-    }
+#endif
+        tab = table::create(
+            tab_->d.size, sp_);
 #ifndef BOOST_NO_EXCEPTIONS
+    }
     catch(...)
     {
+        // eat the exception
         return;
     }
 #endif
@@ -668,17 +650,11 @@ insert(
     value const& v) ->
         iterator
 {
-    auto p = pos - begin();
-    reserve(size() + count);
-    cleanup_insert c(p, count, *this);
+    undo_insert u(pos, count, *this);
     while(count--)
-    {
-        ::new(&begin()[p++])
-            value(v, sp_);
-        ++c.valid;
-    }
-    c.ok = true;
-    return begin() + c.pos;
+        u.emplace(v);
+    u.commit = true;
+    return begin() + u.pos;
 }
 
 auto
@@ -688,19 +664,12 @@ insert(
     std::initializer_list<value> init) ->
         iterator
 {
-    auto p = pos - begin();
-    reserve(size() + init.size());
-    cleanup_insert c(
-        p, init.size(), *this);
-    for(auto it = init.begin();
-        it != init.end(); ++it)
-    {
-        ::new(&begin()[p++]) value(
-            std::move(*it), sp_);
-        ++c.valid;
-    }
-    c.ok = true;
-    return begin() + c.pos;
+    undo_insert u(
+        pos, init.size(), *this);
+    for(auto& v : init)
+        u.emplace(std::move(v));
+    u.commit = true;
+    return begin() + u.pos;
 }
 
 auto
@@ -725,7 +694,8 @@ erase(
     auto const n = last - first;
     auto p = data() + (first - begin());
     table::destroy(p, p + n);
-    move(p, p + n, n);
+    move(p, p + n,
+        size() - (last - begin()));
     tab_->d.size -= n;
     return p;
 }
@@ -827,29 +797,16 @@ swap(array& other) noexcept
 
 //------------------------------------------------------------------------------
 
-storage_ptr
-array::
-release_storage() noexcept
-{
-    if(tab_)
-    {
-        table::destroy(tab_, sp_);
-        tab_ = nullptr;
-    }
-    return std::move(sp_);
-}
-
 void
 array::
 copy(array const& other)
 {
     if(other.empty())
     {
-        if(tab_)
-        {
-            table::destroy(tab_, sp_);
-            tab_ = nullptr;
-        }
+        if(! tab_)
+            return;
+        table::destroy(tab_, sp_);
+        tab_ = nullptr;
         return;
     }
 
@@ -889,15 +846,15 @@ move(
 
 void
 array::
-assign(std::initializer_list<value> init)
+assign(
+    std::initializer_list<value> init)
 {
     if(init.size() == 0)
     {
-        if(tab_)
-        {
-            table::destroy(tab_, sp_);
-            tab_ = nullptr;
-        }
+        if(! tab_)
+            return;
+        table::destroy(tab_, sp_);
+        tab_ = nullptr;
         return;
     }
 

@@ -32,13 +32,13 @@ raw_default_storage() noexcept
 } // detail
 
 storage_ptr
-default_storage()
+default_storage() noexcept
 {
     return detail::raw_default_storage();
 }
 
 void
-default_storage(storage_ptr sp)
+default_storage(storage_ptr sp) noexcept
 {
     detail::raw_default_storage() = std::move(sp);
 }

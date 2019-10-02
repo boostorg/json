@@ -74,14 +74,12 @@ class value;
 class array
 {
     struct table;
-    struct undo;
-    friend class value;
 
     table* tab_ = nullptr;
     storage_ptr sp_;
 
-    struct cleanup_assign;
-    struct cleanup_insert;
+    struct undo;
+    struct undo_insert;
 
 public:
     /// The type of each element
@@ -1641,10 +1639,6 @@ private:
     emplace_impl(
         const_iterator pos,
         Arg&& arg);
-
-    BOOST_JSON_DECL
-    storage_ptr
-    release_storage() noexcept;
 
     BOOST_JSON_DECL
     void

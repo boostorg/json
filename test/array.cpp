@@ -71,12 +71,18 @@ public:
         }
 
         // array(size_type, value, storage)
-        fail_loop([](storage_ptr const& sp)
         {
-            array a(3, true, sp);
-            BEAST_EXPECT(a.size() == 3);
-            check_storage(a, sp);
-        });
+            {
+                array(0, true);
+            }
+
+            fail_loop([](storage_ptr const& sp)
+            {
+                array a(3, true, sp);
+                BEAST_EXPECT(a.size() == 3);
+                check_storage(a, sp);
+            });
+        }
 
         // array(size_type)
         {
@@ -116,12 +122,25 @@ public:
 
         // array(array const&)
         {
-            std::initializer_list<value> init =
-                { 1, true, "hello" };
-            array a1(init.begin(), init.end());
-            array a2(a1);
-            check(a2);
-            check_storage(a2, default_storage());
+            {
+                array a1;
+                array a2(a1);
+            }
+
+            {
+                array a1;
+                array a2({ 1, true, "hello" });
+                a2 = a1;
+            }
+
+            {
+                std::initializer_list<value> init =
+                    { 1, true, "hello" };
+                array a1(init.begin(), init.end());
+                array a2(a1);
+                check(a2);
+                check_storage(a2, default_storage());
+            }
         }
 
         // array(array const&, storage)
@@ -159,17 +178,31 @@ public:
         }
 
         // array(array&&, storage)
-        fail_loop([this](storage_ptr const& sp)
         {
-            std::initializer_list<value> init =
-                { 1, true, "hello" };
-            array a1(init.begin(), init.end());
-            array a2(std::move(a1), sp);
-            BEAST_EXPECT(! a1.empty());
-            check(a2);
-            check_storage(a1, default_storage());
-            check_storage(a2, sp);
-        });
+            {
+                std::initializer_list<value> init =
+                    { 1, true, "hello" };
+                array a1(init.begin(), init.end());
+                array a2(
+                    std::move(a1), default_storage());
+                BEAST_EXPECT(a1.empty());
+                check(a2);
+                check_storage(a1, default_storage());
+                check_storage(a2, default_storage());
+            }
+
+            fail_loop([this](storage_ptr const& sp)
+            {
+                std::initializer_list<value> init =
+                    { 1, true, "hello" };
+                array a1(init.begin(), init.end());
+                array a2(std::move(a1), sp);
+                BEAST_EXPECT(! a1.empty());
+                check(a2);
+                check_storage(a1, default_storage());
+                check_storage(a2, sp);
+            });
+        }
 
         // array(init_list)
         {
@@ -234,6 +267,16 @@ public:
 
         // operator=(init_list)
         {
+            {
+                array a;
+                a = {};
+            }
+
+            {
+                array a({ 1, true, "hello" });
+                a = {};
+            }
+
             {
                 std::initializer_list<value> init =
                     { 1, true, "hello" };
@@ -504,9 +547,26 @@ public:
 
         // reserve()
         {
-            array a;
-            a.reserve(50);
-            BEAST_EXPECT(a.capacity() >= 50);
+            {
+                array a;
+                a.reserve(0);
+            }
+
+            {
+                array a(3);
+                a.reserve(1);
+            }
+
+            {
+                array a(3);
+                a.reserve(0);
+            }
+
+            {
+                array a;
+                a.reserve(50);
+                BEAST_EXPECT(a.capacity() >= 50);
+            }
         }
 
         // capacity()
@@ -517,6 +577,13 @@ public:
 
         // shrink_to_fit()
         {
+            {
+                array a(1);
+                a.shrink_to_fit();
+                BEAST_EXPECT(a.size() == 1);
+                BEAST_EXPECT(a.capacity() >= 1);
+            }
+
             fail_loop([](storage_ptr const& sp)
             {
                 array a(1, sp);
@@ -567,7 +634,7 @@ public:
             }
         }
 
-        // insert(before, value_type const&)
+        // insert(const_iterator, value_type const&)
         fail_loop([this](storage_ptr const& sp)
         {
             array a({1, "hello"}, sp);
@@ -577,28 +644,31 @@ public:
             check_storage(a, sp);
         });
 
-        // insert(before, value_type const&)
+        // insert(const_iterator, value_type&&)
         fail_loop([this](storage_ptr const& sp)
         {
             array a({1, "hello"}, sp);
-            a.insert(a.begin() + 1, true);
+            value v(true);
+            a.insert(
+                a.begin() + 1, std::move(v));
             check(a);
             check_storage(a, sp);
         });
 
-        // insert(before, size_type, value_type const&)
+        // insert(const_iterator, size_type, value_type const&)
         fail_loop([this](storage_ptr const& sp)
         {
+            value v({1,2,3});
             array a({1, "hello"}, sp);
-            a.insert(a.begin() + 1, 3, true);
+            a.insert(a.begin() + 1, 3, v);
             BEAST_EXPECT(a[0].is_number());
-            BEAST_EXPECT(a[1].is_bool());
-            BEAST_EXPECT(a[2].is_bool());
-            BEAST_EXPECT(a[3].is_bool());
+            BEAST_EXPECT(a[1].size() == 3);
+            BEAST_EXPECT(a[2].size() == 3);
+            BEAST_EXPECT(a[3].size() == 3);
             BEAST_EXPECT(a[4].is_string());
         });
 
-        // insert(before, InputIt, InputIt)
+        // insert(const_iterator, InputIt, InputIt)
         fail_loop([this](storage_ptr const& sp)
         {
             std::initializer_list<
@@ -609,7 +679,7 @@ public:
             check(a);
         });
 
-        // insert(before, init_list)
+        // insert(const_iterator, init_list)
         fail_loop([this](storage_ptr const& sp)
         {
             array a({"hello"}, sp);
@@ -617,7 +687,7 @@ public:
             check(a);
         });
 
-        // emplace(before, arg)
+        // emplace(const_iterator, arg)
         fail_loop([this](storage_ptr const& sp)
         {
             array a({1, "hello"}, sp);
@@ -631,6 +701,15 @@ public:
         {
             array a({1, true, nullptr, "hello"});
             a.erase(a.begin() + 2);
+            check(a);
+        }
+
+        // erase(first, last)
+        {
+            array a({1, true, nullptr, 1.f, "hello"});
+            a.erase(
+                a.begin() + 2,
+                a.begin() + 4);
             check(a);
         }
 
@@ -786,7 +865,7 @@ public:
             check(a1);
         }
 
-        // insert(before, count, value_type const&)
+        // insert(const_iterator, count, value_type const&)
         {
             auto sp = make_storage<fail_storage>();
             array a1;
@@ -813,7 +892,7 @@ public:
         }
 
     #if _ITERATOR_DEBUG_LEVEL == 0
-        // insert(before, InputIt, InputIt)
+        // insert(const_iterator, InputIt, InputIt)
         {
             std::initializer_list<value> init(
                 {1, true, "hello"});
@@ -837,7 +916,7 @@ public:
         }
     #endif
 
-        // emplace(before, arg)
+        // emplace(const_iterator, arg)
         {
             auto sp = make_storage<fail_storage>();
             array a1;
@@ -861,7 +940,7 @@ public:
         }
 
     #if _ITERATOR_DEBUG_LEVEL == 0
-        // emplace(before, arg)
+        // emplace(const_iterator, arg)
         {
             auto sp = make_storage<fail_storage>();
             array a1;

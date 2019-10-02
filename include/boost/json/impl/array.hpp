@@ -87,39 +87,26 @@ struct array::table
 
 //------------------------------------------------------------------------------
 
-struct array::cleanup_assign
+struct array::undo_insert
 {
+    value* it;
     array& self;
-    table* tab;
-    bool ok = false;
+    size_type const pos;
+    size_type const n;
+    bool commit = false;
 
-    BOOST_JSON_DECL
-    explicit
-    cleanup_assign(
-        array& self);
-
-    BOOST_JSON_DECL
-    ~cleanup_assign();
-};
-
-//------------------------------------------------------------------------------
-
-struct array::cleanup_insert
-{
-    array& self;
-    size_type pos;
-    size_type n;
-    size_type valid = 0;
-    bool ok = false;
-
-    BOOST_JSON_DECL
-    cleanup_insert(
-        size_type pos_,
+    inline
+    undo_insert(
+        value const* pos_,
         size_type n_,
         array& self_);
 
-    BOOST_JSON_DECL
-    ~cleanup_insert();
+    inline
+    ~undo_insert();
+
+    template<class Arg>
+    void
+    emplace(Arg&& arg);
 };
 
 //------------------------------------------------------------------------------
@@ -242,18 +229,13 @@ insert(
     std::forward_iterator_tag) ->
         iterator
 {
-    auto count = std::distance(first, last);
-    auto d = pos - begin();
-    reserve(size() + count);
-    cleanup_insert c(d, count, *this);
-    while(count--)
-    {
-        ::new(&begin()[d++]) value(
-            *first++, sp_);
-        ++c.valid;
-    }
-    c.ok = true;
-    return begin() + c.pos;
+    undo_insert u(
+        pos, std::distance(
+            first, last), *this);
+    while(first != last)
+        u.emplace(*first++);
+    u.commit = true;
+    return begin() + u.pos;
 }
 
 template<class Arg>
@@ -264,13 +246,12 @@ emplace_impl(
     Arg&& arg) ->
         iterator
 {
-    auto const d = pos - begin();
-    reserve(size() + 1);
-    cleanup_insert c(d, 1, *this);
-    ::new(&tab_->begin()[d]) value(
-        std::forward<Arg>(arg), sp_);
-    c.ok = true;
-    return begin() + d;
+    undo_insert u(
+        pos, 1, *this);
+    u.emplace(
+        std::forward<Arg>(arg));
+    u.commit = true;
+    return begin() + u.pos;
 }
 
 } // json

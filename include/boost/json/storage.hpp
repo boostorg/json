@@ -241,7 +241,7 @@ make_storage_adaptor(Allocator const& a);
 */
 BOOST_JSON_DECL
 storage_ptr
-default_storage();
+default_storage() noexcept;
 
 /** Set the current default storage
 
@@ -250,7 +250,7 @@ default_storage();
 */
 BOOST_JSON_DECL
 void
-default_storage(storage_ptr sp);
+default_storage(storage_ptr sp) noexcept;
 
 } // json
 } // boost

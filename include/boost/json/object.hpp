@@ -571,10 +571,6 @@ private:
         Arg&& arg);
 
     BOOST_JSON_DECL
-    storage_ptr
-    release_storage() noexcept;
-
-    BOOST_JSON_DECL
     static
     size_type
     constrain_hash(

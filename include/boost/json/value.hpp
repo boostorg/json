@@ -890,10 +890,6 @@ public:
 
 private:
     BOOST_JSON_DECL
-    storage_ptr
-    destroy() noexcept;
-
-    BOOST_JSON_DECL
     void
     construct(
         json::kind, storage_ptr) noexcept;

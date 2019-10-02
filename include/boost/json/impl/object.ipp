@@ -1166,19 +1166,6 @@ reserve(size_type count)
 
 //------------------------------------------------------------------------------
 
-storage_ptr
-object::
-release_storage() noexcept
-{
-    if(tab_)
-    {
-        table::destroy_list(tab_, sp_);
-        table::destroy(tab_, sp_);
-        tab_ = nullptr;
-    }
-    return std::move(sp_);
-}
-
 auto
 object::
 constrain_hash(
