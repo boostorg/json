@@ -25,7 +25,6 @@ namespace json {
 
 struct object::list_hook
 {
-public:
     element* prev_;
     element* next_;
 };
@@ -80,11 +79,6 @@ struct object::element
         p[sizeof(element) +
             n + key.size()] = '\0';
         boost::ignore_unused(e);
-#if 0
-        // VFALCO This causes unnecessary addref/release
-        BOOST_ASSERT(
-            *e->v_.get_storage() == *sp);
-#endif
         return reinterpret_cast<element*>(p);
     }
 
@@ -93,7 +87,7 @@ struct object::element
     void
     destroy(
         element const* e,
-        storage_ptr const& sp);
+        storage_ptr const& sp) noexcept;
 
 private:
     template<class Arg>
@@ -111,6 +105,28 @@ private:
     prepare_allocate(
         storage_ptr const& sp,
         key_type key);
+};
+
+//------------------------------------------------------------------------------
+
+class object::hasher
+{
+    BOOST_JSON_DECL
+    static
+    std::pair<
+        std::uint64_t, std::uint64_t>
+    init(std::true_type) noexcept;
+
+    BOOST_JSON_DECL
+    static
+    std::pair<
+        std::uint32_t, std::uint32_t>
+    init(std::false_type) noexcept;
+
+public:
+    BOOST_JSON_DECL
+    std::size_t
+    operator()(key_type key) const noexcept;
 };
 
 //------------------------------------------------------------------------------
@@ -683,10 +699,10 @@ object::
 object(
     InputIt first,
     InputIt last,
-    size_type capacity)
+    size_type bucket_count)
     : sp_(default_storage())
 {
-    construct(first, last, capacity,
+    construct(first, last, bucket_count,
         iter_cat<InputIt>{});
 }
 
@@ -707,11 +723,11 @@ object::
 object(
     InputIt first,
     InputIt last,
-    size_type capacity,
+    size_type bucket_count,
     storage_ptr store)
     : sp_(std::move(store))
 {
-    construct(first, last, capacity,
+    construct(first, last, bucket_count,
         iter_cat<InputIt>{});
 }
 
@@ -825,10 +841,10 @@ object::
 construct(
     InputIt first,
     InputIt last,
-    size_type capacity,
+    size_type bucket_count,
     std::forward_iterator_tag)
 {
-    reserve(std::max<size_type>(capacity,
+    reserve(std::max<size_type>(bucket_count,
         std::distance(first, last)));
     while(first != last)
     {
@@ -844,10 +860,10 @@ object::
 construct(
     InputIt first,
     InputIt last,
-    size_type capacity,
+    size_type bucket_count,
     std::input_iterator_tag)
 {
-    reserve(capacity);
+    reserve(bucket_count);
     while(first != last)
     {
         value_type v(*first++);
@@ -859,7 +875,9 @@ construct(
 template<class InputIt>
 void
 object::
-insert(InputIt first, InputIt last,
+insert(
+    InputIt first,
+    InputIt last,
     std::forward_iterator_tag)
 {
     reserve(size() +
@@ -875,7 +893,9 @@ insert(InputIt first, InputIt last,
 template<class InputIt>
 void
 object::
-insert(InputIt first, InputIt last,
+insert(
+    InputIt first,
+    InputIt last,
     std::input_iterator_tag)
 {
     while(first != last)

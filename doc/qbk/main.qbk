@@ -33,6 +33,7 @@
 [/ Named Requirements ]
 
 [def __Allocator__              [@https://en.cppreference.com/w/cpp/named_req/Allocator ['Allocator]]]
+[def __Hash__                   [@https://en.cppreference.com/w/cpp/named_req/Hash ['Hash]]]
 [def __InputIterator__          [@https://en.cppreference.com/w/cpp/named_req/InputIterator ['InputIterator]]]
 
 [def __ConstBufferSequence__    [@boost:/doc/html/boost_asio/reference/ConstBufferSequence.html ['ConstBufferSequence]]]

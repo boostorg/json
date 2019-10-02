@@ -65,11 +65,13 @@ class value;
 
     Non-const member functions may not be called concurrently.
 
-    @ref array meets the requirements of
+    @par Satisfies
+
+    Meets the requirements of
         <em>Container</em>,
-        <em>SequenceContainer</em>,
-        <em>ContiguousContainer</em>, and
-        <em>ReversibleContainer</em>.
+        <em>ContiguousContainer</em>,
+        <em>ReversibleContainer</em>, and
+        <em>SequenceContainer</em>.
 */
 class array
 {

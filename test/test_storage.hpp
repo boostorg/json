@@ -16,6 +16,7 @@
 #include <boost/core/lightweight_test.hpp>
 #include <cstddef>
 #include <memory>
+#include <type_traits>
 
 namespace boost {
 namespace json {
@@ -49,6 +50,8 @@ struct unique_storage : storage
         return false;
     }
 };
+
+//------------------------------------------------------------------------------
 
 struct test_failure : std::exception
 {
@@ -103,6 +106,8 @@ struct fail_storage : storage
     }
 };
 
+//------------------------------------------------------------------------------
+
 class scoped_fail_storage
 {
     storage_ptr sp_;
@@ -121,8 +126,16 @@ public:
     }
 };
 
+//------------------------------------------------------------------------------
+
+namespace detail {
+
 template<class F>
-void
+typename std::enable_if<
+    std::is_same<void,
+        decltype(std::declval<F const&>()(
+            std::declval<storage_ptr>()))>::value
+    >::type
 fail_loop(F&& f)
 {
     auto sp = make_storage<fail_storage>();
@@ -140,6 +153,45 @@ fail_loop(F&& f)
     }
     BEAST_EXPECT(sp->fail < 200);
 }
+
+template<class F>
+typename std::enable_if<
+    std::is_same<void, decltype(
+        std::declval<F const&>()())>::value
+    >::type
+fail_loop(F&& f)
+{
+    auto saved = default_storage();
+    auto sp =
+        make_storage<fail_storage>();
+    default_storage(sp);
+    while(sp->fail < 200)
+    {
+        try
+        {
+            f();
+        }
+        catch(test_failure const&)
+        {
+            continue;
+        }
+        break;
+    }
+    BEAST_EXPECT(sp->fail < 200);
+    default_storage(saved);
+}
+
+} // detail
+
+template<class F>
+void
+fail_loop(F&& f)
+{
+    detail::fail_loop(
+        std::forward<F>(f));
+}
+
+//------------------------------------------------------------------------------
 
 inline
 bool

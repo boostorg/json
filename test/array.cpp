@@ -85,13 +85,14 @@ public:
         }
 
         // array(size_type)
+        fail_loop([]
         {
             array a(3);
             BEAST_EXPECT(a.size() == 3);
             for(auto const& v : a)
                 BEAST_EXPECT(v.is_null());
             check_storage(a, default_storage());
-        }
+        });
 
         // array(size_type, storage)
         fail_loop([](storage_ptr const& sp)

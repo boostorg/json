@@ -49,7 +49,7 @@ object::
 element::
 destroy(
     element const* e,
-    storage_ptr const& sp)
+    storage_ptr const& sp) noexcept
 {
     auto const len = e->key().size();
     auto const n =
@@ -80,9 +80,8 @@ prepare_allocate(
 
 //------------------------------------------------------------------------------
 
-class object::table
+struct object::table
 {
-public:
     // number of values in the object
     std::size_t count = 0;
 
@@ -92,16 +91,24 @@ public:
     // insertion-order list of all objects
     element* head;
 
-    // this always points to end_element
-    element* end;
-
     list_hook end_element;
 
     table() noexcept
-        : end(reinterpret_cast<
-            element*>(&end_element))
+        : head(end())
     {
-        head = end;
+    }
+
+    element*
+    begin() noexcept
+    {
+        return head;
+    }
+
+    element*
+    end() noexcept
+    {
+        return reinterpret_cast<
+            element*>(&end_element);
     }
 
     element*&
@@ -109,6 +116,30 @@ public:
     {
         return reinterpret_cast<
             element**>(this + 1)[n];
+    }
+
+    static
+    table*
+    construct(
+        size_type bucket_count,
+        storage_ptr const& sp)
+    {
+        auto tab = ::new(sp->allocate(
+            sizeof(table) +
+                bucket_count *
+                sizeof(element*),
+            (std::max)(
+                alignof(table),
+                alignof(element*))
+                    )) table;
+        tab->count = 0;
+        tab->bucket_count = bucket_count;
+        auto it = &tab->bucket(0);
+        auto const last =
+            &tab->bucket(bucket_count);
+        while(it != last)
+            *it++ = tab->end();
+        return tab;
     }
 
     static
@@ -134,7 +165,7 @@ public:
         storage_ptr const& sp) noexcept
     {
         for(auto it = tab->head;
-            it != tab->end;)
+            it != tab->end();)
         {
             auto next = it->next_;
             element::destroy(it, sp);
@@ -149,38 +180,25 @@ public:
         size_type bucket_count,
         storage_ptr const& sp)
     {
-        auto tab = ::new(sp->allocate(
-            sizeof(table) +
-                bucket_count *
-                sizeof(element*),
-            alignof(table))) table;
-
+        auto tab =
+            construct(bucket_count, sp);
         if(from)
         {
             tab->count = from->count;
             tab->bucket_count = bucket_count;
-            if(from->head != from->end)
+            if(from->head != from->end())
             {
                 tab->head = from->head;
-                tab->end->prev_ =
-                    from->end->prev_;
-                tab->end->prev_->next_ =
-                    tab->end;
+                tab->end()->prev_ =
+                    from->end()->prev_;
+                tab->end()->prev_->next_ =
+                    tab->end();
             }
             else
             {
-                tab->head = tab->end;
+                tab->head = tab->end();
             }
         }
-        else
-        {
-            tab->count = 0;
-            tab->bucket_count = bucket_count;
-            tab->head = tab->end;
-        }
-        for(size_type i = 0;
-            i < bucket_count; ++i)
-            tab->bucket(i) = tab->end;
         if(from)
             destroy(from, sp);
         return tab;
@@ -298,24 +316,27 @@ object() noexcept
 }
 
 object::
-object(storage_ptr store) noexcept
-    : sp_(std::move(store))
-{
-}
-
-object::
-object(size_type capacity)
-    : object(capacity, default_storage())
+object(storage_ptr sp) noexcept
+    : sp_(std::move(sp))
 {
 }
 
 object::
 object(
-    size_type capacity,
-    storage_ptr store)
-    : sp_(std::move(store))
+    size_type bucket_count)
+    : object(
+        bucket_count,
+    default_storage())
 {
-    reserve(capacity);
+}
+
+object::
+object(
+    size_type bucket_count,
+    storage_ptr sp)
+    : sp_(std::move(sp))
+{
+    reserve(bucket_count);
 }
 
 object::
@@ -337,14 +358,15 @@ object(pilfered<object> other) noexcept
 object::
 object(
     object&& other,
-    storage_ptr store) noexcept
-    : sp_(std::move(store))
+    storage_ptr sp) noexcept
+    : sp_(std::move(sp))
 {
     *this = std::move(other);
 }
 
 object::
-object(object const& other)
+object(
+    object const& other)
     : object(other, other.get_storage())
 {
 }
@@ -352,8 +374,8 @@ object(object const& other)
 object::
 object(
     object const& other,
-    storage_ptr store)
-    : sp_(std::move(store))
+    storage_ptr sp)
+    : sp_(std::move(sp))
 {
     *this = other;
 }
@@ -371,10 +393,10 @@ object(
 object::
 object(
     std::initializer_list<value> init,
-    size_type capacity)
+    size_type bucket_count)
     : object(
         init,
-        capacity,
+        bucket_count,
         default_storage())
 {
 }
@@ -382,23 +404,23 @@ object(
 object::
 object(
     std::initializer_list<value> init,
-    storage_ptr store)
+    storage_ptr sp)
     : object(
         init,
         init.size(),
-        std::move(store))
+        std::move(sp))
 {
 }      
         
 object::
 object(
     std::initializer_list<value> init,
-    size_type capacity,
-    storage_ptr store)
-    : sp_(std::move(store))
+    size_type bucket_count,
+    storage_ptr sp)
+    : sp_(std::move(sp))
 {
     reserve(std::max<size_type>(
-        capacity, init.size()));
+        bucket_count, init.size()));
     for(auto& e : init)
     {
         if(! e.is_key_value_pair())
@@ -519,7 +541,7 @@ end() noexcept ->
 {
     if(! tab_)
         return {};
-    return tab_->end;
+    return tab_->end();
 }
 
 auto
@@ -529,7 +551,7 @@ end() const noexcept ->
 {
     if(! tab_)
         return {};
-    return tab_->end;
+    return tab_->end();
 }
 
 auto
@@ -539,7 +561,7 @@ cend() const noexcept ->
 {
     if(! tab_)
         return {};
-    return tab_->end;
+    return tab_->end();
 }
 
 //------------------------------------------------------------------------------
@@ -900,7 +922,7 @@ end(size_type n)  noexcept ->
     boost::ignore_unused(n);
     if(! tab_)
         return {};
-    return tab_->end;
+    return tab_->end();
 }
 
 auto
@@ -911,7 +933,7 @@ end(size_type n) const noexcept ->
     boost::ignore_unused(n);
     if(! tab_)
         return {};
-    return tab_->end;
+    return tab_->end();
 }
 
 auto
@@ -922,7 +944,7 @@ cend(size_type n) noexcept ->
     boost::ignore_unused(n);
     if(! tab_)
         return {};
-    return tab_->end;
+    return tab_->end();
 }
 
 auto
@@ -953,7 +975,7 @@ bucket_size(size_type n) const noexcept ->
         return 0;
     size_type size = 0;
     for(auto e = tab_->bucket(n);
-        e != tab_->end; ++e)
+        e != tab_->end(); ++e)
         ++size;
     return size;
 }
@@ -1124,10 +1146,10 @@ object::
 rehash(size_type count)
 {
     // snap to nearest prime 
-    auto const ptab =
+    auto const primes =
         detail::get_primes();
     count = *std::lower_bound(
-        ptab.begin(), ptab.end(), count);
+        primes.begin(), primes.end(), count);
     auto const bc = bucket_count();
     if(count == bc)
         return;
@@ -1135,7 +1157,7 @@ rehash(size_type count)
     {
         count = (std::max<size_type>)(
             count, *std::lower_bound(
-            ptab.begin(), ptab.end(),
+            primes.begin(), primes.end(),
             static_cast<size_type>(
                 std::ceil(size() /
                 max_load_factor()))));
@@ -1143,10 +1165,11 @@ rehash(size_type count)
             return;
     }
     // rehash
+    //auto tab = table::construct(count, sp_);
     tab_ = table::allocate(
         tab_, count, sp_);
     for(auto e = tab_->head;
-        e != tab_->end; e = e->next_)
+        e != tab_->end(); e = e->next_)
     {
         auto const n = bucket(e->key());
         auto& head = tab_->bucket(n);
@@ -1189,7 +1212,7 @@ find_element(
     auto e = tab_->bucket(
         constrain_hash(hash, bc));
     auto eq = key_eq();
-    while(e != tab_->end)
+    while(e != tab_->end())
     {
         if(eq(key, e->key()))
             return e;
@@ -1239,12 +1262,12 @@ finish_insert(
     auto& head = tab_->bucket(bn);
     e->local_next_ = head;
     head = e;
-    if(tab_->head == tab_->end)
+    if(tab_->head == tab_->end())
     {
-        BOOST_ASSERT(before.e_ == tab_->end);
+        BOOST_ASSERT(before.e_ == tab_->end());
         tab_->head = e;
-        tab_->end->prev_ = e;
-        e->next_ = tab_->end;
+        tab_->end()->prev_ = e;
+        e->next_ = tab_->end();
     }
     else
     {
@@ -1276,11 +1299,11 @@ remove(element* e)
     if(head != e)
     {
         auto it = head;
-        BOOST_ASSERT(it != tab_->end);
+        BOOST_ASSERT(it != tab_->end());
         while(it->local_next_ != e)
         {
             it = it->local_next_;
-            BOOST_ASSERT(it != tab_->end);
+            BOOST_ASSERT(it != tab_->end());
         }
         it->local_next_ = e->local_next_;
     }

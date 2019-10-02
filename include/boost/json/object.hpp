@@ -26,53 +26,100 @@ class value;
 
 //------------------------------------------------------------------------------
 
-/** The container used to represent JSON values of object type.
+/** An associative container of key to JSON value pairs
 
-    This copies the interface of `std::unordered_map` with
-    one important distinction: the order of insertions is
-    preserved.
+    This is an associative container that contains key-value
+    pairs with unique keys. Search, insertion, and removal of
+    elements have average constant-time complexity.
+
+    Internally the elements are initially kept in insertion
+    order, but this order can be changed manually by specifying
+    where new or moved elements go. Elements are also organized
+    into buckets. Which bucket an element is placed into depends
+    entirely on the hash of its key. This allows fast access to
+    individual elements, since once the hash is computed, it
+    refers to the exact bucket the element is placed into.
+
+    @par Storage
+
+    All elements stored in the container will use the same storage that
+    was used to construct the container, including recursive children
+    of those elements.
+
+    @par Satisfies
+
+    @ref object meets the requirements of
+        <em>Container</em>,
+        <em>ReversibleContainer</em>,
+        <em>SequenceContainer</em>, and
+        <em>UnorderedAssociativeContainer</em>.
 */
 class object
 {
     struct list_hook;
     struct element;
-    class table;
-    friend class value;
+    struct table;
+    struct undo;
 
     storage_ptr sp_;
     table* tab_ = nullptr;
     float mf_ = 1.0;
 
 public:
+    /// The type of keys
     using key_type = string_view;
+
+    /// The type of mapped values
     using mapped_type = value;
+
+    /// The element type
     using value_type = std::pair<key_type, value>;
+
+    /// The type used to represent unsigned integers
     using size_type = std::size_t;
+
+    /// The type used to represent signed integers
     using difference_type = std::ptrdiff_t;
-    using reference = std::pair<key_type, value&>;
-    using const_reference = std::pair<key_type, value const&>;
 
-    /// hasher
-    class hasher
-    {
-        BOOST_JSON_DECL
-        static
-        std::pair<
-            std::uint64_t, std::uint64_t>
-        init(std::true_type) noexcept;
+    /// A reference to an element
+    using reference =
+        std::pair<key_type const, value&>;
 
-        BOOST_JSON_DECL
-        static
-        std::pair<
-            std::uint32_t, std::uint32_t>
-        init(std::false_type) noexcept;
+    /// A const reference to an element
+    using const_reference =
+        std::pair<key_type const, value const&>;
 
-    public:
-        BOOST_JSON_DECL
-        std::size_t
-        operator()(key_type key) const noexcept;
-    };
+#ifdef GENERATING_DOCUMENTATION
+    /** The hash function used for keys
 
+        Objects of this type are used to calculate the
+        hash for a key.
+
+        @par Satisfies
+
+        Meets the requirements of __Hash__
+    */
+    using hasher = __see_below__;
+
+    /** The key comparison function
+
+        Objects of this type are used to compare keys
+        for equality.
+    */
+    using key_equal = __see_below__;
+
+    using pointer = __implementation_defined__;
+    using const_pointer = __implementation_defined__;
+    using iterator = __implementation_defined__;
+    using const_iterator = __implementation_defined__;
+    using local_iterator = __implementation_defined__;
+    using const_local_iterator = __implementation_defined__;
+
+    using node_type = __see_below__;
+    using insert_return_type = __see_below__;
+
+#else
+    class hasher;
     class key_equal;
     class pointer;
     class const_pointer;
@@ -82,33 +129,108 @@ public:
     class const_local_iterator;
     class node_type;
     struct insert_return_type;
+#endif
 
     //--------------------------------------------------------------------------
-    //
-    // Special Members
-    //
-    //--------------------------------------------------------------------------
 
+    /** Destroy the container
+
+        The destructor for each element is called, any used
+        memory is deallocated, and shared ownership of the
+        underlying storage is released.
+
+        @par Complexity
+
+        Linear in @ref size()
+    */
     BOOST_JSON_DECL
     ~object();
 
+    //--------------------------------------------------------------------------
+
+    /** Construct an empty container
+
+        The container and all inserted elements will use the
+        default storage.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
     BOOST_JSON_DECL
     object() noexcept;
 
+    /** Construct an empty container
+
+        The container and all inserted elements will use the
+        storage pointed to by `sp`.
+
+        @par Complexity
+
+        Constant.
+
+        @param sp A pointer to the @ref storage to use.
+        The array will acquire shared ownership of the pointer.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
     BOOST_JSON_DECL
     explicit
     object(
-        storage_ptr store) noexcept;
+        storage_ptr sp) noexcept;
 
+    /** Construct an empty container
+
+        Storage is allocated for at least `bucket_count`
+        buckets.
+        The container and all inserted elements will use the
+        default storage.
+
+        @par Complexity
+
+        Constant.
+
+        @param bucket_count The number of buckets to allocate.
+
+        @par Exception Safety
+
+        Strong guarantee.
+    */
     BOOST_JSON_DECL
     explicit
     object(
-        size_type capacity);
+        size_type bucket_count);
 
+    /** Construct an empty container
+
+        Storage is allocated for at least `bucket_count`
+        buckets.
+        The container and all inserted elements will use the
+        storage pointed to by `sp`.
+
+        @par Complexity
+
+        Constant.
+
+        @param bucket_count The number of buckets to allocate.
+
+        @param sp A pointer to the @ref storage to use.
+        The array will acquire shared ownership of the pointer.
+
+        @par Exception Safety
+
+        Strong guarantee.
+    */
     BOOST_JSON_DECL
     object(
-        size_type capacity,
-        storage_ptr store);
+        size_type bucket_count,
+        storage_ptr sp);
 
     template<
         class InputIt
@@ -135,7 +257,7 @@ public:
     object(
         InputIt first,
         InputIt last,
-        size_type capacity);
+        size_type bucket_count);
 
     template<
         class InputIt
@@ -149,7 +271,7 @@ public:
     object(
         InputIt first,
         InputIt last,
-        storage_ptr store);
+        storage_ptr sp);
 
     template<
         class InputIt
@@ -163,8 +285,8 @@ public:
     object(
         InputIt first,
         InputIt last,
-        size_type capacity,
-        storage_ptr store);
+        size_type bucket_count,
+        storage_ptr sp);
 
     BOOST_JSON_DECL
     object(object&& other) noexcept;
@@ -175,7 +297,7 @@ public:
     BOOST_JSON_DECL
     object(
         object&& other,
-        storage_ptr store) noexcept;
+        storage_ptr sp) noexcept;
 
     BOOST_JSON_DECL
     object(
@@ -184,7 +306,7 @@ public:
     BOOST_JSON_DECL
     object(
         object const& other,
-        storage_ptr store);
+        storage_ptr sp);
 
     BOOST_JSON_DECL
     object(
@@ -193,18 +315,18 @@ public:
     BOOST_JSON_DECL
     object(
         std::initializer_list<value> init,
-        size_type capacity);
+        size_type bucket_count);
 
     BOOST_JSON_DECL
     object(
         std::initializer_list<value> init,
-        storage_ptr store);
+        storage_ptr sp);
         
     BOOST_JSON_DECL
     object(
         std::initializer_list<value> init,
         size_type capacity,
-        storage_ptr store);
+        storage_ptr sp);
 
     BOOST_JSON_DECL
     object&
