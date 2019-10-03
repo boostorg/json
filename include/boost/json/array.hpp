@@ -161,8 +161,8 @@ public:
 
         Constant.
 
-        @param sp A pointer to the @ref storage to use.
-        The array will acquire shared ownership of the pointer.
+        @param sp A pointer to the @ref storage to use. The
+        container will acquire shared ownership of the pointer.
 
         @par Exception Safety
 
@@ -213,8 +213,8 @@ public:
 
         @param v The value to be inserted.
 
-        @param sp A pointer to the @ref storage to use.
-        The array will acquire shared ownership of the pointer.
+        @param sp A pointer to the @ref storage to use. The
+        container will acquire shared ownership of the pointer.
     */
     BOOST_JSON_DECL
     array(
@@ -259,8 +259,8 @@ public:
 
         @param count The number of copies to insert.
 
-        @param sp A pointer to the @ref storage to use.
-        The array will acquire shared ownership of the pointer.
+        @param sp A pointer to the @ref storage to use. The
+        container will acquire shared ownership of the pointer.
     */
     BOOST_JSON_DECL
     array(
@@ -341,8 +341,8 @@ public:
         @param last An input iterator pointing to the end
         of the range.
 
-        @param sp A pointer to the @ref storage to use.
-        The array will acquire shared ownership of the pointer.
+        @param sp A pointer to the @ref storage to use. The
+        container will acquire shared ownership of the pointer.
 
         @tparam InputIt a type meeting the requirements of
         __InputIterator__.
@@ -375,7 +375,7 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param other The array to copy
+        @param other The container to copy
     */
     BOOST_JSON_DECL
     array(array const& other);
@@ -396,10 +396,10 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param other The array to copy
+        @param other The container to copy
 
-        @param sp A pointer to the @ref storage to use.
-        The array will acquire shared ownership of the pointer.
+        @param sp A pointer to the @ref storage to use. The
+        container will acquire shared ownership of the pointer.
     */
     BOOST_JSON_DECL
     array(
@@ -425,7 +425,7 @@ public:
 
         No-throw guarantee.
 
-        @param other The array to pilfer
+        @param other The container to pilfer
 
         @see
         
@@ -456,12 +456,12 @@ public:
 
         No-throw guarantee.
 
-        @param other The array to move
+        @param other The container to move
     */
     BOOST_JSON_DECL
     array(array&& other) noexcept;
 
-    /** Storage-extended move constructor
+    /** Move constructor
 
         Using `*sp` as the @ref storage for the new container,
         moves all the elements from `other`.
@@ -488,10 +488,10 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param other The array to move
+        @param other The container to move
 
-        @param sp A pointer to the @ref storage to use.
-        The array will acquire shared ownership of the pointer.
+        @param sp A pointer to the @ref storage to use. The
+        container will acquire shared ownership of the pointer.
     */
     BOOST_JSON_DECL
     array(
@@ -534,8 +534,8 @@ public:
 
         @param init The initializer list to insert
 
-        @param sp A pointer to the @ref storage to use.
-        The array will acquire shared ownership of the pointer.
+        @param sp A pointer to the @ref storage to use. The
+        container will acquire shared ownership of the pointer.
     */
     BOOST_JSON_DECL
     array(
@@ -550,14 +550,14 @@ public:
 
         @par Complexity
 
-        Linear in @ref size() and `other.size()`.
+        Linear in @ref size() plus `other.size()`.
 
         @par Exception Safety
 
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param other The array to copy
+        @param other The container to copy
     */
     BOOST_JSON_DECL
     array&
@@ -580,14 +580,14 @@ public:
 
         @par Complexity
 
-        At most, linear in `other.size()`.
+        At most, linear in `this->size()` plus `other.size()`.
 
         @par Exception Safety
 
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param other The array to assign from
+        @param other The container to assign from
     */
     BOOST_JSON_DECL
     array&
@@ -600,7 +600,7 @@ public:
 
         @par Complexity
 
-        Linear in `init.size()`.
+        Linear in `this->size()` plus `init.size()`.
 
         @par Exception Safety
 
@@ -864,7 +864,7 @@ public:
     */
     BOOST_JSON_DECL
     const_iterator
-    cbegin() noexcept
+    cbegin() const noexcept
     {
         return begin();
     }
@@ -906,7 +906,7 @@ public:
     */
     BOOST_JSON_DECL
     const_iterator
-    cend() noexcept
+    cend() const noexcept
     {
         return end();
     }
@@ -951,7 +951,7 @@ public:
     */
     BOOST_JSON_DECL
     const_reverse_iterator
-    crbegin() noexcept
+    crbegin() const noexcept
     {
         return rbegin();
     }
@@ -999,7 +999,7 @@ public:
     */
     BOOST_JSON_DECL
     const_reverse_iterator
-    crend() noexcept
+    crend() const noexcept
     {
         return rend();
     }
@@ -1597,13 +1597,13 @@ public:
 
         @par Exception Safety
 
-        No-throw guarantee.
+        Strong guarantee.
 
-        @param other The array to swap with
+        @param other The container to swap with
     */
     BOOST_JSON_DECL
     void
-    swap(array& other) noexcept;
+    swap(array& other);
 
 private:
     template<class It>

@@ -34,7 +34,7 @@ object::
 element::
 key() const noexcept
 {
-    auto p =reinterpret_cast<
+    auto p = reinterpret_cast<
         char const*>(this + 1);
     auto const result =
         detail::varint_read(p);
@@ -61,29 +61,12 @@ destroy(
         alignof(element));
 }
 
-auto
-object::
-element::
-prepare_allocate(
-    storage_ptr const& sp,
-    key_type key) ->
-        std::unique_ptr<char, cleanup>
-{
-    auto const n = static_cast<std::size_t>(
-        detail::varint_size(key.size()));
-    auto const size =
-        sizeof(element) + n + key.size() + 1;
-    auto p = reinterpret_cast<char*>(
-        sp->allocate(size, alignof(element)));
-    return { p, cleanup{size, sp, n} };
-}
-
 //------------------------------------------------------------------------------
 
 struct object::table
 {
     // number of values in the object
-    std::size_t count = 0;
+    std::size_t size = 0;
 
     // number of buckets in table
     std::size_t bucket_count = 0;
@@ -96,6 +79,8 @@ struct object::table
     table() noexcept
         : head(end())
     {
+        head->next = nullptr;
+        head->prev = nullptr;
     }
 
     element*
@@ -132,7 +117,7 @@ struct object::table
                 alignof(table),
                 alignof(element*))
                     )) table;
-        tab->count = 0;
+        tab->size = 0;
         tab->bucket_count = bucket_count;
         auto it = &tab->bucket(0);
         auto const last =
@@ -148,62 +133,122 @@ struct object::table
         table* tab,
         storage_ptr const& sp) noexcept
     {
-        auto const count =
+        auto const n =
             tab->bucket_count;
         tab->~table();
         sp->deallocate(
             tab,
             sizeof(table) +
-                count * sizeof(element*),
+                n * sizeof(element*),
             alignof(table));
     }
-
-    static
-    void
-    destroy_list(
-        table* tab,
-        storage_ptr const& sp) noexcept
-    {
-        for(auto it = tab->head;
-            it != tab->end();)
-        {
-            auto next = it->next_;
-            element::destroy(it, sp);
-            it = next;
-        }
-    }
-
-    static
-    table*
-    allocate(
-        table* from,
-        size_type bucket_count,
-        storage_ptr const& sp)
-    {
-        auto tab =
-            construct(bucket_count, sp);
-        if(from)
-        {
-            tab->count = from->count;
-            tab->bucket_count = bucket_count;
-            if(from->head != from->end())
-            {
-                tab->head = from->head;
-                tab->end()->prev_ =
-                    from->end()->prev_;
-                tab->end()->prev_->next_ =
-                    tab->end();
-            }
-            else
-            {
-                tab->head = tab->end();
-            }
-        }
-        if(from)
-            destroy(from, sp);
-        return tab;
-    }
 };
+
+//------------------------------------------------------------------------------
+
+object::
+undo_range::
+undo_range(object& self) noexcept
+    : self_(self)
+{
+}
+
+void
+object::
+undo_range::
+insert(element* e) noexcept
+{
+    if(! head_)
+    {
+        head_ = e;
+        tail_ = e;
+        e->prev = nullptr;
+    }
+    else
+    {
+        e->prev = tail_;
+        tail_->next = e;
+        tail_ = e;
+    }
+    e->next = nullptr;
+    ++n_;
+}
+
+object::
+undo_range::
+~undo_range()
+{
+    for(auto it = head_; it;)
+    {
+        auto e = it;
+        it = it->next;
+        element::destroy(
+            e, self_.sp_);
+    }
+}
+
+void
+object::
+undo_range::
+commit(
+    const_iterator pos,
+    size_type min_buckets)
+{
+    if(head_ == nullptr)
+        return;
+    auto& tab = self_.tab_;
+    auto before = pos.e_;
+
+    // add space for n_ elements.
+    //
+    // this is the last allocation, so
+    // we never have to clean it up on
+    // an exception.
+    //
+    bool const at_end =
+        before == nullptr ||
+        before == tab->end();
+    self_.rehash((std::max)(min_buckets,
+        static_cast<size_type>(std::ceil(
+            (self_.size() + n_) /
+                self_.max_load_factor()))));
+    // refresh `before`, which
+    // may have been invalidated
+    if(at_end)
+        before = tab->end();
+
+    // insert each item into buckets
+    for(auto it = head_; it;)
+    {
+        auto const e = it;
+        it = it->next;
+        // discard dupes
+        auto const result =
+            self_.find_impl(e->key());
+        if(result.first)
+        {
+            element::destroy(e, self_.sp_);
+            continue;
+        }
+        // add to list
+        e->next = before;
+        e->prev = before->prev;
+        before->prev = e;
+        if(e->prev)
+            e->prev->next = e;
+        else
+            tab->head = e;
+        // add to bucket
+        auto const bn = constrain_hash(
+            result.second, tab->bucket_count);
+        auto& local_head = tab->bucket(bn);
+        e->local_next = local_head;
+        local_head = e;
+        ++tab->size;
+    }
+    // do nothing in dtor
+    head_ = nullptr;
+}
 
 //------------------------------------------------------------------------------
 
@@ -252,46 +297,55 @@ operator()(key_type key) const noexcept
 
 //------------------------------------------------------------------------------
 
-struct object::cleanup_replace
+object::
+node_type::
+node_type(
+    element* e,
+    storage_ptr sp) noexcept
+    : e_(e)
+    , sp_(std::move(sp))
 {
-    object& obj;
-    table* tab;
-    bool ok = false;
+}
 
-    explicit
-    cleanup_replace(
-        object& obj_)
-        : obj(obj_)
-        , tab(boost::exchange(
-            obj_.tab_, nullptr))
-    {
-    }
+object::
+node_type::
+~node_type()
+{
+    if(e_)
+        element::destroy(e_, sp_);
+}
 
-    ~cleanup_replace()
+object::
+node_type::
+node_type(
+    node_type&& other) noexcept
+    : e_(boost::exchange(
+        other.e_, nullptr))
+    , sp_(boost::exchange(
+        other.sp_, nullptr))
+{
+}
+
+auto
+object::
+node_type::
+operator=(node_type&& other) noexcept ->
+    node_type&
+{
+    if(e_)
     {
-        if(! ok)
-        {
-            if(obj.tab_)
-            {
-                table::destroy_list(
-                    obj.tab_, obj.sp_);
-                table::destroy(
-                    obj.tab_, obj.sp_);
-            }
-            obj.tab_ = tab;
-        }
-        else
-        {
-            if(tab)
-            {
-                table::destroy_list(
-                    tab, obj.sp_);
-                table::destroy(
-                    tab, obj.sp_);
-            }
-        }
+        element::destroy(e_, sp_);
+        e_ = nullptr;
+        sp_ = nullptr;
     }
-};
+    if(other.e_)
+    {
+        e_ = boost::exchange(
+            other.e_, nullptr);
+        sp_ = std::move(other.sp_);
+    }
+    return *this;
+}
 
 //------------------------------------------------------------------------------
 //
@@ -302,11 +356,16 @@ struct object::cleanup_replace
 object::
 ~object()
 {
-    if(tab_)
+    if(! tab_)
+        return;
+    for(auto it = tab_->head;
+        it != tab_->end();)
     {
-        table::destroy_list(tab_, sp_);
-        table::destroy(tab_, sp_);
+        auto next = it->next;
+        element::destroy(it, sp_);
+        it = next;
     }
+    table::destroy(tab_, sp_);
 }
 
 object::
@@ -326,7 +385,7 @@ object(
     size_type bucket_count)
     : object(
         bucket_count,
-    default_storage())
+        default_storage())
 {
 }
 
@@ -344,7 +403,30 @@ object(object&& other) noexcept
     : sp_(other.sp_)
     , tab_(boost::exchange(
         other.tab_, nullptr))
+    , mf_(other.mf_)
 {
+}
+
+object::
+object(
+    object&& other,
+    storage_ptr sp)
+    : sp_(std::move(sp))
+    , mf_(other.mf_)
+{
+    if(*sp_ == *other.sp_)
+    {
+        tab_ = boost::exchange(
+            other.tab_, nullptr);
+    }
+    else
+    {
+        insert_range(
+            end(),
+            other.begin(),
+            other.end(),
+            0);
+    }
 }
 
 object::
@@ -352,22 +434,16 @@ object(pilfered<object> other) noexcept
     : sp_(std::move(other.get().sp_))
     , tab_(boost::exchange(
         other.get().tab_, nullptr))
+    , mf_(other.get().mf_)
 {
-}
-
-object::
-object(
-    object&& other,
-    storage_ptr sp) noexcept
-    : sp_(std::move(sp))
-{
-    *this = std::move(other);
 }
 
 object::
 object(
     object const& other)
-    : object(other, other.get_storage())
+    : object(
+        other,
+        other.get_storage())
 {
 }
 
@@ -376,13 +452,19 @@ object(
     object const& other,
     storage_ptr sp)
     : sp_(std::move(sp))
+    , mf_(other.mf_)
 {
-    *this = other;
+    insert_range(
+        end(),
+        other.begin(),
+        other.end(),
+        0);
 }
 
 object::
 object(
-    std::initializer_list<value> init)
+    std::initializer_list<
+        init_value> init)
     : object(
         init,
         init.size(),
@@ -392,7 +474,8 @@ object(
 
 object::
 object(
-    std::initializer_list<value> init,
+    std::initializer_list<
+        init_value> init,
     size_type bucket_count)
     : object(
         init,
@@ -403,7 +486,8 @@ object(
 
 object::
 object(
-    std::initializer_list<value> init,
+    std::initializer_list<
+        init_value> init,
     storage_ptr sp)
     : object(
         init,
@@ -414,45 +498,26 @@ object(
         
 object::
 object(
-    std::initializer_list<value> init,
+    std::initializer_list<
+        init_value> init,
     size_type bucket_count,
     storage_ptr sp)
     : sp_(std::move(sp))
 {
-    reserve(std::max<size_type>(
-        bucket_count, init.size()));
-    for(auto& e : init)
-    {
-        if(! e.is_key_value_pair())
-            BOOST_THROW_EXCEPTION(
-                std::invalid_argument(
-                    "expected key/value pair"));
-        emplace_impl(
-            end(),
-            e.as_array()[0].as_string(),
-            std::move(e.as_array()[1]));
-    }
+    insert_range(
+        end(),
+        init.begin(),
+        init.end(),
+        bucket_count);
 }
 
 object&
 object::
 operator=(object&& other)
 {
-    if(*other.sp_ == *sp_)
-    {
-        if(tab_)
-        {
-            table::destroy_list(tab_, sp_);
-            table::destroy(tab_, sp_);
-        }
-        tab_ = other.tab_;
-        other.tab_ = nullptr;
-    }
-    else
-    {
-        *this = const_cast<
-            object const&>(other);
-    }
+    object tmp(std::move(other), sp_);
+    this->~object();
+    ::new(this) object(pilfer(tmp));
     return *this;
 }
 
@@ -460,34 +525,21 @@ object&
 object::
 operator=(object const& other)
 {
-    cleanup_replace c(*this);
-    reserve(other.size());
-    for(auto v : other)
-        emplace_impl(end(), v.first,
-            v.second);
-    c.ok = true;
+    object tmp(other, sp_);
+    this->~object();
+    ::new(this) object(pilfer(tmp));
     return *this;
 }
 
 object&
 object::
 operator=(
-    std::initializer_list<value> init)
+    std::initializer_list<
+        init_value> init)
 {
-    cleanup_replace c(*this);
-    reserve(init.size());
-    for(auto& e : init)
-    {
-        if(! e.is_key_value_pair())
-            BOOST_THROW_EXCEPTION(
-                std::invalid_argument(
-                    "expected key/value pair"));
-        emplace_impl(
-            end(),
-            e.as_array()[0].as_string(),
-            std::move(e.as_array()[1]));
-    }
-    c.ok = true;
+    object tmp(init, sp_);
+    this->~object();
+    ::new(this) object(pilfer(tmp));
     return *this;
 }
 
@@ -529,9 +581,7 @@ object::
 cbegin() const noexcept ->
     const_iterator
 {
-    if(! tab_)
-        return {};
-    return tab_->head;
+    return begin();
 }
 
 auto
@@ -559,10 +609,58 @@ object::
 cend() const noexcept ->
     const_iterator
 {
-    if(! tab_)
-        return {};
-    return tab_->end();
+    return end();
 }
+
+#if 0
+auto
+object::
+rbegin() noexcept ->
+    reverse_iterator
+{
+    return reverse_iterator(end());
+}
+
+auto
+object::
+rbegin() const noexcept ->
+    const_reverse_iterator
+{
+    return const_reverse_iterator(end());
+}
+
+auto
+object::
+crbegin() const noexcept ->
+    const_reverse_iterator
+{
+    return rbegin();
+}
+
+auto
+object::
+rend() noexcept ->
+    reverse_iterator
+{
+    return reverse_iterator(begin());
+}
+
+auto
+object::
+rend() const noexcept ->
+    const_reverse_iterator
+{
+    return const_reverse_iterator(begin());
+}
+
+auto
+object::
+crend() const noexcept ->
+    const_reverse_iterator
+{
+    return rend();
+}
+#endif
 
 //------------------------------------------------------------------------------
 //
@@ -575,7 +673,7 @@ object::
 empty() const noexcept
 {
     return ! tab_ ||
-        tab_->count == 0;
+        tab_->size == 0;
 }
 
 auto
@@ -585,7 +683,7 @@ size() const noexcept ->
 {
     if(! tab_)
         return 0;
-    return tab_->count;
+    return tab_->size;
 }
 
 auto
@@ -607,30 +705,34 @@ void
 object::
 clear() noexcept
 {
-    if(! tab_)
-        return;
-    table::destroy_list(tab_, sp_);
-    table::destroy(tab_, sp_);
-    tab_ = nullptr;
+    object tmp(std::move(*this));
 }
 
 void
 object::
 insert(
-    std::initializer_list<value> init)
+    std::initializer_list<
+        init_value> init)
 {
-    reserve(size() + init.size());
-    for(auto& e : init)
-    {
-        if(! e.is_key_value_pair())
-            BOOST_THROW_EXCEPTION(
-                std::invalid_argument(
-                    "expected key/value pair"));
-        emplace_impl(
-            end(),
-            e.as_array()[0].as_string(),
-            std::move(e.as_array()[1]));
-    }
+    insert_range(
+        end(),
+        init.begin(),
+        init.end(),
+        0);
+}
+
+void
+object::
+insert(
+    const_iterator pos,
+    std::initializer_list<
+        init_value> init)
+{
+    insert_range(
+        pos,
+        init.begin(),
+        init.end(),
+        0);
 }
 
 auto
@@ -644,21 +746,20 @@ insert(node_type&& nh) ->
 auto
 object::
 insert(
-    const_iterator before,
+    const_iterator pos,
     node_type&& nh) ->
         insert_return_type
 {
     if(! nh.e_)
         return { end(), false, {} };
-    auto const hash = hasher{}(nh.e_->key());
-    auto e = prepare_insert(
-        &before, nh.key(), hash);
-    if(e)
-        return { iterator(e), false, std::move(nh) };
-    e = nh.e_;
-    finish_insert(before, e, hash);
-    nh.e_ = nullptr;
-    return { iterator(e), true, {} };
+    auto const result =
+        find_impl(nh.key());
+    if(result.first)
+        return { iterator(result.first),
+            false, std::move(nh) };
+    insert(pos, result.second, nh.e_);
+    return { iterator(boost::exchange(
+        nh.e_, nullptr)), true, {} };
 }
 
 auto
@@ -666,7 +767,7 @@ object::
 erase(const_iterator pos) ->
     iterator
 {
-    auto e = pos.e_->next_;
+    auto e = pos.e_->next;
     remove(pos.e_);
     element::destroy(pos.e_, sp_);
     return e;
@@ -684,7 +785,7 @@ erase(
     auto e = first.e_;
     while(e != last.e_)
     {
-        auto next = e->next_;
+        auto next = e->next;
         remove(e);
         element::destroy(e, sp_);
         e = next;
@@ -701,15 +802,18 @@ erase(key_type key) ->
     if(it == end())
         return 0;
     erase(it);
-    return true;
+    return 1;
 }
 
 void
 object::
-swap(object& other) noexcept
+swap(object& other)
 {
     // undefined if storage not equal
-    BOOST_ASSERT(*sp_ == *other.sp_);
+    if(*sp_ != *other.sp_)
+        BOOST_THROW_EXCEPTION(
+            std::invalid_argument(
+                "swap on unequal storage"));
     std::swap(tab_, other.tab_);
     std::swap(mf_, other.mf_);
 }
@@ -785,8 +889,8 @@ object::
 operator[](key_type key) ->
     value&
 {
-    auto const result =
-        emplace_impl(end(), key, kind::null);
+    auto const result = emplace(
+        end(), key, kind::null);
     return result.first->second;
 }
 
@@ -800,7 +904,7 @@ operator[](key_type key) const ->
 
 auto
 object::
-count(key_type key) const ->
+count(key_type key) const noexcept ->
     size_type
 {
     if(find(key) == end())
@@ -810,72 +914,33 @@ count(key_type key) const ->
 
 auto
 object::
-count(
-    key_type key,
-    std::size_t hash) const ->
-        size_type
-{
-    if(find(key, hash) == end())
-        return 0;
-    return 1;
-}
-
-auto
-object::
-find(key_type key) ->
+find(key_type key) noexcept ->
     iterator
 {
-    return find(key, hasher{}(key));
+    auto const e =
+        find_impl(key).first;
+    if(e)
+        return {e};
+    return end();
 }
 
 auto
 object::
-find(
-    key_type key,
-    std::size_t hash) ->
-        iterator
-{
-    auto it = static_cast<
-        object const&>(*this).find(
-            key, hash);
-    return iterator(it.e_);
-}
-
-auto
-object::
-find(key_type key) const ->
+find(key_type key) const noexcept ->
     const_iterator
 {
-    return find(key, hasher{}(key));
-}
-
-auto
-object::
-find(
-    key_type key,
-    std::size_t hash) const ->
-        const_iterator
-{
-    auto e = find_element(key, hash);
-    if(! e)
-        return end();
-    return e;
+    auto const e =
+        find_impl(key).first;
+    if(e)
+        return {e};
+    return end();
 }
 
 bool
 object::
-contains(key_type key) const
+contains(key_type key) const noexcept
 {
     return find(key) != end();
-}
-
-bool
-object::
-contains(
-    key_type key,
-    std::size_t hash) const
-{
-    return find(key, hash) != end();
 }
 
 //------------------------------------------------------------------------------
@@ -1127,20 +1192,7 @@ load_factor() const noexcept
         size()) / bucket_count();
 }
 
-float
-object::
-max_load_factor() const
-{
-    return mf_;
-}
-
-void
-object::
-max_load_factor(float ml)
-{
-    mf_ = ml;
-}
-
+// rehash to at least `count` buckets
 void
 object::
 rehash(size_type count)
@@ -1164,16 +1216,33 @@ rehash(size_type count)
         if(count >= bc)
             return;
     }
-    // rehash
-    //auto tab = table::construct(count, sp_);
-    tab_ = table::allocate(
-        tab_, count, sp_);
+    // create new buckets
+    auto tab = table::construct(count, sp_);
+    if(tab_)
+    {
+        tab->size = tab_->size;
+        if(tab_->head != tab_->end())
+        {
+            tab->head = tab_->head;
+            tab->end()->prev =
+                tab_->end()->prev;
+            tab->end()->prev->next =
+                tab->end();
+        }
+        else
+        {
+            tab->head = tab->end();
+        }
+        table::destroy(tab_, sp_);
+    }
+    tab_ = tab;
+    // rehash into new buckets
     for(auto e = tab_->head;
-        e != tab_->end(); e = e->next_)
+        e != tab_->end(); e = e->next)
     {
         auto const n = bucket(e->key());
         auto& head = tab_->bucket(n);
-        e->local_next_ = head;
+        e->local_next = head;
         head = e;
     }
 }
@@ -1189,6 +1258,56 @@ reserve(size_type count)
 
 //------------------------------------------------------------------------------
 
+// allocate a new element
+auto
+object::
+allocate_impl(
+    key_type key,
+    construct_base const& place_new) ->
+        element*
+{
+    auto const n = static_cast<std::size_t>(
+        detail::varint_size(key.size()));
+    auto const size =
+        sizeof(element) + n + key.size() + 1;
+    struct cleanup
+    {
+        void* p;
+        std::size_t size;
+        storage_ptr const& sp;
+
+        ~cleanup()
+        {
+            if(p)
+                sp->deallocate(p, size,
+                    alignof(element));
+        }
+    };
+    cleanup c{sp_->allocate(
+        size, alignof(element)), size, sp_};
+    place_new(c.p);
+    char* p = static_cast<char*>(c.p);
+    c.p = nullptr;
+    detail::varint_write(
+        p + sizeof(element), key.size());
+    std::memcpy(
+        p + sizeof(element) + n,
+        key.data(),
+        key.size());
+    p[sizeof(element) +
+        n + key.size()] = '\0';
+    return reinterpret_cast<element*>(p);
+}
+
+auto
+object::
+allocate(std::pair<
+    string_view, value const&> const& p) ->
+        element*
+{
+    return allocate(p.first, p.second);
+}
+
 auto
 object::
 constrain_hash(
@@ -1201,84 +1320,84 @@ constrain_hash(
 
 auto
 object::
-find_element(
-    key_type key,
-    std::size_t hash) const noexcept ->
-        element*
+find_impl(key_type key) const noexcept ->
+    std::pair<element*, std::size_t>
 {
+    auto const hash = hash_function()(key);
     auto bc = bucket_count();
     if(bc == 0)
-        return nullptr;
+        return { nullptr, hash };
     auto e = tab_->bucket(
         constrain_hash(hash, bc));
-    auto eq = key_eq();
+    auto const eq = key_eq();
     while(e != tab_->end())
     {
         if(eq(key, e->key()))
-            return e;
-        e = e->local_next_;
+            return { e, hash };
+        e = e->local_next;
     }
-    return nullptr;
-}
+    return { nullptr, hash };
+};
 
-auto
+// destroys `e` on exception
+void
 object::
-prepare_insert(
-    const_iterator* before,
-    key_type key,
-    std::size_t hash) ->
-        element*
+insert(
+    const_iterator before,
+    std::size_t hash,
+    element* e)
 {
-    auto bc = bucket_count();
-    if(bc > 0)
+    struct revert
     {
-        auto e = find_element(key, hash);
-        if(e)
-            return e;
-    }
-    if(size() + 1 > bc * max_load_factor()
-        || bc == 0)
+        element* e;
+        storage_ptr const& sp;
+
+        ~revert()
+        {
+            if(e)
+                element::destroy(e, sp);
+        }
+    };
+    revert r{e, sp_};
+
+    // rehash if necessary
+    if( size() + 1 >
+        bucket_count() * max_load_factor())
     {
-        auto const at_end = *before == end();
+        auto const at_end = before == end();
         rehash(static_cast<size_type>(
             (std::ceil)(
                 float(size()+1) /
                 max_load_factor())));
         if(at_end)
-            *before = end();
+            before = end();
     }
-    return nullptr;
-}
 
-void
-object::
-finish_insert(
-    const_iterator before,
-    element* e,
-    std::size_t hash)
-{
+    // perform insert
     auto const bn = constrain_hash(
         hash, tab_->bucket_count);
     auto& head = tab_->bucket(bn);
-    e->local_next_ = head;
+    e->local_next = head;
     head = e;
     if(tab_->head == tab_->end())
     {
-        BOOST_ASSERT(before.e_ == tab_->end());
+        BOOST_ASSERT(
+            before.e_ == tab_->end());
         tab_->head = e;
-        tab_->end()->prev_ = e;
-        e->next_ = tab_->end();
+        tab_->end()->prev = e;
+        e->next = tab_->end();
     }
     else
     {
-        e->prev_ = before.e_->prev_;
-        e->next_ = before.e_;
-        e->prev_->next_ = e;
-        e->next_->prev_ = e;
+        e->prev = before.e_->prev;
+        e->next = before.e_;
+        e->prev->next = e;
+        e->next->prev = e;
         if(tab_->head == before.e_)
             tab_->head = e;
     }
-    ++tab_->count;
+    ++tab_->size;
+    r.e = nullptr;
 }
 
 void
@@ -1287,12 +1406,12 @@ remove(element* e)
 {
     if(e == tab_->head)
     {
-        tab_->head = e->next_;
+        tab_->head = e->next;
     }
     else
     {
-        e->prev_->next_ = e->next_;
-        e->next_->prev_ = e->prev_;
+        e->prev->next = e->next;
+        e->next->prev = e->prev;
     }
     auto& head = tab_->bucket(
         bucket(e->key()));
@@ -1300,18 +1419,18 @@ remove(element* e)
     {
         auto it = head;
         BOOST_ASSERT(it != tab_->end());
-        while(it->local_next_ != e)
+        while(it->local_next != e)
         {
-            it = it->local_next_;
+            it = it->local_next;
             BOOST_ASSERT(it != tab_->end());
         }
-        it->local_next_ = e->local_next_;
+        it->local_next = e->local_next;
     }
     else
     {
-        head = head->local_next_;
+        head = head->local_next;
     }
-    --tab_->count;
+    --tab_->size;
 }
 
 } // json

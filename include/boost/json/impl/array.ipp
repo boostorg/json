@@ -666,15 +666,16 @@ insert(
 {
     undo_insert u(
         pos, init.size(), *this);
-    for(auto& v : init)
-        u.emplace(std::move(v));
+    for(auto const& v : init)
+        u.emplace(v);
     u.commit = true;
     return begin() + u.pos;
 }
 
 auto
 array::
-erase(const_iterator pos) noexcept ->
+erase(
+    const_iterator pos) noexcept ->
     iterator
 {
     auto p = data() + (pos - begin());
@@ -789,9 +790,13 @@ resize(
 
 void
 array::
-swap(array& other) noexcept
+swap(array& other)
 {
-    BOOST_ASSERT(*sp_ == *other.sp_);
+    // undefined if storage not equal
+    if(*sp_ != *other.sp_)
+        BOOST_THROW_EXCEPTION(
+            std::invalid_argument(
+                "swap on unequal storage"));
     std::swap(tab_, other.tab_);
 }
 

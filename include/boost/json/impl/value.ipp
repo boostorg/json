@@ -413,8 +413,12 @@ value(
 {
     if(maybe_object(init))
     {
+#if 0
         ::new(&obj_) object(
             init, std::move(sp));
+#else
+        ::new(&obj_) object(std::move(sp));
+#endif
         kind_ = json::kind::object;
     }
     else
