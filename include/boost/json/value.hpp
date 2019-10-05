@@ -537,9 +537,27 @@ public:
         reset(json::kind::null);
     }
 
-    /** Swap this value with another value.
+    /** Swap the contents
 
+        Exchanges the contents of this container with another
+        container.
+        All iterators and references remain valid.
 
+        @par Precondition
+
+        `*get_storage() == *other.get_storage()`
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        Strong guarantee.
+
+        @param other The container to swap with
+
+        @throws std::domain_error if `*get_storage() != *other.get_storage()`
     */
     BOOST_JSON_DECL
     void
@@ -692,7 +710,6 @@ public:
         default:
             return true;
         }
-
     }
 
     /// Returns `true` if this is an array or object

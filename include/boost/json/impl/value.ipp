@@ -538,6 +538,23 @@ reset(json::kind k) noexcept
     clear();
 }
 
+void
+value::
+swap(value& other)
+{
+    // undefined if storage not equal
+    if(*get_storage() != *other.get_storage())
+        BOOST_THROW_EXCEPTION(
+            std::domain_error(
+                "swap on unequal storage"));
+
+    value tmp(pilfer(*this));
+    this->~value();
+    ::new(this) value(pilfer(other));
+    other.~value();
+    ::new(&other) value(pilfer(tmp));
+}
+
 //------------------------------------------------------------------------------
 //
 // Observers

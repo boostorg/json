@@ -812,7 +812,7 @@ swap(object& other)
     // undefined if storage not equal
     if(*sp_ != *other.sp_)
         BOOST_THROW_EXCEPTION(
-            std::invalid_argument(
+            std::domain_error(
                 "swap on unequal storage"));
     std::swap(tab_, other.tab_);
     std::swap(mf_, other.mf_);

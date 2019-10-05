@@ -1332,7 +1332,7 @@ public:
 
         @param other The container to swap with
 
-        @throws std::logic_error if `*get_storage() != *other.get_storage()`
+        @throws std::domain_error if `*get_storage() != *other.get_storage()`
     */
     BOOST_JSON_DECL
     void
