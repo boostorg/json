@@ -561,7 +561,7 @@ public:
     */
     BOOST_JSON_DECL
     void
-    swap(value& other) noexcept;
+    swap(value& other);
 
     //--------------------------------------------------------------------------
     //
