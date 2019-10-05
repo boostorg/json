@@ -95,6 +95,7 @@ using has_to_json =
 class value
 {
     struct undo;
+    struct init_iter;
     friend class value_test;
 
 #ifndef GENERATING_DOCUMENTATION
@@ -125,72 +126,245 @@ public:
     BOOST_JSON_DECL
     ~value();
 
-    /** Construct a null value using the default storage.
+    /** Construct a null value
+
+        The container and all of its contents will use the
+        default storage.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
     */
     BOOST_JSON_DECL
     value() noexcept;
 
-    /** Construct a null value using the specified storage.
+    /** Construct a null value
 
-        The value and all of its contents will use the
+        The container and all of its contents will use the
         specified storage object.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+
+        @param sp A pointer to the @ref storage to use. The
+        container will acquire shared ownership of the pointer.
     */
     BOOST_JSON_DECL
     explicit
     value(storage_ptr sp) noexcept;
 
-    /** Construct a value using the default storage
+    /** Construct a value of the specified kind
 
-        The value and all of its contents will use the
-        specified storage object.
+        The container and all of its contents will use the
+        default storage.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+
+        @param k The kind of JSON value.
     */
     BOOST_JSON_DECL
     explicit
     value(json::kind k) noexcept;
 
-    /** Construct a value using the specified storage.
+    /** Construct a value of the specified kind
 
-        The value and all of its contents will use the specified
-        storage object.
+        The container and all of its contents will use the
+        specified storage object.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
 
         @param k The kind of JSON value.
 
-        @param store The storage to use.
+        @param sp The storage to use.
+
+        @param sp A pointer to the @ref storage to use. The
+        container will acquire shared ownership of the pointer.
     */
     BOOST_JSON_DECL
     value(
         json::kind k,
         storage_ptr sp) noexcept;
 
-    /// Copy constructor
+    /** Copy constructor
+
+        The container and all of its contents will use the
+        default storage.
+
+        @par Complexity
+
+        Linear in the size of `other`.
+
+        @param other The value to copy.
+    */
     BOOST_JSON_DECL
     value(value const& other);
 
-    /// Storage-extended copy constructor
+    /** Copy constructor
+
+        The container and all of its contents will use the
+        specified storage object.
+
+        @par Complexity
+
+        Linear in the size of `other`.
+
+        @param other The value to copy.
+
+        @param sp A pointer to the @ref storage to use. The
+        container will acquire shared ownership of the pointer.
+    */
     BOOST_JSON_DECL
     value(
         value const& other,
         storage_ptr sp);
 
-    /// Pilfer constructor
+    /** Pilfer constructor
+
+        Constructs the container with the contents of `other`
+        using pilfer semantics.
+        Ownership of the @ref storage is transferred.
+
+        @note
+
+        After construction, the moved-from object may only be
+        destroyed.
+        
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+
+        @param other The container to pilfer
+
+        @see
+        
+        Pilfering constructors are described in
+        <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0308r0.html">Valueless Variants Considered Harmful</a>, by Peter Dimov.
+    */
     BOOST_JSON_DECL
     value(pilfered<value> other) noexcept;
 
-    /// Move constructor
+    /** Move constructor
+
+        Constructs the container with the contents of `other`
+        using move semantics. Ownership of the underlying
+        memory is transferred.
+        The container acquires shared ownership of the
+        @ref storage used by `other`.
+        
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+
+        @param other The container to move
+    */
     BOOST_JSON_DECL
     value(value&& other) noexcept;
 
-    /// Storage-extended move constructor
+    /** Move constructor
+
+        Using `*sp` as the @ref storage for the new container,
+        moves all the elements from `other`.
+
+        @li If `*other.get_storage() == *sp`, ownership of the
+        underlying memory is transferred in constant time, with
+        no possibility of exceptions.
+
+        @li If `*other.get_storage() != *sp`, a copy is performed.
+        In this case, the moved-from container is not changed.
+
+        The container and all of its contents will use the
+        specified storage object.
+        
+        @par Complexity
+
+        Constant or linear in the size of `other`.
+
+        @par Exception Safety
+
+        Strong guarantee.
+        Calls to @ref storage::allocate may throw.
+
+        @param other The container to move
+
+        @param sp A pointer to the @ref storage to use. The
+        container array will acquire shared ownership of the pointer.
+    */
     BOOST_JSON_DECL
     value(
         value&& other,
         storage_ptr sp);
 
-    /// Move assignment
+    /** Move assignment operator
+
+        Replaces the contents with those of `other` using move
+        semantics (the data in `other` is moved into this container).
+
+        @li If `*other.get_storage() == get_storage()`,
+        ownership of the  underlying memory is transferred in
+        constant time, with no possibility of exceptions.
+
+        @li If `*other.get_storage() != *sp`, a copy is performed.
+        In this case the moved-from container is not modified,
+        and exceptions may be thrown.
+
+        @par Complexity
+
+        Constant or linear in the size of `*this` plus `other`.
+
+        @par Exception Safety
+
+        Strong guarantee.
+        Calls to @ref storage::allocate may throw.
+
+        @param other The container to assign from
+    */
     BOOST_JSON_DECL
     value& operator=(value&& other);
 
-    /// Copy assignment
+    /** Copy assignment operator
+
+        Replaces the contents with a copy of `other`.
+
+        @par Complexity
+
+        Linear in the size of `*this` plus `other`.
+
+        @par Exception Safety
+
+        Strong guarantee.
+        Calls to @ref storage::allocate may throw.
+
+        @param other The container to copy
+    */
     BOOST_JSON_DECL
     value& operator=(value const& other);
 
@@ -233,7 +407,7 @@ public:
     /** Construct a number
     */
     BOOST_JSON_DECL
-    value(number num);
+    value(number num) noexcept;
 
     /** Construct a number
     */

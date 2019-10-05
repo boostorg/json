@@ -369,20 +369,24 @@ struct value::undo
         value old;
     };
     value* cur;
-    bool commit = false;
 
     explicit
-    undo(value* cur_)
+    undo(value* cur_) noexcept
         : cur(cur_)
     {
         relocate(&old, *cur);
     }
 
+    void
+    commit() noexcept
+    {
+        old.~value();
+        cur = nullptr;
+    }
+
     ~undo()
     {
-        if(commit)
-            old.~value();
-        else
+        if(cur)
             relocate(cur, old);
     }
 };

@@ -500,7 +500,7 @@ public:
         
         @par Complexity
 
-        At most, linear in `other.size()`.
+        Constant or linear in `other.size()`.
 
         @par Exception Safety
 
@@ -715,7 +715,7 @@ public:
 
         @par Complexity
 
-        Constant, or linear in @ref size() plus `other.size()`.
+        Constant or linear in @ref size() plus `other.size()`.
 
         @par Exception Safety
 
@@ -730,7 +730,7 @@ public:
 
     /** Copy assignment operator
 
-        Replaces the contents with an element-wise copy of other.
+        Replaces the contents with an element-wise copy of `other`.
 
         @par Complexity
 
@@ -1312,6 +1312,28 @@ public:
     size_type
     erase(key_type key);
 
+    /** Swap the contents
+
+        Exchanges the contents of this container with another
+        container.
+        All iterators and references remain valid.
+
+        @par Precondition
+
+        `*get_storage() == *other.get_storage()`
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        Strong guarantee.
+
+        @param other The container to swap with
+
+        @throws std::logic_error if `*get_storage() != *other.get_storage()`
+    */
     BOOST_JSON_DECL
     void
     swap(object& other);

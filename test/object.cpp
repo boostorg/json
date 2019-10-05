@@ -501,7 +501,6 @@ public:
             object o;
             auto v = object::value_type("a", 1);
             auto result = o.insert(std::move(v));
-            BEAST_EXPECT(v.second.is_null());
             BEAST_EXPECT(result.second);
             BEAST_EXPECT(result.first->first == "a");
             auto v2 = object::value_type("a", 2);

@@ -161,12 +161,12 @@ public:
 
         Constant.
 
-        @param sp A pointer to the @ref storage to use. The
-        container will acquire shared ownership of the pointer.
-
         @par Exception Safety
 
         No-throw guarantee.
+
+        @param sp A pointer to the @ref storage to use. The
+        container will acquire shared ownership of the pointer.
     */
     BOOST_JSON_DECL
     explicit
@@ -1588,18 +1588,25 @@ public:
 
     /** Swap the contents
 
-        Exchanges the contents of this array with another array.
+        Exchanges the contents of this container with another
+        container.
         All iterators and references remain valid.
 
         @par Precondition
 
         `*get_storage() == *other.get_storage()`
 
+        @par Complexity
+
+        Constant.
+
         @par Exception Safety
 
         Strong guarantee.
 
         @param other The container to swap with
+
+        @throws std::logic_error if `*get_storage() != *other.get_storage()`
     */
     BOOST_JSON_DECL
     void

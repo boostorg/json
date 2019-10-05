@@ -18,6 +18,60 @@
 namespace boost {
 namespace json {
 
+//------------------------------------------------------------------------------
+
+struct value::init_iter
+{
+    using value_type = std::pair<
+        string_view const, value const&>;
+    using pointer = value_type const*;
+    using reference = value_type const&;
+    using difference_type = std::ptrdiff_t;
+    using iterator_category =
+        std::input_iterator_tag;
+
+    std::initializer_list<value>::iterator it_;
+
+    init_iter&
+    operator++() noexcept
+    {
+        ++it_;
+        return *this;
+    }
+
+    init_iter
+    operator++(int) noexcept
+    {
+        auto tmp = *this;
+        ++it_;
+        return tmp;
+    }
+
+    value_type
+    operator*() const noexcept
+    {
+        return {
+            it_->as_array()[0].as_string(),
+            it_->as_array()[1] };
+    }
+
+    bool
+    operator==(
+        init_iter const& other) const noexcept
+    {
+        return it_ == other.it_;
+    }
+
+    bool
+    operator!=(
+        init_iter const& other) const noexcept
+    {
+        return it_ != other.it_;
+    }
+};
+
+//------------------------------------------------------------------------------
+
 value::
 ~value()
 {
@@ -209,25 +263,23 @@ value(value&& other) noexcept
     switch(other.kind_)
     {
     case json::kind::object:
-        relocate(&obj_, other.obj_);
-        ::new(&other.nat_.sp_) storage_ptr(
-            obj_.get_storage());
+        ::new(&obj_) object(
+            std::move(other.obj_));
         break;
 
     case json::kind::array:
-        relocate(&arr_, other.arr_);
-        ::new(&other.nat_.sp_) storage_ptr(
-            arr_.get_storage());
+        ::new(&arr_) array(
+            std::move(other.arr_));
         break;
 
     case json::kind::string:
-        relocate(&str_, other.str_);
-        ::new(&other.nat_.sp_) storage_ptr(
-            str_.get_allocator().get_storage());
+        ::new(&str_) string(
+            std::move(other.str_));
         break;
 
     case json::kind::number:
-        relocate(&nat_.num_, other.nat_.num_);
+        ::new(&nat_.num_) number(
+            std::move(other.nat_.num_));
         ::new(&nat_.sp_) storage_ptr(
             other.nat_.sp_);
         break;
@@ -244,7 +296,6 @@ value(value&& other) noexcept
         break;
     }
     kind_ = other.kind_;
-    other.kind_ = json::kind::null;
 }
 
 value::
@@ -302,7 +353,7 @@ operator=(value&& other)
     ::new(this) value(
         std::move(other),
         u.old.get_storage());
-    u.commit = true;
+    u.commit();
     return *this;
 }
 
@@ -316,7 +367,7 @@ operator=(value const& other)
     undo u(this);
     ::new(this) value(other,
         u.old.get_storage());
-    u.commit = true;
+    u.commit();
     return *this;
 }
 
@@ -381,10 +432,12 @@ value(
 }
 
 value::
-value(number num)
-    : value(num,
-        default_storage())
+value(number num) noexcept
+    : kind_(json::kind::number)
 {
+    ::new(&nat_.num_) number(num);
+    ::new(&nat_.sp_) storage_ptr(
+        default_storage());
 }
 
 value::
@@ -413,12 +466,10 @@ value(
 {
     if(maybe_object(init))
     {
-#if 0
         ::new(&obj_) object(
-            init, std::move(sp));
-#else
-        ::new(&obj_) object(std::move(sp));
-#endif
+            init_iter{init.begin()},
+            init_iter{init.end()},
+            std::move(sp));
         kind_ = json::kind::object;
     }
     else
@@ -437,7 +488,7 @@ operator=(object obj)
     ::new(this) value(
         std::move(obj),
         u.old.get_storage());
-    u.commit = true;
+    u.commit();
     return *this;
 }
 
@@ -449,7 +500,7 @@ operator=(array arr)
     ::new(this) value(
         std::move(arr),
         u.old.get_storage());
-    u.commit = true;
+    u.commit();
     return *this;
 }
 
@@ -461,7 +512,7 @@ operator=(string str)
     ::new(this) value(
         std::move(str),
         u.old.get_storage());
-    u.commit = true;
+    u.commit();
     return *this;
 }
 
@@ -480,30 +531,18 @@ reset(json::kind k) noexcept
         undo u(this);
         ::new(this) value(
             k, u.old.get_storage());
-        u.commit = true;
+        u.commit();
         return;
     }
 
-    switch(kind_)
-    {
-    case json::kind::object:
-        obj_.clear();    
-        break;
-
-    case json::kind::array:
-        arr_.clear();
-        break;
-
-    case json::kind::string:
-        str_.clear();
-        break;
-
-    case json::kind::number:
-    case json::kind::boolean:
-    case json::kind::null:
-        break;
-    }
+    clear();
 }
+
+//------------------------------------------------------------------------------
+//
+// Observers
+//
+//------------------------------------------------------------------------------
 
 bool
 value::
