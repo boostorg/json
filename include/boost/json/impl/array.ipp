@@ -792,12 +792,22 @@ void
 array::
 swap(array& other)
 {
-    // undefined if storage not equal
-    if(*sp_ != *other.sp_)
-        BOOST_THROW_EXCEPTION(
-            std::domain_error(
-                "swap on unequal storage"));
-    std::swap(tab_, other.tab_);
+    if(*sp_ == *other.sp_)
+    {
+        std::swap(tab_, other.tab_);
+        return;
+    }
+
+    array temp1(
+        std::move(*this),
+        other.get_storage());
+    array temp2(
+        std::move(other),
+        this->get_storage());
+    other.~array();
+    ::new(&other) array(pilfer(temp1));
+    this->~array();
+    ::new(this) array(pilfer(temp2));
 }
 
 //------------------------------------------------------------------------------

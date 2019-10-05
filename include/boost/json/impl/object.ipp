@@ -332,18 +332,9 @@ node_type::
 operator=(node_type&& other) noexcept ->
     node_type&
 {
-    if(e_)
-    {
-        element::destroy(e_, sp_);
-        e_ = nullptr;
-        sp_ = nullptr;
-    }
-    if(other.e_)
-    {
-        e_ = boost::exchange(
-            other.e_, nullptr);
-        sp_ = std::move(other.sp_);
-    }
+    node_type temp;
+    temp.swap(*this);
+    this->swap(other);
     return *this;
 }
 
@@ -395,7 +386,7 @@ object(
     storage_ptr sp)
     : sp_(std::move(sp))
 {
-    reserve(bucket_count);
+    rehash(bucket_count);
 }
 
 object::
@@ -751,15 +742,17 @@ insert(
         insert_return_type
 {
     if(! nh.e_)
-        return { end(), false, {} };
+        return { end(), {}, false };
+    BOOST_ASSERT(
+        *nh.get_storage() == *sp_);
     auto const result =
         find_impl(nh.key());
     if(result.first)
         return { iterator(result.first),
-            false, std::move(nh) };
+            std::move(nh), false };
     insert(pos, result.second, nh.e_);
     return { iterator(boost::exchange(
-        nh.e_, nullptr)), true, {} };
+        nh.e_, nullptr)), {}, true };
 }
 
 auto
@@ -767,10 +760,11 @@ object::
 erase(const_iterator pos) ->
     iterator
 {
-    auto e = pos.e_->next;
-    remove(pos.e_);
-    element::destroy(pos.e_, sp_);
-    return e;
+    auto e = pos.e_;
+    pos = e->next;
+    remove(e);
+    element::destroy(e, sp_);
+    return iterator(pos.e_);
 }
 
 auto
@@ -780,17 +774,14 @@ erase(
     const_iterator last) ->
         iterator
 {
-    if(! tab_)
-        return first.e_;
-    auto e = first.e_;
-    while(e != last.e_)
+    while(first != last)
     {
-        auto next = e->next;
+        auto e = first.e_;
+        first = e->next;
         remove(e);
         element::destroy(e, sp_);
-        e = next;
     }
-    return e;
+    return iterator(first.e_);
 }
 
 auto
@@ -809,13 +800,23 @@ void
 object::
 swap(object& other)
 {
-    // undefined if storage not equal
-    if(*sp_ != *other.sp_)
-        BOOST_THROW_EXCEPTION(
-            std::domain_error(
-                "swap on unequal storage"));
-    std::swap(tab_, other.tab_);
-    std::swap(mf_, other.mf_);
+    if(*sp_ == *other.sp_)
+    {
+        std::swap(tab_, other.tab_);
+        std::swap(mf_, other.mf_);
+        return;
+    }
+
+    object temp1(
+        std::move(*this),
+        other.get_storage());
+    object temp2(
+        std::move(other),
+        this->get_storage());
+    other.~object();
+    ::new(&other) object(pilfer(temp1));
+    this->~object();
+    ::new(this) object(pilfer(temp2));
 }
 
 auto
@@ -823,6 +824,7 @@ object::
 extract(const_iterator pos) ->
     node_type
 {
+    BOOST_ASSERT(pos != end());
     remove(pos.e_);
     return { pos.e_, sp_ };
 }
@@ -836,20 +838,6 @@ extract(key_type key) ->
     if(it == end())
         return {};
     return extract(it);
-}
-
-void
-object::
-merge(object&)
-{
-    // TODO
-}
-
-void
-object::
-merge(object&&)
-{
-    // TODO
 }
 
 //------------------------------------------------------------------------------
@@ -892,14 +880,6 @@ operator[](key_type key) ->
     auto const result = emplace(
         end(), key, kind::null);
     return result.first->second;
-}
-
-auto
-object::
-operator[](key_type key) const ->
-    value const&
-{
-    return find(key)->second;
 }
 
 auto
@@ -947,115 +927,6 @@ contains(key_type key) const noexcept
 //
 // Bucket Interface
 //
-//------------------------------------------------------------------------------
-
-auto
-object::
-begin(size_type n) noexcept ->
-    local_iterator
-{
-    if(! tab_)
-        return {};
-    return tab_->bucket(n);
-}
-
-auto
-object::
-begin(size_type n) const noexcept ->
-    const_local_iterator
-{
-    if(! tab_)
-        return {};
-    return tab_->bucket(n);
-}
-
-auto
-object::
-cbegin(size_type n) noexcept ->
-    const_local_iterator
-{
-    if(! tab_)
-        return {};
-    return tab_->bucket(n);
-}
-
-auto
-object::
-end(size_type n)  noexcept ->
-    local_iterator
-{
-    boost::ignore_unused(n);
-    if(! tab_)
-        return {};
-    return tab_->end();
-}
-
-auto
-object::
-end(size_type n) const noexcept ->
-    const_local_iterator
-{
-    boost::ignore_unused(n);
-    if(! tab_)
-        return {};
-    return tab_->end();
-}
-
-auto
-object::
-cend(size_type n) noexcept ->
-    const_local_iterator
-{
-    boost::ignore_unused(n);
-    if(! tab_)
-        return {};
-    return tab_->end();
-}
-
-auto
-object::
-bucket_count() const noexcept ->
-    size_type
-{
-    if(! tab_)
-        return 0;
-    return tab_->bucket_count;
-}
-
-auto
-object::
-max_bucket_count() const noexcept ->
-    size_type
-{
-    return (std::numeric_limits<
-        size_type>::max)();
-}
-
-auto
-object::
-bucket_size(size_type n) const noexcept ->
-    size_type
-{
-    if(! tab_)
-        return 0;
-    size_type size = 0;
-    for(auto e = tab_->bucket(n);
-        e != tab_->end(); ++e)
-        ++size;
-    return size;
-}
-
-auto
-object::
-bucket(key_type key) const noexcept ->
-    size_type
-{
-    if(! tab_)
-        return 0; // undefined
-    return hasher{}(key) %
-        bucket_count();
-}
-
 //------------------------------------------------------------------------------
 
 namespace detail {
@@ -1177,6 +1048,108 @@ get_primes() noexcept
 } // detail
 
 //------------------------------------------------------------------------------
+
+auto
+object::
+begin(size_type n) ->
+    local_iterator
+{
+    BOOST_ASSERT(tab_);
+    return tab_->bucket(n);
+}
+
+auto
+object::
+begin(size_type n) const ->
+    const_local_iterator
+{
+    BOOST_ASSERT(tab_);
+    return tab_->bucket(n);
+}
+
+auto
+object::
+cbegin(size_type n) const ->
+    const_local_iterator
+{
+    BOOST_ASSERT(tab_);
+    return tab_->bucket(n);
+}
+
+auto
+object::
+end(size_type n)  ->
+    local_iterator
+{
+    boost::ignore_unused(n);
+    BOOST_ASSERT(tab_);
+    return tab_->end();
+}
+
+auto
+object::
+end(size_type n) const ->
+    const_local_iterator
+{
+    boost::ignore_unused(n);
+    BOOST_ASSERT(tab_);
+    return tab_->end();
+}
+
+auto
+object::
+cend(size_type n) const ->
+    const_local_iterator
+{
+    boost::ignore_unused(n);
+    BOOST_ASSERT(tab_);
+    return tab_->end();
+}
+
+auto
+object::
+bucket_count() const noexcept ->
+    size_type
+{
+    if(! tab_)
+        return 0;
+    return tab_->bucket_count;
+}
+
+auto
+object::
+max_bucket_count() const noexcept ->
+    size_type
+{
+    return detail::get_primes().end()[-1];
+}
+
+auto
+object::
+bucket_size(size_type n) const ->
+    size_type
+{
+    BOOST_ASSERT(tab_);
+    size_type size = 0;
+    for(auto e = tab_->bucket(n);
+        e != tab_->end();
+        e = e->local_next)
+        ++size;
+    return size;
+}
+
+auto
+object::
+bucket(key_type key) const ->
+    size_type
+{
+    BOOST_ASSERT(tab_);
+    return constrain_hash(
+        hash_function()(key),
+        bucket_count());
+}
+
+//------------------------------------------------------------------------------
 //
 // Hash Policy
 //
@@ -1192,32 +1165,41 @@ load_factor() const noexcept
         size()) / bucket_count();
 }
 
-// rehash to at least `count` buckets
 void
 object::
-rehash(size_type count)
+max_load_factor(float mf)
+{
+    mf_ = mf;
+    if(load_factor() > mf_)
+        rehash(0);
+}
+
+// rehash to at least `n` buckets
+void
+object::
+rehash(size_type n)
 {
     // snap to nearest prime 
     auto const primes =
         detail::get_primes();
-    count = *std::lower_bound(
-        primes.begin(), primes.end(), count);
+    n = *std::lower_bound(
+        primes.begin(), primes.end(), n);
     auto const bc = bucket_count();
-    if(count == bc)
+    if(n == bc)
         return;
-    if(count < bc)
+    if(n < bc)
     {
-        count = (std::max<size_type>)(
-            count, *std::lower_bound(
+        n = (std::max<size_type>)(
+            n, *std::lower_bound(
             primes.begin(), primes.end(),
             static_cast<size_type>(
                 std::ceil(size() /
                 max_load_factor()))));
-        if(count >= bc)
+        if(n <= bc)
             return;
     }
     // create new buckets
-    auto tab = table::construct(count, sp_);
+    auto tab = table::construct(n, sp_);
     if(tab_)
     {
         tab->size = tab_->size;
@@ -1240,8 +1222,8 @@ rehash(size_type count)
     for(auto e = tab_->head;
         e != tab_->end(); e = e->next)
     {
-        auto const n = bucket(e->key());
-        auto& head = tab_->bucket(n);
+        auto const bn = bucket(e->key());
+        auto& head = tab_->bucket(bn);
         e->local_next = head;
         head = e;
     }
@@ -1249,11 +1231,11 @@ rehash(size_type count)
 
 void
 object::
-reserve(size_type count)
+reserve(size_type n)
 {
     rehash(static_cast<
         size_type>(std::ceil(
-            count / max_load_factor())));
+            n / max_load_factor())));
 }
 
 //------------------------------------------------------------------------------
@@ -1386,15 +1368,17 @@ insert(
         tab_->head = e;
         tab_->end()->prev = e;
         e->next = tab_->end();
+        e->prev = nullptr;
     }
     else
     {
         e->prev = before.e_->prev;
-        e->next = before.e_;
-        e->prev->next = e;
-        e->next->prev = e;
-        if(tab_->head == before.e_)
+        if(e->prev)
+            e->prev->next = e;
+        else
             tab_->head = e;
+        e->next = before.e_;
+        e->next->prev = e;
     }
     ++tab_->size;
     r.e = nullptr;

@@ -196,8 +196,6 @@ public:
 
         @param k The kind of JSON value.
 
-        @param sp The storage to use.
-
         @param sp A pointer to the @ref storage to use. The
         container will acquire shared ownership of the pointer.
     */
@@ -964,10 +962,6 @@ public:
     BOOST_JSON_DECL
     value&
     operator[](key_type key);
-
-    BOOST_JSON_DECL
-    value const&
-    operator[](key_type key) const;
 
     BOOST_JSON_DECL
     size_type

@@ -798,14 +798,6 @@ operator[](key_type key)
     return obj_[key];
 }
 
-value const&
-value::
-operator[](key_type key) const
-{
-    BOOST_ASSERT(this->is_object());
-    return obj_[key];
-}
-
 auto
 value::
 count(key_type key) const ->

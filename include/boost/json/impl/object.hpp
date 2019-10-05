@@ -17,6 +17,7 @@
 #include <boost/utility/string_view.hpp>
 #include <algorithm>
 #include <type_traits>
+#include <utility>
 
 namespace boost {
 namespace json {
@@ -162,6 +163,92 @@ public:
 
 //------------------------------------------------------------------------------
 
+class object::const_iterator
+{
+    element* e_ = nullptr;
+
+    friend class object;
+
+    const_iterator(element* e)
+        : e_(e)
+    {
+    }
+
+public:
+    using value_type = object::value_type;
+    using pointer = object::const_pointer;
+    using reference = object::const_reference;
+    using difference_type = std::ptrdiff_t;
+    using iterator_category =
+        std::bidirectional_iterator_tag;
+
+    const_iterator() = default;
+    const_iterator(const_iterator const&) = default;
+    const_iterator& operator=(const_iterator const&) = default;
+
+    const_iterator(iterator it) noexcept;
+    const_iterator(local_iterator it) noexcept;
+    const_iterator(const_local_iterator it) noexcept;
+
+    const_iterator&
+    operator++() noexcept
+    {
+        e_ = e_->next;
+        return *this;
+    }
+
+    const_iterator
+    operator++(int) noexcept
+    {
+        auto tmp = *this;
+        ++*this;
+        return tmp;
+    }
+
+    const_iterator&
+    operator--() noexcept
+    {
+        e_ = e_->prev;
+        return *this;
+    }
+
+    const_iterator
+    operator--(int) noexcept
+    {
+        auto tmp = *this;
+        --*this;
+        return tmp;
+    }
+
+    pointer
+    operator->() const noexcept
+    {
+        return const_reference{
+            e_->key(), e_->v };
+    }
+
+    reference
+    operator*() const noexcept
+    {
+        return {
+            e_->key(), e_->v };
+    }
+
+    bool
+    operator==(const_iterator other) const noexcept
+    {
+        return e_ == other.e_;
+    }
+
+    bool
+    operator!=(const_iterator other) const noexcept
+    {
+        return e_ != other.e_;
+    }
+};
+
+//------------------------------------------------------------------------------
+
 class object::iterator
 {
     element* e_ = nullptr;
@@ -182,34 +269,10 @@ public:
         std::bidirectional_iterator_tag;
 
     iterator() = default;
+    iterator(iterator const&) = default;
+    iterator& operator=(iterator const&) = default;
 
-    iterator(
-        iterator const&) = default;
-
-    iterator& operator=(
-        iterator const&) = default;
-
-    bool
-    operator==(
-        iterator const& other) const noexcept
-    {
-        return e_ == other.e_;
-    }
-
-    bool
-    operator!=(
-        iterator const& other) const noexcept
-    {
-        return e_ != other.e_;
-    }
-
-    bool
-    operator==(
-        const_iterator const& other) const noexcept;
-
-    bool
-    operator!=(
-        const_iterator const& other) const noexcept;
+    iterator(local_iterator it) noexcept;
 
     iterator&
     operator++() noexcept
@@ -254,141 +317,19 @@ public:
         return {
             e_->key(), e_->v };
     }
-};
 
-//------------------------------------------------------------------------------
-
-class object::const_iterator
-{
-    element* e_ = nullptr;
-
-    friend class object;
-
-    const_iterator(element* e)
-        : e_(e)
+    bool
+    operator==(const_iterator other) const noexcept
     {
-    }
-
-public:
-    using value_type = object::value_type;
-    using pointer = object::const_pointer;
-    using reference = object::const_reference;
-    using difference_type = std::ptrdiff_t;
-    using iterator_category =
-        std::bidirectional_iterator_tag;
-
-    const_iterator() = default;
-
-    const_iterator(
-        const_iterator const&) = default;
-
-    const_iterator& operator=(
-        const_iterator const&) = default;
-
-    const_iterator(iterator it)
-        : e_(it.e_)
-    {
-    }
-
-    const_iterator&
-    operator=(iterator it) noexcept
-    {
-        e_ = it.e_;
-        return *this;
+        return const_iterator(*this) == other;
     }
 
     bool
-    operator==(
-        const_iterator const& other) const noexcept
+    operator!=(const_iterator other) const noexcept
     {
-        return e_ == other.e_;
-    }
-
-    bool
-    operator!=(
-        const_iterator const& other) const noexcept
-    {
-        return e_ != other.e_;
-    }
-
-    bool
-    operator==(
-        iterator const& other) const noexcept
-    {
-        return e_ == other.e_;
-    }
-
-    bool
-    operator!=(
-        iterator const& other) const noexcept
-    {
-        return e_ != other.e_;
-    }
-
-    const_iterator&
-    operator++() noexcept
-    {
-        e_ = e_->next;
-        return *this;
-    }
-
-    const_iterator
-    operator++(int) noexcept
-    {
-        auto tmp = *this;
-        ++*this;
-        return tmp;
-    }
-
-    const_iterator&
-    operator--() noexcept
-    {
-        e_ = e_->prev;
-        return *this;
-    }
-
-    const_iterator
-    operator--(int) noexcept
-    {
-        auto tmp = *this;
-        --*this;
-        return tmp;
-    }
-
-    pointer
-    operator->() const noexcept
-    {
-        return const_reference{
-            e_->key(), e_->v };
-    }
-
-    reference
-    operator*() const noexcept
-    {
-        return {
-            e_->key(), e_->v };
+        return const_iterator(*this) != other;
     }
 };
-
-inline
-bool
-object::
-iterator::
-operator==(
-    const_iterator const& other) const noexcept
-{
-    return e_ == other.e_;
-}
-
-inline
-bool
-object::
-iterator::
-operator!=(
-    const_iterator const& other) const noexcept
-{
-    return e_ != other.e_;
-}
 
 //------------------------------------------------------------------------------
 
@@ -405,44 +346,17 @@ class object::local_iterator
 
 public:
     using value_type = object::value_type;
-
+    using pointer = object::pointer;
     using reference = object::reference;
+    using difference_type = std::ptrdiff_t;
+    using iterator_category =
+        std::forward_iterator_tag;
 
     local_iterator() = default;
-
     local_iterator(
         local_iterator const&) = default;
-
-    local_iterator& operator=(
-        local_iterator const&) = default;
-
-    bool
-    operator==(
-        local_iterator const& other) const noexcept
-    {
-        return e_ == other.e_;
-    }
-
-    bool
-    operator!=(
-        local_iterator const& other) const noexcept
-    {
-        return e_ != other.e_;
-    }
-
-    bool
-    operator==(
-        iterator const& other) const noexcept
-    {
-        return e_ == other.e_;
-    }
-
-    bool
-    operator!=(
-        iterator const& other) const noexcept
-    {
-        return e_ != other.e_;
-    }
+    local_iterator&
+    operator=(local_iterator const&) = default;
 
     local_iterator&
     operator++() noexcept
@@ -472,61 +386,49 @@ public:
         return {
             e_->key(), e_->v };
     }
+
+    bool
+    operator==(const_iterator other) const noexcept
+    {
+        return const_iterator(*this) == other;
+    }
+
+    bool
+    operator!=(const_iterator other) const noexcept
+    {
+        return const_iterator(*this) != other;
+    }
 };
 
 //------------------------------------------------------------------------------
 
 class object::const_local_iterator
 {
-    element const* e_ = nullptr;
+    element* e_ = nullptr;
 
     friend class object;
 
-    const_local_iterator(element const* e)
+    const_local_iterator(element* e)
         : e_(e)
     {
     }
 
 public:
     using value_type = object::value_type;
-    
+    using pointer = object::const_pointer;
     using reference = object::const_reference;
+    using difference_type = std::ptrdiff_t;
+    using iterator_category =
+        std::forward_iterator_tag;
 
     const_local_iterator() = default;
-
     const_local_iterator(
         const_local_iterator const&) = default;
-
-    const_local_iterator& operator=(
+    const_local_iterator&
+    operator=(
         const_local_iterator const&) = default;
 
-    bool
-    operator==(
-        const_local_iterator const& other) const noexcept
-    {
-        return e_ == other.e_;
-    }
-
-    bool
-    operator!=(
-        const_local_iterator const& other) const noexcept
-    {
-        return e_ != other.e_;
-    }
-
-    bool
-    operator==(
-        iterator const& other) const noexcept
-    {
-        return e_ == other.e_;
-    }
-
-    bool
-    operator!=(
-        iterator const& other) const noexcept
-    {
-        return e_ != other.e_;
-    }
+    const_local_iterator(local_iterator it) noexcept;
 
     const_local_iterator&
     operator++() noexcept
@@ -556,7 +458,66 @@ public:
         return {
             e_->key(), e_->v };
     }
+
+    bool
+    operator==(const_iterator other) const noexcept
+    {
+        return const_iterator(*this) == other;
+    }
+
+    bool
+    operator!=(const_iterator other) const noexcept
+    {
+        return const_iterator(*this) != other;
+    }
 };
+
+//------------------------------------------------------------------------------
+
+inline
+object::
+const_iterator::
+const_iterator(
+    iterator it) noexcept
+    : e_(it.e_)
+{
+}
+
+inline
+object::
+const_iterator::
+const_iterator(
+    local_iterator it) noexcept
+    : e_(it.e_)
+{
+}
+
+inline
+object::
+const_iterator::
+const_iterator(
+    const_local_iterator it) noexcept
+    : e_(it.e_)
+{
+}
+
+inline
+object::
+iterator::
+iterator(
+    local_iterator it) noexcept
+    : e_(it.e_)
+{
+}
+
+inline
+object::
+const_local_iterator::
+const_local_iterator(
+    local_iterator it) noexcept
+    : e_(it.e_)
+{
+}
 
 //------------------------------------------------------------------------------
 
@@ -605,35 +566,51 @@ public:
     explicit
     operator bool() const noexcept
     {
-        return e_ != nullptr;
+        return ! empty();
     }
 
-    key_type
-    key() const noexcept
+    key_type const
+    key() const
     {
         return e_->key();
     }
 
     mapped_type&
-    value() noexcept
+    mapped()
     {
         return e_->v;
     }
 
     mapped_type const&
-    value() const noexcept
+    mapped() const
     {
         return e_->v;
     }
+
+    void
+    swap(node_type& other) noexcept
+    {
+        std::swap(e_, other.e_);
+        std::swap(sp_, other.sp_);
+    }
 };
+
+inline
+void
+swap(
+    object::node_type& lhs,
+    object::node_type& rhs) noexcept
+{
+    lhs.swap(rhs);
+}
 
 //------------------------------------------------------------------------------
 
 struct object::insert_return_type
 {
     iterator position;
-    bool inserted;
     node_type node;
+    bool inserted;
 };
 
 //------------------------------------------------------------------------------
@@ -805,7 +782,7 @@ emplace(
 inline
 auto
 object::
-hash_function() const ->
+hash_function() const noexcept ->
     hasher
 {
     return hasher{};
@@ -814,7 +791,7 @@ hash_function() const ->
 inline
 auto
 object::
-key_eq() const ->
+key_eq() const noexcept ->
     key_equal
 {
     return key_equal{};

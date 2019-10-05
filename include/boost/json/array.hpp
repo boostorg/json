@@ -278,7 +278,7 @@ public:
 
         `not std::is_convertible_v<InputIt, storage_ptr>`
 
-        @par Requires
+        @par Mandates
 
         `std::is_constructible_v<value, std::iterator_traits<InputIt>::value_type>`
 
@@ -322,7 +322,7 @@ public:
 
         `not std::is_convertible_v<InputIt, storage_ptr>`
 
-        @par Requires
+        @par Mandates
 
         `std::is_constructible_v<value, std::iterator_traits<InputIt>::value_type>`
 
@@ -1263,7 +1263,7 @@ public:
 
         `not std::is_convertible_v<InputIt, value>`
 
-        @par Requires
+        @par Mandates
 
         `std::is_constructible_v<value, std::iterator_traits<InputIt>::value_type>`
 
@@ -1589,24 +1589,28 @@ public:
     /** Swap the contents
 
         Exchanges the contents of this container with another
-        container.
-        All iterators and references remain valid.
+        container. Ownership of the respective @ref storage
+        objects is not transferred.
 
-        @par Precondition
+        @li If `*other.get_storage() == *sp`, ownership of the
+        underlying memory is swapped in constant time, with
+        no possibility of exceptions. All iterators and
+        references remain valid.
 
-        `*get_storage() == *other.get_storage()`
+        @li If `*other.get_storage() != *sp`, the contents are
+        logically swapped by making copies, which can throw.
+        In this case all iterators and references are invalidated.
 
         @par Complexity
 
-        Constant.
+        Constant or linear in @ref size() plus `other.size()`.
 
         @par Exception Safety
 
         Strong guarantee.
+        Calls to @ref storage::allocate may throw.
 
         @param other The container to swap with
-
-        @throws std::domain_error if `*get_storage() != *other.get_storage()`
     */
     BOOST_JSON_DECL
     void

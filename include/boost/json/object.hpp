@@ -31,7 +31,7 @@ class value;
     This is an associative container that contains key-value
     pairs with unique keys. Search, insertion, and removal of
     elements have average constant-time complexity.
-
+    <br>
     Internally the elements are initially kept in insertion
     order, but this order can be changed manually by specifying
     where new or moved elements go. Elements are also organized
@@ -48,7 +48,7 @@ class value;
 
     @par Satisfies
 
-    @ref object meets the requirements of
+    @ref object models
         <em>Container</em>,
         <em>ReversibleContainer</em>,
         <em>SequenceContainer</em>, and
@@ -117,7 +117,37 @@ public:
     using const_local_iterator = __implementation_defined__;
 
     using node_type = __see_below__;
-    using insert_return_type = __see_below__;
+
+    /** Describes the result of inserting a node handle.
+
+        Objects of this type are returned by functions
+        which attempt to insert a compatible node handle.
+    */
+    struct insert_return_type
+    {
+        /** An iterator pointing to the result of the insertion.
+
+            If @ref inserted is `true`, this will point to the
+            newly inserted element. Otherwise it will point to
+            the already existing element with the matching key.
+        */
+        iterator position;
+
+        /** The empty node handle, or the original node handle
+
+            If @ref inserted is `true`, this will be an empty
+            node handle. Otherwise, it will have ownership of
+            the original node used to perform the insertion.
+        */
+        node_type node;
+
+        /** Indicates if the insertion was successful.
+
+            This will be `true` if the node was inserted, or
+            `false` if a matching key was already in the container.
+        */
+        bool inserted;
+    };
 
 #else
     class hasher;
@@ -215,6 +245,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
+        Calls to @ref storage::allocate may throw.
     */
     BOOST_JSON_DECL
     explicit
@@ -240,13 +271,14 @@ public:
         @par Exception Safety
 
         Strong guarantee.
+        Calls to @ref storage::allocate may throw.
     */
     BOOST_JSON_DECL
     object(
         size_type bucket_count,
         storage_ptr sp);
 
-    /** Construct a container with the contents of a range
+    /** Construct with the contents of a range
 
         The elements in the range `[first, last)` are
         inserted in order.
@@ -293,7 +325,7 @@ public:
         InputIt first,
         InputIt last);
 
-    /** Construct a container with the contents of a range
+    /** Construct with the contents of a range
 
         The elements in the range `[first, last)` are
         inserted in order.
@@ -346,7 +378,7 @@ public:
         InputIt last,
         size_type bucket_count);
 
-    /** Construct a container with the contents of a range
+    /** Construct with the contents of a range
 
         The elements in the range `[first, last)` are
         inserted in order.
@@ -397,7 +429,7 @@ public:
         InputIt last,
         storage_ptr sp);
 
-    /** Construct a container with the contents of a range
+    /** Construct with the contents of a range
 
         The elements in the range `[first, last)` are
         inserted in order.
@@ -456,7 +488,7 @@ public:
 
     /** Move constructor
 
-        Constructs the container with the contents of `other`
+        Construct the container with the contents of `other`
         using move semantics. Ownership of the underlying
         memory is transferred.
         The container acquires shared ownership of the
@@ -519,7 +551,7 @@ public:
 
     /** Pilfer constructor
 
-        Constructs the container with the contents of `other`
+        Construct the container with the contents of `other`
         using pilfer semantics.
         Ownership of the @ref storage is transferred.
 
@@ -548,7 +580,7 @@ public:
 
     /** Copy constructor
 
-        Constructs the container with a copy of the contents
+        Construct the container with a copy of the contents
         of `other.
         The container and all inserted elements will use the
         default storage.
@@ -570,7 +602,7 @@ public:
 
     /** Copy constructor
 
-        Constructs the container with a copy of the contents
+        Construct the container with a copy of the contents
         of `other.
         The container and all inserted elements will use the
         default storage.
@@ -594,7 +626,7 @@ public:
         object const& other,
         storage_ptr sp);
 
-    /** Constructs the container with the contents of an initializer list
+    /** Construct the container with an initializer list
 
         The container and all inserted elements will use the
         default storage.
@@ -615,7 +647,7 @@ public:
         std::initializer_list<
             init_value> init);
 
-    /** Constructs the container with the contents of an initializer list
+    /** Construct the container with an initializer list
 
         Storage is allocated for at least `bucket_count`
         buckets.
@@ -642,7 +674,7 @@ public:
             init_value> init,
         size_type bucket_count);
 
-    /** Constructs the container with the contents of an initializer list
+    /** Construct the container with an initializer list
 
         The container and all inserted elements will use the
         @ref storage pointed to by `sp`.
@@ -667,7 +699,7 @@ public:
             init_value> init,
         storage_ptr sp);
         
-    /** Constructs the container with the contents of an initializer list
+    /** Construct the container with an initializer list
 
         Storage is allocated for at least `bucket_count`
         buckets.
@@ -977,8 +1009,6 @@ public:
     /** Return the number of elements in the container
 
         This returns the number of elements in the container.
-        The value returned may be different from the value
-        returned from @ref capacity.
 
         @par Complexity
 
@@ -1187,6 +1217,9 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
         
+        @param pos Iterator before which the new elements will
+        be inserted. This may be the @ref end() iterator.
+
         @param init The initializer list to insert
     */
     BOOST_JSON_DECL
@@ -1196,10 +1229,73 @@ public:
         std::initializer_list<
             init_value> init);
 
+    /** Insert a node
+
+        Attempts to inserts the node contained in `nh`:
+
+        @li If `nh.empty()`, does nothing and returns the
+        @ref end() iterator. Otherwise,
+
+        @li If `! nh.empty()`, inserts the element owned by
+        `nh` into the container, if a matching key equivalent
+        to `nh.key()` does not already exist. The element is
+        inserted after all the existing elements.
+
+        @par Expects
+
+        `nh.get_storage() == *this->get_storage()`.
+
+        @par Complexity
+
+        Amortized constant on average, worst case linear in @ref size().
+
+        @par Exception Safety
+
+        Strong guarantee.
+        Calls to @ref storage::allocate may throw.
+
+        @param nh A compatible node handle.
+
+        @returns An @ref insert_return_type describing the result
+        of the insertion.
+    */
     BOOST_JSON_DECL
     insert_return_type
     insert(node_type&& nh);
 
+    /** Insert a node
+
+        Attempts to inserts the node contained in `nh`:
+
+        @li If `nh.empty()`, does nothing and returns the
+        @ref end() iterator. Otherwise,
+
+        @li If `! nh.empty()`, inserts the element owned by
+        `nh` into the container, if a matching key equivalent
+        to `nh.key()` does not already exist. The element is
+        inserted before `pos`.
+
+        @par Expects
+
+        `nh.get_storage() == *this->get_storage()`.
+
+        @par Complexity
+
+        Amortized constant on average, worst case linear in @ref size().
+
+        @par Exception Safety
+
+        Strong guarantee.
+        Calls to @ref storage::allocate may throw.
+
+        @param pos Iterator before which the new elements will
+        be inserted. This may be the @ref end() iterator.
+
+        @param nh A compatible node handle.
+
+        @returns An @ref insert_return_type describing the result
+        of the insertion.
+    */
     BOOST_JSON_DECL
     insert_return_type
     insert(
@@ -1276,8 +1372,8 @@ public:
 
         @param obj The value to insert or assign
 
-        @returns A pair `p` where `p.first` is an iterator
-        to the existing or inserted element, and `p.second`
+        @returns A pair where `first` is an iterator
+        to the existing or inserted element, and `second`
         is `true` if the insertion took place or `false` if
         the assignment took place.
     */
@@ -1288,26 +1384,133 @@ public:
         key_type key,
         M&& obj);
 
+    /** Construct an element in place
+
+        Inserts a new element into the container constructed
+        in-place with the given argument if there is no element
+        with the key in the container.
+        The element is inserted after all the existing elements.
+
+        @par Complexity
+
+        Amortized constant on average, worst case linear in @ref size().
+
+        @par Exception Safety
+
+        Strong guarantee.
+        Calls to @ref storage::allocate may throw.
+
+        @param key The key used for lookup and insertion
+
+        @param arg The argument used to construct the value.
+        This will be passed as `std::forward<Arg>(arg)` to
+        the @ref value constructor.
+
+        @returns A pair where `first` is an iterator
+        to the existing or inserted element, and `second`
+        is `true` if the insertion took place or `false` if
+        the assignment took place.
+    */
     template<class Arg>
     std::pair<iterator, bool>
     emplace(key_type key, Arg&& arg);
 
+    /** Construct an element in place
+
+        Inserts a new element into the container constructed
+        in-place with the given argument if there is no element
+        with the key in the container.
+        The element is inserted before `pos`.
+
+        @par Complexity
+
+        Amortized constant on average, worst case linear in @ref size().
+
+        @par Exception Safety
+
+        Strong guarantee.
+        Calls to @ref storage::allocate may throw.
+
+        @param pos Iterator before which the new element will
+        be inserted. This may be the @ref end() iterator.
+
+        @param key The key used for lookup and insertion
+
+        @param arg The argument used to construct the value.
+        This will be passed as `std::forward<Arg>(arg)` to
+        the @ref value constructor.
+
+        @returns A pair where `first` is an iterator
+        to the existing or inserted element, and `second`
+        is `true` if the insertion took place or `false` if
+        the assignment took place.
+    */
     template<class Arg>
     std::pair<iterator, bool>
     emplace(
         const_iterator pos,
         key_type key, Arg&& arg);
 
+    /** Erase an element
+
+        Remove the element pointed to by `pos`, which must
+        be valid and dereferenceable. Thus the @ref end()
+        iterator (which is valid but cannot be dereferenced)
+        cannot be used as a value for `pos`.
+        References and iterators to the erased element are
+        invalidated. Other iterators and references are not
+        invalidated.
+
+        @par Complexity
+
+        Constant on average, worst case linear in @ref size().
+
+        @returns The number of elements removed, which can
+        be either 0 or 1.
+    */
     BOOST_JSON_DECL
     iterator
     erase(const_iterator pos);
     
+    /** Erase a range of elements
+
+        Removes the elements in the range `[first, last)`,
+        which must be a valid range in `*this`.
+        References and iterators to the erased elements are
+        invalidated. Other iterators and references are not
+        invalidated.
+
+        @par Complexity
+
+        Average case linear in `std::distance(first, last)`,
+        worst case linear in @ref size().
+
+        @param first The beginning of the range to remove.
+        
+        @param last The end of the range to remove.
+        
+        @returns An iterator following the last removed element.
+    */
     BOOST_JSON_DECL
     iterator
     erase(
         const_iterator first,
         const_iterator last);
 
+    /** Erase an element
+
+        Remove the element which matches `key`, if it exists.
+        References and iterators to the erased element are
+        invalidated. Other iterators and references are not
+        invalidated.
+
+        @par Complexity
+
+        Constant on average, worst case linear in @ref size().
+
+        @returns The number of elements removed, which can
+        be either 0 or 1.
+    */
     BOOST_JSON_DECL
     size_type
     erase(key_type key);
@@ -1315,37 +1518,85 @@ public:
     /** Swap the contents
 
         Exchanges the contents of this container with another
-        container.
-        All iterators and references remain valid.
+        container. Ownership of the respective @ref storage
+        objects is not transferred.
 
-        @par Precondition
+        @li If `*other.get_storage() == *sp`, ownership of the
+        underlying memory is swapped in constant time, with
+        no possibility of exceptions. All iterators and
+        references remain valid.
 
-        `*get_storage() == *other.get_storage()`
+        @li If `*other.get_storage() != *sp`, the contents are
+        logically swapped by making copies, which can throw.
+        In this case all iterators and references are invalidated.
 
         @par Complexity
 
-        Constant.
+        Constant or linear in @ref size() plus `other.size()`.
 
         @par Exception Safety
 
         Strong guarantee.
+        Calls to @ref storage::allocate may throw.
 
         @param other The container to swap with
-
-        @throws std::domain_error if `*get_storage() != *other.get_storage()`
     */
     BOOST_JSON_DECL
     void
     swap(object& other);
 
+    /** Extract a node
+
+        If the container has an element that matches `key`,
+        unlinks the node that contains that element from
+        the container and returns a node handle that owns
+        it. Otherwise, returns an empty node handle.
+        <br>
+        Extracting a node invalidates only the iterators
+        to the extracted element, and preserves the relative
+        order of the elements that are not erased. Pointers
+        and references to the extracted element remain valid,
+        but cannot be used while element is owned by a node
+        handle: they become usable if the element is inserted
+        into a container.
+
+        @par Complexity
+
+        Constant on average, worst case linear in @ref size().
+
+        @param pos The key of the element to find
+    */
     BOOST_JSON_DECL
     node_type
     extract(const_iterator pos);
 
+    /** Extract a node
+
+        If the container has an element that matches `key`,
+        unlinks the node that contains that element from
+        the container and returns a node handle that owns
+        it. Otherwise, returns an empty node handle.
+        <br>
+        Extracting a node invalidates only the iterators
+        to the extracted element, and preserves the relative
+        order of the elements that are not erased. Pointers
+        and references to the extracted element remain valid,
+        but cannot be used while element is owned by a node
+        handle: they become usable if the element is inserted
+        into a container.
+
+        @par Complexity
+
+        Constant on average, worst case linear in @ref size().
+
+        @param key The key of the element to find
+    */
     BOOST_JSON_DECL
     node_type
     extract(key_type key);
 
+#if 0
+    // TODO
     BOOST_JSON_DECL
     void
     merge(object& source);
@@ -1353,41 +1604,150 @@ public:
     BOOST_JSON_DECL
     void
     merge(object&& source);
+#endif
 
     //--------------------------------------------------------------------------
     //
     // Lookup
     //
     //--------------------------------------------------------------------------
-    
+
+    /** Access the specified element, with bounds checking.
+
+        Returns a reference to the mapped value of the element
+        that matches `key`, otherwise throws.
+
+        @par Complexity
+
+        Constant on average, worst case linear in @ref size().
+
+        @throws std::out_of_range if no such element exists.
+
+        @param key The key of the element to find
+    */
     BOOST_JSON_DECL
     value&
     at(key_type key);
-    
+
+    /** Access the specified element, with bounds checking.
+
+        Returns a constant reference to the mapped value of
+        the element that matches `key`, otherwise throws.
+
+        @par Complexity
+
+        Constant on average, worst case linear in @ref size().
+
+        @throws std::out_of_range if no such element exists.
+
+        @param key The key of the element to find
+    */
     BOOST_JSON_DECL
     value const&
     at(key_type key) const;
 
+    /** Access or insert the specified element
+
+        Returns a reference to the value that is mapped
+        to a key equivalent to key, performing an insertion
+        of a null value if such key does not already exist.
+        <br>
+        If an insertion occurs and results in a rehashing of
+        the container, all iterators are invalidated. Otherwise
+        iterators are not affected. References are not
+        invalidated. Rehashing occurs only if the new
+        number of elements is greater than
+        `max_load_factor()*bucket_count()`.
+
+        @par Complexity
+
+        Constant on average, worst case linear in @ref size().
+
+        @par Exception Safety
+
+        Strong guarantee.
+        Calls to @ref storage::allocate may throw.
+        If an exception is thrown by any operation, the
+        insertion has no effect.
+
+        @param key The key of the element to find
+    */
     BOOST_JSON_DECL
     value&
     operator[](key_type key);
     
-    BOOST_JSON_DECL
-    value const&
-    operator[](key_type key) const;
+    /** Count the number of elements with a specific key
 
+        This function returns the count of the number of
+        elements match `key`. The only possible return values
+        are 0 and 1.
+
+        @par Complexity
+
+        Constant on average, worst case linear in @ref size().
+
+        @par Exception Safety
+
+        No-throw guarantee.
+
+        @param key The key of the element to find
+    */
     BOOST_JSON_DECL
     size_type
     count(key_type key) const noexcept;
 
+    /** Find an element with a specific key
+
+        This function returns an iterator to the element
+        matching `key` if it exists, otherwise returns
+        @ref end().
+
+        @par Complexity
+
+        Constant on average, worst case linear in @ref size().
+
+        @par Exception Safety
+
+        No-throw guarantee.
+
+        @param key The key of the element to find
+    */
     BOOST_JSON_DECL
     iterator
     find(key_type key) noexcept;
 
+    /** Find an element with a specific key
+
+        This function returns a constant iterator to
+        the element matching `key` if it exists,
+        otherwise returns @ref end().
+
+        @par Complexity
+
+        Constant on average, worst case linear in @ref size().
+
+        @par Exception Safety
+
+        No-throw guarantee.
+
+        @param key The key of the element to find
+    */
     BOOST_JSON_DECL
     const_iterator
     find(key_type key) const noexcept;
 
+    /** Check if the container contains an element with a specific key
+
+        @par Complexity
+
+        Constant on average, worst case linear in @ref size().
+
+        @par Exception Safety
+
+        No-throw guarantee.
+
+        @param key The key of the element to find
+    */
     BOOST_JSON_DECL
     bool
     contains(key_type key) const noexcept;
@@ -1398,58 +1758,11 @@ public:
     //
     //--------------------------------------------------------------------------
 
-    /** Return an iterator to the beginning of the specified bucket
+    /** Return an iterator to the beginning of the specified bucket.
 
-        If the container is empty, the returned iterator
-        will be equal to `end(n)`.
+        @par Expects
 
-        @par Complexity
-
-        Constant.
-
-        @param n The zero-based index of the bucket to access.
-    */
-    BOOST_JSON_DECL
-    local_iterator
-    begin(size_type n) noexcept;
-
-    /** Return a constant iterator to the beginning of the specified bucket
-
-        If the container is empty, the returned iterator
-        will be equal to `end(n)`.
-
-        @par Complexity
-
-        Constant.
-
-        @param n The zero-based index of the bucket to access.
-    */
-    BOOST_JSON_DECL
-    const_local_iterator
-    begin(size_type n) const noexcept;
-
-    /** Return a constant iterator to the beginning of the specified bucket
-
-        If the container is empty, the returned iterator
-        will be equal to `end(n)`.
-
-        @par Complexity
-
-        Constant.
-
-        @param n The zero-based index of the bucket to access.
-    */
-    BOOST_JSON_DECL
-    const_local_iterator
-    cbegin(size_type n) noexcept;
-
-    /** Return a iterator to the end of the specified bucket
-
-        If the container is empty, the returned iterator
-        will be equal to `end(n)`.
-        This element acts as a placeholder, attempting to
-        access the pointed-to value results in undefined
-        behavior.
+        `n` is in the range `[0, bucket_count())`.
 
         @par Complexity
 
@@ -1459,15 +1772,13 @@ public:
     */
     BOOST_JSON_DECL
     local_iterator
-    end(size_type n)  noexcept;
+    begin(size_type n);
 
-    /** Return a constant iterator to the end of the specified bucket
+    /** Return a constant iterator to the beginning of the specified bucket.
 
-        If the container is empty, the returned iterator
-        will be equal to `end(n)`.
-        This element acts as a placeholder, attempting to
-        access the pointed-to value results in undefined
-        behavior.
+        @par Expects
+
+        `n` is in the range `[0, bucket_count())`.
 
         @par Complexity
 
@@ -1477,15 +1788,53 @@ public:
     */
     BOOST_JSON_DECL
     const_local_iterator
-    end(size_type n) const noexcept;
+    begin(size_type n) const;
 
-    /** Return a constant iterator to the end of the specified bucket
+    /** Return a constant iterator to the beginning of the specified bucket.
 
-        If the container is empty, the returned iterator
-        will be equal to `end(n)`.
+        @par Expects
+
+        `n` is in the range `[0, bucket_count())`.
+
+        @par Complexity
+
+        Constant
+
+        @param n The zero-based index of the bucket to access.
+    */
+    BOOST_JSON_DECL
+    const_local_iterator
+    cbegin(size_type n) const;
+
+    /** Return a iterator to the end of the specified bucket.
+
         This element acts as a placeholder, attempting to
         access the pointed-to value results in undefined
         behavior.
+
+        @par Expects
+
+        `n` is in the range `[0, bucket_count())`
+
+        @par Complexity.
+
+        Constant.
+
+        @param n The zero-based index of the bucket to access.
+    */
+    BOOST_JSON_DECL
+    local_iterator
+    end(size_type n);
+
+    /** Return a constant iterator to the end of the specified bucket
+
+        This element acts as a placeholder, attempting to
+        access the pointed-to value results in undefined
+        behavior.
+
+        @par Expects
+
+        `n` is in the range `[0, bucket_count())`.
 
         @par Complexity
 
@@ -1495,9 +1844,29 @@ public:
     */
     BOOST_JSON_DECL
     const_local_iterator
-    cend(size_type n) noexcept;
+    end(size_type n) const;
 
-    /** Returns the number of buckets in the container
+    /** Return a constant iterator to the end of the specified bucket.
+
+        This element acts as a placeholder, attempting to
+        access the pointed-to value results in undefined
+        behavior.
+
+        @par Expects
+
+        `n` is in the range `[0, bucket_count())`.
+
+        @par Complexity
+
+        Constant.
+
+        @param n The zero-based index of the bucket to access.
+    */
+    BOOST_JSON_DECL
+    const_local_iterator
+    cend(size_type n) const;
+
+    /** Returns the number of buckets in the container.
 
         This returns the number of buckets, which may be
         zero if the container is empty.
@@ -1505,12 +1874,16 @@ public:
         @par Complexity
 
         Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
     */
     BOOST_JSON_DECL
     size_type
     bucket_count() const noexcept;
 
-    /** Returns the maximum number of buckets in the container
+    /** Returns the maximum number of buckets in the container.
 
         The value returned is dependent on system or
         library implementation limitations.
@@ -1518,25 +1891,37 @@ public:
         @par Complexity
 
         Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
     */
     BOOST_JSON_DECL
     size_type
     max_bucket_count() const noexcept;
 
-    /** Returns the number of elements in a bucket
+    /** Returns the number of elements in a bucket.
 
         This returns the number of elements in the
         bucket with index `n`.
+
+        @par Expects
+
+        `n` is in the range `[0, bucket_count())`.
 
         @par Complexity
 
         Constant.
 
+        @par Exception Safety
+
+        No-throw guarantee.
+
         @param n The zero-based index of the bucket to access.
     */
     BOOST_JSON_DECL
     size_type
-    bucket_size(size_type n) const noexcept;
+    bucket_size(size_type n) const;
 
     /** Returns the index of the bucket corresponding to a key
 
@@ -1544,13 +1929,20 @@ public:
         a matching key. The returned value is valid only for
         instances of the container for which @ref bucket_count()
         returns the same value.
-        The behavior is undefined if @ref bucket_count() is zero.
+
+        @par Expects
+
+        `n` is in the range `[0, bucket_count())`.
+
+        @par Complexity
+
+        Constant
 
         @param key The value of the key to examine
     */
     BOOST_JSON_DECL
     size_type
-    bucket(key_type key) const noexcept;
+    bucket(key_type key) const;
 
     //--------------------------------------------------------------------------
     //
@@ -1558,10 +1950,35 @@ public:
     //
     //--------------------------------------------------------------------------
 
+    /** Returns the average number of elements per bucket
+
+        This effectively computes @ref size() divided by @ref bucket_count().
+
+        @par Complexity
+
+        Constant
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
     BOOST_JSON_DECL
     float
     load_factor() const noexcept;
 
+    /** Returns the current maximum load factor
+
+        The container automatically increases the number
+        of buckets if the load factor exceeds this threshold.
+        
+        @par Complexity
+
+        Constant
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
     BOOST_JSON_DECL
     float
     max_load_factor() const noexcept
@@ -1569,20 +1986,85 @@ public:
         return mf_;
     }
 
-    BOOST_JSON_DECL
-    void
-    max_load_factor(float ml) noexcept
-    {
-        mf_ = ml;
-    }
+    /** Set the maximum average number of elements per bucket
 
-    BOOST_JSON_DECL
-    void
-    rehash(size_type count);
+        The container automatically increases the number
+        of buckets if the load factor exceeds this threshold.
 
+        @par Complexity
+
+        Average case linear in the size of the container,
+        worst case quadratic.
+
+        @par Exception Safety
+
+        Strong guarantee.
+        Calls to @ref storage::allocate may throw.
+
+        @param ml The new maximum load factor
+    */
     BOOST_JSON_DECL
     void
-    reserve(size_type count);
+    max_load_factor(float ml);
+
+    /** Reserves at least the specified number of buckets.
+
+        Sets the number of buckets to `count` and rehashes
+        the container, i.e. puts the elements into appropriate
+        buckets considering that total number of buckets has
+        changed. If the new number of buckets makes load
+        factor more than maximum load factor
+        `(count < size() / max_load_factor())`, then the new
+        number of buckets is at least
+        `size() / max_load_factor()`.
+
+        @note
+
+        `rehash(0)` may be used to force an unconditional
+        rehash, such as after suspension of automatic
+        rehashing by temporarily increasing @ref max_load_factor().
+
+        @par Complexity
+
+        Average case linear in the size of the container,
+        worst case quadratic.
+
+        @par Exception Safety
+
+        Strong guarantee.
+        Calls to @ref storage::allocate may throw.
+
+        @param bucket_count The minimum number of buckets.
+    */
+    BOOST_JSON_DECL
+    void
+    rehash(size_type bucket_count);
+
+    /** Reserve space for at least the specified number of elements.
+
+        Sets the number of buckets to the number needed to
+        accomodate at least `count` elements without exceeding
+        the maximum load factor, and rehashes the container;
+        i.e. puts the elements into appropriate buckets
+        considering that total number of buckets has
+        changed. Effectively calls
+        `rehash(std::ceil(count / max_load_factor()))`.
+
+        @par Complexity
+
+        Average case linear in the size of the container,
+        worst case quadratic.
+
+        @par Exception Safety
+
+        Strong guarantee.
+        Calls to @ref storage::allocate may throw.
+
+        @param n The new minimum capacity of the container
+    */
+    BOOST_JSON_DECL
+    void
+    reserve(size_type n);
 
     //--------------------------------------------------------------------------
     //
@@ -1590,13 +2072,51 @@ public:
     //
     //--------------------------------------------------------------------------
 
+    /** Returns the function used to hash the keys
+
+        The returned function object has this equivalent
+        signature:
+        @code
+        struct hasher
+        {
+            std::size_t operator()(string_view) const noexcept;
+        };
+        @endcode
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
     BOOST_JSON_DECL
     hasher
-    hash_function() const;
+    hash_function() const noexcept;
 
+    /** Returns the function that compares keys for equality.
+
+        The returned function object has this equivalent
+        signature:
+        @code
+        struct key_equal
+        {
+            bool operator()(string_view, string_view) const noexcept;
+        };
+        @endcode
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
     BOOST_JSON_DECL
     key_equal
-    key_eq() const;
+    key_eq() const noexcept;
 
 private:
     struct construct_base;
@@ -1648,6 +2168,13 @@ private:
     void
     remove(element* e);
 };
+
+inline
+void
+swap(object& lhs, object& rhs)
+{
+    lhs.swap(rhs);
+}
 
 } // json
 } // boost
