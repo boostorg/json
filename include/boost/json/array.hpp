@@ -1579,6 +1579,8 @@ public:
         Calls to @ref storage::allocate may throw.
 
         @param count The new size of the container.
+
+        @param v The @ref value to copy into the new elements.
     */
     BOOST_JSON_DECL
     void

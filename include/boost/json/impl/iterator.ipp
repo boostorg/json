@@ -27,8 +27,8 @@ node::
         }
         else
         {
-            // VFALCO Why not?
-            //arr.it.~const_iterator();
+            // VFALCO Array iterators are just a pointer
+            //arr_it.~const_iterator();
         }
     }
 }
