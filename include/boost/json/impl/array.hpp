@@ -87,6 +87,26 @@ struct array::table
 
 //------------------------------------------------------------------------------
 
+struct array::undo_create
+{
+    table* tab;
+    storage_ptr const& sp;
+
+    undo_create(
+        size_type n,
+        storage_ptr const& sp_)
+        : tab(table::create(n, sp_))
+        , sp(sp_)
+    {
+    }
+
+    ~undo_create()
+    {
+        if(tab)
+            table::destroy(tab, sp);
+    }
+};
+
 struct array::undo_insert
 {
     value* it;
@@ -117,7 +137,8 @@ array(
     InputIt first, InputIt last)
     : array(
         first, last,
-        default_storage())
+        default_storage(),
+        iter_cat<InputIt>{})
 {
     static_assert(
         std::is_constructible<value,
@@ -129,10 +150,10 @@ template<class InputIt, class>
 array::
 array(
     InputIt first, InputIt last,
-    storage_ptr store)
+    storage_ptr sp)
     : array(
         first, last,
-        std::move(store),
+        std::move(sp),
         iter_cat<InputIt>{})
 {
     static_assert(
@@ -185,26 +206,31 @@ template<class InputIt>
 array::
 array(
     InputIt first, InputIt last,
-    storage_ptr store,
+    storage_ptr sp,
     std::input_iterator_tag)
-    : sp_(std::move(store))
+    : sp_(std::move(sp))
 {
-    while(first != last)
-        emplace_impl(end(), *first++);
 }
 
 template<class InputIt>
 array::
 array(
     InputIt first, InputIt last,
-    storage_ptr store,
+    storage_ptr sp,
     std::forward_iterator_tag)
-    : sp_(std::move(store))
+    : sp_(std::move(sp))
 {
-    reserve(std::distance(first, last));
+    undo_create u(
+        std::distance(first, last), sp_);
     while(first != last)
-        emplace_impl(end(), *first++);
+    {
+        ::new(u.tab->end()) value(
+            *first++, sp_);
+        ++u.tab->d.size;
+    }
+    std::swap(tab_, u.tab);
 }
+
 template<class InputIt>
 auto
 array::

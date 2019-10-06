@@ -80,7 +80,7 @@ class array
     table* tab_ = nullptr;
     storage_ptr sp_;
 
-    struct undo;
+    struct undo_create;
     struct undo_insert;
 
 public:

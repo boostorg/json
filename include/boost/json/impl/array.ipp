@@ -89,20 +89,6 @@ relocate(
 
 //------------------------------------------------------------------------------
 
-struct array::undo
-{
-    table* tab;
-    storage_ptr const& sp;
-
-    ~undo()
-    {
-        if(tab)
-            table::destroy(tab, sp);
-    }
-};
-
-//------------------------------------------------------------------------------
-
 array::
 undo_insert::
 undo_insert(
@@ -197,8 +183,7 @@ array(
     if(count == 0)
         return;
 
-    undo u{table::create(
-        count, sp_), sp_};
+    undo_create u(count, sp_);
     while(count--)
     {
         ::new(u.tab->end()) value(v, sp_);
@@ -825,8 +810,7 @@ copy(array const& other)
         return;
     }
 
-    undo u{table::create(
-        other.size(), sp_), sp_};
+    undo_create u(other.size(), sp_);
     for(auto const& v : other)
     {
         ::new(u.tab->end()) value(v, sp_);
@@ -873,8 +857,7 @@ assign(
         return;
     }
 
-    undo u{table::create(
-        init.size(), sp_), sp_};
+    undo_create u(init.size(), sp_);
     for(auto const& v : init)
     {
         ::new(u.tab->end()) value(v, sp_);

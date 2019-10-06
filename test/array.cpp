@@ -305,7 +305,7 @@ public:
     }
 
     void
-    testElementAccess()
+    testAccess()
     {
         // at(pos)
         {
@@ -657,7 +657,7 @@ public:
         });
 
         // insert(const_iterator, size_type, value_type const&)
-        fail_loop([this](storage_ptr const& sp)
+        fail_loop([](storage_ptr const& sp)
         {
             value v({1,2,3});
             array a({1, "hello"}, sp);
@@ -1009,7 +1009,7 @@ public:
     run() override
     {
         testSpecial();
-        testElementAccess();
+        testAccess();
         testIterators();
         testCapacity();
         testModifiers();

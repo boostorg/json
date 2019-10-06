@@ -19,18 +19,6 @@
 namespace boost {
 namespace json {
 
-#define BEAST_THROWS( EXPR, EXCEP ) \
-    try { \
-        EXPR; \
-        BEAST_FAIL(); \
-    } \
-    catch(EXCEP const&) { \
-        BEAST_PASS(); \
-    } \
-    catch(...) { \
-        BEAST_FAIL(); \
-    }
-
 class object_test : public beast::unit_test::suite
 {
 public:

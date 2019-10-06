@@ -143,8 +143,7 @@ value(
 
     case json::kind::string:
         ::new(&str_) string(
-            string::allocator_type(
-                std::move(sp)));
+            std::move(sp));
         break;
 
     case json::kind::number:
@@ -188,10 +187,8 @@ value(
         break;
 
     case json::kind::string:
-        // workaround for some stdlibs
-        construct_string(
-            other.str_,
-            std::move(sp));
+        ::new(&str_) string(
+            other.str_, std::move(sp));
         break;
 
     case json::kind::number:
@@ -318,8 +315,7 @@ value(
         break;
 
     case json::kind::string:
-        // workaround for some stdlibs
-        construct_string(
+        ::new(&str_) string(
             std::move(other.str_),
             std::move(sp));
         break;
@@ -424,11 +420,11 @@ value::
 value(
     string str,
     storage_ptr sp)
-{
-    // workaround for some stdlibs
-    construct_string(
+    : str_(
         std::move(str),
-        std::move(sp));
+        std::move(sp))
+    , kind_(json::kind::string)
+{
 }
 
 value::
@@ -591,7 +587,7 @@ maybe_object(
 //
 //------------------------------------------------------------------------------
 
-storage_ptr
+storage_ptr const&
 value::
 get_storage() const noexcept
 {
@@ -604,7 +600,7 @@ get_storage() const noexcept
         return arr_.get_storage();
 
     case json::kind::string:
-        return str_.get_allocator().get_storage();
+        return str_.get_storage();
 
     default:
         break;
@@ -1000,48 +996,6 @@ pop_back()
     }
     auto it = arr_.end();
     arr_.erase(--it);
-}
-
-//------------------------------------------------------------------------------
-
-// private
-
-template<class S>
-auto
-value::
-construct_string(
-    S&& str, storage_ptr sp) ->
-        typename std::enable_if<
-            ! std::is_constructible<S, string,
-                typename string::allocator_type
-                    >::value>::type
-
-{
-    // workaround for missing std::string
-    // ctors in some stdlib versions
-    auto s = string(typename
-        string::allocator_type(
-            std::move(sp)));
-    s = std::move(str);
-    ::new(&str_) string(
-        std::move(s));
-    kind_ = json::kind::string;
-}
-
-template<class S>
-auto
-value::
-construct_string(
-    S&& str, storage_ptr sp) ->
-        typename std::enable_if<
-            std::is_constructible<S, string,
-                typename string::allocator_type
-                    >::value>::type
-{
-    ::new(&str_) string(std::move(str),
-        typename string::allocator_type(
-            std::move(sp)));
-    kind_ = json::kind::string;
 }
 
 //------------------------------------------------------------------------------

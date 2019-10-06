@@ -767,7 +767,7 @@ public:
     //--------------------------------------------------------------------------
 
     BOOST_JSON_DECL
-    storage_ptr
+    storage_ptr const&
     get_storage() const noexcept;
 
     object&
@@ -1078,24 +1078,6 @@ private:
     void
     construct(
         json::kind, storage_ptr) noexcept;
-
-    template<class S>
-    auto
-    construct_string(
-        S&& str, storage_ptr store) ->
-            typename std::enable_if<
-                ! std::is_constructible<S, string,
-                    typename string::allocator_type
-                        >::value>::type;
-
-    template<class S>
-    auto
-    construct_string(
-        S&& str, storage_ptr store) ->
-            typename std::enable_if<
-                std::is_constructible<S, string,
-                    typename string::allocator_type
-                        >::value>::type;
 
     BOOST_JSON_DECL
     friend

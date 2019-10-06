@@ -234,7 +234,7 @@ equal_storage(
         return equal_storage(v.as_array(), sp);
 
     case json::kind::string:
-        return *v.as_string().get_allocator().get_storage() == *sp;
+        return *v.as_string().get_storage() == *sp;
 
     case json::kind::number:
     case json::kind::boolean:
