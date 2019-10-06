@@ -1391,9 +1391,11 @@ public:
             object o({
                 {"a", 1},
                 {"b", true},
-                {"b", true},
+                {"b", {1,2,3}},
                 {"c", "hello"}});
-            check(o, 3);
+            BEAST_EXPECT(o.at("a").as_number() == 1);
+            BEAST_EXPECT(o.at("b").as_bool());
+            BEAST_EXPECT(o.at("c").as_string() == "hello");
         }
 
         // insert, not at end, causing a rehash
