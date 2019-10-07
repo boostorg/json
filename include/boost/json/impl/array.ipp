@@ -183,13 +183,13 @@ array(
     if(count == 0)
         return;
 
-    undo_create u(count, sp_);
+    undo_create u(count, *this);
     while(count--)
     {
-        ::new(u.tab->end()) value(v, sp_);
-        ++u.tab->d.size;
+        ::new(tab_->end()) value(v, sp_);
+        ++tab_->d.size;
     }
-    std::swap(tab_, u.tab);
+    u.commit();
 }
 
 array::
@@ -810,13 +810,13 @@ copy(array const& other)
         return;
     }
 
-    undo_create u(other.size(), sp_);
+    undo_create u(other.size(), *this);
     for(auto const& v : other)
     {
-        ::new(u.tab->end()) value(v, sp_);
-        ++u.tab->d.size;
+        ::new(tab_->end()) value(v, sp_);
+        ++tab_->d.size;
     }
-    std::swap(tab_, u.tab);
+    u.commit();
 }
 
 void
@@ -857,13 +857,13 @@ assign(
         return;
     }
 
-    undo_create u(init.size(), sp_);
+    undo_create u(init.size(), *this);
     for(auto const& v : init)
     {
-        ::new(u.tab->end()) value(v, sp_);
-        ++u.tab->d.size;
+        ::new(tab_->end()) value(v, sp_);
+        ++tab_->d.size;
     }
-    std::swap(tab_, u.tab);
+    u.commit();
 }
 
 } // json

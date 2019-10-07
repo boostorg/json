@@ -129,6 +129,20 @@ jobs:
 
     - os: linux
       env:
+        - COMMENT=valgrind
+        - B2_TOOLSET=clang-6.0
+        - B2_CXXSTD=11,14
+        - B2_DEFINES="define=BOOST_NO_STRESS_TEST=1"
+        - B2_VARIANT=variant=debug
+        - B2_TESTFLAGS=testing.launcher=valgrind
+        - VALGRIND_OPTS=--error-exitcode=1
+      addons: *clang-6
+      script:
+        - cd $BOOST_ROOT/libs/$SELF
+        - ci/travis/valgrind.sh
+
+    - os: linux
+      env:
         - COMMENT=asan
         - B2_VARIANT=variant=debug
         - B2_TOOLSET=gcc-8
@@ -158,20 +172,6 @@ jobs:
         - B2_LINKFLAGS="linkflags=-fuse-ld=gold"
         - UBSAN_OPTIONS=print_stacktrace=1
       addons: *gcc-8
-
-    - os: linux
-      env:
-        - COMMENT=valgrind
-        - B2_TOOLSET=clang-6.0
-        - B2_CXXSTD=11,14
-        - B2_DEFINES="define=BOOST_NO_STRESS_TEST=1"
-        - B2_VARIANT=variant=debug
-        - B2_TESTFLAGS=testing.launcher=valgrind
-        - VALGRIND_OPTS=--error-exitcode=1
-      addons: *clang-6
-      script:
-        - cd $BOOST_ROOT/libs/$SELF
-        - ci/travis/valgrind.sh
 
     # libstdc++
     - { os: "linux", dist: "trusty",  # xenial has libstdc++ from gcc 5.4.0 with newer ABI

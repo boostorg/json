@@ -20,6 +20,8 @@ namespace json {
 class array_test : public beast::unit_test::suite
 {
 public:
+    using init_list = std::initializer_list<value>;
+
     void
     check(array const& a)
     {
@@ -104,8 +106,7 @@ public:
 
         // array(InputIt, InputIt)
         {
-            std::initializer_list<value> init =
-                { 1, true, "hello" };
+            init_list init{ 1, true, "hello" };
             array a(init.begin(), init.end());
             check(a);
             check_storage(a, default_storage());
@@ -114,8 +115,7 @@ public:
         // array(InputIt, InputIt, storage)
         fail_loop([this](storage_ptr const& sp)
         {
-            std::initializer_list<value> init =
-                { 1, true, "hello" };
+            init_list init{ 1, true, "hello" };
             array a(init.begin(), init.end(), sp);
             check(a);
             check_storage(a, sp);
@@ -135,8 +135,7 @@ public:
             }
 
             {
-                std::initializer_list<value> init =
-                    { 1, true, "hello" };
+                init_list init{ 1, true, "hello" };
                 array a1(init.begin(), init.end());
                 array a2(a1);
                 check(a2);
@@ -147,8 +146,7 @@ public:
         // array(array const&, storage)
         fail_loop([](storage_ptr const& sp)
         {
-            std::initializer_list<value> init =
-                { 1, true, "hello" };
+            init_list init{ 1, true, "hello" };
             array a1(init.begin(), init.end());
             array a2(a1, sp);
             BEAST_EXPECT(a2.size() == 3);
@@ -157,8 +155,7 @@ public:
 
         // array(pilfered<array>)
         {
-            std::initializer_list<value> init =
-                { 1, true, "hello" };
+            init_list init{ 1, true, "hello" };
             array a1(init.begin(), init.end());
             array a2(pilfer(a1));
             BEAST_EXPECT(a1.empty());
@@ -169,8 +166,7 @@ public:
 
         // array(array&&)
         {
-            std::initializer_list<value> init =
-                { 1, true, "hello" };
+            init_list init{ 1, true, "hello" };
             array a1(init.begin(), init.end());
             array a2 = std::move(a1);
             BEAST_EXPECT(a1.empty());
@@ -181,8 +177,7 @@ public:
         // array(array&&, storage)
         {
             {
-                std::initializer_list<value> init =
-                    { 1, true, "hello" };
+                init_list init{ 1, true, "hello" };
                 array a1(init.begin(), init.end());
                 array a2(
                     std::move(a1), default_storage());
@@ -194,8 +189,7 @@ public:
 
             fail_loop([this](storage_ptr const& sp)
             {
-                std::initializer_list<value> init =
-                    { 1, true, "hello" };
+                init_list init{ 1, true, "hello" };
                 array a1(init.begin(), init.end());
                 array a2(std::move(a1), sp);
                 BEAST_EXPECT(! a1.empty());
@@ -279,8 +273,7 @@ public:
             }
 
             {
-                std::initializer_list<value> init =
-                    { 1, true, "hello" };
+                init_list init{ 1, true, "hello" };
                 array a({nullptr, value(kind::object), 1.f});
                 a = init;
                 check(a);
@@ -289,8 +282,7 @@ public:
 
             fail_loop([this](storage_ptr const& sp)
             {
-                std::initializer_list<value> init =
-                    { 1, true, "hello" };
+                init_list init{ 1, true, "hello" };
                 array a({nullptr, value(kind::object), 1.f}, sp);
                 a = init;
                 check(a);
@@ -845,8 +837,7 @@ public:
 
         // operator=(init_list)
         {
-            std::initializer_list<value> init(
-                {1, true, "hello"});
+            init_list init{ 1, true, "hello" };
             auto sp = make_storage<fail_storage>();
             array a1;
             while(sp->fail < 200)
@@ -895,8 +886,7 @@ public:
     #if _ITERATOR_DEBUG_LEVEL == 0
         // insert(const_iterator, InputIt, InputIt)
         {
-            std::initializer_list<value> init(
-                {1, true, "hello"});
+            init_list init{ 1, true, "hello" };
             auto sp = make_storage<fail_storage>();
             array a1;
             while(sp->fail < 200)

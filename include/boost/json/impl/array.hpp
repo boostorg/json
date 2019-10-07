@@ -89,21 +89,41 @@ struct array::table
 
 struct array::undo_create
 {
-    table* tab;
-    storage_ptr const& sp;
+private:
+    array& self_;
+    table* saved_;
+    bool commit_ = false;
 
+public:
     undo_create(
         size_type n,
-        storage_ptr const& sp_)
-        : tab(table::create(n, sp_))
-        , sp(sp_)
+        array& self)
+        : self_(self)
+        , saved_(boost::exchange(
+            self.tab_,
+            table::create(n, self.sp_)))
     {
+    }
+
+    void
+    commit()
+    {
+        commit_ = true;
     }
 
     ~undo_create()
     {
-        if(tab)
-            table::destroy(tab, sp);
+        if(! commit_)
+        {
+            table::destroy(
+                self_.tab_, self_.sp_);
+            self_.tab_ = saved_;
+        }
+        else if(saved_)
+        {
+            table::destroy(
+                saved_, self_.sp_);
+        }
     }
 };
 
@@ -220,15 +240,15 @@ array(
     std::forward_iterator_tag)
     : sp_(std::move(sp))
 {
-    undo_create u(
-        std::distance(first, last), sp_);
+    undo_create u(std::distance(
+        first, last), *this);
     while(first != last)
     {
-        ::new(u.tab->end()) value(
+        ::new(tab_->end()) value(
             *first++, sp_);
-        ++u.tab->d.size;
+        ++tab_->d.size;
     }
-    std::swap(tab_, u.tab);
+    u.commit();
 }
 
 template<class InputIt>
@@ -240,10 +260,7 @@ insert(
     std::input_iterator_tag) ->
         iterator
 {
-    auto d = pos - begin();
-    while(first != last)
-        pos = insert(pos, *first++) + 1;
-    return begin() + d;
+    // TODO
 }
 
 template<class InputIt>
