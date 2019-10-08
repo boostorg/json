@@ -15,6 +15,7 @@
 #include <boost/beast/_experimental/unit_test/suite.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <cstddef>
+#include <iterator>
 #include <memory>
 #include <type_traits>
 
@@ -261,6 +262,79 @@ check_storage(
     storage_ptr const& sp)
 {
     BEAST_EXPECT(equal_storage(v, sp));
+}
+
+//------------------------------------------------------------------------------
+
+// wrap an iterator to make an input iterator
+template<class FwdIt>
+class input_iterator
+{
+    FwdIt it_;
+
+
+public:
+    using value_type = typename std::iterator_traits<FwdIt>::value_type;
+    using pointer = typename std::iterator_traits<FwdIt>::pointer;
+    using reference = typename std::iterator_traits<FwdIt>::reference;
+    using difference_type = typename std::iterator_traits<FwdIt>::difference_type;
+    using iterator_category = std::input_iterator_tag;
+
+    input_iterator() = default;
+    input_iterator(input_iterator const&) = default;
+    input_iterator& operator=(
+        input_iterator const&) = default;
+
+    input_iterator(FwdIt it)
+        : it_(it)
+    {
+    }
+
+    input_iterator&
+    operator++() noexcept
+    {
+        ++it_;
+        return *this;
+    }
+
+    input_iterator
+    operator++(int) noexcept
+    {
+        auto tmp = *this;
+        ++*this;
+        return tmp;
+    }
+
+    pointer
+    operator->() const noexcept
+    {
+        return it_.operator->();
+    }
+
+    reference
+    operator*() const noexcept
+    {
+        return *it_;
+    }
+
+    bool
+    operator==(input_iterator other) const noexcept
+    {
+        return it_ == other.it_;
+    }
+
+    bool
+    operator!=(input_iterator other) const noexcept
+    {
+        return it_ != other.it_;
+    }
+};
+
+template<class FwdIt>
+input_iterator<FwdIt>
+make_input_iterator(FwdIt it)
+{
+    return input_iterator<FwdIt>(it);
 }
 
 } // json

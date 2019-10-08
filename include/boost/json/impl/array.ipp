@@ -80,14 +80,86 @@ array::
 table::
 relocate(
     value* dest,
-    value* first,
-    value* last) noexcept
+    value* src,
+    size_type n) noexcept
 {
-    while(first != last)
-        boost::relocate(dest++, *first++);
+    if( dest >= src &&
+        dest < src + n)
+    {
+        // backwards
+        dest += n;
+        auto it = src + n;
+        while(it != src)
+            boost::relocate(
+                --dest, *--it);
+    }
+    else
+    {
+        auto last = src + n;
+        while(src != last)
+            boost::relocate(
+                dest++, *src++);
+    }
 }
 
 //------------------------------------------------------------------------------
+
+array::
+undo_create::
+~undo_create()
+{
+    if(! commit_)
+    {
+        if(self_.tab_)
+            table::destroy(
+                self_.tab_, self_.sp_);
+        self_.tab_ = saved_;
+    }
+    else if(saved_)
+    {
+        table::destroy(
+            saved_, self_.sp_);
+    }
+}
+
+array::
+undo_create::
+undo_create(
+    array& self)
+    : self_(self)
+{
+}
+
+array::
+undo_create::
+undo_create(
+    size_type n,
+    array& self)
+    : self_(self)
+    , saved_(boost::exchange(
+        self.tab_,
+        table::create(n, self.sp_)))
+{
+}
+
+//------------------------------------------------------------------------------
+
+array::
+undo_insert::
+~undo_insert()
+{
+    if(! commit)
+    {
+        table::destroy(
+            self.begin() + pos, it);
+        self.tab_->d.size -= n;
+        auto const first =
+            self.begin() + pos;
+        table::relocate(
+            first, first + n,
+            self.size() - pos);
+    }
+}
 
 array::
 undo_insert::
@@ -102,27 +174,10 @@ undo_insert(
     self.reserve(self.size() + n);
     // (iterators invalidated now)
     it = self.begin() + pos;
-    self.move(
+    table::relocate(
         it + n, it,
         self.size() - pos);
     self.tab_->d.size += n;
-}
-
-array::
-undo_insert::
-~undo_insert()
-{
-    if(! commit)
-    {
-        table::destroy(
-            self.begin() + pos, it);
-        self.tab_->d.size -= n;
-        auto const first =
-            self.begin() + pos;
-        self.move(
-            first, first + n,
-            self.size() - pos);
-    }
 }
 
 template<class Arg>
@@ -150,6 +205,8 @@ array::
         table::destroy(tab_, sp_);
 }
 
+//------------------------------------------------------------------------------
+
 array::
 array() noexcept
     : sp_(default_storage())
@@ -159,17 +216,6 @@ array() noexcept
 array::
 array(storage_ptr sp) noexcept
     : sp_(std::move(sp))
-{
-}
-
-array::
-array(
-    size_type count,
-    value const& v)
-    : array(
-        count,
-        v,
-        default_storage())
 {
 }
 
@@ -190,16 +236,6 @@ array(
         ++tab_->d.size;
     }
     u.commit();
-}
-
-array::
-array(
-    size_type count)
-    : array(
-        count,
-        value(kind::null),
-        default_storage())
-{
 }
 
 array::
@@ -255,15 +291,6 @@ array(
         copy(other);
     else
         std::swap(tab_, other.tab_);
-}
-
-array::
-array(
-    std::initializer_list<value> init)
-    : array(
-        init,
-        default_storage())
-{
 }
 
 array::
@@ -531,7 +558,8 @@ reserve(size_type new_capacity)
 
     table::relocate(
         tab->begin(),
-        tab_->begin(), tab_->end());
+        tab_->begin(),
+        tab_->d.size);
     tab->d.size = tab_->d.size;
     tab_->d.size = 0;
     std::swap(tab, tab_);
@@ -581,7 +609,8 @@ shrink_to_fit() noexcept
 
     table::relocate(
         tab->begin(),
-        tab_->begin(), tab_->end());
+        tab_->begin(),
+        tab_->d.size);
     tab->d.size = tab_->d.size;
     tab_->d.size = 0;
     std::swap(tab, tab_);
@@ -665,7 +694,7 @@ erase(
 {
     auto p = data() + (pos - begin());
     table::destroy(p, p + 1);
-    move(p, p + 1, 1);
+    table::relocate(p, p + 1, 1);
     --tab_->d.size;
     return p;
 }
@@ -680,7 +709,7 @@ erase(
     auto const n = last - first;
     auto p = data() + (first - begin());
     table::destroy(p, p + n);
-    move(p, p + n,
+    table::relocate(p, p + n,
         size() - (last - begin()));
     tab_->d.size -= n;
     return p;
@@ -817,30 +846,6 @@ copy(array const& other)
         ++tab_->d.size;
     }
     u.commit();
-}
-
-void
-array::
-move(
-    value* to,
-    value* from,
-    size_type n) noexcept
-{
-    if(to > from)
-    {
-        // backwards
-        to += n;
-        from += n;
-        while(n--)
-            boost::relocate(
-                --to, *--from);
-    }
-    else
-    {
-        while(n--)
-            boost::relocate(
-                to++, *from++);
-    }
 }
 
 void

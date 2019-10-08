@@ -139,7 +139,7 @@ public:
     /** Construct an empty container
 
         The container and all inserted elements will use the
-        default storage.
+        @ref storage returned by @ref default_storage().
 
         @par Complexity
 
@@ -155,7 +155,7 @@ public:
     /** Construct an empty container
 
         The container and all inserted elements will use the
-        storage pointed to by `sp`.
+        @ref storage owned by `sp`.
 
         @par Complexity
 
@@ -165,8 +165,9 @@ public:
 
         No-throw guarantee.
 
-        @param sp A pointer to the @ref storage to use. The
-        container will acquire shared ownership of the pointer.
+        @param sp A pointer to the @ref storage
+        to use. The container will acquire shared
+        ownership of the storage object.
     */
     BOOST_JSON_DECL
     explicit
@@ -175,30 +176,9 @@ public:
     /** Construct a container with `count` copies of `v`
 
         The container and all inserted elements will use the
-        default storage.
-
-        @par Complexity
-
-        Linear in `count`.
-
-        @par Exception Safety
-
-        Strong guarantee.
-        Calls to @ref storage::allocate may throw.
-
-        @param count The number of copies to insert.
-
-        @param v The value to be inserted.
-    */
-    BOOST_JSON_DECL
-    array(
-        size_type count,
-        value_type const& v);
-
-    /** Construct a container with `count` copies of `v`
-
-        The container and all inserted elements will use the
-        storage pointed to by `sp`.
+        @ref storage owned by `sp`,
+        or the default parameter value returned by
+        @ref default_storage() if this argument is omitted.
 
         @par Complexity
 
@@ -213,40 +193,22 @@ public:
 
         @param v The value to be inserted.
 
-        @param sp A pointer to the @ref storage to use. The
-        container will acquire shared ownership of the pointer.
+        @param sp A pointer to the @ref storage
+        to use. The container will acquire shared
+        ownership of the storage object.
     */
     BOOST_JSON_DECL
     array(
         size_type count,
         value_type const& v,
-        storage_ptr sp);
+        storage_ptr sp = default_storage());
 
     /** Construct a container with `count` null values
 
         The container and all inserted elements will use the
-        default storage.
-
-        @par Complexity
-
-        Linear in `count`.
-
-        @par Exception Safety
-
-        Strong guarantee.
-        Calls to @ref storage::allocate may throw.
-
-        @param count The number of null values to insert.
-    */
-    BOOST_JSON_DECL
-    explicit
-    array(
-        size_type count);
-
-    /** Construct a container with `count` null values
-
-        The container and all inserted elements will use the
-        storage pointed to by `sp`.
+        @ref storage owned by `sp`,
+        or the default parameter value returned by
+        @ref default_storage() if this argument is omitted.
 
         @par Complexity
 
@@ -259,26 +221,25 @@ public:
 
         @param count The number of copies to insert.
 
-        @param sp A pointer to the @ref storage to use. The
-        container will acquire shared ownership of the pointer.
+        @param sp A pointer to the @ref storage
+        to use. The container will acquire shared
+        ownership of the storage object.
     */
     BOOST_JSON_DECL
     array(
         size_type count,
-        storage_ptr sp);
+        storage_ptr sp = default_storage());
 
     /** Construct a container with the contents of a range
 
         The elements in the range `[first, last)` are
         inserted in order.
         The container and all inserted elements will use the
-        default storage.
+        @ref storage owned by `sp`,
+        or the default parameter value returned by
+        @ref default_storage() if this argument is omitted.
 
         @par Constraints
-
-        `not std::is_convertible_v<InputIt, storage_ptr>`
-
-        @par Mandates
 
         `std::is_constructible_v<value, std::iterator_traits<InputIt>::value_type>`
 
@@ -297,52 +258,9 @@ public:
         @param last An input iterator pointing to the end
         of the range.
 
-        @tparam InputIt a type meeting the requirements of
-        __InputIterator__.
-    */
-    template<
-        class InputIt
-    #ifndef GENERATING_DOCUMENTATION
-        ,class = typename std::enable_if<
-            ! std::is_convertible<
-                InputIt, storage_ptr>::value>::type
-    #endif
-    >
-    array(
-        InputIt first, InputIt last);
-
-    /** Construct a container with the contents of a range
-
-        The elements in the range `[first, last)` are
-        inserted in order.
-        The container and all inserted elements will use the
-        @ref storage pointed to by `sp`.
-
-        @par Constraints
-
-        `not std::is_convertible_v<InputIt, storage_ptr>`
-
-        @par Mandates
-
-        `std::is_constructible_v<value, std::iterator_traits<InputIt>::value_type>`
-
-        @par Complexity
-
-        Linear in `std::distance(first, last)`
-
-        @par Exception Safety
-
-        Strong guarantee.
-        Calls to @ref storage::allocate may throw.
-
-        @param first An input iterator pointing to the first
-        element to insert, or pointing to the end of the range.
-
-        @param last An input iterator pointing to the end
-        of the range.
-
-        @param sp A pointer to the @ref storage to use. The
-        container will acquire shared ownership of the pointer.
+        @param sp A pointer to the @ref storage
+        to use. The container will acquire shared
+        ownership of the storage object.
 
         @tparam InputIt a type meeting the requirements of
         __InputIterator__.
@@ -351,20 +269,21 @@ public:
         class InputIt
     #ifndef GENERATING_DOCUMENTATION
         ,class = typename std::enable_if<
-            ! std::is_convertible<
-                InputIt, storage_ptr>::value>::type
+            std::is_constructible<value,
+                typename std::iterator_traits<
+                    InputIt>::value_type>::value>::type
     #endif
     >
     array(
         InputIt first, InputIt last,
-        storage_ptr sp);
+        storage_ptr sp = default_storage());
 
     /** Copy constructor
 
         Constructs the container with a copy of the contents
         of `other.
         The container and all inserted elements will use the
-        default storage.
+        @ref storage returned by @ref default_storage().
 
         @par Complexity
 
@@ -383,9 +302,9 @@ public:
     /** Copy constructor
 
         Constructs the container with a copy of the contents
-        of `other.
+        of `other`.
         The container and all inserted elements will use the
-        default storage.
+        @ref storage owned by `sp`.
 
         @par Complexity
 
@@ -398,8 +317,9 @@ public:
 
         @param other The container to copy
 
-        @param sp A pointer to the @ref storage to use. The
-        container will acquire shared ownership of the pointer.
+        @param sp A pointer to the @ref storage
+        to use. The container will acquire shared
+        ownership of the storage object.
     */
     BOOST_JSON_DECL
     array(
@@ -501,27 +421,9 @@ public:
     /** Constructs the container with the contents of an initializer list
 
         The container and all inserted elements will use the
-        default storage.
-
-        @par Complexity
-
-        Linear in `init.size()`.
-
-        @par Exception Safety
-
-        Strong guarantee.
-        Calls to @ref storage::allocate may throw.
-
-        @param init The initializer list to insert
-    */
-    BOOST_JSON_DECL
-    array(
-        std::initializer_list<value> init);
-
-    /** Constructs the container with the contents of an initializer list
-
-        The container and all inserted elements will use the
-        @ref storage pointed to by `sp`.
+        @ref storage owned by `sp`,
+        or the default parameter value returned by
+        @ref default_storage() if this argument is omitted.
 
         @par Complexity
 
@@ -534,13 +436,14 @@ public:
 
         @param init The initializer list to insert
 
-        @param sp A pointer to the @ref storage to use. The
-        container will acquire shared ownership of the pointer.
+        @param sp A pointer to the @ref storage
+        to use. The container will acquire shared
+        ownership of the storage object.
     */
     BOOST_JSON_DECL
     array(
         std::initializer_list<value> init,
-        storage_ptr sp);
+        storage_ptr sp = default_storage());
 
     //--------------------------------------------------------------------------
 
@@ -613,6 +516,8 @@ public:
     array&
     operator=(
         std::initializer_list<value> init);
+
+    //--------------------------------------------------------------------------
 
     /** Return a pointer to the storage associated with the container
 
@@ -1293,13 +1198,12 @@ public:
     */
     template<
         class InputIt
-#if 0
     #ifndef GENERATING_DOCUMENTATION
         ,class = typename std::enable_if<
-            ! std::is_convertible<
-                InputIt, value>::value>::type
+            std::is_constructible<value,
+                typename std::iterator_traits<
+                    InputIt>::value_type>::value>::type
     #endif
-#endif
     >
     iterator
     insert(
@@ -1658,13 +1562,6 @@ private:
     BOOST_JSON_DECL
     void
     copy(array const& other);
-
-    BOOST_JSON_DECL
-    void
-    move(
-        value* to,
-        value* from,
-        size_type n) noexcept;
 
     BOOST_JSON_DECL
     void

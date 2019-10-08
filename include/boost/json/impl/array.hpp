@@ -81,8 +81,8 @@ struct array::table
     void
     relocate(
         value* dest,
-        value* first,
-        value* last) noexcept;
+        value* src,
+        size_type n) noexcept;
 };
 
 //------------------------------------------------------------------------------
@@ -91,41 +91,30 @@ struct array::undo_create
 {
 private:
     array& self_;
-    table* saved_;
+    table* saved_ = nullptr;
     bool commit_ = false;
 
 public:
+    BOOST_JSON_DECL
+    ~undo_create();
+
+    BOOST_JSON_DECL
+    explicit
+    undo_create(array& self);
+
+    BOOST_JSON_DECL
     undo_create(
         size_type n,
-        array& self)
-        : self_(self)
-        , saved_(boost::exchange(
-            self.tab_,
-            table::create(n, self.sp_)))
-    {
-    }
+        array& self);
 
     void
     commit()
     {
         commit_ = true;
     }
-
-    ~undo_create()
-    {
-        if(! commit_)
-        {
-            table::destroy(
-                self_.tab_, self_.sp_);
-            self_.tab_ = saved_;
-        }
-        else if(saved_)
-        {
-            table::destroy(
-                saved_, self_.sp_);
-        }
-    }
 };
+
+//------------------------------------------------------------------------------
 
 struct array::undo_insert
 {
@@ -135,13 +124,13 @@ struct array::undo_insert
     size_type const n;
     bool commit = false;
 
-    inline
+    BOOST_JSON_DECL
     undo_insert(
         value const* pos_,
         size_type n_,
         array& self_);
 
-    inline
+    BOOST_JSON_DECL
     ~undo_insert();
 
     template<class Arg>
@@ -150,21 +139,6 @@ struct array::undo_insert
 };
 
 //------------------------------------------------------------------------------
-
-template<class InputIt, class>
-array::
-array(
-    InputIt first, InputIt last)
-    : array(
-        first, last,
-        default_storage(),
-        iter_cat<InputIt>{})
-{
-    static_assert(
-        std::is_constructible<value,
-            decltype(*first)>::value,
-        "json::value is not constructible from the iterator's value type");
-}
 
 template<class InputIt, class>
 array::
@@ -182,7 +156,7 @@ array(
         "json::value is not constructible from the iterator's value type");
 }
 
-template<class InputIt>
+template<class InputIt, class>
 auto
 array::
 insert(
@@ -230,6 +204,16 @@ array(
     std::input_iterator_tag)
     : sp_(std::move(sp))
 {
+    undo_create u(*this);
+    while(first != last)
+    {
+        if(size() >= capacity())
+            reserve(size() + 1);
+        ::new(tab_->end()) value(
+            *first++, sp_);
+        ++tab_->d.size;
+    }
+    u.commit();
 }
 
 template<class InputIt>
@@ -260,7 +244,18 @@ insert(
     std::input_iterator_tag) ->
         iterator
 {
-    // TODO
+    if(first == last)
+        return begin() + (pos - begin());
+    array tmp(first, last, sp_);
+    undo_insert u(pos, tmp.size(), *this);
+    table::relocate(
+        u.it,
+        tmp.tab_->begin(),
+        tmp.size());
+    table::destroy(tmp.tab_, sp_);
+    tmp.tab_ = nullptr;
+    u.commit = true;
+    return begin() + u.pos;
 }
 
 template<class InputIt>

@@ -165,7 +165,7 @@ public:
     }
 
     void
-    testAssignment()
+    testOpAssign()
     {
         // operator=(string)
         fail_loop([](storage_ptr const& sp)
@@ -634,7 +634,7 @@ public:
     run() override
     {
         testCtors();
-        testAssignment();
+        testOpAssign();
         testAssign();
         testAccess();
         testIterators();
