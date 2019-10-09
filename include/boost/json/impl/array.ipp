@@ -818,10 +818,10 @@ swap(array& other)
     array temp2(
         std::move(other),
         this->get_storage());
-    other.~array();
-    ::new(&other) array(pilfer(temp1));
     this->~array();
     ::new(this) array(pilfer(temp2));
+    other.~array();
+    ::new(&other) array(pilfer(temp1));
 }
 
 //------------------------------------------------------------------------------

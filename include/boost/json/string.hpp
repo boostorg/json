@@ -29,33 +29,167 @@ namespace json {
 */
 class string
 {
-    struct impl;
-
-    impl* s_ = nullptr;
-    storage_ptr sp_;
-
 public:
-    using traits_type = std::char_traits<char>;
-    using value_type = char;
-    using size_type = unsigned long;
-    using difference_type = long;
-    using pointer = char*;
-    using reference = char&;
-    using iterator = char*;
-    using const_pointer = char const*;
-    using const_reference = const char&;
-    using const_iterator = char const*;
+    using traits_type       = std::char_traits<char>;
+    using value_type        = char;
+    using size_type         = string_view::size_type;
+    using difference_type   = string_view::difference_type;
+    using pointer           = char*;
+    using reference         = char&;
+    using iterator          = char*;
+    using const_pointer     = char const*;
+    using const_reference   = const char&;
+    using const_iterator    = char const*;
+
     using reverse_iterator =
         std::reverse_iterator<iterator>;
+
     using const_reverse_iterator =
         std::reverse_iterator<const_iterator>;
 
     /// A special index
     static constexpr size_type npos =
-        (std::numeric_limits<size_type>::max)();
+        string_view::npos;
 
+private:
+    using impl_size_type = unsigned long;
+
+    static constexpr
+        size_type max_size_ = 0x7fffffff; // 2GB
+
+    static constexpr
+        impl_size_type mask_ = 0x0f;
+
+    struct impl
+    {
+        impl_size_type size;
+        impl_size_type capacity;
+
+        union
+        {
+            char* p;
+            char buf[20]; // SBO
+        };
+
+        bool
+        in_sbo() const noexcept
+        {
+            return capacity < sizeof(buf);
+        }
+
+        BOOST_JSON_DECL
+        static
+        size_type
+        growth(
+            size_type new_size,
+            size_type capacity);
+
+        BOOST_JSON_DECL
+        void
+        destroy(
+            storage_ptr const& sp);
+
+        BOOST_JSON_DECL
+        void
+        construct() noexcept;
+
+        BOOST_JSON_DECL
+        char*
+        construct(
+            size_type new_size,
+            storage_ptr const& sp);
+
+        template<class InputIt>
+        void
+        construct(
+            InputIt first,
+            InputIt last,
+            storage_ptr const& sp,
+            std::forward_iterator_tag);
+
+        template<class InputIt>
+        void
+        construct(
+            InputIt first,
+            InputIt last,
+            storage_ptr const& sp,
+            std::input_iterator_tag);
+
+        BOOST_JSON_DECL
+        char*
+        assign(
+            size_type new_size,
+            storage_ptr const& sp);
+
+        BOOST_JSON_DECL
+        char*
+        append(
+            size_type n,
+            storage_ptr const& sp);
+
+        BOOST_JSON_DECL
+        char*
+        insert(
+            size_type pos,
+            size_type n,
+            storage_ptr const& sp);
+
+        BOOST_JSON_DECL
+        void
+        unalloc(storage_ptr const& sp) noexcept;
+
+        void
+        term(size_type n) noexcept
+        {
+            size = n;
+            data()[size] = 0;
+        }
+
+        char*
+        data() noexcept
+        {
+            if(in_sbo())
+                return buf;
+            return p;
+        }
+
+        char const*
+        data() const noexcept
+        {
+            if(in_sbo())
+                return buf;
+            return p;
+        }
+
+        char*
+        end() noexcept
+        {
+            return data() + size;
+        }
+
+        char const*
+        end() const noexcept
+        {
+            return data() + size;
+        }
+
+        bool
+        contains(char const* s) const noexcept
+        {
+            return s >= data() && s < end();
+        }
+    };
+
+    impl s_;
+    storage_ptr sp_;
+
+public:
     BOOST_JSON_DECL
     ~string();
+
+    //
+    // Construction
+    //
 
     BOOST_JSON_DECL
     string() noexcept;
@@ -133,43 +267,57 @@ public:
 
     BOOST_JSON_DECL
     string(
-        string_view sv,
+        string_view s,
         storage_ptr sp =
             default_storage());
 
     BOOST_JSON_DECL
     string(
-        string_view sv,
+        string_view s,
         size_type pos,
         size_type n,
         storage_ptr sp =
             default_storage());
 
     //--------------------------------------------------------------------------
+    //
+    // Assignment
+    //
+    //--------------------------------------------------------------------------
 
-    BOOST_JSON_DECL
     string&
-    operator=(string const& other);
+    operator=(string const& other)
+    {
+        return assign(other);
+    }
 
-    BOOST_JSON_DECL
     string&
-    operator=(string&& other);
+    operator=(string&& other)
+    {
+        return assign(std::move(other));
+    }
 
-    BOOST_JSON_DECL
     string&
-    operator=(char const* s);
+    operator=(char const* s)
+    {
+        return assign(s);
+    }
 
     BOOST_JSON_DECL
     string&
     operator=(char ch);
 
-    BOOST_JSON_DECL
     string&
-    operator=(std::initializer_list<char> init);
+    operator=(std::initializer_list<char> init)
+    {
+        return assign(init);
+    }
 
-    BOOST_JSON_DECL
     string&
-    operator=(string_view sv);
+    operator=(string_view s)
+    {
+        return assign(s);
+    }
 
     //--------------------------------------------------------------------------
 
@@ -184,12 +332,15 @@ public:
     assign(
         string const& other);
 
-    BOOST_JSON_DECL
     string&
     assign(
         string const& other,
         size_type pos,
-        size_type count);
+        size_type count)
+    {
+        return assign(
+            other.substr(pos, count));
+    }
 
     BOOST_JSON_DECL
     string&
@@ -201,10 +352,13 @@ public:
         char const* s,
         size_type count);
 
-    BOOST_JSON_DECL
     string&
     assign(
-        char const* s);
+        char const* s)
+    {
+        return assign(s,
+            traits_type::length(s));
+    }
 
     template<class InputIt
     #ifndef GENERATING_DOCUMENTATION
@@ -220,20 +374,26 @@ public:
         InputIt first,
         InputIt last);
 
-    BOOST_JSON_DECL
     string&
-    assign(std::initializer_list<char> init);
+    assign(std::initializer_list<char> init)
+    {
+        return assign(init.begin(), init.size());
+    }
 
-    BOOST_JSON_DECL
     string&
-    assign(string_view sv);
+    assign(string_view s)
+    {
+        return assign(s.data(), s.size());
+    }
 
-    BOOST_JSON_DECL
     string&
     assign(
-        string_view sv,
+        string_view s,
         size_type pos,
-        size_type count = npos);
+        size_type count = npos)
+    {
+        return assign(s.substr(pos, count));
+    }
 
     //--------------------------------------------------------------------------
 
@@ -257,44 +417,64 @@ public:
     char const&
     at(size_type pos) const;
 
-    BOOST_JSON_DECL
     char&
-    operator[](size_type pos);
+    operator[](size_type pos)
+    {
+        return s_.data()[pos];
+    }
 
-    BOOST_JSON_DECL
     const char&
-    operator[](size_type pos) const;
+    operator[](size_type pos) const
+    {
+        return s_.data()[pos];
+    }
 
-    BOOST_JSON_DECL
     char&
-    front();
+    front()
+    {
+        return s_.data()[0];
+    }
 
-    BOOST_JSON_DECL
     char const&
-    front() const;
+    front() const
+    {
+        return s_.data()[0];
+    }
 
-    BOOST_JSON_DECL
     char&
-    back();
+    back()
+    {
+        return s_.data()[s_.size - 1];
+    }
 
-    BOOST_JSON_DECL
     char const&
-    back() const;
+    back() const
+    {
+        return s_.data()[s_.size - 1];
+    }
 
-    BOOST_JSON_DECL
     char*
-    data() noexcept;
+    data() noexcept
+    {
+        return s_.data();
+    }
 
-    BOOST_JSON_DECL
     char const*
-    data() const noexcept;
+    data() const noexcept
+    {
+        return s_.data();
+    }
 
-    BOOST_JSON_DECL
     char const*
-    c_str() const noexcept;
+    c_str() const noexcept
+    {
+        return s_.data();
+    }
 
-    BOOST_JSON_DECL
-    operator string_view() const noexcept;
+    operator string_view() const noexcept
+    {
+        return {data(), size()};
+    }
 
     //--------------------------------------------------------------------------
     //
@@ -311,9 +491,11 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
     iterator
-    begin() noexcept;
+    begin() noexcept
+    {
+        return s_.data();
+    }
 
     /** Return an iterator to the first character
 
@@ -324,9 +506,11 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
     const_iterator
-    begin() const noexcept;
+    begin() const noexcept
+    {
+        return s_.data();
+    }
 
     /** Return an iterator to the first character
 
@@ -337,11 +521,10 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
     const_iterator
     cbegin() const noexcept
     {
-        return begin();
+        return s_.data();
     }
 
     /** Return an iterator to the character following the last character
@@ -353,9 +536,11 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
     iterator
-    end() noexcept;
+    end() noexcept
+    {
+        return s_.end();
+    }
 
     /** Return an iterator to the character following the last character
 
@@ -366,9 +551,11 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
     const_iterator
-    end() const noexcept;
+    end() const noexcept
+    {
+        return s_.end();
+    }
 
     /** Return an iterator to the character following the last character
 
@@ -379,11 +566,10 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
     const_iterator
     cend() const noexcept
     {
-        return end();
+        return s_.end();
     }
 
     /** Return a reverse iterator to the first character of the reversed container
@@ -396,9 +582,11 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
     reverse_iterator
-    rbegin() noexcept;
+    rbegin() noexcept
+    {
+        return reverse_iterator(s_.end());
+    }
 
     /** Return a reverse iterator to the first character of the reversed container
 
@@ -410,9 +598,11 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
     const_reverse_iterator
-    rbegin() const noexcept;
+    rbegin() const noexcept
+    {
+        return const_reverse_iterator(s_.end());
+    }
 
     /** Return a reverse iterator to the first character of the reversed container
 
@@ -424,11 +614,10 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
     const_reverse_iterator
     crbegin() const noexcept
     {
-        return rbegin();
+        return const_reverse_iterator(s_.end());
     }
 
     /** Return a reverse iterator to the character following the last character of the reversed container
@@ -442,9 +631,11 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
     reverse_iterator
-    rend() noexcept;
+    rend() noexcept
+    {
+        return reverse_iterator(begin());
+    }
 
     /** Return a reverse iterator to the character following the last character of the reversed container
 
@@ -457,9 +648,11 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
     const_reverse_iterator
-    rend() const noexcept;
+    rend() const noexcept
+    {
+        return const_reverse_iterator(begin());
+    }
 
     /** Return a reverse iterator to the character following the last character of the reversed container
 
@@ -472,11 +665,10 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
     const_reverse_iterator
     crend() const noexcept
     {
-        return rend();
+        return const_reverse_iterator(begin());
     }
 
     //--------------------------------------------------------------------------
@@ -485,33 +677,43 @@ public:
     //
     //--------------------------------------------------------------------------
 
-    BOOST_JSON_DECL
     bool
-    empty() const noexcept;
+    empty() const noexcept
+    {
+        return s_.size == 0;
+    }
 
-    BOOST_JSON_DECL
     size_type
-    size() const noexcept;
+    size() const noexcept
+    {
+        return s_.size;
+    }
 
     size_type
     length() const noexcept
     {
-        return size();
+        return s_.size;
     }
 
     size_type
     max_size() const noexcept
     {
-        return npos - 1;
+        return max_size_;
     }
 
     BOOST_JSON_DECL
     void
     reserve(size_type new_capacity);
 
-    BOOST_JSON_DECL
     size_type
-    capacity() const noexcept;
+    capacity() const noexcept
+    {
+        return s_.capacity;
+    }
+
+    BOOST_JSON_DECL
+    void
+    shrink_to_fit();
 
     //--------------------------------------------------------------------------
     //
@@ -525,14 +727,62 @@ public:
 
     //--------------------------------------------------------------------------
 
-    // insert
+    BOOST_JSON_DECL
+    string&
+    insert(
+        size_type pos,
+        size_type count,
+        char ch);
+
+    BOOST_JSON_DECL
+    string&
+    insert(
+        size_type pos,
+        string_view s);
+
+    BOOST_JSON_DECL
+    string&
+    insert(
+        size_type pos,
+        char const* s,
+        size_type count);
+
+    BOOST_JSON_DECL
+    string&
+    insert(
+        size_type pos,
+        string_view s,
+        size_type pos_str,
+        size_type count = npos);
+
+    BOOST_JSON_DECL
+    iterator
+    insert(
+        const_iterator pos,
+        size_type count,
+        char ch);
+
+    template<class InputIt
+    #ifndef GENERATING_DOCUMENTATION
+        ,class = typename std::enable_if<
+            std::is_convertible<
+                typename std::iterator_traits<
+                    InputIt>::value_type,
+                char>::value>::type
+    #endif
+    >
+    iterator
+    insert(
+        const_iterator pos,
+        InputIt first,
+        InputIt last);
 
     //--------------------------------------------------------------------------
 
     BOOST_JSON_DECL
     string&
     erase(
-        size_type index = 0,
+        size_type pos = 0,
         size_type count = npos);
 
     BOOST_JSON_DECL
@@ -563,12 +813,12 @@ public:
 
     BOOST_JSON_DECL
     string&
-    append(string const& str );
+    append(string const& s);
 
     BOOST_JSON_DECL
     string&
     append(
-        string const& str,
+        string const& s,
         size_type pos,
         size_type count = npos);
 
@@ -600,85 +850,897 @@ public:
 
     BOOST_JSON_DECL
     string&
-    append(string_view sv);
+    append(string_view s);
 
-    //--------------------------------------------------------------------------
-    //
-    // Observers
-    //
     //--------------------------------------------------------------------------
 
     BOOST_JSON_DECL
+    string&
+    operator+=(string const& s)
+    {
+        return append(s);
+    }
+
+    BOOST_JSON_DECL
+    string&
+    operator+=(char ch)
+    {
+        push_back(ch);
+        return *this;
+    }
+
+    BOOST_JSON_DECL
+    string&
+    operator+=(char const* s)
+    {
+        return append(s);
+    }
+
+    BOOST_JSON_DECL
+    string&
+    operator+=(std::initializer_list<char> init)
+    {
+        return append(init);
+    }
+
+    BOOST_JSON_DECL
+    string&
+    operator+=(string_view s)
+    {
+        return append(s);
+    }
+
+    //--------------------------------------------------------------------------
+
+    int
+    compare(string const& s) const noexcept
+    {
+        return string_view(*this).compare(
+            string_view(s));
+    }
+
+    int
+    compare(
+        size_type pos1,
+        size_type count1,
+        string const& s) const
+    {
+        return string_view(*this).compare(
+            pos1, count1, string_view(s));
+    }
+
+    int
+    compare(
+        size_type pos1,
+        size_type count1,
+        string const& s,
+        size_type pos2,
+        size_type count2 = npos) const
+    {
+        return string_view(*this).compare(
+            pos1, count1, string_view(s),
+            pos2, count2);
+    }
+
+    int
+    compare(char const* s) const
+    {
+        return string_view(*this).compare(s);
+    }
+
+    int
+    compare(
+        size_type pos1,
+        size_type count1,
+        char const* s) const
+    {
+        return string_view(*this).compare(
+            pos1, count1, s);
+    }
+
+    int
+    compare(
+        size_type pos1,
+        size_type count1,
+        char const* s,
+        size_type count2) const
+    {
+        return string_view(*this).compare(
+            pos1, count1, s, count2);
+    }
+
+    int
+    compare(string_view s) const noexcept
+    {
+        return string_view(*this).compare(s);
+    }
+
+    int
+    compare(
+        size_type pos1,
+        size_type count1,
+        string_view s) const
+    {
+        return string_view(*this).compare(
+            pos1, count1, s);
+    }
+
+    int
+    compare(
+        size_type pos1,
+        size_type count1,
+        string_view s,
+        size_type pos2,
+        size_type count2 = npos) const
+    {
+        return string_view(*this).compare(
+            pos1, count1, s, pos2, count2);
+    }
+
+    //--------------------------------------------------------------------------
+
+    bool
+    starts_with(string_view s) const noexcept
+    {
+        return string_view(*this).starts_with(s);
+    }
+
+    bool
+    starts_with(char ch) const noexcept
+    {
+        return string_view(*this).starts_with(ch);
+    }
+
+    bool 
+    starts_with(char const* s) const
+    {
+        return string_view(*this).starts_with(s);
+    }
+
+    bool
+    ends_with(string_view s) const noexcept
+    {
+        return string_view(*this).ends_with(s);
+    }
+
+    bool
+    ends_with(char ch) const noexcept
+    {
+        return string_view(*this).ends_with(ch);
+    }
+
+    bool 
+    ends_with(char const* s) const
+    {
+        return string_view(*this).ends_with(s);
+    }
+
+    //--------------------------------------------------------------------------
+
+    string&
+    replace(
+        size_type pos,
+        size_type count,
+        string const& s);
+
+    string&
+    replace(
+        const_iterator first,
+        const_iterator last,
+        string const& s);
+
+    string&
+    replace(
+        size_type pos,
+        size_type count,
+        string const& s,
+        size_type pos2,
+        size_type count2 = npos);
+
+    template<class InputIt
+    #ifndef GENERATING_DOCUMENTATION
+        ,class = typename std::enable_if<
+            std::is_convertible<
+                typename std::iterator_traits<
+                    InputIt>::value_type,
+                char>::value>::type
+    #endif
+    >
+    string&
+    replace(
+        const_iterator first,
+        const_iterator last,
+        InputIt first2,
+        InputIt last2);
+
+    string&
+    replace(
+        size_type pos,
+        size_type count,
+        char const* s,
+        size_type count2);
+
+    string&
+    replace(
+        const_iterator first,
+        const_iterator last,
+        char const* s,
+        size_type count2);
+
+    string&
+    replace(
+        size_type pos,
+        size_type count,
+        char const* s);
+
+    string&
+    replace(
+        const_iterator first,
+        const_iterator last,
+        char const* s);
+
+    string&
+    replace(
+        size_type pos,
+        size_type count,
+        size_type count2,
+        char ch);
+
+    string&
+    replace(
+        const_iterator first,
+        const_iterator last,
+        size_type count2,
+        char ch);
+
+    string&
+    replace(
+        const_iterator first,
+        const_iterator last,
+        std::initializer_list<char> init);
+
+    template<class T
+    >
+    string&
+    replace(
+        size_type pos,
+        size_type count,
+        T const& t);
+
+    template<class T>
+    string&
+    replace(
+        const_iterator first,
+        const_iterator last,
+        T const& t);
+
+    template<class T>
+    string&
+    replace(
+        size_type pos,
+        size_type count,
+        T const& t,
+        size_type pos2,
+        size_type count2 = npos);
+
+    //--------------------------------------------------------------------------
+
     string_view
     substr(
         size_type pos = 0,
-        size_type count = npos) const;
+        size_type count = npos) const
+    {
+        return string_view(*this).substr(pos, count);
+    }
+
+    //--------------------------------------------------------------------------
+
+    size_type
+    copy(
+        char* dest,
+        size_type count,
+        size_type pos = 0) const
+    {
+        return string_view(*this).copy(dest, count, pos);
+    }
+
+    //--------------------------------------------------------------------------
+
+    void
+    resize(size_type count)
+    {
+        resize(count, 0);
+    }
+
+    BOOST_JSON_DECL
+    void
+    resize(size_type count, char ch);
+
+    //--------------------------------------------------------------------------
+
+    BOOST_JSON_DECL
+    void
+    swap(string& other);
+
+    //--------------------------------------------------------------------------
+    //
+    // Search
+    //
+    //--------------------------------------------------------------------------
+
+    size_type
+    find(
+        string const& s,
+        size_type pos = 0) const noexcept
+    {
+        return string_view(*this).find(string_view(s), pos);
+    }
+
+    size_type
+    find(
+        char const* s,
+        size_type pos,
+        size_type count) const
+    {
+        return string_view(*this).find(s, pos, count);
+    }
+
+    size_type
+    find(
+        char const* s,
+        size_type pos = 0) const
+    {
+        return string_view(*this).find(s, pos);
+    }
+
+
+    size_type
+    find(
+        char ch,
+        size_type pos = 0) const noexcept
+    {
+        return string_view(*this).find(ch, pos);
+    }
+
+    template<class T
+    #ifndef GENERATING_DOCUMENTATION
+        , typename std::enable_if<
+            std::is_convertible<
+                T const&, string_view>::value &&
+            ! std::is_convertible<
+                T const&, char const*>::value
+                    >::type
+    #endif
+    >
+    size_type
+    find(
+        T const &t,
+        size_type pos = 0) const noexcept
+    {
+        return string_view(*this).find(string_view(t), pos);
+    }
+
+    //--------------------------------------------------------------------------
+
+    size_type
+    rfind(
+        string const& s,
+        size_type pos = npos) const noexcept
+    {
+        return string_view(*this).rfind(string_view(s), pos);
+    }
+
+    size_type
+    rfind(
+        char const* s,
+        size_type pos,
+        size_type count) const
+    {
+        return string_view(*this).rfind(s, pos, count);
+    }
+
+    size_type
+    rfind(
+        char const* s,
+        size_type pos = npos) const
+    {
+        return string_view(*this).rfind(s, pos);
+    }
+
+    size_type
+    rfind(
+        char ch,
+        size_type pos = npos) const noexcept
+    {
+        return string_view(*this).rfind(ch, pos);
+    }
+
+    template<class T
+    #ifndef GENERATING_DOCUMENTATION
+        , typename std::enable_if<
+            std::is_convertible<
+                T const&, string_view>::value &&
+            ! std::is_convertible<
+                T const&, char const*>::value
+                    >::type
+    #endif
+    >
+    size_type
+    rfind(
+        T const& t,
+        size_type pos = npos) const noexcept
+    {
+        return string_view(*this).rfind(string_view(t), pos);
+    }
+
+    //--------------------------------------------------------------------------
+
+    size_type
+    find_first_of(
+        string const& s,
+        size_type pos = 0) const noexcept
+    {
+        return string_view(*this).find_first_of(string_view(s), pos);
+    }
+
+    size_type
+    find_first_of(
+        char const* s,
+        size_type pos,
+        size_type count) const
+    {
+        return string_view(*this).find_first_of(s, pos, count);
+    }
+
+    size_type
+    find_first_of(
+        char const* s,
+        size_type pos = 0) const
+    {
+        return string_view(*this).find_first_of(s, pos);
+    }
+
+    size_type
+    find_first_of(
+        char ch,
+        size_type pos = 0) const noexcept
+    {
+        return string_view(*this).find_first_of(ch, pos);
+    }
+
+    template<class T
+    #ifndef GENERATING_DOCUMENTATION
+        , typename std::enable_if<
+            std::is_convertible<
+                T const&, string_view>::value &&
+            ! std::is_convertible<
+                T const&, char const*>::value
+                    >::type
+    #endif
+    >
+    size_type
+    find_first_of(
+        T const& t,
+        size_type pos = 0) const noexcept
+    {
+        return string_view(*this).find_first_of(string_view(t), pos);
+    }
+
+    //--------------------------------------------------------------------------
+
+    size_type
+    find_first_not_of(
+        string const& s,
+        size_type pos = 0) const noexcept
+    {
+        return string_view(*this).find_first_not_of(string_view(s), pos);
+    }
+
+    size_type
+    find_first_not_of(
+        char const* s,
+        size_type pos,
+        size_type count) const
+    {
+        return string_view(*this).find_first_not_of(s, pos, count);
+    }
+
+    size_type
+    find_first_not_of(
+        char const* s,
+        size_type pos = 0) const
+    {
+        return string_view(*this).find_first_not_of(s, pos);
+    }
+
+    size_type
+    find_first_not_of(
+        char ch,
+        size_type pos = 0) const noexcept
+    {
+        return string_view(*this).find_first_not_of(ch, pos);
+    }
+
+    template<class T
+    #ifndef GENERATING_DOCUMENTATION
+        , typename std::enable_if<
+            std::is_convertible<
+                T const&, string_view>::value &&
+            ! std::is_convertible<
+                T const&, char const*>::value
+                    >::type
+    #endif
+    >
+    size_type
+    find_first_not_of(
+        T const& t,
+        size_type pos = 0) const noexcept
+    {
+        return string_view(*this).find_first_not_of(string_view(t), pos);
+    }
+
+    //--------------------------------------------------------------------------
+
+    size_type
+    find_last_of(
+        string const& s,
+        size_type pos = 0) const noexcept
+    {
+        return string_view(*this).find_last_of(string_view(s), pos);
+    }
+
+    size_type
+    find_last_of(
+        char const* s,
+        size_type pos,
+        size_type count) const
+    {
+        return string_view(*this).find_last_of(s, pos, count);
+    }
+
+    size_type
+    find_last_of(
+        char const* s,
+        size_type pos = 0) const
+    {
+        return string_view(*this).find_last_of(s, pos);
+    }
+
+    size_type
+    find_last_of(
+        char ch,
+        size_type pos = 0) const noexcept
+    {
+        return string_view(*this).find_last_of(ch, pos);
+    }
+
+    template<class T
+    #ifndef GENERATING_DOCUMENTATION
+        , typename std::enable_if<
+            std::is_convertible<
+                T const&, string_view>::value &&
+            ! std::is_convertible<
+                T const&, char const*>::value
+                    >::type
+    #endif
+    >
+    size_type
+    find_last_of(
+        T const& t,
+        size_type pos = 0) const noexcept
+    {
+        return string_view(*this).find_last_of(string_view(t), pos);
+    }
+
+    //--------------------------------------------------------------------------
+
+    size_type
+    find_last_not_of(
+        string const& s,
+        size_type pos = 0) const noexcept
+    {
+        return string_view(*this).find_last_not_of(string_view(s), pos);
+    }
+
+    size_type
+    find_last_not_of(
+        char const* s,
+        size_type pos,
+        size_type count) const
+    {
+        return string_view(*this).find_last_not_of(s, pos, count);
+    }
+
+    size_type
+    find_last_not_of(
+        char const* s,
+        size_type pos = 0) const
+    {
+        return string_view(*this).find_last_not_of(s, pos);
+    }
+
+    size_type
+    find_last_not_of(
+        char ch,
+        size_type pos = 0) const noexcept
+    {
+        return string_view(*this).find_last_not_of(ch, pos);
+    }
+
+    template<class T
+    #ifndef GENERATING_DOCUMENTATION
+        , typename std::enable_if<
+            std::is_convertible<
+                T const&, string_view>::value &&
+            ! std::is_convertible<
+                T const&, char const*>::value
+                    >::type
+    #endif
+    >
+    size_type
+    find_last_not_of(
+        T const& t,
+        size_type pos = 0) const noexcept
+    {
+        return string_view(*this).find_last_not_of(string_view(t), pos);
+    }
+
+    //--------------------------------------------------------------------------
+
+    //--------------------------------------------------------------------------
 
 private:
+    class undo;
+
     template<class It>
     using iter_cat = typename
         std::iterator_traits<It>::iterator_category;
 
-    BOOST_JSON_DECL
+    template<class InputIt>
     void
-    raw_resize(
-        size_type size);
-
-    BOOST_JSON_DECL
-    char*
-    raw_insert(
-        size_type pos,
-        size_type n);
+    assign(InputIt first, InputIt last,
+        std::forward_iterator_tag);
 
     template<class InputIt>
     void
-    maybe_raw_resize(
-        InputIt, InputIt,
-        std::input_iterator_tag)
-    {
-    }
+    assign(InputIt first, InputIt last,
+        std::input_iterator_tag);
+    template<class InputIt>
+    void
+    append(InputIt first, InputIt last,
+        std::forward_iterator_tag);
 
     template<class InputIt>
     void
-    maybe_raw_resize(
-        InputIt first,
-        InputIt last,
-        std::forward_iterator_tag)
-    {
-        raw_resize(std::distance(
-            first, last));
-    }
+    append(InputIt first, InputIt last,
+        std::input_iterator_tag);
 };
+
+//------------------------------------------------------------------------------
+
+// operator==
 
 inline
 bool
 operator==(string const& lhs, string const& rhs)
 {
-    return std::lexicographical_compare(
-        lhs.begin(), lhs.end(),
-        rhs.begin(), rhs.end())
-            == 0;
+    return string_view(lhs) == string_view(rhs);
 }
+
+template<class T
+#ifndef GENERATING_DOCUMENTATION
+    , class = typename std::enable_if<
+        std::is_constructible<
+            string_view, T>::value &&
+        ! std::is_same<
+            string, T>::value>::type
+#endif
+>
+bool operator==(string const& lhs, T const& rhs)
+{
+    return string_view(lhs) == string_view(rhs);
+}
+
+template<class T
+#ifndef GENERATING_DOCUMENTATION
+    , class = typename std::enable_if<
+        std::is_constructible<
+            string_view, T>::value &&
+        ! std::is_same<
+            string, T>::value>::type
+#endif
+>
+bool operator==(T const& lhs, string const& rhs)
+{
+    return string_view(lhs) == string_view(rhs);
+}
+
+// operator!=
 
 inline
 bool
-operator==(char const* lhs, string const& rhs)
+operator!=(string const& lhs, string const& rhs)
 {
-    return std::lexicographical_compare(
-        lhs, lhs + std::char_traits<char>::length(lhs),
-        rhs.begin(), rhs.end())
-            == 0;
+    return string_view(lhs) != string_view(rhs);
 }
+
+template<class T
+#ifndef GENERATING_DOCUMENTATION
+    , class = typename std::enable_if<
+        std::is_constructible<
+            string_view, T>::value &&
+        ! std::is_same<
+            string, T>::value>::type
+#endif
+>
+bool operator!=(string const& lhs, T const& rhs)
+{
+    return string_view(lhs) != string_view(rhs);
+}
+
+template<class T
+#ifndef GENERATING_DOCUMENTATION
+    , class = typename std::enable_if<
+        std::is_constructible<
+            string_view, T>::value &&
+        ! std::is_same<
+            string, T>::value>::type
+#endif
+>
+bool operator!=(T const& lhs, string const& rhs)
+{
+    return string_view(lhs) != string_view(rhs);
+}
+
+// operator<
 
 inline
 bool
-operator==(string const& lhs, char const* rhs)
+operator<(string const& lhs, string const& rhs)
 {
-    return std::lexicographical_compare(
-        lhs.begin(), lhs.end(),
-        rhs, rhs + std::char_traits<char>::length(rhs))
-            == 0;
+    return string_view(lhs) < string_view(rhs);
 }
+
+template<class T
+#ifndef GENERATING_DOCUMENTATION
+    , class = typename std::enable_if<
+        std::is_constructible<
+            string_view, T>::value &&
+        ! std::is_same<
+            string, T>::value>::type
+#endif
+>
+bool operator<(string const& lhs, T const& rhs)
+{
+    return string_view(lhs) < string_view(rhs);
+}
+
+template<class T
+#ifndef GENERATING_DOCUMENTATION
+    , class = typename std::enable_if<
+        std::is_constructible<
+            string_view, T>::value &&
+        ! std::is_same<
+            string, T>::value>::type
+#endif
+>
+bool operator<(T const& lhs, string const& rhs)
+{
+    return string_view(lhs) < string_view(rhs);
+}
+
+// operator<=
+
+inline
+bool
+operator<=(string const& lhs, string const& rhs)
+{
+    return string_view(lhs) <= string_view(rhs);
+}
+
+template<class T
+#ifndef GENERATING_DOCUMENTATION
+    , class = typename std::enable_if<
+        std::is_constructible<
+            string_view, T>::value &&
+        ! std::is_same<
+            string, T>::value>::type
+#endif
+>
+bool operator<=(string const& lhs, T const& rhs)
+{
+    return string_view(lhs) <= string_view(rhs);
+}
+
+template<class T
+#ifndef GENERATING_DOCUMENTATION
+    , class = typename std::enable_if<
+        std::is_constructible<
+            string_view, T>::value &&
+        ! std::is_same<
+            string, T>::value>::type
+#endif
+>
+bool operator<=(T const& lhs, string const& rhs)
+{
+    return string_view(lhs) <= string_view(rhs);
+}
+
+// operator>=
+
+inline
+bool
+operator>=(string const& lhs, string const& rhs)
+{
+    return string_view(lhs) >= string_view(rhs);
+}
+
+template<class T
+#ifndef GENERATING_DOCUMENTATION
+    , class = typename std::enable_if<
+        std::is_constructible<
+            string_view, T>::value &&
+        ! std::is_same<
+            string, T>::value>::type
+#endif
+>
+bool operator>=(string const& lhs, T const& rhs)
+{
+    return string_view(lhs) >= string_view(rhs);
+}
+
+template<class T
+#ifndef GENERATING_DOCUMENTATION
+    , class = typename std::enable_if<
+        std::is_constructible<
+            string_view, T>::value &&
+        ! std::is_same<
+            string, T>::value>::type
+#endif
+>
+bool operator>=(T const& lhs, string const& rhs)
+{
+    return string_view(lhs) >= string_view(rhs);
+}
+
+// operator>=
+
+inline
+bool
+operator>(string const& lhs, string const& rhs)
+{
+    return string_view(lhs) > string_view(rhs);
+}
+
+template<class T
+#ifndef GENERATING_DOCUMENTATION
+    , class = typename std::enable_if<
+        std::is_constructible<
+            string_view, T>::value &&
+        ! std::is_same<
+            string, T>::value>::type
+#endif
+>
+bool operator>(string const& lhs, T const& rhs)
+{
+    return string_view(lhs) > string_view(rhs);
+}
+
+template<class T
+#ifndef GENERATING_DOCUMENTATION
+    , class = typename std::enable_if<
+        std::is_constructible<
+            string_view, T>::value &&
+        ! std::is_same<
+            string, T>::value>::type
+#endif
+>
+bool operator>(T const& lhs, string const& rhs)
+{
+    return string_view(lhs) > string_view(rhs);
+}
+
+// operator<<
 
 BOOST_JSON_DECL
 std::ostream&

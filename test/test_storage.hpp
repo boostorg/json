@@ -125,6 +125,12 @@ public:
     {
         default_storage(sp_);
     }
+
+    storage_ptr const&
+    get() const noexcept
+    {
+        return sp_;
+    }
 };
 
 //------------------------------------------------------------------------------

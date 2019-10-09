@@ -19,6 +19,15 @@ namespace json {
 
 namespace detail {
 
+storage_ptr const&
+global_storage()
+{
+    static storage_ptr const sp =
+        make_storage_adaptor(
+            std::allocator<void>());
+    return sp;
+}
+
 inline
 storage_ptr&
 raw_default_storage() noexcept
