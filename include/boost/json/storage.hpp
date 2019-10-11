@@ -11,14 +11,13 @@
 #define BOOST_JSON_STORAGE_HPP
 
 #include <boost/json/detail/config.hpp>
+#include <boost/core/exchange.hpp>
+#include <boost/static_assert.hpp>
+#include <atomic>
 #include <cstddef>
 #include <cstdlib>
 #include <memory>
 #include <type_traits>
-
-#ifdef BOOST_JSON_TRACK_STORAGE
-#include <atomic>
-#endif
 
 namespace boost {
 namespace json {
@@ -27,9 +26,19 @@ namespace json {
 */
 class storage
 {
+    template<class T>
+    friend class basic_storage_ptr;
+
+    std::atomic<std::size_t> refs_;
+
 public:
     static std::size_t constexpr max_align =
         sizeof(max_align_t);
+
+    storage()
+        : refs_(1)
+    {
+    }
 
     virtual
     ~storage() = default;
@@ -77,92 +86,143 @@ public:
 
 /** Manages a type-erased storage object and options for a set of JSON values.
 */
-#ifndef BOOST_JSON_TRACK_STORAGE
-using storage_ptr = std::shared_ptr<storage>;
-
-#else
 template<class T>
 class basic_storage_ptr
 {
+    BOOST_STATIC_ASSERT(
+        std::is_base_of<storage, T>::value);
+
     template<class U>
     friend class basic_storage_ptr;
 
     using count = std::atomic<unsigned>;
 
-    T* pv_ = nullptr;
-    count* pn_ = nullptr;
+    T* t_ = nullptr;
 
     void
-    increment() const noexcept;
+    increment() const noexcept
+    {
+        ++t_->refs_;
+    }
 
     void
-    decrement() const noexcept;
+    decrement() const noexcept
+    {
+        if(--t_->refs_ > 0)
+            return;
+        delete t_;
+    }
 
     explicit
-    basic_storage_ptr(T* t) noexcept;
+    basic_storage_ptr(T* t) noexcept
+        : t_(t)
+    {
+    }
 
 public:
-    ~basic_storage_ptr();
-
     basic_storage_ptr() = default;
 
-    basic_storage_ptr(
-        basic_storage_ptr&&) noexcept;
+    ~basic_storage_ptr()
+    {
+        if(t_)
+            decrement();
+    }
 
     basic_storage_ptr(
-        basic_storage_ptr const&) noexcept;
+        basic_storage_ptr&& other) noexcept
+        : t_(boost::exchange(other.t_, nullptr))
+    {
+    }
+
+
+    basic_storage_ptr(
+        basic_storage_ptr const& other) noexcept
+        : t_(other.t_)
+    {
+        if(t_)
+            increment();
+    }
+
 
     template<class U
+    #ifndef GENERATING_DOCUMENTATION
         ,class = typename std::enable_if<
             std::is_convertible<U*, T*>::value &&
             ! std::is_same<U, T>::value
                 >::type
+    #endif
     >
     basic_storage_ptr(
-        basic_storage_ptr<U>&& sp) noexcept;
+        basic_storage_ptr<U>&& sp) noexcept
+        : t_(boost::exchange(sp.t_, nullptr))
+    {
+    }
 
     template<class U
+    #ifndef GENERATING_DOCUMENTATION
         ,class = typename std::enable_if<
             std::is_convertible<U*, T*>::value &&
             ! std::is_same<U, T>::value
                 >::type
+    #endif
     >
     basic_storage_ptr(
-        basic_storage_ptr<U> const& sp) noexcept;
+        basic_storage_ptr<U> const& sp) noexcept
+        : t_(sp.t_)
+    {
+        if(t_)
+            increment();
+    }
 
     basic_storage_ptr(
-        std::nullptr_t) noexcept;
+        std::nullptr_t) noexcept
+    {
+    }
 
     basic_storage_ptr&
     operator=(
-        basic_storage_ptr&&) noexcept;
+        basic_storage_ptr&& other) noexcept
+    {
+        if(t_)
+            decrement();
+        t_ = boost::exchange(other.t_, nullptr);
+        return *this;
+    }
 
     basic_storage_ptr&
     operator=(
-        basic_storage_ptr const&) noexcept;
+        basic_storage_ptr const& other) noexcept
+    {
+        if(other.t_)
+            other.increment();
+        if(t_)
+            decrement();
+        t_ = other.t_;
+        return *this;
+    }
 
     explicit
     operator bool() const noexcept
     {
-        return pv_ != nullptr;
+        return t_ != nullptr;
     }
 
     T*
     get() const noexcept
     {
-        return pv_;
+        return t_;
     }
 
     T*
     operator->() const noexcept
     {
-        return pv_;
+        return t_;
     }
 
     T&
     operator*() const noexcept
     {
-        return *pv_;
+        return *t_;
     }
 
     template<class U, class... Args>
@@ -215,21 +275,7 @@ operator!=(storage_ptr const& lhs, storage* rhs) noexcept
     return lhs.get() != rhs;
 }
 
-#endif
-
 //------------------------------------------------------------------------------
-
-/** Construct a new storage object
-*/
-#ifndef BOOST_JSON_TRACK_STORAGE
-template<class Storage, class... Args>
-std::shared_ptr<Storage>
-make_storage(Args&&... args);
-#else
-template<class Storage, class... Args>
-basic_storage_ptr<Storage>
-make_storage(Args&&... args);
-#endif
 
 /** Construct a storage adaptor for the specified allocator
 */
