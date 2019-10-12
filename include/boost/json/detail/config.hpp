@@ -10,20 +10,32 @@
 #ifndef BOOST_JSON_DETAIL_CONFIG_HPP
 #define BOOST_JSON_DETAIL_CONFIG_HPP
 
-// Default to a header-only implementation. The user must specifically
-// request separate compilation by defining BOOST_JSON_SEPARATE_COMPILATION
-#ifndef BOOST_JSON_HEADER_ONLY
-# ifndef BOOST_JSON_SEPARATE_COMPILATION
-#   define BOOST_JSON_HEADER_ONLY 1
-# endif
-#endif
+#include <boost/config.hpp>
 
-#if GENERATING_DOCUMENTATION
+#if defined(GENERATING_DOCUMENTATION)
 # define BOOST_JSON_DECL
 #elif defined(BOOST_JSON_HEADER_ONLY)
 # define BOOST_JSON_DECL inline
+# define BOOST_JSON_PUBLIC
 #else
-# define BOOST_JSON_DECL
+# if (defined(BOOST_JSON_DYN_LINK) || defined(BOOST_ALL_DYN_LINK)) && !defined(BOOST_JSON_STATIC_LINK)
+#  if defined(BOOST_JSON_SOURCE)
+#   define BOOST_JSON_DECL BOOST_SYMBOL_EXPORT
+#   define BOOST_JSON_BUILD_DLL
+#  else
+#   define BOOST_JSON_DECL BOOST_SYMBOL_IMPORT
+#  endif
+# endif // shared lib
+# ifndef  BOOST_JSON_DECL
+#  define BOOST_JSON_DECL
+# endif
+# if !defined(BOOST_JSON_SOURCE) && !defined(BOOST_ALL_NO_LIB) && !defined(BOOST_JSON_NO_LIB)
+#  define BOOST_LIB_NAME boost_json
+#  if defined(BOOST_ALL_DYN_LINK) || defined(BOOST_JSON_DYN_LINK)
+#   define BOOST_DYN_LINK
+#  endif
+#  include <boost/config/auto_link.hpp>
+# endif  // auto-linking disabled
 #endif
 
 #endif

@@ -12,6 +12,7 @@
 
 #include <boost/beast/_experimental/unit_test/suite.hpp>
 #include <boost/static_assert.hpp>
+#include <cmath>
 #include <type_traits>
 
 #include "test_storage.hpp"

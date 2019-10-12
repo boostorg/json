@@ -24,7 +24,7 @@ namespace json {
 
 /** Abstract interface to a memory resource used with JSON.
 */
-class storage
+class BOOST_SYMBOL_VISIBLE storage
 {
     template<class T>
     friend class basic_storage_ptr;
@@ -233,47 +233,29 @@ public:
 
 using storage_ptr = basic_storage_ptr<storage>;
 
-inline
+BOOST_JSON_DECL
 bool
-operator==(storage_ptr const& lhs, storage_ptr const& rhs) noexcept
-{
-    return lhs.get() == rhs.get();
-}
+operator==(storage_ptr const& lhs, storage_ptr const& rhs) noexcept;
 
-inline
+BOOST_JSON_DECL
 bool
-operator==(storage* lhs, storage_ptr const& rhs) noexcept
-{
-    return lhs == rhs.get();
-}
+operator==(storage* lhs, storage_ptr const& rhs) noexcept;
 
-inline
+BOOST_JSON_DECL
 bool
-operator==(storage_ptr const& lhs, storage* rhs) noexcept
-{
-    return lhs.get() == rhs;
-}
+operator==(storage_ptr const& lhs, storage* rhs) noexcept;
 
-inline
+BOOST_JSON_DECL
 bool
-operator!=(storage_ptr const& lhs, storage_ptr const& rhs) noexcept
-{
-    return lhs.get() != rhs.get();
-}
+operator!=(storage_ptr const& lhs, storage_ptr const& rhs) noexcept;
 
-inline
+BOOST_JSON_DECL
 bool
-operator!=(storage* lhs, storage_ptr const& rhs) noexcept
-{
-    return lhs != rhs.get();
-}
+operator!=(storage* lhs, storage_ptr const& rhs) noexcept;
 
-inline
+BOOST_JSON_DECL
 bool
-operator!=(storage_ptr const& lhs, storage* rhs) noexcept
-{
-    return lhs.get() != rhs;
-}
+operator!=(storage_ptr const& lhs, storage* rhs) noexcept;
 
 //------------------------------------------------------------------------------
 

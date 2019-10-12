@@ -39,7 +39,7 @@ using is_viewy = typename std::enable_if<
 
 /** The native type of string values
 */
-class string
+class BOOST_SYMBOL_VISIBLE string
 {
 public:
     using traits_type       = std::char_traits<char>;
@@ -141,10 +141,10 @@ private:
 
         BOOST_JSON_DECL
         static
-        size_type
+        impl_size_type
         growth(
             size_type new_size,
-            size_type capacity);
+            impl_size_type capacity);
 
         BOOST_JSON_DECL
         void
@@ -1789,7 +1789,7 @@ operator<<(std::ostream& os, string const& s);
 } // boost
 
 #include <boost/json/impl/string.hpp>
-#if BOOST_JSON_HEADER_ONLY
+#ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/impl/string.ipp>
 #endif
 

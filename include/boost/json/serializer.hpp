@@ -19,7 +19,7 @@
 namespace boost {
 namespace json {
 
-class serializer
+class BOOST_SYMBOL_VISIBLE serializer
 {
     struct base
     {
@@ -56,24 +56,24 @@ class serializer
         bool last_;
 
     public:
-        BOOST_JSON_DECL
+        inline
         impl(value const& jv);
 
-        BOOST_JSON_DECL
+        inline
         bool
         is_done() const noexcept override;
 
-        BOOST_JSON_DECL
+        inline
         std::size_t
         next(boost::asio::mutable_buffer) override;
 
     private:
-        BOOST_JSON_DECL
+        inline
         void
         append(char c,
             boost::asio::mutable_buffer& b);
 
-        BOOST_JSON_DECL
+        inline
         void
         append(
             char const* s, std::size_t n,

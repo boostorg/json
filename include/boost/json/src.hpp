@@ -7,8 +7,8 @@
 // Official repository: https://github.com/vinniefalco/json
 //
 
-#ifndef BOOST_JSON_LIB_HPP
-#define BOOST_JSON_LIB_HPP
+#ifndef BOOST_JSON_SRC_HPP
+#define BOOST_JSON_SRC_HPP
 
 /*
 
@@ -17,15 +17,12 @@ the program, with the macro BOOST_BEAST_SPLIT_COMPILATION defined.
 
 */
 
-#define BOOST_JSON_SOURCE
-
 #include <boost/json/detail/config.hpp>
 
 #if defined(BOOST_JSON_HEADER_ONLY)
 # error Do not compile library source with the header only macro defined
 #endif
 
-#include <boost/json/detail/varint.ipp>
 #include <boost/json/impl/array.ipp>
 #include <boost/json/impl/basic_parser.ipp>
 #include <boost/json/impl/error.ipp>
@@ -36,6 +33,7 @@ the program, with the macro BOOST_BEAST_SPLIT_COMPILATION defined.
 #include <boost/json/impl/parser.ipp>
 #include <boost/json/impl/serializer.ipp>
 #include <boost/json/impl/storage.ipp>
+#include <boost/json/impl/string.ipp>
 #include <boost/json/impl/value.ipp>
 
 #endif

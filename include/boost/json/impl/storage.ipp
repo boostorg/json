@@ -52,6 +52,44 @@ default_storage(storage_ptr sp) noexcept
     detail::raw_default_storage() = std::move(sp);
 }
 
+//------------------------------------------------------------------------------
+
+bool
+operator==(storage_ptr const& lhs, storage_ptr const& rhs) noexcept
+{
+    return lhs.get() == rhs.get();
+}
+
+bool
+operator==(storage* lhs, storage_ptr const& rhs) noexcept
+{
+    return lhs == rhs.get();
+}
+
+bool
+operator==(storage_ptr const& lhs, storage* rhs) noexcept
+{
+    return lhs.get() == rhs;
+}
+
+bool
+operator!=(storage_ptr const& lhs, storage_ptr const& rhs) noexcept
+{
+    return lhs.get() != rhs.get();
+}
+
+bool
+operator!=(storage* lhs, storage_ptr const& rhs) noexcept
+{
+    return lhs != rhs.get();
+}
+
+bool
+operator!=(storage_ptr const& lhs, storage* rhs) noexcept
+{
+    return lhs.get() != rhs;
+}
+
 } // json
 } // boost
 

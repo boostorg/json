@@ -21,7 +21,7 @@ namespace json {
 
 /** The representation of parsed numbers.
 */
-class number
+class BOOST_SYMBOL_VISIBLE number
 {
     struct base10_ieee
     {
@@ -185,30 +185,33 @@ public:
 private:
     struct pow10;
 
-    BOOST_JSON_DECL
+    inline
     void
     assign_signed(
         long long i) noexcept;
 
-    BOOST_JSON_DECL
+    inline
     void
     assign_unsigned(
         unsigned long long i) noexcept;
 
-    BOOST_JSON_DECL
+    inline
     void
     assign_double(double f) noexcept;
 
+    BOOST_JSON_DECL
     friend
     std::ostream&
     operator<<(std::ostream& os, number const& n);
 
+    BOOST_JSON_DECL
     friend
     bool
     operator==(
         number const& lhs,
         number const& rhs) noexcept;
 
+    BOOST_JSON_DECL
     friend
     bool
     operator!=(

@@ -1,6 +1,5 @@
 bin/
 bin64/
-build/
 *.*#
 
 # Because of CMake and VS2017

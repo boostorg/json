@@ -338,6 +338,60 @@ operator=(node_type&& other) noexcept ->
     return *this;
 }
 
+void
+swap(
+    object::node_type& lhs,
+    object::node_type& rhs) noexcept
+{
+    lhs.swap(rhs);
+}
+
+//------------------------------------------------------------------------------
+//
+// Iterators
+//
+//------------------------------------------------------------------------------
+
+object::
+const_iterator::
+const_iterator(
+    iterator it) noexcept
+    : e_(it.e_)
+{
+}
+
+object::
+const_iterator::
+const_iterator(
+    local_iterator it) noexcept
+    : e_(it.e_)
+{
+}
+
+object::
+const_iterator::
+const_iterator(
+    const_local_iterator it) noexcept
+    : e_(it.e_)
+{
+}
+
+object::
+iterator::
+iterator(
+    local_iterator it) noexcept
+    : e_(it.e_)
+{
+}
+
+object::
+const_local_iterator::
+const_local_iterator(
+    local_iterator it) noexcept
+    : e_(it.e_)
+{
+}
+
 //------------------------------------------------------------------------------
 //
 // Special Members
@@ -1240,6 +1294,24 @@ reserve(size_type n)
 
 //------------------------------------------------------------------------------
 
+auto
+object::
+hash_function() const noexcept ->
+    hasher
+{
+    return hasher{};
+}
+
+auto
+object::
+key_eq() const noexcept ->
+    key_equal
+{
+    return key_equal{};
+}
+
+//------------------------------------------------------------------------------
+
 // allocate a new element
 auto
 object::
@@ -1415,6 +1487,12 @@ remove(element* e)
         head = head->local_next;
     }
     --tab_->size;
+}
+
+void
+swap(object& lhs, object& rhs)
+{
+    lhs.swap(rhs);
 }
 
 } // json

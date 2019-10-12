@@ -10,6 +10,7 @@
 #ifndef BOOST_JSON_DETAIL_VARINT_HPP
 #define BOOST_JSON_DETAIL_VARINT_HPP
 
+#include <boost/json/detail/config.hpp>
 #include <cstdlib>
 #include <cstdint>
 #include <utility>
@@ -18,26 +19,60 @@ namespace boost {
 namespace json {
 namespace detail {
 
-BOOST_JSON_DECL
+inline
 int
-varint_size(std::uint64_t value);
+varint_size(std::uint64_t value)
+{
+    int n = 1;
+    while(value > 127)
+    {
+        ++n;
+        value /= 128;
+    }
+    return n;
+}
 
-BOOST_JSON_DECL
+inline
 std::pair<std::uint64_t, int>
-varint_read(void const* src);
+varint_read(void const* src)
+{
+    auto cp0 = reinterpret_cast<
+        unsigned char const*>(src);
+    auto cp = cp0;
+    std::size_t value = 0;
+    std::size_t factor = 1;
+    while(*cp > 127)
+    {
+        value += (*cp++ & 0x7f) * factor;
+        factor *= 128;
+    }
+    value += *cp++ * factor;
+    return {value,
+        static_cast<int>(cp - cp0)};
+}
 
-BOOST_JSON_DECL
+inline
 int
 varint_write(
     void* dest,
-    std::uint64_t value);
+    std::uint64_t value)
+{
+    auto cp0 = reinterpret_cast<
+        unsigned char*>(dest);
+    auto cp = cp0;
+    while(value > 127)
+    {
+        *cp++ = static_cast<
+            unsigned char>(value & 0x7f);
+        value >>= 7;
+    }
+    *cp++ = static_cast<
+        unsigned char>(value);
+    return static_cast<int>(cp - cp0);
+}
 
 } // detail
 } // json
 } // boost
-
-#ifdef BOOST_JSON_HEADER_ONLY
-#include <boost/json/detail/varint.ipp>
-#endif
 
 #endif

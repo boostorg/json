@@ -7,6 +7,24 @@
 # Official repository: https://github.com/vinniefalco/json
 #
 
+import testing ;
+import ../../config/checks/config : requires ;
+
+project
+    : requirements
+    <library>/boost/json//boost_json
+    [ requires
+    cxx11_constexpr
+    cxx11_decltype
+    cxx11_hdr_tuple
+    cxx11_template_aliases
+    cxx11_variadic_templates
+    ]
+    <toolset>msvc-14.1:<cxxflags>"/permissive-"
+    <toolset>msvc-14.2:<cxxflags>"/permissive-"
+    <target-os>windows:<define>_WIN32_WINNT=0x0601
+    ;
+
 local SOURCES =
     _detail_stack.cpp
     allocator.cpp
@@ -29,24 +47,9 @@ local SOURCES =
     ;
 
 local RUN_TESTS ;
-
 for local f in $(SOURCES)
 {
-    RUN_TESTS += [ run $(f) lib.cpp main.cpp ] ;
+    RUN_TESTS += [ run $(f) main.cpp ] ;
 }
 
 alias run-tests : $(RUN_TESTS) ;
-
-exe fat-tests :
-    $(SOURCES)
-    lib.cpp
-    main.cpp
-    ;
-
-explicit fat-tests ;
-
-run $(SOURCES)
-    lib.cpp
-    : : : : run-fat-tests ;
-
-explicit run-fat-tests ;

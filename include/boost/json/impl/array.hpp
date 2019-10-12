@@ -135,7 +135,13 @@ struct array::undo_insert
 
     template<class Arg>
     void
-    emplace(Arg&& arg);
+    emplace(Arg&& arg)
+    {
+        ::new(it) value(
+            std::forward<Arg>(arg),
+            self.sp_);
+        ++it;
+    }
 };
 
 //------------------------------------------------------------------------------

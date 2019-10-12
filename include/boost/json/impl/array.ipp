@@ -180,18 +180,6 @@ undo_insert(
     self.tab_->d.size += n;
 }
 
-template<class Arg>
-void
-array::
-undo_insert::
-emplace(Arg&& arg)
-{
-    ::new(it) value(
-        std::forward<Arg>(arg),
-        self.sp_);
-    ++it;
-}
-
 //------------------------------------------------------------------------------
 //
 // Special Members

@@ -54,17 +54,8 @@ class value;
         <em>SequenceContainer</em>, and
         <em>UnorderedAssociativeContainer</em>.
 */
-class object
+class BOOST_SYMBOL_VISIBLE object
 {
-    struct list_hook;
-    struct element;
-    struct table;
-    class undo_range;
-
-    storage_ptr sp_;
-    table* tab_ = nullptr;
-    float mf_ = 1.0;
-
 public:
     /// The type of keys
     using key_type = string_view;
@@ -150,16 +141,16 @@ public:
     };
 
 #else
-    class hasher;
-    class key_equal;
-    class pointer;
-    class const_pointer;
-    class iterator;
-    class const_iterator;
-    class local_iterator;
-    class const_local_iterator;
-    class node_type;
-    struct insert_return_type;
+    class BOOST_SYMBOL_VISIBLE hasher;
+    class BOOST_SYMBOL_VISIBLE key_equal;
+    class BOOST_SYMBOL_VISIBLE pointer;
+    class BOOST_SYMBOL_VISIBLE const_pointer;
+    class BOOST_SYMBOL_VISIBLE iterator;
+    class BOOST_SYMBOL_VISIBLE const_iterator;
+    class BOOST_SYMBOL_VISIBLE local_iterator;
+    class BOOST_SYMBOL_VISIBLE const_local_iterator;
+    class BOOST_SYMBOL_VISIBLE node_type;
+    struct BOOST_SYMBOL_VISIBLE insert_return_type;
 #endif
 
 #if 0
@@ -175,6 +166,23 @@ public:
     /// The value type of initializer lists
     using init_value = std::pair<key_type, value>;
 
+private:
+    struct list_hook;
+    struct element;
+    struct table;
+    class undo_range;
+
+    storage_ptr sp_;
+    table* tab_ = nullptr;
+    float mf_ = 1.0;
+
+    template<class T>
+    using is_inputit = typename std::enable_if<
+        std::is_convertible<typename
+            std::iterator_traits<T>::value_type,
+            const_reference>::value>::type;
+
+public:
     //--------------------------------------------------------------------------
 
     /** Destroy the container
@@ -313,14 +321,9 @@ public:
     template<
         class InputIt
     #ifndef GENERATING_DOCUMENTATION
-        ,class = typename std::enable_if<
-            std::is_convertible<
-                typename std::iterator_traits<
-                    InputIt>::value_type,
-                const_reference>::value>::type
+        ,class = is_inputit<InputIt>
     #endif
     >
-    BOOST_JSON_DECL
     object(
         InputIt first,
         InputIt last);
@@ -365,14 +368,9 @@ public:
     template<
         class InputIt
     #ifndef GENERATING_DOCUMENTATION
-        ,class = typename std::enable_if<
-            std::is_convertible<
-                typename std::iterator_traits<
-                    InputIt>::value_type,
-                const_reference>::value>::type
+        ,class = is_inputit<InputIt>
     #endif
     >
-    BOOST_JSON_DECL
     object(
         InputIt first,
         InputIt last,
@@ -416,14 +414,9 @@ public:
     template<
         class InputIt
     #ifndef GENERATING_DOCUMENTATION
-        ,class = typename std::enable_if<
-            std::is_convertible<
-                typename std::iterator_traits<
-                    InputIt>::value_type,
-                const_reference>::value>::type
+        ,class = is_inputit<InputIt>
     #endif
     >
-    BOOST_JSON_DECL
     object(
         InputIt first,
         InputIt last,
@@ -472,14 +465,9 @@ public:
     template<
         class InputIt
     #ifndef GENERATING_DOCUMENTATION
-        ,class = typename std::enable_if<
-            std::is_convertible<
-                typename std::iterator_traits<
-                    InputIt>::value_type,
-                const_reference>::value>::type
+        ,class = is_inputit<InputIt>
     #endif
     >
-    BOOST_JSON_DECL
     object(
         InputIt first,
         InputIt last,
@@ -1114,11 +1102,7 @@ public:
     template<
         class InputIt
     #ifndef GENERATING_DOCUMENTATION
-        ,class = typename std::enable_if<
-            std::is_convertible<
-                typename std::iterator_traits<
-                    InputIt>::value_type,
-                const_reference>::value>::type
+        ,class = is_inputit<InputIt>
     #endif
     >
     void
@@ -1164,11 +1148,7 @@ public:
     template<
         class InputIt
     #ifndef GENERATING_DOCUMENTATION
-        ,class = typename std::enable_if<
-            std::is_convertible<
-                typename std::iterator_traits<
-                    InputIt>::value_type,
-                const_reference>::value>::type
+        ,class = is_inputit<InputIt>
     #endif
     >
     void
@@ -2146,8 +2126,9 @@ private:
         size_type bucket_count) noexcept;
 
     BOOST_JSON_DECL
-    std::pair<element*, std::size_t>
-    find_impl(key_type key) const noexcept;
+    auto
+    find_impl(key_type key) const noexcept ->
+        std::pair<element*, std::size_t>;
 
     BOOST_JSON_DECL
     void
@@ -2169,12 +2150,9 @@ private:
     remove(element* e);
 };
 
-inline
+BOOST_JSON_DECL
 void
-swap(object& lhs, object& rhs)
-{
-    lhs.swap(rhs);
-}
+swap(object& lhs, object& rhs);
 
 } // json
 } // boost

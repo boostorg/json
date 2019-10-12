@@ -28,7 +28,7 @@ BOOST_JSON_INLINE_VARIABLE(end, end_t)
 
 /** A generator to perform a depth-first traversal of a JSON value.
 */
-class const_iterator
+class BOOST_SYMBOL_VISIBLE const_iterator
 {
 #ifndef GENERATING_DOCUMENTATION
     struct node
@@ -91,18 +91,21 @@ public:
     const_iterator&
     operator++() noexcept;
 
+    BOOST_JSON_DECL
     void
     operator++(int) noexcept
     {
         ++*this;
     }
 
+    BOOST_JSON_DECL
     value_type
     operator->() const noexcept
     {
         return *(*this);
     }
 
+    BOOST_JSON_DECL
     friend
     bool
     operator==(
@@ -112,6 +115,7 @@ public:
         return lhs.stack_.empty();
     }
 
+    BOOST_JSON_DECL
     friend
     bool
     operator==(
@@ -121,6 +125,7 @@ public:
         return rhs.stack_.empty();
     }
 
+    BOOST_JSON_DECL
     friend
     bool
     operator!=(
@@ -130,6 +135,7 @@ public:
         return ! lhs.stack_.empty();
     }
 
+    BOOST_JSON_DECL
     friend
     bool
     operator!=(
@@ -143,7 +149,7 @@ public:
 } // json
 } // boost
 
-#if BOOST_JSON_HEADER_ONLY
+#ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/impl/iterator.ipp>
 #endif
 

@@ -27,7 +27,7 @@ namespace json {
 
 /** A parser for serialized JSON
 */
-class basic_parser
+class BOOST_SYMBOL_VISIBLE basic_parser
 #ifndef GENERATING_DOCUMENTATION
     : private detail::parser_base
 #endif
@@ -45,14 +45,14 @@ class basic_parser
     bool n_exp_neg_;
     bool is_key_;
 
-    BOOST_JSON_DECL
+    inline
     static
     bool
     append_digit(
         number::mantissa_type* value,
         char digit);
 
-    BOOST_JSON_DECL
+    inline
     static
     bool
     append_digit(
@@ -120,58 +120,70 @@ protected:
     BOOST_JSON_DECL
     basic_parser();
 
+    BOOST_JSON_DECL
     virtual
     void
     on_document_begin(error_code& ec) = 0;
 
+    BOOST_JSON_DECL
     virtual
     void
     on_object_begin(error_code& ec) = 0;
 
+    BOOST_JSON_DECL
     virtual
     void
     on_object_end(error_code& ec) = 0;
 
+    BOOST_JSON_DECL
     virtual
     void
     on_array_begin(error_code& ec) = 0;
 
+    BOOST_JSON_DECL
     virtual
     void
     on_array_end(error_code& ec) = 0;
 
+    BOOST_JSON_DECL
     virtual
     void
     on_key_data(
         string_view s,
         error_code& ec) = 0;
 
+    BOOST_JSON_DECL
     virtual
     void
     on_key_end(
         string_view s,
         error_code& ec) = 0;
 
+    BOOST_JSON_DECL
     virtual
     void
     on_string_data(
         string_view s,
         error_code& ec) = 0;
 
+    BOOST_JSON_DECL
     virtual
     void
     on_string_end(
         string_view,
         error_code& ec) = 0;
 
+    BOOST_JSON_DECL
     virtual
     void
     on_number(number n, error_code& ec) = 0;
 
+    BOOST_JSON_DECL
     virtual
     void
     on_bool(bool b, error_code& ec) = 0;
 
+    BOOST_JSON_DECL
     virtual
     void
     on_null(error_code& ec) = 0;
@@ -181,7 +193,7 @@ protected:
 } // boost
 
 #include <boost/json/impl/basic_parser.hpp>
-#if BOOST_JSON_HEADER_ONLY
+#ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/impl/basic_parser.ipp>
 #endif
 

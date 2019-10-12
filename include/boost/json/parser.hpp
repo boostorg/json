@@ -21,7 +21,8 @@
 namespace boost {
 namespace json {
 
-class parser : public basic_parser
+class BOOST_SYMBOL_VISIBLE parser
+    : public basic_parser
 {
     static std::size_t const
         default_max_depth = 32;
@@ -70,7 +71,7 @@ private:
     void
     assign(T&& t);
 
-    BOOST_JSON_DECL
+    inline
     void
     reset();
 

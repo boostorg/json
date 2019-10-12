@@ -73,7 +73,7 @@ class value;
         <em>ReversibleContainer</em>, and
         <em>SequenceContainer</em>.
 */
-class array
+class BOOST_SYMBOL_VISIBLE array
 {
     struct table;
 
@@ -1559,11 +1559,11 @@ private:
         const_iterator pos,
         Arg&& arg);
 
-    BOOST_JSON_DECL
+    inline
     void
     copy(array const& other);
 
-    BOOST_JSON_DECL
+    inline
     void
     assign(std::initializer_list<value> init);
 };

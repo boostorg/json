@@ -7,4 +7,6 @@
 // Official repository: https://github.com/vinniefalco/json
 //
 
-//#include <boost/json/lib.hpp>
+#ifndef BOOST_JSON_HEADER_ONLY
+#include <boost/json/src.hpp>
+#endif
