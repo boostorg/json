@@ -12,7 +12,6 @@
 
 #include <boost/json/basic_parser.hpp>
 #include <boost/json/error.hpp>
-#include <boost/beast/core/static_string.hpp>
 #include <boost/assert.hpp>
 
 namespace boost {
@@ -164,9 +163,7 @@ write_eof(error_code& ec)
         [this, &ec]
         {
             char c = 0;
-            write_some(
-                boost::asio::const_buffer(
-                &c, 1), ec);
+            write_some(&c, 1, ec);
             BOOST_ASSERT(ec);
         };
 
@@ -182,8 +179,7 @@ write_eof(error_code& ec)
         case state::number_exp:
         case state::number_exp_digits2:
             stack_.front() = state::number_end;
-            write_some(
-                boost::asio::const_buffer{}, ec);
+            write_some(nullptr, 0, ec);
             if(ec)
                 return;
             break;
@@ -204,15 +200,16 @@ write_eof(error_code& ec)
 std::size_t
 basic_parser::
 write_some(
-    boost::asio::const_buffer buffer,
+    void const* data,
+    std::size_t size,
     error_code& ec)
 {
-    auto p = static_cast<
-        char const*>(buffer.data());
-    auto n = buffer.size();
+    auto p = static_cast<char const*>(data);
+    auto n = size;
     auto const p0 = p;
     auto const p1 = p0 + n;
-    beast::static_string<4096> temp;
+    std::string temp; // VFALCO string bad!
+    temp.reserve(4096);
     ec = {};
     BOOST_ASSERT(stack_.front() != state::end);
     auto const maybe_flush =
@@ -1015,11 +1012,12 @@ finish:
 std::size_t
 basic_parser::
 write(
-    boost::asio::const_buffer buffer,
+    void const* data,
+    std::size_t size,
     error_code& ec)
 {
     auto bytes_used =
-        write_some(buffer, ec);
+        write_some(data, size, ec);
     if(! ec)
         write_eof(ec);
     return bytes_used;

@@ -15,7 +15,6 @@
 
 #include <boost/json.hpp>
 #include <boost/beast/_experimental/unit_test/dstream.hpp>
-#include <boost/beast/core/static_string.hpp>
 #include <boost/container/pmr/global_resource.hpp>
 #include <boost/container/pmr/unsynchronized_pool_resource.hpp>
 #include <chrono>
@@ -122,7 +121,7 @@ public:
         boost::string_view s) override
     {
         boost::system::error_code ec;
-        p_->write({s.data(), s.size()}, ec);
+        p_->write(s.data(), s.size(), ec);
     }
 };
 
@@ -177,7 +176,7 @@ class factory
 {
     std::string s_;
     std::mt19937 g_;
-    beast::static_string<445> lorem_;
+    std::string lorem_;
     int depth_;
     int indent_ = 4;
     int max_depth_ = 6;
@@ -210,10 +209,11 @@ public:
     {
     }
 
-    beast::static_string<20>
-    key() noexcept
+    std::string const&
+    key(std::string& s) noexcept
     {
-        beast::static_string<20> s;
+        s.clear();
+        s.reserve(20);
         auto const append =
             [this, &s]()
             {
@@ -337,7 +337,7 @@ private:
     void
     append_integer()
     {
-        auto const ns = beast::to_static_string(
+        auto const ns = std::to_string(
             rand(std::numeric_limits<int>::max()));
         s_.append(ns.c_str(), ns.size());
     }

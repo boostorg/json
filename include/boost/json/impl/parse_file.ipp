@@ -10,9 +10,8 @@
 #ifndef BOOST_JSON_IMPL_PARSE_FILE_IPP
 #define BOOST_JSON_IMPL_PARSE_FILE_IPP
 
-#include <boost/beast/core/file.hpp>
-#include <boost/beast/core/flat_buffer.hpp>
-#include <boost/beast/core/detail/clamp.hpp>
+#include <boost/system/error_code.hpp>
+#include <cstdio>
 
 namespace boost {
 namespace json {
@@ -23,34 +22,47 @@ parse_file(
     basic_parser& parser,
     error_code& ec)
 {
-    beast::file f;
-    f.open(path, beast::file_mode::scan, ec);
-    if(ec)
-        return;
-    beast::flat_buffer b;
-    auto remain = f.size(ec);
-    if(ec)
-        return;
-    while(remain > 0)
+    auto const& gc =
+        boost::system::generic_category();
+    
+    struct cleanup
     {
-        auto amount = beast::detail::clamp(remain);
-        auto mb = b.prepare(amount);
-        b.commit(f.read(mb.data(), mb.size(), ec));
-        if(ec)
-            return;
-        if(remain == b.size())
-            break;
-        auto bytes_used =
-            parser.write_some(b.data(), ec);
-        if(ec)
-            return;
-        remain -= b.size();
-        b.consume(bytes_used);
-    }
-    parser.write(b.data(), ec);
-    if(ec)
+        FILE* f;
+        ~cleanup()
+        {
+            ::fclose(f);
+        }
+    };
+
+    auto f = ::fopen(path, "rb");
+    if(! f)
+    {
+        ec = error_code(errno, gc);
         return;
-    // finished
+    }
+    cleanup c{f};
+    std::size_t result;
+    result = ::fseek(f, 0, SEEK_END);
+    if(result != 0)
+    {
+        ec = error_code(errno, gc);
+        return;
+    }
+    auto const size = ::ftell(f);
+    if(size == -1L)
+    {
+        ec = error_code(errno, gc);
+        return;
+    }
+    char* buf = new char[size];
+    result = ::fread(buf, 1, size, f);
+    if(result != 0)
+    {
+        ec = error_code(errno, gc);
+        return;
+    }
+    parser.write(buf, size, ec);
+    delete[] buf;
 }
 
 } // json

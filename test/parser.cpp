@@ -49,7 +49,7 @@ R"xx({
         ;
         parser p;
         error_code ec;
-        p.write({in.data(), in.size()}, ec);
+        p.write(in.data(), in.size(), ec);
         if(BEAST_EXPECTS(! ec, ec.message()))
         {
             std::stringstream ss;

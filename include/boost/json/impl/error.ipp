@@ -23,7 +23,7 @@ public:
     const char*
     name() const noexcept override
     {
-        return "boost.beast.json";
+        return "boost.json";
     }
 
     BOOST_JSON_DECL
@@ -113,7 +113,7 @@ public:
     const char*
     name() const noexcept override
     {
-        return "boost.beast";
+        return "boost.json";
     }
 
     BOOST_JSON_DECL

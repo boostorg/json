@@ -15,7 +15,6 @@
 #include <boost/json/number.hpp>
 #include <boost/json/detail/basic_parser.hpp>
 #include <boost/json/detail/stack.hpp>
-#include <boost/asio/buffer.hpp>
 #include <boost/utility/string_view.hpp>
 #include <cstdint>
 
@@ -71,44 +70,18 @@ public:
     void
     reset();
 
-    template<
-        class ConstBufferSequence
-#ifndef GENERATING_DOCUMENTATION
-        ,class = typename std::enable_if<
-            ! std::is_convertible<
-                ConstBufferSequence,
-                boost::asio::const_buffer>::value>::type
-#endif
-    >
-    std::size_t
-    write_some(
-        ConstBufferSequence const& buffers,
-        error_code& ec);
-
     BOOST_JSON_DECL
     std::size_t
     write_some(
-        boost::asio::const_buffer buffer,
-        error_code& ec);
-
-    template<
-        class ConstBufferSequence
-#ifndef GENERATING_DOCUMENTATION
-        ,class = typename std::enable_if<
-            ! std::is_convertible<
-                ConstBufferSequence,
-                boost::asio::const_buffer>::value>::type
-#endif
-    >
-    std::size_t
-    write(
-        ConstBufferSequence const& buffers,
+        void const* data,
+        std::size_t size,
         error_code& ec);
 
     BOOST_JSON_DECL
     std::size_t
     write(
-        boost::asio::const_buffer buffer,
+        void const* data,
+        std::size_t size,
         error_code& ec);
 
     BOOST_JSON_DECL
@@ -192,7 +165,6 @@ protected:
 } // json
 } // boost
 
-#include <boost/json/impl/basic_parser.hpp>
 #ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/impl/basic_parser.ipp>
 #endif
