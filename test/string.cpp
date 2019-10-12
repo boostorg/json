@@ -782,6 +782,13 @@ public:
                 BEAST_EXPECT(
                     s == std::string(t.v2.size(), '*'));
             });
+
+            // self-assign
+            {
+                string s(t.v1);
+                s = s;
+                BEAST_EXPECT(s == t.v1);
+            }
         }
 
         // assign(string, size_type, size_type)
@@ -1053,6 +1060,22 @@ public:
                     make_input_iterator(init2.end()));
                 BEAST_EXPECT(s == t.v2);
             });
+
+            // empty range
+            {
+                string s(t.v1);
+                s.assign(init1.begin(), init1.begin());
+                BEAST_EXPECT(s.empty());
+            }
+
+            // empty range
+            {
+                string s(t.v1);
+                s.assign(
+                    make_input_iterator(init1.begin()),
+                    make_input_iterator(init1.begin()));
+                BEAST_EXPECT(s.empty());
+            }
         }
 
         // assign(std::initializer_list<char>)
@@ -1394,6 +1417,8 @@ public:
     void
     testCapacity()
     {
+        test_vectors const t;
+
         // empty()
         {
             {
@@ -1418,11 +1443,61 @@ public:
 
         // reserve(size_type)
         {
+            fail_loop([&]
+            {
+                string s;
+                s.append(t.v1);
+                s.append(t.v2);
+
+                s.reserve(0);
+                BEAST_EXPECT(s.size() ==
+                    t.v1.size() + t.v2.size());
+
+                s.reserve(t.v1.size() + t.v2.size());
+                BEAST_EXPECT(s.size() ==
+                    t.v1.size() + t.v2.size());
+
+                s.reserve(s.size() * 2);
+                BEAST_EXPECT(s.capacity() >
+                    t.v1.size() + t.v2.size());
+
+                s.resize(t.v1.size());
+                s.reserve(t.v1.size());
+                BEAST_EXPECT(s == t.v1);
+            });
         }
 
         // capacity()
         {
+            // implied
         }
+
+        // shrink_to_fit()
+        fail_loop([&]
+        {
+            string s;
+            string::size_type cap;
+
+            cap = s.capacity();
+            s.shrink_to_fit();
+            BEAST_EXPECT(s.capacity() == cap);
+
+            s.reserve(s.capacity() + 1);
+            s.shrink_to_fit();
+            BEAST_EXPECT(s.capacity() == cap);
+
+            s.resize(cap * 3, '*');
+            cap = s.capacity();
+            s.resize(cap - 1);
+            s.shrink_to_fit();
+            BEAST_EXPECT(s.capacity() == cap);
+
+            s.resize(cap / 2);
+            BEAST_EXPECT(s.capacity() == cap);
+
+            s.shrink_to_fit();
+            BEAST_EXPECT(s.capacity() < cap);
+        });
     }
 
     void
@@ -1453,12 +1528,298 @@ public:
     void
     testInsert()
     {
+        test_vectors const t;
+
         // insert(size_type, size_type, char)
-        // insert(size_type, string_view)
+        {
+            fail_loop([&]
+            {
+                string s(t.v1);
+                s.insert(1, 3, '*');
+                BEAST_EXPECT(s == std::string(
+                    t.v1).insert(1, 3, '*'));
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v2);
+                s.insert(1, 3, '*');
+                BEAST_EXPECT(s == std::string(
+                    t.v2).insert(1, 3, '*'));
+            });
+
+            // pos out of range
+            {
+                string s(t.v1);
+                BEAST_THROWS(
+                    (s.insert(s.size() + 2, 1, '*')),
+                    std::out_of_range);
+            }
+
+            // size > max_size
+            {
+                string s(t.v1);
+                BEAST_THROWS(
+                    (s.insert(1, "", s.max_size())),
+                    std::length_error);
+            }
+        }
+
+        // insert(size_type, char const*)
+        {
+            fail_loop([&]
+            {
+                string s(t.v1);
+                s.insert(1, "***");
+                BEAST_EXPECT(s == std::string(
+                    t.v1).insert(1, "***"));
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v2);
+                s.insert(1, "***");
+                BEAST_EXPECT(s == std::string(
+                    t.v2).insert(1, "***"));
+            });
+
+            // pos out of range
+            {
+                string s(t.v1);
+                BEAST_THROWS(
+                    (s.insert(s.size() + 2, "*", 1)),
+                    std::out_of_range);
+            }
+        }
+
         // insert(size_type, char const*, size_type)
-        // insert(size_type, string_view, size_type, size_type)
-        // insert(const_iterator, size_type, char ch)
+        {
+            fail_loop([&]
+            {
+                string s(t.v1);
+                s.insert(1, "*****", 3);
+                BEAST_EXPECT(s == std::string(
+                    t.v1).insert(1, "*****", 3));
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v2);
+                s.insert(1, "*****", 3);
+                BEAST_EXPECT(s == std::string(
+                    t.v2).insert(1, "*****", 3));
+            });
+        }
+
+        // insert(size_type, string const&)
+        {
+            fail_loop([&]
+            {
+                string s(t.v1);
+                s.insert(1, string(t.v2));
+                BEAST_EXPECT(s == std::string(
+                    t.v1).insert(1, t.s2));
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v2);
+                s.insert(1, string(t.v1));
+                BEAST_EXPECT(s == std::string(
+                    t.v2).insert(1, t.s1));
+            });
+        }
+
+        // insert(size_type, string const&, size_type, size_type)
+        {
+            fail_loop([&]
+            {
+                string s(t.v1);
+                s.insert(1, string(t.v2), 1, 3);
+                BEAST_EXPECT(s == std::string(
+                    t.v1).insert(1, t.s2, 1, 3));
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v2);
+                s.insert(1, string(t.v1), 1, 3);
+                BEAST_EXPECT(s == std::string(
+                    t.v2).insert(1, t.s1, 1, 3));
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v1);
+                s.insert(1, string(t.v2), 1);
+                BEAST_EXPECT(s == std::string(
+                    t.v1).insert(1, t.s2, 1, std::string::npos));
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v2);
+                s.insert(1, string(t.v1), 1);
+                BEAST_EXPECT(s == std::string(
+                    t.v2).insert(1, t.s1, 1, std::string::npos));
+            });
+        }
+
+        // insert(const_iterator, char)
+        {
+            fail_loop([&]
+            {
+                string s(t.v1);
+                BEAST_EXPECT(
+                    *s.insert(s.begin()+2, '*') == '*');
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v2);
+                BEAST_EXPECT(
+                    *s.insert(s.begin()+2, '*') == '*');
+            });
+        }
+
+        // insert(const_iterator, size_type, char)
+        {
+            fail_loop([&]
+            {
+                string s(t.v1);
+                BEAST_EXPECT(string_view(
+                    s.insert(s.begin()+2, 3, '*'), 5) ==
+                        "***cd");
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v2);
+                BEAST_EXPECT(string_view(
+                    s.insert(s.begin()+2, 3, '*'), 5) ==
+                        "***CD");
+            });
+        }
+
         // insert(const_iterator, InputIt, InputIt)
+        {
+            std::initializer_list<char> init1 = {
+                'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+                'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's'
+            };
+            BEAST_EXPECT(std::string(init1) == t.s1);
+
+            std::initializer_list<char> init2 = {
+                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+                'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'
+            };
+            BEAST_EXPECT(std::string(init2) == t.s2);
+
+            fail_loop([&]
+            {
+                string s(t.v1);
+                s.insert(s.begin()+2, init2.begin(), init2.end());
+                BEAST_EXPECT(s == std::string(
+                    t.s1).insert(2, init2.begin(), init2.size()));
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v2);
+                s.insert(s.begin()+2, init1.begin(), init1.end());
+                BEAST_EXPECT(s == std::string(
+                    t.s2).insert(2, init1.begin(), init1.size()));
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v1);
+                s.insert(s.begin()+2,
+                    make_input_iterator(init2.begin()),
+                    make_input_iterator(init2.end()));
+                BEAST_EXPECT(s == std::string(
+                    t.s1).insert(2, init2.begin(), init2.size()));
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v2);
+                s.insert(s.begin()+2,
+                    make_input_iterator(init1.begin()),
+                    make_input_iterator(init1.end()));
+                BEAST_EXPECT(s == std::string(
+                    t.s2).insert(2, init1.begin(), init1.size()));
+            });
+        }
+
+        // insert(const_iterator, initializer_list)
+        {
+            std::initializer_list<char> init1 = {
+                'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+                'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's'
+            };
+            BEAST_EXPECT(std::string(init1) == t.s1);
+
+            std::initializer_list<char> init2 = {
+                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+                'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'
+            };
+            BEAST_EXPECT(std::string(init2) == t.s2);
+
+            fail_loop([&]
+            {
+                string s(t.v1);
+                s.insert(s.begin()+2, init2);
+                BEAST_EXPECT(s == std::string(
+                    t.s1).insert(2, init2.begin(), init2.size()));
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v2);
+                s.insert(s.begin()+2, init1);
+                BEAST_EXPECT(s == std::string(
+                    t.s2).insert(2, init1.begin(), init1.size()));
+            });
+        }
+
+        // insert(const_iterator, string_view)
+        {
+            fail_loop([&]
+            {
+                string s(t.v1);
+                s.insert(2, string_view(t.v2));
+                BEAST_EXPECT(s == std::string(
+                    t.v1).insert(2, t.s2));
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v2);
+                s.insert(2, string_view(t.v1));
+                BEAST_EXPECT(s == std::string(
+                    t.v2).insert(2, t.s1));
+            });
+        }
+
+        // insert(const_iterator, string_view)
+        {
+            fail_loop([&]
+            {
+                string s(t.v1);
+                s.insert(2, string_view(t.v2), 2, 3);
+                BEAST_EXPECT(s == std::string(
+                    t.v1).insert(2, t.s2, 2, 3));
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v2);
+                s.insert(2, string_view(t.v1), 2, 3);
+                BEAST_EXPECT(s == std::string(
+                    t.v2).insert(2, t.s1, 2, 3));
+            });
+        }
     }
 
     void
@@ -1508,6 +1869,13 @@ public:
                 s.erase();
                 BEAST_EXPECT(s ==
                     std::string(t.v2).erase());
+            }
+
+            {
+                string s(t.v1);
+                BEAST_THROWS(
+                    (s.erase(t.v1.size() + 1, 1)),
+                    std::out_of_range);
             }
         }
 
@@ -1587,99 +1955,232 @@ public:
     void
     testAppend()
     {
+        test_vectors const t;
+
         // append(size_type, char)
-        fail_loop([&](storage_ptr const& sp)
         {
-            string s("123", sp);
-            s.append(3, '*');
-            BEAST_EXPECT(s == "123***");
-        });
-
-        // append(string)
-        fail_loop([&](storage_ptr const& sp)
-        {
-            string s("123", sp);
-            s.append(string("abc"));
-            BEAST_EXPECT(s == "123abc");
-        });
-
-        // append(string, size_type, size_type)
-        fail_loop([&](storage_ptr const& sp)
-        {
-            string s("123", sp);
-            s.append(string("abcde"), 1, 3);
-            BEAST_EXPECT(s == "123bcd");
-        });
-
-        // append(char const*, size_type)
-        fail_loop([&](storage_ptr const& sp)
-        {
-            string s("123", sp);
-            s.append("abc", 3);
-            BEAST_EXPECT(s == "123abc");
-        });
-
-        // append(char const*)
-        fail_loop([&](storage_ptr const& sp)
-        {
-            string s("123", sp);
-            s.append("abc");
-            BEAST_EXPECT(s == "123abc");
-        });
-
-        // append(InputIt, InputIt)
-        {
-            fail_loop([&](storage_ptr const& sp)
+            fail_loop([&]
             {
-                std::initializer_list<
-                    char> init = { 'a', 'b', 'c' };
-                string s("123", sp);
-                s.append(init.begin(), init.end());
-                BEAST_EXPECT(s == "123abc");
+                string s(t.v1);
+                s.append(t.v2.size(), '*');
+                BEAST_EXPECT(s == t.s1 +
+                    std::string(t.v2.size(), '*'));
             });
 
-            // multiple growth
-            fail_loop([&](storage_ptr const& sp)
+            fail_loop([&]
             {
-                auto init = {
-                    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
-                    'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p' };
-                string s("12345678", sp);
-                s.append(init.begin(), init.end());
-                BEAST_EXPECT(
-                    s == "12345678abcdefghijklmnop");
-            });
-
-            // input iterator
-            fail_loop([&](storage_ptr const& sp)
-            {
-                auto init = {
-                    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
-                    'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p' };
-                string s("12345678", sp);
-                s.append(
-                    make_input_iterator(init.begin()),
-                    make_input_iterator(init.end()));
-                BEAST_EXPECT(
-                    s == "12345678abcdefghijklmnop");
+                string s(t.v2);
+                s.append(t.v1.size(), '*');
+                BEAST_EXPECT(s == t.s2 +
+                    std::string(t.v1.size(), '*'));
             });
         }
 
-        // append(init_list)
-        fail_loop([&](storage_ptr const& sp)
+        // append(string)
         {
-            string s("123", sp);
-            s.append({'a', 'b', 'c'});
-            BEAST_EXPECT(s == "123abc");
-        });
+            fail_loop([&]
+            {
+                string s(t.v1);
+                s.append(string(t.v2));
+                BEAST_EXPECT(s == t.s1 + t.s2);
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v2);
+                s.append(string(t.v1));
+                BEAST_EXPECT(s == t.s2 + t.s1);
+            });
+        }
+
+        // append(string, size_type, size_type)
+        {
+            fail_loop([&]
+            {
+                string s(t.v1);
+                s.append(string(t.v2), 3);
+                BEAST_EXPECT(s == t.s1 + t.s2.substr(3));
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v2);
+                s.append(string(t.v1), 3);
+                BEAST_EXPECT(s == t.s2 + t.s1.substr(3));
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v1);
+                s.append(string(t.v2), 2, 3);
+                BEAST_EXPECT(s == t.s1 + t.s2.substr(2, 3));
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v2);
+                s.append(string(t.v1), 2, 3);
+                BEAST_EXPECT(s == t.s2 + t.s1.substr(2, 3));
+            });
+        }
+
+        // append(char const*)
+        {
+            fail_loop([&]
+            {
+                string s(t.v1);
+                s.append(t.s2.c_str());
+                BEAST_EXPECT(s == t.s1 + t.s2);
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v2);
+                s.append(t.s1.c_str());
+                BEAST_EXPECT(s == t.s2 + t.s1);
+            });
+        }
+
+        // append(char const*, size_type)
+        {
+            fail_loop([&]
+            {
+                string s(t.v1);
+                s.append(t.s2.c_str(), 5);
+                BEAST_EXPECT(s == t.s1 + t.s2.substr(0, 5));
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v2);
+                s.append(t.s1.c_str(), 5);
+                BEAST_EXPECT(s == t.s2 + t.s1.substr(0, 5));
+            });
+        }
+
+        // append(initializer_list)
+        {
+            std::initializer_list<char> init1 = {
+                'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+                'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's'
+            };
+            BEAST_EXPECT(std::string(init1) == t.s1);
+
+            std::initializer_list<char> init2 = {
+                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+                'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'
+            };
+            BEAST_EXPECT(std::string(init2) == t.s2);
+
+            fail_loop([&]
+            {
+                string s(t.v1);
+                s.append(init2);
+                BEAST_EXPECT(s == t.s1 + t.s2);
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v2);
+                s.append(init1);
+                BEAST_EXPECT(s == t.s2 + t.s1);
+            });
+        }
+
+        // append(InputIt, InputIt)
+        {
+            std::initializer_list<char> init1 = {
+                'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+                'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's'
+            };
+            BEAST_EXPECT(std::string(init1) == t.s1);
+
+            std::initializer_list<char> init2 = {
+                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+                'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'
+            };
+            BEAST_EXPECT(std::string(init2) == t.s2);
+
+            fail_loop([&]
+            {
+                string s(t.v1);
+                s.append(init2.begin(), init2.end());
+                BEAST_EXPECT(s == t.s1 + t.s2);
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v2);
+                s.append(init1.begin(), init1.end());
+                BEAST_EXPECT(s == t.s2 + t.s1);
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v1);
+                s.append(
+                    make_input_iterator(init2.begin()),
+                    make_input_iterator(init2.end()));
+                BEAST_EXPECT(s == t.s1 + t.s2);
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v2);
+                s.append(
+                    make_input_iterator(init1.begin()),
+                    make_input_iterator(init1.end()));
+                BEAST_EXPECT(s == t.s2 + t.s1);
+            });
+        }
 
         // append(string_view)
-        fail_loop([&](storage_ptr const& sp)
         {
-            string s("123", sp);
-            s.append(string_view("abc", 3));
-            BEAST_EXPECT(s == "123abc");
-        });
+            fail_loop([&]
+            {
+                string s(t.v1);
+                s.append(t.v2);
+                BEAST_EXPECT(s == t.s1 + t.s2);
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v2);
+                s.append(t.v1);
+                BEAST_EXPECT(s == t.s2 + t.s1);
+            });
+        }
+
+        // append(string_view)
+        {
+            fail_loop([&]
+            {
+                string s(t.v1);
+                s.append(t.v2, 2);
+                BEAST_EXPECT(s == t.s1 + t.s2.substr(2));
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v2);
+                s.append(t.v1, 2);
+                BEAST_EXPECT(s == t.s2 + t.s1.substr(2));
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v1);
+                s.append(t.v2, 2, 3);
+                BEAST_EXPECT(s == t.s1 + t.s2.substr(2, 3));
+            });
+
+            fail_loop([&]
+            {
+                string s(t.v2);
+                s.append(t.v1, 2, 3);
+                BEAST_EXPECT(s == t.s2 + t.s1.substr(2, 3));
+            });
+        }
     }
 
     void
@@ -1694,7 +2195,6 @@ public:
                 string s(t.v1);
                 s += string(t.v2);
                 BEAST_EXPECT(s == t.s1 + t.s2);
-
             });
 
             fail_loop([&]
@@ -1709,42 +2209,28 @@ public:
         {
             fail_loop([&]
             {
-                string s("123");
-                s += '4';
-                BEAST_EXPECT(s == "1234");
+                string s;
+                for(auto ch : t.v1)
+                    s += ch;
+                BEAST_EXPECT(s == t.v1);
             });
 
             fail_loop([&]
             {
-                string s(t.v1);
-                s += '*';
-                BEAST_EXPECT(s == t.s1 + '*');
-            });
-
-            fail_loop([&]
-            {
-                string s(t.v2);
-                s += '*';
-                BEAST_EXPECT(s == t.s2 + '*');
+                string s;
+                for(auto ch : t.v2)
+                    s += ch;
+                BEAST_EXPECT(s == t.v2);
             });
         }
 
         // operator+=(char const*)
         {
-            {
-                string s(t.v1);
-                scoped_fail_storage fs;
-                s += "";
-                BEAST_EXPECT(s == t.v1);
-
-            }
-
             fail_loop([&]
             {
                 string s(t.v1);
                 s += t.s2.c_str();
                 BEAST_EXPECT(s == t.s1 + t.s2);
-
             });
 
             fail_loop([&]
@@ -1771,20 +2257,6 @@ public:
 
             fail_loop([&]
             {
-                string s;
-                s += init1;
-                BEAST_EXPECT(s == t.v1);
-            });
-
-            fail_loop([&]
-            {
-                string s;
-                s += init2;
-                BEAST_EXPECT(s == t.v2);
-            });
-
-            fail_loop([&]
-            {
                 string s(t.v1);
                 s += init2;
                 BEAST_EXPECT(s == t.s1 + t.s2);
@@ -1796,7 +2268,6 @@ public:
                 s += init1;
                 BEAST_EXPECT(s == t.s2 + t.s1);
             });
-
         }
 
         // operator+=(string_view)
@@ -1806,7 +2277,6 @@ public:
                 string s(t.v1);
                 s += t.v2;
                 BEAST_EXPECT(s == t.s1 + t.s2);
-
             });
 
             fail_loop([&]
@@ -1950,16 +2420,126 @@ public:
     void
     testCopy()
     {
+        test_vectors const t;
+
+        // copy(char*, count, pos)
+        {
+            {
+                string s(t.v1);
+                std::string d;
+                d.resize(s.size());
+                s.copy(&d[0], d.size(), 0);
+                BEAST_EXPECT(d == t.v1);
+            }
+
+            {
+                string s(t.v1);
+                std::string d;
+                d.resize(s.size());
+                s.copy(&d[0], d.size());
+                BEAST_EXPECT(d == t.v1);
+            }
+        }
     }
 
     void
     testResize()
     {
+        test_vectors const t;
+
+        // resize(size_type)
+        {
+            fail_loop([&]
+            {
+                string s;
+                s.resize(t.v1.size());
+                BEAST_EXPECT(s.size() == t.v1.size());
+                BEAST_EXPECT(s == string(t.v1.size(), '\0'));
+            });
+
+            fail_loop([&]
+            {
+                string s;
+                s.resize(t.v2.size());
+                BEAST_EXPECT(s.size() == t.v2.size());
+                BEAST_EXPECT(s == string(t.v2.size(), '\0'));
+            });
+
+            fail_loop([&]
+            {
+                string s;
+                s.resize(t.v1.size());
+                s.resize(t.v2.size());
+                BEAST_EXPECT(s == string(t.v2.size(), '\0'));
+                s.resize(t.v1.size());
+                BEAST_EXPECT(s == string(t.v1.size(), '\0'));
+            });
+        }
+
+        // resize(size_type, char)
+        {
+            fail_loop([&]
+            {
+                string s;
+                s.resize(t.v1.size(), '*');
+                BEAST_EXPECT(s.size() == t.v1.size());
+                BEAST_EXPECT(s == string(t.v1.size(), '*'));
+            });
+
+            fail_loop([&]
+            {
+                string s;
+                s.resize(t.v2.size(), '*');
+                BEAST_EXPECT(s.size() == t.v2.size());
+                BEAST_EXPECT(s == string(t.v2.size(), '*'));
+            });
+
+            fail_loop([&]
+            {
+                string s;
+                s.resize(t.v1.size(), '*');
+                s.resize(t.v2.size(), '*');
+                BEAST_EXPECT(s == string(t.v2.size(), '*'));
+                s.resize(t.v1.size());
+                BEAST_EXPECT(s == string(t.v1.size(), '*'));
+            });
+        }
     }
 
     void
     testSwap()
     {
+        test_vectors const t;
+
+        // swap
+        {
+            fail_loop([&]
+            {
+                string s1(t.v1);
+                string s2(t.v2);
+                s1.swap(s2);
+                BEAST_EXPECT(s1 == t.v2);
+                BEAST_EXPECT(s2 == t.v1);
+            });
+
+            fail_loop([&]
+            {
+                string s1(t.v1);
+                string s2(t.v2);
+                swap(s1, s2);
+                BEAST_EXPECT(s1 == t.v2);
+                BEAST_EXPECT(s2 == t.v1);
+            });
+
+            fail_loop([&](storage_ptr const& sp)
+            {
+                string s1(t.v1);
+                string s2(t.v2, sp);
+                s1.swap(s2);
+                BEAST_EXPECT(s1 == t.v2);
+                BEAST_EXPECT(s2 == t.v1);
+            });
+        }
     }
 
     void
@@ -2023,6 +2603,97 @@ public:
     void
     testNonMembers()
     {
+        test_vectors const t;
+        string const s1(t.v1);
+        string const s2(t.v2);
+        auto const v1(t.v1);
+        auto const v2(t.v2);
+
+        BEAST_EXPECT(! operator< (s1, s2));
+        BEAST_EXPECT(! operator< (s1, v2));
+        BEAST_EXPECT(! operator<=(s1, s2));
+        BEAST_EXPECT(! operator<=(s1, v2));
+        BEAST_EXPECT(! operator==(s1, s2));
+        BEAST_EXPECT(! operator==(s1, v2));
+        BEAST_EXPECT(  operator!=(s1, s2));
+        BEAST_EXPECT(  operator!=(s1, v2));
+        BEAST_EXPECT(  operator>=(s1, s2));
+        BEAST_EXPECT(  operator>=(s1, v2));
+        BEAST_EXPECT(  operator> (s1, s2));
+        BEAST_EXPECT(  operator> (s1, v2));
+
+        BEAST_EXPECT(  operator< (s2, s1));
+        BEAST_EXPECT(  operator< (s2, v1));
+        BEAST_EXPECT(  operator<=(s2, s1));
+        BEAST_EXPECT(  operator<=(s2, v1));
+        BEAST_EXPECT(  operator!=(s2, s1));
+        BEAST_EXPECT(  operator!=(s2, v1));
+        BEAST_EXPECT(! operator==(s2, s1));
+        BEAST_EXPECT(! operator==(s2, v1));
+        BEAST_EXPECT(! operator>=(s2, s1));
+        BEAST_EXPECT(! operator>=(s2, v1));
+        BEAST_EXPECT(! operator> (s2, s1));
+        BEAST_EXPECT(! operator> (s2, v1));
+
+        BEAST_EXPECT(  operator< (s2, s1));
+        BEAST_EXPECT(  operator< (v2, s1));
+        BEAST_EXPECT(  operator<=(s2, s1));
+        BEAST_EXPECT(  operator<=(v2, s1));
+        BEAST_EXPECT(  operator!=(s2, s1));
+        BEAST_EXPECT(  operator!=(v2, s1));
+        BEAST_EXPECT(! operator==(s2, s1));
+        BEAST_EXPECT(! operator==(v2, s1));
+        BEAST_EXPECT(! operator>=(s2, s1));
+        BEAST_EXPECT(! operator>=(v2, s1));
+        BEAST_EXPECT(! operator> (s2, s1));
+        BEAST_EXPECT(! operator> (v2, s1));
+
+        BEAST_EXPECT(! operator< (s1, s2));
+        BEAST_EXPECT(! operator< (v1, s2));
+        BEAST_EXPECT(! operator<=(s1, s2));
+        BEAST_EXPECT(! operator<=(v1, s2));
+        BEAST_EXPECT(! operator==(s1, s2));
+        BEAST_EXPECT(! operator==(v1, s2));
+        BEAST_EXPECT(  operator!=(s1, s2));
+        BEAST_EXPECT(  operator!=(v1, s2));
+        BEAST_EXPECT(  operator>=(s1, s2));
+        BEAST_EXPECT(  operator>=(v1, s2));
+        BEAST_EXPECT(  operator> (s1, s2));
+        BEAST_EXPECT(  operator> (v1, s2));
+    }
+
+    void
+    testImpl()
+    {
+        // exceed max size
+        {
+            {
+                string s;
+                BEAST_THROWS(
+                    (s.resize(s.max_size() + 1)),
+                    std::length_error);
+            }
+            {
+                // VFALCO tsan doesn't like this
+            #if 0
+                string s;
+                try
+                {
+                    s.resize(s.max_size() - 1);
+                }
+                catch(std::exception const&)
+                {
+                }
+            #endif
+            }
+            {
+                string s;
+                s.resize(100);
+                BEAST_THROWS(
+                    (s.append(s.max_size() - 1, '*')),
+                    std::length_error);
+            }
+        }
     }
 
     void
@@ -2033,21 +2704,21 @@ public:
         testAssign();
         testElementAccess();
         testIterators();
-        testCapacity(); //
+        testCapacity();
 
-        testClear(); //
-        testInsert(); //
+        testClear();
+        testInsert();
         testErase();
         testPushPop();
-        testAppend(); //
+        testAppend();
         testPlusEquals();
         testCompare();
         testStartEndsWith();
         testReplace(); //
         testSubStr();
-        testCopy(); //
-        testResize(); //
-        testSwap(); //
+        testCopy();
+        testResize();
+        testSwap();
 
         testFind();
         testRfind(); //
@@ -2057,6 +2728,8 @@ public:
         testFindNotLastOf(); //
 
         testNonMembers();
+
+        testImpl();
     }
 };
 

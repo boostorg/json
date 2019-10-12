@@ -25,6 +25,18 @@
 namespace boost {
 namespace json {
 
+namespace detail {
+
+template<class T>
+using is_viewy = typename std::enable_if<
+    std::is_convertible<
+        T const&, string_view>::value &&
+    ! std::is_convertible<
+        T const&, char const&>::value
+            >::type;
+
+} // detail
+
 /** The native type of string values
 */
 class string
@@ -51,11 +63,17 @@ public:
     static constexpr size_type npos =
         string_view::npos;
 
+    template<class T>
+    using is_inputit = typename std::enable_if<
+        std::is_convertible<typename
+            std::iterator_traits<T>::value_type,
+            char>::value>::type;
+
 private:
     using impl_size_type = unsigned long;
 
     static constexpr
-        size_type max_size_ = 0x7fffffff; // 2GB
+        size_type max_size_ = 0x7ffffffe; // 2GB
 
     static constexpr
         impl_size_type mask_ = 0x0f;
@@ -65,16 +83,60 @@ private:
         impl_size_type size;
         impl_size_type capacity;
 
+    #ifndef GENERATING_DOCUMENTATION
+        // XSL has problems with anonymous unions
         union
         {
             char* p;
             char buf[20]; // SBO
         };
+    #endif
 
         bool
         in_sbo() const noexcept
         {
             return capacity < sizeof(buf);
+        }
+
+        void
+        term(size_type n) noexcept
+        {
+            size = n;
+            data()[size] = 0;
+        }
+
+        char*
+        data() noexcept
+        {
+            if(in_sbo())
+                return buf;
+            return p;
+        }
+
+        char const*
+        data() const noexcept
+        {
+            if(in_sbo())
+                return buf;
+            return p;
+        }
+
+        char*
+        end() noexcept
+        {
+            return data() + size;
+        }
+
+        char const*
+        end() const noexcept
+        {
+            return data() + size;
+        }
+
+        bool
+        contains(char const* s) const noexcept
+        {
+            return s >= data() && s < end();
         }
 
         BOOST_JSON_DECL
@@ -137,47 +199,6 @@ private:
         BOOST_JSON_DECL
         void
         unalloc(storage_ptr const& sp) noexcept;
-
-        void
-        term(size_type n) noexcept
-        {
-            size = n;
-            data()[size] = 0;
-        }
-
-        char*
-        data() noexcept
-        {
-            if(in_sbo())
-                return buf;
-            return p;
-        }
-
-        char const*
-        data() const noexcept
-        {
-            if(in_sbo())
-                return buf;
-            return p;
-        }
-
-        char*
-        end() noexcept
-        {
-            return data() + size;
-        }
-
-        char const*
-        end() const noexcept
-        {
-            return data() + size;
-        }
-
-        bool
-        contains(char const* s) const noexcept
-        {
-            return s >= data() && s < end();
-        }
     };
 
     impl s_;
@@ -228,11 +249,7 @@ public:
 
     template<class InputIt
     #ifndef GENERATING_DOCUMENTATION
-        ,class = typename std::enable_if<
-            std::is_convertible<
-                typename std::iterator_traits<
-                    InputIt>::value_type,
-                char>::value>::type
+        ,class = is_inputit<InputIt>
     #endif
     >
     string(
@@ -362,11 +379,7 @@ public:
 
     template<class InputIt
     #ifndef GENERATING_DOCUMENTATION
-        ,class = typename std::enable_if<
-            std::is_convertible<
-                typename std::iterator_traits<
-                    InputIt>::value_type,
-                char>::value>::type
+        ,class = is_inputit<InputIt>
     #endif
     >
     string&
@@ -734,11 +747,14 @@ public:
         size_type count,
         char ch);
 
-    BOOST_JSON_DECL
     string&
     insert(
         size_type pos,
-        string_view s);
+        char const* s)
+    {
+        return insert(pos, s,
+            traits_type::length(s));
+    }
 
     BOOST_JSON_DECL
     string&
@@ -747,13 +763,31 @@ public:
         char const* s,
         size_type count);
 
-    BOOST_JSON_DECL
     string&
     insert(
         size_type pos,
-        string_view s,
+        string const& s)
+    {
+        return insert(pos, s.data(), s.size());
+    }
+
+    string&
+    insert(
+        size_type pos,
+        string const& s,
         size_type pos_str,
-        size_type count = npos);
+        size_type count = npos)
+    {
+        return insert(pos, s.substr(pos_str, count));
+    }
+
+    iterator
+    insert(
+        const_iterator pos,
+        char ch)
+    {
+        return insert(pos, 1, ch);
+    }
 
     BOOST_JSON_DECL
     iterator
@@ -764,11 +798,7 @@ public:
 
     template<class InputIt
     #ifndef GENERATING_DOCUMENTATION
-        ,class = typename std::enable_if<
-            std::is_convertible<
-                typename std::iterator_traits<
-                    InputIt>::value_type,
-                char>::value>::type
+        ,class = is_inputit<InputIt>
     #endif
     >
     iterator
@@ -776,6 +806,42 @@ public:
         const_iterator pos,
         InputIt first,
         InputIt last);
+
+    BOOST_JSON_DECL
+    iterator
+    insert(
+        const_iterator pos,
+        std::initializer_list<char> init);
+
+    template<class T
+    #ifndef GENERATING_DOCUMENTATION
+        ,class = detail::is_viewy<T>
+    #endif
+    >
+    string&
+    insert(
+        size_type pos,
+        T const& t)
+    {
+        string_view s(t);
+        return insert(pos, s.data(), s.size());
+    }
+
+    template<class T
+    #ifndef GENERATING_DOCUMENTATION
+        ,class = detail::is_viewy<T>
+    #endif
+    >
+    string&
+    insert(
+        size_type pos,
+        T const& t,
+        size_type pos_str,
+        size_type count = npos)
+    {
+        return insert(pos,
+            string_view(t).substr(pos_str, count));
+    }
 
     //--------------------------------------------------------------------------
 
@@ -809,18 +875,30 @@ public:
 
     BOOST_JSON_DECL
     string&
-    append(size_type count, char ch);
+    append(
+        size_type count,
+        char ch);
 
-    BOOST_JSON_DECL
     string&
-    append(string const& s);
+    append(string const& s)
+    {
+        return append(s.data(), s.size());
+    }
 
-    BOOST_JSON_DECL
     string&
     append(
         string const& s,
         size_type pos,
-        size_type count = npos);
+        size_type count = npos)
+    {
+        return append(s.substr(pos, count));
+    }
+
+    string&
+    append(char const* s)
+    {
+        return append(s, traits_type::length(s));
+    }
 
     BOOST_JSON_DECL
     string&
@@ -828,17 +906,9 @@ public:
         char const* s,
         size_type count);
 
-    BOOST_JSON_DECL
-    string&
-    append(char const* s);
-
     template<class InputIt
     #ifndef GENERATING_DOCUMENTATION
-        ,class = typename std::enable_if<
-            std::is_convertible<
-                typename std::iterator_traits<
-                    InputIt>::value_type,
-                char>::value>::type
+        ,class = is_inputit<InputIt>
     #endif
     >
     string&
@@ -846,11 +916,37 @@ public:
 
     BOOST_JSON_DECL
     string&
-    append(std::initializer_list<char> init);
+    append(std::initializer_list<char> init)
+    {
+        return append(init.begin(), init.size());
+    }
 
-    BOOST_JSON_DECL
+    template<class T
+    #ifndef GENERATING_DOCUMENTATION
+        ,class = detail::is_viewy<T>
+    #endif
+    >
     string&
-    append(string_view s);
+    append(T const& t)
+    {
+        string_view s(t);
+        return append(s.data(), s.size());
+    }
+
+    template<class T
+    #ifndef GENERATING_DOCUMENTATION
+        ,class = detail::is_viewy<T>
+    #endif
+    >
+    string&
+    append(
+        T const& t,
+        size_type pos,
+        size_type count = npos)
+    {
+        auto s = string_view(t).substr(pos, count);
+        return append(s.data(), s.size());
+    }
 
     //--------------------------------------------------------------------------
 
@@ -883,11 +979,15 @@ public:
         return append(init);
     }
 
-    BOOST_JSON_DECL
+    template<class T
+    #ifndef GENERATING_DOCUMENTATION
+        ,class = detail::is_viewy<T>
+    #endif
+    >
     string&
-    operator+=(string_view s)
+    operator+=(T const& t)
     {
-        return append(s);
+        return append(t);
     }
 
     //--------------------------------------------------------------------------
@@ -1039,11 +1139,7 @@ public:
 
     template<class InputIt
     #ifndef GENERATING_DOCUMENTATION
-        ,class = typename std::enable_if<
-            std::is_convertible<
-                typename std::iterator_traits<
-                    InputIt>::value_type,
-                char>::value>::type
+        ,class = is_inputit<InputIt>
     #endif
     >
     string&
@@ -1100,6 +1196,9 @@ public:
         std::initializer_list<char> init);
 
     template<class T
+    #ifndef GENERATING_DOCUMENTATION
+        ,class = detail::is_viewy<T>
+    #endif
     >
     string&
     replace(
@@ -1107,14 +1206,22 @@ public:
         size_type count,
         T const& t);
 
-    template<class T>
+    template<class T
+    #ifndef GENERATING_DOCUMENTATION
+        ,class = detail::is_viewy<T>
+    #endif
+    >
     string&
     replace(
         const_iterator first,
         const_iterator last,
         T const& t);
 
-    template<class T>
+    template<class T
+    #ifndef GENERATING_DOCUMENTATION
+        ,class = detail::is_viewy<T>
+    #endif
+    >
     string&
     replace(
         size_type pos,
@@ -1204,12 +1311,7 @@ public:
 
     template<class T
     #ifndef GENERATING_DOCUMENTATION
-        , typename std::enable_if<
-            std::is_convertible<
-                T const&, string_view>::value &&
-            ! std::is_convertible<
-                T const&, char const*>::value
-                    >::type
+        ,class = detail::is_viewy<T>
     #endif
     >
     size_type
@@ -1257,12 +1359,7 @@ public:
 
     template<class T
     #ifndef GENERATING_DOCUMENTATION
-        , typename std::enable_if<
-            std::is_convertible<
-                T const&, string_view>::value &&
-            ! std::is_convertible<
-                T const&, char const*>::value
-                    >::type
+        ,class = detail::is_viewy<T>
     #endif
     >
     size_type
@@ -1310,12 +1407,7 @@ public:
 
     template<class T
     #ifndef GENERATING_DOCUMENTATION
-        , typename std::enable_if<
-            std::is_convertible<
-                T const&, string_view>::value &&
-            ! std::is_convertible<
-                T const&, char const*>::value
-                    >::type
+        ,class = detail::is_viewy<T>
     #endif
     >
     size_type
@@ -1363,12 +1455,7 @@ public:
 
     template<class T
     #ifndef GENERATING_DOCUMENTATION
-        , typename std::enable_if<
-            std::is_convertible<
-                T const&, string_view>::value &&
-            ! std::is_convertible<
-                T const&, char const*>::value
-                    >::type
+        ,class = detail::is_viewy<T>
     #endif
     >
     size_type
@@ -1416,12 +1503,7 @@ public:
 
     template<class T
     #ifndef GENERATING_DOCUMENTATION
-        , typename std::enable_if<
-            std::is_convertible<
-                T const&, string_view>::value &&
-            ! std::is_convertible<
-                T const&, char const*>::value
-                    >::type
+        ,class = detail::is_viewy<T>
     #endif
     >
     size_type
@@ -1469,12 +1551,7 @@ public:
 
     template<class T
     #ifndef GENERATING_DOCUMENTATION
-        , typename std::enable_if<
-            std::is_convertible<
-                T const&, string_view>::value &&
-            ! std::is_convertible<
-                T const&, char const*>::value
-                    >::type
+        ,class = detail::is_viewy<T>
     #endif
     >
     size_type
@@ -1505,6 +1582,7 @@ private:
     void
     assign(InputIt first, InputIt last,
         std::input_iterator_tag);
+
     template<class InputIt>
     void
     append(InputIt first, InputIt last,
@@ -1515,6 +1593,15 @@ private:
     append(InputIt first, InputIt last,
         std::input_iterator_tag);
 };
+
+//------------------------------------------------------------------------------
+
+inline
+void
+swap(string& lhs, string& rhs)
+{
+    lhs.swap(rhs);
+}
 
 //------------------------------------------------------------------------------
 
@@ -1529,11 +1616,7 @@ operator==(string const& lhs, string const& rhs)
 
 template<class T
 #ifndef GENERATING_DOCUMENTATION
-    , class = typename std::enable_if<
-        std::is_constructible<
-            string_view, T>::value &&
-        ! std::is_same<
-            string, T>::value>::type
+    ,class = detail::is_viewy<T>
 #endif
 >
 bool operator==(string const& lhs, T const& rhs)
@@ -1543,11 +1626,7 @@ bool operator==(string const& lhs, T const& rhs)
 
 template<class T
 #ifndef GENERATING_DOCUMENTATION
-    , class = typename std::enable_if<
-        std::is_constructible<
-            string_view, T>::value &&
-        ! std::is_same<
-            string, T>::value>::type
+    ,class = detail::is_viewy<T>
 #endif
 >
 bool operator==(T const& lhs, string const& rhs)
@@ -1566,11 +1645,7 @@ operator!=(string const& lhs, string const& rhs)
 
 template<class T
 #ifndef GENERATING_DOCUMENTATION
-    , class = typename std::enable_if<
-        std::is_constructible<
-            string_view, T>::value &&
-        ! std::is_same<
-            string, T>::value>::type
+    ,class = detail::is_viewy<T>
 #endif
 >
 bool operator!=(string const& lhs, T const& rhs)
@@ -1580,11 +1655,7 @@ bool operator!=(string const& lhs, T const& rhs)
 
 template<class T
 #ifndef GENERATING_DOCUMENTATION
-    , class = typename std::enable_if<
-        std::is_constructible<
-            string_view, T>::value &&
-        ! std::is_same<
-            string, T>::value>::type
+    ,class = detail::is_viewy<T>
 #endif
 >
 bool operator!=(T const& lhs, string const& rhs)
@@ -1603,11 +1674,7 @@ operator<(string const& lhs, string const& rhs)
 
 template<class T
 #ifndef GENERATING_DOCUMENTATION
-    , class = typename std::enable_if<
-        std::is_constructible<
-            string_view, T>::value &&
-        ! std::is_same<
-            string, T>::value>::type
+    ,class = detail::is_viewy<T>
 #endif
 >
 bool operator<(string const& lhs, T const& rhs)
@@ -1617,11 +1684,7 @@ bool operator<(string const& lhs, T const& rhs)
 
 template<class T
 #ifndef GENERATING_DOCUMENTATION
-    , class = typename std::enable_if<
-        std::is_constructible<
-            string_view, T>::value &&
-        ! std::is_same<
-            string, T>::value>::type
+    ,class = detail::is_viewy<T>
 #endif
 >
 bool operator<(T const& lhs, string const& rhs)
@@ -1640,11 +1703,7 @@ operator<=(string const& lhs, string const& rhs)
 
 template<class T
 #ifndef GENERATING_DOCUMENTATION
-    , class = typename std::enable_if<
-        std::is_constructible<
-            string_view, T>::value &&
-        ! std::is_same<
-            string, T>::value>::type
+    ,class = detail::is_viewy<T>
 #endif
 >
 bool operator<=(string const& lhs, T const& rhs)
@@ -1654,11 +1713,7 @@ bool operator<=(string const& lhs, T const& rhs)
 
 template<class T
 #ifndef GENERATING_DOCUMENTATION
-    , class = typename std::enable_if<
-        std::is_constructible<
-            string_view, T>::value &&
-        ! std::is_same<
-            string, T>::value>::type
+    ,class = detail::is_viewy<T>
 #endif
 >
 bool operator<=(T const& lhs, string const& rhs)
@@ -1677,11 +1732,7 @@ operator>=(string const& lhs, string const& rhs)
 
 template<class T
 #ifndef GENERATING_DOCUMENTATION
-    , class = typename std::enable_if<
-        std::is_constructible<
-            string_view, T>::value &&
-        ! std::is_same<
-            string, T>::value>::type
+    ,class = detail::is_viewy<T>
 #endif
 >
 bool operator>=(string const& lhs, T const& rhs)
@@ -1691,11 +1742,7 @@ bool operator>=(string const& lhs, T const& rhs)
 
 template<class T
 #ifndef GENERATING_DOCUMENTATION
-    , class = typename std::enable_if<
-        std::is_constructible<
-            string_view, T>::value &&
-        ! std::is_same<
-            string, T>::value>::type
+    ,class = detail::is_viewy<T>
 #endif
 >
 bool operator>=(T const& lhs, string const& rhs)
@@ -1714,11 +1761,7 @@ operator>(string const& lhs, string const& rhs)
 
 template<class T
 #ifndef GENERATING_DOCUMENTATION
-    , class = typename std::enable_if<
-        std::is_constructible<
-            string_view, T>::value &&
-        ! std::is_same<
-            string, T>::value>::type
+    ,class = detail::is_viewy<T>
 #endif
 >
 bool operator>(string const& lhs, T const& rhs)
@@ -1728,11 +1771,7 @@ bool operator>(string const& lhs, T const& rhs)
 
 template<class T
 #ifndef GENERATING_DOCUMENTATION
-    , class = typename std::enable_if<
-        std::is_constructible<
-            string_view, T>::value &&
-        ! std::is_same<
-            string, T>::value>::type
+    ,class = detail::is_viewy<T>
 #endif
 >
 bool operator>(T const& lhs, string const& rhs)

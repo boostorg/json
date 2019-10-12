@@ -292,13 +292,13 @@ reserve(size_type new_cap)
         s_ = tmp;
         return;
     }
-    if( new_cap < sizeof(s_.buf) &&
-        ! s_.in_sbo())
+    if( new_cap >= sizeof(s_.buf) ||
+        s_.in_sbo())
     {
-        s_.unalloc(sp_);
+        // do nothing
         return;
     }
-    // do nothing
+    s_.unalloc(sp_);
 }
 
 void
@@ -316,16 +316,16 @@ shrink_to_fit()
         (std::min<size_type>)(
             s_.size | mask_,
             max_size());
-    if(new_cap < s_.capacity)
-    {
-        impl tmp;
-        tmp.construct(new_cap, sp_);
-        traits_type::copy(tmp.data(),
-            s_.data(), s_.size + 1);
-        tmp.size = s_.size;
-        s_.destroy(sp_);
-        s_ = tmp;
-    }
+    if(new_cap >= s_.capacity)
+        return;
+
+    impl tmp;
+    tmp.construct(new_cap, sp_);
+    traits_type::copy(tmp.data(),
+        s_.data(), s_.size + 1);
+    tmp.size = s_.size;
+    s_.destroy(sp_);
+    s_ = tmp;
 }
 
 //------------------------------------------------------------------------------
@@ -371,25 +371,6 @@ append(size_type count, char ch)
 
 string&
 string::
-append(string const& s)
-{
-    return append(
-        s.data(), s.size());
-}
-
-string&
-string::
-append(
-    string const& s,
-    size_type pos,
-    size_type count)
-{
-    return append(
-        s.substr(pos, count));
-}
-
-string&
-string::
 append(
     char const* s,
     size_type count)
@@ -398,30 +379,6 @@ append(
         s_.append(count, sp_),
         s, count);
     return *this;
-}
-
-string&
-string::
-append(char const* s)
-{
-    return append(s,
-        traits_type::length(s));
-}
-
-string&
-string::
-append(std::initializer_list<char> init)
-{
-    append(init.begin(), init.end());
-    return *this;
-}
-
-string&
-string::
-append(string_view s)
-{
-    return append(
-        s.data(), s.size());
 }
 
 //------------------------------------------------------------------------------
@@ -437,16 +394,6 @@ insert(
         s_.insert(pos, count, sp_),
         count, ch);
     return *this;
-}
-
-string&
-string::
-insert(
-    size_type pos,
-    string_view s)
-{
-    return insert(pos,
-        s.data(), s.size());
 }
 
 string&
@@ -475,19 +422,8 @@ insert(
     traits_type::copy(
         s_.data() + pos,
         s, count);
+    s_.size += count;
     return *this;
-}
-
-string&
-string::
-insert(
-    size_type pos,
-    string_view s,
-    size_type pos_str,
-    size_type count)
-{
-    return insert(pos,
-        s.substr(pos_str, count));
 }
 
 auto
@@ -498,11 +434,23 @@ insert(
     char ch) ->
         iterator
 {
-    auto const off =
-        pos - s_.data();
+    auto const off = pos - begin();
     insert(off, count, ch);
-    return s_.data() + off;
+    return begin() + off;
 }
+
+auto
+string::
+insert(
+    const_iterator pos,
+    std::initializer_list<char> init) ->
+        iterator
+{
+    auto const off = pos - begin();
+    insert(off, init.begin(), init.size());
+    return begin() + off;
+}
+
 
 //------------------------------------------------------------------------------
 

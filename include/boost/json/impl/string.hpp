@@ -218,6 +218,7 @@ insert(
     impl tmp;
     tmp.construct(growth(
         size + n, capacity), sp);
+    tmp.size = size + n;
     traits_type::copy(
         tmp.data(),
         data(),

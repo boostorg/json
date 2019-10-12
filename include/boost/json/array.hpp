@@ -281,7 +281,7 @@ public:
     /** Copy constructor
 
         Constructs the container with a copy of the contents
-        of `other.
+        of `other`.
         The container and all inserted elements will use the
         @ref storage returned by @ref default_storage().
 
