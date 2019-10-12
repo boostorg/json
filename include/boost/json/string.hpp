@@ -101,7 +101,8 @@ private:
         void
         term(size_type n) noexcept
         {
-            size = n;
+            size = static_cast<
+                impl_size_type>(n);
             data()[size] = 0;
         }
 

@@ -36,7 +36,8 @@ construct(
     while(first != last)
         *dest++ = *first++;
     *dest++ = 0;
-    size = n;
+    size = static_cast<
+        impl_size_type>(n);
 }
 
 template<class InputIt>

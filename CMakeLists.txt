@@ -49,7 +49,7 @@ if (MSVC)
 
     add_definitions (
         -D_WIN32_WINNT=0x0601
-        -D_ITERATOR_DEBUG_LEVEL=0
+        -D_CRT_SECURE_NO_WARNINGS
     )
 
     add_compile_options(

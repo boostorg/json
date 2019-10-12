@@ -44,7 +44,8 @@ growth(
         return max_size_; // overflow
     return (std::max<impl_size_type>)(
         capacity + capacity / 2,
-        new_size);
+        static_cast<impl_size_type>(
+            new_size));
 }
 
 void
@@ -155,7 +156,8 @@ insert(
             dest + n,
             dest,
             size + 1 - pos);
-        size += n;
+        size += static_cast<
+            impl_size_type>(n);
         return dest;
     }
     if(n > max_size_ - size)
@@ -165,7 +167,8 @@ insert(
     impl tmp;
     tmp.construct(growth(
         size + n, capacity), sp);
-    tmp.size = size + n;
+    tmp.size = size + static_cast<
+        impl_size_type>(n);
     traits_type::copy(
         tmp.data(),
         data(),
@@ -596,7 +599,8 @@ insert(
     traits_type::copy(
         s_.data() + pos,
         s, count);
-    s_.size += count;
+    s_.size += static_cast<
+        impl_size_type>(count);
     return *this;
 }
 
@@ -644,7 +648,8 @@ erase(
         s_.data() + pos,
         s_.data() + pos + count,
         s_.size - pos - count + 1);
-    s_.size -= count;
+    s_.size -= static_cast<
+        impl_size_type>(count);
     s_.data()[s_.size] = 0;
     return *this;
 }
@@ -678,8 +683,10 @@ resize(size_type count, char ch)
 {
     if(count <= s_.size)
     {
-        s_.data()[count] = 0;
-        s_.size = count;
+        auto const n = static_cast<
+            impl_size_type>(count);
+        s_.data()[n] = 0;
+        s_.size = n;
         return;
     }
 
@@ -688,7 +695,8 @@ resize(size_type count, char ch)
         s_.end(),
         count + 1 - s_.size,
         ch);
-    s_.size = count;
+    s_.size = static_cast<
+        impl_size_type>(count);
 }
 
 //------------------------------------------------------------------------------
