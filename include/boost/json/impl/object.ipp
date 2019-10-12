@@ -360,38 +360,6 @@ const_iterator(
 {
 }
 
-object::
-const_iterator::
-const_iterator(
-    local_iterator it) noexcept
-    : e_(it.e_)
-{
-}
-
-object::
-const_iterator::
-const_iterator(
-    const_local_iterator it) noexcept
-    : e_(it.e_)
-{
-}
-
-object::
-iterator::
-iterator(
-    local_iterator it) noexcept
-    : e_(it.e_)
-{
-}
-
-object::
-const_local_iterator::
-const_local_iterator(
-    local_iterator it) noexcept
-    : e_(it.e_)
-{
-}
-
 //------------------------------------------------------------------------------
 //
 // Special Members
@@ -1102,63 +1070,6 @@ get_primes() noexcept
 } // detail
 
 //------------------------------------------------------------------------------
-
-auto
-object::
-begin(size_type n) ->
-    local_iterator
-{
-    BOOST_ASSERT(tab_);
-    return tab_->bucket(n);
-}
-
-auto
-object::
-begin(size_type n) const ->
-    const_local_iterator
-{
-    BOOST_ASSERT(tab_);
-    return tab_->bucket(n);
-}
-
-auto
-object::
-cbegin(size_type n) const ->
-    const_local_iterator
-{
-    BOOST_ASSERT(tab_);
-    return tab_->bucket(n);
-}
-
-auto
-object::
-end(size_type n)  ->
-    local_iterator
-{
-    boost::ignore_unused(n);
-    BOOST_ASSERT(tab_);
-    return tab_->end();
-}
-
-auto
-object::
-end(size_type n) const ->
-    const_local_iterator
-{
-    boost::ignore_unused(n);
-    BOOST_ASSERT(tab_);
-    return tab_->end();
-}
-
-auto
-object::
-cend(size_type n) const ->
-    const_local_iterator
-{
-    boost::ignore_unused(n);
-    BOOST_ASSERT(tab_);
-    return tab_->end();
-}
 
 auto
 object::

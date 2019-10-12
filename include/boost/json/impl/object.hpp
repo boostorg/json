@@ -193,8 +193,6 @@ public:
     BOOST_JSON_DECL const_iterator& operator=(const_iterator const&) = default;
 
     BOOST_JSON_DECL const_iterator(iterator it) noexcept;
-    BOOST_JSON_DECL const_iterator(local_iterator it) noexcept;
-    BOOST_JSON_DECL const_iterator(const_local_iterator it) noexcept;
 
     BOOST_JSON_DECL
     const_iterator&
@@ -286,8 +284,6 @@ public:
     BOOST_JSON_DECL iterator(iterator const&) = default;
     BOOST_JSON_DECL iterator& operator=(iterator const&) = default;
 
-    BOOST_JSON_DECL iterator(local_iterator it) noexcept;
-
     BOOST_JSON_DECL
     iterator&
     operator++() noexcept
@@ -346,156 +342,6 @@ public:
     }
 
     BOOST_JSON_DECL
-    bool
-    operator!=(const_iterator other) const noexcept
-    {
-        return const_iterator(*this) != other;
-    }
-};
-
-//------------------------------------------------------------------------------
-
-class BOOST_SYMBOL_VISIBLE object::local_iterator
-{
-    element* e_ = nullptr;
-
-    friend class object;
-
-    local_iterator(element* e)
-        : e_(e)
-    {
-    }
-
-public:
-    using value_type = object::value_type;
-    using pointer = object::pointer;
-    using reference = object::reference;
-    using difference_type = std::ptrdiff_t;
-    using iterator_category =
-        std::forward_iterator_tag;
-
-    BOOST_JSON_DECL local_iterator() = default;
-    BOOST_JSON_DECL local_iterator(local_iterator const&) = default;
-    BOOST_JSON_DECL local_iterator& operator=(local_iterator const&) = default;
-
-    BOOST_JSON_DECL
-    local_iterator&
-    operator++() noexcept
-    {
-        e_ = e_->local_next;
-        return *this;
-    }
-
-    BOOST_JSON_DECL
-    local_iterator
-    operator++(int) noexcept
-    {
-        auto tmp = *this;
-        ++*this;
-        return tmp;
-    }
-
-    BOOST_JSON_DECL
-    const_pointer
-    operator->() const noexcept
-    {
-        return const_reference{
-            e_->key(), e_->v };
-    }
-
-    BOOST_JSON_DECL
-    const_reference
-    operator*() const noexcept
-    {
-        return {
-            e_->key(), e_->v };
-    }
-
-    BOOST_JSON_DECL
-    bool
-    operator==(const_iterator other) const noexcept
-    {
-        return const_iterator(*this) == other;
-    }
-
-    BOOST_JSON_DECL
-    bool
-    operator!=(const_iterator other) const noexcept
-    {
-        return const_iterator(*this) != other;
-    }
-};
-
-//------------------------------------------------------------------------------
-
-class BOOST_SYMBOL_VISIBLE object::const_local_iterator
-{
-    element* e_ = nullptr;
-
-    friend class object;
-
-    BOOST_JSON_DECL
-    const_local_iterator(element* e)
-        : e_(e)
-    {
-    }
-
-public:
-    using value_type = object::value_type;
-    using pointer = object::const_pointer;
-    using reference = object::const_reference;
-    using difference_type = std::ptrdiff_t;
-    using iterator_category =
-        std::forward_iterator_tag;
-
-    BOOST_JSON_DECL const_local_iterator() = default;
-    BOOST_JSON_DECL const_local_iterator(const_local_iterator const&) = default;
-    BOOST_JSON_DECL const_local_iterator& operator=(
-        const_local_iterator const&) = default;
-
-    BOOST_JSON_DECL const_local_iterator(local_iterator it) noexcept;
-
-    BOOST_JSON_DECL 
-    const_local_iterator&
-    operator++() noexcept
-    {
-        e_ = e_->local_next;
-        return *this;
-    }
-
-    BOOST_JSON_DECL 
-    const_local_iterator
-    operator++(int) noexcept
-    {
-        auto tmp = *this;
-        ++*this;
-        return tmp;
-    }
-
-    BOOST_JSON_DECL 
-    const_pointer
-    operator->() const noexcept
-    {
-        return const_reference{
-            e_->key(), e_->v };
-    }
-
-    BOOST_JSON_DECL 
-    const_reference
-    operator*() const noexcept
-    {
-        return {
-            e_->key(), e_->v };
-    }
-
-    BOOST_JSON_DECL 
-    bool
-    operator==(const_iterator other) const noexcept
-    {
-        return const_iterator(*this) == other;
-    }
-
-    BOOST_JSON_DECL 
     bool
     operator!=(const_iterator other) const noexcept
     {

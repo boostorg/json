@@ -41,83 +41,27 @@ public:
 
     BOOST_STATIC_ASSERT(  std::is_constructible<object::iterator, object::iterator>::value);
     BOOST_STATIC_ASSERT(! std::is_constructible<object::iterator, object::const_iterator>::value);
-    BOOST_STATIC_ASSERT(  std::is_constructible<object::iterator, object::local_iterator>::value);
-    BOOST_STATIC_ASSERT(! std::is_constructible<object::iterator, object::const_local_iterator>::value);
 
     BOOST_STATIC_ASSERT(  std::is_constructible<object::const_iterator, object::iterator>::value);
     BOOST_STATIC_ASSERT(  std::is_constructible<object::const_iterator, object::const_iterator>::value);
-    BOOST_STATIC_ASSERT(  std::is_constructible<object::const_iterator, object::local_iterator>::value);
-    BOOST_STATIC_ASSERT(  std::is_constructible<object::const_iterator, object::const_local_iterator>::value);
-
-    BOOST_STATIC_ASSERT(! std::is_constructible<object::local_iterator, object::iterator>::value);
-    BOOST_STATIC_ASSERT(! std::is_constructible<object::local_iterator, object::const_iterator>::value);
-    BOOST_STATIC_ASSERT(  std::is_constructible<object::local_iterator, object::local_iterator>::value);
-    BOOST_STATIC_ASSERT(! std::is_constructible<object::local_iterator, object::const_local_iterator>::value);
-
-    BOOST_STATIC_ASSERT(! std::is_constructible<object::const_local_iterator, object::iterator>::value);
-    BOOST_STATIC_ASSERT(! std::is_constructible<object::const_local_iterator, object::const_iterator>::value);
-    BOOST_STATIC_ASSERT(  std::is_constructible<object::const_local_iterator, object::local_iterator>::value);
-    BOOST_STATIC_ASSERT(  std::is_constructible<object::const_local_iterator, object::const_local_iterator>::value);
 
     BOOST_STATIC_ASSERT(  std::is_assignable<object::iterator, object::iterator>::value);
     BOOST_STATIC_ASSERT(! std::is_assignable<object::iterator, object::const_iterator>::value);
-    BOOST_STATIC_ASSERT(  std::is_assignable<object::iterator, object::local_iterator>::value);
-    BOOST_STATIC_ASSERT(! std::is_assignable<object::iterator, object::const_local_iterator>::value);
 
     BOOST_STATIC_ASSERT(  std::is_assignable<object::const_iterator, object::iterator>::value);
     BOOST_STATIC_ASSERT(  std::is_assignable<object::const_iterator, object::const_iterator>::value);
-    BOOST_STATIC_ASSERT(  std::is_assignable<object::const_iterator, object::local_iterator>::value);
-    BOOST_STATIC_ASSERT(  std::is_assignable<object::const_iterator, object::const_local_iterator>::value);
-
-    BOOST_STATIC_ASSERT(! std::is_assignable<object::local_iterator, object::iterator>::value);
-    BOOST_STATIC_ASSERT(! std::is_assignable<object::local_iterator, object::const_iterator>::value);
-    BOOST_STATIC_ASSERT(  std::is_assignable<object::local_iterator, object::local_iterator>::value);
-    BOOST_STATIC_ASSERT(! std::is_assignable<object::local_iterator, object::const_local_iterator>::value);
-
-    BOOST_STATIC_ASSERT(! std::is_assignable<object::const_local_iterator, object::iterator>::value);
-    BOOST_STATIC_ASSERT(! std::is_assignable<object::const_local_iterator, object::const_iterator>::value);
-    BOOST_STATIC_ASSERT(  std::is_assignable<object::const_local_iterator, object::local_iterator>::value);
-    BOOST_STATIC_ASSERT(  std::is_assignable<object::const_local_iterator, object::const_local_iterator>::value);
 
     BOOST_STATIC_ASSERT(is_equal_comparable<object::iterator, object::iterator>::value);
     BOOST_STATIC_ASSERT(is_equal_comparable<object::iterator, object::const_iterator>::value);
-    BOOST_STATIC_ASSERT(is_equal_comparable<object::iterator, object::local_iterator>::value);
-    BOOST_STATIC_ASSERT(is_equal_comparable<object::iterator, object::const_local_iterator>::value);
 
     BOOST_STATIC_ASSERT(is_equal_comparable<object::const_iterator, object::iterator>::value);
     BOOST_STATIC_ASSERT(is_equal_comparable<object::const_iterator, object::const_iterator>::value);
-    BOOST_STATIC_ASSERT(is_equal_comparable<object::const_iterator, object::local_iterator>::value);
-    BOOST_STATIC_ASSERT(is_equal_comparable<object::const_iterator, object::const_local_iterator>::value);
-
-    BOOST_STATIC_ASSERT(is_equal_comparable<object::local_iterator, object::iterator>::value);
-    BOOST_STATIC_ASSERT(is_equal_comparable<object::local_iterator, object::const_iterator>::value);
-    BOOST_STATIC_ASSERT(is_equal_comparable<object::local_iterator, object::local_iterator>::value);
-    BOOST_STATIC_ASSERT(is_equal_comparable<object::local_iterator, object::const_local_iterator>::value);
-
-    BOOST_STATIC_ASSERT(is_equal_comparable<object::const_local_iterator, object::iterator>::value);
-    BOOST_STATIC_ASSERT(is_equal_comparable<object::const_local_iterator, object::const_iterator>::value);
-    BOOST_STATIC_ASSERT(is_equal_comparable<object::const_local_iterator, object::local_iterator>::value);
-    BOOST_STATIC_ASSERT(is_equal_comparable<object::const_local_iterator, object::const_local_iterator>::value);
 
     BOOST_STATIC_ASSERT(is_unequal_comparable<object::iterator, object::iterator>::value);
     BOOST_STATIC_ASSERT(is_unequal_comparable<object::iterator, object::const_iterator>::value);
-    BOOST_STATIC_ASSERT(is_unequal_comparable<object::iterator, object::local_iterator>::value);
-    BOOST_STATIC_ASSERT(is_unequal_comparable<object::iterator, object::const_local_iterator>::value);
 
     BOOST_STATIC_ASSERT(is_unequal_comparable<object::const_iterator, object::iterator>::value);
     BOOST_STATIC_ASSERT(is_unequal_comparable<object::const_iterator, object::const_iterator>::value);
-    BOOST_STATIC_ASSERT(is_unequal_comparable<object::const_iterator, object::local_iterator>::value);
-    BOOST_STATIC_ASSERT(is_unequal_comparable<object::const_iterator, object::const_local_iterator>::value);
-
-    BOOST_STATIC_ASSERT(is_unequal_comparable<object::local_iterator, object::iterator>::value);
-    BOOST_STATIC_ASSERT(is_unequal_comparable<object::local_iterator, object::const_iterator>::value);
-    BOOST_STATIC_ASSERT(is_unequal_comparable<object::local_iterator, object::local_iterator>::value);
-    BOOST_STATIC_ASSERT(is_unequal_comparable<object::local_iterator, object::const_local_iterator>::value);
-
-    BOOST_STATIC_ASSERT(is_unequal_comparable<object::const_local_iterator, object::iterator>::value);
-    BOOST_STATIC_ASSERT(is_unequal_comparable<object::const_local_iterator, object::const_iterator>::value);
-    BOOST_STATIC_ASSERT(is_unequal_comparable<object::const_local_iterator, object::local_iterator>::value);
-    BOOST_STATIC_ASSERT(is_unequal_comparable<object::const_local_iterator, object::const_local_iterator>::value);
 
     static
     void
@@ -1081,55 +1025,12 @@ public:
     testBuckets()
     {
         object o;
-        auto const& co = o;
         o.max_load_factor(1000);
         for(std::size_t i = 0;; ++i)
         {
             o.emplace(std::to_string(i), i);
             if(o.bucket_size(0) >= 3)
                 break;
-        }
-
-        // begin(size_type)
-        // end(size_type)
-        {
-            auto it = o.begin(0);
-            BEAST_EXPECT(it != o.end());
-            BEAST_EXPECT(! (*it).first.empty());
-            BEAST_EXPECT(it->second.is_number()); ++it;
-            BEAST_EXPECT(it->second.is_number()); it++;
-            BEAST_EXPECT(it->second.is_number()); ++it;
-            BEAST_EXPECT(it != o.begin(0));
-            BEAST_EXPECT(it == o.end(0));
-            BEAST_EXPECT(it == o.end());
-        }
-
-        // begin(size_type) const
-        // end(size_type) const
-        {
-            auto it = co.begin(0);
-            BEAST_EXPECT(it != co.end());
-            BEAST_EXPECT(! (*it).first.empty());
-            BEAST_EXPECT(it->second.is_number()); ++it;
-            BEAST_EXPECT(it->second.is_number()); it++;
-            BEAST_EXPECT(it->second.is_number()); ++it;
-            BEAST_EXPECT(it != co.begin(0));
-            BEAST_EXPECT(it == co.end(0));
-            BEAST_EXPECT(it == co.end());
-        }
-
-        // cbegin(size_type)
-        // cend(size_type)
-        {
-            auto it = o.cbegin(0);
-            BEAST_EXPECT(it != co.cend());
-            BEAST_EXPECT(! (*it).first.empty());
-            BEAST_EXPECT(it->second.is_number()); ++it;
-            BEAST_EXPECT(it->second.is_number()); it++;
-            BEAST_EXPECT(it->second.is_number()); ++it;
-            BEAST_EXPECT(it != co.cbegin(0));
-            BEAST_EXPECT(it == co.cend(0));
-            BEAST_EXPECT(it == co.cend());
         }
 
         // bucket_count()
@@ -1151,20 +1052,6 @@ public:
 
         // bucket(key_type)
         {
-            for(auto it = o.begin(0);
-                    it != o.end(0); ++it)
-                BEAST_EXPECT(
-                    o.bucket(it->first) == 0);
-        }
-
-        // iterator(local_iterator)
-        {
-            object::iterator it(o.begin(0));
-        }
-
-        // const_local_iterator(local_iterator)
-        {
-            object::const_local_iterator it(o.begin(0));
         }
     }
 
@@ -1405,26 +1292,6 @@ public:
                 {"c", "hello"}});
             o.insert(o.begin(), {"a", 1});
             check(o, 3);
-        }
-
-        // remove element in the middle of a bucket
-        {
-            object o;
-            o.max_load_factor(1000);
-            for(std::size_t i = 0;; ++i)
-            {
-                o.emplace(std::to_string(i), i);
-                if(o.bucket_size(0) >= 3)
-                    break;
-            }
-
-            auto bn = o.bucket_size(0);
-            auto it = o.begin(0);
-            ++it;
-            ++it;
-            o.erase(it);
-            BEAST_EXPECT(
-                o.bucket_size(0) < bn);
         }
     }
 

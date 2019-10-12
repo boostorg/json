@@ -104,8 +104,6 @@ public:
     using const_pointer = __implementation_defined__;
     using iterator = __implementation_defined__;
     using const_iterator = __implementation_defined__;
-    using local_iterator = __implementation_defined__;
-    using const_local_iterator = __implementation_defined__;
 
     using node_type = __see_below__;
 
@@ -147,8 +145,6 @@ public:
     class BOOST_SYMBOL_VISIBLE const_pointer;
     class BOOST_SYMBOL_VISIBLE iterator;
     class BOOST_SYMBOL_VISIBLE const_iterator;
-    class BOOST_SYMBOL_VISIBLE local_iterator;
-    class BOOST_SYMBOL_VISIBLE const_local_iterator;
     class BOOST_SYMBOL_VISIBLE node_type;
     struct BOOST_SYMBOL_VISIBLE insert_return_type;
 #endif
@@ -171,6 +167,8 @@ private:
     struct element;
     struct table;
     class undo_range;
+
+    static constexpr float load_factor_ = 1.f;
 
     storage_ptr sp_;
     table* tab_ = nullptr;
@@ -1738,114 +1736,6 @@ public:
     //
     //--------------------------------------------------------------------------
 
-    /** Return an iterator to the beginning of the specified bucket.
-
-        @par Expects
-
-        `n` is in the range `[0, bucket_count())`.
-
-        @par Complexity
-
-        Constant.
-
-        @param n The zero-based index of the bucket to access.
-    */
-    BOOST_JSON_DECL
-    local_iterator
-    begin(size_type n);
-
-    /** Return a constant iterator to the beginning of the specified bucket.
-
-        @par Expects
-
-        `n` is in the range `[0, bucket_count())`.
-
-        @par Complexity
-
-        Constant.
-
-        @param n The zero-based index of the bucket to access.
-    */
-    BOOST_JSON_DECL
-    const_local_iterator
-    begin(size_type n) const;
-
-    /** Return a constant iterator to the beginning of the specified bucket.
-
-        @par Expects
-
-        `n` is in the range `[0, bucket_count())`.
-
-        @par Complexity
-
-        Constant
-
-        @param n The zero-based index of the bucket to access.
-    */
-    BOOST_JSON_DECL
-    const_local_iterator
-    cbegin(size_type n) const;
-
-    /** Return a iterator to the end of the specified bucket.
-
-        This element acts as a placeholder, attempting to
-        access the pointed-to value results in undefined
-        behavior.
-
-        @par Expects
-
-        `n` is in the range `[0, bucket_count())`
-
-        @par Complexity.
-
-        Constant.
-
-        @param n The zero-based index of the bucket to access.
-    */
-    BOOST_JSON_DECL
-    local_iterator
-    end(size_type n);
-
-    /** Return a constant iterator to the end of the specified bucket
-
-        This element acts as a placeholder, attempting to
-        access the pointed-to value results in undefined
-        behavior.
-
-        @par Expects
-
-        `n` is in the range `[0, bucket_count())`.
-
-        @par Complexity
-
-        Constant.
-
-        @param n The zero-based index of the bucket to access.
-    */
-    BOOST_JSON_DECL
-    const_local_iterator
-    end(size_type n) const;
-
-    /** Return a constant iterator to the end of the specified bucket.
-
-        This element acts as a placeholder, attempting to
-        access the pointed-to value results in undefined
-        behavior.
-
-        @par Expects
-
-        `n` is in the range `[0, bucket_count())`.
-
-        @par Complexity
-
-        Constant.
-
-        @param n The zero-based index of the bucket to access.
-    */
-    BOOST_JSON_DECL
-    const_local_iterator
-    cend(size_type n) const;
-
     /** Returns the number of buckets in the container.
 
         This returns the number of buckets, which may be
@@ -2143,7 +2033,7 @@ private:
         const_iterator pos,
         InputIt first,
         InputIt last,
-        size_type bucket_count);
+        size_type size_hint);
 
     BOOST_JSON_DECL
     void
