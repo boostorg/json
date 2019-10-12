@@ -119,7 +119,7 @@ public:
             }
 
             // forward iterator
-            fail_loop([this](storage_ptr const& sp)
+            fail_loop([&](storage_ptr const& sp)
             {
                 init_list init{ 1, true, "hello" };
                 array a(init.begin(), init.end(), sp);
@@ -128,7 +128,7 @@ public:
             });
 
             // input iterator
-            fail_loop([this](storage_ptr const& sp)
+            fail_loop([&](storage_ptr const& sp)
             {
                 init_list init{ 1, true, "hello" };
                 array a(
@@ -205,7 +205,7 @@ public:
                 check_storage(a2, default_storage());
             }
 
-            fail_loop([this](storage_ptr const& sp)
+            fail_loop([&](storage_ptr const& sp)
             {
                 init_list init{ 1, true, "hello" };
                 array a1(init.begin(), init.end());
@@ -226,7 +226,7 @@ public:
                 check_storage(a, default_storage());
             }
 
-            fail_loop([this](storage_ptr const& sp)
+            fail_loop([&](storage_ptr const& sp)
             {
                 array a({1, true, "hello"}, sp);
                 check(a, sp);
@@ -250,7 +250,7 @@ public:
                 check_storage(a2, default_storage());
             }
 
-            fail_loop([this](storage_ptr const& sp)
+            fail_loop([&](storage_ptr const& sp)
             {
                 array a1({1, true, "hello"});
                 array a2({nullptr, value(kind::object), 1.f}, sp);
@@ -272,7 +272,7 @@ public:
                 check(a2);
             }
 
-            fail_loop([this](storage_ptr const& sp)
+            fail_loop([&](storage_ptr const& sp)
             {
                 array a1({1, true, "hello"});
                 array a2({nullptr, value(kind::object), 1.f}, sp);
@@ -304,7 +304,7 @@ public:
                 check_storage(a, default_storage());
             }
 
-            fail_loop([this](storage_ptr const& sp)
+            fail_loop([&](storage_ptr const& sp)
             {
                 init_list init{ 1, true, "hello" };
                 array a({nullptr, value(kind::object), 1.f}, sp);
@@ -656,7 +656,7 @@ public:
         }
 
         // insert(const_iterator, value_type const&)
-        fail_loop([this](storage_ptr const& sp)
+        fail_loop([&](storage_ptr const& sp)
         {
             array a({1, "hello"}, sp);
             value v(true);
@@ -666,7 +666,7 @@ public:
         });
 
         // insert(const_iterator, value_type&&)
-        fail_loop([this](storage_ptr const& sp)
+        fail_loop([&](storage_ptr const& sp)
         {
             array a({1, "hello"}, sp);
             value v(true);
@@ -692,7 +692,7 @@ public:
         // insert(const_iterator, InputIt, InputIt)
         {
             // forward iterator
-            fail_loop([this](storage_ptr const& sp)
+            fail_loop([&](storage_ptr const& sp)
             {
                 std::initializer_list<
                     value> init = {1, true};
@@ -703,7 +703,7 @@ public:
             });
 
             // forward iterator (multiple growth)
-            fail_loop([this](storage_ptr const& sp)
+            fail_loop([&](storage_ptr const& sp)
             {
                 std::initializer_list<
                     value> init = {1, "hello", true, 1, 2, 3, 4, 5, 6, 7};
@@ -724,7 +724,7 @@ public:
             }
 
             // input iterator
-            fail_loop([this](storage_ptr const& sp)
+            fail_loop([&](storage_ptr const& sp)
             {
                 std::initializer_list<
                     value> init = {1, true};
@@ -736,7 +736,7 @@ public:
             });
 
             // input iterator (multiple growth)
-            fail_loop([this](storage_ptr const& sp)
+            fail_loop([&](storage_ptr const& sp)
             {
                 std::initializer_list<
                     value> init = {1, true, 1, 2, 3, 4, 5, 6, 7};
@@ -748,7 +748,7 @@ public:
             });
 
             // backward relocate
-            fail_loop([this](storage_ptr const& sp)
+            fail_loop([&](storage_ptr const& sp)
             {
                 std::initializer_list<
                     value> init = {1, 2};
@@ -760,7 +760,7 @@ public:
         }
 
         // insert(const_iterator, init_list)
-        fail_loop([this](storage_ptr const& sp)
+        fail_loop([&](storage_ptr const& sp)
         {
             array a({"hello"}, sp);
             a.insert(a.begin(), {1, true});
@@ -768,7 +768,7 @@ public:
         });
 
         // emplace(const_iterator, arg)
-        fail_loop([this](storage_ptr const& sp)
+        fail_loop([&](storage_ptr const& sp)
         {
             array a({1, "hello"}, sp);
             auto it = a.emplace(
@@ -794,7 +794,7 @@ public:
         }
 
         // push_back(value const&)
-        fail_loop([this](storage_ptr const& sp)
+        fail_loop([&](storage_ptr const& sp)
         {
             array a({1, true}, sp);
             value v("hello");
@@ -807,7 +807,7 @@ public:
 
         // push_back(value&&)
         {
-            fail_loop([this](storage_ptr const& sp)
+            fail_loop([&](storage_ptr const& sp)
             {
                 array a({1, true}, sp);
                 value v("hello");
@@ -818,7 +818,7 @@ public:
         }
 
         // emplace_back(arg)
-        fail_loop([this](storage_ptr const& sp)
+        fail_loop([&](storage_ptr const& sp)
         {
             array a({1, true}, sp);
             a.emplace_back("hello");
@@ -827,7 +827,7 @@ public:
         });
 
         // pop_back()
-        fail_loop([this](storage_ptr const& sp)
+        fail_loop([&](storage_ptr const& sp)
         {
             array a({1, true, "hello", nullptr}, sp);
             a.pop_back();
@@ -913,7 +913,7 @@ public:
     testExceptions()
     {
         // operator=(array const&)
-        fail_loop([this](storage_ptr const& sp)
+        fail_loop([&](storage_ptr const& sp)
         {
             array a0({1, true, "hello"});
             array a1;
@@ -925,7 +925,7 @@ public:
         });
 
         // operator=(init_list)
-        fail_loop([this](storage_ptr const& sp)
+        fail_loop([&](storage_ptr const& sp)
         {
             init_list init{ 1, true, "hello" };
             array a1;
@@ -953,7 +953,7 @@ public:
         });
 
         // insert(const_iterator, InputIt, InputIt)
-        fail_loop([this](storage_ptr const& sp)
+        fail_loop([&](storage_ptr const& sp)
         {
             init_list init{ 1, true, "hello" };
             array a1;
@@ -978,7 +978,7 @@ public:
         });
 
         // emplace(const_iterator, arg)
-        fail_loop([this](storage_ptr const& sp)
+        fail_loop([&](storage_ptr const& sp)
         {
             array a1;
             array a({1, "hello"}, sp);

@@ -521,8 +521,9 @@ public:
     using key_type = string_view;
     using mapped_type = json::value;
 
+    node_type(node_type const&) = delete;
+
     BOOST_JSON_DECL node_type() = default;
-    BOOST_JSON_DECL node_type(node_type const&) = delete;
 
     BOOST_JSON_DECL
     ~node_type();

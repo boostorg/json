@@ -34,12 +34,11 @@ is_done() const noexcept
 std::size_t
 serializer::
 impl::
-next(boost::asio::mutable_buffer b)
+next(char* dest, std::size_t size)
 {
-    auto const p0 =
-        reinterpret_cast<char*>(b.data());
+    auto const p0 = dest;
     auto p = p0;
-    auto n = b.size();
+    auto n = size;
     while(n > 0)
     {
         switch(state_)
@@ -213,29 +212,6 @@ next(boost::asio::mutable_buffer b)
     }
 finish:
     return p - p0;
-}
-
-void
-serializer::
-impl::
-append(char c,
-    boost::asio::mutable_buffer& b)
-{
-    BOOST_ASSERT(b.size() >= 1);
-    *reinterpret_cast<char*>(b.data()) = c;
-    b += 1;
-}
-
-void
-serializer::
-impl::
-append(
-    char const* s, std::size_t n,
-    boost::asio::mutable_buffer& b)
-{
-    BOOST_ASSERT(b.size() >= n);
-    std::memcpy(b.data(), s, n);
-    b += n;
 }
 
 //------------------------------------------------------------------------------

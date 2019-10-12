@@ -47,7 +47,7 @@ public:
         serializer sr(jv);
         char buf[2048];
         auto const n =
-            sr.next({buf, sizeof(buf)});
+            sr.next(buf, sizeof(buf));
         string_view s(buf, n);
         log << s << "\n";
     }

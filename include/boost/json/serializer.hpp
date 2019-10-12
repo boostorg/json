@@ -14,7 +14,6 @@
 #include <boost/json/iterator.hpp>
 #include <boost/json/number.hpp>
 #include <boost/json/value.hpp>
-#include <boost/asio/buffer.hpp>
 
 namespace boost {
 namespace json {
@@ -31,7 +30,7 @@ class BOOST_SYMBOL_VISIBLE serializer
 
         virtual
         std::size_t
-        next(boost::asio::mutable_buffer) = 0;
+        next(char* dest, std::size_t size) = 0;
     };
 
     class impl : public base
@@ -65,19 +64,7 @@ class BOOST_SYMBOL_VISIBLE serializer
 
         inline
         std::size_t
-        next(boost::asio::mutable_buffer) override;
-
-    private:
-        inline
-        void
-        append(char c,
-            boost::asio::mutable_buffer& b);
-
-        inline
-        void
-        append(
-            char const* s, std::size_t n,
-            boost::asio::mutable_buffer& b);
+        next(char* dest, std::size_t size) override;
     };
 
     typename std::aligned_storage<
@@ -105,19 +92,6 @@ public:
     explicit
     serializer(value const& jv);
 
-    template<class MutableBufferSequence>
-    std::size_t
-    next(MutableBufferSequence const& buffers)
-    {
-        std::size_t bytes_transferred = 0;
-        for(auto it = boost::asio::buffer_sequence_begin(buffers),
-            end = boost::asio::buffer_sequence_end(buffers);
-            it != end; ++it)
-            bytes_transferred += next(
-                boost::asio::mutable_buffer(*it));
-        return bytes_transferred;
-    }
-
     bool
     is_done() const noexcept
     {
@@ -125,9 +99,9 @@ public:
     }
 
     std::size_t
-    next(boost::asio::mutable_buffer buffer)
+    next(char* dest, std::size_t size)
     {
-        return get_base().next(buffer);
+        return get_base().next(dest, size);
     }
 };
 
