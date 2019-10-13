@@ -83,7 +83,8 @@ basic_parser()
 }
 
 bool
-basic_parser::is_done() const noexcept
+basic_parser::
+is_done() const noexcept
 {
     return stack_.front() == state::end;
 }

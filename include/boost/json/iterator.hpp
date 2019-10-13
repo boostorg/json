@@ -28,7 +28,7 @@ BOOST_JSON_INLINE_VARIABLE(end, end_t)
 
 /** A generator to perform a depth-first traversal of a JSON value.
 */
-class BOOST_SYMBOL_VISIBLE const_iterator
+class const_iterator
 {
 #ifndef GENERATING_DOCUMENTATION
     struct node

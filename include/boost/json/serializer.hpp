@@ -18,7 +18,7 @@
 namespace boost {
 namespace json {
 
-class BOOST_SYMBOL_VISIBLE serializer
+class serializer
 {
     struct base
     {

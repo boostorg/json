@@ -19,6 +19,11 @@ namespace boost {
 namespace json {
 
 parser::
+~parser()
+{
+}
+
+parser::
 parser()
 {
 }

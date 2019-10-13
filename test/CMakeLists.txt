@@ -23,7 +23,6 @@ add_executable (json-tests
     test_storage.hpp
     main.cpp
     _detail_stack.cpp
-    allocator.cpp
     array.cpp
     assign_string.cpp
     assign_vector.cpp

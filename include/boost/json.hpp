@@ -10,7 +10,6 @@
 #ifndef BOOST_JSON_HPP
 #define BOOST_JSON_HPP
 
-#include <boost/json/allocator.hpp>
 #include <boost/json/array.hpp>
 #include <boost/json/assign_string.hpp>
 #include <boost/json/assign_vector.hpp>

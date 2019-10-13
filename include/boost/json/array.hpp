@@ -11,7 +11,6 @@
 #define BOOST_JSON_ARRAY_HPP
 
 #include <boost/json/detail/config.hpp>
-#include <boost/json/allocator.hpp>
 #include <boost/json/kind.hpp>
 #include <boost/json/storage.hpp>
 #include <boost/pilfer.hpp>
@@ -73,7 +72,7 @@ class value;
         <em>ReversibleContainer</em>, and
         <em>SequenceContainer</em>.
 */
-class BOOST_SYMBOL_VISIBLE array
+class array
 {
     struct table;
 

@@ -21,7 +21,7 @@ namespace json {
 
 /** The representation of parsed numbers.
 */
-class BOOST_SYMBOL_VISIBLE number
+class number
 {
     struct base10_ieee
     {

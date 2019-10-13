@@ -39,7 +39,7 @@ using is_viewy = typename std::enable_if<
 
 /** The native type of string values
 */
-class BOOST_SYMBOL_VISIBLE string
+class string
 {
 public:
     using traits_type       = std::char_traits<char>;

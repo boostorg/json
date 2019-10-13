@@ -299,20 +299,27 @@ operator()(key_type key) const noexcept
 
 object::
 node_type::
+~node_type()
+{
+    if(e_)
+        element::destroy(e_, sp_);
+}
+
+object::
+node_type::
+node_type()
+    : e_(nullptr)
+{
+}
+
+object::
+node_type::
 node_type(
     element* e,
     storage_ptr sp) noexcept
     : e_(e)
     , sp_(std::move(sp))
 {
-}
-
-object::
-node_type::
-~node_type()
-{
-    if(e_)
-        element::destroy(e_, sp_);
 }
 
 object::

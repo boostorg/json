@@ -60,7 +60,7 @@ struct object::element : list_hook
 
 //------------------------------------------------------------------------------
 
-class BOOST_SYMBOL_VISIBLE object::undo_range
+class object::undo_range
 {
     object& self_;
     element* head_ = nullptr;
@@ -88,7 +88,7 @@ public:
 
 //------------------------------------------------------------------------------
 
-class BOOST_SYMBOL_VISIBLE object::hasher
+class object::hasher
 {
     inline
     static
@@ -110,7 +110,7 @@ public:
 
 //------------------------------------------------------------------------------
 
-class BOOST_SYMBOL_VISIBLE  object::key_equal
+class object::key_equal
 {
 public:
     BOOST_JSON_DECL
@@ -125,7 +125,7 @@ public:
 
 //------------------------------------------------------------------------------
 
-class BOOST_SYMBOL_VISIBLE object::pointer
+class object::pointer
 {
     reference t_;
 
@@ -146,7 +146,7 @@ public:
 
 //------------------------------------------------------------------------------
 
-class BOOST_SYMBOL_VISIBLE object::const_pointer
+class object::const_pointer
 {
     const_reference t_;
 
@@ -168,13 +168,12 @@ public:
 
 //------------------------------------------------------------------------------
 
-class BOOST_SYMBOL_VISIBLE object::const_iterator
+class object::const_iterator
 {
     element* e_ = nullptr;
 
     friend class object;
 
-    BOOST_JSON_DECL
     const_iterator(element* e)
         : e_(e)
     {
@@ -188,13 +187,13 @@ public:
     using iterator_category =
         std::bidirectional_iterator_tag;
 
-    BOOST_JSON_DECL const_iterator() = default;
-    BOOST_JSON_DECL const_iterator(const_iterator const&) = default;
-    BOOST_JSON_DECL const_iterator& operator=(const_iterator const&) = default;
-
-    BOOST_JSON_DECL const_iterator(iterator it) noexcept;
+    const_iterator() = default;
+    const_iterator(const_iterator const&) = default;
+    const_iterator& operator=(const_iterator const&) = default;
 
     BOOST_JSON_DECL
+    const_iterator(iterator it) noexcept;
+
     const_iterator&
     operator++() noexcept
     {
@@ -202,7 +201,6 @@ public:
         return *this;
     }
 
-    BOOST_JSON_DECL
     const_iterator
     operator++(int) noexcept
     {
@@ -211,7 +209,6 @@ public:
         return tmp;
     }
 
-    BOOST_JSON_DECL
     const_iterator&
     operator--() noexcept
     {
@@ -219,7 +216,6 @@ public:
         return *this;
     }
 
-    BOOST_JSON_DECL
     const_iterator
     operator--(int) noexcept
     {
@@ -228,7 +224,6 @@ public:
         return tmp;
     }
 
-    BOOST_JSON_DECL
     pointer
     operator->() const noexcept
     {
@@ -236,7 +231,6 @@ public:
             e_->key(), e_->v };
     }
 
-    BOOST_JSON_DECL
     reference
     operator*() const noexcept
     {
@@ -244,14 +238,12 @@ public:
             e_->key(), e_->v };
     }
 
-    BOOST_JSON_DECL
     bool
     operator==(const_iterator other) const noexcept
     {
         return e_ == other.e_;
     }
 
-    BOOST_JSON_DECL
     bool
     operator!=(const_iterator other) const noexcept
     {
@@ -280,11 +272,10 @@ public:
     using iterator_category =
         std::bidirectional_iterator_tag;
 
-    BOOST_JSON_DECL iterator() = default;
-    BOOST_JSON_DECL iterator(iterator const&) = default;
-    BOOST_JSON_DECL iterator& operator=(iterator const&) = default;
+    iterator() = default;
+    iterator(iterator const&) = default;
+    iterator& operator=(iterator const&) = default;
 
-    BOOST_JSON_DECL
     iterator&
     operator++() noexcept
     {
@@ -292,7 +283,6 @@ public:
         return *this;
     }
 
-    BOOST_JSON_DECL
     iterator
     operator++(int) noexcept
     {
@@ -301,7 +291,6 @@ public:
         return tmp;
     }
 
-    BOOST_JSON_DECL
     iterator&
     operator--() noexcept
     {
@@ -309,7 +298,6 @@ public:
         return *this;
     }
 
-    BOOST_JSON_DECL
     iterator
     operator--(int) noexcept
     {
@@ -318,7 +306,6 @@ public:
         return tmp;
     }
 
-    BOOST_JSON_DECL
     pointer
     operator->() const noexcept
     {
@@ -326,7 +313,6 @@ public:
             e_->key(), e_->v };
     }
 
-    BOOST_JSON_DECL
     reference
     operator*() const noexcept
     {
@@ -334,14 +320,12 @@ public:
             e_->key(), e_->v };
     }
 
-    BOOST_JSON_DECL
     bool
     operator==(const_iterator other) const noexcept
     {
         return const_iterator(*this) == other;
     }
 
-    BOOST_JSON_DECL
     bool
     operator!=(const_iterator other) const noexcept
     {
@@ -351,9 +335,9 @@ public:
 
 //------------------------------------------------------------------------------
 
-class BOOST_SYMBOL_VISIBLE object::node_type
+class object::node_type
 {
-    element* e_ = nullptr;
+    element* e_;
     storage_ptr sp_;
 
     friend class object;
@@ -369,10 +353,11 @@ public:
 
     node_type(node_type const&) = delete;
 
-    BOOST_JSON_DECL node_type() = default;
-
     BOOST_JSON_DECL
     ~node_type();
+
+    BOOST_JSON_DECL
+    node_type();
 
     BOOST_JSON_DECL
     node_type(
@@ -441,7 +426,7 @@ swap(
 
 //------------------------------------------------------------------------------
 
-struct BOOST_SYMBOL_VISIBLE object::insert_return_type
+struct object::insert_return_type
 {
     iterator position;
     node_type node;
@@ -618,7 +603,7 @@ emplace(
 
 // type-erased constructor to
 // reduce template instantiations.
-struct BOOST_SYMBOL_VISIBLE object::construct_base
+struct object::construct_base
 {
     virtual
     ~construct_base() = default;

@@ -27,7 +27,6 @@ project
 
 local SOURCES =
     _detail_stack.cpp
-    allocator.cpp
     array.cpp
     assign_string.cpp
     assign_vector.cpp

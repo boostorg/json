@@ -26,7 +26,7 @@ namespace json {
 
 /** A parser for serialized JSON
 */
-class BOOST_SYMBOL_VISIBLE basic_parser
+class basic_parser
 #ifndef GENERATING_DOCUMENTATION
     : private detail::parser_base
 #endif
@@ -59,6 +59,12 @@ class BOOST_SYMBOL_VISIBLE basic_parser
         char digit, bool neg);
 
 public:
+    BOOST_JSON_DECL
+    virtual
+    ~basic_parser()
+    {
+    }
+
     /// Returns `true` if the parser has completed without error
     BOOST_JSON_DECL
     bool

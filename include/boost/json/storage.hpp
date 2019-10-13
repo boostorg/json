@@ -24,21 +24,27 @@ namespace json {
 
 /** Abstract interface to a memory resource used with JSON.
 */
-class BOOST_SYMBOL_VISIBLE storage
+class storage
 {
+    std::atomic<std::size_t> refs_;
+
+    BOOST_JSON_DECL
+    void
+    addref();
+
+    BOOST_JSON_DECL
+    void
+    release();
+
     template<class T>
     friend class basic_storage_ptr;
-
-    std::atomic<std::size_t> refs_;
 
 public:
     static std::size_t constexpr max_align =
         sizeof(max_align_t);
 
-    storage()
-        : refs_(1)
-    {
-    }
+    BOOST_JSON_DECL
+    storage();
 
     virtual
     ~storage() = default;
@@ -99,20 +105,6 @@ class basic_storage_ptr
 
     T* t_ = nullptr;
 
-    void
-    increment() const noexcept
-    {
-        ++t_->refs_;
-    }
-
-    void
-    decrement() const noexcept
-    {
-        if(--t_->refs_ > 0)
-            return;
-        delete t_;
-    }
-
     explicit
     basic_storage_ptr(T* t) noexcept
         : t_(t)
@@ -125,7 +117,7 @@ public:
     ~basic_storage_ptr()
     {
         if(t_)
-            decrement();
+            t_->release();
     }
 
     basic_storage_ptr(
@@ -140,7 +132,7 @@ public:
         : t_(other.t_)
     {
         if(t_)
-            increment();
+            t_->addref();
     }
 
 
@@ -171,7 +163,7 @@ public:
         : t_(sp.t_)
     {
         if(t_)
-            increment();
+            t_->addref();
     }
 
     basic_storage_ptr(
@@ -184,7 +176,7 @@ public:
         basic_storage_ptr&& other) noexcept
     {
         if(t_)
-            decrement();
+            t_->release();
         t_ = boost::exchange(other.t_, nullptr);
         return *this;
     }
@@ -194,9 +186,9 @@ public:
         basic_storage_ptr const& other) noexcept
     {
         if(other.t_)
-            other.increment();
+            other.t_->addref();
         if(t_)
-            decrement();
+            t_->release();
         t_ = other.t_;
         return *this;
     }

@@ -17,6 +17,8 @@
 namespace boost {
 namespace json {
 
+//------------------------------------------------------------------------------
+
 namespace detail {
 
 storage_ptr const&
@@ -50,6 +52,30 @@ void
 default_storage(storage_ptr sp) noexcept
 {
     detail::raw_default_storage() = std::move(sp);
+}
+
+//------------------------------------------------------------------------------
+
+void
+storage::
+addref()
+{
+    ++refs_;
+}
+
+void
+storage::
+release()
+{
+    if(--refs_ > 0)
+        return;
+    delete this;
+}
+
+storage::
+storage()
+    : refs_(1)
+{
 }
 
 //------------------------------------------------------------------------------

@@ -54,7 +54,7 @@ class value;
         <em>SequenceContainer</em>, and
         <em>UnorderedAssociativeContainer</em>.
 */
-class BOOST_SYMBOL_VISIBLE object
+class object
 {
 public:
     /// The type of keys
@@ -139,14 +139,14 @@ public:
     };
 
 #else
-    class BOOST_SYMBOL_VISIBLE hasher;
-    class BOOST_SYMBOL_VISIBLE key_equal;
-    class BOOST_SYMBOL_VISIBLE pointer;
-    class BOOST_SYMBOL_VISIBLE const_pointer;
-    class BOOST_SYMBOL_VISIBLE iterator;
-    class BOOST_SYMBOL_VISIBLE const_iterator;
-    class BOOST_SYMBOL_VISIBLE node_type;
-    struct BOOST_SYMBOL_VISIBLE insert_return_type;
+    class hasher;
+    class key_equal;
+    class pointer;
+    class const_pointer;
+    class iterator;
+    class const_iterator;
+    class node_type;
+    struct insert_return_type;
 #endif
 
 #if 0

@@ -21,7 +21,7 @@
 namespace boost {
 namespace json {
 
-class BOOST_SYMBOL_VISIBLE parser
+class parser
     : public basic_parser
 {
     static std::size_t const
@@ -37,6 +37,10 @@ class BOOST_SYMBOL_VISIBLE parser
 
 public:
     BOOST_JSON_DECL
+    virtual
+    ~parser();
+
+    BOOST_JSON_DECL
     parser();
 
     BOOST_JSON_DECL
@@ -44,6 +48,7 @@ public:
 
     /** Returns the maximum allowed depth of input JSON.
     */
+    BOOST_JSON_DECL
     std::size_t
     max_depth() const noexcept
     {
@@ -52,6 +57,7 @@ public:
 
     /** Set the maximum allowed depth of input JSON.
     */
+    BOOST_JSON_DECL
     void
     max_depth(unsigned long levels) noexcept
     {
@@ -71,7 +77,7 @@ private:
     void
     assign(T&& t);
 
-    inline
+    BOOST_JSON_DECL
     void
     reset();
 
