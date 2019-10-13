@@ -1018,20 +1018,15 @@ public:
     testHashPolicy()
     {
         object o;
-        for(std::size_t i = 0; i < 1000; ++i)
+        for(std::size_t i = 0; i < 100; ++i)
             o.emplace(std::to_string(i), i);
-
-        // max_load_factor()
-        {
-            BEAST_EXPECT(
-                o.max_load_factor() == 1);
-        }
 
         // reserve(size_type)
         {
+            o.reserve(50);
+            BEAST_EXPECT(o.capacity() >= 50);
             o.reserve(200);
-            BEAST_EXPECT(o.capacity() >=
-                std::ceil(200 / o.max_load_factor()));
+            BEAST_EXPECT(o.capacity() >= 200);
         }
     }
 

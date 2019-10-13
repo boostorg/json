@@ -59,7 +59,6 @@ class basic_parser
         char digit, bool neg);
 
 public:
-    BOOST_JSON_DECL
     virtual
     ~basic_parser()
     {

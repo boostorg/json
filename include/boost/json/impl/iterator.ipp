@@ -206,6 +206,38 @@ operator++() noexcept
     return *this;
 }
 
+bool
+operator==(
+    const_iterator const& lhs,
+    end_t) noexcept
+{
+    return lhs.stack_.empty();
+}
+
+bool
+operator==(
+    end_t,
+    const_iterator const& rhs) noexcept
+{
+    return rhs.stack_.empty();
+}
+
+bool
+operator!=(
+    const_iterator const& lhs,
+    end_t) noexcept
+{
+    return ! lhs.stack_.empty();
+}
+
+bool
+operator!=(
+    end_t,
+    const_iterator const& rhs) noexcept
+{
+    return ! rhs.stack_.empty();
+}
+
 } // json
 } // boost
 

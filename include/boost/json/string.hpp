@@ -915,7 +915,6 @@ public:
     string&
     append(InputIt first, InputIt last);
 
-    BOOST_JSON_DECL
     string&
     append(std::initializer_list<char> init)
     {
@@ -951,14 +950,12 @@ public:
 
     //--------------------------------------------------------------------------
 
-    BOOST_JSON_DECL
     string&
     operator+=(string const& s)
     {
         return append(s);
     }
 
-    BOOST_JSON_DECL
     string&
     operator+=(char ch)
     {
@@ -966,14 +963,12 @@ public:
         return *this;
     }
 
-    BOOST_JSON_DECL
     string&
     operator+=(char const* s)
     {
         return append(s);
     }
 
-    BOOST_JSON_DECL
     string&
     operator+=(std::initializer_list<char> init)
     {
@@ -1562,8 +1557,6 @@ public:
     {
         return string_view(*this).find_last_not_of(string_view(t), pos);
     }
-
-    //--------------------------------------------------------------------------
 
     //--------------------------------------------------------------------------
 

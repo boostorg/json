@@ -171,6 +171,13 @@ private:
     storage_ptr sp_;
     table* tab_ = nullptr;
 
+    static
+    float
+    max_load_factor() noexcept
+    {
+        return 1.f;
+    }
+
     template<class T>
     using is_inputit = typename std::enable_if<
         std::is_convertible<typename
@@ -798,26 +805,6 @@ public:
     BOOST_JSON_DECL
     size_type
     max_size() const noexcept;
-
-    /** Returns the current maximum load factor
-
-        The container automatically increases the number
-        of buckets if the load factor exceeds this threshold.
-        
-        @par Complexity
-
-        Constant
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    BOOST_JSON_DECL
-    float
-    max_load_factor() const noexcept
-    {
-        return 1.f;
-    }
 
     /** Returns the maximum number of elements the container can support before rehashing.
 
@@ -1702,6 +1689,8 @@ private:
         element* e);
 };
 
+/** Swap this container with the contents of another container.
+*/
 BOOST_JSON_DECL
 void
 swap(object& lhs, object& rhs);

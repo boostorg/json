@@ -14,9 +14,36 @@
 #include <boost/json/error.hpp>
 #include <boost/core/ignore_unused.hpp>
 #include <boost/assert.hpp>
+#include <utility>
 
 namespace boost {
 namespace json {
+
+template<class T>
+void
+parser::
+assign(T&& t)
+{
+    auto& jv = *stack_.front();
+    BOOST_ASSERT(! jv.is_object());
+    if(obj_)
+    {
+        BOOST_ASSERT(jv.is_null());
+        jv = std::forward<T>(t);
+        stack_.pop_front();
+    }
+    else if(stack_.front()->is_array())
+    {
+        BOOST_ASSERT(s_.empty());
+        jv.as_array().emplace_back(
+            std::forward<T>(t));
+    }
+    else
+    {
+        BOOST_ASSERT(jv.is_null());
+        jv = std::forward<T>(t);
+    }
+}
 
 parser::
 ~parser()
@@ -29,9 +56,23 @@ parser()
 }
 
 parser::
-parser(storage_ptr const& store)
-    : jv_(store)
+parser(storage_ptr sp)
+    : jv_(std::move(sp))
 {
+}
+
+std::size_t
+parser::
+max_depth() const noexcept
+{
+    return max_depth_;
+}
+
+void
+parser::
+max_depth(unsigned long levels) noexcept
+{
+    max_depth_ = levels;
 }
 
 value const&

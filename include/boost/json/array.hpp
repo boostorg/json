@@ -118,7 +118,7 @@ public:
     using const_reverse_iterator =
         std::reverse_iterator<const_iterator>;
 
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
 
     /** Destroy the container
 
@@ -133,7 +133,7 @@ public:
     BOOST_JSON_DECL
     ~array();
 
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
 
     /** Construct an empty container
 
@@ -444,7 +444,7 @@ public:
         std::initializer_list<value> init,
         storage_ptr sp = default_storage());
 
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
 
     /** Copy assignment operator
 
@@ -516,7 +516,7 @@ public:
     operator=(
         std::initializer_list<value> init);
 
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
 
     /** Return a pointer to the storage associated with the container
 
@@ -531,11 +531,11 @@ public:
     storage_ptr const&
     get_storage() const noexcept;
 
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
     //
     // Element access
     //
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
 
     /** Access an element, with bounds checking
 
@@ -625,11 +625,9 @@ public:
 
         Constant.
     */
+    BOOST_JSON_DECL
     reference
-    front()
-    {
-        return (*this)[0];
-    }
+    front();
 
     /** Access the first element
 
@@ -643,11 +641,9 @@ public:
 
         Constant.
     */
+    BOOST_JSON_DECL
     const_reference
-    front() const
-    {
-        return (*this)[0];
-    }
+    front() const;
 
     /** Access the last element
 
@@ -661,11 +657,9 @@ public:
 
         Constant.
     */
+    BOOST_JSON_DECL
     reference
-    back()
-    {
-        return (*this)[size() - 1];
-    }
+    back();
 
     /** Access the last element
 
@@ -679,11 +673,9 @@ public:
 
         Constant.
     */
+    BOOST_JSON_DECL
     const_reference
-    back() const
-    {
-        return (*this)[size() - 1];
-    }
+    back() const;
 
     /** Access the underlying array directly
 
@@ -725,11 +717,11 @@ public:
     value_type const*
     data() const noexcept;
 
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
     //
     // Iterators
     //
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
 
     /** Return an iterator to the first element
 
@@ -768,10 +760,7 @@ public:
     */
     BOOST_JSON_DECL
     const_iterator
-    cbegin() const noexcept
-    {
-        return begin();
-    }
+    cbegin() const noexcept;
 
     /** Return an iterator to the element following the last element
 
@@ -810,10 +799,7 @@ public:
     */
     BOOST_JSON_DECL
     const_iterator
-    cend() const noexcept
-    {
-        return end();
-    }
+    cend() const noexcept;
 
     /** Return a reverse iterator to the first element of the reversed container
 
@@ -855,10 +841,7 @@ public:
     */
     BOOST_JSON_DECL
     const_reverse_iterator
-    crbegin() const noexcept
-    {
-        return rbegin();
-    }
+    crbegin() const noexcept;
 
     /** Return a reverse iterator to the element following the last element of the reversed container
 
@@ -903,16 +886,13 @@ public:
     */
     BOOST_JSON_DECL
     const_reverse_iterator
-    crend() const noexcept
-    {
-        return rend();
-    }
+    crend() const noexcept;
 
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
     //
     // Capacity
     //
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
 
     /** Check if the container has no elements
 
@@ -1022,11 +1002,11 @@ public:
     void
     shrink_to_fit() noexcept;
 
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
     //
     // Modifiers
     //
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
 
     /** Clear the contents
 

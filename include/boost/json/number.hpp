@@ -75,8 +75,7 @@ public:
 
     number() = default;
     number(number const&) = default;
-    number& operator=(
-        number const&) = default;
+    number& operator=(number const&) = default;
 
     /** Construct a number from mantissa, exponent, and sign
     */
@@ -217,7 +216,6 @@ private:
     operator!=(
         number const& lhs,
         number const& rhs) noexcept;
-
 };
 
 BOOST_JSON_DECL

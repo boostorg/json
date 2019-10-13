@@ -30,7 +30,7 @@ namespace json {
 auto
 array::
 table::
-create(
+construct(
     size_type capacity,
     storage_ptr const& sp) ->
         table*
@@ -54,13 +54,12 @@ void
 array::
 table::
 destroy(
-    table* tab,
     storage_ptr const& sp) noexcept
 {
-    destroy(tab->begin(), tab->end());
-    sp->deallocate(tab,
+    destroy(begin(), end());
+    sp->deallocate(this,
         sizeof(table) +
-            tab->d.capacity * sizeof(value),
+            d.capacity * sizeof(value),
         alignof(value));
 }
 
@@ -111,14 +110,13 @@ undo_create::
     if(! commit_)
     {
         if(self_.tab_)
-            table::destroy(
-                self_.tab_, self_.sp_);
+            self_.tab_->destroy(
+                self_.sp_);
         self_.tab_ = saved_;
     }
     else if(saved_)
     {
-        table::destroy(
-            saved_, self_.sp_);
+        saved_->destroy(self_.sp_);
     }
 }
 
@@ -138,7 +136,7 @@ undo_create(
     : self_(self)
     , saved_(boost::exchange(
         self.tab_,
-        table::create(n, self.sp_)))
+        table::construct(n, self.sp_)))
 {
 }
 
@@ -190,7 +188,7 @@ array::
 ~array()
 {
     if(tab_)
-        table::destroy(tab_, sp_);
+        tab_->destroy(sp_);
 }
 
 //------------------------------------------------------------------------------
@@ -311,7 +309,7 @@ operator=(array&& other)
     else
     {
         if(tab_)
-            table::destroy(tab_, sp_);
+            tab_->destroy(sp_);
         tab_ = boost::exchange(
             other.tab_, nullptr);
     }
@@ -380,6 +378,38 @@ operator[](size_type pos) const ->
 
 auto
 array::
+front() ->
+    reference
+{
+    return tab_->begin()[0];
+}
+
+auto
+array::
+front() const ->
+    const_reference
+{
+    return tab_->begin()[0];
+}
+
+auto
+array::
+back() ->
+    reference
+{
+    return tab_->end()[-1];
+}
+
+auto
+array::
+back() const ->
+    const_reference
+{
+    return tab_->end()[-1];
+}
+
+auto
+array::
 data() noexcept ->
     value*
 {
@@ -426,6 +456,16 @@ begin() const noexcept ->
 
 auto
 array::
+cbegin() const noexcept ->
+    const_iterator
+{
+    if(! tab_)
+        return nullptr;
+    return tab_->begin();
+}
+
+auto
+array::
 end() noexcept ->
     iterator
 {
@@ -437,6 +477,16 @@ end() noexcept ->
 auto
 array::
 end() const noexcept ->
+    const_iterator
+{
+    if(! tab_)
+        return nullptr;
+    return tab_->end();
+}
+
+auto
+array::
+cend() const noexcept ->
     const_iterator
 {
     if(! tab_)
@@ -466,6 +516,16 @@ rbegin() const noexcept ->
 
 auto
 array::
+crbegin() const noexcept ->
+    const_reverse_iterator
+{
+    if(! tab_)
+        return const_reverse_iterator(nullptr);
+    return const_reverse_iterator(tab_->end());
+}
+
+auto
+array::
 rend() noexcept ->
     reverse_iterator
 {
@@ -477,6 +537,16 @@ rend() noexcept ->
 auto
 array::
 rend() const noexcept ->
+    const_reverse_iterator
+{
+    if(! tab_)
+        return const_reverse_iterator(nullptr);
+    return const_reverse_iterator(tab_->begin());
+}
+
+auto
+array::
+crend() const noexcept ->
     const_reverse_iterator
 {
     if(! tab_)
@@ -537,7 +607,7 @@ reserve(size_type new_capacity)
     }
 
     auto tab =
-        table::create(new_capacity, sp_);
+        table::construct(new_capacity, sp_);
     if(! tab_)
     {
         tab_ = tab;
@@ -551,7 +621,7 @@ reserve(size_type new_capacity)
     tab->d.size = tab_->d.size;
     tab_->d.size = 0;
     std::swap(tab, tab_);
-    table::destroy(tab, sp_);
+    tab->destroy(sp_);
 }
 
 auto
@@ -572,7 +642,7 @@ shrink_to_fit() noexcept
         return;
     if(tab_->d.size == 0)
     {
-        table::destroy(tab_, sp_);
+        tab_->destroy(sp_);
         tab_ = nullptr;
         return;
     }
@@ -584,7 +654,7 @@ shrink_to_fit() noexcept
     try
     {
 #endif
-        tab = table::create(
+        tab = table::construct(
             tab_->d.size, sp_);
 #ifndef BOOST_NO_EXCEPTIONS
     }
@@ -602,7 +672,7 @@ shrink_to_fit() noexcept
     tab->d.size = tab_->d.size;
     tab_->d.size = 0;
     std::swap(tab, tab_);
-    table::destroy(tab, sp_);
+    tab->destroy(sp_);
 }
 
 //------------------------------------------------------------------------------
@@ -822,7 +892,7 @@ copy(array const& other)
     {
         if(! tab_)
             return;
-        table::destroy(tab_, sp_);
+        tab_->destroy(sp_);
         tab_ = nullptr;
         return;
     }
@@ -845,7 +915,7 @@ assign(
     {
         if(! tab_)
             return;
-        table::destroy(tab_, sp_);
+        tab_->destroy(sp_);
         tab_ = nullptr;
         return;
     }

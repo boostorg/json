@@ -58,15 +58,13 @@ struct array::table
     BOOST_JSON_DECL
     static
     table*
-    create(
+    construct(
         size_type capacity,
         storage_ptr const& sp);
 
     BOOST_JSON_DECL
-    static
     void
     destroy(
-        table* tab,
         storage_ptr const& sp) noexcept;
 
     BOOST_JSON_DECL
@@ -258,7 +256,7 @@ insert(
         u.it,
         tmp.tab_->begin(),
         tmp.size());
-    table::destroy(tmp.tab_, sp_);
+    tmp.tab_->destroy(sp_);
     tmp.tab_ = nullptr;
     u.commit = true;
     return begin() + u.pos;
@@ -290,10 +288,8 @@ emplace_impl(
     Arg&& arg) ->
         iterator
 {
-    undo_insert u(
-        pos, 1, *this);
-    u.emplace(
-        std::forward<Arg>(arg));
+    undo_insert u(pos, 1, *this);
+    u.emplace(std::forward<Arg>(arg));
     u.commit = true;
     return begin() + u.pos;
 }

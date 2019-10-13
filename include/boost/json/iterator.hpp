@@ -91,14 +91,12 @@ public:
     const_iterator&
     operator++() noexcept;
 
-    BOOST_JSON_DECL
     void
     operator++(int) noexcept
     {
         ++*this;
     }
 
-    BOOST_JSON_DECL
     value_type
     operator->() const noexcept
     {
@@ -110,40 +108,28 @@ public:
     bool
     operator==(
         const_iterator const& lhs,
-        end_t) noexcept
-    {
-        return lhs.stack_.empty();
-    }
+        end_t) noexcept;
 
     BOOST_JSON_DECL
     friend
     bool
     operator==(
         end_t,
-        const_iterator const& rhs) noexcept
-    {
-        return rhs.stack_.empty();
-    }
+        const_iterator const& rhs) noexcept;
 
     BOOST_JSON_DECL
     friend
     bool
     operator!=(
         const_iterator const& lhs,
-        end_t) noexcept
-    {
-        return ! lhs.stack_.empty();
-    }
+        end_t) noexcept;
 
     BOOST_JSON_DECL
     friend
     bool
     operator!=(
         end_t,
-        const_iterator const& rhs) noexcept
-    {
-        return ! rhs.stack_.empty();
-    }
+        const_iterator const& rhs) noexcept;
 };
 
 } // json

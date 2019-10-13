@@ -111,7 +111,6 @@ public:
 class object::key_equal
 {
 public:
-    BOOST_JSON_DECL
     bool
     operator()(
         string_view lhs,
@@ -128,13 +127,11 @@ class object::pointer
     reference t_;
 
 public:
-    BOOST_JSON_DECL
     pointer(reference t)
         : t_(t)
     {
     }
 
-    BOOST_JSON_DECL
     reference*
     operator->() noexcept
     {
@@ -149,14 +146,12 @@ class object::const_pointer
     const_reference t_;
 
 public:
-    BOOST_JSON_DECL
     const_pointer(
         const_reference t)
         : t_(t)
     {
     }
 
-    BOOST_JSON_DECL
     const_reference*
     operator->() noexcept
     {
@@ -365,49 +360,42 @@ public:
     node_type&
     operator=(node_type&& other) noexcept;
 
-    BOOST_JSON_DECL
     storage_ptr const&
     get_storage() const noexcept
     {
         return sp_;
     }
 
-    BOOST_JSON_DECL
     bool
     empty() const noexcept
     {
         return e_ == nullptr;
     }
 
-    BOOST_JSON_DECL
     explicit
     operator bool() const noexcept
     {
         return ! empty();
     }
 
-    BOOST_JSON_DECL
     key_type const
     key() const
     {
         return e_->key();
     }
 
-    BOOST_JSON_DECL
     mapped_type&
     mapped()
     {
         return e_->v;
     }
 
-    BOOST_JSON_DECL
     mapped_type const&
     mapped() const
     {
         return e_->v;
     }
 
-    BOOST_JSON_DECL
     void
     swap(node_type& other) noexcept
     {
@@ -416,11 +404,14 @@ public:
     }
 };
 
-BOOST_JSON_DECL
+inline
 void
 swap(
     object::node_type& lhs,
-    object::node_type& rhs) noexcept;
+    object::node_type& rhs) noexcept
+{
+    lhs.swap(rhs);
+}
 
 //----------------------------------------------------------
 

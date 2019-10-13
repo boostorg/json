@@ -339,14 +339,6 @@ operator=(node_type&& other) noexcept ->
     return *this;
 }
 
-void
-swap(
-    object::node_type& lhs,
-    object::node_type& rhs) noexcept
-{
-    lhs.swap(rhs);
-}
-
 //----------------------------------------------------------
 
 object::

@@ -44,25 +44,19 @@ public:
     parser();
 
     BOOST_JSON_DECL
-    parser(storage_ptr const& store);
+    parser(storage_ptr sp);
 
     /** Returns the maximum allowed depth of input JSON.
     */
     BOOST_JSON_DECL
     std::size_t
-    max_depth() const noexcept
-    {
-        return max_depth_;
-    }
+    max_depth() const noexcept;
 
     /** Set the maximum allowed depth of input JSON.
     */
     BOOST_JSON_DECL
     void
-    max_depth(unsigned long levels) noexcept
-    {
-        max_depth_ = levels;
-    }
+    max_depth(unsigned long levels) noexcept;
 
     BOOST_JSON_DECL
     value const&
@@ -150,7 +144,6 @@ private:
 } // json
 } // boost
 
-#include <boost/json/impl/parser.hpp>
 #ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/impl/parser.ipp>
 #endif
