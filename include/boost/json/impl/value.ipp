@@ -465,6 +465,7 @@ value(
         ::new(&obj_) object(
             init_iter{init.begin()},
             init_iter{init.end()},
+            init.size(),
             std::move(sp));
         kind_ = json::kind::object;
     }

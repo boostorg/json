@@ -22,7 +22,7 @@
 namespace boost {
 namespace json {
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------
 
 struct object::list_hook
 {
@@ -30,7 +30,7 @@ struct object::list_hook
     element* next;
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------
 
 struct object::element : list_hook
 {
@@ -39,14 +39,12 @@ struct object::element : list_hook
 
     BOOST_JSON_DECL
     string_view
-    key() const noexcept;
+    key() const;
 
     BOOST_JSON_DECL
-    static
     void
     destroy(
-        element const* e,
-        storage_ptr const& sp) noexcept;
+        storage_ptr const& sp) const;
 
     template<class Arg>
     element(
@@ -58,7 +56,7 @@ struct object::element : list_hook
     }
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------
 
 class object::undo_range
 {
@@ -83,10 +81,10 @@ public:
     void
     commit(
         const_iterator pos,
-        size_type min_buckets);
+        size_type count);
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------
 
 class object::hasher
 {
@@ -108,7 +106,7 @@ public:
     operator()(key_type key) const noexcept;
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------
 
 class object::key_equal
 {
@@ -123,7 +121,7 @@ public:
     }
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------
 
 class object::pointer
 {
@@ -144,7 +142,7 @@ public:
     }
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------
 
 class object::const_pointer
 {
@@ -166,7 +164,7 @@ public:
     }
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------
 
 class object::const_iterator
 {
@@ -251,7 +249,7 @@ public:
     }
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------
 
 class object::iterator
 {
@@ -333,7 +331,7 @@ public:
     }
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------
 
 class object::node_type
 {
@@ -424,7 +422,7 @@ swap(
     object::node_type& lhs,
     object::node_type& rhs) noexcept;
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------
 
 struct object::insert_return_type
 {
@@ -433,63 +431,22 @@ struct object::insert_return_type
     bool inserted;
 };
 
-//------------------------------------------------------------------------------
-
-template<class InputIt, class>
-object::
-object(
-    InputIt first,
-    InputIt last)
-    : object(
-        first,
-        last,
-        0,
-        default_storage())
-{
-}
+//----------------------------------------------------------
 
 template<class InputIt, class>
 object::
 object(
     InputIt first,
     InputIt last,
-    size_type bucket_count)
-    : object(
-        first,
-        last,
-        bucket_count,
-        default_storage())
-{
-}
-
-template<class InputIt, class>
-object::
-object(
-    InputIt first,
-    InputIt last,
-    storage_ptr sp)
-    : object(
-        first,
-        last,
-        0,
-        sp)
-{
-}
-
-template<class InputIt, class>
-object::
-object(
-    InputIt first,
-    InputIt last,
-    size_type bucket_count,
+    size_type count,
     storage_ptr sp)
     : sp_(std::move(sp))
 {
     insert_range(end(),
-        first, last, bucket_count);
+        first, last, count);
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------
 
 template<class P, class>
 auto
@@ -599,7 +556,7 @@ emplace(
     return { iterator(e), true };
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------
 
 // type-erased constructor to
 // reduce template instantiations.
@@ -651,12 +608,12 @@ insert_range(
     const_iterator pos,
     InputIt first,
     InputIt last,
-    size_type bucket_count)
+    size_type count)
 {
     undo_range u(*this);
     while(first != last)
         u.insert(allocate(*first++));
-    u.commit(pos, bucket_count);
+    u.commit(pos, count);
 }
 
 } // json

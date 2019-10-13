@@ -67,12 +67,12 @@ public:
     void
     check(
         object const& o,
-        std::size_t bucket_count)
+        std::size_t capacity)
     {
         BEAST_EXPECT(! o.empty());
         BEAST_EXPECT(o.size() == 3);
         BEAST_EXPECT(
-            o.bucket_count() == bucket_count);
+            o.capacity() == capacity);
         BEAST_EXPECT(o.at("a").as_number() == 1);
         BEAST_EXPECT(o.at("b").as_bool());
         BEAST_EXPECT(o.at("c").as_string() == "hello");
@@ -112,7 +112,7 @@ public:
             object o;
             BEAST_EXPECT(o.empty());
             BEAST_EXPECT(o.size() == 0);
-            BEAST_EXPECT(o.bucket_count() == 0);
+            BEAST_EXPECT(o.capacity() == 0);
         }
 
         // object(storage_ptr)
@@ -128,7 +128,7 @@ public:
             object o(50);
             BEAST_EXPECT(o.empty());
             BEAST_EXPECT(o.size() == 0);
-            BEAST_EXPECT(o.bucket_count() == 53);
+            BEAST_EXPECT(o.capacity() == 53);
         });
 
         // object(size_type, storage_ptr)
@@ -137,62 +137,49 @@ public:
             object o(50, sp);
             BEAST_EXPECT(o.empty());
             BEAST_EXPECT(o.size() == 0);
-            BEAST_EXPECT(o.bucket_count() == 53);
-            check_storage(o, sp);
-        });
-
-        // object(InputIt, InputIt)
-        //fail_loop([]
-        {
-            std::initializer_list<std::pair<
-                string_view, value>> init = {
-                    {"a", 1},
-                    {"b", true},
-                    {"c", "hello"}};
-            object o(init.begin(), init.end());
-            check(o, 3);
-        }//);
-
-        // object(InputIt, InputIt, size_type)
-        fail_loop([]
-        {
-            std::initializer_list<std::pair<
-                string_view, value>> init = {
-                    {"a", 1},
-                    {"b", true},
-                    {"c", "hello"}};
-            object o(init.begin(), init.end(), 5);
-            check(o, 7);
-        });
-
-        // object(InputIt, InputIt, storage_ptr)
-        fail_loop([](storage_ptr const& sp)
-        {
-            std::initializer_list<std::pair<
-                string_view, value>> init = {
-                    {"a", 1},
-                    {"b", true},
-                    {"c", "hello"}};
-            object o(init.begin(), init.end(), sp);
-            check(o, 3);
+            BEAST_EXPECT(o.capacity() == 53);
             check_storage(o, sp);
         });
 
         // object(InputIt, InputIt, size_type, storage_ptr)
-        fail_loop([](storage_ptr const& sp)
         {
-            std::initializer_list<std::pair<
-                string_view, value>> init = {
-                    {"a", 1},
-                    {"b", true},
-                    {"c", "hello"}};
-            object o(init.begin(), init.end(), 5, sp);
-            BEAST_EXPECT(! o.empty());
-            BEAST_EXPECT(o.size() == 3);
-            BEAST_EXPECT(o.bucket_count() == 7);
-            check(o, 7);
-            check_storage(o, sp);
-        });
+            fail_loop([]
+            {
+                std::initializer_list<std::pair<
+                    string_view, value>> init = {
+                        {"a", 1},
+                        {"b", true},
+                        {"c", "hello"}};
+                object o(init.begin(), init.end());
+                check(o, 3);
+            });
+
+            fail_loop([]
+            {
+                std::initializer_list<std::pair<
+                    string_view, value>> init = {
+                        {"a", 1},
+                        {"b", true},
+                        {"c", "hello"}};
+                object o(init.begin(), init.end(), 5);
+                check(o, 7);
+            });
+
+            fail_loop([](storage_ptr const& sp)
+            {
+                std::initializer_list<std::pair<
+                    string_view, value>> init = {
+                        {"a", 1},
+                        {"b", true},
+                        {"c", "hello"}};
+                object o(init.begin(), init.end(), 5, sp);
+                BEAST_EXPECT(! o.empty());
+                BEAST_EXPECT(o.size() == 3);
+                BEAST_EXPECT(o.capacity() == 7);
+                check(o, 7);
+                check_storage(o, sp);
+            });
+        }
 
         // object(object&&)
         {
@@ -1024,35 +1011,7 @@ public:
     void
     testBuckets()
     {
-        object o;
-        o.max_load_factor(1000);
-        for(std::size_t i = 0;; ++i)
-        {
-            o.emplace(std::to_string(i), i);
-            if(o.bucket_size(0) >= 3)
-                break;
-        }
-
-        // bucket_count()
-        // bucket_size()
-        {
-            std::size_t n = 0;
-            for(std::size_t i = 0;
-                i < o.bucket_count(); ++i)
-                n += o.bucket_size(i);
-            BEAST_EXPECT(n == o.size());
-        }
-
-        // max_bucket_count()
-        {
-            BEAST_EXPECT(
-                o.max_bucket_count() >=
-                o.bucket_count());
-        }
-
-        // bucket(key_type)
-        {
-        }
+        // TODO
     }
 
     void
@@ -1062,40 +1021,16 @@ public:
         for(std::size_t i = 0; i < 1000; ++i)
             o.emplace(std::to_string(i), i);
 
-        // load_factor()
-        {
-            BEAST_EXPECT(
-                o.load_factor() <=
-                o.max_load_factor());
-        }
-
         // max_load_factor()
         {
             BEAST_EXPECT(
                 o.max_load_factor() == 1);
         }
 
-        // max_load_factor(float)
-        {
-            auto const lf =
-                o.load_factor();
-            o.max_load_factor(lf/2);
-            BEAST_EXPECT(
-                o.load_factor() < lf);
-        }
-
-        // rehash(size_type)
-        {
-            o.clear();
-            o.rehash(100);
-            BEAST_EXPECT(
-                o.bucket_count() >= 100);
-        }
-
         // reserve(size_type)
         {
             o.reserve(200);
-            BEAST_EXPECT(o.bucket_count() >=
+            BEAST_EXPECT(o.capacity() >=
                 std::ceil(200 / o.max_load_factor()));
         }
     }
@@ -1280,9 +1215,9 @@ public:
                 {"a", 1},
                 {"b", true},
                 {"c", "hello"}});
-            BEAST_EXPECT(o.bucket_count() == 3);
+            BEAST_EXPECT(o.capacity() == 3);
             o.insert(o.begin(), {"d", {1,2,3}});
-            BEAST_EXPECT(o.bucket_count() > 3);
+            BEAST_EXPECT(o.capacity() > 3);
         }
 
         // insert before first element of non-empty container

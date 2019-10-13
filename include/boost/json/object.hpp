@@ -24,7 +24,7 @@ namespace json {
 
 class value;
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------
 
 /** An associative container of key to JSON value pairs
 
@@ -168,11 +168,8 @@ private:
     struct table;
     class undo_range;
 
-    static constexpr float load_factor_ = 1.f;
-
     storage_ptr sp_;
     table* tab_ = nullptr;
-    float mf_ = 1.0;
 
     template<class T>
     using is_inputit = typename std::enable_if<
@@ -181,7 +178,7 @@ private:
             const_reference>::value>::type;
 
 public:
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
 
     /** Destroy the container
 
@@ -196,12 +193,12 @@ public:
     BOOST_JSON_DECL
     ~object();
 
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
 
     /** Construct an empty container
 
         The container and all inserted elements will use the
-        default storage.
+        @ref storage returned by @ref default_storage().
 
         @par Complexity
 
@@ -217,18 +214,19 @@ public:
     /** Construct an empty container
 
         The container and all inserted elements will use the
-        storage pointed to by `sp`.
+        @ref storage owned by `sp`.
 
         @par Complexity
 
         Constant.
 
-        @param sp A pointer to the @ref storage to use.
-        The container will acquire shared ownership of the pointer.
-
         @par Exception Safety
 
         No-throw guarantee.
+
+        @param sp A pointer to the @ref storage
+        to use. The container will acquire shared
+        ownership of the storage object.
     */
     BOOST_JSON_DECL
     explicit
@@ -237,52 +235,33 @@ public:
 
     /** Construct an empty container
 
-        Storage is allocated for at least `bucket_count`
-        buckets.
+        Storage for indexing the elements by hash is
+        allocated for at least `count` elements.
         The container and all inserted elements will use the
-        default storage.
+        @ref storage owned by `sp`,
+        or the default parameter value returned by
+        @ref default_storage() if this argument is omitted.
 
         @par Complexity
 
         Constant.
 
-        @param bucket_count The number of buckets to allocate.
-
         @par Exception Safety
 
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
-    */
-    BOOST_JSON_DECL
-    explicit
-    object(
-        size_type bucket_count);
 
-    /** Construct an empty container
+        @param count The minimum number of elements for
+        which space in the index is reserved.
 
-        Storage is allocated for at least `bucket_count`
-        buckets.
-        The container and all inserted elements will use the
-        storage pointed to by `sp`.
-
-        @par Complexity
-
-        Constant.
-
-        @param bucket_count The number of buckets to allocate.
-
-        @param sp A pointer to the @ref storage to use. The
-        container will acquire shared ownership of the pointer.
-
-        @par Exception Safety
-
-        Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        @param sp A pointer to the @ref storage
+        to use. The container will acquire shared
+        ownership of the storage object.
     */
     BOOST_JSON_DECL
     object(
-        size_type bucket_count,
-        storage_ptr sp);
+        size_type count,
+        storage_ptr sp = default_storage());
 
     /** Construct with the contents of a range
 
@@ -291,8 +270,14 @@ public:
         If multiple elements in the range have keys that
         compare equivalent, only the first occurring key
         will be inserted.
+        Storage for indexing the elements by hash is
+        allocated for at least `count` elements, or an
+        implementation defined amount if this argument
+        is omitted.
         The container and all inserted elements will use the
-        default storage.
+        @ref storage owned by `sp`,
+        or the default parameter value returned by
+        @ref default_storage() if this argument is omitted.
 
         @par Constraints
 
@@ -313,52 +298,12 @@ public:
         @param last An input iterator pointing to the end
         of the range.
 
-        @tparam InputIt a type meeting the requirements of
-        __InputIterator__.
-    */
-    template<
-        class InputIt
-    #ifndef GENERATING_DOCUMENTATION
-        ,class = is_inputit<InputIt>
-    #endif
-    >
-    object(
-        InputIt first,
-        InputIt last);
+        @param count The minimum number of elements for
+        which space in the index is reserved.
 
-    /** Construct with the contents of a range
-
-        The elements in the range `[first, last)` are
-        inserted in order.
-        If multiple elements in the range have keys that
-        compare equivalent, only the first occurring key
-        will be inserted.
-        Storage is allocated for at least `bucket_count`
-        buckets.
-        The container and all inserted elements will use the
-        default storage.
-
-        @par Constraints
-
-        `std::is_constructible_v<const_reference, std::iterator_traits<InputIt>::value_type>`
-
-        @par Complexity
-
-        Linear in `std::distance(first, last)`
-
-        @par Exception Safety
-
-        Strong guarantee.
-        Calls to @ref storage::allocate may throw.
-
-        @param first An input iterator pointing to the first
-        element to insert, or pointing to the end of the range.
-
-        @param last An input iterator pointing to the end
-        of the range.
-
-        @param bucket_count A lower limit on the number of
-        buckets to allocate.
+        @param sp A pointer to the @ref storage
+        to use. The container will acquire shared
+        ownership of the storage object.
 
         @tparam InputIt a type meeting the requirements of
         __InputIterator__.
@@ -372,105 +317,8 @@ public:
     object(
         InputIt first,
         InputIt last,
-        size_type bucket_count);
-
-    /** Construct with the contents of a range
-
-        The elements in the range `[first, last)` are
-        inserted in order.
-        If multiple elements in the range have keys that
-        compare equivalent, only the first occurring key
-        will be inserted.
-        The container and all inserted elements will use the
-        storage pointed to by `sp`.
-
-        @par Constraints
-
-        `std::is_constructible_v<const_reference, std::iterator_traits<InputIt>::value_type>`
-
-        @par Complexity
-
-        Linear in `std::distance(first, last)`
-
-        @par Exception Safety
-
-        Strong guarantee.
-        Calls to @ref storage::allocate may throw.
-
-        @param first An input iterator pointing to the first
-        element to insert, or pointing to the end of the range.
-
-        @param last An input iterator pointing to the end
-        of the range.
-
-        @param sp A pointer to the @ref storage to use. The
-        container  will acquire shared ownership of the pointer.
-
-        @tparam InputIt a type meeting the requirements of
-        __InputIterator__.
-    */
-    template<
-        class InputIt
-    #ifndef GENERATING_DOCUMENTATION
-        ,class = is_inputit<InputIt>
-    #endif
-    >
-    object(
-        InputIt first,
-        InputIt last,
-        storage_ptr sp);
-
-    /** Construct with the contents of a range
-
-        The elements in the range `[first, last)` are
-        inserted in order.
-        If multiple elements in the range have keys that
-        compare equivalent, only the first occurring key
-        will be inserted.
-        Storage is allocated for at least `bucket_count`
-        buckets.
-        The container and all inserted elements will use the
-        storage pointed to by `sp`.
-
-        @par Constraints
-
-        `std::is_constructible_v<const_reference, std::iterator_traits<InputIt>::value_type>`
-
-        @par Complexity
-
-        Linear in `std::distance(first, last)`
-
-        @par Exception Safety
-
-        Strong guarantee.
-        Calls to @ref storage::allocate may throw.
-
-        @param first An input iterator pointing to the first
-        element to insert, or pointing to the end of the range.
-
-        @param last An input iterator pointing to the end
-        of the range.
-
-        @param bucket_count A lower limit on the number of
-        buckets to allocate.
-
-        @param sp A pointer to the @ref storage to use. The
-        container will acquire shared ownership of the pointer.
-
-        @tparam InputIt a type meeting the requirements of
-        __InputIterator__.
-    */
-    template<
-        class InputIt
-    #ifndef GENERATING_DOCUMENTATION
-        ,class = is_inputit<InputIt>
-    #endif
-    >
-    object(
-        InputIt first,
-        InputIt last,
-        size_type bucket_count,
-        storage_ptr sp);
+        size_type count = 0,
+        storage_ptr sp = default_storage());
 
     /** Move constructor
 
@@ -611,34 +459,17 @@ public:
     object(
         object const& other,
         storage_ptr sp);
-
+       
     /** Construct the container with an initializer list
 
+        Storage for indexing the elements by hash is
+        allocated for at least `count` elements, or an
+        implementation defined amount if this argument
+        is omitted.
         The container and all inserted elements will use the
-        default storage.
-
-        @par Complexity
-
-        Linear in `init.size()`.
-
-        @par Exception Safety
-
-        Strong guarantee.
-        Calls to @ref storage::allocate may throw.
-
-        @param init The initializer list to insert
-    */
-    BOOST_JSON_DECL
-    object(
-        std::initializer_list<
-            init_value> init);
-
-    /** Construct the container with an initializer list
-
-        Storage is allocated for at least `bucket_count`
-        buckets.
-        The container and all inserted elements will use the
-        default storage.
+        @ref storage owned by `sp`,
+        or the default parameter value returned by
+        @ref default_storage() if this argument is omitted.
 
         @par Complexity
 
@@ -651,70 +482,19 @@ public:
 
         @param init The initializer list to insert
 
-        @param bucket_count A lower limit on the number of
-        buckets to allocate.
+        @param count The minimum number of elements for
+        which space in the index is reserved.
+
+        @param sp A pointer to the @ref storage
+        to use. The container will acquire shared
+        ownership of the storage object.
     */
     BOOST_JSON_DECL
     object(
         std::initializer_list<
             init_value> init,
-        size_type bucket_count);
-
-    /** Construct the container with an initializer list
-
-        The container and all inserted elements will use the
-        @ref storage pointed to by `sp`.
-
-        @par Complexity
-
-        Linear in `init.size()`.
-
-        @par Exception Safety
-
-        Strong guarantee.
-        Calls to @ref storage::allocate may throw.
-
-        @param init The initializer list to insert
-
-        @param sp A pointer to the @ref storage to use. The
-        container will acquire shared ownership of the pointer.
-    */
-    BOOST_JSON_DECL
-    object(
-        std::initializer_list<
-            init_value> init,
-        storage_ptr sp);
-        
-    /** Construct the container with an initializer list
-
-        Storage is allocated for at least `bucket_count`
-        buckets.
-        The container and all inserted elements will use the
-        @ref storage pointed to by `sp`.
-
-        @par Complexity
-
-        Linear in `init.size()`.
-
-        @par Exception Safety
-
-        Strong guarantee.
-        Calls to @ref storage::allocate may throw.
-
-        @param init The initializer list to insert
-
-        @param bucket_count A lower limit on the number of
-        buckets to allocate.
-
-        @param sp A pointer to the @ref storage to use. The
-        container will acquire shared ownership of the pointer.
-    */
-    BOOST_JSON_DECL
-    object(
-        std::initializer_list<
-            init_value> init,
-        size_type bucket_count,
-        storage_ptr sp);
+        size_type count = 0,
+        storage_ptr sp = default_storage());
 
     /** Move assignment operator
 
@@ -800,11 +580,11 @@ public:
     storage_ptr const&
     get_storage() const noexcept;
 
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
     //
     // Iterators
     //
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
 
     /** Return an iterator to the first element
 
@@ -973,11 +753,11 @@ public:
     crend() const noexcept;
 #endif
 
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
     //
     // Capacity
     //
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
 
     /** Check if the container has no elements
 
@@ -1019,11 +799,74 @@ public:
     size_type
     max_size() const noexcept;
 
-    //--------------------------------------------------------------------------
+    /** Returns the current maximum load factor
+
+        The container automatically increases the number
+        of buckets if the load factor exceeds this threshold.
+        
+        @par Complexity
+
+        Constant
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
+    BOOST_JSON_DECL
+    float
+    max_load_factor() const noexcept
+    {
+        return 1.f;
+    }
+
+    /** Returns the maximum number of elements the container can support before rehashing.
+
+        This returns the number of elements which may exist in
+        the container, after which the container will require a
+        rehash. It effectively returns `size() / max_load_factor()`.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
+    BOOST_JSON_DECL
+    size_type
+    capacity() const noexcept;
+
+    /** Reserve space for at least the specified number of elements.
+
+        Sets the number of buckets to the number needed to
+        accomodate at least `n` elements without exceeding
+        the maximum load factor, and rehashes the container;
+        i.e. puts the elements into appropriate buckets
+        considering that total number of buckets has
+        changed.
+
+        @par Complexity
+
+        Average case linear in the size of the container,
+        worst case quadratic.
+
+        @par Exception Safety
+
+        Strong guarantee.
+        Calls to @ref storage::allocate may throw.
+
+        @param n The new minimum capacity of the container
+    */
+    BOOST_JSON_DECL
+    void
+    reserve(size_type n);
+
+    //------------------------------------------------------
     //
     // Modifiers
     //
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
 
     /** Clear the contents
 
@@ -1286,14 +1129,15 @@ public:
         container. assigns `std::forward<M>(obj)` to the
         `mapped type` corresponding to the key. Otherwise,
         inserts the new value at the end as if by insert,
-        constructing it from `value_type(key, std::forward<M>(obj))`.
+        constructing it from
+        `value_type(key, std::forward<M>(obj))`.
 
-        If the insertion occurs and results in a rehashing of
-        the container, all iterators are invalidated.
+        If the insertion occurs and results in a rehashing
+        of the container, all iterators are invalidated.
         Otherwise, iterators are not affected.
         References are not invalidated.
-        Rehashing occurs only if the new number of elements is
-        greater than `max_load_factor()*bucket_count()`.
+        Rehashing occurs only if the new number of elements
+        is greater than @ref capacity().
 
         @par Complexity
 
@@ -1327,12 +1171,12 @@ public:
         by `pos` as if by insert, constructing it from
         `value_type(key, std::forward<M>(obj))`.
 
-        If the insertion occurs and results in a rehashing of
-        the container, all iterators are invalidated.
+        If the insertion occurs and results in a rehashing
+        of the container, all iterators are invalidated.
         Otherwise, iterators are not affected.
         References are not invalidated.
-        Rehashing occurs only if the new number of elements is
-        greater than `max_load_factor()*bucket_count()`.
+        Rehashing occurs only if the new number of elements
+        is greater than @ref capacity().
 
         @par Complexity
 
@@ -1365,9 +1209,17 @@ public:
     /** Construct an element in place
 
         Inserts a new element into the container constructed
-        in-place with the given argument if there is no element
-        with the key in the container.
-        The element is inserted after all the existing elements.
+        in-place with the given argument if there is no
+        element with the key in the container.
+        The element is inserted after all the existing
+        elements.
+
+        If the insertion occurs and results in a rehashing
+        of the container, all iterators are invalidated.
+        Otherwise, iterators are not affected.
+        References are not invalidated.
+        Rehashing occurs only if the new number of elements
+        is greater than @ref capacity().
 
         @par Complexity
 
@@ -1396,13 +1248,21 @@ public:
     /** Construct an element in place
 
         Inserts a new element into the container constructed
-        in-place with the given argument if there is no element
-        with the key in the container.
+        in-place with the given argument if there is no
+        element with the key in the container.
         The element is inserted before `pos`.
+
+        If the insertion occurs and results in a rehashing
+        of the container, all iterators are invalidated.
+        Otherwise, iterators are not affected.
+        References are not invalidated.
+        Rehashing occurs only if the new number of elements
+        is greater than @ref capacity().
 
         @par Complexity
 
-        Amortized constant on average, worst case linear in @ref size().
+        Amortized constant on average, worst case linear
+        in @ref size().
 
         @par Exception Safety
 
@@ -1584,11 +1444,11 @@ public:
     merge(object&& source);
 #endif
 
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
     //
     // Lookup
     //
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
 
     /** Access the specified element, with bounds checking.
 
@@ -1635,7 +1495,7 @@ public:
         iterators are not affected. References are not
         invalidated. Rehashing occurs only if the new
         number of elements is greater than
-        `max_load_factor()*bucket_count()`.
+        @ref capacity().
 
         @par Complexity
 
@@ -1730,217 +1590,11 @@ public:
     bool
     contains(key_type key) const noexcept;
 
-    //--------------------------------------------------------------------------
-    //
-    // Bucket Interface
-    //
-    //--------------------------------------------------------------------------
-
-    /** Returns the number of buckets in the container.
-
-        This returns the number of buckets, which may be
-        zero if the container is empty.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    BOOST_JSON_DECL
-    size_type
-    bucket_count() const noexcept;
-
-    /** Returns the maximum number of buckets in the container.
-
-        The value returned is dependent on system or
-        library implementation limitations.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    BOOST_JSON_DECL
-    size_type
-    max_bucket_count() const noexcept;
-
-    /** Returns the number of elements in a bucket.
-
-        This returns the number of elements in the
-        bucket with index `n`.
-
-        @par Expects
-
-        `n` is in the range `[0, bucket_count())`.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-
-        @param n The zero-based index of the bucket to access.
-    */
-    BOOST_JSON_DECL
-    size_type
-    bucket_size(size_type n) const;
-
-    /** Returns the index of the bucket corresponding to a key
-
-        This returns the zero based index of the bucket for
-        a matching key. The returned value is valid only for
-        instances of the container for which @ref bucket_count()
-        returns the same value.
-
-        @par Expects
-
-        `n` is in the range `[0, bucket_count())`.
-
-        @par Complexity
-
-        Constant
-
-        @param key The value of the key to examine
-    */
-    BOOST_JSON_DECL
-    size_type
-    bucket(key_type key) const;
-
-    //--------------------------------------------------------------------------
-    //
-    // Hash Policy
-    //
-    //--------------------------------------------------------------------------
-
-    /** Returns the average number of elements per bucket
-
-        This effectively computes @ref size() divided by @ref bucket_count().
-
-        @par Complexity
-
-        Constant
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    BOOST_JSON_DECL
-    float
-    load_factor() const noexcept;
-
-    /** Returns the current maximum load factor
-
-        The container automatically increases the number
-        of buckets if the load factor exceeds this threshold.
-        
-        @par Complexity
-
-        Constant
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    BOOST_JSON_DECL
-    float
-    max_load_factor() const noexcept
-    {
-        return mf_;
-    }
-
-    /** Set the maximum average number of elements per bucket
-
-        The container automatically increases the number
-        of buckets if the load factor exceeds this threshold.
-
-        @par Complexity
-
-        Average case linear in the size of the container,
-        worst case quadratic.
-
-        @par Exception Safety
-
-        Strong guarantee.
-        Calls to @ref storage::allocate may throw.
-
-        @param ml The new maximum load factor
-    */
-    BOOST_JSON_DECL
-    void
-    max_load_factor(float ml);
-
-    /** Reserves at least the specified number of buckets.
-
-        Sets the number of buckets to `count` and rehashes
-        the container, i.e. puts the elements into appropriate
-        buckets considering that total number of buckets has
-        changed. If the new number of buckets makes load
-        factor more than maximum load factor
-        `(count < size() / max_load_factor())`, then the new
-        number of buckets is at least
-        `size() / max_load_factor()`.
-
-        @note
-
-        `rehash(0)` may be used to force an unconditional
-        rehash, such as after suspension of automatic
-        rehashing by temporarily increasing @ref max_load_factor().
-
-        @par Complexity
-
-        Average case linear in the size of the container,
-        worst case quadratic.
-
-        @par Exception Safety
-
-        Strong guarantee.
-        Calls to @ref storage::allocate may throw.
-
-        @param bucket_count The minimum number of buckets.
-    */
-    BOOST_JSON_DECL
-    void
-    rehash(size_type bucket_count);
-
-    /** Reserve space for at least the specified number of elements.
-
-        Sets the number of buckets to the number needed to
-        accomodate at least `count` elements without exceeding
-        the maximum load factor, and rehashes the container;
-        i.e. puts the elements into appropriate buckets
-        considering that total number of buckets has
-        changed. Effectively calls
-        `rehash(std::ceil(count / max_load_factor()))`.
-
-        @par Complexity
-
-        Average case linear in the size of the container,
-        worst case quadratic.
-
-        @par Exception Safety
-
-        Strong guarantee.
-        Calls to @ref storage::allocate may throw.
-
-        @param n The new minimum capacity of the container
-    */
-    BOOST_JSON_DECL
-    void
-    reserve(size_type n);
-
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
     //
     // Observers
     //
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
 
     /** Returns the function used to hash the keys
 
@@ -1991,6 +1645,39 @@ public:
 private:
     struct construct_base;
 
+    inline
+    static
+    size_type
+    constrain_hash(
+        std::size_t hash,
+        size_type bucket_count) noexcept;
+
+    inline
+    size_type
+    bucket(key_type key) const;
+
+    inline
+    void
+    rehash(size_type bucket_count);
+
+    inline
+    void
+    remove(element* e);
+
+    template<class Arg>
+    element*
+    allocate(
+        key_type key,
+        Arg&& arg);
+
+    template<class InputIt>
+    void
+    insert_range(
+        const_iterator pos,
+        InputIt first,
+        InputIt last,
+        size_type size_hint);
+
     BOOST_JSON_DECL
     element*
     allocate_impl(
@@ -2001,19 +1688,6 @@ private:
     element*
     allocate(std::pair<
         string_view, value const&> const& p);
-
-    template<class Arg>
-    element*
-    allocate(
-        key_type key,
-        Arg&& arg);
-
-    BOOST_JSON_DECL
-    static
-    size_type
-    constrain_hash(
-        std::size_t hash,
-        size_type bucket_count) noexcept;
 
     BOOST_JSON_DECL
     auto
@@ -2026,18 +1700,6 @@ private:
         const_iterator pos,
         std::size_t hash,
         element* e);
-
-    template<class InputIt>
-    void
-    insert_range(
-        const_iterator pos,
-        InputIt first,
-        InputIt last,
-        size_type size_hint);
-
-    BOOST_JSON_DECL
-    void
-    remove(element* e);
 };
 
 BOOST_JSON_DECL
