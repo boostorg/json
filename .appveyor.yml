@@ -49,12 +49,36 @@ environment:
     B2_VARIANT: variant=release
 
   matrix:
+    - FLAVOR: mingw32
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      ARCH: i686
+      B2_ADDRESS_MODEL: address-model=32
+      B2_CXXSTD: 11
+      SCRIPT: ci\appveyor\mingw.bat
+      B2_VARIANT: variant=debug
+
+    - FLAVOR: cygwin (64-bit)
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      ADDPATH: C:\cygwin64\bin;
+      B2_ADDRESS_MODEL: address-model=64
+      B2_CXXSTD: 11,17
+      # https://github.com/boostorg/test/issues/144
+      B2_DEFINES: define=_POSIX_C_SOURCE=200112L define=__USE_ISOC99
+      B2_THREADING: threadapi=pthread
+      B2_TOOLSET: gcc
+
     - FLAVOR: Visual Studio 2019
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       B2_ADDRESS_MODEL: address-model=64
       B2_CXXFLAGS: cxxflags=-permissive-
       B2_CXXSTD: latest # 2a
       B2_TOOLSET: msvc-14.2
+
+    - FLAVOR: Visual Studio 2015 C++14 (Default)
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      B2_ADDRESS_MODEL: address-model=64,32
+      B2_TOOLSET: msvc-14.0
+      B2_VARIANT: variant=debug
 
     - FLAVOR: Visual Studio 2017 C++2a Strict
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
@@ -81,43 +105,15 @@ environment:
       B2_CXXSTD: 11
       B2_TOOLSET: clang-win
 
-    - FLAVOR: Visual Studio 2015 C++14 (Default)
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-      B2_ADDRESS_MODEL: address-model=64,32
-      B2_TOOLSET: msvc-14.0
-      B2_VARIANT: variant=debug
-
-    - FLAVOR: Visual Studio 2010, 2012, 2013
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-      B2_TOOLSET: msvc-10.0,msvc-11.0,msvc-12.0
-
     - FLAVOR: cygwin (32-bit)
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       ADDPATH: C:\cygwin\bin;
       B2_ADDRESS_MODEL: address-model=32
-      B2_CXXSTD: 03,11
+      B2_CXXSTD: 11
       # https://github.com/boostorg/test/issues/144
       B2_DEFINES: define=_POSIX_C_SOURCE=200112L
       B2_THREADING: threadapi=pthread
       B2_TOOLSET: gcc
-      B2_VARIANT: variant=debug
-
-    - FLAVOR: cygwin (64-bit)
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-      ADDPATH: C:\cygwin64\bin;
-      B2_ADDRESS_MODEL: address-model=64
-      B2_CXXSTD: 11,17
-      # https://github.com/boostorg/test/issues/144
-      B2_DEFINES: define=_POSIX_C_SOURCE=200112L define=__USE_ISOC99
-      B2_THREADING: threadapi=pthread
-      B2_TOOLSET: gcc
-
-    - FLAVOR: mingw32
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-      ARCH: i686
-      B2_ADDRESS_MODEL: address-model=32
-      B2_CXXSTD: 03,11
-      SCRIPT: ci\appveyor\mingw.bat
       B2_VARIANT: variant=debug
 
     - FLAVOR: mingw64

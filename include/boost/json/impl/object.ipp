@@ -935,126 +935,6 @@ key_eq() const noexcept ->
 //
 //----------------------------------------------------------
 
-namespace detail {
-
-struct primes
-{
-    using value_type = std::size_t;
-    using iterator = std::size_t const*;
-
-    std::size_t const* begin_;
-    std::size_t const* end_;
-
-    iterator
-    begin() const noexcept
-    {
-        return begin_;
-    }
-
-    iterator
-    end() const noexcept
-    {
-        return end_;
-    }
-};
-
-// Taken from Boost.Intrusive and Boost.MultiIndex code,
-// thanks to Ion Gaztanaga and Joaquin M Lopez Munoz.
-
-template<class = void>
-primes
-get_primes(std::false_type) noexcept
-{
-    static std::size_t constexpr list[] = {
-        0UL,
-
-        3UL,                     7UL,
-        11UL,                    17UL,
-        29UL,                    53UL,
-        97UL,                    193UL,
-        389UL,                   769UL,
-        1543UL,                  3079UL,
-        6151UL,                  12289UL,
-        24593UL,                 49157UL,
-        98317UL,                 196613UL,
-        393241UL,                786433UL,
-        1572869UL,               3145739UL,
-        6291469UL,               12582917UL,
-        25165843UL,              50331653UL,
-        100663319UL,             201326611UL,
-        402653189UL,             805306457UL,
-        1610612741UL,            3221225473UL,
-
-        4294967291UL,            4294967295UL
-    };
-    return {
-        &list[0],
-        &list[std::extent<
-            decltype(list)>::value] };
-}
-
-template<class = void>
-primes
-get_primes(std::true_type) noexcept
-{
-    static std::size_t constexpr list[] = {
-        0ULL,
-
-        3ULL,                     7ULL,
-        11ULL,                    17ULL,
-        29ULL,                    53ULL,
-        97ULL,                    193ULL,
-        389ULL,                   769ULL,
-        1543ULL,                  3079ULL,
-        6151ULL,                  12289ULL,
-        24593ULL,                 49157ULL,
-        98317ULL,                 196613ULL,
-        393241ULL,                786433ULL,
-        1572869ULL,               3145739ULL,
-        6291469ULL,               12582917ULL,
-        25165843ULL,              50331653ULL,
-        100663319ULL,             201326611ULL,
-        402653189ULL,             805306457ULL,
-        1610612741ULL,            3221225473ULL,
-
-        6442450939ULL,            12884901893ULL,
-        25769803751ULL,           51539607551ULL,
-        103079215111ULL,          206158430209ULL,
-        412316860441ULL,          824633720831ULL,
-        1649267441651ULL,         3298534883309ULL,
-        6597069766657ULL,         13194139533299ULL,
-        26388279066623ULL,        52776558133303ULL,
-        105553116266489ULL,       211106232532969ULL,
-        422212465066001ULL,       844424930131963ULL,
-        1688849860263953ULL,      3377699720527861ULL,
-        6755399441055731ULL,      13510798882111483ULL,
-        27021597764222939ULL,     54043195528445957ULL,
-        108086391056891903ULL,    216172782113783843ULL,
-        432345564227567621ULL,    864691128455135207ULL,
-        1729382256910270481ULL,   3458764513820540933ULL,
-        6917529027641081903ULL,   13835058055282163729ULL,
-        18446744073709551557ULL,  18446744073709551615ULL
-    };
-    return {
-        &list[0],
-        &list[std::extent<
-            decltype(list)>::value] };
-}
-
-BOOST_JSON_DECL
-primes
-get_primes() noexcept
-{
-    return get_primes(
-        std::integral_constant<bool,
-            sizeof(std::size_t) >=
-                sizeof(unsigned long long)>{});
-}
-
-} // detail
-
-//----------------------------------------------------------
-
 auto
 object::
 constrain_hash(
@@ -1081,23 +961,69 @@ void
 object::
 rehash(size_type n)
 {
+    auto const next_prime =
+    [](size_type n)
+    {
+        // Taken from Boost.Intrusive and Boost.MultiIndex code,
+        // thanks to Ion Gaztanaga and Joaquin M Lopez Munoz.
+        static unsigned long long constexpr list[] = {
+            0ULL,
+
+            3ULL,                     7ULL,
+            11ULL,                    17ULL,
+            29ULL,                    53ULL,
+            97ULL,                    193ULL,
+            389ULL,                   769ULL,
+            1543ULL,                  3079ULL,
+            6151ULL,                  12289ULL,
+            24593ULL,                 49157ULL,
+            98317ULL,                 196613ULL,
+            393241ULL,                786433ULL,
+            1572869ULL,               3145739ULL,
+            6291469ULL,               12582917ULL,
+            25165843ULL,              50331653ULL,
+            100663319ULL,             201326611ULL,
+            402653189ULL,             805306457ULL,
+            1610612741ULL,            3221225473ULL,
+
+            6442450939ULL,            12884901893ULL,
+            25769803751ULL,           51539607551ULL,
+            103079215111ULL,          206158430209ULL,
+            412316860441ULL,          824633720831ULL,
+            1649267441651ULL,         3298534883309ULL,
+            6597069766657ULL,         13194139533299ULL,
+            26388279066623ULL,        52776558133303ULL,
+            105553116266489ULL,       211106232532969ULL,
+            422212465066001ULL,       844424930131963ULL,
+            1688849860263953ULL,      3377699720527861ULL,
+            6755399441055731ULL,      13510798882111483ULL,
+            27021597764222939ULL,     54043195528445957ULL,
+            108086391056891903ULL,    216172782113783843ULL,
+            432345564227567621ULL,    864691128455135207ULL,
+            1729382256910270481ULL,   3458764513820540933ULL,
+            6917529027641081903ULL,   13835058055282163729ULL,
+            18446744073709551557ULL,  18446744073709551615ULL
+        };
+        return static_cast<size_type>(
+            *std::lower_bound(
+                &list[0],
+                &list[std::extent<
+                    decltype(list)>::value],
+                (unsigned long long)n));
+    };
+
     // snap to nearest prime 
-    auto const primes =
-        detail::get_primes();
-    n = *std::lower_bound(
-        primes.begin(), primes.end(), n);
+    n = next_prime(n);
     auto const bc = tab_ ?
         tab_->bucket_count : 0;
     if(n == bc)
         return;
     if(n < bc)
     {
-        n = (std::max<size_type>)(
-            n, *std::lower_bound(
-            primes.begin(), primes.end(),
-            static_cast<size_type>(
-                std::ceil(size() /
-                max_load_factor()))));
+        n = next_prime(static_cast<
+            size_type>(std::ceil(size() /
+                max_load_factor())));
+
         if(n <= bc)
             return;
     }
