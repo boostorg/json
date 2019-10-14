@@ -69,12 +69,12 @@ stages:
           PACKAGES: g++-5
         GCC 4.9:
           B2_TOOLSET: gcc
-          B2_CXXSTD: 03,11
+          B2_CXXSTD: 11
           CXX: g++-4.9
           PACKAGES: g++-4.9
         GCC 4.8:
           B2_TOOLSET: gcc
-          B2_CXXSTD: 03,11
+          B2_CXXSTD: 11
           CXX: g++-4.8
           PACKAGES: g++-4.8
         Clang 8:
@@ -109,27 +109,27 @@ stages:
           LLVM_REPO: llvm-toolchain-xenial-4.0
         Clang 3.9:
           B2_TOOLSET: clang
-          B2_CXXSTD: 03,11,14
+          B2_CXXSTD: 11,14
           CXX: clang++-3.9
           PACKAGES: clang-3.9
         Clang 3.8:
           B2_TOOLSET: clang
           CXX: clang++-3.8
-          B2_CXXSTD: 03,11,14
+          B2_CXXSTD: 11,14
           PACKAGES: clang-3.8
         Clang 3.7:
           B2_TOOLSET: clang
-          B2_CXXSTD: 03,11
+          B2_CXXSTD: 11
           CXX: clang++-3.7
           PACKAGES: clang-3.7
         Clang 3.6:
           B2_TOOLSET: clang
-          B2_CXXSTD: 03,11
+          B2_CXXSTD: 11
           CXX: clang++-3.6
           PACKAGES: clang-3.6
         Clang 3.5:
           B2_TOOLSET: clang
-          B2_CXXSTD: 03,11
+          B2_CXXSTD: 11
           CXX: clang++-3.5
           PACKAGES: clang-3.5
     steps:
@@ -258,19 +258,19 @@ stages:
           XCODE_APP: /Applications/Xcode_9.2.app
         Xcode 9.1:
           B2_TOOLSET: clang
-          B2_CXXSTD: 03,11
+          B2_CXXSTD: 11
           XCODE_APP: /Applications/Xcode_9.1.app
         Xcode 9.0.1:
           B2_TOOLSET: clang
-          B2_CXXSTD: 03,11
+          B2_CXXSTD: 11
           XCODE_APP: /Applications/Xcode_9.0.1.app
         Xcode 9.0:
           B2_TOOLSET: clang
-          B2_CXXSTD: 03,11
+          B2_CXXSTD: 11
           XCODE_APP: /Applications/Xcode_9.app
         Xcode 8.3.3:
           B2_TOOLSET: clang
-          B2_CXXSTD: 03,11
+          B2_CXXSTD: 11
           XCODE_APP: /Applications/Xcode_8.3.3.app
     steps:
     - bash: |
