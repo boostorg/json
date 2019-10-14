@@ -12,6 +12,8 @@
 
 #include <boost/beast/_experimental/unit_test/suite.hpp>
 
+#include "parse-vectors.hpp"
+
 namespace boost {
 namespace json {
 
@@ -269,7 +271,46 @@ public:
         bad ("n");
     }
 
-    void run() override
+    void
+    testParseVectors()
+    {
+        parse_vectors pv;
+        std::size_t fail = 0;
+        std::size_t info = 0;
+        auto const tot = pv.size();
+        for(auto const& v : pv)
+        {
+            error_code ec;
+            test_parser p;
+            p.write(
+                v.text.data(),
+                v.text.size(),
+                ec);
+            char result;
+            result = ec ? 'n' : 'y';
+            if(result != v.result)
+            {
+                if(v.result == 'i')
+                    ++info;
+                else
+                    ++fail;
+                log <<
+                    "'" << v.result << "' " <<
+                    v.name;
+                if(ec)
+                    log << " " << ec.message() << "\n";
+                else
+                    log << "\n";
+            }
+        }
+        if(fail > 0)
+            log << fail << "/" << tot <<
+            " parse vector failures, " <<
+            info << " informational.\n";
+    }
+
+    void
+    run() override
     {
         log <<
             "sizeof(basic_parser) == " <<
@@ -279,6 +320,8 @@ public:
         testString();
         testNumber();
         testMonostates();
+
+        testParseVectors();
     }
 };
 
