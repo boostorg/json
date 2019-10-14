@@ -33,10 +33,10 @@ public:
         s.emplace_front("2");
         BEAST_EXPECT(s.size() == 2);
         BEAST_EXPECT(s[0] == "2");
-        s.pop_front();
+        s.pop();
         BEAST_EXPECT(s.size() == 1);
         BEAST_EXPECT(s[0] == "1");
-        s.pop_front();
+        s.pop();
         BEAST_EXPECT(s.empty());
     }
 

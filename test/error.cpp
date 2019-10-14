@@ -49,16 +49,38 @@ public:
         check(condition::parse_error, error::mantissa_overflow);
         check(condition::parse_error, error::exponent_overflow);
         check(condition::parse_error, error::too_deep);
-
-        check(condition::assign_error, error::integer_overflow);
-        check(condition::assign_error, error::expected_object);
-        check(condition::assign_error, error::expected_array);
-        check(condition::assign_error, error::expected_string);
-        check(condition::assign_error, error::expected_number);
-        check(condition::assign_error, error::expected_bool);
-        check(condition::assign_error, error::expected_null);
         
+        check(condition::parse_error, error::illegal_char);
+        check(condition::parse_error, error::illegal_control_char);
+        check(condition::parse_error, error::illegal_escape_char);
+        check(condition::parse_error, error::illegal_extra_digits);
+        check(condition::parse_error, error::illegal_extra_chars);
+        check(condition::parse_error, error::illegal_leading_surrogate);
+        check(condition::parse_error, error::illegal_trailing_surrogate);
+
+        check(condition::parse_error, error::expected_comma);
+        check(condition::parse_error, error::expected_colon);
+        check(condition::parse_error, error::expected_quotes);
+        check(condition::parse_error, error::expected_hex_digit);
+        check(condition::parse_error, error::expected_utf16_escape);
+        check(condition::parse_error, error::expected_mantissa);
+        check(condition::parse_error, error::expected_fraction);
+        check(condition::parse_error, error::expected_exponent);
+        check(condition::parse_error, error::expected_true);
+        check(condition::parse_error, error::expected_false);
+        check(condition::parse_error, error::expected_null);
+
+        check(condition::assign_error, error::not_object);
+        check(condition::assign_error, error::not_array);
+        check(condition::assign_error, error::not_string);
+        check(condition::assign_error, error::not_number);
+        check(condition::assign_error, error::not_bool);
+        check(condition::assign_error, error::not_null);
+        check(condition::assign_error, error::integer_overflow);
+    
         check(error::key_not_found);
+        
+        check(error::test_failure);
     }
 };
 

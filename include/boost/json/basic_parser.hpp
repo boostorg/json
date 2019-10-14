@@ -40,6 +40,8 @@ class basic_parser
         state, stack_capacity> stack_;
     number::mantissa_type n_mant_;
     number::exponent_type n_exp_;
+    long u0_;
+    unsigned short u_;
     bool n_neg_;
     bool n_exp_neg_;
     bool is_key_;

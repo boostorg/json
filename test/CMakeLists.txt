@@ -21,6 +21,7 @@ add_executable (json-tests
     ${PROJECT_SOURCE_DIR}/src/src.cpp
     Jamfile
     test_storage.hpp
+    parse-vectors.hpp
     main.cpp
     _detail_stack.cpp
     array.cpp

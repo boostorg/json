@@ -118,6 +118,7 @@ jobs:
       env:
         - COMMENT=codecov.io
         - B2_CXXSTD=11
+        - B2_CXXFLAGS="cxxflags=-fno-inline"
         - B2_TOOLSET=gcc-8
         - B2_DEFINES="define=BOOST_DISABLE_ASSERTS define=BOOST_NO_STRESS_TEST=1"
       addons: *gcc-8

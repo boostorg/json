@@ -32,44 +32,101 @@ using error_condition = boost::system::error_condition;
 /// Error codes returned by JSON operations
 enum class error
 {
-    /// The serialized JSON object contains a syntax error
+    /// syntax error
     syntax = 1,
 
-    /// Unexpected extra data encountered while parsing
+    /// extra data
     extra_data,
 
-    /// A mantissa overflowed while parsing
+    /// mantissa overflow
     mantissa_overflow,
 
-    /// The parser encountered an exponent that overflowed
+    /// exponent too large
     exponent_overflow,
 
-    /// The parser's maximum depth limit was reached
+    /// too deep
     too_deep,
 
-    /// Expected a value of kind object
-    expected_object,
+    /// illegal character for value
+    illegal_char,
 
-    /// Expected a value of kind array
-    expected_array,
+    /// illegal control character
+    illegal_control_char,
+    
+    /// illegal character in escape sequence
+    illegal_escape_char,
 
-    /// Expected a value of kind string
-    expected_string,
+    /// illegal extra digits in number
+    illegal_extra_digits,
 
-    /// Expect a value of kind number
-    expected_number,
+    /// illegal extra characters
+    illegal_extra_chars,
 
-    /// Expected a value of kind boolean
-    expected_bool,
+    /// illegal leading surrogate
+    illegal_leading_surrogate,
 
-    /// Expected a value of kind boolean
+    /// illegal trailing surrogate
+    illegal_trailing_surrogate,
+
+    /// expected comma
+    expected_comma,
+
+    /// expected colon
+    expected_colon,
+
+    /// expected quotes
+    expected_quotes,
+
+    /// expected hex digit
+    expected_hex_digit,
+
+    /// expected utf16 escape
+    expected_utf16_escape,
+
+    /// expected mantissa
+    expected_mantissa,
+
+    /// expected fractional part of mantissa
+    expected_fraction,
+
+    /// expected exponent here
+    expected_exponent,
+
+    /// expected 'true'
+    expected_true,
+
+    /// expected 'false'
+    expected_false,
+
+    /// expected 'null'
     expected_null,
 
-    /// An integer assignment would overflow
+    /// not an object
+    not_object,
+
+    /// not an array
+    not_array,
+
+    /// not a string
+    not_string,
+
+    /// not a number
+    not_number,
+
+    /// not a boolean
+    not_bool,
+
+    /// not a null
+    not_null,
+
+    /// integer overflow
     integer_overflow,
 
-    /// The key was not found in the object
-    key_not_found
+    /// key not found
+    key_not_found,
+
+    /// test failure
+    test_failure
 };
 
 /// Error conditions corresponding to JSON errors

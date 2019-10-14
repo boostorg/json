@@ -29,8 +29,8 @@ from_json(
     value const& v)
 {
     if(! v.is_string())
-        throw system_error(
-            error::expected_string);
+        BOOST_THROW_EXCEPTION(
+            system_error(error::not_string));
     auto& s= v.as_string();
     t.assign(s.data(), s.size());
 }

@@ -147,7 +147,7 @@ public:
     }
 
     void
-    push_front(T const& t)
+    push(T const& t)
     {
         if(n_ < N)
             ::new(&base()[n_]) T(t);
@@ -170,7 +170,7 @@ public:
     }
 
     void
-    pop_front()
+    pop()
     {
         BOOST_ASSERT(n_ > 0);
         if(! v_.empty())

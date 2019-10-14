@@ -578,22 +578,22 @@ from_json(T& t, value const& v)
         auto const rhs = v.get_int64();
         if( rhs > (std::numeric_limits<T>::max)() ||
             rhs < (std::numeric_limits<T>::min)())
-            throw system_error(
-                error::integer_overflow);
+            BOOST_THROW_EXCEPTION(system_error(
+                error::integer_overflow));
         t = static_cast<T>(rhs);
     }
     else if(v.is_uint64())
     {
         auto const rhs = v.get_uint64();
         if(rhs > (std::numeric_limits<T>::max)())
-            throw system_error(
-                error::integer_overflow);
+            BOOST_THROW_EXCEPTION(system_error(
+                error::integer_overflow));
         t = static_cast<T>(rhs);
     }
     else
     {
-        throw system_error(
-            error::expected_number);
+        BOOST_THROW_EXCEPTION(
+            system_error(error::not_number));
     }
 }
 

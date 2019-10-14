@@ -7,68 +7,88 @@
 // Official repository: https://github.com/vinniefalco/json
 //
 
-#ifndef BOOST_JSON_DETAIL_BASIC_PARSER_HPP
-#define BOOST_JSON_DETAIL_BASIC_PARSER_HPP
+#ifndef BOOST_JSON_DETAIL_BUFFER_HPP
+#define BOOST_JSON_DETAIL_BUFFER_HPP
+
+#include <boost/utility/string_view.hpp>
+#include <cstring>
 
 namespace boost {
 namespace json {
 namespace detail {
 
-struct parser_base
+// A simple string-like temporary static buffer
+template<unsigned long N>
+class buffer
 {
-    static
-    bool
-    is_ws(char c) noexcept
+    char buf_[N];
+    unsigned int size_ = 0;
+
+public:
+    using size_type = unsigned int;
+
+    buffer() = default;
+
+    string_view
+    get() const noexcept
     {
-        return
-            c == ' '  || c == '\t' ||
-            c == '\r' || c == '\n';
+        return {buf_, size_};
     }
 
-    static
-    bool
-    is_digit(char c) noexcept
+    operator string_view() const noexcept
     {
-        return static_cast<unsigned char>(c - '0') < 10;
+        return get();
     }
 
-    static
-    bool
-    is_control(char c) noexcept
+    char const*
+    data() const noexcept
     {
-        return static_cast<unsigned char>(c) < 32;
+        return buf_;
     }
 
-    static
-    short
-    hex_digit(char c) noexcept
+    size_type
+    size() const noexcept
     {
-        if (c >= '0' && c <= '9')
-            return c - '0';
-        if (c >= 'A' && c <= 'F')
-            return 10 + c - 'A';
-        if (c >= 'a' && c <= 'f')
-            return 10 + c - 'a';
-        return -1;
+        return size_;
     }
 
-    static
-    int
-    utf8_encode(
-        char* dest,
-        unsigned long cp)
+    size_type
+    max_size() const noexcept
     {
+        return N;
+    }
+
+    void
+    clear() noexcept
+    {
+        size_ = 0;
+    }
+
+    void
+    push_back(char ch) noexcept
+    {
+        buf_[size_++] = ch;
+    }
+
+    // append valid 32-bit code point as utf8
+    void
+    append_utf8(
+        unsigned long cp) noexcept
+    {
+        auto dest = buf_ + size_;
         if(cp < 0x80)
         {
             dest[0] = static_cast<char>(cp);
-            return 1;
+            size_ += 1;
+            return;
         }
 
         if(cp < 0x800)
         {
             dest[0] = static_cast<char>( (cp >> 6)          | 0xc0);
             dest[1] = static_cast<char>( (cp & 0x3f)        | 0x80);
-            return 2;
+            size_ += 2;
+            return;
         }
 
         if(cp < 0x10000)
@@ -76,7 +96,7 @@ struct parser_base
             dest[0] = static_cast<char>( (cp >> 12)         | 0xe0);
             dest[1] = static_cast<char>(((cp >> 6) & 0x3f)  | 0x80);
             dest[2] = static_cast<char>( (cp       & 0x3f)  | 0x80);
-            return 3;
+            size_ += 3;
         }
 
         {
@@ -84,10 +104,9 @@ struct parser_base
             dest[1] = static_cast<char>(((cp >> 12) & 0x3f) | 0x80);
             dest[2] = static_cast<char>(((cp >> 6)  & 0x3f) | 0x80);
             dest[3] = static_cast<char>( (cp        & 0x3f) | 0x80);
-            return 4;
+            size_ += 4;
         }
     }
-
 };
 
 } // detail

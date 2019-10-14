@@ -30,7 +30,7 @@ assign(T&& t)
     {
         BOOST_ASSERT(jv.is_null());
         jv = std::forward<T>(t);
-        stack_.pop_front();
+        stack_.pop();
     }
     else if(stack_.front()->is_array())
     {
@@ -94,7 +94,7 @@ parser::
 on_document_begin(error_code&)
 {
     stack_.clear();
-    stack_.push_front(&jv_);
+    stack_.push(&jv_);
     s_.clear();
     obj_ = false;
 }
@@ -119,7 +119,7 @@ on_object_begin(error_code& ec)
     {
         jv.as_array().emplace_back(
             kind::object);
-        stack_.push_front(
+        stack_.push(
             &jv.as_array().back());
     }
     else
@@ -136,7 +136,7 @@ on_object_end(error_code&)
 {
     BOOST_ASSERT(
         stack_.front()->is_object());
-    stack_.pop_front();
+    stack_.pop();
     if(! stack_.empty())
     {
         auto const& jv = stack_.front();
@@ -167,7 +167,7 @@ on_array_begin(error_code& ec)
         BOOST_ASSERT(s_.empty());
         jv.as_array().emplace_back(
             kind::array);
-        stack_.push_front(
+        stack_.push(
             &jv.as_array().back());
     }
     else
@@ -184,7 +184,7 @@ on_array_end(error_code&)
 {
     BOOST_ASSERT(
         stack_.front()->is_array());
-    stack_.pop_front();
+    stack_.pop();
     if(! stack_.empty())
     {
         auto const& jv = stack_.front();
@@ -220,7 +220,7 @@ on_key_end(
     // overwrite duplicate keys
     if(! result.second)
         result.first->second.emplace_null();
-    stack_.push_front(&result.first->second);
+    stack_.push(&result.first->second);
     s_.clear();
 }
 
@@ -243,7 +243,7 @@ on_string_data(
         {
             BOOST_ASSERT(s_.empty());
             jv.as_array().emplace_back(kind::string);
-            stack_.push_front(
+            stack_.push(
                 &jv.as_array().back());
             stack_.front()->as_string().append(
                 s.data(), s.size());
@@ -270,7 +270,7 @@ on_string_end(
 {
     on_string_data(s, ec);
     BOOST_ASSERT(stack_.front()->is_string());
-    stack_.pop_front();
+    stack_.pop();
     if(! stack_.empty())
     {
         auto const& jv = stack_.front();
@@ -290,7 +290,7 @@ on_number(number n, error_code&)
     {
         BOOST_ASSERT(jv.is_null());
         jv.emplace_number() = std::move(n);
-        stack_.pop_front();
+        stack_.pop();
     }
     else if(stack_.front()->is_array())
     {

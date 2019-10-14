@@ -161,13 +161,13 @@ operator++() noexcept
     {
         if(n.v->is_structured())
         {
-            stack_.pop_front();
+            stack_.pop();
             stack_.emplace_front(
                 *n.v, true);
         }
         else
         {
-            stack_.pop_front();
+            stack_.pop();
         }
     }
     else if(n.v->is_object())
@@ -175,7 +175,7 @@ operator++() noexcept
         if(n.obj_it ==
             n.v->as_object().end())
         {
-            stack_.pop_front();
+            stack_.pop();
         }
         else
         {
@@ -192,7 +192,7 @@ operator++() noexcept
         if(n.arr_it ==
             n.v->as_array().end())
         {
-            stack_.pop_front();
+            stack_.pop();
         }
         else
         {

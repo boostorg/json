@@ -20,88 +20,164 @@ namespace json {
 class basic_parser_test : public beast::unit_test::suite
 {
 public:
-    struct test_parser
-        : basic_parser
+    class test_parser
+        : public basic_parser
     {
-        test_parser() = default;
+        std::size_t n_ = std::size_t(-1);
+
+        void
+        maybe_fail(error_code& ec)
+        {
+            if(n_ && --n_ > 0)
+                return;
+            ec = error::test_failure;
+        }
 
         void
         on_document_begin(
-            error_code&) override
+            error_code& ec) override
         {
+            maybe_fail(ec);
         }
 
         void
         on_object_begin(
-            error_code&) override
+            error_code& ec) override
         {
+            maybe_fail(ec);
         }
 
         void
         on_object_end(
-            error_code&) override
+            error_code& ec) override
         {
+            maybe_fail(ec);
         }
 
         void
         on_array_begin(
-            error_code&) override
+            error_code& ec) override
         {
+            maybe_fail(ec);
         }
 
         void
         on_array_end(
-            error_code&) override
+            error_code& ec) override
         {
+            maybe_fail(ec);
         }
 
         void
         on_key_data(
             string_view,
-            error_code&) override
+            error_code& ec) override
         {
+            maybe_fail(ec);
         }
 
         void
         on_key_end(
             string_view,
-            error_code&) override
+            error_code& ec) override
         {
+            maybe_fail(ec);
         }
         
         void
         on_string_data(
             string_view,
-            error_code&) override
+            error_code& ec) override
         {
+            maybe_fail(ec);
         }
 
         void
         on_string_end(
             string_view,
-            error_code&) override
+            error_code& ec) override
         {
+            maybe_fail(ec);
         }
 
         void
         on_number(
             number,
-            error_code&) override
+            error_code& ec) override
         {
+            maybe_fail(ec);
         }
 
         void
         on_bool(
             bool,
-            error_code&) override
+            error_code& ec) override
         {
+            maybe_fail(ec);
         }
 
         void
-        on_null(error_code&) override
+        on_null(error_code& ec) override
+        {
+            maybe_fail(ec);
+        }
+
+    public:
+        test_parser() = default;
+
+        test_parser(
+            std::size_t n)
+            : n_(n)
         {
         }
     };
+
+    void
+    parse_grind(
+        string_view input,
+        error_code ex)
+    {
+        if(input.size() > 100)
+            return;
+        for(std::size_t n = 0;
+            n < input.size() - 1; ++n)
+        {
+            error_code ec;
+            test_parser p;
+            p.write_some(input.data(), n, ec);
+            if(! ec)
+                p.write_some(input.data() + n,
+                    input.size() - n, ec);
+            if(! ec)
+                p.write_eof(ec);
+            if(ec)
+            {
+                BEAST_EXPECTS(
+                    ec == ex, std::string(input) +
+                    " : " + ec.message());
+                return;
+            }
+        }
+
+        std::size_t n = 1;
+        for(; n < 10000; ++n)
+        {
+            error_code ec;
+            test_parser p{n};
+            p.write(
+                input.data(),
+                input.size(),
+                ec);
+            if(ec != error::test_failure)
+            {
+                BEAST_EXPECTS(
+                    ec == ex, std::string(input) +
+                    " : " + ec.message());
+                break;
+            }
+        }
+        BEAST_EXPECT(n < 10000);
+    }
 
     void
     good(string_view s)
@@ -286,6 +362,17 @@ public:
                 v.text.data(),
                 v.text.size(),
                 ec);
+            if(v.result == 'i')
+            {
+                auto const s = ec ?
+                    "reject" : "accept";
+                ++info;
+                log <<
+                    "'" << v.result << "' " <<
+                    v.name << " " << s << "\n";
+                parse_grind(v.text, ec);
+                continue;
+            }
             char result;
             result = ec ? 'n' : 'y';
             if(result != v.result)
@@ -302,6 +389,10 @@ public:
                 else
                     log << "\n";
             }
+            else
+            {
+                parse_grind(v.text, ec);
+            }
         }
         if(fail > 0)
             log << fail << "/" << tot <<
@@ -315,13 +406,13 @@ public:
         log <<
             "sizeof(basic_parser) == " <<
             sizeof(basic_parser) << "\n";
+        testParseVectors();
+
         testObject();
         testArray();
         testString();
         testNumber();
         testMonostates();
-
-        testParseVectors();
     }
 };
 
