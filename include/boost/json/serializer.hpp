@@ -11,9 +11,9 @@
 #define BOOST_JSON_SERIALIZER_HPP
 
 #include <boost/json/detail/config.hpp>
-#include <boost/json/iterator.hpp>
 #include <boost/json/number.hpp>
 #include <boost/json/value.hpp>
+#include <boost/json/detail/iterator.hpp>
 
 namespace boost {
 namespace json {
@@ -48,7 +48,7 @@ class serializer
         };
 
         value const& jv_;
-        const_iterator it_;
+        detail::const_iterator it_;
         string_view str_;
         char buf_[number::max_string_chars + 1];
         state state_ = state::init;

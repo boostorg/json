@@ -45,7 +45,7 @@ next(char* dest, std::size_t size)
         {
         case state::next:
             ++it_;
-            if(it_ == end)
+            if(it_ == detail::end)
             {
                 state_ = state::done;
                 break;

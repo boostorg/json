@@ -8,12 +8,13 @@
 //
 
 // Test that header file is self-contained.
-#include <boost/json/iterator.hpp>
+#include <boost/json/detail/iterator.hpp>
 
 #include <boost/beast/_experimental/unit_test/suite.hpp>
 
 namespace boost {
 namespace json {
+namespace detail {
 
 class iterator_test : public beast::unit_test::suite
 {
@@ -113,5 +114,6 @@ public:
 
 BEAST_DEFINE_TESTSUITE(boost,json,iterator);
 
+} // detail
 } // json
 } // boost

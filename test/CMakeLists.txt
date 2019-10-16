@@ -23,13 +23,13 @@ add_executable (json-tests
     test_storage.hpp
     parse-vectors.hpp
     main.cpp
+    _detail_iterator.cpp
     _detail_stack.cpp
     array.cpp
     assign_string.cpp
     assign_vector.cpp
     basic_parser.cpp
     error.cpp
-    iterator.cpp
     json.cpp
     kind.cpp
     number.cpp

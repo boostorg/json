@@ -7,13 +7,14 @@
 // Official repository: https://github.com/vinniefalco/json
 //
 
-#ifndef BOOST_JSON_ITERATOR_IMPL_IPP
-#define BOOST_JSON_ITERATOR_IMPL_IPP
+#ifndef BOOST_JSON_DETAIL_ITERATOR_IMPL_IPP
+#define BOOST_JSON_DETAIL_ITERATOR_IMPL_IPP
 
-#include <boost/json/iterator.hpp>
+#include <boost/json/detail/iterator.hpp>
 
 namespace boost {
 namespace json {
+namespace detail {
 
 const_iterator::
 node::
@@ -238,6 +239,7 @@ operator!=(
     return ! rhs.stack_.empty();
 }
 
+} // detail
 } // json
 } // boost
 

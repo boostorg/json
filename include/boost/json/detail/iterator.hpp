@@ -7,8 +7,8 @@
 // Official repository: https://github.com/vinniefalco/json
 //
 
-#ifndef BOOST_JSON_ITERATOR_HPP
-#define BOOST_JSON_ITERATOR_HPP
+#ifndef BOOST_JSON_DETAIL_ITERATOR_HPP
+#define BOOST_JSON_DETAIL_ITERATOR_HPP
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/value.hpp>
@@ -19,6 +19,7 @@
 
 namespace boost {
 namespace json {
+namespace detail {
 
 struct end_t
 {
@@ -60,7 +61,7 @@ class const_iterator
     };
 #endif
 
-    detail::stack<node, 50> stack_;
+    stack<node, 50> stack_;
 
 public:
     struct value_type
@@ -132,11 +133,12 @@ public:
         const_iterator const& rhs) noexcept;
 };
 
+} // detail
 } // json
 } // boost
 
 #ifdef BOOST_JSON_HEADER_ONLY
-#include <boost/json/impl/iterator.ipp>
+#include <boost/json/detail/iterator.ipp>
 #endif
 
 #endif
