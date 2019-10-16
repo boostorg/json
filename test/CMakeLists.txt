@@ -20,8 +20,10 @@ add_executable (json-tests
     ${PROJECT_SOURCE_DIR}/include/boost/pilfer.hpp
     ${PROJECT_SOURCE_DIR}/src/src.cpp
     Jamfile
-    test_storage.hpp
+    fail_parser.hpp
     parse-vectors.hpp
+    test_storage.hpp
+    throw_parser.hpp
     main.cpp
     _detail_iterator.cpp
     _detail_stack.cpp

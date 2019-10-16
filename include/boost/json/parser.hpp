@@ -24,9 +24,17 @@ namespace json {
 class parser
     : public basic_parser
 {
+    using size_type = unsigned;
+
     static std::size_t const
         default_max_depth = 32;
 
+    union
+    {
+        char buf_[512];
+        char* alloc_;
+    };
+    unsigned capacity_ = sizeof(buf_);
     value jv_;
     detail::stack<value*,
         default_max_depth> stack_;
@@ -74,6 +82,18 @@ private:
     BOOST_JSON_DECL
     void
     reset();
+
+    BOOST_JSON_DECL
+    void
+    on_stack_info(
+        stack& s) noexcept override;
+
+    BOOST_JSON_DECL
+    void
+    on_stack_grow(
+        stack& s,
+        unsigned capacity,
+        error_code& ec) override;
 
     BOOST_JSON_DECL
     void

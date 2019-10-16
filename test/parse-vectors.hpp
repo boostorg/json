@@ -61,8 +61,6 @@ parse_vectors::
 parse_vectors() noexcept
 {
     static item const list[] = {
-        { 'y', "string_last_surrogates_1_and_2", lit("[\"\\uDBFF\\uDFFF\"]") },
-
         { 'i', "number_double_huge_neg_exp", lit("[123.456e-789]") },
         { 'i', "number_huge_exp", lit("[0.4e006699999999999999999999999999999999999999999999999999999999999999999999999"
                "99999999999999999999999999999999999999999999969999999006]") },
@@ -1365,6 +1363,7 @@ parse_vectors() noexcept
         { 'y', "string_escaped_noncharacter", lit("[\"\\uFFFF\"]") },
         { 'y', "string_in_array", lit("[\"asd\"]") },
         { 'y', "string_in_array_with_leading_space", lit("[ \"asd\"]") },
+        { 'y', "string_last_surrogates_1_and_2", lit("[\"\\uDBFF\\uDFFF\"]") },
         { 'y', "string_nbsp_uescaped", lit("[\"new\\u00A0line\"]") },
         { 'y', "string_nonCharacterInUTF-8_U+10FFFF", lit("[\"\xF4\x8F\xBF\xBF\"]") },
         { 'y', "string_nonCharacterInUTF-8_U+FFFF", lit("[\"\xEF\xBF\xBF\"]") },

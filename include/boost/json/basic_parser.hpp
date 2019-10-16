@@ -33,13 +33,9 @@ class basic_parser
 {
     enum class state : char;
 
-    /// Depth to which the stack does not require dynamic allocation
-    static std::size_t const stack_capacity = 64;
-
-    detail::stack<
-        state, stack_capacity> stack_;
     number::mantissa_type n_mant_;
     number::exponent_type n_exp_;
+    unsigned top_ = 0;
     long u0_;
     unsigned short u_;
     bool n_neg_;
@@ -96,9 +92,31 @@ public:
     write_eof(error_code& ec);
 
 protected:
+    struct stack
+    {
+        void* base;
+        unsigned capacity;
+    };
+
+    class stack_impl;
+
     /// Constructor (default)
     BOOST_JSON_DECL
     basic_parser();
+
+    BOOST_JSON_DECL
+    virtual
+    void
+    on_stack_info(
+        stack& s) noexcept = 0;
+
+    BOOST_JSON_DECL
+    virtual
+    void
+    on_stack_grow(
+        stack& s,
+        unsigned capacity,
+        error_code& ec) = 0;
 
     BOOST_JSON_DECL
     virtual

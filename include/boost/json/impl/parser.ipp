@@ -14,6 +14,8 @@
 #include <boost/json/error.hpp>
 #include <boost/core/ignore_unused.hpp>
 #include <boost/assert.hpp>
+#include <boost/throw_exception.hpp>
+#include <stdexcept>
 #include <utility>
 
 namespace boost {
@@ -48,6 +50,8 @@ assign(T&& t)
 parser::
 ~parser()
 {
+    if(capacity_ > sizeof(buf_))
+        delete[] alloc_;
 }
 
 parser::
@@ -87,6 +91,43 @@ parser::
 release() noexcept
 {
     return std::move(jv_);
+}
+
+void
+parser::
+on_stack_info(
+    stack& s) noexcept
+{
+    s.capacity = capacity_;
+    if(capacity_ == sizeof(buf_))
+        s.base = buf_;
+    else
+        s.base = alloc_;
+}
+
+void
+parser::
+on_stack_grow(
+    stack& s,
+    unsigned capacity,
+    error_code&)
+{
+    if(capacity <= capacity_)
+        return;
+    auto n = capacity_ +
+        capacity_ / 2;
+    if( n < capacity)
+        n = capacity;
+    n |= 0xf;
+    auto p = new char[n];
+    std::memcpy(
+        p, s.base, s.capacity);
+    if(capacity_ > sizeof(buf_))
+        delete[] alloc_;
+    alloc_ = p;
+    capacity_ = n;
+    s.base = alloc_;
+    s.capacity = n;
 }
 
 void

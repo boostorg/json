@@ -12,6 +12,8 @@
 
 #include <boost/beast/_experimental/unit_test/suite.hpp>
 
+#include "fail_parser.hpp"
+#include "throw_parser.hpp"
 #include "parse-vectors.hpp"
 
 namespace boost {
@@ -20,118 +22,6 @@ namespace json {
 class basic_parser_test : public beast::unit_test::suite
 {
 public:
-    class test_parser
-        : public basic_parser
-    {
-        std::size_t n_ = std::size_t(-1);
-
-        void
-        maybe_fail(error_code& ec)
-        {
-            if(n_ && --n_ > 0)
-                return;
-            ec = error::test_failure;
-        }
-
-        void
-        on_document_begin(
-            error_code& ec) override
-        {
-            maybe_fail(ec);
-        }
-
-        void
-        on_object_begin(
-            error_code& ec) override
-        {
-            maybe_fail(ec);
-        }
-
-        void
-        on_object_end(
-            error_code& ec) override
-        {
-            maybe_fail(ec);
-        }
-
-        void
-        on_array_begin(
-            error_code& ec) override
-        {
-            maybe_fail(ec);
-        }
-
-        void
-        on_array_end(
-            error_code& ec) override
-        {
-            maybe_fail(ec);
-        }
-
-        void
-        on_key_data(
-            string_view,
-            error_code& ec) override
-        {
-            maybe_fail(ec);
-        }
-
-        void
-        on_key_end(
-            string_view,
-            error_code& ec) override
-        {
-            maybe_fail(ec);
-        }
-        
-        void
-        on_string_data(
-            string_view,
-            error_code& ec) override
-        {
-            maybe_fail(ec);
-        }
-
-        void
-        on_string_end(
-            string_view,
-            error_code& ec) override
-        {
-            maybe_fail(ec);
-        }
-
-        void
-        on_number(
-            number,
-            error_code& ec) override
-        {
-            maybe_fail(ec);
-        }
-
-        void
-        on_bool(
-            bool,
-            error_code& ec) override
-        {
-            maybe_fail(ec);
-        }
-
-        void
-        on_null(error_code& ec) override
-        {
-            maybe_fail(ec);
-        }
-
-    public:
-        test_parser() = default;
-
-        test_parser(
-            std::size_t n)
-            : n_(n)
-        {
-        }
-    };
-
     void
     parse_grind(
         string_view input,
@@ -139,31 +29,85 @@ public:
     {
         if(input.size() > 100)
             return;
-        for(std::size_t n = 0;
-            n < input.size() - 1; ++n)
+
+        // iterate each split point
+        if(input.size() > 0)
         {
-            error_code ec;
-            test_parser p;
-            p.write_some(input.data(), n, ec);
-            if(! ec)
-                p.write_some(input.data() + n,
-                    input.size() - n, ec);
-            if(! ec)
-                p.write_eof(ec);
-            if(ec)
+            for(std::size_t i = 0;
+                i < input.size() - 1; ++i)
             {
-                BEAST_EXPECTS(
-                    ec == ex, std::string(input) +
-                    " : " + ec.message());
-                return;
+                BEAST_EXPECT(i < 10000);
+
+                // test exceptions
+                for(std::size_t j = 1;;++j)
+                {
+                    if(! BEAST_EXPECT(j < 10000))
+                        break;
+                    error_code ec;
+                    throw_parser p(j);
+                    try
+                    {
+                        p.write_some(
+                            input.data(), i, ec);
+                        if(! ec)
+                            p.write(input.data() + i,
+                                input.size() - i, ec);
+                        if(ec)
+                            BEAST_EXPECTS(
+                                ec == ex, std::string(input) +
+                                " : " + ec.message());
+                        break;
+                    }
+                    catch(test_exception const&)
+                    {
+                        continue;
+                    }
+                    catch(...)
+                    {
+                        BEAST_FAIL();
+                    }
+                }
+
+                // test errors
+                for(std::size_t j = 1;;++j)
+                {
+                    if(! BEAST_EXPECT(j < 10000))
+                        break;
+                    error_code ec;
+                    fail_parser p(j);
+                    {
+                        p.write_some(input.data(), i, ec);
+                        if(ec == error::test_failure)
+                            continue;
+                    }
+                    if(! ec)
+                    {
+                        p.write_some(input.data() + i,
+                            input.size() - i, ec);
+                        if(ec == error::test_failure)
+                            continue;
+                    }
+                    if(! ec)
+                    {
+                        p.write_eof(ec);
+                        if(ec == error::test_failure)
+                            continue;
+                    }
+                    if(ec)
+                        BEAST_EXPECTS(
+                            ec == ex, std::string(input) +
+                            " : " + ec.message());
+                    break;
+                }
             }
         }
 
+#if 0
         std::size_t n = 1;
         for(; n < 10000; ++n)
         {
             error_code ec;
-            test_parser p{n};
+            fail_parser p{n};
             p.write(
                 input.data(),
                 input.size(),
@@ -177,18 +121,20 @@ public:
             }
         }
         BEAST_EXPECT(n < 10000);
+#endif
     }
 
     void
     good(string_view s)
     {
+#if 0
         error_code ec;
         for(std::size_t i = 0;
             i < s.size() - 1; ++i)
         {
             // write_some with 1 buffer
             {
-                test_parser p;
+                fail_parser p;
                 auto used = p.write_some(s.data(), i, ec);
                 BEAST_EXPECT(used == i);
                 BEAST_EXPECT(! p.is_done());
@@ -205,19 +151,22 @@ public:
             }
             // write with 1 buffer
             {
-                test_parser p;
+                fail_parser p;
                 auto used = p.write(s.data(), s.size(), ec);
                 BEAST_EXPECT(used = s.size());
                 BEAST_EXPECTS(! ec, ec.message());
             }
         }
+#else
+        parse_grind(s, error_code{});
+#endif
     }
 
     void
     bad(string_view s)
     {
         error_code ec;
-        test_parser p;
+        fail_parser p;
         auto const used = p.write_some(
             s.data(), s.size(), ec);
         if(! ec)
@@ -320,11 +269,10 @@ public:
         bad ("0.0e-");
         bad ("0.0e0-");
         bad ("0.0e");
-
     }
 
     void
-    testMonostates()
+    testBoolean()
     {
         good("true");
         good(" true");
@@ -332,18 +280,49 @@ public:
         good("\ttrue");
         good("true\t");
         good("\r\n\t true\r\n\t ");
-        bad ("truu");
-        bad ("tu");
+        bad ("TRUE");
+        bad ("tRUE");
+        bad ("trUE");
+        bad ("truE");
+        bad ("truex");
+        bad ("tru");
+        bad ("tr");
         bad ("t");
 
         good("false");
+        good(" false");
+        good("false ");
+        good("\tfalse");
+        good("false\t");
+        good("\r\n\t false\r\n\t ");
+        bad ("FALSE");
+        bad ("fALSE");
+        bad ("faLSE");
+        bad ("falSE");
+        bad ("falsE");
+        bad ("falsex");
         bad ("fals");
-        bad ("fel");
+        bad ("fal");
+        bad ("fa");
         bad ("f");
+    }
 
+    void
+    testNull()
+    {
         good("null");
+        good(" null");
+        good("null ");
+        good("\tnull");
+        good("null\t");
+        good("\r\n\t null\r\n\t ");
+        bad ("NULL");
+        bad ("nULL");
+        bad ("nuLL");
+        bad ("nulL");
+        bad ("nullx");
         bad ("nul");
-        bad ("no");
+        bad ("nu");
         bad ("n");
     }
 
@@ -357,7 +336,7 @@ public:
         for(auto const& v : pv)
         {
             error_code ec;
-            test_parser p;
+            fail_parser p;
             p.write(
                 v.text.data(),
                 v.text.size(),
@@ -412,7 +391,8 @@ public:
         testArray();
         testString();
         testNumber();
-        testMonostates();
+        testBoolean();
+        testNull();
     }
 };
 
