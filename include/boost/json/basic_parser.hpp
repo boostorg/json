@@ -104,13 +104,11 @@ protected:
     BOOST_JSON_DECL
     basic_parser();
 
-    BOOST_JSON_DECL
     virtual
     void
     on_stack_info(
         stack& s) noexcept = 0;
 
-    BOOST_JSON_DECL
     virtual
     void
     on_stack_grow(
@@ -118,70 +116,58 @@ protected:
         unsigned capacity,
         error_code& ec) = 0;
 
-    BOOST_JSON_DECL
     virtual
     void
     on_document_begin(error_code& ec) = 0;
 
-    BOOST_JSON_DECL
     virtual
     void
     on_object_begin(error_code& ec) = 0;
 
-    BOOST_JSON_DECL
     virtual
     void
     on_object_end(error_code& ec) = 0;
 
-    BOOST_JSON_DECL
     virtual
     void
     on_array_begin(error_code& ec) = 0;
 
-    BOOST_JSON_DECL
     virtual
     void
     on_array_end(error_code& ec) = 0;
 
-    BOOST_JSON_DECL
     virtual
     void
     on_key_data(
         string_view s,
         error_code& ec) = 0;
 
-    BOOST_JSON_DECL
     virtual
     void
     on_key_end(
         string_view s,
         error_code& ec) = 0;
 
-    BOOST_JSON_DECL
     virtual
     void
     on_string_data(
         string_view s,
         error_code& ec) = 0;
 
-    BOOST_JSON_DECL
     virtual
     void
     on_string_end(
         string_view,
         error_code& ec) = 0;
 
-    BOOST_JSON_DECL
     virtual
     void
     on_number(number n, error_code& ec) = 0;
 
-    BOOST_JSON_DECL
     virtual
     void
     on_bool(bool b, error_code& ec) = 0;
 
-    BOOST_JSON_DECL
     virtual
     void
     on_null(error_code& ec) = 0;

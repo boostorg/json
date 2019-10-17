@@ -683,9 +683,9 @@ public:
             array a({1, "hello"}, sp);
             a.insert(a.begin() + 1, 3, v);
             BEAST_EXPECT(a[0].is_number());
-            BEAST_EXPECT(a[1].size() == 3);
-            BEAST_EXPECT(a[2].size() == 3);
-            BEAST_EXPECT(a[3].size() == 3);
+            BEAST_EXPECT(a[1].as_array().size() == 3);
+            BEAST_EXPECT(a[2].as_array().size() == 3);
+            BEAST_EXPECT(a[3].as_array().size() == 3);
             BEAST_EXPECT(a[4].is_string());
         });
 
@@ -838,9 +838,9 @@ public:
         // resize(size_type)
         {
             value v(array{});
-            v.emplace_back(1);
-            v.emplace_back(true);
-            v.emplace_back("hello");
+            v.as_array().emplace_back(1);
+            v.as_array().emplace_back(true);
+            v.as_array().emplace_back("hello");
 
             fail_loop([&](storage_ptr const& sp)
             {
@@ -862,9 +862,9 @@ public:
         // resize(size_type, value_type const&)
         {
             value v(array{});
-            v.emplace_back(1);
-            v.emplace_back(true);
-            v.emplace_back("hello");
+            v.as_array().emplace_back(1);
+            v.as_array().emplace_back(true);
+            v.as_array().emplace_back("hello");
 
             fail_loop([&](storage_ptr const& sp)
             {

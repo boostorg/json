@@ -109,8 +109,9 @@ public:
 
     /** Describes the result of inserting a node handle.
 
-        Objects of this type are returned by functions
-        which attempt to insert a compatible node handle.
+        Objects of this type are returned by overloads
+        of @ref insert which accept a @ref node_type
+        parameter.
     */
     struct insert_return_type
     {

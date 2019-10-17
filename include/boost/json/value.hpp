@@ -12,6 +12,7 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/array.hpp>
+#include <boost/json/error.hpp>
 #include <boost/json/kind.hpp>
 #include <boost/json/number.hpp>
 #include <boost/json/object.hpp>
@@ -20,6 +21,7 @@
 #include <boost/json/detail/is_specialized.hpp>
 #include <boost/json/detail/value.hpp>
 #include <boost/type_traits/make_void.hpp>
+#include <boost/throw_exception.hpp>
 #include <boost/utility/string_view.hpp>
 #include <boost/pilfer.hpp>
 #include <cstdlib>
@@ -88,7 +90,7 @@ using has_to_json =
             detail::remove_cr<T>>::value>;
 #endif
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------
 
 /** The type used to represent any JSON value
 */
@@ -165,25 +167,6 @@ public:
     /** Construct a value of the specified kind
 
         The container and all of its contents will use the
-        default storage.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-
-        @param k The kind of JSON value.
-    */
-    BOOST_JSON_DECL
-    explicit
-    value(json::kind k) noexcept;
-
-    /** Construct a value of the specified kind
-
-        The container and all of its contents will use the
         specified storage object.
 
         @par Complexity
@@ -202,7 +185,7 @@ public:
     BOOST_JSON_DECL
     value(
         json::kind k,
-        storage_ptr sp) noexcept;
+        storage_ptr sp = default_storage()) noexcept;
 
     /** Copy constructor
 
@@ -366,11 +349,11 @@ public:
     BOOST_JSON_DECL
     value& operator=(value const& other);
 
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
     //
     // Conversion
     //
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
 
     /** Construct an object
     */
@@ -443,11 +426,17 @@ public:
     value&
     operator=(string str);
 
-    //--------------------------------------------------------------------------
+    /** Assign a number
+    */
+    BOOST_JSON_DECL
+    value&
+    operator=(number num);
+
+    //------------------------------------------------------
     //
     // Modifiers
     //
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
 
     /** Reset the json to the specified type.
 
@@ -460,8 +449,12 @@ public:
         valid state.
     */
     BOOST_JSON_DECL
-    void
-    reset(json::kind k = json::kind::null) noexcept;
+    value&
+    reset(json::kind k = json::kind::null) noexcept
+    {
+        value(k, get_storage()).swap(*this);
+        return *this;
+    }
 
     /** Set the value to an empty object, and return it.
 
@@ -473,7 +466,7 @@ public:
     emplace_object() noexcept
     {
         reset(json::kind::object);
-        return as_object();
+        return obj_;
     }
 
     /** Set the value to an empty array, and return it.
@@ -486,7 +479,7 @@ public:
     emplace_array() noexcept
     {
         reset(json::kind::array);
-        return as_array();
+        return arr_;
     }
 
     /** Set the value to an empty string, and return it.
@@ -499,7 +492,7 @@ public:
     emplace_string() noexcept
     {
         reset(json::kind::string);
-        return as_string();
+        return str_;
     }
 
     /** Set the value to an uninitialized number, and return it.
@@ -512,7 +505,7 @@ public:
     emplace_number() noexcept
     {
         reset(json::kind::number);
-        return as_number();
+        return nat_.num_;
     }
 
     /** Set the value to an uninitialized boolean, and return it.
@@ -525,7 +518,7 @@ public:
     emplace_bool() noexcept
     {
         reset(json::kind::boolean);
-        return as_bool();
+        return nat_.bool_;
     }
 
     /// Set the value to a null
@@ -547,38 +540,24 @@ public:
 
         @par Complexity
 
-        Constant.
+        Constant or linear in the size of `*this` plus `other`.
 
         @par Exception Safety
 
         Strong guarantee.
+        Calls to @ref storage::allocate may throw.
 
         @param other The container to swap with
-
-        @throws std::domain_error if `*get_storage() != *other.get_storage()`
     */
     BOOST_JSON_DECL
     void
     swap(value& other);
 
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
     //
     // Exchange
     //
-    //--------------------------------------------------------------------------
-
-    /// Construct from another type
-    template<
-        class T
-    #ifndef GENERATING_DOCUMENTATION
-        ,class = typename std::enable_if<
-            has_to_json<T>::value>::type
-    #endif
-    >
-    value(T const& t)
-        : value(t, default_storage())
-    {
-    }
+    //------------------------------------------------------
 
     /// Construct from another type using the specified storage
     template<
@@ -588,7 +567,9 @@ public:
             has_to_json<T>::value>::type
     #endif
     >
-    value(T const& t, storage_ptr sp)
+    value(
+        T const& t,
+        storage_ptr sp = default_storage())
         : value(std::move(sp))
     {
         value_exchange<
@@ -641,11 +622,11 @@ public:
                 >::from_json(t, *this);
     }
 
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
     //
     // Observers
     //
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
 
     /// Returns the kind of this JSON value
     json::kind
@@ -760,71 +741,199 @@ public:
     maybe_object(
         std::initializer_list<value> init) noexcept;
 
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
     //
     // Accessors
     //
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
 
     BOOST_JSON_DECL
     storage_ptr const&
     get_storage() const noexcept;
 
+    object*
+    if_object() noexcept
+    {
+        if(kind_ == json::kind::object)
+            return &obj_;
+        return nullptr;
+    }
+
+    object const*
+    if_object() const noexcept
+    {
+        if(kind_ == json::kind::object)
+            return &obj_;
+        return nullptr;
+    }
+
+    array*
+    if_array() noexcept
+    {
+        if(kind_ == json::kind::array)
+            return &arr_;
+        return nullptr;
+    }
+
+    array const*
+    if_array() const noexcept
+    {
+        if(kind_ == json::kind::array)
+            return &arr_;
+        return nullptr;
+    }
+
+    string*
+    if_string() noexcept
+    {
+        if(kind_ == json::kind::string)
+            return &str_;
+        return nullptr;
+    }
+
+    string const*
+    if_string() const noexcept
+    {
+        if(kind_ == json::kind::string)
+            return &str_;
+        return nullptr;
+    }
+
+    number*
+    if_number() noexcept
+    {
+        if(kind_ == json::kind::number)
+            return &nat_.num_;
+        return nullptr;
+    }
+
+    number const*
+    if_number() const noexcept
+    {
+        if(kind_ == json::kind::number)
+            return &nat_.num_;
+        return nullptr;
+    }
+
+    bool*
+    if_boolean() noexcept
+    {
+        if(kind_ == json::kind::boolean)
+            return &nat_.bool_;
+        return nullptr;
+    }
+
+    bool const*
+    if_boolean() const noexcept
+    {
+        if(kind_ == json::kind::boolean)
+            return &nat_.bool_;
+        return nullptr;
+    }
+
+    //------------------------------------------------------
+
     object&
     as_object() noexcept
     {
-        BOOST_ASSERT(is_object());
+        if(kind_ != json::kind::object)
+            BOOST_THROW_EXCEPTION(
+                system_error(
+                    error::not_object));
         return obj_;
     }
 
     object const&
-    as_object() const noexcept
+    as_object() const
     {
-        BOOST_ASSERT(is_object());
+        if(kind_ != json::kind::object)
+            BOOST_THROW_EXCEPTION(
+                system_error(
+                    error::not_object));
         return obj_;
     }
 
     array&
-    as_array() noexcept
+    as_array()
     {
-        BOOST_ASSERT(is_array());
+        if(kind_ != json::kind::array)
+            BOOST_THROW_EXCEPTION(
+                system_error(
+                    error::not_array));
         return arr_;
     }
 
     array const&
-    as_array() const noexcept
+    as_array() const
     {
-        BOOST_ASSERT(is_array());
+        if(kind_ != json::kind::array)
+            BOOST_THROW_EXCEPTION(
+                system_error(
+                    error::not_array));
         return arr_;
     }
 
     string&
-    as_string() noexcept
+    as_string()
     {
-        BOOST_ASSERT(is_string());
+        if(kind_ != json::kind::string)
+            BOOST_THROW_EXCEPTION(
+                system_error(
+                    error::not_string));
         return str_;
     }
 
     string const&
-    as_string() const noexcept
+    as_string() const
     {
-        BOOST_ASSERT(is_string());
+        if(kind_ != json::kind::string)
+            BOOST_THROW_EXCEPTION(
+                system_error(
+                    error::not_string));
         return str_;
     }
 
     number&
-    as_number() noexcept
+    as_number()
     {
-        BOOST_ASSERT(is_number());
+        if(kind_ != json::kind::number)
+            BOOST_THROW_EXCEPTION(
+                system_error(
+                    error::not_number));
         return nat_.num_;
     }
 
     number const&
-    as_number() const noexcept
+    as_number() const
     {
-        BOOST_ASSERT(is_number());
+        if(kind_ != json::kind::number)
+            BOOST_THROW_EXCEPTION(
+                system_error(
+                    error::not_number));
         return nat_.num_;
     }
+
+    bool&
+    as_bool() noexcept
+    {
+        if(kind_ != json::kind::boolean)
+            BOOST_THROW_EXCEPTION(
+                system_error(
+                    error::not_bool));
+        return nat_.bool_;
+    }
+
+    bool const&
+    as_bool() const noexcept
+    {
+        if(kind_ != json::kind::boolean)
+            BOOST_THROW_EXCEPTION(
+                system_error(
+                    error::not_bool));
+        return nat_.bool_;
+    }
+
+    //------------------------------------------------------
 
     std::int64_t
     get_int64() const noexcept
@@ -847,231 +956,7 @@ public:
         return nat_.num_.get_double();
     }
 
-    bool&
-    as_bool() noexcept
-    {
-        BOOST_ASSERT(is_bool());
-        return nat_.bool_;
-    }
-
-    bool const&
-    as_bool() const noexcept
-    {
-        BOOST_ASSERT(is_bool());
-        return nat_.bool_;
-    }
-
-    //--------------------------------------------------------------------------
-    //
-    // Structured
-    //
-    //--------------------------------------------------------------------------
-    
-    using key_type = string_view;
-    using mapped_type = value;
-    using value_type = std::pair<key_type, value>;
-    using size_type = std::size_t;
-    using difference_type = std::ptrdiff_t;
-    using reference = std::pair<key_type, value&>;
-    using const_reference = std::pair<key_type, value const&>;
-    class pointer;
-    class const_pointer;
-    class iterator;
-    class const_iterator;
-    using reverse_iterator =
-        std::reverse_iterator<iterator>;
-    using const_reverse_iterator =
-        std::reverse_iterator<const_iterator>;
-
-    //
-    // Capacity
-    //
-
-    BOOST_JSON_DECL
-    bool
-    empty() const;
-
-    BOOST_JSON_DECL
-    size_type
-    size() const;
-
-    //
-    // Iterators
-    //
-
-    BOOST_JSON_DECL
-    iterator
-    begin();
-
-    BOOST_JSON_DECL
-    const_iterator
-    begin() const;
-
-    BOOST_JSON_DECL
-    const_iterator
-    cbegin();
-
-    BOOST_JSON_DECL
-    iterator
-    end();
-
-    BOOST_JSON_DECL
-    const_iterator
-    end() const;
-
-    BOOST_JSON_DECL
-    const_iterator
-    cend();
-
-    BOOST_JSON_DECL
-    reverse_iterator
-    rbegin();
-
-    BOOST_JSON_DECL
-    const_reverse_iterator
-    rbegin() const;
-
-    BOOST_JSON_DECL
-    const_reverse_iterator
-    crbegin();
-
-    BOOST_JSON_DECL
-    reverse_iterator
-    rend();
-
-    BOOST_JSON_DECL
-    const_reverse_iterator
-    rend() const;
-
-    BOOST_JSON_DECL
-    const_reverse_iterator
-    crend();
-
-    //
-    // Lookup
-    //
-
-    BOOST_JSON_DECL
-    value&
-    at(key_type key);
-    
-    BOOST_JSON_DECL
-    value const&
-    at(key_type key) const;
-
-    BOOST_JSON_DECL
-    value&
-    operator[](key_type key);
-
-    BOOST_JSON_DECL
-    size_type
-    count(key_type key) const;
-
-    BOOST_JSON_DECL
-    iterator
-    find(key_type key);
-
-    BOOST_JSON_DECL
-    const_iterator
-    find(key_type key) const;
-
-    BOOST_JSON_DECL
-    bool
-    contains(key_type key) const;
-
-    //
-    // Elements
-    //
-
-    BOOST_JSON_DECL
-    reference
-    at(size_type pos);
-
-    BOOST_JSON_DECL
-    const_reference
-    at(size_type pos) const;
-
-    BOOST_JSON_DECL
-    value&
-    operator[](size_type i);
-
-    BOOST_JSON_DECL
-    value const&
-    operator[](size_type i) const;
-
-    BOOST_JSON_DECL
-    reference
-    front();
-
-    BOOST_JSON_DECL
-    const_reference
-    front() const;
-
-    BOOST_JSON_DECL
-    reference
-    back();
-
-    BOOST_JSON_DECL
-    const_reference
-    back() const;
-
-    // Modifiers
-
-    BOOST_JSON_DECL
-    void
-    clear() noexcept;
-
-    template<class M>
-    std::pair<iterator, bool>
-    insert_or_assign(
-        key_type key, M&& obj);
-
-    template<class M>
-    std::pair<iterator, bool>
-    insert_or_assign(
-        const_iterator before,
-        key_type key,
-        M&& obj);
-
-    template<class Arg>
-    std::pair<iterator, bool>
-    emplace(key_type key, Arg&& arg);
-
-    template<class Arg>
-    std::pair<iterator, bool>
-    emplace(
-        const_iterator before,
-        key_type key, Arg&& arg);
-
-    template<class Arg>
-    iterator
-    emplace(
-        const_iterator before,
-        Arg&& arg);
-
-    BOOST_JSON_DECL
-    size_type
-    erase(key_type key);
-
-    BOOST_JSON_DECL
-    iterator
-    erase(const_iterator pos);
-
-    BOOST_JSON_DECL
-    iterator
-    erase(
-        const_iterator first,
-        const_iterator last);
-
-    template<class Arg>
-    value&
-    emplace_back(Arg&& arg);
-
-    BOOST_JSON_DECL
-    void
-    pop_back();
-
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
 
 private:
     BOOST_JSON_DECL

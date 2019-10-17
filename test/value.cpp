@@ -570,30 +570,6 @@ public:
     }
 
     void
-    testStructured()
-    {
-        // empty()
-        {
-            value jv;
-            jv.emplace_object();
-            BEAST_EXPECT(jv.empty());
-            jv.emplace_array();
-            BEAST_EXPECT(jv.empty());
-        }
-
-        // size()
-        {
-            value jv;
-            jv.emplace_object();
-            jv.as_object().emplace("x", 1);
-            BEAST_EXPECT(jv.size() == 1);
-            jv.emplace_array();
-            jv.as_array().emplace_back(1);
-            BEAST_EXPECT(jv.size() == 1);
-        }
-    }
-
-    void
     testCustomization()
     {
         using namespace value_test_ns;
@@ -650,7 +626,6 @@ public:
         testModifiers();
         testExchange();
         testAccessors();
-        testStructured();
         testCustomization();
         testInitList();
     }
@@ -660,33 +635,3 @@ BEAST_DEFINE_TESTSUITE(boost,json,value);
 
 } // json
 } // boost
-
-#if 0
-
-    /** {brief}
-
-        {description}
-
-        @par Constraints
-
-        {constraints}
-
-        @par Requires
-
-        {requires}
-
-        @par Complexity
-
-        {complexity}
-
-        @par Exception Safety
-
-        Strong guarantee.
-        Calls to @ref storage::allocate may throw.
-
-        @param {name} {desc}
-
-        @tparam {type} {desc}
-    */
-
-#endif

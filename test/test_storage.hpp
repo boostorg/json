@@ -230,7 +230,7 @@ equal_storage(
     case json::kind::object:
         if(*v.as_object().get_storage() != *sp)
             return false;
-        for(auto const& e : v)
+        for(auto const& e : v.as_object())
             if(! equal_storage(e.second, sp))
                 return false;
         return true;
