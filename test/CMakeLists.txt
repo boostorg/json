@@ -36,7 +36,6 @@ add_executable (json-tests
     kind.cpp
     number.cpp
     object.cpp
-    parse_file.cpp
     parser.cpp
     serializer.cpp
     storage.cpp
