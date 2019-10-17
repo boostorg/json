@@ -32,16 +32,16 @@ growth(
     impl_size_type capacity) ->
         impl_size_type
 {
-    if(new_size > max_size_)
+    if(new_size > detail::max_string_length_)
         BOOST_THROW_EXCEPTION(
             std::length_error(
                 "size > max_size()"));
     new_size |= mask_;
-    if( new_size > max_size_)
-        return max_size_;
+    if( new_size > detail::max_string_length_)
+        return detail::max_string_length_;
     if( capacity >
-        max_size_ - capacity / 2)
-        return max_size_; // overflow
+        detail::max_string_length_ - capacity / 2)
+        return detail::max_string_length_; // overflow
     return (std::max<impl_size_type>)(
         capacity + capacity / 2,
         static_cast<impl_size_type>(
@@ -116,7 +116,7 @@ append(
     size_type n,
     storage_ptr const& sp)
 {
-    if(n > max_size_ - size)
+    if(n > detail::max_string_length_ - size)
         BOOST_THROW_EXCEPTION(
             std::length_error(
                 "size > max_size()"));
@@ -160,7 +160,7 @@ insert(
             impl_size_type>(n);
         return dest;
     }
-    if(n > max_size_ - size)
+    if(n > detail::max_string_length_ - size)
         BOOST_THROW_EXCEPTION(
             std::length_error(
                 "size > max_size()"));

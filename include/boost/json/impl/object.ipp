@@ -27,36 +27,17 @@
 namespace boost {
 namespace json {
 
-//----------------------------------------------------------
-
-string_view
-object::
-element::
-key() const
-{
-    auto p = reinterpret_cast<
-        char const*>(this + 1);
-    auto const result =
-        detail::varint_read(p);
-    return {
-        p + result.second,
-        static_cast<std::size_t>(
-            result.first) };
-}
-
 void
 object::
 element::
 destroy(
     storage_ptr const& sp) const
 {
-    auto const len = key().size();
-    auto const n =
-        detail::varint_size(len);
+    auto const size_ = size;
     this->~element();
     sp->deallocate(
         const_cast<element*>(this),
-        sizeof(element) + n + len + 1,
+        sizeof(element) + size_ + 1,
         alignof(element));
 }
 
@@ -1099,10 +1080,9 @@ allocate_impl(
     construct_base const& place_new) ->
         element*
 {
-    auto const n = static_cast<std::size_t>(
-        detail::varint_size(key.size()));
     auto const size =
-        sizeof(element) + n + key.size() + 1;
+        sizeof(element) +
+        key.size() + 1;
     struct cleanup
     {
         void* p;
@@ -1121,15 +1101,16 @@ allocate_impl(
     place_new(c.p);
     char* p = static_cast<char*>(c.p);
     c.p = nullptr;
-    detail::varint_write(
-        p + sizeof(element), key.size());
     std::memcpy(
-        p + sizeof(element) + n,
+        p + sizeof(element),
         key.data(),
         key.size());
     p[sizeof(element) +
-        n + key.size()] = '\0';
-    return reinterpret_cast<element*>(p);
+        key.size()] = '\0';
+    auto e = reinterpret_cast<
+        element*>(p);
+    e->size = key.size();
+    return e;
 }
 
 auto

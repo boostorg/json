@@ -37,4 +37,15 @@
 # endif  // auto-linking disabled
 #endif
 
+namespace boost {
+namespace json {
+namespace detail {
+
+// max length of strings used as keys or values
+constexpr unsigned long max_string_length_ = 0x7ffffffe; // 2GB
+
+} // detail
+} // json
+} // boost
+
 #endif

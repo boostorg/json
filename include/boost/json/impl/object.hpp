@@ -11,7 +11,6 @@
 #define BOOST_JSON_IMPL_OBJECT_HPP
 
 #include <boost/json/value.hpp>
-#include <boost/json/detail/varint.hpp>
 #include <boost/core/exchange.hpp>
 #include <boost/core/ignore_unused.hpp>
 #include <boost/utility/string_view.hpp>
@@ -36,10 +35,15 @@ struct object::element : list_hook
 {
     value v;
     element* local_next;
+    unsigned long size; // of key (excluding null)
 
-    BOOST_JSON_DECL
     string_view
-    key() const;
+    key() const
+    {
+        return {reinterpret_cast<
+            char const*>(this+1),
+                size};
+    }
 
     BOOST_JSON_DECL
     void

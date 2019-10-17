@@ -73,9 +73,6 @@ private:
     using impl_size_type = unsigned long;
 
     static constexpr
-        size_type max_size_ = 0x7ffffffe; // 2GB
-
-    static constexpr
         impl_size_type mask_ = 0x0f;
 
     struct impl
@@ -712,7 +709,7 @@ public:
     size_type
     max_size() const noexcept
     {
-        return max_size_;
+        return detail::max_string_length_;
     }
 
     BOOST_JSON_DECL
