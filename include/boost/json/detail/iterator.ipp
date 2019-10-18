@@ -108,10 +108,12 @@ operator*() const noexcept ->
     {
         BOOST_ASSERT(
             stack_.size() == 1);
+        BOOST_ASSERT(n.key.empty());
         return {
             stack_.size() - 1,
-            n.key,
+            "",
             *n.v,
+            false,
             true,
             false };
     }
@@ -124,6 +126,7 @@ operator*() const noexcept ->
                 stack_.size(),
                 n.obj_it->first,
                 n.obj_it->second,
+                true,
                 std::next(n.obj_it) ==
                     n.v->as_object().end(),
                 false };
@@ -131,6 +134,7 @@ operator*() const noexcept ->
             stack_.size() - 1,
             "",
             *n.v,
+            true,
             stack_.size() == 1
                 || stack_[1].last(),
             true};
@@ -141,6 +145,7 @@ operator*() const noexcept ->
             stack_.size(),
             "",
             *n.arr_it,
+            false,
             std::next(n.arr_it) ==
                 n.v->as_array().end(),
             false };
@@ -148,6 +153,7 @@ operator*() const noexcept ->
         stack_.size() - 1,
         "",
         *n.v,
+        false,
         stack_.size() == 1
             || stack_[1].last(),
         true};

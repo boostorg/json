@@ -69,6 +69,7 @@ public:
         std::size_t         depth;
         string_view         key;
         json::value const&  value;
+        bool                has_key;
         bool                last;
         bool                end;
 

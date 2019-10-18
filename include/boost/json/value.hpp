@@ -816,7 +816,7 @@ public:
     }
 
     bool*
-    if_boolean() noexcept
+    if_bool() noexcept
     {
         if(kind_ == json::kind::boolean)
             return &nat_.bool_;
@@ -824,7 +824,7 @@ public:
     }
 
     bool const*
-    if_boolean() const noexcept
+    if_bool() const noexcept
     {
         if(kind_ == json::kind::boolean)
             return &nat_.bool_;

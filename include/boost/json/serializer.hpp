@@ -20,89 +20,27 @@ namespace json {
 
 class serializer
 {
-    struct base
-    {
-        virtual ~base() = default;
+    enum class state : char;
 
-        virtual
-        bool
-        is_done() const noexcept = 0;
-
-        virtual
-        std::size_t
-        next(char* dest, std::size_t size) = 0;
-    };
-
-    class impl : public base
-    {
-        enum class state
-        {
-            next,
-            init,
-            key,
-            value,
-            literal,
-            key_literal,
-            string,
-            done
-        };
-
-        value const& jv_;
-        detail::const_iterator it_;
-        string_view str_;
-        char buf_[number::max_string_chars + 1];
-        state state_ = state::init;
-        bool last_;
-
-    public:
-        inline
-        impl(value const& jv);
-
-        inline
-        bool
-        is_done() const noexcept override;
-
-        inline
-        std::size_t
-        next(char* dest, std::size_t size) override;
-    };
-
-    typename std::aligned_storage<
-        sizeof(impl)>::type buf_;
-
-    base&
-    get_base() noexcept
-    {
-        return *reinterpret_cast<
-            base*>(&buf_);
-    }
-
-    base const&
-    get_base() const noexcept
-    {
-        return *reinterpret_cast<
-            base const*>(&buf_);
-    }
+    detail::const_iterator it_;
+    string_view key_;
+    string_view str_;
+    unsigned char nbuf_;
+    char buf_[number::max_string_chars + 1];
+    state state_;
 
 public:
-    BOOST_JSON_DECL
-    ~serializer();
-
     BOOST_JSON_DECL
     explicit
     serializer(value const& jv);
 
+    BOOST_JSON_DECL
     bool
-    is_done() const noexcept
-    {
-        return get_base().is_done();
-    }
+    is_done() const noexcept;
 
+    BOOST_JSON_DECL
     std::size_t
-    next(char* dest, std::size_t size)
-    {
-        return get_base().next(dest, size);
-    }
+    next(char* dest, std::size_t size);
 };
 
 } // json

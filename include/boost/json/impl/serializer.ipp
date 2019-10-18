@@ -11,21 +11,46 @@
 #define BOOST_JSON_IMPL_SERIALIZER_IPP
 
 #include <boost/json/serializer.hpp>
+#include <boost/static_assert.hpp>
 
 namespace boost {
 namespace json {
 
-serializer::
-impl::
-impl(value const& jv)
-    : jv_(jv)
-    , it_(jv)
+enum class serializer::state : char
 {
+    inc,    // increment iterator
+    val,    // value
+
+    key1,   // '"'
+    key2,   // escaped string
+    key3,   // '"'
+    key4,   // ':'
+    key5,   // literal (ctrl or utf16 escape)
+
+    str1,   // '"'
+    str2,   // escaped string
+    str3,   // '"'
+    str4,   // ','
+    str5,   // literal (ctrl or utf16 escape)
+
+    lit,    // literal string ({number}, true, false, null)
+
+    done
+};
+
+serializer::
+serializer(
+    value const& jv)
+    : it_(jv)
+    , state_(state::val)
+
+{
+    // ensure room for \uXXXX escape plus one
+    BOOST_STATIC_ASSERT(sizeof(buf_) >= 7);
 }
 
 bool
 serializer::
-impl::
 is_done() const noexcept
 {
     return state_ == state::done;
@@ -33,199 +58,275 @@ is_done() const noexcept
 
 std::size_t
 serializer::
-impl::
 next(char* dest, std::size_t size)
 {
     auto const p0 = dest;
+    auto const p1 = dest + size;
     auto p = p0;
-    auto n = size;
-    while(n > 0)
+loop:
+    switch(state_)
     {
-        switch(state_)
+    case state::inc:
+    {
+        ++it_;
+        if(it_ == detail::end)
         {
-        case state::next:
-            ++it_;
-            if(it_ == detail::end)
-            {
-                state_ = state::done;
-                break;
-            }
-            BOOST_FALLTHROUGH;
-
-        case state::init:
-            str_ = it_->key;
-            if(! str_.empty())
-            {
-                *p++ = '\"';
-                --n;
-                state_ = state::key;
-            }
-            else
-            {
-                state_ = state::value;
-            }
-            break;
-
-        case state::key:
-        case state::string:
-            // Write escaped/UTF-8 string
-            if(n >= str_.size())
-            {
-                std::memcpy(p,
-                    str_.data(), str_.size());
-                p += str_.size();
-                n -= str_.size();
-                if(state_ == state::string)
-                {
-                    if(last_)
-                        str_ = {"\"", 1};
-                    else
-                        str_ = {"\",", 2};
-                    state_ = state::literal;
-                }
-                else
-                {
-                    str_ = {"\":", 2};
-                    state_ = state::key_literal;
-                }
-                break;
-            }
-            else
-            {
-                std::memcpy(p,
-                    str_.data(), n);
-                p += n;
-                str_ = {
-                    str_.data() + n,
-                    str_.size() - n};
-                n = 0;
-            }
-            break;
-
-        case state::literal:
-        case state::key_literal:
-            // Copy content of str_ without escapes
-            if(n >= str_.size())
-            {
-                std::memcpy(p,
-                    str_.data(), str_.size());
-                p += str_.size();
-                n -= str_.size();
-                if(state_ == state::literal)
-                    state_ = state::next;
-                else
-                    state_ = state::value;
-            }
-            else
-            {
-                std::memcpy(p,
-                    str_.data(), n);
-                p += n;
-                str_ = {
-                    str_.data() + n,
-                    str_.size() - n};
-                n = 0;
-            }
-            break;
-
-        case state::value:
-        {
-            auto const& e = *it_;
-            if(! e.end)
-            {
-                switch(e.value.kind())
-                {
-                case kind::object:
-                    *p++ = '{';
-                    --n;
-                    state_ = state::next;
-                    break;
-                case kind::array:
-                    *p++ = '[';
-                    --n;
-                    state_ = state::next;
-                    break;
-                case kind::string:
-                    *p++ = '\"';
-                    str_ = e.value.as_string();
-                    last_ = e.last;
-                    state_ = state::string;
-                    break;
-                case kind::number:
-                    str_ = e.value.as_number().print(
-                        buf_, sizeof(buf_));
-                    if(! e.last)
-                    {
-                        buf_[str_.size()] = ',';
-                        str_ = {buf_, str_.size() + 1};
-                    }
-                    state_ = state::literal;
-                    break;
-                case kind::boolean:
-                    if(e.value.as_bool())
-                    {
-                        if(! e.last)
-                            str_ = {"true,", 5};
-                        else
-                            str_ = {"true", 4};
-                    }
-                    else
-                    {
-                        if(! e.last)
-                            str_ = {"false,", 6};
-                        else
-                            str_ = {"false", 5};
-                    }
-                    state_ = state::literal;
-                    break;
-                case kind::null:
-                    if(! e.last)
-                        str_ = {"null,", 5};
-                    else
-                        str_ = {"null", 4};
-                    state_ = state::literal;
-                    break;
-                }
-            }
-            else if(e->value.is_object())
-            {
-                if(! e.last)
-                    str_ = {"},", 2};
-                else
-                    str_ = {"}", 1};
-                state_ = state::literal;
-            }
-            else if(e->value.is_array())
-            {
-                if(! e.last)
-                    str_ = {"],", 2};
-                else
-                    str_ = {"]", 1};
-                state_ = state::literal;
-            }
-            break;
+            state_ = state::done;
+            goto loop;
         }
+        auto const& e = *it_;
+        if(e.end)
+        {
+            if(e.value.is_object())
+            {
+                str_ = {"},", e.last ? 1U : 2U};
+                state_ = state::lit;
+                goto loop;
+            }
+            BOOST_ASSERT(e.value.is_array());
+            str_ = {"],", e.last ? 1U : 2U};
+            state_ = state::lit;
+            goto loop;
+        }
+        if(e.has_key)
+        {
+            key_ = it_->key;
+            state_ = state::key1;
+            goto loop;
+        }
+        BOOST_FALLTHROUGH;
+    }
 
-        case state::done:
+    case state::val:
+    {
+        auto const& e = *it_;
+        switch(e.value.kind())
+        {
+        case kind::object:
+            if(p >= p1)
+                goto finish;
+            *p++ = '{';
+            state_ = state::inc;
+            goto loop;
+            break;
+
+        case kind::array:
+            if(p >= p1)
+                goto finish;
+            *p++ = '[';
+            state_ = state::inc;
+            goto loop;
+
+        case kind::string:
+            str_ = *e.value.if_string();
+            state_ = state::str1;
+            goto loop;
+
+        case kind::number:
+            str_ = e.value.if_number()->print(
+                buf_, sizeof(buf_));
+            if(! e.last)
+            {
+                buf_[str_.size()] = ',';
+                str_ = {str_.data(),
+                    str_.size() + 1};
+            }
+            state_ = state::lit;
+            goto loop;
+
+        case kind::boolean:
+            if(*e.value.if_bool())
+                str_ = { "true,",
+                    e.last ? 4U : 5U };
+            else
+                str_ = { "false,",
+                    e.last ? 5U : 6U };
+            state_ = state::lit;
+            goto loop;
+
+        case kind::null:
+            str_ = { "null,",
+                e.last ? 4U : 5U };
+            state_ = state::lit;
+            goto loop;
+        }
+    }
+
+    //---
+
+    case state::key1:
+        if(p >= p1)
+            goto finish;
+        *p++ = '\"';
+        state_ = state::key2;
+        BOOST_FALLTHROUGH;
+
+    case state::key2:
+    {
+        auto const n =
+            key_.copy(p, p1 - p);
+        p += n;
+        if(n < key_.size())
+        {
+            BOOST_ASSERT(p >= p1);
+            key_ = key_.substr(n);
             goto finish;
         }
+        state_ = state::key3;
+        BOOST_FALLTHROUGH;
+    }
+
+    case state::key3:
+        if(p >= p1)
+            goto finish;
+        *p++ = '\"';
+        state_ = state::key4;
+        BOOST_FALLTHROUGH;
+
+    case state::key4:
+        if(p >= p1)
+            goto finish;
+        *p++ = ':';
+        state_ = state::val;
+        goto loop;
+
+    case state::key5:
+        if(p >= p1)
+            goto finish;
+        break;
+
+    //---
+
+    case state::str1:
+        if(p >= p1)
+            goto finish;
+        *p++ = '\"';
+        state_ = state::str2;
+        BOOST_FALLTHROUGH;
+
+    case state::str2:
+    {
+        auto s = str_.data();
+        auto const s1 =
+            s + str_.size();
+        while(p < p1 && s < s1)
+        {
+            auto ch = *s++;
+            if(ch == '\\')
+            {
+                if(p + 2 <= p1)
+                {
+                    *p++ = '\\';
+                    *p++ = '\\';
+                    continue;
+                }
+                str_ = str_.substr(
+                    s - str_.data());
+                buf_[1] = '\\';
+                buf_[0] = '\\';
+                nbuf_ = 2;
+                state_ = state::str5;
+                goto loop;
+            }
+            else if(ch == '\"')
+            {
+                if(p + 2 <= p1)
+                {
+                    *p++ = '\\';
+                    *p++ = '\"';
+                    continue;
+                }
+                str_ = str_.substr(
+                    s - str_.data());
+                buf_[1] = '\\';
+                buf_[0] = '\"';
+                nbuf_ = 2;
+                state_ = state::str5;
+                goto loop;
+            }
+            else if(ch >= 32)
+            {
+                *p++ = ch;
+                continue;
+            }
+            else
+            {
+                str_ = str_.substr(
+                    s - str_.data());
+                buf_[5] = '\\';
+                buf_[4] = 'u';
+                buf_[3] = '0';
+                buf_[2] = '0';
+                buf_[1] = "0123456789abcdef"[ch >>  4];
+                buf_[0] = "0123456789abcdef"[ch &  15];
+                nbuf_ = 6;
+                state_ = state::str5;
+                goto loop;
+            }
+        }
+        if(s < s1)
+        {
+            str_ = str_.substr(
+                s - str_.data());
+            goto finish;
+        }
+        state_ = state::str3;
+        BOOST_FALLTHROUGH;
+    }
+
+    case state::str3:
+        if(p >= p1)
+            goto finish;
+        *p++ = '\"';
+        if(it_->last)
+        {
+            state_ = state::inc;
+            goto loop;
+        }
+        state_ = state::str4;
+        BOOST_FALLTHROUGH;
+
+    case state::str4:
+        if(p >= p1)
+            goto finish;
+        *p++ = ',';
+        state_ = state::inc;
+        goto loop;
+
+    case state::str5:
+        while(p < p1)
+        {
+            *p++ = buf_[--nbuf_];
+            if(! nbuf_)
+            {
+                state_ = state::str2;
+                goto loop;
+            }
+        }
+        goto finish;
+
+    //---
+
+    case state::lit:
+    {
+        auto const n =
+            str_.copy(p, p1 - p);
+        p += n;
+        if(n == str_.size())
+        {
+            state_ = state::inc;
+            goto loop;
+        }
+        str_ = str_.substr(n);
+        BOOST_ASSERT(p >= p1);
+        goto finish;
+    }
+
+    case state::done:
+        goto finish;
     }
 finish:
     return p - p0;
-}
-
-//------------------------------------------------------------------------------
-
-serializer::
-~serializer()
-{
-    get_base().~base();
-}
-
-serializer::
-serializer(value const& jv)
-{
-    ::new(&get_base()) impl(jv);
 }
 
 } // json
