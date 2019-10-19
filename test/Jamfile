@@ -26,8 +26,6 @@ project
     ;
 
 local SOURCES =
-    _detail_iterator.cpp
-    _detail_stack.cpp
     array.cpp
     assign_string.cpp
     assign_vector.cpp
@@ -42,6 +40,12 @@ local SOURCES =
     storage.cpp
     string.cpp
     value.cpp
+    _detail_stack.cpp
+    ryu/d2fixed_test.cpp
+    ryu/d2s_intrinsics_test.cpp
+    ryu/d2s_table_test.cpp
+    ryu/d2s_test.cpp
+    ryu/f2s_test.cpp
     ;
 
 local RUN_TESTS ;

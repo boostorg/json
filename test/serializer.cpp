@@ -16,7 +16,7 @@
 
 #include "parse-vectors.hpp"
 
-#define SOFT_FAIL
+//#define SOFT_FAIL
 
 namespace boost {
 namespace json {
@@ -79,7 +79,9 @@ public:
             ! ec, ec.message()))
     #endif
         {
-            log << "  " << s1 << std::endl << std::endl;
+            log <<
+                "  " << s0 << "\n"
+                "  " << s1 << std::endl << std::endl;
             return;
         }
         auto s2 = to_string(jv1);
@@ -130,7 +132,7 @@ public:
                 continue;
 
             round_trip(e.text);
-
+#if 0
             error_code ec;
             std::string s1, s2;
             {
@@ -163,6 +165,7 @@ public:
                     "  " << s2 << "\n" <<
                     std::endl << std::endl;
             }
+#endif
         }
     }
 
@@ -185,7 +188,7 @@ public:
     run()
     {
         pass();
-        
+#if 0
         tv(R"("")");
         tv(R"("x")");
         tv(R"("xyz")");
@@ -239,15 +242,26 @@ public:
 
         tv(R"(null)");
 
-#if 0
         parse_vectors const pv;
         for(auto const e : pv)
         {
             if( e.result == 'y' ||
                 good(e.text))
+            {
+                log << e.name << std::endl;
                 round_trip(e.text);
+            }
         }
+#else
+        error_code ec;
+        auto const jv =
+            from_string("1.5e+2", ec);
+        log <<
+            jv.as_number().get_double() <<
+            std::endl;
 #endif
+
+        pass();
     }
 };
 

@@ -1,0 +1,310 @@
+// Copyright 2018 Ulf Adams
+//
+// The contents of this file may be used under the terms of the Apache License,
+// Version 2.0.
+//
+//    (See accompanying file LICENSE-Apache or copy at
+//     http://www.apache.org/licenses/LICENSE-2.0)
+//
+// Alternatively, the contents of this file may be used under the terms of
+// the Boost Software License, Version 1.0.
+//    (See accompanying file LICENSE-Boost or copy at
+//     https://www.boost.org/LICENSE_1_0.txt)
+//
+// Unless required by applicable law or agreed to in writing, this software
+// is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.
+
+/*
+    This is a derivative work
+*/
+
+#ifndef BOOST_JSON_DETAIL_RYU_DETAIL_D2S_INTRINSICS_HPP
+#define BOOST_JSON_DETAIL_RYU_DETAIL_D2S_INTRINSICS_HPP
+
+// This sets BOOST_JSON_DETAIL_RYU_32_BIT_PLATFORM as a side effect if applicable.
+#include <boost/json/detail/ryu/detail/common.hpp>
+#include <boost/assert.hpp>
+#include <cstdint>
+
+#if defined(BOOST_JSON_RYU_HAS_64_BIT_INTRINSICS)
+#include <intrin.h>
+#endif
+
+namespace boost {
+namespace json {
+namespace detail {
+
+namespace ryu {
+namespace detail {
+
+#if defined(BOOST_JSON_RYU_HAS_64_BIT_INTRINSICS)
+
+inline
+std::uint64_t
+umul128(
+    std::uint64_t const a,
+    std::uint64_t const b,
+    std::uint64_t* const productHi) noexcept
+{
+    return _umul128(a, b, productHi);
+}
+
+inline
+std::uint64_t
+shiftright128(
+    std::uint64_t const lo,
+    std::uint64_t const hi,
+    std::uint32_t const dist) noexcept
+{
+    // For the __shiftright128 intrinsic, the shift value is always
+    // modulo 64.
+    // In the current implementation of the double-precision version
+    // of Ryu, the shift value is always < 64. (In the case
+    // BOOST_JSON_RYU_OPTIMIZE_SIZE == 0, the shift value is in the range [49, 58].
+    // Otherwise in the range [2, 59].)
+    // Check this here in case a future change requires larger shift
+    // values. In this case this function needs to be adjusted.
+    BOOST_ASSERT(dist < 64);
+    return __shiftright128(lo, hi, (unsigned char) dist);
+}
+
+#else // defined(BOOST_JSON_RYU_HAS_64_BIT_INTRINSICS)
+
+inline
+std::uint64_t
+umul128(
+    std::uint64_t const a,
+    std::uint64_t const b,
+    std::uint64_t* const productHi) noexcept
+{
+    // The casts here help MSVC to avoid calls to the __allmul library function.
+    std::uint32_t const aLo = (std::uint32_t)a;
+    std::uint32_t const aHi = (std::uint32_t)(a >> 32);
+    std::uint32_t const bLo = (std::uint32_t)b;
+    std::uint32_t const bHi = (std::uint32_t)(b >> 32);
+
+    std::uint64_t const b00 = (std::uint64_t)aLo * bLo;
+    std::uint64_t const b01 = (std::uint64_t)aLo * bHi;
+    std::uint64_t const b10 = (std::uint64_t)aHi * bLo;
+    std::uint64_t const b11 = (std::uint64_t)aHi * bHi;
+
+    std::uint32_t const b00Lo = (std::uint32_t)b00;
+    std::uint32_t const b00Hi = (std::uint32_t)(b00 >> 32);
+
+    std::uint64_t const mid1 = b10 + b00Hi;
+    std::uint32_t const mid1Lo = (std::uint32_t)(mid1);
+    std::uint32_t const mid1Hi = (std::uint32_t)(mid1 >> 32);
+
+    std::uint64_t const mid2 = b01 + mid1Lo;
+    std::uint32_t const mid2Lo = (std::uint32_t)(mid2);
+    std::uint32_t const mid2Hi = (std::uint32_t)(mid2 >> 32);
+
+    std::uint64_t const pHi = b11 + mid1Hi + mid2Hi;
+    std::uint64_t const pLo = ((std::uint64_t)mid2Lo << 32) | b00Lo;
+
+    *productHi = pHi;
+    return pLo;
+}
+
+inline
+std::uint64_t
+shiftright128(
+    uint64_t const lo,
+    uint64_t const hi,
+    uint32_t const dist)
+{
+    // We don't need to handle the case dist >= 64 here (see above).
+    BOOST_ASSERT(dist < 64);
+    
+#if defined(BOOST_JSON_RYU_OPTIMIZE_SIZE) || !defined(BOOST_JSON_DETAIL_RYU_32_BIT_PLATFORM)
+    BOOST_ASSERT(dist > 0);
+    return (hi << (64 - dist)) | (lo >> dist);
+#else
+    // Avoid a 64-bit shift by taking advantage of the range of shift values.
+    BOOST_ASSERT(dist >= 32);
+    return (hi << (64 - dist)) | ((std::uint32_t)(lo >> 32) >> (dist - 32));
+#endif
+}
+
+#endif // defined(BOOST_JSON_RYU_HAS_64_BIT_INTRINSICS)
+
+#ifdef BOOST_JSON_DETAIL_RYU_32_BIT_PLATFORM
+
+// Returns the high 64 bits of the 128-bit product of a and b.
+inline
+std::uint64_t
+umulh(
+    uint64_t const a,
+    uint64_t const b)
+{
+    // Reuse the umul128 implementation.
+    // Optimizers will likely eliminate the instructions used to compute the
+    // low part of the product.
+    std::uint64_t hi;
+    umul128(a, b, &hi);
+    return hi;
+}
+
+// On 32-bit platforms, compilers typically generate calls to library
+// functions for 64-bit divisions, even if the divisor is a constant.
+//
+// E.g.:
+// https://bugs.llvm.org/show_bug.cgi?id=37932
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=17958
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=37443
+//
+// The functions here perform division-by-constant using multiplications
+// in the same way as 64-bit compilers would do.
+//
+// NB:
+// The multipliers and shift values are the ones generated by clang x64
+// for expressions like x/5, x/10, etc.
+
+inline
+std::uint64_t
+div5(std::uint64_t const x)
+{
+    return umulh(x, 0xCCCCCCCCCCCCCCCDu) >> 2;
+}
+
+inline
+std::uint64_t
+div10(std::uint64_t const x)
+{
+    return umulh(x, 0xCCCCCCCCCCCCCCCDu) >> 3;
+}
+
+inline
+std::uint64_t
+div100(
+    std::uint64_t const x)
+{
+    return umulh(x >> 2, 0x28F5C28F5C28F5C3u) >> 2;
+}
+
+inline
+std::uint64_t
+div1e8(std::uint64_t const x)
+{
+    return umulh(x, 0xABCC77118461CEFDu) >> 26;
+}
+
+inline
+std::uint64_t
+div1e9(std::uint64_t const x)
+{
+    return umulh(x >> 9, 0x44B82FA09B5A53u) >> 11;
+}
+
+inline
+std::uint32_t
+mod1e9(std::uint64_t const x)
+{
+    // Avoid 64-bit math as much as possible.
+    // Returning (std::uint32_t) (x - 1000000000 * div1e9(x)) would
+    // perform 32x64-bit multiplication and 64-bit subtraction.
+    // x and 1000000000 * div1e9(x) are guaranteed to differ by
+    // less than 10^9, so their highest 32 bits must be identical,
+    // so we can truncate both sides to uint32_t before subtracting.
+    // We can also simplify (std::uint32_t) (1000000000 * div1e9(x)).
+    // We can truncate before multiplying instead of after, as multiplying
+    // the highest 32 bits of div1e9(x) can't affect the lowest 32 bits.
+    return ((std::uint32_t) x) - 1000000000 * ((std::uint32_t) div1e9(x));
+}
+
+#else // BOOST_JSON_DETAIL_RYU_32_BIT_PLATFORM
+
+inline
+std::uint64_t
+div5(std::uint64_t const x)
+{
+    return x / 5;
+}
+
+inline
+std::uint64_t
+div10(std::uint64_t const x)
+{
+    return x / 10;
+}
+
+inline
+std::uint64_t
+div100(const std::uint64_t x)
+{
+    return x / 100;
+}
+
+inline
+std::uint64_t
+div1e8(const std::uint64_t x)
+{
+    return x / 100000000;
+}
+
+inline
+std::uint64_t
+div1e9(const std::uint64_t x)
+{
+    return x / 1000000000;
+}
+
+inline
+uint32_t
+mod1e9(const std::uint64_t x)
+{
+    return (std::uint32_t) (x - 1000000000 * div1e9(x));
+}
+
+#endif // BOOST_JSON_DETAIL_RYU_32_BIT_PLATFORM
+
+inline
+std::uint32_t
+pow5Factor(std::uint64_t value)
+{
+    std::uint32_t count = 0;
+    for (;;)
+    {
+        BOOST_ASSERT(value != 0);
+        std::uint64_t const q = div5(value);
+        uint32_t const r = ((std::uint32_t) value) - 5 * ((std::uint32_t) q);
+        if (r != 0)
+            break;
+        value = q;
+        ++count;
+    }
+    return count;
+}
+
+// Returns true if value is divisible by 5^p.
+inline
+bool
+multipleOfPowerOf5(
+    std::uint64_t const value,
+    std::uint32_t const p)
+{
+    // I tried a case distinction on p, but there was no performance difference.
+    return pow5Factor(value) >= p;
+}
+
+// Returns true if value is divisible by 2^p.
+inline
+bool
+multipleOfPowerOf2(
+    std::uint64_t const value,
+    std::uint32_t const p)
+{
+    BOOST_ASSERT(value != 0);
+    // return __builtin_ctzll(value) >= p;
+    return (value & ((1ull << p) - 1)) == 0;
+}
+
+} // detail
+} // ryu
+
+} // detail
+} // json
+} // boost
+
+#endif

@@ -23,8 +23,6 @@ the program, with the macro BOOST_BEAST_SPLIT_COMPILATION defined.
 # error Do not compile library source with the header only macro defined
 #endif
 
-#include <boost/json/detail/iterator.ipp>
-
 #include <boost/json/impl/array.ipp>
 #include <boost/json/impl/basic_parser.ipp>
 #include <boost/json/impl/error.ipp>
@@ -35,5 +33,10 @@ the program, with the macro BOOST_BEAST_SPLIT_COMPILATION defined.
 #include <boost/json/impl/storage.ipp>
 #include <boost/json/impl/string.ipp>
 #include <boost/json/impl/value.ipp>
+
+#include <boost/json/detail/iterator.ipp>
+#include <boost/json/detail/ryu/impl/f2s.ipp>
+#include <boost/json/detail/ryu/impl/d2s.ipp>
+#include <boost/json/detail/ryu/impl/d2fixed.ipp>
 
 #endif

@@ -19,6 +19,8 @@
 #include <string>
 #include <vector>
 
+#include <boost/json/detail/ryu/ryu.hpp>
+
 namespace boost {
 namespace json {
 
@@ -111,7 +113,7 @@ number(
         {
             double d =
                 static_cast<double>(mant) *
-                std::pow(10, exp);
+                std::pow(10.0, exp);
             if(sign)
                 d *= -1;
             return d;
@@ -356,8 +358,7 @@ print(
         break;
 
     case type_double:
-        n = snprintf(buf, buf_size,
-            "%e", double_);
+        n = detail::ryu::d2s_buffered_n(double_, buf);
         break;
 
     default:

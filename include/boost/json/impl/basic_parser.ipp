@@ -1124,7 +1124,19 @@ loop_number:
                 ec = error::mantissa_overflow;
                 goto finish;
             }
-            --n_exp_;
+            if(n_exp_neg_)
+            {
+                ++n_exp_;
+            }
+            else if(n_exp_ > 0)
+            {
+                --n_exp_;
+            }
+            else
+            {
+                n_exp_neg_ = true;
+                n_exp_ = 1;
+            }
         }
         break;
 

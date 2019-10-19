@@ -19,13 +19,17 @@ add_executable (json-tests
     ${PROJECT_SOURCE_DIR}/include/boost/json.hpp
     ${PROJECT_SOURCE_DIR}/include/boost/pilfer.hpp
     ${PROJECT_SOURCE_DIR}/src/src.cpp
+    ryu/d2fixed_test.cpp
+    ryu/d2s_intrinsics_test.cpp
+    ryu/d2s_table_test.cpp
+    ryu/d2s_test.cpp
+    ryu/f2s_test.cpp
     Jamfile
     fail_parser.hpp
     parse-vectors.hpp
     test_storage.hpp
     throw_parser.hpp
     main.cpp
-    _detail_iterator.cpp
     _detail_stack.cpp
     array.cpp
     assign_string.cpp
