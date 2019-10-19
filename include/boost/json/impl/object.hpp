@@ -35,7 +35,7 @@ struct object::element : list_hook
 {
     value v;
     element* local_next;
-    unsigned long size; // of key (excluding null)
+    impl_size_type size; // of key (excluding null)
 
     string_view
     key() const

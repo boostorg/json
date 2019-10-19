@@ -57,7 +57,11 @@ class value;
 class object
 {
 public:
-    /// The type of keys
+    /** The type of keys.
+
+        The implementation imposes a 2GB upper limit
+        on the size of keys.
+    */
     using key_type = string_view;
 
     /// The type of mapped values
@@ -171,6 +175,8 @@ private:
 
     storage_ptr sp_;
     table* tab_ = nullptr;
+
+    using impl_size_type = unsigned long;
 
     static
     float
@@ -1136,6 +1142,8 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
+        @throw std::length_error if key is too large
+
         @param key The key used for lookup and insertion
 
         @param obj The value to insert or assign
@@ -1174,6 +1182,8 @@ public:
 
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
+
+        @throw std::length_error if key is too large
 
         @param pos Iterator before which the new elements will
         be inserted. This may be the @ref end() iterator.
@@ -1218,6 +1228,8 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
+        @throw std::length_error if key is too large
+
         @param key The key used for lookup and insertion
 
         @param arg The argument used to construct the value.
@@ -1256,6 +1268,8 @@ public:
 
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
+
+        @throw std::length_error if key is too large
 
         @param pos Iterator before which the new element will
         be inserted. This may be the @ref end() iterator.

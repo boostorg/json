@@ -1080,6 +1080,10 @@ allocate_impl(
     construct_base const& place_new) ->
         element*
 {
+    if( key.size() >
+        detail::max_string_length_)
+        BOOST_THROW_EXCEPTION(
+            std::length_error("key too long"));
     auto const size =
         sizeof(element) +
         key.size() + 1;
@@ -1109,7 +1113,8 @@ allocate_impl(
         key.size()] = '\0';
     auto e = reinterpret_cast<
         element*>(p);
-    e->size = key.size();
+    e->size = static_cast<
+        impl_size_type>(key.size());
     return e;
 }
 
