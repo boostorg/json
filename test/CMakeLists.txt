@@ -18,6 +18,7 @@ add_executable (json-tests
     ${PROJECT_FILES}
     ${PROJECT_SOURCE_DIR}/include/boost/json.hpp
     ${PROJECT_SOURCE_DIR}/include/boost/pilfer.hpp
+    ${PROJECT_SOURCE_DIR}/include/boost/json/json.natvis
     ${PROJECT_SOURCE_DIR}/src/src.cpp
     ryu/d2fixed_test.cpp
     ryu/d2s_intrinsics_test.cpp

@@ -120,7 +120,7 @@ undo_create::
 array::
 undo_create::
 undo_create(
-    array& self)
+    array& self) noexcept
     : self_(self)
 {
 }
@@ -361,7 +361,8 @@ shrink_to_fit() noexcept
         tab_ = nullptr;
         return;
     }
-    if(size() < 3 && capacity() <= 3)
+    if( size() < 3 &&
+        capacity() <= 3)
         return;
 
     table* tab;

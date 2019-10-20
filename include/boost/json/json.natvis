@@ -20,13 +20,7 @@
   <Type Name="boost::beast::json::storage_ptr">
     <DisplayString>storage</DisplayString>
     <Expand>
-      <ExpandedItem>p_</ExpandedItem>
-    </Expand>
-  </Type>
-  <Type Name="boost::beast::json::allocator&lt;*&gt;">
-    <DisplayString>allocator</DisplayString>
-    <Expand>
-      <ExpandedItem>sp_</ExpandedItem>
+      <ExpandedItem>t_</ExpandedItem>
     </Expand>
   </Type>
   -->

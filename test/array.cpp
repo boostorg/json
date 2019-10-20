@@ -22,6 +22,18 @@ class array_test : public beast::unit_test::suite
 public:
     using init_list = std::initializer_list<value>;
 
+    string_view const str_;
+
+    array_test()
+        : str_(
+            "abcdefghijklmnopqrstuvwxyz")
+    {
+        // ensure this string does
+        // not fit in the SBO area.
+        BOOST_ASSERT(str_.size() >
+            string().capacity());
+    }
+
     void
     check(array const& a)
     {
@@ -80,7 +92,7 @@ public:
             }
 
             // construct with three `true` values
-            fail_loop([](storage_ptr const& sp)
+            fail_loop([&](storage_ptr const& sp)
             {
                 array a(3, true, sp);
                 BEAST_EXPECT(a.size() == 3);
@@ -91,7 +103,7 @@ public:
         // array(size_type, storage)
         {
             // default storage
-            fail_loop([]
+            fail_loop([&]
             {
                 array a(3);
                 BEAST_EXPECT(a.size() == 3);
@@ -100,7 +112,7 @@ public:
                 check_storage(a, default_storage());
             });
 
-            fail_loop([](storage_ptr const& sp)
+            fail_loop([&](storage_ptr const& sp)
             {
                 array a(3, sp);
                 BEAST_EXPECT(a.size() == 3);
@@ -111,17 +123,22 @@ public:
         // array(InputIt, InputIt, storage)
         {
             // default storage
+            fail_loop([&]
             {
-                init_list init{ 1, true, "hello" };
+                init_list init{ 0, 1, str_, 3, 4 };
                 array a(init.begin(), init.end());
-                check(a);
                 check_storage(a, default_storage());
-            }
+                BEAST_EXPECT(a[0].as_number() == 0);
+                BEAST_EXPECT(a[1].as_number() == 1);
+                BEAST_EXPECT(a[2].as_string() == str_);
+                BEAST_EXPECT(a[3].as_number() == 3);
+                BEAST_EXPECT(a[4].as_number() == 4);
+            });
 
             // forward iterator
             fail_loop([&](storage_ptr const& sp)
             {
-                init_list init{ 1, true, "hello" };
+                init_list init{ 1, true, str_ };
                 array a(init.begin(), init.end(), sp);
                 check(a);
                 check_storage(a, sp);
@@ -130,7 +147,7 @@ public:
             // input iterator
             fail_loop([&](storage_ptr const& sp)
             {
-                init_list init{ 1, true, "hello" };
+                init_list init{ 1, true, str_ };
                 array a(
                     make_input_iterator(init.begin()),
                     make_input_iterator(init.end()), sp);
@@ -148,23 +165,24 @@ public:
 
             {
                 array a1;
-                array a2({ 1, true, "hello" });
+                array a2({ 1, true, str_ });
                 a2 = a1;
             }
 
+            fail_loop([&]
             {
-                init_list init{ 1, true, "hello" };
+                init_list init{ 1, true, str_ };
                 array a1(init.begin(), init.end());
                 array a2(a1);
                 check(a2);
                 check_storage(a2, default_storage());
-            }
+            });
         }
 
         // array(array const&, storage)
-        fail_loop([](storage_ptr const& sp)
+        fail_loop([&](storage_ptr const& sp)
         {
-            init_list init{ 1, true, "hello" };
+            init_list init{ 1, true, str_ };
             array a1(init.begin(), init.end());
             array a2(a1, sp);
             BEAST_EXPECT(a2.size() == 3);
@@ -173,7 +191,7 @@ public:
 
         // array(pilfered<array>)
         {
-            init_list init{ 1, true, "hello" };
+            init_list init{ 1, true, str_ };
             array a1(init.begin(), init.end());
             array a2(pilfer(a1));
             BEAST_EXPECT(a1.empty());
@@ -184,7 +202,7 @@ public:
 
         // array(array&&)
         {
-            init_list init{ 1, true, "hello" };
+            init_list init{ 1, true, str_ };
             array a1(init.begin(), init.end());
             array a2 = std::move(a1);
             BEAST_EXPECT(a1.empty());
@@ -195,7 +213,7 @@ public:
         // array(array&&, storage)
         {
             {
-                init_list init{ 1, true, "hello" };
+                init_list init{ 1, true, str_ };
                 array a1(init.begin(), init.end());
                 array a2(
                     std::move(a1), default_storage());
@@ -207,7 +225,7 @@ public:
 
             fail_loop([&](storage_ptr const& sp)
             {
-                init_list init{ 1, true, "hello" };
+                init_list init{ 1, true, str_ };
                 array a1(init.begin(), init.end());
                 array a2(std::move(a1), sp);
                 BEAST_EXPECT(! a1.empty());
@@ -221,14 +239,14 @@ public:
         {
             // default storage
             {
-                array a({1, true, "hello"});
+                array a({1, true, str_});
                 check(a);
                 check_storage(a, default_storage());
             }
 
             fail_loop([&](storage_ptr const& sp)
             {
-                array a({1, true, "hello"}, sp);
+                array a({1, true, str_}, sp);
                 check(a, sp);
                 check_storage(a, sp);
             });
@@ -241,7 +259,7 @@ public:
         // operator=(array const&)
         {
             {
-                array a1({1, true, "hello"});
+                array a1({1, true, str_});
                 array a2({nullptr, value(kind::object), 1.f});
                 a2 = a1;
                 check(a1);
@@ -252,7 +270,7 @@ public:
 
             fail_loop([&](storage_ptr const& sp)
             {
-                array a1({1, true, "hello"});
+                array a1({1, true, str_});
                 array a2({nullptr, value(kind::object), 1.f}, sp);
                 a2 = a1;
                 check(a1);
@@ -265,16 +283,25 @@ public:
         // operator=(array&&)
         {
             {
-                array a1({1, true, "hello"});
+                array a1({1, true, str_});
                 array a2({nullptr, object{}, 1.f});
                 a2 = std::move(a1);
                 BEAST_EXPECT(a1.empty());
                 check(a2);
             }
 
+            // empty
+            {
+                array a1;
+                array a2;
+                a2 = std::move(a1);
+                BEAST_EXPECT(a1.empty());
+                BEAST_EXPECT(a2.empty());
+            }
+
             fail_loop([&](storage_ptr const& sp)
             {
-                array a1({1, true, "hello"});
+                array a1({1, true, str_});
                 array a2({nullptr, value(kind::object), 1.f}, sp);
                 a2 = std::move(a1);
                 check(a1);
@@ -292,12 +319,12 @@ public:
             }
 
             {
-                array a({ 1, true, "hello" });
+                array a({ 1, true, str_ });
                 a = {};
             }
 
             {
-                init_list init{ 1, true, "hello" };
+                init_list init{ 1, true, str_ };
                 array a({nullptr, value(kind::object), 1.f});
                 a = init;
                 check(a);
@@ -306,7 +333,7 @@ public:
 
             fail_loop([&](storage_ptr const& sp)
             {
-                init_list init{ 1, true, "hello" };
+                init_list init{ 1, true, str_ };
                 array a({nullptr, value(kind::object), 1.f}, sp);
                 a = init;
                 check(a);
@@ -329,7 +356,7 @@ public:
     {
         // at(pos)
         {
-            array a({1, true, "hello"});
+            array a({1, true, str_});
             scoped_fail_storage fs;
             BEAST_EXPECT(a.at(0).is_number());
             BEAST_EXPECT(a.at(1).is_bool());
@@ -347,7 +374,7 @@ public:
 
         // at(pos) const
         {
-            array const a({1, true, "hello"});
+            array const a({1, true, str_});
             scoped_fail_storage fs;
             BEAST_EXPECT(a.at(0).is_number());
             BEAST_EXPECT(a.at(1).is_bool());
@@ -363,18 +390,18 @@ public:
             }
         }
 
-        // operator[](size_type)
+        // operator[&](size_type)
         {
-            array a({1, true, "hello"});
+            array a({1, true, str_});
             scoped_fail_storage fs;
             BEAST_EXPECT(a[0].is_number());
             BEAST_EXPECT(a[1].is_bool());
             BEAST_EXPECT(a[2].is_string());
         }
 
-        // operator[](size_type) const
+        // operator[&](size_type) const
         {
-            array const a({1, true, "hello"});
+            array const a({1, true, str_});
             scoped_fail_storage fs;
             BEAST_EXPECT(a[0].is_number());
             BEAST_EXPECT(a[1].is_bool());
@@ -383,28 +410,28 @@ public:
 
         // front()
         {
-            array a({1, true, "hello"});
+            array a({1, true, str_});
             scoped_fail_storage fs;
             BEAST_EXPECT(a.front().is_number());
         }
 
         // front() const
         {
-            array const a({1, true, "hello"});
+            array const a({1, true, str_});
             scoped_fail_storage fs;
             BEAST_EXPECT(a.front().is_number());
         }
 
         // back()
         {
-            array a({1, true, "hello"});
+            array a({1, true, str_});
             scoped_fail_storage fs;
             BEAST_EXPECT(a.back().is_string());
         }
 
         // back() const
         {
-            array const a({1, true, "hello"});
+            array const a({1, true, str_});
             scoped_fail_storage fs;
             BEAST_EXPECT(a.back().is_string());
         }
@@ -412,7 +439,7 @@ public:
         // data()
         {
             {
-                array a({1, true, "hello"});
+                array a({1, true, str_});
                 scoped_fail_storage fs;
                 BEAST_EXPECT(a.data() == &a[0]);
             }
@@ -424,7 +451,7 @@ public:
         // data() const
         {
             {
-                array const a({1, true, "hello"});
+                array const a({1, true, str_});
                 scoped_fail_storage fs;
                 BEAST_EXPECT(a.data() == &a[0]);
             }
@@ -438,7 +465,7 @@ public:
     void
     testIterators()
     {
-        array a({1, true, "hello"});
+        array a({1, true, str_});
         auto const& ac(a);
 
         {
@@ -535,9 +562,13 @@ public:
             BEAST_EXPECT(std::distance(
                 ca2.begin(), ca2.end()) == 0);
             BEAST_EXPECT(std::distance(
+                ca2.cbegin(), ca2.cend()) == 0);
+            BEAST_EXPECT(std::distance(
                 a2.rbegin(), a2.rend()) == 0);
             BEAST_EXPECT(std::distance(
                 ca2.rbegin(), ca2.rend()) == 0);
+            BEAST_EXPECT(std::distance(
+                ca2.crbegin(), ca2.crend()) == 0);
         }
     }
 
@@ -546,10 +577,20 @@ public:
     {
         // empty()
         {
-            array a;
-            BEAST_EXPECT(a.empty());
-            a.emplace_back(1);
-            BEAST_EXPECT(! a.empty());
+            {
+                array a;
+                BEAST_EXPECT(a.empty());
+                a.emplace_back(1);
+                BEAST_EXPECT(! a.empty());
+            }
+
+            {
+                array a({1, 2});
+                BEAST_EXPECT(! a.empty());
+                a.clear();
+                BEAST_EXPECT(a.empty());
+                BEAST_EXPECT(a.capacity() > 0);
+            }
         }
 
         // size()
@@ -605,7 +646,15 @@ public:
                 BEAST_EXPECT(a.capacity() >= 1);
             }
 
-            fail_loop([](storage_ptr const& sp)
+            {
+                array a({0, 1, 2, 3});
+                BEAST_EXPECT(a.capacity() > 3);
+                a.erase(a.begin(), a.begin() + 2);
+                a.shrink_to_fit();
+                BEAST_EXPECT(a.capacity() == 3);
+            }
+
+            fail_loop([&](storage_ptr const& sp)
             {
                 array a(1, sp);
                 a.resize(a.capacity());
@@ -613,7 +662,7 @@ public:
                 BEAST_EXPECT(a.size() == a.capacity());
             });
 
-            fail_loop([](storage_ptr const& sp)
+            fail_loop([&](storage_ptr const& sp)
             {
                 array a(sp);
                 a.reserve(10);
@@ -622,7 +671,7 @@ public:
                 BEAST_EXPECT(a.capacity() == 0);
             });
 
-            fail_loop([](storage_ptr const& sp)
+            fail_loop([&](storage_ptr const& sp)
             {
                 array a(3, sp);
                 a.reserve(10);
@@ -648,7 +697,7 @@ public:
                 BEAST_EXPECT(a.capacity() == 0);
             }
             {
-                array a({1, true, "hello"});
+                array a({1, true, str_});
                 a.clear();
                 BEAST_EXPECT(a.size() == 0);
                 BEAST_EXPECT(a.capacity() > 0);
@@ -658,7 +707,7 @@ public:
         // insert(const_iterator, value_type const&)
         fail_loop([&](storage_ptr const& sp)
         {
-            array a({1, "hello"}, sp);
+            array a({1, str_}, sp);
             value v(true);
             a.insert(a.begin() + 1, v);
             check(a);
@@ -668,7 +717,7 @@ public:
         // insert(const_iterator, value_type&&)
         fail_loop([&](storage_ptr const& sp)
         {
-            array a({1, "hello"}, sp);
+            array a({1, str_}, sp);
             value v(true);
             a.insert(
                 a.begin() + 1, std::move(v));
@@ -677,10 +726,10 @@ public:
         });
 
         // insert(const_iterator, size_type, value_type const&)
-        fail_loop([](storage_ptr const& sp)
+        fail_loop([&](storage_ptr const& sp)
         {
             value v({1,2,3});
-            array a({1, "hello"}, sp);
+            array a({1, str_}, sp);
             a.insert(a.begin() + 1, 3, v);
             BEAST_EXPECT(a[0].is_number());
             BEAST_EXPECT(a[1].as_array().size() == 3);
@@ -696,7 +745,7 @@ public:
             {
                 std::initializer_list<
                     value> init = {1, true};
-                array a({"hello"}, sp);
+                array a({str_}, sp);
                 a.insert(a.begin(),
                     init.begin(), init.end());
                 check(a);
@@ -706,7 +755,7 @@ public:
             fail_loop([&](storage_ptr const& sp)
             {
                 std::initializer_list<
-                    value> init = {1, "hello", true, 1, 2, 3, 4, 5, 6, 7};
+                    value> init = {1, str_, true, 1, 2, 3, 4, 5, 6, 7};
                 array a(sp);
                 a.insert(a.begin(),
                     init.begin(), init.end());
@@ -728,7 +777,7 @@ public:
             {
                 std::initializer_list<
                     value> init = {1, true};
-                array a({"hello"}, sp);
+                array a({str_}, sp);
                 a.insert(a.begin(),
                     make_input_iterator(init.begin()),
                     make_input_iterator(init.end()));
@@ -740,7 +789,7 @@ public:
             {
                 std::initializer_list<
                     value> init = {1, true, 1, 2, 3, 4, 5, 6, 7};
-                array a({"hello"}, sp);
+                array a({str_}, sp);
                 a.insert(a.begin(),
                     make_input_iterator(init.begin()),
                     make_input_iterator(init.end()));
@@ -762,31 +811,41 @@ public:
         // insert(const_iterator, init_list)
         fail_loop([&](storage_ptr const& sp)
         {
-            array a({"hello"}, sp);
-            a.insert(a.begin(), {1, true});
-            check(a);
+            array a({0, 3, 4}, sp);
+            auto it = a.insert(
+                a.begin() + 1, {1, str_});
+            BEAST_EXPECT(it == a.begin() + 1);
+            BEAST_EXPECT(a[0].as_number() == 0);
+            BEAST_EXPECT(a[1].as_number() == 1);
+            BEAST_EXPECT(a[2].as_string() == str_);
+            BEAST_EXPECT(a[3].as_number() == 3);
+            BEAST_EXPECT(a[4].as_number() == 4);
         });
 
         // emplace(const_iterator, arg)
         fail_loop([&](storage_ptr const& sp)
         {
-            array a({1, "hello"}, sp);
+            array a({0, 2, 3, 4}, sp);
             auto it = a.emplace(
-                a.begin() + 1, true);
+                a.begin() + 1, str_);
             BEAST_EXPECT(it == a.begin() + 1);
-            check(a);
+            BEAST_EXPECT(a[0].as_number() == 0);
+            BEAST_EXPECT(a[1].as_string() == str_);
+            BEAST_EXPECT(a[2].as_number() == 2);
+            BEAST_EXPECT(a[3].as_number() == 3);
+            BEAST_EXPECT(a[4].as_number() == 4);
         });
 
         // erase(pos)
         {
-            array a({1, true, nullptr, "hello"});
+            array a({1, true, nullptr, str_});
             a.erase(a.begin() + 2);
             check(a);
         }
 
         // erase(first, last)
         {
-            array a({1, true, nullptr, 1.f, "hello"});
+            array a({1, true, nullptr, 1.f, str_});
             a.erase(
                 a.begin() + 2,
                 a.begin() + 4);
@@ -797,10 +856,10 @@ public:
         fail_loop([&](storage_ptr const& sp)
         {
             array a({1, true}, sp);
-            value v("hello");
+            value v(str_);
             a.push_back(v);
             BEAST_EXPECT(
-                v.as_string() == "hello");
+                v.as_string() == str_);
             check(a);
             check_storage(a, sp);
         });
@@ -810,7 +869,7 @@ public:
             fail_loop([&](storage_ptr const& sp)
             {
                 array a({1, true}, sp);
-                value v("hello");
+                value v(str_);
                 a.push_back(std::move(v));
                 check(a);
                 check_storage(a, sp);
@@ -821,7 +880,7 @@ public:
         fail_loop([&](storage_ptr const& sp)
         {
             array a({1, true}, sp);
-            a.emplace_back("hello");
+            a.emplace_back(str_);
             check(a);
             check_storage(a, sp);
         });
@@ -829,7 +888,7 @@ public:
         // pop_back()
         fail_loop([&](storage_ptr const& sp)
         {
-            array a({1, true, "hello", nullptr}, sp);
+            array a({1, true, str_, nullptr}, sp);
             a.pop_back();
             check(a);
             check_storage(a, sp);
@@ -840,7 +899,7 @@ public:
             value v(array{});
             v.as_array().emplace_back(1);
             v.as_array().emplace_back(true);
-            v.as_array().emplace_back("hello");
+            v.as_array().emplace_back(str_);
 
             fail_loop([&](storage_ptr const& sp)
             {
@@ -864,7 +923,7 @@ public:
             value v(array{});
             v.as_array().emplace_back(1);
             v.as_array().emplace_back(true);
-            v.as_array().emplace_back("hello");
+            v.as_array().emplace_back(str_);
 
             fail_loop([&](storage_ptr const& sp)
             {
@@ -887,7 +946,7 @@ public:
         {
             // same storage
             {
-                array a1({1, true, "hello"});
+                array a1({1, true, str_});
                 array a2 = {1.};
                 scoped_fail_storage fs;
                 a1.swap(a2);
@@ -900,11 +959,19 @@ public:
             // different storage
             fail_loop([&](storage_ptr const& sp)
             {
-                array a1({1, true, "hello"}, sp);
+                array a1({1, true, str_}, sp);
                 array a2 = {1.};
                 a1.swap(a2);
                 check(a2);
                 BEAST_EXPECT(a1.size() == 1);
+            });
+            fail_loop([&](storage_ptr const& sp)
+            {
+                array a1 = {1.};
+                array a2({1, true, str_}, sp);
+                a1.swap(a2);
+                check(a1);
+                BEAST_EXPECT(a2.size() == 1);
             });
         }
     }
@@ -915,7 +982,7 @@ public:
         // operator=(array const&)
         fail_loop([&](storage_ptr const& sp)
         {
-            array a0({1, true, "hello"});
+            array a0({1, true, str_});
             array a1;
             array a(sp);
             a.emplace_back(nullptr);
@@ -927,7 +994,7 @@ public:
         // operator=(init_list)
         fail_loop([&](storage_ptr const& sp)
         {
-            init_list init{ 1, true, "hello" };
+            init_list init{ 1, true, str_ };
             array a1;
             array a(sp);
             a.emplace_back(nullptr);
@@ -937,7 +1004,7 @@ public:
         });
 
         // insert(const_iterator, count, value_type const&)
-        fail_loop([](storage_ptr const& sp)
+        fail_loop([&](storage_ptr const& sp)
         {
             array a1;
             array a({1, true}, sp);
@@ -955,7 +1022,7 @@ public:
         // insert(const_iterator, InputIt, InputIt)
         fail_loop([&](storage_ptr const& sp)
         {
-            init_list init{ 1, true, "hello" };
+            init_list init{ 1, true, str_ };
             array a1;
             array a(sp);
             a.insert(a.end(),
@@ -965,7 +1032,7 @@ public:
         });
 
         // emplace(const_iterator, arg)
-        fail_loop([](storage_ptr const& sp)
+        fail_loop([&](storage_ptr const& sp)
         {
             array a1;
             array a({1, nullptr}, sp);
@@ -981,7 +1048,7 @@ public:
         fail_loop([&](storage_ptr const& sp)
         {
             array a1;
-            array a({1, "hello"}, sp);
+            array a({1, str_}, sp);
             a.emplace(a.begin() + 1, true);
             a1 = a;
             check(a1);

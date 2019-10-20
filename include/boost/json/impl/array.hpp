@@ -98,7 +98,8 @@ public:
 
     BOOST_JSON_DECL
     explicit
-    undo_create(array& self);
+    undo_create(
+        array& self) noexcept;
 
     BOOST_JSON_DECL
     undo_create(
@@ -106,7 +107,7 @@ public:
         array& self);
 
     void
-    commit()
+    commit() noexcept
     {
         commit_ = true;
     }
