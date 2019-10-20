@@ -12,6 +12,7 @@
 
 #include <boost/beast/_experimental/unit_test/suite.hpp>
 #include <boost/json/parser.hpp>
+#include <boost/json/serializer.hpp>
 #include <sstream>
 
 namespace boost {

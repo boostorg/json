@@ -12,6 +12,7 @@
 
 #include <boost/json/serializer.hpp>
 #include <boost/static_assert.hpp>
+#include <ostream>
 
 namespace boost {
 namespace json {
@@ -327,6 +328,20 @@ loop:
     }
 finish:
     return p - p0;
+}
+
+std::ostream&
+operator<<(std::ostream& os, value const& jv)
+{
+    serializer sr(jv);
+    while(! sr.is_done())
+    {
+        char buf[4096];
+        auto const n =
+            sr.next(buf, sizeof(buf));
+        os.write(buf, n);
+    }
+    return os;
 }
 
 } // json

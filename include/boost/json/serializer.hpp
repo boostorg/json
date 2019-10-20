@@ -14,6 +14,7 @@
 #include <boost/json/number.hpp>
 #include <boost/json/value.hpp>
 #include <boost/json/detail/iterator.hpp>
+#include <iosfwd>
 
 namespace boost {
 namespace json {
@@ -42,6 +43,12 @@ public:
     std::size_t
     next(char* dest, std::size_t size);
 };
+
+BOOST_JSON_DECL
+std::ostream&
+operator<<(
+    std::ostream& os,
+    value const& jv);
 
 } // json
 } // boost

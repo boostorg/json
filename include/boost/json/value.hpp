@@ -962,13 +962,6 @@ private:
     void
     construct(
         json::kind, storage_ptr) noexcept;
-
-    BOOST_JSON_DECL
-    friend
-    std::ostream&
-    operator<<(
-        std::ostream& os,
-        value const& jv);
 };
 
 } // json

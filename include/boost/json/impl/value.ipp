@@ -613,64 +613,6 @@ get_storage() const noexcept
     return nat_.sp_;
 }
 
-//----------------------------------------------------------
-
-// friends
-
-std::ostream&
-operator<<(std::ostream& os, value const& jv)
-{
-    switch(jv.kind())
-    {
-    case json::kind::object:
-        os << '{';
-        for(auto it = jv.as_object().begin(),
-            last = jv.as_object().end();
-            it != last;)
-        {
-            os << '\"' << it->first << "\":";
-            os << it->second;
-            if(++it != last)
-                os << ',';
-        }
-        os << '}';
-        break;
-        
-    case json::kind::array:
-        os << '[';
-        for(auto it = jv.as_array().begin(),
-            last = jv.as_array().end();
-            it != last;)
-        {
-            os << *it;
-            if(++it != last)
-                os << ',';
-        }
-        os << ']';
-        break;
-        
-    case json::kind::string:
-        os << '\"' << jv.as_string() << '\"';
-        break;
-        
-    case json::kind::number:
-        os << jv.as_number();
-        break;
-        
-    case json::kind::boolean:
-        if(jv.as_bool())
-            os << "true";
-        else
-            os << "false";
-        break;
-
-    case json::kind::null:
-        os << "null";
-        break;
-    }
-    return os;
-}
-
 } // json
 } // boost
 
