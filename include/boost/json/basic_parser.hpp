@@ -33,28 +33,23 @@ class basic_parser
 {
     enum class state : char;
 
-    number::mantissa_type n_mant_;
-    number::exponent_type n_exp_;
+    ieee_decimal num_;
     unsigned top_ = 0;
     long u0_;
     unsigned short u_;
-    bool n_neg_;
-    bool n_exp_neg_;
+    char efrac_;
+    bool esign_;
     bool is_key_;
 
     inline
-    static
     bool
-    append_digit(
-        number::mantissa_type* value,
-        char digit);
+    append_mantissa(
+        char digit) noexcept;
 
     inline
-    static
     bool
-    append_digit(
-        number::exponent_type* value,
-        char digit, bool neg);
+    append_exponent(
+        char digit) noexcept;
 
 public:
     virtual
@@ -118,23 +113,28 @@ protected:
 
     virtual
     void
-    on_document_begin(error_code& ec) = 0;
+    on_document_begin(
+        error_code& ec) = 0;
 
     virtual
     void
-    on_object_begin(error_code& ec) = 0;
+    on_object_begin(
+        error_code& ec) = 0;
 
     virtual
     void
-    on_object_end(error_code& ec) = 0;
+    on_object_end(
+        error_code& ec) = 0;
 
     virtual
     void
-    on_array_begin(error_code& ec) = 0;
+    on_array_begin(
+        error_code& ec) = 0;
 
     virtual
     void
-    on_array_end(error_code& ec) = 0;
+    on_array_end(
+        error_code& ec) = 0;
 
     virtual
     void
@@ -162,7 +162,9 @@ protected:
 
     virtual
     void
-    on_number(number n, error_code& ec) = 0;
+    on_number(
+        ieee_decimal dec,
+        error_code& ec) = 0;
 
     virtual
     void

@@ -448,7 +448,6 @@ public:
         empty. Otherwise, the value will be in an undefined,
         valid state.
     */
-    BOOST_JSON_DECL
     value&
     reset(json::kind k = json::kind::null) noexcept
     {

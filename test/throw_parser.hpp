@@ -126,7 +126,7 @@ class throw_parser
 
     void
     on_number(
-        number,
+        ieee_decimal,
         error_code&) override
     {
         maybe_throw();

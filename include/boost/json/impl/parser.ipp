@@ -323,8 +323,9 @@ on_string_end(
 
 void
 parser::
-on_number(number n, error_code&)
+on_number(ieee_decimal dec, error_code&)
 {
+    number n(dec.mantissa, dec.exponent, dec.sign);
     auto& jv = *stack_.front();
     BOOST_ASSERT(! jv.is_object());
     if(obj_)

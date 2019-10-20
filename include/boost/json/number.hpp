@@ -19,6 +19,13 @@
 namespace boost {
 namespace json {
 
+struct ieee_decimal
+{
+    std::uint64_t mantissa;
+    short exponent;
+    bool sign;
+};
+
 /** The representation of parsed numbers.
 */
 class number

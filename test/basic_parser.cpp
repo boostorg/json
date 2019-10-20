@@ -13,6 +13,7 @@
 #include <boost/beast/_experimental/unit_test/suite.hpp>
 
 #include "fail_parser.hpp"
+#include "number_parser.hpp"
 #include "throw_parser.hpp"
 #include "parse-vectors.hpp"
 
@@ -101,65 +102,12 @@ public:
                 }
             }
         }
-
-#if 0
-        std::size_t n = 1;
-        for(; n < 10000; ++n)
-        {
-            error_code ec;
-            fail_parser p{n};
-            p.write(
-                input.data(),
-                input.size(),
-                ec);
-            if(ec != error::test_failure)
-            {
-                BEAST_EXPECTS(
-                    ec == ex, std::string(input) +
-                    " : " + ec.message());
-                break;
-            }
-        }
-        BEAST_EXPECT(n < 10000);
-#endif
     }
 
     void
     good(string_view s)
     {
-#if 0
-        error_code ec;
-        for(std::size_t i = 0;
-            i < s.size() - 1; ++i)
-        {
-            // write_some with 1 buffer
-            {
-                fail_parser p;
-                auto used = p.write_some(s.data(), i, ec);
-                BEAST_EXPECT(used == i);
-                BEAST_EXPECT(! p.is_done());
-                if(! BEAST_EXPECTS(! ec, ec.message()))
-                    continue;
-                used = p.write_some(
-                    s.data() + i, s.size() - i, ec);
-                BEAST_EXPECT(used == s.size() - i);
-                if(! BEAST_EXPECTS(! ec, ec.message()))
-                    continue;
-                p.write(nullptr, 0, ec);
-                BEAST_EXPECTS(! ec, ec.message());
-                BEAST_EXPECT(p.is_done());
-            }
-            // write with 1 buffer
-            {
-                fail_parser p;
-                auto used = p.write(s.data(), s.size(), ec);
-                BEAST_EXPECT(used = s.size());
-                BEAST_EXPECTS(! ec, ec.message());
-            }
-        }
-#else
         parse_grind(s, error_code{});
-#endif
     }
 
     void
@@ -232,6 +180,39 @@ public:
     void
     testNumber()
     {
+        auto const test =
+            []( string_view s,
+                decltype(ieee_decimal::mantissa) m,
+                decltype(ieee_decimal::exponent) e,
+                bool sign)
+            {
+                auto const dec = parse_ieee_decimal(s);
+                BEAST_EXPECTS(dec.mantissa == m, "mantissa=" + std::to_string(dec.mantissa));
+                BEAST_EXPECTS(dec.exponent == e, "exponent=" + std::to_string(dec.exponent));
+                BEAST_EXPECTS(dec.sign == sign, "sign=" + std::to_string(sign));
+            };
+
+        test(" 0", 0, 0, false);
+        test(" 1e2", 1, 2, false);
+        test(" 1E2", 1, 2, false);
+        test("-1E2", 1, 2, true);
+        test("-1E-2", 1, -2, true);
+        test("0e32767", 0, 32767, false);
+        test("0e-32768", 0, -32768, false);
+        test(" 9223372036854775807", 9223372036854775807, 0, false);
+        test("-9223372036854775807", 9223372036854775807, 0, true);
+        test(" 9223372036854775807e32767",  9223372036854775807,  32767, false);
+        test(" 9223372036854775807e-32768", 9223372036854775807, -32768, false);
+        test("-9223372036854775807e32767",  9223372036854775807,  32767, true);
+        test("-9223372036854775807e-32768", 9223372036854775807, -32768, true);
+        test(" 18446744073709551615", 18446744073709551615, 0, false);
+        test("-18446744073709551615", 18446744073709551615, 0, true);
+        test(" 18446744073709551615e32767",  18446744073709551615,  32767, false);
+        test(" 18446744073709551615e-32768", 18446744073709551615, -32768, false);
+        test("-18446744073709551615e32767",  18446744073709551615,  32767, true);
+        test("-18446744073709551615e-32768", 18446744073709551615, -32768, true);
+        test("1.0", 10, -1, false);
+
         good("0");
         good("0.0");
         good("0.10");

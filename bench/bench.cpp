@@ -413,11 +413,8 @@ benchParse(
 }
 
 int
-main(int argc, char** argv)
+main(int, char**)
 {
-    boost::ignore_unused(argc);
-    boost::ignore_unused(argv);
-
     for(int i = 5; i < 7; ++i)
     {
         factory f;

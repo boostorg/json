@@ -187,8 +187,6 @@ public:
     void
     run()
     {
-        pass();
-#if 0
         tv(R"("")");
         tv(R"("x")");
         tv(R"("xyz")");
@@ -242,6 +240,7 @@ public:
 
         tv(R"(null)");
 
+#if 0
         parse_vectors const pv;
         for(auto const e : pv)
         {
@@ -252,16 +251,7 @@ public:
                 round_trip(e.text);
             }
         }
-#else
-        error_code ec;
-        auto const jv =
-            from_string("1.5e+2", ec);
-        log <<
-            jv.as_number().get_double() <<
-            std::endl;
 #endif
-
-        pass();
     }
 };
 

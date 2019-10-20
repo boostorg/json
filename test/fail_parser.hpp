@@ -115,7 +115,7 @@ class fail_parser
 
     void
     on_number(
-        number,
+        ieee_decimal,
         error_code& ec) override
     {
         maybe_fail(ec);

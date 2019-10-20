@@ -72,10 +72,10 @@ enum class basic_parser::state : char
     u_pair1, u_pair2,
     u_surr,
     
-    number_mant1,   number_mant2,
-    number_fract1,  number_fract2,      number_fract3,
-    number_exp,     number_exp_sign,
-    number_exp_digits1, number_exp_digits2, number_end,
+    num_mant1,      num_mant2,
+    num_frac1,      num_frac2,      num_frac3,
+    num_exp,        num_exp_sign,
+    num_exp_dig1,   num_exp_dig2,   num_end,
 
     end
 };
@@ -180,46 +180,42 @@ reset()
 // Returns `false` on overflow.
 bool
 basic_parser::
-append_digit(
-    number::mantissa_type* value,
-    char digit)
+append_mantissa(
+    char digit) noexcept
 {
-    number::mantissa_type temp =
-        *value * 10;
-    if(temp < *value)
+    decltype(num_.mantissa) temp =
+        num_.mantissa * 10;
+    if(temp < num_.mantissa)
         return false;
-    number::mantissa_type result =
+    decltype(num_.mantissa) result =
         temp + digit;
     if(result < temp)
         return false;
-    *value = result;
+    num_.mantissa = result;
     return true;
 }
 
 // Append the digit to the signed exponent
 bool
 basic_parser::
-append_digit(
-    number::exponent_type* value,
-    char digit, bool neg)
+append_exponent(
+    char digit) noexcept
 {
-    if(neg)
+    if(! esign_)
     {
-        if(! *value)
+        decltype(num_.exponent) temp =
+            num_.exponent * 10 + digit;
+        if(temp >= num_.exponent)
         {
-            *value = -digit;
+            num_.exponent = temp;
+            return true;
         }
-        else
-        {
-            *value *= 10;
-            *value -= digit;
-        }
+        return false;
     }
-    else
-    {
-        *value *= 10;
-        *value += digit;
-    }
+    decltype(num_.exponent) temp =
+        num_.exponent * 10 - digit;
+    // VFALCO TODO check for overflow
+    num_.exponent = temp;
     return true;
 }
 
@@ -290,7 +286,6 @@ write_some(
         st.push(state::value);
         st.push(state::ws);
         is_key_ = false;
-        n_neg_ = false;
         u0_ = -1;
         goto loop_ws;
     }
@@ -351,23 +346,37 @@ loop_ws:
         // number
         case '-':
             ++p;
-            n_neg_ = true;
-            BOOST_FALLTHROUGH;
+            num_.mantissa = 0;
+            num_.exponent = 0;
+            num_.sign = true;
+            efrac_ = 0;
+            st.front() = state::num_mant1;
+            goto loop_mant;
+
         case '0':
+            ++p;
+            num_.mantissa = 0;
+            num_.exponent = 0;
+            num_.sign = false;
+            efrac_ = 0;
+            st.front() = state::num_frac1;
+            goto loop_frac;
+
         case '1': case '2': case '3':
         case '4': case '5': case '6':
         case '7': case '8': case '9':
-            n_mant_ = 0;
-            n_exp_ = 0;
-            st.front() = state::number_mant1;
-            goto loop_number;
+            num_.mantissa = 0;
+            num_.exponent = 0;
+            num_.sign = false;
+            efrac_ = 0;
+            st.front() = state::num_mant2;
+            goto loop_mant;
 
         // true
         case 't':
             if(p + 4 <= p1)
             {
-                if(
-                    p[1] == 'r' &&
+                if( p[1] == 'r' &&
                     p[2] == 'u' &&
                     p[3] == 'e')
                 {
@@ -389,8 +398,7 @@ loop_ws:
         case 'f':
             if(p + 5 <= p1)
             {
-                if(
-                    p[1] == 'a' &&
+                if( p[1] == 'a' &&
                     p[2] == 'l' &&
                     p[3] == 's' &&
                     p[4] == 'e')
@@ -413,8 +421,7 @@ loop_ws:
         case 'n':
             if(p + 4 <= p1)
             {
-                if(
-                    p[1] == 'u' &&
+                if( p[1] == 'u' &&
                     p[2] == 'l' &&
                     p[3] == 'l')
                 {
@@ -1046,34 +1053,35 @@ loop_string:
     // number
     //
 
-    case state::number_mant1:
-loop_number:
+    // 
+    case state::num_mant1:
+loop_mant:
         if(p >= p1)
             break;
-        if(! is_digit(*p))
+        if(is_digit(*p))
         {
-            // expected mantissa digit
-            ec = error::expected_mantissa;
-            goto finish;
-        }
-        if(*p != '0')
-        {
-            st.front() = state::number_mant2;
+            if(*p != '0')
+            {
+                st.front() = state::num_mant2;
+                goto loop;
+            }
+            ++p;
+            st.front() = state::num_frac1;
             goto loop;
         }
-        ++p;
-        st.front() = state::number_fract1;
-        goto loop;
+        // expected mantissa digit
+        ec = error::expected_mantissa;
+        goto finish;
 
-    case state::number_mant2:
+    case state::num_mant2:
         while(p < p1)
         {
             if(! is_digit(*p))
             {
-                st.front() = state::number_fract1;
+                st.front() = state::num_frac1;
                 goto loop;
             }
-            if(! append_digit(&n_mant_, *p++ - '0'))
+            if(! append_mantissa(*p++ - '0'))
             {
                 ec = error::mantissa_overflow;
                 goto finish;
@@ -1081,13 +1089,14 @@ loop_number:
         }
         break;
 
-    case state::number_fract1:
+    case state::num_frac1:
+loop_frac:
         if(p >= p1)
             break;
         if(*p == '.')
         {
             ++p;
-            st.front() = state::number_fract2;
+            st.front() = state::num_frac2;
             goto loop;
         }
         if(is_digit(*p))
@@ -1096,10 +1105,10 @@ loop_number:
             ec = error::illegal_extra_digits;
             goto finish;
         }
-        st.front() = state::number_exp;
+        st.front() = state::num_exp;
         goto loop;
 
-    case state::number_fract2:
+    case state::num_frac2:
         if(p >= p1)
             break;
         if(! is_digit(*p))
@@ -1108,70 +1117,52 @@ loop_number:
             ec = error::expected_fraction;
             goto finish;
         }
-        st.front() = state::number_fract3;
+        st.front() = state::num_frac3;
         goto loop;
 
-    case state::number_fract3:
+    case state::num_frac3:
         while(p < p1)
         {
             if(! is_digit(*p))
             {
-                st.front() = state::number_exp;
+                st.front() = state::num_exp;
                 goto loop;
             }
-            if(! append_digit(&n_mant_, *p++ - '0'))
+            if(! append_mantissa(*p++ - '0'))
             {
                 ec = error::mantissa_overflow;
                 goto finish;
             }
-            if(n_exp_neg_)
-            {
-                ++n_exp_;
-            }
-            else if(n_exp_ > 0)
-            {
-                --n_exp_;
-            }
-            else
-            {
-                n_exp_neg_ = true;
-                n_exp_ = 1;
-            }
+            ++efrac_;
         }
         break;
 
-    case state::number_exp:
+    case state::num_exp:
         BOOST_ASSERT(p < p1);
-        if(*p == 'e' || *p == 'E')
-        {
-            ++p;
-            st.front() = state::number_exp_sign;
-            goto loop;
-        }
-        st.front() = state::number_end;
-        goto loop;
+        if(*p != 'e' && *p != 'E')
+            goto loop_num_end;
+        ++p;
+        st.front() = state::num_exp_sign;
+        BOOST_FALLTHROUGH;
 
-    case state::number_exp_sign:
+    case state::num_exp_sign:
         if(p >= p1)
             break;
-        if(*p == '+')
+        if(*p == '-')
         {
             ++p;
-            n_exp_neg_ = false;
-        }
-        else if(*p == '-')
-        {
-            ++p;
-            n_exp_neg_ = true;
+            esign_ = true;
         }
         else
         {
-            n_exp_neg_ = false;
+            if(*p == '+')
+                ++p;
+            esign_ = false;
         }
-        st.front() = state::number_exp_digits1;
-        goto loop;
+        st.front() = state::num_exp_dig1;
+        BOOST_FALLTHROUGH;
 
-    case state::number_exp_digits1:
+    case state::num_exp_dig1:
         if(p >= p1)
             break;
         if(! is_digit(*p))
@@ -1180,19 +1171,15 @@ loop_number:
             ec = error::expected_exponent;
             goto finish;
         }
-        st.front() = state::number_exp_digits2;
+        st.front() = state::num_exp_dig2;
         goto loop;
 
-    case state::number_exp_digits2:
+    case state::num_exp_dig2:
         while(p < p1)
         {
             if(! is_digit(*p))
-            {
-                st.front() = state::number_end;
-                goto loop;
-            }
-            if(! append_digit(&n_exp_,
-                *p++ - '0', n_exp_neg_))
+                goto loop_num_end;
+            if(! append_exponent(*p++ - '0'))
             {
                 ec = error::exponent_overflow;
                 goto finish;
@@ -1200,12 +1187,12 @@ loop_number:
         }
         break;
 
-    case state::number_end:
+    case state::num_end:
+loop_num_end:
         // NOTE this code is
         // repeated in write_eof.
-        n_neg_ = false;
-        this->on_number(number(
-            n_mant_, n_exp_, n_neg_), ec);
+        num_.exponent -= efrac_;
+        this->on_number(num_, ec);
         if(ec)
             goto finish;
         st.pop();
@@ -1293,18 +1280,13 @@ write_eof(error_code& ec)
         // allow "" (empty string)
         switch(st.front())
         {
-        case state::number_mant2:
-        case state::number_fract1:
-        case state::number_fract3:
-        case state::number_exp:
-        case state::number_exp_digits2:
-            //st.front() = state::number_end;
-            //write_some(nullptr, 0, ec);
-            //if(ec)
-            //    return;
-            n_neg_ = false;
-            this->on_number(number(
-                n_mant_, n_exp_, n_neg_), ec);
+        case state::num_mant2:
+        case state::num_frac1:
+        case state::num_frac3:
+        case state::num_exp:
+        case state::num_exp_dig2:
+            num_.exponent -= efrac_;
+            this->on_number(num_, ec);
             if(ec)
                 return;
             st.pop();

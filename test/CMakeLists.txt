@@ -26,6 +26,7 @@ add_executable (json-tests
     ryu/f2s_test.cpp
     Jamfile
     fail_parser.hpp
+    number_parser.hpp
     parse-vectors.hpp
     test_storage.hpp
     throw_parser.hpp

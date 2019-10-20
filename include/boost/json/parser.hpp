@@ -147,7 +147,7 @@ private:
     BOOST_JSON_DECL
     void
     on_number(
-        number n,
+        ieee_decimal dec,
         error_code& ec) override;
 
     BOOST_JSON_DECL
