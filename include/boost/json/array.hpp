@@ -461,9 +461,12 @@ public:
 
         @param other The container to copy
     */
-    BOOST_JSON_DECL
     array&
-    operator=(array const& other);
+    operator=(array const& other)
+    {
+        copy(other);
+        return *this;
+    }
 
     /** Move assignment operator
 
@@ -511,10 +514,13 @@ public:
 
         @param init The initializer list to assign
     */
-    BOOST_JSON_DECL
     array&
     operator=(
-        std::initializer_list<value> init);
+        std::initializer_list<value> init)
+    {
+        assign(init);
+        return *this;
+    }
 
     //------------------------------------------------------
 
@@ -527,9 +533,11 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
     storage_ptr const&
-    get_storage() const noexcept;
+    get_storage() const noexcept
+    {
+        return sp_;
+    }
 
     //------------------------------------------------------
     //
@@ -552,7 +560,7 @@ public:
 
         @throws std::out_of_range `pos >= size()`
     */
-    BOOST_JSON_DECL
+    inline
     reference
     at(size_type pos);
 
@@ -571,7 +579,7 @@ public:
 
         @throws std::out_of_range `pos >= size()`
     */
-    BOOST_JSON_DECL
+    inline
     const_reference
     at(size_type pos) const;
 
@@ -590,7 +598,7 @@ public:
 
         @param pos A zero-based index
     */
-    BOOST_JSON_DECL
+    inline
     reference
     operator[](size_type pos);
 
@@ -609,7 +617,7 @@ public:
 
         @param pos A zero-based index
     */
-    BOOST_JSON_DECL
+    inline
     const_reference
     operator[](size_type pos) const;
 
@@ -625,7 +633,7 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
+    inline
     reference
     front();
 
@@ -641,7 +649,7 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
+    inline
     const_reference
     front() const;
 
@@ -657,7 +665,7 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
+    inline
     reference
     back();
 
@@ -673,7 +681,7 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
+    inline
     const_reference
     back() const;
 
@@ -693,7 +701,7 @@ public:
         If `size() == 0`, the function may or may not return
         a null pointer.
     */
-    BOOST_JSON_DECL
+    inline
     value_type*
     data() noexcept;
 
@@ -713,7 +721,7 @@ public:
         If `size() == 0`, the function may or may not return
         a null pointer.
     */
-    BOOST_JSON_DECL
+    inline
     value_type const*
     data() const noexcept;
 
@@ -732,7 +740,7 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
+    inline
     iterator
     begin() noexcept;
 
@@ -745,7 +753,7 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
+    inline
     const_iterator
     begin() const noexcept;
 
@@ -758,7 +766,7 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
+    inline
     const_iterator
     cbegin() const noexcept;
 
@@ -771,7 +779,7 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
+    inline
     iterator
     end() noexcept;
 
@@ -784,7 +792,7 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
+    inline
     const_iterator
     end() const noexcept;
 
@@ -797,7 +805,7 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
+    inline
     const_iterator
     cend() const noexcept;
 
@@ -811,7 +819,7 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
+    inline
     reverse_iterator
     rbegin() noexcept;
 
@@ -825,7 +833,7 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
+    inline
     const_reverse_iterator
     rbegin() const noexcept;
 
@@ -839,7 +847,7 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
+    inline
     const_reverse_iterator
     crbegin() const noexcept;
 
@@ -854,7 +862,7 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
+    inline
     reverse_iterator
     rend() noexcept;
 
@@ -869,7 +877,7 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
+    inline
     const_reverse_iterator
     rend() const noexcept;
 
@@ -884,7 +892,7 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
+    inline
     const_reverse_iterator
     crend() const noexcept;
 
@@ -903,7 +911,7 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
+    inline
     bool
     empty() const noexcept;
 
@@ -917,7 +925,7 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
+    inline
     size_type
     size() const noexcept;
 
@@ -932,9 +940,22 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
+    inline
     size_type
     max_size() const noexcept;
+
+    /** Return the number of elements that can be held in currently allocated memory
+
+        This number may be larger than the value returned
+        by @ref size().
+
+        @par Complexity
+
+        Constant.
+    */
+    inline
+    size_type
+    capacity() const noexcept;
 
     /** Increase the capacity to at least a certain amount
 
@@ -968,19 +989,6 @@ public:
     BOOST_JSON_DECL
     void
     reserve(size_type new_capacity);
-
-    /** Return the number of elements that can be held in currently allocated memory
-
-        This number may be larger than the value returned
-        by @ref size().
-
-        @par Complexity
-
-        Constant.
-    */
-    BOOST_JSON_DECL
-    size_type
-    capacity() const noexcept;
 
     /** Request the removal of unused capacity
 
@@ -1051,11 +1059,13 @@ public:
 
         @return An iterator to the inserted value
     */
-    BOOST_JSON_DECL
     iterator
     insert(
         const_iterator pos,
-        value_type const& v);
+        value_type const& v)
+    {
+        return emplace_impl(pos, v);
+    }
 
     /** Insert elements before the specified location
 
@@ -1085,11 +1095,14 @@ public:
 
         @return An iterator to the inserted value
     */
-    BOOST_JSON_DECL
     iterator
     insert(
         const_iterator pos,
-        value_type&& v);
+        value_type&& v)
+    {
+        return emplace_impl(
+            pos, std::move(v));
+    }
 
     /** Insert elements before the specified location
 
@@ -1330,9 +1343,11 @@ public:
         @param v The value to insert. A copy will be made
         using container's associated @ref storage.
     */
-    BOOST_JSON_DECL
     void
-    push_back(value_type const& v);
+    push_back(value_type const& v)
+    {
+        emplace_impl(end(), v);
+    }
 
     /** Add an element to the end.
 
@@ -1356,9 +1371,11 @@ public:
         value will be transferred via move construction,
         using the container's associated @ref storage.
     */
-    BOOST_JSON_DECL
     void
-    push_back(value_type&& v);
+    push_back(value_type&& v)
+    {
+        emplace_impl(end(), std::move(v));
+    }
 
     /** Append a constructed element in-place
 
@@ -1538,11 +1555,11 @@ private:
         const_iterator pos,
         Arg&& arg);
 
-    inline
+    BOOST_JSON_DECL
     void
     copy(array const& other);
 
-    inline
+    BOOST_JSON_DECL
     void
     assign(std::initializer_list<value> init);
 };

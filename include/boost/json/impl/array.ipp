@@ -11,21 +11,31 @@
 #define BOOST_JSON_IMPL_ARRAY_IPP
 
 #include <boost/json/array.hpp>
-#include <boost/core/exchange.hpp>
 #include <boost/assert.hpp>
 #include <boost/pilfer.hpp>
-#include <algorithm>
+#include <boost/static_assert.hpp>
 #include <cstdlib>
 #include <limits>
 #include <new>
-#include <stdexcept>
-#include <type_traits>
 #include <utility>
 
 namespace boost {
 namespace json {
 
 //------------------------------------------------------------------------------
+
+void
+array::
+table::
+destroy(
+    storage_ptr const& sp) noexcept
+{
+    destroy(begin(), end());
+    sp->deallocate(this,
+        sizeof(table) +
+            d.capacity * sizeof(value),
+        alignof(value));
+}
 
 auto
 array::
@@ -48,19 +58,6 @@ construct(
     p->d.size = 0;
     p->d.capacity = capacity;
     return p;
-}
-
-void
-array::
-table::
-destroy(
-    storage_ptr const& sp) noexcept
-{
-    destroy(begin(), end());
-    sp->deallocate(this,
-        sizeof(table) +
-            d.capacity * sizeof(value),
-        alignof(value));
 }
 
 void
@@ -292,14 +289,6 @@ array(
 
 array&
 array::
-operator=(array const& other)
-{
-    copy(other);
-    return *this;
-}
-
-array&
-array::
 operator=(array&& other)
 {
     if(*sp_ != *other.sp_)
@@ -316,275 +305,11 @@ operator=(array&& other)
     return *this;
 }
 
-array&
-array::
-operator=(
-    std::initializer_list<value> init)
-{
-    assign(init);
-    return *this;
-}
-
-storage_ptr const&
-array::
-get_storage() const noexcept
-{
-    return sp_;
-}
-
-//------------------------------------------------------------------------------
-//
-// Element access
-//
-//------------------------------------------------------------------------------
-
-auto
-array::
-at(size_type pos) ->
-    reference
-{
-    if(pos >= size())
-        BOOST_THROW_EXCEPTION(std::out_of_range(
-            "json::array index out of bounds"));
-    return tab_->begin()[pos];
-}
-
-auto
-array::
-at(size_type pos) const ->
-    const_reference
-{
-    if(pos >= size())
-        BOOST_THROW_EXCEPTION(std::out_of_range(
-            "json::array index out of bounds"));
-    return tab_->begin()[pos];
-}
-
-auto
-array::
-operator[](size_type pos) ->
-    reference
-{
-    return tab_->begin()[pos];
-}
-
-auto
-array::
-operator[](size_type pos) const ->
-    const_reference
-{
-    return tab_->begin()[pos];
-}
-
-auto
-array::
-front() ->
-    reference
-{
-    return tab_->begin()[0];
-}
-
-auto
-array::
-front() const ->
-    const_reference
-{
-    return tab_->begin()[0];
-}
-
-auto
-array::
-back() ->
-    reference
-{
-    return tab_->end()[-1];
-}
-
-auto
-array::
-back() const ->
-    const_reference
-{
-    return tab_->end()[-1];
-}
-
-auto
-array::
-data() noexcept ->
-    value*
-{
-    if(! tab_)
-        return nullptr;
-    return tab_->begin();
-}
-
-auto
-array::
-data() const noexcept ->
-    value const*
-{
-    if(! tab_)
-        return nullptr;
-    return tab_->begin();
-}
-
-//------------------------------------------------------------------------------
-//
-// Iterators
-//
-//------------------------------------------------------------------------------
-
-auto
-array::
-begin() noexcept ->
-    iterator
-{
-    if(! tab_)
-        return nullptr;
-    return tab_->begin();
-}
-
-auto
-array::
-begin() const noexcept ->
-    const_iterator
-{
-    if(! tab_)
-        return nullptr;
-    return tab_->begin();
-}
-
-auto
-array::
-cbegin() const noexcept ->
-    const_iterator
-{
-    if(! tab_)
-        return nullptr;
-    return tab_->begin();
-}
-
-auto
-array::
-end() noexcept ->
-    iterator
-{
-    if(! tab_)
-        return nullptr;
-    return tab_->end();
-}
-
-auto
-array::
-end() const noexcept ->
-    const_iterator
-{
-    if(! tab_)
-        return nullptr;
-    return tab_->end();
-}
-
-auto
-array::
-cend() const noexcept ->
-    const_iterator
-{
-    if(! tab_)
-        return nullptr;
-    return tab_->end();
-}
-
-auto
-array::
-rbegin() noexcept ->
-    reverse_iterator
-{
-    if(! tab_)
-        return reverse_iterator(nullptr);
-    return reverse_iterator(tab_->end());
-}
-
-auto
-array::
-rbegin() const noexcept ->
-    const_reverse_iterator
-{
-    if(! tab_)
-        return const_reverse_iterator(nullptr);
-    return const_reverse_iterator(tab_->end());
-}
-
-auto
-array::
-crbegin() const noexcept ->
-    const_reverse_iterator
-{
-    if(! tab_)
-        return const_reverse_iterator(nullptr);
-    return const_reverse_iterator(tab_->end());
-}
-
-auto
-array::
-rend() noexcept ->
-    reverse_iterator
-{
-    if(! tab_)
-        return reverse_iterator(nullptr);
-    return reverse_iterator(tab_->begin());
-}
-
-auto
-array::
-rend() const noexcept ->
-    const_reverse_iterator
-{
-    if(! tab_)
-        return const_reverse_iterator(nullptr);
-    return const_reverse_iterator(tab_->begin());
-}
-
-auto
-array::
-crend() const noexcept ->
-    const_reverse_iterator
-{
-    if(! tab_)
-        return const_reverse_iterator(nullptr);
-    return const_reverse_iterator(tab_->begin());
-}
-
 //------------------------------------------------------------------------------
 //
 // Capacity
 //
 //------------------------------------------------------------------------------
-
-bool
-array::
-empty() const noexcept
-{
-    return ! tab_ || tab_->d.size == 0;
-}
-
-auto
-array::
-size() const noexcept ->
-    size_type
-{
-    if(! tab_)
-        return 0;
-    return tab_->d.size;
-}
-
-auto
-array::
-max_size() const noexcept ->
-    size_type
-{
-    return (std::numeric_limits<
-        size_type>::max)() / sizeof(value);
-}
 
 void
 array::
@@ -622,16 +347,6 @@ reserve(size_type new_capacity)
     tab_->d.size = 0;
     std::swap(tab, tab_);
     tab->destroy(sp_);
-}
-
-auto
-array::
-capacity() const noexcept ->
-    size_type
-{
-    if(! tab_)
-        return 0;
-    return tab_->d.capacity;
 }
 
 void
@@ -697,27 +412,6 @@ auto
 array::
 insert(
     const_iterator pos,
-    value const& v) ->
-        iterator
-{
-    return emplace_impl(pos, v);
-}
-
-auto
-array::
-insert(
-    const_iterator pos,
-    value&& v) ->
-        iterator
-{
-    return emplace_impl(
-        pos, std::move(v));
-}
-
-auto
-array::
-insert(
-    const_iterator pos,
     size_type count,
     value const& v) ->
         iterator
@@ -771,20 +465,6 @@ erase(
         size() - (last - begin()));
     tab_->d.size -= n;
     return p;
-}
-
-void
-array::
-push_back(value const& v)
-{
-    emplace_impl(end(), v);
-}
-
-void
-array::
-push_back(value&& v)
-{
-    emplace_impl(end(), std::move(v));
 }
 
 void

@@ -12,8 +12,8 @@
 
 #include <boost/json/value.hpp>
 #include <boost/core/exchange.hpp>
-#include <boost/static_assert.hpp>
 #include <algorithm>
+#include <stdexcept>
 #include <type_traits>
 
 namespace boost {
@@ -56,16 +56,16 @@ struct array::table
     }
 
     BOOST_JSON_DECL
+    void
+    destroy(
+        storage_ptr const& sp) noexcept;
+
+    BOOST_JSON_DECL
     static
     table*
     construct(
         size_type capacity,
         storage_ptr const& sp);
-
-    BOOST_JSON_DECL
-    void
-    destroy(
-        storage_ptr const& sp) noexcept;
 
     BOOST_JSON_DECL
     static
@@ -141,6 +141,270 @@ struct array::undo_insert
         ++it;
     }
 };
+
+//------------------------------------------------------------------------------
+//
+// Element access
+//
+//------------------------------------------------------------------------------
+
+auto
+array::
+at(size_type pos) ->
+    reference
+{
+    if(pos >= size())
+        BOOST_THROW_EXCEPTION(std::out_of_range(
+            "json::array index out of bounds"));
+    return tab_->begin()[pos];
+}
+
+auto
+array::
+at(size_type pos) const ->
+    const_reference
+{
+    if(pos >= size())
+        BOOST_THROW_EXCEPTION(std::out_of_range(
+            "json::array index out of bounds"));
+    return tab_->begin()[pos];
+}
+
+auto
+array::
+operator[](size_type pos) ->
+    reference
+{
+    return tab_->begin()[pos];
+}
+
+auto
+array::
+operator[](size_type pos) const ->
+    const_reference
+{
+    return tab_->begin()[pos];
+}
+
+auto
+array::
+front() ->
+    reference
+{
+    return tab_->begin()[0];
+}
+
+auto
+array::
+front() const ->
+    const_reference
+{
+    return tab_->begin()[0];
+}
+
+auto
+array::
+back() ->
+    reference
+{
+    return tab_->end()[-1];
+}
+
+auto
+array::
+back() const ->
+    const_reference
+{
+    return tab_->end()[-1];
+}
+
+auto
+array::
+data() noexcept ->
+    value*
+{
+    if(! tab_)
+        return nullptr;
+    return tab_->begin();
+}
+
+auto
+array::
+data() const noexcept ->
+    value const*
+{
+    if(! tab_)
+        return nullptr;
+    return tab_->begin();
+}
+
+//------------------------------------------------------------------------------
+//
+// Iterators
+//
+//------------------------------------------------------------------------------
+
+auto
+array::
+begin() noexcept ->
+    iterator
+{
+    if(! tab_)
+        return nullptr;
+    return tab_->begin();
+}
+
+auto
+array::
+begin() const noexcept ->
+    const_iterator
+{
+    if(! tab_)
+        return nullptr;
+    return tab_->begin();
+}
+
+auto
+array::
+cbegin() const noexcept ->
+    const_iterator
+{
+    if(! tab_)
+        return nullptr;
+    return tab_->begin();
+}
+
+auto
+array::
+end() noexcept ->
+    iterator
+{
+    if(! tab_)
+        return nullptr;
+    return tab_->end();
+}
+
+auto
+array::
+end() const noexcept ->
+    const_iterator
+{
+    if(! tab_)
+        return nullptr;
+    return tab_->end();
+}
+
+auto
+array::
+cend() const noexcept ->
+    const_iterator
+{
+    if(! tab_)
+        return nullptr;
+    return tab_->end();
+}
+
+auto
+array::
+rbegin() noexcept ->
+    reverse_iterator
+{
+    if(! tab_)
+        return reverse_iterator(nullptr);
+    return reverse_iterator(tab_->end());
+}
+
+auto
+array::
+rbegin() const noexcept ->
+    const_reverse_iterator
+{
+    if(! tab_)
+        return const_reverse_iterator(nullptr);
+    return const_reverse_iterator(tab_->end());
+}
+
+auto
+array::
+crbegin() const noexcept ->
+    const_reverse_iterator
+{
+    if(! tab_)
+        return const_reverse_iterator(nullptr);
+    return const_reverse_iterator(tab_->end());
+}
+
+auto
+array::
+rend() noexcept ->
+    reverse_iterator
+{
+    if(! tab_)
+        return reverse_iterator(nullptr);
+    return reverse_iterator(tab_->begin());
+}
+
+auto
+array::
+rend() const noexcept ->
+    const_reverse_iterator
+{
+    if(! tab_)
+        return const_reverse_iterator(nullptr);
+    return const_reverse_iterator(tab_->begin());
+}
+
+auto
+array::
+crend() const noexcept ->
+    const_reverse_iterator
+{
+    if(! tab_)
+        return const_reverse_iterator(nullptr);
+    return const_reverse_iterator(tab_->begin());
+}
+
+//------------------------------------------------------------------------------
+//
+// Capacity
+//
+//------------------------------------------------------------------------------
+
+bool
+array::
+empty() const noexcept
+{
+    return ! tab_ || tab_->d.size == 0;
+}
+
+auto
+array::
+size() const noexcept ->
+    size_type
+{
+    if(! tab_)
+        return 0;
+    return tab_->d.size;
+}
+
+auto
+array::
+max_size() const noexcept ->
+    size_type
+{
+    return (std::numeric_limits<
+        size_type>::max)() / sizeof(value);
+}
+
+auto
+array::
+capacity() const noexcept ->
+    size_type
+{
+    if(! tab_)
+        return 0;
+    return tab_->d.capacity;
+}
 
 //------------------------------------------------------------------------------
 
