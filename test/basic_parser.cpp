@@ -12,9 +12,7 @@
 
 #include <boost/beast/_experimental/unit_test/suite.hpp>
 
-#include "fail_parser.hpp"
-#include "number_parser.hpp"
-#include "throw_parser.hpp"
+#include "test.hpp"
 #include "parse-vectors.hpp"
 
 namespace boost {

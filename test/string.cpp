@@ -15,7 +15,7 @@
 #include <numeric>
 #include <string>
 
-#include "test_storage.hpp"
+#include "test.hpp"
 
 namespace boost {
 namespace json {

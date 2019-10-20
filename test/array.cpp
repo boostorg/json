@@ -12,7 +12,7 @@
 
 #include <boost/beast/_experimental/unit_test/suite.hpp>
 
-#include "test_storage.hpp"
+#include "test.hpp"
 
 namespace boost {
 namespace json {

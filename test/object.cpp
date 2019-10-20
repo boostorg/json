@@ -15,7 +15,7 @@
 #include <cmath>
 #include <type_traits>
 
-#include "test_storage.hpp"
+#include "test.hpp"
 
 namespace boost {
 namespace json {

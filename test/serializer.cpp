@@ -11,9 +11,7 @@
 #include <boost/json/serializer.hpp>
 
 #include <boost/json/parser.hpp>
-
 #include <boost/beast/_experimental/unit_test/suite.hpp>
-
 #include "parse-vectors.hpp"
 
 //#define SOFT_FAIL
