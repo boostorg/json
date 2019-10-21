@@ -398,14 +398,8 @@ public:
     */
     BOOST_JSON_DECL
     value(
-        std::initializer_list<value> init);
-
-    /** Construct an object or array
-    */
-    BOOST_JSON_DECL
-    value(
         std::initializer_list<value> init,
-        storage_ptr sp);
+        storage_ptr sp = default_storage());
 
     /** Assign an object
     */
@@ -594,6 +588,16 @@ public:
 
     /** Try to assign a value to another type
 
+        This function attempts to assign the contents of
+        `*this` to the variable `t`.
+        @par Complexity
+
+        Linear in the size of `*this`.
+
+        @par Exception Safety
+
+        Strong guarantee.
+
         @throws system error Thrown upon failure
     */
     template<class T>
@@ -621,117 +625,40 @@ public:
     }
 
     //------------------------------------------------------
-    //
-    // Observers
-    //
-    //------------------------------------------------------
 
-    /// Returns the kind of this JSON value
-    json::kind
-    kind() const noexcept
-    {
-        return kind_;
-    }
+    /** Returns `true` if this is an array containing only a key and value
 
-    /// Returns `true` if this is an object
-    bool
-    is_object() const noexcept
-    {
-        return kind_ == json::kind::object;
-    }
+        This function returns `true` if all the following
+        conditions are met:
 
-    /// Returns `true` if this is an array
-    bool
-    is_array() const noexcept
-    {
-        return kind_ == json::kind::array;
-    }
+        @li @ref kind() returns `kind::array`
+        @li `this->as_array().size() == 2`
+        @li `this->as_array()[0].is_string() == true`
+        
+        Otherwise, the function returns `false`.
 
-    /// Returns `true` if this is a string
-    bool
-    is_string() const noexcept
-    {
-        return kind_ == json::kind::string;
-    }
+        @par Complexity
 
-    /// Returns `true` if this is a number
-    bool
-    is_number() const noexcept
-    {
-        return kind_ == json::kind::number;
-    }
-
-    bool
-    is_bool() const noexcept
-    {
-        return kind_ == json::kind::boolean;
-    }
-
-    bool
-    is_null() const noexcept
-    {
-        return kind_ == json::kind::null;
-    }
-
-    //---
-
-    /// Returns `true` if this is not an array or object
-    bool
-    is_primitive() const noexcept
-    {
-        switch(kind_)
-        {
-        case json::kind::object:
-        case json::kind::array:
-            return false;
-        default:
-            return true;
-        }
-    }
-
-    /// Returns `true` if this is an array or object
-    bool
-    is_structured() const noexcept
-    {
-        return ! is_primitive();
-    }
-
-    /// Returns `true` if this is a number representable as a `std::int64_t`
-    bool
-    is_int64() const noexcept
-    {
-        return
-            kind_ == json::kind::number &&
-            nat_.num_.is_int64();
-    }
-
-    /// Returns `true` if this is a number representable as a `std::uint64_t`
-    bool
-    is_uint64() const noexcept
-    {
-        return
-            kind_ == json::kind::number &&
-            nat_.num_.is_uint64();
-    }
-
-    /** Returns `true` if this is a number representable as a `double`
-
-        The return value will always be the same as the
-        value returned from @ref is_number.
-    */
-    bool
-    is_double() const noexcept
-    {
-        return kind_ == json::kind::number;
-    }
-
-    /** Returns `true` if this is an array with just a key and value
+        Constant.
     */
     BOOST_JSON_DECL
     bool
     is_key_value_pair() const noexcept;
 
-    /** Returns `true` if the init list consists only of key-value pairs
+    /** Returns `true` if the initializer list consists only of key-value pairs
+
+        This function returns `true` if @ref is_key_value_pair()
+        is true for every element in the initializer list.
+
+        @par Complexity
+
+        Linear in `init.size()`.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+
+        @param init The initializer list to inspect.
     */
     static
     BOOST_JSON_DECL
@@ -741,14 +668,189 @@ public:
 
     //------------------------------------------------------
     //
+    // Observers
+    //
+    //------------------------------------------------------
+
+    /** Returns the kind of this JSON value
+
+        This function returns the discriminating enumeration
+        constant of type @ref json::kind corresponding to the type
+        of value held in the union.
+
+        @par Complexity
+
+        Constant.
+    */
+    json::kind
+    kind() const noexcept
+    {
+        return kind_;
+    }
+
+    /** Returns true if this is an object
+
+        This function returns `true` if
+        @ref kind() equals `kind::object`.
+
+        @par Complexity
+
+        Constant.
+    */
+    bool
+    is_object() const noexcept
+    {
+        return kind_ == json::kind::object;
+    }
+
+    /** Returns true if this is an array
+
+        This function returns `true` if
+        @ref kind() equals `kind::array`.
+
+        @par Complexity
+
+        Constant.
+    */
+    bool
+    is_array() const noexcept
+    {
+        return kind_ == json::kind::array;
+    }
+
+    /** Returns true if this is a string
+
+        This function returns `true` if
+        @ref kind() equals `kind::string`.
+
+        @par Complexity
+
+        Constant.
+    */
+    bool
+    is_string() const noexcept
+    {
+        return kind_ == json::kind::string;
+    }
+
+    /** Returns true if this is a number
+
+        This function returns `true` if
+        @ref kind() equals `kind::number`.
+
+        @par Complexity
+
+        Constant.
+    */
+    bool
+    is_number() const noexcept
+    {
+        return kind_ == json::kind::number;
+    }
+
+    /** Returns true if this is a boolean
+
+        This function returns `true` if
+        @ref kind() equals `kind::boolean`.
+
+        @par Complexity
+
+        Constant.
+    */
+    bool
+    is_bool() const noexcept
+    {
+        return kind_ == json::kind::boolean;
+    }
+
+    /** Returns true if this is a null
+
+        This function returns `true` if
+        @ref kind() equals `kind::null`.
+
+        @par Complexity
+
+        Constant.
+    */
+    bool
+    is_null() const noexcept
+    {
+        return kind_ == json::kind::null;
+    }
+
+    /** Returns true if this is not an array or object
+
+        This function returns `true` if
+        @ref kind() is neither `kind::object` nor
+        `kind::array`.
+
+        @par Complexity
+
+        Constant.
+    */
+    bool
+    is_primitive() const noexcept
+    {
+       return
+           kind_ != json::kind::object &&
+           kind_ != json::kind::array;
+    }
+
+    /** Returns true if this is an array or object
+
+        This function returns `true` if
+        @ref kind() is either `kind::object` or
+        `kind::array`.
+
+        @par Complexity
+
+        Constant.
+    */
+    bool
+    is_structured() const noexcept
+    {
+       return
+           kind_ == json::kind::object ||
+           kind_ == json::kind::array;
+    }
+
+    //------------------------------------------------------
+    //
     // Accessors
     //
     //------------------------------------------------------
 
+    /** Return the storage associated with the value.
+
+        This returns a pointer to the storage object
+        that was used to construct the value.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
     BOOST_JSON_DECL
     storage_ptr const&
     get_storage() const noexcept;
 
+    /** Return a pointer to an object, or nullptr.
+
+        If @ref kind() returns `kind::object`,
+        returns a pointer to the object. Otherwise,
+        returns `nullptr`.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
     object*
     if_object() noexcept
     {
@@ -757,6 +859,20 @@ public:
         return nullptr;
     }
 
+    /** Return a pointer to an object, or nullptr.
+
+        If @ref kind() returns `kind::object`,
+        returns a pointer to the object. Otherwise,
+        returns `nullptr`.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
     object const*
     if_object() const noexcept
     {
@@ -765,6 +881,20 @@ public:
         return nullptr;
     }
 
+    /** Return a pointer to an array, or nullptr.
+
+        If @ref kind() returns `kind::array`,
+        returns a pointer to the array. Otherwise,
+        returns `nullptr`.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
     array*
     if_array() noexcept
     {
@@ -773,6 +903,20 @@ public:
         return nullptr;
     }
 
+    /** Return a pointer to an array, or nullptr.
+
+        If @ref kind() returns `kind::array`,
+        returns a pointer to the array. Otherwise,
+        returns `nullptr`.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
     array const*
     if_array() const noexcept
     {
@@ -781,6 +925,20 @@ public:
         return nullptr;
     }
 
+    /** Return a pointer to a string, or nullptr.
+
+        If @ref kind() returns `kind::string`,
+        returns a pointer to the string. Otherwise,
+        returns `nullptr`.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
     string*
     if_string() noexcept
     {
@@ -789,6 +947,20 @@ public:
         return nullptr;
     }
 
+    /** Return a pointer to a string, or nullptr.
+
+        If @ref kind() returns `kind::string`,
+        returns a pointer to the string. Otherwise,
+        returns `nullptr`.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
     string const*
     if_string() const noexcept
     {
@@ -797,6 +969,20 @@ public:
         return nullptr;
     }
 
+    /** Return a pointer to a number, or nullptr.
+
+        If @ref kind() returns `kind::number`,
+        returns a pointer to the number. Otherwise,
+        returns `nullptr`.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
     number*
     if_number() noexcept
     {
@@ -805,6 +991,20 @@ public:
         return nullptr;
     }
 
+    /** Return a pointer to a number, or nullptr.
+
+        If @ref kind() returns `kind::number`,
+        returns a pointer to the number. Otherwise,
+        returns `nullptr`.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
     number const*
     if_number() const noexcept
     {
@@ -813,6 +1013,20 @@ public:
         return nullptr;
     }
 
+    /** Return a pointer to a bool, or nullptr.
+
+        If @ref kind() returns `kind::boolean`,
+        returns a pointer to the `bool`. Otherwise,
+        returns `nullptr`.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
     bool*
     if_bool() noexcept
     {
@@ -821,6 +1035,20 @@ public:
         return nullptr;
     }
 
+    /** Return a pointer to a bool, or nullptr.
+
+        If @ref kind() returns `kind::boolean`,
+        returns a pointer to the `bool`. Otherwise,
+        returns `nullptr`.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
     bool const*
     if_bool() const noexcept
     {
@@ -831,6 +1059,22 @@ public:
 
     //------------------------------------------------------
 
+    /** Return a reference to the object, or throw an exception.
+
+        If @ref kind() returns `kind::object`,
+        returns a reference to the object. Otherwise,
+        throws an exception.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        Strong guarantee.
+
+        @throw system_error if `*this` is not an object.
+    */
     object&
     as_object()
     {
@@ -841,6 +1085,22 @@ public:
         return obj_;
     }
 
+    /** Return a reference to the object, or throw an exception.
+
+        If @ref kind() returns `kind::object`,
+        returns a reference to the object. Otherwise,
+        throws an exception.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        Strong guarantee.
+
+        @throw system_error if `*this` is not an object.
+    */
     object const&
     as_object() const
     {
@@ -851,6 +1111,22 @@ public:
         return obj_;
     }
 
+    /** Return a reference to the array, or throw an exception.
+
+        If @ref kind() returns `kind::array`,
+        returns a reference to the array. Otherwise,
+        throws an exception.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        Strong guarantee.
+
+        @throw system_error if `*this` is not an array.
+    */
     array&
     as_array()
     {
@@ -861,6 +1137,22 @@ public:
         return arr_;
     }
 
+    /** Return a reference to the array, or throw an exception.
+
+        If @ref kind() returns `kind::array`,
+        returns a reference to the array. Otherwise,
+        throws an exception.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        Strong guarantee.
+
+        @throw system_error if `*this` is not an array.
+    */
     array const&
     as_array() const
     {
@@ -871,6 +1163,22 @@ public:
         return arr_;
     }
 
+    /** Return a reference to the string, or throw an exception.
+
+        If @ref kind() returns `kind::string`,
+        returns a reference to the string. Otherwise,
+        throws an exception.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        Strong guarantee.
+
+        @throw system_error if `*this` is not a string.
+    */
     string&
     as_string()
     {
@@ -881,6 +1189,22 @@ public:
         return str_;
     }
 
+    /** Return a reference to the string, or throw an exception.
+
+        If @ref kind() returns `kind::string`,
+        returns a reference to the string. Otherwise,
+        throws an exception.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        Strong guarantee.
+
+        @throw system_error if `*this` is not a string.
+    */
     string const&
     as_string() const
     {
@@ -891,6 +1215,22 @@ public:
         return str_;
     }
 
+    /** Return a reference to the number, or throw an exception.
+
+        If @ref kind() returns `kind::number`,
+        returns a reference to the number. Otherwise,
+        throws an exception.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        Strong guarantee.
+
+        @throw system_error if `*this` is not a number.
+    */
     number&
     as_number()
     {
@@ -901,6 +1241,22 @@ public:
         return nat_.num_;
     }
 
+    /** Return a reference to the number, or throw an exception.
+
+        If @ref kind() returns `kind::number`,
+        returns a reference to the number. Otherwise,
+        throws an exception.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        Strong guarantee.
+
+        @throw system_error if `*this` is not a number.
+    */
     number const&
     as_number() const
     {
@@ -911,6 +1267,22 @@ public:
         return nat_.num_;
     }
 
+    /** Return a reference to the bool, or throw an exception.
+
+        If @ref kind() returns `kind::boolean`,
+        returns a reference to the `bool`. Otherwise,
+        throws an exception.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        Strong guarantee.
+
+        @throw system_error if `*this` is not a boolean.
+    */
     bool&
     as_bool()
     {
@@ -921,6 +1293,22 @@ public:
         return nat_.bool_;
     }
 
+    /** Return a reference to the bool, or throw an exception.
+
+        If @ref kind() returns `kind::boolean`,
+        returns a reference to the `bool`. Otherwise,
+        throws an exception.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        Strong guarantee.
+
+        @throw system_error if `*this` is not a boolean.
+    */
     bool const&
     as_bool() const
     {
@@ -929,29 +1317,6 @@ public:
                 system_error(
                     error::not_bool));
         return nat_.bool_;
-    }
-
-    //------------------------------------------------------
-
-    std::int64_t
-    get_int64() const noexcept
-    {
-        BOOST_ASSERT(is_int64());
-        return nat_.num_.get_int64();
-    }
-
-    std::uint64_t
-    get_uint64() const noexcept
-    {
-        BOOST_ASSERT(is_uint64());
-        return nat_.num_.get_uint64();
-    }
-
-    double
-    get_double() const noexcept
-    {
-        BOOST_ASSERT(is_double());
-        return nat_.num_.get_double();
     }
 
     //------------------------------------------------------

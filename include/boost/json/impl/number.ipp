@@ -219,6 +219,13 @@ number(double f) noexcept
     assign_double(f);
 }
 
+number::
+number(long double f) noexcept
+{
+    assign_double(static_cast<
+        double>(f));
+}
+
 //----------------------------------------------------------
 
 bool

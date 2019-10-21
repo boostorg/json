@@ -150,18 +150,19 @@ template<typename T
 void
 from_json(T& t, value const& v)
 {
-    if(v.is_int64())
+    auto const& num = v.as_number();
+    if(num.is_int64())
     {
-        auto const rhs = v.get_int64();
+        auto const rhs = num.get_int64();
         if( rhs > (std::numeric_limits<T>::max)() ||
             rhs < (std::numeric_limits<T>::min)())
             BOOST_JSON_THROW(system_error(
                 error::integer_overflow));
         t = static_cast<T>(rhs);
     }
-    else if(v.is_uint64())
+    else if(num.is_uint64())
     {
-        auto const rhs = v.get_uint64();
+        auto const rhs = num.get_uint64();
         if(rhs > (std::numeric_limits<T>::max)())
             BOOST_JSON_THROW(system_error(
                 error::integer_overflow));
@@ -173,6 +174,16 @@ from_json(T& t, value const& v)
             system_error(error::not_number));
     }
 }
+
+//----------------------------------------------------------
+
+inline
+void
+swap(value& lhs, value& rhs)
+{
+    lhs.swap(rhs);
+}
+
 
 } // json
 } // boost

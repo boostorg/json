@@ -46,8 +46,8 @@ global_storage() noexcept
         }
 
         bool
-        is_equal(
-            storage const& other) const noexcept
+        is_equal(storage const& other)
+            const noexcept override
         {
             auto p = dynamic_cast<
                 builtin const*>(&other);

@@ -3,8 +3,8 @@
 #---------------------------------------------------------------------------
 
 INPUT = \
-        $(LIB_DIR)/include/boost/pilfer.hpp \
-        $(LIB_DIR)/include/boost/json
+        include/boost/pilfer.hpp \
+        include/boost/json
 
 #        $(LIB_DIR)/include/boost/json/allocator.hpp \
 #        $(LIB_DIR)/include/boost/json/array.hpp \

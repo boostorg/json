@@ -357,7 +357,7 @@ void
 parser::
 on_null(error_code&)
 {
-    assign(null);
+    assign(nullptr);
 }
 
 } // json

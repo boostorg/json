@@ -12,13 +12,6 @@
 [table
 [[Identifier] [Description]]
 [
-    [[link json.ref.boost__json__allocator `allocator`]]
-    [
-        Adapts a
-        [link json.ref.boost__json__storage_ptr `storage_ptr`]
-        to meet the __Allocator__ named requirements.
-    ]
-][
     [[link json.ref.boost__json__array `array`]]
     [
         The container used to represent JSON values of array type.
@@ -27,11 +20,6 @@
     [[link json.ref.boost__json__basic_parser `basic_parser`]]
     [
         An abstract base class which implements the JSON parser.
-    ]
-][
-    [[link json.ref.boost__json__const_iterator `const_iterator`]]
-    [
-        A generator to perform a depth-first traversal of a JSON value.
     ]
 ][
     [[link json.ref.boost__json__condition `condition`]]
@@ -44,7 +32,7 @@
         Error code values returned by JSON operations.
     ]
 ][
-    [[link json.ref.boost__json__error `has_from_json`]]
+    [[link json.ref.boost__json__has_from_json `has_from_json`]]
     [
         Trait to determine if a type can be assigned to a JSON
         [link json.ref.boost__json__value `value`].
@@ -55,6 +43,12 @@
         Trait to determine if a JSON
         [link json.ref.boost__json__value `value`]
         can be constructed or assigned from a type.
+    ]
+][
+    [[link json.ref.boost__json__ieee_decimal `ieee_decimal`]]
+    [
+        Describes an IEEE floating point value using
+        an unsigned integer and base-10 exponent.
     ]
 ][
     [[link json.ref.boost__json__kind `kind`]]
@@ -91,8 +85,10 @@
         Abstract interface to a memory resource used with JSON.
     ]
 ][
-    [[link json.ref.boost__json__storage_ptr `storage_ptr`]]
     [
+        [link json.ref.boost__json__storage_ptr `storage_ptr`]
+        [link json.ref.boost__json__basic_storage_ptr `basic_storage_ptr`]
+    ][
         Smart pointer container for a reference counted, type-erased
         [link json.ref.boost__json__storage `storage`]
         object.

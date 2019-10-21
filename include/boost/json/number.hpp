@@ -80,9 +80,14 @@ public:
     using exponent_type =
         short;
 
-    number() = default;
     number(number const&) = default;
     number& operator=(number const&) = default;
+
+    number() noexcept
+        : k_(type_int64)
+    {
+        int64_ = 0;
+    }
 
     /** Construct a number from mantissa, exponent, and sign
     */
@@ -131,6 +136,10 @@ public:
     /// Construct a number from a floating point value
     BOOST_JSON_DECL
     number(double v) noexcept;
+
+    /// Construct a number from a floating point value
+    BOOST_JSON_DECL
+    number(long double v) noexcept;
 
     /// Return true if the number is negative
     BOOST_JSON_DECL

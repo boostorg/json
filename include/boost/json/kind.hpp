@@ -11,24 +11,31 @@
 #define BOOST_JSON_KIND_HPP
 
 #include <boost/json/detail/config.hpp>
-#include <boost/json/detail/static_const.hpp>
-#include <cstddef>
 
 namespace boost {
 namespace json {
 
-/// Constants for identifying the type of a JSON value
+/// Constants for identifying the type of a @ref value
 enum class kind
 {
+    /// An @ref object.
     object,
+
+    /// An @ref array.
     array,
+
+    /// A @ref string.
     string,
+
+    /// A @ref number.
     number,
+
+    /// A `bool`.
     boolean,
+
+    /// A null.
     null
 };
-
-BOOST_JSON_INLINE_VARIABLE(null, std::nullptr_t)
 
 } // json
 } // boost

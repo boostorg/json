@@ -445,14 +445,6 @@ value(
 }
 
 value::
-value(std::initializer_list<value> init)
-    : value(
-        init,
-        default_storage())
-{
-}
-
-value::
 value(
     std::initializer_list<value> init,
     storage_ptr sp)
