@@ -10,7 +10,6 @@
 #ifndef BOOST_JSON_IMPL_STORAGE_HPP
 #define BOOST_JSON_IMPL_STORAGE_HPP
 
-#include <boost/json/detail/storage_adaptor.hpp>
 #include <utility>
 
 namespace boost {
@@ -20,7 +19,7 @@ namespace detail {
 
 BOOST_JSON_DECL
 storage_ptr const&
-global_storage();
+global_storage() noexcept;
 
 } // detail
 
@@ -30,14 +29,6 @@ make_storage(Args&&... args)
 {
     return basic_storage_ptr<Storage>(
         new Storage(std::forward<Args>(args)...));
-}
-
-template<class Allocator>
-storage_ptr
-make_storage_adaptor(Allocator const& a)
-{
-    return make_storage<
-        detail::storage_adaptor<Allocator>>(a);
 }
 
 } // json

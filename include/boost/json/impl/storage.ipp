@@ -11,7 +11,6 @@
 #define BOOST_JSON_IMPL_STORAGE_IPP
 
 #include <boost/json/storage.hpp>
-#include <boost/json/detail/storage_adaptor.hpp>
 #include <memory>
 
 namespace boost {
@@ -24,9 +23,41 @@ namespace detail {
 storage_ptr const&
 global_storage() noexcept
 {
+    struct builtin : storage
+    {
+        void*
+        allocate(
+            std::size_t n,
+            std::size_t) override
+        {
+            return std::allocator<
+                char>().allocate(n);
+        }
+
+        void
+        deallocate(
+            void* p,
+            std::size_t n,
+            std::size_t) noexcept override
+        {
+            std::allocator<
+                char>().deallocate(
+                static_cast<char*>(p), n);
+        }
+
+        bool
+        is_equal(
+            storage const& other) const noexcept
+        {
+            auto p = dynamic_cast<
+                builtin const*>(&other);
+            if(! p)
+                return false;
+            return true;
+        }
+    };
     static storage_ptr const sp =
-        make_storage_adaptor(
-            std::allocator<void>());
+        make_storage<builtin>();
     return sp;
 }
 
@@ -35,8 +66,7 @@ storage_ptr&
 raw_default_storage() noexcept
 {
     static storage_ptr sp =
-        make_storage_adaptor(
-            std::allocator<void>());
+        global_storage();
     return sp;
 }
 
@@ -76,56 +106,6 @@ storage::
 storage() noexcept
     : refs_(1)
 {
-}
-
-//----------------------------------------------------------
-
-bool
-operator==(
-    storage_ptr const& lhs,
-    storage_ptr const& rhs) noexcept
-{
-    return lhs.get() == rhs.get();
-}
-
-bool
-operator==(
-    storage* lhs,
-    storage_ptr const& rhs) noexcept
-{
-    return lhs == rhs.get();
-}
-
-bool
-operator==(
-    storage_ptr const& lhs,
-    storage* rhs) noexcept
-{
-    return lhs.get() == rhs;
-}
-
-bool
-operator!=(
-    storage_ptr const& lhs,
-    storage_ptr const& rhs) noexcept
-{
-    return lhs.get() != rhs.get();
-}
-
-bool
-operator!=(
-    storage* lhs,
-    storage_ptr const& rhs) noexcept
-{
-    return lhs != rhs.get();
-}
-
-bool
-operator!=(
-    storage_ptr const& lhs,
-    storage* rhs) noexcept
-{
-    return lhs.get() != rhs;
 }
 
 } // json

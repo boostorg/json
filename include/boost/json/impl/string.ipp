@@ -12,6 +12,7 @@
 
 #include <boost/core/exchange.hpp>
 #include <boost/core/ignore_unused.hpp>
+#include <boost/assert.hpp>
 #include <algorithm>
 #include <new>
 #include <ostream>

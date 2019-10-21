@@ -20,7 +20,7 @@
 #include <boost/json/string.hpp>
 #include <boost/json/detail/is_specialized.hpp>
 #include <boost/json/detail/value.hpp>
-#include <boost/type_traits/make_void.hpp>
+#include <boost/assert.hpp>
 #include <boost/utility/string_view.hpp>
 #include <boost/pilfer.hpp>
 #include <cstdlib>

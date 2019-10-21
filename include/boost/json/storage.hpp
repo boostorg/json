@@ -30,11 +30,11 @@ class storage
 
     BOOST_JSON_DECL
     void
-    addref();
+    addref() noexcept;
 
     BOOST_JSON_DECL
     void
-    release();
+    release() noexcept;
 
     template<class T>
     friend class basic_storage_ptr;
@@ -44,7 +44,7 @@ public:
         sizeof(max_align_t);
 
     BOOST_JSON_DECL
-    storage();
+    storage() noexcept;
 
     virtual
     ~storage() = default;
@@ -223,39 +223,63 @@ public:
     make_storage(Args&&... args);
 };
 
+template<class T, class U>
+bool
+operator==(
+    basic_storage_ptr<T> const& lhs,
+    basic_storage_ptr<U> const& rhs) noexcept
+{
+    return lhs.get() == rhs.get();
+}
+
+template<class T, class U>
+bool
+operator!=(
+    basic_storage_ptr<T> const& lhs,
+    basic_storage_ptr<U> const& rhs) noexcept
+{
+    return lhs.get() != rhs.get();
+}
+
+template<class T>
+bool
+operator==(
+    basic_storage_ptr<T> const& lhs,
+    std::nullptr_t) noexcept
+{
+    return lhs.get() == nullptr;
+}
+
+template<class T>
+bool
+operator!=(
+    basic_storage_ptr<T> const& lhs,
+    std::nullptr_t) noexcept
+{
+    return lhs.get() != nullptr;
+}
+
+template<class T>
+bool
+operator==(
+    std::nullptr_t,
+    basic_storage_ptr<T> const& rhs) noexcept
+{
+    return rhs.get() == nullptr;
+}
+
+template<class T>
+bool
+operator!=(
+    std::nullptr_t,
+    basic_storage_ptr<T> const& rhs) noexcept
+{
+    return rhs.get() == nullptr;
+}
+
 using storage_ptr = basic_storage_ptr<storage>;
 
-BOOST_JSON_DECL
-bool
-operator==(storage_ptr const& lhs, storage_ptr const& rhs) noexcept;
-
-BOOST_JSON_DECL
-bool
-operator==(storage* lhs, storage_ptr const& rhs) noexcept;
-
-BOOST_JSON_DECL
-bool
-operator==(storage_ptr const& lhs, storage* rhs) noexcept;
-
-BOOST_JSON_DECL
-bool
-operator!=(storage_ptr const& lhs, storage_ptr const& rhs) noexcept;
-
-BOOST_JSON_DECL
-bool
-operator!=(storage* lhs, storage_ptr const& rhs) noexcept;
-
-BOOST_JSON_DECL
-bool
-operator!=(storage_ptr const& lhs, storage* rhs) noexcept;
-
 //----------------------------------------------------------
-
-/** Construct a storage adaptor for the specified allocator
-*/
-template<class Allocator>
-storage_ptr
-make_storage_adaptor(Allocator const& a);
 
 /** Return a pointer to the current default storage
 */
