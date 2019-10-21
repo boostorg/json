@@ -12,7 +12,6 @@
 
 #include <boost/core/exchange.hpp>
 #include <boost/core/ignore_unused.hpp>
-#include <boost/throw_exception.hpp>
 #include <algorithm>
 #include <new>
 #include <ostream>
@@ -33,7 +32,7 @@ growth(
         impl_size_type
 {
     if(new_size > detail::max_string_length_)
-        BOOST_THROW_EXCEPTION(
+        BOOST_JSON_THROW(
             std::length_error(
                 "size > max_size()"));
     new_size |= mask_;
@@ -117,7 +116,7 @@ append(
     storage_ptr const& sp)
 {
     if(n > detail::max_string_length_ - size)
-        BOOST_THROW_EXCEPTION(
+        BOOST_JSON_THROW(
             std::length_error(
                 "size > max_size()"));
     if(n <= capacity - size)
@@ -145,7 +144,7 @@ insert(
     storage_ptr const& sp)
 {
     if(pos > size)
-        BOOST_THROW_EXCEPTION(
+        BOOST_JSON_THROW(
             std::out_of_range(
                 "pos > size()"));
     if(n <= capacity - size)
@@ -161,7 +160,7 @@ insert(
         return dest;
     }
     if(n > detail::max_string_length_ - size)
-        BOOST_THROW_EXCEPTION(
+        BOOST_JSON_THROW(
             std::length_error(
                 "size > max_size()"));
     impl tmp;
@@ -424,7 +423,7 @@ string::
 at(size_type pos)
 {
     if(pos >= size())
-        BOOST_THROW_EXCEPTION(
+        BOOST_JSON_THROW(
             std::out_of_range(
                 "pos >= size()"));
     return s_.data()[pos];
@@ -435,7 +434,7 @@ string::
 at(size_type pos) const
 {
     if(pos >= size())
-        BOOST_THROW_EXCEPTION(
+        BOOST_JSON_THROW(
             std::out_of_range(
                 "pos >= size()"));
     return s_.data()[pos];
@@ -581,7 +580,7 @@ insert(
     size_type count)
 {
     if(pos >= s_.size)
-        BOOST_THROW_EXCEPTION(
+        BOOST_JSON_THROW(
             std::out_of_range(
                 "pos >= size()"));
     if(count > s_.capacity - s_.size)
@@ -639,7 +638,7 @@ erase(
     size_type count)
 {
     if(pos > s_.size)
-        BOOST_THROW_EXCEPTION(
+        BOOST_JSON_THROW(
             std::out_of_range(
                 "pos > size()"));
     if( count > s_.size - pos)

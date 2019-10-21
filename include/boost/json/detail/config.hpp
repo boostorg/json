@@ -37,6 +37,12 @@
 # endif  // auto-linking disabled
 #endif
 
+#ifndef BOOST_NO_EXCEPTIONS
+# define BOOST_JSON_THROW(x) throw(x)
+#else
+# define BOOST_JSON_THROW(x) do{}while(0)
+#endif
+
 namespace boost {
 namespace json {
 namespace detail {

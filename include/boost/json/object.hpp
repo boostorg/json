@@ -109,40 +109,6 @@ public:
     using iterator = __implementation_defined__;
     using const_iterator = __implementation_defined__;
 
-    using node_type = __see_below__;
-
-    /** Describes the result of inserting a node handle.
-
-        Objects of this type are returned by overloads
-        of @ref insert which accept a @ref node_type
-        parameter.
-    */
-    struct insert_return_type
-    {
-        /** An iterator pointing to the result of the insertion.
-
-            If @ref inserted is `true`, this will point to the
-            newly inserted element. Otherwise it will point to
-            the already existing element with the matching key.
-        */
-        iterator position;
-
-        /** The empty node handle, or the original node handle
-
-            If @ref inserted is `true`, this will be an empty
-            node handle. Otherwise, it will have ownership of
-            the original node used to perform the insertion.
-        */
-        node_type node;
-
-        /** Indicates if the insertion was successful.
-
-            This will be `true` if the node was inserted, or
-            `false` if a matching key was already in the container.
-        */
-        bool inserted;
-    };
-
 #else
     class hasher;
     class key_equal;
@@ -150,18 +116,6 @@ public:
     class const_pointer;
     class iterator;
     class const_iterator;
-    class node_type;
-    struct insert_return_type;
-#endif
-
-#if 0
-    /// A reverse random access iterator to an element
-    using reverse_iterator =
-        std::reverse_iterator<iterator>;
-
-    /// A const reverse random access iterator to an element
-    using const_reverse_iterator =
-        std::reverse_iterator<const_iterator>;
 #endif
 
     /// The value type of initializer lists
@@ -590,9 +544,11 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
     storage_ptr const&
-    get_storage() const noexcept;
+    get_storage() const noexcept
+    {
+        return sp_;
+    }
 
     //------------------------------------------------------
     //
@@ -609,7 +565,7 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
+    inline
     iterator
     begin() noexcept;
 
@@ -622,7 +578,7 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
+    inline
     const_iterator
     begin() const noexcept;
 
@@ -635,7 +591,7 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
+    inline
     const_iterator
     cbegin() const noexcept;
 
@@ -648,7 +604,7 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
+    inline
     iterator
     end() noexcept;
 
@@ -661,7 +617,7 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
+    inline
     const_iterator
     end() const noexcept;
 
@@ -674,98 +630,9 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
+    inline
     const_iterator
     cend() const noexcept;
-
-#if 0
-    /** Return a reverse iterator to the first element of the reversed container
-
-        The pointed-to element corresponds to the last element
-        of the non-reversed container. If the container is empty,
-        the returned iterator is equal to @ref rend()
-
-        @par Complexity
-
-        Constant.
-    */
-    BOOST_JSON_DECL
-    reverse_iterator
-    rbegin() noexcept;
-
-    /** Return a reverse iterator to the first element of the reversed container
-
-        The pointed-to element corresponds to the last element
-        of the non-reversed container. If the container is empty,
-        the returned iterator is equal to @ref rend()
-
-        @par Complexity
-
-        Constant.
-    */
-    BOOST_JSON_DECL
-    const_reverse_iterator
-    rbegin() const noexcept;
-
-    /** Return a reverse iterator to the first element of the reversed container
-
-        The pointed-to element corresponds to the last element
-        of the non-reversed container. If the container is empty,
-        the returned iterator is equal to @ref rend()
-
-        @par Complexity
-
-        Constant.
-    */
-    BOOST_JSON_DECL
-    const_reverse_iterator
-    crbegin() const noexcept;
-
-    /** Return a reverse iterator to the element following the last element of the reversed container
-
-        The pointed-to element corresponds to the element
-        preceding the first element of the non-reversed container.
-        This element acts as a placeholder, attempting to access
-        it results in undefined behavior.
-
-        @par Complexity
-
-        Constant.
-    */
-    BOOST_JSON_DECL
-    reverse_iterator
-    rend() noexcept;
-
-    /** Return a reverse iterator to the element following the last element of the reversed container
-
-        The pointed-to element corresponds to the element
-        preceding the first element of the non-reversed container.
-        This element acts as a placeholder, attempting to access
-        it results in undefined behavior.
-
-        @par Complexity
-
-        Constant.
-    */
-    BOOST_JSON_DECL
-    const_reverse_iterator
-    rend() const noexcept;
-
-    /** Return a reverse iterator to the element following the last element of the reversed container
-
-        The pointed-to element corresponds to the element
-        preceding the first element of the non-reversed container.
-        This element acts as a placeholder, attempting to access
-        it results in undefined behavior.
-
-        @par Complexity
-
-        Constant.
-    */
-    BOOST_JSON_DECL
-    const_reverse_iterator
-    crend() const noexcept;
-#endif
 
     //------------------------------------------------------
     //
@@ -782,7 +649,7 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
+    inline
     bool
     empty() const noexcept;
 
@@ -794,7 +661,7 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
+    inline
     size_type
     size() const noexcept;
 
@@ -809,7 +676,7 @@ public:
 
         Constant.
     */
-    BOOST_JSON_DECL
+    inline
     size_type
     max_size() const noexcept;
 
@@ -827,7 +694,7 @@ public:
 
         No-throw guarantee.
     */
-    BOOST_JSON_DECL
+    inline
     size_type
     capacity() const noexcept;
 
@@ -852,7 +719,7 @@ public:
 
         @param n The new minimum capacity of the container
     */
-    BOOST_JSON_DECL
+    inline
     void
     reserve(size_type n);
 
@@ -1044,79 +911,6 @@ public:
         std::initializer_list<
             init_value> init);
 
-    /** Insert a node
-
-        Attempts to inserts the node contained in `nh`:
-
-        @li If `nh.empty()`, does nothing and returns the
-        @ref end() iterator. Otherwise,
-
-        @li If `! nh.empty()`, inserts the element owned by
-        `nh` into the container, if a matching key equivalent
-        to `nh.key()` does not already exist. The element is
-        inserted after all the existing elements.
-
-        @par Expects
-
-        `nh.get_storage() == *this->get_storage()`.
-
-        @par Complexity
-
-        Amortized constant on average, worst case linear in @ref size().
-
-        @par Exception Safety
-
-        Strong guarantee.
-        Calls to @ref storage::allocate may throw.
-
-        @param nh A compatible node handle.
-
-        @returns An @ref insert_return_type describing the result
-        of the insertion.
-    */
-    BOOST_JSON_DECL
-    insert_return_type
-    insert(node_type&& nh);
-
-    /** Insert a node
-
-        Attempts to inserts the node contained in `nh`:
-
-        @li If `nh.empty()`, does nothing and returns the
-        @ref end() iterator. Otherwise,
-
-        @li If `! nh.empty()`, inserts the element owned by
-        `nh` into the container, if a matching key equivalent
-        to `nh.key()` does not already exist. The element is
-        inserted before `pos`.
-
-        @par Expects
-
-        `nh.get_storage() == *this->get_storage()`.
-
-        @par Complexity
-
-        Amortized constant on average, worst case linear in @ref size().
-
-        @par Exception Safety
-
-        Strong guarantee.
-        Calls to @ref storage::allocate may throw.
-
-        @param pos Iterator before which the new elements will
-        be inserted. This may be the @ref end() iterator.
-
-        @param nh A compatible node handle.
-
-        @returns An @ref insert_return_type describing the result
-        of the insertion.
-    */
-    BOOST_JSON_DECL
-    insert_return_type
-    insert(
-        const_iterator pos,
-        node_type&& nh);
-
     /** Insert an element or assign an element if the key already exists
 
         If the key equivalent to `key` already exists in the
@@ -1305,12 +1099,19 @@ public:
 
         Constant on average, worst case linear in @ref size().
 
+        @par Exception Safety
+
+        No-throw guarantee.
+
+        @param pos An iterator pointing to the element to be
+        removed.
+
         @returns The number of elements removed, which can
         be either 0 or 1.
     */
     BOOST_JSON_DECL
     iterator
-    erase(const_iterator pos);
+    erase(const_iterator pos) noexcept;
     
     /** Erase a range of elements
 
@@ -1325,6 +1126,10 @@ public:
         Average case linear in `std::distance(first, last)`,
         worst case linear in @ref size().
 
+        @par Exception Safety
+
+        No-throw guarantee.
+
         @param first The beginning of the range to remove.
         
         @param last The end of the range to remove.
@@ -1335,7 +1140,7 @@ public:
     iterator
     erase(
         const_iterator first,
-        const_iterator last);
+        const_iterator last) noexcept;
 
     /** Erase an element
 
@@ -1348,12 +1153,16 @@ public:
 
         Constant on average, worst case linear in @ref size().
 
+        @par Exception Safety
+
+        No-throw guarantee.
+
         @returns The number of elements removed, which can
         be either 0 or 1.
     */
     BOOST_JSON_DECL
     size_type
-    erase(key_type key);
+    erase(key_type key) noexcept;
 
     /** Swap the contents
 
@@ -1384,67 +1193,6 @@ public:
     BOOST_JSON_DECL
     void
     swap(object& other);
-
-    /** Extract a node
-
-        If the container has an element that matches `key`,
-        unlinks the node that contains that element from
-        the container and returns a node handle that owns
-        it. Otherwise, returns an empty node handle.
-        <br>
-        Extracting a node invalidates only the iterators
-        to the extracted element, and preserves the relative
-        order of the elements that are not erased. Pointers
-        and references to the extracted element remain valid,
-        but cannot be used while element is owned by a node
-        handle: they become usable if the element is inserted
-        into a container.
-
-        @par Complexity
-
-        Constant on average, worst case linear in @ref size().
-
-        @param pos The key of the element to find
-    */
-    BOOST_JSON_DECL
-    node_type
-    extract(const_iterator pos);
-
-    /** Extract a node
-
-        If the container has an element that matches `key`,
-        unlinks the node that contains that element from
-        the container and returns a node handle that owns
-        it. Otherwise, returns an empty node handle.
-        <br>
-        Extracting a node invalidates only the iterators
-        to the extracted element, and preserves the relative
-        order of the elements that are not erased. Pointers
-        and references to the extracted element remain valid,
-        but cannot be used while element is owned by a node
-        handle: they become usable if the element is inserted
-        into a container.
-
-        @par Complexity
-
-        Constant on average, worst case linear in @ref size().
-
-        @param key The key of the element to find
-    */
-    BOOST_JSON_DECL
-    node_type
-    extract(key_type key);
-
-#if 0
-    // TODO
-    BOOST_JSON_DECL
-    void
-    merge(object& source);
-
-    BOOST_JSON_DECL
-    void
-    merge(object&& source);
-#endif
 
     //------------------------------------------------------
     //
@@ -1617,7 +1365,7 @@ public:
 
         No-throw guarantee.
     */
-    BOOST_JSON_DECL
+    inline
     hasher
     hash_function() const noexcept;
 
@@ -1640,7 +1388,7 @@ public:
 
         No-throw guarantee.
     */
-    BOOST_JSON_DECL
+    inline
     key_equal
     key_eq() const noexcept;
 
@@ -1656,15 +1404,15 @@ private:
 
     inline
     size_type
-    bucket(key_type key) const;
+    bucket(key_type key) const noexcept;
 
-    inline
+    BOOST_JSON_DECL
     void
     rehash(size_type bucket_count);
 
     inline
     void
-    remove(element* e);
+    remove(element* e) noexcept;
 
     template<class Arg>
     element*

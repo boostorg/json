@@ -15,6 +15,7 @@
 #include <boost/core/ignore_unused.hpp>
 #include <boost/utility/string_view.hpp>
 #include <algorithm>
+#include <cmath>
 #include <type_traits>
 #include <utility>
 
@@ -38,7 +39,7 @@ struct object::element : list_hook
     impl_size_type size; // of key (excluding null)
 
     string_view
-    key() const
+    key() const noexcept
     {
         return {reinterpret_cast<
             char const*>(this+1),
@@ -48,7 +49,7 @@ struct object::element : list_hook
     BOOST_JSON_DECL
     void
     destroy(
-        storage_ptr const& sp) const;
+        storage_ptr const& sp) const noexcept;
 
     template<class Arg>
     element(
@@ -57,6 +58,57 @@ struct object::element : list_hook
         : v(std::forward<Arg>(arg),
             std::move(sp))
     {
+    }
+};
+
+//----------------------------------------------------------
+
+struct object::table
+{
+    // number of values in the object
+    std::size_t size;
+
+    // number of buckets in table
+    std::size_t bucket_count;
+
+    // insertion-order list of all objects
+    element* head;
+
+    list_hook end_element;
+
+    inline
+    void
+    destroy(
+        storage_ptr const& sp) noexcept;
+
+    inline
+    table(size_type bucket_count_) noexcept;
+
+    static
+    inline
+    table*
+    construct(
+        size_type bucket_count,
+        storage_ptr const& sp);
+
+    element*
+    begin() noexcept
+    {
+        return head;
+    }
+
+    element*
+    end() noexcept
+    {
+        return reinterpret_cast<
+            element*>(&end_element);
+    }
+
+    element*&
+    bucket(std::size_t n) noexcept
+    {
+        return reinterpret_cast<
+            element**>(this + 1)[n];
     }
 };
 
@@ -331,100 +383,143 @@ public:
 };
 
 //----------------------------------------------------------
+//
+// Iterators
+//
+//----------------------------------------------------------
 
-class object::node_type
+auto
+object::
+begin() noexcept ->
+    iterator
 {
-    element* e_;
-    storage_ptr sp_;
+    if(! tab_)
+        return {};
+    return tab_->head;
+}
 
-    friend class object;
-
-    BOOST_JSON_DECL
-    node_type(
-        element* e,
-        storage_ptr sp) noexcept;
-
-public:
-    using key_type = string_view;
-    using mapped_type = json::value;
-
-    node_type(node_type const&) = delete;
-
-    BOOST_JSON_DECL
-    ~node_type();
-
-    BOOST_JSON_DECL
-    node_type();
-
-    BOOST_JSON_DECL
-    node_type(
-        node_type&& other) noexcept;
-
-    BOOST_JSON_DECL
-    node_type&
-    operator=(node_type&& other) noexcept;
-
-    storage_ptr const&
-    get_storage() const noexcept
-    {
-        return sp_;
-    }
-
-    bool
-    empty() const noexcept
-    {
-        return e_ == nullptr;
-    }
-
-    explicit
-    operator bool() const noexcept
-    {
-        return ! empty();
-    }
-
-    key_type const
-    key() const
-    {
-        return e_->key();
-    }
-
-    mapped_type&
-    mapped()
-    {
-        return e_->v;
-    }
-
-    mapped_type const&
-    mapped() const
-    {
-        return e_->v;
-    }
-
-    void
-    swap(node_type& other) noexcept
-    {
-        std::swap(e_, other.e_);
-        std::swap(sp_, other.sp_);
-    }
-};
-
-inline
-void
-swap(
-    object::node_type& lhs,
-    object::node_type& rhs) noexcept
+auto
+object::
+begin() const noexcept ->
+    const_iterator
 {
-    lhs.swap(rhs);
+    if(! tab_)
+        return {};
+    return tab_->head;
+}
+
+auto
+object::
+cbegin() const noexcept ->
+    const_iterator
+{
+    return begin();
+}
+
+auto
+object::
+end() noexcept ->
+    iterator
+{
+    if(! tab_)
+        return {};
+    return tab_->end();
+}
+
+auto
+object::
+end() const noexcept ->
+    const_iterator
+{
+    if(! tab_)
+        return {};
+    return tab_->end();
+}
+
+auto
+object::
+cend() const noexcept ->
+    const_iterator
+{
+    return end();
 }
 
 //----------------------------------------------------------
+//
+// Capacity
+//
+//----------------------------------------------------------
 
-struct object::insert_return_type
+bool
+object::
+empty() const noexcept
 {
-    iterator position;
-    node_type node;
-    bool inserted;
-};
+    return ! tab_ ||
+        tab_->size == 0;
+}
+
+auto
+object::
+size() const noexcept ->
+    size_type
+{
+    if(! tab_)
+        return 0;
+    return tab_->size;
+}
+
+auto
+object::
+max_size() const noexcept ->
+    size_type
+{
+    return (std::numeric_limits<
+        size_type>::max)();
+}
+
+auto
+object::
+capacity() const noexcept ->
+    size_type
+{
+    if(! tab_)
+        return 0;
+    return static_cast<
+        size_type>(std::ceil(
+            tab_->bucket_count *
+            max_load_factor()));
+}
+
+void
+object::
+reserve(size_type n)
+{
+    rehash(static_cast<
+        size_type>(std::ceil(
+            n / max_load_factor())));
+}
+
+//----------------------------------------------------------
+//
+// Observers
+//
+//----------------------------------------------------------
+
+auto
+object::
+hash_function() const noexcept ->
+    hasher
+{
+    return hasher{};
+}
+
+auto
+object::
+key_eq() const noexcept ->
+    key_equal
+{
+    return key_equal{};
+}
 
 //----------------------------------------------------------
 
@@ -460,6 +555,9 @@ insert(
     const_iterator pos, P&& p) ->
         std::pair<iterator, bool>
 {
+    // VFALCO We can do better here,
+    // by constructing `v` with the
+    // get_storage().
     value_type v(std::forward<P>(p));
     return emplace(pos, v.first,
         std::move(v.second));

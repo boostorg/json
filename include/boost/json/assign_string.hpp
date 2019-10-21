@@ -29,7 +29,7 @@ from_json(
     value const& v)
 {
     if(! v.is_string())
-        BOOST_THROW_EXCEPTION(
+        BOOST_JSON_THROW(
             system_error(error::not_string));
     auto& s= v.as_string();
     t.assign(s.data(), s.size());

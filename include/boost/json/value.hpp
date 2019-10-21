@@ -21,7 +21,6 @@
 #include <boost/json/detail/is_specialized.hpp>
 #include <boost/json/detail/value.hpp>
 #include <boost/type_traits/make_void.hpp>
-#include <boost/throw_exception.hpp>
 #include <boost/utility/string_view.hpp>
 #include <boost/pilfer.hpp>
 #include <cstdlib>
@@ -833,10 +832,10 @@ public:
     //------------------------------------------------------
 
     object&
-    as_object() noexcept
+    as_object()
     {
         if(kind_ != json::kind::object)
-            BOOST_THROW_EXCEPTION(
+            BOOST_JSON_THROW(
                 system_error(
                     error::not_object));
         return obj_;
@@ -846,7 +845,7 @@ public:
     as_object() const
     {
         if(kind_ != json::kind::object)
-            BOOST_THROW_EXCEPTION(
+            BOOST_JSON_THROW(
                 system_error(
                     error::not_object));
         return obj_;
@@ -856,7 +855,7 @@ public:
     as_array()
     {
         if(kind_ != json::kind::array)
-            BOOST_THROW_EXCEPTION(
+            BOOST_JSON_THROW(
                 system_error(
                     error::not_array));
         return arr_;
@@ -866,7 +865,7 @@ public:
     as_array() const
     {
         if(kind_ != json::kind::array)
-            BOOST_THROW_EXCEPTION(
+            BOOST_JSON_THROW(
                 system_error(
                     error::not_array));
         return arr_;
@@ -876,7 +875,7 @@ public:
     as_string()
     {
         if(kind_ != json::kind::string)
-            BOOST_THROW_EXCEPTION(
+            BOOST_JSON_THROW(
                 system_error(
                     error::not_string));
         return str_;
@@ -886,7 +885,7 @@ public:
     as_string() const
     {
         if(kind_ != json::kind::string)
-            BOOST_THROW_EXCEPTION(
+            BOOST_JSON_THROW(
                 system_error(
                     error::not_string));
         return str_;
@@ -896,7 +895,7 @@ public:
     as_number()
     {
         if(kind_ != json::kind::number)
-            BOOST_THROW_EXCEPTION(
+            BOOST_JSON_THROW(
                 system_error(
                     error::not_number));
         return nat_.num_;
@@ -906,27 +905,27 @@ public:
     as_number() const
     {
         if(kind_ != json::kind::number)
-            BOOST_THROW_EXCEPTION(
+            BOOST_JSON_THROW(
                 system_error(
                     error::not_number));
         return nat_.num_;
     }
 
     bool&
-    as_bool() noexcept
+    as_bool()
     {
         if(kind_ != json::kind::boolean)
-            BOOST_THROW_EXCEPTION(
+            BOOST_JSON_THROW(
                 system_error(
                     error::not_bool));
         return nat_.bool_;
     }
 
     bool const&
-    as_bool() const noexcept
+    as_bool() const
     {
         if(kind_ != json::kind::boolean)
-            BOOST_THROW_EXCEPTION(
+            BOOST_JSON_THROW(
                 system_error(
                     error::not_bool));
         return nat_.bool_;

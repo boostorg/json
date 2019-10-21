@@ -13,9 +13,9 @@
 #include <boost/json/object.hpp>
 #include <boost/core/exchange.hpp>
 #include <boost/core/ignore_unused.hpp>
-#include <boost/throw_exception.hpp>
 #include <boost/assert.hpp>
 #include <algorithm>
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <limits>
@@ -31,7 +31,7 @@ void
 object::
 element::
 destroy(
-    storage_ptr const& sp) const
+    storage_ptr const& sp) const noexcept
 {
     auto const size_ = size;
     this->~element();
@@ -43,83 +43,55 @@ destroy(
 
 //----------------------------------------------------------
 
-struct object::table
+void
+object::
+table::
+destroy(
+    storage_ptr const& sp) noexcept
 {
-    // number of values in the object
-    std::size_t size;
+    auto const n = bucket_count;
+    this->~table();
+    sp->deallocate(
+        this,
+        sizeof(*this) +
+            n * sizeof(element*),
+        alignof(table));
+}
 
-    // number of buckets in table
-    std::size_t bucket_count;
+object::
+table::
+table(size_type bucket_count_) noexcept
+    : size(0)
+    , bucket_count(bucket_count_)
+    , head(end())
+{
+    head->next = nullptr;
+    head->prev = nullptr;
+}
 
-    // insertion-order list of all objects
-    element* head;
-
-    list_hook end_element;
-
-    void
-    destroy(
-        storage_ptr const& sp) noexcept
-    {
-        auto const n = bucket_count;
-        this->~table();
-        sp->deallocate(
-            this,
-            sizeof(*this) +
-                n * sizeof(element*),
-            alignof(table));
-    }
-
-    static
-    table*
-    construct(
-        size_type bucket_count,
-        storage_ptr const& sp)
-    {
-        auto tab = ::new(sp->allocate(
-            sizeof(table) +
-                bucket_count *
-                sizeof(element*),
-            (std::max)(
-                alignof(table),
-                alignof(element*))
-                    )) table(bucket_count);
-        auto it = &tab->bucket(0);
-        auto const last =
-            &tab->bucket(bucket_count);
-        while(it != last)
-            *it++ = tab->end();
-        return tab;
-    }
-
-    table(size_type bucket_count_) noexcept
-        : size(0)
-        , bucket_count(bucket_count_)
-        , head(end())
-    {
-        head->next = nullptr;
-        head->prev = nullptr;
-    }
-
-    element*
-    begin() noexcept
-    {
-        return head;
-    }
-
-    element*
-    end() noexcept
-    {
-        return reinterpret_cast<
-            element*>(&end_element);
-    }
-
-    element*&
-    bucket(std::size_t n) noexcept
-    {
-        return reinterpret_cast<
-            element**>(this + 1)[n];
-    }
-};
+auto
+object::
+table::
+construct(
+    size_type bucket_count,
+    storage_ptr const& sp) ->
+        table*
+{
+    auto tab = ::new(sp->allocate(
+        sizeof(table) +
+            bucket_count *
+            sizeof(element*),
+        (std::max)(
+            alignof(table),
+            alignof(element*))
+                )) table(bucket_count);
+    auto it = &tab->bucket(0);
+    auto const last =
+        &tab->bucket(bucket_count);
+    while(it != last)
+        *it++ = tab->end();
+    return tab;
+}
 
 //----------------------------------------------------------
 
@@ -268,56 +240,6 @@ operator()(key_type key) const noexcept
         end = key.end(); p != end; ++p)
         hash = (*p ^ hash) * prime;
     return hash;
-}
-
-//----------------------------------------------------------
-
-object::
-node_type::
-~node_type()
-{
-    if(e_)
-        e_->destroy(sp_);
-}
-
-object::
-node_type::
-node_type()
-    : e_(nullptr)
-{
-}
-
-object::
-node_type::
-node_type(
-    element* e,
-    storage_ptr sp) noexcept
-    : e_(e)
-    , sp_(std::move(sp))
-{
-}
-
-object::
-node_type::
-node_type(
-    node_type&& other) noexcept
-    : e_(boost::exchange(
-        other.e_, nullptr))
-    , sp_(boost::exchange(
-        other.sp_, nullptr))
-{
-}
-
-auto
-object::
-node_type::
-operator=(node_type&& other) noexcept ->
-    node_type&
-{
-    node_type temp;
-    temp.swap(*this);
-    this->swap(other);
-    return *this;
 }
 
 //----------------------------------------------------------
@@ -478,180 +400,6 @@ operator=(
     return *this;
 }
 
-storage_ptr const&
-object::
-get_storage() const noexcept
-{
-    return sp_;
-}
-
-//----------------------------------------------------------
-//
-// Iterators
-//
-//----------------------------------------------------------
-
-auto
-object::
-begin() noexcept ->
-    iterator
-{
-    if(! tab_)
-        return {};
-    return tab_->head;
-}
-
-auto
-object::
-begin() const noexcept ->
-    const_iterator
-{
-    if(! tab_)
-        return {};
-    return tab_->head;
-}
-
-auto
-object::
-cbegin() const noexcept ->
-    const_iterator
-{
-    return begin();
-}
-
-auto
-object::
-end() noexcept ->
-    iterator
-{
-    if(! tab_)
-        return {};
-    return tab_->end();
-}
-
-auto
-object::
-end() const noexcept ->
-    const_iterator
-{
-    if(! tab_)
-        return {};
-    return tab_->end();
-}
-
-auto
-object::
-cend() const noexcept ->
-    const_iterator
-{
-    return end();
-}
-
-#if 0
-auto
-object::
-rbegin() noexcept ->
-    reverse_iterator
-{
-    return reverse_iterator(end());
-}
-
-auto
-object::
-rbegin() const noexcept ->
-    const_reverse_iterator
-{
-    return const_reverse_iterator(end());
-}
-
-auto
-object::
-crbegin() const noexcept ->
-    const_reverse_iterator
-{
-    return rbegin();
-}
-
-auto
-object::
-rend() noexcept ->
-    reverse_iterator
-{
-    return reverse_iterator(begin());
-}
-
-auto
-object::
-rend() const noexcept ->
-    const_reverse_iterator
-{
-    return const_reverse_iterator(begin());
-}
-
-auto
-object::
-crend() const noexcept ->
-    const_reverse_iterator
-{
-    return rend();
-}
-#endif
-
-//----------------------------------------------------------
-//
-// Capacity
-//
-//----------------------------------------------------------
-
-bool
-object::
-empty() const noexcept
-{
-    return ! tab_ ||
-        tab_->size == 0;
-}
-
-auto
-object::
-size() const noexcept ->
-    size_type
-{
-    if(! tab_)
-        return 0;
-    return tab_->size;
-}
-
-auto
-object::
-max_size() const noexcept ->
-    size_type
-{
-    return (std::numeric_limits<
-        size_type>::max)();
-}
-
-auto
-object::
-capacity() const noexcept ->
-    size_type
-{
-    if(! tab_)
-        return 0;
-    return static_cast<
-        size_type>(std::ceil(
-            tab_->bucket_count *
-            max_load_factor()));
-}
-
-void
-object::
-reserve(size_type n)
-{
-    rehash(static_cast<
-        size_type>(std::ceil(
-            n / max_load_factor())));
-}
-
 //----------------------------------------------------------
 //
 // Modifiers
@@ -694,36 +442,7 @@ insert(
 
 auto
 object::
-insert(node_type&& nh) ->
-    insert_return_type
-{
-    return insert(end(), std::move(nh));
-}
-
-auto
-object::
-insert(
-    const_iterator pos,
-    node_type&& nh) ->
-        insert_return_type
-{
-    if(! nh.e_)
-        return { end(), {}, false };
-    BOOST_ASSERT(
-        *nh.get_storage() == *sp_);
-    auto const result =
-        find_impl(nh.key());
-    if(result.first)
-        return { iterator(result.first),
-            std::move(nh), false };
-    insert(pos, result.second, nh.e_);
-    return { iterator(boost::exchange(
-        nh.e_, nullptr)), {}, true };
-}
-
-auto
-object::
-erase(const_iterator pos) ->
+erase(const_iterator pos) noexcept ->
     iterator
 {
     auto e = pos.e_;
@@ -737,7 +456,7 @@ auto
 object::
 erase(
     const_iterator first,
-    const_iterator last) ->
+    const_iterator last) noexcept ->
         iterator
 {
     while(first != last)
@@ -752,7 +471,7 @@ erase(
 
 auto
 object::
-erase(key_type key) ->
+erase(key_type key) noexcept ->
     size_type
 {
     auto it = find(key);
@@ -784,27 +503,6 @@ swap(object& other)
     ::new(this) object(pilfer(temp2));
 }
 
-auto
-object::
-extract(const_iterator pos) ->
-    node_type
-{
-    BOOST_ASSERT(pos != end());
-    remove(pos.e_);
-    return { pos.e_, sp_ };
-}
-
-auto
-object::
-extract(key_type key) ->
-    node_type
-{
-    auto it = find(key);
-    if(it == end())
-        return {};
-    return extract(it);
-}
-
 //----------------------------------------------------------
 //
 // Lookup
@@ -818,7 +516,7 @@ at(key_type key) ->
 {
     auto it = find(key);
     if(it == end())
-        BOOST_THROW_EXCEPTION(
+        BOOST_JSON_THROW(
          std::out_of_range(
             "key not found"));
     return it->second;
@@ -831,7 +529,7 @@ at(key_type key) const ->
 {
     auto it = find(key);
     if(it == end())
-        BOOST_THROW_EXCEPTION(
+        BOOST_JSON_THROW(
          std::out_of_range(
             "key not found"));
     return it->second;
@@ -890,28 +588,6 @@ contains(key_type key) const noexcept
 
 //----------------------------------------------------------
 //
-// Observers
-//
-//----------------------------------------------------------
-
-auto
-object::
-hash_function() const noexcept ->
-    hasher
-{
-    return hasher{};
-}
-
-auto
-object::
-key_eq() const noexcept ->
-    key_equal
-{
-    return key_equal{};
-}
-
-//----------------------------------------------------------
-//
 // Implementation
 //
 //----------------------------------------------------------
@@ -928,7 +604,7 @@ constrain_hash(
 
 auto
 object::
-bucket(key_type key) const ->
+bucket(key_type key) const noexcept ->
     size_type
 {
     BOOST_ASSERT(tab_);
@@ -943,7 +619,7 @@ object::
 rehash(size_type n)
 {
     auto const next_prime =
-    [](size_type n)
+    [](size_type n) noexcept
     {
         // Taken from Boost.Intrusive and Boost.MultiIndex code,
         // thanks to Ion Gaztanaga and Joaquin M Lopez Munoz.
@@ -1041,7 +717,7 @@ rehash(size_type n)
 
 void
 object::
-remove(element* e)
+remove(element* e) noexcept
 {
     if(e == tab_->head)
     {
@@ -1082,7 +758,7 @@ allocate_impl(
 {
     if( key.size() >
         detail::max_string_length_)
-        BOOST_THROW_EXCEPTION(
+        BOOST_JSON_THROW(
             std::length_error("key too long"));
     auto const size =
         sizeof(element) +

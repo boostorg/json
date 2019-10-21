@@ -11,7 +11,6 @@
 #define BOOST_JSON_IMPL_VALUE_HPP
 
 #include <boost/json/error.hpp>
-#include <boost/throw_exception.hpp>
 #include <limits>
 #include <type_traits>
 
@@ -156,7 +155,7 @@ from_json(T& t, value const& v)
         auto const rhs = v.get_int64();
         if( rhs > (std::numeric_limits<T>::max)() ||
             rhs < (std::numeric_limits<T>::min)())
-            BOOST_THROW_EXCEPTION(system_error(
+            BOOST_JSON_THROW(system_error(
                 error::integer_overflow));
         t = static_cast<T>(rhs);
     }
@@ -164,13 +163,13 @@ from_json(T& t, value const& v)
     {
         auto const rhs = v.get_uint64();
         if(rhs > (std::numeric_limits<T>::max)())
-            BOOST_THROW_EXCEPTION(system_error(
+            BOOST_JSON_THROW(system_error(
                 error::integer_overflow));
         t = static_cast<T>(rhs);
     }
     else
     {
-        BOOST_THROW_EXCEPTION(
+        BOOST_JSON_THROW(
             system_error(error::not_number));
     }
 }

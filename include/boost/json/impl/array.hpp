@@ -155,7 +155,7 @@ at(size_type pos) ->
     reference
 {
     if(pos >= size())
-        BOOST_THROW_EXCEPTION(std::out_of_range(
+        BOOST_JSON_THROW(std::out_of_range(
             "json::array index out of bounds"));
     return tab_->begin()[pos];
 }
@@ -166,7 +166,7 @@ at(size_type pos) const ->
     const_reference
 {
     if(pos >= size())
-        BOOST_THROW_EXCEPTION(std::out_of_range(
+        BOOST_JSON_THROW(std::out_of_range(
             "json::array index out of bounds"));
     return tab_->begin()[pos];
 }

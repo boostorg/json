@@ -31,7 +31,7 @@ from_json(
     value const& v)
 {
     if(! v.is_array())
-        BOOST_THROW_EXCEPTION(
+        BOOST_JSON_THROW(
             system_error(error::not_array));
     auto& arr = v.as_array();
     t.resize(0);
