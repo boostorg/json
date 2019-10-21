@@ -11,9 +11,9 @@
 #define BOOST_JSON_IMPL_ARRAY_IPP
 
 #include <boost/json/array.hpp>
-#include <boost/assert.hpp>
+#include <boost/json/detail/exchange.hpp>
+#include <boost/json/detail/assert.hpp>
 #include <boost/pilfer.hpp>
-#include <boost/static_assert.hpp>
 #include <cstdlib>
 #include <limits>
 #include <new>
@@ -49,7 +49,7 @@ construct(
     if( capacity < 3)
         capacity = 3;
 
-    BOOST_STATIC_ASSERT(
+    BOOST_JSON_STATIC_ASSERT(
         sizeof(table) == sizeof(value));
     auto const p = ::new(sp->allocate(
         sizeof(table) +
@@ -131,7 +131,7 @@ undo_create(
     size_type n,
     array& self)
     : self_(self)
-    , saved_(boost::exchange(
+    , saved_(detail::exchange(
         self.tab_,
         table::construct(n, self.sp_)))
 {
@@ -249,16 +249,16 @@ array(
 
 array::
 array(pilfered<array> other) noexcept
-    : tab_(boost::exchange(
+    : tab_(detail::exchange(
         other.get().tab_, nullptr))
-    , sp_(boost::exchange(
+    , sp_(detail::exchange(
         other.get().sp_, nullptr))
 {
 }
 
 array::
 array(array&& other) noexcept
-    : tab_(boost::exchange(
+    : tab_(detail::exchange(
         other.tab_, nullptr))
     , sp_(other.sp_)
 {
@@ -299,7 +299,7 @@ operator=(array&& other)
     {
         if(tab_)
             tab_->destroy(sp_);
-        tab_ = boost::exchange(
+        tab_ = detail::exchange(
             other.tab_, nullptr);
     }
     return *this;

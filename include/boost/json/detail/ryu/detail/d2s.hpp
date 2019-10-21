@@ -22,22 +22,19 @@
 #ifndef BOOST_JSON_DETAIL_RYU_DETAIL_D2S_HPP
 #define BOOST_JSON_DETAIL_RYU_DETAIL_D2S_HPP
 
-#include <assert.h>
-#include <stdint.h>
-
 #include <boost/json/detail/ryu/detail/common.hpp>
+#include <boost/json/detail/assert.hpp>
+#include <cstdint>
 
 // Only include the full table if we're not optimizing for size.
 #if !defined(BOOST_JSON_RYU_OPTIMIZE_SIZE)
 #include <boost/json/detail/ryu/detail/d2s_full_table.hpp>
 #endif
-
 #if defined(BOOST_JSON_RYU_HAS_UINT128)
 typedef __uint128_t uint128_t;
 #else
 #include <boost/json/detail/ryu/detail/d2s_intrinsics.hpp>
 #endif
-
 namespace boost {
 namespace json {
 namespace detail {

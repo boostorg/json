@@ -7,4 +7,6 @@
 # Official repository: https://github.com/vinniefalco/json
 #
 
+path-constant LIB_DIR : . ;
+
 build-project test ;

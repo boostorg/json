@@ -11,7 +11,6 @@
 #include <boost/json/kind.hpp>
 
 #include <boost/beast/_experimental/unit_test/suite.hpp>
-#include <boost/static_assert.hpp>
 #include <type_traits>
 
 namespace boost {
@@ -20,7 +19,7 @@ namespace json {
 class kind_test : public beast::unit_test::suite
 {
 public:
-    BOOST_STATIC_ASSERT(
+    BOOST_JSON_STATIC_ASSERT(
         std::is_enum<kind>::value);
 
     void

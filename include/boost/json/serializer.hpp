@@ -14,6 +14,7 @@
 #include <boost/json/number.hpp>
 #include <boost/json/value.hpp>
 #include <boost/json/detail/iterator.hpp>
+#include <boost/json/detail/string.hpp>
 #include <iosfwd>
 
 namespace boost {

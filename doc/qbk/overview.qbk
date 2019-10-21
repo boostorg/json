@@ -1,0 +1,182 @@
+[/
+    Copyright (c) 2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+    Official repository: https://github.com/vinniefalco/json
+]
+
+[section Overview]
+[block'''<?dbhtml stop-chunking?>''']
+
+[/-----------------------------------------------------------------------------]
+
+[section Introduction]
+
+This library provides containers and algorithms which implement JSON
+([@https://json.org/ "JavaScript Object Notation"]), a lightweight
+data-interchange format. This format is easy for humans to read and
+write, and easy for machines to parse and generate. It is based on a
+subset of the Javascript Programming Language,
+[@https://www.ecma-international.org/ecma-262/10.0/index.html Standard ECMA-262].
+JSON is a text format that is language-indepdent but uses conventions
+that are familiar to programmers of the C-family of languages, including
+C, C++, C#, Java, JavaScript, Perl, Python, and many others. These
+properties make JSON an ideal data-interchange language.
+
+[endsect]
+
+[/-----------------------------------------------------------------------------]
+
+[section Motivation]
+
+There are an overwhelming number of JSON libraries. A common theme 
+throughout is an emphasis on parsing performance or feature richness.
+This library uses a different approach: it provides a carefully
+designed JSON container, __value__, engineered from the ground up to be
+ideally suited as a vocabulary type. In particular it provides an interface
+which is stable, lightweight, and appropriate for use as parameter or
+return types in public interfaces.
+
+The design of the library also achieves these goals:
+
+* Requires only C++11
+* Support stateful allocators
+* Uniform interface on all C++ versions
+* Strict parser and serializer which work incrementally
+* Security-aware treatment of untrusted inputs
+* Fast compilation performance
+
+[endsect]
+
+[/-----------------------------------------------------------------------------]
+
+[section Requirements]
+
+Boost.JSON requires:
+
+* [*C++11]: Robust support for most language features
+
+Tested with these compilers: msvc-14+, gcc 4.8.4+, clang 3.6+.
+
+Typically a program will need to link statically or dynamically with the
+Boost.JSON library, which is either delivered with boost or built
+separately.
+Please visit the [@boost:/more/getting_started.html Boost documentation]
+for instructions on how to build and link with Boost libraries for your
+particular environment system.
+
+Alternatively, Boost.JSON may be used in a header-only configuration by
+defining the macro `BOOST_JSON_HEADER_ONLY` and simply including the
+desired header files.
+
+Boost.JSON may also be used without the rest of Boost, simply by defining
+the macro `BOOST_JSON_STANDALONE`. This configuration requires C++17 or
+later.
+
+[endsect]
+
+[/-----------------------------------------------------------------------------]
+
+[section Design]
+
+[heading Terminology]
+
+
+
+[heading Description]
+
+Avoid user-defined customizations for the value type such as template
+parameters or alternate container choices.
+
+Avoid standard library containers. Custom container types for object,
+array, and string values present the same interface in each version of C++.
+
+The parser adheres strictly to the JSON specification and avoids calling
+into external code. This facilitates security auditing and insulates from
+upstream changes.
+
+The serializer adheres strictly to the JSON specification and avoids
+calling into external code. This ensures that the serialized output is
+predictable, uniform, and insulated from upstream changes.
+
+Arrays and objects are represented by their own distinct and constructible
+types. This allows the caller to work with the native container instead of
+going through the value type.
+
+Provide a minimal API.
+
+No single parser is going to meet the needs of all JSON consumers.
+This library thus provides a straightforward parser with a narrow
+contract, it only parses strictly valid JSON according to the
+specification. Users with parsing needs that are not covered by this
+use-case can and should use other available parsers, by adapting them
+to store their results in the __value__ type.
+
+[heading Allocators]
+
+Lorem ipsum.
+
+[endsect]
+
+[/-----------------------------------------------------------------------------]
+
+[heading Frequently Asked Questions]
+
+[variablelist
+
+[[
+    "Why doesn't the parser support comments"
+][
+    The parser provided in this library adheres strictly to
+    [@https://www.ecma-international.org/ecma-262/10.0/index.html Standard ECMA-262].
+    Users who want to parse non-compliant JSON can copy the parser
+    implementation and make the necessary adjustments in their
+    derivative work.
+]]
+
+[[
+    "I want to parse directly into my own data structures"
+][
+    The purpose of this library is to enable algorithms which implement
+    JSON functionality in their public interfaces to be interoperable,
+    by providing a __value__ type that meets the bar for vocabulary
+    type suitability. Parsing directly into a user defined type offers
+    some advantages but is not the goal of the library.
+]]
+
+[[
+    "Why not use a standard __Allocator__?"
+][
+    Using standard allocators would require that __value__ be declared
+    as a class template, which would impose an additional compilation
+    burden. By avoiding the template, most of the function definitions
+    in the library can be excluded from the headers and emitted in a
+    separate static or dynamic library.
+]]
+
+
+[[
+    "Why __storage__ and __storage_ptr__ instead of `std` types?"
+][
+    The standard's __memory_resource__ is only available since C++17.
+    __polymorphic_allocator__ treats the memory resource as a reference
+    with respect to ownership. Boost.JSON uses a reference counted
+    smart pointer container to simplify the lifetime management of
+    memory  resources. The library defines its own __storage__ type
+    which defines the reference counter intrusively, allowing a 50%
+    space savings over using a __shared_ptr__.
+]]
+
+[[
+    "Why __string__ instead of __std_string__?"
+][
+    
+]]
+
+]
+
+[/-----------------------------------------------------------------------------]
+
+[endsect]

@@ -11,7 +11,6 @@
 #define BOOST_JSON_IMPL_ARRAY_HPP
 
 #include <boost/json/value.hpp>
-#include <boost/core/exchange.hpp>
 #include <algorithm>
 #include <stdexcept>
 #include <type_traits>

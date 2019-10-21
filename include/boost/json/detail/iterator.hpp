@@ -13,19 +13,13 @@
 #include <boost/json/detail/config.hpp>
 #include <boost/json/value.hpp>
 #include <boost/json/detail/stack.hpp>
-#include <boost/json/detail/static_const.hpp>
+#include <boost/json/detail/string.hpp>
 #include <iterator>
 #include <new>
 
 namespace boost {
 namespace json {
 namespace detail {
-
-struct end_t
-{
-};
-
-BOOST_JSON_INLINE_VARIABLE(end, end_t)
 
 /** A generator to perform a depth-first traversal of a JSON value.
 */
@@ -80,10 +74,21 @@ public:
         }
     };
 
+    struct end_t
+    {
+    };
+
     BOOST_JSON_DECL
     explicit
     const_iterator(
         value const& jv);
+
+    static
+    end_t
+    end() noexcept
+    {
+        return {};
+    }
 
     BOOST_JSON_DECL
     value_type

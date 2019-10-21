@@ -1,0 +1,52 @@
+[/
+    Copyright (c) 2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+    Official repository: https://github.com/vinniefalco/json
+]
+
+[section Benchmarks]
+[block'''<?dbhtml stop-chunking?>''']
+
+[/-----------------------------------------------------------------------------]
+
+[table
+[ [Small Document] [Large Document] ]
+[[
+```
+Boost.JSON parse 55952763 bytes in 234ms
+Boost.JSON parse 55952763 bytes in 232ms
+Boost.JSON parse 55952763 bytes in 231ms
+rapidjson parse 55952763 bytes in 239ms
+rapidjson parse 55952763 bytes in 240ms
+rapidjson parse 55952763 bytes in 239ms
+nlohmann parse 55952763 bytes in 495ms
+nlohmann parse 55952763 bytes in 491ms
+nlohmann parse 55952763 bytes in 494ms
+tao-json parse 55952763 bytes in 2178ms
+tao-json parse 55952763 bytes in 2069ms
+tao-json parse 55952763 bytes in 2056ms
+```
+][
+```
+Boost.JSON parse 488889121 bytes in 1820ms
+Boost.JSON parse 488889121 bytes in 1831ms
+Boost.JSON parse 488889121 bytes in 1835ms
+rapidjson parse 488889121 bytes in 1860ms
+rapidjson parse 488889121 bytes in 1886ms
+rapidjson parse 488889121 bytes in 1828ms
+nlohmann parse 488889121 bytes in 4195ms
+nlohmann parse 488889121 bytes in 4241ms
+nlohmann parse 488889121 bytes in 4320ms
+tao-json parse 488889121 bytes in 22952ms
+tao-json parse 488889121 bytes in 23265ms
+tao-json parse 488889121 bytes in 23117ms
+```
+]]
+]
+
+[/-----------------------------------------------------------------------------]
+
+[endsect]

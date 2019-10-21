@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_DETAIL_STACK_HPP
 #define BOOST_JSON_DETAIL_STACK_HPP
 
-#include <boost/assert.hpp>
+#include <boost/json/detail/assert.hpp>
 #include <new>
 #include <type_traits>
 #include <utility>
@@ -69,7 +69,7 @@ public:
     T&
     operator[](std::size_t i) noexcept
     {
-        BOOST_ASSERT(i < n_);
+        BOOST_JSON_ASSERT(i < n_);
         if(v_.empty())
             return base()[n_ - (i + 1)];
         if(i < v_.size())
@@ -81,7 +81,7 @@ public:
     T const&
     operator[](std::size_t i) const noexcept
     {
-        BOOST_ASSERT(i < n_);
+        BOOST_JSON_ASSERT(i < n_);
         if(v_.empty())
             return base()[n_ - (i + 1)];
         if(i < v_.size())
@@ -172,7 +172,7 @@ public:
     void
     pop()
     {
-        BOOST_ASSERT(n_ > 0);
+        BOOST_JSON_ASSERT(n_ > 0);
         if(! v_.empty())
             v_.pop_back();
         else

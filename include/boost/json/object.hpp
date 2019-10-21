@@ -12,7 +12,7 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/storage.hpp>
-#include <boost/utility/string_view.hpp>
+#include <boost/json/detail/string.hpp>
 #include <boost/pilfer.hpp>
 #include <cstdlib>
 #include <initializer_list>

@@ -11,9 +11,7 @@
 #define BOOST_JSON_IMPL_OBJECT_HPP
 
 #include <boost/json/value.hpp>
-#include <boost/core/exchange.hpp>
-#include <boost/core/ignore_unused.hpp>
-#include <boost/utility/string_view.hpp>
+#include <boost/json/detail/string.hpp>
 #include <algorithm>
 #include <cmath>
 #include <type_traits>

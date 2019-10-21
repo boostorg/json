@@ -44,7 +44,7 @@ node(
 {
     if(it)
     {
-        BOOST_ASSERT(
+        BOOST_JSON_ASSERT(
             v->is_structured());
         if(v->is_object())
             ::new(&obj_it)
@@ -106,9 +106,9 @@ operator*() const noexcept ->
     auto const& n = stack_.front();
     if(! n.it)
     {
-        BOOST_ASSERT(
+        BOOST_JSON_ASSERT(
             stack_.size() == 1);
-        BOOST_ASSERT(n.key.empty());
+        BOOST_JSON_ASSERT(n.key.empty());
         return {
             stack_.size() - 1,
             "",
@@ -117,7 +117,7 @@ operator*() const noexcept ->
             true,
             false };
     }
-    BOOST_ASSERT(n.v->is_structured());
+    BOOST_JSON_ASSERT(n.v->is_structured());
     if(n.v->is_object())
     {
         if(n.obj_it !=
@@ -216,14 +216,14 @@ operator++() noexcept
 bool
 operator==(
     const_iterator const& lhs,
-    end_t) noexcept
+    const_iterator::end_t) noexcept
 {
     return lhs.stack_.empty();
 }
 
 bool
 operator==(
-    end_t,
+    const_iterator::end_t,
     const_iterator const& rhs) noexcept
 {
     return rhs.stack_.empty();
@@ -232,14 +232,14 @@ operator==(
 bool
 operator!=(
     const_iterator const& lhs,
-    end_t) noexcept
+    const_iterator::end_t) noexcept
 {
     return ! lhs.stack_.empty();
 }
 
 bool
 operator!=(
-    end_t,
+    const_iterator::end_t,
     const_iterator const& rhs) noexcept
 {
     return ! rhs.stack_.empty();

@@ -35,7 +35,7 @@
 #define BOOST_JSON_DETAIL_RYU_IMPL_D2S_IPP
 
 #include <boost/json/detail/ryu/ryu.hpp>
-#include <boost/assert.hpp>
+#include <boost/json/detail/assert.hpp>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -235,7 +235,7 @@ decimalLength17(
     // The average output length is 16.38 digits, so we check high-to-low.
     // Function precondition: v is not an 18, 19, or 20-digit number.
     // (17 digits are sufficient for round-tripping.)
-    BOOST_ASSERT(v < 100000000000000000L);
+    BOOST_JSON_ASSERT(v < 100000000000000000L);
     if (v >= 10000000000000000L) { return 17; }
     if (v >= 1000000000000000L) { return 16; }
     if (v >= 100000000000000L) { return 15; }

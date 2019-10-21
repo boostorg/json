@@ -22,7 +22,7 @@
 #ifndef BOOST_JSON_DETAIL_RYU_DETAIL_COMMON_HPP
 #define BOOST_JSON_DETAIL_RYU_DETAIL_COMMON_HPP
 
-#include <boost/assert.hpp>
+#include <boost/json/detail/assert.hpp>
 #include <cstdint>
 #include <cstring>
 
@@ -49,7 +49,7 @@ decimalLength9(
     // Function precondition: v is not a 10-digit number.
     // (f2s: 9 digits are sufficient for round-tripping.)
     // (d2fixed: We print 9-digit blocks.)
-    BOOST_ASSERT(v < 1000000000);
+    BOOST_JSON_ASSERT(v < 1000000000);
     if (v >= 100000000) { return 9; }
     if (v >= 10000000) { return 8; }
     if (v >= 1000000) { return 7; }
@@ -70,8 +70,8 @@ pow5bits(
     // This approximation works up to the point that the multiplication overflows at e = 3529.
     // If the multiplication were done in 64 bits, it would fail at 5^4004 which is just greater
     // than 2^9297.
-    BOOST_ASSERT(e >= 0);
-    BOOST_ASSERT(e <= 3528);
+    BOOST_JSON_ASSERT(e >= 0);
+    BOOST_JSON_ASSERT(e <= 3528);
     return static_cast<std::int32_t>(((
         static_cast<std::uint32_t>(e)* 1217359) >> 19) + 1);
 }
@@ -83,8 +83,8 @@ log10Pow2(
     std::int32_t const e) noexcept
 {
     // The first value this approximation fails for is 2^1651 which is just greater than 10^297.
-    BOOST_ASSERT(e >= 0);
-    BOOST_ASSERT(e <= 1650);
+    BOOST_JSON_ASSERT(e >= 0);
+    BOOST_JSON_ASSERT(e <= 1650);
     return (static_cast<std::uint32_t>(e) * 78913) >> 18;
 }
 
@@ -95,8 +95,8 @@ log10Pow5(
     std::int32_t const e) noexcept
 {
     // The first value this approximation fails for is 5^2621 which is just greater than 10^1832.
-    BOOST_ASSERT(e >= 0);
-    BOOST_ASSERT(e <= 2620);
+    BOOST_JSON_ASSERT(e >= 0);
+    BOOST_JSON_ASSERT(e <= 2620);
     return (static_cast<std::uint32_t>(e) * 732923) >> 20;
 }
 

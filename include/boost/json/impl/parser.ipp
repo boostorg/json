@@ -12,8 +12,7 @@
 
 #include <boost/json/parser.hpp>
 #include <boost/json/error.hpp>
-#include <boost/core/ignore_unused.hpp>
-#include <boost/assert.hpp>
+#include <boost/json/detail/assert.hpp>
 #include <stdexcept>
 #include <utility>
 
@@ -26,22 +25,22 @@ parser::
 assign(T&& t)
 {
     auto& jv = *stack_.front();
-    BOOST_ASSERT(! jv.is_object());
+    BOOST_JSON_ASSERT(! jv.is_object());
     if(obj_)
     {
-        BOOST_ASSERT(jv.is_null());
+        BOOST_JSON_ASSERT(jv.is_null());
         jv = std::forward<T>(t);
         stack_.pop();
     }
     else if(stack_.front()->is_array())
     {
-        BOOST_ASSERT(s_.empty());
+        BOOST_JSON_ASSERT(s_.empty());
         jv.as_array().emplace_back(
             std::forward<T>(t));
     }
     else
     {
-        BOOST_ASSERT(jv.is_null());
+        BOOST_JSON_ASSERT(jv.is_null());
         jv = std::forward<T>(t);
     }
 }
@@ -149,10 +148,10 @@ on_object_begin(error_code& ec)
         return;
     }
     auto& jv = *stack_.front();
-    BOOST_ASSERT(! jv.is_object());
+    BOOST_JSON_ASSERT(! jv.is_object());
     if(obj_)
     {
-        BOOST_ASSERT(jv.is_null());
+        BOOST_JSON_ASSERT(jv.is_null());
         jv.emplace_object();
     }
     else if(jv.is_array())
@@ -164,7 +163,7 @@ on_object_begin(error_code& ec)
     }
     else
     {
-        BOOST_ASSERT(jv.is_null());
+        BOOST_JSON_ASSERT(jv.is_null());
         jv.emplace_object();
     }
     obj_ = true;
@@ -174,13 +173,13 @@ void
 parser::
 on_object_end(error_code&)
 {
-    BOOST_ASSERT(
+    BOOST_JSON_ASSERT(
         stack_.front()->is_object());
     stack_.pop();
     if(! stack_.empty())
     {
         auto const& jv = stack_.front();
-        BOOST_ASSERT(
+        BOOST_JSON_ASSERT(
             jv->is_array() || jv->is_object());
         obj_ = jv->is_object();
     }
@@ -196,15 +195,15 @@ on_array_begin(error_code& ec)
         return;
     }
     auto& jv = *stack_.front();
-    BOOST_ASSERT(! jv.is_object());
+    BOOST_JSON_ASSERT(! jv.is_object());
     if(obj_)
     {
-        BOOST_ASSERT(jv.is_null());
+        BOOST_JSON_ASSERT(jv.is_null());
         jv.emplace_array();
     }
     else if(jv.is_array())
     {
-        BOOST_ASSERT(s_.empty());
+        BOOST_JSON_ASSERT(s_.empty());
         jv.as_array().emplace_back(
             kind::array);
         stack_.push(
@@ -212,7 +211,7 @@ on_array_begin(error_code& ec)
     }
     else
     {
-        BOOST_ASSERT(jv.is_null());
+        BOOST_JSON_ASSERT(jv.is_null());
         jv.emplace_array();
     }
     obj_ = false;
@@ -222,13 +221,13 @@ void
 parser::
 on_array_end(error_code&)
 {
-    BOOST_ASSERT(
+    BOOST_JSON_ASSERT(
         stack_.front()->is_array());
     stack_.pop();
     if(! stack_.empty())
     {
         auto const& jv = stack_.front();
-        BOOST_ASSERT(
+        BOOST_JSON_ASSERT(
             jv->is_array() || jv->is_object());
         obj_ = jv->is_object();
     }
@@ -270,18 +269,18 @@ on_string_data(
     string_view s, error_code&)
 {
     auto& jv = *stack_.front();
-    BOOST_ASSERT(! jv.is_object());
+    BOOST_JSON_ASSERT(! jv.is_object());
     if(! jv.is_string())
     {
         if(obj_)
         {
-            BOOST_ASSERT(jv.is_null());
+            BOOST_JSON_ASSERT(jv.is_null());
             jv.emplace_string().append(
                 s.data(), s.size());
         }
         else if(stack_.front()->is_array())
         {
-            BOOST_ASSERT(s_.empty());
+            BOOST_JSON_ASSERT(s_.empty());
             jv.as_array().emplace_back(kind::string);
             stack_.push(
                 &jv.as_array().back());
@@ -290,7 +289,7 @@ on_string_data(
         }
         else
         {
-            BOOST_ASSERT(jv.is_null());
+            BOOST_JSON_ASSERT(jv.is_null());
             jv.emplace_string().append(
                 s.data(), s.size());
         }
@@ -309,12 +308,12 @@ on_string_end(
     error_code& ec)
 {
     on_string_data(s, ec);
-    BOOST_ASSERT(stack_.front()->is_string());
+    BOOST_JSON_ASSERT(stack_.front()->is_string());
     stack_.pop();
     if(! stack_.empty())
     {
         auto const& jv = stack_.front();
-        BOOST_ASSERT(
+        BOOST_JSON_ASSERT(
             jv->is_array() || jv->is_object());
         obj_ = jv->is_object();
     }
@@ -326,22 +325,22 @@ on_number(ieee_decimal dec, error_code&)
 {
     number n(dec.mantissa, dec.exponent, dec.sign);
     auto& jv = *stack_.front();
-    BOOST_ASSERT(! jv.is_object());
+    BOOST_JSON_ASSERT(! jv.is_object());
     if(obj_)
     {
-        BOOST_ASSERT(jv.is_null());
+        BOOST_JSON_ASSERT(jv.is_null());
         jv.emplace_number() = std::move(n);
         stack_.pop();
     }
     else if(stack_.front()->is_array())
     {
-        BOOST_ASSERT(s_.empty());
+        BOOST_JSON_ASSERT(s_.empty());
         jv.as_array().emplace_back(
             std::move(n));
     }
     else
     {
-        BOOST_ASSERT(jv.is_null());
+        BOOST_JSON_ASSERT(jv.is_null());
         jv.emplace_number() = std::move(n);
     }
 }

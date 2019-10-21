@@ -11,7 +11,6 @@
 #define BOOST_JSON_IMPL_SERIALIZER_IPP
 
 #include <boost/json/serializer.hpp>
-#include <boost/static_assert.hpp>
 #include <ostream>
 
 namespace boost {
@@ -47,7 +46,7 @@ serializer(
 
 {
     // ensure room for \uXXXX escape plus one
-    BOOST_STATIC_ASSERT(sizeof(buf_) >= 7);
+    BOOST_JSON_STATIC_ASSERT(sizeof(buf_) >= 7);
 }
 
 bool
@@ -70,7 +69,7 @@ loop:
     case state::inc:
     {
         ++it_;
-        if(it_ == detail::end)
+        if(it_ == detail::const_iterator::end())
         {
             state_ = state::done;
             goto loop;
@@ -84,7 +83,7 @@ loop:
                 state_ = state::lit;
                 goto loop;
             }
-            BOOST_ASSERT(e.value.is_array());
+            BOOST_JSON_ASSERT(e.value.is_array());
             str_ = {"],", e.last ? 1U : 2U};
             state_ = state::lit;
             goto loop;
@@ -169,7 +168,7 @@ loop:
         p += n;
         if(n < key_.size())
         {
-            BOOST_ASSERT(p >= p1);
+            BOOST_JSON_ASSERT(p >= p1);
             key_ = key_.substr(n);
             goto finish;
         }
@@ -319,7 +318,7 @@ loop:
             goto loop;
         }
         str_ = str_.substr(n);
-        BOOST_ASSERT(p >= p1);
+        BOOST_JSON_ASSERT(p >= p1);
         goto finish;
     }
 

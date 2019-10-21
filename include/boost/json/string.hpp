@@ -12,8 +12,8 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/storage.hpp>
+#include <boost/json/detail/string.hpp>
 #include <boost/pilfer.hpp>
-#include <boost/utility/string_view.hpp>
 #include <algorithm>
 #include <initializer_list>
 #include <iosfwd>
@@ -706,8 +706,10 @@ public:
         return s_.size;
     }
 
+    static
+    constexpr
     size_type
-    max_size() const noexcept
+    max_size() noexcept
     {
         return detail::max_string_length_;
     }

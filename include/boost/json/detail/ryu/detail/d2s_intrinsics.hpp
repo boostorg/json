@@ -24,7 +24,7 @@
 
 // This sets BOOST_JSON_DETAIL_RYU_32_BIT_PLATFORM as a side effect if applicable.
 #include <boost/json/detail/ryu/detail/common.hpp>
-#include <boost/assert.hpp>
+#include <boost/json/detail/assert.hpp>
 #include <cstdint>
 
 #if defined(BOOST_JSON_RYU_HAS_64_BIT_INTRINSICS)
@@ -65,7 +65,7 @@ shiftright128(
     // Otherwise in the range [2, 59].)
     // Check this here in case a future change requires larger shift
     // values. In this case this function needs to be adjusted.
-    BOOST_ASSERT(dist < 64);
+    BOOST_JSON_ASSERT(dist < 64);
     return __shiftright128(lo, hi, (unsigned char) dist);
 }
 
@@ -115,14 +115,14 @@ shiftright128(
     uint32_t const dist)
 {
     // We don't need to handle the case dist >= 64 here (see above).
-    BOOST_ASSERT(dist < 64);
+    BOOST_JSON_ASSERT(dist < 64);
     
 #if defined(BOOST_JSON_RYU_OPTIMIZE_SIZE) || !defined(BOOST_JSON_DETAIL_RYU_32_BIT_PLATFORM)
-    BOOST_ASSERT(dist > 0);
+    BOOST_JSON_ASSERT(dist > 0);
     return (hi << (64 - dist)) | (lo >> dist);
 #else
     // Avoid a 64-bit shift by taking advantage of the range of shift values.
-    BOOST_ASSERT(dist >= 32);
+    BOOST_JSON_ASSERT(dist >= 32);
     return (hi << (64 - dist)) | ((std::uint32_t)(lo >> 32) >> (dist - 32));
 #endif
 }
@@ -266,7 +266,7 @@ pow5Factor(std::uint64_t value)
     std::uint32_t count = 0;
     for (;;)
     {
-        BOOST_ASSERT(value != 0);
+        BOOST_JSON_ASSERT(value != 0);
         std::uint64_t const q = div5(value);
         uint32_t const r = ((std::uint32_t) value) - 5 * ((std::uint32_t) q);
         if (r != 0)
@@ -295,7 +295,7 @@ multipleOfPowerOf2(
     std::uint64_t const value,
     std::uint32_t const p)
 {
-    BOOST_ASSERT(value != 0);
+    BOOST_JSON_ASSERT(value != 0);
     // return __builtin_ctzll(value) >= p;
     return (value & ((1ull << p) - 1)) == 0;
 }

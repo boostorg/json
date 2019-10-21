@@ -11,6 +11,7 @@
 #define BOOST_JSON_IMPL_VALUE_HPP
 
 #include <boost/json/error.hpp>
+#include <boost/json/detail/make_void.hpp>
 #include <limits>
 #include <type_traits>
 
@@ -58,7 +59,7 @@ struct is_range : std::false_type
 };
 
 template<class T>
-struct is_range<T, boost::void_t<
+struct is_range<T, void_t<
     typename T::value_type,
     decltype(
         std::declval<T const&>().begin(),

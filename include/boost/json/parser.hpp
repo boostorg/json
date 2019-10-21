@@ -11,9 +11,10 @@
 #define BOOST_JSON_PARSER_HPP
 
 #include <boost/json/detail/config.hpp>
-#include <boost/json/value.hpp>
 #include <boost/json/basic_parser.hpp>
 #include <boost/json/storage.hpp>
+#include <boost/json/value.hpp>
+#include <boost/json/detail/string.hpp>
 #include <new>
 #include <string>
 #include <type_traits>

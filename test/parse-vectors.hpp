@@ -11,17 +11,20 @@
 #ifndef PARSE_VECTORS
 #define PARSE_VECTORS
 
-#include <boost/utility/string_view.hpp>
+#include <boost/json/detail/string.hpp>
 #include <cstdlib>
 #include <type_traits>
+
+namespace boost {
+namespace json {
 
 struct parse_vectors
 {
     struct item
     {
         char result;
-        ::boost::string_view name;
-        ::boost::string_view text;
+        string_view name;
+        string_view text;
     };
 
     using iterator = item const*;
@@ -1412,5 +1415,8 @@ parse_vectors() noexcept
     last_ = &list[std::extent<
         decltype(list)>::value - 1];
 }
+
+} // json
+} // boost
 
 #endif

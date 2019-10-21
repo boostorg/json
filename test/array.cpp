@@ -30,7 +30,7 @@ public:
     {
         // ensure this string does
         // not fit in the SBO area.
-        BOOST_ASSERT(str_.size() >
+        BOOST_JSON_ASSERT(str_.size() >
             string().capacity());
     }
 

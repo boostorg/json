@@ -26,12 +26,7 @@
 #define BOOST_JSON_DETAIL_RYU_IMPL_F2S_IPP
 
 #include <boost/json/detail/ryu/ryu.hpp>
-
-#include <assert.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#include <limits.h>
+#include <boost/json/detail/assert.hpp>
 
 #ifdef RYU_DEBUG
 #include <stdio.h>
@@ -39,6 +34,10 @@
 
 #include <boost/json/detail/ryu/detail/common.hpp>
 #include <boost/json/detail/ryu/detail/digit_table.hpp>
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
+#include <limits>
 
 namespace boost {
 namespace json {
@@ -99,7 +98,7 @@ pow5Factor(uint32_t value)
     std::uint32_t count = 0;
     for (;;)
     {
-        BOOST_ASSERT(value != 0);
+        BOOST_JSON_ASSERT(value != 0);
         const std::uint32_t q = value / 5;
         const std::uint32_t r = value % 5;
         if (r != 0)
@@ -140,7 +139,7 @@ mulShift(
     const std::uint64_t factor,
     const std::int32_t shift)
 {
-    BOOST_ASSERT(shift > 32);
+    BOOST_JSON_ASSERT(shift > 32);
 
   // The casts here help MSVC to avoid calls to the __allmul library
   // function.
@@ -162,7 +161,7 @@ mulShift(
 #else // BOOST_JSON_DETAIL_RYU_32_BIT_PLATFORM
     const std::uint64_t sum = (bits0 >> 32) + bits1;
     const std::uint64_t shiftedSum = sum >> (shift - 32);
-    BOOST_ASSERT(shiftedSum <= UINT32_MAX);
+    BOOST_JSON_ASSERT(shiftedSum <= UINT32_MAX);
     return (std::uint32_t) shiftedSum;
 #endif // BOOST_JSON_DETAIL_RYU_32_BIT_PLATFORM
 }

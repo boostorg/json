@@ -11,7 +11,7 @@
 #define BOOST_JSON_NUMBER_HPP
 
 #include <boost/json/detail/config.hpp>
-#include <boost/utility/string_view.hpp>
+#include <boost/json/detail/string.hpp>
 #include <cstdint>
 #include <iosfwd>
 #include <type_traits>

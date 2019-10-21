@@ -16,6 +16,10 @@ import doxygen ;
 import modules ;
 import saxonhe ;
 
+local broot = [ os.environ BOOST_ROOT ] ;
+
+path-constant out : . ;
+
 #-------------------------------------------------------------------------------
 #
 # Build the list of header files that Doxygen will scan. We need
@@ -78,9 +82,6 @@ make index.xml
 
 rule make_doxygen_xml ( targets * : sources * : properties * )
 {
-    LIB_DIR on $(targets) =
-        [ path.native [ path.parent [ path.root
-        [ on $(sources[1]) return $(SEARCH) ] [ path.pwd ] ] ] ] ;
 }
 
 if [ os.name ] = NT
@@ -145,20 +146,40 @@ install qbk : reference.qbk ;
 # Produce the Boost.Book XML from the QuickBook
 #
 
+install stylesheets
+    :
+        $(broot)/doc/src/boostbook.css
+    :
+        <location>$(out)/html
+    ;
+
+explicit stylesheets ;
+
 install images
     :
+        [ glob $(broot)/doc/src/images/*.png ]
+        images/doc-logo.png
     :
-        <location>html/json/images
+        <location>$(out)/html/images
     ;
 
 explicit images ;
+
+install callouts
+    :
+        [ glob $(broot)/doc/src/images/callouts/*.png ]
+    :
+        <location>$(out)/html/images/callouts
+    ;
+
+explicit callout ;
 
 xml json_doc
     :
         qbk/main.qbk
     :
-        <dependency>images
         <dependency>qbk
+#        <include>$(broot)/tools/boostbook/dtd
     ;
 
 explicit json_doc ;
@@ -173,16 +194,19 @@ boostbook json
     :
         json_doc
     :
-        <xsl:param>boost.root=../../../..
-        <xsl:param>chapter.autolabel=1
-        <xsl:param>chunk.section.depth=8                # Depth to which sections should be chunked
+        <xsl:param>boost.image.src=images/doc-logo.png
+        <xsl:param>boost.image.alt="Boost.JSON Logo"
+        <xsl:param>boost.image.w=880
+        <xsl:param>boost.image.h=80
+        <xsl:param>boost.graphics.root=images/
+        <xsl:param>html.stylesheet=boostbook.css
+        <xsl:param>nav.layout=none
+        <xsl:param>chapter.autolabel=0
         <xsl:param>chunk.first.sections=1               # Chunk the first top-level section?
-        <xsl:param>toc.section.depth=8                  # How deep should recursive sections appear in the TOC?
-        <xsl:param>toc.max.depth=8                      # How many levels should be created for each TOC?
-        <xsl:param>generate.section.toc.level=8         # Control depth of TOC generation in sections
-        <xsl:param>generate.toc="chapter toc,title section nop reference nop"
-        <include>../../../tools/boostbook/dtd
+        <xsl:param>chunk.section.depth=8                # Depth to which sections should be chunked
+        <xsl:param>generate.toc="chapter nop section nop"
     :
+        <dependency>stylesheets
         <dependency>images
     ;
 

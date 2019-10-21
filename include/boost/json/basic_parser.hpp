@@ -15,7 +15,7 @@
 #include <boost/json/number.hpp>
 #include <boost/json/detail/basic_parser.hpp>
 #include <boost/json/detail/stack.hpp>
-#include <boost/utility/string_view.hpp>
+#include <boost/json/detail/string.hpp>
 #include <cstdint>
 
 #include <string>

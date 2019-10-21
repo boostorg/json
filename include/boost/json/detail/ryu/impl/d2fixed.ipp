@@ -144,8 +144,8 @@ mulShift_mod1e9(
     if (j < 128 || j > 180)
         printf("%d\n", j);
 #endif
-    BOOST_ASSERT(j >= 128);
-    BOOST_ASSERT(j <= 180);
+    BOOST_JSON_ASSERT(j >= 128);
+    BOOST_JSON_ASSERT(j <= 180);
     // j: [128, 256)
     const uint128_t mid = b1 + (std::uint64_t) (b0 >> 64); // 64
     const uint128_t s1 = b2 + (std::uint64_t) (mid >> 64); // 128
@@ -223,8 +223,8 @@ mulShift_mod1e9(
     if (j < 128 || j > 180)
         printf("%d\n", j);
 #endif
-    BOOST_ASSERT(j >= 128);
-    BOOST_ASSERT(j <= 180);
+    BOOST_JSON_ASSERT(j >= 128);
+    BOOST_JSON_ASSERT(j <= 180);
 #if defined(BOOST_JSON_RYU_HAS_64_BIT_INTRINSICS)
     std::uint32_t const dist = (std::uint32_t) (j - 128); // dist: [0, 52]
     std::uint64_t const shiftedhigh = s1high >> dist;

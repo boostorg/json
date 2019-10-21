@@ -13,7 +13,7 @@
 #include <boost/json/basic_parser.hpp>
 #include <boost/json/error.hpp>
 #include <boost/json/detail/buffer.hpp>
-#include <boost/assert.hpp>
+#include <boost/json/detail/assert.hpp>
 
 namespace boost {
 namespace json {
@@ -290,7 +290,7 @@ write_some(
         goto loop_ws;
     }
 
-    BOOST_ASSERT(st.front() != state::end);
+    BOOST_JSON_ASSERT(st.front() != state::end);
 loop:
     switch(st.front())
     {
@@ -309,7 +309,7 @@ loop_ws:
 
     case state::value:
     {
-        BOOST_ASSERT(p < p1);
+        BOOST_JSON_ASSERT(p < p1);
         switch(*p)
         {
         // object
@@ -453,7 +453,7 @@ loop_ws:
 
     // first key or end of object
     case state::object1:
-        BOOST_ASSERT(p < p1);
+        BOOST_JSON_ASSERT(p < p1);
         if(*p == '}')
         {
             ++p;
@@ -475,7 +475,7 @@ loop_ws:
         goto loop;
 
     case state::object2:
-        BOOST_ASSERT(p < p1);
+        BOOST_JSON_ASSERT(p < p1);
         if(*p == '}')
         {
             ++p;
@@ -502,7 +502,7 @@ loop_ws:
         goto loop_ws;
 
     case state::colon:
-        BOOST_ASSERT(p < p1);
+        BOOST_JSON_ASSERT(p < p1);
         if(*p != ':')
         {
             ec = error::expected_colon;
@@ -518,7 +518,7 @@ loop_ws:
     //
 
     case state::array1:
-        BOOST_ASSERT(p < p1);
+        BOOST_JSON_ASSERT(p < p1);
         if(*p == ']')
         {
             ++p;
@@ -536,7 +536,7 @@ loop_ws:
         goto loop;
 
     case state::array2:
-        BOOST_ASSERT(p < p1);
+        BOOST_JSON_ASSERT(p < p1);
         if(*p == ']')
         {
             ++p;
@@ -565,7 +565,7 @@ loop_ws:
     // double quote opening string
     case state::string1:
 loop_string:
-        BOOST_ASSERT(p < p1);
+        BOOST_JSON_ASSERT(p < p1);
         if(*p != '\"')
         {
             ec = error::expected_quotes;
@@ -629,7 +629,7 @@ loop_string:
             // TODO UTF-8?
             ++p;
         }
-        BOOST_ASSERT(p != start);
+        BOOST_JSON_ASSERT(p != start);
         if(is_key_)
             this->on_key_data({start,
                 static_cast<std::size_t>(
@@ -1138,7 +1138,7 @@ loop_frac:
         break;
 
     case state::num_exp:
-        BOOST_ASSERT(p < p1);
+        BOOST_JSON_ASSERT(p < p1);
         if(*p != 'e' && *p != 'E')
             goto loop_num_end;
         ++p;
@@ -1259,7 +1259,7 @@ write_eof(error_code& ec)
         {
             char c = 0;
             write_some(&c, 1, ec);
-            BOOST_ASSERT(ec);
+            BOOST_JSON_ASSERT(ec);
         };
 
     stack_impl st;

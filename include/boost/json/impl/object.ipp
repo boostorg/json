@@ -11,9 +11,8 @@
 #define BOOST_JSON_IMPL_OBJECT_IPP
 
 #include <boost/json/object.hpp>
-#include <boost/core/exchange.hpp>
-#include <boost/core/ignore_unused.hpp>
-#include <boost/assert.hpp>
+#include <boost/json/detail/exchange.hpp>
+#include <boost/json/detail/assert.hpp>
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -297,7 +296,7 @@ object(
 object::
 object(object&& other) noexcept
     : sp_(other.sp_)
-    , tab_(boost::exchange(
+    , tab_(detail::exchange(
         other.tab_, nullptr))
 {
 }
@@ -310,7 +309,7 @@ object(
 {
     if(*sp_ == *other.sp_)
     {
-        tab_ = boost::exchange(
+        tab_ = detail::exchange(
             other.tab_, nullptr);
     }
     else
@@ -326,7 +325,7 @@ object(
 object::
 object(pilfered<object> other) noexcept
     : sp_(std::move(other.get().sp_))
-    , tab_(boost::exchange(
+    , tab_(detail::exchange(
         other.get().tab_, nullptr))
 {
 }
@@ -607,7 +606,7 @@ object::
 bucket(key_type key) const noexcept ->
     size_type
 {
-    BOOST_ASSERT(tab_);
+    BOOST_JSON_ASSERT(tab_);
     return constrain_hash(
         hash_function()(key),
         tab_->bucket_count);
@@ -733,11 +732,11 @@ remove(element* e) noexcept
     if(head != e)
     {
         auto it = head;
-        BOOST_ASSERT(it != tab_->end());
+        BOOST_JSON_ASSERT(it != tab_->end());
         while(it->local_next != e)
         {
             it = it->local_next;
-            BOOST_ASSERT(it != tab_->end());
+            BOOST_JSON_ASSERT(it != tab_->end());
         }
         it->local_next = e->local_next;
     }
@@ -865,7 +864,7 @@ insert(
     head = e;
     if(tab_->head == tab_->end())
     {
-        BOOST_ASSERT(
+        BOOST_JSON_ASSERT(
             before.e_ == tab_->end());
         tab_->head = e;
         tab_->end()->prev = e;

@@ -1,0 +1,214 @@
+[/
+    Copyright (c) 2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+    Official repository: https://github.com/vinniefalco/json
+]
+
+[section:comparison Comparison to Other Libraries]
+[block'''<?dbhtml stop-chunking?>''']
+
+We use these criteria for evaluating a library's JSON container (the
+"value type") for suitability as a vocabulary type:
+
+* The value type declaration is completely decoupled
+  from other facilities such as parsing and serialization.
+
+* The value type is not a class template
+
+[/-----------------------------------------------------------------------------]
+
+[heading Comparison to nlohmann JSON]
+
+* Value Type: [@https://github.com/nlohmann/json/blob/00cb98a3d170161711ab912ae6acefba31f29f75/include/nlohmann/json.hpp#L165 `nlohmann::basic_json`]
+
+```
+template<
+    template<typename, typename, typename...> class ObjectType,
+    template<typename, typename...> class ArrayType,
+    class StringType,
+    class BooleanType,
+    class NumberIntegerType,
+    class NumberUnsignedType,
+    class NumberFloatType,
+    template<typename> class AllocatorType,
+    template<typename, typename = void> class JSONSerializer
+    >
+class basic_json
+{
+  private:
+    ....
+    friend ::nlohmann::detail::parser<basic_json>;
+    friend ::nlohmann::detail::serializer<basic_json>;
+...
+
+```
+
+* __bad__ `basic_json` is a class template. Libraries must agree on
+  all the template parameters to be fully interoperable.
+
+* __bad__ Too much customization. We struggle to see a use case for
+  making `BooleanType` anything other than `bool`.
+
+* __bad__ Poor separation of concerns. The `basic_json` container
+  declaration needlessly conflates parsing and serialization APIs.
+
+* __bad__ Limited allocator support. Only stateless allocators are
+  allowed, which rules out the most important type of allocator, a
+  local arena-based implementation.
+
+* __bad__ No incremental parsing, no incremental serialization.
+
+* __bad__ Mediocre parsing performance.
+
+* __good__ Full-featured, including JSON Pointer, CBOR, and others.
+
+[/-----------------------------------------------------------------------------]
+
+[heading Comparison to RapidJSON]
+
+* Value Type: [@https://github.com/Tencent/rapidjson/blob/bb5f966b9939d6cdfbac3462a0410e185099b3af/include/rapidjson/document.h#L608 `rapidjson::GenericValue`]
+
+```
+template <typename Encoding, typename Allocator = MemoryPoolAllocator<> > 
+class GenericValue;
+
+template <bool Const, typename ValueT>
+class GenericArray;
+
+template <bool Const, typename ValueT>
+class GenericObject;
+```
+
+* __bad__ The value type is a class template.
+
+* __bad__ The value type is not __CopyConstructible__
+
+* __bad__ The interface of the array and object types are considerably
+  different from their standard library equivalents, and not idiomatic.
+
+* __bad__ No incremental parsing, no incremental serialization.
+
+* __good__ Parsing performance is excellent.
+
+[/-----------------------------------------------------------------------------]
+
+[heading Comparison to TaoCPP JSON]
+
+* Value Type: [@https://github.com/taocpp/json/blob/e0944b3b2686a6b9749c16dd06f72445bf7eef0a/include/tao/json/basic_value.hpp#L38 `tao::json::basic_value`]
+
+*https://github.com/taocpp/json
+
+```
+template< template< typename... > class Traits >
+class basic_value
+{
+    ...
+public:
+    using array_t = std::vector< basic_value >;
+    using object_t = std::map< std::string, basic_value, std::less<> >;
+...
+```
+
+The `basic_value` type uses the `Traits` as a template parameter, where the
+traits provide specializations to convert each supported native or user defined
+type to and from JSON. This makes the value type unsuitable as a vocabulary
+type because the traits for a `basic_value` exported by two different
+libraries which each has added support for their own types, are not the same.
+
+* __bad__ C++17 or later is required.
+
+* __bad__ No allocator support.
+
+* __bad__ The value type is a class template.
+
+* __bad__ The array and object container interfaces change
+  depending on which version of the standard C++ library is used.
+
+* __bad__ The performance of the library changes significantly
+  depending on which version of the standard library is used.
+
+* __bad__ Parsing performance is the worst surveyed, by a large margin.
+
+* __bad__ No incremental parsing, no incremental serialization.
+
+[/-----------------------------------------------------------------------------]
+
+[heading Comparison to JSONCPP]
+
+* Value Type: [@https://github.com/open-source-parsers/jsoncpp/blob/41ffff01d39085222280791a23451d3e852b06c2/include/json/value.h#L188 `Json::Value`]
+
+[/-----------------------------------------------------------------------------]
+
+[heading Comparison to Ciere Labs json_spirit]
+
+* Value Type: [@https://github.com/cierelabs/json_spirit/blob/e885dc55054bf0e6ef250322923396aed4c3ece7/ciere/json/value.hpp#L72 `ciere::json::value`]
+
+
+```
+   typedef std::string                                  string_t;
+   typedef std::map<std::string, value>                 object_t;
+   typedef std::pair<std::string, value>                object_member_t;
+   typedef boost::container::stable_vector<value>       array_t;
+
+   class value : public boost::spirit::extended_variant<
+        null_t, bool_t, string_t, int_t, double_t, object_t, array_t>
+        { ... };
+
+```
+
+* No allocator support.
+
+[/-----------------------------------------------------------------------------]
+
+[heading Comparison to SIMD JSON]
+
+https://github.com/lemire/simdjson
+
+```
+class ParsedJson;
+```
+
+This is quite an interesting data structure, which is optimized to work well
+with the SIMD parser. It makes very good design choices for the intended
+use-case. However it is not well suited as a vocabulary type due to the
+necessary limitations.
+
+* Read-only
+* Sequential access only, via `ParsedJson::BasicIterator`
+* Can only be realistically populated by the provided SIMD JSON parser.
+
+[/-----------------------------------------------------------------------------]
+
+[heading Comparison to trial.protocol]
+
+https://github.com/breese/trial.protocol
+
+```
+template <template <typename> class Allocator>
+class basic_variable
+{
+    ....
+public:
+```
+
+* The value type is a class template.
+
+* Allocators may only be default-constructed
+
+[/-----------------------------------------------------------------------------]
+
+[heading Comparison to jbc-json]
+
+https://github.com/Julien-Blanc-tgcm/jbc-json
+
+```
+template<typename traits_>
+class basic_item
+```
+
+[/-----------------------------------------------------------------------------]
+
+[endsect]

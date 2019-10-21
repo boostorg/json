@@ -11,7 +11,7 @@
 #define BOOST_JSON_DETAIL_VALUE_HPP
 
 #include <boost/json/error.hpp>
-#include <boost/type_traits/make_void.hpp>
+#include <boost/json/detail/make_void.hpp>
 #include <type_traits>
 
 namespace boost {
@@ -29,7 +29,7 @@ struct has_adl_to_json : std::false_type
 
 template<class T>
 struct has_adl_to_json<T,
-    boost::void_t<decltype(to_json(
+    void_t<decltype(to_json(
         std::declval<T const&>(),
         std::declval<json::value&>()))>>
     : std::true_type
@@ -44,7 +44,7 @@ struct has_adl_from_json : std::false_type
 
 template<class T>
 struct has_adl_from_json<T,
-    boost::void_t<decltype(from_json(
+    void_t<decltype(from_json(
         std::declval<T&>(),
         std::declval<json::value const&>()))>>
     : std::true_type
@@ -59,7 +59,7 @@ struct has_mf_to_json : std::false_type
 
 template<class T>
 struct has_mf_to_json<T,
-    boost::void_t<decltype(
+    void_t<decltype(
         std::declval<T const&>().to_json(
             std::declval<json::value&>()))>>
     : std::true_type
@@ -74,7 +74,7 @@ struct has_mf_from_json : std::false_type
 
 template<class T>
 struct has_mf_from_json<T,
-    boost::void_t<decltype(
+    void_t<decltype(
     std::declval<T&>().from_json(
         std::declval<json::value const&>()))>>
     : std::true_type

@@ -10,7 +10,6 @@
 #ifndef BOOST_JSON_IMPL_STRING_HPP
 #define BOOST_JSON_IMPL_STRING_HPP
 
-#include <boost/core/ignore_unused.hpp>
 #include <algorithm>
 #include <utility>
 #include <string>

@@ -11,8 +11,6 @@
 #define BOOST_JSON_STORAGE_HPP
 
 #include <boost/json/detail/config.hpp>
-#include <boost/core/exchange.hpp>
-#include <boost/static_assert.hpp>
 #include <atomic>
 #include <cstddef>
 #include <cstdlib>
@@ -95,7 +93,7 @@ public:
 template<class T>
 class basic_storage_ptr
 {
-    BOOST_STATIC_ASSERT(
+    BOOST_JSON_STATIC_ASSERT(
         std::is_base_of<storage, T>::value);
 
     template<class U>
@@ -164,8 +162,9 @@ public:
     */
     basic_storage_ptr(
         basic_storage_ptr&& other) noexcept
-        : t_(boost::exchange(other.t_, nullptr))
+        : t_(other.t_)
     {
+        other.t_ = nullptr;
     }
 
     /** Copy construct a storage pointer.
@@ -204,8 +203,9 @@ public:
     >
     basic_storage_ptr(
         basic_storage_ptr<U>&& sp) noexcept
-        : t_(boost::exchange(sp.t_, nullptr))
+        : t_(sp.t_)
     {
+        sp.t_ = nullptr;
     }
 
     template<class U
@@ -264,7 +264,8 @@ public:
     {
         if(t_)
             t_->release();
-        t_ = boost::exchange(other.t_, nullptr);
+        t_ = other.t_;
+        other.t_ = nullptr;
         return *this;
     }
 

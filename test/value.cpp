@@ -11,7 +11,6 @@
 #include <boost/json/value.hpp>
 
 #include <boost/beast/_experimental/unit_test/suite.hpp>
-#include <boost/static_assert.hpp>
 #include <memory>
 #include <vector>
 
@@ -68,7 +67,7 @@ public:
     {
         // ensure this string does
         // not fit in the SBO area.
-        BOOST_ASSERT(str_.size() >
+        BOOST_JSON_ASSERT(str_.size() >
             string().capacity());
     }
 
@@ -92,10 +91,10 @@ public:
         }
     }
 
-    BOOST_STATIC_ASSERT(
+    BOOST_JSON_STATIC_ASSERT(
         detail::is_range<std::vector<int>>::value);
 
-    BOOST_STATIC_ASSERT(
+    BOOST_JSON_STATIC_ASSERT(
         detail::is_range<std::initializer_list<int>>::value);
 
     //------------------------------------------------------

@@ -10,9 +10,7 @@
 #ifndef BOOST_JSON_IMPL_STRING_IPP
 #define BOOST_JSON_IMPL_STRING_IPP
 
-#include <boost/core/exchange.hpp>
-#include <boost/core/ignore_unused.hpp>
-#include <boost/assert.hpp>
+#include <boost/json/detail/assert.hpp>
 #include <algorithm>
 #include <new>
 #include <ostream>
@@ -188,8 +186,8 @@ string::
 impl::
 unalloc(storage_ptr const& sp) noexcept
 {
-    BOOST_ASSERT(size < sizeof(buf));
-    BOOST_ASSERT(! in_sbo());
+    BOOST_JSON_ASSERT(size < sizeof(buf));
+    BOOST_JSON_ASSERT(! in_sbo());
     auto const p_ = p;
     traits_type::copy(
         buf, data(), size + 1);
