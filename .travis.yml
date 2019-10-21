@@ -124,7 +124,7 @@ jobs:
       addons: *gcc-8
       script:
         - cd $BOOST_ROOT/libs/$SELF
-        - ci/travis/codecov.sh
+        - tools/codecov.sh
 
     - { os: "linux", env: [ "B2_TOOLSET=clang-8",     "B2_CXXSTD=17,2a"    ], addons: *clang-8   }
 
