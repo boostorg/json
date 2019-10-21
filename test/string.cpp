@@ -786,7 +786,7 @@ public:
             // self-assign
             {
                 string s(t.v1);
-                s = s;
+                s = static_cast<string const&>(s);
                 BEAST_EXPECT(s == t.v1);
             }
         }

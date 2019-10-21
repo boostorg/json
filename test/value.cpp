@@ -326,7 +326,7 @@ public:
             // self-assign
             {
                 value jv(kind::object);
-                jv = *(&jv);
+                jv = static_cast<value const&>(jv);
             }
         }
 

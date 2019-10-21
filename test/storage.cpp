@@ -45,7 +45,8 @@ public:
 
         bool
         is_equal(
-            storage const&) const noexcept
+            storage const&)
+            const noexcept override
         {
             return true;
         }
