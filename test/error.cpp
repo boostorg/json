@@ -24,6 +24,8 @@ public:
         auto const ec = make_error_code(e);
         ec.category().name();
         BEAST_EXPECT(! ec.message().empty());
+        BEAST_EXPECT(ec.category().default_error_condition(
+            static_cast<int>(e)).category() == ec.category());
     }
 
     void check(condition c, error e)
@@ -79,7 +81,6 @@ public:
         check(condition::assign_error, error::integer_overflow);
     
         check(error::key_not_found);
-        
         check(error::test_failure);
     }
 };

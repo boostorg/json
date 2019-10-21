@@ -11,6 +11,7 @@
 #define BOOST_JSON_IMPL_STORAGE_IPP
 
 #include <boost/json/storage.hpp>
+#include <boost/assert.hpp>
 #include <memory>
 
 namespace boost {
@@ -49,11 +50,9 @@ global_storage() noexcept
         is_equal(storage const& other)
             const noexcept override
         {
-            auto p = dynamic_cast<
-                builtin const*>(&other);
-            if(! p)
-                return false;
-            return true;
+            BOOST_ASSERT(dynamic_cast<
+                builtin const*>(&other) == nullptr);
+            return false;
         }
     };
     static storage_ptr const sp =

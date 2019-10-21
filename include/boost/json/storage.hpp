@@ -84,7 +84,7 @@ public:
         storage const& lhs,
         storage const& rhs) noexcept
     {
-        return !(lhs == rhs);
+        return &lhs != &rhs && ! lhs.is_equal(rhs);
     }
 };
 
