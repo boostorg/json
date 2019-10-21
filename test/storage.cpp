@@ -53,17 +53,160 @@ public:
     };
 
     void
-    run() override
+    testMembers()
     {
+        auto const dsp = default_storage();
+        auto const usp =
+            make_storage<unique_storage>();
+
+        // ~storage_ptr()
+        {
+            // implied
+        }
+
+        // storage_ptr()
+        {
+            storage_ptr sp;
+            BEAST_EXPECT(! sp);
+        }
+
+        // storage_ptr(storage_ptr&&)
+        {
+            storage_ptr sp1 = dsp;
+            storage_ptr sp2(std::move(sp1));
+            BEAST_EXPECT(! sp1);
+            BEAST_EXPECT(*sp2 == *dsp);
+        }
+
+        // storage_ptr(storage_ptr const&)
+        {
+            storage_ptr sp1 = dsp;
+            storage_ptr sp2(sp1);
+            BEAST_EXPECT(sp1);
+            BEAST_EXPECT(sp2);
+            BEAST_EXPECT(sp1 == sp2);
+        }
+
+        // storage_ptr(basic_storage_ptr<U>&&)
+        {
+            basic_storage_ptr<unique_storage> sp1 =
+                make_storage<unique_storage>();
+            storage_ptr sp2(std::move(sp1));
+            BEAST_EXPECT(! sp1);
+            BEAST_EXPECT(sp2);
+        }
+
+        // storage_ptr(basic_storage_ptr<U> const&)
+        {
+            basic_storage_ptr<unique_storage> sp1 =
+                make_storage<unique_storage>();
+            storage_ptr sp2(sp1);
+            BEAST_EXPECT(sp1);
+            BEAST_EXPECT(sp2);
+            BEAST_EXPECT(*sp1 == *sp2);
+        }
+
+        // storage_ptr(nullptr_t)
+        {
+            storage_ptr sp(nullptr);
+            BEAST_EXPECT(! sp);
+        }
+
+        // operator=(storage_ptr&&)
+        {
+            storage_ptr sp1(dsp);
+            storage_ptr sp2(usp);
+            sp2 = std::move(sp1);
+            BEAST_EXPECT(! sp1);
+            BEAST_EXPECT(*sp2 == *dsp);
+        }
+
+        // operator=(storage_ptr const&)
+        {
+            storage_ptr sp1(dsp);
+            storage_ptr sp2(usp);
+            sp2 = sp1;
+            BEAST_EXPECT(sp1);
+            BEAST_EXPECT(*sp1 == *sp2);
+        }
+
+        // operator bool()
+        {
+            storage_ptr sp;
+            BEAST_EXPECT(! sp);
+            sp = dsp;
+            BEAST_EXPECT(sp);
+        }
+
+        // get()
+        {
+            storage_ptr sp(dsp);
+            BEAST_EXPECT(sp.get() == dsp.get());
+        }
+
+        // operator->()
+        {
+            storage_ptr sp(dsp);
+            BEAST_EXPECT(sp.operator->() == dsp.get());
+        }
+
+        // operator*()
+        {
+            storage_ptr sp(dsp);
+            BEAST_EXPECT(&sp.operator*() == dsp.get());
+        }
+
+        // exception in make_storage
         {
             BEAST_THROWS(
                 make_storage<throwing>(),
                 std::exception);
         }
+    }
 
-        basic_storage_ptr<storage> sp =
-            make_storage<fail_storage>();
-        pass();
+    void
+    testRelational()
+    {
+        basic_storage_ptr<unique_storage> sp1 =
+            make_storage<unique_storage>();
+        storage_ptr sp2 = sp1;
+        basic_storage_ptr<unique_storage> sp3 =
+            make_storage<unique_storage>();
+        storage_ptr sp4;
+        BEAST_EXPECT(sp1 == sp2);
+        BEAST_EXPECT(sp1 != sp3);
+        BEAST_EXPECT(sp4 == nullptr);
+        BEAST_EXPECT(sp3 != nullptr);
+        BEAST_EXPECT(nullptr == sp4);
+        BEAST_EXPECT(nullptr != sp3);
+    }
+
+    void
+    testFree()
+    {
+        // default_storage()
+        {
+            auto sp1 = default_storage();
+            auto sp2 = default_storage();
+            BEAST_EXPECT(*sp1 == *sp2);
+        }
+
+        // default_storage(storage_ptr)
+        {
+            auto sp1 = default_storage();
+            auto sp2 = make_storage<unique_storage>();
+            default_storage(sp2);
+            BEAST_EXPECT(*default_storage() == *sp2);
+            default_storage(sp1);
+        }
+    }
+
+    void
+    run() override
+    {
+        testMembers();
+        testRelational();
+        testFree();
     }
 };
 

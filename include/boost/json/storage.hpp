@@ -274,7 +274,7 @@ operator!=(
     std::nullptr_t,
     basic_storage_ptr<T> const& rhs) noexcept
 {
-    return rhs.get() == nullptr;
+    return rhs.get() != nullptr;
 }
 
 using storage_ptr = basic_storage_ptr<storage>;
