@@ -64,7 +64,7 @@ construct(
     };
 
     undo u{*this, sp, false};
-    auto dest = construct(1, sp);
+    auto dest = construct();
     size = 1;
     *dest++ = *first++;
     while(first != last)

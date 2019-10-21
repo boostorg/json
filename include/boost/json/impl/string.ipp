@@ -52,14 +52,14 @@ void
 string::
 impl::
 destroy(
-    storage_ptr const& sp)
+    storage_ptr const& sp) noexcept
 {
     if(! in_sbo())
         sp->deallocate(
             p, capacity + 1, 1);
 }
 
-void
+char*
 string::
 impl::
 construct() noexcept
@@ -67,6 +67,7 @@ construct() noexcept
     size = 0;
     capacity = sizeof(buf) - 1;
     buf[0] = 0;
+    return buf;
 }
 
 char*

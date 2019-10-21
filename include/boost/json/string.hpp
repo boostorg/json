@@ -147,10 +147,10 @@ private:
         BOOST_JSON_DECL
         void
         destroy(
-            storage_ptr const& sp);
+            storage_ptr const& sp) noexcept;
 
         BOOST_JSON_DECL
-        void
+        char*
         construct() noexcept;
 
         BOOST_JSON_DECL
