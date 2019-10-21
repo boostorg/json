@@ -88,7 +88,7 @@ public:
     }
 };
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------
 
 /** Manages a type-erased storage object and options for a set of JSON values.
 */
@@ -249,7 +249,7 @@ BOOST_JSON_DECL
 bool
 operator!=(storage_ptr const& lhs, storage* rhs) noexcept;
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------
 
 /** Construct a storage adaptor for the specified allocator
 */

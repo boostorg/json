@@ -17,12 +17,12 @@
 namespace boost {
 namespace json {
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------
 
 namespace detail {
 
 storage_ptr const&
-global_storage()
+global_storage() noexcept
 {
     static storage_ptr const sp =
         make_storage_adaptor(
@@ -54,18 +54,18 @@ default_storage(storage_ptr sp) noexcept
     detail::raw_default_storage() = std::move(sp);
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------
 
 void
 storage::
-addref()
+addref() noexcept
 {
     ++refs_;
 }
 
 void
 storage::
-release()
+release() noexcept
 {
     if(--refs_ > 0)
         return;
@@ -73,45 +73,57 @@ release()
 }
 
 storage::
-storage()
+storage() noexcept
     : refs_(1)
 {
 }
 
-//------------------------------------------------------------------------------
+//----------------------------------------------------------
 
 bool
-operator==(storage_ptr const& lhs, storage_ptr const& rhs) noexcept
+operator==(
+    storage_ptr const& lhs,
+    storage_ptr const& rhs) noexcept
 {
     return lhs.get() == rhs.get();
 }
 
 bool
-operator==(storage* lhs, storage_ptr const& rhs) noexcept
+operator==(
+    storage* lhs,
+    storage_ptr const& rhs) noexcept
 {
     return lhs == rhs.get();
 }
 
 bool
-operator==(storage_ptr const& lhs, storage* rhs) noexcept
+operator==(
+    storage_ptr const& lhs,
+    storage* rhs) noexcept
 {
     return lhs.get() == rhs;
 }
 
 bool
-operator!=(storage_ptr const& lhs, storage_ptr const& rhs) noexcept
+operator!=(
+    storage_ptr const& lhs,
+    storage_ptr const& rhs) noexcept
 {
     return lhs.get() != rhs.get();
 }
 
 bool
-operator!=(storage* lhs, storage_ptr const& rhs) noexcept
+operator!=(
+    storage* lhs,
+    storage_ptr const& rhs) noexcept
 {
     return lhs != rhs.get();
 }
 
 bool
-operator!=(storage_ptr const& lhs, storage* rhs) noexcept
+operator!=(
+    storage_ptr const& lhs,
+    storage* rhs) noexcept
 {
     return lhs.get() != rhs;
 }
