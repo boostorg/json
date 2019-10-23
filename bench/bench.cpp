@@ -67,13 +67,6 @@ public:
     {
         pr_.deallocate(p, n, align);
     }
-
-    bool
-    do_is_equal(storage const& other) const noexcept override
-    {
-       return this == dynamic_cast<
-            pool_storage const*>(&other);
-    }
 };
 
 //----------------------------------------------------------

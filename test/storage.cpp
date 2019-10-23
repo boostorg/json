@@ -42,14 +42,6 @@ public:
             std::size_t) noexcept override
         {
         }
-
-        bool
-        do_is_equal(
-            storage const&)
-            const noexcept override
-        {
-            return true;
-        }
     };
 
     void

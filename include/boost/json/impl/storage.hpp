@@ -15,14 +15,6 @@
 namespace boost {
 namespace json {
 
-namespace detail {
-
-BOOST_JSON_DECL
-storage_ptr const&
-global_storage() noexcept;
-
-} // detail
-
 template<class Storage, class... Args>
 basic_storage_ptr<Storage>
 make_storage(Args&&... args)

@@ -92,6 +92,13 @@ using has_to_json =
 //----------------------------------------------------------
 
 /** The type used to represent any JSON value
+
+    @par Thread Safety:
+
+    Distinct instances may be accessed concurrently.
+    Non-const member functions of a shared instance
+    may not be called concurrently with any other
+    member functions of that instance.
 */
 class value
 {
@@ -433,13 +440,19 @@ public:
 
     /** Reset the json to the specified type.
 
-        This changes the value to hold a value of the
-        specified type. Any previous contents are cleared.
+        This changes the value to hold a newly constructed
+        value of the specified type.
+        The previous contents are destroyed.
 
-        @param k The kind to set. If the new kind is an
-        object, array, or string the resulting value will be
-        empty. Otherwise, the value will be in an undefined,
-        valid state.
+        @par Complexity
+
+        Linear in the existing size of `*this`.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+
+        @param k The kind to set.
     */
     value&
     reset(json::kind k = json::kind::null) noexcept
@@ -451,8 +464,16 @@ public:
     /** Set the value to an empty object, and return it.
 
         This calls `reset(json::kind::object)` and returns
-        `as_object()`. The previous contents of the value
-        are destroyed.
+        @ref as_object().
+        The previous contents are destroyed.
+
+        @par Complexity
+
+        Linear in the existing size of `*this`.
+
+        @par Exception Safety
+
+        No-throw guarantee.
     */
     object&
     emplace_object() noexcept
@@ -464,8 +485,16 @@ public:
     /** Set the value to an empty array, and return it.
 
         This calls `reset(json::kind::array)` and returns
-        `as_array()`. The previous contents of the value
-        are destroyed.
+        @ref as_array().
+        The previous contents are destroyed.
+
+        @par Complexity
+
+        Linear in the existing size of `*this`.
+
+        @par Exception Safety
+
+        No-throw guarantee.
     */
     array&
     emplace_array() noexcept
@@ -477,8 +506,16 @@ public:
     /** Set the value to an empty string, and return it.
 
         This calls `reset(json::kind::string)` and returns
-        `as_string()`. The previous contents of the value
-        are destroyed.
+        @ref as_string().
+        The previous contents are destroyed.
+
+        @par Complexity
+
+        Linear in the existing size of `*this`.
+
+        @par Exception Safety
+
+        No-throw guarantee.
     */
     string&
     emplace_string() noexcept
@@ -487,11 +524,19 @@ public:
         return str_;
     }
 
-    /** Set the value to an uninitialized number, and return it.
+    /** Set the value to the number 0, and return it.
 
         This calls `reset(json::kind::number)` and returns
-        `as_number()`. The previous contents of the value
-        are destroyed.
+        @ref as_number().
+        The previous contents are destroyed.
+
+        @par Complexity
+
+        Linear in the existing size of `*this`.
+
+        @par Exception Safety
+
+        No-throw guarantee.
     */
     number&
     emplace_number() noexcept
@@ -500,11 +545,19 @@ public:
         return nat_.num_;
     }
 
-    /** Set the value to an uninitialized boolean, and return it.
+    /** Set the value to boolean false, and return it.
 
         This calls `reset(json::kind::boolean)` and returns
-        `as_bool()`. The previous contents of the value
-        are destroyed.
+        @ref as_bool().
+        The previous contents are destroyed.
+
+        @par Complexity
+
+        Linear in the existing size of `*this`.
+
+        @par Exception Safety
+
+        No-throw guarantee.
     */
     bool&
     emplace_bool() noexcept
@@ -513,7 +566,19 @@ public:
         return nat_.bool_;
     }
 
-    /// Set the value to a null
+    /** Set the value to null.
+
+        This calls `reset(json::kind::null)`.
+        The previous contents are destroyed.
+
+        @par Complexity
+
+        Linear in the existing size of `*this`.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
     void
     emplace_null() noexcept
     {

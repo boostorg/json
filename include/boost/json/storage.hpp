@@ -25,6 +25,7 @@ namespace json {
 class storage
 {
     std::atomic<std::size_t> refs_;
+    unsigned long long id_ = 0;
 
     BOOST_JSON_DECL
     void
@@ -40,9 +41,6 @@ class storage
 public:
     static std::size_t constexpr max_align =
         sizeof(max_align_t);
-
-    BOOST_JSON_DECL
-    storage() noexcept;
 
     virtual
     ~storage() = default;
@@ -70,7 +68,10 @@ public:
     is_equal(
         storage const& other) const noexcept
     {
-        return do_is_equal(other);
+        return (this == &other) || (
+            this->id_ != 0 &&
+            this->id_ == other.id_);
+
     }
 
     friend
@@ -79,7 +80,7 @@ public:
         storage const& lhs,
         storage const& rhs) noexcept
     {
-        return &lhs == &rhs || lhs.is_equal(rhs);
+        return lhs.is_equal(rhs);
     }
 
     friend
@@ -88,10 +89,16 @@ public:
         storage const& lhs,
         storage const& rhs) noexcept
     {
-        return &lhs != &rhs && ! lhs.is_equal(rhs);
+        return ! lhs.is_equal(rhs);
     }
 
 protected:
+    // Choose a unique 64-bit random number from here:
+    // https://www.random.org/cgi-bin/randbyte?nbytes=8&format=h
+    BOOST_JSON_DECL
+    explicit
+    storage(unsigned long long id = 0) noexcept;
+
     virtual
     void*
     do_allocate(
@@ -104,12 +111,6 @@ protected:
         void* p,
         std::size_t n,
         std::size_t align) noexcept = 0;
-
-    virtual
-    bool
-    do_is_equal(
-        storage const& other) const noexcept = 0;
-
 };
 
 //----------------------------------------------------------

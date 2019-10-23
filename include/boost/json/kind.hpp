@@ -15,6 +15,8 @@
 namespace boost {
 namespace json {
 
+//[usage_a_1
+
 /// Constants for identifying the type of a @ref value
 enum class kind
 {
@@ -36,6 +38,8 @@ enum class kind
     /// A null.
     null
 };
+
+//]
 
 } // json
 } // boost

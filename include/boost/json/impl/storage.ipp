@@ -36,8 +36,9 @@ release() noexcept
 }
 
 storage::
-storage() noexcept
+storage(unsigned long long id) noexcept
     : refs_(1)
+    , id_(id)
 {
 }
 
@@ -48,6 +49,11 @@ default_storage() noexcept
 {
     struct builtin : storage
     {
+        builtin()
+            : storage(0x3b88990852d58ae4)
+        {
+        }
+
         void*
         do_allocate(
             std::size_t n,
@@ -66,16 +72,6 @@ default_storage() noexcept
             std::allocator<
                 char>().deallocate(
                 static_cast<char*>(p), n);
-        }
-
-        bool
-        do_is_equal(storage const& other)
-            const noexcept override
-        {
-            (void)other;
-            BOOST_JSON_ASSERT(dynamic_cast<
-                builtin const*>(&other) == nullptr);
-            return false;
         }
     };
     static storage_ptr const sp =

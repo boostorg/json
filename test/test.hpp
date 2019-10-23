@@ -47,12 +47,6 @@ struct unique_storage : storage
         return std::allocator<
             char>{}.deallocate(cp, n);
     }
-    bool
-    do_is_equal(
-        storage const&) const noexcept override
-    {
-        return false;
-    }
 };
 
 //----------------------------------------------------------
@@ -101,12 +95,6 @@ struct fail_storage : storage
             reinterpret_cast<char*>(p);
         return std::allocator<
             char>{}.deallocate(cp, n);
-    }
-    bool
-    do_is_equal(
-        storage const&) const noexcept override
-    {
-        return false;
     }
 };
 
