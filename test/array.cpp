@@ -62,7 +62,6 @@ public:
 
         // array()
         {
-            scoped_fail_storage fs;
             array a;
             BEAST_EXPECT(a.empty());
             BEAST_EXPECT(a.size() == 0);
@@ -70,7 +69,6 @@ public:
 
         // array(storage_ptr)
         {
-            scoped_fail_storage fs;
             array a(default_storage());
             check_storage(a, default_storage());
         }
@@ -103,19 +101,20 @@ public:
         // array(size_type, storage)
         {
             // default storage
-            fail_loop([&]
             {
                 array a(3);
                 BEAST_EXPECT(a.size() == 3);
                 for(auto const& v : a)
                     BEAST_EXPECT(v.is_null());
                 check_storage(a, default_storage());
-            });
+            }
 
             fail_loop([&](storage_ptr const& sp)
             {
                 array a(3, sp);
                 BEAST_EXPECT(a.size() == 3);
+                for(auto const& v : a)
+                    BEAST_EXPECT(v.is_null());
                 check_storage(a, sp);
             });
         }
@@ -123,7 +122,6 @@ public:
         // array(InputIt, InputIt, storage)
         {
             // default storage
-            fail_loop([&]
             {
                 init_list init{ 0, 1, str_, 3, 4 };
                 array a(init.begin(), init.end());
@@ -133,7 +131,7 @@ public:
                 BEAST_EXPECT(a[2].as_string() == str_);
                 BEAST_EXPECT(a[3].as_number() == 3);
                 BEAST_EXPECT(a[4].as_number() == 4);
-            });
+            }
 
             // forward iterator
             fail_loop([&](storage_ptr const& sp)
@@ -169,14 +167,13 @@ public:
                 a2 = a1;
             }
 
-            fail_loop([&]
             {
                 init_list init{ 1, true, str_ };
                 array a1(init.begin(), init.end());
                 array a2(a1);
                 check(a2);
                 check_storage(a2, default_storage());
-            });
+            }
         }
 
         // array(array const&, storage)
@@ -185,7 +182,7 @@ public:
             init_list init{ 1, true, str_ };
             array a1(init.begin(), init.end());
             array a2(a1, sp);
-            BEAST_EXPECT(a2.size() == 3);
+            check(a2);
             check_storage(a2, sp);
         });
 
@@ -357,7 +354,6 @@ public:
         // at(pos)
         {
             array a({1, true, str_});
-            scoped_fail_storage fs;
             BEAST_EXPECT(a.at(0).is_number());
             BEAST_EXPECT(a.at(1).is_bool());
             BEAST_EXPECT(a.at(2).is_string());
@@ -375,7 +371,6 @@ public:
         // at(pos) const
         {
             array const a({1, true, str_});
-            scoped_fail_storage fs;
             BEAST_EXPECT(a.at(0).is_number());
             BEAST_EXPECT(a.at(1).is_bool());
             BEAST_EXPECT(a.at(2).is_string());
@@ -393,7 +388,6 @@ public:
         // operator[&](size_type)
         {
             array a({1, true, str_});
-            scoped_fail_storage fs;
             BEAST_EXPECT(a[0].is_number());
             BEAST_EXPECT(a[1].is_bool());
             BEAST_EXPECT(a[2].is_string());
@@ -402,7 +396,6 @@ public:
         // operator[&](size_type) const
         {
             array const a({1, true, str_});
-            scoped_fail_storage fs;
             BEAST_EXPECT(a[0].is_number());
             BEAST_EXPECT(a[1].is_bool());
             BEAST_EXPECT(a[2].is_string());
@@ -411,28 +404,24 @@ public:
         // front()
         {
             array a({1, true, str_});
-            scoped_fail_storage fs;
             BEAST_EXPECT(a.front().is_number());
         }
 
         // front() const
         {
             array const a({1, true, str_});
-            scoped_fail_storage fs;
             BEAST_EXPECT(a.front().is_number());
         }
 
         // back()
         {
             array a({1, true, str_});
-            scoped_fail_storage fs;
             BEAST_EXPECT(a.back().is_string());
         }
 
         // back() const
         {
             array const a({1, true, str_});
-            scoped_fail_storage fs;
             BEAST_EXPECT(a.back().is_string());
         }
 
@@ -440,7 +429,6 @@ public:
         {
             {
                 array a({1, true, str_});
-                scoped_fail_storage fs;
                 BEAST_EXPECT(a.data() == &a[0]);
             }
             {
@@ -452,7 +440,6 @@ public:
         {
             {
                 array const a({1, true, str_});
-                scoped_fail_storage fs;
                 BEAST_EXPECT(a.data() == &a[0]);
             }
             {
@@ -763,7 +750,6 @@ public:
 
             // input iterator (empty range)
             {
-                scoped_fail_storage fs;
                 std::initializer_list<value> init;
                 array a;
                 a.insert(a.begin(),
@@ -948,7 +934,6 @@ public:
             {
                 array a1({1, true, str_});
                 array a2 = {1.};
-                scoped_fail_storage fs;
                 a1.swap(a2);
                 check(a2);
                 BEAST_EXPECT(a1.size() == 1);

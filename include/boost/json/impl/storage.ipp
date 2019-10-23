@@ -19,73 +19,6 @@ namespace json {
 
 //----------------------------------------------------------
 
-namespace detail {
-
-storage_ptr const&
-global_storage() noexcept
-{
-    struct builtin : storage
-    {
-        void*
-        allocate(
-            std::size_t n,
-            std::size_t) override
-        {
-            return std::allocator<
-                char>().allocate(n);
-        }
-
-        void
-        deallocate(
-            void* p,
-            std::size_t n,
-            std::size_t) noexcept override
-        {
-            std::allocator<
-                char>().deallocate(
-                static_cast<char*>(p), n);
-        }
-
-        bool
-        is_equal(storage const& other)
-            const noexcept override
-        {
-            (void)other;
-            BOOST_JSON_ASSERT(dynamic_cast<
-                builtin const*>(&other) == nullptr);
-            return false;
-        }
-    };
-    static storage_ptr const sp =
-        make_storage<builtin>();
-    return sp;
-}
-
-inline
-storage_ptr&
-raw_default_storage() noexcept
-{
-    static storage_ptr sp =
-        global_storage();
-    return sp;
-}
-
-} // detail
-
-storage_ptr
-default_storage() noexcept
-{
-    return detail::raw_default_storage();
-}
-
-void
-default_storage(storage_ptr sp) noexcept
-{
-    detail::raw_default_storage() = std::move(sp);
-}
-
-//----------------------------------------------------------
-
 void
 storage::
 addref() noexcept
@@ -106,6 +39,48 @@ storage::
 storage() noexcept
     : refs_(1)
 {
+}
+
+//----------------------------------------------------------
+
+storage_ptr const&
+default_storage() noexcept
+{
+    struct builtin : storage
+    {
+        void*
+        do_allocate(
+            std::size_t n,
+            std::size_t) override
+        {
+            return std::allocator<
+                char>().allocate(n);
+        }
+
+        void
+        do_deallocate(
+            void* p,
+            std::size_t n,
+            std::size_t) noexcept override
+        {
+            std::allocator<
+                char>().deallocate(
+                static_cast<char*>(p), n);
+        }
+
+        bool
+        do_is_equal(storage const& other)
+            const noexcept override
+        {
+            (void)other;
+            BOOST_JSON_ASSERT(dynamic_cast<
+                builtin const*>(&other) == nullptr);
+            return false;
+        }
+    };
+    static storage_ptr const sp =
+        make_storage<builtin>();
+    return sp;
 }
 
 } // json

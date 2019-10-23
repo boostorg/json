@@ -47,25 +47,31 @@ public:
     virtual
     ~storage() = default;
 
-    virtual
     void*
     allocate(
         std::size_t n,
         std::size_t align =
-            max_align) = 0;
+            max_align)
+    {
+        return do_allocate(n, align);
+    }
 
-    virtual
     void
     deallocate(
         void* p,
         std::size_t n,
         std::size_t align =
-            max_align) noexcept = 0;
+            max_align)
+    {
+        return do_deallocate(p, n, align);
+    }
 
-    virtual
     bool
     is_equal(
-        storage const& other) const noexcept = 0;
+        storage const& other) const noexcept
+    {
+        return do_is_equal(other);
+    }
 
     friend
     bool
@@ -84,6 +90,26 @@ public:
     {
         return &lhs != &rhs && ! lhs.is_equal(rhs);
     }
+
+protected:
+    virtual
+    void*
+    do_allocate(
+        std::size_t n,
+        std::size_t align) = 0;
+
+    virtual
+    void
+    do_deallocate(
+        void* p,
+        std::size_t n,
+        std::size_t align) noexcept = 0;
+
+    virtual
+    bool
+    do_is_equal(
+        storage const& other) const noexcept = 0;
+
 };
 
 //----------------------------------------------------------
@@ -481,12 +507,12 @@ using storage_ptr = basic_storage_ptr<storage>;
 
 //----------------------------------------------------------
 
-/** Return a pointer to the current default storage
+/** Return a pointer to the default storage
 
-    This function returns a pointer to the current default storage.
-    This default storage is used when constructing
-    any @ref value, @ref object, @ref array, or @ref string
-    and the storage is not explicitly specified.
+    This function returns the default storage, which is
+    used when constructing a container without explicitly
+    specifying the storage. The default storage uses the
+    global allocator, equivalent to `std::allocator<char>`.
 
     @par Complexity
 
@@ -498,37 +524,11 @@ using storage_ptr = basic_storage_ptr<storage>;
 
     @par Thread Safety
 
-    May not be called concurrently with
-    `void default_storage(storage_ptr)`.
+    May be called concurrently.
 */
 BOOST_JSON_DECL
-storage_ptr
+storage_ptr const&
 default_storage() noexcept;
-
-/** Set the current default storage
-
-    This function changes the current default storage pointer.
-    This default storage is used when constructing
-    any @ref value, @ref object, @ref array, or @ref string
-    and the storage is not explicitly specified.
-
-    @par Complexity
-
-    Constant.
-
-    @par Exception Safety
-
-    No-throw guarantee.
-
-    @par Thread Safety
-
-    May not be called concurrently with
-    `void default_storage()` or
-    `void default_storage(storage_ptr)`.
-*/
-BOOST_JSON_DECL
-void
-default_storage(storage_ptr sp) noexcept;
 
 } // json
 } // boost

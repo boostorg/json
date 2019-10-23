@@ -28,7 +28,7 @@ public:
         }
 
         void*
-        allocate(
+        do_allocate(
             std::size_t,
             std::size_t) override
         {
@@ -36,7 +36,7 @@ public:
         }
 
         void
-        deallocate(
+        do_deallocate(
             void*,
             std::size_t,
             std::size_t) noexcept override
@@ -44,7 +44,7 @@ public:
         }
 
         bool
-        is_equal(
+        do_is_equal(
             storage const&)
             const noexcept override
         {
@@ -182,22 +182,13 @@ public:
     }
 
     void
-    testFree()
+    testDefaultStorage()
     {
         // default_storage()
         {
             auto sp1 = default_storage();
             auto sp2 = default_storage();
             BEAST_EXPECT(*sp1 == *sp2);
-        }
-
-        // default_storage(storage_ptr)
-        {
-            auto sp1 = default_storage();
-            auto sp2 = make_storage<unique_storage>();
-            default_storage(sp2);
-            BEAST_EXPECT(*default_storage() == *sp2);
-            default_storage(sp1);
         }
     }
 
@@ -206,7 +197,7 @@ public:
     {
         testMembers();
         testRelational();
-        testFree();
+        testDefaultStorage();
     }
 };
 

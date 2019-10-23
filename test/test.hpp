@@ -28,7 +28,7 @@ namespace json {
 struct unique_storage : storage
 {
     void*
-    allocate(
+    do_allocate(
         std::size_t n,
         std::size_t) override
     {
@@ -37,7 +37,7 @@ struct unique_storage : storage
     }
 
     void
-    deallocate(
+    do_deallocate(
         void* p,
         std::size_t n,
         std::size_t) noexcept override
@@ -48,7 +48,7 @@ struct unique_storage : storage
             char>{}.deallocate(cp, n);
     }
     bool
-    is_equal(
+    do_is_equal(
         storage const&) const noexcept override
     {
         return false;
@@ -77,7 +77,7 @@ struct fail_storage : storage
     }
 
     void*
-    allocate(
+    do_allocate(
         std::size_t n,
         std::size_t) override
     {
@@ -92,7 +92,7 @@ struct fail_storage : storage
     }
 
     void
-    deallocate(
+    do_deallocate(
         void* p,
         std::size_t n,
         std::size_t) noexcept override
@@ -103,7 +103,7 @@ struct fail_storage : storage
             char>{}.deallocate(cp, n);
     }
     bool
-    is_equal(
+    do_is_equal(
         storage const&) const noexcept override
     {
         return false;
@@ -112,33 +112,31 @@ struct fail_storage : storage
 
 //----------------------------------------------------------
 
-class scoped_fail_storage
-{
-    storage_ptr sp_;
-
-public:
-    scoped_fail_storage()
-        : sp_(default_storage())
-    {
-        default_storage(
-            make_storage<fail_storage>());
-    }
-
-    ~scoped_fail_storage()
-    {
-        default_storage(sp_);
-    }
-
-    storage_ptr const&
-    get() const noexcept
-    {
-        return sp_;
-    }
-};
-
-//----------------------------------------------------------
-
 namespace detail {
+
+#if 1
+
+template<class F>
+void
+fail_loop(F&& f)
+{
+    auto sp = make_storage<fail_storage>();
+    while(sp->fail < 200)
+    {
+        try
+        {
+            f(sp);
+        }
+        catch(test_failure const&)
+        {
+            continue;
+        }
+        break;
+    }
+    BEAST_EXPECT(sp->fail < 200);
+}
+
+#else
 
 template<class F>
 typename std::enable_if<
@@ -190,6 +188,8 @@ fail_loop(F&& f)
     BEAST_EXPECT(sp->fail < 200);
     default_storage(saved);
 }
+
+#endif
 
 } // detail
 

@@ -52,7 +52,7 @@ public:
     }
 
     void*
-    allocate(
+    do_allocate(
         std::size_t n,
         std::size_t align) override
     {
@@ -60,7 +60,7 @@ public:
     }
 
     void
-    deallocate(
+    do_deallocate(
         void* p,
         std::size_t n,
         std::size_t align) noexcept override
@@ -69,7 +69,7 @@ public:
     }
 
     bool
-    is_equal(storage const& other) const noexcept override
+    do_is_equal(storage const& other) const noexcept override
     {
        return this == dynamic_cast<
             pool_storage const*>(&other);

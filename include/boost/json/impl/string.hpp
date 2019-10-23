@@ -136,11 +136,12 @@ insert(
     };
 
     impl tmp;
+    // We use the global storage since
+    // it is a temporary deallocated here.
     tmp.construct(first, last,
-        detail::global_storage(),
+        default_storage(),
         iter_cat<InputIt>{});
-    cleanup c{tmp,
-        detail::global_storage()};
+    cleanup c{tmp, default_storage()};
     auto const off = pos - s_.data();
     traits_type::copy(
         s_.insert(off, tmp.size, sp_),
@@ -219,11 +220,12 @@ append(
     };
 
     impl tmp;
+    // We use the global storage since
+    // it is a temporary deallocated here.
     tmp.construct(first, last,
-        detail::global_storage(),
+        default_storage(),
         std::input_iterator_tag{});
-    cleanup c{tmp,
-        detail::global_storage()};
+    cleanup c{tmp, default_storage()};
     traits_type::copy(
         s_.append(tmp.size, sp_),
         tmp.data(), tmp.size);
