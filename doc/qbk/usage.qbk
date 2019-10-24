@@ -7,13 +7,6 @@
     Official repository: https://github.com/vinniefalco/json
 ]
 
-[/
-    VFALCO unfortunately quickbook wants relative paths and we have
-    no variables so all of the .cpp and .hpp files are placed here.
-]
-
-[import ../../include/boost/json/kind.hpp]
-
 [section Usage]
 [block'''<?dbhtml stop-chunking?>''']
 
@@ -78,7 +71,7 @@ assignment from another value, from calling the member function
 functions like
 [link json.ref.boost__json__value.emplace_array `value::emplace_array`] or
 [link json.ref.boost__json__value.emplace_bool `value::emplace_bool`]. In
-all cases, the previous contents of the value are disposed:
+all cases, the previous contents of the value are destroyed:
 
 ```
 value jv;
@@ -176,7 +169,7 @@ without changing the existing value:
 value jv( kind::bool );
 jv.as_bool() = true;
 
-jv.as_string() = "Hello, world!"; // OOPS! This throws!
+jv.as_string() = "Hello, world!"; // throws system_error !!
 ```
 
 However, as shown above these functions throw an exception if the kind
@@ -187,8 +180,9 @@ if the schema of the JSON is not valid.
 
 We can query a value for its underlying representation of a particular
 kind in a way that does not throw exceptions by requesting a pointer
-which may be null, instead of a reference. Here a string is assigned
-to the value:
+which may be null, instead of a reference. Here we use
+[link json.ref.boost__json__value.if_string.overload1 `value::if_string`]
+to conditionally perform an assignment without using exceptions:
 
 ```
 value jv( kind::string );
@@ -208,17 +202,21 @@ if(auto ptr = jv.if_string())
     *jv.if_string() = "Hello, world!";
 
     // The compiler's static analysis can see that
-    // a null pointer is never dereferenced above
+    // a null pointer is never dereferenced above.
     ```
 ]
 
+[/-----------------------------------------------------------------------------]
 
-
-
+[The String Type]
 
 [/-----------------------------------------------------------------------------]
 
-[heading Container]
+[The Array Type]
+
+[/-----------------------------------------------------------------------------]
+
+[The Object Type]
 
 [/-----------------------------------------------------------------------------]
 

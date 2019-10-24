@@ -32,6 +32,12 @@
         Error code values returned by JSON operations.
     ]
 ][
+    [[link json.ref.boost__json__fixed_storage `fixed_storage`]]
+    [
+        A fast __storage__ which uses a single large pre-allocated
+        block of memory.
+    ]
+][
     [[link json.ref.boost__json__has_from_json `has_from_json`]]
     [
         Trait to determine if a type can be assigned to a JSON

@@ -15,6 +15,7 @@
 #include <boost/json/assign_vector.hpp>
 #include <boost/json/basic_parser.hpp>
 #include <boost/json/error.hpp>
+#include <boost/json/fixed_storage.hpp>
 #include <boost/json/kind.hpp>
 #include <boost/json/number.hpp>
 #include <boost/json/object.hpp>

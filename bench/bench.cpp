@@ -15,11 +15,11 @@
 
 #include <boost/json.hpp>
 #include <boost/beast/_experimental/unit_test/dstream.hpp>
-#include <boost/container/pmr/global_resource.hpp>
-#include <boost/container/pmr/unsynchronized_pool_resource.hpp>
 #include <chrono>
 #include <iostream>
 #include <random>
+
+#include <boost/json/fixed_storage.hpp>
 
 /*
 
@@ -35,39 +35,6 @@ namespace beast = boost::beast;
 namespace json = boost::json;
 
 boost::beast::unit_test::dstream dout{std::cerr};
-
-//----------------------------------------------------------
-
-class pool_storage : public json::storage
-{
-    boost::container::pmr::unsynchronized_pool_resource pr_;
-
-public:
-    virtual
-    ~pool_storage() = default;
-
-    pool_storage()
-        : pr_(boost::container::pmr::new_delete_resource())
-    {
-    }
-
-    void*
-    do_allocate(
-        std::size_t n,
-        std::size_t align) override
-    {
-        return pr_.allocate(n, align);
-    }
-
-    void
-    do_deallocate(
-        void* p,
-        std::size_t n,
-        std::size_t align) noexcept override
-    {
-        pr_.deallocate(p, n, align);
-    }
-};
 
 //----------------------------------------------------------
 
@@ -413,6 +380,7 @@ main(int, char**)
         factory f;
         f.max_depth(i);
         auto const doc = f.make_document();
+#if 1
         for(int j = 0; j < 3; ++j)
         {
             rapidjson_impl impl;
@@ -423,10 +391,15 @@ main(int, char**)
             nlohmann_impl impl;
             benchParse(doc, impl);
         }
+#endif
         for(int j = 0; j < 3; ++j)
         {
-            //boost_impl impl(json::make_storage<pool_storage>());
+#if 0
+            boost_impl impl(json::make_storage<
+                json::fixed_storage>(2047 * 1024 * 1024));
+#else
             boost_impl impl;
+#endif
             benchParse(doc, impl);
         }
     }
