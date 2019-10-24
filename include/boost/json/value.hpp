@@ -440,8 +440,8 @@ public:
 
     /** Reset the json to the specified type.
 
-        This changes the value to hold a newly constructed
-        value of the specified type.
+        This changes the value to hold a newly
+        constructed value of the specified type.
         The previous contents are destroyed.
 
         @par Complexity
@@ -454,12 +454,9 @@ public:
 
         @param k The kind to set.
     */
+    BOOST_JSON_DECL
     value&
-    reset(json::kind k = json::kind::null) noexcept
-    {
-        value(k, get_storage()).swap(*this);
-        return *this;
-    }
+    reset(json::kind k = json::kind::null) noexcept;
 
     /** Set the value to an empty object, and return it.
 

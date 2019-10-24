@@ -1450,6 +1450,12 @@ private:
         const_iterator pos,
         std::size_t hash,
         element* e);
+
+    inline
+    storage_ptr
+    release_storage() noexcept;
+
+    friend class value;
 };
 
 /** Swap this container with the contents of another container.

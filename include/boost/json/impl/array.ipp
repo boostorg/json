@@ -82,19 +82,29 @@ relocate(
     if( dest >= src &&
         dest < src + n)
     {
+    #ifdef BOOST_JSON_VALUE_IS_TRIVIAL
+        std::memmove(dest, src,
+            n * sizeof(value));
+    #else
         // backwards
         dest += n;
         auto it = src + n;
         while(it != src)
             boost::relocate(
                 --dest, *--it);
+    #endif
     }
     else
     {
+    #ifdef BOOST_JSON_VALUE_IS_TRIVIAL
+        std::memcpy(dest, src,
+            n * sizeof(value));
+    #else
         auto last = src + n;
         while(src != last)
             boost::relocate(
                 dest++, *src++);
+    #endif
     }
 }
 
@@ -184,8 +194,7 @@ undo_insert(
 array::
 ~array()
 {
-    if(tab_)
-        tab_->destroy(sp_);
+    release_storage();
 }
 
 //----------------------------------------------------------
@@ -608,6 +617,18 @@ assign(
         ++tab_->d.size;
     }
     u.commit();
+}
+
+storage_ptr
+array::
+release_storage() noexcept
+{
+    if(tab_)
+    {
+        tab_->destroy(sp_);
+        tab_ = nullptr;
+    }
+    return std::move(sp_);
 }
 
 } // json

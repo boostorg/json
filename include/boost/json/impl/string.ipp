@@ -722,6 +722,16 @@ swap(string& other)
 
 //----------------------------------------------------------
 
+storage_ptr
+string::
+release_storage() noexcept
+{
+    s_.destroy(sp_);
+    return std::move(sp_);
+}
+
+//----------------------------------------------------------
+
 std::ostream&
 operator<<(std::ostream& os, string const& s)
 {

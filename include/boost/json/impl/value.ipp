@@ -520,6 +520,78 @@ operator=(number num)
 //
 //----------------------------------------------------------
 
+value&
+value::
+reset(json::kind k) noexcept
+{
+    if(k != kind_)
+    {
+        storage_ptr sp;
+        switch(kind_)
+        {
+        case json::kind::object:
+        {
+            sp = obj_.release_storage();
+            obj_.~object();
+            break;
+        }
+            
+        case json::kind::array:
+        {
+            sp = arr_.release_storage();
+            arr_.~array();
+            break;
+        }
+
+        case json::kind::string:
+        {
+            sp = str_.release_storage();
+            str_.~string();
+            break;
+        }
+
+        case json::kind::number:
+        case json::kind::boolean:
+        case json::kind::null:
+        {
+            sp = std::move(nat_.sp_);
+            this->~value();
+            break;
+        }
+        }
+        ::new(this) value(k, std::move(sp));
+    }
+    else
+    {
+        switch(kind_)
+        {
+        case json::kind::object:
+            obj_.clear();
+            break;
+
+        case json::kind::array:
+            arr_.clear();
+            break;
+
+        case json::kind::string:
+            str_.clear();
+            break;
+
+        case json::kind::number:
+            nat_.num_ = 0;
+            break;
+
+        case json::kind::boolean:
+            nat_.bool_ = false;
+            break;
+
+        case json::kind::null:
+            break;
+        }
+    }
+    return *this;
+}
+
 void
 value::
 swap(value& other)

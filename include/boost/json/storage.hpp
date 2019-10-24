@@ -71,7 +71,6 @@ public:
         return (this == &other) || (
             this->id_ != 0 &&
             this->id_ == other.id_);
-
     }
 
     friend

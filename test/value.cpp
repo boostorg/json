@@ -622,6 +622,27 @@ public:
             BEAST_EXPECT(value().reset(kind::number).is_number());
             BEAST_EXPECT(value().reset(kind::boolean).is_bool());
             BEAST_EXPECT(value().reset(kind::null).is_null());
+
+            BEAST_EXPECT(value(kind::object).reset().is_null());
+            BEAST_EXPECT(value(kind::array).reset().is_null());
+            BEAST_EXPECT(value(kind::string).reset().is_null());
+            BEAST_EXPECT(value(kind::number).reset().is_null());
+            BEAST_EXPECT(value(kind::boolean).reset().is_null());
+            BEAST_EXPECT(
+                value(kind::null).reset(kind::object).is_object());
+
+            BEAST_EXPECT(value(kind::object). reset(kind::object).is_object());
+            BEAST_EXPECT(value(kind::array).  reset(kind::array).is_array());
+            BEAST_EXPECT(value(kind::string). reset(kind::string).is_string());
+            BEAST_EXPECT(value(kind::number). reset(kind::number).is_number());
+            BEAST_EXPECT(value(kind::boolean).reset(kind::boolean).is_bool());
+            BEAST_EXPECT(value(kind::null).   reset(kind::null).is_null());
+
+            BEAST_EXPECT(value(
+                object({{"a",1},{"b",2},{"c",3}})).reset().is_null());
+            BEAST_EXPECT(value(array({1,2,3})).reset().is_null());
+            BEAST_EXPECT(value(string("abc")).reset().is_null());
+            BEAST_EXPECT(value(number(1)).reset().is_null());
         }
 
         // emplace

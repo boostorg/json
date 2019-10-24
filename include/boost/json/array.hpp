@@ -1019,10 +1019,10 @@ public:
     /** Clear the contents
 
         Erases all elements from the container. After this
-        call, @ref size() and @ref capacity() both return
-        zero. All references, pointers, or iterators referring
-        to contained elements are invalidated. Any past-the-end
-        iterators are also invalidated.
+        call, @ref size() returns zero but @ref capacity()
+        is unchanged. All references, pointers, or iterators
+        referring to contained elements are invalidated. Any
+        past-the-end iterators are also invalidated.
 
         @par Complexity
 
@@ -1562,6 +1562,12 @@ private:
     BOOST_JSON_DECL
     void
     assign(std::initializer_list<value> init);
+
+    inline
+    storage_ptr
+    release_storage() noexcept;
+
+    friend class value;
 };
 
 } // json

@@ -40,7 +40,7 @@ struct parser_base
     }
 
     static
-    short
+    char
     hex_digit(char c) noexcept
     {
         if (c >= '0' && c <= '9')

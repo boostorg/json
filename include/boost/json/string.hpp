@@ -1585,6 +1585,12 @@ private:
     void
     append(InputIt first, InputIt last,
         std::input_iterator_tag);
+
+    inline
+    storage_ptr
+    release_storage() noexcept;
+
+    friend class value;
 };
 
 //----------------------------------------------------------

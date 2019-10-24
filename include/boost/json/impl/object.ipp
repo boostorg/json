@@ -260,16 +260,7 @@ const_iterator(
 object::
 ~object()
 {
-    if(! tab_)
-        return;
-    for(auto e = tab_->head;
-        e != tab_->end();)
-    {
-        auto next = e->next;
-        e->destroy(sp_);
-        e = next;
-    }
-    tab_->destroy(sp_);
+    release_storage();
 }
 
 object::
@@ -409,7 +400,17 @@ void
 object::
 clear() noexcept
 {
-    object tmp(std::move(*this));
+    if(! tab_)
+        return;
+    for(auto e = tab_->head;
+        e != tab_->end();)
+    {
+        auto next = e->next;
+        e->destroy(sp_);
+        e = next;
+    }
+    tab_->head = tab_->end();
+    tab_->size = 0;
 }
 
 void
@@ -883,6 +884,19 @@ insert(
     }
     ++tab_->size;
     r.e = nullptr;
+}
+
+storage_ptr
+object::
+release_storage() noexcept
+{
+    clear();
+    if(tab_)
+    {
+        tab_->destroy(sp_);
+        tab_ = nullptr;
+    }
+    return std::move(sp_);
 }
 
 void
