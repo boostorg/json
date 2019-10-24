@@ -25,9 +25,9 @@ class serializer
     enum class state : char;
 
     detail::const_iterator it_;
-    string_view key_;
     string_view str_;
     unsigned char nbuf_;
+    bool key_;
     char buf_[number::max_string_chars + 1];
     state state_;
 
@@ -44,6 +44,10 @@ public:
     std::size_t
     next(char* dest, std::size_t size);
 };
+
+BOOST_JSON_DECL
+std::string
+to_string(value const& jv);
 
 BOOST_JSON_DECL
 std::ostream&

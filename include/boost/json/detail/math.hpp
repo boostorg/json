@@ -7,8 +7,8 @@
 // Official repository: https://github.com/vinniefalco/json
 //
 
-#ifndef BOOST_JSON_DETAIL_NUMBER_HPP
-#define BOOST_JSON_DETAIL_NUMBER_HPP
+#ifndef BOOST_JSON_DETAIL_MATH_HPP
+#define BOOST_JSON_DETAIL_MATH_HPP
 
 namespace boost {
 namespace json {

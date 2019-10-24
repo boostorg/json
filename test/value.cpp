@@ -703,6 +703,7 @@ public:
         }
 
         // kind::number
+#if 0
         {
             // VFALCO I'm not sure these should be numbers
             BEAST_EXPECT(value(tt<char>{}).is_number());
@@ -713,6 +714,7 @@ public:
             { value jv; BEAST_EXPECT((jv = tt<unsigned char>{}).is_number()); }
             { value jv; BEAST_EXPECT((jv = tt<wchar_t>{}).is_number()); }
         }
+#endif
 
         // kind::number
         {

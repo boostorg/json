@@ -11,6 +11,7 @@
 #define BOOST_JSON_NUMBER_HPP
 
 #include <boost/json/detail/config.hpp>
+#include <boost/json/ieee_decimal.hpp>
 #include <boost/json/storage.hpp>
 #include <boost/json/detail/string.hpp>
 #include <boost/pilfer.hpp>
@@ -21,12 +22,33 @@
 namespace boost {
 namespace json {
 
-struct ieee_decimal
-{
-    std::uint64_t mantissa;
-    short exponent;
-    bool sign;
-};
+namespace detail {
+
+template<class T>
+using remove_cv_t = typename
+    std::remove_cv<T>::type;
+
+} // detail
+
+/** Metafunction returning `true` if a `T` can be assigned to @ref number
+*/
+#ifdef GENERATING_DOCUMENTATION
+template<class T>
+using is_number = __see_below__;
+#else
+template<class T>
+using is_number =
+    std::integral_constant<bool,
+        std::is_arithmetic<T>::value &&
+        ! std::is_same<detail::remove_cv_t<T>,
+            bool>::value &&
+        ! std::is_same<detail::remove_cv_t<T>,
+            char>::value &&
+        ! std::is_same<detail::remove_cv_t<T>,
+            wchar_t>::value &&
+        ! std::is_same<detail::remove_cv_t<T>,
+            unsigned char>::value>;
+#endif
 
 /** The representation of parsed numbers.
 */
@@ -45,14 +67,13 @@ class number
     // The XSLT has problems with private anon unions
     union
     {
-        unsigned
-        long long   uint64_;
-        long long   int64_;
-        double      double_;
+        double double_;
+        long long int64_;
+        unsigned long long uint64_;
     };
 #endif
 
-    kind k_;
+    kind kind_;
 
 public:
     static std::size_t constexpr
@@ -67,12 +88,6 @@ public:
              5      // unsigned 16-bit exponent
         #endif
             ;
-
-    using mantissa_type =
-        unsigned long long;
-
-    using exponent_type =
-        short;
 
     //------------------------------------------------------
 
@@ -114,54 +129,19 @@ public:
     /** Construct a number from mantissa, exponent, and sign
     */
     BOOST_JSON_DECL
-    number(
-        mantissa_type mant,
-        exponent_type exp,
-        bool sign) noexcept;
+    explicit
+    number(ieee_decimal const& dec) noexcept;
 
-    /// Construct a number from a signed integer
-    BOOST_JSON_DECL
-    number(short v) noexcept;
-
-    /// Construct a number from a signed integer
-    BOOST_JSON_DECL
-    number(int v) noexcept;
-
-    /// Construct a number from a signed integer
-    BOOST_JSON_DECL
-    number(long v) noexcept;
-
-    /// Construct a number from a signed integer
-    BOOST_JSON_DECL
-    number(long long v) noexcept;
-
-    /// Construct a number from an unsigned integer
-    BOOST_JSON_DECL
-    number(unsigned short v) noexcept;
-
-    /// Construct a number from an unsigned integer
-    BOOST_JSON_DECL
-    number(unsigned int v) noexcept;
-
-    /// Construct a number from an unsigned integer
-    BOOST_JSON_DECL
-    number(unsigned long v) noexcept;
-
-    /// Construct a number from an unsigned integer
-    BOOST_JSON_DECL
-    number(unsigned long long v) noexcept;
-
-    /// Construct a number from a floating point value
-    BOOST_JSON_DECL
-    number(float v) noexcept;
-
-    /// Construct a number from a floating point value
-    BOOST_JSON_DECL
-    number(double v) noexcept;
-
-    /// Construct a number from a floating point value
-    BOOST_JSON_DECL
-    number(long double v) noexcept;
+    template<class T
+    #ifndef GENERATING_DOCUMENTATION
+        ,class = typename std::enable_if<
+            is_number<T>::value>::type
+    #endif
+    >
+    number(T t) noexcept
+    {
+        assign_impl(t);
+    }
 
     storage_ptr const&
     get_storage() const noexcept
@@ -226,21 +206,41 @@ public:
         std::size_t buf_size) const noexcept;
 
 private:
-    struct pow10;
-
-    inline
+    template<class T>
     void
-    assign_signed(
-        long long i) noexcept;
+    assign_impl(T t,
+        typename std::enable_if<
+            std::is_unsigned<
+            T>::value>::type* = 0) noexcept
+    {
+        kind_ = kind::type_uint64;
+        uint64_ = t;
+    }
 
-    inline
+    template<class T>
     void
-    assign_unsigned(
-        unsigned long long i) noexcept;
+    assign_impl(T t,
+        typename std::enable_if<
+            std::is_signed<T>::value &&
+            std::is_integral<T>::value
+            >::type* = 0) noexcept
+    {
+        kind_ = kind::type_int64;
+        int64_ = t;
+    }
 
-    inline
+    template<class T>
     void
-    assign_double(double f) noexcept;
+    assign_impl(T t,
+        typename std::enable_if<
+            ! std::is_integral<
+            T>::value>::type* = 0) noexcept
+    {
+        kind_ = kind::type_double;
+        // VFALCO silence warnings
+        // when `T` is `long double`.
+        double_ = static_cast<double>(t);
+    }
 
     BOOST_JSON_DECL
     friend
@@ -260,7 +260,6 @@ private:
     operator!=(
         number const& lhs,
         number const& rhs) noexcept;
-
 
     inline
     storage_ptr

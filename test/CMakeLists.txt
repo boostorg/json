@@ -35,6 +35,7 @@ add_executable (json-tests
     assign_vector.cpp
     basic_parser.cpp
     error.cpp
+    ieee_decimal.cpp
     json.cpp
     kind.cpp
     number.cpp

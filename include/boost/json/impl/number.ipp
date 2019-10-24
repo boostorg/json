@@ -11,7 +11,7 @@
 #define BOOST_JSON_IMPL_NUMBER_IPP
 
 #include <boost/json/number.hpp>
-#include <boost/json/detail/number.hpp>
+#include <boost/json/detail/math.hpp>
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
@@ -32,6 +32,8 @@ namespace json {
     https://www.ampl.com/netlib/fp/dtoa.c
 
     https://www.exploringbinary.com/fast-path-decimal-to-floating-point-conversion/
+
+    https://kkimdev.github.io/posts/2018/06/15/IEEE-754-Floating-Point-Type-in-C++.html
 */
 
 //----------------------------------------------------------
@@ -44,7 +46,7 @@ number::
 number::
 number() noexcept
     : sp_(default_storage())
-    , k_(kind::type_int64)
+    , kind_(kind::type_int64)
 {
     int64_ = 0;
 }
@@ -52,7 +54,7 @@ number() noexcept
 number::
 number(storage_ptr sp) noexcept
     : sp_(std::move(sp))
-    , k_(kind::type_int64)
+    , kind_(kind::type_int64)
 {
     int64_ = 0;
 }
@@ -60,10 +62,10 @@ number(storage_ptr sp) noexcept
 number::
 number(pilfered<number> p) noexcept
     : sp_(std::move(p.get().sp_))
-    , k_(p.get().k_)
+    , kind_(p.get().kind_)
 {
     auto& other = p.get();
-    switch(k_)
+    switch(kind_)
     {
     default:
     case kind::type_double:
@@ -83,9 +85,9 @@ number(pilfered<number> p) noexcept
 number::
 number(number const& other)
     : sp_(other.sp_)
-    , k_(other.k_)
+    , kind_(other.kind_)
 {
-    switch(k_)
+    switch(kind_)
     {
     default:
     case kind::type_double:
@@ -107,9 +109,9 @@ number(
     number const& other,
     storage_ptr sp)
     : sp_(std::move(sp))
-    , k_(other.k_)
+    , kind_(other.kind_)
 {
-    switch(k_)
+    switch(kind_)
     {
     default:
     case kind::type_double:
@@ -129,9 +131,9 @@ number(
 number::
 number(number&& other)
     : sp_(other.sp_)
-    , k_(other.k_)
+    , kind_(other.kind_)
 {
-    switch(k_)
+    switch(kind_)
     {
     default:
     case kind::type_double:
@@ -153,9 +155,9 @@ number(
     number&& other,
     storage_ptr sp)
     : sp_(std::move(sp))
-    , k_(other.k_)
+    , kind_(other.kind_)
 {
-    switch(k_)
+    switch(kind_)
     {
     default:
     case kind::type_double:
@@ -176,8 +178,8 @@ number&
 number::
 operator=(number const& other)
 {
-    k_ = other.k_;
-    switch(k_)
+    kind_ = other.kind_;
+    switch(kind_)
     {
     default:
     case kind::type_double:
@@ -198,126 +200,62 @@ operator=(number const& other)
 //----------------------------------------------------------
 
 number::
-number(
-    mantissa_type mant,
-    exponent_type exp,
-    bool sign) noexcept
+number(ieee_decimal const& dec) noexcept
 {
     auto const as_double =
         [&]
         {
-            double d = static_cast<
-                double>(mant) * detail::pow10(exp);
-            if(sign)
+            double d;
+            if(dec.exponent >= 0)
+                d = static_cast<
+                    double>(dec.mantissa) *
+                    std::pow(10., dec.exponent);
+            else
+                d = static_cast<
+                    double>(dec.mantissa) /
+                    std::pow(10., -dec.exponent);
+            if(dec.sign)
                 d *= -1;
             return d;
         };
 
-    if(exp == 0)
+    if(dec.exponent == 0)
     {
-        if(! sign)
+        if(! dec.sign)
         {
-            assign_unsigned(mant);
+            assign_impl(dec.mantissa);
         }
-        else if(mant <= static_cast<unsigned long long>(
+        else if(dec.mantissa <= static_cast<unsigned long long>(
             (std::numeric_limits<long long>::max)()) + 1)
         {
-            assign_signed(static_cast<long long>(mant));
+            assign_impl(static_cast<
+                long long>(dec.mantissa));
         }
         else
         {
-            assign_double(as_double());
+            assign_impl(as_double());
         }
     }
     else
     {
         auto const d = as_double();
-        if(! sign)
+        if(! dec.sign)
         {
             auto v = static_cast<unsigned long long>(d);
             if(v == d)
-                assign_unsigned(v);
+                assign_impl(v);
             else
-                assign_double(d);
+                assign_impl(d);
         }
         else
         {
             auto v = static_cast<long long>(d);
             if(v == d)
-                assign_signed(v);
+                assign_impl(v);
             else
-                assign_double(d);
+                assign_impl(d);
         }
     }
-}
-
-//----------------------------------------------------------
-
-number::
-number(short i) noexcept
-{
-    assign_signed(i);
-}
-
-number::
-number(int i) noexcept
-{
-    assign_signed(i);
-}
-
-number::
-number(long i) noexcept
-{
-    assign_signed(i);
-}
-
-number::
-number(long long i) noexcept
-{
-    assign_signed(i);
-}
-
-number::
-number(unsigned short i) noexcept
-{
-    assign_unsigned(i);
-}
-
-number::
-number(unsigned int i) noexcept
-{
-    assign_unsigned(i);
-}
-
-number::
-number(unsigned long i) noexcept
-{
-    assign_unsigned(i);
-}
-
-number::
-number(unsigned long long i) noexcept
-{
-    assign_unsigned(i);
-}
-
-number::
-number(float f) noexcept
-{
-    assign_double(f);
-}
-
-number::
-number(double f) noexcept
-{
-    assign_double(f);
-}
-
-number::
-number(long double f) noexcept
-{
-    assign_double(static_cast<
-        double>(f));
 }
 
 //----------------------------------------------------------
@@ -326,7 +264,7 @@ bool
 number::
 is_int64() const noexcept
 {
-    switch(k_)
+    switch(kind_)
     {
     default:
     case kind::type_int64:
@@ -345,7 +283,7 @@ bool
 number::
 is_uint64() const noexcept
 {
-    switch(k_)
+    switch(kind_)
     {
     default:
     case kind::type_int64:
@@ -365,7 +303,7 @@ std::int_least64_t
 number::
 get_int64() const noexcept
 {
-    switch(k_)
+    switch(kind_)
     {
     default:
     case kind::type_int64:
@@ -385,7 +323,7 @@ std::uint_least64_t
 number::
 get_uint64() const noexcept
 {
-    switch(k_)
+    switch(kind_)
     {
     default:
     case kind::type_int64:
@@ -405,7 +343,7 @@ double
 number::
 get_double() const noexcept
 {
-    switch(k_)
+    switch(kind_)
     {
     default:
     case kind::type_int64:
@@ -426,7 +364,7 @@ print(
     std::size_t buf_size) const noexcept
 {
     int n;
-    switch(k_)
+    switch(kind_)
     {
     default:
     case kind::type_int64:
@@ -449,32 +387,6 @@ print(
 
 //----------------------------------------------------------
 
-void
-number::
-assign_signed(long long i) noexcept
-{
-    k_ = kind::type_int64;
-    int64_ = i;
-}
-
-void
-number::
-assign_unsigned(unsigned long long i) noexcept
-{
-    k_ = kind::type_uint64;
-    uint64_ = i;
-}
-
-void
-number::
-assign_double(double f) noexcept
-{
-    k_ = kind::type_double;
-    double_ = f;
-}
-
-//----------------------------------------------------------
-
 std::ostream&
 operator<<(std::ostream& os, number const& n)
 {
@@ -488,7 +400,7 @@ operator==(
     number const& lhs,
     number const& rhs) noexcept
 {
-    switch(lhs.k_)
+    switch(lhs.kind_)
     {
     default:
     case number::kind::type_int64:

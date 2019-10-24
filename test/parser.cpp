@@ -68,12 +68,58 @@ R"xx({
     }
 
     void
+    testParse()
+    {
+        auto const check =
+            [&](json::value const& jv)
+            {
+                BEAST_EXPECT(jv.is_object());
+                BEAST_EXPECT(jv.as_object().find(
+                    "a")->second.is_bool());
+                BEAST_EXPECT(jv.as_object().find(
+                    "b")->second.is_number());
+                BEAST_EXPECT(jv.as_object().find(
+                    "c")->second.is_string());
+            };
+
+        string_view js =
+            "{\"a\":true,\"b\":1,\"c\":\"x\"}";
+
+        // parse(value)
+        {
+            check(parse(js));
+        }
+
+        // parse(value, storage_ptr)
+        {
+            check(parse(js, default_storage()));
+        }
+
+        // parse(value, error_code)
+        {
+            error_code ec;
+            auto jv = parse(js, ec);
+            BEAST_EXPECTS(! ec, ec.message());
+            check(jv);
+        }
+
+        // parse(value, storage_ptr, error_code)
+        {
+            error_code ec;
+            auto jv = parse(js, default_storage(), ec);
+            BEAST_EXPECTS(! ec, ec.message());
+            check(jv);
+        }
+    }
+
+    void
     run()
     {
         log <<
             "sizeof(parser) == " <<
             sizeof(parser) << "\n";
         testParser();
+        testParse();
     }
 };
 

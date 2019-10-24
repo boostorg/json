@@ -14,6 +14,7 @@
 #include <boost/json/basic_parser.hpp>
 #include <boost/json/storage.hpp>
 #include <boost/json/value.hpp>
+#include <boost/json/storage.hpp>
 #include <boost/json/detail/string.hpp>
 #include <new>
 #include <string>
@@ -161,6 +162,39 @@ private:
     void
     on_null(error_code&) override;
 };
+
+//----------------------------------------------------------
+
+BOOST_JSON_DECL
+value
+parse(
+    string_view s,
+    storage_ptr sp,
+    error_code& ec);
+
+inline
+value
+parse(
+    string_view s,
+    error_code& ec)
+{
+    return parse(s,
+        default_storage(), ec);
+}
+
+BOOST_JSON_DECL
+value
+parse(
+    string_view s,
+    storage_ptr sp);
+
+inline
+value
+parse(string_view s)
+{
+    return parse(
+        s, default_storage());
+}
 
 } // json
 } // boost

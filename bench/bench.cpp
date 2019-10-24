@@ -9,6 +9,7 @@
 
 #include "lib/nlohmann/single_include/nlohmann/json.hpp"
 
+#include "lib/rapidjson/include/rapidjson/rapidjson.h"
 #include "lib/rapidjson/include/rapidjson/document.h"
 #include "lib/rapidjson/include/rapidjson/writer.h"
 #include "lib/rapidjson/include/rapidjson/stringbuffer.h"
@@ -45,7 +46,7 @@ public:
     virtual ~any_impl() = default;
 
     virtual boost::string_view name() const noexcept = 0;
-    virtual void parse(boost::string_view s) = 0;
+    virtual void work(boost::string_view s) = 0;
 };
 
 //----------------------------------------------------------
@@ -58,30 +59,46 @@ struct boost_impl : public any_impl
         return "Boost.JSON";
     }
 
-    void
-    parse(boost::string_view s) override
+    static
+    std::string
+    to_string(
+        json::value const& jv,
+        std::size_t size_hint)
     {
-        json::parser p;
-        boost::system::error_code ec;
-        p.write(s.data(), s.size(), ec);
+        std::string s;
+        std::size_t len = 0;
+        s.resize(size_hint);
+        json::serializer p(jv);
+        for(;;)
+        {
+            auto const used = p.next(
+                &s[len], s.size() - len);
+            len += used;
+            s.resize(len);
+            if(p.is_done())
+                break;
+            s.resize((len * 3) / 2);
+        }
+        return s;
     }
-};
-
-//----------------------------------------------------------
-
-struct nlohmann_impl : public any_impl
-{
-    boost::string_view
-    name() const noexcept override
-    {
-        return "nlohmann";
-    }
 
     void
-    parse(boost::string_view s) override
+    work(boost::string_view s) override
     {
-        auto jv = nlohmann::json::parse(
-            s.begin(), s.end());
+        std::string s2;
+        {
+            json::parser p;
+            boost::system::error_code ec;
+            p.write(s.data(), s.size(), ec);
+            s2 = to_string(p.get(), s.size() * 2);
+            dout << "s2.size() == " << s2.size() << std::endl;
+        }
+        {
+            json::parser p;
+            boost::system::error_code ec;
+            p.write(s2.data(), s2.size(), ec);
+            dout << "ec.message() == " << ec.message() << std::endl;
+        }
     }
 };
 
@@ -96,10 +113,40 @@ struct rapidjson_impl : public any_impl
     }
 
     void
-    parse(boost::string_view s) override
+    work(boost::string_view s) override
     {
-        rapidjson::Document d;
-        d.Parse(s.data(), s.size());
+        rapidjson::StringBuffer s2;
+        {
+            rapidjson::Document d;
+            d.Parse(s.data(), s.size());
+            s2.Clear();
+            rapidjson::Writer<
+                rapidjson::StringBuffer> wr(s2);
+            d.Accept(wr);
+            dout << "s2.GetSize() == " << s2.GetSize() << std::endl;
+        }
+        {
+            rapidjson::Document d;
+            d.Parse(s2.GetString(), s2.GetSize());
+        }
+    }
+};
+
+//----------------------------------------------------------
+
+struct nlohmann_impl : public any_impl
+{
+    boost::string_view
+    name() const noexcept override
+    {
+        return "nlohmann";
+    }
+
+    void
+    work(boost::string_view s) override
+    {
+        auto jv = nlohmann::json::parse(
+            s.begin(), s.end());
     }
 };
 
@@ -334,7 +381,7 @@ benchParse(
     auto const when = clock_type::now();
     dout << impl.name();
     while(repeat--)
-        impl.parse(doc);
+        impl.work(doc);
     auto const elapsed =
         std::chrono::duration_cast<
             std::chrono::milliseconds>(
@@ -361,11 +408,16 @@ load_file(char const* path)
     return s;
 }
 
+void
+study();
+
 int
 main(
     int const argc,
     char const* const* const argv)
 {
+    study();
+
     if(argc > 1)
     {
         std::vector<std::string> vs;
@@ -381,9 +433,9 @@ main(
         {
             v.clear();
 #if 1
-            v.emplace_back(new nlohmann_impl);
-            v.emplace_back(new nlohmann_impl);
-            v.emplace_back(new nlohmann_impl);
+            //v.emplace_back(new nlohmann_impl);
+            //v.emplace_back(new nlohmann_impl);
+            //v.emplace_back(new nlohmann_impl);
             v.emplace_back(new rapidjson_impl);
             v.emplace_back(new rapidjson_impl);
             v.emplace_back(new rapidjson_impl);
@@ -394,7 +446,7 @@ main(
 
             dout << "File: " << argv[i + 1] << std::endl;
             for(auto& impl : v)
-                benchParse(vs[i], *impl, 100);
+                benchParse(vs[i], *impl, 1);
             dout << std::endl;
         }
     }
@@ -432,3 +484,12 @@ main(
 
     return 0;
 }
+
+void
+study()
+{
+    json::string_view js = "[\"\xFF""\"]";
+    rapidjson::Document d;
+    d.Parse(js.data(), js.size());
+}
+

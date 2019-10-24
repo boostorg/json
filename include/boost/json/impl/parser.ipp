@@ -323,7 +323,7 @@ void
 parser::
 on_number(ieee_decimal dec, error_code&)
 {
-    number n(dec.mantissa, dec.exponent, dec.sign);
+    number n(dec);
     auto& jv = *stack_.front();
     BOOST_JSON_ASSERT(! jv.is_object());
     if(obj_)
@@ -357,6 +357,32 @@ parser::
 on_null(error_code&)
 {
     assign(nullptr);
+}
+
+//----------------------------------------------------------
+
+value
+parse(
+    string_view s,
+    storage_ptr sp,
+    error_code& ec)
+{
+    parser p(std::move(sp));
+    p.write(s.data(), s.size(), ec);
+    return p.release();
+}
+
+value
+parse(
+    string_view s,
+    storage_ptr sp)
+{
+    error_code ec;
+    auto jv = parse(s, std::move(sp), ec);
+    if(ec)
+        BOOST_JSON_THROW(
+            system_error(ec));
+    return jv;
 }
 
 } // json

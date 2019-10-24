@@ -21,16 +21,10 @@ enum class serializer::state : char
     inc,    // increment iterator
     val,    // value
 
-    key1,   // '"'
-    key2,   // escaped string
-    key3,   // '"'
-    key4,   // ':'
-    key5,   // literal (ctrl or utf16 escape)
-
     str1,   // '"'
     str2,   // escaped string
     str3,   // '"'
-    str4,   // ','
+    str4,   // ':' or ','
     str5,   // literal (ctrl or utf16 escape)
 
     lit,    // literal string ({number}, true, false, null)
@@ -90,8 +84,9 @@ loop:
         }
         if(e.has_key)
         {
-            key_ = it_->key;
-            state_ = state::key1;
+            key_ = true;
+            str_ = it_->key;
+            state_ = state::str1;
             goto loop;
         }
         BOOST_FALLTHROUGH;
@@ -118,6 +113,7 @@ loop:
             goto loop;
 
         case kind::string:
+            key_ = false;
             str_ = *e.value.if_string();
             state_ = state::str1;
             goto loop;
@@ -151,49 +147,6 @@ loop:
             goto loop;
         }
     }
-
-    //---
-
-    case state::key1:
-        if(p >= p1)
-            goto finish;
-        *p++ = '\"';
-        state_ = state::key2;
-        BOOST_FALLTHROUGH;
-
-    case state::key2:
-    {
-        auto const n =
-            key_.copy(p, p1 - p);
-        p += n;
-        if(n < key_.size())
-        {
-            BOOST_JSON_ASSERT(p >= p1);
-            key_ = key_.substr(n);
-            goto finish;
-        }
-        state_ = state::key3;
-        BOOST_FALLTHROUGH;
-    }
-
-    case state::key3:
-        if(p >= p1)
-            goto finish;
-        *p++ = '\"';
-        state_ = state::key4;
-        BOOST_FALLTHROUGH;
-
-    case state::key4:
-        if(p >= p1)
-            goto finish;
-        *p++ = ':';
-        state_ = state::val;
-        goto loop;
-
-    case state::key5:
-        if(p >= p1)
-            goto finish;
-        break;
 
     //---
 
@@ -244,7 +197,8 @@ loop:
                 state_ = state::str5;
                 goto loop;
             }
-            else if(ch >= 32)
+            else if(static_cast<
+                unsigned char>(ch) >= 32)
             {
                 *p++ = ch;
                 continue;
@@ -257,8 +211,12 @@ loop:
                 buf_[4] = 'u';
                 buf_[3] = '0';
                 buf_[2] = '0';
-                buf_[1] = "0123456789abcdef"[ch >>  4];
-                buf_[0] = "0123456789abcdef"[ch &  15];
+                static constexpr char hex[] =
+                    "0123456789abcdef";
+                buf_[1] = hex[static_cast<
+                    unsigned char>(ch) >> 4];
+                buf_[0] = hex[static_cast<
+                    unsigned char>(ch) & 15];
                 nbuf_ = 6;
                 state_ = state::str5;
                 goto loop;
@@ -278,7 +236,7 @@ loop:
         if(p >= p1)
             goto finish;
         *p++ = '\"';
-        if(it_->last)
+        if(it_->last && ! key_)
         {
             state_ = state::inc;
             goto loop;
@@ -289,8 +247,16 @@ loop:
     case state::str4:
         if(p >= p1)
             goto finish;
-        *p++ = ',';
-        state_ = state::inc;
+        if(key_)
+        {
+            *p++ = ':';
+            state_ = state::val;
+        }
+        else
+        {
+            *p++ = ',';
+            state_ = state::inc;
+        }
         goto loop;
 
     case state::str5:
@@ -328,6 +294,29 @@ loop:
 finish:
     return p - p0;
 }
+
+std::string
+to_string(
+    json::value const& jv)
+{
+    std::string s;
+    std::size_t len = 0;
+    s.resize(1024);
+    json::serializer p(jv);
+    for(;;)
+    {
+        auto const used = p.next(
+            &s[len], s.size() - len);
+        len += used;
+        s.resize(len);
+        if(p.is_done())
+            break;
+        s.resize((len * 3) / 2);
+    }
+    s.shrink_to_fit();
+    return s;
+}
+
 
 std::ostream&
 operator<<(std::ostream& os, value const& jv)

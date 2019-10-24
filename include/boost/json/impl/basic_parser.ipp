@@ -1303,7 +1303,6 @@ write_eof(error_code& ec)
     ec = {};
 }
 
-
 } // json
 } // boost
 

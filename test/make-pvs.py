@@ -19,7 +19,7 @@ def escape(c):
     n = ord(c);
     if n >= 32 and n <= 127:
         return c;
-    return chex(c);
+    return chex(c) + "\"\"";
 
 def tocpp(s):
     v0 = ""

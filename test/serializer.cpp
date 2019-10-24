@@ -14,7 +14,7 @@
 #include <boost/beast/_experimental/unit_test/suite.hpp>
 #include "parse-vectors.hpp"
 
-//#define SOFT_FAIL
+#define SOFT_FAIL
 
 namespace boost {
 namespace json {
@@ -23,43 +23,32 @@ class serializer_test : public beast::unit_test::suite
 {
 public:
     static
-    std::string
-    to_string(value const& jv)
+    unsigned
+    common(
+        string_view s1,
+        string_view s2)
     {
-        std::string s;
-        unsigned long cap = 1024;
-        for(;;)
+        unsigned n = 0;
+        auto p1 = s1.data();
+        auto p2 = s2.data();
+        auto end = s1.size() > s2.size() ?
+            s2.end() : s1.end();
+        while(p1 < end)
         {
-            s.resize(cap);
-            serializer p(jv);
-            s.resize(p.next(
-                &s[0], s.size()));
-            if(p.is_done())
+            ++n;
+            if(*p1++ != *p2++)
                 break;
-            cap *= 2;
         }
-        return s;
-    }
-
-    static
-    value
-    from_string(
-        string_view s,
-        error_code& ec)
-    {
-        parser p;
-        p.write(
-            s.data(),
-            s.size(),
-            ec);
-        return p.release();
+        return n;
     }
 
     void
-    round_trip(string_view s0)
+    round_trip(
+        string_view name,
+        string_view s0)
     {
         error_code ec;
-        auto jv0 = from_string(s0, ec);
+        auto jv0 = parse(s0, ec);
     #ifdef SOFT_FAIL
         if(ec)
             return;
@@ -69,7 +58,10 @@ public:
             return;
     #endif
         auto s1 = to_string(jv0);
-        auto jv1 = from_string(s1, ec);
+        parser p;
+        auto n = p.write(
+            s1.data(), s1.size(), ec);
+        auto jv1 = p.release();
     #ifdef SOFT_FAIL
         if(ec)
     #else
@@ -77,7 +69,15 @@ public:
             ! ec, ec.message()))
     #endif
         {
+            auto c1 = s1.data() + n;
+            if( n > 60)
+                n = 60;
+            auto c0 = c1 - n;
             log <<
+                "context\n"
+                "  " << string_view(c0, c1-c0) << std::endl;
+            log <<
+                name << "\n"
                 "  " << s0 << "\n"
                 "  " << s1 << std::endl << std::endl;
             return;
@@ -88,18 +88,24 @@ public:
     #else
         if(! BEAST_EXPECT(s1 == s2))
     #endif
+        {
+            auto c = common(s1, s2);
             log <<
-                "  " << s1 << "\n"
-                "  " << s2 << std::endl << std::endl;
+                name << "\n"
+                "  " << s0 << "\n"
+                "  " << s1.substr(0, c) << "\n"
+                "  " << s2.substr(0, c) << std::endl << std::endl;
+        }
     }
 
     void
     print_grind(
+        string_view name,
         json::value const& jv)
     {
         auto const s0 = to_string(jv);
         log << s0 << std::endl;
-        round_trip(s0);
+        round_trip(name, s0);
         for(std::size_t i = 1;
             i < s0.size() - 1; ++i)
         {
@@ -121,6 +127,34 @@ public:
     }
 
     void
+    testSerializer()
+    {
+        value jv;
+
+        // serializer(value)
+        {
+            serializer sr(jv);
+        }
+
+        // is_done()
+        {
+            serializer sr(jv);
+            BEAST_EXPECT(! sr.is_done());
+        }
+
+        // next()
+        {
+            serializer sr(jv);
+            char buf[1024];
+            auto n = sr.next(
+                buf, sizeof(buf));
+            BEAST_EXPECT(sr.is_done());
+            BEAST_EXPECT(string_view(
+                buf, n) == "null");
+        }
+    }
+
+    void
     testRoundTrips()
     {
         parse_vectors const pv;
@@ -129,41 +163,7 @@ public:
             if(e.result != 'y')
                 continue;
 
-            round_trip(e.text);
-#if 0
-            error_code ec;
-            std::string s1, s2;
-            {
-                auto jv = from_string(
-                    e.text, ec);
-                if(! BEAST_EXPECTS(
-                    ! ec, ec.message()))
-                    continue;
-                s1 = to_string(jv);
-            }
-            {
-                auto jv =
-                    from_string(s1, ec);
-                if(! BEAST_EXPECTS(
-                    ! ec, ec.message()))
-                {
-                    log <<
-                        "  " << e.text << "\n" <<
-                        "  " << s1 << "\n" <<
-                        std::endl << std::endl;
-                    continue;
-                }
-                s2 = to_string(jv);
-            }
-            if(! BEAST_EXPECT(s1 == s2))
-            if(s1 != s2)
-            {
-                log <<
-                    "  " << s1 << "\n" <<
-                    "  " << s2 << "\n" <<
-                    std::endl << std::endl;
-            }
-#endif
+            round_trip(e.name, e.text);
         }
     }
 
@@ -171,7 +171,7 @@ public:
     good(string_view s)
     {
         error_code ec;
-        auto jv = from_string(s, ec);
+        auto jv = parse(s, ec);
         return !ec;
     }
 
@@ -179,11 +179,13 @@ public:
     void
     tv(char const (&s)[N])
     {
-        round_trip(string_view(s, N - 1));
+        round_trip(
+            "",
+            string_view(s, N - 1));
     }
 
     void
-    run()
+    doTestStrings()
     {
         tv(R"("")");
         tv(R"("x")");
@@ -237,19 +239,34 @@ public:
         tv(R"(false)");
 
         tv(R"(null)");
+    }
 
-#if 0
+    void
+    doTestVectors()
+    {
         parse_vectors const pv;
         for(auto const e : pv)
         {
             if( e.result == 'y' ||
                 good(e.text))
             {
-                log << e.name << std::endl;
-                round_trip(e.text);
+                round_trip(e.name, e.text);
             }
         }
-#endif
+    }
+
+    void
+    run()
+    {
+        parse_vectors const pv;
+        auto jv = parse(pv.begin()->text);
+        auto s = to_string(jv);
+        error_code ec;
+        auto jv2 = parse(s, ec);
+        BEAST_EXPECTS(! ec, ec.message());
+        testSerializer();
+        doTestStrings();
+        doTestVectors();
     }
 };
 

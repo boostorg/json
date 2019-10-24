@@ -20,6 +20,23 @@ namespace json {
 class number_test : public beast::unit_test::suite
 {
 public:
+    BOOST_JSON_STATIC_ASSERT(is_number<int>::value);
+    BOOST_JSON_STATIC_ASSERT(is_number<short>::value);
+    BOOST_JSON_STATIC_ASSERT(is_number<long>::value);
+    BOOST_JSON_STATIC_ASSERT(is_number<long long>::value);
+    BOOST_JSON_STATIC_ASSERT(is_number<unsigned int>::value);
+    BOOST_JSON_STATIC_ASSERT(is_number<unsigned short>::value);
+    BOOST_JSON_STATIC_ASSERT(is_number<unsigned long>::value);
+    BOOST_JSON_STATIC_ASSERT(is_number<unsigned long long>::value);
+    BOOST_JSON_STATIC_ASSERT(is_number<float>::value);
+    BOOST_JSON_STATIC_ASSERT(is_number<double>::value);
+    BOOST_JSON_STATIC_ASSERT(is_number<long double>::value);
+
+    BOOST_JSON_STATIC_ASSERT(! is_number<char>::value);
+    BOOST_JSON_STATIC_ASSERT(! is_number<wchar_t>::value);
+    BOOST_JSON_STATIC_ASSERT(! is_number<unsigned char>::value);
+    BOOST_JSON_STATIC_ASSERT(! is_number<bool>::value);
+
     template<class I>
     void
     check(I v
@@ -49,9 +66,11 @@ public:
         n2 = n;
         BEAST_EXPECT(n == n2);
         BEAST_EXPECT(n.is_uint64());
+#if 0
         BEAST_EXPECT(number(static_cast<
-            number::mantissa_type>(v),
+            decltype(ieee_decimal::mantissa)>(v),
                 0, false) == n);
+#endif
         BEAST_EXPECT(n.get_uint64() == v);
         BEAST_EXPECT(n.get_double() == v);
      }

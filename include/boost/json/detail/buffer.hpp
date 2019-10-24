@@ -70,6 +70,15 @@ public:
         buf_[size_++] = ch;
     }
 
+    // returns true if cp is a valid utf-32 code point
+    static
+    bool
+    is_valid(unsigned long cp) noexcept
+    {
+        return cp <= 0x0010ffffu &&
+            (cp < 0xd800u || cp > 0xdfffu);
+    }
+
     // append valid 32-bit code point as utf8
     void
     append_utf8(
