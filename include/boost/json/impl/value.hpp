@@ -112,7 +112,9 @@ to_json(char const* t, value& v)
 template<class T
     ,class = typename std::enable_if<
         std::is_constructible<number, T>::value &&
-        ! std::is_same<number, T>::value>::type
+        ! std::is_same<number, T>::value &&
+        ! std::is_convertible<T, storage_ptr>::value
+            >::type
 >
 inline
 void

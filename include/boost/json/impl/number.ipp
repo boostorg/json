@@ -11,6 +11,7 @@
 #define BOOST_JSON_IMPL_NUMBER_IPP
 
 #include <boost/json/number.hpp>
+#include <boost/json/detail/number.hpp>
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
@@ -26,79 +27,173 @@ namespace json {
 
 //----------------------------------------------------------
 
-struct number::pow10
+/*  Reference work:
+
+    https://www.ampl.com/netlib/fp/dtoa.c
+
+    https://www.exploringbinary.com/fast-path-decimal-to-floating-point-conversion/
+*/
+
+//----------------------------------------------------------
+
+number::
+~number()
 {
-    std::size_t
-    size() const noexcept
-    {
-        return size_;
-    }
+}
 
-    mantissa_type const*
-    begin() const noexcept
-    {
-        return begin_;
-    }
+number::
+number() noexcept
+    : sp_(default_storage())
+    , k_(kind::type_int64)
+{
+    int64_ = 0;
+}
 
-    mantissa_type const*
-    end() const noexcept
-    {
-        return end_;
-    }
+number::
+number(storage_ptr sp) noexcept
+    : sp_(std::move(sp))
+    , k_(kind::type_int64)
+{
+    int64_ = 0;
+}
 
-    mantissa_type
-    operator[](
-        exponent_type n) const
+number::
+number(pilfered<number> p) noexcept
+    : sp_(std::move(p.get().sp_))
+    , k_(p.get().k_)
+{
+    auto& other = p.get();
+    switch(k_)
     {
-        return begin_[n];
+    default:
+    case kind::type_double:
+        double_ = other.double_;
+        break;
+
+    case kind::type_int64:
+        int64_ = other.int64_;
+        break;
+
+    case kind::type_uint64:
+        uint64_ = other.uint64_;
+        break;
     }
-        
-    static
-    pow10 const&
-    get() noexcept
+}
+
+number::
+number(number const& other)
+    : sp_(other.sp_)
+    , k_(other.k_)
+{
+    switch(k_)
     {
-        struct pow10_impl : pow10
-        {
-            pow10_impl()
-            {
-                static mantissa_type constexpr list[] = {
-                    1ULL,
-                    10ULL,
-                    100ULL,
-                    1000ULL,
-                    10000ULL,
-                    100000ULL,
-                    1000000ULL,
-                    10000000ULL,
-                    100000000ULL,
-                    1000000000ULL,
-                    10000000000ULL,
-                    100000000000ULL,
-                    1000000000000ULL,
-                    10000000000000ULL,
-                    100000000000000ULL,
-                    1000000000000000ULL,
-                    10000000000000000ULL,
-                    100000000000000000ULL,
-                    1000000000000000000ULL,
-                    10000000000000000000ULL
-                };
-                size_ = std::extent<
-                    decltype(list)>::value;
-                begin_ = &list[0];
-                end_ = &list[size_];
-            }
-        };
+    default:
+    case kind::type_double:
+        double_ = other.double_;
+        break;
 
-        static pow10_impl const tab;
-        return tab;
+    case kind::type_int64:
+        int64_ = other.int64_;
+        break;
+
+    case kind::type_uint64:
+        uint64_ = other.uint64_;
+        break;
     }
+}
 
-protected:
-    std::size_t size_;
-    mantissa_type const* begin_;
-    mantissa_type const* end_;
-};
+number::
+number(
+    number const& other,
+    storage_ptr sp)
+    : sp_(std::move(sp))
+    , k_(other.k_)
+{
+    switch(k_)
+    {
+    default:
+    case kind::type_double:
+        double_ = other.double_;
+        break;
+
+    case kind::type_int64:
+        int64_ = other.int64_;
+        break;
+
+    case kind::type_uint64:
+        uint64_ = other.uint64_;
+        break;
+    }
+}
+
+number::
+number(number&& other)
+    : sp_(other.sp_)
+    , k_(other.k_)
+{
+    switch(k_)
+    {
+    default:
+    case kind::type_double:
+        double_ = other.double_;
+        break;
+
+    case kind::type_int64:
+        int64_ = other.int64_;
+        break;
+
+    case kind::type_uint64:
+        uint64_ = other.uint64_;
+        break;
+    }
+}
+
+number::
+number(
+    number&& other,
+    storage_ptr sp)
+    : sp_(std::move(sp))
+    , k_(other.k_)
+{
+    switch(k_)
+    {
+    default:
+    case kind::type_double:
+        double_ = other.double_;
+        break;
+
+    case kind::type_int64:
+        int64_ = other.int64_;
+        break;
+
+    case kind::type_uint64:
+        uint64_ = other.uint64_;
+        break;
+    }
+}
+
+number&
+number::
+operator=(number const& other)
+{
+    k_ = other.k_;
+    switch(k_)
+    {
+    default:
+    case kind::type_double:
+        double_ = other.double_;
+        break;
+
+    case kind::type_int64:
+        int64_ = other.int64_;
+        break;
+
+    case kind::type_uint64:
+        uint64_ = other.uint64_;
+        break;
+    }
+    return *this;
+}
 
 //----------------------------------------------------------
 
@@ -111,9 +206,8 @@ number(
     auto const as_double =
         [&]
         {
-            double d =
-                static_cast<double>(mant) *
-                std::pow(10.0, exp);
+            double d = static_cast<
+                double>(mant) * detail::pow10(exp);
             if(sign)
                 d *= -1;
             return d;
@@ -234,21 +328,17 @@ is_int64() const noexcept
 {
     switch(k_)
     {
-    case type_int64:
+    default:
+    case kind::type_int64:
         return true;
 
-    case type_uint64:
+    case kind::type_uint64:
         return int64_ >= 0;
 
-    case type_double:
+    case kind::type_double:
         return static_cast<long long>(
             double_) == double_;
-
-    default:
-    case type_ieee:
-        break;
     }
-    return false;
 }
 
 bool
@@ -257,22 +347,18 @@ is_uint64() const noexcept
 {
     switch(k_)
     {
-    case type_int64:
+    default:
+    case kind::type_int64:
         return int64_ >= 0;
 
-    case type_uint64:
+    case kind::type_uint64:
         return true;
 
-    case type_double:
+    case kind::type_double:
         return static_cast<
             unsigned long long>(
                 double_) == double_;
-
-    default:
-    case type_ieee:
-        break;
     }
-    return false;
 }
 
 std::int_least64_t
@@ -281,22 +367,18 @@ get_int64() const noexcept
 {
     switch(k_)
     {
-    case type_int64:
+    default:
+    case kind::type_int64:
         return int64_;
 
-    case type_uint64:
+    case kind::type_uint64:
         return static_cast<
             long long>(uint64_);
 
-    case type_double:
+    case kind::type_double:
         return static_cast<
             long long>(double_);
-
-    default:
-    case type_ieee:
-        break;
     }
-    return 0;
 }
 
 std::uint_least64_t
@@ -305,22 +387,18 @@ get_uint64() const noexcept
 {
     switch(k_)
     {
-    case type_int64:
+    default:
+    case kind::type_int64:
         return static_cast<
             unsigned long long>(int64_);
 
-    case type_uint64:
+    case kind::type_uint64:
         return uint64_;
 
-    case type_double:
+    case kind::type_double:
         return static_cast<
             unsigned long long>(double_);
-
-    default:
-    case type_ieee:
-        break;
     }
-    return 0;
 }
 
 double
@@ -329,20 +407,16 @@ get_double() const noexcept
 {
     switch(k_)
     {
-    case type_int64:
+    default:
+    case kind::type_int64:
         return static_cast<double>(int64_);
 
-    case type_uint64:
+    case kind::type_uint64:
         return static_cast<double>(uint64_);
 
-    case type_double:
+    case kind::type_double:
         return double_;
-
-    default:
-    case type_ieee:
-        break;
     }
-    return 0;
 }
 
 string_view
@@ -354,24 +428,19 @@ print(
     int n;
     switch(k_)
     {
-    case type_int64:
+    default:
+    case kind::type_int64:
         n = snprintf(buf, buf_size,
             "%lld", int64_);
         break;
 
-    case type_uint64:
+    case kind::type_uint64:
         n = snprintf(buf, buf_size,
             "%llu", uint64_);
         break;
 
-    case type_double:
+    case kind::type_double:
         n = detail::ryu::d2s_buffered_n(double_, buf);
-        break;
-
-    default:
-    case type_ieee:
-        n = snprintf(buf, buf_size,
-            "_unimpl");
         break;
     }
     return { buf, static_cast<
@@ -384,7 +453,7 @@ void
 number::
 assign_signed(long long i) noexcept
 {
-    k_ = type_int64;
+    k_ = kind::type_int64;
     int64_ = i;
 }
 
@@ -392,7 +461,7 @@ void
 number::
 assign_unsigned(unsigned long long i) noexcept
 {
-    k_ = type_uint64;
+    k_ = kind::type_uint64;
     uint64_ = i;
 }
 
@@ -400,7 +469,7 @@ void
 number::
 assign_double(double f) noexcept
 {
-    k_ = type_double;
+    k_ = kind::type_double;
     double_ = f;
 }
 
@@ -421,28 +490,24 @@ operator==(
 {
     switch(lhs.k_)
     {
-    case number::type_int64:
+    default:
+    case number::kind::type_int64:
         return
             rhs.is_int64() &&
             lhs.get_int64() ==
                 rhs.get_int64();
 
-    case number::type_uint64:
+    case number::kind::type_uint64:
         return
             rhs.is_uint64() &&
             lhs.get_uint64() ==
                 rhs.get_uint64();
 
-    case number::type_double:
+    case number::kind::type_double:
         return
             lhs.get_double() ==
             rhs.get_double();
-
-    default:
-    case number::type_ieee:
-        break;
     }
-    return false;
 }
 
 bool

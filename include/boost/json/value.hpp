@@ -108,26 +108,18 @@ class value
 
 #ifndef GENERATING_DOCUMENTATION
     // XSL scripts have trouble with private anon unions
-    struct native
-    {
-        union
-        {
-            number  num_;
-            bool    bool_;
-        };
-        storage_ptr sp_;
-    };
-
     union
     {
-        object    obj_;
-        array     arr_;
-        string    str_;
-        native    nat_;
+        object      obj_;
+        array       arr_;
+        string      str_;
+        number      num_;
+        storage_ptr sp_;
     };
 #endif
 
     json::kind kind_;
+    bool bool_;
 
 public:
     /// Destroy a value and all of its contents
@@ -539,7 +531,7 @@ public:
     emplace_number() noexcept
     {
         reset(json::kind::number);
-        return nat_.num_;
+        return num_;
     }
 
     /** Set the value to boolean false, and return it.
@@ -560,7 +552,7 @@ public:
     emplace_bool() noexcept
     {
         reset(json::kind::boolean);
-        return nat_.bool_;
+        return bool_;
     }
 
     /** Set the value to null.
@@ -1049,7 +1041,7 @@ public:
     if_number() noexcept
     {
         if(kind_ == json::kind::number)
-            return &nat_.num_;
+            return &num_;
         return nullptr;
     }
 
@@ -1071,7 +1063,7 @@ public:
     if_number() const noexcept
     {
         if(kind_ == json::kind::number)
-            return &nat_.num_;
+            return &num_;
         return nullptr;
     }
 
@@ -1093,7 +1085,7 @@ public:
     if_bool() noexcept
     {
         if(kind_ == json::kind::boolean)
-            return &nat_.bool_;
+            return &bool_;
         return nullptr;
     }
 
@@ -1115,7 +1107,7 @@ public:
     if_bool() const noexcept
     {
         if(kind_ == json::kind::boolean)
-            return &nat_.bool_;
+            return &bool_;
         return nullptr;
     }
 
@@ -1300,7 +1292,7 @@ public:
             BOOST_JSON_THROW(
                 system_error(
                     error::not_number));
-        return nat_.num_;
+        return num_;
     }
 
     /** Return a reference to the number, or throw an exception.
@@ -1326,7 +1318,7 @@ public:
             BOOST_JSON_THROW(
                 system_error(
                     error::not_number));
-        return nat_.num_;
+        return num_;
     }
 
     /** Return a reference to the bool, or throw an exception.
@@ -1352,7 +1344,7 @@ public:
             BOOST_JSON_THROW(
                 system_error(
                     error::not_bool));
-        return nat_.bool_;
+        return bool_;
     }
 
     /** Return a reference to the bool, or throw an exception.
@@ -1378,7 +1370,7 @@ public:
             BOOST_JSON_THROW(
                 system_error(
                     error::not_bool));
-        return nat_.bool_;
+        return bool_;
     }
 
     //------------------------------------------------------

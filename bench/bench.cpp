@@ -17,9 +17,10 @@
 #include <boost/beast/_experimental/unit_test/dstream.hpp>
 #include <chrono>
 #include <iostream>
+#include <memory>
 #include <random>
-
-#include <boost/json/fixed_storage.hpp>
+#include <cstdio>
+#include <vector>
 
 /*
 
@@ -49,27 +50,8 @@ public:
 
 //----------------------------------------------------------
 
-class boost_impl : public any_impl
+struct boost_impl : public any_impl
 {
-    json::parser* p_;
-
-public:
-    boost_impl()
-        : p_(new json::parser)
-    {
-    }
-
-    explicit
-    boost_impl(json::storage_ptr sp)
-        : p_(new json::parser(std::move(sp)))
-    {
-    }
-
-    ~boost_impl()
-    {
-        delete p_;
-    }
-
     boost::string_view
     name() const noexcept override
     {
@@ -77,25 +59,18 @@ public:
     }
 
     void
-    parse(
-        boost::string_view s) override
+    parse(boost::string_view s) override
     {
+        json::parser p;
         boost::system::error_code ec;
-        p_->write(s.data(), s.size(), ec);
+        p.write(s.data(), s.size(), ec);
     }
 };
 
 //----------------------------------------------------------
 
-class nlohmann_impl : public any_impl
+struct nlohmann_impl : public any_impl
 {
-    nlohmann::json root_;
-
-public:
-    nlohmann_impl()
-    {
-    }
-
     boost::string_view
     name() const noexcept override
     {
@@ -103,18 +78,17 @@ public:
     }
 
     void
-    parse(
-        boost::string_view s) override
+    parse(boost::string_view s) override
     {
-        auto jv = nlohmann::json::parse(s.begin(), s.end());
+        auto jv = nlohmann::json::parse(
+            s.begin(), s.end());
     }
 };
 
 //----------------------------------------------------------
 
-class rapidjson_impl : public any_impl
+struct rapidjson_impl : public any_impl
 {
-public:
     boost::string_view
     name() const noexcept override
     {
@@ -122,8 +96,7 @@ public:
     }
 
     void
-    parse(
-        boost::string_view s) override
+    parse(boost::string_view s) override
     {
         rapidjson::Document d;
         d.Parse(s.data(), s.size());
@@ -354,12 +327,14 @@ public:
 void
 benchParse(
     boost::string_view doc,
-    any_impl& impl)
+    any_impl& impl,
+    int repeat = 1)
 {
     using clock_type = std::chrono::steady_clock;
     auto const when = clock_type::now();
     dout << impl.name();
-    impl.parse(doc);
+    while(repeat--)
+        impl.parse(doc);
     auto const elapsed =
         std::chrono::duration_cast<
             std::chrono::milliseconds>(
@@ -372,35 +347,86 @@ benchParse(
     dout.flush();
 }
 
-int
-main(int, char**)
+std::string
+load_file(char const* path)
 {
-    for(int i = 5; i < 7; ++i)
+    FILE* f = fopen(path, "rb");
+    fseek(f, 0, SEEK_END);
+    auto const size = ftell(f);
+    std::string s;
+    s.resize(size);
+    fseek(f, 0, SEEK_SET);
+    fread(&s[0], 1, size, f);
+    fclose(f);
+    return s;
+}
+
+int
+main(
+    int const argc,
+    char const* const* const argv)
+{
+    if(argc > 1)
     {
-        factory f;
-        f.max_depth(i);
-        auto const doc = f.make_document();
+        std::vector<std::string> vs;
+        vs.reserve(argc - 1);
+        for(int i = 1; i < argc; ++i)
+            vs.emplace_back(load_file(argv[i]));
+
+        std::vector<
+            std::unique_ptr<any_impl>> v;
+        v.reserve(10);
+
+        for(int i = 0; i < argc - 1; ++i)
+        {
+            v.clear();
 #if 1
-        for(int j = 0; j < 3; ++j)
-        {
-            rapidjson_impl impl;
-            benchParse(doc, impl);
-        }
-        for(int j = 0; j < 3; ++j)
-        {
-            nlohmann_impl impl;
-            benchParse(doc, impl);
-        }
+            v.emplace_back(new nlohmann_impl);
+            v.emplace_back(new nlohmann_impl);
+            v.emplace_back(new nlohmann_impl);
+            v.emplace_back(new rapidjson_impl);
+            v.emplace_back(new rapidjson_impl);
+            v.emplace_back(new rapidjson_impl);
 #endif
-        for(int j = 0; j < 3; ++j)
+            v.emplace_back(new boost_impl);
+            v.emplace_back(new boost_impl);
+            v.emplace_back(new boost_impl);
+
+            dout << "File: " << argv[i + 1] << std::endl;
+            for(auto& impl : v)
+                benchParse(vs[i], *impl, 100);
+            dout << std::endl;
+        }
+    }
+    else
+    {
+        for(int i = 5; i < 7; ++i)
         {
-#if 0
-            boost_impl impl(json::make_storage<
-                json::fixed_storage>(2047 * 1024 * 1024));
-#else
-            boost_impl impl;
-#endif
-            benchParse(doc, impl);
+            factory f;
+            f.max_depth(i);
+            auto const doc = f.make_document();
+    #if 1
+            for(int j = 0; j < 3; ++j)
+            {
+                rapidjson_impl impl;
+                benchParse(doc, impl);
+            }
+            for(int j = 0; j < 3; ++j)
+            {
+                nlohmann_impl impl;
+                benchParse(doc, impl);
+            }
+    #endif
+            for(int j = 0; j < 3; ++j)
+            {
+    #if 0
+                boost_impl impl(json::make_storage<
+                    json::fixed_storage>(2047 * 1024 * 1024));
+    #else
+                boost_impl impl;
+    #endif
+                benchParse(doc, impl);
+            }
         }
     }
 

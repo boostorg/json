@@ -11,7 +11,9 @@
 #define BOOST_JSON_NUMBER_HPP
 
 #include <boost/json/detail/config.hpp>
+#include <boost/json/storage.hpp>
 #include <boost/json/detail/string.hpp>
+#include <boost/pilfer.hpp>
 #include <cstdint>
 #include <iosfwd>
 #include <type_traits>
@@ -30,21 +32,14 @@ struct ieee_decimal
 */
 class number
 {
-    struct base10_ieee
-    {
-        unsigned
-        long long   mant;
-        short       exp;
-        bool        sign;
-    };
-
-    enum kind
+    enum class kind : char
     {
         type_int64,
         type_uint64,
-        type_double,
-        type_ieee
+        type_double
     };
+
+    storage_ptr sp_;
 
 #ifndef GENERATING_DOCUMENTATION
     // The XSLT has problems with private anon unions
@@ -54,7 +49,6 @@ class number
         long long   uint64_;
         long long   int64_;
         double      double_;
-        base10_ieee ieee_;
     };
 #endif
 
@@ -80,14 +74,42 @@ public:
     using exponent_type =
         short;
 
-    number(number const&) = default;
-    number& operator=(number const&) = default;
+    //------------------------------------------------------
 
-    number() noexcept
-        : k_(type_int64)
-    {
-        int64_ = 0;
-    }
+    BOOST_JSON_DECL
+    ~number();
+
+    BOOST_JSON_DECL
+    number() noexcept;
+
+    BOOST_JSON_DECL
+    explicit
+    number(storage_ptr sp) noexcept;
+
+    BOOST_JSON_DECL
+    number(pilfered<number> other) noexcept;
+
+    BOOST_JSON_DECL
+    number(number const& other);
+
+    BOOST_JSON_DECL
+    number(
+        number const& other,
+        storage_ptr sp);
+
+    BOOST_JSON_DECL
+    number(number&& other);
+
+    BOOST_JSON_DECL
+    number(
+        number&& other,
+        storage_ptr sp);
+
+    BOOST_JSON_DECL
+    number&
+    operator=(number const& other);
+
+    //------------------------------------------------------
 
     /** Construct a number from mantissa, exponent, and sign
     */
@@ -140,6 +162,12 @@ public:
     /// Construct a number from a floating point value
     BOOST_JSON_DECL
     number(long double v) noexcept;
+
+    storage_ptr const&
+    get_storage() const noexcept
+    {
+        return sp_;
+    }
 
     /// Return true if the number is negative
     BOOST_JSON_DECL
@@ -232,6 +260,16 @@ private:
     operator!=(
         number const& lhs,
         number const& rhs) noexcept;
+
+
+    inline
+    storage_ptr
+    release_storage() noexcept
+    {
+        return std::move(sp_);
+    }
+
+    friend class value;
 };
 
 BOOST_JSON_DECL

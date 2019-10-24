@@ -90,12 +90,12 @@ value::
         break;
 
     case json::kind::number:
-        nat_.num_.~number();
-        BOOST_FALLTHROUGH;
+        num_.~number();
+        break;
 
     case json::kind::boolean:
     case json::kind::null:
-        nat_.sp_.~storage_ptr();
+        sp_.~storage_ptr();
         break;
     }
 }
@@ -139,19 +139,18 @@ value(
         break;
 
     case json::kind::number:
-        ::new(&nat_.num_) number;
-        ::new(&nat_.sp_)
-            storage_ptr(std::move(sp));
+        ::new(&num_) number(
+            std::move(sp));
         break;
 
     case json::kind::boolean:
-        ::new(&nat_.bool_) bool{};
-        ::new(&nat_.sp_)
+        ::new(&bool_) bool{};
+        ::new(&sp_)
             storage_ptr(std::move(sp));
         break;
 
     case json::kind::null:
-        ::new(&nat_.sp_)
+        ::new(&sp_)
             storage_ptr(std::move(sp));
         break;
     }
@@ -189,20 +188,18 @@ value(
         break;
 
     case json::kind::number:
-        ::new(&nat_.num_) number(
-            other.nat_.num_);
-        ::new(&nat_.sp_) storage_ptr(
-            std::move(sp));
+        ::new(&num_) number(
+            other.num_, std::move(sp));
         break;
 
     case json::kind::boolean:
-        nat_.bool_ = other.nat_.bool_;
-        ::new(&nat_.sp_) storage_ptr(
+        bool_ = other.bool_;
+        ::new(&sp_) storage_ptr(
             std::move(sp));
         break;
 
     case json::kind::null:
-        ::new(&nat_.sp_) storage_ptr(
+        ::new(&sp_) storage_ptr(
             std::move(sp));
         break;
     }
@@ -217,34 +214,33 @@ value(pilfered<value> p) noexcept
     {
     case json::kind::object:
         relocate(&obj_, other.obj_);
-        ::new(&other.nat_.sp_) storage_ptr;
+        ::new(&other.sp_) storage_ptr;
         break;
 
     case json::kind::array:
         relocate(&arr_, other.arr_);
-        ::new(&other.nat_.sp_) storage_ptr;
+        ::new(&other.sp_) storage_ptr;
         break;
 
     case json::kind::string:
         relocate(&str_, other.str_);
-        ::new(&other.nat_.sp_) storage_ptr;
+        ::new(&other.sp_) storage_ptr;
         break;
 
     case json::kind::number:
-        relocate(&nat_.num_, other.nat_.num_);
-        ::new(&nat_.sp_) storage_ptr(
-            std::move(other.nat_.sp_));
+        relocate(&num_, other.num_);
+        ::new(&other.sp_) storage_ptr;
         break;
 
     case json::kind::boolean:
-        nat_.bool_ = other.nat_.bool_;
-        ::new(&nat_.sp_) storage_ptr(
-            std::move(other.nat_.sp_));
+        bool_ = other.bool_;
+        ::new(&sp_) storage_ptr(
+            std::move(other.sp_));
         break;
 
     case json::kind::null:
-        ::new(&nat_.sp_) storage_ptr(
-            std::move(other.nat_.sp_));
+        ::new(&sp_) storage_ptr(
+            std::move(other.sp_));
         break;
     }
     kind_ = other.kind_;
@@ -272,21 +268,19 @@ value(value&& other) noexcept
         break;
 
     case json::kind::number:
-        ::new(&nat_.num_) number(
-            std::move(other.nat_.num_));
-        ::new(&nat_.sp_) storage_ptr(
-            other.nat_.sp_);
+        ::new(&num_) number(
+            std::move(other.num_));
         break;
 
     case json::kind::boolean:
-        nat_.bool_ = other.nat_.bool_;
-        ::new(&nat_.sp_) storage_ptr(
-            other.nat_.sp_);
+        bool_ = other.bool_;
+        ::new(&sp_) storage_ptr(
+            other.sp_);
         break;
 
     case json::kind::null:
-        ::new(&nat_.sp_) storage_ptr(
-            other.nat_.sp_);
+        ::new(&sp_) storage_ptr(
+            other.sp_);
         break;
     }
     kind_ = other.kind_;
@@ -318,20 +312,19 @@ value(
         break;
 
     case json::kind::number:
-        relocate(
-            &nat_.num_, other.nat_.num_);
-        ::new(&nat_.sp_) storage_ptr(
+        ::new(&num_) number(
+            std::move(other.num_),
             std::move(sp));
         break;
 
     case json::kind::boolean:
-        nat_.bool_ = other.nat_.bool_;
-        ::new(&nat_.sp_) storage_ptr(
+        bool_ = other.bool_;
+        ::new(&sp_) storage_ptr(
             std::move(sp));
         break;
 
     case json::kind::null:
-        ::new(&nat_.sp_) storage_ptr(
+        ::new(&sp_) storage_ptr(
             std::move(sp));
         break;
     }
@@ -428,9 +421,8 @@ value::
 value(number num) noexcept
     : kind_(json::kind::number)
 {
-    ::new(&nat_.num_) number(num);
-    ::new(&nat_.sp_) storage_ptr(
-        default_storage());
+    ::new(&num_) number(
+        std::move(num));
 }
 
 value::
@@ -439,8 +431,8 @@ value(
     storage_ptr sp)
     : kind_(json::kind::number)
 {
-    ::new(&nat_.num_) number(num);
-    ::new(&nat_.sp_) storage_ptr(
+    ::new(&num_) number(
+        std::move(num),
         std::move(sp));
 }
 
@@ -551,10 +543,16 @@ reset(json::kind k) noexcept
         }
 
         case json::kind::number:
+        {
+            sp = num_.release_storage();
+            num_.~number();
+            break;
+        }
+
         case json::kind::boolean:
         case json::kind::null:
         {
-            sp = std::move(nat_.sp_);
+            sp = std::move(sp_);
             this->~value();
             break;
         }
@@ -578,11 +576,11 @@ reset(json::kind k) noexcept
             break;
 
         case json::kind::number:
-            nat_.num_ = 0;
+            num_ = 0;
             break;
 
         case json::kind::boolean:
-            nat_.bool_ = false;
+            bool_ = false;
             break;
 
         case json::kind::null:
@@ -671,10 +669,13 @@ get_storage() const noexcept
     case json::kind::string:
         return str_.get_storage();
 
+    case json::kind::number:
+        return num_.get_storage();
+
     default:
         break;
     }
-    return nat_.sp_;
+    return sp_;
 }
 
 } // json
