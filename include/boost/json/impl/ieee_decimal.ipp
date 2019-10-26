@@ -11,6 +11,7 @@
 #define BOOST_JSON_IMPL_IEEE_DECIMAL_IPP
 
 #include <boost/json/detail/config.hpp>
+#include <boost/json/detail/math.hpp>
 
 namespace boost {
 namespace json {
@@ -32,10 +33,30 @@ double
 to_double(
     ieee_decimal const& dec) noexcept
 {
-    (void)dec;
-    return 0;
-}
+    auto const fp =
+        [](double m, int e) -> double
+    {
+        if(e < -308)
+            return 0.0;
+        if(e >= 0)
+            return m * detail::pow10(e);
+        else
+            return m / detail::pow10(-e);
+    };
 
+    double d = static_cast<
+        double>(dec.mantissa);
+    if(dec.exponent < -308)
+    {
+        d = fp(d, -308);
+        d = fp(d, dec.exponent + 308);
+    }
+    else
+    {
+        d = fp(d, dec.exponent);
+    }
+    return d;
+}
 
 } // json
 } // boost

@@ -258,12 +258,6 @@ public:
     void
     run()
     {
-        parse_vectors const pv;
-        auto jv = parse(pv.begin()->text);
-        auto s = to_string(jv);
-        error_code ec;
-        auto jv2 = parse(s, ec);
-        BEAST_EXPECTS(! ec, ec.message());
         testSerializer();
         doTestStrings();
         doTestVectors();

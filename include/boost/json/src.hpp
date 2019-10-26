@@ -36,6 +36,7 @@ the program, with the macro BOOST_BEAST_SPLIT_COMPILATION defined.
 #include <boost/json/impl/value.ipp>
 
 #include <boost/json/detail/iterator.ipp>
+#include <boost/json/detail/ieee_parser.ipp>
 #include <boost/json/detail/ryu/impl/f2s.ipp>
 #include <boost/json/detail/ryu/impl/d2s.ipp>
 #include <boost/json/detail/ryu/impl/d2fixed.ipp>

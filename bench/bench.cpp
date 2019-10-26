@@ -408,16 +408,11 @@ load_file(char const* path)
     return s;
 }
 
-void
-study();
-
 int
 main(
     int const argc,
     char const* const* const argv)
 {
-    study();
-
     if(argc > 1)
     {
         std::vector<std::string> vs;
@@ -483,13 +478,5 @@ main(
     }
 
     return 0;
-}
-
-void
-study()
-{
-    json::string_view js = "[\"\xFF""\"]";
-    rapidjson::Document d;
-    d.Parse(js.data(), js.size());
 }
 

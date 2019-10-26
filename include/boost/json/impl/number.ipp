@@ -202,23 +202,6 @@ operator=(number const& other)
 number::
 number(ieee_decimal const& dec) noexcept
 {
-    auto const as_double =
-        [&]
-        {
-            double d;
-            if(dec.exponent >= 0)
-                d = static_cast<
-                    double>(dec.mantissa) *
-                    std::pow(10., dec.exponent);
-            else
-                d = static_cast<
-                    double>(dec.mantissa) /
-                    std::pow(10., -dec.exponent);
-            if(dec.sign)
-                d *= -1;
-            return d;
-        };
-
     if(dec.exponent == 0)
     {
         if(! dec.sign)
@@ -233,12 +216,12 @@ number(ieee_decimal const& dec) noexcept
         }
         else
         {
-            assign_impl(as_double());
+            assign_impl(to_double(dec));
         }
     }
     else
     {
-        auto const d = as_double();
+        auto const d = to_double(dec);
         if(! dec.sign)
         {
             auto v = static_cast<unsigned long long>(d);

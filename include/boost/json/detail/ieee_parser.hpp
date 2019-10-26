@@ -24,17 +24,19 @@ class ieee_parser
     enum class state
     {
         init,
-        mant,
-        frac1,
+        mant1, mant2,
+        frac1, frac2, frac3,
+        exp1,  exp2,  exp3,  exp4, exp5,
         done
     };
 
     ieee_decimal dec_;
-    state state_;
+    short off_;
+    state st_;
 
 public:
     ieee_parser()
-        : state_(state::init)
+        : st_(state::init)
     {
     }
 
@@ -47,53 +49,37 @@ public:
     bool
     is_done() const noexcept
     {
-        return state_ == state::done;
+        return st_ == state::done;
     }
 
     void
     reset()
     {
-        state_ = state::init;
+        st_ = state::init;
     }
 
+    BOOST_JSON_DECL
     bool
-    maybe_parse(char ch) noexcept
-    {
-        if(ch != '-')
-        {
-            dec_.mantissa = 0;
-            dec_.exponent = 0;
-            dec_.sign = true;
-            state_ = state::mant;
-            return true;
-        }
-        ch = ch - '0';
-        if(static_cast<
-            unsigned char>(ch) > 9)
-            return false;
-        dec_.mantissa = ch;
-        dec_.exponent = 0;
-        dec_.sign = false;
-        if(ch == '0')
-            state_ = state::frac1;
-        else
-            state_ = state::mant;
-        return true;
-    }
+    maybe_init(char ch) noexcept;
 
+    BOOST_JSON_DECL
     std::size_t
     write_some(
         char const* data,
         std::size_t size,
-        error_code& ec) noexcept
-    {
-        auto p = data;
-        auto const p0 = data;
-        auto const p1 = data + size;
-        ec = {};
-    loop:
-        return 0;
-    }
+        error_code& ec) noexcept;
+
+    BOOST_JSON_DECL
+    std::size_t
+    write(
+        char const* data,
+        std::size_t size,
+        error_code& ec) noexcept;
+
+    BOOST_JSON_DECL
+    void
+    write_eof(
+        error_code& ec) noexcept;
 };
 
 } // detail
@@ -101,7 +87,7 @@ public:
 } // boost
 
 #ifdef BOOST_JSON_HEADER_ONLY
-#include <boost/json/impl/ieee_decimal.ipp>
+#include <boost/json/detail/ieee_parser.ipp>
 #endif
 
 #endif

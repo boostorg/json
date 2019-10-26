@@ -14,6 +14,7 @@
 #include <boost/json/error.hpp>
 #include <boost/json/ieee_decimal.hpp>
 #include <boost/json/detail/basic_parser.hpp>
+#include <boost/json/detail/ieee_parser.hpp>
 #include <boost/json/detail/stack.hpp>
 #include <boost/json/detail/string.hpp>
 #include <cstdint>
@@ -33,23 +34,11 @@ class basic_parser
 {
     enum class state : char;
 
-    ieee_decimal num_;
+    detail::ieee_parser iep_;
     unsigned top_ = 0;
     long u0_;
     unsigned short u_;
-    char efrac_;
-    bool esign_;
     bool is_key_;
-
-    inline
-    bool
-    append_mantissa(
-        char digit) noexcept;
-
-    inline
-    bool
-    append_exponent(
-        char digit) noexcept;
 
 public:
     virtual

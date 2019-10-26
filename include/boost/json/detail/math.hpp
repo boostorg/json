@@ -10,6 +10,8 @@
 #ifndef BOOST_JSON_DETAIL_MATH_HPP
 #define BOOST_JSON_DETAIL_MATH_HPP
 
+#include <boost/json/detail/assert.hpp>
+
 namespace boost {
 namespace json {
 namespace detail {

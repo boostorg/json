@@ -71,13 +71,10 @@ enum class basic_parser::state : char
     u_esc1,  u_esc2,  u_esc3,  u_esc4,
     u_pair1, u_pair2,
     u_surr,
-    
-    num_mant1,      num_mant2,
-    num_frac1,      num_frac2,      num_frac3,
-    num_exp,        num_exp_sign,
-    num_exp_dig1,   num_exp_dig2,   num_end,
 
-    end
+    num,
+
+    done0, done
 };
 
 //----------------------------------------------------------
@@ -175,63 +172,16 @@ reset()
 
 //----------------------------------------------------------
 
-// Append the digit to the
-// value, which must be unsigned.
-// Returns `false` on overflow.
-bool
-basic_parser::
-append_mantissa(
-    char digit) noexcept
-{
-    decltype(num_.mantissa) temp =
-        num_.mantissa * 10;
-    if(temp < num_.mantissa)
-        return false;
-    decltype(num_.mantissa) result =
-        temp + digit;
-    if(result < temp)
-        return false;
-    num_.mantissa = result;
-    return true;
-}
-
-// Append the digit to the signed exponent
-bool
-basic_parser::
-append_exponent(
-    char digit) noexcept
-{
-    if(! esign_)
-    {
-        decltype(num_.exponent) temp =
-            num_.exponent * 10 + digit;
-        if(temp >= num_.exponent)
-        {
-            num_.exponent = temp;
-            return true;
-        }
-        return false;
-    }
-    decltype(num_.exponent) temp =
-        num_.exponent * 10 - digit;
-    // VFALCO TODO check for overflow
-    num_.exponent = temp;
-    return true;
-}
-
-//----------------------------------------------------------
-
 std::size_t
 basic_parser::
 write_some(
-    char const* data,
-    std::size_t size,
+    char const* const data,
+    std::size_t const size,
     error_code& ec)
 {
-    auto p = static_cast<char const*>(data);
-    auto n = size;
+    auto p = data;
     auto const p0 = p;
-    auto const p1 = p0 + n;
+    auto const p1 = p0 + size;
     detail::buffer<2048> temp;
     stack_impl st;
     ec = {};
@@ -281,7 +231,7 @@ write_some(
         this->on_document_begin(ec);
         if(ec)
             goto finish;
-        st.push(state::end);
+        st.push(state::done0);
         st.push(state::ws);
         st.push(state::value);
         st.push(state::ws);
@@ -290,11 +240,6 @@ write_some(
         goto loop_ws;
     }
 
-    if(st.front() == state::end)
-    {
-        ec = error::illegal_extra_chars;
-        goto finish;
-    }
 loop:
     switch(st.front())
     {
@@ -346,35 +291,6 @@ loop_ws:
         case '"':
             st.front() = state::string1;
             goto loop_string;
-
-        // number
-        case '-':
-            ++p;
-            num_.mantissa = 0;
-            num_.exponent = 0;
-            num_.sign = true;
-            efrac_ = 0;
-            st.front() = state::num_mant1;
-            goto loop_mant;
-
-        case '0':
-            ++p;
-            num_.mantissa = 0;
-            num_.exponent = 0;
-            num_.sign = false;
-            efrac_ = 0;
-            st.front() = state::num_frac1;
-            goto loop_frac;
-
-        case '1': case '2': case '3':
-        case '4': case '5': case '6':
-        case '7': case '8': case '9':
-            num_.mantissa = 0;
-            num_.exponent = 0;
-            num_.sign = false;
-            efrac_ = 0;
-            st.front() = state::num_mant2;
-            goto loop_mant;
 
         // true
         case 't':
@@ -444,6 +360,12 @@ loop_ws:
             goto loop;
 
         default:
+            if(iep_.maybe_init(*p))
+            {
+                ++p;
+                st.front() = state::num;
+                goto loop_num;
+            }
             ec = error::illegal_char;
             goto finish;
         }
@@ -911,6 +833,32 @@ loop_string:
         goto loop;
 
     //------------------------------------------------------
+    //
+    // number
+    //
+    case state::num:
+    {
+loop_num:
+        if(p >= p1)
+            break;
+        p += iep_.write_some(
+            p, p1 - p, ec);
+        if(ec)
+            goto finish;
+        if(iep_.is_done())
+        {
+            this->on_number(
+                iep_.get(), ec);
+            if(ec)
+                goto finish;
+            st.pop();
+            goto loop;
+        }
+        BOOST_JSON_ASSERT(p == p1);
+        break;
+    }
+
+    //------------------------------------------------------
 
     //
     // true
@@ -1054,160 +1002,16 @@ loop_string:
         goto loop;
 
     //
-    // number
+    // done
     //
 
-    // 
-    case state::num_mant1:
-loop_mant:
-        if(p >= p1)
-            break;
-        if(is_digit(*p))
-        {
-            if(*p != '0')
-            {
-                st.front() = state::num_mant2;
-                goto loop;
-            }
-            ++p;
-            st.front() = state::num_frac1;
-            goto loop;
-        }
-        // expected mantissa digit
-        ec = error::expected_mantissa;
-        goto finish;
-
-    case state::num_mant2:
-        while(p < p1)
-        {
-            if(! is_digit(*p))
-            {
-                st.front() = state::num_frac1;
-                goto loop;
-            }
-            if(! append_mantissa(*p++ - '0'))
-            {
-                ec = error::mantissa_overflow;
-                goto finish;
-            }
-        }
+    case state::done0:
+        st.front() = state::done;
         break;
 
-    case state::num_frac1:
-loop_frac:
-        if(p >= p1)
-            break;
-        if(*p == '.')
-        {
-            ++p;
-            st.front() = state::num_frac2;
-            goto loop;
-        }
-        if(is_digit(*p))
-        {
-            // unexpected digit after zero
-            ec = error::illegal_extra_digits;
-            goto finish;
-        }
-        st.front() = state::num_exp;
-        goto loop;
-
-    case state::num_frac2:
-        if(p >= p1)
-            break;
-        if(! is_digit(*p))
-        {
-            // expected mantissa fraction digit
-            ec = error::expected_fraction;
-            goto finish;
-        }
-        st.front() = state::num_frac3;
-        goto loop;
-
-    case state::num_frac3:
-        while(p < p1)
-        {
-            if(! is_digit(*p))
-            {
-                st.front() = state::num_exp;
-                goto loop;
-            }
-            if(! append_mantissa(*p++ - '0'))
-            {
-                ec = error::mantissa_overflow;
-                goto finish;
-            }
-            ++efrac_;
-        }
+    case state::done:
+        ec = error::illegal_extra_chars;
         break;
-
-    case state::num_exp:
-        BOOST_JSON_ASSERT(p < p1);
-        if(*p != 'e' && *p != 'E')
-            goto loop_num_end;
-        ++p;
-        st.front() = state::num_exp_sign;
-        BOOST_FALLTHROUGH;
-
-    case state::num_exp_sign:
-        if(p >= p1)
-            break;
-        if(*p == '-')
-        {
-            ++p;
-            esign_ = true;
-        }
-        else
-        {
-            if(*p == '+')
-                ++p;
-            esign_ = false;
-        }
-        st.front() = state::num_exp_dig1;
-        BOOST_FALLTHROUGH;
-
-    case state::num_exp_dig1:
-        if(p >= p1)
-            break;
-        if(! is_digit(*p))
-        {
-            // expected exponent digit
-            ec = error::expected_exponent;
-            goto finish;
-        }
-        st.front() = state::num_exp_dig2;
-        goto loop;
-
-    case state::num_exp_dig2:
-        while(p < p1)
-        {
-            if(! is_digit(*p))
-                goto loop_num_end;
-            if(! append_exponent(*p++ - '0'))
-            {
-                ec = error::exponent_overflow;
-                goto finish;
-            }
-        }
-        break;
-
-    case state::num_end:
-loop_num_end:
-        // NOTE this code is
-        // repeated in write_eof.
-        num_.exponent -= efrac_;
-        this->on_number(num_, ec);
-        if(ec)
-            goto finish;
-        st.pop();
-        goto loop;
-
-    //
-    // (end)
-    //
-
-    case state::end:
-        goto finish;
     }
 
 finish:
@@ -1225,27 +1029,24 @@ write(
     std::size_t size,
     error_code& ec)
 {
-    if(top_ == 1) // state::end
+    if(top_ == 1 && size > 0) // state::done
     {
-        if(size == 0)
-            ec = {};
-        else
-            ec = error::illegal_extra_chars;
+        ec = error::illegal_extra_chars;
         return 0;
     }
-    auto bytes_used =
+    auto n =
         write_some(data, size, ec);
     if(! ec)
     {
         write_eof(ec);
         if(! ec)
         {
-            if( bytes_used < size ||
+            if( n < size ||
                 ec == error::illegal_char)
                 ec = error::illegal_extra_chars;
         }
     }
-    return bytes_used;
+    return n;
 }
 
 //----------------------------------------------------------
@@ -1254,20 +1055,6 @@ void
 basic_parser::
 write_eof(error_code& ec)
 {
-    // write a null, this is invalid no matter
-    // what state we are in, to get a descriptive
-    // error.
-    //
-    // VFALCO we might want to return error::partial_data
-
-    auto const fail =
-        [this, &ec]
-        {
-            char c = 0;
-            write_some(&c, 1, ec);
-            BOOST_JSON_ASSERT(ec);
-        };
-
     stack_impl st;
     {
         stack si;
@@ -1280,32 +1067,28 @@ write_eof(error_code& ec)
         ec = error::syntax;
         return;
     }
-    while(st.front() != state::end)
+    for(;;)
     {
         // pop all states that
         // allow "" (empty string)
         switch(st.front())
         {
-        case state::num_mant2:
-        case state::num_frac1:
-        case state::num_frac3:
-        case state::num_exp:
-        case state::num_exp_dig2:
-            num_.exponent -= efrac_;
-            this->on_number(num_, ec);
+        case state::ws:
+            st.pop();
+            break;
+
+        case state::num:
+            iep_.write_eof(ec);
+            if(! ec)
+                this->on_number(
+                    iep_.get(), ec);
             if(ec)
                 return;
             st.pop();
             break;
 
-        case state::num_end:
-            // should never get here
-            BOOST_JSON_ASSERT(false);
-            st.pop();
-            break;
-
-        case state::ws:
-            st.pop();
+        case state::done0:
+            st.front() = state::done;
             break;
 
         case state::value:
@@ -1335,19 +1118,14 @@ write_eof(error_code& ec)
         case state::u_pair1:
         case state::u_pair2:
         case state::u_surr:
-        case state::num_mant1:
-        //case state::num_mant2:
-        //case state::num_frac1:
-        case state::num_frac2:
-        //case state::num_frac3:
-        //case state::num_exp:
-        case state::num_exp_sign:
-        case state::num_exp_dig1:
-        //case state::num_exp_dig2:
             ec = error::syntax;
             return;
+
+        case state::done:
+            goto finish;
         }
     }
+finish:
     ec = {};
 }
 
