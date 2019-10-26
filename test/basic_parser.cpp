@@ -46,11 +46,13 @@ public:
                     throw_parser p(j);
                     try
                     {
-                        p.write_some(
+                        auto const n = p.write_some(
                             input.data(), i, ec);
                         if(! ec)
-                            p.write(input.data() + i,
-                                input.size() - i, ec);
+                        {
+                            p.write(input.data() + n,
+                                input.size() - n, ec);
+                        }
                         if(ec)
                             BEAST_EXPECTS(
                                 ec == ex, std::string(input) +
@@ -74,15 +76,14 @@ public:
                         break;
                     error_code ec;
                     fail_parser p(j);
-                    {
-                        p.write_some(input.data(), i, ec);
-                        if(ec == error::test_failure)
-                            continue;
-                    }
+                    auto n = p.write_some(
+                        input.data(), i, ec);
+                    if(ec == error::test_failure)
+                        continue;
                     if(! ec)
                     {
-                        p.write_some(input.data() + i,
-                            input.size() - i, ec);
+                        p.write_some(input.data() + n,
+                            input.size() - n, ec);
                         if(ec == error::test_failure)
                             continue;
                     }

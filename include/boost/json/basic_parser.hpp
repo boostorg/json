@@ -71,14 +71,14 @@ public:
     BOOST_JSON_DECL
     std::size_t
     write_some(
-        void const* data,
+        char const* data,
         std::size_t size,
         error_code& ec);
 
     BOOST_JSON_DECL
     std::size_t
     write(
-        void const* data,
+        char const* data,
         std::size_t size,
         error_code& ec);
 

@@ -9,6 +9,7 @@
 
 // Test that header file is self-contained.
 #include <boost/json/ieee_decimal.hpp>
+#include <boost/json/detail/ieee_parser.hpp>
 
 #include <boost/beast/_experimental/unit_test/suite.hpp>
 #include <type_traits>

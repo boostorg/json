@@ -224,7 +224,7 @@ append_exponent(
 std::size_t
 basic_parser::
 write_some(
-    void const* data,
+    char const* data,
     std::size_t size,
     error_code& ec)
 {
@@ -290,7 +290,11 @@ write_some(
         goto loop_ws;
     }
 
-    BOOST_JSON_ASSERT(st.front() != state::end);
+    if(st.front() == state::end)
+    {
+        ec = error::illegal_extra_chars;
+        goto finish;
+    }
 loop:
     switch(st.front())
     {
@@ -1203,13 +1207,7 @@ loop_num_end:
     //
 
     case state::end:
-        if(p < p1)
-        {
-            // unexpected extra characters
-            ec = error::illegal_extra_chars;
-            goto finish;
-        }
-        break;
+        goto finish;
     }
 
 finish:
@@ -1223,10 +1221,18 @@ finish:
 std::size_t
 basic_parser::
 write(
-    void const* data,
+    char const* data,
     std::size_t size,
     error_code& ec)
 {
+    if(top_ == 1) // state::end
+    {
+        if(size == 0)
+            ec = {};
+        else
+            ec = error::illegal_extra_chars;
+        return 0;
+    }
     auto bytes_used =
         write_some(data, size, ec);
     if(! ec)
@@ -1292,12 +1298,54 @@ write_eof(error_code& ec)
             st.pop();
             break;
 
+        case state::num_end:
+            // should never get here
+            BOOST_JSON_ASSERT(false);
+            st.pop();
+            break;
+
         case state::ws:
             st.pop();
             break;
 
-        default:
-            return fail();
+        case state::value:
+        case state::object1:
+        case state::object2:
+        case state::colon:
+        case state::array1:
+        case state::array2:
+        case state::string1:
+        case state::string2:
+        case state::string3:
+        case state::string4:
+        case state::true1:
+        case state::true2:
+        case state::true3:
+        case state::false1:
+        case state::false2:
+        case state::false3:
+        case state::false4:
+        case state::null1:
+        case state::null2:
+        case state::null3:
+        case state::u_esc1:
+        case state::u_esc2:
+        case state::u_esc3:
+        case state::u_esc4:
+        case state::u_pair1:
+        case state::u_pair2:
+        case state::u_surr:
+        case state::num_mant1:
+        //case state::num_mant2:
+        //case state::num_frac1:
+        case state::num_frac2:
+        //case state::num_frac3:
+        //case state::num_exp:
+        case state::num_exp_sign:
+        case state::num_exp_dig1:
+        //case state::num_exp_dig2:
+            ec = error::syntax;
+            return;
         }
     }
     ec = {};
