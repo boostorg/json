@@ -119,7 +119,8 @@ loop:
             goto loop;
 
         case kind::number:
-            if(p1 - p >= number::max_string_chars + 1)
+            if(static_cast<std::size_t>(
+                p1 - p) >= number::max_string_chars + 1)
             {
                 p += e.value->if_number()->print(
                     p, p1 - p).size();

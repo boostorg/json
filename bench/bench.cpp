@@ -476,23 +476,33 @@ load_file(char const* path)
     return s;
 }
 
+struct file_item
+{
+    string_view name;
+    std::string text;
+};
+
+using file_list = std::vector<file_item>;
+
 void
 benchParse(
-    std::vector<std::string> const& vs,
+    file_list const& vs,
     std::vector<std::unique_ptr<
         any_impl const>> const& vi)
 {
-    for(int i = 0; i < vs.size(); ++i)
+    for(unsigned i = 0; i < vs.size(); ++i)
     {
-        dout << "File " + std::to_string(i+1) +
-            " (" + std::to_string(vs[i].size()) + " bytes)" <<
-            std::endl;
-        for(int j = 0; j < vi.size(); ++j)
+        dout <<
+            "Parse File " << std::to_string(i+1) <<
+                " " << vs[i].name << " (" <<
+                std::to_string(vs[i].text.size()) << " bytes)" <<
+                std::endl;
+        for(unsigned j = 0; j < vi.size(); ++j)
         {
-            for(int k = 0; k < 3; ++k)
+            for(unsigned k = 0; k < 3; ++k)
             {
                 auto const when = clock_type::now();
-                vi[j]->parse(vs[i], 100);
+                vi[j]->parse(vs[i].text, 250);
                 auto const ms = std::chrono::duration_cast<
                     std::chrono::milliseconds>(
                     clock_type::now() - when).count();
@@ -506,21 +516,23 @@ benchParse(
 
 void
 benchSerialize(
-    std::vector<std::string> const& vs,
+    file_list const& vs,
     std::vector<std::unique_ptr<
         any_impl const>> const& vi)
 {
-    for(int i = 0; i < vs.size(); ++i)
+    for(unsigned i = 0; i < vs.size(); ++i)
     {
-        dout << "File " + std::to_string(i+1) +
-            " (" + std::to_string(vs[i].size()) + " bytes)" <<
-            std::endl;
-        for(int j = 0; j < vi.size(); ++j)
+        dout <<
+            "Serialize File " << std::to_string(i+1) <<
+                " " << vs[i].name << " (" <<
+                std::to_string(vs[i].text.size()) << " bytes)" <<
+                std::endl;
+        for(unsigned j = 0; j < vi.size(); ++j)
         {
-            for(int k = 0; k < 3; ++k)
+            for(unsigned k = 0; k < 3; ++k)
             {
                 auto const when = clock_type::now();
-                vi[j]->serialize(vs[i], 1000);
+                vi[j]->serialize(vs[i].text, 200);
                 auto const ms = std::chrono::duration_cast<
                     std::chrono::milliseconds>(
                     clock_type::now() - when).count();
@@ -537,12 +549,14 @@ main(
     int const argc,
     char const* const* const argv)
 {
-    std::vector<std::string> vs;
+    file_list vs;
     if(argc > 1)
     {
         vs.reserve(argc - 1);
         for(int i = 1; i < argc; ++i)
-            vs.emplace_back(load_file(argv[i]));
+            vs.emplace_back(
+                file_item{argv[i],
+                load_file(argv[i])});
     }
 
     std::vector<std::unique_ptr<any_impl const>> vi;
@@ -552,7 +566,7 @@ main(
     //vi.emplace_back(new nlohmann_impl);
 
     benchParse(vs, vi);
-    //benchSerialize(vs, vi);
+    benchSerialize(vs, vi);
 
     return 0;
 }

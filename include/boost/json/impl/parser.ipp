@@ -36,7 +36,7 @@ assign(T&& t)
     else if(stack_.front()->is_array())
     {
         BOOST_JSON_ASSERT(s_.empty());
-        jv.as_array().emplace_back(
+        jv.if_array()->emplace_back(
             std::forward<T>(t));
     }
     else
@@ -159,10 +159,10 @@ on_object_begin(error_code& ec)
     }
     else if(jv.is_array())
     {
-        jv.as_array().emplace_back(
+        jv.if_array()->emplace_back(
             kind::object);
         stack_.push(
-            &jv.as_array().back());
+            &jv.if_array()->back());
     }
     else
     {
@@ -207,10 +207,10 @@ on_array_begin(error_code& ec)
     else if(jv.is_array())
     {
         BOOST_JSON_ASSERT(s_.empty());
-        jv.as_array().emplace_back(
+        jv.if_array()->emplace_back(
             kind::array);
         stack_.push(
-            &jv.as_array().back());
+            &jv.if_array()->back());
     }
     else
     {
@@ -257,8 +257,9 @@ on_key_end(
         s_.append(s.data(), s.size());
         s = {s_.data(), s_.size()};
     }
-    auto const result = jv.as_object().emplace(
-        s, kind::null);
+    auto const result =
+        jv.if_object()->emplace(
+            s, kind::null);
     // overwrite duplicate keys
     if(! result.second)
         result.first->second.emplace_null();
@@ -284,10 +285,10 @@ on_string_data(
         else if(stack_.front()->is_array())
         {
             BOOST_JSON_ASSERT(s_.empty());
-            jv.as_array().emplace_back(kind::string);
+            jv.if_array()->emplace_back(kind::string);
             stack_.push(
-                &jv.as_array().back());
-            stack_.front()->as_string().append(
+                &jv.if_array()->back());
+            stack_.front()->if_string()->append(
                 s.data(), s.size());
         }
         else
@@ -299,7 +300,7 @@ on_string_data(
     }
     else
     {
-        stack_.front()->as_string().append(
+        stack_.front()->if_string()->append(
             s.data(), s.size());
     }
 }
@@ -338,7 +339,7 @@ on_number(ieee_decimal dec, error_code&)
     else if(stack_.front()->is_array())
     {
         BOOST_JSON_ASSERT(s_.empty());
-        jv.as_array().emplace_back(
+        jv.if_array()->emplace_back(
             std::move(n));
     }
     else
@@ -359,7 +360,22 @@ void
 parser::
 on_null(error_code&)
 {
-    assign(nullptr);
+    auto& jv = *stack_.front();
+    BOOST_JSON_ASSERT(! jv.is_object());
+    if(obj_)
+    {
+        BOOST_JSON_ASSERT(jv.is_null());
+        stack_.pop();
+    }
+    else if(stack_.front()->is_array())
+    {
+        BOOST_JSON_ASSERT(s_.empty());
+        jv.if_array()->emplace_back(kind::null);
+    }
+    else
+    {
+        BOOST_JSON_ASSERT(jv.is_null());
+    }
 }
 
 //----------------------------------------------------------
