@@ -34,7 +34,9 @@ add_executable (json-tests
     assign_string.cpp
     assign_vector.cpp
     basic_parser.cpp
+    block_storage.cpp
     error.cpp
+    fixed_storage.cpp
     ieee_decimal.cpp
     json.cpp
     kind.cpp

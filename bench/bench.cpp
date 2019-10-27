@@ -114,7 +114,11 @@ public:
         int repeat) const override
     {
         while(repeat--)
-            json::parse(s);
+        {
+            auto sp = json::make_storage<
+                json::block_storage>();
+            json::parse(s, sp);
+        }
     }
 
     void

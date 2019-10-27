@@ -11,7 +11,10 @@
 #define BOOST_JSON_FIXED_STORAGE_HPP
 
 #include <boost/json/detail/config.hpp>
+#include <boost/json/detail/assert.hpp>
 #include <boost/json/storage.hpp>
+#include <cstddef>
+#include <memory>
 #include <stdexcept>
 
 namespace boost {
@@ -21,22 +24,32 @@ namespace json {
 */
 class fixed_storage : public storage
 {
-    char* const base_;
     std::size_t const size_;
+    char* const base_;
     std::size_t used_ = 0;
     std::size_t refs_ = 0;
 
 public:
     ~fixed_storage()
     {
-        delete[] base_;
+        std::allocator<
+            char>{}.deallocate(base_, size_);
     }
 
     explicit
     fixed_storage(
         std::size_t bytes)
-        : base_(new char[bytes])
-        , size_(bytes)
+        : size_(
+            [bytes]
+            {
+                auto const align =
+                    sizeof(std::max_align_t) - 1;
+                if(bytes & align)
+                    return bytes | align;
+                return bytes;
+            }())
+        , base_(std::allocator<
+            char>{}.allocate(size_))
     {
     }
 
@@ -46,6 +59,7 @@ protected:
         std::size_t n,
         std::size_t align) override
     {
+        (void)align;
         // must be power of 2
         BOOST_JSON_ASSERT(
             (align & (align - 1)) == 0);

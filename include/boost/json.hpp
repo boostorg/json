@@ -14,6 +14,7 @@
 #include <boost/json/assign_string.hpp>
 #include <boost/json/assign_vector.hpp>
 #include <boost/json/basic_parser.hpp>
+#include <boost/json/block_storage.hpp>
 #include <boost/json/error.hpp>
 #include <boost/json/fixed_storage.hpp>
 #include <boost/json/ieee_decimal.hpp>

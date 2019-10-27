@@ -12,6 +12,7 @@
 
 #include <boost/json/parser.hpp>
 #include <boost/json/error.hpp>
+#include <boost/json/block_storage.hpp>
 #include <boost/json/detail/assert.hpp>
 #include <stdexcept>
 #include <utility>
@@ -54,6 +55,8 @@ parser::
 
 parser::
 parser()
+    : jv_(make_storage<
+        block_storage>())
 {
 }
 
