@@ -49,11 +49,11 @@ node(
         if(v->is_object())
             ::new(&obj_it)
                 object::const_iterator(
-                    v->as_object().begin());
+                    v->if_object()->begin());
         else
             ::new(&arr_it)
                 array::const_iterator(
-                    v->as_array().begin());
+                    v->if_array()->begin());
     }
 }
 
@@ -83,25 +83,90 @@ last() const noexcept
         return true;
     if(v->is_object())
         return obj_it ==
-            v->as_object().end();
+            v->if_object()->end();
     return arr_it ==
-        v->as_array().end();
+        v->if_array()->end();
 }
 
 //----------------------------------------------------------
 
 const_iterator::
 const_iterator(
-    value const& jv)
+    value const& jv) noexcept
 {
     stack_.emplace_front(
         jv, false);
+    setup();
 }
 
-auto
+bool
 const_iterator::
-operator*() const noexcept ->
-    value_type
+at_end() const noexcept
+{
+    return stack_.empty();
+}
+
+const_iterator&
+const_iterator::
+operator++() noexcept
+{
+    {
+        auto& n = stack_.front();
+        if(! n.it)
+        {
+            if(n.v->is_structured())
+            {
+                stack_.pop();
+                stack_.emplace_front(
+                    *n.v, true);
+            }
+            else
+            {
+                stack_.pop();
+            }
+        }
+        else if(n.v->is_object())
+        {
+            if(n.obj_it ==
+                n.v->if_object()->end())
+            {
+                stack_.pop();
+            }
+            else
+            {
+                auto const& jv =
+                    n.obj_it->second;
+                if(jv.is_structured())
+                    stack_.emplace_front(
+                        jv, true);
+                ++n.obj_it;
+            }
+        }
+        else
+        {
+            if(n.arr_it ==
+                n.v->if_array()->end())
+            {
+                stack_.pop();
+            }
+            else
+            {
+                auto const& jv = *n.arr_it;
+                if(jv.is_structured())
+                    stack_.emplace_front(
+                        jv, true);
+                ++n.arr_it;
+            }
+        }
+    }
+    if(! stack_.empty())
+        setup();
+    return *this;
+}
+
+void
+const_iterator::
+setup() noexcept
 {
     auto const& n = stack_.front();
     if(! n.it)
@@ -109,140 +174,57 @@ operator*() const noexcept ->
         BOOST_JSON_ASSERT(
             stack_.size() == 1);
         BOOST_JSON_ASSERT(n.key.empty());
-        return {
-            stack_.size() - 1,
-            "",
-            *n.v,
-            false,
-            true,
-            false };
+        v_.depth =  stack_.size() - 1,
+        v_.key = "";
+        v_.value = n.v;
+        v_.has_key = false;
+        v_.last = true;
+        v_.end = false;
+        return;
     }
     BOOST_JSON_ASSERT(n.v->is_structured());
     if(n.v->is_object())
     {
         if(n.obj_it !=
-            n.v->as_object().end())
-            return {
-                stack_.size(),
-                n.obj_it->first,
-                n.obj_it->second,
-                true,
-                std::next(n.obj_it) ==
-                    n.v->as_object().end(),
-                false };
-        return {
-            stack_.size() - 1,
-            "",
-            *n.v,
-            true,
-            stack_.size() == 1
-                || stack_[1].last(),
-            true};
+            n.v->if_object()->end())
+        {
+            v_.depth = stack_.size();
+            v_.key = n.obj_it->first;
+            v_.value = &n.obj_it->second;
+            v_.has_key = true;
+            v_.last = std::next(n.obj_it) ==
+                n.v->if_object()->end();
+            v_.end = false;
+            return;
+        }
+        v_.depth = stack_.size() - 1;
+        v_.key = "";
+        v_.value = n.v;
+        v_.has_key = true;
+        v_.last = stack_.size() == 1
+            || stack_[1].last();
+        v_.end = true;
+        return;
     }
     if(n.arr_it !=
-        n.v->as_array().end())
-        return {
-            stack_.size(),
-            "",
-            *n.arr_it,
-            false,
-            std::next(n.arr_it) ==
-                n.v->as_array().end(),
-            false };
-    return {
-        stack_.size() - 1,
-        "",
-        *n.v,
-        false,
-        stack_.size() == 1
-            || stack_[1].last(),
-        true};
-}
-
-const_iterator&
-const_iterator::
-operator++() noexcept
-{
-    auto& n = stack_.front();
-    if(! n.it)
+        n.v->if_array()->end())
     {
-        if(n.v->is_structured())
-        {
-            stack_.pop();
-            stack_.emplace_front(
-                *n.v, true);
-        }
-        else
-        {
-            stack_.pop();
-        }
+        v_.depth = stack_.size();
+        v_.key = "";
+        v_.value = n.arr_it;
+        v_.has_key = false;
+        v_.last = std::next(n.arr_it) ==
+            n.v->if_array()->end();
+        v_.end = false;
+        return;
     }
-    else if(n.v->is_object())
-    {
-        if(n.obj_it ==
-            n.v->as_object().end())
-        {
-            stack_.pop();
-        }
-        else
-        {
-            auto const& jv =
-                n.obj_it->second;
-            if(jv.is_structured())
-                stack_.emplace_front(
-                    jv, true);
-            ++n.obj_it;
-        }
-    }
-    else
-    {
-        if(n.arr_it ==
-            n.v->as_array().end())
-        {
-            stack_.pop();
-        }
-        else
-        {
-            auto const& jv = *n.arr_it;
-            if(jv.is_structured())
-                stack_.emplace_front(
-                    jv, true);
-            ++n.arr_it;
-        }
-    }
-    return *this;
-}
-
-bool
-operator==(
-    const_iterator const& lhs,
-    const_iterator::end_t) noexcept
-{
-    return lhs.stack_.empty();
-}
-
-bool
-operator==(
-    const_iterator::end_t,
-    const_iterator const& rhs) noexcept
-{
-    return rhs.stack_.empty();
-}
-
-bool
-operator!=(
-    const_iterator const& lhs,
-    const_iterator::end_t) noexcept
-{
-    return ! lhs.stack_.empty();
-}
-
-bool
-operator!=(
-    const_iterator::end_t,
-    const_iterator const& rhs) noexcept
-{
-    return ! rhs.stack_.empty();
+    v_.depth = stack_.size() - 1;
+    v_.key = "";
+    v_.value = n.v;
+    v_.has_key = false;
+    v_.last = stack_.size() == 1
+        || stack_[1].last();
+    v_.end = true;
 }
 
 } // detail

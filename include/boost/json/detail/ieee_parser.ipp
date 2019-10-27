@@ -88,7 +88,7 @@ loop:
             }
             dec_.mantissa = d;
             st_ = state::mant2;
-            goto loop;
+            BOOST_FALLTHROUGH;
         }
 
     // zero or more digits
@@ -135,15 +135,15 @@ loop:
             st_ = state::exp1;
             goto loop;
         }
-        if(*p == '.')
+        if(*p != '.')
         {
-            ++p;
-            st_ = state::frac2;
-            goto loop;
+            dec_.exponent = off_;
+            st_ = state::done;
+            break;
         }
-        dec_.exponent = off_;
-        st_ = state::done;
-        break;
+        ++p;
+        st_ = state::frac2;
+        BOOST_FALLTHROUGH;
 
     // one fraction digit
     case state::frac2:
@@ -170,7 +170,7 @@ loop:
         }
         ++p;
         st_ = state::frac3;
-        goto loop;
+        BOOST_FALLTHROUGH;
 
     // zero or more fraction digits
     case state::frac3:
@@ -193,17 +193,17 @@ loop:
                 ++p;
                 continue;
             }
-            if(*p == 'e' || *p == 'E')
+            if(*p != 'e' && *p != 'E')
             {
-                ++p;
-                st_ = state::exp1;
-                goto loop;
+                dec_.exponent += off_;
+                st_ = state::done;
+                goto finish;
             }
-            dec_.exponent += off_;
-            st_ = state::done;
+            ++p;
+            st_ = state::exp1;
             break;
         }
-        break;
+        BOOST_FALLTHROUGH;
 
     // plus or minus
     case state::exp1:
@@ -218,7 +218,7 @@ loop:
         if(*p == '+')
             ++p;
         st_ = state::exp2;
-        goto loop;
+        BOOST_FALLTHROUGH;
 
     // one digit
     case state::exp2:
@@ -226,16 +226,16 @@ loop:
         if(p >= p1)
             break;
         unsigned char const d = *p - '0';
-        if(d < 10)
+        if(d >= 10)
         {
-            ++p;
-            dec_.exponent =
-                static_cast<short>(d);
-            st_ = state::exp3;
-            goto loop;
+            ec = error::expected_exponent;
+            break;
         }
-        ec = error::expected_exponent;
-        break;
+        ++p;
+        dec_.exponent =
+            static_cast<short>(d);
+        st_ = state::exp3;
+        BOOST_FALLTHROUGH;
     }
 
     // zero or more digits
@@ -272,16 +272,16 @@ loop:
         if(p >= p1)
             break;
         unsigned char const d = *p - '0';
-        if(d < 10)
+        if(d >= 10)
         {
-            ++p;
-            dec_.exponent =
-                - static_cast<short>(d);
-            st_ = state::exp5;
-            goto loop;
+            ec = error::expected_exponent;
+            break;
         }
-        ec = error::expected_exponent;
-        break;
+        ++p;
+        dec_.exponent =
+            - static_cast<short>(d);
+        st_ = state::exp5;
+        BOOST_FALLTHROUGH;
     }
 
     // zero or more digits
@@ -316,6 +316,7 @@ loop:
         ec = error::illegal_extra_chars;
         break;
     }
+finish:
     return p - p0;
 }
 

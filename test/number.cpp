@@ -291,8 +291,8 @@ public:
 
         check_output((std::numeric_limits<short>::min)());
         check_output((std::numeric_limits<short>::max)());
-        check_output((std::numeric_limits<short>::min)());
-        check_output((std::numeric_limits<short>::max)());
+        check_output((std::numeric_limits<short>::min)()/2);
+        check_output((std::numeric_limits<short>::max)()/2);
         check_output((std::numeric_limits<int>::min)());
         check_output((std::numeric_limits<int>::max)());
         check_output((std::numeric_limits<int>::min)()/2);

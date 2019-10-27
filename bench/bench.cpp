@@ -36,6 +36,9 @@ http://seriot.ch/parsing_json.php
 namespace beast = boost::beast;
 namespace json = boost::json;
 
+using clock_type = std::chrono::steady_clock;
+using string_view = boost::string_view;
+
 boost::beast::unit_test::dstream dout{std::cerr};
 
 //----------------------------------------------------------
@@ -45,15 +48,19 @@ class any_impl
 public:
     virtual ~any_impl() = default;
 
-    virtual boost::string_view name() const noexcept = 0;
-    virtual void work(boost::string_view s) = 0;
+    virtual string_view name() const noexcept = 0;
+    virtual void work(string_view s) const = 0;
+
+    virtual void parse(string_view s, int repeat) const = 0;
+    virtual void serialize(string_view s, int repeat) const = 0;
 };
 
 //----------------------------------------------------------
 
-struct boost_impl : public any_impl
+class boost_impl : public any_impl
 {
-    boost::string_view
+public:
+    string_view
     name() const noexcept override
     {
         return "Boost.JSON";
@@ -83,7 +90,7 @@ struct boost_impl : public any_impl
     }
 
     void
-    work(boost::string_view s) override
+    work(string_view s) const override
     {
         std::string s2;
         {
@@ -100,20 +107,39 @@ struct boost_impl : public any_impl
             dout << "ec.message() == " << ec.message() << std::endl;
         }
     }
+
+    void
+    parse(
+        string_view s,
+        int repeat) const override
+    {
+        while(repeat--)
+            json::parse(s);
+    }
+
+    void
+    serialize(
+        string_view s,
+        int repeat) const override
+    {
+        auto jv = json::parse(s);
+        while(repeat--)
+            json::to_string(jv);
+    }
 };
 
 //----------------------------------------------------------
 
 struct rapidjson_impl : public any_impl
 {
-    boost::string_view
+    string_view
     name() const noexcept override
     {
         return "rapidjson";
     }
 
     void
-    work(boost::string_view s) override
+    work(string_view s) const override
     {
         rapidjson::StringBuffer s2;
         {
@@ -130,23 +156,61 @@ struct rapidjson_impl : public any_impl
             d.Parse(s2.GetString(), s2.GetSize());
         }
     }
+
+    void
+    parse(string_view s, int repeat) const override
+    {
+        while(repeat--)
+        {
+            rapidjson::Document d;
+            d.Parse(s.data(), s.size());
+        }
+    }
+
+    void
+    serialize(string_view s, int repeat) const override
+    {
+        rapidjson::Document d;
+        d.Parse(s.data(), s.size());
+        while(repeat--)
+        {
+            rapidjson::StringBuffer st;
+            st.Clear();
+            rapidjson::Writer<
+                rapidjson::StringBuffer> wr(st);
+            d.Accept(wr);
+        }
+    }
 };
 
 //----------------------------------------------------------
 
 struct nlohmann_impl : public any_impl
 {
-    boost::string_view
+    string_view
     name() const noexcept override
     {
         return "nlohmann";
     }
 
     void
-    work(boost::string_view s) override
+    work(string_view s) const override
     {
         auto jv = nlohmann::json::parse(
             s.begin(), s.end());
+    }
+
+    void
+    parse(string_view s, int repeat) const override
+    {
+        while(repeat--)
+            nlohmann::json::parse(
+                s.begin(), s.end());
+    }
+
+    void
+    serialize(string_view, int) const override
+    {
     }
 };
 
@@ -213,7 +277,7 @@ public:
         }
     }
 
-    boost::string_view
+    string_view
     string() noexcept
     {
         return {
@@ -358,7 +422,7 @@ public:
         max_depth_ = n;
     }
 
-    boost::string_view
+    string_view
     make_document()
     {
         s_.clear();
@@ -373,7 +437,7 @@ public:
 // parse random documents
 void
 benchParse(
-    boost::string_view doc,
+    string_view doc,
     any_impl& impl,
     int repeat = 1)
 {
@@ -408,74 +472,83 @@ load_file(char const* path)
     return s;
 }
 
+void
+benchParse(
+    std::vector<std::string> const& vs,
+    std::vector<std::unique_ptr<
+        any_impl const>> const& vi)
+{
+    for(int i = 0; i < vs.size(); ++i)
+    {
+        dout << "File " + std::to_string(i+1) +
+            " (" + std::to_string(vs[i].size()) + " bytes)" <<
+            std::endl;
+        for(int j = 0; j < vi.size(); ++j)
+        {
+            for(int k = 0; k < 3; ++k)
+            {
+                auto const when = clock_type::now();
+                vi[j]->parse(vs[i], 100);
+                auto const ms = std::chrono::duration_cast<
+                    std::chrono::milliseconds>(
+                    clock_type::now() - when).count();
+                dout << " " << vi[j]->name() << ": " <<
+                    std::to_string(ms) << "ms" <<
+                    std::endl;
+            }
+        }
+    }
+}
+
+void
+benchSerialize(
+    std::vector<std::string> const& vs,
+    std::vector<std::unique_ptr<
+        any_impl const>> const& vi)
+{
+    for(int i = 0; i < vs.size(); ++i)
+    {
+        dout << "File " + std::to_string(i+1) +
+            " (" + std::to_string(vs[i].size()) + " bytes)" <<
+            std::endl;
+        for(int j = 0; j < vi.size(); ++j)
+        {
+            for(int k = 0; k < 3; ++k)
+            {
+                auto const when = clock_type::now();
+                vi[j]->serialize(vs[i], 1000);
+                auto const ms = std::chrono::duration_cast<
+                    std::chrono::milliseconds>(
+                    clock_type::now() - when).count();
+                dout << " " << vi[j]->name() << ": " <<
+                    std::to_string(ms) << "ms" <<
+                    std::endl;
+            }
+        }
+    }
+}
+
 int
 main(
     int const argc,
     char const* const* const argv)
 {
+    std::vector<std::string> vs;
     if(argc > 1)
     {
-        std::vector<std::string> vs;
         vs.reserve(argc - 1);
         for(int i = 1; i < argc; ++i)
             vs.emplace_back(load_file(argv[i]));
-
-        std::vector<
-            std::unique_ptr<any_impl>> v;
-        v.reserve(10);
-
-        for(int i = 0; i < argc - 1; ++i)
-        {
-            v.clear();
-#if 1
-            //v.emplace_back(new nlohmann_impl);
-            //v.emplace_back(new nlohmann_impl);
-            //v.emplace_back(new nlohmann_impl);
-            v.emplace_back(new rapidjson_impl);
-            v.emplace_back(new rapidjson_impl);
-            v.emplace_back(new rapidjson_impl);
-#endif
-            v.emplace_back(new boost_impl);
-            v.emplace_back(new boost_impl);
-            v.emplace_back(new boost_impl);
-
-            dout << "File: " << argv[i + 1] << std::endl;
-            for(auto& impl : v)
-                benchParse(vs[i], *impl, 1);
-            dout << std::endl;
-        }
     }
-    else
-    {
-        for(int i = 5; i < 7; ++i)
-        {
-            factory f;
-            f.max_depth(i);
-            auto const doc = f.make_document();
-    #if 1
-            for(int j = 0; j < 3; ++j)
-            {
-                rapidjson_impl impl;
-                benchParse(doc, impl);
-            }
-            for(int j = 0; j < 3; ++j)
-            {
-                nlohmann_impl impl;
-                benchParse(doc, impl);
-            }
-    #endif
-            for(int j = 0; j < 3; ++j)
-            {
-    #if 0
-                boost_impl impl(json::make_storage<
-                    json::fixed_storage>(2047 * 1024 * 1024));
-    #else
-                boost_impl impl;
-    #endif
-                benchParse(doc, impl);
-            }
-        }
-    }
+
+    std::vector<std::unique_ptr<any_impl const>> vi;
+    vi.reserve(10);
+    vi.emplace_back(new boost_impl);
+    vi.emplace_back(new rapidjson_impl);
+    //vi.emplace_back(new nlohmann_impl);
+
+    benchParse(vs, vi);
+    //benchSerialize(vs, vi);
 
     return 0;
 }

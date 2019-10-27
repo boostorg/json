@@ -106,6 +106,7 @@ public:
             dest[1] = static_cast<char>(((cp >> 6) & 0x3f)  | 0x80);
             dest[2] = static_cast<char>( (cp       & 0x3f)  | 0x80);
             size_ += 3;
+            return;
         }
 
         {

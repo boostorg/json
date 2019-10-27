@@ -62,7 +62,7 @@ public:
     {
         std::size_t         depth;
         string_view         key;
-        json::value const&  value;
+        json::value const*  value;
         bool                has_key;
         bool                last;
         bool                end;
@@ -74,69 +74,37 @@ public:
         }
     };
 
-    struct end_t
-    {
-    };
-
     BOOST_JSON_DECL
     explicit
     const_iterator(
-        value const& jv);
-
-    static
-    end_t
-    end() noexcept
-    {
-        return {};
-    }
+        value const& jv) noexcept;
 
     BOOST_JSON_DECL
-    value_type
-    operator*() const noexcept;
+    bool
+    at_end() const noexcept;
+
+    value_type const&
+    operator*() const noexcept
+    {
+        return v_;
+    }
+
+    value_type const*
+    operator->() const noexcept
+    {
+        return &v_;
+    }
 
     BOOST_JSON_DECL
     const_iterator&
     operator++() noexcept;
 
+private:
+    inline
     void
-    operator++(int) noexcept
-    {
-        ++*this;
-    }
+    setup() noexcept;
 
-    value_type
-    operator->() const noexcept
-    {
-        return *(*this);
-    }
-
-    BOOST_JSON_DECL
-    friend
-    bool
-    operator==(
-        const_iterator const& lhs,
-        end_t) noexcept;
-
-    BOOST_JSON_DECL
-    friend
-    bool
-    operator==(
-        end_t,
-        const_iterator const& rhs) noexcept;
-
-    BOOST_JSON_DECL
-    friend
-    bool
-    operator!=(
-        const_iterator const& lhs,
-        end_t) noexcept;
-
-    BOOST_JSON_DECL
-    friend
-    bool
-    operator!=(
-        end_t,
-        const_iterator const& rhs) noexcept;
+    value_type v_;
 };
 
 } // detail

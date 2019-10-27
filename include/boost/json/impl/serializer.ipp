@@ -63,7 +63,7 @@ loop:
     case state::inc:
     {
         ++it_;
-        if(it_ == detail::const_iterator::end())
+        if(it_.at_end())
         {
             state_ = state::done;
             goto loop;
@@ -71,13 +71,13 @@ loop:
         auto const& e = *it_;
         if(e.end)
         {
-            if(e.value.is_object())
+            if(e.value->is_object())
             {
                 str_ = {"},", e.last ? 1U : 2U};
                 state_ = state::lit;
                 goto loop;
             }
-            BOOST_JSON_ASSERT(e.value.is_array());
+            BOOST_JSON_ASSERT(e.value->is_array());
             str_ = {"],", e.last ? 1U : 2U};
             state_ = state::lit;
             goto loop;
@@ -95,7 +95,7 @@ loop:
     case state::val:
     {
         auto const& e = *it_;
-        switch(e.value.kind())
+        switch(e.value->kind())
         {
         case kind::object:
             if(p >= p1)
@@ -114,12 +114,21 @@ loop:
 
         case kind::string:
             key_ = false;
-            str_ = *e.value.if_string();
+            str_ = *e.value->if_string();
             state_ = state::str1;
             goto loop;
 
         case kind::number:
-            str_ = e.value.if_number()->print(
+            if(p1 - p >= number::max_string_chars + 1)
+            {
+                p += e.value->if_number()->print(
+                    p, p1 - p).size();
+                if(! e.last)
+                    *p++ = ',';
+                state_ = state::inc;
+                goto loop;
+            }
+            str_ = e.value->if_number()->print(
                 buf_, sizeof(buf_));
             if(! e.last)
             {
@@ -131,7 +140,7 @@ loop:
             goto loop;
 
         case kind::boolean:
-            if(*e.value.if_bool())
+            if(*e.value->if_bool())
                 str_ = { "true,",
                     e.last ? 4U : 5U };
             else

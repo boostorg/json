@@ -250,6 +250,7 @@ public:
             if( e.result == 'y' ||
                 good(e.text))
             {
+                //log << i++ << " " << e.text << std::endl;
                 round_trip(e.name, e.text);
             }
         }
