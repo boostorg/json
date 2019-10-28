@@ -13,7 +13,18 @@ source_group (TREE ${PROJECT_SOURCE_DIR}/include/boost/json PREFIX json FILES ${
 
 GroupSources(bench "/")
 
-#add_definitions("-DBOOST_JSON_TRACK_STORAGE")
+if (MSVC)
+    add_compile_options(
+        /GL         # Whole program optimization
+        /Ob2        # inline any suitable
+        )
+
+    add_link_options(
+        /LTCG       # Link Time Code Generation
+        )
+
+endif()
+
 add_executable (bench
     ${BEAST_FILES}
     ${PROJECT_FILES}

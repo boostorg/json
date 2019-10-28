@@ -61,8 +61,6 @@ class number
         type_double
     };
 
-    storage_ptr sp_;
-
 #ifndef GENERATING_DOCUMENTATION
     // The XSLT has problems with private anon unions
     union
@@ -76,7 +74,7 @@ class number
     kind kind_;
 
 public:
-    static std::size_t constexpr
+    static int constexpr
         max_string_chars =
         #ifdef GENERATING_DOCUMENTATION
             27
@@ -91,38 +89,11 @@ public:
 
     //------------------------------------------------------
 
-    BOOST_JSON_DECL
-    ~number();
+    number(number const&) = default;
+    number& operator=(number const&) = default;
 
     BOOST_JSON_DECL
     number() noexcept;
-
-    BOOST_JSON_DECL
-    explicit
-    number(storage_ptr sp) noexcept;
-
-    BOOST_JSON_DECL
-    number(pilfered<number> other) noexcept;
-
-    BOOST_JSON_DECL
-    number(number const& other);
-
-    BOOST_JSON_DECL
-    number(
-        number const& other,
-        storage_ptr sp);
-
-    BOOST_JSON_DECL
-    number(number&& other);
-
-    BOOST_JSON_DECL
-    number(
-        number&& other,
-        storage_ptr sp);
-
-    BOOST_JSON_DECL
-    number&
-    operator=(number const& other);
 
     //------------------------------------------------------
 
@@ -141,12 +112,6 @@ public:
     number(T t) noexcept
     {
         assign_impl(t);
-    }
-
-    storage_ptr const&
-    get_storage() const noexcept
-    {
-        return sp_;
     }
 
     /// Return true if the number is negative
@@ -260,15 +225,6 @@ private:
     operator!=(
         number const& lhs,
         number const& rhs) noexcept;
-
-    inline
-    storage_ptr
-    release_storage() noexcept
-    {
-        return std::move(sp_);
-    }
-
-    friend class value;
 };
 
 BOOST_JSON_DECL

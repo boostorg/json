@@ -107,19 +107,31 @@ class value
     friend class value_test;
 
 #ifndef GENERATING_DOCUMENTATION
+    struct scalar
+    {
+        storage_ptr sp;
+        union
+        {
+            number num;
+            bool b;
+        };
+
+        ~scalar()
+        {
+        }
+    };
+
     // XSL scripts have trouble with private anon unions
     union
     {
         object      obj_;
         array       arr_;
         string      str_;
-        number      num_;
-        storage_ptr sp_;
+        scalar      sca_;
     };
 #endif
 
     json::kind kind_;
-    bool bool_;
 
 public:
     /// Destroy a value and all of its contents
@@ -183,6 +195,16 @@ public:
     BOOST_JSON_DECL
     value(
         json::kind k,
+        storage_ptr sp = default_storage()) noexcept;
+
+    BOOST_JSON_DECL
+    value(
+        kind_array_t,
+        storage_ptr sp = default_storage()) noexcept;
+
+    BOOST_JSON_DECL
+    value(
+        kind_null_t,
         storage_ptr sp = default_storage()) noexcept;
 
     /** Copy constructor
@@ -531,7 +553,7 @@ public:
     emplace_number() noexcept
     {
         reset(json::kind::number);
-        return num_;
+        return sca_.num;
     }
 
     /** Set the value to boolean false, and return it.
@@ -552,7 +574,7 @@ public:
     emplace_bool() noexcept
     {
         reset(json::kind::boolean);
-        return bool_;
+        return sca_.b;
     }
 
     /** Set the value to null.
@@ -1041,7 +1063,7 @@ public:
     if_number() noexcept
     {
         if(kind_ == json::kind::number)
-            return &num_;
+            return &sca_.num;
         return nullptr;
     }
 
@@ -1063,7 +1085,7 @@ public:
     if_number() const noexcept
     {
         if(kind_ == json::kind::number)
-            return &num_;
+            return &sca_.num;
         return nullptr;
     }
 
@@ -1085,7 +1107,7 @@ public:
     if_bool() noexcept
     {
         if(kind_ == json::kind::boolean)
-            return &bool_;
+            return &sca_.b;
         return nullptr;
     }
 
@@ -1107,7 +1129,7 @@ public:
     if_bool() const noexcept
     {
         if(kind_ == json::kind::boolean)
-            return &bool_;
+            return &sca_.b;
         return nullptr;
     }
 
@@ -1292,7 +1314,7 @@ public:
             BOOST_JSON_THROW(
                 system_error(
                     error::not_number));
-        return num_;
+        return sca_.num;
     }
 
     /** Return a reference to the number, or throw an exception.
@@ -1318,7 +1340,7 @@ public:
             BOOST_JSON_THROW(
                 system_error(
                     error::not_number));
-        return num_;
+        return sca_.num;
     }
 
     /** Return a reference to the bool, or throw an exception.
@@ -1344,7 +1366,7 @@ public:
             BOOST_JSON_THROW(
                 system_error(
                     error::not_bool));
-        return bool_;
+        return sca_.b;
     }
 
     /** Return a reference to the bool, or throw an exception.
@@ -1370,7 +1392,7 @@ public:
             BOOST_JSON_THROW(
                 system_error(
                     error::not_bool));
-        return bool_;
+        return sca_.b;
     }
 
     //------------------------------------------------------

@@ -18,217 +18,489 @@ namespace json {
 
 enum class serializer::state : char
 {
-    inc,    // increment iterator
-    val,    // value
-
+    val,    // initialize value
+    obj0,   // begin object
+    obj1,   // key
+    obj2,   // ':'
+    obj3,   // end object
+    arr0,   // begin array
+    arr1,   // array
+    arr2,   // end array
     str1,   // '"'
     str2,   // escaped string
     str3,   // '"'
-    str4,   // ':' or ','
-    str5,   // literal (ctrl or utf16 escape)
-
+    str4,   // literal (ctrl or utf16 escape)
     lit,    // literal string ({number}, true, false, null)
-
     done
 };
 
-serializer::
-serializer(
-    value const& jv)
-    : it_(jv)
-    , state_(state::val)
+//----------------------------------------------------------
 
+serializer::
+node::
+node(state st_) noexcept
 {
-    // ensure room for \uXXXX escape plus one
-    BOOST_JSON_STATIC_ASSERT(sizeof(buf_) >= 7);
+    st = st_;
+}
+
+serializer::
+node::
+node(value const& jv) noexcept
+{
+    pjv = &jv;
+    st = state::val;
+}
+
+serializer::
+node::
+node(object const& o) noexcept
+{
+    obj.po = &o;
+    ::new(&obj.it) object::
+        const_iterator(o.begin());
+    st = state::obj0;
+}
+
+serializer::
+node::
+node(array const& a) noexcept
+{
+    arr.pa = &a;
+    ::new(&arr.it) array::
+        const_iterator(a.begin());
+    st = state::arr0;
+}
+
+//----------------------------------------------------------
+
+void
+serializer::
+reset(value const& jv) noexcept
+{
+    stack_.clear();
+    stack_.emplace_front(state::done);
+    stack_.emplace_front(jv);
 }
 
 bool
 serializer::
 is_done() const noexcept
 {
-    return state_ == state::done;
+    return stack_.front().st == state::done;
 }
 
 std::size_t
 serializer::
 next(char* dest, std::size_t size)
 {
+    static constexpr char hex[] = "0123456789abcdef";
+    static constexpr char esc[] =
+        "uuuuuuuubtnufruuuuuuuuuuuuuuuuuu"
+        "\0\0\"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+        "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\\\0\0\0"
+        "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+        "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+        "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+        "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+        "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
+    auto const dist =
+        []( char const* first,
+            char const* last)
+        {
+            return static_cast<
+                std::size_t>(last - first);
+        };
     auto const p0 = dest;
     auto const p1 = dest + size;
     auto p = p0;
 loop:
-    switch(state_)
+    switch(stack_.front().st)
     {
-    case state::inc:
-    {
-        ++it_;
-        if(it_.at_end())
-        {
-            state_ = state::done;
-            goto loop;
-        }
-        auto const& e = *it_;
-        if(e.end)
-        {
-            if(e.value->is_object())
-            {
-                str_ = {"},", e.last ? 1U : 2U};
-                state_ = state::lit;
-                goto loop;
-            }
-            BOOST_JSON_ASSERT(e.value->is_array());
-            str_ = {"],", e.last ? 1U : 2U};
-            state_ = state::lit;
-            goto loop;
-        }
-        if(e.has_key)
-        {
-            key_ = true;
-            str_ = it_->key;
-            state_ = state::str1;
-            goto loop;
-        }
-        BOOST_FALLTHROUGH;
-    }
-
     case state::val:
     {
-        auto const& e = *it_;
-        switch(e.value->kind())
+loop_init:
+        auto const& jv =
+            *stack_.front().pjv;
+        switch(jv.kind())
         {
         case kind::object:
-            if(p >= p1)
-                goto finish;
-            *p++ = '{';
-            state_ = state::inc;
+            stack_.pop();
+            stack_.emplace_front(
+                *jv.if_object());
             goto loop;
-            break;
 
         case kind::array:
-            if(p >= p1)
-                goto finish;
-            *p++ = '[';
-            state_ = state::inc;
+            stack_.pop();
+            stack_.emplace_front(
+                *jv.if_array());
             goto loop;
 
         case kind::string:
-            key_ = false;
-            str_ = *e.value->if_string();
-            state_ = state::str1;
-            goto loop;
-
+            str_ = *jv.if_string();
+            stack_.front().st = state::str1;
+            goto loop_str;
+    
         case kind::number:
-            if(static_cast<std::size_t>(
-                p1 - p) >= number::max_string_chars + 1)
+            if(p1 - p >= number::max_string_chars)
             {
-                p += e.value->if_number()->print(
+                p += jv.if_number()->print(
                     p, p1 - p).size();
-                if(! e.last)
-                    *p++ = ',';
-                state_ = state::inc;
+                stack_.pop();
                 goto loop;
             }
-            str_ = e.value->if_number()->print(
+            str_ = jv.if_number()->print(
                 buf_, sizeof(buf_));
-            if(! e.last)
-            {
-                buf_[str_.size()] = ',';
-                str_ = {str_.data(),
-                    str_.size() + 1};
-            }
-            state_ = state::lit;
+            stack_.front().st = state::lit;
             goto loop;
-
+    
         case kind::boolean:
-            if(*e.value->if_bool())
-                str_ = { "true,",
-                    e.last ? 4U : 5U };
-            else
-                str_ = { "false,",
-                    e.last ? 5U : 6U };
-            state_ = state::lit;
+            if(*jv.if_bool())
+            {
+                if(p1 - p >= 4)
+                {
+                    *p++ = 't';
+                    *p++ = 'r';
+                    *p++ = 'u';
+                    *p++ = 'e';
+                    stack_.pop();
+                    goto loop;
+                }
+                str_ = {"true", 4U};
+                stack_.front().st = state::lit;
+                goto loop;
+            }
+            if(p1 - p >= 5)
+            {
+                *p++ = 'f';
+                *p++ = 'a';
+                *p++ = 'l';
+                *p++ = 's';
+                *p++ = 'e';
+                stack_.pop();
+                goto loop;
+            }
+            str_ = {"false", 5U};
+            stack_.front().st = state::lit;
             goto loop;
-
+   
         case kind::null:
-            str_ = { "null,",
-                e.last ? 4U : 5U };
-            state_ = state::lit;
+            if(p1 - p >= 4)
+            {
+                *p++ = 'n';
+                *p++ = 'u';
+                *p++ = 'l';
+                *p++ = 'l';
+                stack_.pop();
+                goto loop;
+            }
+            str_ = {"null", 4U};
+            stack_.front().st = state::lit;
             goto loop;
         }
     }
 
-    //---
+    case state::obj0:
+    {
+        if(p >= p1)
+            goto finish;
+        *p++ = '{';
+        auto& e = stack_.front().obj;
+        if(e.it == e.po->end())
+        {
+            stack_.front().st =
+                state::obj3;
+            goto loop;
+        }
+        stack_.front().st =
+            state::obj1;
+        str_ = e.it->first;
+        stack_.emplace_front(
+            state::str1);
+        goto loop_str;
+    }
+
+    // key done
+    case state::obj1:
+    {
+        if(p >= p1)
+            goto finish;
+        *p++ = ':';
+        auto& e = stack_.front().obj;
+        stack_.front().st =
+            state::obj2;
+        stack_.emplace_front(
+            e.it->second);
+        goto loop_init;
+    }
+
+    case state::obj2:
+    {
+        if(p >= p1)
+            goto finish;
+        auto& e = stack_.front().obj;
+        ++e.it;
+        if(e.it == e.po->end())
+        {
+            *p++ = '}';
+            stack_.pop();
+            goto loop;
+        }
+        *p++ = ',';
+        stack_.front().st =
+            state::obj1;
+        str_ = e.it->first;
+        stack_.emplace_front(
+            state::str1);
+        goto loop_str;
+    }
+
+    case state::obj3:
+        if(p >= p1)
+            goto finish;
+        *p++ = '}';
+        stack_.pop();
+        goto loop;
+
+    case state::arr0:
+    {
+        if(p >= p1)
+            goto finish;
+        *p++ = '[';
+        auto& e = stack_.front().arr;
+        if(e.it == e.pa->end())
+        {
+            stack_.front().st =
+                state::arr2;
+            goto loop;
+        }
+        stack_.front().st =
+            state::arr1;
+        stack_.emplace_front(*e.it);
+        goto loop_init;
+    }
+
+    case state::arr1:
+    {
+        if(p >= p1)
+            goto finish;
+        auto& e = stack_.front().arr;
+        ++e.it;
+        if(e.it == e.pa->end())
+        {
+            *p++ = ']';
+            stack_.pop();
+            goto loop;
+        }
+        *p++ = ',';
+        auto const& jv = *e.it;
+        stack_.emplace_front(jv);
+        goto loop_init;
+    }
+
+    case state::arr2:
+        if(p >= p1)
+            goto finish;
+        *p++ = ']';
+        stack_.pop();
+        goto loop;
 
     case state::str1:
+loop_str:
         if(p >= p1)
             goto finish;
         *p++ = '\"';
-        state_ = state::str2;
+        stack_.front().st = state::str2;
         BOOST_FALLTHROUGH;
-
+#if 1
     case state::str2:
     {
         auto s = str_.data();
         auto const s1 =
             s + str_.size();
+        while(s < s1)
+        {
+            char const* sn;
+            auto const d = dist(p, p1);
+            if(d >= 6 * dist(s, s1))
+                sn = s1;
+            else if(d >= 6)
+                sn = s + d / 6;
+            else
+                break;
+
+            // fast loop
+            while(s < sn)
+            {
+                auto const ch = *s++;
+                auto const c = esc[static_cast<
+                    unsigned char>(ch)];
+                if(! c)
+                {
+                    *p++ = ch;
+                    continue;
+                }
+                *p++ = '\\';
+                *p++ = c;
+                if(c != 'u')
+                    continue;
+                *p++ = '0';
+                *p++ = '0';
+                *p++ = hex[static_cast<
+                    unsigned char>(ch) >> 4];
+                *p++ = hex[static_cast<
+                    unsigned char>(ch) & 15];
+            }
+        }
         while(p < p1 && s < s1)
         {
-            auto ch = *s++;
-            if(ch == '\\')
-            {
-                if(p + 2 <= p1)
-                {
-                    *p++ = '\\';
-                    *p++ = '\\';
-                    continue;
-                }
-                str_ = str_.substr(
-                    s - str_.data());
-                buf_[1] = '\\';
-                buf_[0] = '\\';
-                nbuf_ = 2;
-                state_ = state::str5;
-                goto loop;
-            }
-            else if(ch == '\"')
-            {
-                if(p + 2 <= p1)
-                {
-                    *p++ = '\\';
-                    *p++ = '\"';
-                    continue;
-                }
-                str_ = str_.substr(
-                    s - str_.data());
-                buf_[1] = '\\';
-                buf_[0] = '\"';
-                nbuf_ = 2;
-                state_ = state::str5;
-                goto loop;
-            }
-            else if(static_cast<
-                unsigned char>(ch) >= 32)
+            auto const ch = *s++;
+            auto const c = esc[static_cast<
+                unsigned char>(ch)];
+            if(! c)
             {
                 *p++ = ch;
                 continue;
             }
-            else
+            if(c != 'u')
             {
+                if(p1 - p >= 2)
+                {
+                    *p++ = '\\';
+                    *p++ = c;
+                    continue;
+                }
+                buf_[1] = '\\';
+                buf_[0] = c;
+                nbuf_ = 2;
                 str_ = str_.substr(
                     s - str_.data());
+                stack_.front().st =
+                    state::str4;
+                goto loop;
+            }
+            if(p1 - p >= 6)
+            {
+                *p++ = '\\';
+                *p++ = 'u';
+                *p++ = '0';
+                *p++ = '0';
+                *p++ = hex[static_cast<
+                    unsigned char>(ch) >> 4];
+                *p++ = hex[static_cast<
+                    unsigned char>(ch) & 15];
+                continue;
+            }
+            buf_[5] = '\\';
+            buf_[4] = 'u';
+            buf_[3] = '0';
+            buf_[2] = '0';
+            buf_[1] = hex[static_cast<
+                unsigned char>(ch) >> 4];
+            buf_[0] = hex[static_cast<
+                unsigned char>(ch) & 15];
+            nbuf_ = 6;
+            str_ = str_.substr(
+                s - str_.data());
+            stack_.front().st =
+                state::str4;
+            goto loop;
+        }
+        if(s < s1)
+        {
+            str_ = str_.substr(
+                s - str_.data());
+            goto finish;
+        }
+        stack_.front().st =
+            state::str3;
+        BOOST_FALLTHROUGH;
+    }
+#else
+    case state::str2:
+    {
+        auto s = str_.data();
+        auto const s1 =
+            s + str_.size();
+        if(static_cast<unsigned long>(
+            p1 - p) >= 6 * str_.size())
+        {
+            // fast loop
+            while(s < s1)
+            {
+                auto const ch = *s++;
+                auto const c = esc[static_cast<
+                    unsigned char>(ch)];
+                if(! c)
+                {
+                    *p++ = ch;
+                    continue;
+                }
+                *p++ = '\\';
+                *p++ = c;
+                if(c != 'u')
+                    continue;
+                *p++ = '0';
+                *p++ = '0';
+                *p++ = hex[static_cast<
+                    unsigned char>(ch) >> 4];
+                *p++ = hex[static_cast<
+                    unsigned char>(ch) & 15];
+            }
+        }
+        else
+        {
+            while(p < p1 && s < s1)
+            {
+                auto const ch = *s++;
+                auto const c = esc[static_cast<
+                    unsigned char>(ch)];
+                if(! c)
+                {
+                    *p++ = ch;
+                    continue;
+                }
+                if(c != 'u')
+                {
+                    if(p + 2 <= p1)
+                    {
+                        *p++ = '\\';
+                        *p++ = c;
+                        continue;
+                    }
+                    buf_[1] = '\\';
+                    buf_[0] = c;
+                    nbuf_ = 2;
+                    str_ = str_.substr(
+                        s - str_.data());
+                    stack_.front().st =
+                        state::str4;
+                    goto loop;
+                }
+                if(p + 6 <= p1)
+                {
+                    *p++ = '\\';
+                    *p++ = 'u';
+                    *p++ = '0';
+                    *p++ = '0';
+                    *p++ = hex[static_cast<
+                        unsigned char>(ch) >> 4];
+                    *p++ = hex[static_cast<
+                        unsigned char>(ch) & 15];
+                    continue;
+                }
                 buf_[5] = '\\';
                 buf_[4] = 'u';
                 buf_[3] = '0';
                 buf_[2] = '0';
-                static constexpr char hex[] =
-                    "0123456789abcdef";
                 buf_[1] = hex[static_cast<
                     unsigned char>(ch) >> 4];
                 buf_[0] = hex[static_cast<
                     unsigned char>(ch) & 15];
                 nbuf_ = 6;
-                state_ = state::str5;
+                str_ = str_.substr(
+                    s - str_.data());
+                stack_.front().st =
+                    state::str4;
                 goto loop;
             }
         }
@@ -238,50 +510,31 @@ loop:
                 s - str_.data());
             goto finish;
         }
-        state_ = state::str3;
+        stack_.front().st =
+            state::str3;
         BOOST_FALLTHROUGH;
     }
+#endif
 
     case state::str3:
         if(p >= p1)
             goto finish;
         *p++ = '\"';
-        if(it_->last && ! key_)
-        {
-            state_ = state::inc;
-            goto loop;
-        }
-        state_ = state::str4;
-        BOOST_FALLTHROUGH;
-
-    case state::str4:
-        if(p >= p1)
-            goto finish;
-        if(key_)
-        {
-            *p++ = ':';
-            state_ = state::val;
-        }
-        else
-        {
-            *p++ = ',';
-            state_ = state::inc;
-        }
+        stack_.pop();
         goto loop;
 
-    case state::str5:
+    case state::str4:
         while(p < p1)
         {
             *p++ = buf_[--nbuf_];
             if(! nbuf_)
             {
-                state_ = state::str2;
+                stack_.front().st =
+                    state::str2;
                 goto loop;
             }
         }
         goto finish;
-
-    //---
 
     case state::lit:
     {
@@ -290,7 +543,7 @@ loop:
         p += n;
         if(n == str_.size())
         {
-            state_ = state::inc;
+            stack_.pop();
             goto loop;
         }
         str_ = str_.substr(n);
@@ -305,28 +558,23 @@ finish:
     return p - p0;
 }
 
-std::string
+string
 to_string(
     json::value const& jv)
 {
-    std::string s;
-    std::size_t len = 0;
-    s.resize(1024);
-    json::serializer p(jv);
-    for(;;)
+    string s;
+    serializer sr(jv);
+    while(! sr.is_done())
     {
-        auto const used = p.next(
-            &s[len], s.size() - len);
-        len += used;
-        s.resize(len);
-        if(p.is_done())
-            break;
-        s.resize((len * 3) / 2);
+        if(s.size() >= s.capacity())
+            s.reserve(s.capacity() + 1);
+        s.grow(static_cast<
+            string::size_type>(
+            sr.next(s.data() + s.size(),
+                s.capacity() - s.size())));
     }
-    s.shrink_to_fit();
     return s;
 }
-
 
 std::ostream&
 operator<<(std::ostream& os, value const& jv)

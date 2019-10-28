@@ -187,7 +187,6 @@ swap(value& lhs, value& rhs)
     lhs.swap(rhs);
 }
 
-
 } // json
 } // boost
 

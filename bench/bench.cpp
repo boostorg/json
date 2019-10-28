@@ -35,12 +35,14 @@ http://seriot.ch/parsing_json.php
 */
 
 namespace beast = boost::beast;
-namespace json = boost::json;
+
+namespace boost {
+namespace json {
 
 using clock_type = std::chrono::steady_clock;
 using string_view = boost::string_view;
 
-boost::beast::unit_test::dstream dout{std::cerr};
+beast::unit_test::dstream dout{std::cerr};
 
 //----------------------------------------------------------
 
@@ -61,7 +63,7 @@ public:
     string_view
     name() const noexcept override
     {
-        return "Boost.JSON";
+        return "boost::json";
     }
 
     void
@@ -71,8 +73,8 @@ public:
     {
         while(repeat--)
         {
-            json::scoped_storage<
-                json::block_storage> ss;
+            scoped_storage<
+                block_storage> ss;
             json::parse(s, ss);
         }
     }
@@ -84,7 +86,422 @@ public:
     {
         auto jv = json::parse(s);
         while(repeat--)
-            json::to_string(jv);
+            to_string(jv);
+    }
+};
+
+class boost_null_impl : public any_impl
+{
+    struct null_parser : basic_parser
+    {
+        std::size_t n_ = std::size_t(-1);
+        char buf[256];
+
+        void
+        on_stack_info(
+            stack& s) noexcept override
+        {
+            s.base = buf;
+            s.capacity = sizeof(buf);
+        }
+
+        void
+        on_stack_grow(
+            stack&,
+            unsigned,
+            error_code& ec) override
+        {
+            ec = error::too_deep;
+        }
+
+        void
+        on_document_begin(
+            error_code&) override
+        {
+        }
+
+        void
+        on_object_begin(
+            error_code&) override
+        {
+        }
+
+        void
+        on_object_end(
+            error_code&) override
+        {
+        }
+
+        void
+        on_array_begin(
+            error_code&) override
+        {
+        }
+
+        void
+        on_array_end(
+            error_code&) override
+        {
+        }
+
+        void
+        on_key_data(
+            string_view,
+            error_code&) override
+        {
+        }
+
+        void
+        on_key_end(
+            string_view,
+            error_code&) override
+        {
+        }
+        
+        void
+        on_string_data(
+            string_view,
+            error_code&) override
+        {
+        }
+
+        void
+        on_string_end(
+            string_view,
+            error_code&) override
+        {
+        }
+
+        void
+        on_number(
+            ieee_decimal,
+            error_code&) override
+        {
+        }
+
+        void
+        on_bool(
+            bool,
+            error_code&) override
+        {
+        }
+
+        void
+        on_null(error_code&) override
+        {
+        }
+
+        null_parser() = default;
+    };
+public:
+    string_view
+    name() const noexcept override
+    {
+        return "null parser";
+    }
+
+    void
+    parse(
+        string_view s,
+        int repeat) const override
+    {
+        while(repeat--)
+        {
+            error_code ec;
+            null_parser p;
+            p.write(s.data(), s.size(), ec);
+        }
+    }
+
+    void
+    serialize(
+        string_view s,
+        int repeat) const override
+    {
+        auto jv = json::parse(s);
+        while(repeat--)
+            to_string(jv);
+    }
+};
+
+class boost_vec_impl : public any_impl
+{
+    struct vec_parser : basic_parser
+    {
+        std::vector<value> vec_;
+        char buf[256];
+
+        void
+        on_stack_info(
+            stack& s) noexcept override
+        {
+            s.base = buf;
+            s.capacity = sizeof(buf);
+        }
+
+        void
+        on_stack_grow(
+            stack&,
+            unsigned,
+            error_code& ec) override
+        {
+            ec = error::too_deep;
+        }
+
+        void
+        on_document_begin(
+            error_code&) override
+        {
+        }
+
+        void
+        on_object_begin(
+            error_code&) override
+        {
+        }
+
+        void
+        on_object_end(
+            error_code&) override
+        {
+        }
+
+        void
+        on_array_begin(
+            error_code&) override
+        {
+        }
+
+        void
+        on_array_end(
+            error_code&) override
+        {
+        }
+
+        void
+        on_key_data(
+            string_view,
+            error_code&) override
+        {
+        }
+
+        void
+        on_key_end(
+            string_view,
+            error_code&) override
+        {
+        }
+        
+        void
+        on_string_data(
+            string_view,
+            error_code&) override
+        {
+        }
+
+        void
+        on_string_end(
+            string_view,
+            error_code&) override
+        {
+        }
+
+        void
+        on_number(
+            ieee_decimal dec,
+            error_code&) override
+        {
+            vec_.emplace_back(number(dec));
+        }
+
+        void
+        on_bool(
+            bool,
+            error_code&) override
+        {
+        }
+
+        void
+        on_null(error_code&) override
+        {
+        }
+
+        vec_parser() = default;
+    };
+public:
+    string_view
+    name() const noexcept override
+    {
+        return "vector<value>";
+    }
+
+    void
+    parse(
+        string_view s,
+        int repeat) const override
+    {
+        while(repeat--)
+        {
+            error_code ec;
+            vec_parser p;
+            p.write(s.data(), s.size(), ec);
+        }
+    }
+
+    void
+    serialize(
+        string_view s,
+        int repeat) const override
+    {
+        auto jv = json::parse(s);
+        while(repeat--)
+            to_string(jv);
+    }
+};
+
+class boost_arr_impl : public any_impl
+{
+    struct arr_parser : basic_parser
+    {
+        storage_ptr sp_;
+        array arr_;
+        char buf[256];
+
+        void
+        on_stack_info(
+            stack& s) noexcept override
+        {
+            s.base = buf;
+            s.capacity = sizeof(buf);
+        }
+
+        void
+        on_stack_grow(
+            stack&,
+            unsigned,
+            error_code& ec) override
+        {
+            ec = error::too_deep;
+        }
+
+        void
+        on_document_begin(
+            error_code&) override
+        {
+        }
+
+        void
+        on_object_begin(
+            error_code&) override
+        {
+        }
+
+        void
+        on_object_end(
+            error_code&) override
+        {
+        }
+
+        void
+        on_array_begin(
+            error_code&) override
+        {
+        }
+
+        void
+        on_array_end(
+            error_code&) override
+        {
+        }
+
+        void
+        on_key_data(
+            string_view,
+            error_code&) override
+        {
+        }
+
+        void
+        on_key_end(
+            string_view,
+            error_code&) override
+        {
+        }
+        
+        void
+        on_string_data(
+            string_view,
+            error_code&) override
+        {
+        }
+
+        void
+        on_string_end(
+            string_view,
+            error_code&) override
+        {
+        }
+
+        void
+        on_number(
+            ieee_decimal dec,
+            error_code&) override
+        {
+            arr_.emplace_back(number(dec));
+        }
+
+        void
+        on_bool(
+            bool,
+            error_code&) override
+        {
+        }
+
+        void
+        on_null(error_code&) override
+        {
+        }
+
+        arr_parser(
+            storage_ptr sp = default_storage())
+            : arr_(std::move(sp))
+        {
+        }
+    };
+public:
+    string_view
+    name() const noexcept override
+    {
+        return "array";
+    }
+
+    void
+    parse(
+        string_view s,
+        int repeat) const override
+    {
+        while(repeat--)
+        {
+            error_code ec;
+        #if 1
+            scoped_storage<
+                block_storage> ss;
+            arr_parser p(ss);
+        #else
+            arr_parser p;
+        #endif
+            p.write(s.data(), s.size(), ec);
+        }
+    }
+
+    void
+    serialize(
+        string_view s,
+        int repeat) const override
+    {
+        auto jv = json::parse(s);
+        while(repeat--)
+            to_string(jv);
     }
 };
 
@@ -187,17 +604,17 @@ benchParse(
                 std::endl;
         for(unsigned j = 0; j < vi.size(); ++j)
         {
-            for(unsigned k = 0; k < 6; ++k)
+            for(unsigned k = 0; k < 15; ++k)
             {
                 auto const when = clock_type::now();
                 vi[j]->parse(vs[i].text, 250);
                 auto const ms = std::chrono::duration_cast<
                     std::chrono::milliseconds>(
                     clock_type::now() - when).count();
-                if(k > 2)
-                dout << " " << vi[j]->name() << ": " <<
-                    std::to_string(ms) << "ms" <<
-                    std::endl;
+                if(k > 4)
+                    dout << " " << vi[j]->name() << ": " <<
+                        std::to_string(ms) << "ms" <<
+                        std::endl;
             }
         }
     }
@@ -218,26 +635,31 @@ benchSerialize(
                 std::endl;
         for(unsigned j = 0; j < vi.size(); ++j)
         {
-            for(unsigned k = 0; k < 3; ++k)
+            for(unsigned k = 0; k < 10; ++k)
             {
                 auto const when = clock_type::now();
-                vi[j]->serialize(vs[i].text, 200);
+                vi[j]->serialize(vs[i].text, 1000);
                 auto const ms = std::chrono::duration_cast<
                     std::chrono::milliseconds>(
                     clock_type::now() - when).count();
-                dout << " " << vi[j]->name() << ": " <<
-                    std::to_string(ms) << "ms" <<
-                    std::endl;
+                if(k >  4)
+                    dout << " " << vi[j]->name() << ": " <<
+                        std::to_string(ms) << "ms" <<
+                        std::endl;
             }
         }
     }
 }
+
+} // json
+} // boost
 
 int
 main(
     int const argc,
     char const* const* const argv)
 {
+    using namespace boost::json;
     file_list vs;
     if(argc > 1)
     {
@@ -252,11 +674,14 @@ main(
     vi.reserve(10);
     vi.emplace_back(new boost_impl);
     vi.emplace_back(new rapidjson_impl);
+    //vi.emplace_back(new boost_null_impl);
+    //vi.emplace_back(new boost_vec_impl);
+    //vi.emplace_back(new boost_arr_impl);
     //vi.emplace_back(new nlohmann_impl);
 
-    benchParse(vs, vi);
-    //benchSerialize(vs, vi);
-
+    //benchParse(vs, vi);
+    benchSerialize(vs, vi);
+        
     return 0;
 }
 

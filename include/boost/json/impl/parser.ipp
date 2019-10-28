@@ -178,8 +178,7 @@ on_array_begin(error_code& ec)
     else if(jv.is_array())
     {
         BOOST_JSON_ASSERT(s_.empty());
-        jv.if_array()->emplace_back(
-            kind::array);
+        jv.if_array()->emplace_back(kind_array);
         stack_.push(
             &jv.if_array()->back());
     }
@@ -358,7 +357,7 @@ on_null(error_code&)
     else if(stack_.front()->is_array())
     {
         BOOST_JSON_ASSERT(s_.empty());
-        jv.if_array()->emplace_back(kind::null);
+        jv.if_array()->emplace_back(kind_null);
     }
     else
     {

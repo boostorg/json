@@ -23,83 +23,39 @@ namespace detail {
 template<class T, std::size_t N>
 class stack
 {
-    std::vector<T> v_; 
-    std::size_t n_ = 0; // includes v_.size()
-    typename std::aligned_storage<
-        N * sizeof(T), alignof(T)>::type buf_;
-
-    T*
-    base() noexcept
+    union
     {
-        return reinterpret_cast<
-            T*>(&buf_);
-    }
+        T vec_[N];
+        int unused;
+    };
 
-    T const*
-    base() const noexcept
-    {
-        return reinterpret_cast<
-            T const*>(&buf_);
-    }
-
-    void
-    destroy()
-    {
-        for(auto p = base(),
-            last = base() +
-                (n_ < N ? n_ : N);
-            p != last; ++p)
-        {
-            (*p).~T();
-        }
-    }
+    T* top_ = vec_ - 1;
 
 public:
     using value_type = T;
 
-    stack() = default;
+    ~stack() = default;
 
-    ~stack()
+    stack() noexcept
     {
-        destroy();
     }
 
-    // element access
-
-    T&
-    operator[](std::size_t i) noexcept
+    std::size_t
+    size() const noexcept
     {
-        BOOST_JSON_ASSERT(i < n_);
-        if(v_.empty())
-            return base()[n_ - (i + 1)];
-        if(i < v_.size())
-            return v_[v_.size() - (i + 1)];
-        return base()[
-            N - (v_.size() + i + 1)];
-    }
-
-    T const&
-    operator[](std::size_t i) const noexcept
-    {
-        BOOST_JSON_ASSERT(i < n_);
-        if(v_.empty())
-            return base()[n_ - (i + 1)];
-        if(i < v_.size())
-            return v_[v_.size() - (i + 1)];
-        return base()[
-            N - (v_.size() + i + 1)];
+        return top_ + 1 - vec_;
     }
 
     T&
     front() noexcept
     {
-        return (*this)[0];
+        return *top_;
     }
 
     T const&
     front() const noexcept
     {
-        return (*this)[0];
+        return *top_;
     }
 
     // capacity
@@ -107,77 +63,33 @@ public:
     bool
     empty() const noexcept
     {
-        return n_ == 0;
+        return top_ < vec_;
     }
-
-    std::size_t
-    size() const noexcept
-    {
-        return n_;
-    }
-
-    std::size_t
-    max_size() const noexcept
-    {
-        return v_.max_size();
-    }
-
-    void
-    reserve(std::size_t n)
-    {
-        if(n <= N)
-            return;
-        v_.reserve(n - N);
-    }
-
-    std::size_t
-    capacity() const noexcept
-    {
-        return N + v_.capacity();
-    }
-
-    // modifiers
 
     void
     clear() noexcept
     {
-        v_.clear();
-        destroy();
-        n_ = 0;
+        top_ = vec_ - 1;
     }
 
     void
     push(T const& t)
     {
-        if(n_ < N)
-            ::new(&base()[n_]) T(t);
-        else
-            v_.push_back(t);
-        ++n_;
+        *++top_ = t;
     }
 
     template<class... Args>
     void
     emplace_front(Args&&... args)
     {
-        if(n_ < N)
-            ::new(&base()[n_]) T(
-                std::forward<Args>(args)...);
-        else
-            v_.emplace_back(
-                std::forward<Args>(args)...);
-        ++n_;
+        ::new(++top_) T(
+            std::forward<Args>(args)...);
     }
 
     void
     pop()
     {
-        BOOST_JSON_ASSERT(n_ > 0);
-        if(! v_.empty())
-            v_.pop_back();
-        else
-            base()[n_ - 1].~T();
-        --n_;
+        --top_;
     }
 };
 

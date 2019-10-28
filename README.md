@@ -30,15 +30,22 @@ serialization, and also supports custom allocators robustly.
 
 ## Design Goals
 
-The design of the library achieves these goals:
+There are an overwhelming number of JSON libraries. A common theme 
+throughout is an emphasis on parsing performance or feature richness.
+This library uses a different approach: it provides a carefully
+designed JSON container, `value`, engineered from the ground up to be
+ideally suited as a vocabulary type. In particular it provides an interface
+which is stable, lightweight, and appropriate for use as parameter or
+return types in public interfaces.
 
-* Robust support for custom allocators throughout.
-* Array and object interfaces closely track their
-  corresponding C++20 container equivalents.
-* Use `std::basic_string` for strings.
-* Minimize use of templates for reduced compilation times.
-* Parsers and serializers work incrementally (['online algorithms]).
-* Elements in objects may also be iterated in insertion order.
+The design of the library also achieves these goals:
+
+* Requires only C++11
+* Support stateful allocators
+* Uniform interface on all C++ versions
+* Strict parser and serializer which work incrementally
+* Security-aware treatment of untrusted inputs
+* Fast compilation performance
 
 ## License
 

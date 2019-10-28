@@ -37,6 +37,8 @@ growth(
     new_size |= mask_;
     if( new_size > detail::max_string_length_)
         return detail::max_string_length_;
+#if 0
+    // growth factor 1.5
     if( capacity >
         detail::max_string_length_ - capacity / 2)
         return detail::max_string_length_; // overflow
@@ -44,6 +46,15 @@ growth(
         capacity + capacity / 2,
         static_cast<impl_size_type>(
             new_size));
+#else
+    // growth factor 2
+    if( capacity >
+        detail::max_string_length_ - capacity)
+        return detail::max_string_length_; // overflow
+    return (std::max<impl_size_type>)(
+        capacity * 2, static_cast<
+            impl_size_type>(new_size));
+#endif
 }
 
 void
@@ -288,16 +299,16 @@ string(
 
 string::
 string(pilfered<string> p) noexcept
-    : s_(p.get().s_)
-    , sp_(std::move(p.get().sp_))
+    : sp_(std::move(p.get().sp_))
+    , s_(p.get().s_)
 {
     p.get().s_.construct();
 }
 
 string::
 string(string&& other) noexcept
-    : s_(other.s_)
-    , sp_(other.sp_)
+    : sp_(other.sp_)
+    , s_(other.s_)
 {
     other.s_.construct();
 }

@@ -17,26 +17,6 @@
 namespace boost {
 namespace json {
 
-//----------------------------------------------------------
-
-void
-storage::
-addref() noexcept
-{
-    ++refs_;
-}
-
-void
-storage::
-release() noexcept
-{
-    if(scoped_)
-        return;
-    if(--refs_ > 0)
-        return;
-    delete this;
-}
-
 storage::
 storage(unsigned long long id) noexcept
     : refs_(1)

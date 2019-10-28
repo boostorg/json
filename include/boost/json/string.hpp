@@ -12,6 +12,7 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/storage.hpp>
+#include <boost/json/detail/assert.hpp>
 #include <boost/json/detail/string.hpp>
 #include <boost/pilfer.hpp>
 #include <algorithm>
@@ -199,8 +200,8 @@ private:
         unalloc(storage_ptr const& sp) noexcept;
     };
 
-    impl s_;
     storage_ptr sp_;
+    impl s_;
 
 public:
     BOOST_JSON_DECL
@@ -1257,6 +1258,14 @@ public:
     BOOST_JSON_DECL
     void
     resize(size_type count, char ch);
+
+    void
+    grow(size_type n) noexcept
+    {
+        BOOST_JSON_ASSERT(
+            n <= s_.capacity - s_.size);
+        s_.term(s_.size + n);
+    }
 
     //------------------------------------------------------
 

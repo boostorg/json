@@ -34,6 +34,7 @@ namespace json {
         '\'
         '/'
         'b'
+        'f'
         'n'
         'r'
         't'
@@ -247,12 +248,16 @@ loop:
 loop_ws:
         while(p < p1)
         {
-            if(! is_ws(*p))
+            if( *p == ' ' ||
+                *p == '\t' ||
+                *p == '\r' ||
+                *p == '\n')
             {
-                st.pop();
-                goto loop;
+                ++p;
+                continue;
             }
-            ++p;
+            st.pop();
+            goto loop;
         }
         break;
 
@@ -640,7 +645,7 @@ loop_string:
         case 'f':
             if(! maybe_flush(ec))
                 goto finish;
-            temp.push_back('\x08');
+            temp.push_back('\x0c');
             break;
 
         case 'n':

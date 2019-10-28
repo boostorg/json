@@ -18,22 +18,6 @@ struct parser_base
 {
     static
     bool
-    is_ws(char c) noexcept
-    {
-        return
-            c == ' '  || c == '\t' ||
-            c == '\r' || c == '\n';
-    }
-
-    static
-    bool
-    is_digit(char c) noexcept
-    {
-        return static_cast<unsigned char>(c - '0') < 10;
-    }
-
-    static
-    bool
     is_control(char c) noexcept
     {
         return static_cast<unsigned char>(c) < 32;

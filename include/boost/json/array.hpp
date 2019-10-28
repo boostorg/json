@@ -74,23 +74,15 @@ class value;
 */
 class array
 {
-    struct table;
-
-    table* tab_ = nullptr;
-    storage_ptr sp_;
-
-    struct undo_create;
-    struct undo_insert;
-
 public:
+    /// The type used to represent unsigned integers
+    using size_type = unsigned long;
+
     /// The type of each element
     using value_type = value;
 
-    /// The type used to represent unsigned integers
-    using size_type = std::size_t;
-
     /// The type used to represent signed integers
-    using difference_type = std::ptrdiff_t;
+    using difference_type = long;
 
     /// A reference to an element
     using reference = value&;
@@ -199,7 +191,7 @@ public:
     BOOST_JSON_DECL
     array(
         size_type count,
-        value_type const& v,
+        value const& v,
         storage_ptr sp = default_storage());
 
     /** Construct a container with `count` null values
@@ -461,12 +453,9 @@ public:
 
         @param other The container to copy
     */
+    BOOST_JSON_DECL
     array&
-    operator=(array const& other)
-    {
-        copy(other);
-        return *this;
-    }
+    operator=(array const& other);
 
     /** Move assignment operator
 
@@ -514,13 +503,10 @@ public:
 
         @param init The initializer list to assign
     */
+    BOOST_JSON_DECL
     array&
     operator=(
-        std::initializer_list<value> init)
-    {
-        assign(init);
-        return *this;
-    }
+        std::initializer_list<value> init);
 
     //------------------------------------------------------
 
@@ -600,7 +586,7 @@ public:
     */
     inline
     reference
-    operator[](size_type pos);
+    operator[](size_type pos) noexcept;
 
     /** Access an element
 
@@ -619,7 +605,7 @@ public:
     */
     inline
     const_reference
-    operator[](size_type pos) const;
+    operator[](size_type pos) const noexcept;
 
     /** Access the first element
 
@@ -635,7 +621,7 @@ public:
     */
     inline
     reference
-    front();
+    front() noexcept;
 
     /** Access the first element
 
@@ -651,7 +637,7 @@ public:
     */
     inline
     const_reference
-    front() const;
+    front() const noexcept;
 
     /** Access the last element
 
@@ -667,7 +653,7 @@ public:
     */
     inline
     reference
-    back();
+    back() noexcept;
 
     /** Access the last element
 
@@ -683,7 +669,7 @@ public:
     */
     inline
     const_reference
-    back() const;
+    back() const noexcept;
 
     /** Access the underlying array directly
 
@@ -702,7 +688,7 @@ public:
         a null pointer.
     */
     inline
-    value_type*
+    value*
     data() noexcept;
 
     /** Access the underlying array directly
@@ -722,7 +708,7 @@ public:
         a null pointer.
     */
     inline
-    value_type const*
+    value const*
     data() const noexcept;
 
     //------------------------------------------------------
@@ -911,9 +897,11 @@ public:
 
         Constant.
     */
-    inline
     bool
-    empty() const noexcept;
+    empty() const noexcept
+    {
+        return impl_.size == 0;
+    }
 
     /** Return the number of elements in the container
 
@@ -925,9 +913,11 @@ public:
 
         Constant.
     */
-    inline
     size_type
-    size() const noexcept;
+    size() const noexcept
+    {
+        return impl_.size;
+    }
 
     /** Return the maximum number of elements the container can hold
 
@@ -940,9 +930,12 @@ public:
 
         Constant.
     */
-    inline
+    static
     size_type
-    max_size() const noexcept;
+    max_size() noexcept
+    {
+        return size_type(-1);
+    }
 
     /** Return the number of elements that can be held in currently allocated memory
 
@@ -953,9 +946,11 @@ public:
 
         Constant.
     */
-    inline
     size_type
-    capacity() const noexcept;
+    capacity() const noexcept
+    {
+        return impl_.capacity;
+    }
 
     /** Increase the capacity to at least a certain amount
 
@@ -986,9 +981,14 @@ public:
 
         @param new_capacity The new capacity of the array.
     */
-    BOOST_JSON_DECL
     void
-    reserve(size_type new_capacity);
+    reserve(size_type new_capacity)
+    {
+        // never shrink
+        if(new_capacity <= impl_.capacity)
+            return;
+        reserve_impl(new_capacity);
+    }
 
     /** Request the removal of unused capacity
 
@@ -1062,9 +1062,9 @@ public:
     iterator
     insert(
         const_iterator pos,
-        value_type const& v)
+        value const& v)
     {
-        return emplace_impl(pos, v);
+        return emplace(pos, v);
     }
 
     /** Insert elements before the specified location
@@ -1098,10 +1098,9 @@ public:
     iterator
     insert(
         const_iterator pos,
-        value_type&& v)
+        value&& v)
     {
-        return emplace_impl(
-            pos, std::move(v));
+        return emplace(pos, std::move(v));
     }
 
     /** Insert elements before the specified location
@@ -1139,7 +1138,7 @@ public:
     insert(
         const_iterator pos,
         size_type count,
-        value_type const& v);
+        value const& v);
 
     /** Insert elements before the specified location
 
@@ -1344,9 +1343,9 @@ public:
         using container's associated @ref storage.
     */
     void
-    push_back(value_type const& v)
+    push_back(value const& v)
     {
-        emplace_impl(end(), v);
+        emplace_back(v);
     }
 
     /** Add an element to the end.
@@ -1372,9 +1371,9 @@ public:
         using the container's associated @ref storage.
     */
     void
-    push_back(value_type&& v)
+    push_back(value&& v)
     {
-        emplace_impl(end(), std::move(v));
+        emplace_back(std::move(v));
     }
 
     /** Append a constructed element in-place
@@ -1486,7 +1485,7 @@ public:
     void
     resize(
         size_type count,
-        value_type const& v);
+        value const& v);
 
     /** Swap the contents
 
@@ -1519,6 +1518,40 @@ public:
     swap(array& other);
 
 private:
+    struct impl_type
+    {
+        value* vec = nullptr;
+        size_type size = 0;
+        size_type capacity = 0;
+
+        impl_type() = default;
+        impl_type(impl_type const&) = default;
+        impl_type& operator=(
+            impl_type const&) = default;
+
+        inline
+        size_type
+        index_of(value const*) const noexcept;
+
+        inline
+        impl_type(
+            impl_type&& other) noexcept;
+
+        inline
+        void
+        swap(impl_type& rhs) noexcept;
+
+        inline
+        void
+        construct(
+            size_type capacity,
+            storage_ptr const& sp);
+
+        BOOST_JSON_DECL
+        void
+        destroy(storage_ptr const& sp) noexcept;
+    };
+
     template<class It>
     using iter_cat = typename
         std::iterator_traits<It>::iterator_category;
@@ -1549,11 +1582,11 @@ private:
         InputIt first, InputIt last,
         std::forward_iterator_tag);
 
-    template<class Arg>
-    iterator
-    emplace_impl(
-        const_iterator pos,
-        Arg&& arg);
+    inline
+    void
+    destroy(
+        value* first,
+        value* last) noexcept;
 
     BOOST_JSON_DECL
     void
@@ -1561,13 +1594,31 @@ private:
 
     BOOST_JSON_DECL
     void
-    assign(std::initializer_list<value> init);
+    copy(std::initializer_list<value> init);
+
+    BOOST_JSON_DECL
+    void
+    reserve_impl(size_type capacity);
+
+    BOOST_JSON_DECL
+    static
+    void
+    relocate(
+        value* dest,
+        value* src,
+        size_type n) noexcept;
 
     inline
     storage_ptr
     release_storage() noexcept;
 
+    class undo_create;
+    class undo_assign;
+    class undo_insert;
     friend class value;
+
+    storage_ptr sp_;
+    impl_type impl_;
 };
 
 } // json

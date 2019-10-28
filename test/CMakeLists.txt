@@ -29,7 +29,6 @@ add_executable (json-tests
     test.hpp
     parse-vectors.hpp
     main.cpp
-    _detail_stack.cpp
     array.cpp
     assign_string.cpp
     assign_vector.cpp

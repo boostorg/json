@@ -13,7 +13,7 @@
 #include <boost/json/detail/config.hpp>
 #include <boost/json/number.hpp>
 #include <boost/json/value.hpp>
-#include <boost/json/detail/iterator.hpp>
+#include <boost/json/detail/stack.hpp>
 #include <boost/json/detail/string.hpp>
 #include <iosfwd>
 
@@ -24,21 +24,67 @@ class serializer
 {
     enum class state : char;
 
-    detail::const_iterator it_;
+    struct nobj
+    {
+        object const* po;
+        object::const_iterator it;
+    };
+
+    struct narr
+    {
+        array const* pa;
+        array::const_iterator it;
+    };
+
+    struct node
+    {
+        union
+        {
+            value const* pjv;
+            nobj obj;
+            narr arr;
+        };
+        state st;
+
+        inline
+        explicit
+        node(state st_) noexcept;
+
+        inline
+        explicit
+        node(value const& jv) noexcept;
+
+        inline
+        explicit
+        node(object const& o) noexcept;
+
+        inline
+        explicit
+        node(array const& a) noexcept;
+    };
+
+    detail::stack<node, 50> stack_;
+
     string_view str_;
     unsigned char nbuf_;
-    bool key_;
     char buf_[number::max_string_chars + 1];
-    state state_;
 
 public:
-    BOOST_JSON_DECL
     explicit
-    serializer(value const& jv);
+    serializer(value const& jv)
+    {
+        // ensure room for \uXXXX escape plus one
+        BOOST_JSON_STATIC_ASSERT(sizeof(buf_) >= 7);
+        reset(jv);
+    }
 
     BOOST_JSON_DECL
     bool
     is_done() const noexcept;
+
+    BOOST_JSON_DECL
+    void
+    reset(value const& jv) noexcept;
 
     BOOST_JSON_DECL
     std::size_t
@@ -46,7 +92,7 @@ public:
 };
 
 BOOST_JSON_DECL
-std::string
+string
 to_string(value const& jv);
 
 BOOST_JSON_DECL

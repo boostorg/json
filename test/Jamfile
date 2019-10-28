@@ -42,7 +42,6 @@ local SOURCES =
     storage.cpp
     string.cpp
     value.cpp
-    _detail_stack.cpp
     ryu/d2fixed_test.cpp
     ryu/d2s_intrinsics_test.cpp
     ryu/d2s_table_test.cpp

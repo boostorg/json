@@ -90,12 +90,13 @@ value::
         break;
 
     case json::kind::number:
-        num_.~number();
+        sca_.num.~number();
+        sca_.sp.~storage_ptr();
         break;
 
     case json::kind::boolean:
     case json::kind::null:
-        sp_.~storage_ptr();
+        sca_.sp.~storage_ptr();
         break;
     }
 }
@@ -139,22 +140,42 @@ value(
         break;
 
     case json::kind::number:
-        ::new(&num_) number(
-            std::move(sp));
+        ::new(&sca_.num) number;
+        ::new(&sca_.sp)
+            storage_ptr(std::move(sp));
         break;
 
     case json::kind::boolean:
-        ::new(&bool_) bool{};
-        ::new(&sp_)
+        ::new(&sca_.b) bool{};
+        ::new(&sca_.sp)
             storage_ptr(std::move(sp));
         break;
 
     case json::kind::null:
-        ::new(&sp_)
+        ::new(&sca_.sp)
             storage_ptr(std::move(sp));
         break;
     }
     kind_ = k;
+}
+
+value::
+value(
+    kind_array_t,
+    storage_ptr sp) noexcept
+    : arr_(std::move(sp))
+    , kind_(json::kind::array)
+{
+}
+
+value::
+value(
+    kind_null_t,
+    storage_ptr sp) noexcept
+    : kind_(json::kind::null)
+{
+    ::new(&sca_.sp)
+        storage_ptr(std::move(sp));
 }
 
 value::
@@ -188,19 +209,22 @@ value(
         break;
 
     case json::kind::number:
-        ::new(&num_) number(
-            other.num_, std::move(sp));
+        ::new(&sca_.num) number(
+            other.sca_.num);
+        ::new(&sca_.sp)
+            storage_ptr(std::move(sp));
         break;
 
     case json::kind::boolean:
-        bool_ = other.bool_;
-        ::new(&sp_) storage_ptr(
-            std::move(sp));
+        ::new(&sca_.b) bool(
+            other.sca_.b);
+        ::new(&sca_.sp)
+            storage_ptr(std::move(sp));
         break;
 
     case json::kind::null:
-        ::new(&sp_) storage_ptr(
-            std::move(sp));
+        ::new(&sca_.sp)
+            storage_ptr(std::move(sp));
         break;
     }
     kind_ = other.kind_;
@@ -214,33 +238,34 @@ value(pilfered<value> p) noexcept
     {
     case json::kind::object:
         relocate(&obj_, other.obj_);
-        ::new(&other.sp_) storage_ptr;
+        ::new(&other.sca_.sp) storage_ptr;
         break;
 
     case json::kind::array:
         relocate(&arr_, other.arr_);
-        ::new(&other.sp_) storage_ptr;
+        ::new(&other.sca_.sp) storage_ptr;
         break;
 
     case json::kind::string:
         relocate(&str_, other.str_);
-        ::new(&other.sp_) storage_ptr;
+        ::new(&other.sca_.sp) storage_ptr;
         break;
 
     case json::kind::number:
-        relocate(&num_, other.num_);
-        ::new(&other.sp_) storage_ptr;
+        relocate(&sca_.num, other.sca_.num);
+        ::new(&sca_.sp) storage_ptr(
+            std::move(other.sca_.sp));
         break;
 
     case json::kind::boolean:
-        bool_ = other.bool_;
-        ::new(&sp_) storage_ptr(
-            std::move(other.sp_));
+        ::new(&sca_.b) bool(other.sca_.b);
+        ::new(&sca_.sp) storage_ptr(
+            std::move(other.sca_.sp));
         break;
 
     case json::kind::null:
-        ::new(&sp_) storage_ptr(
-            std::move(other.sp_));
+        ::new(&sca_.sp) storage_ptr(
+            std::move(other.sca_.sp));
         break;
     }
     kind_ = other.kind_;
@@ -268,19 +293,22 @@ value(value&& other) noexcept
         break;
 
     case json::kind::number:
-        ::new(&num_) number(
-            std::move(other.num_));
+        ::new(&sca_.num) number(
+            std::move(other.sca_.num));
+        ::new(&sca_.sp) storage_ptr(
+            other.sca_.sp);
         break;
 
     case json::kind::boolean:
-        bool_ = other.bool_;
-        ::new(&sp_) storage_ptr(
-            other.sp_);
+        ::new(&sca_.b) bool(
+            other.sca_.b);
+        ::new(&sca_.sp) storage_ptr(
+            other.sca_.sp);
         break;
 
     case json::kind::null:
-        ::new(&sp_) storage_ptr(
-            other.sp_);
+        ::new(&sca_.sp) storage_ptr(
+            other.sca_.sp);
         break;
     }
     kind_ = other.kind_;
@@ -312,19 +340,21 @@ value(
         break;
 
     case json::kind::number:
-        ::new(&num_) number(
-            std::move(other.num_),
+        ::new(&sca_.num) number(
+            std::move(other.sca_.num));
+        ::new(&sca_.sp) storage_ptr(
             std::move(sp));
         break;
 
     case json::kind::boolean:
-        bool_ = other.bool_;
-        ::new(&sp_) storage_ptr(
+        ::new(&sca_.b) bool(
+            other.sca_.b);
+        ::new(&sca_.sp) storage_ptr(
             std::move(sp));
         break;
 
     case json::kind::null:
-        ::new(&sp_) storage_ptr(
+        ::new(&sca_.sp) storage_ptr(
             std::move(sp));
         break;
     }
@@ -421,8 +451,10 @@ value::
 value(number num) noexcept
     : kind_(json::kind::number)
 {
-    ::new(&num_) number(
+    ::new(&sca_.num) number(
         std::move(num));
+    ::new(&sca_.sp) storage_ptr(
+        default_storage());
 }
 
 value::
@@ -431,8 +463,9 @@ value(
     storage_ptr sp)
     : kind_(json::kind::number)
 {
-    ::new(&num_) number(
-        std::move(num),
+    ::new(&sca_.num) number(
+        std::move(num));
+    ::new(&sca_.sp) storage_ptr(
         std::move(sp));
 }
 
@@ -544,16 +577,15 @@ reset(json::kind k) noexcept
 
         case json::kind::number:
         {
-            sp = num_.release_storage();
-            num_.~number();
+            sp = std::move(sca_.sp);
+            sca_.num.~number();
             break;
         }
 
         case json::kind::boolean:
         case json::kind::null:
         {
-            sp = std::move(sp_);
-            this->~value();
+            sp = std::move(sca_.sp);
             break;
         }
         }
@@ -576,11 +608,11 @@ reset(json::kind k) noexcept
             break;
 
         case json::kind::number:
-            num_ = 0;
+            sca_.num = 0;
             break;
 
         case json::kind::boolean:
-            bool_ = false;
+            sca_.b = false;
             break;
 
         case json::kind::null:
@@ -670,12 +702,12 @@ get_storage() const noexcept
         return str_.get_storage();
 
     case json::kind::number:
-        return num_.get_storage();
-
+    case json::kind::boolean:
+    case json::kind::null:
     default:
         break;
     }
-    return sp_;
+    return sca_.sp;
 }
 
 } // json

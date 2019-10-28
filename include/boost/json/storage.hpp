@@ -25,17 +25,22 @@ namespace json {
 class storage
 {
     std::atomic<std::size_t> refs_;
-    //std::size_t refs_;
     unsigned long long id_ = 0;
     bool scoped_ = false;
 
-    BOOST_JSON_DECL
     void
-    addref() noexcept;
+    addref() noexcept
+    {
+        if(! scoped_)
+            ++refs_;
+    }
 
-    BOOST_JSON_DECL
     void
-    release() noexcept;
+    release() noexcept
+    {
+        if(! scoped_ && --refs_ == 0)
+            delete this;
+    }
 
     template<class T>
     friend class basic_storage_ptr;
