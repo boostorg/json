@@ -12,10 +12,10 @@
 
 #include <boost/json/detail/config.hpp>
 #include <atomic>
-#include <cstddef>
 #include <cstdlib>
 #include <memory>
 #include <type_traits>
+#include <utility>
 
 namespace boost {
 namespace json {
@@ -25,7 +25,9 @@ namespace json {
 class storage
 {
     std::atomic<std::size_t> refs_;
+    //std::size_t refs_;
     unsigned long long id_ = 0;
+    bool scoped_ = false;
 
     BOOST_JSON_DECL
     void
@@ -38,18 +40,17 @@ class storage
     template<class T>
     friend class basic_storage_ptr;
 
-public:
-    static std::size_t constexpr max_align =
-        sizeof(max_align_t);
+    template<class T>
+    friend class scoped_storage;
 
+public:
     virtual
     ~storage() = default;
 
     void*
     allocate(
         std::size_t n,
-        std::size_t align =
-            max_align)
+        std::size_t align)
     {
         return do_allocate(n, align);
     }
@@ -58,10 +59,15 @@ public:
     deallocate(
         void* p,
         std::size_t n,
-        std::size_t align =
-            max_align)
+        std::size_t align) noexcept
     {
         return do_deallocate(p, n, align);
+    }
+
+    bool
+    is_scoped() const noexcept
+    {
+        return scoped_;
     }
 
     bool
@@ -125,7 +131,8 @@ class basic_storage_ptr
     template<class U>
     friend class basic_storage_ptr;
 
-    using count = std::atomic<unsigned>;
+    template<class U>
+    friend class scoped_storage;
 
     T* t_ = nullptr;
 
@@ -136,7 +143,7 @@ class basic_storage_ptr
     }
 
 public:
-    /** Construct an null storage pointer
+    /** Construct a null storage pointer
 
         This constructs a null storage pointer.
 
@@ -504,6 +511,31 @@ operator!=(
 
 /// A type-erased storage pointer.
 using storage_ptr = basic_storage_ptr<storage>;
+
+//----------------------------------------------------------
+
+template<class T>
+class scoped_storage
+{
+    T t_;
+
+    BOOST_JSON_STATIC_ASSERT(
+        std::is_base_of<storage, T>::value);
+
+public:
+    template<class... Args>
+    explicit
+    scoped_storage(Args&&... args)
+        : t_(std::forward<Args>(args)...)
+    {
+        t_.scoped_ = true;
+    }
+
+    operator storage_ptr() noexcept
+    {
+        return storage_ptr(&t_);
+    }
+};
 
 //----------------------------------------------------------
 

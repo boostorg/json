@@ -13,7 +13,7 @@
 #include <boost/json/detail/config.hpp>
 #include <boost/json/detail/assert.hpp>
 #include <boost/json/storage.hpp>
-#include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <stdexcept>
 
@@ -22,30 +22,45 @@ namespace json {
 
 /** A storage which uses a multiple fixed size blocks
 */
-class block_storage : public storage
+class block_storage final
+    : public storage
 {
     struct block
     {
         std::size_t const size;
-        std::size_t used;
+        std::uintptr_t top;
         block* next;
 
-        char*
-        begin() noexcept
+        block(
+            std::size_t size_,
+            block* next_)
+            : size(size_)
+            , top(reinterpret_cast<
+                std::uintptr_t>(this+1))
+            , next(next_)
         {
-            return reinterpret_cast<
-                char*>(this+1);
         }
 
-        char*
-        end() noexcept
+        void*
+        alloc(
+            std::size_t n,
+            std::size_t align) noexcept
         {
-            return begin() + size;
+            // must be power of 2
+            BOOST_JSON_ASSERT(
+                (align & (align - 1)) == 0);
+            auto i = top;
+            if((i & (align - 1)) != 0)
+                i = (i | (align - 1)) + 1;
+            if(i + n > (reinterpret_cast<
+                std::uintptr_t>(this+1) + size))
+                return nullptr;
+            top = i + n;
+            return reinterpret_cast<void*>(i);
         }
     };
 
     std::size_t const block_size_;
-    std::size_t refs_ = 0;
     block* head_ = nullptr;
 
 public:
@@ -64,7 +79,7 @@ public:
 
     explicit
     block_storage(
-        std::size_t block_size = 256 * 1024)
+        std::size_t block_size = 64 * 1024)
         : block_size_(block_size)
     {
     }
@@ -78,10 +93,8 @@ private:
             size + sizeof(block) - 1) /
             sizeof(block);
         auto& b = *::new(
-            a.allocate(n + 1)) block{
-                n * sizeof(block),
-                0,
-                head_};
+            a.allocate(n + 1)) block(
+                n * sizeof(block), head_);
         head_ = &b;
         return b;
     }
@@ -91,35 +104,18 @@ private:
         std::size_t n,
         std::size_t align) override
     {
-        (void)align;
-        // must be power of 2
-        BOOST_JSON_ASSERT(
-            (align & (align - 1)) == 0);
-        // cannot exceed max alignment
-        BOOST_JSON_ASSERT(
-            align <= sizeof(std::max_align_t));
-        auto const needed =
-            [&]
-            {
-                if(n < block_size_)
-                    return block_size_;
-                return n + sizeof(block);
-            };
         if(head_)
         {
-            auto const avail =
-                head_->size - head_->used;
-            if(avail < n)
-                alloc_block(needed());
+            auto p = head_->alloc(n, align);
+            if(p)
+                return p;
         }
+        if(n > block_size_ - 2 * align)
+            alloc_block(n + 2 * align);
         else
-        {
-            alloc_block(needed());
-        }
-        ++refs_;
-        auto p =
-            head_->begin() + head_->used;
-        head_->used += n;
+            alloc_block(block_size_);
+        auto p = head_->alloc(n, align);
+        BOOST_JSON_ASSERT(p);
         return p;
     }
 
@@ -129,9 +125,6 @@ private:
         std::size_t,
         std::size_t) noexcept override
     {
-        if(--refs_ > 0)
-            return;
-        //clear();
     }
 };
 

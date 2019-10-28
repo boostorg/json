@@ -30,6 +30,8 @@ void
 storage::
 release() noexcept
 {
+    if(scoped_)
+        return;
     if(--refs_ > 0)
         return;
     delete this;

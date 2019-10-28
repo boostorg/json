@@ -260,7 +260,8 @@ const_iterator(
 object::
 ~object()
 {
-    release_storage();
+    if(sp_ && ! sp_->is_scoped())
+        release_storage();
 }
 
 object::

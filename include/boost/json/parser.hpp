@@ -22,7 +22,7 @@
 namespace boost {
 namespace json {
 
-class parser
+class parser final
     : public basic_parser
 {
     using size_type = unsigned;
@@ -76,10 +76,6 @@ public:
     release() noexcept;
 
 private:
-    template<class T>
-    void
-    assign(T&& t);
-
     BOOST_JSON_DECL
     void
     reset();

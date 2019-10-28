@@ -36,7 +36,6 @@ add_executable (json-tests
     basic_parser.cpp
     block_storage.cpp
     error.cpp
-    fixed_storage.cpp
     ieee_decimal.cpp
     json.cpp
     kind.cpp

@@ -12,39 +12,12 @@
 
 #include <boost/json/parser.hpp>
 #include <boost/json/error.hpp>
-#include <boost/json/block_storage.hpp>
 #include <boost/json/detail/assert.hpp>
 #include <stdexcept>
 #include <utility>
 
 namespace boost {
 namespace json {
-
-template<class T>
-void
-parser::
-assign(T&& t)
-{
-    auto& jv = *stack_.front();
-    BOOST_JSON_ASSERT(! jv.is_object());
-    if(obj_)
-    {
-        BOOST_JSON_ASSERT(jv.is_null());
-        jv = std::forward<T>(t);
-        stack_.pop();
-    }
-    else if(stack_.front()->is_array())
-    {
-        BOOST_JSON_ASSERT(s_.empty());
-        jv.if_array()->emplace_back(
-            std::forward<T>(t));
-    }
-    else
-    {
-        BOOST_JSON_ASSERT(jv.is_null());
-        jv = std::forward<T>(t);
-    }
-}
 
 parser::
 ~parser()
@@ -55,8 +28,6 @@ parser::
 
 parser::
 parser()
-    : jv_(make_storage<
-        block_storage>())
 {
 }
 
@@ -353,7 +324,24 @@ void
 parser::
 on_bool(bool b, error_code&)
 {
-    assign(b);
+    auto& jv = *stack_.front();
+    BOOST_JSON_ASSERT(! jv.is_object());
+    if(obj_)
+    {
+        BOOST_JSON_ASSERT(jv.is_null());
+        jv.emplace_bool() = b;
+        stack_.pop();
+    }
+    else if(stack_.front()->is_array())
+    {
+        BOOST_JSON_ASSERT(s_.empty());
+        jv.if_array()->emplace_back(b);
+    }
+    else
+    {
+        BOOST_JSON_ASSERT(jv.is_null());
+        jv.emplace_bool() = b;
+    }
 }
 
 void

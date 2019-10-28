@@ -194,7 +194,8 @@ undo_insert(
 array::
 ~array()
 {
-    release_storage();
+    if(sp_ && ! sp_->is_scoped())
+        release_storage();
 }
 
 //----------------------------------------------------------
