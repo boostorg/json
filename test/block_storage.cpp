@@ -10,6 +10,8 @@
 // Test that header file is self-contained.
 #include <boost/json/block_storage.hpp>
 
+#include <boost/json/storage_ptr.hpp>
+
 #include <boost/beast/_experimental/unit_test/suite.hpp>
 
 namespace boost {

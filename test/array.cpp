@@ -198,7 +198,6 @@ public:
             array a1(init.begin(), init.end());
             array a2(pilfer(a1));
             BEAST_EXPECT(a1.empty());
-            BEAST_EXPECT(! a1.get_storage());
             check(a2);
             check_storage(a2, default_storage());
         }

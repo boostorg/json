@@ -52,14 +52,15 @@ impl_type::
 destroy(
     storage_ptr const& sp) noexcept
 {
-    if(! vec || sp->is_scoped())
-        return;
-    auto it = vec + size;
-    while(it != vec)
-        (*--it).~value();
-    sp->deallocate(vec,
-        capacity * sizeof(value),
-        alignof(value));
+    if(vec && sp->need_free())
+    {
+        auto it = vec + size;
+        while(it != vec)
+            (*--it).~value();
+        sp->deallocate(vec,
+            capacity * sizeof(value),
+            alignof(value));
+    }
     vec = nullptr;
     size = 0;
     capacity = 0;
@@ -163,8 +164,7 @@ undo_insert(
 array::
 ~array()
 {
-    if(sp_)
-        impl_.destroy(sp_);
+    impl_.destroy(sp_);
 }
 
 //----------------------------------------------------------
@@ -558,7 +558,7 @@ array::
 destroy(
     value* first, value* last) noexcept
 {
-    if(! sp_->is_scoped())
+    if(sp_->need_free())
         while(last != first)
             (*--last).~value();
 }

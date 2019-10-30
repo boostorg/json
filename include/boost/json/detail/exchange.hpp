@@ -19,8 +19,8 @@ inline
 T
 exchange(T& t, U u) noexcept
 {
-    T v = t;
-    t = u;
+    T v = std::move(t);
+    t = std::move(u);
     return v;
 }
 

@@ -80,7 +80,8 @@ public:
     explicit
     block_storage(
         std::size_t block_size = 64 * 1024)
-        : block_size_(block_size)
+        : storage(false)
+        , block_size_(block_size)
     {
     }
 

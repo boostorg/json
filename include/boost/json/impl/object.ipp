@@ -260,7 +260,7 @@ const_iterator(
 object::
 ~object()
 {
-    if(sp_ && ! sp_->is_scoped())
+    if(sp_->need_free())
         release_storage();
 }
 

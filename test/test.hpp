@@ -12,7 +12,7 @@
 
 #include <boost/json/basic_parser.hpp>
 #include <boost/json/value.hpp>
-#include <boost/json/storage.hpp>
+#include <boost/json/storage_ptr.hpp>
 #include <boost/beast/_experimental/unit_test/suite.hpp>
 #include <cstddef>
 #include <iterator>
@@ -27,25 +27,26 @@ namespace json {
 // unique_storage
 struct unique_storage : storage
 {
+    unique_storage()
+        : storage(true)
+    {
+    }
+
     void*
     do_allocate(
         std::size_t n,
         std::size_t) override
     {
-        return std::allocator<
-            char>{}.allocate(n);
+        return ::operator new(n);
     }
 
     void
     do_deallocate(
         void* p,
-        std::size_t n,
+        std::size_t,
         std::size_t) noexcept override
     {
-        auto cp =
-            reinterpret_cast<char*>(p);
-        return std::allocator<
-            char>{}.deallocate(cp, n);
+        return ::operator delete(p);
     }
 };
 
@@ -66,7 +67,8 @@ struct fail_storage : storage
     std::size_t fail_max = 1;
     std::size_t fail = 0;
 
-    ~fail_storage()
+    fail_storage()
+        : storage(true)
     {
     }
 
@@ -81,39 +83,31 @@ struct fail_storage : storage
             fail = 0;
             throw test_failure{};
         }
-        return std::allocator<
-            char>{}.allocate(n);
+        return ::operator new(n);
     }
 
     void
     do_deallocate(
         void* p,
-        std::size_t n,
+        std::size_t,
         std::size_t) noexcept override
     {
-        auto cp =
-            reinterpret_cast<char*>(p);
-        return std::allocator<
-            char>{}.deallocate(cp, n);
+        ::operator delete(p);
     }
 };
 
 //----------------------------------------------------------
 
-namespace detail {
-
-#if 1
-
 template<class F>
 void
 fail_loop(F&& f)
 {
-    auto sp = make_storage<fail_storage>();
-    while(sp->fail < 200)
+    scoped_storage<fail_storage> ss;
+    while(ss->fail < 200)
     {
         try
         {
-            f(sp);
+            f(ss);
         }
         catch(test_failure const&)
         {
@@ -121,72 +115,7 @@ fail_loop(F&& f)
         }
         break;
     }
-    BEAST_EXPECT(sp->fail < 200);
-}
-
-#else
-
-template<class F>
-typename std::enable_if<
-    std::is_same<void,
-        decltype(std::declval<F const&>()(
-            std::declval<storage_ptr>()))>::value
-    >::type
-fail_loop(F&& f)
-{
-    auto sp = make_storage<fail_storage>();
-    while(sp->fail < 200)
-    {
-        try
-        {
-            f(sp);
-        }
-        catch(test_failure const&)
-        {
-            continue;
-        }
-        break;
-    }
-    BEAST_EXPECT(sp->fail < 200);
-}
-
-template<class F>
-typename std::enable_if<
-    std::is_same<void, decltype(
-        std::declval<F const&>()())>::value
-    >::type
-fail_loop(F&& f)
-{
-    auto saved = default_storage();
-    auto sp =
-        make_storage<fail_storage>();
-    default_storage(sp);
-    while(sp->fail < 200)
-    {
-        try
-        {
-            f();
-        }
-        catch(test_failure const&)
-        {
-            continue;
-        }
-        break;
-    }
-    BEAST_EXPECT(sp->fail < 200);
-    default_storage(saved);
-}
-
-#endif
-
-} // detail
-
-template<class F>
-void
-fail_loop(F&& f)
-{
-    detail::fail_loop(
-        std::forward<F>(f));
+    BEAST_EXPECT(ss->fail < 200);
 }
 
 //----------------------------------------------------------

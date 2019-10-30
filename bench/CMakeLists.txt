@@ -14,15 +14,17 @@ source_group (TREE ${PROJECT_SOURCE_DIR}/include/boost/json PREFIX json FILES ${
 GroupSources(bench "/")
 
 if (MSVC)
-    add_compile_options(
-        /GL         # Whole program optimization
-        /Ob2        # inline any suitable
-        )
+    if (CMAKE_BUILD_TYPE EQUAL "Debug")
+    else()
+        add_compile_options(
+            /GL         # Whole program optimization
+            /Ob2        # inline any suitable
+            )
 
-    add_link_options(
-        /LTCG       # Link Time Code Generation
-        )
-
+        add_link_options(
+            /LTCG       # Link Time Code Generation
+            )
+    endif()
 endif()
 
 add_executable (bench

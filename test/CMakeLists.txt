@@ -43,6 +43,7 @@ add_executable (json-tests
     parser.cpp
     serializer.cpp
     storage.cpp
+    storage_ptr.cpp
     string.cpp
     value.cpp
 )

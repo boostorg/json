@@ -16,7 +16,7 @@
 #include <boost/json/kind.hpp>
 #include <boost/json/number.hpp>
 #include <boost/json/object.hpp>
-#include <boost/json/storage.hpp>
+#include <boost/json/storage_ptr.hpp>
 #include <boost/json/string.hpp>
 #include <boost/json/detail/is_specialized.hpp>
 #include <boost/json/detail/value.hpp>

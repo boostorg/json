@@ -23,6 +23,7 @@
 #include <boost/json/parser.hpp>
 #include <boost/json/serializer.hpp>
 #include <boost/json/storage.hpp>
+#include <boost/json/storage_ptr.hpp>
 #include <boost/json/string.hpp>
 #include <boost/json/value.hpp>
 

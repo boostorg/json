@@ -11,7 +11,7 @@
 #define BOOST_JSON_STRING_HPP
 
 #include <boost/json/detail/config.hpp>
-#include <boost/json/storage.hpp>
+#include <boost/json/storage_ptr.hpp>
 #include <boost/json/detail/assert.hpp>
 #include <boost/json/detail/string.hpp>
 #include <boost/pilfer.hpp>
