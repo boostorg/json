@@ -170,12 +170,6 @@ array::
 //----------------------------------------------------------
 
 array::
-array() noexcept
-    : sp_(default_storage())
-{
-}
-
-array::
 array(storage_ptr sp) noexcept
     : sp_(std::move(sp))
 {

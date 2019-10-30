@@ -223,7 +223,6 @@ string::
 
 string::
 string() noexcept
-    : sp_(default_storage())
 {
     s_.construct();
 }
@@ -281,7 +280,7 @@ string(
 
 string::
 string(string const& other)
-    : sp_(default_storage())
+    : sp_(other.sp_)
 {
     s_.construct();
     assign(other);

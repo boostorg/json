@@ -198,7 +198,7 @@ public:
                 });
             check(obj1, 3);
             auto const sp =
-                default_storage();
+                storage_ptr{};
             object obj2(std::move(obj1));
             BEAST_EXPECT(obj1.empty());
             BEAST_EXPECT(obj1.size() == 0);
@@ -222,7 +222,7 @@ public:
         }
 
         auto const sp = make_storage<unique_storage>();
-        auto const sp0 = default_storage();
+        auto const sp0 = storage_ptr{};
 
         // object(object&&, storage_ptr)
         fail_loop([&](storage_ptr const& sp)
@@ -236,7 +236,7 @@ public:
             BEAST_EXPECT(! obj1.empty());
             check(obj2, 3);
             check_storage(obj1,
-                default_storage());
+                storage_ptr{});
             check_storage(obj2, sp);
         });
 
@@ -326,9 +326,9 @@ public:
                 check(obj2, 3);
                 BEAST_EXPECT(obj1.empty());
                 check_storage(obj1,
-                    default_storage());
+                    storage_ptr{});
                 check_storage(obj2,
-                    default_storage());
+                    storage_ptr{});
             }
 
             fail_loop([&](storage_ptr const& sp)
@@ -342,7 +342,7 @@ public:
                 check(obj1, 3);
                 check(obj2, 3);
                 check_storage(obj1,
-                    default_storage());
+                    storage_ptr{});
                 check_storage(obj2, sp);
             });
         }
@@ -359,9 +359,9 @@ public:
                 check(obj1, 3);
                 check(obj2, 3);
                 check_storage(obj1,
-                    default_storage());
+                    storage_ptr{});
                 check_storage(obj2,
-                    default_storage());
+                    storage_ptr{});
             }
 
             fail_loop([&](storage_ptr const& sp)
@@ -375,7 +375,7 @@ public:
                 check(obj1, 3);
                 check(obj2, 3);
                 check_storage(obj1,
-                    default_storage());
+                    storage_ptr{});
                 check_storage(obj2, sp);
             });
         }
@@ -390,7 +390,7 @@ public:
                     {"c", "hello"} },
                 check(o, 3);
                 check_storage(o,
-                    default_storage());
+                    storage_ptr{});
             }
 
             fail_loop([&](storage_ptr const& sp)

@@ -327,34 +327,6 @@ public:
     }
 };
 
-//----------------------------------------------------------
-
-/** Return a pointer to the default storage
-
-    This function returns the default storage, which is
-    used when constructing a container without explicitly
-    specifying the storage. The default storage uses the
-    global allocator, equivalent to `std::allocator<char>`.
-
-    @par Complexity
-
-    Constant.
-
-    @par Exception Safety
-
-    No-throw guarantee.
-
-    @par Thread Safety
-
-    May be called concurrently.
-*/
-inline
-storage_ptr
-default_storage() noexcept
-{
-    return {};
-}
-
 } // json
 } // boost
 

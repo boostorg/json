@@ -265,12 +265,6 @@ object::
 }
 
 object::
-object() noexcept
-    : sp_(default_storage())
-{
-}
-
-object::
 object(storage_ptr sp) noexcept
     : sp_(std::move(sp))
 {

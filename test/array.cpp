@@ -75,8 +75,8 @@ public:
 
         // array(storage_ptr)
         {
-            array a(default_storage());
-            check_storage(a, default_storage());
+            array a(storage_ptr{});
+            check_storage(a, storage_ptr{});
         }
 
         // array(size_type, value, storage)
@@ -87,7 +87,7 @@ public:
                 BEAST_EXPECT(a.size() == 3);
                 for(auto const& v : a)
                     BEAST_EXPECT(v.is_bool());
-                check_storage(a, default_storage());
+                check_storage(a, storage_ptr{});
             }
 
             // construct with zero `true` values
@@ -112,7 +112,7 @@ public:
                 BEAST_EXPECT(a.size() == 3);
                 for(auto const& v : a)
                     BEAST_EXPECT(v.is_null());
-                check_storage(a, default_storage());
+                check_storage(a, storage_ptr{});
             }
 
             fail_loop([&](storage_ptr const& sp)
@@ -131,7 +131,7 @@ public:
             {
                 init_list init{ 0, 1, str_, 3, 4 };
                 array a(init.begin(), init.end());
-                check_storage(a, default_storage());
+                check_storage(a, storage_ptr{});
                 BEAST_EXPECT(a[0].as_number() == 0);
                 BEAST_EXPECT(a[1].as_number() == 1);
                 BEAST_EXPECT(a[2].as_string() == str_);
@@ -178,7 +178,7 @@ public:
                 array a1(init.begin(), init.end());
                 array a2(a1);
                 check(a2);
-                check_storage(a2, default_storage());
+                check_storage(a2, storage_ptr{});
             }
         }
 
@@ -199,7 +199,7 @@ public:
             array a2(pilfer(a1));
             BEAST_EXPECT(a1.empty());
             check(a2);
-            check_storage(a2, default_storage());
+            check_storage(a2, storage_ptr{});
         }
 
         // array(array&&)
@@ -209,7 +209,7 @@ public:
             array a2 = std::move(a1);
             BEAST_EXPECT(a1.empty());
             check(a2);
-            check_storage(a2, default_storage());
+            check_storage(a2, storage_ptr{});
         }
 
         // array(array&&, storage)
@@ -218,11 +218,11 @@ public:
                 init_list init{ 1, true, str_ };
                 array a1(init.begin(), init.end());
                 array a2(
-                    std::move(a1), default_storage());
+                    std::move(a1), storage_ptr{});
                 BEAST_EXPECT(a1.empty());
                 check(a2);
-                check_storage(a1, default_storage());
-                check_storage(a2, default_storage());
+                check_storage(a1, storage_ptr{});
+                check_storage(a2, storage_ptr{});
             }
 
             fail_loop([&](storage_ptr const& sp)
@@ -232,7 +232,7 @@ public:
                 array a2(std::move(a1), sp);
                 BEAST_EXPECT(! a1.empty());
                 check(a2);
-                check_storage(a1, default_storage());
+                check_storage(a1, storage_ptr{});
                 check_storage(a2, sp);
             });
         }
@@ -243,7 +243,7 @@ public:
             {
                 array a({1, true, str_});
                 check(a);
-                check_storage(a, default_storage());
+                check_storage(a, storage_ptr{});
             }
 
             fail_loop([&](storage_ptr const& sp)
@@ -266,8 +266,8 @@ public:
                 a2 = a1;
                 check(a1);
                 check(a2);
-                check_storage(a1, default_storage());
-                check_storage(a2, default_storage());
+                check_storage(a1, storage_ptr{});
+                check_storage(a2, storage_ptr{});
             }
 
             fail_loop([&](storage_ptr const& sp)
@@ -277,7 +277,7 @@ public:
                 a2 = a1;
                 check(a1);
                 check(a2);
-                check_storage(a1, default_storage());
+                check_storage(a1, storage_ptr{});
                 check_storage(a2, sp);
             });
         }
@@ -308,7 +308,7 @@ public:
                 a2 = std::move(a1);
                 check(a1);
                 check(a2);
-                check_storage(a1, default_storage());
+                check_storage(a1, storage_ptr{});
                 check_storage(a2, sp);
             });
         }
@@ -330,7 +330,7 @@ public:
                 array a({nullptr, value(kind::object), 1.f});
                 a = init;
                 check(a);
-                check_storage(a, default_storage());
+                check_storage(a, storage_ptr{});
             }
 
             fail_loop([&](storage_ptr const& sp)

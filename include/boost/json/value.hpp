@@ -195,17 +195,17 @@ public:
     BOOST_JSON_DECL
     value(
         json::kind k,
-        storage_ptr sp = default_storage()) noexcept;
+        storage_ptr sp = {}) noexcept;
 
     BOOST_JSON_DECL
     value(
         kind_array_t,
-        storage_ptr sp = default_storage()) noexcept;
+        storage_ptr sp = {}) noexcept;
 
     BOOST_JSON_DECL
     value(
         kind_null_t,
-        storage_ptr sp = default_storage()) noexcept;
+        storage_ptr sp = {}) noexcept;
 
     /** Copy constructor
 
@@ -409,21 +409,20 @@ public:
     */
     BOOST_JSON_DECL
     value(number num,
-        storage_ptr sp = default_storage());
+        storage_ptr sp = {});
 
     /** Construct a bool
     */
 #ifdef GENERATING_DOCUMENTATION
     value(bool b,
-        storage_ptr = default_storage()) noexcept;
+        storage_ptr = {}) noexcept;
 #else
     template<class Bool
         ,class = typename std::enable_if<
             std::is_same<Bool, bool>::value>::type
     >
     value(Bool b,
-        storage_ptr sp =
-            default_storage()) noexcept;
+        storage_ptr sp = {}) noexcept;
 #endif
 
     /** Construct an object or array
@@ -431,7 +430,7 @@ public:
     BOOST_JSON_DECL
     value(
         std::initializer_list<value> init,
-        storage_ptr sp = default_storage());
+        storage_ptr sp = {});
 
     /** Assign to this value
     */
@@ -642,7 +641,7 @@ public:
     >
     value(
         T const& t,
-        storage_ptr sp = default_storage())
+        storage_ptr sp = {})
         : value(std::move(sp))
     {
         value_exchange<

@@ -174,7 +174,7 @@ parse(
     error_code& ec)
 {
     return parse(s,
-        default_storage(), ec);
+        storage_ptr{}, ec);
 }
 
 BOOST_JSON_DECL
@@ -187,8 +187,7 @@ inline
 value
 parse(string_view s)
 {
-    return parse(
-        s, default_storage());
+    return parse(s, storage_ptr{});
 }
 
 } // json

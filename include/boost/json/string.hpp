@@ -222,29 +222,25 @@ public:
     string(
         size_type count,
         char ch,
-        storage_ptr sp =
-            default_storage());
+        storage_ptr sp = {});
 
     BOOST_JSON_DECL
     string(
         string const& other,
         size_type pos,
         size_type count = npos,
-        storage_ptr sp =
-            default_storage());
+        storage_ptr sp = {});
 
     BOOST_JSON_DECL
     string(
         char const* s,
-        storage_ptr sp =
-            default_storage());
+        storage_ptr sp = {});
 
     BOOST_JSON_DECL
     string(
         char const* s,
         size_type count,
-        storage_ptr sp =
-            default_storage());
+        storage_ptr sp = {});
 
     template<class InputIt
     #ifndef GENERATING_DOCUMENTATION
@@ -254,8 +250,7 @@ public:
     string(
         InputIt first,
         InputIt last,
-        storage_ptr sp =
-            default_storage());
+        storage_ptr sp = {});
 
     BOOST_JSON_DECL
     string(string const& other);
@@ -279,21 +274,19 @@ public:
     BOOST_JSON_DECL
     string(
         std::initializer_list<char> init,
-        storage_ptr sp = default_storage());
+        storage_ptr sp = {});
 
     BOOST_JSON_DECL
     string(
         string_view s,
-        storage_ptr sp =
-            default_storage());
+        storage_ptr sp = {});
 
     BOOST_JSON_DECL
     string(
         string_view s,
         size_type pos,
         size_type n,
-        storage_ptr sp =
-            default_storage());
+        storage_ptr sp = {});
 
     //------------------------------------------------------
     //

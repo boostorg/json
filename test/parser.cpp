@@ -92,7 +92,7 @@ R"xx({
 
         // parse(value, storage_ptr)
         {
-            check(parse(js, default_storage()));
+            check(parse(js, storage_ptr{}));
         }
 
         // parse(value, error_code)
@@ -106,7 +106,7 @@ R"xx({
         // parse(value, storage_ptr, error_code)
         {
             error_code ec;
-            auto jv = parse(js, default_storage(), ec);
+            auto jv = parse(js, storage_ptr{}, ec);
             BEAST_EXPECTS(! ec, ec.message());
             check(jv);
         }

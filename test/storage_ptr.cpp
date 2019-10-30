@@ -48,7 +48,7 @@ public:
     void
     testMembers()
     {
-        auto const dsp = default_storage();
+        auto const dsp = storage_ptr{};
         auto const usp =
             make_storage<unique_storage>();
 
@@ -121,21 +121,9 @@ public:
     }
 
     void
-    testDefaultStorage()
-    {
-        // default_storage()
-        {
-            auto sp1 = default_storage();
-            auto sp2 = default_storage();
-            BEAST_EXPECT(*sp1 == *sp2);
-        }
-    }
-
-    void
     run() override
     {
         testMembers();
-        testDefaultStorage();
     }
 };
 

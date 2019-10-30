@@ -102,7 +102,7 @@ public:
     void
     testConstruction()
     {
-        auto dsp = default_storage();
+        auto dsp = storage_ptr{};
         auto sp = make_storage<unique_storage>();
 
         // ~value()
@@ -454,7 +454,7 @@ public:
     void
     testConversion()
     {
-        auto dsp = default_storage();
+        auto dsp = storage_ptr{};
         auto sp = make_storage<unique_storage>();
 
         // value(object)

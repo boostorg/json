@@ -105,7 +105,7 @@ value::
 value() noexcept
     : value(
         json::kind::null,
-        default_storage())
+        storage_ptr{})
 {
 }
 

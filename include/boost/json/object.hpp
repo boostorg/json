@@ -176,8 +176,7 @@ public:
 
         No-throw guarantee.
     */
-    BOOST_JSON_DECL
-    object() noexcept;
+    object() = default;
 
     /** Construct an empty container
 
@@ -229,7 +228,7 @@ public:
     BOOST_JSON_DECL
     object(
         size_type count,
-        storage_ptr sp = default_storage());
+        storage_ptr sp = {});
 
     /** Construct with the contents of a range
 
@@ -286,7 +285,7 @@ public:
         InputIt first,
         InputIt last,
         size_type count = 0,
-        storage_ptr sp = default_storage());
+        storage_ptr sp = {});
 
     /** Move constructor
 
@@ -462,7 +461,7 @@ public:
         std::initializer_list<
             init_value> init,
         size_type count = 0,
-        storage_ptr sp = default_storage());
+        storage_ptr sp = {});
 
     /** Move assignment operator
 

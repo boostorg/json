@@ -130,7 +130,7 @@ public:
     /** Construct an empty container
 
         The container and all inserted elements will use the
-        @ref storage returned by @ref default_storage().
+        @ref storage returned by default storage.
 
         @par Complexity
 
@@ -140,8 +140,7 @@ public:
 
         No-throw guarantee.
     */
-    BOOST_JSON_DECL
-    array() noexcept;
+    array() = default;
 
     /** Construct an empty container
 
@@ -169,7 +168,7 @@ public:
         The container and all inserted elements will use the
         @ref storage owned by `sp`,
         or the default parameter value returned by
-        @ref default_storage() if this argument is omitted.
+        default storage if this argument is omitted.
 
         @par Complexity
 
@@ -192,14 +191,14 @@ public:
     array(
         size_type count,
         value const& v,
-        storage_ptr sp = default_storage());
+        storage_ptr sp = {});
 
     /** Construct a container with `count` null values
 
         The container and all inserted elements will use the
         @ref storage owned by `sp`,
         or the default parameter value returned by
-        @ref default_storage() if this argument is omitted.
+        default storage if this argument is omitted.
 
         @par Complexity
 
@@ -219,7 +218,7 @@ public:
     BOOST_JSON_DECL
     array(
         size_type count,
-        storage_ptr sp = default_storage());
+        storage_ptr sp = {});
 
     /** Construct a container with the contents of a range
 
@@ -228,7 +227,7 @@ public:
         The container and all inserted elements will use the
         @ref storage owned by `sp`,
         or the default parameter value returned by
-        @ref default_storage() if this argument is omitted.
+        default storage if this argument is omitted.
 
         @par Constraints
 
@@ -267,14 +266,14 @@ public:
     >
     array(
         InputIt first, InputIt last,
-        storage_ptr sp = default_storage());
+        storage_ptr sp = {});
 
     /** Copy constructor
 
         Constructs the container with a copy of the contents
         of `other`.
         The container and all inserted elements will use the
-        @ref storage returned by @ref default_storage().
+        @ref storage returned by default storage.
 
         @par Complexity
 
@@ -414,7 +413,7 @@ public:
         The container and all inserted elements will use the
         @ref storage owned by `sp`,
         or the default parameter value returned by
-        @ref default_storage() if this argument is omitted.
+        default storage if this argument is omitted.
 
         @par Complexity
 
@@ -434,7 +433,7 @@ public:
     BOOST_JSON_DECL
     array(
         std::initializer_list<value> init,
-        storage_ptr sp = default_storage());
+        storage_ptr sp = {});
 
     //------------------------------------------------------
 
