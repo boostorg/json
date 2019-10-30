@@ -448,16 +448,6 @@ value(
 }
 
 value::
-value(number num) noexcept
-    : kind_(json::kind::number)
-{
-    ::new(&sca_.num) number(
-        std::move(num));
-    ::new(&sca_.sp) storage_ptr(
-        default_storage());
-}
-
-value::
 value(
     number num,
     storage_ptr sp)
@@ -489,54 +479,6 @@ value(
             init, std::move(sp));
         kind_ = json::kind::array;
     }
-}
-
-value&
-value::
-operator=(object obj)
-{
-    undo u(this);
-    ::new(this) value(
-        std::move(obj),
-        u.old.get_storage());
-    u.commit();
-    return *this;
-}
-
-value&
-value::
-operator=(array arr)
-{
-    undo u(this);
-    ::new(this) value(
-        std::move(arr),
-        u.old.get_storage());
-    u.commit();
-    return *this;
-}
-
-value&
-value::
-operator=(string str)
-{
-    undo u(this);
-    ::new(this) value(
-        std::move(str),
-        u.old.get_storage());
-    u.commit();
-    return *this;
-}
-
-value&
-value::
-operator=(number num)
-{
-    undo u(this);
-    ::new(this) value(
-        std::move(num),
-        u.old.get_storage());
-    u.commit();
-    return *this;
 }
 
 //----------------------------------------------------------

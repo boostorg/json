@@ -123,14 +123,6 @@ to_json(T t, value& v)
     v.emplace_number() = t;
 }
 
-// bool
-inline
-void
-to_json(bool b, value& v)
-{
-    v.emplace_bool() = b;
-}
-
 // null
 inline
 void
@@ -176,6 +168,18 @@ from_json(T& t, value const& v)
         BOOST_JSON_THROW(
             system_error(error::not_number));
     }
+}
+
+//----------------------------------------------------------
+
+template<class Bool, class>
+value::
+value(Bool b, storage_ptr sp) noexcept
+    : kind_(json::kind::boolean)
+{
+    ::new(&sca_.b) bool(b);
+    ::new(&sca_.sp) storage_ptr(
+        std::move(sp));
 }
 
 //----------------------------------------------------------

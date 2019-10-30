@@ -408,12 +408,23 @@ public:
     /** Construct a number
     */
     BOOST_JSON_DECL
-    value(number num) noexcept;
+    value(number num,
+        storage_ptr sp = default_storage());
 
-    /** Construct a number
+    /** Construct a bool
     */
-    BOOST_JSON_DECL
-    value(number num, storage_ptr sp);
+#ifdef GENERATING_DOCUMENTATION
+    value(bool b,
+        storage_ptr = default_storage()) noexcept;
+#else
+    template<class Bool
+        ,class = typename std::enable_if<
+            std::is_same<Bool, bool>::value>::type
+    >
+    value(Bool b,
+        storage_ptr sp =
+            default_storage()) noexcept;
+#endif
 
     /** Construct an object or array
     */
@@ -422,29 +433,23 @@ public:
         std::initializer_list<value> init,
         storage_ptr sp = default_storage());
 
-    /** Assign an object
+    /** Assign to this value
     */
-    BOOST_JSON_DECL
+    template<class T
+#ifndef GENERATING_DOCUMENTATION
+        ,class = typename std::enable_if<
+            std::is_constructible<value, T>::value>::type
+#endif
+    >
     value&
-    operator=(object obj);
-
-    /** Assign an array
-    */
-    BOOST_JSON_DECL
-    value&
-    operator=(array arr);
-
-    /** Assign a string
-    */
-    BOOST_JSON_DECL
-    value&
-    operator=(string str);
-
-    /** Assign a number
-    */
-    BOOST_JSON_DECL
-    value&
-    operator=(number num);
+    operator=(T&& t)
+    {
+        value tmp(
+            std::forward<T>(t),
+            get_storage());
+        tmp.swap(*this);
+        return *this;
+    }
 
     //------------------------------------------------------
     //
