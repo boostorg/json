@@ -448,7 +448,7 @@ public:
                 BEAST_EXPECT(a.data() == &a[0]);
             }
             {
-                array const a;
+                array const a{};
                 BEAST_EXPECT(a.data() == nullptr);
             }
         }
