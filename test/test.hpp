@@ -24,27 +24,37 @@ namespace json {
 
 //----------------------------------------------------------
 
-// unique_storage
-struct unique_storage : storage
+struct unique_storage
 {
-    unique_storage()
-        : storage(true)
+    static
+    constexpr
+    unsigned long long
+    id()
     {
+        return 0;
+    }
+
+    static
+    constexpr
+    bool
+    need_free()
+    {
+        return true;
     }
 
     void*
-    do_allocate(
+    allocate(
         std::size_t n,
-        std::size_t) override
+        std::size_t)
     {
         return ::operator new(n);
     }
 
     void
-    do_deallocate(
+    deallocate(
         void* p,
         std::size_t,
-        std::size_t) noexcept override
+        std::size_t) noexcept
     {
         return ::operator delete(p);
     }
@@ -62,20 +72,31 @@ struct test_failure : std::exception
     }
 };
 
-struct fail_storage : storage
+struct fail_storage
 {
+    static
+    constexpr
+    unsigned long long
+    id()
+    {
+        return 0;
+    }
+
+    static
+    constexpr
+    bool
+    need_free()
+    {
+        return true;
+    }
+
     std::size_t fail_max = 1;
     std::size_t fail = 0;
 
-    fail_storage()
-        : storage(true)
-    {
-    }
-
     void*
-    do_allocate(
+    allocate(
         std::size_t n,
-        std::size_t) override
+        std::size_t)
     {
         if(++fail == fail_max)
         {
@@ -87,10 +108,10 @@ struct fail_storage : storage
     }
 
     void
-    do_deallocate(
+    deallocate(
         void* p,
         std::size_t,
-        std::size_t) noexcept override
+        std::size_t) noexcept
     {
         ::operator delete(p);
     }

@@ -295,35 +295,66 @@ operator!=(
 template<class T>
 class scoped_storage
 {
-    T t_;
+    struct impl : storage
+    {
+        T t;
 
-    BOOST_JSON_STATIC_ASSERT(
-        std::is_base_of<storage, T>::value);
+        template<class... Args>
+        constexpr
+        explicit
+        impl(Args&&... args)
+            : storage(
+                T::id(),
+                T::need_free(),
+                false)
+            , t(std::forward<Args>(args)...)
+        {
+        }
+
+        void*
+        allocate(
+            std::size_t n,
+            std::size_t align) override
+        {
+            return t.allocate(n, align);
+        }
+
+        void
+        deallocate(
+            void* p,
+            std::size_t n,
+            std::size_t align) noexcept override
+        {
+            t.deallocate(p, n, align);
+        }
+    };
+
+    impl impl_;
 
 public:
     template<class... Args>
+    constexpr
     explicit
     scoped_storage(Args&&... args)
-        : t_(std::forward<Args>(args)...)
+        : impl_(std::forward<Args>(args)...)
     {
-        t_.counted_ = false;
     }
 
-    T*
+    storage*
     get() noexcept
     {
-        return &t_;
+        return &impl_;
     }
 
     T*
     operator->() noexcept
     {
-        return get();
+        return &impl_.t;
     }
 
     operator storage_ptr() noexcept
     {
-        return storage_ptr(&t_);
+        return storage_ptr(&impl_);
     }
 };
 

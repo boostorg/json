@@ -24,8 +24,8 @@ class storage
     std::atomic<
         unsigned long long> refs_{ 1 };
     unsigned long long const id_ = 0;
-    bool const need_free_ = true;
-    bool counted_ = true;
+    bool const need_free_ ;
+    bool const counted_;
 
     friend class storage_ptr;
 
@@ -51,22 +51,19 @@ public:
             this->id_ != 0 &&
             this->id_ == other.id_);
     }
+
+    virtual
     void*
     allocate(
         std::size_t n,
-        std::size_t align)
-    {
-        return do_allocate(n, align);
-    }
+        std::size_t align) = 0;
 
+    virtual
     void
     deallocate(
         void* p,
         std::size_t n,
-        std::size_t align) noexcept
-    {
-        return do_deallocate(p, n, align);
-    }
+        std::size_t align) noexcept = 0;
 
     friend
     bool
@@ -86,29 +83,19 @@ public:
         return ! lhs.is_equal(rhs);
     }
 
-protected:
     // Choose a unique 64-bit random number from here:
     // https://www.random.org/cgi-bin/randbyte?nbytes=8&format=h
+    constexpr
+    explicit
     storage(
+        unsigned long long id,
         bool need_free,
-        unsigned long long id = 0) noexcept
+        bool counted) noexcept
         : id_(id)
         , need_free_(need_free)
+        , counted_(counted)
     {
     }
-
-    virtual
-    void*
-    do_allocate(
-        std::size_t n,
-        std::size_t align) = 0;
-
-    virtual
-    void
-    do_deallocate(
-        void* p,
-        std::size_t n,
-        std::size_t align) noexcept = 0;
 };
 
 } // json

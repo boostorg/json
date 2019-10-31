@@ -22,8 +22,7 @@ namespace json {
 
 /** A storage which uses a multiple fixed size blocks
 */
-class block_storage final
-    : public storage
+class block_storage
 {
     struct block
     {
@@ -64,6 +63,22 @@ class block_storage final
     block* head_ = nullptr;
 
 public:
+    static
+    constexpr
+    unsigned long long
+    id()
+    {
+        return 0;
+    }
+
+    static
+    constexpr
+    bool
+    need_free()
+    {
+        return false;
+    }
+
     ~block_storage()
     {
         std::allocator<block> a;
@@ -80,30 +95,14 @@ public:
     explicit
     block_storage(
         std::size_t block_size = 64 * 1024)
-        : storage(false)
-        , block_size_(block_size)
+        : block_size_(block_size)
     {
-    }
-
-private:
-    block&
-    alloc_block(std::size_t size)
-    {
-        std::allocator<block> a;
-        auto const n = (
-            size + sizeof(block) - 1) /
-            sizeof(block);
-        auto& b = *::new(
-            a.allocate(n + 1)) block(
-                n * sizeof(block), head_);
-        head_ = &b;
-        return b;
     }
 
     void*
-    do_allocate(
+    allocate(
         std::size_t n,
-        std::size_t align) override
+        std::size_t align)
     {
         if(head_)
         {
@@ -121,11 +120,26 @@ private:
     }
 
     void
-    do_deallocate(
+    deallocate(
         void*,
         std::size_t,
-        std::size_t) noexcept override
+        std::size_t) noexcept
     {
+    }
+
+private:
+    block&
+    alloc_block(std::size_t size)
+    {
+        std::allocator<block> a;
+        auto const n = (
+            size + sizeof(block) - 1) /
+            sizeof(block);
+        auto& b = *::new(
+            a.allocate(n + 1)) block(
+                n * sizeof(block), head_);
+        head_ = &b;
+        return b;
     }
 };
 

@@ -17,6 +17,83 @@
 namespace boost {
 namespace json {
 
+//----------------------------------------------------------
+
+namespace detail {
+
+template<class T>
+struct counted_storage_impl : storage
+{
+    T t;
+
+    template<class... Args>
+    constexpr
+    explicit
+    counted_storage_impl(Args&&... args)
+        : storage(
+            T::id(),
+            T::need_free(),
+            true)
+        , t(std::forward<Args>(args)...)
+    {
+    }
+
+    void*
+    allocate(
+        std::size_t n,
+        std::size_t align) override
+    {
+        return t.allocate(n, align);
+    }
+
+    void
+    deallocate(
+        void* p,
+        std::size_t n,
+        std::size_t align) noexcept override
+    {
+        t.deallocate(p, n, align);
+    }
+};
+
+struct default_storage_impl
+{
+    static
+    constexpr
+    unsigned long long id()
+    { 
+        return 0x3b88990852d58ae4;
+    }
+
+    static
+    constexpr
+    bool need_free()
+    {
+        return true;
+    }
+
+    void*
+    allocate(
+        std::size_t n,
+        std::size_t)
+    {
+        return ::operator new(n);
+    }
+
+    void
+    deallocate(
+        void* p,
+        std::size_t,
+        std::size_t) noexcept
+    {
+        ::operator delete(p);
+    }
+};
+
+} // detail
+
+//----------------------------------------------------------
+
 storage_ptr&
 storage_ptr::
 operator=(
@@ -44,33 +121,10 @@ storage*
 storage_ptr::
 get() const noexcept
 {
-    struct default_impl : storage
-    {
-        default_impl()
-            : storage(true,
-            0x3b88990852d58ae4)
-        {
-        }
-
-        void*
-        do_allocate(
-            std::size_t n,
-            std::size_t) override
-        {
-            return ::operator new(n);
-        }
-
-        void
-        do_deallocate(
-            void* p,
-            std::size_t,
-            std::size_t) noexcept override
-        {
-            ::operator delete(p);
-        }
-    };
-    //[[clang::require_constant_initialization]] 
-    static scoped_storage<default_impl> impl;
+#ifdef __clang__
+    [[clang::require_constant_initialization]] 
+#endif
+    static scoped_storage<detail::default_storage_impl> impl;
     return p_ ? p_ : impl.get();
 }
 
@@ -78,8 +132,9 @@ template<class Storage, class... Args>
 storage_ptr
 make_storage(Args&&... args)
 {
-    return storage_ptr(new Storage(
-        std::forward<Args>(args)...));
+    return storage_ptr(new 
+        detail::counted_storage_impl<Storage>(
+            std::forward<Args>(args)...));
 }
 
 } // json

@@ -20,27 +20,42 @@ namespace json {
 class storage_ptr_test : public beast::unit_test::suite
 {
 public:
-    struct throwing : storage
+    struct throwing
     {
+        static
+        constexpr
+        unsigned long long
+        id()
+        {
+            return 0;
+        }
+
+        static
+        constexpr
+        bool
+        need_free()
+        {
+            return true;
+        }
+
         throwing()
-            : storage(false)
         {
             throw std::exception{};
         }
 
         void*
-        do_allocate(
+        allocate(
             std::size_t,
-            std::size_t) override
+            std::size_t)
         {
             return nullptr;
         }
 
         void
-        do_deallocate(
+        deallocate(
             void*,
             std::size_t,
-            std::size_t) noexcept override
+            std::size_t) noexcept
         {
         }
     };
