@@ -11,8 +11,8 @@
 #define BOOST_JSON_SERIALIZER_HPP
 
 #include <boost/json/detail/config.hpp>
-#include <boost/json/number.hpp>
 #include <boost/json/value.hpp>
+#include <boost/json/detail/format.hpp>
 #include <boost/json/detail/stack.hpp>
 #include <boost/json/detail/string.hpp>
 #include <iosfwd>
@@ -67,7 +67,7 @@ class serializer
 
     string_view str_;
     unsigned char nbuf_;
-    char buf_[number::max_string_chars + 1];
+    char buf_[detail::max_string_chars + 1];
 
 public:
     explicit

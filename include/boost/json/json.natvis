@@ -4,14 +4,13 @@
     <DisplayString Condition="kind_==kind::object">object{obj_}</DisplayString>
     <DisplayString Condition="kind_==kind::array">array{arr_}</DisplayString>
     <DisplayString Condition="kind_==kind::string">string{str_}</DisplayString>
-    <DisplayString Condition="kind_==kind::number">{nat_.num_}</DisplayString>
     <DisplayString Condition="kind_==kind::boolean">{nat_.bool_}</DisplayString>
     <DisplayString Condition="kind_==kind::null">null</DisplayString>
     <Expand>
       <ExpandedItem Condition="kind_==kind::object">obj_</ExpandedItem>
       <ExpandedItem Condition="kind_==kind::array">arr_</ExpandedItem>
       <ExpandedItem Condition="kind_==kind::string">str_</ExpandedItem>
-      <Item Name="storage" Condition="kind_==kind::number||kind_==kind::boolean||kind_==kind::null">nat_.sp_</Item>
+      <Item Name="storage" Condition="kind_==kind::boolean||kind_==kind::null">nat_.sp_</Item>
       <ExpandedItem Condition="kind_==kind::number">nat_.num_</ExpandedItem>
       <ExpandedItem Condition="kind_==kind::boolean">nat_.bool_</ExpandedItem>
     </Expand>

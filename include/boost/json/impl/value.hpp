@@ -108,21 +108,6 @@ to_json(char const* t, value& v)
     v.emplace_string() = t;
 }
 
-// number
-template<class T
-    ,class = typename std::enable_if<
-        std::is_constructible<number, T>::value &&
-        ! std::is_same<number, T>::value &&
-        ! std::is_convertible<T, storage_ptr>::value
-            >::type
->
-inline
-void
-to_json(T t, value& v)
-{
-    v.emplace_number() = t;
-}
-
 // null
 inline
 void
@@ -145,19 +130,18 @@ template<typename T
 void
 from_json(T& t, value const& v)
 {
-    auto const& num = v.as_number();
-    if(num.is_int64())
+    if(v.is_int64())
     {
-        auto const rhs = num.get_int64();
+        auto const rhs = v.as_int64();
         if( rhs > (std::numeric_limits<T>::max)() ||
             rhs < (std::numeric_limits<T>::min)())
             BOOST_JSON_THROW(system_error(
                 error::integer_overflow));
         t = static_cast<T>(rhs);
     }
-    else if(num.is_uint64())
+    else if(v.is_uint64())
     {
-        auto const rhs = num.get_uint64();
+        auto const rhs = v.as_uint64();
         if(rhs > (std::numeric_limits<T>::max)())
             BOOST_JSON_THROW(system_error(
                 error::integer_overflow));

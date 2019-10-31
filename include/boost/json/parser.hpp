@@ -14,6 +14,7 @@
 #include <boost/json/basic_parser.hpp>
 #include <boost/json/storage.hpp>
 #include <boost/json/value.hpp>
+#include <boost/json/string.hpp>
 #include <boost/json/detail/string.hpp>
 #include <new>
 #include <string>
@@ -39,7 +40,7 @@ class parser final
     value jv_;
     detail::stack<value*,
         default_max_depth> stack_;
-    std::string s_;
+    string s_;
     unsigned long max_depth_ =
         default_max_depth;
     bool obj_;

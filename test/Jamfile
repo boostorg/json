@@ -32,7 +32,6 @@ local SOURCES =
     basic_parser.cpp
     block_storage.cpp
     error.cpp
-    ieee_decimal.cpp
     json.cpp
     kind.cpp
     number.cpp

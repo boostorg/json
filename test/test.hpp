@@ -651,7 +651,9 @@ equal_storage(
     case json::kind::string:
         return *v.as_string().get_storage() == *sp;
 
-    case json::kind::number:
+    case json::kind::int64:
+    case json::kind::uint64:
+    case json::kind::double_:
     case json::kind::boolean:
     case json::kind::null:
     break;

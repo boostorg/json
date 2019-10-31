@@ -12,6 +12,8 @@
 
 #include <boost/json/value.hpp>
 #include <boost/config.hpp>
+#include <cstring>
+#include <limits>
 #include <new>
 #include <utility>
 
@@ -51,8 +53,8 @@ struct value::init_iter
     operator*() const noexcept
     {
         return {
-            it_->as_array()[0].as_string(),
-            it_->as_array()[1] };
+            (*it_->if_array())[0].as_string(),
+            (*it_->if_array())[1] };
     }
 
     bool
@@ -89,11 +91,9 @@ value::
         str_.~string();
         break;
 
-    case json::kind::number:
-        sca_.num.~number();
-        sca_.sp.~storage_ptr();
-        break;
-
+    case json::kind::int64:
+    case json::kind::uint64:
+    case json::kind::double_:
     case json::kind::boolean:
     case json::kind::null:
         sca_.sp.~storage_ptr();
@@ -139,8 +139,20 @@ value(
             std::move(sp));
         break;
 
-    case json::kind::number:
-        ::new(&sca_.num) number;
+    case json::kind::int64:
+        ::new(&sca_.i) std::int64_t{};
+        ::new(&sca_.sp)
+            storage_ptr(std::move(sp));
+        break;
+
+    case json::kind::uint64:
+        ::new(&sca_.u) std::uint64_t{};
+        ::new(&sca_.sp)
+            storage_ptr(std::move(sp));
+        break;
+
+    case json::kind::double_:
+        ::new(&sca_.d) double{};
         ::new(&sca_.sp)
             storage_ptr(std::move(sp));
         break;
@@ -208,9 +220,23 @@ value(
             other.str_, std::move(sp));
         break;
 
-    case json::kind::number:
-        ::new(&sca_.num) number(
-            other.sca_.num);
+    case json::kind::int64:
+        ::new(&sca_.i) std::int64_t(
+            other.sca_.i);
+        ::new(&sca_.sp)
+            storage_ptr(std::move(sp));
+        break;
+
+    case json::kind::uint64:
+        ::new(&sca_.u) std::uint64_t(
+            other.sca_.u);
+        ::new(&sca_.sp)
+            storage_ptr(std::move(sp));
+        break;
+
+    case json::kind::double_:
+        ::new(&sca_.d) double(
+            other.sca_.d);
         ::new(&sca_.sp)
             storage_ptr(std::move(sp));
         break;
@@ -233,6 +259,11 @@ value(
 value::
 value(pilfered<value> p) noexcept
 {
+#ifdef BOOST_JSON_VALUE_IS_TRIVIAL
+    std::memcpy(this, &p.get(), sizeof(*this));
+    ::new(&p.get().sca_.sp) storage_ptr{};
+    p.get().kind_ = json::kind::null;
+#else
     auto& other = p.get();
     switch(other.kind_)
     {
@@ -251,8 +282,23 @@ value(pilfered<value> p) noexcept
         ::new(&other.sca_.sp) storage_ptr;
         break;
 
-    case json::kind::number:
-        relocate(&sca_.num, other.sca_.num);
+    case json::kind::int64:
+        ::new(&sca_.i) std::int64_t(
+            other.sca_.i);
+        ::new(&sca_.sp) storage_ptr(
+            std::move(other.sca_.sp));
+        break;
+
+    case json::kind::uint64:
+        ::new(&sca_.u) std::uint64_t(
+            other.sca_.u);
+        ::new(&sca_.sp) storage_ptr(
+            std::move(other.sca_.sp));
+        break;
+
+    case json::kind::double_:
+        ::new(&sca_.d) double(
+            other.sca_.d);
         ::new(&sca_.sp) storage_ptr(
             std::move(other.sca_.sp));
         break;
@@ -270,6 +316,7 @@ value(pilfered<value> p) noexcept
     }
     kind_ = other.kind_;
     other.kind_ = json::kind::null;
+#endif
 }
 
 value::
@@ -292,9 +339,23 @@ value(value&& other) noexcept
             std::move(other.str_));
         break;
 
-    case json::kind::number:
-        ::new(&sca_.num) number(
-            std::move(other.sca_.num));
+    case json::kind::int64:
+        ::new(&sca_.i) std::int64_t(
+            other.sca_.i);
+        ::new(&sca_.sp) storage_ptr(
+            other.sca_.sp);
+        break;
+
+    case json::kind::uint64:
+        ::new(&sca_.u) std::uint64_t(
+            other.sca_.u);
+        ::new(&sca_.sp) storage_ptr(
+            other.sca_.sp);
+        break;
+
+    case json::kind::double_:
+        ::new(&sca_.d) double(
+            other.sca_.d);
         ::new(&sca_.sp) storage_ptr(
             other.sca_.sp);
         break;
@@ -339,9 +400,23 @@ value(
             std::move(sp));
         break;
 
-    case json::kind::number:
-        ::new(&sca_.num) number(
-            std::move(other.sca_.num));
+    case json::kind::int64:
+        ::new(&sca_.i) std::int64_t(
+            other.sca_.i);
+        ::new(&sca_.sp) storage_ptr(
+            std::move(sp));
+        break;
+
+    case json::kind::uint64:
+        ::new(&sca_.u) std::uint64_t(
+            other.sca_.u);
+        ::new(&sca_.sp) storage_ptr(
+            std::move(sp));
+        break;
+
+    case json::kind::double_:
+        ::new(&sca_.d) double(
+            other.sca_.d);
         ::new(&sca_.sp) storage_ptr(
             std::move(sp));
         break;
@@ -449,14 +524,63 @@ value(
 
 value::
 value(
-    number num,
+    ieee_decimal const& dec,
     storage_ptr sp)
-    : kind_(json::kind::number)
 {
-    ::new(&sca_.num) number(
-        std::move(num));
-    ::new(&sca_.sp) storage_ptr(
-        std::move(sp));
+    ::new(&sca_.sp) storage_ptr(std::move(sp));
+    if(dec.exponent == 0)
+    {
+        if(! dec.sign)
+        {
+            kind_ = json::kind::uint64;
+            sca_.u = dec.mantissa;
+        }
+        else if(
+            dec.mantissa <= static_cast<std::uint64_t>(
+            (std::numeric_limits<std::int64_t>::max)()) + 1)
+        {
+            kind_ = json::kind::int64;
+            sca_.i = static_cast<
+                std::int64_t>(dec.mantissa);
+        }
+        else
+        {
+            kind_ = json::kind::double_;
+            sca_.d = to_double(dec);
+        }
+    }
+    else
+    {
+        auto const d = to_double(dec);
+        if(! dec.sign)
+        {
+            auto u = static_cast<std::uint64_t>(d);
+            if(u == d)
+            {
+                kind_ = json::kind::uint64;
+                sca_.u = u;
+            }
+            else
+            {
+                kind_ = json::kind::double_;
+                sca_.d = to_double(dec);
+            }
+        }
+        else
+        {
+            auto i = static_cast<std::int64_t>(d);
+            if(i == d)
+            {
+                kind_ = json::kind::int64;
+                sca_.i = i;
+            }
+            else
+            {
+                kind_ = json::kind::double_;
+                sca_.d = to_double(dec);
+            }
+        }
+    }
 }
 
 value::
@@ -517,19 +641,13 @@ reset(json::kind k) noexcept
             break;
         }
 
-        case json::kind::number:
-        {
-            sp = std::move(sca_.sp);
-            sca_.num.~number();
-            break;
-        }
-
+        case json::kind::int64:
+        case json::kind::uint64:
+        case json::kind::double_:
         case json::kind::boolean:
         case json::kind::null:
-        {
             sp = std::move(sca_.sp);
             break;
-        }
         }
         ::new(this) value(k, std::move(sp));
     }
@@ -549,8 +667,16 @@ reset(json::kind k) noexcept
             str_.clear();
             break;
 
-        case json::kind::number:
-            sca_.num = 0;
+        case json::kind::int64:
+            sca_.i = 0;
+            break;
+
+        case json::kind::uint64:
+            sca_.u = 0;
+            break;
+
+        case json::kind::double_:
+            sca_.d = 0;
             break;
 
         case json::kind::boolean:
@@ -643,7 +769,9 @@ get_storage() const noexcept
     case json::kind::string:
         return str_.get_storage();
 
-    case json::kind::number:
+    case json::kind::int64:
+    case json::kind::uint64:
+    case json::kind::double_:
     case json::kind::boolean:
     case json::kind::null:
     default:

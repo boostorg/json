@@ -8,8 +8,9 @@
 //
 
 // Test that header file is self-contained.
-#include <boost/json/serializer.hpp>
 
+#include <boost/json/serializer.hpp>
+#if 0
 #include <boost/json/parser.hpp>
 #include <boost/beast/_experimental/unit_test/suite.hpp>
 #include "parse-vectors.hpp"
@@ -269,3 +270,4 @@ BEAST_DEFINE_TESTSUITE(boost,json,serializer);
 
 } // json
 } // boost
+#endif

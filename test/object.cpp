@@ -85,7 +85,7 @@ public:
         BEAST_EXPECT(o.size() == 3);
         BEAST_EXPECT(
             o.capacity() == capacity);
-        BEAST_EXPECT(o.at("a").as_number() == 1);
+        BEAST_EXPECT(o.at("a").as_int64() == 1);
         BEAST_EXPECT(o.at("b").as_bool());
         BEAST_EXPECT(o.at("c").as_string() == "hello");
 
@@ -543,7 +543,7 @@ public:
                     std::make_pair("x", 1));
                 BEAST_EXPECT(result.second);
                 BEAST_EXPECT(result.first->first == "x");
-                BEAST_EXPECT(result.first->second.as_number() == 1);
+                BEAST_EXPECT(result.first->second.as_int64() == 1);
             });
 
             fail_loop([&](storage_ptr const& sp)
@@ -553,7 +553,7 @@ public:
                 auto result = o.insert(p);
                 BEAST_EXPECT(result.second);
                 BEAST_EXPECT(result.first->first == "x");
-                BEAST_EXPECT(result.first->second.as_number() == 1);
+                BEAST_EXPECT(result.first->second.as_int64() == 1);
             });
         }
 
@@ -685,7 +685,7 @@ public:
                 object o({{"a", 1}}, sp);
                 BEAST_EXPECT(
                     ! o.insert_or_assign("a", 2).second);
-                BEAST_EXPECT(o["a"].as_number() == 2);
+                BEAST_EXPECT(o["a"].as_int64() == 2);
             });
         }
 
@@ -706,7 +706,7 @@ public:
                 o.insert_or_assign("c", "hello");
                 BEAST_EXPECT(! o.insert_or_assign(
                     o.find("b"), "a", 2).second);
-                BEAST_EXPECT(o["a"].as_number() == 2);
+                BEAST_EXPECT(o["a"].as_int64() == 2);
             });
         }
 
@@ -741,7 +741,7 @@ public:
                     {"c", "hello"}}, sp);
                 auto it = o.erase(o.begin());
                 BEAST_EXPECT(it->first == "a");
-                BEAST_EXPECT(it->second.as_number() == 1);
+                BEAST_EXPECT(it->second.as_int64() == 1);
                 check(o, 7);
             });
         }
@@ -934,7 +934,7 @@ public:
                 {"b", true},
                 {"b", {1,2,3}},
                 {"c", "hello"}});
-            BEAST_EXPECT(o.at("a").as_number() == 1);
+            BEAST_EXPECT(o.at("a").as_int64() == 1);
             BEAST_EXPECT(o.at("b").as_bool());
             BEAST_EXPECT(o.at("c").as_string() == "hello");
         }

@@ -58,6 +58,10 @@ if (MSVC)
         /MP           # Multi-processor compilation
         )
 
+    add_link_options(
+        /INCREMENTAL:NO
+    )
+
     set (Boost_USE_STATIC_LIBS ON)
     set (Boost_USE_STATIC_RUNTIME ON)
 

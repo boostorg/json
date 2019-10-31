@@ -62,11 +62,6 @@
         An enumeration which describes the JSON value's type.
     ]
 ][
-    [[link json.ref.boost__json__number `number`]]
-    [
-        The type used to represent JSON values of number type.
-    ]
-][
     [[link json.ref.boost__json__object `object`]]
     [
         The container used to represent JSON values of object type.

@@ -11,6 +11,7 @@
 #define BOOST_JSON_IMPL_SERIALIZER_IPP
 
 #include <boost/json/serializer.hpp>
+#include <boost/json/detail/format.hpp>
 #include <ostream>
 
 namespace boost {
@@ -140,19 +141,45 @@ loop_init:
             stack_.front().st = state::str1;
             goto loop_str;
     
-        case kind::number:
-            if(p1 - p >= number::max_string_chars)
+        case kind::int64:
+            if(p1 - p >= detail::max_string_chars)
             {
-                p += jv.if_number()->print(
-                    p, p1 - p).size();
+                p += detail::format_int64(
+                    p,  *jv.if_int64());
                 stack_.pop();
                 goto loop;
             }
-            str_ = jv.if_number()->print(
-                buf_, sizeof(buf_));
+            str_ = { buf_, detail::format_int64(
+                buf_, *jv.if_int64()) };
             stack_.front().st = state::lit;
             goto loop;
-    
+
+        case kind::uint64:
+            if(p1 - p >= detail::max_string_chars)
+            {
+                p += detail::format_int64(
+                    p,  *jv.if_uint64());
+                stack_.pop();
+                goto loop;
+            }
+            str_ = { buf_, detail::format_uint64(
+                buf_, *jv.if_uint64()) };
+            stack_.front().st = state::lit;
+            goto loop;
+
+        case kind::double_:
+            if(p1 - p >= detail::max_string_chars)
+            {
+                p += detail::format_double(
+                    p,  *jv.if_double());
+                stack_.pop();
+                goto loop;
+            }
+            str_ = { buf_, detail::format_double(
+                buf_, *jv.if_double()) };
+            stack_.front().st = state::lit;
+            goto loop;
+
         case kind::boolean:
             if(*jv.if_bool())
             {

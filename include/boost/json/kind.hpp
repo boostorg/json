@@ -28,8 +28,14 @@ enum class kind
     /// A @ref string.
     string,
 
-    /// A @ref number.
-    number,
+    /// A signed 64-bit integer.
+    int64,
+
+    /// An unsigned 64-bit integer.
+    uint64,
+
+    /// A double precision floating point.
+    double_,
 
     /// A `bool`.
     boolean,
@@ -46,14 +52,12 @@ struct kind_type
 using kind_object_t = kind_type<kind::object>;
 using kind_array_t = kind_type<kind::array>;
 using kind_string_t = kind_type<kind::string>;
-using kind_number_t = kind_type<kind::number>;
 using kind_bool_t = kind_type<kind::boolean>;
 using kind_null_t = kind_type<kind::null>;
 
 BOOST_JSON_INLINE_VARIABLE(kind_object, kind_object_t);
 BOOST_JSON_INLINE_VARIABLE(kind_array, kind_array_t);
 BOOST_JSON_INLINE_VARIABLE(kind_string, kind_string_t);
-BOOST_JSON_INLINE_VARIABLE(kind_number, kind_number_t);
 BOOST_JSON_INLINE_VARIABLE(kind_bool, kind_bool_t);
 BOOST_JSON_INLINE_VARIABLE(kind_null, kind_null_t);
 

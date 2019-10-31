@@ -297,25 +297,24 @@ void
 parser::
 on_number(ieee_decimal dec, error_code&)
 {
-    number n(dec);
     auto& jv = *stack_.front();
     BOOST_JSON_ASSERT(! jv.is_object());
     if(obj_)
     {
         BOOST_JSON_ASSERT(jv.is_null());
-        jv.emplace_number() = std::move(n);
+        jv = value(dec);
         stack_.pop();
     }
     else if(stack_.front()->is_array())
     {
         BOOST_JSON_ASSERT(s_.empty());
         jv.if_array()->emplace_back(
-            std::move(n));
+            dec);
     }
     else
     {
         BOOST_JSON_ASSERT(jv.is_null());
-        jv.emplace_number() = std::move(n);
+        jv = dec;
     }
 }
 

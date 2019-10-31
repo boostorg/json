@@ -20,11 +20,6 @@ add_executable (json-tests
     ${PROJECT_SOURCE_DIR}/include/boost/pilfer.hpp
     ${PROJECT_SOURCE_DIR}/include/boost/json/json.natvis
     ${PROJECT_SOURCE_DIR}/src/src.cpp
-    ryu/d2fixed_test.cpp
-    ryu/d2s_intrinsics_test.cpp
-    ryu/d2s_table_test.cpp
-    ryu/d2s_test.cpp
-    ryu/f2s_test.cpp
     Jamfile
     test.hpp
     parse-vectors.hpp
@@ -35,7 +30,6 @@ add_executable (json-tests
     basic_parser.cpp
     block_storage.cpp
     error.cpp
-    ieee_decimal.cpp
     json.cpp
     kind.cpp
     number.cpp
@@ -46,6 +40,11 @@ add_executable (json-tests
     storage_ptr.cpp
     string.cpp
     value.cpp
+    ryu/d2fixed_test.cpp
+    ryu/d2s_intrinsics_test.cpp
+    ryu/d2s_table_test.cpp
+    ryu/d2s_test.cpp
+    ryu/f2s_test.cpp
 )
 
 add_test(json-tests json-tests)

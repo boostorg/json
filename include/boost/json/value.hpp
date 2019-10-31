@@ -26,6 +26,7 @@
 #include <cstdlib>
 #include <initializer_list>
 #include <iosfwd>
+#include <new>
 #include <type_traits>
 #include <utility>
 
@@ -112,7 +113,9 @@ class value
         storage_ptr sp;
         union
         {
-            number num;
+            std::uint64_t u;
+            std::int64_t i;
+            double d;
             bool b;
         };
 
@@ -405,10 +408,100 @@ public:
     BOOST_JSON_DECL
     value(string str, storage_ptr sp);
 
-    /** Construct a number
-    */
+    value(short i, storage_ptr sp = {})
+        : kind_(json::kind::int64)
+    {
+        sca_.i = i;
+        ::new(&sca_.sp) storage_ptr(
+            std::move(sp));
+    }
+
+    value(int i, storage_ptr sp = {})
+        : kind_(json::kind::int64)
+    {
+        sca_.i = i;
+        ::new(&sca_.sp) storage_ptr(
+            std::move(sp));
+    }
+
+    value(long i, storage_ptr sp = {})
+        : kind_(json::kind::int64)
+    {
+        sca_.i = i;
+        ::new(&sca_.sp) storage_ptr(
+            std::move(sp));
+    }
+
+    value(long long i, storage_ptr sp = {})
+        : kind_(json::kind::int64)
+    {
+        sca_.i = i;
+        ::new(&sca_.sp) storage_ptr(
+            std::move(sp));
+    }
+
+    value(unsigned short u, storage_ptr sp = {})
+        : kind_(json::kind::uint64)
+    {
+        sca_.u = u;
+        ::new(&sca_.sp) storage_ptr(
+            std::move(sp));
+    }
+
+    value(unsigned int u, storage_ptr sp = {})
+        : kind_(json::kind::uint64)
+    {
+        sca_.u = u;
+        ::new(&sca_.sp) storage_ptr(
+            std::move(sp));
+    }
+
+    value(unsigned long u, storage_ptr sp = {})
+        : kind_(json::kind::uint64)
+    {
+        sca_.u = u;
+        ::new(&sca_.sp) storage_ptr(
+            std::move(sp));
+    }
+
+    value(unsigned long long u, storage_ptr sp = {})
+        : kind_(json::kind::uint64)
+    {
+        sca_.u = u;
+        ::new(&sca_.sp) storage_ptr(
+            std::move(sp));
+    }
+
+    value(float d,
+        storage_ptr sp = {})
+        : kind_(json::kind::double_)
+    {
+        sca_.d = d;
+        ::new(&sca_.sp) storage_ptr(
+            std::move(sp));
+    }
+
+    value(double d,
+        storage_ptr sp = {})
+        : kind_(json::kind::double_)
+    {
+        sca_.d = d;
+        ::new(&sca_.sp) storage_ptr(
+            std::move(sp));
+    }
+
+    value(long double d,
+        storage_ptr sp = {})
+        : kind_(json::kind::double_)
+    {
+        sca_.d = static_cast<double>(d);
+        ::new(&sca_.sp) storage_ptr(
+            std::move(sp));
+    }
+
     BOOST_JSON_DECL
-    value(number num,
+    value(
+        ieee_decimal const& dec,
         storage_ptr sp = {});
 
     /** Construct a bool
@@ -539,25 +632,25 @@ public:
         return str_;
     }
 
-    /** Set the value to the number 0, and return it.
-
-        This calls `reset(json::kind::number)` and returns
-        @ref as_number().
-        The previous contents are destroyed.
-
-        @par Complexity
-
-        Linear in the existing size of `*this`.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    number&
-    emplace_number() noexcept
+    std::int64_t&
+    emplace_int64() noexcept
     {
-        reset(json::kind::number);
-        return sca_.num;
+        reset(json::kind::int64);
+        return sca_.i;
+    }
+
+    std::uint64_t&
+    emplace_uint64() noexcept
+    {
+        reset(json::kind::uint64);
+        return sca_.u;
+    }
+
+    double&
+    emplace_double() noexcept
+    {
+        reset(json::kind::double_);
+        return sca_.d;
     }
 
     /** Set the value to boolean false, and return it.
@@ -816,7 +909,9 @@ public:
     /** Returns true if this is a number
 
         This function returns `true` if
-        @ref kind() equals `kind::number`.
+        the value contained is a signed or
+        unsigned integer, or a double precision
+        floating point.
 
         @par Complexity
 
@@ -825,7 +920,28 @@ public:
     bool
     is_number() const noexcept
     {
-        return kind_ == json::kind::number;
+        return
+            kind_ == json::kind::int64 ||
+            kind_ == json::kind::uint64 ||
+            kind_ == json::kind::double_;
+    }
+
+    bool
+    is_int64() const noexcept
+    {
+        return kind_ == json::kind::int64;
+    }
+
+    bool
+    is_uint64() const noexcept
+    {
+        return kind_ == json::kind::uint64;
+    }
+
+    bool
+    is_double() const noexcept
+    {
+        return kind_ == json::kind::double_;
     }
 
     /** Returns true if this is a boolean
@@ -1049,47 +1165,51 @@ public:
         return nullptr;
     }
 
-    /** Return a pointer to a number, or nullptr.
-
-        If @ref kind() returns `kind::number`,
-        returns a pointer to the number. Otherwise,
-        returns `nullptr`.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    number*
-    if_number() noexcept
+    std::int64_t*
+    if_int64() noexcept
     {
-        if(kind_ == json::kind::number)
-            return &sca_.num;
+        if(kind_ == json::kind::int64)
+            return &sca_.i;
         return nullptr;
     }
 
-    /** Return a pointer to a number, or nullptr.
-
-        If @ref kind() returns `kind::number`,
-        returns a pointer to the number. Otherwise,
-        returns `nullptr`.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    number const*
-    if_number() const noexcept
+    std::int64_t const*
+    if_int64() const noexcept
     {
-        if(kind_ == json::kind::number)
-            return &sca_.num;
+        if(kind_ == json::kind::int64)
+            return &sca_.i;
+        return nullptr;
+    }
+
+    std::uint64_t*
+    if_uint64() noexcept
+    {
+        if(kind_ == json::kind::uint64)
+            return &sca_.u;
+        return nullptr;
+    }
+
+    std::uint64_t const*
+    if_uint64() const noexcept
+    {
+        if(kind_ == json::kind::uint64)
+            return &sca_.u;
+        return nullptr;
+    }
+
+    double*
+    if_double() noexcept
+    {
+        if(kind_ == json::kind::double_)
+            return &sca_.d;
+        return nullptr;
+    }
+
+    double const*
+    if_double() const noexcept
+    {
+        if(kind_ == json::kind::double_)
+            return &sca_.d;
         return nullptr;
     }
 
@@ -1295,56 +1415,67 @@ public:
         return str_;
     }
 
-    /** Return a reference to the number, or throw an exception.
-
-        If @ref kind() returns `kind::number`,
-        returns a reference to the number. Otherwise,
-        throws an exception.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        Strong guarantee.
-
-        @throw system_error if `*this` is not a number.
-    */
-    number&
-    as_number()
+    std::int64_t&
+    as_int64()
     {
-        if(kind_ != json::kind::number)
+        if(kind_ != json::kind::int64)
             BOOST_JSON_THROW(
                 system_error(
                     error::not_number));
-        return sca_.num;
+        return sca_.i;
     }
 
-    /** Return a reference to the number, or throw an exception.
 
-        If @ref kind() returns `kind::number`,
-        returns a reference to the number. Otherwise,
-        throws an exception.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        Strong guarantee.
-
-        @throw system_error if `*this` is not a number.
-    */
-    number const&
-    as_number() const
+    std::int64_t const&
+    as_int64() const
     {
-        if(kind_ != json::kind::number)
+        if(kind_ != json::kind::int64)
             BOOST_JSON_THROW(
                 system_error(
                     error::not_number));
-        return sca_.num;
+        return sca_.i;
+    }
+
+    std::uint64_t&
+    as_uint64()
+    {
+        if(kind_ != json::kind::uint64)
+            BOOST_JSON_THROW(
+                system_error(
+                    error::not_number));
+        return sca_.u;
+    }
+
+
+    std::uint64_t const&
+    as_uint64() const
+    {
+        if(kind_ != json::kind::uint64)
+            BOOST_JSON_THROW(
+                system_error(
+                    error::not_number));
+        return sca_.u;
+    }
+
+    double&
+    as_double()
+    {
+        if(kind_ != json::kind::double_)
+            BOOST_JSON_THROW(
+                system_error(
+                    error::not_number));
+        return sca_.d;
+    }
+
+
+    double const&
+    as_double() const
+    {
+        if(kind_ != json::kind::double_)
+            BOOST_JSON_THROW(
+                system_error(
+                    error::not_number));
+        return sca_.d;
     }
 
     /** Return a reference to the bool, or throw an exception.

@@ -12,7 +12,7 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/error.hpp>
-#include <boost/json/ieee_decimal.hpp>
+#include <boost/json/number.hpp>
 #include <cstdint>
 
 namespace boost {

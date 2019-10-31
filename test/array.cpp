@@ -132,11 +132,11 @@ public:
                 init_list init{ 0, 1, str_, 3, 4 };
                 array a(init.begin(), init.end());
                 check_storage(a, storage_ptr{});
-                BEAST_EXPECT(a[0].as_number() == 0);
-                BEAST_EXPECT(a[1].as_number() == 1);
+                BEAST_EXPECT(a[0].as_int64() == 0);
+                BEAST_EXPECT(a[1].as_int64() == 1);
                 BEAST_EXPECT(a[2].as_string() == str_);
-                BEAST_EXPECT(a[3].as_number() == 3);
-                BEAST_EXPECT(a[4].as_number() == 4);
+                BEAST_EXPECT(a[3].as_int64() == 3);
+                BEAST_EXPECT(a[4].as_int64() == 4);
             }
 
             // forward iterator
@@ -812,11 +812,11 @@ public:
             auto it = a.insert(
                 a.begin() + 1, {1, str_});
             BEAST_EXPECT(it == a.begin() + 1);
-            BEAST_EXPECT(a[0].as_number() == 0);
-            BEAST_EXPECT(a[1].as_number() == 1);
+            BEAST_EXPECT(a[0].as_int64() == 0);
+            BEAST_EXPECT(a[1].as_int64() == 1);
             BEAST_EXPECT(a[2].as_string() == str_);
-            BEAST_EXPECT(a[3].as_number() == 3);
-            BEAST_EXPECT(a[4].as_number() == 4);
+            BEAST_EXPECT(a[3].as_int64() == 3);
+            BEAST_EXPECT(a[4].as_int64() == 4);
         });
 
         // emplace(const_iterator, arg)
@@ -826,11 +826,11 @@ public:
             auto it = a.emplace(
                 a.begin() + 1, str_);
             BEAST_EXPECT(it == a.begin() + 1);
-            BEAST_EXPECT(a[0].as_number() == 0);
+            BEAST_EXPECT(a[0].as_int64() == 0);
             BEAST_EXPECT(a[1].as_string() == str_);
-            BEAST_EXPECT(a[2].as_number() == 2);
-            BEAST_EXPECT(a[3].as_number() == 3);
-            BEAST_EXPECT(a[4].as_number() == 4);
+            BEAST_EXPECT(a[2].as_int64() == 2);
+            BEAST_EXPECT(a[3].as_int64() == 3);
+            BEAST_EXPECT(a[4].as_int64() == 4);
         });
 
         // erase(pos)
@@ -949,7 +949,7 @@ public:
                 check(a2);
                 BEAST_EXPECT(a1.size() == 1);
                 BEAST_EXPECT(a1.front().is_number());
-                BEAST_EXPECT(a1.front().as_number().get_double() == 1.);
+                BEAST_EXPECT(a1.front().as_double() == 1.);
             }
 
             // different storage
