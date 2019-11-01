@@ -12,6 +12,7 @@
 
 #include <boost/json/serializer.hpp>
 #include <boost/json/detail/format.hpp>
+#include <boost/json/detail/sse2.hpp>
 #include <ostream>
 
 namespace boost {
@@ -357,6 +358,7 @@ loop_str:
 
             // fast loop
             char const* ss = s;
+            s += detail::count_unescaped(s, sn - s);
             while(s < sn)
             {
                 auto const ch = *s++;
