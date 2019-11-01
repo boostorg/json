@@ -32,12 +32,6 @@
         Error code values returned by JSON operations.
     ]
 ][
-    [[link json.ref.boost__json__fixed_storage `fixed_storage`]]
-    [
-        A fast __storage__ which uses a single large pre-allocated
-        block of memory.
-    ]
-][
     [[link json.ref.boost__json__has_from_json `has_from_json`]]
     [
         Trait to determine if a type can be assigned to a JSON
@@ -81,6 +75,14 @@
         into its serialized representation.
     ]
 ][
+    [
+        [link json.ref.boost__json__scoped_storage `scoped_storage`]
+    ][
+        A smart container for type-erased
+        [link json.ref.boost__json__storage `storage`]
+        object whose allocations have a scoped lifetime.
+    ]
+][
     [[link json.ref.boost__json__storage `storage`]]
     [
         Abstract interface to a memory resource used with JSON.
@@ -88,7 +90,6 @@
 ][
     [
         [link json.ref.boost__json__storage_ptr `storage_ptr`]
-        [link json.ref.boost__json__basic_storage_ptr `basic_storage_ptr`]
     ][
         Smart pointer container for a reference counted, type-erased
         [link json.ref.boost__json__storage `storage`]

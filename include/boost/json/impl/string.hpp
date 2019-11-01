@@ -10,7 +10,6 @@
 #ifndef BOOST_JSON_IMPL_STRING_HPP
 #define BOOST_JSON_IMPL_STRING_HPP
 
-#include <algorithm>
 #include <utility>
 #include <string>
 
@@ -20,34 +19,30 @@ namespace json {
 //----------------------------------------------------------
 
 template<class InputIt>
-void
 string::
 impl::
-construct(
+impl(
     InputIt first,
     InputIt last,
     storage_ptr const& sp,
-    std::forward_iterator_tag)
+    std::random_access_iterator_tag)
+    : impl(static_cast<size_type>(
+        last - first), sp)
 {
-    auto const n =
-        std::distance(first, last);
-    auto dest = construct(n, sp);
-    while(first != last)
-        *dest++ = *first++;
-    *dest++ = 0;
-    size = static_cast<
-        impl_size_type>(n);
+    std::copy(
+        first, last, data());
+    data()[size] = 0;
 }
 
 template<class InputIt>
-void
 string::
 impl::
-construct(
+impl(
     InputIt first,
     InputIt last,
     storage_ptr const& sp,
     std::input_iterator_tag)
+    : impl()
 {
     struct undo
     {
@@ -63,7 +58,7 @@ construct(
     };
 
     undo u{*this, sp, false};
-    auto dest = construct();
+    auto dest = data();
     size = 1;
     *dest++ = *first++;
     while(first != last)
@@ -87,10 +82,9 @@ string(
     InputIt last,
     storage_ptr sp)
     : sp_(std::move(sp))
+    , impl_(first, last, sp_,
+        iter_cat<InputIt>{})
 {
-    s_.construct(
-        first, last, sp_,
-        iter_cat<InputIt>{});
 }
 
 template<class InputIt, class>
@@ -135,19 +129,19 @@ insert(
         }
     };
 
-    impl tmp;
     // We use the global storage since
     // it is a temporary deallocated here.
-    tmp.construct(first, last,
+    impl tmp(
+        first, last,
         storage_ptr{},
         iter_cat<InputIt>{});
     cleanup c{tmp, storage_ptr{}};
-    auto const off = pos - s_.data();
+    auto const off = pos - impl_.data();
     traits_type::copy(
-        s_.insert(off, tmp.size, sp_),
+        impl_.insert(off, tmp.size, sp_),
         tmp.data(),
         tmp.size);
-    return s_.data() + off;
+    return impl_.data() + off;
 }
 
 //----------------------------------------------------------
@@ -158,10 +152,10 @@ string::
 assign(
     InputIt first,
     InputIt last,
-    std::forward_iterator_tag)
+    std::random_access_iterator_tag)
 {
-    auto dest = s_.assign(
-        std::distance(first, last), sp_);
+    auto dest = impl_.assign(static_cast<
+        size_type>(last - first), sp_);
     while(first != last)
         *dest++ = *first++;
 }
@@ -176,15 +170,14 @@ assign(
 {
     if(first == last)
     {
-        s_.term(0);
+        impl_.term(0);
         return;
     }
-    impl tmp;
-    tmp.construct(
+    impl tmp(
         first, last, sp_,
         std::input_iterator_tag{});
-    s_.destroy(sp_);
-    s_ = tmp;
+    impl_.destroy(sp_);
+    impl_ = tmp;
 }
 
 template<class InputIt>
@@ -193,11 +186,12 @@ string::
 append(
     InputIt first,
     InputIt last,
-    std::forward_iterator_tag)
+    std::random_access_iterator_tag)
 {
-    auto const n =
-        std::distance(first, last);
-    std::copy(first, last, s_.append(n, sp_));
+    auto const n = static_cast<
+        size_type>(last - first);
+    std::copy(first, last,
+        impl_.append(n, sp_));
 }
 
 template<class InputIt>
@@ -219,15 +213,15 @@ append(
         }
     };
 
-    impl tmp;
     // We use the global storage since
     // it is a temporary deallocated here.
-    tmp.construct(first, last,
+    impl tmp(
+        first, last,
         storage_ptr{},
         std::input_iterator_tag{});
     cleanup c{tmp, storage_ptr{}};
     traits_type::copy(
-        s_.append(tmp.size, sp_),
+        impl_.append(tmp.size, sp_),
         tmp.data(), tmp.size);
 }
 

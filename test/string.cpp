@@ -13,6 +13,7 @@
 #include <boost/config.hpp>
 #include <boost/beast/_experimental/unit_test/suite.hpp>
 #include <numeric>
+#include <sstream>
 #include <string>
 
 #include "test.hpp"
@@ -216,12 +217,14 @@ public:
         // string(string)
         {
             {
-                string s(string(t.v1));
+                string const s0(t.v1);
+                string s(s0);
                 BEAST_EXPECT(s == t.v1);
             }
 
             {
-                string s(string(t.v2));
+                string const s0(t.v2);
+                string s(s0);
                 BEAST_EXPECT(s == t.v2);
             }
         }
@@ -230,13 +233,15 @@ public:
         {
             fail_loop([&](storage_ptr const& sp)
             {
-                string s(string(t.v1), sp);
+                string const s0(t.v1);
+                string s(s0, sp);
                 BEAST_EXPECT(s == t.v1);
             });
 
             fail_loop([&](storage_ptr const& sp)
             {
-                string s(string(t.v2), sp);
+                string const s0(t.v2);
+                string s(s0, sp);
                 BEAST_EXPECT(s == t.v2);
             });
         }
@@ -294,7 +299,7 @@ public:
                 string s1(t.v1, sp);
                 string s2(std::move(s1), sp);
                 BEAST_EXPECT(s2 == t.v1);
-                BEAST_EXPECT(s1 == t.v1);
+                BEAST_EXPECT(s1.empty());
                 BEAST_EXPECT(
                     *s1.get_storage() ==
                     *s2.get_storage());
@@ -479,7 +484,7 @@ public:
                 string s2(t.v1, sp);
                 s = std::move(s2);
                 BEAST_EXPECT(s == t.v1);
-                BEAST_EXPECT(s2 == t.v1);
+                BEAST_EXPECT(s2.empty());
                 BEAST_EXPECT(
                     *s.get_storage() ==
                     *s2.get_storage());
@@ -492,7 +497,7 @@ public:
                 string s2(t.v1, sp);
                 s = std::move(s2);
                 BEAST_EXPECT(s == t.v1);
-                BEAST_EXPECT(s2 == t.v1);
+                BEAST_EXPECT(s2.empty());
                 BEAST_EXPECT(
                     *s.get_storage() ==
                     *s2.get_storage());
@@ -607,23 +612,6 @@ public:
                 string s(t.v2.size(), '*', sp);
                 s = t.s2.c_str();
                 BEAST_EXPECT(s == t.v2);
-            });
-        }
-
-        // operator=(char)
-        {
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(t.v1.size(), '*', sp);
-                s = '*';
-                BEAST_EXPECT(s == "*");
-            });
-
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(t.v2.size(), '*', sp);
-                s = '*';
-                BEAST_EXPECT(s == "*");
             });
         }
 
@@ -800,7 +788,7 @@ public:
                 string s2(t.v1, sp);
                 s.assign(std::move(s2));
                 BEAST_EXPECT(s == t.v1);
-                BEAST_EXPECT(s2 == t.v1);
+                BEAST_EXPECT(s2.empty());
                 BEAST_EXPECT(
                     *s.get_storage() ==
                     *s2.get_storage());
@@ -813,7 +801,7 @@ public:
                 string s2(t.v1, sp);
                 s.assign(std::move(s2));
                 BEAST_EXPECT(s == t.v1);
-                BEAST_EXPECT(s2 == t.v1);
+                BEAST_EXPECT(s2.empty());
                 BEAST_EXPECT(
                     *s.get_storage() ==
                     *s2.get_storage());
@@ -1411,12 +1399,10 @@ public:
         }
 
         // size()
-        // length()
         // max_size()
         {
             string s = "abc";
             BEAST_EXPECT(s.size() == 3);
-            BEAST_EXPECT(s.length() == 3);
             BEAST_EXPECT(s.max_size() < string::npos);
         }
 
@@ -2639,6 +2625,11 @@ public:
         BEAST_EXPECT(  operator>=(v1, s2));
         BEAST_EXPECT(  operator> (s1, s2));
         BEAST_EXPECT(  operator> (v1, s2));
+
+        std::stringstream ss;
+        string s = "Hello, world";
+        ss << s;
+        BEAST_EXPECT(ss.str() == s);
     }
 
     void
@@ -2654,7 +2645,6 @@ public:
             }
             {
                 // VFALCO tsan doesn't like this
-            #if 0
                 string s;
                 try
                 {
@@ -2663,7 +2653,6 @@ public:
                 catch(std::exception const&)
                 {
                 }
-            #endif
             }
             {
                 string s;

@@ -24,6 +24,8 @@ class serializer
 {
     enum class state : char;
 
+#ifndef GENERATING_DOCUMENTATION
+    // The xsl has problems with anonymous unions
     struct nobj
     {
         object const* po;
@@ -62,6 +64,7 @@ class serializer
         explicit
         node(array const& a) noexcept;
     };
+#endif
 
     detail::stack<node, 50> stack_;
 

@@ -22,6 +22,28 @@ namespace json {
 
 //----------------------------------------------------------
 
+string::
+impl::
+impl(
+    size_type size_,
+    storage_ptr const& sp)
+{
+    if(size_ < sizeof(buf))
+    {
+        // SBO
+        capacity = sizeof(buf) - 1;
+    }
+    else
+    {
+        capacity = growth(size_,
+            sizeof(buf) - 1);
+        p = static_cast<char*>(
+            sp->allocate(capacity + 1, 1));
+    }
+    size = static_cast<
+        impl_size_type>(size_);
+}
+
 auto
 string::
 impl::
@@ -71,47 +93,15 @@ destroy(
 char*
 string::
 impl::
-construct() noexcept
-{
-    size = 0;
-    capacity = sizeof(buf) - 1;
-    buf[0] = 0;
-    return buf;
-}
-
-char*
-string::
-impl::
-construct(
-    size_type new_size,
-    storage_ptr const& sp)
-{
-    if(new_size < sizeof(buf))
-    {
-        // SBO
-        capacity = sizeof(buf) - 1;
-        return buf;
-    }
-
-    capacity = growth(new_size,
-        sizeof(buf) - 1);
-    p = static_cast<char*>(
-        sp->allocate(capacity + 1, 1));
-    return p;
-}
-
-char*
-string::
-impl::
 assign(
     size_type new_size,
     storage_ptr const& sp)
 {
     if(new_size > capacity)
     {
-        impl tmp;
-        tmp.construct(growth(
-            new_size, capacity), sp);
+        impl tmp(growth(
+            new_size,
+            capacity), sp);
         destroy(sp);
         *this = tmp;
     }
@@ -135,11 +125,10 @@ append(
         term(size + n);
         return end() - n;
     }
-    impl tmp;
+    impl tmp(growth(
+        size + n, capacity), sp);
     traits_type::copy(
-        tmp.construct(growth(
-            size + n, capacity), sp),
-        data(), size);
+        tmp.data(), data(), size);
     tmp.term(size + n);
     destroy(sp);
     *this = tmp;
@@ -174,8 +163,7 @@ insert(
         BOOST_JSON_THROW(
             std::length_error(
                 "size > max_size()"));
-    impl tmp;
-    tmp.construct(growth(
+    impl tmp(growth(
         size + n, capacity), sp);
     tmp.size = size + static_cast<
         impl_size_type>(n);
@@ -208,162 +196,9 @@ unalloc(storage_ptr const& sp) noexcept
 }
 
 //----------------------------------------------------------
-
-string::
-~string()
-{
-    s_.destroy(sp_);
-}
-
-//----------------------------------------------------------
 //
-// Construction
+// Assignment
 //
-//----------------------------------------------------------
-
-string::
-string() noexcept
-{
-    s_.construct();
-}
-
-string::
-string(storage_ptr sp) noexcept
-    : sp_(std::move(sp))
-{
-    s_.construct();
-}
-
-string::
-string(
-    size_type count,
-    char ch,
-    storage_ptr sp)
-    : sp_(std::move(sp))
-{
-    s_.construct();
-    assign(count, ch);
-}
-
-string::
-string(
-    string const& other,
-    size_type pos,
-    size_type count,
-    storage_ptr sp)
-    : sp_(std::move(sp))
-{
-    s_.construct();
-    assign(other, pos, count);
-}
-
-string::
-string(
-    char const* s,
-    storage_ptr sp)
-    : sp_(std::move(sp))
-{
-    s_.construct();
-    assign(s);
-}
-
-string::
-string(
-    char const* s,
-    size_type count,
-    storage_ptr sp)
-    : sp_(std::move(sp))
-{
-    s_.construct();
-    assign(s, count);
-}
-
-string::
-string(string const& other)
-    : sp_(other.sp_)
-{
-    s_.construct();
-    assign(other);
-}
-
-string::
-string(
-    string const& other,
-    storage_ptr sp)
-    : sp_(std::move(sp))
-{
-    s_.construct();
-    assign(other);
-}
-
-string::
-string(pilfered<string> p) noexcept
-    : sp_(std::move(p.get().sp_))
-    , s_(p.get().s_)
-{
-    p.get().s_.construct();
-}
-
-string::
-string(string&& other) noexcept
-    : sp_(other.sp_)
-    , s_(other.s_)
-{
-    other.s_.construct();
-}
-
-string::
-string(
-    string&& other,
-    storage_ptr sp)
-    : sp_(std::move(sp))
-{
-    s_.construct();
-    assign(std::move(other));
-}
-
-string::
-string(
-    std::initializer_list<char> init,
-    storage_ptr sp)
-    : sp_(std::move(sp))
-{
-    s_.construct();
-    assign(init);
-}
-
-string::
-string(
-    string_view s,
-    storage_ptr sp)
-    : sp_(std::move(sp))
-{
-    s_.construct();
-    assign(s);
-}
-
-string::
-string(
-    string_view s,
-    size_type pos,
-    size_type n,
-    storage_ptr sp)
-    : sp_(std::move(sp))
-{
-    s_.construct();
-    assign(s.substr(pos, n));
-}
-
-//----------------------------------------------------------
-
-string&
-string::
-operator=(char ch)
-{
-    *s_.assign(1, sp_) = ch;
-    return *this;
-}
-
 //----------------------------------------------------------
 
 string&
@@ -373,7 +208,7 @@ assign(
     char ch)
 {
     traits_type::assign(
-        s_.assign(count, sp_),
+        impl_.assign(count, sp_),
         count,
         ch);
     return *this;
@@ -395,19 +230,16 @@ string&
 string::
 assign(string&& other)
 {
-    // copy
-    if(*sp_ != *other.sp_)
-        return assign(other);
-
-    s_.destroy(sp_);
-    s_ = other.s_;
-    if(! other.s_.in_sbo())
+    if(*sp_ == *other.sp_)
     {
-        other.s_.construct(0, sp_);
-        other.s_.data()[0] = 0;
-        other.s_.size = 0;
+        impl_.destroy(sp_);
+        impl_ = other.impl_;
+        ::new(&other.impl_) impl();
+        return *this;
     }
-    return *this;
+
+    // copy
+    return assign(other);
 }
 
 string&
@@ -417,37 +249,9 @@ assign(
     size_type count)
 {
     traits_type::copy(
-        s_.assign(count, sp_),
+        impl_.assign(count, sp_),
         s, count);
     return *this;
-}
-
-//----------------------------------------------------------
-//
-// Element Access
-//
-//----------------------------------------------------------
-
-char&
-string::
-at(size_type pos)
-{
-    if(pos >= size())
-        BOOST_JSON_THROW(
-            std::out_of_range(
-                "pos >= size()"));
-    return s_.data()[pos];
-}
-
-char const&
-string::
-at(size_type pos) const
-{
-    if(pos >= size())
-        BOOST_JSON_THROW(
-            std::out_of_range(
-                "pos >= size()"));
-    return s_.data()[pos];
 }
 
 //----------------------------------------------------------
@@ -458,60 +262,28 @@ at(size_type pos) const
 
 void
 string::
-reserve(size_type new_cap)
-{
-    if(new_cap < s_.size)
-        return;
-    if(new_cap == s_.capacity)
-        return;
-    if(new_cap > s_.capacity)
-    {
-        // grow
-        new_cap = impl::growth(
-            new_cap, s_.capacity);
-        impl tmp;
-        tmp.construct(new_cap, sp_);
-        traits_type::copy(tmp.data(),
-            s_.data(), s_.size + 1);
-        tmp.size = s_.size;
-        s_.destroy(sp_);
-        s_ = tmp;
-        return;
-    }
-    if( new_cap >= sizeof(s_.buf) ||
-        s_.in_sbo())
-    {
-        // do nothing
-        return;
-    }
-    s_.unalloc(sp_);
-}
-
-void
-string::
 shrink_to_fit()
 {
-    if(s_.in_sbo())
+    if(impl_.in_sbo())
         return;
-    if(s_.size < sizeof(s_.buf))
+    if(impl_.size < sizeof(impl_.buf))
     {
-        s_.unalloc(sp_);
+        impl_.unalloc(sp_);
         return;
     }
     auto const new_cap =
         (std::min<size_type>)(
-            s_.size | mask_,
+            impl_.size | mask_,
             max_size());
-    if(new_cap >= s_.capacity)
+    if(new_cap >= impl_.capacity)
         return;
 
-    impl tmp;
-    tmp.construct(new_cap, sp_);
+    impl tmp(new_cap, sp_);
     traits_type::copy(tmp.data(),
-        s_.data(), s_.size + 1);
-    tmp.size = s_.size;
-    s_.destroy(sp_);
-    s_ = tmp;
+        impl_.data(), impl_.size + 1);
+    tmp.size = impl_.size;
+    impl_.destroy(sp_);
+    impl_ = tmp;
 }
 
 //----------------------------------------------------------
@@ -524,7 +296,7 @@ void
 string::
 clear() noexcept
 {
-    s_.term(0);
+    impl_.term(0);
 }
 
 //----------------------------------------------------------
@@ -533,14 +305,14 @@ void
 string::
 push_back(char ch)
 {
-    *s_.append(1, sp_) = ch;
+    *impl_.append(1, sp_) = ch;
 }
 
 void
 string::
 pop_back()
 {
-    s_.data()[--s_.size] = 0;
+    impl_.data()[--impl_.size] = 0;
 }
 
 //----------------------------------------------------------
@@ -550,7 +322,7 @@ string::
 append(size_type count, char ch)
 {
     traits_type::assign(
-        s_.append(count, sp_),
+        impl_.append(count, sp_),
         count, ch);
     return *this;
 }
@@ -562,7 +334,7 @@ append(
     size_type count)
 {
     traits_type::copy(
-        s_.append(count, sp_),
+        impl_.append(count, sp_),
         s, count);
     return *this;
 }
@@ -577,7 +349,7 @@ insert(
     char ch)
 {
     traits_type::assign(
-        s_.insert(pos, count, sp_),
+        impl_.insert(pos, count, sp_),
         count, ch);
     return *this;
 }
@@ -589,26 +361,26 @@ insert(
     char const* s,
     size_type count)
 {
-    if(pos >= s_.size)
+    if(pos >= impl_.size)
         BOOST_JSON_THROW(
             std::out_of_range(
                 "pos >= size()"));
-    if(count > s_.capacity - s_.size)
+    if(count > impl_.capacity - impl_.size)
     {
         traits_type::copy(
-            s_.insert(pos, count, sp_),
+            impl_.insert(pos, count, sp_),
             s, count);
         return *this;
     }
     // VFALCO TODO handle [s, s+count) inside *this
     traits_type::move(
-        s_.data() + pos + count,
-        s_.data() + pos,
-        s_.size - pos + 1);
+        impl_.data() + pos + count,
+        impl_.data() + pos,
+        impl_.size - pos + 1);
     traits_type::copy(
-        s_.data() + pos,
+        impl_.data() + pos,
         s, count);
-    s_.size += static_cast<
+    impl_.size += static_cast<
         impl_size_type>(count);
     return *this;
 }
@@ -647,19 +419,19 @@ erase(
     size_type pos,
     size_type count)
 {
-    if(pos > s_.size)
+    if(pos > impl_.size)
         BOOST_JSON_THROW(
             std::out_of_range(
                 "pos > size()"));
-    if( count > s_.size - pos)
-        count = s_.size - pos;
+    if( count > impl_.size - pos)
+        count = impl_.size - pos;
     traits_type::move(
-        s_.data() + pos,
-        s_.data() + pos + count,
-        s_.size - pos - count + 1);
-    s_.size -= static_cast<
+        impl_.data() + pos,
+        impl_.data() + pos + count,
+        impl_.size - pos - count + 1);
+    impl_.size -= static_cast<
         impl_size_type>(count);
-    s_.data()[s_.size] = 0;
+    impl_.data()[impl_.size] = 0;
     return *this;
 }
 
@@ -690,21 +462,21 @@ void
 string::
 resize(size_type count, char ch)
 {
-    if(count <= s_.size)
+    if(count <= impl_.size)
     {
         auto const n = static_cast<
             impl_size_type>(count);
-        s_.data()[n] = 0;
-        s_.size = n;
+        impl_.data()[n] = 0;
+        impl_.size = n;
         return;
     }
 
     reserve(count);
     traits_type::assign(
-        s_.end(),
-        count + 1 - s_.size,
+        impl_.end(),
+        count + 1 - impl_.size,
         ch);
-    s_.size = static_cast<
+    impl_.size = static_cast<
         impl_size_type>(count);
 }
 
@@ -716,7 +488,7 @@ swap(string& other)
 {
     if(*sp_ == *other.sp_)
     {
-        std::swap(s_, other.s_);
+        std::swap(impl_, other.impl_);
         return;
     }
 
@@ -732,11 +504,41 @@ swap(string& other)
 
 //----------------------------------------------------------
 
+void
+string::
+reserve_impl(size_type new_cap)
+{
+    BOOST_JSON_ASSERT(
+        new_cap >= impl_.capacity);
+    if(new_cap > impl_.capacity)
+    {
+        // grow
+        new_cap = impl::growth(
+            new_cap, impl_.capacity);
+        impl tmp(new_cap, sp_);
+        traits_type::copy(tmp.data(),
+            impl_.data(), impl_.size + 1);
+        tmp.size = impl_.size;
+        impl_.destroy(sp_);
+        impl_ = tmp;
+        return;
+    }
+    /*
+    if( new_cap >= sizeof(impl_.buf) ||
+        impl_.in_sbo())
+    {
+        // do nothing
+        return;
+    }
+    impl_.unalloc(sp_);
+    */
+}
+
 storage_ptr
 string::
 release_storage() noexcept
 {
-    s_.destroy(sp_);
+    impl_.destroy(sp_);
     return std::move(sp_);
 }
 
@@ -745,8 +547,7 @@ release_storage() noexcept
 std::ostream&
 operator<<(std::ostream& os, string const& s)
 {
-    os.write(s.data(), s.size());
-    return os;
+    return os << static_cast<string_view>(s);
 }
 
 } // json

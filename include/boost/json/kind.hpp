@@ -16,7 +16,7 @@
 namespace boost {
 namespace json {
 
-/// Constants for identifying the type of a @ref value
+/// Constants for identifying the type of a value
 enum class kind
 {
     /// An @ref object.

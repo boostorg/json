@@ -165,8 +165,8 @@ public:
 
     /** Construct an empty container
 
-        The container and all inserted elements will use the
-        @ref storage returned by @ref default_storage().
+        The container and all inserted elements will use
+        the default storage.
 
         @par Complexity
 
@@ -204,10 +204,6 @@ public:
 
         Storage for indexing the elements by hash is
         allocated for at least `count` elements.
-        The container and all inserted elements will use the
-        @ref storage owned by `sp`,
-        or the default parameter value returned by
-        @ref default_storage() if this argument is omitted.
 
         @par Complexity
 
@@ -221,9 +217,12 @@ public:
         @param count The minimum number of elements for
         which space in the index is reserved.
 
-        @param sp A pointer to the @ref storage
+        @param sp An optional pointer to the @ref storage
         to use. The container will acquire shared
         ownership of the storage object.
+        If this parameter is omitted, the default storage
+        is used.
+
     */
     BOOST_JSON_DECL
     object(
@@ -243,12 +242,12 @@ public:
         is omitted.
         The container and all inserted elements will use the
         @ref storage owned by `sp`,
-        or the default parameter value returned by
-        @ref default_storage() if this argument is omitted.
 
         @par Constraints
 
-        `std::is_constructible_v<const_reference, std::iterator_traits<InputIt>::value_type>`
+        @code
+        std::is_constructible_v<const_reference, std::iterator_traits<InputIt>::value_type>
+        @endcode
 
         @par Complexity
 
@@ -268,9 +267,11 @@ public:
         @param count The minimum number of elements for
         which space in the index is reserved.
 
-        @param sp A pointer to the @ref storage
+        @param sp An optional pointer to the @ref storage
         to use. The container will acquire shared
         ownership of the storage object.
+        If this parameter is omitted, the default storage
+        is used.
 
         @tparam InputIt a type meeting the requirements of
         __InputIterator__.
@@ -329,7 +330,7 @@ public:
         is not changed.
 
         The container and all inserted elements will use the
-        specified storage.
+        @ref storage owned by `sp`.
         
         @par Complexity
 
@@ -343,7 +344,7 @@ public:
         @param other The container to move
 
         @param sp A pointer to the @ref storage to use. The
-        container array will acquire shared ownership of the pointer.
+        container will acquire shared ownership of the pointer.
     */
     BOOST_JSON_DECL
     object(
@@ -406,7 +407,7 @@ public:
         Construct the container with a copy of the contents
         of `other.
         The container and all inserted elements will use the
-        default storage.
+        specified storage.
 
         @par Complexity
 
@@ -434,9 +435,7 @@ public:
         implementation defined amount if this argument
         is omitted.
         The container and all inserted elements will use the
-        @ref storage owned by `sp`,
-        or the default parameter value returned by
-        @ref default_storage() if this argument is omitted.
+        @ref storage owned by `sp`.
 
         @par Complexity
 
@@ -452,9 +451,12 @@ public:
         @param count The minimum number of elements for
         which space in the index is reserved.
 
-        @param sp A pointer to the @ref storage
+        @param sp An optional pointer to the @ref storage
         to use. The container will acquire shared
         ownership of the storage object.
+        If this parameter is omitted, the default storage
+        is used.
+
     */
     BOOST_JSON_DECL
     object(
@@ -780,7 +782,9 @@ public:
 
         @par Constraints
 
-        `std::is_constructible_v<const_reference, std::iterator_traits<InputIt>::value_type>`
+        @code
+        std::is_constructible_v<const_reference, std::iterator_traits<InputIt>::value_type>
+        @endcode
 
         @par Complexity
         
@@ -823,7 +827,9 @@ public:
 
         @par Constraints
 
-        `std::is_constructible_v<const_reference, std::iterator_traits<InputIt>::value_type>`
+        @code
+        std::is_constructible_v<const_reference, std::iterator_traits<InputIt>::value_type>
+        @endcode
 
         @par Complexity
         

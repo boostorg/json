@@ -235,7 +235,9 @@ public:
 
         @par Constraints
 
-        `std::is_constructible_v<value, std::iterator_traits<InputIt>::value_type>`
+        @code
+        std::is_constructible_v<value, std::iterator_traits<InputIt>::value_type>
+        @endcode
 
         @par Complexity
 
@@ -934,6 +936,7 @@ public:
         Constant.
     */
     static
+    constexpr
     size_type
     max_size() noexcept
     {
@@ -1161,11 +1164,15 @@ public:
 
         @par Constraints
 
-        `not std::is_convertible_v<InputIt, value>`
+        @code
+        not std::is_convertible_v<InputIt, value>
+        @endcode
 
         @par Mandates
 
-        `std::is_constructible_v<value, std::iterator_traits<InputIt>::value_type>`
+        @code
+        std::is_constructible_v<value, std::iterator_traits<InputIt>::value_type>
+        @endcode
 
         @par Complexity
         

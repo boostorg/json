@@ -19,13 +19,6 @@
 namespace boost {
 namespace json {
 
-namespace detail {
-
-// max length of strings used as keys or values
-constexpr unsigned long max_string_length_ = 0x7ffffffe; // 2GB
-
-} // detail
-
 #ifndef BOOST_JSON_STANDALONE
 /// The type of string view used by the library
 using string_view = boost::string_view;
@@ -34,6 +27,21 @@ using string_view = boost::string_view;
 using string_view = std::string_view;
 
 #endif
+
+namespace detail {
+
+// max length of strings used as keys or values
+constexpr unsigned long max_string_length_ = 0x7ffffffe; // 2GB
+
+template<class T>
+using is_viewy = typename std::enable_if<
+    std::is_convertible<
+        T const&, string_view>::value &&
+    ! std::is_convertible<
+        T const&, char const&>::value
+            >::type;
+
+} // detail
 
 } // json
 } // boost
