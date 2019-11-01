@@ -621,6 +621,16 @@ public:
                 a.reserve(50);
                 BEAST_EXPECT(a.capacity() >= 50);
             }
+
+            fail_loop([&](storage_ptr const& sp)
+            {
+                array a(min_capacity_, 'c', sp);
+                a.reserve(a.capacity() + 1);
+                auto const new_cap = a.capacity();
+                BEAST_EXPECT(new_cap > min_capacity_);
+                a.reserve((min_capacity_ + new_cap) / 2);
+                BEAST_EXPECT(a.capacity() == new_cap);
+            });
         }
 
         // capacity()
