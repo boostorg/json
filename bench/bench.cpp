@@ -433,17 +433,24 @@ main(
                 load_file(argv[i])});
     }
 
-    std::vector<std::unique_ptr<any_impl const>> vi;
-    vi.reserve(10);
-    //vi.emplace_back(new boost_vec_impl);
-    vi.emplace_back(new boost_default_impl);
-    vi.emplace_back(new boost_impl);
-    vi.emplace_back(new rapidjson_impl);
-    //vi.emplace_back(new nlohmann_impl);
+    try
+    {
+        std::vector<std::unique_ptr<any_impl const>> vi;
+        vi.reserve(10);
+        //vi.emplace_back(new boost_vec_impl);
+        vi.emplace_back(new boost_default_impl);
+        vi.emplace_back(new boost_impl);
+        vi.emplace_back(new rapidjson_impl);
+        //vi.emplace_back(new nlohmann_impl);
 
-    benchParse(vs, vi);
-    //benchSerialize(vs, vi);
-        
+        benchParse(vs, vi);
+        benchSerialize(vs, vi);
+    }
+    catch(system_error const& se)
+    {
+        dout << se.what() << std::endl;
+    }
+
     return 0;
 }
 

@@ -338,7 +338,7 @@ loop_str:
         *p++ = '\"';
         stack_.front().st = state::str2;
         BOOST_FALLTHROUGH;
-#if 1
+
     case state::str2:
     {
         auto s = str_.data();
@@ -356,16 +356,19 @@ loop_str:
                 break;
 
             // fast loop
+            char const* ss = s;
             while(s < sn)
             {
                 auto const ch = *s++;
                 auto const c = esc[static_cast<
                     unsigned char>(ch)];
                 if(! c)
-                {
-                    *p++ = ch;
                     continue;
-                }
+                auto const n = (s - ss) - 1;
+                std::memcpy(p, ss, n);
+                ss = s;
+                p += n;
+                *p++ = ch;
                 *p++ = '\\';
                 *p++ = c;
                 if(c != 'u')
@@ -377,6 +380,9 @@ loop_str:
                 *p++ = hex[static_cast<
                     unsigned char>(ch) & 15];
             }
+            auto const n = s - ss;
+            std::memcpy(p, ss, n);
+            p += n;
         }
         while(p < p1 && s < s1)
         {
@@ -442,106 +448,6 @@ loop_str:
             state::str3;
         BOOST_FALLTHROUGH;
     }
-#else
-    case state::str2:
-    {
-        auto s = str_.data();
-        auto const s1 =
-            s + str_.size();
-        if(static_cast<unsigned long>(
-            p1 - p) >= 6 * str_.size())
-        {
-            // fast loop
-            while(s < s1)
-            {
-                auto const ch = *s++;
-                auto const c = esc[static_cast<
-                    unsigned char>(ch)];
-                if(! c)
-                {
-                    *p++ = ch;
-                    continue;
-                }
-                *p++ = '\\';
-                *p++ = c;
-                if(c != 'u')
-                    continue;
-                *p++ = '0';
-                *p++ = '0';
-                *p++ = hex[static_cast<
-                    unsigned char>(ch) >> 4];
-                *p++ = hex[static_cast<
-                    unsigned char>(ch) & 15];
-            }
-        }
-        else
-        {
-            while(p < p1 && s < s1)
-            {
-                auto const ch = *s++;
-                auto const c = esc[static_cast<
-                    unsigned char>(ch)];
-                if(! c)
-                {
-                    *p++ = ch;
-                    continue;
-                }
-                if(c != 'u')
-                {
-                    if(p + 2 <= p1)
-                    {
-                        *p++ = '\\';
-                        *p++ = c;
-                        continue;
-                    }
-                    buf_[1] = '\\';
-                    buf_[0] = c;
-                    nbuf_ = 2;
-                    str_ = str_.substr(
-                        s - str_.data());
-                    stack_.front().st =
-                        state::str4;
-                    goto loop;
-                }
-                if(p + 6 <= p1)
-                {
-                    *p++ = '\\';
-                    *p++ = 'u';
-                    *p++ = '0';
-                    *p++ = '0';
-                    *p++ = hex[static_cast<
-                        unsigned char>(ch) >> 4];
-                    *p++ = hex[static_cast<
-                        unsigned char>(ch) & 15];
-                    continue;
-                }
-                buf_[5] = '\\';
-                buf_[4] = 'u';
-                buf_[3] = '0';
-                buf_[2] = '0';
-                buf_[1] = hex[static_cast<
-                    unsigned char>(ch) >> 4];
-                buf_[0] = hex[static_cast<
-                    unsigned char>(ch) & 15];
-                nbuf_ = 6;
-                str_ = str_.substr(
-                    s - str_.data());
-                stack_.front().st =
-                    state::str4;
-                goto loop;
-            }
-        }
-        if(s < s1)
-        {
-            str_ = str_.substr(
-                s - str_.data());
-            goto finish;
-        }
-        stack_.front().st =
-            state::str3;
-        BOOST_FALLTHROUGH;
-    }
-#endif
 
     case state::str3:
         if(p >= p1)
