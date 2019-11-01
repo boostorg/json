@@ -628,33 +628,28 @@ relocate(
     value* src,
     size_type n) noexcept
 {
+#ifdef BOOST_JSON_VALUE_IS_TRIVIAL
+    std::memmove(dest, src,
+        n * sizeof(value));
+#else
     if( dest >= src &&
         dest < src + n)
     {
-    #ifdef BOOST_JSON_VALUE_IS_TRIVIAL
-        std::memmove(dest, src,
-            n * sizeof(value));
-    #else
         // backwards
         dest += n;
         auto it = src + n;
         while(it != src)
             boost::relocate(
                 --dest, *--it);
-    #endif
     }
     else
     {
-    #ifdef BOOST_JSON_VALUE_IS_TRIVIAL
-        std::memcpy(dest, src,
-            n * sizeof(value));
-    #else
         auto last = src + n;
         while(src != last)
             boost::relocate(
                 dest++, *src++);
-    #endif
     }
+#endif
 }
 
 storage_ptr
