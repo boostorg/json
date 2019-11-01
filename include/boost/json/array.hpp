@@ -1517,6 +1517,10 @@ public:
     swap(array& other);
 
 private:
+    static
+    constexpr
+    unsigned long min_capacity_ = 16;
+
     struct impl_type
     {
         value* vec = nullptr;

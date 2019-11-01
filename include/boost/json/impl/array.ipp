@@ -75,8 +75,8 @@ construct(
 {
     // The choice of minimum capacity
     // affects the speed of parsing.
-    if( capacity_ < 16)
-        capacity_ = 16;
+    if( capacity_ < min_capacity_)
+        capacity_ = min_capacity_;
     vec = reinterpret_cast<value*>(
         sp->allocate(
             capacity_ * sizeof(value),
@@ -335,8 +335,8 @@ shrink_to_fit() noexcept
         impl_.destroy(sp_);
         return;
     }
-    if( impl_.size < 3 &&
-        impl_.capacity <= 3)
+    if( impl_.size < min_capacity_ &&
+        impl_.capacity <= min_capacity_)
         return;
 
     impl_type impl;
@@ -629,7 +629,13 @@ relocate(
     size_type n) noexcept
 {
 #ifdef BOOST_JSON_VALUE_IS_TRIVIAL
-    std::memmove(dest, src,
+    if(n == 0)
+        return;
+    std::memmove(
+        reinterpret_cast<
+            void*>(dest),
+        reinterpret_cast<
+            void const*>(src),
         n * sizeof(value));
 #else
     if( dest >= src &&

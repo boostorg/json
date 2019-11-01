@@ -57,35 +57,6 @@ public:
 
 //----------------------------------------------------------
 
-class boost_default_impl : public any_impl
-{
-public:
-    string_view
-    name() const noexcept override
-    {
-        return "boost(default)";
-    }
-
-    void
-    parse(
-        string_view s,
-        int repeat) const override
-    {
-        while(repeat--)
-            json::parse(s);
-    }
-
-    void
-    serialize(
-        string_view s,
-        int repeat) const override
-    {
-        auto jv = json::parse(s);
-        while(repeat--)
-            to_string(jv);
-    }
-};
-
 class boost_impl : public any_impl
 {
 public:
@@ -116,6 +87,37 @@ public:
         scoped_storage<
             block_storage> ss;
         auto jv = json::parse(s, ss);
+        while(repeat--)
+            to_string(jv);
+    }
+};
+
+//----------------------------------------------------------
+
+class boost_default_impl : public any_impl
+{
+public:
+    string_view
+    name() const noexcept override
+    {
+        return "boost(default)";
+    }
+
+    void
+    parse(
+        string_view s,
+        int repeat) const override
+    {
+        while(repeat--)
+            json::parse(s);
+    }
+
+    void
+    serialize(
+        string_view s,
+        int repeat) const override
+    {
+        auto jv = json::parse(s);
         while(repeat--)
             to_string(jv);
     }
@@ -433,9 +435,9 @@ main(
 
     std::vector<std::unique_ptr<any_impl const>> vi;
     vi.reserve(10);
-    vi.emplace_back(new boost_impl);
+    //vi.emplace_back(new boost_vec_impl);
     vi.emplace_back(new boost_default_impl);
-    vi.emplace_back(new boost_vec_impl);
+    vi.emplace_back(new boost_impl);
     vi.emplace_back(new rapidjson_impl);
     //vi.emplace_back(new nlohmann_impl);
 
