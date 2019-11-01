@@ -35,43 +35,6 @@ struct parser_base
             return 10 + c - 'a';
         return -1;
     }
-
-    static
-    int
-    utf8_encode(
-        char* dest,
-        unsigned long cp)
-    {
-        if(cp < 0x80)
-        {
-            dest[0] = static_cast<char>(cp);
-            return 1;
-        }
-
-        if(cp < 0x800)
-        {
-            dest[0] = static_cast<char>( (cp >> 6)          | 0xc0);
-            dest[1] = static_cast<char>( (cp & 0x3f)        | 0x80);
-            return 2;
-        }
-
-        if(cp < 0x10000)
-        {
-            dest[0] = static_cast<char>( (cp >> 12)         | 0xe0);
-            dest[1] = static_cast<char>(((cp >> 6) & 0x3f)  | 0x80);
-            dest[2] = static_cast<char>( (cp       & 0x3f)  | 0x80);
-            return 3;
-        }
-
-        {
-            dest[0] = static_cast<char>( (cp >> 18)         | 0xf0);
-            dest[1] = static_cast<char>(((cp >> 12) & 0x3f) | 0x80);
-            dest[2] = static_cast<char>(((cp >> 6)  & 0x3f) | 0x80);
-            dest[3] = static_cast<char>( (cp        & 0x3f) | 0x80);
-            return 4;
-        }
-    }
-
 };
 
 } // detail

@@ -444,7 +444,7 @@ main(
         //vi.emplace_back(new nlohmann_impl);
 
         benchParse(vs, vi);
-        benchSerialize(vs, vi);
+        //benchSerialize(vs, vi);
     }
     catch(system_error const& se)
     {

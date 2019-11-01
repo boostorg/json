@@ -12,8 +12,9 @@
 
 #include <boost/json/basic_parser.hpp>
 #include <boost/json/error.hpp>
-#include <boost/json/detail/buffer.hpp>
 #include <boost/json/detail/assert.hpp>
+#include <boost/json/detail/buffer.hpp>
+#include <boost/json/detail/sse2.hpp>
 
 namespace boost {
 namespace json {
@@ -516,6 +517,7 @@ loop_string:
         auto const start = p;
         while(p < p1)
         {
+            p += detail::count_unescaped(p, p1 - p);
             if(*p == '\"')
             {
                 if(is_key_)

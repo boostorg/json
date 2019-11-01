@@ -52,8 +52,6 @@
 # endif
 #endif
 
-#define BOOST_JSON_VALUE_IS_TRIVIAL
-
 #ifndef BOOST_NO_EXCEPTIONS
 # define BOOST_JSON_THROW(x) throw(x)
 #else
@@ -61,5 +59,17 @@
 #endif
 
 #define BOOST_JSON_STATIC_ASSERT( ... ) static_assert(__VA_ARGS__, #__VA_ARGS__)
+
+// optimizations
+
+#define BOOST_JSON_VALUE_IS_TRIVIAL
+
+#ifndef BOOST_JSON_NO_SSE2
+# if (defined(_M_IX86) && _M_IX86_FP == 2) || \
+      defined(_M_X64) || defined(__SSE2__)
+#  define BOOST_JSON_USE_SSE2
+# endif
+#endif
+
 
 #endif
