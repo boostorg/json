@@ -44,9 +44,15 @@
 # endif
 #endif
 
-//#ifdef _MSC_VER
+#ifndef BOOST_JSON_FORCEINLINE
+# ifdef _MSC_VER
+#  define BOOST_JSON_FORCEINLINE __forceinline
+# else
+#  define BOOST_JSON_FORCEINLINE
+# endif
+#endif
+
 #define BOOST_JSON_VALUE_IS_TRIVIAL
-//#endif
 
 #ifndef BOOST_NO_EXCEPTIONS
 # define BOOST_JSON_THROW(x) throw(x)

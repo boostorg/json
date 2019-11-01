@@ -23,7 +23,7 @@ public:
     using init_list = std::initializer_list<value>;
 
     string_view const str_;
-    unsigned long min_cap_;
+    unsigned long min_capacity_;
 
     array_test()
         : str_(
@@ -37,7 +37,7 @@ public:
         // calculate minimum array capacity
         array a;
         a.resize(1);
-        min_cap_ = a.capacity();
+        min_capacity_ = a.capacity();
     }
 
     void
@@ -139,7 +139,7 @@ public:
                 BEAST_EXPECT(a[4].as_int64() == 4);
             }
 
-            // forward iterator
+            // random iterator
             fail_loop([&](storage_ptr const& sp)
             {
                 init_list init{ 1, true, str_ };
@@ -638,16 +638,13 @@ public:
                 BEAST_EXPECT(a.capacity() >= 1);
             }
 
-            // VFALCO FIX ME!
-        #if 0
             {
-                array a({0, 1, 2, 3});
-                BEAST_EXPECT(a.capacity() >= 3);
+                array a(min_capacity_, 'c');
+                BEAST_EXPECT(a.capacity() >= min_capacity_);
                 a.erase(a.begin(), a.begin() + 2);
                 a.shrink_to_fit();
-                BEAST_EXPECT(a.capacity() == 3);
+                BEAST_EXPECT(a.capacity() == min_capacity_);
             }
-        #endif
 
             fail_loop([&](storage_ptr const& sp)
             {
@@ -666,18 +663,16 @@ public:
                 BEAST_EXPECT(a.capacity() == 0);
             });
 
-            // VFALCO FIX ME!
-        #if 0
             fail_loop([&](storage_ptr const& sp)
             {
-                array a(3, sp);
-                a.reserve(10);
-                BEAST_EXPECT(a.capacity() >= 10);
+                array a(min_capacity_, sp);
+                a.reserve(min_capacity_ * 2);
+                BEAST_EXPECT(a.capacity() >=
+                    min_capacity_ * 2);
                 a.shrink_to_fit();
-                if(a.capacity() > 3)
+                if(a.capacity() > min_capacity_)
                     throw test_failure{};
             });
-        #endif
         }
     }
 
@@ -738,7 +733,7 @@ public:
 
         // insert(const_iterator, InputIt, InputIt)
         {
-            // forward iterator
+            // random iterator
             fail_loop([&](storage_ptr const& sp)
             {
                 std::initializer_list<
@@ -749,11 +744,15 @@ public:
                 check(a);
             });
 
-            // forward iterator (multiple growth)
+            // random iterator (multiple growth)
             fail_loop([&](storage_ptr const& sp)
             {
-                std::initializer_list<
-                    value> init = {1, str_, true, 1, 2, 3, 4, 5, 6, 7};
+                std::initializer_list<value> init = {
+                     1, str_, true,  1,  2,  3,  4,  5,  6,
+                     7,  8,  9, 10, 11, 12, 13, 14, 15, 16,
+                    17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
+                    27, 28, 29, 30 };
+                BEAST_EXPECT(init.size() > min_capacity_);
                 array a(sp);
                 a.insert(a.begin(),
                     init.begin(), init.end());
@@ -796,8 +795,7 @@ public:
             // backward relocate
             fail_loop([&](storage_ptr const& sp)
             {
-                std::initializer_list<
-                    value> init = {1, 2};
+                std::initializer_list<value> init = {1, 2};
                 array a({"a", "b", "c", "d", "e"}, sp);
                 a.insert(
                     a.begin() + 1,

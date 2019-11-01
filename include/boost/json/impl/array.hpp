@@ -33,9 +33,10 @@ index_of(value const* pos) const noexcept ->
 class array::undo_create
 {
     array& self_;
-    bool commit_ = false;
 
 public:
+    bool commit = false;
+
     BOOST_JSON_DECL
     ~undo_create();
 
@@ -45,12 +46,6 @@ public:
         : self_(self)
     {
     }
-
-    void
-    commit() noexcept
-    {
-        commit_ = true;
-    }
 };
 
 //----------------------------------------------------------
@@ -59,21 +54,16 @@ class array::undo_assign
 {
     array& self_;
     impl_type impl_;
-    bool commit_ = false;
 
 public:
-    BOOST_JSON_DECL
-    ~undo_assign();
+    bool commit = false;
 
     explicit
     BOOST_JSON_DECL
     undo_assign(array& self);
 
-    void
-    commit() noexcept
-    {
-        commit_ = true;
-    }
+    BOOST_JSON_DECL
+    ~undo_assign();
 };
 
 //----------------------------------------------------------
@@ -82,26 +72,20 @@ class array::undo_insert
 {
     array& self_;
     size_type const n_;
-    bool commit_ = false;
 
 public:
     value* it;
     size_type const pos;
+    bool commit = false;
 
     BOOST_JSON_DECL
     undo_insert(
         value const* pos_,
-        std::size_t n,
+        unsigned long long n,
         array& self);
 
     BOOST_JSON_DECL
     ~undo_insert();
-
-    void
-    commit() noexcept
-    {
-        commit_ = true;
-    }
 
     template<class Arg>
     void
@@ -364,7 +348,7 @@ emplace(
 {
     undo_insert u(pos, 1, *this);
     u.emplace(std::forward<Arg>(arg));
-    u.commit();
+    u.commit = true;
     return impl_.vec + u.pos;
 }
 
@@ -405,7 +389,7 @@ array(
             *first++, sp_);
         ++impl_.size;
     }
-    u.commit();
+    u.commit = true;
 }
 
 template<class InputIt>
@@ -413,12 +397,12 @@ array::
 array(
     InputIt first, InputIt last,
     storage_ptr sp,
-    std::forward_iterator_tag)
+    std::random_access_iterator_tag)
     : sp_(std::move(sp))
 {
     undo_create u(*this);
-    auto const n = static_cast<std::size_t>(
-        std::distance(first, last));
+    auto const n = static_cast<
+        unsigned long long>(last - first);
     if(n > max_size())
         BOOST_JSON_THROW(
             std::length_error(
@@ -432,7 +416,7 @@ array(
                 *first++, sp_);
         ++impl_.size;
     }
-    u.commit();
+    u.commit = true;
 }
 
 template<class InputIt>
@@ -452,9 +436,9 @@ insert(
         pos, tmp.impl_.size, *this);
     relocate(u.it,
         tmp.impl_.vec, tmp.impl_.size);
+    // don't destroy values in tmp
     tmp.impl_.size = 0;
-    tmp.impl_.destroy(sp_);
-    u.commit();
+    u.commit = true;
     return impl_.vec + u.pos;
 }
 
@@ -464,11 +448,11 @@ array::
 insert(
     const_iterator pos,
     InputIt first, InputIt last,
-    std::forward_iterator_tag) ->
+    std::random_access_iterator_tag) ->
         iterator
 {
-    auto const n = static_cast<std::size_t>(
-        std::distance(first, last));
+    auto const n = static_cast<
+        unsigned long long>(last - first);
     if(n > max_size())
         BOOST_JSON_THROW(
             std::length_error(
@@ -477,7 +461,7 @@ insert(
         size_type>(n), *this);
     while(first != last)
         u.emplace(*first++);
-    u.commit();
+    u.commit = true;
     return begin() + u.pos;
 }
 

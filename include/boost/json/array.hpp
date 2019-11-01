@@ -26,13 +26,13 @@ class value;
 /** A dynamically sized array of JSON values
 
     This is the type used to represent JSON values of kind array.
-    It strives for semantic equivalence to `std::vector<value>`.
+    It is modeled for equivalence to `std::vector<json::value>`.
 
     The elements are stored contiguously, which means that elements
     can be accessed not only through iterators, but also using offsets
     to regular pointers to elements. This means that a pointer to an
     element of an @ref array may be passed to any function that expects
-    a pointer to an element of an array.
+    a pointer to @ref value.
 
     The storage of the array is handled automatically, being expanded
     and contracted as needed. Arrays usually occupy more space than
@@ -122,8 +122,12 @@ public:
 
         Linear in @ref size()
     */
-    BOOST_JSON_DECL
-    ~array();
+    ~array()
+    {
+        if( impl_.vec &&
+            sp_->need_free())
+            destroy();
+    }
 
     //------------------------------------------------------
 
@@ -980,6 +984,7 @@ public:
 
         @param new_capacity The new capacity of the array.
     */
+    BOOST_JSON_FORCEINLINE
     void
     reserve(size_type new_capacity)
     {
@@ -1533,6 +1538,11 @@ private:
             impl_type const&) = default;
 
         inline
+        impl_type&
+        operator=(
+            impl_type&& other) noexcept;
+
+        inline
         size_type
         index_of(value const*) const noexcept;
 
@@ -1569,7 +1579,7 @@ private:
     array(
         InputIt first, InputIt last,
         storage_ptr sp,
-        std::forward_iterator_tag);
+        std::random_access_iterator_tag);
 
     template<class InputIt>
     iterator
@@ -1583,7 +1593,7 @@ private:
     insert(
         const_iterator pos,
         InputIt first, InputIt last,
-        std::forward_iterator_tag);
+        std::random_access_iterator_tag);
 
     inline
     void
@@ -1593,9 +1603,13 @@ private:
 
     BOOST_JSON_DECL
     void
+    destroy() noexcept;
+
+    inline
+    void
     copy(array const& other);
 
-    BOOST_JSON_DECL
+    inline
     void
     copy(std::initializer_list<value> init);
 

@@ -36,6 +36,19 @@ impl_type(impl_type&& other) noexcept
 {
 }
 
+auto
+array::
+impl_type::
+operator=(
+    impl_type&& other) noexcept ->
+        impl_type&
+{
+    ::new(this) impl_type(
+        std::move(other));
+    return *this;
+}
+
+
 void
 array::
 impl_type::
@@ -61,9 +74,6 @@ destroy(
             capacity * sizeof(value),
             alignof(value));
     }
-    vec = nullptr;
-    size = 0;
-    capacity = 0;
 }
 
 void
@@ -91,20 +101,11 @@ array::
 undo_create::
 ~undo_create()
 {
-    if(! commit_)
+    if(! commit)
         self_.impl_.destroy(self_.sp_);
 }
 
 //----------------------------------------------------------
-
-array::
-undo_assign::
-~undo_assign()
-{
-    if(! commit_)
-        impl_.swap(self_.impl_);
-    impl_.destroy(self_.sp_);
-}
 
 array::
 undo_assign::
@@ -114,29 +115,22 @@ undo_assign(array& self)
 {
 }
 
-//----------------------------------------------------------
-
 array::
-undo_insert::
-~undo_insert()
+undo_assign::
+~undo_assign()
 {
-    if(! commit_)
-    {
-        auto const first =
-            self_.impl_.vec + pos;
-        self_.destroy(first, it);
-        self_.impl_.size -= n_;
-        relocate(
-            first, first + n_,
-            self_.impl_.size - pos);
-    }
+    if(! commit)
+        impl_.swap(self_.impl_);
+    impl_.destroy(self_.sp_);
 }
+
+//----------------------------------------------------------
 
 array::
 undo_insert::
 undo_insert(
     value const* pos_,
-    std::size_t n,
+    unsigned long long n,
     array& self)
     : self_(self)
     , n_(static_cast<size_type>(n))
@@ -155,18 +149,26 @@ undo_insert(
     self_.impl_.size += n_;
 }
 
+array::
+undo_insert::
+~undo_insert()
+{
+    if(! commit)
+    {
+        auto const first =
+            self_.impl_.vec + pos;
+        self_.destroy(first, it);
+        self_.impl_.size -= n_;
+        relocate(
+            first, first + n_,
+            self_.impl_.size - pos);
+    }
+}
+
 //----------------------------------------------------------
 //
 // Special Members
 //
-//----------------------------------------------------------
-
-array::
-~array()
-{
-    impl_.destroy(sp_);
-}
-
 //----------------------------------------------------------
 
 array::
@@ -191,7 +193,7 @@ array(
             impl_.size) value(v, sp_);
         ++impl_.size;
     }
-    u.commit();
+    u.commit = true;
 }
 
 array::
@@ -210,7 +212,7 @@ array(
                 kind_null, sp_);
         ++impl_.size;
     }
-    u.commit();
+    u.commit = true;
 }
 
 array::
@@ -219,7 +221,7 @@ array(array const& other)
 {
     undo_create u(*this);
     copy(other);
-    u.commit();
+    u.commit = true;
 }
 
 array::
@@ -230,7 +232,7 @@ array(
 {
     undo_create u(*this);
     copy(other);
-    u.commit();
+    u.commit = true;
 }
 
 array::
@@ -262,7 +264,7 @@ array(
     {
         undo_create u(*this);
         copy(other);
-        u.commit();
+        u.commit = true;
     }
 }
 
@@ -274,7 +276,7 @@ array(
 {
     undo_create u(*this);
     copy(init);
-    u.commit();
+    u.commit = true;
 }
 
 //----------------------------------------------------------
@@ -285,7 +287,7 @@ operator=(array const& other)
 {
     undo_assign u(*this);
     copy(other);
-    u.commit();
+    u.commit = true;
     return *this;
 }
 
@@ -296,13 +298,14 @@ operator=(array&& other)
     if(*sp_ == *other.sp_)
     {
         impl_.destroy(sp_);
-        impl_.swap(other.impl_);
+        impl_ = std::move(
+            other.impl_);
     }
     else
     {
         undo_assign u(*this);
         copy(other);
-        u.commit();
+        u.commit = true;
     }
     return *this;
 }
@@ -314,7 +317,7 @@ operator=(
 {
     undo_assign u(*this);
     copy(init);
-    u.commit();
+    u.commit = true;
     return *this;
 }
 
@@ -333,6 +336,7 @@ shrink_to_fit() noexcept
     if(impl_.size == 0)
     {
         impl_.destroy(sp_);
+        impl_ = {};
         return;
     }
     if( impl_.size < min_capacity_ &&
@@ -392,7 +396,7 @@ insert(
     undo_insert u(pos, count, *this);
     while(count--)
         u.emplace(v);
-    u.commit();
+    u.commit = true;
     return impl_.vec + u.pos;
 }
 
@@ -408,7 +412,7 @@ insert(
             init.size()), *this);
     for(auto const& v : init)
         u.emplace(v);
-    u.commit();
+    u.commit = true;
     return impl_.vec + u.pos;
 }
 
@@ -559,6 +563,18 @@ destroy(
 
 void
 array::
+destroy() noexcept
+{
+    auto it = impl_.vec + impl_.size;
+    while(it != impl_.vec)
+        (*--it).~value();
+    sp_->deallocate(impl_.vec,
+        impl_.capacity * sizeof(value),
+        alignof(value));
+}
+
+void
+array::
 copy(array const& other)
 {
     reserve(other.size());
@@ -663,6 +679,7 @@ array::
 release_storage() noexcept
 {
     impl_.destroy(sp_);
+    impl_ = {};
     return std::move(sp_);
 }
 

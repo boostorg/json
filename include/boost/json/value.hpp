@@ -530,7 +530,8 @@ public:
     template<class T
 #ifndef GENERATING_DOCUMENTATION
         ,class = typename std::enable_if<
-            std::is_constructible<value, T>::value>::type
+            std::is_constructible<
+            value, T, storage_ptr>::value>::type
 #endif
     >
     value&
