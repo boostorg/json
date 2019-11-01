@@ -15,10 +15,13 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-#include <math.h>
+/*
+    This is a derivative work
+*/
 
 #include <boost/json/detail/ryu/detail/d2s_intrinsics.hpp>
 #include "gtest.hpp"
+#include <math.h>
 
 namespace boost {
 namespace json {

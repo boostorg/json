@@ -40,33 +40,6 @@ void d2s_buffered(double f, char* result) noexcept;
 BOOST_JSON_DECL
 char* d2s(double f) noexcept;
 
-BOOST_JSON_DECL
-int f2s_buffered_n(float f, char* result) noexcept;
-
-BOOST_JSON_DECL
-void f2s_buffered(float f, char* result) noexcept;
-
-BOOST_JSON_DECL
-char* f2s(float f) noexcept;
-
-BOOST_JSON_DECL
-int d2fixed_buffered_n(double d, uint32_t precision, char* result) noexcept;
-
-BOOST_JSON_DECL
-void d2fixed_buffered(double d, uint32_t precision, char* result) noexcept;
-
-BOOST_JSON_DECL
-char* d2fixed(double d, uint32_t precision) noexcept;
-
-BOOST_JSON_DECL
-int d2exp_buffered_n(double d, uint32_t precision, char* result) noexcept;
-
-BOOST_JSON_DECL
-void d2exp_buffered(double d, uint32_t precision, char* result) noexcept;
-
-BOOST_JSON_DECL
-char* d2exp(double d, uint32_t precision) noexcept;
-
 } // ryu
 
 } // detail
@@ -74,9 +47,7 @@ char* d2exp(double d, uint32_t precision) noexcept;
 } // boost
 
 #ifdef BOOST_JSON_HEADER_ONLY
-#include <boost/json/detail/ryu/impl/f2s.ipp>
 #include <boost/json/detail/ryu/impl/d2s.ipp>
-#include <boost/json/detail/ryu/impl/d2fixed.ipp>
 #endif
 
 #endif
