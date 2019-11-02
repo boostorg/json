@@ -52,23 +52,13 @@ growth(
     impl_size_type capacity) ->
         impl_size_type
 {
-    if(new_size > detail::max_string_length_)
+    if(new_size > max_size())
         BOOST_JSON_THROW(
             std::length_error(
                 "size > max_size()"));
     new_size |= mask_;
-    if( new_size > detail::max_string_length_)
+    if( new_size > max_size())
         return detail::max_string_length_;
-#if 0
-    // growth factor 1.5
-    if( capacity >
-        detail::max_string_length_ - capacity / 2)
-        return detail::max_string_length_; // overflow
-    return (std::max<impl_size_type>)(
-        capacity + capacity / 2,
-        static_cast<impl_size_type>(
-            new_size));
-#else
     // growth factor 2
     if( capacity >
         detail::max_string_length_ - capacity)
@@ -76,7 +66,6 @@ growth(
     return (std::max<impl_size_type>)(
         capacity * 2, static_cast<
             impl_size_type>(new_size));
-#endif
 }
 
 void
@@ -116,7 +105,7 @@ append(
     size_type n,
     storage_ptr const& sp)
 {
-    if(n > detail::max_string_length_ - size)
+    if(n > max_size() - size)
         BOOST_JSON_THROW(
             std::length_error(
                 "size > max_size()"));
@@ -159,7 +148,7 @@ insert(
             impl_size_type>(n);
         return dest;
     }
-    if(n > detail::max_string_length_ - size)
+    if(n > max_size() - size)
         BOOST_JSON_THROW(
             std::length_error(
                 "size > max_size()"));

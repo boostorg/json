@@ -2643,6 +2643,7 @@ public:
                     (s.resize(s.max_size() + 1)),
                     std::length_error);
             }
+#if 0
             {
                 // VFALCO tsan doesn't like this
                 string s;
@@ -2654,6 +2655,7 @@ public:
                 {
                 }
             }
+#endif
             {
                 string s;
                 s.resize(100);
