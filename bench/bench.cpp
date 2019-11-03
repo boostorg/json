@@ -365,14 +365,14 @@ benchParse(
                 std::endl;
         for(unsigned j = 0; j < vi.size(); ++j)
         {
-            for(unsigned k = 0; k < 10; ++k)
+            for(unsigned k = 0; k < 15; ++k)
             {
                 auto const when = clock_type::now();
                 vi[j]->parse(vs[i].text, 250);
                 auto const ms = std::chrono::duration_cast<
                     std::chrono::milliseconds>(
                     clock_type::now() - when).count();
-                if(k > 4)
+                if(k > 9)
                     dout << " " << vi[j]->name() << ": " <<
                         std::to_string(ms) << "ms" <<
                         std::endl;
@@ -397,14 +397,14 @@ benchSerialize(
                 std::endl;
         for(unsigned j = 0; j < vi.size(); ++j)
         {
-            for(unsigned k = 0; k < 10; ++k)
+            for(unsigned k = 0; k < 15; ++k)
             {
                 auto const when = clock_type::now();
                 vi[j]->serialize(vs[i].text, 1000);
                 auto const ms = std::chrono::duration_cast<
                     std::chrono::milliseconds>(
                     clock_type::now() - when).count();
-                if(k >  4)
+                if(k >  9)
                     dout << " " << vi[j]->name() << ": " <<
                         std::to_string(ms) << "ms" <<
                         std::endl;
