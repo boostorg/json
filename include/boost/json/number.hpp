@@ -11,6 +11,7 @@
 #define BOOST_JSON_NUMBER_HPP
 
 #include <boost/json/detail/config.hpp>
+#include <stdint.h>
 
 namespace boost {
 namespace json {
@@ -19,7 +20,7 @@ namespace json {
 */
 struct ieee_decimal
 {
-    unsigned long long mantissa;
+    uint64_t mantissa;
     short exponent;
     bool sign;
 };

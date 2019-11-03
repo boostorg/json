@@ -12,6 +12,7 @@
 
 #include <boost/json/detail/ieee_parser.hpp>
 #include <boost/json/detail/assert.hpp>
+#include <boost/json/detail/sse2.hpp>
 
 namespace boost {
 namespace json {
@@ -44,11 +45,11 @@ maybe_init(char ch) noexcept
     return true;
 }
 
-std::size_t
+size_t
 ieee_parser::
 write_some(
     char const* const data,
-    std::size_t const size,
+    size_t const size,
     error_code& ec) noexcept
 {
     auto p = data;
@@ -80,48 +81,26 @@ loop:
             ec = error::expected_mantissa;
             break;
         }
-        ++p;
         if(d == 0)
         {
+            ++p;
             st_ = state::frac1;
             goto loop;
         }
         // 64-bit unsigned is at most 20 digits
-        if(p1 - p < 18)
+        if(p1 - p < 16)
         {
+            ++p;
             dec_.mantissa = d;
             st_ = state::mant2;
             goto loop;
         }
-        // fast loop
-        unsigned long long m = d;
-        for(int i = 0; i < 18; ++i)
-        {
-            d = *p - '0';
-            if(d < 10)
-            {
-                m = 10 * m + d;
-                ++p;
-                continue;
-            }
-            if(*p == '.')
-            {
-                ++p;
-                dec_.mantissa = m;
-                st_ = state::frac2;
-                goto loop;
-            }
-            if(*p == 'e' || *p == 'E')
-            {
-                ++p;
-                dec_.mantissa = m;
-                st_ = state::exp1;
-                goto loop;
-            }
-            st_ = state::done;
-            goto finish;
-        }
-        dec_.mantissa = m;
+        // fast path
+        auto const result =
+            detail::parse_unsigned(
+                dec_.mantissa, p);
+        dec_.mantissa = result.m;
+        p += result.n;
         st_ = state::mant2;
         BOOST_FALLTHROUGH;
     }
@@ -190,23 +169,49 @@ loop:
     {
         if(p >= p1)
             break;
-        unsigned char const d = *p - '0';
-        if(d >= 10)
+        // three digits or less
+        if( dec_.mantissa < 1000 &&
+            p1 - p >= 16)
         {
-            ec = error::expected_fraction;
-            break;
-        }
-        auto tmp  = dec_.mantissa * 10 + d;
-        if(dec_.mantissa < tmp)
-        {
-            --off_;
-            dec_.mantissa = tmp;
+            // fast path
+            auto const result =
+                parse_unsigned(dec_.mantissa, p);
+            if(result.n == 0)
+            {
+                ec = error::expected_fraction;
+                break;
+            }
+            p += result.n;
+            off_ -= static_cast<short>(result.n);
+            if(result.n < 16)
+            {
+                dec_.mantissa = result.m;
+                dec_.exponent = off_;
+                st_ = state::done;
+                goto finish;
+            }
+            dec_.mantissa = result.m;
         }
         else
         {
-            // limit of precision
+            unsigned char const d = *p - '0';
+            if(d >= 10)
+            {
+                ec = error::expected_fraction;
+                break;
+            }
+            auto tmp  = dec_.mantissa * 10 + d;
+            if(dec_.mantissa < tmp)
+            {
+                --off_;
+                dec_.mantissa = tmp;
+            }
+            else
+            {
+                // limit of precision
+            }
+            ++p;
         }
-        ++p;
         st_ = state::frac3;
         BOOST_FALLTHROUGH;
     }
@@ -363,11 +368,11 @@ finish:
     return p - p0;
 }
 
-std::size_t
+size_t
 ieee_parser::
 write(
     char const* data,
-    std::size_t size,
+    size_t size,
     error_code& ec) noexcept
 {
     auto n = write_some(data, size, ec);

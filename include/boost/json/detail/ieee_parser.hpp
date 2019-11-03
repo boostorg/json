@@ -13,7 +13,7 @@
 #include <boost/json/detail/config.hpp>
 #include <boost/json/error.hpp>
 #include <boost/json/number.hpp>
-#include <cstdint>
+#include <stdint.h>
 
 namespace boost {
 namespace json {
@@ -63,17 +63,17 @@ public:
     maybe_init(char ch) noexcept;
 
     BOOST_JSON_DECL
-    std::size_t
+    size_t
     write_some(
         char const* data,
-        std::size_t size,
+        size_t size,
         error_code& ec) noexcept;
 
     BOOST_JSON_DECL
-    std::size_t
+    size_t
     write(
         char const* data,
-        std::size_t size,
+        size_t size,
         error_code& ec) noexcept;
 
     BOOST_JSON_DECL

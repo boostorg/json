@@ -48,7 +48,7 @@
 # ifdef _MSC_VER
 #  define BOOST_JSON_FORCEINLINE __forceinline
 # else
-#  define BOOST_JSON_FORCEINLINE
+#  define BOOST_JSON_FORCEINLINE inline
 # endif
 #endif
 

@@ -1,5 +1,6 @@
 //
-// Copyright (c) 2019 Peter Dimov (pdimov at gmail dot com)
+// Copyright (c) 2019 Peter Dimov (pdimov at gmail dot com),
+//                    Vinnie Falco (vinnie dot falco at gmail dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -11,21 +12,41 @@
 #define BOOST_JSON_DETAIL_SSE2_HPP
 
 #include <boost/json/detail/config.hpp>
+#include <stdint.h>
 #ifdef BOOST_JSON_USE_SSE2
-#include <emmintrin.h>
-#include <xmmintrin.h>
+# include <emmintrin.h>
+# include <xmmintrin.h>
+# ifdef _MSC_VER
+#  include <intrin.h>
+# endif
 #endif
 
 namespace boost {
 namespace json {
 namespace detail {
 
-#ifdef BOOST_JSON_USE_SSE2
+struct parse_unsigned_result
+{
+    uint64_t m;
+    int n;
+};
+
 inline
-unsigned long long
+bool
+operator==(
+    parse_unsigned_result const& lhs,
+    parse_unsigned_result const& rhs) noexcept
+{
+    return lhs.m == rhs.m && lhs.n == rhs.n;
+}
+
+#ifdef BOOST_JSON_USE_SSE2
+
+inline
+size_t
 count_unescaped(
     char const* s,
-    unsigned long long n) noexcept
+    size_t n) noexcept
 {
     __m128i const q1 = _mm_set1_epi8( '"' );
     __m128i const q2 = _mm_set1_epi8( '\\' );
@@ -71,15 +92,71 @@ count_unescaped(
     return s - s0;
 };
 
+// assumes p..p+15 are valid
+inline
+parse_unsigned_result
+parse_unsigned( uint64_t r, char const* p ) noexcept
+{
+    __m128i const q1 = _mm_set1_epi8( '0' );
+    __m128i const q2 = _mm_set1_epi8( '9' );
+
+    __m128i v1 = _mm_loadu_si128( (__m128i const*)p );
+
+    v1 = _mm_or_si128(
+            _mm_cmplt_epi8( v1, q1 ),
+            _mm_cmpgt_epi8( v1, q2 ) );
+
+    int m = _mm_movemask_epi8( v1 );
+
+    int n;
+
+    if( m == 0 )
+    {
+        n = 16;
+    }
+    else
+    {
+#if defined(__GNUC__) || defined(__clang__)
+        n = __builtin_ffs( m ) - 1;
+#else
+        unsigned long index;
+        _BitScanForward( &index, m );
+        n = index;
+#endif
+    }
+
+    for( int i = 0; i < n; ++i )
+    {
+        r = r * 10 + p[ i ] - '0';
+    }
+
+    return { r, n };
+}
+
 #else
 
 inline
-unsigned long long
+size_t
 count_unescaped(
     char const*,
     unsigned long long) noexcept
 {
     return 0;
+}
+
+inline
+parse_unsigned_result
+parse_unsigned( uint64_t r, char const* p ) noexcept
+{
+    int n = 0;
+    for(; n< 16; ++n )
+    {
+        unsigned char const d = *p++ - '0';
+        if(d > 9)
+            break;
+        r = r * 10 + d;
+    }
+    return { r, n };
 }
 
 #endif
