@@ -30,6 +30,7 @@ count_unescaped(
     __m128i const q1 = _mm_set1_epi8( '"' );
     __m128i const q2 = _mm_set1_epi8( '\\' );
     __m128i const q3 = _mm_set1_epi8( 0x20 );
+    __m128i const q4 = _mm_set1_epi8( -1 );
 
     char const * s0 = s;
 
@@ -39,7 +40,7 @@ count_unescaped(
 
         __m128i v2 = _mm_cmpeq_epi8( v1, q1 );
         __m128i v3 = _mm_cmpeq_epi8( v1, q2 );
-        __m128i v4 = _mm_cmplt_epi8( v1, q3 );
+        __m128i v4 = _mm_and_si128( _mm_cmplt_epi8( v1, q3 ), _mm_cmpgt_epi8( v1, q4 ) ); // ch > -1 && ch < 0x20
 
         __m128i v5 = _mm_or_si128( v2, v3 );
         __m128i v6 = _mm_or_si128( v5, v4 );
