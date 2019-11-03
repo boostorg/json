@@ -187,44 +187,44 @@ loop:
 
     // one fraction digit
     case state::frac2:
+    {
         if(p >= p1)
             break;
+        unsigned char const d = *p - '0';
+        if(d >= 10)
         {
-            unsigned char const d = *p - '0';
-            if(d >= 10)
-            {
-                ec = error::expected_fraction;
-                break;
-            }
-            unsigned long long const m =
-                dec_.mantissa * 10 + d;
-            if(m > dec_.mantissa)
-            {
-                --off_;
-                dec_.mantissa = m;
-            }
-            else
-            {
-                // limit of precision
-            }
+            ec = error::expected_fraction;
+            break;
+        }
+        auto tmp  = dec_.mantissa * 10 + d;
+        if(dec_.mantissa < tmp)
+        {
+            --off_;
+            dec_.mantissa = tmp;
+        }
+        else
+        {
+            // limit of precision
         }
         ++p;
         st_ = state::frac3;
         BOOST_FALLTHROUGH;
+    }
 
     // zero or more fraction digits
     case state::frac3:
+    {
+        auto m = dec_.mantissa;
         while(p < p1)
         {
             unsigned char const d = *p - '0';
             if(d < 10)
             {
-                unsigned long long const m =
-                    dec_.mantissa * 10 + d;
-                if(m > dec_.mantissa)
+                auto tmp = m * 10 + d;
+                if(m < tmp)
                 {
                     --off_;
-                    dec_.mantissa = m;
+                    m = tmp;
                 }
                 else
                 {
@@ -235,6 +235,7 @@ loop:
             }
             if(*p != 'e' && *p != 'E')
             {
+                dec_.mantissa = m;
                 dec_.exponent += off_;
                 st_ = state::done;
                 goto finish;
@@ -243,7 +244,9 @@ loop:
             st_ = state::exp1;
             break;
         }
+        dec_.mantissa = m;
         BOOST_FALLTHROUGH;
+    }
 
     // plus or minus
     case state::exp1:
