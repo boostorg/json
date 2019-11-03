@@ -852,10 +852,25 @@ loop_num:
             p, p1 - p, ec);
         if(ec)
             goto finish;
+        if(p < p1)
+            iep_.write_eof(ec);
+        if(ec)
+            goto finish;
         if(iep_.is_done())
         {
-            this->on_number(
-                iep_.get(), ec);
+            auto const num = iep_.get();
+            switch(num.kind)
+            {
+            case kind::int64:
+                this->on_int64(num.i, ec);
+                break;
+            case kind::uint64:
+                this->on_uint64(num.u, ec);
+                break;
+            case kind::double_:
+                this->on_double(num.d, ec);
+                break;
+            }
             if(ec)
                 goto finish;
             st.pop();
@@ -1085,14 +1100,28 @@ write_eof(error_code& ec)
             break;
 
         case state::num:
+        {
             iep_.write_eof(ec);
-            if(! ec)
-                this->on_number(
-                    iep_.get(), ec);
+            if(ec)
+                return;
+            auto const num = iep_.get();
+            switch(num.kind)
+            {
+            case kind::int64:
+                this->on_int64(num.i, ec);
+                break;
+            case kind::uint64:
+                this->on_uint64(num.u, ec);
+                break;
+            case kind::double_:
+                this->on_double(num.d, ec);
+                break;
+            }
             if(ec)
                 return;
             st.pop();
             break;
+        }
 
         case state::done0:
             st.front() = state::done;

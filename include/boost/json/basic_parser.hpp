@@ -12,15 +12,13 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/error.hpp>
-#include <boost/json/number.hpp>
 #include <boost/json/detail/basic_parser.hpp>
-#include <boost/json/detail/ieee_parser.hpp>
+#include <boost/json/detail/number.hpp>
 #include <boost/json/detail/stack.hpp>
 #include <boost/json/detail/string.hpp>
-#include <cstdint>
-
 #include <string>
 #include <vector>
+#include <stdint.h>
 
 namespace boost {
 namespace json {
@@ -34,7 +32,7 @@ class basic_parser
 {
     enum class state : char;
 
-    detail::ieee_parser iep_;
+    detail::number_parser iep_;
     unsigned top_ = 0;
     long u0_;
     unsigned short u_;
@@ -151,8 +149,20 @@ protected:
 
     virtual
     void
-    on_number(
-        ieee_decimal dec,
+    on_int64(
+        int64_t i,
+        error_code& ec) = 0;
+
+    virtual
+    void
+    on_uint64(
+        uint64_t u,
+        error_code& ec) = 0;
+
+    virtual
+    void
+    on_double(
+        double d,
         error_code& ec) = 0;
 
     virtual

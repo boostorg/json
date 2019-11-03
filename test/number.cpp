@@ -8,10 +8,9 @@
 //
 
 // Test that header file is self-contained.
-#include <boost/json/number.hpp>
+#include <boost/json/detail/number.hpp>
 
 #include <boost/json/detail/string.hpp>
-#include <boost/json/detail/ieee_parser.hpp>
 
 #include <boost/beast/_experimental/unit_test/suite.hpp>
 #include <type_traits>
@@ -22,104 +21,228 @@ namespace json {
 class number_test : public beast::unit_test::suite
 {
 public:
+    template<class F>
     void
-    good(string_view s)
+    grind(string_view s, F&& f)
     {
-        error_code ec;
-        detail::ieee_parser p;
-        p.write(s.data(), s.size(), ec);
-        BEAST_EXPECTS(! ec, ec.message());
+        {
+            error_code ec;
+            detail::number_parser p;
+            p.write(s.data(), s.size(), ec);
+            if(BEAST_EXPECTS(! ec, ec.message()))
+            {
+                BEAST_EXPECT(p.is_done());
+                f(p.get());
+            }
+        }
+        for(size_t i = 1; i < s.size(); ++i)
+        {
+            error_code ec;
+            detail::number_parser p;
+            p.write_some(s.data(), i, ec);
+            if(! BEAST_EXPECTS(! ec, ec.message()))
+                continue;
+            p.write(
+                s.data() + i, s.size() - i, ec);
+            if(! BEAST_EXPECTS(! ec, ec.message()))
+                continue;
+            BEAST_EXPECT(p.is_done());
+            f(p.get());
+        }
     }
 
     void
-    bad(string_view s)
+    check_bad(string_view s)
     {
-        error_code ec;
-        detail::ieee_parser p;
-        p.write(s.data(), s.size(), ec);
-        BEAST_EXPECTS(!! ec, ec.message());
+        error_code xec;
+        {
+            detail::number_parser p;
+            p.write(s.data(), s.size(), xec);
+            BEAST_EXPECT(xec);
+        }
+        for(size_t i = 1; i < s.size(); ++i)
+        {
+            error_code ec;
+            detail::number_parser p;
+            p.write_some(s.data(), i, ec);
+            if(ec == xec)
+            {
+                BEAST_PASS();
+                continue;
+            }
+            if(! BEAST_EXPECTS(! ec, ec.message()))
+                continue;
+            p.write(
+                s.data() + i, s.size() - i, ec);
+            BEAST_EXPECT(ec == xec);
+        }
+    }
+
+    void
+    check_int64(
+        string_view s,
+        int64_t i)
+    {
+        grind(s,
+            [&](detail::number num)
+            {
+                if( BEAST_EXPECT(
+                        num.kind == kind::int64))
+                    BEAST_EXPECT(num.i == i);
+            });
+    }
+
+    void
+    check_uint64(
+        string_view s,
+        uint64_t u)
+    {
+        grind(s,
+            [&](detail::number num)
+            {
+                if( BEAST_EXPECT(
+                        num.kind == kind::uint64))
+                    BEAST_EXPECT(num.u == u);
+            });
+    }
+
+    void
+    check_double(
+        string_view s,
+        double d)
+    {
+        grind(s,
+            [&](detail::number num)
+            {
+                if( BEAST_EXPECT(
+                        num.kind == kind::double_))
+                    BEAST_EXPECT(num.d == d);
+            });
     }
 
     void
     testParse()
     {
-        auto const test =
-            [&]( string_view s,
-                decltype(ieee_decimal::mantissa) m,
-                decltype(ieee_decimal::exponent) e,
-                bool sign)
-            {
-                error_code ec;
-                detail::ieee_parser p;
-                p.write(s.data(), s.size(), ec);
-                if(BEAST_EXPECTS(! ec, ec.message()))
-                {
-                    auto const dec = p.get();
-                    if(! BEAST_EXPECT(
-                        dec.mantissa == m &&
-                        dec.exponent == e &&
-                        dec.sign == sign))
-                    {
-                        log <<
-                            "  " << s << "\n"
-                            "  { " + std::to_string(dec.mantissa) +
-                            ", " + std::to_string(dec.exponent) + " }" <<
-                            std::endl;
-                    }
-                }
-            };
+        check_double("-999999999999999999999", -999999999999999999999.0);
+        check_double("-100000000000000000009", -100000000000000000009.0);
+        check_double("-10000000000000000000", -10000000000000000000.0);
+        check_double("-9223372036854775809", -9223372036854775809.0);
+        check_int64( "-9223372036854775808", INT64_MIN);
+        check_int64( "-9223372036854775807", -9223372036854775807);
+        check_int64( "-999999999999999999", -999999999999999999);
+        check_int64( "-99999999999999999", -99999999999999999);
+        check_int64( "-9999999999999999", -9999999999999999);
+        check_int64( "-999999999999999", -999999999999999);
+        check_int64( "-99999999999999", -99999999999999);
+        check_int64( "-9999999999999", -9999999999999);
+        check_int64( "-999999999999", -999999999999);
+        check_int64( "-99999999999", -99999999999);
+        check_int64( "-9999999999", -9999999999);
+        check_int64( "-999999999", -999999999);
+        check_int64( "-99999999", -99999999);
+        check_int64( "-9999999", -9999999);
+        check_int64( "-999999", -999999);
+        check_int64( "-99999", -99999);
+        check_int64( "-9999", -9999);
+        check_int64( "-999", -999);
+        check_int64( "-99", -99);
+        check_int64( "-9", -9);
+        check_int64(  "0", 0);
+        check_int64(  "9", 9);
+        check_int64(  "99", 99);
+        check_int64(  "999", 999);
+        check_int64(  "9999", 9999);
+        check_int64(  "99999", 99999);
+        check_int64(  "999999", 999999);
+        check_int64(  "9999999", 9999999);
+        check_int64(  "99999999", 99999999);
+        check_int64(  "999999999", 999999999);
+        check_int64(  "9999999999", 9999999999);
+        check_int64(  "99999999999", 99999999999);
+        check_int64(  "999999999999", 999999999999);
+        check_int64(  "9999999999999", 9999999999999);
+        check_int64(  "99999999999999", 99999999999999);
+        check_int64(  "999999999999999", 999999999999999);
+        check_int64(  "9999999999999999", 9999999999999999);
+        check_int64(  "99999999999999999", 99999999999999999);
+        check_int64(  "999999999999999999", 999999999999999999);
+        check_int64(  "9223372036854775807", INT64_MAX);
+        check_uint64( "9223372036854775808", 9223372036854775808);
+        check_uint64( "9999999999999999999", 9999999999999999999);
+        check_uint64( "18446744073709551615", UINT64_MAX);
+        check_double( "18446744073709551616", 18446744073709551616.0);
+        check_double( "99999999999999999999", 99999999999999999999.0);
+        check_double( "999999999999999999999", 999999999999999999999.0);
+        check_double( "1000000000000000000000", 1000000000000000000000.0);
+        check_double( "9999999999999999999999", 9999999999999999999999.0);
+        check_double( "99999999999999999999999", 99999999999999999999999.0);
 
-        test( "0", 0, 0, false);
-        test( "1e2", 1, 2, false);
-        test( "1E2", 1, 2, false);
-        test("-1E2", 1, 2, true);
-        test("-1E-2", 1, -2, true);
-        test( "9223372036854775807", 9223372036854775807, 0, false);
-        test("-9223372036854775807", 9223372036854775807, 0, true);
-        test("18446744073709551615", 18446744073709551615ULL, 0, false);
-        test("-18446744073709551615", 18446744073709551615ULL, 0, true);
-        test("1e308", 1, 308, false);
-        test("10e308", 10, 308, false);
+        check_double("-0.9999999999999999999999", -1.0000000000000002);
+        check_double("-0.9999999999999999", -1.0000000000000000);
+        check_double("-0.9007199254740991", -0.9007199254740991); // (2^53-1)
+        check_double("-0.999999999999999", -0.99999999999999911);
+        check_double("-0.99999999999999", -0.99999999999999001);
+        check_double("-0.9999999999999", -0.99999999999990008);
+        check_double("-0.999999999999", -0.99999999999900002);
+        check_double("-0.99999999999", -0.99999999998999989);
+        check_double("-0.9999999999", -0.99999999989999999);
+        check_double("-0.999999999", -0.99999999900000003);
+        check_double("-0.99999999", -0.99999999000000006);
+        check_double("-0.9999999", -0.99999989999999994);
+        check_double("-0.999999", -0.999999);
+        check_double("-0.99999", -0.99999);
+        check_double("-0.9999", -0.9999);
+        check_double("-0.8125", -0.8125);
+        check_double("-0.999", -0.999);
+        check_double("-0.99", -0.99);
+        check_double("-1.0", -1);
+        check_double("-0.9", -0.9);
+        check_double("-0.0", 0);
+        check_double( "0.0", 0);
+        check_double( "0.9", 0.9);
+        check_double( "0.99", 0.99);
+        check_double( "0.999", 0.999);
+        check_double( "0.8125", 0.8125);
+        check_double( "0.9999", 0.9999);
+        check_double( "0.99999", 0.99999);
+        check_double( "0.999999", 0.999999);
+        check_double( "0.9999999", 0.99999989999999994);
+        check_double( "0.99999999", 0.99999999000000006);
+        check_double( "0.999999999", 0.99999999900000003);
+        check_double( "0.9999999999", 0.99999999989999999);
+        check_double( "0.99999999999", 0.99999999998999989);
+        check_double( "0.999999999999", 0.99999999999900002);
+        check_double( "0.9999999999999", 0.99999999999990008);
+        check_double( "0.99999999999999", 0.99999999999999001);
+        check_double( "0.999999999999999", 0.99999999999999911);
+        check_double( "0.9007199254740991", 0.9007199254740991); // (2^53-1)
+        check_double( "0.9999999999999999", 1.0000000000000000);
+        check_double( "0.9999999999999999999999", 1.0000000000000002);
+        check_double( "0.999999999999999999999999999", 1.0000000000000002);
 
-        test("1.0", 10, -1, false);
+        check_double("-1e-1", -1e-1);
+        check_double("-1e0", -1);
+        check_double("-1e1", -1e1);
+        check_double( "0e0", 0);
+        check_double( "1e0", 1);
 
-        good("0");
-        good("0.0");
-        good("0.10");
-        good("0.01");
-        good("1");
-        good("10");
-        good("1.5");
-        good("10.5");
-        good("10.25");
-        good("10.25e0");
-        good("1e1");
-        good("1e10");
-        good("1e+0");
-        good("1e+1");
-        good("0e+10");
-        good("0e-0");
-        good("0e-1");
-        good("0e-10");
-        good("1E+1");
-        good("-0");
-        good("-1");
-        good("-1e1");
-
-        bad ("");
-        bad ("-");
-        bad ("00");
-        bad ("00.");
-        bad ("00.0");
-        bad ("1a");
-        bad (".");
-        bad ("1.");
-        bad ("1+");
-        bad ("0.0+");
-        bad ("0.0e+");
-        bad ("0.0e-");
-        bad ("0.0e0-");
-        bad ("0.0e");
+        check_bad("");
+        check_bad("x");
+        check_bad("00");
+        check_bad("e");
+        check_bad("-");
+        check_bad("00");
+        check_bad("00.");
+        check_bad("00.0");
+        check_bad("1a");
+        check_bad(".");
+        check_bad("1.");
+        check_bad("1+");
+        check_bad("0.0+");
+        check_bad("0.0e+");
+        check_bad("0.0e-");
+        check_bad("0.0e0-");
+        check_bad("0.0e");
     }
 
     void

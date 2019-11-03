@@ -144,8 +144,20 @@ private:
 
     BOOST_JSON_DECL
     void
-    on_number(
-        ieee_decimal dec,
+    on_int64(
+        int64_t i,
+        error_code& ec) override;
+
+    BOOST_JSON_DECL
+    void
+    on_uint64(
+        uint64_t u,
+        error_code& ec) override;
+
+    BOOST_JSON_DECL
+    void
+    on_double(
+        double d,
         error_code& ec) override;
 
     BOOST_JSON_DECL

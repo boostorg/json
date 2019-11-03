@@ -293,26 +293,79 @@ on_string_end(
 
 void
 parser::
-on_number(ieee_decimal dec, error_code&)
+on_int64(
+    int64_t i,
+    error_code&)
 {
     auto& jv = *stack_.front();
     BOOST_JSON_ASSERT(! jv.is_object());
     if(obj_)
     {
         BOOST_JSON_ASSERT(jv.is_null());
-        jv = value(dec);
+        jv = i;
         stack_.pop();
     }
     else if(stack_.front()->is_array())
     {
         BOOST_JSON_ASSERT(s_.empty());
-        jv.if_array()->emplace_back(
-            dec);
+        jv.if_array()->emplace_back(i);
     }
     else
     {
         BOOST_JSON_ASSERT(jv.is_null());
-        jv = dec;
+        jv = i;
+    }
+}
+
+void
+parser::
+on_uint64(
+    uint64_t u,
+    error_code&)
+{
+    auto& jv = *stack_.front();
+    BOOST_JSON_ASSERT(! jv.is_object());
+    if(obj_)
+    {
+        BOOST_JSON_ASSERT(jv.is_null());
+        jv = u;
+        stack_.pop();
+    }
+    else if(stack_.front()->is_array())
+    {
+        BOOST_JSON_ASSERT(s_.empty());
+        jv.if_array()->emplace_back(u);
+    }
+    else
+    {
+        BOOST_JSON_ASSERT(jv.is_null());
+        jv = u;
+    }
+}
+
+void
+parser::
+on_double(
+    double d,
+    error_code&)
+{
+    auto& jv = *stack_.front();
+    BOOST_JSON_ASSERT(! jv.is_object());
+    if(obj_)
+    {
+        BOOST_JSON_ASSERT(jv.is_null());
+        jv = d;
+        stack_.pop();
+    }
+    else if(stack_.front()->is_array())
+    {
+        BOOST_JSON_ASSERT(s_.empty());
+        jv.if_array()->emplace_back(d);
+    }
+    else
+    {
+        BOOST_JSON_ASSERT(jv.is_null());
+        jv = d;
     }
 }
 

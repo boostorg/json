@@ -7,43 +7,59 @@
 // Official repository: https://github.com/vinniefalco/json
 //
 
-#ifndef BOOST_JSON_DETAIL_IEEE_PARSER_HPP
-#define BOOST_JSON_DETAIL_IEEE_PARSER_HPP
+#ifndef BOOST_JSON_DETAIL_NUMBER_HPP
+#define BOOST_JSON_DETAIL_NUMBER_HPP
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/error.hpp>
-#include <boost/json/number.hpp>
+#include <boost/json/kind.hpp>
 #include <stdint.h>
 
 namespace boost {
 namespace json {
 namespace detail {
 
-class ieee_parser
+struct number
+{
+    union
+    {
+        double d;
+        int64_t i;
+        uint64_t u;
+    };
+
+    json::kind kind;
+};
+
+class number_parser
 {
     enum class state
     {
-        init,
-        mant1, mant2,
-        frac1, frac2, frac3,
-        exp1,  exp2,  exp3,  exp4, exp5,
+        init,   init0,  init1,
+        mant,   mantn,  mantd,
+        frac1,  frac2,  frac3, fracd,
+        exp1,   exp2,   exp3,
         done
     };
 
-    ieee_decimal dec_;
+    number n_;
+    short exp_;
+    short dig_;
     short off_;
+    bool neg_;
+    bool eneg_;
     state st_;
 
 public:
-    ieee_parser()
+    number_parser()
         : st_(state::init)
     {
     }
 
-    ieee_decimal const&
+    number
     get() const noexcept
     {
-        return dec_;
+        return n_;
     }
 
     bool
@@ -87,7 +103,7 @@ public:
 } // boost
 
 #ifdef BOOST_JSON_HEADER_ONLY
-#include <boost/json/detail/ieee_parser.ipp>
+#include <boost/json/detail/number.ipp>
 #endif
 
 #endif

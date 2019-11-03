@@ -14,7 +14,6 @@
 #include <boost/json/array.hpp>
 #include <boost/json/error.hpp>
 #include <boost/json/kind.hpp>
-#include <boost/json/number.hpp>
 #include <boost/json/object.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/string.hpp>
@@ -534,13 +533,6 @@ public:
         ::new(&sca_.sp) storage_ptr(
             std::move(sp));
     }
-
-    /** Construct a floating point number.
-    */
-    BOOST_JSON_DECL
-    value(
-        ieee_decimal const& dec,
-        storage_ptr sp = {});
 
     /** Construct a boolean.
     */

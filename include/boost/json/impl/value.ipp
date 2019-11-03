@@ -379,67 +379,6 @@ operator=(value const& other)
 
 value::
 value(
-    ieee_decimal const& dec,
-    storage_ptr sp)
-{
-    ::new(&sca_.sp) storage_ptr(std::move(sp));
-    if(dec.exponent == 0)
-    {
-        if(! dec.sign)
-        {
-            kind_ = json::kind::uint64;
-            sca_.u = dec.mantissa;
-        }
-        else if(
-            dec.mantissa <= static_cast<std::uint64_t>(
-            (std::numeric_limits<std::int64_t>::max)()) + 1)
-        {
-            kind_ = json::kind::int64;
-            sca_.i = static_cast<
-                std::int64_t>(dec.mantissa);
-        }
-        else
-        {
-            kind_ = json::kind::double_;
-            sca_.d = to_double(dec);
-        }
-    }
-    else
-    {
-        auto const d = to_double(dec);
-        if(! dec.sign)
-        {
-            auto u = static_cast<std::uint64_t>(d);
-            if(u == d)
-            {
-                kind_ = json::kind::uint64;
-                sca_.u = u;
-            }
-            else
-            {
-                kind_ = json::kind::double_;
-                sca_.d = to_double(dec);
-            }
-        }
-        else
-        {
-            auto i = static_cast<std::int64_t>(d);
-            if(i == d)
-            {
-                kind_ = json::kind::int64;
-                sca_.i = i;
-            }
-            else
-            {
-                kind_ = json::kind::double_;
-                sca_.d = to_double(dec);
-            }
-        }
-    }
-}
-
-value::
-value(
     std::initializer_list<value> init,
     storage_ptr sp)
 {
