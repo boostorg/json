@@ -71,38 +71,73 @@ loop:
 
     // one digit
     case state::mant1:
+    {
         if(p >= p1)
             break;
+        unsigned char d = *p - '0';
+        if(d >= 10)
         {
-            unsigned char const d = *p - '0';
-            if(d >= 10)
-            {
-                ec = error::expected_mantissa;
-                break;
-            }
-            ++p;
-            if(d == 0)
-            {
-                st_ = state::frac1;
-                goto loop;
-            }
+            ec = error::expected_mantissa;
+            break;
+        }
+        ++p;
+        if(d == 0)
+        {
+            st_ = state::frac1;
+            goto loop;
+        }
+        // 64-bit unsigned is at most 20 digits
+        if(p1 - p < 18)
+        {
             dec_.mantissa = d;
             st_ = state::mant2;
-            BOOST_FALLTHROUGH;
+            goto loop;
         }
+        // fast loop
+        unsigned long long m = d;
+        for(int i = 0; i < 18; ++i)
+        {
+            d = *p - '0';
+            if(d < 10)
+            {
+                m = 10 * m + d;
+                ++p;
+                continue;
+            }
+            if(*p == '.')
+            {
+                ++p;
+                dec_.mantissa = m;
+                st_ = state::frac2;
+                goto loop;
+            }
+            if(*p == 'e' || *p == 'E')
+            {
+                ++p;
+                dec_.mantissa = m;
+                st_ = state::exp1;
+                goto loop;
+            }
+            st_ = state::done;
+            goto finish;
+        }
+        dec_.mantissa = m;
+        st_ = state::mant2;
+        BOOST_FALLTHROUGH;
+    }
 
     // zero or more digits
     case state::mant2:
     {
-        auto mantissa = dec_.mantissa;
+        auto m = dec_.mantissa;
         while(p < p1)
         {
             unsigned char const d = *p - '0';
             if(d < 10)
             {
-                auto const tmp = mantissa * 10 + d;
-                if(tmp > mantissa)
-                    mantissa = tmp;
+                auto const tmp = m * 10 + d;
+                if( m < tmp)
+                    m = tmp;
                 else
                     ++off_; // limit of precision
                 ++p;
@@ -111,14 +146,14 @@ loop:
             if(*p == '.')
             {
                 ++p;
-                dec_.mantissa = mantissa;
+                dec_.mantissa = m;
                 st_ = state::frac2;
                 goto loop;
             }
             if(*p == 'e' || *p == 'E')
             {
                 ++p;
-                dec_.mantissa = mantissa;
+                dec_.mantissa = m;
                 st_ = state::exp1;
                 goto loop;
             }
@@ -126,7 +161,7 @@ loop:
             st_ = state::done;
             break;
         }
-        dec_.mantissa = mantissa;
+        dec_.mantissa = m;
         break;
     }
 

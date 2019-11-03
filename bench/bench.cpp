@@ -404,7 +404,7 @@ benchSerialize(
                 auto const ms = std::chrono::duration_cast<
                     std::chrono::milliseconds>(
                     clock_type::now() - when).count();
-                if(k >  9)
+                if(k > 9)
                     dout << " " << vi[j]->name() << ": " <<
                         std::to_string(ms) << "ms" <<
                         std::endl;
@@ -456,76 +456,76 @@ main(
 
 /*
 Parse File 1 array.json (609414 bytes)
- boost(block): 511ms
- boost(block): 497ms
- boost(block): 474ms
- boost(block): 469ms
- boost(block): 463ms
+ boost(block): 397ms
+ boost(block): 398ms
+ boost(block): 393ms
+ boost(block): 394ms
+ boost(block): 396ms
+ rapidjson: 380ms
  rapidjson: 378ms
- rapidjson: 379ms
+ rapidjson: 381ms
  rapidjson: 378ms
- rapidjson: 376ms
  rapidjson: 378ms
 
 Parse File 2 arrays.json (1461524 bytes)
- boost(block): 1523ms
- boost(block): 1513ms
- boost(block): 1516ms
- boost(block): 1513ms
- boost(block): 1520ms
+ boost(block): 1517ms
+ boost(block): 1517ms
+ boost(block): 1512ms
+ boost(block): 1521ms
+ boost(block): 1511ms
+ rapidjson: 937ms
  rapidjson: 936ms
+ rapidjson: 937ms
  rapidjson: 936ms
- rapidjson: 934ms
- rapidjson: 949ms
- rapidjson: 950ms
+ rapidjson: 938ms
 
 Parse File 3 strings.json (1016132 bytes)
- boost(block): 48ms
- boost(block): 48ms
- boost(block): 48ms
- boost(block): 48ms
- boost(block): 48ms
- rapidjson: 455ms
- rapidjson: 453ms
- rapidjson: 455ms
- rapidjson: 453ms
- rapidjson: 453ms
+ boost(block): 49ms
+ boost(block): 49ms
+ boost(block): 49ms
+ boost(block): 49ms
+ boost(block): 49ms
+ rapidjson: 451ms
+ rapidjson: 449ms
+ rapidjson: 451ms
+ rapidjson: 450ms
+ rapidjson: 452ms
 
 Parse File 4 twitter.json (646995 bytes)
- boost(block): 747ms
- boost(block): 746ms
- boost(block): 744ms
- boost(block): 747ms
- boost(block): 747ms
- rapidjson: 438ms
- rapidjson: 437ms
- rapidjson: 450ms
- rapidjson: 443ms
- rapidjson: 450ms
+ boost(block): 762ms
+ boost(block): 762ms
+ boost(block): 762ms
+ boost(block): 761ms
+ boost(block): 761ms
+ rapidjson: 434ms
+ rapidjson: 436ms
+ rapidjson: 453ms
+ rapidjson: 432ms
+ rapidjson: 434ms
 
 Parse File 5 citm_catalog.json (1777672 bytes)
- boost(block): 1485ms
- boost(block): 1485ms
- boost(block): 1485ms
  boost(block): 1487ms
- boost(block): 1485ms
- rapidjson: 910ms
- rapidjson: 909ms
- rapidjson: 909ms
- rapidjson: 907ms
- rapidjson: 910ms
+ boost(block): 1495ms
+ boost(block): 1488ms
+ boost(block): 1492ms
+ boost(block): 1490ms
+ rapidjson: 903ms
+ rapidjson: 903ms
+ rapidjson: 903ms
+ rapidjson: 902ms
+ rapidjson: 903ms
 
 Parse File 6 canada.json (2251060 bytes)
- boost(block): 4046ms
- boost(block): 4191ms
- boost(block): 4295ms
- boost(block): 4131ms
- boost(block): 4134ms
- rapidjson: 1412ms
- rapidjson: 1409ms
- rapidjson: 1410ms
- rapidjson: 1409ms
- rapidjson: 1411ms
+ boost(block): 4282ms
+ boost(block): 4247ms
+ boost(block): 4252ms
+ boost(block): 4234ms
+ boost(block): 4257ms
+ rapidjson: 1418ms
+ rapidjson: 1417ms
+ rapidjson: 1417ms
+ rapidjson: 1417ms
+ rapidjson: 1417ms
 
 Serialize File 1 array.json (609414 bytes)
  boost(block): 854ms
