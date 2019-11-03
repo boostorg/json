@@ -179,4 +179,14 @@ Lorem ipsum.
 
 [/-----------------------------------------------------------------------------]
 
+[section Credits]
+
+This library wouldn't be where it is today without the help of
+[@https://github.com/pdimov Peter Dimov]
+for design advice and optimization assistance.
+
+[endsect]
+
+[/-----------------------------------------------------------------------------]
+
 [endsect]

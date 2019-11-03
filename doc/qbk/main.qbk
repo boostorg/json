@@ -78,8 +78,8 @@ in memory.
         [link json.overview Overview]
     ][
         A review of the requirements and features included in Boost.JSON,
-        rationale and design information, and answers to frequently
-        asked questions.
+        rationale and design information, answers to frequently
+        asked questions, and credits.
     ]]
     [[
         [link json.usage Usage]
