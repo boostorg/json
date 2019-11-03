@@ -258,13 +258,6 @@ const_iterator(
 //----------------------------------------------------------
 
 object::
-~object()
-{
-    if(sp_->need_free())
-        release_storage();
-}
-
-object::
 object(storage_ptr sp) noexcept
     : sp_(std::move(sp))
 {
@@ -881,17 +874,20 @@ insert(
     r.e = nullptr;
 }
 
-storage_ptr
+void
 object::
-release_storage() noexcept
+destroy() noexcept
 {
-    clear();
-    if(tab_)
+    for(auto e = tab_->head;
+        e != tab_->end();)
     {
-        tab_->destroy(sp_);
-        tab_ = nullptr;
+        auto next = e->next;
+        e->destroy(sp_);
+        e = next;
     }
-    return std::move(sp_);
+    tab_->head = tab_->end();
+    tab_->size = 0;
+    tab_->destroy(sp_);
 }
 
 void

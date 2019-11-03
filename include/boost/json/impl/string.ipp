@@ -523,14 +523,6 @@ reserve_impl(size_type new_cap)
     */
 }
 
-storage_ptr
-string::
-release_storage() noexcept
-{
-    impl_.destroy(sp_);
-    return std::move(sp_);
-}
-
 //----------------------------------------------------------
 
 std::ostream&

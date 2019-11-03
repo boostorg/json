@@ -158,8 +158,11 @@ public:
 
         Linear in @ref size()
     */
-    BOOST_JSON_DECL
-    ~object();
+    ~object()
+    {
+        if(tab_ && sp_->need_free())
+            destroy();
+    }
 
     //------------------------------------------------------
 
@@ -1456,11 +1459,9 @@ private:
         std::size_t hash,
         element* e);
 
-    inline
-    storage_ptr
-    release_storage() noexcept;
-
-    friend class value;
+    BOOST_JSON_DECL
+    void
+    destroy() noexcept;
 };
 
 /** Swap this container with the contents of another container.

@@ -438,7 +438,7 @@ main(
         std::vector<std::unique_ptr<any_impl const>> vi;
         vi.reserve(10);
         //vi.emplace_back(new boost_vec_impl);
-        vi.emplace_back(new boost_default_impl);
+        //vi.emplace_back(new boost_default_impl);
         vi.emplace_back(new boost_impl);
         vi.emplace_back(new rapidjson_impl);
         //vi.emplace_back(new nlohmann_impl);
@@ -454,3 +454,149 @@ main(
     return 0;
 }
 
+/*
+Parse File 1 array.json (609414 bytes)
+ boost(block): 511ms
+ boost(block): 497ms
+ boost(block): 474ms
+ boost(block): 469ms
+ boost(block): 463ms
+ rapidjson: 378ms
+ rapidjson: 379ms
+ rapidjson: 378ms
+ rapidjson: 376ms
+ rapidjson: 378ms
+
+Parse File 2 arrays.json (1461524 bytes)
+ boost(block): 1523ms
+ boost(block): 1513ms
+ boost(block): 1516ms
+ boost(block): 1513ms
+ boost(block): 1520ms
+ rapidjson: 936ms
+ rapidjson: 936ms
+ rapidjson: 934ms
+ rapidjson: 949ms
+ rapidjson: 950ms
+
+Parse File 3 strings.json (1016132 bytes)
+ boost(block): 48ms
+ boost(block): 48ms
+ boost(block): 48ms
+ boost(block): 48ms
+ boost(block): 48ms
+ rapidjson: 455ms
+ rapidjson: 453ms
+ rapidjson: 455ms
+ rapidjson: 453ms
+ rapidjson: 453ms
+
+Parse File 4 twitter.json (646995 bytes)
+ boost(block): 747ms
+ boost(block): 746ms
+ boost(block): 744ms
+ boost(block): 747ms
+ boost(block): 747ms
+ rapidjson: 438ms
+ rapidjson: 437ms
+ rapidjson: 450ms
+ rapidjson: 443ms
+ rapidjson: 450ms
+
+Parse File 5 citm_catalog.json (1777672 bytes)
+ boost(block): 1485ms
+ boost(block): 1485ms
+ boost(block): 1485ms
+ boost(block): 1487ms
+ boost(block): 1485ms
+ rapidjson: 910ms
+ rapidjson: 909ms
+ rapidjson: 909ms
+ rapidjson: 907ms
+ rapidjson: 910ms
+
+Parse File 6 canada.json (2251060 bytes)
+ boost(block): 4046ms
+ boost(block): 4191ms
+ boost(block): 4295ms
+ boost(block): 4131ms
+ boost(block): 4134ms
+ rapidjson: 1412ms
+ rapidjson: 1409ms
+ rapidjson: 1410ms
+ rapidjson: 1409ms
+ rapidjson: 1411ms
+
+Serialize File 1 array.json (609414 bytes)
+ boost(block): 854ms
+ boost(block): 853ms
+ boost(block): 851ms
+ boost(block): 853ms
+ boost(block): 853ms
+ rapidjson: 785ms
+ rapidjson: 785ms
+ rapidjson: 783ms
+ rapidjson: 785ms
+ rapidjson: 785ms
+
+Serialize File 2 arrays.json (1461524 bytes)
+ boost(block): 1269ms
+ boost(block): 1259ms
+ boost(block): 1257ms
+ boost(block): 1259ms
+ boost(block): 1260ms
+ rapidjson: 3112ms
+ rapidjson: 3110ms
+ rapidjson: 3109ms
+ rapidjson: 3109ms
+ rapidjson: 3114ms
+
+Serialize File 3 strings.json (1016132 bytes)
+ boost(block): 582ms
+ boost(block): 584ms
+ boost(block): 582ms
+ boost(block): 585ms
+ boost(block): 584ms
+ rapidjson: 2072ms
+ rapidjson: 2072ms
+ rapidjson: 2073ms
+ rapidjson: 2074ms
+ rapidjson: 2074ms
+
+Serialize File 4 twitter.json (646995 bytes)
+ boost(block): 658ms
+ boost(block): 659ms
+ boost(block): 659ms
+ boost(block): 659ms
+ boost(block): 659ms
+ rapidjson: 871ms
+ rapidjson: 871ms
+ rapidjson: 872ms
+ rapidjson: 872ms
+ rapidjson: 872ms
+
+Serialize File 5 citm_catalog.json (1777672 bytes)
+ boost(block): 1049ms
+ boost(block): 1049ms
+ boost(block): 1048ms
+ boost(block): 1047ms
+ boost(block): 1047ms
+ rapidjson: 898ms
+ rapidjson: 896ms
+ rapidjson: 898ms
+ rapidjson: 898ms
+ rapidjson: 898ms
+
+Serialize File 6 canada.json (2251060 bytes)
+ boost(block): 10521ms
+ boost(block): 10616ms
+ boost(block): 10560ms
+ boost(block): 10553ms
+ boost(block): 10446ms
+ rapidjson: 10788ms
+ rapidjson: 10776ms
+ rapidjson: 10784ms
+ rapidjson: 10805ms
+ rapidjson: 10789ms
+
+*/

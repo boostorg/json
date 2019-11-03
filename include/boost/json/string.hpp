@@ -2685,12 +2685,6 @@ private:
     BOOST_JSON_DECL
     void
     reserve_impl(size_type new_capacity);
-
-    inline
-    storage_ptr
-    release_storage() noexcept;
-
-    friend class value;
 };
 
 //----------------------------------------------------------

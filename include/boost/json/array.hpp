@@ -1632,14 +1632,9 @@ private:
         value* src,
         size_type n) noexcept;
 
-    inline
-    storage_ptr
-    release_storage() noexcept;
-
     class undo_create;
     class undo_assign;
     class undo_insert;
-    friend class value;
 
     storage_ptr sp_;
     impl_type impl_;

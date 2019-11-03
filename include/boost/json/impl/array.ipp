@@ -672,15 +672,6 @@ relocate(
 #endif
 }
 
-storage_ptr
-array::
-release_storage() noexcept
-{
-    impl_.destroy(sp_);
-    impl_ = {};
-    return std::move(sp_);
-}
-
 } // json
 } // boost
 
