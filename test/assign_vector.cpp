@@ -19,6 +19,11 @@ namespace json {
 class assign_vector_test : public beast::unit_test::suite
 {
 public:
+    BOOST_JSON_STATIC_ASSERT(
+        has_from_json<int>::value);
+    BOOST_JSON_STATIC_ASSERT(
+        detail::has_adl_from_json<std::vector<int>>::value);
+
     void
     testAssign()
     {

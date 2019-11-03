@@ -693,7 +693,7 @@ d2s_buffered_n(
     const std::uint32_t ieeeExponent = (std::uint32_t)((bits >> DOUBLE_MANTISSA_BITS) & ((1u << DOUBLE_EXPONENT_BITS) - 1));
     // Case distinction; exit early for the easy cases.
     if (ieeeExponent == ((1u << DOUBLE_EXPONENT_BITS) - 1u) || (ieeeExponent == 0 && ieeeMantissa == 0)) {
-        return copy_special_str(result, ieeeSign, ieeeExponent, ieeeMantissa);
+        return copy_special_str(result, ieeeSign, ieeeExponent != 0, ieeeMantissa != 0);
     }
 
     floating_decimal_64 v;

@@ -28,9 +28,6 @@ from_json(
         Allocator>& t,
     value const& v)
 {
-    if(! v.is_string())
-        BOOST_JSON_THROW(
-            system_error(error::not_string));
     auto& s= v.as_string();
     t.assign(s.data(), s.size());
 }

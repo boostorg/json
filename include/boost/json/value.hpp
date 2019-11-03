@@ -769,6 +769,7 @@ public:
 
         This function attempts to assign the contents of
         `*this` to the variable `t`.
+
         @par Complexity
 
         Linear in the size of `*this`.

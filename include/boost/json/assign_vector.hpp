@@ -20,19 +20,14 @@ namespace boost {
 namespace json {
 
 template<class T, class A
-#if 0
     ,class = typename std::enable_if<
-        can_assign_from<T>::value>::type
-#endif
+        has_from_json<T>::value>::type
 >
 void
 from_json(
     std::vector<T, A>& t,
     value const& v)
 {
-    if(! v.is_array())
-        BOOST_JSON_THROW(
-            system_error(error::not_array));
     auto& arr = v.as_array();
     t.resize(0);
     t.resize(arr.size());
