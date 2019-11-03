@@ -93,15 +93,16 @@ loop:
 
     // zero or more digits
     case state::mant2:
+    {
+        auto mantissa = dec_.mantissa;
         while(p < p1)
         {
             unsigned char const d = *p - '0';
             if(d < 10)
             {
-                unsigned long long const m =
-                    dec_.mantissa * 10 + d;
-                if(m > dec_.mantissa)
-                    dec_.mantissa = m;
+                auto const tmp = mantissa * 10 + d;
+                if(tmp > mantissa)
+                    mantissa = tmp;
                 else
                     ++off_; // limit of precision
                 ++p;
@@ -110,12 +111,14 @@ loop:
             if(*p == '.')
             {
                 ++p;
+                dec_.mantissa = mantissa;
                 st_ = state::frac2;
                 goto loop;
             }
             if(*p == 'e' || *p == 'E')
             {
                 ++p;
+                dec_.mantissa = mantissa;
                 st_ = state::exp1;
                 goto loop;
             }
@@ -123,7 +126,9 @@ loop:
             st_ = state::done;
             break;
         }
+        dec_.mantissa = mantissa;
         break;
+    }
 
     // one of [.eE]
     case state::frac1:
