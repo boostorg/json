@@ -284,9 +284,11 @@ array&
 array::
 operator=(array const& other)
 {
-    undo_assign u(*this);
-    copy(other);
-    u.commit = true;
+    if(this == &other)
+        return *this;
+    array tmp(other, sp_);
+    this->~array();
+    ::new(this) array(pilfer(tmp));
     return *this;
 }
 
@@ -294,18 +296,9 @@ array&
 array::
 operator=(array&& other)
 {
-    if(*sp_ == *other.sp_)
-    {
-        impl_.destroy(sp_);
-        impl_ = std::move(
-            other.impl_);
-    }
-    else
-    {
-        undo_assign u(*this);
-        copy(other);
-        u.commit = true;
-    }
+    array tmp(std::move(other), sp_);
+    this->~array();
+    ::new(this) array(pilfer(tmp));
     return *this;
 }
 
@@ -314,9 +307,9 @@ array::
 operator=(
     std::initializer_list<value> init)
 {
-    undo_assign u(*this);
-    copy(init);
-    u.commit = true;
+    array tmp(init, sp_);
+    this->~array();
+    ::new(this) array(pilfer(tmp));
     return *this;
 }
 

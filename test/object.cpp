@@ -905,23 +905,6 @@ public:
         }
     }
 
-    void
-    testObservers()
-    {
-        // hash_function()
-        {
-            object o;
-            o.hash_function();
-        }
-
-        // key_eq()
-        {
-            object o;
-            object::key_equal eq = o.key_eq();
-            BEAST_EXPECT(eq("a", "a"));
-        }
-    }
-
     //------------------------------------------------------
 
     void
@@ -979,7 +962,6 @@ public:
         testModifiers();
         testLookup();
         testHashPolicy();
-        testObservers();
         testImplementation();
     }
 };

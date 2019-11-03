@@ -29,22 +29,16 @@ class value;
 /** An associative container of key to JSON value pairs
 
     This is an associative container that contains key-value
-    pairs with unique keys. Search, insertion, and removal of
-    elements have average constant-time complexity.
-    <br>
-    Internally the elements are initially kept in insertion
-    order, but this order can be changed manually by specifying
-    where new or moved elements go. Elements are also organized
-    into buckets. Which bucket an element is placed into depends
-    entirely on the hash of its key. This allows fast access to
-    individual elements, since once the hash is computed, it
-    refers to the exact bucket the element is placed into.
+    pairs with unique keys. Internally the elements are
+    initially kept in insertion order, but this order can
+    be changed manually by specifying where new or moved
+    elements go.
 
     @par Storage
 
-    All elements stored in the container will use the same storage that
-    was used to construct the container, including recursive children
-    of those elements.
+    All elements stored in the container will use the same
+    storage that was used to construct the container,
+    including the children of those elements.
 
     @par Satisfies
 
@@ -56,6 +50,32 @@ class value;
 */
 class object
 {
+    struct list_hook;
+    struct element;
+    class hasher;
+    struct key_eq;
+    struct table;
+    class undo_range;
+
+    storage_ptr sp_;
+    table* tab_ = nullptr;
+
+    static
+    constexpr
+    float
+    max_load_factor() noexcept
+    {
+        return 1.f;
+    }
+
+    template<class T>
+    using is_inputit = typename std::enable_if<
+        std::is_convertible<typename
+            std::iterator_traits<T>::value_type,
+            std::pair<
+                string_view const,
+                value const&>>::value>::type;
+
 public:
     /** The type of keys.
 
@@ -72,10 +92,10 @@ public:
         std::pair<key_type const, value>;
 
     /// The type used to represent unsigned integers
-    using size_type = std::size_t;
+    using size_type = unsigned long;
 
     /// The type used to represent signed integers
-    using difference_type = std::ptrdiff_t;
+    using difference_type = long;
 
     /// A reference to an element
     using reference =
@@ -86,32 +106,19 @@ public:
         std::pair<key_type const, value const&>;
 
 #ifdef GENERATING_DOCUMENTATION
-    /** The hash function used for keys
-
-        Objects of this type are used to calculate the
-        hash for a key.
-
-        @par Satisfies
-
-        Meets the requirements of __Hash__
-    */
-    using hasher = __see_below__;
-
-    /** The key comparison function
-
-        Objects of this type are used to compare keys
-        for equality.
-    */
-    using key_equal = __see_below__;
-
+    /// A pointer to an element
     using pointer = __implementation_defined__;
+
+    /// A const pointer to an element
     using const_pointer = __implementation_defined__;
+
+    /// A bidirectional iterator to an element
     using iterator = __implementation_defined__;
+
+    /// A bidirectional const iterator to an element
     using const_iterator = __implementation_defined__;
 
 #else
-    class hasher;
-    class key_equal;
     class pointer;
     class const_pointer;
     class iterator;
@@ -121,31 +128,6 @@ public:
     /// The value type of initializer lists
     using init_value = std::pair<key_type, value>;
 
-private:
-    struct list_hook;
-    struct element;
-    struct table;
-    class undo_range;
-
-    storage_ptr sp_;
-    table* tab_ = nullptr;
-
-    using impl_size_type = unsigned long;
-
-    static
-    float
-    max_load_factor() noexcept
-    {
-        return 1.f;
-    }
-
-    template<class T>
-    using is_inputit = typename std::enable_if<
-        std::is_convertible<typename
-            std::iterator_traits<T>::value_type,
-            const_reference>::value>::type;
-
-public:
     //------------------------------------------------------
 
     /** Destroy the container
@@ -267,8 +249,8 @@ public:
         @param last An input iterator pointing to the end
         of the range.
 
-        @param count The minimum number of elements for
-        which space in the index is reserved.
+        @param count An optional, minimum number of elements
+        for which space in the index is reserved.
 
         @param sp An optional pointer to the @ref storage
         to use. The container will acquire shared
@@ -680,9 +662,13 @@ public:
 
         Constant.
     */
-    inline
+    static
+    constexpr
     size_type
-    max_size() const noexcept;
+    max_size() noexcept
+    {
+        return size_type(-1);
+    }
 
     /** Returns the maximum number of elements the container can support before rehashing.
 
@@ -735,8 +721,9 @@ public:
 
     /** Clear the contents
 
-        Erases all elements from the container. After this
-        call, @ref size() returns zero.
+        Erases all elements from the container with
+        changing the capacity. After this call,
+        @ref size() returns zero.
         All references, pointers, or iterators referring
         to contained elements are invalidated. Any past-the-end
         iterators are also invalidated.
@@ -1348,58 +1335,6 @@ public:
     bool
     contains(key_type key) const noexcept;
 
-    //------------------------------------------------------
-    //
-    // Observers
-    //
-    //------------------------------------------------------
-
-    /** Returns the function used to hash the keys
-
-        The returned function object has this equivalent
-        signature:
-        @code
-        struct hasher
-        {
-            std::size_t operator()(string_view) const noexcept;
-        };
-        @endcode
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    inline
-    hasher
-    hash_function() const noexcept;
-
-    /** Returns the function that compares keys for equality.
-
-        The returned function object has this equivalent
-        signature:
-        @code
-        struct key_equal
-        {
-            bool operator()(string_view, string_view) const noexcept;
-        };
-        @endcode
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    inline
-    key_equal
-    key_eq() const noexcept;
-
 private:
     struct construct_base;
 
@@ -1463,12 +1398,6 @@ private:
     void
     destroy() noexcept;
 };
-
-/** Swap this container with the contents of another container.
-*/
-BOOST_JSON_DECL
-void
-swap(object& lhs, object& rhs);
 
 } // json
 } // boost

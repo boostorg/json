@@ -445,10 +445,15 @@ value(
 {
     if(maybe_object(init))
     {
+        if(init.size() > object::max_size())
+            BOOST_JSON_THROW(
+                std::length_error(
+                    "count > max_size()"));
         ::new(&obj_) object(
             init_iter{init.begin()},
             init_iter{init.end()},
-            init.size(),
+            static_cast<
+                object::size_type>(init.size()),
             std::move(sp));
         kind_ = json::kind::object;
     }

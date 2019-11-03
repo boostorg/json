@@ -17,7 +17,6 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
-#include <limits>
 #include <memory>
 #include <new>
 #include <stdexcept>
@@ -198,48 +197,61 @@ commit(
 
 //----------------------------------------------------------
 
-std::pair<
-    std::uint64_t,
-    std::uint64_t>
-object::
-hasher::
-init(std::true_type) noexcept
+class object::hasher
 {
-    return {
-        0x100000001B3ULL,
-        0xcbf29ce484222325ULL
-    };
-}
+    inline
+    static
+    std::pair<
+        std::uint64_t, std::uint64_t>
+    init(std::true_type) noexcept
+    {
+        return {
+            0x100000001B3ULL,
+            0xcbf29ce484222325ULL
+        };
+    }
 
-std::pair<
-    std::uint32_t,
-    std::uint32_t>
-object::
-hasher::
-init(std::false_type) noexcept
-{
-    return {
-        0x01000193UL,
-        0x811C9DC5UL
-    };
-}
+    inline
+    static
+    std::pair<
+        std::uint32_t, std::uint32_t>
+    init(std::false_type) noexcept
+    {
+        return {
+            0x01000193UL,
+            0x811C9DC5UL
+        };
+    }
 
-std::size_t
-object::
-hasher::
-operator()(key_type key) const noexcept
+public:
+    std::size_t
+    operator()(key_type key) const noexcept
+    {
+        std::size_t prime;
+        std::size_t hash;
+        std::tie(prime, hash) = init(
+            std::integral_constant<bool,
+                sizeof(std::size_t) >=
+            sizeof(unsigned long long)>{});
+        for(auto p = key.begin(),
+            end = key.end(); p != end; ++p)
+            hash = (*p ^ hash) * prime;
+        return hash;
+    }
+};
+
+//----------------------------------------------------------
+
+struct object::key_eq
 {
-    std::size_t prime;
-    std::size_t hash;
-    std::tie(prime, hash) = init(
-        std::integral_constant<bool,
-            sizeof(std::size_t) >=
-        sizeof(unsigned long long)>{});
-    for(auto p = key.begin(),
-        end = key.end(); p != end; ++p)
-        hash = (*p ^ hash) * prime;
-    return hash;
-}
+    bool
+    operator()(
+        string_view lhs,
+        string_view rhs) const noexcept
+    {
+        return lhs == rhs;
+    }
+};
 
 //----------------------------------------------------------
 
@@ -312,10 +324,13 @@ object(pilfered<object> other) noexcept
 object::
 object(
     object const& other)
-    : object(
-        other,
-        other.get_storage())
+    : sp_(other.sp_)
 {
+    insert_range(
+        end(),
+        other.begin(),
+        other.end(),
+        0);
 }
 
 object::
@@ -332,8 +347,7 @@ object(
 }
 
 object::
-object(
-    std::initializer_list<
+object(std::initializer_list<
         init_value> init,
     size_type count,
     storage_ptr sp)
@@ -360,6 +374,8 @@ object&
 object::
 operator=(object const& other)
 {
+    if(this == &other)
+        return *this;
     object tmp(other, sp_);
     this->~object();
     ::new(this) object(pilfer(tmp));
@@ -368,9 +384,8 @@ operator=(object const& other)
 
 object&
 object::
-operator=(
-    std::initializer_list<
-        init_value> init)
+operator=(std::initializer_list<
+    init_value> init)
 {
     object tmp(init, sp_);
     this->~object();
@@ -597,7 +612,7 @@ bucket(key_type key) const noexcept ->
 {
     BOOST_JSON_ASSERT(tab_);
     return constrain_hash(
-        hash_function()(key),
+        hasher()(key),
         tab_->bucket_count);
 }
 
@@ -778,7 +793,7 @@ allocate_impl(
     auto e = reinterpret_cast<
         element*>(p);
     e->size = static_cast<
-        impl_size_type>(key.size());
+        size_type>(key.size());
     return e;
 }
 
@@ -796,7 +811,7 @@ object::
 find_impl(key_type key) const noexcept ->
     std::pair<element*, std::size_t>
 {
-    auto const hash = hash_function()(key);
+    auto const hash = hasher()(key);
     if(! tab_ || tab_->bucket_count == 0)
         return { nullptr, hash };
     auto bc = tab_->bucket_count;
@@ -888,12 +903,6 @@ destroy() noexcept
     tab_->head = tab_->end();
     tab_->size = 0;
     tab_->destroy(sp_);
-}
-
-void
-swap(object& lhs, object& rhs)
-{
-    lhs.swap(rhs);
 }
 
 } // json

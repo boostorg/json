@@ -99,14 +99,14 @@ public:
     /// A random access iterator to an element
     using iterator = value*;
 
-    /// A const random access iterator to an element
+    /// A random access const iterator to an element
     using const_iterator = value const*;
 
     /// A reverse random access iterator to an element
     using reverse_iterator =
         std::reverse_iterator<iterator>;
 
-    /// A const reverse random access iterator to an element
+    /// A reverse random access const iterator to an element
     using const_reverse_iterator =
         std::reverse_iterator<const_iterator>;
 

@@ -63,26 +63,26 @@ public:
     /// A pointer to an element
     using pointer           = char*;
 
+    /// A const pointer to an element
+    using const_pointer     = char const*;
+
     /// A reference to an element
     using reference         = char&;
-
-    /// A random access iterator to an element
-    using iterator          = char*;
-
-    /// A const random access pointer to an element
-    using const_pointer     = char const*;
 
     /// A const reference to an element
     using const_reference   = const char&;
 
-    /// A const random access iterator  to an element
+    /// A random access iterator to an element
+    using iterator          = char*;
+
+    /// A random access const iterator  to an element
     using const_iterator    = char const*;
 
     /// A reverse random access iterator to an element
     using reverse_iterator =
         std::reverse_iterator<iterator>;
 
-    /// A const reverse random access iterator to an element
+    /// A reverse random access const iterator to an element
     using const_reverse_iterator =
         std::reverse_iterator<const_iterator>;
 
@@ -251,6 +251,21 @@ public:
     // Construction
     //
 
+    /** Default constructor.
+
+        The string will have a zero size and a non-zero,
+        unspecified capacity, using the default storage.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
+    string() = default;
+
     /** Pilfer constructor.
 
         Constructs the string with the contents of `other`
@@ -283,21 +298,6 @@ public:
     {
         ::new(&other.get().impl_) impl();
     }
-
-    /** Default constructor.
-
-        The string will have a zero size and a non-zero,
-        unspecified capacity, using the default storage.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    string() = default;
 
     /** Constructor.
 

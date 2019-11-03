@@ -34,7 +34,7 @@ struct object::element : list_hook
 {
     value v;
     element* local_next;
-    impl_size_type size; // of key (excluding null)
+    size_type size; // of key (excluding null)
 
     string_view
     key() const noexcept
@@ -64,10 +64,10 @@ struct object::element : list_hook
 struct object::table
 {
     // number of values in the object
-    std::size_t size;
+    size_type size;
 
     // number of buckets in table
-    std::size_t bucket_count;
+    size_type bucket_count;
 
     // insertion-order list of all objects
     element* head;
@@ -136,42 +136,6 @@ public:
     commit(
         const_iterator pos,
         size_type count);
-};
-
-//----------------------------------------------------------
-
-class object::hasher
-{
-    inline
-    static
-    std::pair<
-        std::uint64_t, std::uint64_t>
-    init(std::true_type) noexcept;
-
-    inline
-    static
-    std::pair<
-        std::uint32_t, std::uint32_t>
-    init(std::false_type) noexcept;
-
-public:
-    BOOST_JSON_DECL
-    std::size_t
-    operator()(key_type key) const noexcept;
-};
-
-//----------------------------------------------------------
-
-class object::key_equal
-{
-public:
-    bool
-    operator()(
-        string_view lhs,
-        string_view rhs) const noexcept
-    {
-        return lhs == rhs;
-    }
 };
 
 //----------------------------------------------------------
@@ -468,15 +432,6 @@ size() const noexcept ->
 
 auto
 object::
-max_size() const noexcept ->
-    size_type
-{
-    return (std::numeric_limits<
-        size_type>::max)();
-}
-
-auto
-object::
 capacity() const noexcept ->
     size_type
 {
@@ -495,28 +450,6 @@ reserve(size_type n)
     rehash(static_cast<
         size_type>(std::ceil(
             n / max_load_factor())));
-}
-
-//----------------------------------------------------------
-//
-// Observers
-//
-//----------------------------------------------------------
-
-auto
-object::
-hash_function() const noexcept ->
-    hasher
-{
-    return hasher{};
-}
-
-auto
-object::
-key_eq() const noexcept ->
-    key_equal
-{
-    return key_equal{};
 }
 
 //----------------------------------------------------------
@@ -705,6 +638,15 @@ insert_range(
     while(first != last)
         u.insert(allocate(*first++));
     u.commit(pos, count);
+}
+
+//----------------------------------------------------------
+
+inline
+void
+swap(object& lhs, object& rhs)
+{
+    lhs.swap(rhs);
 }
 
 } // json
