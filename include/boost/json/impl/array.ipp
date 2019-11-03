@@ -208,8 +208,7 @@ array(
     {
         ::new(
             impl_.vec +
-            impl_.size) value(
-                kind_null, sp_);
+            impl_.size) value(sp_);
         ++impl_.size;
     }
     u.commit = true;
@@ -477,8 +476,7 @@ resize(size_type count)
     auto const end =
         impl_.vec + count;
     while(it != end)
-        ::new(it++) value(
-            kind_null, sp_);
+        ::new(it++) value(sp_);
     impl_.size = count;
 }
 

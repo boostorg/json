@@ -119,6 +119,12 @@ class value
             bool b;
         };
 
+        scalar() = default;
+        scalar(storage_ptr sp_)
+            : sp(std::move(sp_))
+        {
+        }
+
         ~scalar()
         {
         }
@@ -137,30 +143,24 @@ class value
     json::kind kind_;
 
 public:
-    /// Destroy a value and all of its contents
+    /** Destructor.
+
+        The value and all of its contents are destroyed.
+        Any dynamically allocated internal storage
+        is freed.
+
+        @par Complexity
+
+        Linear in the size of `*this`.
+    */
     BOOST_JSON_DECL
     ~value();
 
-    /** Construct a null value
+    /** Default constructor.
 
+        Default constructed values are null.
         The container and all of its contents will use the
-        default storage.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    BOOST_JSON_DECL
-    value() noexcept;
-
-    /** Construct a null value
-
-        The container and all of its contents will use the
-        specified storage object.
+        specified storage.
 
         @par Complexity
 
@@ -170,89 +170,26 @@ public:
 
         No-throw guarantee.
 
-        @param sp A pointer to the @ref storage to use. The
-        container will acquire shared ownership of the pointer.
+        @param sp The storage to use. If this parameter
+        is omitted, the default storage is used.
     */
-    BOOST_JSON_DECL
     explicit
-    value(storage_ptr sp) noexcept;
+    value(storage_ptr sp = {}) noexcept
+        : sca_(std::move(sp))
+        , kind_(json::kind::null)
+    {
+    }
 
-    /** Construct a value of the specified kind
+    /** Pilfer constructor.
 
-        The container and all of its contents will use the
-        specified storage object.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-
-        @param k The kind of JSON value.
-
-        @param sp A pointer to the @ref storage to use. The
-        container will acquire shared ownership of the pointer.
-    */
-    BOOST_JSON_DECL
-    value(
-        json::kind k,
-        storage_ptr sp = {}) noexcept;
-
-    BOOST_JSON_DECL
-    value(
-        kind_array_t,
-        storage_ptr sp = {}) noexcept;
-
-    BOOST_JSON_DECL
-    value(
-        kind_null_t,
-        storage_ptr sp = {}) noexcept;
-
-    /** Copy constructor
-
-        The container and all of its contents will use the
-        default storage.
-
-        @par Complexity
-
-        Linear in the size of `other`.
-
-        @param other The value to copy.
-    */
-    BOOST_JSON_DECL
-    value(value const& other);
-
-    /** Copy constructor
-
-        The container and all of its contents will use the
-        specified storage object.
-
-        @par Complexity
-
-        Linear in the size of `other`.
-
-        @param other The value to copy.
-
-        @param sp A pointer to the @ref storage to use. The
-        container will acquire shared ownership of the pointer.
-    */
-    BOOST_JSON_DECL
-    value(
-        value const& other,
-        storage_ptr sp);
-
-    /** Pilfer constructor
-
-        Constructs the container with the contents of `other`
-        using pilfer semantics.
-        Ownership of the @ref storage is transferred.
+        Constructs the container with the contents
+        of `other` using pilfer semantics.
+        Ownership of the storage is transferred.
 
         @note
 
-        After construction, the moved-from object may only be
-        destroyed.
+        After construction, the moved-from object may
+        only be destroyed.
         
         @par Complexity
 
@@ -262,7 +199,7 @@ public:
 
         No-throw guarantee.
 
-        @param other The container to pilfer
+        @param other The container to pilfer.
 
         @see
         
@@ -272,13 +209,52 @@ public:
     BOOST_JSON_DECL
     value(pilfered<value> other) noexcept;
 
+    /** Copy constructor.
+
+        The container and all of its contents will use
+        the same storage as `other`.
+
+        @par Complexity
+
+        Linear in the size of `other`.
+
+        @par Exception Safety
+
+        Strong guarantee.
+        Calls to @ref storage::allocate may throw.
+
+        @param other The value to copy.
+    */
+    value(value const& other)
+        : value(other, other.get_storage())
+    {
+    }
+
+    /** Copy constructor
+
+        The container and all of its contents will use the
+        specified storage.
+
+        @par Complexity
+
+        Linear in the size of `other`.
+
+        @param other The value to copy.
+
+        @param sp The storage to use.
+    */
+    BOOST_JSON_DECL
+    value(
+        value const& other,
+        storage_ptr sp);
+
     /** Move constructor
 
         Constructs the container with the contents of `other`
         using move semantics. Ownership of the underlying
         memory is transferred.
         The container acquires shared ownership of the
-        @ref storage used by `other`.
+        storage used by `other`.
         
         @par Complexity
 
@@ -288,14 +264,14 @@ public:
 
         No-throw guarantee.
 
-        @param other The container to move
+        @param other The value to move.
     */
     BOOST_JSON_DECL
     value(value&& other) noexcept;
 
     /** Move constructor
 
-        Using `*sp` as the @ref storage for the new container,
+        Using `*sp` as the storage for the new container,
         moves all the elements from `other`.
 
         @li If `*other.get_storage() == *sp`, ownership of the
@@ -317,10 +293,9 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param other The container to move
+        @param other The container to move.
 
-        @param sp A pointer to the @ref storage to use. The
-        container array will acquire shared ownership of the pointer.
+        @param sp The storage to use.
     */
     BOOST_JSON_DECL
     value(
@@ -349,7 +324,7 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param other The container to assign from
+        @param other The value to assign from.
     */
     BOOST_JSON_DECL
     value& operator=(value&& other);
@@ -367,7 +342,7 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param other The container to copy
+        @param other The value to copy.
     */
     BOOST_JSON_DECL
     value& operator=(value const& other);
@@ -380,34 +355,75 @@ public:
 
     /** Construct an object
     */
-    BOOST_JSON_DECL
-    value(object obj) noexcept;
+    value(object obj) noexcept
+        : obj_(std::move(obj))
+        , kind_(json::kind::object)
+    {
+    }
 
     /** Construct an object
     */
-    BOOST_JSON_DECL
-    value(object obj, storage_ptr sp);
+    value(object obj, storage_ptr sp)
+        : obj_(std::move(obj), std::move(sp))
+        , kind_(json::kind::object)
+    {
+    }
 
     /** Construct an array
     */
-    BOOST_JSON_DECL
-    value(array arr) noexcept;
+    value(array arr) noexcept
+        : arr_(std::move(arr))
+        , kind_(json::kind::array)
+    {
+    }
 
     /** Construct an array
     */
-    BOOST_JSON_DECL
-    value(array arr, storage_ptr sp);
+    value(array arr, storage_ptr sp)
+        : arr_(std::move(arr), std::move(sp))
+        , kind_(json::kind::array)
+    {
+    }
 
     /** Construct a string
     */
-    BOOST_JSON_DECL
-    value(string str) noexcept;
+    value(
+        string str) noexcept
+        : str_(std::move(str))
+        , kind_(json::kind::string)
+    {
+    }
 
     /** Construct a string
     */
-    BOOST_JSON_DECL
-    value(string str, storage_ptr sp);
+    value(string str, storage_ptr sp)
+        : str_(std::move(str), std::move(sp))
+        , kind_(json::kind::string)
+    {
+    }
 
+    /** Construct a string
+    */
+    value(
+        string_view s,
+        storage_ptr sp = {})
+        : str_(s, std::move(sp))
+        , kind_(json::kind::string)
+    {
+    }
+
+    /** Construct a string
+    */
+    value(
+        char const* s,
+        storage_ptr sp = {})
+        : str_(s, std::move(sp))
+        , kind_(json::kind::string)
+    {
+    }
+
+    /** Construct a signed integer.
+    */
     value(short i, storage_ptr sp = {})
         : kind_(json::kind::int64)
     {
@@ -416,6 +432,8 @@ public:
             std::move(sp));
     }
 
+    /** Construct a signed integer.
+    */
     value(int i, storage_ptr sp = {})
         : kind_(json::kind::int64)
     {
@@ -424,6 +442,8 @@ public:
             std::move(sp));
     }
 
+    /** Construct a signed integer.
+    */
     value(long i, storage_ptr sp = {})
         : kind_(json::kind::int64)
     {
@@ -432,6 +452,8 @@ public:
             std::move(sp));
     }
 
+    /** Construct a signed integer.
+    */
     value(long long i, storage_ptr sp = {})
         : kind_(json::kind::int64)
     {
@@ -440,6 +462,8 @@ public:
             std::move(sp));
     }
 
+    /** Construct an unsigned integer.
+    */
     value(unsigned short u, storage_ptr sp = {})
         : kind_(json::kind::uint64)
     {
@@ -448,6 +472,8 @@ public:
             std::move(sp));
     }
 
+    /** Construct an unsigned integer.
+    */
     value(unsigned int u, storage_ptr sp = {})
         : kind_(json::kind::uint64)
     {
@@ -456,6 +482,8 @@ public:
             std::move(sp));
     }
 
+    /** Construct an unsigned integer.
+    */
     value(unsigned long u, storage_ptr sp = {})
         : kind_(json::kind::uint64)
     {
@@ -464,6 +492,8 @@ public:
             std::move(sp));
     }
 
+    /** Construct an unsigned integer.
+    */
     value(unsigned long long u, storage_ptr sp = {})
         : kind_(json::kind::uint64)
     {
@@ -472,6 +502,8 @@ public:
             std::move(sp));
     }
 
+    /** Construct a floating point number.
+    */
     value(float d,
         storage_ptr sp = {})
         : kind_(json::kind::double_)
@@ -481,6 +513,8 @@ public:
             std::move(sp));
     }
 
+    /** Construct a floating point number.
+    */
     value(double d,
         storage_ptr sp = {})
         : kind_(json::kind::double_)
@@ -490,6 +524,8 @@ public:
             std::move(sp));
     }
 
+    /** Construct a floating point number.
+    */
     value(long double d,
         storage_ptr sp = {})
         : kind_(json::kind::double_)
@@ -499,12 +535,14 @@ public:
             std::move(sp));
     }
 
+    /** Construct a floating point number.
+    */
     BOOST_JSON_DECL
     value(
         ieee_decimal const& dec,
         storage_ptr sp = {});
 
-    /** Construct a bool
+    /** Construct a boolean.
     */
 #ifdef GENERATING_DOCUMENTATION
     value(bool b,
@@ -517,6 +555,16 @@ public:
     value(Bool b,
         storage_ptr sp = {}) noexcept;
 #endif
+
+    /** Construct a null
+    */
+    value(
+        std::nullptr_t,
+        storage_ptr sp = {})
+        : sca_(std::move(sp))
+        , kind_(json::kind::null)
+    {
+    }
 
     /** Construct an object or array
     */
@@ -550,26 +598,6 @@ public:
     //
     //------------------------------------------------------
 
-    /** Reset the json to the specified type.
-
-        This changes the value to hold a newly
-        constructed value of the specified type.
-        The previous contents are destroyed.
-
-        @par Complexity
-
-        Linear in the existing size of `*this`.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-
-        @param k The kind to set.
-    */
-    BOOST_JSON_DECL
-    value&
-    reset(json::kind k = json::kind::null) noexcept;
-
     /** Set the value to an empty object, and return it.
 
         This calls `reset(json::kind::object)` and returns
@@ -584,12 +612,9 @@ public:
 
         No-throw guarantee.
     */
+    BOOST_JSON_DECL
     object&
-    emplace_object() noexcept
-    {
-        reset(json::kind::object);
-        return obj_;
-    }
+    emplace_object() noexcept;
 
     /** Set the value to an empty array, and return it.
 
@@ -605,12 +630,9 @@ public:
 
         No-throw guarantee.
     */
+    BOOST_JSON_DECL
     array&
-    emplace_array() noexcept
-    {
-        reset(json::kind::array);
-        return arr_;
-    }
+    emplace_array() noexcept;
 
     /** Set the value to an empty string, and return it.
 
@@ -626,33 +648,21 @@ public:
 
         No-throw guarantee.
     */
+    BOOST_JSON_DECL
     string&
-    emplace_string() noexcept
-    {
-        reset(json::kind::string);
-        return str_;
-    }
+    emplace_string() noexcept;
 
+    BOOST_JSON_DECL
     std::int64_t&
-    emplace_int64() noexcept
-    {
-        reset(json::kind::int64);
-        return sca_.i;
-    }
+    emplace_int64() noexcept;
 
+    BOOST_JSON_DECL
     std::uint64_t&
-    emplace_uint64() noexcept
-    {
-        reset(json::kind::uint64);
-        return sca_.u;
-    }
+    emplace_uint64() noexcept;
 
+    BOOST_JSON_DECL
     double&
-    emplace_double() noexcept
-    {
-        reset(json::kind::double_);
-        return sca_.d;
-    }
+    emplace_double() noexcept;
 
     /** Set the value to boolean false, and return it.
 
@@ -668,12 +678,9 @@ public:
 
         No-throw guarantee.
     */
+    BOOST_JSON_DECL
     bool&
-    emplace_bool() noexcept
-    {
-        reset(json::kind::boolean);
-        return sca_.b;
-    }
+    emplace_bool() noexcept;
 
     /** Set the value to null.
 
@@ -688,11 +695,9 @@ public:
 
         No-throw guarantee.
     */
+    BOOST_JSON_DECL
     void
-    emplace_null() noexcept
-    {
-        reset(json::kind::null);
-    }
+    emplace_null() noexcept;
 
     /** Swap the contents
 
@@ -1535,9 +1540,8 @@ public:
 
 private:
     BOOST_JSON_DECL
-    void
-    construct(
-        json::kind, storage_ptr) noexcept;
+    storage_ptr
+    destroy() noexcept;
 };
 
 } // json

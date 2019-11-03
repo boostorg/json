@@ -130,8 +130,7 @@ on_object_begin(error_code& ec)
     }
     else if(jv.is_array())
     {
-        jv.if_array()->emplace_back(
-            kind::object);
+        jv.if_array()->emplace_back(object{});
         stack_.push(
             &jv.if_array()->back());
     }
@@ -178,7 +177,7 @@ on_array_begin(error_code& ec)
     else if(jv.is_array())
     {
         BOOST_JSON_ASSERT(s_.empty());
-        jv.if_array()->emplace_back(kind_array);
+        jv.if_array()->emplace_back(array{});
         stack_.push(
             &jv.if_array()->back());
     }
@@ -228,8 +227,7 @@ on_key_end(
         s = {s_.data(), s_.size()};
     }
     auto const result =
-        jv.if_object()->emplace(
-            s, kind::null);
+        jv.if_object()->emplace(s, nullptr);
     // overwrite duplicate keys
     if(! result.second)
         result.first->second.emplace_null();
@@ -255,7 +253,7 @@ on_string_data(
         else if(stack_.front()->is_array())
         {
             BOOST_JSON_ASSERT(s_.empty());
-            jv.if_array()->emplace_back(kind::string);
+            jv.if_array()->emplace_back(string{});
             stack_.push(
                 &jv.if_array()->back());
             stack_.front()->if_string()->append(
@@ -356,7 +354,7 @@ on_null(error_code&)
     else if(stack_.front()->is_array())
     {
         BOOST_JSON_ASSERT(s_.empty());
-        jv.if_array()->emplace_back(kind_null);
+        jv.if_array()->emplace_back(nullptr);
     }
     else
     {

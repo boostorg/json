@@ -86,34 +86,10 @@ template<class T
 void
 to_json(T const& t, value& v)
 {
-    v.reset(json::kind::array);
+    array arr(v.get_storage());
     for(auto const& e : t)
-        v.as_array().push_back(e);
-}
-
-// string
-inline
-void
-to_json(string_view t, value& v)
-{
-    v.emplace_string().assign(
-        t.data(), t.size());
-}
-
-// string
-inline
-void
-to_json(char const* t, value& v)
-{
-    v.emplace_string() = t;
-}
-
-// null
-inline
-void
-to_json(std::nullptr_t, value& v)
-{
-    v.emplace_null();
+        arr.emplace_back(e);
+    v = std::move(arr);
 }
 
 //----------------------------------------------------------

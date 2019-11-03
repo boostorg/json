@@ -262,7 +262,7 @@ public:
         {
             {
                 array a1({1, true, str_});
-                array a2({nullptr, value(kind::object), 1.f});
+                array a2({nullptr, object{}, 1.f});
                 a2 = a1;
                 check(a1);
                 check(a2);
@@ -273,7 +273,7 @@ public:
             fail_loop([&](storage_ptr const& sp)
             {
                 array a1({1, true, str_});
-                array a2({nullptr, value(kind::object), 1.f}, sp);
+                array a2({nullptr, object{}, 1.f}, sp);
                 a2 = a1;
                 check(a1);
                 check(a2);
@@ -304,7 +304,7 @@ public:
             fail_loop([&](storage_ptr const& sp)
             {
                 array a1({1, true, str_});
-                array a2({nullptr, value(kind::object), 1.f}, sp);
+                array a2({nullptr, object{}, 1.f}, sp);
                 a2 = std::move(a1);
                 check(a1);
                 check(a2);
@@ -327,7 +327,7 @@ public:
 
             {
                 init_list init{ 1, true, str_ };
-                array a({nullptr, value(kind::object), 1.f});
+                array a({nullptr, object{}, 1.f});
                 a = init;
                 check(a);
                 check_storage(a, storage_ptr{});
@@ -336,7 +336,7 @@ public:
             fail_loop([&](storage_ptr const& sp)
             {
                 init_list init{ 1, true, str_ };
-                array a({nullptr, value(kind::object), 1.f}, sp);
+                array a({nullptr, object{}, 1.f}, sp);
                 a = init;
                 check(a);
                 check_storage(a, sp);
@@ -1013,7 +1013,7 @@ public:
             array a1;
             array a({1, true}, sp);
             a.insert(a.begin() + 1,
-                3, value(kind::null));
+                3, nullptr);
             a1 = a;
             BEAST_EXPECT(a1.size() == 5);
             BEAST_EXPECT(a1[0].is_number());

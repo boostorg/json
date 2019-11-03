@@ -22,7 +22,7 @@ public:
     void
     testAssign()
     {
-        value jv(kind::array);
+        value jv(array{});
         {
             auto& a = jv.as_array();
             a.push_back(1);

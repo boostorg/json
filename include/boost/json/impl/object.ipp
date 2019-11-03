@@ -536,7 +536,7 @@ operator[](key_type key) ->
     value&
 {
     auto const result = emplace(
-        end(), key, kind::null);
+        end(), key, nullptr);
     return result.first->second;
 }
 
