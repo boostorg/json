@@ -40,14 +40,29 @@ count_unescaped(
 
         __m128i v2 = _mm_cmpeq_epi8( v1, q1 );
         __m128i v3 = _mm_cmpeq_epi8( v1, q2 );
-        __m128i v4 = _mm_and_si128( _mm_cmplt_epi8( v1, q3 ), _mm_cmpgt_epi8( v1, q4 ) ); // ch > -1 && ch < 0x20
+        __m128i v4 = _mm_and_si128(
+            _mm_cmplt_epi8( v1, q3 ),
+            _mm_cmpgt_epi8( v1, q4 ) ); // ch > -1 && ch < 0x20
 
         __m128i v5 = _mm_or_si128( v2, v3 );
         __m128i v6 = _mm_or_si128( v5, v4 );
 
         int w = _mm_movemask_epi8( v6 );
 
-        if( w != 0 ) break;
+        if( w != 0 )
+        {
+            int m;
+#if defined(__GNUC__) || defined(__clang__)
+            m = __builtin_ffs( w ) - 1;
+#else
+            unsigned long index;
+            _BitScanForward( &index, w );
+            m = index;
+#endif
+
+            s += m;
+            break;
+        }
 
         s += 16;
         n -= 16;
