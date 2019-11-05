@@ -30,6 +30,14 @@ class storage_ptr
 
     inline
     void
+    addref() const noexcept
+    {
+        if( p_ && p_->counted_)
+            ++p_->refs_;
+    }
+
+    inline
+    void
     release() const noexcept
     {
         if( p_ &&
@@ -132,8 +140,7 @@ public:
         storage_ptr const& other) noexcept
         : p_(other.p_)
     {
-        if(p_)
-            ++p_->refs_;
+        addref();
     }
 
     /** Move assign a storage pointer.

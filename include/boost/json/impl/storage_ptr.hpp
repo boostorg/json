@@ -110,8 +110,7 @@ storage_ptr::
 operator=(
     storage_ptr const& other) noexcept
 {
-    if(other.p_)
-        ++other.p_->refs_;
+    other.addref();
     release();
     p_ = other.p_;
     return *this;
