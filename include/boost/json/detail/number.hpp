@@ -37,7 +37,7 @@ class number_parser
     {
         init,   init0,  init1,
         mant,   mantn,  mantd,
-        frac1,  frac2,  frac3, fracd,
+        frac1,  frac2,  fracd,
         exp1,   exp2,   exp3,
         done
     };

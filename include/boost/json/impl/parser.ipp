@@ -130,9 +130,9 @@ on_object_begin(error_code& ec)
     }
     else if(jv.is_array())
     {
-        jv.if_array()->emplace_back(object{});
+        jv.get_array().emplace_back(object_kind);
         stack_.push(
-            &jv.if_array()->back());
+            &jv.get_array().back());
     }
     else
     {
@@ -177,9 +177,9 @@ on_array_begin(error_code& ec)
     else if(jv.is_array())
     {
         BOOST_JSON_ASSERT(s_.empty());
-        jv.if_array()->emplace_back(array{});
+        jv.get_array().emplace_back(array_kind);
         stack_.push(
-            &jv.if_array()->back());
+            &jv.get_array().back());
     }
     else
     {
@@ -227,7 +227,7 @@ on_key_end(
         s = {s_.data(), s_.size()};
     }
     auto const result =
-        jv.if_object()->emplace(s, nullptr);
+        jv.get_object().emplace(s, nullptr);
     // overwrite duplicate keys
     if(! result.second)
         result.first->second.emplace_null();
@@ -253,9 +253,9 @@ on_string_data(
         else if(stack_.front()->is_array())
         {
             BOOST_JSON_ASSERT(s_.empty());
-            jv.if_array()->emplace_back(string{});
+            jv.get_array().emplace_back(string{});
             stack_.push(
-                &jv.if_array()->back());
+                &jv.get_array().back());
             stack_.front()->if_string()->append(
                 s.data(), s.size());
         }
@@ -308,7 +308,7 @@ on_int64(
     else if(stack_.front()->is_array())
     {
         BOOST_JSON_ASSERT(s_.empty());
-        jv.if_array()->emplace_back(i);
+        jv.get_array().emplace_back(i);
     }
     else
     {
@@ -334,7 +334,7 @@ on_uint64(
     else if(stack_.front()->is_array())
     {
         BOOST_JSON_ASSERT(s_.empty());
-        jv.if_array()->emplace_back(u);
+        jv.get_array().emplace_back(u);
     }
     else
     {
@@ -360,7 +360,7 @@ on_double(
     else if(stack_.front()->is_array())
     {
         BOOST_JSON_ASSERT(s_.empty());
-        jv.if_array()->emplace_back(d);
+        jv.get_array().emplace_back(d);
     }
     else
     {
@@ -384,7 +384,7 @@ on_bool(bool b, error_code&)
     else if(stack_.front()->is_array())
     {
         BOOST_JSON_ASSERT(s_.empty());
-        jv.if_array()->emplace_back(b);
+        jv.get_array().emplace_back(b);
     }
     else
     {
@@ -407,7 +407,7 @@ on_null(error_code&)
     else if(stack_.front()->is_array())
     {
         BOOST_JSON_ASSERT(s_.empty());
-        jv.if_array()->emplace_back(nullptr);
+        jv.get_array().emplace_back(nullptr);
     }
     else
     {

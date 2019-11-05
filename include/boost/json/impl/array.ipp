@@ -635,7 +635,6 @@ relocate(
     value* src,
     size_type n) noexcept
 {
-#ifdef BOOST_JSON_VALUE_IS_TRIVIAL
     if(n == 0)
         return;
     std::memmove(
@@ -644,25 +643,6 @@ relocate(
         reinterpret_cast<
             void const*>(src),
         n * sizeof(value));
-#else
-    if( dest >= src &&
-        dest < src + n)
-    {
-        // backwards
-        dest += n;
-        auto it = src + n;
-        while(it != src)
-            boost::relocate(
-                --dest, *--it);
-    }
-    else
-    {
-        auto last = src + n;
-        while(src != last)
-            boost::relocate(
-                dest++, *src++);
-    }
-#endif
 }
 
 } // json

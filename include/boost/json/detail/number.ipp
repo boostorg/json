@@ -393,7 +393,7 @@ loop:
                     {
                         ++p;
                         n_.d = static_cast<double>(m);
-                        st_ = state::frac3;
+                        st_ = state::fracd;
                         goto loop;
                     }
                     ++p;
@@ -420,7 +420,7 @@ loop:
     }
 
     // zero or more [0..9] (double)
-    case state::frac3:
+    case state::fracd:
     {
         BOOST_JSON_ASSERT(
             n_.kind == kind::double_);
@@ -505,7 +505,7 @@ loop:
     {
         if(p < p1)
         {
-            auto const lim = 308 - off_;
+            //auto const lim = 308 - off_;
             auto e = exp_;
             while(p < p1)
             {
@@ -620,7 +620,7 @@ write_eof(
         st_ = state::done;
         break;
 
-    case state::frac3:
+    case state::fracd:
         BOOST_JSON_ASSERT(
             n_.kind == kind::double_);
         ec = {};

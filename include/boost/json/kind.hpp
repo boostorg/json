@@ -44,6 +44,17 @@ enum class kind
     null
 };
 
+struct object_kind_t
+{
+};
+
+struct array_kind_t
+{
+};
+
+BOOST_JSON_INLINE_VARIABLE(object_kind, object_kind_t);
+BOOST_JSON_INLINE_VARIABLE(array_kind, array_kind_t);
+
 } // json
 } // boost
 

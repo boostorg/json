@@ -861,6 +861,7 @@ loop_num:
             auto const num = iep_.get();
             switch(num.kind)
             {
+            default:
             case kind::int64:
                 this->on_int64(num.i, ec);
                 break;
@@ -1107,6 +1108,7 @@ write_eof(error_code& ec)
             auto const num = iep_.get();
             switch(num.kind)
             {
+            default:
             case kind::int64:
                 this->on_int64(num.i, ec);
                 break;

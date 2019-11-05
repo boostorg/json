@@ -352,7 +352,7 @@ public:
     //
     //------------------------------------------------------
 
-    /** Construct an object
+    /** Construct an object.
     */
     value(object obj) noexcept
         : obj_(std::move(obj))
@@ -360,7 +360,7 @@ public:
     {
     }
 
-    /** Construct an object
+    /** Construct an object.
     */
     value(object obj, storage_ptr sp)
         : obj_(std::move(obj), std::move(sp))
@@ -368,7 +368,16 @@ public:
     {
     }
 
-    /** Construct an array
+    /** Construct an object.
+    */
+    value(object_kind_t,
+        storage_ptr sp = {}) noexcept
+        : obj_(std::move(sp))
+        , kind_(json::kind::object)
+    {
+    }
+
+    /** Construct an array.
     */
     value(array arr) noexcept
         : arr_(std::move(arr))
@@ -376,7 +385,7 @@ public:
     {
     }
 
-    /** Construct an array
+    /** Construct an array.
     */
     value(array arr, storage_ptr sp)
         : arr_(std::move(arr), std::move(sp))
@@ -384,7 +393,16 @@ public:
     {
     }
 
-    /** Construct a string
+    /** Construct an array.
+    */
+    value(array_kind_t,
+        storage_ptr sp = {}) noexcept
+        : arr_(std::move(sp))
+        , kind_(json::kind::array)
+    {
+    }
+
+    /** Construct a string.
     */
     value(
         string str) noexcept
@@ -393,7 +411,7 @@ public:
     {
     }
 
-    /** Construct a string
+    /** Construct a string.
     */
     value(string str, storage_ptr sp)
         : str_(std::move(str), std::move(sp))
@@ -401,7 +419,7 @@ public:
     {
     }
 
-    /** Construct a string
+    /** Construct a string.
     */
     value(
         string_view s,
@@ -411,7 +429,7 @@ public:
     {
     }
 
-    /** Construct a string
+    /** Construct a string.
     */
     value(
         char const* s,
@@ -1527,6 +1545,112 @@ public:
                 system_error(
                     error::not_bool));
         return sca_.b;
+    }
+
+    //------------------------------------------------------
+
+    /** Return a value as an object, without checking.
+
+        This is a fast way to gain access to an object
+        value when the kind is known.
+
+        @par Preconditions
+        
+        @code
+        this->is_object()
+        @endcode
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
+    object&
+    get_object() noexcept
+    {
+        BOOST_JSON_ASSERT(is_object());
+        return obj_;
+    }
+
+    /** Return a value as an object, without checking.
+
+        This is a fast way to gain access to an object
+        value when the kind is known.
+
+        @par Preconditions
+        
+        @code
+        this->is_object()
+        @endcode
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
+    object const&
+    get_object() const noexcept
+    {
+        BOOST_JSON_ASSERT(is_object());
+        return obj_;
+    }
+
+    /** Return a value as an array, without checking.
+
+        This is a fast way to gain access to an array
+        value when the kind is known.
+
+        @par Preconditions
+        
+        @code
+        this->is_array()
+        @endcode
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
+    array&
+    get_array() noexcept
+    {
+        BOOST_JSON_ASSERT(is_array());
+        return arr_;
+    }
+
+    /** Return a value as an array, without checking.
+
+        This is a fast way to gain access to an array
+        value when the kind is known.
+
+        @par Preconditions
+        
+        @code
+        this->is_array()
+        @endcode
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
+    array const&
+    get_array() const noexcept
+    {
+        BOOST_JSON_ASSERT(is_array());
+        return arr_;
     }
 
     //------------------------------------------------------

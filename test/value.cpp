@@ -515,34 +515,62 @@ public:
 
         // value(object)
         // value(object, storage_ptr)
+        // value(object_kind, storage_ptr)
         {
             {
                 auto jv = value(object());
+                BEAST_EXPECT(jv.is_object());
                 BEAST_EXPECT(*jv.get_storage() == *dsp);
             }
             {
                 auto jv = value(object(sp));
+                BEAST_EXPECT(jv.is_object());
                 BEAST_EXPECT(*jv.get_storage() == *sp);
             }
             {
                 auto jv = value(object(), sp);
+                BEAST_EXPECT(jv.is_object());
+                BEAST_EXPECT(*jv.get_storage() == *sp);
+            }
+            {
+                auto jv = value(object_kind);
+                BEAST_EXPECT(jv.is_object());
+                BEAST_EXPECT(*jv.get_storage() == *dsp);
+            }
+            {
+                auto jv = value(object_kind, sp);
+                BEAST_EXPECT(jv.is_object());
                 BEAST_EXPECT(*jv.get_storage() == *sp);
             }
         }
 
         // value(array)
         // value(array, storage_ptr)
+        // value(object_kind, storage_ptr)
         {
             {
                 auto jv = value(array());
+                BEAST_EXPECT(jv.is_array());
                 BEAST_EXPECT(*jv.get_storage() == *dsp);
             }
             {
                 auto jv = value(array(sp));
+                BEAST_EXPECT(jv.is_array());
                 BEAST_EXPECT(*jv.get_storage() == *sp);
             }
             {
                 auto jv = value(array(), sp);
+                BEAST_EXPECT(jv.is_array());
+                BEAST_EXPECT(*jv.get_storage() == *sp);
+            }
+            {
+                auto jv = value(array_kind);
+                BEAST_EXPECT(jv.is_array());
+                BEAST_EXPECT(*jv.get_storage() == *dsp);
+            }
+            {
+                auto jv = value(array_kind, sp);
+                BEAST_EXPECT(jv.is_array());
                 BEAST_EXPECT(*jv.get_storage() == *sp);
             }
         }
@@ -552,14 +580,17 @@ public:
         {
             {
                 auto jv = value(string());
+                BEAST_EXPECT(jv.is_string());
                 BEAST_EXPECT(*jv.get_storage() == *dsp);
             }
             {
                 auto jv = value(string(sp));
+                BEAST_EXPECT(jv.is_string());
                 BEAST_EXPECT(*jv.get_storage() == *sp);
             }
             {
                 auto jv = value(string(), sp);
+                BEAST_EXPECT(jv.is_string());
                 BEAST_EXPECT(*jv.get_storage() == *sp);
             }
         }
@@ -605,6 +636,36 @@ public:
             {
                 auto jv = value(double{3.141}, sp);
                 BEAST_EXPECT(jv.is_double());
+                BEAST_EXPECT(*jv.get_storage() == *sp);
+            }
+        }
+
+        // value(bool)
+        // value(bool, storage_ptr)
+        {
+            {
+                auto jv = value(true);
+                BEAST_EXPECT(jv.is_bool());
+                BEAST_EXPECT(*jv.get_storage() == *dsp);
+            }
+            {
+                auto jv = value(true, sp);
+                BEAST_EXPECT(jv.is_bool());
+                BEAST_EXPECT(*jv.get_storage() == *sp);
+            }
+        }
+
+        // value(nullptr_t)
+        // value(nullptr_t, storage_ptr)
+        {
+            {
+                auto jv = value(nullptr);
+                BEAST_EXPECT(jv.is_null());
+                BEAST_EXPECT(*jv.get_storage() == *dsp);
+            }
+            {
+                auto jv = value(nullptr, sp);
+                BEAST_EXPECT(jv.is_null());
                 BEAST_EXPECT(*jv.get_storage() == *sp);
             }
         }
