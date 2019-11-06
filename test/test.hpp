@@ -145,7 +145,6 @@ class fail_parser
     : public basic_parser
 {
     std::size_t n_ = std::size_t(-1);
-    char buf[256];
 
     void
     maybe_fail(error_code& ec)
@@ -156,24 +155,14 @@ class fail_parser
     }
 
     void
-    on_stack_info(
-        stack& s) noexcept override
-    {
-        s.base = buf;
-        s.capacity = sizeof(buf);
-    }
-
-    void
-    on_stack_grow(
-        stack&,
-        unsigned,
+    on_document_begin(
         error_code& ec) override
     {
-        ec = error::too_deep;
+        maybe_fail(ec);
     }
 
     void
-    on_document_begin(
+    on_document_end(
         error_code& ec) override
     {
         maybe_fail(ec);
@@ -208,7 +197,7 @@ class fail_parser
     }
 
     void
-    on_key_data(
+    on_key_part(
         string_view,
         error_code& ec) override
     {
@@ -216,7 +205,7 @@ class fail_parser
     }
 
     void
-    on_key_end(
+    on_key(
         string_view,
         error_code& ec) override
     {
@@ -224,7 +213,7 @@ class fail_parser
     }
         
     void
-    on_string_data(
+    on_string_part(
         string_view,
         error_code& ec) override
     {
@@ -232,7 +221,7 @@ class fail_parser
     }
 
     void
-    on_string_end(
+    on_string(
         string_view,
         error_code& ec) override
     {
@@ -305,7 +294,6 @@ class throw_parser
     : public basic_parser
 {
     std::size_t n_ = std::size_t(-1);
-    char buf[256];
 
     void
     maybe_throw()
@@ -316,24 +304,14 @@ class throw_parser
     }
 
     void
-    on_stack_info(
-        stack& s) noexcept override
-    {
-        s.base = buf;
-        s.capacity = sizeof(buf);
-    }
-
-    void
-    on_stack_grow(
-        stack&,
-        unsigned,
-        error_code& ec) override
-    {
-        ec = error::too_deep;
-    }
-
-    void
     on_document_begin(
+        error_code&) override
+    {
+        maybe_throw();
+    }
+
+    void
+    on_document_end(
         error_code&) override
     {
         maybe_throw();
@@ -368,7 +346,7 @@ class throw_parser
     }
 
     void
-    on_key_data(
+    on_key_part(
         string_view,
         error_code&) override
     {
@@ -376,7 +354,7 @@ class throw_parser
     }
 
     void
-    on_key_end(
+    on_key(
         string_view,
         error_code&) override
     {
@@ -384,7 +362,7 @@ class throw_parser
     }
         
     void
-    on_string_data(
+    on_string_part(
         string_view,
         error_code&) override
     {
@@ -392,7 +370,7 @@ class throw_parser
     }
 
     void
-    on_string_end(
+    on_string(
         string_view,
         error_code&) override
     {

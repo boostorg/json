@@ -115,11 +115,21 @@ R"xx({
     void
     run()
     {
+#if 0
         log <<
             "sizeof(parser) == " <<
             sizeof(parser) << "\n";
         testParser();
         testParse();
+#else
+        error_code ec;
+        auto jv = parse(
+            "[\"abcdefg\",\"1\",\"2\",[\"a\", \"b\", \"c\"], \"d\"]"
+        , ec);
+        if(BEAST_EXPECTS(! ec, ec.message()))
+            log << to_string(jv) << std::endl;
+
+#endif
     }
 };
 

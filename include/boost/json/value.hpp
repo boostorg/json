@@ -439,6 +439,15 @@ public:
     {
     }
 
+    /** Construct an array.
+    */
+    value(string_kind_t,
+        storage_ptr sp = {}) noexcept
+        : str_(std::move(sp))
+        , kind_(json::kind::string)
+    {
+    }
+
     /** Construct a signed integer.
     */
     value(short i, storage_ptr sp = {})
@@ -1627,6 +1636,32 @@ public:
         return arr_;
     }
 
+    /** Return a value as a string, without checking.
+
+        This is a fast way to gain access to a string
+        value when the kind is known.
+
+        @par Preconditions
+        
+        @code
+        this->is_string()
+        @endcode
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
+    string&
+    get_string() noexcept
+    {
+        BOOST_JSON_ASSERT(is_string());
+        return str_;
+    }
+
     /** Return a value as an array, without checking.
 
         This is a fast way to gain access to an array
@@ -1659,6 +1694,37 @@ private:
     BOOST_JSON_DECL
     storage_ptr
     destroy() noexcept;
+};
+
+//----------------------------------------------------------
+
+struct key_value_pair
+{
+    json::value value;
+    string_view const key;
+
+    key_value_pair(
+        key_value_pair const&) = delete;
+
+    BOOST_JSON_DECL
+    ~key_value_pair();
+
+    template<class... Args>
+    key_value_pair(
+        string_view key,
+        Args&&... args);
+
+    BOOST_JSON_DECL
+    static
+    void
+    destroy(
+        key_value_pair* p,
+        size_type n) noexcept;
+
+private:
+    friend object;
+
+    key_value_pair* next_;
 };
 
 } // json

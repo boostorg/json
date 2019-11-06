@@ -52,8 +52,13 @@ struct array_kind_t
 {
 };
 
+struct string_kind_t
+{
+};
+
 BOOST_JSON_INLINE_VARIABLE(object_kind, object_kind_t);
 BOOST_JSON_INLINE_VARIABLE(array_kind, array_kind_t);
+BOOST_JSON_INLINE_VARIABLE(string_kind, string_kind_t);
 
 } // json
 } // boost

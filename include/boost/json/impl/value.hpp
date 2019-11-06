@@ -151,6 +151,29 @@ swap(value& lhs, value& rhs)
     lhs.swap(rhs);
 }
 
+//----------------------------------------------------------
+
+template<class... Args>
+key_value_pair::
+key_value_pair(
+    string_view key_,
+    Args&&... args)
+    : value(std::forward<Args>(args)...)
+    , key(
+        [&]
+        {
+            auto s = reinterpret_cast<
+                char*>(value.get_storage()->
+                    allocate(key_.size() + 1));
+            std::memcpy(s, key_.data(), key_.size());
+            s[key_.size()] = 0;
+            return string_view(s, key_.size() + 1);
+        }())
+{
+}
+
+//----------------------------------------------------------
+
 } // json
 } // boost
 

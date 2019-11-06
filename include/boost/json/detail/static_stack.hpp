@@ -10,11 +10,10 @@
 #ifndef BOOST_JSON_DETAIL_STATIC_STACK_HPP
 #define BOOST_JSON_DETAIL_STATIC_STACK_HPP
 
+#include <boost/json/detail/config.hpp>
 #include <boost/json/detail/assert.hpp>
 #include <new>
-#include <type_traits>
 #include <utility>
-#include <vector>
 
 namespace boost {
 namespace json {
@@ -76,6 +75,8 @@ public:
     void
     push(T const& t)
     {
+        BOOST_JSON_ASSERT(
+            top_ < vec_ + N);
         *++top_ = t;
     }
 
@@ -83,6 +84,8 @@ public:
     void
     emplace_front(Args&&... args)
     {
+        BOOST_JSON_ASSERT(
+            top_ < vec_ + N);
         ::new(++top_) T(
             std::forward<Args>(args)...);
     }

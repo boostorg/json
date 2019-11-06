@@ -129,8 +129,6 @@ class boost_vec_impl : public any_impl
 {
     struct vec_parser : basic_parser
     {
-        std::size_t n_ = std::size_t(-1);
-        char buf[256];
         std::vector<double> vec_;
         double d_ = 0;
 
@@ -143,24 +141,13 @@ class boost_vec_impl : public any_impl
         }
 
         void
-        on_stack_info(
-            stack& s) noexcept override
-        {
-            s.base = buf;
-            s.capacity = sizeof(buf);
-        }
-
-        void
-        on_stack_grow(
-            stack&,
-            unsigned,
-            error_code& ec) override
-        {
-            ec = error::too_deep;
-        }
-
-        void
         on_document_begin(
+            error_code&) override
+        {
+        }
+
+        void
+        on_document_end(
             error_code&) override
         {
         }
@@ -190,28 +177,28 @@ class boost_vec_impl : public any_impl
         }
 
         void
-        on_key_data(
+        on_key_part(
             string_view,
             error_code&) override
         {
         }
 
         void
-        on_key_end(
+        on_key(
             string_view,
             error_code&) override
         {
         }
         
         void
-        on_string_data(
+        on_string_part(
             string_view,
             error_code&) override
         {
         }
 
         void
-        on_string_end(
+        on_string(
             string_view,
             error_code&) override
         {
@@ -389,7 +376,7 @@ benchParse(
                 auto const ms = std::chrono::duration_cast<
                     std::chrono::milliseconds>(
                     clock_type::now() - when).count();
-                if(k > 4)
+                if(k >= 0)
                     dout << " " << vi[j]->name() << ": " <<
                         std::to_string(ms) << "ms" <<
                         std::endl;

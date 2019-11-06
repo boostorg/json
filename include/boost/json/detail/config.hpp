@@ -69,5 +69,12 @@
 # endif
 #endif
 
+namespace boost {
+namespace json {
+
+using size_type = unsigned long;
+
+} // json
+} // boost
 
 #endif

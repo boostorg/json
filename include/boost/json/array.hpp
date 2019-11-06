@@ -23,6 +23,52 @@ namespace json {
 
 class value;
 
+class unchecked_array
+{
+    value* data_;
+    unsigned long size_;
+    storage_ptr const& sp_;
+
+public:
+    inline
+    ~unchecked_array();
+
+    unchecked_array(
+        value* data,
+        unsigned long size,
+        storage_ptr const& sp) noexcept
+        : data_(data)
+        , size_(size)
+        , sp_(sp)
+    {
+    }
+
+    unchecked_array(
+        unchecked_array&& other) noexcept
+        : data_(other.data_)
+        , size_(other.size_)
+        , sp_(other.sp_)
+    {
+        other.data_ = nullptr;
+    }
+
+    storage_ptr const&
+    get_storage() const noexcept
+    {
+        return sp_;
+    }
+
+    unsigned long
+    size() const noexcept
+    {
+        return size_;
+    }
+
+    inline
+    void
+    relocate(value* dest) noexcept;
+};
+
 /** A dynamically sized array of JSON values
 
     This is the type used to represent JSON values of kind array.
@@ -512,6 +558,10 @@ public:
     array&
     operator=(
         std::initializer_list<value> init);
+
+    BOOST_JSON_DECL
+    void
+    assign(unchecked_array&& ua);
 
     //------------------------------------------------------
 

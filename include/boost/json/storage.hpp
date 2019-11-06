@@ -56,14 +56,16 @@ public:
     void*
     allocate(
         std::size_t n,
-        std::size_t align) = 0;
+        std::size_t align =
+            alignof(std::max_align_t)) = 0;
 
     virtual
     void
     deallocate(
         void* p,
         std::size_t n,
-        std::size_t align) noexcept = 0;
+        std::size_t align =
+            alignof(std::max_align_t)) = 0;
 
     friend
     bool

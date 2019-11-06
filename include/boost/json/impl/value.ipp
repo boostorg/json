@@ -506,6 +506,35 @@ destroy() noexcept
     return std::move(sca_.sp);
 }
 
+//----------------------------------------------------------
+
+key_value_pair::
+~key_value_pair()
+{
+    auto const& sp = value.get_storage();
+    if(sp->need_free())
+        sp->deallocate(const_cast<void*>(
+            reinterpret_cast<void const*>(
+                key.data())), key.size(), 1);
+}
+
+void
+key_value_pair::
+destroy(
+    key_value_pair* p,
+    size_type n) noexcept
+{
+    if(n == 0)
+        return;
+    auto const& sp = p->value.get_storage();
+    if(! sp->need_free())
+        return;
+    while(n--)
+        (*p++).~key_value_pair();
+}
+
+//----------------------------------------------------------
+
 } // json
 } // boost
 

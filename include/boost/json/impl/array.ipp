@@ -313,6 +313,18 @@ operator=(
     return *this;
 }
 
+void
+array::
+assign(unchecked_array&& ua)
+{
+    BOOST_JSON_ASSERT(
+        *ua.get_storage() == *sp_);
+    reserve(ua.size());
+    resize(0);
+    impl_.size = ua.size();
+    ua.relocate(impl_.vec);
+}
+
 //----------------------------------------------------------
 //
 // Capacity

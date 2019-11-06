@@ -14,6 +14,7 @@
 #include <boost/json/error.hpp>
 #include <boost/json/detail/basic_parser.hpp>
 #include <boost/json/detail/number.hpp>
+#include <boost/json/detail/static_stack.hpp>
 #include <boost/json/detail/string.hpp>
 #include <string>
 #include <vector>
@@ -31,8 +32,10 @@ class basic_parser
 {
     enum class state : char;
 
+    detail::static_stack<state, 64> st_;
     detail::number_parser iep_;
-    unsigned top_ = 0;
+    std::size_t depth_;
+    std::size_t max_depth_ = 32;
     long u0_;
     unsigned short u_;
     bool is_key_;
@@ -41,18 +44,38 @@ public:
     virtual
     ~basic_parser()
     {
+        // VFALCO defaulting this causes link
+        // link errors on some older toolchains.
     }
 
     /// Returns `true` if the parser has completed without error
-    BOOST_JSON_DECL
     bool
-    is_done() const noexcept;
+    is_done() const noexcept
+    {
+        return st_.size() == 1;
+    }
+
+    /** Returns the maximum allowed depth of input JSON.
+    */
+    std::size_t
+    max_depth() const noexcept
+    {
+        return max_depth_;
+    }
+
+    /** Set the maximum allowed depth of input JSON.
+    */
+    void
+    max_depth(unsigned long levels) noexcept
+    {
+        max_depth_ = levels;
+    }
 
     /** Reset the state, to parse a new document.
     */
     BOOST_JSON_DECL
     void
-    reset();
+    reset() noexcept;
 
     BOOST_JSON_DECL
     std::size_t
@@ -73,33 +96,18 @@ public:
     write_eof(error_code& ec);
 
 protected:
-    struct stack
-    {
-        void* base;
-        unsigned capacity;
-    };
-
-    class stack_impl;
-
     /// Constructor (default)
     BOOST_JSON_DECL
     basic_parser();
 
     virtual
     void
-    on_stack_info(
-        stack& s) noexcept = 0;
-
-    virtual
-    void
-    on_stack_grow(
-        stack& s,
-        unsigned capacity,
+    on_document_begin(
         error_code& ec) = 0;
 
     virtual
     void
-    on_document_begin(
+    on_document_end(
         error_code& ec) = 0;
 
     virtual
@@ -124,25 +132,25 @@ protected:
 
     virtual
     void
-    on_key_data(
+    on_key_part(
         string_view s,
         error_code& ec) = 0;
 
     virtual
     void
-    on_key_end(
+    on_key(
         string_view s,
         error_code& ec) = 0;
 
     virtual
     void
-    on_string_data(
+    on_string_part(
         string_view s,
         error_code& ec) = 0;
 
     virtual
     void
-    on_string_end(
+    on_string(
         string_view,
         error_code& ec) = 0;
 

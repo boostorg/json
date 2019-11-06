@@ -22,6 +22,26 @@ namespace json {
 
 //----------------------------------------------------------
 
+unchecked_object::
+~unchecked_object()
+{
+    if(data_)
+        key_value_pair::destroy(
+            data_, size_);
+}
+
+void
+unchecked_object::
+relocate(key_value_pair* dest) noexcept
+{
+    std::memcpy(dest, data_,
+        sizeof(key_value_pair) * size_);
+    data_ = nullptr;
+}
+
+//----------------------------------------------------------
+
+
 struct object::list_hook
 {
     element* prev;

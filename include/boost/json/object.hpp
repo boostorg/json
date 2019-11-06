@@ -23,6 +23,53 @@ namespace boost {
 namespace json {
 
 class value;
+struct key_value_pair;
+
+class unchecked_object
+{
+    key_value_pair* data_;
+    unsigned long size_;
+    storage_ptr const& sp_;
+
+public:
+    inline
+    ~unchecked_object();
+
+    unchecked_object(
+        key_value_pair* data,
+        unsigned long size,
+        storage_ptr const& sp) noexcept
+        : data_(data)
+        , size_(size)
+        , sp_(sp)
+    {
+    }
+
+    unchecked_object(
+        unchecked_object&& other) noexcept
+        : data_(other.data_)
+        , size_(other.size_)
+        , sp_(other.sp_)
+    {
+        other.data_ = nullptr;
+    }
+
+    storage_ptr const&
+    get_storage() const noexcept
+    {
+        return sp_;
+    }
+
+    unsigned long
+    size() const noexcept
+    {
+        return size_;
+    }
+
+    inline
+    void
+    relocate(key_value_pair* dest) noexcept;
+};
 
 //----------------------------------------------------------
 

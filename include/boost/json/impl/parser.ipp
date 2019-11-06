@@ -13,6 +13,8 @@
 #include <boost/json/parser.hpp>
 #include <boost/json/error.hpp>
 #include <boost/json/detail/assert.hpp>
+#include <boost/json/detail/except.hpp>
+#include <cstring>
 #include <stdexcept>
 #include <utility>
 
@@ -22,8 +24,6 @@ namespace json {
 parser::
 ~parser()
 {
-    if(capacity_ > sizeof(buf_))
-        delete[] alloc_;
 }
 
 parser::
@@ -33,22 +33,8 @@ parser()
 
 parser::
 parser(storage_ptr sp)
-    : jv_(std::move(sp))
+    : st_(sp)
 {
-}
-
-std::size_t
-parser::
-max_depth() const noexcept
-{
-    return max_depth_;
-}
-
-void
-parser::
-max_depth(unsigned long levels) noexcept
-{
-    max_depth_ = levels;
 }
 
 value const&
@@ -67,228 +53,116 @@ release() noexcept
 
 void
 parser::
-on_stack_info(
-    stack& s) noexcept
-{
-    s.capacity = capacity_;
-    if(capacity_ == sizeof(buf_))
-        s.base = buf_;
-    else
-        s.base = alloc_;
-}
-
-void
-parser::
-on_stack_grow(
-    stack& s,
-    unsigned capacity,
-    error_code&)
-{
-    if(capacity <= capacity_)
-        return;
-    auto n = capacity_ +
-        capacity_ / 2;
-    if( n < capacity)
-        n = capacity;
-    n |= 0xf;
-    auto p = new char[n];
-    std::memcpy(
-        p, s.base, s.capacity);
-    if(capacity_ > sizeof(buf_))
-        delete[] alloc_;
-    alloc_ = p;
-    capacity_ = n;
-    s.base = alloc_;
-    s.capacity = n;
-}
-
-void
-parser::
 on_document_begin(error_code&)
 {
-    stack_.clear();
-    stack_.push(&jv_);
-    s_.clear();
-    obj_ = false;
 }
 
 void
 parser::
-on_object_begin(error_code& ec)
+on_document_end(error_code&)
 {
-    if(stack_.size() >= max_depth_)
-    {
-        ec = error::too_deep;
-        return;
-    }
-    auto& jv = *stack_.front();
-    BOOST_JSON_ASSERT(! jv.is_object());
-    if(obj_)
-    {
-        BOOST_JSON_ASSERT(jv.is_null());
-        jv.emplace_object();
-    }
-    else if(jv.is_array())
-    {
-        jv.get_array().emplace_back(object_kind);
-        stack_.push(
-            &jv.get_array().back());
-    }
-    else
-    {
-        BOOST_JSON_ASSERT(jv.is_null());
-        jv.emplace_object();
-    }
-    obj_ = true;
+    BOOST_JSON_ASSERT(size_ == 1);
+    auto ua = st_.pop_array(1);
+    jv_.~value();
+    ua.relocate(&jv_);
+}
+
+void
+parser::
+on_object_begin(error_code&)
+{
+    st_.emplace_value(object_kind);
+    st_.push(size_ + 1);
+    size_ = 0;
 }
 
 void
 parser::
 on_object_end(error_code&)
 {
-    BOOST_JSON_ASSERT(
-        stack_.front()->is_object());
-    stack_.pop();
-    if(! stack_.empty())
-    {
-        auto const& jv = stack_.front();
-        BOOST_JSON_ASSERT(
-            jv->is_array() || jv->is_object());
-        obj_ = jv->is_object();
-    }
+    auto ua = st_.pop_array(size_);
+    st_.pop(size_);
 }
 
 void
 parser::
-on_array_begin(error_code& ec)
+on_array_begin(error_code&)
 {
-    if(stack_.size() >= max_depth_)
-    {
-        ec = error::too_deep;
-        return;
-    }
-    auto& jv = *stack_.front();
-    BOOST_JSON_ASSERT(! jv.is_object());
-    if(obj_)
-    {
-        BOOST_JSON_ASSERT(jv.is_null());
-        jv.emplace_array();
-    }
-    else if(jv.is_array())
-    {
-        BOOST_JSON_ASSERT(s_.empty());
-        jv.get_array().emplace_back(array_kind);
-        stack_.push(
-            &jv.get_array().back());
-    }
-    else
-    {
-        BOOST_JSON_ASSERT(jv.is_null());
-        jv.emplace_array();
-    }
-    obj_ = false;
+    st_.emplace_value(array_kind);
+    st_.push(size_ + 1);
+    size_ = 0;
 }
 
 void
 parser::
 on_array_end(error_code&)
 {
-    BOOST_JSON_ASSERT(
-        stack_.front()->is_array());
-    stack_.pop();
-    if(! stack_.empty())
-    {
-        auto const& jv = stack_.front();
-        BOOST_JSON_ASSERT(
-            jv->is_array() || jv->is_object());
-        obj_ = jv->is_object();
-    }
+    auto ua = st_.pop_array(size_);
+    st_.pop(size_);
+    st_.top_value().get_array().assign(std::move(ua));
 }
 
 void
 parser::
-on_key_data(
+on_key_part(
+    string_view,
+    error_code&)
+{
+}
+
+void
+parser::
+on_key(
+    string_view,
+    error_code&)
+{
+}
+
+void
+parser::
+on_string_part(
     string_view s,
     error_code&)
 {
-    s_.append(s.data(), s.size());
+    if( s.size() >
+        detail::max_string_length_ - len_)
+        BOOST_JSON_THROW(
+            detail::string_too_large_exception());  
+    st_.push(s);
+    len_ += static_cast<size_type>(
+        s.size());
 }
 
 void
 parser::
-on_key_end(
+on_string(
     string_view s,
     error_code&)
 {
-    auto& jv = *stack_.front();
-    if(! s_.empty())
+    if( s.size() >
+        detail::max_string_length_ - len_)
+        BOOST_JSON_THROW(
+            detail::string_too_large_exception());  
+    if(len_ == 0)
     {
-        s_.append(s.data(), s.size());
-        s = {s_.data(), s_.size()};
-    }
-    auto const result =
-        jv.get_object().emplace(s, nullptr);
-    // overwrite duplicate keys
-    if(! result.second)
-        result.first->second.emplace_null();
-    stack_.push(&result.first->second);
-    s_.clear();
-}
-
-void
-parser::
-on_string_data(
-    string_view s, error_code&)
-{
-    auto& jv = *stack_.front();
-    BOOST_JSON_ASSERT(! jv.is_object());
-    if(! jv.is_string())
-    {
-        if(obj_)
-        {
-            BOOST_JSON_ASSERT(jv.is_null());
-            jv.emplace_string().append(
-                s.data(), s.size());
-        }
-        else if(stack_.front()->is_array())
-        {
-            BOOST_JSON_ASSERT(s_.empty());
-            jv.get_array().emplace_back(string{});
-            stack_.push(
-                &jv.get_array().back());
-            stack_.front()->if_string()->append(
-                s.data(), s.size());
-        }
-        else
-        {
-            BOOST_JSON_ASSERT(jv.is_null());
-            jv.emplace_string().append(
-                s.data(), s.size());
-        }
+        // fast path
+        st_.emplace_value(s);
     }
     else
     {
-        stack_.front()->if_string()->append(
+        auto& js = st_.emplace_value(
+            string_kind).get_string();
+        js.reserve(len_ + s.size());
+        auto const ss = st_.pop_string(len_);
+        std::memcpy(
+            js.data(), ss.data(), ss.size());
+        std::memcpy(
+            js.data() + ss.size(),
             s.data(), s.size());
+        js.grow(ss.size() + s.size());
     }
-}
-
-void
-parser::
-on_string_end(
-    string_view s,
-    error_code& ec)
-{
-    on_string_data(s, ec);
-    BOOST_JSON_ASSERT(stack_.front()->is_string());
-    stack_.pop();
-    if(! stack_.empty())
-    {
-        auto const& jv = stack_.front();
-        BOOST_JSON_ASSERT(
-            jv->is_array() || jv->is_object());
-        obj_ = jv->is_object();
-    }
+    len_ = 0;
+    ++size_;
 }
 
 void
@@ -297,24 +171,8 @@ on_int64(
     int64_t i,
     error_code&)
 {
-    auto& jv = *stack_.front();
-    BOOST_JSON_ASSERT(! jv.is_object());
-    if(obj_)
-    {
-        BOOST_JSON_ASSERT(jv.is_null());
-        jv = i;
-        stack_.pop();
-    }
-    else if(stack_.front()->is_array())
-    {
-        BOOST_JSON_ASSERT(s_.empty());
-        jv.get_array().emplace_back(i);
-    }
-    else
-    {
-        BOOST_JSON_ASSERT(jv.is_null());
-        jv = i;
-    }
+    ++size_;
+    st_.emplace_value(i);
 }
 
 void
@@ -323,24 +181,8 @@ on_uint64(
     uint64_t u,
     error_code&)
 {
-    auto& jv = *stack_.front();
-    BOOST_JSON_ASSERT(! jv.is_object());
-    if(obj_)
-    {
-        BOOST_JSON_ASSERT(jv.is_null());
-        jv = u;
-        stack_.pop();
-    }
-    else if(stack_.front()->is_array())
-    {
-        BOOST_JSON_ASSERT(s_.empty());
-        jv.get_array().emplace_back(u);
-    }
-    else
-    {
-        BOOST_JSON_ASSERT(jv.is_null());
-        jv = u;
-    }
+    ++size_;
+    st_.emplace_value(u);
 }
 
 void
@@ -349,70 +191,24 @@ on_double(
     double d,
     error_code&)
 {
-    auto& jv = *stack_.front();
-    BOOST_JSON_ASSERT(! jv.is_object());
-    if(obj_)
-    {
-        BOOST_JSON_ASSERT(jv.is_null());
-        jv = d;
-        stack_.pop();
-    }
-    else if(stack_.front()->is_array())
-    {
-        BOOST_JSON_ASSERT(s_.empty());
-        jv.get_array().emplace_back(d);
-    }
-    else
-    {
-        BOOST_JSON_ASSERT(jv.is_null());
-        jv = d;
-    }
+    ++size_;
+    st_.emplace_value(d);
 }
 
 void
 parser::
 on_bool(bool b, error_code&)
 {
-    auto& jv = *stack_.front();
-    BOOST_JSON_ASSERT(! jv.is_object());
-    if(obj_)
-    {
-        BOOST_JSON_ASSERT(jv.is_null());
-        jv.emplace_bool() = b;
-        stack_.pop();
-    }
-    else if(stack_.front()->is_array())
-    {
-        BOOST_JSON_ASSERT(s_.empty());
-        jv.get_array().emplace_back(b);
-    }
-    else
-    {
-        BOOST_JSON_ASSERT(jv.is_null());
-        jv.emplace_bool() = b;
-    }
+    ++size_;
+    st_.emplace_value(b);
 }
 
 void
 parser::
 on_null(error_code&)
 {
-    auto& jv = *stack_.front();
-    BOOST_JSON_ASSERT(! jv.is_object());
-    if(obj_)
-    {
-        BOOST_JSON_ASSERT(jv.is_null());
-        stack_.pop();
-    }
-    else if(stack_.front()->is_array())
-    {
-        BOOST_JSON_ASSERT(s_.empty());
-        jv.get_array().emplace_back(nullptr);
-    }
-    else
-    {
-        BOOST_JSON_ASSERT(jv.is_null());
-    }
+    ++size_;
+    st_.emplace_value(nullptr);
 }
 
 //----------------------------------------------------------
