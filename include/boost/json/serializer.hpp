@@ -13,7 +13,7 @@
 #include <boost/json/detail/config.hpp>
 #include <boost/json/value.hpp>
 #include <boost/json/detail/format.hpp>
-#include <boost/json/detail/stack.hpp>
+#include <boost/json/detail/static_stack.hpp>
 #include <boost/json/detail/string.hpp>
 #include <iosfwd>
 
@@ -66,7 +66,7 @@ class serializer
     };
 #endif
 
-    detail::stack<node, 50> stack_;
+    detail::static_stack<node, 50> stack_;
 
     string_view str_;
     unsigned char nbuf_;

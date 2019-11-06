@@ -14,7 +14,6 @@
 #include <boost/json/error.hpp>
 #include <boost/json/detail/basic_parser.hpp>
 #include <boost/json/detail/number.hpp>
-#include <boost/json/detail/stack.hpp>
 #include <boost/json/detail/string.hpp>
 #include <string>
 #include <vector>

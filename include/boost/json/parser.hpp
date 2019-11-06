@@ -15,6 +15,7 @@
 #include <boost/json/storage.hpp>
 #include <boost/json/value.hpp>
 #include <boost/json/string.hpp>
+#include <boost/json/detail/static_stack.hpp>
 #include <boost/json/detail/string.hpp>
 #include <new>
 #include <string>
@@ -38,7 +39,7 @@ class parser final
     };
     unsigned capacity_ = sizeof(buf_);
     value jv_;
-    detail::stack<value*,
+    detail::static_stack<value*,
         default_max_depth> stack_;
     string s_;
     unsigned long max_depth_ =

@@ -7,8 +7,8 @@
 // Official repository: https://github.com/vinniefalco/json
 //
 
-#ifndef BOOST_JSON_DETAIL_STACK_HPP
-#define BOOST_JSON_DETAIL_STACK_HPP
+#ifndef BOOST_JSON_DETAIL_STATIC_STACK_HPP
+#define BOOST_JSON_DETAIL_STATIC_STACK_HPP
 
 #include <boost/json/detail/assert.hpp>
 #include <new>
@@ -20,8 +20,9 @@ namespace boost {
 namespace json {
 namespace detail {
 
+// NOTE T must be trivial
 template<class T, std::size_t N>
-class stack
+class static_stack
 {
     union
     {
@@ -34,9 +35,9 @@ class stack
 public:
     using value_type = T;
 
-    ~stack() = default;
+    ~static_stack() = default;
 
-    stack() noexcept
+    static_stack() noexcept
     {
     }
 
