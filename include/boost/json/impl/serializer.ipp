@@ -241,7 +241,7 @@ loop_init:
         }
         stack_.front().st =
             state::obj1;
-        str_ = e.it->first;
+        str_ = e.it->key();
         stack_.emplace_front(
             state::str1);
         goto loop_str;
@@ -257,7 +257,7 @@ loop_init:
         stack_.front().st =
             state::obj2;
         stack_.emplace_front(
-            e.it->second);
+            e.it->value());
         goto loop_init;
     }
 
@@ -276,7 +276,7 @@ loop_init:
         *p++ = ',';
         stack_.front().st =
             state::obj1;
-        str_ = e.it->first;
+        str_ = e.it->key();
         stack_.emplace_front(
             state::str1);
         goto loop_str;

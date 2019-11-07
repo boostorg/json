@@ -376,7 +376,7 @@ benchParse(
                 auto const ms = std::chrono::duration_cast<
                     std::chrono::milliseconds>(
                     clock_type::now() - when).count();
-                if(k >= 0)
+                if(k > 4)
                     dout << " " << vi[j]->name() << ": " <<
                         std::to_string(ms) << "ms" <<
                         std::endl;

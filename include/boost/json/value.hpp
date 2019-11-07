@@ -1698,33 +1698,156 @@ private:
 
 //----------------------------------------------------------
 
-struct key_value_pair
+struct object::value_type
 {
-    json::value value;
-    string_view const key;
+    /** Copy assignment (deleted).
+    */
+    value_type&
+    operator=(value_type const&) = delete;
 
-    key_value_pair(
-        key_value_pair const&) = delete;
-
+    /** Destructor.
+    */
     BOOST_JSON_DECL
-    ~key_value_pair();
+    ~value_type();
 
+    /** Copy constructor.
+    */
+    BOOST_JSON_DECL
+    value_type(value_type const& other);
+
+    /** Copy constructor.
+    */
+    BOOST_JSON_DECL
+    value_type(
+        value_type const& other,
+        storage_ptr sp);
+
+    /** Construct a key and value pair.
+    */
     template<class... Args>
-    key_value_pair(
+    value_type(
         string_view key,
         Args&&... args);
 
+    /** Construct a key and value pair.
+    */
+    explicit
+    value_type(
+        std::pair<
+            string_view,
+            json::value> const& p,
+        storage_ptr sp = {})
+        : value_type(
+            p.first,
+            p.second,
+            std::move(sp))
+    {
+    }
+
+    /** Construct a key and value pair.
+    */
+    explicit
+    value_type(
+        std::pair<
+            string_view,
+            json::value>&& p,
+        storage_ptr sp = {})
+        : value_type(
+            p.first,
+            std::move(p).second,
+            std::move(sp))
+    {
+    }
+
+    /** Return the key of this element.
+    */
+    string_view const
+    key() const noexcept
+    {
+        return { key_, len_ };
+    }
+
+    /** Return the value of this element.
+    */
+    json::value const&
+    value() const noexcept
+    {
+        return value_;
+    }
+
+    /** Return the value of this element.
+    */
+    json::value&
+    value() noexcept
+    {
+        return value_;
+    }
+
+    /** Destroy a range of elements.
+    */
     BOOST_JSON_DECL
     static
     void
     destroy(
-        key_value_pair* p,
+        value_type* p,
         size_type n) noexcept;
 
 private:
     friend object;
 
-    key_value_pair* next_;
+    value_type* next_;
+    json::value value_;
+    // VFALCO could SBO this
+    std::size_t len_;
+    char* key_;
+};
+
+//----------------------------------------------------------
+
+class unchecked_object
+{
+    object::value_type* data_;
+    unsigned long size_;
+    storage_ptr const& sp_;
+
+public:
+    inline
+    ~unchecked_object();
+
+    unchecked_object(
+        object::value_type* data,
+        unsigned long size,
+        storage_ptr const& sp) noexcept
+        : data_(data)
+        , size_(size)
+        , sp_(sp)
+    {
+    }
+
+    unchecked_object(
+        unchecked_object&& other) noexcept
+        : data_(other.data_)
+        , size_(other.size_)
+        , sp_(other.sp_)
+    {
+        other.data_ = nullptr;
+    }
+
+    storage_ptr const&
+    get_storage() const noexcept
+    {
+        return sp_;
+    }
+
+    unsigned long
+    size() const noexcept
+    {
+        return size_;
+    }
+
+    inline
+    void
+    relocate(object::value_type* dest) noexcept;
 };
 
 } // json

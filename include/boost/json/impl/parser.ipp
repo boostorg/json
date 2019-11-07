@@ -24,6 +24,7 @@ namespace json {
 parser::
 ~parser()
 {
+    destroy();
 }
 
 parser::
@@ -51,17 +52,60 @@ release() noexcept
     return std::move(jv_);
 }
 
+//----------------------------------------------------------
+
+void
+parser::
+destroy()
+{
+    if(key_ > 0)
+    {
+        BOOST_JSON_ASSERT(lev_.obj);
+        BOOST_JSON_ASSERT(str_ == 0);
+        st_.unreserve(key_);
+    }
+    if(str_ > 0)
+    {
+        st_.unreserve(str_);
+    }
+    if(! st_.empty())
+    {
+        for(;;)
+        {
+            if(lev_.obj)
+            {
+                st_.unreserve(sizeof(
+                    object::value_type));
+                auto uo = st_.pop_object(
+                    lev_.size);
+            }
+            else
+            {
+                st_.unreserve(sizeof(
+                    value));
+                auto ua = st_.pop_array(
+                    lev_.size);
+            }
+            if(st_.empty())
+                break;
+            st_.pop(lev_);
+        }
+    }
+}
+
 void
 parser::
 on_document_begin(error_code&)
 {
+    st_.placeholder(sizeof(value));
 }
 
 void
 parser::
 on_document_end(error_code&)
 {
-    BOOST_JSON_ASSERT(size_ == 1);
+    BOOST_JSON_ASSERT(lev_.size == 1);
+    st_.unreserve(sizeof(value));
     auto ua = st_.pop_array(1);
     jv_.~value();
     ua.relocate(&jv_);
@@ -71,51 +115,97 @@ void
 parser::
 on_object_begin(error_code&)
 {
-    st_.emplace_value(object_kind);
-    st_.push(size_ + 1);
-    size_ = 0;
+    lev_ = level{ 0, false };
+    st_.push(lev_);
+    lev_ = level{ 0, true };
+    st_.placeholder(sizeof(
+        object::value_type));
 }
 
 void
 parser::
 on_object_end(error_code&)
 {
-    auto ua = st_.pop_array(size_);
-    st_.pop(size_);
+    st_.unreserve(sizeof(
+        object::value_type));
+    auto uo = st_.pop_object(lev_.size);
+    st_.pop(lev_);
+    if(lev_.obj)
+    {
+        st_.emplace_pair(
+            std::move(uo));
+        st_.placeholder(
+            sizeof(object::value_type));
+    }
+    else
+    {
+        st_.emplace_value(std::move(uo));
+        st_.placeholder(sizeof(value));
+    }
+    ++lev_.size;
 }
 
 void
 parser::
 on_array_begin(error_code&)
 {
-    st_.emplace_value(array_kind);
-    st_.push(size_ + 1);
-    size_ = 0;
+    st_.push(lev_);
+    lev_ = level{ 0, false };
+    st_.placeholder(sizeof(value));
 }
 
 void
 parser::
 on_array_end(error_code&)
 {
-    auto ua = st_.pop_array(size_);
-    st_.pop(size_);
-    st_.top_value().get_array().assign(std::move(ua));
+    st_.unreserve(sizeof(value));
+    auto ua = st_.pop_array(lev_.size);
+    st_.pop(lev_);
+    if(lev_.obj)
+    {
+        st_.emplace_pair(
+            std::move(ua));
+        st_.placeholder(
+            sizeof(object::value_type));
+    }
+    else
+    {
+        st_.emplace_value(std::move(ua));
+        st_.placeholder(sizeof(value));
+    }
+    ++lev_.size;
 }
 
 void
 parser::
 on_key_part(
-    string_view,
+    string_view s,
     error_code&)
 {
+    if( s.size() >
+        detail::max_string_length_ - key_)
+        BOOST_JSON_THROW(
+            detail::key_too_large_exception());  
+    st_.push(s);
+    key_ += static_cast<size_type>(
+        s.size());
 }
 
 void
 parser::
 on_key(
-    string_view,
+    string_view s,
     error_code&)
 {
+    if( s.size() >
+        detail::max_string_length_ - key_)
+        BOOST_JSON_THROW(
+            detail::key_too_large_exception());  
+    st_.push(s);
+    key_ += static_cast<size_type>(
+        s.size());
+    st_.push(key_);
+    key_ = 0;
 }
 
 void
@@ -125,11 +215,11 @@ on_string_part(
     error_code&)
 {
     if( s.size() >
-        detail::max_string_length_ - len_)
+        detail::max_string_length_ - str_)
         BOOST_JSON_THROW(
             detail::string_too_large_exception());  
     st_.push(s);
-    len_ += static_cast<size_type>(
+    str_ += static_cast<size_type>(
         s.size());
 }
 
@@ -140,29 +230,50 @@ on_string(
     error_code&)
 {
     if( s.size() >
-        detail::max_string_length_ - len_)
+        detail::max_string_length_ - str_)
         BOOST_JSON_THROW(
             detail::string_too_large_exception());  
-    if(len_ == 0)
+    if(str_ == 0)
     {
         // fast path
-        st_.emplace_value(s);
+        if(lev_.obj)
+        {
+            st_.emplace_pair(s);
+            st_.placeholder(
+                sizeof(object::value_type));
+        }
+        else
+        {
+            st_.emplace_value(s);
+            st_.placeholder(sizeof(value));
+        }
+        ++lev_.size;
     }
     else
     {
-        auto& js = st_.emplace_value(
-            string_kind).get_string();
-        js.reserve(len_ + s.size());
-        auto const ss = st_.pop_string(len_);
-        std::memcpy(
-            js.data(), ss.data(), ss.size());
-        std::memcpy(
-            js.data() + ss.size(),
+        auto const ss = st_.pop_string(str_);
+        string* const ps = [&]
+        {
+            if(lev_.obj)
+                return &st_.emplace_pair(
+                    string_kind).value().get_string();
+            return &st_.emplace_value(
+                string_kind).get_string();
+        }();
+        if(lev_.obj)
+            st_.placeholder(
+                sizeof(object::value_type));
+        else
+            st_.placeholder(sizeof(value));
+        ++lev_.size;
+        ps->reserve(str_ + s.size());
+        std::memcpy(ps->data(),
+            ss.data(), ss.size());
+        std::memcpy(ps->data() + ss.size(),
             s.data(), s.size());
-        js.grow(ss.size() + s.size());
+        ps->grow(ss.size() + s.size());
     }
-    len_ = 0;
-    ++size_;
+    str_ = 0;
 }
 
 void
@@ -171,8 +282,18 @@ on_int64(
     int64_t i,
     error_code&)
 {
-    ++size_;
-    st_.emplace_value(i);
+    if(lev_.obj)
+    {
+        st_.emplace_pair(i);
+        st_.placeholder(
+            sizeof(object::value_type));
+    }
+    else
+    {
+        st_.emplace_value(i);
+        st_.placeholder(sizeof(value));
+    }
+    ++lev_.size;
 }
 
 void
@@ -181,8 +302,18 @@ on_uint64(
     uint64_t u,
     error_code&)
 {
-    ++size_;
-    st_.emplace_value(u);
+    if(lev_.obj)
+    {
+        st_.emplace_pair(u);
+        st_.placeholder(
+            sizeof(object::value_type));
+    }
+    else
+    {
+        st_.emplace_value(u);
+        st_.placeholder(sizeof(value));
+    }
+    ++lev_.size;
 }
 
 void
@@ -191,24 +322,54 @@ on_double(
     double d,
     error_code&)
 {
-    ++size_;
-    st_.emplace_value(d);
+    if(lev_.obj)
+    {
+        st_.emplace_pair(d);
+        st_.placeholder(
+            sizeof(object::value_type));
+    }
+    else
+    {
+        st_.emplace_value(d);
+        st_.placeholder(sizeof(value));
+    }
+    ++lev_.size;
 }
 
 void
 parser::
 on_bool(bool b, error_code&)
 {
-    ++size_;
-    st_.emplace_value(b);
+    if(lev_.obj)
+    {
+        st_.emplace_pair(b);
+        st_.placeholder(
+            sizeof(object::value_type));
+    }
+    else
+    {
+        st_.emplace_value(b);
+        st_.placeholder(sizeof(value));
+    }
+    ++lev_.size;
 }
 
 void
 parser::
 on_null(error_code&)
 {
-    ++size_;
-    st_.emplace_value(nullptr);
+    if(lev_.obj)
+    {
+        st_.emplace_pair(nullptr);
+        st_.placeholder(
+            sizeof(object::value_type));
+    }
+    else
+    {
+        st_.emplace_value(nullptr);
+        st_.placeholder(sizeof(value));
+    }
+    ++lev_.size;
 }
 
 //----------------------------------------------------------

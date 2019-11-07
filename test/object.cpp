@@ -57,11 +57,11 @@ public:
     BOOST_JSON_STATIC_ASSERT(  std::is_constructible<object::const_iterator, object::iterator>::value);
     BOOST_JSON_STATIC_ASSERT(  std::is_constructible<object::const_iterator, object::const_iterator>::value);
 
-    BOOST_JSON_STATIC_ASSERT(  std::is_assignable<object::iterator, object::iterator>::value);
-    BOOST_JSON_STATIC_ASSERT(! std::is_assignable<object::iterator, object::const_iterator>::value);
+    //BOOST_JSON_STATIC_ASSERT(  std::is_assignable<object::iterator, object::iterator>::value);
+    //BOOST_JSON_STATIC_ASSERT(! std::is_assignable<object::iterator, object::const_iterator>::value);
 
-    BOOST_JSON_STATIC_ASSERT(  std::is_assignable<object::const_iterator, object::iterator>::value);
-    BOOST_JSON_STATIC_ASSERT(  std::is_assignable<object::const_iterator, object::const_iterator>::value);
+    //BOOST_JSON_STATIC_ASSERT(  std::is_assignable<object::const_iterator, object::iterator>::value);
+    //BOOST_JSON_STATIC_ASSERT(  std::is_assignable<object::const_iterator, object::const_iterator>::value);
 
     BOOST_JSON_STATIC_ASSERT(is_equal_comparable<object::iterator, object::iterator>::value);
     BOOST_JSON_STATIC_ASSERT(is_equal_comparable<object::iterator, object::const_iterator>::value);
@@ -88,26 +88,7 @@ public:
         BEAST_EXPECT(o.at("a").as_int64() == 1);
         BEAST_EXPECT(o.at("b").as_bool());
         BEAST_EXPECT(o.at("c").as_string() == "hello");
-
-        // ordering, storage
-
-        auto it = o.begin();
-        BEAST_EXPECT(it->first == "a");
-        BEAST_EXPECT(
-            *it->second.get_storage() ==
-            *o.get_storage());
-
-        ++it;
-        BEAST_EXPECT(it->first == "b");
-        BEAST_EXPECT(
-            *it->second.get_storage() ==
-            *o.get_storage());
-
-        it++;
-        BEAST_EXPECT(it->first == "c");
-        BEAST_EXPECT(
-            *it->second.get_storage() ==
-            *o.get_storage());
+        check_storage(o, o.get_storage());
     }
 
     void
@@ -429,55 +410,109 @@ public:
         // begin()
         {
             auto it = o.begin();
-            BEAST_EXPECT(it->first == "a"); ++it;
-            BEAST_EXPECT(it->first == "b"); it++;
-            BEAST_EXPECT(it->first == "c"); ++it;
+            BEAST_EXPECT(it->key() == "a"); ++it;
+            BEAST_EXPECT(it->key() == "b"); it++;
+            BEAST_EXPECT(it->key() == "c"); ++it;
             BEAST_EXPECT(it == o.end());
         }
 
         // begin() const
         {
             auto it = co.begin();
-            BEAST_EXPECT(it->first == "a"); ++it;
-            BEAST_EXPECT(it->first == "b"); it++;
-            BEAST_EXPECT(it->first == "c"); ++it;
+            BEAST_EXPECT(it->key() == "a"); ++it;
+            BEAST_EXPECT(it->key() == "b"); it++;
+            BEAST_EXPECT(it->key() == "c"); ++it;
             BEAST_EXPECT(it == co.end());
         }
 
         // cbegin()
         {
             auto it = o.cbegin();
-            BEAST_EXPECT(it->first == "a"); ++it;
-            BEAST_EXPECT(it->first == "b"); it++;
-            BEAST_EXPECT(it->first == "c"); ++it;
+            BEAST_EXPECT(it->key() == "a"); ++it;
+            BEAST_EXPECT(it->key() == "b"); it++;
+            BEAST_EXPECT(it->key() == "c"); ++it;
             BEAST_EXPECT(it == o.cend());
         }
 
         // end()
         {
             auto it = o.end();
-            --it; BEAST_EXPECT(it->first == "c");
-            it--; BEAST_EXPECT(it->first == "b");
-            --it; BEAST_EXPECT(it->first == "a");
+            --it; BEAST_EXPECT(it->key() == "c");
+            it--; BEAST_EXPECT(it->key() == "b");
+            --it; BEAST_EXPECT(it->key() == "a");
             BEAST_EXPECT(it == o.begin());
         }
 
         // end() const
         {
             auto it = co.end();
-            --it; BEAST_EXPECT(it->first == "c");
-            it--; BEAST_EXPECT(it->first == "b");
-            --it; BEAST_EXPECT(it->first == "a");
+            --it; BEAST_EXPECT(it->key() == "c");
+            it--; BEAST_EXPECT(it->key() == "b");
+            --it; BEAST_EXPECT(it->key() == "a");
             BEAST_EXPECT(it == co.begin());
         }
 
         // cend()
         {
             auto it = o.cend();
-            --it; BEAST_EXPECT(it->first == "c");
-            it--; BEAST_EXPECT(it->first == "b");
-            --it; BEAST_EXPECT(it->first == "a");
+            --it; BEAST_EXPECT(it->key() == "c");
+            it--; BEAST_EXPECT(it->key() == "b");
+            --it; BEAST_EXPECT(it->key() == "a");
             BEAST_EXPECT(it == o.cbegin());
+        }
+
+        // rbegin()
+        {
+            auto it = o.rbegin();
+            BEAST_EXPECT(it->key() == "c"); ++it;
+            BEAST_EXPECT(it->key() == "b"); it++;
+            BEAST_EXPECT(it->key() == "a"); ++it;
+            BEAST_EXPECT(it == o.rend());
+        }
+
+        // rbegin() const
+        {
+            auto it = co.rbegin();
+            BEAST_EXPECT(it->key() == "c"); ++it;
+            BEAST_EXPECT(it->key() == "b"); it++;
+            BEAST_EXPECT(it->key() == "a"); ++it;
+            BEAST_EXPECT(it == co.rend());
+        }
+
+        // crbegin()
+        {
+            auto it = o.crbegin();
+            BEAST_EXPECT(it->key() == "c"); ++it;
+            BEAST_EXPECT(it->key() == "b"); it++;
+            BEAST_EXPECT(it->key() == "a"); ++it;
+            BEAST_EXPECT(it == o.crend());
+        }
+
+        // rend()
+        {
+            auto it = o.rend();
+            --it; BEAST_EXPECT(it->key() == "a");
+            it--; BEAST_EXPECT(it->key() == "b");
+            --it; BEAST_EXPECT(it->key() == "c");
+            BEAST_EXPECT(it == o.rbegin());
+        }
+
+        // rend() const
+        {
+            auto it = co.rend();
+            --it; BEAST_EXPECT(it->key() == "a");
+            it--; BEAST_EXPECT(it->key() == "b");
+            --it; BEAST_EXPECT(it->key() == "c");
+            BEAST_EXPECT(it == co.rbegin());
+        }
+
+        // crend()
+        {
+            auto it = o.crend();
+            --it; BEAST_EXPECT(it->key() == "a");
+            it--; BEAST_EXPECT(it->key() == "b");
+            --it; BEAST_EXPECT(it->key() == "c");
+            BEAST_EXPECT(it == o.crbegin());
         }
     }
 
@@ -504,36 +539,6 @@ public:
             BEAST_EXPECT(o.empty());
         }
 
-        // insert(value_type&&)
-        fail_loop([&](storage_ptr const& sp)
-        {
-            object o(sp);
-            auto v = object::value_type("a", 1);
-            auto result = o.insert(std::move(v));
-            BEAST_EXPECT(result.second);
-            BEAST_EXPECT(result.first->first == "a");
-            auto v2 = object::value_type("a", 2);
-            BEAST_EXPECT(
-                o.insert(std::move(v2)).first == result.first);
-            BEAST_EXPECT(
-                ! o.insert(std::move(v2)).second);
-        });
-
-        // insert(value_type const&)
-        fail_loop([&](storage_ptr const& sp)
-        {
-            object o(sp);
-            auto v = object::value_type("a", 1);
-            auto result = o.insert(v);
-            BEAST_EXPECT(! v.second.is_null());
-            BEAST_EXPECT(result.second);
-            BEAST_EXPECT(result.first->first == "a");
-            auto v2 = object::value_type("a", 2);
-            BEAST_EXPECT(
-                o.insert(v2).first == result.first);
-            BEAST_EXPECT(! o.insert(v2).second);
-        });
-
         // insert(P&&)
         {
             fail_loop([&](storage_ptr const& sp)
@@ -542,8 +547,8 @@ public:
                 auto result = o.insert(
                     std::make_pair("x", 1));
                 BEAST_EXPECT(result.second);
-                BEAST_EXPECT(result.first->first == "x");
-                BEAST_EXPECT(result.first->second.as_int64() == 1);
+                BEAST_EXPECT(result.first->key() == "x");
+                BEAST_EXPECT(result.first->value().as_int64() == 1);
             });
 
             fail_loop([&](storage_ptr const& sp)
@@ -552,53 +557,8 @@ public:
                 auto const p = std::make_pair("x", 1);
                 auto result = o.insert(p);
                 BEAST_EXPECT(result.second);
-                BEAST_EXPECT(result.first->first == "x");
-                BEAST_EXPECT(result.first->second.as_int64() == 1);
-            });
-        }
-
-        // insert(before, value_type const&)
-        fail_loop([&](storage_ptr const& sp)
-        {
-            object o(sp);
-            o.emplace("a", 1);
-            o.emplace("c", "hello");
-            object::value_type const p("b", true);
-            o.insert(o.find("c"), p);
-            check(o, 3);
-        });
-
-        // insert(before, value_type&&)
-        fail_loop([&](storage_ptr const& sp)
-        {
-            object o(sp);
-            o.emplace("a", 1);
-            o.emplace("c", "hello");
-            o.insert(o.find("c"), { "b", true });
-            check(o, 3);
-        });
-
-        // insert(before, P&&)
-        {
-            fail_loop([&](storage_ptr const& sp)
-            {
-                object o(sp);
-                o.emplace("a", 1);
-                o.emplace("c", "hello");
-                o.insert(o.find("c"),
-                    std::make_pair("b", true));
-                check(o, 3);
-            });
-
-            fail_loop([&](storage_ptr const& sp)
-            {
-                object o(sp);
-                o.emplace("a", 1);
-                o.emplace("c", "hello");
-                auto const p =
-                    std::make_pair("b", true);
-                o.insert(o.find("c"), p);
-                check(o, 3);
+                BEAST_EXPECT(result.first->key() == "x");
+                BEAST_EXPECT(result.first->value().as_int64() == 1);
             });
         }
 
@@ -615,18 +575,6 @@ public:
             check(o, 3);
         });
 
-        // insert(InputIt, InputIt)
-        fail_loop([&](storage_ptr const& sp)
-        {
-            std::initializer_list<std::pair<
-                string_view, value>> init = {
-                    {"b", true}};
-            object o({{"a", 1}, {"c", "hello"}}, sp);
-            o.insert(++o.begin(),
-                init.begin(), init.end());
-            check(o, 3);
-        });
-
         // insert(initializer_list)
         fail_loop([&](storage_ptr const& sp)
         {
@@ -635,20 +583,6 @@ public:
             o.insert({
                 { "b", true },
                 { "c", "hello" }});
-            check(o, 3);
-        });
-
-        // insert(before, initializer_list)
-        fail_loop([&](storage_ptr const& sp)
-        {
-            object o(sp);
-            o.emplace("c", "hello");
-            o.insert(
-                o.find("c"),
-                {
-                    { "a", 1 },
-                    { "b", true }
-                });
             check(o, 3);
         });
 
@@ -689,27 +623,6 @@ public:
             });
         }
 
-        // insert_or_assign(before, key, o);
-        {
-            fail_loop([&](storage_ptr const& sp)
-            {
-                object o({{"a", 1}}, sp);
-                o.insert_or_assign("c", "hello");
-                o.insert_or_assign(o.find("c"), "b", true);
-                check(o, 3);
-            });
-
-            fail_loop([&](storage_ptr const& sp)
-            {
-                object o({{"a", 1}}, sp);
-                o.insert_or_assign("b", true);
-                o.insert_or_assign("c", "hello");
-                BEAST_EXPECT(! o.insert_or_assign(
-                    o.find("b"), "a", 2).second);
-                BEAST_EXPECT(o["a"].as_int64() == 2);
-            });
-        }
-
         // emplace(key, arg)
         fail_loop([&](storage_ptr const& sp)
         {
@@ -717,16 +630,6 @@ public:
             o.emplace("a", 1);
             o.emplace("b", true);
             o.emplace("c", "hello");
-            check(o, 3);
-        });
-
-        // emplace(before, key, arg)
-        fail_loop([&](storage_ptr const& sp)
-        {
-            object o(sp);
-            o.emplace("a", 1);
-            o.emplace("c", "hello");
-            o.emplace(o.find("c"), "b", true);
             check(o, 3);
         });
 
@@ -740,30 +643,12 @@ public:
                     {"b", true},
                     {"c", "hello"}}, sp);
                 auto it = o.erase(o.begin());
-                BEAST_EXPECT(it->first == "a");
-                BEAST_EXPECT(it->second.as_int64() == 1);
+                BEAST_EXPECT(it->key() == "c");
+                BEAST_EXPECT(
+                    it->value().as_string() == "hello");
                 check(o, 7);
             });
         }
-
-        // erase(first, last)
-        fail_loop([&](storage_ptr const& sp)
-        {
-            object o({
-                {"a", 1},
-                {"b", true},
-                {"b2", 2},
-                {"b3", 3},
-                {"b4", 4},
-                {"c", "hello"}}, sp);
-            auto first = o.find("b2");
-            auto last = std::next(first, 3);
-            auto it = o.erase(first, last);
-            BEAST_EXPECT(it->first == "c");
-            BEAST_EXPECT(
-                it->second.as_string() == "hello");
-            check(o, 7);
-        });
 
         // erase(key)
         {
@@ -869,7 +754,7 @@ public:
         // find(key)
         {
             BEAST_EXPECT(
-                o1.find("a")->first == "a");
+                o1.find("a")->key() == "a");
             BEAST_EXPECT(
                 o1.find("e") == o1.end());
         }
@@ -920,26 +805,6 @@ public:
             BEAST_EXPECT(o.at("a").as_int64() == 1);
             BEAST_EXPECT(o.at("b").as_bool());
             BEAST_EXPECT(o.at("c").as_string() == "hello");
-        }
-
-        // insert, not at end, causing a rehash
-        {
-            object o({
-                {"a", 1},
-                {"b", true},
-                {"c", "hello"}});
-            BEAST_EXPECT(o.capacity() == 3);
-            o.insert(o.begin(), {"d", {1,2,3}});
-            BEAST_EXPECT(o.capacity() > 3);
-        }
-
-        // insert before first element of non-empty container
-        {
-            object o({
-                {"b", true},
-                {"c", "hello"}});
-            o.insert(o.begin(), {"a", 1});
-            check(o, 3);
         }
 
         // find in missing or empty tables

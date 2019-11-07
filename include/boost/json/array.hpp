@@ -487,6 +487,9 @@ public:
         std::initializer_list<value> init,
         storage_ptr sp = {});
 
+    BOOST_JSON_DECL
+    array(unchecked_array&& ua);
+
     //------------------------------------------------------
 
     /** Copy assignment operator
@@ -558,10 +561,6 @@ public:
     array&
     operator=(
         std::initializer_list<value> init);
-
-    BOOST_JSON_DECL
-    void
-    assign(unchecked_array&& ua);
 
     //------------------------------------------------------
 
@@ -1008,21 +1007,22 @@ public:
         return impl_.capacity;
     }
 
-    /** Increase the capacity to at least a certain amount
+    /** Increase the capacity to at least a certain amount.
 
-        This increases the capacity of the array to a value
-        that is greater than or equal to `new_capacity`. If
-        `new_capacity > capacity()`, new memory is allocated.
-        Otherwise, the call has no effect. The number of
-        elements and therefore the @ref size() of the container
-        is not changed.
+        This increases the @ref capacity() to a value
+        that is greater than or equal to `new_capacity`.
+        If `new_capacity > capacity()`, new memory is
+        allocated. Otherwise, the call has no effect.
+        The number of elements and therefore the
+        @ref size() of the container is not changed.
 
         @note
 
-        If new memory is allocated, all iterators including any
-        past-the-end iterators, and all references to the
-        elements are invalidated. Otherwise, no iterators or
-        references are invalidated.
+        If new memory is allocated, all iterators
+        including any past-the-end iterators, and all
+        references to the elements are invalidated.
+        Otherwise, no iterators or references are
+        invalidated.
 
         @par Complexity
 
@@ -1033,9 +1033,9 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @throw std::length_error `new_capacity > max_size()`
-
         @param new_capacity The new capacity of the array.
+
+        @throw std::length_error `new_capacity > max_size()`
     */
     BOOST_JSON_FORCEINLINE
     void

@@ -510,6 +510,20 @@ equal_storage(
 inline
 bool
 equal_storage(
+    object const& o,
+    storage_ptr const& sp)
+{
+    if(*o.get_storage() != *sp)
+        return false;
+    for(auto const& e : o)
+        if(! equal_storage(e.value(), sp))
+            return false;
+    return true;
+}
+
+inline
+bool
+equal_storage(
     array const& a,
     storage_ptr const& sp)
 {
@@ -531,10 +545,7 @@ equal_storage(
     case json::kind::object:
         if(*v.as_object().get_storage() != *sp)
             return false;
-        for(auto const& e : v.as_object())
-            if(! equal_storage(e.second, sp))
-                return false;
-        return true;
+        return equal_storage(v.as_object(), sp);
 
     case json::kind::array:
         if(*v.as_array().get_storage() != *sp)
@@ -553,6 +564,15 @@ equal_storage(
     }
 
     return *v.get_storage() == *sp;
+}
+
+inline
+void
+check_storage(
+    object const& o,
+    storage_ptr const& sp)
+{
+    BEAST_EXPECT(equal_storage(o, sp));
 }
 
 inline

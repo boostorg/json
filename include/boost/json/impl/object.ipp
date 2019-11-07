@@ -11,8 +11,9 @@
 #define BOOST_JSON_IMPL_OBJECT_IPP
 
 #include <boost/json/object.hpp>
-#include <boost/json/detail/exchange.hpp>
 #include <boost/json/detail/assert.hpp>
+#include <boost/json/detail/except.hpp>
+#include <boost/json/detail/exchange.hpp>
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -25,242 +26,126 @@
 namespace boost {
 namespace json {
 
-void
-object::
-element::
-destroy(
-    storage_ptr const& sp) const noexcept
-{
-    auto const size_ = size;
-    this->~element();
-    sp->deallocate(
-        const_cast<element*>(this),
-        sizeof(element) + size_ + 1,
-        alignof(element));
-}
-
 //----------------------------------------------------------
 
 void
 object::
-table::
-destroy(
-    storage_ptr const& sp) noexcept
+impl_type::
+do_destroy(storage_ptr const& sp) noexcept
 {
-    auto const n = bucket_count;
-    this->~table();
-    sp->deallocate(
-        this,
-        sizeof(*this) +
-            n * sizeof(element*),
-        alignof(table));
+    if(tab_)
+    {
+        value_type::destroy(
+            begin(), size());
+        sp->deallocate(tab_,
+            sizeof(table) +
+            capacity() * sizeof(value_type) +
+            buckets() * sizeof(value_type*));
+    }
 }
 
+inline
 object::
-table::
-table(size_type bucket_count_) noexcept
-    : size(0)
-    , bucket_count(bucket_count_)
-    , head(end())
+impl_type::
+impl_type(
+    std::size_t capacity,
+    std::size_t buckets,
+    storage_ptr const& sp)
 {
-    head->next = nullptr;
-    head->prev = nullptr;
-}
-
-auto
-object::
-table::
-construct(
-    size_type bucket_count,
-    storage_ptr const& sp) ->
-        table*
-{
-    auto tab = ::new(sp->allocate(
+    tab_ = ::new(sp->allocate(
         sizeof(table) +
-            bucket_count *
-            sizeof(element*),
-        (std::max)(
-            alignof(table),
-            alignof(element*))
-                )) table(bucket_count);
-    auto it = &tab->bucket(0);
-    auto const last =
-        &tab->bucket(bucket_count);
-    while(it != last)
-        *it++ = tab->end();
-    return tab;
+        capacity * sizeof(value_type) +
+        buckets * sizeof(value_type*))) table{
+            0, capacity, buckets };
+    std::memset(bucket_begin(), 0,
+        buckets * sizeof(value_type*));
 }
 
-//----------------------------------------------------------
-
 object::
-undo_range::
-undo_range(object& self) noexcept
-    : self_(self)
+impl_type::
+impl_type(impl_type&& other) noexcept
+    : tab_(detail::exchange(
+        other.tab_, nullptr))
 {
 }
 
 void
 object::
-undo_range::
-insert(element* e) noexcept
+impl_type::
+clear() noexcept
 {
-    if(! head_)
-    {
-        head_ = e;
-        tail_ = e;
-        e->prev = nullptr;
-    }
-    else
-    {
-        e->prev = tail_;
-        tail_->next = e;
-        tail_ = e;
-    }
-    e->next = nullptr;
-    ++n_;
-}
-
-object::
-undo_range::
-~undo_range()
-{
-    for(auto it = head_; it;)
-    {
-        auto e = it;
-        it = it->next;
-        e->destroy(self_.sp_);
-    }
-}
-
-void
-object::
-undo_range::
-commit(
-    const_iterator pos,
-    size_type count)
-{
-    if(head_ == nullptr)
+    if(! tab_)
         return;
-    auto& tab = self_.tab_;
-    auto before = pos.e_;
-
-    // add space for n_ elements.
-    //
-    // this is the last allocation, so
-    // we never have to clean it up on
-    // an exception.
-    //
-    bool const at_end =
-        before == nullptr ||
-        before == tab->end();
-    if( count < self_.size() + n_)
-        count = self_.size() + n_;
-    self_.reserve(count);
-    // refresh `before`, which
-    // may have been invalidated
-    if(at_end)
-        before = tab->end();
-
-    // insert each item into buckets
-    for(auto it = head_; it;)
-    {
-        auto const e = it;
-        it = it->next;
-        // discard dupes
-        auto const result =
-            self_.find_impl(e->key());
-        if(result.first)
-        {
-            e->destroy(self_.sp_);
-            continue;
-        }
-        // add to list
-        e->next = before;
-        e->prev = before->prev;
-        before->prev = e;
-        if(e->prev)
-            e->prev->next = e;
-        else
-            tab->head = e;
-        // add to bucket
-        auto const bn = constrain_hash(
-            result.second, tab->bucket_count);
-        auto& local_head = tab->bucket(bn);
-        e->local_next = local_head;
-        local_head = e;
-        ++tab->size;
-    }
-    // do nothing in dtor
-    head_ = nullptr;
+    value_type::destroy(
+        begin(), size());
+    std::memset(bucket_begin(), 0,
+        buckets() * sizeof(value_type*));
+    tab_->size = 0;
 }
 
-//----------------------------------------------------------
-
-class object::hasher
-{
-    inline
-    static
-    std::pair<
-        std::uint64_t, std::uint64_t>
-    init(std::true_type) noexcept
-    {
-        return {
-            0x100000001B3ULL,
-            0xcbf29ce484222325ULL
-        };
-    }
-
-    inline
-    static
-    std::pair<
-        std::uint32_t, std::uint32_t>
-    init(std::false_type) noexcept
-    {
-        return {
-            0x01000193UL,
-            0x811C9DC5UL
-        };
-    }
-
-public:
-    std::size_t
-    operator()(key_type key) const noexcept
-    {
-        std::size_t prime;
-        std::size_t hash;
-        std::tie(prime, hash) = init(
-            std::integral_constant<bool,
-                sizeof(std::size_t) >=
-            sizeof(unsigned long long)>{});
-        for(auto p = key.begin(),
-            end = key.end(); p != end; ++p)
-            hash = (*p ^ hash) * prime;
-        return hash;
-    }
-};
-
-//----------------------------------------------------------
-
-struct object::key_eq
-{
-    bool
-    operator()(
-        string_view lhs,
-        string_view rhs) const noexcept
-    {
-        return lhs == rhs;
-    }
-};
-
-//----------------------------------------------------------
-
+// checks for dupes
+void
 object::
-const_iterator::
-const_iterator(
-    iterator it) noexcept
-    : e_(it.e_)
+impl_type::
+build() noexcept
 {
+    auto end = this->end();
+    for(auto p = begin(); p != end;)
+    {
+        {
+            auto& head = bucket(p->key());
+            auto it = head;
+            while(it && it->key() != p->key())
+                it = it->next_;
+            if(! it)
+            {
+                p->next_ = head;
+                head = p;
+                ++p;
+                continue;
+            }
+        }
+        p->~value_type();
+        --tab_->size;
+        --end;
+        if(p != end)
+        {
+            auto& head = bucket(end->key());
+            remove(head, end);
+            end->next_ = head;
+            head = p;
+            std::memcpy(
+                reinterpret_cast<void*>(p),
+                reinterpret_cast<void const*>(end),
+                sizeof(*p));
+        }
+    }
+}
+
+// does not check for dupes
+void
+object::
+impl_type::
+rebuild() noexcept
+{
+    auto const end = this->end();
+    for(auto it = begin();
+        it != end; ++it)
+    {
+        auto& head = bucket(it->key());
+        it->next_ = head;
+        head = it;
+    }
+}
+
+void
+object::
+impl_type::
+swap(impl_type& rhs) noexcept
+{
+    auto tmp = tab_;
+    tab_ = rhs.tab_;
+    rhs.tab_ = tmp;
 }
 
 //----------------------------------------------------------
@@ -277,18 +162,17 @@ object(storage_ptr sp) noexcept
 
 object::
 object(
-    size_type count,
+    std::size_t min_capacity,
     storage_ptr sp)
     : sp_(std::move(sp))
 {
-    reserve(count);
+    reserve(min_capacity);
 }
 
 object::
 object(object&& other) noexcept
     : sp_(other.sp_)
-    , tab_(detail::exchange(
-        other.tab_, nullptr))
+    , impl_(std::move(other.impl_))
 {
 }
 
@@ -300,24 +184,22 @@ object(
 {
     if(*sp_ == *other.sp_)
     {
-        tab_ = detail::exchange(
-            other.tab_, nullptr);
+        impl_.swap(other.impl_);
     }
     else
     {
+        undo_construct u(*this);
         insert_range(
-            end(),
             other.begin(),
-            other.end(),
-            0);
+            other.end(), 0);
+        u.commit = true;
     }
 }
 
 object::
 object(pilfered<object> other) noexcept
     : sp_(std::move(other.get().sp_))
-    , tab_(detail::exchange(
-        other.get().tab_, nullptr))
+    , impl_(std::move(other.get().impl_))
 {
 }
 
@@ -326,11 +208,11 @@ object(
     object const& other)
     : sp_(other.sp_)
 {
+    undo_construct u(*this);
     insert_range(
-        end(),
         other.begin(),
-        other.end(),
-        0);
+        other.end(), 0);
+    u.commit = true;
 }
 
 object::
@@ -339,25 +221,36 @@ object(
     storage_ptr sp)
     : sp_(std::move(sp))
 {
+    undo_construct u(*this);
     insert_range(
-        end(),
         other.begin(),
-        other.end(),
-        0);
+        other.end(), 0);
+    u.commit = true;
 }
 
 object::
-object(std::initializer_list<
-        init_value> init,
-    size_type count,
+object(
+    init_list init,
+    std::size_t min_capacity,
     storage_ptr sp)
     : sp_(std::move(sp))
 {
+    undo_construct u(*this);
     insert_range(
-        end(),
         init.begin(),
         init.end(),
-        count);
+        min_capacity);
+    u.commit = true;
+}
+
+object::
+object(unchecked_object&& uo)
+    : sp_(uo.get_storage())
+{
+    reserve(uo.size());
+    uo.relocate(impl_.begin());
+    impl_.grow(uo.size());
+    impl_.build();
 }
 
 object&
@@ -384,8 +277,8 @@ operator=(object const& other)
 
 object&
 object::
-operator=(std::initializer_list<
-    init_value> init)
+operator=(
+    init_list init)
 {
     object tmp(init, sp_);
     this->~object();
@@ -403,44 +296,17 @@ void
 object::
 clear() noexcept
 {
-    if(! tab_)
-        return;
-    for(auto e = tab_->head;
-        e != tab_->end();)
-    {
-        auto next = e->next;
-        e->destroy(sp_);
-        e = next;
-    }
-    tab_->head = tab_->end();
-    tab_->size = 0;
+    impl_.clear();
 }
 
 void
 object::
-insert(
-    std::initializer_list<
-        init_value> init)
+insert(init_list init)
 {
     insert_range(
-        end(),
         init.begin(),
         init.end(),
-        0);
-}
-
-void
-object::
-insert(
-    const_iterator pos,
-    std::initializer_list<
-        init_value> init)
-{
-    insert_range(
-        pos,
-        init.begin(),
-        init.end(),
-        0);
+        init.size());
 }
 
 auto
@@ -448,34 +314,32 @@ object::
 erase(const_iterator pos) noexcept ->
     iterator
 {
-    auto e = pos.e_;
-    pos = e->next;
-    remove(e);
-    e->destroy(sp_);
-    return iterator(pos.e_);
-}
-
-auto
-object::
-erase(
-    const_iterator first,
-    const_iterator last) noexcept ->
-        iterator
-{
-    while(first != last)
+    auto p = impl_.begin() +
+        (pos - impl_.begin());
+    impl_.remove(
+        impl_.bucket(p->key()), p);
+    p->~value_type();
+    impl_.shrink(1);
+    if(p != impl_.end())
     {
-        auto e = first.e_;
-        first = e->next;
-        remove(e);
-        e->destroy(sp_);
+        auto pb = impl_.end();
+        auto& head =
+            impl_.bucket(pb->key());
+        impl_.remove(head, pb);
+        std::memcpy(
+            reinterpret_cast<void*>(p),
+            reinterpret_cast<void const*>(pb),
+            sizeof(*p));
+        p->next_ = head;
+        head = p;
     }
-    return iterator(first.e_);
+    return p;
 }
 
 auto
 object::
 erase(key_type key) noexcept ->
-    size_type
+    std::size_t
 {
     auto it = find(key);
     if(it == end())
@@ -490,10 +354,9 @@ swap(object& other)
 {
     if(*sp_ == *other.sp_)
     {
-        std::swap(tab_, other.tab_);
+        impl_.swap(other.impl_);
         return;
     }
-
     object temp1(
         std::move(*this),
         other.get_storage());
@@ -522,7 +385,7 @@ at(key_type key) ->
         BOOST_JSON_THROW(
          std::out_of_range(
             "key not found"));
-    return it->second;
+    return it->value();
 }
     
 auto
@@ -535,7 +398,7 @@ at(key_type key) const ->
         BOOST_JSON_THROW(
          std::out_of_range(
             "key not found"));
-    return it->second;
+    return it->value();
 }
 
 auto
@@ -543,15 +406,15 @@ object::
 operator[](key_type key) ->
     value&
 {
-    auto const result = emplace(
-        end(), key, nullptr);
-    return result.first->second;
+    auto const result =
+        emplace(key, nullptr);
+    return result.first->value();
 }
 
 auto
 object::
 count(key_type key) const noexcept ->
-    size_type
+    std::size_t
 {
     if(find(key) == end())
         return 0;
@@ -563,10 +426,10 @@ object::
 find(key_type key) noexcept ->
     iterator
 {
-    auto const e =
+    auto const p =
         find_impl(key).first;
-    if(e)
-        return {e};
+    if(p)
+        return p;
     return end();
 }
 
@@ -575,10 +438,10 @@ object::
 find(key_type key) const noexcept ->
     const_iterator
 {
-    auto const e =
+    auto const p =
         find_impl(key).first;
-    if(e)
-        return {e};
+    if(p)
+        return p;
     return end();
 }
 
@@ -591,38 +454,40 @@ contains(key_type key) const noexcept
 
 //----------------------------------------------------------
 //
-// Implementation
+// (implementation)
 //
 //----------------------------------------------------------
 
 auto
 object::
-constrain_hash(
-    std::size_t hash,
-    size_type bucket_count) noexcept ->
-        size_type
+find_impl(key_type key) const noexcept ->
+    std::pair<value_type*, std::size_t>
 {
-    return hash % bucket_count;
-}
-
-auto
-object::
-bucket(key_type key) const noexcept ->
-    size_type
-{
-    BOOST_JSON_ASSERT(tab_);
-    return constrain_hash(
-        hasher()(key),
-        tab_->bucket_count);
+    std::pair<
+        value_type*,
+        std::size_t> result;
+    result.second = digest(key);
+    if(empty())
+    {
+        result.first = nullptr;
+        return result;
+    }
+    auto const& head =
+        impl_.bucket(result.second);
+    auto it = head;
+    while(it && it->key() != key)
+        it = it->next_;
+    result.first = it;
+    return result;
 }
 
 // rehash to at least `n` buckets
 void
 object::
-rehash(size_type n)
+rehash(std::size_t new_capacity)
 {
     auto const next_prime =
-    [](size_type n) noexcept
+    [](std::size_t n) noexcept
     {
         // Taken from Boost.Intrusive and Boost.MultiIndex code,
         // thanks to Ion Gaztanaga and Joaquin M Lopez Munoz.
@@ -664,245 +529,40 @@ rehash(size_type n)
             6917529027641081903ULL,   13835058055282163729ULL,
             18446744073709551557ULL,  18446744073709551615ULL
         };
-        return static_cast<size_type>(
+        return static_cast<std::size_t>(
             *std::lower_bound(
                 &list[0],
                 &list[std::extent<
                     decltype(list)>::value],
                 (unsigned long long)n));
     };
-
-    // snap to nearest prime 
-    n = next_prime(n);
-    auto const bc = tab_ ?
-        tab_->bucket_count : 0;
-    if(n == bc)
-        return;
-    if(n < bc)
-    {
-        n = next_prime(static_cast<
-            size_type>(std::ceil(size() /
-                max_load_factor())));
-
-        if(n <= bc)
-            return;
-    }
-    // create new buckets
-    auto tab = table::construct(n, sp_);
-    if(tab_)
-    {
-        tab->size = tab_->size;
-        if(tab_->head != tab_->end())
-        {
-            tab->head = tab_->head;
-            tab->end()->prev =
-                tab_->end()->prev;
-            tab->end()->prev->next =
-                tab->end();
-        }
-        else
-        {
-            tab->head = tab->end();
-        }
-        tab_->destroy(sp_);
-    }
-    tab_ = tab;
-    // rehash into new buckets
-    for(auto e = tab_->head;
-        e != tab_->end(); e = e->next)
-    {
-        auto const bn = bucket(e->key());
-        auto& head = tab_->bucket(bn);
-        e->local_next = head;
-        head = e;
-    }
-}
-
-void
-object::
-remove(element* e) noexcept
-{
-    if(e == tab_->head)
-    {
-        tab_->head = e->next;
-    }
-    else
-    {
-        e->prev->next = e->next;
-        e->next->prev = e->prev;
-    }
-    auto& head = tab_->bucket(
-        bucket(e->key()));
-    if(head != e)
-    {
-        auto it = head;
-        BOOST_JSON_ASSERT(it != tab_->end());
-        while(it->local_next != e)
-        {
-            it = it->local_next;
-            BOOST_JSON_ASSERT(it != tab_->end());
-        }
-        it->local_next = e->local_next;
-    }
-    else
-    {
-        head = head->local_next;
-    }
-    --tab_->size;
-}
-
-// allocate a new element
-auto
-object::
-allocate_impl(
-    key_type key,
-    construct_base const& place_new) ->
-        element*
-{
-    if( key.size() >
-        detail::max_string_length_)
+    BOOST_JSON_ASSERT(new_capacity > capacity());
+    if(new_capacity > max_size())
         BOOST_JSON_THROW(
-            std::length_error("key too long"));
-    auto const size =
-        sizeof(element) +
-        key.size() + 1;
-    struct cleanup
-    {
-        void* p;
-        std::size_t size;
-        storage_ptr const& sp;
-
-        ~cleanup()
-        {
-            if(p)
-                sp->deallocate(p, size,
-                    alignof(element));
-        }
-    };
-    cleanup c{sp_->allocate(
-        size, alignof(element)), size, sp_};
-    place_new(c.p);
-    char* p = static_cast<char*>(c.p);
-    c.p = nullptr;
-    std::memcpy(
-        p + sizeof(element),
-        key.data(),
-        key.size());
-    p[sizeof(element) +
-        key.size()] = '\0';
-    auto e = reinterpret_cast<
-        element*>(p);
-    e->size = static_cast<
-        size_type>(key.size());
-    return e;
-}
-
-auto
-object::
-allocate(std::pair<
-    string_view, value const&> const& p) ->
-        element*
-{
-    return allocate(p.first, p.second);
-}
-
-auto
-object::
-find_impl(key_type key) const noexcept ->
-    std::pair<element*, std::size_t>
-{
-    auto const hash = hasher()(key);
-    if(! tab_ || tab_->bucket_count == 0)
-        return { nullptr, hash };
-    auto bc = tab_->bucket_count;
-    auto e = tab_->bucket(
-        constrain_hash(hash, bc));
-    auto const eq = key_eq();
-    while(e != tab_->end())
-    {
-        if(eq(key, e->key()))
-            return { e, hash };
-        e = e->local_next;
-    }
-    return { nullptr, hash };
-};
-
-// destroys `e` on exception
-void
-object::
-insert(
-    const_iterator before,
-    std::size_t hash,
-    element* e)
-{
-    struct revert
-    {
-        element* e;
-        storage_ptr const& sp;
-
-        ~revert()
-        {
-            if(e)
-                e->destroy(sp);
-        }
-    };
-    revert r{e, sp_};
-
-    // rehash if necessary
-    if(size() >= capacity())
-    {
-        auto const at_end = before == end();
-        rehash(static_cast<size_type>(
-            (std::ceil)(
-                float(size()+1) /
-                max_load_factor())));
-        if(at_end)
-            before = end();
-    }
-
-    // perform insert
-    auto const bn = constrain_hash(
-        hash, tab_->bucket_count);
-    auto& head = tab_->bucket(bn);
-    e->local_next = head;
-    head = e;
-    if(tab_->head == tab_->end())
-    {
-        BOOST_JSON_ASSERT(
-            before.e_ == tab_->end());
-        tab_->head = e;
-        tab_->end()->prev = e;
-        e->next = tab_->end();
-        e->prev = nullptr;
-    }
-    else
-    {
-        e->prev = before.e_->prev;
-        if(e->prev)
-            e->prev->next = e;
-        else
-            tab_->head = e;
-        e->next = before.e_;
-        e->next->prev = e;
-    }
-    ++tab_->size;
-    r.e = nullptr;
-}
-
-void
-object::
-destroy() noexcept
-{
-    for(auto e = tab_->head;
-        e != tab_->end();)
-    {
-        auto next = e->next;
-        e->destroy(sp_);
-        e = next;
-    }
-    tab_->head = tab_->end();
-    tab_->size = 0;
-    tab_->destroy(sp_);
+            detail::object_too_large_exception());
+    auto const f = std::ceil(
+        new_capacity / max_load_factor());
+    BOOST_JSON_ASSERT(f < static_cast<
+        unsigned long long>(-1));
+    auto const new_buckets = next_prime(
+        static_cast<std::size_t>(f));
+    BOOST_JSON_ASSERT(std::ceil(
+        new_buckets * max_load_factor()) >=
+            new_capacity);
+    new_capacity = static_cast<std::size_t>(
+        std::ceil(new_buckets * max_load_factor()));
+    impl_type impl(
+        new_capacity, new_buckets, sp_);
+    if(impl_.size() > 0)
+        std::memcpy(
+            reinterpret_cast<void*>(impl.begin()),
+            reinterpret_cast<void const*>(impl_.begin()),
+            impl_.size() * sizeof(value_type));
+    impl.grow(impl_.size());
+    impl_.shrink(impl_.size());
+    impl_.destroy(sp_);
+    impl_.swap(impl);
+    impl_.rebuild();
 }
 
 } // json

@@ -13,6 +13,7 @@
 #include <boost/json/detail/config.hpp>
 #include <atomic>
 #include <cstddef>
+#include <stddef.h> // for ::max_align_t
 
 namespace boost {
 namespace json {
@@ -57,7 +58,7 @@ public:
     allocate(
         std::size_t n,
         std::size_t align =
-            alignof(std::max_align_t)) = 0;
+            alignof(max_align_t)) = 0;
 
     virtual
     void
@@ -65,7 +66,7 @@ public:
         void* p,
         std::size_t n,
         std::size_t align =
-            alignof(std::max_align_t)) = 0;
+            alignof(max_align_t)) = 0;
 
     friend
     bool

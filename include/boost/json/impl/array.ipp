@@ -278,6 +278,17 @@ array(
     u.commit = true;
 }
 
+array::
+array(unchecked_array&& ua)
+    : sp_(ua.get_storage())
+{
+    undo_create u(*this);
+    reserve(ua.size());
+    impl_.size = ua.size();
+    ua.relocate(impl_.vec);
+    u.commit = true;
+}
+
 //----------------------------------------------------------
 
 array&
@@ -311,18 +322,6 @@ operator=(
     this->~array();
     ::new(this) array(pilfer(tmp));
     return *this;
-}
-
-void
-array::
-assign(unchecked_array&& ua)
-{
-    BOOST_JSON_ASSERT(
-        *ua.get_storage() == *sp_);
-    reserve(ua.size());
-    resize(0);
-    impl_.size = ua.size();
-    ua.relocate(impl_.vec);
 }
 
 //----------------------------------------------------------

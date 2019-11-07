@@ -32,7 +32,8 @@ struct value::init_iter
     using iterator_category =
         std::input_iterator_tag;
 
-    std::initializer_list<value>::iterator it_;
+    std::initializer_list<
+        value>::iterator it_;
 
     init_iter&
     operator++() noexcept
@@ -70,6 +71,11 @@ struct value::init_iter
     {
         return it_ != other.it_;
     }
+
+    BOOST_JSON_STATIC_ASSERT(
+        std::is_constructible<
+            object::value_type,
+            init_iter::value_type>::value);
 };
 
 //----------------------------------------------------------
@@ -508,29 +514,66 @@ destroy() noexcept
 
 //----------------------------------------------------------
 
-key_value_pair::
-~key_value_pair()
+object::
+value_type::
+~value_type()
 {
-    auto const& sp = value.get_storage();
+    auto const& sp = value_.get_storage();
     if(sp->need_free())
-        sp->deallocate(const_cast<void*>(
-            reinterpret_cast<void const*>(
-                key.data())), key.size(), 1);
+        sp->deallocate(key_, len_ + 1, 1);
+}
+
+object::
+value_type::
+value_type(value_type const& other)
+    : value_(other.value_)
+    , len_(other.len_)
+    , key_(
+        [&]
+        {
+            auto s = reinterpret_cast<
+                char*>(value_.get_storage()->
+                    allocate(other.len_ + 1));
+            std::memcpy(s, other.key_, other.len_);
+            s[other.len_] = 0;
+            return s;
+        }())
+{
+}
+
+object::
+value_type::
+value_type(
+    value_type const& other,
+    storage_ptr sp)
+    : value_(other.value_, std::move(sp))
+    , len_(other.len_)
+    , key_(
+        [&]
+        {
+            auto s = reinterpret_cast<
+                char*>(value_.get_storage()->
+                    allocate(other.len_ + 1));
+            std::memcpy(s, other.key_, other.len_);
+            s[other.len_] = 0;
+            return s;
+        }())
+{
 }
 
 void
-key_value_pair::
+object::
+value_type::
 destroy(
-    key_value_pair* p,
+    value_type* p,
     size_type n) noexcept
 {
     if(n == 0)
         return;
-    auto const& sp = p->value.get_storage();
-    if(! sp->need_free())
+    if(! p->value().get_storage()->need_free())
         return;
     while(n--)
-        (*p++).~key_value_pair();
+        (*p++).~value_type();
 }
 
 //----------------------------------------------------------

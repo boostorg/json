@@ -24,6 +24,30 @@ string_too_large_exception() noexcept
         "string too large");
 }
 
+inline
+std::length_error
+key_too_large_exception() noexcept
+{
+    return std::length_error(
+        "key too large");
+}
+
+inline
+std::length_error
+object_too_large_exception() noexcept
+{
+    return std::length_error(
+        "object too large");
+}
+
+inline
+std::length_error
+stack_overflow_exception() noexcept
+{
+    return std::length_error(
+        "stack overflow");
+}
+
 } // detail
 } // json
 } // boost

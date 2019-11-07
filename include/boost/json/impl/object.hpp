@@ -11,6 +11,8 @@
 #define BOOST_JSON_IMPL_OBJECT_HPP
 
 #include <boost/json/value.hpp>
+#include <boost/json/detail/except.hpp>
+#include <boost/json/detail/exchange.hpp>
 #include <boost/json/detail/string.hpp>
 #include <algorithm>
 #include <cmath>
@@ -26,343 +28,184 @@ unchecked_object::
 ~unchecked_object()
 {
     if(data_)
-        key_value_pair::destroy(
+        object::value_type::destroy(
             data_, size_);
 }
 
 void
 unchecked_object::
-relocate(key_value_pair* dest) noexcept
+relocate(object::value_type* dest) noexcept
 {
-    std::memcpy(dest, data_,
-        sizeof(key_value_pair) * size_);
+    std::memcpy(
+        reinterpret_cast<void*>(dest),
+        data_, sizeof(object::value_type) * size_);
     data_ = nullptr;
 }
 
 //----------------------------------------------------------
 
-
-struct object::list_hook
+void
+object::
+impl_type::
+remove(
+    value_type*& head,
+    value_type* p) noexcept
 {
-    element* prev;
-    element* next;
-};
+    if(head == p)
+    {
+        head = head->next_;
+        return;
+    }
+    auto prev = head;
+    while(prev->next_ != p)
+        prev = prev->next_;
+    prev->next_ = p->next_;
+}
+
+auto
+object::
+impl_type::
+bucket(string_view key) const noexcept ->
+    value_type*&
+{
+    auto const hash = digest(key);
+    auto const i = hash % buckets();
+    return bucket_begin()[i];
+}
+
+auto
+object::
+impl_type::
+bucket(std::size_t hash) const noexcept ->
+    value_type*&
+{
+    return bucket_begin()[hash % buckets()];
+}
+
+auto
+object::
+impl_type::
+begin() const noexcept ->
+    value_type*
+{
+    if(! tab_)
+        return nullptr;
+    return reinterpret_cast<
+        value_type*>(tab_ + 1);
+}
+
+auto
+object::
+impl_type::
+end() const noexcept ->
+    value_type*
+{
+    return begin() + size();
+}
+
+auto
+object::
+impl_type::
+bucket_begin() const noexcept ->
+    value_type**
+{
+    return reinterpret_cast<
+        value_type**>(
+            begin() + capacity());
+}
+
+auto
+object::
+impl_type::
+bucket_end() const noexcept ->
+    value_type**
+{
+    return bucket_begin() + buckets();
+}
 
 //----------------------------------------------------------
 
-struct object::element : list_hook
-{
-    value v;
-    element* local_next;
-    size_type size; // of key (excluding null)
-
-    string_view
-    key() const noexcept
-    {
-        return {reinterpret_cast<
-            char const*>(this+1),
-                size};
-    }
-
-    BOOST_JSON_DECL
-    void
-    destroy(
-        storage_ptr const& sp) const noexcept;
-
-    template<class Arg>
-    element(
-        Arg&& arg,
-        storage_ptr sp)
-        : v(std::forward<Arg>(arg),
-            std::move(sp))
-    {
-    }
-};
-
-//----------------------------------------------------------
-
-struct object::table
-{
-    // number of values in the object
-    size_type size;
-
-    // number of buckets in table
-    size_type bucket_count;
-
-    // insertion-order list of all objects
-    element* head;
-
-    list_hook end_element;
-
-    inline
-    void
-    destroy(
-        storage_ptr const& sp) noexcept;
-
-    inline
-    table(size_type bucket_count_) noexcept;
-
-    static
-    inline
-    table*
-    construct(
-        size_type bucket_count,
-        storage_ptr const& sp);
-
-    element*
-    begin() noexcept
-    {
-        return head;
-    }
-
-    element*
-    end() noexcept
-    {
-        return reinterpret_cast<
-            element*>(&end_element);
-    }
-
-    element*&
-    bucket(std::size_t n) noexcept
-    {
-        return reinterpret_cast<
-            element**>(this + 1)[n];
-    }
-};
-
-//----------------------------------------------------------
-
-class object::undo_range
+class object::undo_construct
 {
     object& self_;
-    element* head_ = nullptr;
-    element* tail_ = nullptr;
-    size_type n_ = 0;
 
 public:
-    BOOST_JSON_DECL
+    bool commit = false;
+
+    ~undo_construct()
+    {
+        if(! commit)
+            self_.impl_.destroy(
+                self_.sp_);
+    }
+
     explicit
-    undo_range(object& self) noexcept;
-
-    BOOST_JSON_DECL
-    ~undo_range();
-
-    BOOST_JSON_DECL
-    void
-    insert(element* e) noexcept;
-
-    BOOST_JSON_DECL
-    void
-    commit(
-        const_iterator pos,
-        size_type count);
-};
-
-//----------------------------------------------------------
-
-class object::pointer
-{
-    reference t_;
-
-public:
-    pointer(reference t)
-        : t_(t)
+    undo_construct(
+        object& self) noexcept
+        : self_(self)
     {
-    }
-
-    reference*
-    operator->() noexcept
-    {
-        return &t_;
     }
 };
 
 //----------------------------------------------------------
 
-class object::const_pointer
+class object::undo_insert
 {
-    const_reference t_;
+    object& self_;
 
 public:
-    const_pointer(
-        const_reference t)
-        : t_(t)
+    value_type* const first;
+    value_type* last;
+    bool commit = false;
+
+    ~undo_insert()
     {
+        if(commit)
+        {
+            self_.impl_.grow(last - first);
+        }
+        else
+        {
+            for(auto it = first; it != last; ++it)
+                self_.impl_.remove(
+                    self_.impl_.bucket(it->key()), it);
+            value_type::destroy(
+                first, static_cast<
+                    std::size_t>(last - first));
+        }
     }
 
-    const_reference*
-    operator->() noexcept
+    explicit
+    undo_insert(
+        object& self) noexcept
+        : self_(self)
+        , first(self_.impl_.end())
+        , last(first)
     {
-        return &t_;
     }
 };
 
 //----------------------------------------------------------
-
-class object::const_iterator
-{
-    element* e_ = nullptr;
-
-    friend class object;
-
-    const_iterator(element* e)
-        : e_(e)
-    {
-    }
-
-public:
-    using value_type = object::value_type;
-    using pointer = object::const_pointer;
-    using reference = object::const_reference;
-    using difference_type = std::ptrdiff_t;
-    using iterator_category =
-        std::bidirectional_iterator_tag;
-
-    const_iterator() = default;
-    const_iterator(const_iterator const&) = default;
-    const_iterator& operator=(const_iterator const&) = default;
-
-    BOOST_JSON_DECL
-    const_iterator(iterator it) noexcept;
-
-    const_iterator&
-    operator++() noexcept
-    {
-        e_ = e_->next;
-        return *this;
-    }
-
-    const_iterator
-    operator++(int) noexcept
-    {
-        auto tmp = *this;
-        ++*this;
-        return tmp;
-    }
-
-    const_iterator&
-    operator--() noexcept
-    {
-        e_ = e_->prev;
-        return *this;
-    }
-
-    const_iterator
-    operator--(int) noexcept
-    {
-        auto tmp = *this;
-        --*this;
-        return tmp;
-    }
-
-    pointer
-    operator->() const noexcept
-    {
-        return const_reference{
-            e_->key(), e_->v };
-    }
-
-    reference
-    operator*() const noexcept
-    {
-        return {
-            e_->key(), e_->v };
-    }
-
-    bool
-    operator==(const_iterator other) const noexcept
-    {
-        return e_ == other.e_;
-    }
-
-    bool
-    operator!=(const_iterator other) const noexcept
-    {
-        return e_ != other.e_;
-    }
-};
-
+//
+// object
+//
 //----------------------------------------------------------
 
-class object::iterator
+template<class InputIt, class>
+object::
+object(
+    InputIt first,
+    InputIt last,
+    std::size_t min_capacity,
+    storage_ptr sp)
+    : sp_(std::move(sp))
 {
-    element* e_ = nullptr;
-
-    friend class object;
-
-    iterator(element* e)
-        : e_(e)
-    {
-    }
-
-public:
-    using value_type = object::value_type;
-    using pointer = object::pointer;
-    using reference = object::reference;
-    using difference_type = std::ptrdiff_t;
-    using iterator_category =
-        std::bidirectional_iterator_tag;
-
-    iterator() = default;
-    iterator(iterator const&) = default;
-    iterator& operator=(iterator const&) = default;
-
-    iterator&
-    operator++() noexcept
-    {
-        e_ = e_->next;
-        return *this;
-    }
-
-    iterator
-    operator++(int) noexcept
-    {
-        auto tmp = *this;
-        ++*this;
-        return tmp;
-    }
-
-    iterator&
-    operator--() noexcept
-    {
-        e_ = e_->prev;
-        return *this;
-    }
-
-    iterator
-    operator--(int) noexcept
-    {
-        auto tmp = *this;
-        --*this;
-        return tmp;
-    }
-
-    pointer
-    operator->() const noexcept
-    {
-        return reference{
-            e_->key(), e_->v };
-    }
-
-    reference
-    operator*() const noexcept
-    {
-        return {
-            e_->key(), e_->v };
-    }
-
-    bool
-    operator==(const_iterator other) const noexcept
-    {
-        return const_iterator(*this) == other;
-    }
-
-    bool
-    operator!=(const_iterator other) const noexcept
-    {
-        return const_iterator(*this) != other;
-    }
-};
+    undo_construct u(*this);
+    insert_range(
+        first, last,
+        min_capacity);
+    u.commit = true;
+}
 
 //----------------------------------------------------------
 //
@@ -375,9 +218,7 @@ object::
 begin() noexcept ->
     iterator
 {
-    if(! tab_)
-        return {};
-    return tab_->head;
+    return impl_.begin();
 }
 
 auto
@@ -385,9 +226,7 @@ object::
 begin() const noexcept ->
     const_iterator
 {
-    if(! tab_)
-        return {};
-    return tab_->head;
+    return impl_.begin();
 }
 
 auto
@@ -395,7 +234,7 @@ object::
 cbegin() const noexcept ->
     const_iterator
 {
-    return begin();
+    return impl_.begin();
 }
 
 auto
@@ -403,9 +242,7 @@ object::
 end() noexcept ->
     iterator
 {
-    if(! tab_)
-        return {};
-    return tab_->end();
+    return impl_.end();
 }
 
 auto
@@ -413,9 +250,7 @@ object::
 end() const noexcept ->
     const_iterator
 {
-    if(! tab_)
-        return {};
-    return tab_->end();
+    return impl_.end();
 }
 
 auto
@@ -423,7 +258,55 @@ object::
 cend() const noexcept ->
     const_iterator
 {
-    return end();
+    return impl_.end();
+}
+
+auto
+object::
+rbegin() noexcept ->
+    reverse_iterator
+{
+    return reverse_iterator(end());
+}
+
+auto
+object::
+rbegin() const noexcept ->
+    const_reverse_iterator
+{
+    return const_reverse_iterator(end());
+}
+
+auto
+object::
+crbegin() const noexcept ->
+    const_reverse_iterator
+{
+    return const_reverse_iterator(end());
+}
+
+auto
+object::
+rend() noexcept ->
+    reverse_iterator
+{
+    return reverse_iterator(begin());
+}
+
+auto
+object::
+rend() const noexcept ->
+    const_reverse_iterator
+{
+    return const_reverse_iterator(begin());
+}
+
+auto
+object::
+crend() const noexcept ->
+    const_reverse_iterator
+{
+    return const_reverse_iterator(begin());
 }
 
 //----------------------------------------------------------
@@ -436,55 +319,32 @@ bool
 object::
 empty() const noexcept
 {
-    return ! tab_ ||
-        tab_->size == 0;
+    return impl_.size() == 0;
 }
 
 auto
 object::
 size() const noexcept ->
-    size_type
+    std::size_t
 {
-    if(! tab_)
-        return 0;
-    return tab_->size;
+    return impl_.size();
 }
 
 auto
 object::
 capacity() const noexcept ->
-    size_type
+    std::size_t
 {
-    if(! tab_)
-        return 0;
-    return static_cast<
-        size_type>(std::ceil(
-            tab_->bucket_count *
-            max_load_factor()));
+    return impl_.capacity();
 }
 
 void
 object::
-reserve(size_type n)
+reserve(std::size_t new_capacity)
 {
-    rehash(static_cast<
-        size_type>(std::ceil(
-            n / max_load_factor())));
-}
-
-//----------------------------------------------------------
-
-template<class InputIt, class>
-object::
-object(
-    InputIt first,
-    InputIt last,
-    size_type count,
-    storage_ptr sp)
-    : sp_(std::move(sp))
-{
-    insert_range(end(),
-        first, last, count);
+    if(new_capacity <= capacity())
+        return;
+    rehash(new_capacity);
 }
 
 //----------------------------------------------------------
@@ -492,172 +352,72 @@ object(
 template<class P, class>
 auto
 object::
-insert(P&& p)->
+insert(P&& p) ->
     std::pair<iterator, bool>
 {
-    return insert(
-        end(), std::forward<P>(p));
-}
-
-template<class P, class>
-auto
-object::
-insert(
-    const_iterator pos, P&& p) ->
-        std::pair<iterator, bool>
-{
-    // VFALCO We can do better here,
-    // by constructing `v` with the
-    // get_storage().
-    value_type v(std::forward<P>(p));
-    return emplace(pos, v.first,
-        std::move(v.second));
-}
-
-template<class InputIt, class>
-void
-object::
-insert(InputIt first, InputIt last)
-{
-    insert_range(end(), first, last, 0);
-}
-
-template<class InputIt, class>
-void
-object::
-insert(
-    const_iterator pos,
-    InputIt first,
-    InputIt last)
-{
-    insert_range(pos, first, last, 0);
-}
-
-template<class M>
-auto
-object::
-insert_or_assign(
-    key_type key, M&& obj) ->
-        std::pair<iterator, bool>
-{
-    return insert_or_assign(end(), key,
-        std::forward<M>(obj));
-}
-
-template<class M>
-auto
-object::
-insert_or_assign(
-    const_iterator pos,
-    key_type key,
-    M&& obj) ->
-        std::pair<iterator, bool>
-{
-    auto const result =
-        find_impl(key);
+    reserve(size() + 1);
+    auto& e = *::new(
+        impl_.end()) value_type(
+            std::forward<P>(p), sp_);
+    auto const result = find_impl(e.key());
     if(result.first)
     {
-        result.first->v = std::forward<M>(obj);
-        return { iterator(result.first), false };
+        e.~value_type();
+        return { result.first, false };
     }
-    auto const e = allocate(
-        key, std::forward<M>(obj));
-    insert(pos, result.second, e);
-    return { iterator(e), true };
+    auto& head =
+        impl_.bucket(result.second);
+    e.next_ = head;
+    head = &e;
+    impl_.grow(1);
+    return { &e, true };
 }
 
-template<class Arg>
+template<class M>
 auto
 object::
-emplace(
-    key_type key,
-    Arg&& arg) ->
+insert_or_assign(
+    key_type key, M&& m) ->
         std::pair<iterator, bool>
 {
-    return emplace(
-        end(),
-        key,
-        std::forward<Arg>(arg));
-}
-
-template<class Arg>
-auto
-object::
-emplace(
-    const_iterator pos,
-    key_type key,
-    Arg&& arg) ->
-        std::pair<iterator, bool>
-{
-    auto const result =
-        find_impl(key);
+    auto const result = find_impl(key);
     if(result.first)
-        return { iterator(
-            result.first), false };
-    auto const e = allocate(
-        key, std::forward<Arg>(arg));
-    insert(pos, result.second, e);
-    return { iterator(e), true };
+    {
+        result.first->value() =
+            std::forward<M>(m);
+        return { result.first, false };
+    }
+    reserve(size() + 1);
+    auto& e = *::new(
+        impl_.end()) value_type(
+            key, std::forward<M>(m), sp_);
+    auto& head =
+        impl_.bucket(result.second);
+    e.next_ = head;
+    head = &e;
+    impl_.grow(1);
+    return { &e, true };
 }
-
-//----------------------------------------------------------
-
-// type-erased constructor to
-// reduce template instantiations.
-struct object::construct_base
-{
-    virtual
-    ~construct_base() = default;
-
-    virtual
-    void
-    operator()(void* p) const = 0;
-};
 
 template<class Arg>
 auto
 object::
-allocate(key_type key, Arg&& arg) ->
-    element*
+emplace(
+    key_type key,
+    Arg&& arg) ->
+        std::pair<iterator, bool>
 {
-    struct place : construct_base
-    {
-        Arg&& arg;
-        storage_ptr const& sp;
-        
-        place(
-            Arg&& arg_,
-            storage_ptr const& sp_) noexcept
-            : arg(std::forward<Arg>(arg_))
-            , sp(sp_)
-        {
-        }
-
-        void
-        operator()(void* p) const override
-        {
-            ::new(p) element(
-                std::forward<Arg>(arg), sp);
-        }
-    };
-
-    return allocate_impl(key, place(
-        std::forward<Arg>(arg), sp_));
-}
-
-template<class InputIt>
-void
-object::
-insert_range(
-    const_iterator pos,
-    InputIt first,
-    InputIt last,
-    size_type count)
-{
-    undo_range u(*this);
-    while(first != last)
-        u.insert(allocate(*first++));
-    u.commit(pos, count);
+    auto const result = find_impl(key);
+    if(result.first)
+        return { result.first, false };
+    reserve(size() + 1);
+    auto p = ::new(impl_.end()) value_type(
+        key, std::forward<Arg>(arg), sp_);
+    auto& head = impl_.bucket(result.second);
+    p->next_ = head;
+    head = p;
+    impl_.grow(1);
+    return { p, true };
 }
 
 //----------------------------------------------------------
@@ -667,6 +427,133 @@ void
 swap(object& lhs, object& rhs)
 {
     lhs.swap(rhs);
+}
+
+//----------------------------------------------------------
+//
+// (implementation)
+//
+//----------------------------------------------------------
+
+std::uint32_t
+object::
+digest(
+    key_type key,
+    std::false_type) noexcept
+{
+    std::uint32_t prime = 0x01000193UL;
+    std::uint32_t hash  = 0x811C9DC5UL;
+    for(auto p = key.begin(),
+        end = key.end(); p != end; ++p)
+        hash = (*p ^ hash) * prime;
+    return hash;
+}
+
+std::uint64_t
+object::
+digest(
+    key_type key,
+    std::true_type) noexcept
+{
+    std::uint64_t prime = 0x100000001B3ULL;
+    std::uint64_t hash  = 0xcbf29ce484222325ULL;
+    for(auto p = key.begin(),
+        end = key.end(); p != end; ++p)
+        hash = (*p ^ hash) * prime;
+    return hash;
+}
+
+std::size_t
+object::
+digest(key_type key) noexcept
+{
+    return digest(key,
+        std::integral_constant<bool,
+            sizeof(std::size_t) ==
+            sizeof(std::uint64_t)>{});
+}
+
+template<class InputIt>
+void
+object::
+insert_range(
+    InputIt first,
+    InputIt last,
+    std::size_t min_capacity,
+    std::input_iterator_tag)
+{
+    reserve(min_capacity);
+    undo_insert u(*this);
+    while(first != last)
+    {
+        reserve(size() + 1);
+        auto& e = *::new(
+            u.last) value_type(*first++, sp_);
+        auto& head = impl_.bucket(e.key());
+        for(auto it = head;;
+            it = it->next_)
+        {
+            if(it)
+            {
+                if(it->key() != e.key())
+                    continue;
+                e.~value_type();
+            }
+            else
+            {
+                e.next_ = head;
+                head = &e;
+                ++u.last;
+            }
+            break;
+        }
+    }
+    u.commit = true;
+}
+
+template<class InputIt>
+void
+object::
+insert_range(
+    InputIt first,
+    InputIt last,
+    std::size_t min_capacity,
+    std::random_access_iterator_tag)
+{
+    auto n = static_cast<
+        std::size_t>(last - first);
+    auto const n0 = size();
+    if(n > max_size() - n0)
+        BOOST_JSON_THROW(
+            detail::object_too_large_exception());
+    if( min_capacity < n0 + n)
+        min_capacity = n0 + n;
+    reserve(min_capacity);
+    undo_insert u(*this);
+    while(n--)
+    {
+        auto& e = *::new(
+            u.last) value_type(*first++, sp_);
+        auto& head = impl_.bucket(e.key());
+        for(auto it = head;;
+            it = it->next_)
+        {
+            if(it)
+            {
+                if(it->key() != e.key())
+                    continue;
+                e.~value_type();
+            }
+            else
+            {
+                e.next_ = head;
+                head = &e;
+                ++u.last;
+            }
+            break;
+        }
+    }
+    u.commit = true;
 }
 
 } // json

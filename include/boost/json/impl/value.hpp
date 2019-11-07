@@ -11,6 +11,7 @@
 #define BOOST_JSON_IMPL_VALUE_HPP
 
 #include <boost/json/error.hpp>
+#include <boost/json/detail/except.hpp>
 #include <boost/json/detail/make_void.hpp>
 #include <limits>
 #include <type_traits>
@@ -75,10 +76,12 @@ struct is_range<T, void_t<
 // assign to value
 //
 
+#if 0
 // range
 template<class T
     ,class = typename std::enable_if<
         detail::is_range<T>::value
+        && ! std::is_same<T, typename object::value_type>::value
         && ! std::is_same<typename T::value_type, char>::value
         && has_to_json<typename T::value_type>::value
             >::type
@@ -91,6 +94,7 @@ to_json(T const& t, value& v)
         arr.emplace_back(e);
     v = std::move(arr);
 }
+#endif
 
 //----------------------------------------------------------
 //
@@ -154,20 +158,25 @@ swap(value& lhs, value& rhs)
 //----------------------------------------------------------
 
 template<class... Args>
-key_value_pair::
-key_value_pair(
-    string_view key_,
+object::
+value_type::
+value_type(
+    string_view key,
     Args&&... args)
-    : value(std::forward<Args>(args)...)
-    , key(
+    : value_(std::forward<Args>(args)...)
+    , len_(key.size())
+    , key_(
         [&]
         {
+            if(key.size() > detail::max_string_length_)
+                BOOST_JSON_THROW(
+                    detail::string_too_large_exception());
             auto s = reinterpret_cast<
-                char*>(value.get_storage()->
-                    allocate(key_.size() + 1));
-            std::memcpy(s, key_.data(), key_.size());
-            s[key_.size()] = 0;
-            return string_view(s, key_.size() + 1);
+                char*>(value_.get_storage()->
+                    allocate(key.size() + 1));
+            std::memcpy(s, key.data(), key.size());
+            s[key.size()] = 0;
+            return s;
         }())
 {
 }

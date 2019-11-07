@@ -12,74 +12,28 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/storage_ptr.hpp>
+#include <boost/json/detail/assert.hpp>
 #include <boost/json/detail/string.hpp>
 #include <boost/pilfer.hpp>
 #include <cstdlib>
 #include <initializer_list>
 #include <iterator>
+#include <type_traits>
 #include <utility>
 
 namespace boost {
 namespace json {
 
 class value;
-struct key_value_pair;
 
-class unchecked_object
-{
-    key_value_pair* data_;
-    unsigned long size_;
-    storage_ptr const& sp_;
-
-public:
-    inline
-    ~unchecked_object();
-
-    unchecked_object(
-        key_value_pair* data,
-        unsigned long size,
-        storage_ptr const& sp) noexcept
-        : data_(data)
-        , size_(size)
-        , sp_(sp)
-    {
-    }
-
-    unchecked_object(
-        unchecked_object&& other) noexcept
-        : data_(other.data_)
-        , size_(other.size_)
-        , sp_(other.sp_)
-    {
-        other.data_ = nullptr;
-    }
-
-    storage_ptr const&
-    get_storage() const noexcept
-    {
-        return sp_;
-    }
-
-    unsigned long
-    size() const noexcept
-    {
-        return size_;
-    }
-
-    inline
-    void
-    relocate(key_value_pair* dest) noexcept;
-};
+class unchecked_object;
 
 //----------------------------------------------------------
 
 /** An associative container of key to JSON value pairs
 
-    This is an associative container that contains key-value
-    pairs with unique keys. Internally the elements are
-    initially kept in insertion order, but this order can
-    be changed manually by specifying where new or moved
-    elements go.
+    This is an associative container whose elements
+    are key/value pairs with unique keys.
 
     @par Storage
 
@@ -97,32 +51,6 @@ public:
 */
 class object
 {
-    struct list_hook;
-    struct element;
-    class hasher;
-    struct key_eq;
-    struct table;
-    class undo_range;
-
-    storage_ptr sp_;
-    table* tab_ = nullptr;
-
-    static
-    constexpr
-    float
-    max_load_factor() noexcept
-    {
-        return 1.f;
-    }
-
-    template<class T>
-    using is_inputit = typename std::enable_if<
-        std::is_convertible<typename
-            std::iterator_traits<T>::value_type,
-            std::pair<
-                string_view const,
-                value const&>>::value>::type;
-
 public:
     /** The type of keys.
 
@@ -135,70 +63,213 @@ public:
     using mapped_type = value;
 
     /// The element type
-    using value_type =
-        std::pair<key_type const, value>;
+    struct value_type;
 
     /// The type used to represent unsigned integers
-    using size_type = unsigned long;
+    using size_type = std::size_t;
 
     /// The type used to represent signed integers
-    using difference_type = long;
+    using difference_type = std::ptrdiff_t;
 
     /// A reference to an element
-    using reference =
-        std::pair<key_type const, value&>;
+    using reference = value_type&;
 
     /// A const reference to an element
-    using const_reference =
-        std::pair<key_type const, value const&>;
+    using const_reference = value_type const&;
 
-#ifdef GENERATING_DOCUMENTATION
     /// A pointer to an element
-    using pointer = __implementation_defined__;
+    using pointer = value_type*;
 
     /// A const pointer to an element
-    using const_pointer = __implementation_defined__;
+    using const_pointer = value_type const*;
 
-    /// A bidirectional iterator to an element
-    using iterator = __implementation_defined__;
+    /// A random access iterator to an element
+    using iterator = value_type*;
 
-    /// A bidirectional const iterator to an element
-    using const_iterator = __implementation_defined__;
+    /// A random access const iterator to an element
+    using const_iterator = value_type const*;
 
-#else
-    class pointer;
-    class const_pointer;
-    class iterator;
-    class const_iterator;
-#endif
+    /// A reverse random access iterator to an element
+    using reverse_iterator =
+        std::reverse_iterator<iterator>;
 
-    /// The value type of initializer lists
-    using init_value = std::pair<key_type, value>;
+    /// A reverse random access const iterator to an element
+    using const_reverse_iterator =
+        std::reverse_iterator<const_iterator>;
 
+    /// The type of initializer lists
+    using init_list = std::initializer_list<
+        std::pair<key_type, value>>;
+
+private:
+    class impl_type
+    {
+        struct table
+        {
+            std::size_t size;
+            std::size_t const capacity;
+            std::size_t const buckets;
+        };
+
+        table* tab_ = nullptr;
+
+        BOOST_JSON_DECL
+        void
+        do_destroy(storage_ptr const& sp) noexcept;
+
+    public:
+        impl_type() = default;
+
+        inline
+        impl_type(
+            std::size_t capacity,
+            std::size_t buckets,
+            storage_ptr const& sp);
+
+        inline
+        impl_type(impl_type&& other) noexcept;
+
+        void
+        destroy(storage_ptr const& sp) noexcept
+        {
+            if( tab_ == nullptr ||
+                ! sp->need_free())
+                return;
+            do_destroy(sp);
+        }
+
+        std::size_t
+        size() const noexcept
+        {
+            return tab_ ? tab_->size : 0;
+        }
+
+        std::size_t
+        capacity() const noexcept
+        {
+            return tab_ ? tab_->capacity : 0;
+        }
+
+        inline
+        value_type*
+        begin() const noexcept;
+
+        inline
+        value_type*
+        end() const noexcept;
+
+        inline
+        void
+        clear() noexcept;
+
+        inline
+        void
+        grow(std::size_t n) noexcept
+        {
+            if(n == 0)
+                return;
+            BOOST_JSON_ASSERT(
+                n <= capacity() - size());
+            tab_->size += n;
+        }
+
+        inline
+        void
+        shrink(std::size_t n) noexcept
+        {
+            if(n == 0)
+                return;
+            BOOST_JSON_ASSERT(n <= size());
+            tab_->size -= n;
+        }
+
+        inline
+        void
+        build() noexcept;
+
+        inline
+        void
+        rebuild() noexcept;
+
+        inline
+        void
+        remove(
+            value_type*& head,
+            value_type* p) noexcept;
+
+        inline
+        value_type*&
+        bucket(std::size_t hash) const noexcept;
+
+        inline
+        value_type*&
+        bucket(string_view key) const noexcept;
+
+        inline
+        void
+        swap(impl_type& rhs) noexcept;
+
+    private:
+        std::size_t
+        buckets() const noexcept
+        {
+            return tab_ ? tab_->buckets : 0;
+        }
+
+        inline
+        value_type**
+        bucket_begin() const noexcept;
+
+        inline
+        value_type**
+        bucket_end() const noexcept;
+    };
+
+    class undo_construct;
+    class undo_insert;
+
+    template<class T>
+    using is_inputit = typename std::enable_if<
+        std::is_constructible<value_type,
+        typename std::iterator_traits<T>::value_type
+            >::value>::type;
+
+    static
+    constexpr
+    double
+    max_load_factor() noexcept
+    {
+        return 1.0;
+    }
+
+    storage_ptr sp_;
+    impl_type impl_;
+
+public:
     //------------------------------------------------------
 
-    /** Destroy the container
+    /** Destructor.
 
-        The destructor for each element is called, any used
-        memory is deallocated, and shared ownership of the
-        underlying storage is released.
+        If `this->get_storage()->need_free() == true`,
+        the destructor for each element is called, and
+        any allocated memory is deallocated.
 
         @par Complexity
 
-        Linear in @ref size()
+        Constant, or linear in @ref size().
     */
+    inline
     ~object()
     {
-        if(tab_ && sp_->need_free())
-            destroy();
+        impl_.destroy(sp_);
     }
 
     //------------------------------------------------------
 
-    /** Construct an empty container
+    /** Default constructor.
 
-        The container and all inserted elements will use
-        the default storage.
+        The object starts out empty, with @ref capacity()
+        equal to zero.
 
         @par Complexity
 
@@ -210,10 +281,10 @@ public:
     */
     object() = default;
 
-    /** Construct an empty container
+    /** Construct an object.
 
-        The container and all inserted elements will use the
-        @ref storage owned by `sp`.
+        The object starts out empty, with @ref capacity()
+        equal to zero.
 
         @par Complexity
 
@@ -223,19 +294,17 @@ public:
 
         No-throw guarantee.
 
-        @param sp A pointer to the @ref storage
-        to use. The container will acquire shared
-        ownership of the storage object.
+        @param sp The @ref storage to use.
     */
     BOOST_JSON_DECL
     explicit
     object(
         storage_ptr sp) noexcept;
 
-    /** Construct an empty container
+    /** Construct an object.
 
-        Storage for indexing the elements by hash is
-        allocated for at least `count` elements.
+        The object starts out empty, with @ref capacity()
+        greater than or equal to `min_capacity`.
 
         @par Complexity
 
@@ -246,44 +315,36 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param count The minimum number of elements for
-        which space in the index is reserved.
+        @param min_capacity The minimum number
+        of elements for which capacity is guaranteed
+        without a subsequent reallocation.
 
-        @param sp An optional pointer to the @ref storage
-        to use. The container will acquire shared
-        ownership of the storage object.
-        If this parameter is omitted, the default storage
-        is used.
-
+        @param sp The @ref storage to use.
     */
     BOOST_JSON_DECL
     object(
-        size_type count,
+        std::size_t min_capacity,
         storage_ptr sp = {});
 
-    /** Construct with the contents of a range
+    /** Construct an object.
 
         The elements in the range `[first, last)` are
-        inserted in order.
+        inserted, preserving their order.
         If multiple elements in the range have keys that
         compare equivalent, only the first occurring key
         will be inserted.
-        Storage for indexing the elements by hash is
-        allocated for at least `count` elements, or an
-        implementation defined amount if this argument
-        is omitted.
-        The container and all inserted elements will use the
-        @ref storage owned by `sp`,
 
         @par Constraints
 
         @code
-        std::is_constructible_v<const_reference, std::iterator_traits<InputIt>::value_type>
+        std::is_constructible_v<
+            value_type,
+            std::iterator_traits<InputIt>::value_type>
         @endcode
 
         @par Complexity
 
-        Linear in `std::distance(first, last)`
+        Linear in `std::distance(first, last)`.
 
         @par Exception Safety
 
@@ -296,14 +357,13 @@ public:
         @param last An input iterator pointing to the end
         of the range.
 
-        @param count An optional, minimum number of elements
-        for which space in the index is reserved.
+        @param min_capacity The minimum number
+        of elements for which capacity is guaranteed
+        without a subsequent reallocation.
+        Upon construction, @ref capacity() will be greater
+        than or equal to this number.
 
-        @param sp An optional pointer to the @ref storage
-        to use. The container will acquire shared
-        ownership of the storage object.
-        If this parameter is omitted, the default storage
-        is used.
+        @param sp The @ref storage to use.
 
         @tparam InputIt a type meeting the requirements of
         __InputIterator__.
@@ -317,10 +377,10 @@ public:
     object(
         InputIt first,
         InputIt last,
-        size_type count = 0,
+        std::size_t min_capacity = 0,
         storage_ptr sp = {});
 
-    /** Move constructor
+    /** Move constructor.
 
         Construct the container with the contents of `other`
         using move semantics. Ownership of the underlying
@@ -330,8 +390,8 @@ public:
 
         @note
 
-        After construction, the moved-from object behaves as
-        if newly constructed with its current storage pointer.
+        After construction, the moved-from object behaves
+        as if newly constructed with its current storage.
         
         @par Complexity
 
@@ -341,12 +401,12 @@ public:
 
         No-throw guarantee.
 
-        @param other The container to move
+        @param other The object to move.
     */
     BOOST_JSON_DECL
     object(object&& other) noexcept;
 
-    /** Move constructor
+    /** Move constructor.
 
         Using `*sp` as the @ref storage for the new container,
         moves all the elements from `other`.
@@ -354,8 +414,8 @@ public:
         @li If `*other.get_storage() == *sp`, ownership of the
         underlying memory is transferred in constant time, with
         no possibility of exceptions.
-        After construction, the moved-from object behaves as if
-        newly constructed with its current @ref storage pointer.
+        After construction, the moved-from object behaves
+        as if newly constructed with its current storage.
 
         @li If `*other.get_storage() != *sp`, an element-wise
         copy is performed. In this case, the moved-from container
@@ -373,17 +433,16 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param other The container to move
+        @param other The object to move.
 
-        @param sp A pointer to the @ref storage to use. The
-        container will acquire shared ownership of the pointer.
+        @param sp The @ref storage to use.
     */
     BOOST_JSON_DECL
     object(
         object&& other,
         storage_ptr sp);
 
-    /** Pilfer constructor
+    /** Pilfer constructor.
 
         Construct the container with the contents of `other`
         using pilfer semantics.
@@ -402,7 +461,7 @@ public:
 
         No-throw guarantee.
 
-        @param other The container to pilfer
+        @param other The container to pilfer.
 
         @see
         
@@ -412,7 +471,7 @@ public:
     BOOST_JSON_DECL
     object(pilfered<object> other) noexcept;
 
-    /** Copy constructor
+    /** Copy constructor.
 
         Construct the container with a copy of the contents
         of `other.
@@ -428,13 +487,13 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param other The container to copy
+        @param other The object to copy.
     */
     BOOST_JSON_DECL
     object(
         object const& other);
 
-    /** Copy constructor
+    /** Copy constructor.
 
         Construct the container with a copy of the contents
         of `other.
@@ -450,24 +509,22 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param other The container to copy
+        @param other The object to copy.
 
-        @param sp A pointer to the @ref storage to use. The
-        container will acquire shared ownership of the pointer.
+        @param sp The @ref storage to use.
     */
     BOOST_JSON_DECL
     object(
         object const& other,
         storage_ptr sp);
        
-    /** Construct the container with an initializer list
+    /** Construct an object.
 
-        Storage for indexing the elements by hash is
-        allocated for at least `count` elements, or an
-        implementation defined amount if this argument
-        is omitted.
-        The container and all inserted elements will use the
-        @ref storage owned by `sp`.
+        The elements in the initializer list `init` are
+        inserted, preserving their order.
+        If multiple elements in the range have keys that
+        compare equivalent, only the first occurring key
+        will be inserted.
 
         @par Complexity
 
@@ -478,29 +535,32 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param init The initializer list to insert
+        @param init The initializer list to insert.
 
-        @param count The minimum number of elements for
-        which space in the index is reserved.
+        @param min_capacity The minimum number
+        of elements for which capacity is guaranteed
+        without a subsequent reallocation.
+        Upon construction, @ref capacity() will be greater
+        than or equal to this number.
 
-        @param sp An optional pointer to the @ref storage
-        to use. The container will acquire shared
-        ownership of the storage object.
-        If this parameter is omitted, the default storage
-        is used.
-
+        @param sp The @ref storage to use.
     */
     BOOST_JSON_DECL
     object(
-        std::initializer_list<
-            init_value> init,
-        size_type count = 0,
+        init_list init,
+        std::size_t min_capacity = 0,
         storage_ptr sp = {});
 
-    /** Move assignment operator
+    /**
+    */
+    BOOST_JSON_DECL
+    object(unchecked_object&& uo);
 
-        Replaces the contents with those of `other` using move
-        semantics (the data in `other` is moved into this container).
+    /** Move assignment.
+
+        Replaces the contents with those of `other`
+        using move semantics (the data in `other` is
+        moved into this container).
 
         @li If `*other.get_storage() == get_storage()`,
         ownership of the  underlying memory is transferred in
@@ -521,13 +581,13 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param other The container to assign from
+        @param other The obect to assign from.
     */
     BOOST_JSON_DECL
     object&
     operator=(object&& other);
 
-    /** Copy assignment operator
+    /** Copy assignment.
 
         Replaces the contents with an element-wise copy of `other`.
 
@@ -540,13 +600,13 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param other The container to copy
+        @param other The object to assign from.
     */
     BOOST_JSON_DECL
     object&
     operator=(object const& other);
 
-    /** Assign the contents of an initializer list
+    /** Assignment operator.
 
         Replaces the contents with the contents of an
         initializer list.
@@ -560,18 +620,16 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param init The initializer list to assign
+        @param init The initializer list to assign from.
     */
     BOOST_JSON_DECL
     object&
-    operator=(
-        std::initializer_list<
-            init_value> init);
+    operator=(init_list init);
 
-    /** Return a pointer to the storage associated with the container
+    /** Return the storage associated with the container.
 
-        Shared ownership of the @ref storage is propagated by
-        the container to all of its children recursively.
+        Shared ownership of the @ref storage is propagated
+        by the container to all of its children recursively.
 
         @par Complexity
 
@@ -667,16 +725,103 @@ public:
     const_iterator
     cend() const noexcept;
 
+    /** Return a reverse iterator to the first element of the reversed container
+
+        The pointed-to element corresponds to the last element
+        of the non-reversed container. If the container is empty,
+        the returned iterator is equal to @ref rend()
+
+        @par Complexity
+
+        Constant.
+    */
+    inline
+    reverse_iterator
+    rbegin() noexcept;
+
+    /** Return a reverse iterator to the first element of the reversed container
+
+        The pointed-to element corresponds to the last element
+        of the non-reversed container. If the container is empty,
+        the returned iterator is equal to @ref rend()
+
+        @par Complexity
+
+        Constant.
+    */
+    inline
+    const_reverse_iterator
+    rbegin() const noexcept;
+
+    /** Return a reverse iterator to the first element of the reversed container
+
+        The pointed-to element corresponds to the last element
+        of the non-reversed container. If the container is empty,
+        the returned iterator is equal to @ref rend()
+
+        @par Complexity
+
+        Constant.
+    */
+    inline
+    const_reverse_iterator
+    crbegin() const noexcept;
+
+    /** Return a reverse iterator to the element following the last element of the reversed container
+
+        The pointed-to element corresponds to the element
+        preceding the first element of the non-reversed container.
+        This element acts as a placeholder, attempting to access
+        it results in undefined behavior.
+
+        @par Complexity
+
+        Constant.
+    */
+    inline
+    reverse_iterator
+    rend() noexcept;
+
+    /** Return a reverse iterator to the element following the last element of the reversed container
+
+        The pointed-to element corresponds to the element
+        preceding the first element of the non-reversed container.
+        This element acts as a placeholder, attempting to access
+        it results in undefined behavior.
+
+        @par Complexity
+
+        Constant.
+    */
+    inline
+    const_reverse_iterator
+    rend() const noexcept;
+
+    /** Return a reverse iterator to the element following the last element of the reversed container
+
+        The pointed-to element corresponds to the element
+        preceding the first element of the non-reversed container.
+        This element acts as a placeholder, attempting to access
+        it results in undefined behavior.
+
+        @par Complexity
+
+        Constant.
+    */
+    inline
+    const_reverse_iterator
+    crend() const noexcept;
+
     //------------------------------------------------------
     //
     // Capacity
     //
     //------------------------------------------------------
 
-    /** Check if the container has no elements
+    /** Return whether there are no elements.
 
-        Returns `true` if there are no elements in the container,
-        i.e. @ref size() returns 0.
+        Returns `true` if there are no elements in
+        the container, i.e. @ref size() returns 0.
 
         @par Complexity
 
@@ -686,7 +831,7 @@ public:
     bool
     empty() const noexcept;
 
-    /** Return the number of elements in the container
+    /** Return the number of elements.
 
         This returns the number of elements in the container.
 
@@ -695,7 +840,7 @@ public:
         Constant.
     */
     inline
-    size_type
+    std::size_t
     size() const noexcept;
 
     /** Return the maximum number of elements the container can hold
@@ -711,54 +856,46 @@ public:
     */
     static
     constexpr
-    size_type
+    std::size_t
     max_size() noexcept
     {
-        return size_type(-1);
+        return 0x80000000;
     }
 
-    /** Returns the maximum number of elements the container can support before rehashing.
+    /** Return the number of elements that can be held in currently allocated memory
 
-        This returns the number of elements which may exist in
-        the container, after which the container will require a
-        rehash. It effectively returns `size() / max_load_factor()`.
+        This number may be larger than the value returned
+        by @ref size().
 
         @par Complexity
 
         Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
     */
     inline
-    size_type
+    std::size_t
     capacity() const noexcept;
 
-    /** Reserve space for at least the specified number of elements.
+    /** Increase the capacity to at least a certain amount.
 
-        Sets the number of buckets to the number needed to
-        accomodate at least `n` elements without exceeding
-        the maximum load factor, and rehashes the container;
-        i.e. puts the elements into appropriate buckets
-        considering that total number of buckets has
-        changed.
+        This inserts an element into the container.
 
         @par Complexity
 
-        Average case linear in the size of the container,
-        worst case quadratic.
+        Constant or average case linear in
+        @ref size(), worst case quadratic.
 
         @par Exception Safety
 
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param n The new minimum capacity of the container
+        @param new_capacity The new minimum capacity.
+
+        @throw std::length_error `new_capacity > max_size()`
     */
     inline
     void
-    reserve(size_type n);
+    reserve(std::size_t new_capacity);
 
     //------------------------------------------------------
     //
@@ -766,49 +903,72 @@ public:
     //
     //------------------------------------------------------
 
-    /** Clear the contents
+    /** Erase all elements.
 
-        Erases all elements from the container with
-        changing the capacity. After this call,
-        @ref size() returns zero.
-        All references, pointers, or iterators referring
-        to contained elements are invalidated. Any past-the-end
-        iterators are also invalidated.
+        Erases all elements from the container without
+        changing the capacity.
+        After this call, @ref size() returns zero.
+        All references, pointers, and iterators are
+        invalidated.
 
         @par Complexity
 
         Linear in @ref size().
+
+        @par Exception Safety
+
+        No-throw guarantee.
     */
     BOOST_JSON_DECL
     void
     clear() noexcept;
 
-    template<class P = value_type
+    /** Insert elements.
+
+        Inserts `p`, from which @ref value_type must
+        be constructible.
+
+        @par Constraints
+
+        @code
+        std::is_constructible_v<value_type, P>
+        @endcode
+
+        @par Complexity
+
+        Average case amortized constant,
+        worst case linear in @ref size().
+
+        @par Exception Safety
+
+        Strong guarantee.
+        Calls to @ref storage::allocate may throw.
+        
+        @param p The value to insert.
+
+        @returns A pair where `first` is an iterator
+        to the existing or inserted element, and `second`
+        is `true` if the insertion took place or `false` if
+        the assignment took place.
+
+        @throw std::length_error key is too long.
+
+        @throw std::length_error @ref size() >= max_size().
+    */
+     template<class P
 #ifndef GENERATING_DOCUMENTATION
         ,class = typename std::enable_if<
-            std::is_constructible<value_type,
-                P&&>::value>::type
+            std::is_constructible<
+                value_type, P, storage_ptr>::value>::type
 #endif
     >
     std::pair<iterator, bool>
     insert(P&& p);
 
-    template<class P = value_type
-#ifndef GENERATING_DOCUMENTATION
-        ,class = typename std::enable_if<
-            std::is_constructible<value_type,
-                P&&>::value>::type
-#endif
-    >
-    std::pair<iterator, bool>
-    insert(
-        const_iterator pos,
-        P&& p);
-
-    /** Insert elements at the end
+    /** Insert elements.
 
         The elements in the range `[first, last)` are
-        inserted at the end, in order.
+        appended to the end, in order.
         If multiple elements in the range have keys that
         compare equivalent, only the first occurring key
         will be inserted.
@@ -820,7 +980,7 @@ public:
         @par Constraints
 
         @code
-        std::is_constructible_v<const_reference, std::iterator_traits<InputIt>::value_type>
+        std::is_constructible_v<value_type, std::iterator_traits<InputIt>::value_type>
         @endcode
 
         @par Complexity
@@ -848,59 +1008,12 @@ public:
     #endif
     >
     void
-    insert(InputIt first, InputIt last);
+    insert(InputIt first, InputIt last)
+    {
+        insert_range(first, last, 0);
+    }
 
-    /** Insert elements before the specified location
-
-        The elements in the range `[first, last)` are
-        inserted before the element pointed to by `pos`.
-        If multiple elements in the range have keys that
-        compare equivalent, only the first occurring key
-        will be inserted.
-
-        @par Precondition
-
-        `first` and `last` are not iterators into `*this`.
-
-        @par Constraints
-
-        @code
-        std::is_constructible_v<const_reference, std::iterator_traits<InputIt>::value_type>
-        @endcode
-
-        @par Complexity
-        
-        Linear in `std::distance(first, last)`.
-
-        @par Exception Safety
-
-        Strong guarantee.
-        Calls to @ref storage::allocate may throw.
-        
-        @param pos Iterator before which the new elements will
-        be inserted. This may be the @ref end() iterator.
-
-        @param first An input iterator pointing to the first
-        element to insert, or pointing to the end of the range.
-
-        @param last An input iterator pointing to the end
-        of the range.
-
-        @tparam InputIt a type meeting the requirements of
-        __InputIterator__.
-    */
-    template<
-        class InputIt
-    #ifndef GENERATING_DOCUMENTATION
-        ,class = is_inputit<InputIt>
-    #endif
-    >
-    void
-    insert(
-        const_iterator pos,
-        InputIt first, InputIt last);
-
-    /** Insert elements at the end
+    /** Insert elements.
 
         The elements in the initializer list are
         inserted at the end, in order.
@@ -921,39 +1034,9 @@ public:
     */
     BOOST_JSON_DECL
     void
-    insert(std::initializer_list<
-        init_value> init);
+    insert(init_list init);
 
-    /** Insert elements before the specified location
-
-        The elements in the initializer list are
-        inserted before the element pointed to by `pos`.
-        If multiple elements in the range have keys that
-        compare equivalent, only the first occurring key
-        will be inserted.
-
-        @par Complexity
-        
-        Linear in `init.size()`.
-
-        @par Exception Safety
-
-        Strong guarantee.
-        Calls to @ref storage::allocate may throw.
-        
-        @param pos Iterator before which the new elements will
-        be inserted. This may be the @ref end() iterator.
-
-        @param init The initializer list to insert
-    */
-    BOOST_JSON_DECL
-    void
-    insert(
-        const_iterator pos,
-        std::initializer_list<
-            init_value> init);
-
-    /** Insert an element or assign an element if the key already exists
+    /** Insert an element or assign to the current element if the key already exists.
 
         If the key equivalent to `key` already exists in the
         container. assigns `std::forward<M>(obj)` to the
@@ -978,13 +1061,13 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @throw std::length_error if key is too large
+        @throw std::length_error if key is too long
 
         @param key The key used for lookup and insertion
 
-        @param obj The value to insert or assign
+        @param m The value to insert or assign
 
-        @returns A `pair` where `first` is an iterator
+        @returns A `std::pair` where `first` is an iterator
         to the existing or inserted element, and `second`
         is `true` if the insertion took place or `false` if
         the assignment took place.
@@ -992,55 +1075,9 @@ public:
     template<class M>
     std::pair<iterator, bool>
     insert_or_assign(
-        key_type key, M&& obj);
+        key_type key, M&& m);
 
-    /** Insert an element or assign an element if the key already exists
-
-        If the key equivalent to `key` already exists in the
-        container. assigns `std::forward<M>(obj)` to the
-        `mapped type` corresponding to the key. Otherwise,
-        inserts the new value before the element pointed to
-        by `pos` as if by insert, constructing it from
-        `value_type(key, std::forward<M>(obj))`.
-
-        If the insertion occurs and results in a rehashing
-        of the container, all iterators are invalidated.
-        Otherwise, iterators are not affected.
-        References are not invalidated.
-        Rehashing occurs only if the new number of elements
-        is greater than @ref capacity().
-
-        @par Complexity
-
-        Amortized constant on average, worst case linear in @ref size().
-
-        @par Exception Safety
-
-        Strong guarantee.
-        Calls to @ref storage::allocate may throw.
-
-        @throw std::length_error if key is too large
-
-        @param pos Iterator before which the new elements will
-        be inserted. This may be the @ref end() iterator.
-
-        @param key The key used for lookup and insertion
-
-        @param obj The value to insert or assign
-
-        @returns A pair where `first` is an iterator
-        to the existing or inserted element, and `second`
-        is `true` if the insertion took place or `false` if
-        the assignment took place.
-    */
-    template<class M>
-    std::pair<iterator, bool>
-    insert_or_assign(
-        const_iterator pos,
-        key_type key,
-        M&& obj);
-
-    /** Construct an element in place
+    /** Construct an element in-place.
 
         Inserts a new element into the container constructed
         in-place with the given argument if there is no
@@ -1064,7 +1101,7 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @throw std::length_error if key is too large
+        @throw std::length_error if key is too long
 
         @param key The key used for lookup and insertion
 
@@ -1072,7 +1109,7 @@ public:
         This will be passed as `std::forward<Arg>(arg)` to
         the @ref value constructor.
 
-        @returns A pair where `first` is an iterator
+        @returns A `std::pair` where `first` is an iterator
         to the existing or inserted element, and `second`
         is `true` if the insertion took place or `false` if
         the assignment took place.
@@ -1080,52 +1117,6 @@ public:
     template<class Arg>
     std::pair<iterator, bool>
     emplace(key_type key, Arg&& arg);
-
-    /** Construct an element in place
-
-        Inserts a new element into the container constructed
-        in-place with the given argument if there is no
-        element with the key in the container.
-        The element is inserted before `pos`.
-
-        If the insertion occurs and results in a rehashing
-        of the container, all iterators are invalidated.
-        Otherwise, iterators are not affected.
-        References are not invalidated.
-        Rehashing occurs only if the new number of elements
-        is greater than @ref capacity().
-
-        @par Complexity
-
-        Amortized constant on average, worst case linear
-        in @ref size().
-
-        @par Exception Safety
-
-        Strong guarantee.
-        Calls to @ref storage::allocate may throw.
-
-        @throw std::length_error if key is too large
-
-        @param pos Iterator before which the new element will
-        be inserted. This may be the @ref end() iterator.
-
-        @param key The key used for lookup and insertion
-
-        @param arg The argument used to construct the value.
-        This will be passed as `std::forward<Arg>(arg)` to
-        the @ref value constructor.
-
-        @returns A pair where `first` is an iterator
-        to the existing or inserted element, and `second`
-        is `true` if the insertion took place or `false` if
-        the assignment took place.
-    */
-    template<class Arg>
-    std::pair<iterator, bool>
-    emplace(
-        const_iterator pos,
-        key_type key, Arg&& arg);
 
     /** Erase an element
 
@@ -1155,35 +1146,6 @@ public:
     iterator
     erase(const_iterator pos) noexcept;
     
-    /** Erase a range of elements
-
-        Removes the elements in the range `[first, last)`,
-        which must be a valid range in `*this`.
-        References and iterators to the erased elements are
-        invalidated. Other iterators and references are not
-        invalidated.
-
-        @par Complexity
-
-        Average case linear in `std::distance(first, last)`,
-        worst case linear in @ref size().
-
-        @par Exception Safety
-
-        No-throw guarantee.
-
-        @param first The beginning of the range to remove.
-        
-        @param last The end of the range to remove.
-        
-        @returns An iterator following the last removed element.
-    */
-    BOOST_JSON_DECL
-    iterator
-    erase(
-        const_iterator first,
-        const_iterator last) noexcept;
-
     /** Erase an element
 
         Remove the element which matches `key`, if it exists.
@@ -1203,7 +1165,7 @@ public:
         be either 0 or 1.
     */
     BOOST_JSON_DECL
-    size_type
+    std::size_t
     erase(key_type key) noexcept;
 
     /** Swap the contents
@@ -1251,7 +1213,7 @@ public:
 
         Constant on average, worst case linear in @ref size().
 
-        @throws std::out_of_range if no such element exists.
+        @throw std::out_of_range if no such element exists.
 
         @param key The key of the element to find
     */
@@ -1268,7 +1230,7 @@ public:
 
         Constant on average, worst case linear in @ref size().
 
-        @throws std::out_of_range if no such element exists.
+        @throw std::out_of_range if no such element exists.
 
         @param key The key of the element to find
     */
@@ -1305,7 +1267,7 @@ public:
     BOOST_JSON_DECL
     value&
     operator[](key_type key);
-    
+
     /** Count the number of elements with a specific key
 
         This function returns the count of the number of
@@ -1323,7 +1285,7 @@ public:
         @param key The key of the element to find
     */
     BOOST_JSON_DECL
-    size_type
+    std::size_t
     count(key_type key) const noexcept;
 
     /** Find an element with a specific key
@@ -1383,67 +1345,74 @@ public:
     contains(key_type key) const noexcept;
 
 private:
-    struct construct_base;
+    struct place
+    {
+        virtual
+        void
+        operator()(void* dest) = 0;
+    };
 
-    inline
+    template<class It>
+    using iter_cat = typename
+        std::iterator_traits<It>::iterator_category;
+
     static
-    size_type
-    constrain_hash(
-        std::size_t hash,
-        size_type bucket_count) noexcept;
-
     inline
-    size_type
-    bucket(key_type key) const noexcept;
+    std::uint32_t
+    digest(
+        key_type key,
+        std::false_type) noexcept;
+
+    static
+    inline
+    std::uint64_t
+    digest(
+        key_type key,
+        std::true_type) noexcept;
+
+    static
+    inline
+    std::size_t
+    digest(key_type key) noexcept;
+
+    BOOST_JSON_DECL
+    std::pair<
+        value_type*,
+        std::size_t>
+    find_impl(key_type key) const noexcept;
 
     BOOST_JSON_DECL
     void
-    rehash(size_type bucket_count);
-
-    inline
-    void
-    remove(element* e) noexcept;
-
-    template<class Arg>
-    element*
-    allocate(
-        key_type key,
-        Arg&& arg);
+    rehash(std::size_t new_capacity);
 
     template<class InputIt>
     void
     insert_range(
-        const_iterator pos,
         InputIt first,
         InputIt last,
-        size_type size_hint);
+        std::size_t min_capacity,
+        std::input_iterator_tag);
 
-    BOOST_JSON_DECL
-    element*
-    allocate_impl(
-        key_type key,
-        construct_base const& place_new);
-
-    BOOST_JSON_DECL
-    element*
-    allocate(std::pair<
-        string_view, value const&> const& p);
-
-    BOOST_JSON_DECL
-    auto
-    find_impl(key_type key) const noexcept ->
-        std::pair<element*, std::size_t>;
-
-    BOOST_JSON_DECL
+    template<class InputIt>
     void
-    insert(
-        const_iterator pos,
-        std::size_t hash,
-        element* e);
+    insert_range(
+        InputIt first,
+        InputIt last,
+        std::size_t min_capacity,
+        std::random_access_iterator_tag);
 
-    BOOST_JSON_DECL
+    template<class InputIt>
     void
-    destroy() noexcept;
+    insert_range(
+        InputIt first,
+        InputIt last,
+        std::size_t min_capacity)
+    {
+        insert_range(
+            first, last,
+            min_capacity,
+            iter_cat<InputIt>{});
+    }
 };
 
 } // json

@@ -75,11 +75,11 @@ R"xx({
             {
                 BEAST_EXPECT(jv.is_object());
                 BEAST_EXPECT(jv.as_object().find(
-                    "a")->second.is_bool());
+                    "a")->value().is_bool());
                 BEAST_EXPECT(jv.as_object().find(
-                    "b")->second.is_number());
+                    "b")->value().is_number());
                 BEAST_EXPECT(jv.as_object().find(
-                    "c")->second.is_string());
+                    "c")->value().is_string());
             };
 
         string_view js =
@@ -115,7 +115,7 @@ R"xx({
     void
     run()
     {
-#if 0
+#if 1
         log <<
             "sizeof(parser) == " <<
             sizeof(parser) << "\n";
@@ -125,6 +125,11 @@ R"xx({
         error_code ec;
         auto jv = parse(
             "[\"abcdefg\",\"1\",\"2\",[\"a\", \"b\", \"c\"], \"d\"]"
+            //"{ \"k\" : 1, \"j\" : [\"hello\"] }"
+            //"{}"
+            //"[1,2,[3,4],5,[6,7,8],9,true,false,null]"
+            //"[]"
+            //"1"
         , ec);
         if(BEAST_EXPECTS(! ec, ec.message()))
             log << to_string(jv) << std::endl;

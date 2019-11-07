@@ -33,8 +33,9 @@ void
 unchecked_array::
 relocate(value* dest) noexcept
 {
-    std::memcpy(dest, data_,
-        sizeof(value) * size_);
+    std::memcpy(
+        reinterpret_cast<void*>(dest),
+        data_, sizeof(value) * size_);
     data_ = nullptr;
 }
 
