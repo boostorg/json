@@ -420,12 +420,13 @@ array::
 array(
     InputIt first, InputIt last,
     storage_ptr sp,
-    std::random_access_iterator_tag)
+    std::forward_iterator_tag)
     : sp_(std::move(sp))
 {
     undo_create u(*this);
-    auto const n = static_cast<
-        unsigned long long>(last - first);
+    auto const n =
+        static_cast<std::size_t>(
+            std::distance(first, last));
     if(n > max_size())
         BOOST_JSON_THROW(
             std::length_error(
@@ -471,11 +472,12 @@ array::
 insert(
     const_iterator pos,
     InputIt first, InputIt last,
-    std::random_access_iterator_tag) ->
+    std::forward_iterator_tag) ->
         iterator
 {
-    auto const n = static_cast<
-        unsigned long long>(last - first);
+    auto const n =
+        static_cast<std::size_t>(
+            std::distance(first, last));
     if(n > max_size())
         BOOST_JSON_THROW(
             std::length_error(

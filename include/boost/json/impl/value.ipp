@@ -446,34 +446,6 @@ maybe_object(
 //
 //----------------------------------------------------------
 
-storage_ptr const&
-value::
-get_storage() const noexcept
-{
-    switch(kind_)
-    {
-    case json::kind::object:
-        return obj_.get_storage();
-
-    case json::kind::array:
-        return arr_.get_storage();
-
-    case json::kind::string:
-        return str_.get_storage();
-
-    case json::kind::int64:
-    case json::kind::uint64:
-    case json::kind::double_:
-    case json::kind::boolean:
-    case json::kind::null:
-    default:
-        break;
-    }
-    return sca_.sp;
-}
-
-//----------------------------------------------------------
-
 storage_ptr
 value::
 destroy() noexcept

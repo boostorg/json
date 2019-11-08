@@ -112,7 +112,7 @@ private:
         union
         {
             char* p;
-            char buf[20]; // SBO
+            char buf[4]; // SBO
         };
     #endif
 
@@ -227,7 +227,7 @@ private:
 
     };
 
-    storage_ptr sp_;
+    storage_ptr sp_; // must come first
     impl impl_;
 
 public:

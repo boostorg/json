@@ -149,6 +149,52 @@ swap(impl_type& rhs) noexcept
 }
 
 //----------------------------------------------------------
+
+class object::undo_insert
+{
+    object& self_;
+
+public:
+    std::size_t const first;
+    std::size_t last;
+    bool commit = false;
+
+    ~undo_insert()
+    {
+        if(commit)
+        {
+            self_.impl_.grow(last - first);
+        }
+        else
+        {
+            auto p0 = self_.impl_.begin() + first;
+            auto p1 = self_.impl_.begin() + last;
+            for(auto it = p0; it != p1; ++it)
+                self_.impl_.remove(
+                    self_.impl_.bucket(it->key()), it);
+            value_type::destroy(p0, last - first);
+        }
+    }
+
+    explicit
+    undo_insert(
+        object& self) noexcept
+        : self_(self)
+        , first(
+            self_.impl_.end() -
+            self_.impl_.begin())
+        , last(first)
+    {
+    }
+
+    value_type*
+    pos() noexcept
+    {
+        return self_.begin() + last;
+    }
+};
+
+//----------------------------------------------------------
 //
 // object
 //
@@ -188,11 +234,11 @@ object(
     }
     else
     {
-        undo_construct u(*this);
+        undo_construct u{this};
         insert_range(
             other.begin(),
             other.end(), 0);
-        u.commit = true;
+        u.self = nullptr;
     }
 }
 
@@ -208,11 +254,11 @@ object(
     object const& other)
     : sp_(other.sp_)
 {
-    undo_construct u(*this);
+    undo_construct u{this};
     insert_range(
         other.begin(),
         other.end(), 0);
-    u.commit = true;
+    u.self = nullptr;
 }
 
 object::
@@ -221,11 +267,11 @@ object(
     storage_ptr sp)
     : sp_(std::move(sp))
 {
-    undo_construct u(*this);
+    undo_construct u{this};
     insert_range(
         other.begin(),
         other.end(), 0);
-    u.commit = true;
+    u.self = nullptr;
 }
 
 object::
@@ -235,12 +281,12 @@ object(
     storage_ptr sp)
     : sp_(std::move(sp))
 {
-    undo_construct u(*this);
+    undo_construct u{this};
     insert_range(
         init.begin(),
         init.end(),
         min_capacity);
-    u.commit = true;
+    u.self = nullptr;
 }
 
 object::
@@ -563,6 +609,106 @@ rehash(std::size_t new_capacity)
     impl_.destroy(sp_);
     impl_.swap(impl);
     impl_.rebuild();
+}
+
+auto
+object::
+emplace_impl(
+    key_type key,
+    place_one& f) ->
+    std::pair<iterator, bool>
+{
+    auto const result = find_impl(key);
+    if(result.first)
+        return { result.first, false };
+    reserve(size() + 1);
+    auto& e = *impl_.end();
+    f(&e);
+    auto& head =
+        impl_.bucket(result.second);
+    e.next_ = head;
+    head = &e;
+    impl_.grow(1);
+    return { &e, true };
+}
+
+auto
+object::
+insert_impl(
+    place_one& f) ->
+    std::pair<iterator, bool>
+{
+    reserve(size() + 1);
+    auto& e = *impl_.end();
+    f(&e);
+    auto const result =
+        find_impl(e.key());
+    if(result.first)
+    {
+        e.~value_type();
+        return { result.first, false };
+    }
+    auto& head =
+        impl_.bucket(result.second);
+    e.next_ = head;
+    head = &e;
+    impl_.grow(1);
+    return { &e, true };
+}
+
+auto
+object::
+insert_impl(
+    std::size_t hash,
+    place_one& f) ->
+        iterator
+{
+    reserve(size() + 1);
+    auto& e = *impl_.end();
+    f(&e);
+    auto& head =
+        impl_.bucket(hash);
+    e.next_ = head;
+    head = &e;
+    impl_.grow(1);
+    return &e;
+}
+
+void
+object::
+insert_range_impl(
+    std::size_t min_capacity,
+    place_range& f)
+{
+    reserve(min_capacity);
+    undo_insert u(*this);
+    for(;;)
+    {
+        reserve(size() + 1);
+        auto& e = *u.pos();
+        if(! f(&e))
+            break;
+        auto& head =
+            impl_.bucket(e.key());
+        for(auto it = head;;
+            it = it->next_)
+        {
+            if(it)
+            {
+                if(it->key() != e.key())
+                    continue;
+                e.~value_type();
+            }
+            else
+            {
+                e.next_ = head;
+                head = &e;
+                ++u.last;
+            }
+            break;
+        }
+    }
+    u.commit = true;
 }
 
 } // json

@@ -588,14 +588,14 @@ public:
 
         // insert_or_assign(key, o);
         {
-        fail_loop([&](storage_ptr const& sp)
+            fail_loop([&](storage_ptr const& sp)
             {
                 object o({{"a", 1}}, sp);
                 o.insert_or_assign("a", str_);
                 BEAST_EXPECT(o["a"].is_string());
             });
 
-        fail_loop([&](storage_ptr const& sp)
+            fail_loop([&](storage_ptr const& sp)
             {
                 object o({
                     {"a", 1},
@@ -606,7 +606,7 @@ public:
                 BEAST_EXPECT(o.size() == 4);
             });
 
-        fail_loop([&](storage_ptr const& sp)
+            fail_loop([&](storage_ptr const& sp)
             {
                 object o({{"a", 1}}, sp);
                 o.insert_or_assign("b", true);
@@ -614,7 +614,7 @@ public:
                 check(o, 3);
             });
 
-        fail_loop([&](storage_ptr const& sp)
+            fail_loop([&](storage_ptr const& sp)
             {
                 object o({{"a", 1}}, sp);
                 BEAST_EXPECT(

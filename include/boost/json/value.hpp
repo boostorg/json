@@ -33,6 +33,8 @@ namespace boost {
 namespace json {
 
 class value;
+class unchecked_object;
+class unchecked_array;
 
 /** Customization point for assigning to and from class types.
 */
@@ -109,7 +111,7 @@ class value
 #ifndef GENERATING_DOCUMENTATION
     struct scalar
     {
-        storage_ptr sp;
+        storage_ptr sp; // must come first
         union
         {
             std::uint64_t u;
@@ -132,6 +134,7 @@ class value
     // XSL scripts have trouble with private anon unions
     union
     {
+        storage_ptr sp_; // must come first
         object      obj_;
         array       arr_;
         string      str_;
@@ -379,6 +382,11 @@ public:
 
     /** Construct an array.
     */
+    inline
+    value(unchecked_object&& uo);
+
+    /** Construct an array.
+    */
     value(array arr) noexcept
         : arr_(std::move(arr))
         , kind_(json::kind::array)
@@ -401,6 +409,11 @@ public:
         , kind_(json::kind::array)
     {
     }
+
+    /** Construct an array.
+    */
+    inline
+    value(unchecked_array&& ua);
 
     /** Construct a string.
     */
@@ -1055,9 +1068,11 @@ public:
 
         No-throw guarantee.
     */
-    BOOST_JSON_DECL
     storage_ptr const&
-    get_storage() const noexcept;
+    get_storage() const noexcept
+    {
+        return sp_;
+    }
 
     /** Return a pointer to an object, or nullptr.
 

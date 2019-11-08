@@ -92,6 +92,12 @@ struct fail_storage
 
     std::size_t fail_max = 1;
     std::size_t fail = 0;
+    std::size_t nalloc = 0;
+
+    ~fail_storage()
+    {
+        BEAST_EXPECT(nalloc == 0);
+    }
 
     void*
     allocate(
@@ -104,7 +110,9 @@ struct fail_storage
             fail = 0;
             throw test_failure{};
         }
-        return ::operator new(n);
+        auto p = ::operator new(n);
+        ++nalloc;
+        return p;
     }
 
     void
@@ -113,6 +121,8 @@ struct fail_storage
         std::size_t,
         std::size_t) noexcept
     {
+        if(BEAST_EXPECT(nalloc > 0))
+            --nalloc;
         ::operator delete(p);
     }
 };

@@ -487,6 +487,7 @@ public:
         std::initializer_list<value> init,
         storage_ptr sp = {});
 
+    explicit
     BOOST_JSON_DECL
     array(unchecked_array&& ua);
 
@@ -1595,6 +1596,11 @@ private:
             impl_type const&) = default;
 
         inline
+        impl_type(
+            size_type capacity,
+            storage_ptr const& sp);
+
+        inline
         impl_type&
         operator=(
             impl_type&& other) noexcept;
@@ -1610,12 +1616,6 @@ private:
         inline
         void
         swap(impl_type& rhs) noexcept;
-
-        inline
-        void
-        construct(
-            size_type capacity,
-            storage_ptr const& sp);
 
         BOOST_JSON_DECL
         void
@@ -1636,7 +1636,7 @@ private:
     array(
         InputIt first, InputIt last,
         storage_ptr sp,
-        std::random_access_iterator_tag);
+        std::forward_iterator_tag);
 
     template<class InputIt>
     iterator
@@ -1650,7 +1650,7 @@ private:
     insert(
         const_iterator pos,
         InputIt first, InputIt last,
-        std::random_access_iterator_tag);
+        std::forward_iterator_tag);
 
     inline
     void
@@ -1686,7 +1686,7 @@ private:
     class undo_assign;
     class undo_insert;
 
-    storage_ptr sp_;
+    storage_ptr sp_; // must come first
     impl_type impl_;
 };
 

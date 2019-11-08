@@ -225,7 +225,7 @@ private:
         bucket_end() const noexcept;
     };
 
-    class undo_construct;
+    struct undo_construct;
     class undo_insert;
 
     template<class T>
@@ -242,7 +242,7 @@ private:
         return 1.0;
     }
 
-    storage_ptr sp_;
+    storage_ptr sp_; // must come first
     impl_type impl_;
 
 public:
@@ -553,6 +553,7 @@ public:
 
     /**
     */
+    explicit
     BOOST_JSON_DECL
     object(unchecked_object&& uo);
 
@@ -1345,12 +1346,8 @@ public:
     contains(key_type key) const noexcept;
 
 private:
-    struct place
-    {
-        virtual
-        void
-        operator()(void* dest) = 0;
-    };
+    struct place_one;
+    struct place_range;
 
     template<class It>
     using iter_cat = typename
@@ -1376,14 +1373,38 @@ private:
     digest(key_type key) noexcept;
 
     BOOST_JSON_DECL
-    std::pair<
-        value_type*,
-        std::size_t>
+    std::pair<value_type*, std::size_t>
     find_impl(key_type key) const noexcept;
 
     BOOST_JSON_DECL
     void
     rehash(std::size_t new_capacity);
+
+    BOOST_JSON_DECL
+    std::pair<iterator, bool>
+    emplace_impl(
+        key_type key, place_one& f);
+
+    BOOST_JSON_DECL
+    std::pair<iterator, bool>
+    insert_impl(place_one& f);
+
+    BOOST_JSON_DECL
+    iterator
+    insert_impl(
+        std::size_t hash,
+        place_one& f);
+
+    BOOST_JSON_DECL
+    std::pair<iterator, bool>
+    insert_or_assign_impl(
+        key_type key, place_one& f);
+
+    BOOST_JSON_DECL
+    void
+    insert_range_impl(
+        std::size_t min_capacity,
+        place_range& f);
 
     template<class InputIt>
     void
@@ -1399,7 +1420,7 @@ private:
         InputIt first,
         InputIt last,
         std::size_t min_capacity,
-        std::random_access_iterator_tag);
+        std::forward_iterator_tag);
 
     template<class InputIt>
     void

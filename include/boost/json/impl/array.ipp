@@ -26,6 +26,25 @@ namespace json {
 
 array::
 impl_type::
+impl_type(
+    size_type capacity_,
+    storage_ptr const& sp)
+{
+    // The choice of minimum capacity
+    // affects the speed of parsing.
+//    if( capacity_ < min_capacity_)
+//        capacity_ = min_capacity_;
+    vec = reinterpret_cast<value*>(
+        sp->allocate(
+            capacity_ * sizeof(value),
+            alignof(value)));
+    size = 0;
+    capacity = capacity_;
+}
+
+
+array::
+impl_type::
 impl_type(impl_type&& other) noexcept
     : vec(detail::exchange(
         other.vec, nullptr))
@@ -74,25 +93,6 @@ destroy(
             capacity * sizeof(value),
             alignof(value));
     }
-}
-
-void
-array::
-impl_type::
-construct(
-    size_type capacity_,
-    storage_ptr const& sp)
-{
-    // The choice of minimum capacity
-    // affects the speed of parsing.
-    if( capacity_ < min_capacity_)
-        capacity_ = min_capacity_;
-    vec = reinterpret_cast<value*>(
-        sp->allocate(
-            capacity_ * sizeof(value),
-            alignof(value)));
-    size = 0;
-    capacity = capacity_;
 }
 
 //----------------------------------------------------------
@@ -281,12 +281,10 @@ array(
 array::
 array(unchecked_array&& ua)
     : sp_(ua.get_storage())
+    , impl_(ua.size(), sp_) // exact
 {
-    undo_create u(*this);
-    reserve(ua.size());
     impl_.size = ua.size();
     ua.relocate(impl_.vec);
-    u.commit = true;
 }
 
 //----------------------------------------------------------
@@ -346,13 +344,18 @@ shrink_to_fit() noexcept
         impl_.capacity <= min_capacity_)
         return;
 
-    impl_type impl;
 #ifndef BOOST_NO_EXCEPTIONS
     try
     {
 #endif
-        impl.construct(
-            impl_.size, sp_);
+        impl_type impl(impl_.size, sp_);
+        relocate(
+            impl.vec,
+            impl_.vec, impl_.size);
+        impl.size = impl_.size;
+        impl_.size = 0;
+        impl_.swap(impl);
+        impl.destroy(sp_);
 #ifndef BOOST_NO_EXCEPTIONS
     }
     catch(...)
@@ -361,14 +364,6 @@ shrink_to_fit() noexcept
         return;
     }
 #endif
-
-    relocate(
-        impl.vec,
-        impl_.vec, impl_.size);
-    impl.size = impl_.size;
-    impl_.size = 0;
-    impl_.swap(impl);
-    impl.destroy(sp_);
 }
 
 //----------------------------------------------------------
@@ -628,15 +623,16 @@ reserve_impl(size_type capacity)
         else if(capacity < hint)
             capacity = hint;
     }
-    impl_type impl;
-    impl.construct(capacity, sp_);
+    if( capacity < min_capacity_)
+        capacity = min_capacity_;
+    impl_type impl(capacity, sp_);
     relocate(
         impl.vec,
         impl_.vec, impl_.size);
     impl.size = impl_.size;
     impl_.size = 0;
-    impl_.swap(impl);
-    impl.destroy(sp_);
+    impl_.destroy(sp_);
+    impl_ = impl;
 }
 
 void

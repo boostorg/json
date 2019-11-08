@@ -14,7 +14,7 @@
 #include <boost/json/detail/except.hpp>
 #include <boost/json/detail/exchange.hpp>
 #include <boost/json/detail/string.hpp>
-#include <algorithm>
+#include <iterator>
 #include <cmath>
 #include <type_traits>
 #include <utility>
@@ -123,66 +123,35 @@ bucket_end() const noexcept ->
     return bucket_begin() + buckets();
 }
 
+
 //----------------------------------------------------------
 
-class object::undo_construct
+struct object::undo_construct
 {
-    object& self_;
-
-public:
-    bool commit = false;
+    object* self;
 
     ~undo_construct()
     {
-        if(! commit)
-            self_.impl_.destroy(
-                self_.sp_);
-    }
-
-    explicit
-    undo_construct(
-        object& self) noexcept
-        : self_(self)
-    {
+        if(self)
+            self->impl_.destroy(
+                self->sp_);
     }
 };
 
 //----------------------------------------------------------
 
-class object::undo_insert
+struct object::place_one
 {
-    object& self_;
+    virtual
+    void
+    operator()(void* dest) = 0;
+};
 
-public:
-    value_type* const first;
-    value_type* last;
-    bool commit = false;
-
-    ~undo_insert()
-    {
-        if(commit)
-        {
-            self_.impl_.grow(last - first);
-        }
-        else
-        {
-            for(auto it = first; it != last; ++it)
-                self_.impl_.remove(
-                    self_.impl_.bucket(it->key()), it);
-            value_type::destroy(
-                first, static_cast<
-                    std::size_t>(last - first));
-        }
-    }
-
-    explicit
-    undo_insert(
-        object& self) noexcept
-        : self_(self)
-        , first(self_.impl_.end())
-        , last(first)
-    {
-    }
+struct object::place_range
+{
+    virtual
+    bool
+    operator()(void* dest) = 0;
 };
 
 //----------------------------------------------------------
@@ -200,11 +169,11 @@ object(
     storage_ptr sp)
     : sp_(std::move(sp))
 {
-    undo_construct u(*this);
+    undo_construct u{this};
     insert_range(
         first, last,
         min_capacity);
-    u.commit = true;
+    u.self = nullptr;
 }
 
 //----------------------------------------------------------
@@ -355,22 +324,30 @@ object::
 insert(P&& p) ->
     std::pair<iterator, bool>
 {
-    reserve(size() + 1);
-    auto& e = *::new(
-        impl_.end()) value_type(
-            std::forward<P>(p), sp_);
-    auto const result = find_impl(e.key());
-    if(result.first)
+    struct place_impl : place_one
     {
-        e.~value_type();
-        return { result.first, false };
-    }
-    auto& head =
-        impl_.bucket(result.second);
-    e.next_ = head;
-    head = &e;
-    impl_.grow(1);
-    return { &e, true };
+        P&& p;
+        storage_ptr const& sp;
+
+        place_impl(
+            P&& p_,
+            storage_ptr const& sp_)
+            : p(std::forward<P>(p_))
+            , sp(sp_)
+        {
+        }
+
+        void
+        operator()(void* dest) override
+        {
+            ::new(dest) value_type(
+                std::forward<P>(p), sp);
+        }
+    };
+
+    place_impl f(
+        std::forward<P>(p), sp_);
+    return insert_impl(f);
 }
 
 template<class M>
@@ -380,6 +357,30 @@ insert_or_assign(
     key_type key, M&& m) ->
         std::pair<iterator, bool>
 {
+    struct place_impl : place_one
+    {
+        key_type key;
+        M&& m;
+        storage_ptr const& sp;
+
+        place_impl(
+            key_type key_,
+            M&& m_,
+            storage_ptr const& sp_)
+            : key(key_)
+            , m(std::forward<M>(m_))
+            , sp(sp_)
+        {
+        }
+
+        void
+        operator()(void* dest) override
+        {
+            ::new(dest) value_type(key,
+                std::forward<M>(m), sp);
+        }
+    };
+
     auto const result = find_impl(key);
     if(result.first)
     {
@@ -387,16 +388,11 @@ insert_or_assign(
             std::forward<M>(m);
         return { result.first, false };
     }
-    reserve(size() + 1);
-    auto& e = *::new(
-        impl_.end()) value_type(
-            key, std::forward<M>(m), sp_);
-    auto& head =
-        impl_.bucket(result.second);
-    e.next_ = head;
-    head = &e;
-    impl_.grow(1);
-    return { &e, true };
+
+    place_impl f(key,
+        std::forward<M>(m), sp_);
+    return { insert_impl(
+        result.second, f), true };
 }
 
 template<class Arg>
@@ -407,17 +403,33 @@ emplace(
     Arg&& arg) ->
         std::pair<iterator, bool>
 {
-    auto const result = find_impl(key);
-    if(result.first)
-        return { result.first, false };
-    reserve(size() + 1);
-    auto p = ::new(impl_.end()) value_type(
-        key, std::forward<Arg>(arg), sp_);
-    auto& head = impl_.bucket(result.second);
-    p->next_ = head;
-    head = p;
-    impl_.grow(1);
-    return { p, true };
+    struct place_impl : place_one
+    {
+        key_type key;
+        Arg&& arg;
+        storage_ptr const& sp;
+    
+        place_impl(
+            key_type key_,
+            Arg&& arg_,
+            storage_ptr const& sp_)
+            : key(key_)
+            , arg(std::forward<Arg>(arg_))
+            , sp(sp_)
+        {
+        }
+
+        void
+        operator()(void* dest) override
+        {
+            ::new(dest) value_type(key,
+                std::forward<Arg>(arg), sp);
+        }
+    };
+
+    place_impl f(key,
+        std::forward<Arg>(arg), sp_);
+    return emplace_impl(key, f);
 }
 
 //----------------------------------------------------------
@@ -482,33 +494,15 @@ insert_range(
     std::size_t min_capacity,
     std::input_iterator_tag)
 {
+    // Since input iterators cannot be rewound,
+    // we keep inserted elements on an exception.
+    //
     reserve(min_capacity);
-    undo_insert u(*this);
     while(first != last)
     {
-        reserve(size() + 1);
-        auto& e = *::new(
-            u.last) value_type(*first++, sp_);
-        auto& head = impl_.bucket(e.key());
-        for(auto it = head;;
-            it = it->next_)
-        {
-            if(it)
-            {
-                if(it->key() != e.key())
-                    continue;
-                e.~value_type();
-            }
-            else
-            {
-                e.next_ = head;
-                head = &e;
-                ++u.last;
-            }
-            break;
-        }
+        insert(*first);
+        ++first;
     }
-    u.commit = true;
 }
 
 template<class InputIt>
@@ -518,42 +512,44 @@ insert_range(
     InputIt first,
     InputIt last,
     std::size_t min_capacity,
-    std::random_access_iterator_tag)
+    std::forward_iterator_tag)
 {
-    auto n = static_cast<
-        std::size_t>(last - first);
+    struct place_impl : place_range
+    {
+        InputIt it;
+        std::size_t n;
+        storage_ptr const& sp;
+
+        place_impl(
+            InputIt it_,
+            std::size_t n_,
+            storage_ptr const& sp_)
+            : it(it_)
+            , n(n_)
+            , sp(sp_)
+        {
+        }
+
+        bool
+        operator()(void* dest) override
+        {
+            if(n-- == 0)
+                return false;
+            ::new(dest) value_type(*it++, sp);
+            return true;
+        }
+    };
+
+    auto const n = static_cast<std::size_t>(
+        std::distance(first, last));
     auto const n0 = size();
     if(n > max_size() - n0)
         BOOST_JSON_THROW(
             detail::object_too_large_exception());
     if( min_capacity < n0 + n)
         min_capacity = n0 + n;
-    reserve(min_capacity);
-    undo_insert u(*this);
-    while(n--)
-    {
-        auto& e = *::new(
-            u.last) value_type(*first++, sp_);
-        auto& head = impl_.bucket(e.key());
-        for(auto it = head;;
-            it = it->next_)
-        {
-            if(it)
-            {
-                if(it->key() != e.key())
-                    continue;
-                e.~value_type();
-            }
-            else
-            {
-                e.next_ = head;
-                head = &e;
-                ++u.last;
-            }
-            break;
-        }
-    }
-    u.commit = true;
+    place_impl f(first, n, sp_);
+    insert_range_impl(min_capacity, f);
 }
 
 } // json

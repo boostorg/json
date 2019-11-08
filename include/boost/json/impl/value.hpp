@@ -136,6 +136,20 @@ from_json(T& t, value const& v)
 
 //----------------------------------------------------------
 
+value::
+value(unchecked_object&& uo)
+    : obj_(std::move(uo))
+    , kind_(json::kind::object)
+{
+}
+
+value::
+value(unchecked_array&& ua)
+    : arr_(std::move(ua))
+    , kind_(json::kind::array)
+{
+}
+
 template<class Bool, class>
 value::
 value(Bool b, storage_ptr sp) noexcept
@@ -165,6 +179,7 @@ value_type(
     Args&&... args)
     : value_(std::forward<Args>(args)...)
     , len_(key.size())
+#if 0
     , key_(
         [&]
         {
@@ -178,7 +193,16 @@ value_type(
             s[key.size()] = 0;
             return s;
         }())
+#endif
 {
+    if(key.size() > detail::max_string_length_)
+        BOOST_JSON_THROW(
+            detail::string_too_large_exception());
+    key_ = reinterpret_cast<
+        char*>(value_.get_storage()->
+            allocate(key.size() + 1));
+    std::memcpy(key_, key.data(), key.size());
+    key_[key.size()] = 0;
 }
 
 //----------------------------------------------------------

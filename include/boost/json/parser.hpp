@@ -31,8 +31,9 @@ class parser final
 {
     struct level
     {
-        size_type size;
+        std::int32_t size;
         bool obj;
+        char pad[3];
     };
 
     class stack
@@ -97,8 +98,9 @@ class parser final
         object::value_type&
         emplace_pair(Arg&& arg)
         {
-            size_type len;
+            std::size_t len;
             pop_impl(len);
+            size_ -= alignup(len) - len;
             auto key = pop_string(len);
             auto const n = sizeof(object::value_type);
             // size for n was placeheld
@@ -114,7 +116,10 @@ class parser final
         placeholder(
             std::size_t bytes)
         {
-            bytes = alignup(bytes);
+            BOOST_JSON_ASSERT(
+                alignup(bytes) == bytes);
+            BOOST_JSON_ASSERT(
+                alignup(size_) == size_);
             prepare(bytes);
             size_ += bytes;
         }
@@ -123,14 +128,26 @@ class parser final
         unreserve(
             std::size_t bytes)
         {
-            bytes = alignup(bytes);
+            BOOST_JSON_ASSERT(
+                alignup(bytes) == bytes);
+            BOOST_JSON_ASSERT(
+                alignup(size_) == size_);
             BOOST_JSON_ASSERT(
                 bytes <= size_);
             size_ -= bytes;
         }
 
         void
-        push(size_type u)
+        align()
+        {
+            auto const n = alignup(size_);
+            if(n > capacity_)
+                grow(n - size_);
+            size_ = n;
+        }
+
+        void
+        push(std::size_t u)
         {
             push_impl(u);
         }
@@ -147,7 +164,7 @@ class parser final
             prepare(s.size());
             std::memcpy(base_ + size_,
                 s.data(), s.size());
-            size_ += alignup(s.size());
+            size_ += s.size();
         }
 
         void
@@ -159,11 +176,16 @@ class parser final
         unchecked_array
         pop_array(size_type size) noexcept
         {
+            BOOST_JSON_ASSERT(
+                alignup(size_) == size_);
             if(size == 0)
                 return { nullptr, 0, sp_ };
-            auto const n = sizeof(value) * size;
+            auto const n =
+                sizeof(value) * size;
+            BOOST_JSON_ASSERT(
+                alignup(n) == n);
             BOOST_JSON_ASSERT(n <= size_);
-            size_ -= alignup(n);
+            size_ -= n;
             return { reinterpret_cast<
                 value*>(base_ + size_),
                     size, sp_ };
@@ -172,19 +194,23 @@ class parser final
         unchecked_object
         pop_object(size_type size) noexcept
         {
+            BOOST_JSON_ASSERT(
+                alignup(size_) == size_);
             if(size == 0)
                 return { nullptr, 0, sp_ };
             auto const n = sizeof(
                 object::value_type) * size;
+            BOOST_JSON_ASSERT(
+                alignup(n) == n);
             BOOST_JSON_ASSERT(n <= size_);
-            size_ -= alignup(n);
+            size_ -= n;
             return { reinterpret_cast<
                 object::value_type*>(base_ + size_),
                     size, sp_ };
         }
 
         string_view
-        pop_string(size_type len) noexcept
+        pop_string(std::size_t len) noexcept
         {
             BOOST_JSON_ASSERT(len <= size_);
             size_ -= len;
@@ -205,7 +231,6 @@ class parser final
         void
         prepare(std::size_t n)
         {
-            n = alignup(n);
             if(n > capacity_ - size_)
                 grow(n);
         }
@@ -238,7 +263,11 @@ class parser final
         void
         push_impl(T t)
         {
-            auto const n = alignup(sizeof(T));
+            BOOST_JSON_ASSERT((sizeof(T) %
+                sizeof(max_align_t)) == 0);
+            BOOST_JSON_ASSERT((size_ %
+                sizeof(max_align_t)) == 0);
+            auto const n = sizeof(T);
             if(n > capacity_ - size_)
                 grow(n);
             ::new(base_ + size_) T(t);
@@ -249,9 +278,13 @@ class parser final
         void
         pop_impl(T& t) noexcept
         {
-            BOOST_JSON_ASSERT(
-                size_ >= sizeof(T));
-            size_ -= alignup(sizeof(T));
+            BOOST_JSON_ASSERT((sizeof(T) %
+                sizeof(max_align_t)) == 0);
+            BOOST_JSON_ASSERT((size_ %
+                sizeof(max_align_t)) == 0);
+            auto const n = sizeof(T);
+            BOOST_JSON_ASSERT(size_ >= n);
+            size_ -= n;
             std::memcpy(
                 &t, base_ + size_, sizeof(T));
         }

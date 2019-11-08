@@ -97,6 +97,7 @@ void
 parser::
 on_document_begin(error_code&)
 {
+    lev_ = level{ 0, false };
     st_.placeholder(sizeof(value));
 }
 
@@ -115,7 +116,6 @@ void
 parser::
 on_object_begin(error_code&)
 {
-    lev_ = level{ 0, false };
     st_.push(lev_);
     lev_ = level{ 0, true };
     st_.placeholder(sizeof(
@@ -204,6 +204,7 @@ on_key(
     st_.push(s);
     key_ += static_cast<size_type>(
         s.size());
+    st_.align();
     st_.push(key_);
     key_ = 0;
 }

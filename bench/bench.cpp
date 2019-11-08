@@ -325,8 +325,13 @@ struct nlohmann_impl : public any_impl
     }
 
     void
-    serialize(string_view, int) const override
+    serialize(string_view s, int repeat) const override
     {
+        auto jv = nlohmann::json::parse(
+            s.begin(), s.end());
+        while(repeat--)
+            auto s = jv.dump();
+
     }
 };
 
@@ -369,7 +374,7 @@ benchParse(
                 std::endl;
         for(unsigned j = 0; j < vi.size(); ++j)
         {
-            for(unsigned k = 0; k < 10; ++k)
+            for(unsigned k = 0; k < 7; ++k)
             {
                 auto const when = clock_type::now();
                 vi[j]->parse(vs[i].text, 250);
@@ -401,14 +406,14 @@ benchSerialize(
                 std::endl;
         for(unsigned j = 0; j < vi.size(); ++j)
         {
-            for(unsigned k = 0; k < 5; ++k)
+            for(unsigned k = 0; k < 7; ++k)
             {
                 auto const when = clock_type::now();
                 vi[j]->serialize(vs[i].text, 1000);
                 auto const ms = std::chrono::duration_cast<
                     std::chrono::milliseconds>(
                     clock_type::now() - when).count();
-                if(k > 9)
+                if(k > 4)
                     dout << " " << vi[j]->name() << ": " <<
                         std::to_string(ms) << "ms" <<
                         std::endl;
@@ -442,13 +447,13 @@ main(
         std::vector<std::unique_ptr<any_impl const>> vi;
         vi.reserve(10);
         //vi.emplace_back(new boost_default_impl);
-        vi.emplace_back(new boost_impl);
+        //.emplace_back(new boost_impl);
         //vi.emplace_back(new boost_vec_impl);
-        vi.emplace_back(new rapidjson_impl);
-        //vi.emplace_back(new nlohmann_impl);
+        //vi.emplace_back(new rapidjson_impl);
+        vi.emplace_back(new nlohmann_impl);
 
-        benchParse(vs, vi);
-        //benchSerialize(vs, vi);
+        //benchParse(vs, vi);
+        benchSerialize(vs, vi);
     }
     catch(system_error const& se)
     {
