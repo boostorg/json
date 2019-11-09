@@ -68,9 +68,11 @@ public:
 
         No-throw guarantee.
     */
-    storage_ptr() = default;
+    BOOST_JSON_DECL
+    storage_ptr() noexcept;
 
     storage_ptr(std::nullptr_t) noexcept
+        : storage_ptr()
     {
     }
 
@@ -115,7 +117,7 @@ public:
         storage_ptr&& other) noexcept
         : p_(other.p_)
     {
-        other.p_ = nullptr;
+        other.p_ = storage_ptr().get();
     }
 
     /** Copy construct a storage pointer.
@@ -160,10 +162,15 @@ public:
 
         @param other The storage pointer to assign from.
     */
-    inline
     storage_ptr&
     operator=(
-        storage_ptr&& other) noexcept;
+        storage_ptr&& other) noexcept
+    {
+        release();
+        p_ = other.p_;
+        other.p_ = storage_ptr().get();
+        return *this;
+    }
 
     /** Copy construct a storage pointer.
 
@@ -184,10 +191,15 @@ public:
 
         @param other The storage pointer to assign from.
     */
-    inline
     storage_ptr&
     operator=(
-        storage_ptr const& other) noexcept;
+        storage_ptr const& other) noexcept
+    {
+        other.addref();
+        release();
+        p_ = other.p_;
+        return *this;
+    }
 
     /** Return a pointer to the storage object.
 
@@ -203,9 +215,11 @@ public:
 
         No-throw guarantee.
     */
-    inline
     storage*
-    get() const noexcept;
+    get() const noexcept
+    {
+        return p_;
+    }
 
     /** Return a pointer to the storage object.
 
@@ -224,7 +238,7 @@ public:
     storage*
     operator->() const noexcept
     {
-        return get();
+        return p_;
     }
 
     /** Return a reference to the storage object.
@@ -248,7 +262,7 @@ public:
     storage&
     operator*() const noexcept
     {
-        return *get();
+        return *p_;
     }
 
     /** Create a new storage object and return a pointer to it.
@@ -369,5 +383,8 @@ public:
 } // boost
 
 #include <boost/json/impl/storage_ptr.hpp>
+#ifdef BOOST_JSON_HEADER_ONLY
+#include <boost/json/impl/storage_ptr.ipp>
+#endif
 
 #endif

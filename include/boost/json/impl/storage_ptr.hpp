@@ -10,7 +10,6 @@
 #ifndef BOOST_JSON_IMPL_STORAGE_PTR_HPP
 #define BOOST_JSON_IMPL_STORAGE_PTR_HPP
 
-#include <boost/json/storage_ptr.hpp>
 #include <new>
 #include <utility>
 
@@ -56,76 +55,9 @@ struct counted_storage_impl : storage
     }
 };
 
-struct default_storage_impl
-{
-    static
-    constexpr
-    unsigned long long id()
-    { 
-        return 0x3b88990852d58ae4;
-    }
-
-    static
-    constexpr
-    bool need_free()
-    {
-        return true;
-    }
-
-    void*
-    allocate(
-        std::size_t n,
-        std::size_t)
-    {
-        return ::operator new(n);
-    }
-
-    void
-    deallocate(
-        void* p,
-        std::size_t,
-        std::size_t) noexcept
-    {
-        ::operator delete(p);
-    }
-};
-
 } // detail
 
 //----------------------------------------------------------
-
-storage_ptr&
-storage_ptr::
-operator=(
-    storage_ptr&& other) noexcept
-{
-    release();
-    p_ = other.p_;
-    other.p_ = nullptr;
-    return *this;
-}
-
-storage_ptr&
-storage_ptr::
-operator=(
-    storage_ptr const& other) noexcept
-{
-    other.addref();
-    release();
-    p_ = other.p_;
-    return *this;
-}
-
-storage*
-storage_ptr::
-get() const noexcept
-{
-#ifdef __clang__
-    [[clang::require_constant_initialization]] 
-#endif
-    static scoped_storage<detail::default_storage_impl> impl;
-    return p_ ? p_ : impl.get();
-}
 
 template<class Storage, class... Args>
 storage_ptr
