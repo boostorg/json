@@ -69,6 +69,18 @@
 # endif
 #endif
 
+#ifndef BOOST_JSON_MAX_STRING_SIZE
+#define BOOST_JSON_MAX_STRING_SIZE 0x7ffffffe // 2GB
+#endif
+
+#ifndef BOOST_JSON_MAX_OBJECT_SIZE
+#define BOOST_JSON_MAX_OBJECT_SIZE 0x7ffffffe // 2GB
+#endif
+
+#ifndef BOOST_JSON_MAX_ARRAY_SIZE
+#define BOOST_JSON_MAX_ARRAY_SIZE 0x7ffffffe // 2GB
+#endif
+
 namespace boost {
 namespace json {
 

@@ -58,11 +58,13 @@ growth(
                 "size > max_size()"));
     new_size |= mask_;
     if( new_size > max_size())
-        return detail::max_string_length_;
+        return static_cast<
+            impl_size_type>(max_size());
     // growth factor 2
     if( capacity >
-        detail::max_string_length_ - capacity)
-        return detail::max_string_length_; // overflow
+        max_size() - capacity)
+        return static_cast<
+            impl_size_type>(max_size()); // overflow
     return (std::max<impl_size_type>)(
         capacity * 2, static_cast<
             impl_size_type>(new_size));

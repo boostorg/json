@@ -30,9 +30,6 @@ using string_view = std::string_view;
 
 namespace detail {
 
-// max length of strings used as keys or values
-constexpr size_type max_string_length_ = 0x7ffffffe; // 2GB
-
 template<class T>
 using is_viewy = typename std::enable_if<
     std::is_convertible<

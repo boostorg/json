@@ -183,7 +183,7 @@ on_key_part(
     error_code&)
 {
     if( s.size() >
-        detail::max_string_length_ - key_)
+        string::max_size() - key_)
         BOOST_JSON_THROW(
             detail::key_too_large_exception());  
     st_.push(s);
@@ -198,7 +198,7 @@ on_key(
     error_code&)
 {
     if( s.size() >
-        detail::max_string_length_ - key_)
+        string::max_size() - key_)
         BOOST_JSON_THROW(
             detail::key_too_large_exception());  
     st_.push(s);
@@ -216,7 +216,7 @@ on_string_part(
     error_code&)
 {
     if( s.size() >
-        detail::max_string_length_ - str_)
+        string::max_size() - str_)
         BOOST_JSON_THROW(
             detail::string_too_large_exception());  
     st_.push(s);
@@ -231,7 +231,7 @@ on_string(
     error_code&)
 {
     if( s.size() >
-        detail::max_string_length_ - str_)
+        string::max_size() - str_)
         BOOST_JSON_THROW(
             detail::string_too_large_exception());  
     if(str_ == 0)

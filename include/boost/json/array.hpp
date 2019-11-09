@@ -990,7 +990,7 @@ public:
     size_type
     max_size() noexcept
     {
-        return size_type(-1);
+        return BOOST_JSON_MAX_ARRAY_SIZE;
     }
 
     /** Return the number of elements that can be held in currently allocated memory

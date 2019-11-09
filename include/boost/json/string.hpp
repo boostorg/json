@@ -55,10 +55,10 @@ public:
     using value_type        = char;
 
     /// The type used to represent unsigned integers
-    using size_type         = string_view::size_type;
+    using size_type         = std::size_t;
 
     /// The type used to represent signed integers
-    using difference_type   = string_view::difference_type;
+    using difference_type   = std::ptrdiff_t;
 
     /// A pointer to an element
     using pointer           = char*;
@@ -1693,7 +1693,7 @@ public:
     size_type
     max_size() noexcept
     {
-        return detail::max_string_length_;
+        return BOOST_JSON_MAX_STRING_SIZE;
     }
 
     /** Return the number of characters that can be held without a reallocation.

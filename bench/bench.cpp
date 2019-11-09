@@ -330,7 +330,7 @@ struct nlohmann_impl : public any_impl
         auto jv = nlohmann::json::parse(
             s.begin(), s.end());
         while(repeat--)
-            auto s = jv.dump();
+            auto st = jv.dump();
 
     }
 };

@@ -179,11 +179,10 @@ value_type(
     Args&&... args)
     : value_(std::forward<Args>(args)...)
     , len_(key.size())
-#if 0
     , key_(
         [&]
         {
-            if(key.size() > detail::max_string_length_)
+            if(key.size() > BOOST_JSON_MAX_STRING_SIZE)
                 BOOST_JSON_THROW(
                     detail::string_too_large_exception());
             auto s = reinterpret_cast<
@@ -193,16 +192,7 @@ value_type(
             s[key.size()] = 0;
             return s;
         }())
-#endif
 {
-    if(key.size() > detail::max_string_length_)
-        BOOST_JSON_THROW(
-            detail::string_too_large_exception());
-    key_ = reinterpret_cast<
-        char*>(value_.get_storage()->
-            allocate(key.size() + 1));
-    std::memcpy(key_, key.data(), key.size());
-    key_[key.size()] = 0;
 }
 
 //----------------------------------------------------------
