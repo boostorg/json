@@ -1651,6 +1651,32 @@ public:
         return arr_;
     }
 
+    /** Return a value as an array, without checking.
+
+        This is a fast way to gain access to an array
+        value when the kind is known.
+
+        @par Preconditions
+        
+        @code
+        this->is_array()
+        @endcode
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
+    array const&
+    get_array() const noexcept
+    {
+        BOOST_JSON_ASSERT(is_array());
+        return arr_;
+    }
+
     /** Return a value as a string, without checking.
 
         This is a fast way to gain access to a string
@@ -1677,15 +1703,15 @@ public:
         return str_;
     }
 
-    /** Return a value as an array, without checking.
+    /** Return a value as a string, without checking.
 
-        This is a fast way to gain access to an array
+        This is a fast way to gain access to a string
         value when the kind is known.
 
         @par Preconditions
         
         @code
-        this->is_array()
+        this->is_string()
         @endcode
 
         @par Complexity
@@ -1696,11 +1722,11 @@ public:
 
         No-throw guarantee.
     */
-    array const&
-    get_array() const noexcept
+    string const&
+    get_string() const noexcept
     {
-        BOOST_JSON_ASSERT(is_array());
-        return arr_;
+        BOOST_JSON_ASSERT(is_string());
+        return str_;
     }
 
     //------------------------------------------------------

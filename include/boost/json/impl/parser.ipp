@@ -58,6 +58,7 @@ void
 parser::
 destroy()
 {
+#if 0
     if(key_ > 0)
     {
         BOOST_JSON_ASSERT(lev_.obj);
@@ -91,6 +92,7 @@ destroy()
             st_.pop(lev_);
         }
     }
+#endif
 }
 
 void

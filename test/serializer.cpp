@@ -8,9 +8,8 @@
 //
 
 // Test that header file is self-contained.
-
 #include <boost/json/serializer.hpp>
-#if 0
+
 #include <boost/json/parser.hpp>
 #include <boost/beast/_experimental/unit_test/suite.hpp>
 #include "parse-vectors.hpp"
@@ -19,6 +18,85 @@
 
 namespace boost {
 namespace json {
+
+static
+void
+print(
+    std::ostream& os,
+    json::value const& jv);
+
+static
+void
+print(
+    std::ostream& os,
+    object const& obj)
+{
+    os << "{";
+    for(auto it = obj.begin();
+        it != obj.end(); ++it)
+    {
+        if(it != obj.begin())
+            os << ",";
+        os << "\"" << it->key() << "\":";
+        print(os, it->value());
+    }
+    os << "}";
+}
+
+static
+void
+print(
+    std::ostream& os,
+    array const& arr)
+{
+    os << "[";
+    for(auto it = arr.begin();
+        it != arr.end(); ++it)
+    {
+        if(it != arr.begin())
+            os << ",";
+        print(os, *it);
+    }
+    os << "]";
+}
+
+static
+void
+print(
+    std::ostream& os,
+    json::value const& jv)
+{
+    switch(jv.kind())
+    {
+    case kind::object:
+        print(os, jv.get_object());
+        break;
+    case kind::array:
+        print(os, jv.get_array());
+        break;
+    case kind::string:
+        os << "\"" << jv.get_string() << "\"";
+        break;
+    case kind::int64:
+        os << jv.as_int64();
+        break;
+    case kind::uint64:
+        os << jv.as_uint64();
+        break;
+    case kind::double_:
+        os << jv.as_double();
+        break;
+    case kind::boolean:
+        if(jv.as_bool())
+            os << "true";
+        else
+            os << "false";
+        break;
+    case kind::null:
+        os << "null";
+        break;
+    }
+}
 
 class serializer_test : public beast::unit_test::suite
 {
@@ -260,9 +338,10 @@ public:
     void
     run()
     {
-        testSerializer();
+        //testSerializer();
         doTestStrings();
-        doTestVectors();
+        //doTestVectors();
+        pass();
     }
 };
 
@@ -270,4 +349,4 @@ BEAST_DEFINE_TESTSUITE(boost,json,serializer);
 
 } // json
 } // boost
-#endif
+
