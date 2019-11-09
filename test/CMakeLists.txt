@@ -13,6 +13,12 @@ source_group (TREE ${PROJECT_SOURCE_DIR}/include/boost/json PREFIX json FILES ${
 
 GroupSources(test "/")
 
+add_definitions(
+    -DBOOST_JSON_MAX_STRING_SIZE=1000
+    -DBOOST_JSON_MAX_OBJECT_SIZE=30
+    -DBOOST_JSON_MAX_ARRAY_SIZE=100
+    )
+
 add_executable (json-tests
     ${BEAST_FILES}
     ${PROJECT_FILES}

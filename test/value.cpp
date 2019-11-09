@@ -409,16 +409,33 @@ public:
             fail_loop([&](storage_ptr const sp)
             {
                 value jv(sp);
-                jv = value({1, 2, 3, 4, 5});
-                BEAST_EXPECT(jv.as_array().size() == 5);
+                jv = value({
+                    { {"a",1}, {"b",2u} },
+                    { 1, 2 },
+                    "hello",
+                    1,
+                    2u,
+                    3.,
+                    true,
+                    nullptr
+                    });
+                BEAST_EXPECT(jv.as_array().size() == 8);
             });
 
             fail_loop([&](storage_ptr const sp)
             {
                 value jv(sp);
                 jv = value({
-                    {"a",1},{"b",2},{"c",3}});
-                BEAST_EXPECT(jv.as_object().size() == 3);
+                    { "aa", { {"a",1}, {"b",2u} } },
+                    { "bb", { 1, 2 } },
+                    { "cc", "hello" },
+                    { "dd", 1 },
+                    { "ee", 2u },
+                    { "ff", 3. },
+                    { "gg", true },
+                    { "hh", nullptr },
+                    });
+                BEAST_EXPECT(jv.as_object().size() == 8);
             });
 
             fail_loop([&](storage_ptr const sp)

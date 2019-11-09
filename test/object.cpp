@@ -57,11 +57,11 @@ public:
     BOOST_JSON_STATIC_ASSERT(  std::is_constructible<object::const_iterator, object::iterator>::value);
     BOOST_JSON_STATIC_ASSERT(  std::is_constructible<object::const_iterator, object::const_iterator>::value);
 
-    //BOOST_JSON_STATIC_ASSERT(  std::is_assignable<object::iterator, object::iterator>::value);
-    //BOOST_JSON_STATIC_ASSERT(! std::is_assignable<object::iterator, object::const_iterator>::value);
+    BOOST_JSON_STATIC_ASSERT(  std::is_assignable<object::iterator&, object::iterator>::value);
+    BOOST_JSON_STATIC_ASSERT(! std::is_assignable<object::iterator&, object::const_iterator>::value);
 
-    //BOOST_JSON_STATIC_ASSERT(  std::is_assignable<object::const_iterator, object::iterator>::value);
-    //BOOST_JSON_STATIC_ASSERT(  std::is_assignable<object::const_iterator, object::const_iterator>::value);
+    BOOST_JSON_STATIC_ASSERT(  std::is_assignable<object::const_iterator&, object::iterator>::value);
+    BOOST_JSON_STATIC_ASSERT(  std::is_assignable<object::const_iterator&, object::const_iterator>::value);
 
     BOOST_JSON_STATIC_ASSERT(is_equal_comparable<object::iterator, object::iterator>::value);
     BOOST_JSON_STATIC_ASSERT(is_equal_comparable<object::iterator, object::const_iterator>::value);
@@ -75,6 +75,32 @@ public:
     BOOST_JSON_STATIC_ASSERT(is_unequal_comparable<object::const_iterator, object::iterator>::value);
     BOOST_JSON_STATIC_ASSERT(is_unequal_comparable<object::const_iterator, object::const_iterator>::value);
 
+    BOOST_JSON_STATIC_ASSERT(  std::is_constructible<object::reverse_iterator, object::reverse_iterator>::value);
+    // std::reverse_iterator ctor is not SFINAEd
+    //BOOST_JSON_STATIC_ASSERT(! std::is_constructible<object::reverse_iterator, object::const_reverse_iterator>::value);
+
+    BOOST_JSON_STATIC_ASSERT(  std::is_constructible<object::const_reverse_iterator, object::reverse_iterator>::value);
+    BOOST_JSON_STATIC_ASSERT(  std::is_constructible<object::const_reverse_iterator, object::const_reverse_iterator>::value);
+
+    BOOST_JSON_STATIC_ASSERT(  std::is_assignable<object::reverse_iterator&, object::reverse_iterator>::value);
+    // std::reverse_iterator assignment is not SFINAEd
+    //BOOST_JSON_STATIC_ASSERT(! std::is_assignable<object::reverse_iterator&, object::const_reverse_iterator>::value);
+
+    BOOST_JSON_STATIC_ASSERT(  std::is_assignable<object::const_reverse_iterator&, object::reverse_iterator>::value);
+    BOOST_JSON_STATIC_ASSERT(  std::is_assignable<object::const_reverse_iterator&, object::const_reverse_iterator>::value);
+
+    BOOST_JSON_STATIC_ASSERT(is_equal_comparable<object::reverse_iterator, object::reverse_iterator>::value);
+    BOOST_JSON_STATIC_ASSERT(is_equal_comparable<object::reverse_iterator, object::const_reverse_iterator>::value);
+
+    BOOST_JSON_STATIC_ASSERT(is_equal_comparable<object::const_reverse_iterator, object::reverse_iterator>::value);
+    BOOST_JSON_STATIC_ASSERT(is_equal_comparable<object::const_reverse_iterator, object::const_reverse_iterator>::value);
+
+    BOOST_JSON_STATIC_ASSERT(is_unequal_comparable<object::reverse_iterator, object::reverse_iterator>::value);
+    BOOST_JSON_STATIC_ASSERT(is_unequal_comparable<object::reverse_iterator, object::const_reverse_iterator>::value);
+
+    BOOST_JSON_STATIC_ASSERT(is_unequal_comparable<object::const_reverse_iterator, object::reverse_iterator>::value);
+    BOOST_JSON_STATIC_ASSERT(is_unequal_comparable<object::const_reverse_iterator, object::const_reverse_iterator>::value);
+    
     static
     void
     check(
@@ -112,25 +138,35 @@ public:
         {
             object o(sp);
             check_storage(o, sp);
-        });
-
-        // object(size_type)
-        {
-            object o(50);
             BEAST_EXPECT(o.empty());
             BEAST_EXPECT(o.size() == 0);
-            BEAST_EXPECT(o.capacity() == 53);
+            BEAST_EXPECT(o.capacity() == 0);
+        });
+
+        // object(std::size_t, storage_ptr)
+        {
+            {
+                object o(10);
+                BEAST_EXPECT(o.empty());
+                BEAST_EXPECT(o.size() == 0);
+                BEAST_EXPECT(o.capacity() >= 10);
+            }
+
+            fail_loop([&](storage_ptr const& sp)
+            {
+                object o(10, sp);
+                check_storage(o, sp);
+                BEAST_EXPECT(o.empty());
+                BEAST_EXPECT(o.size() == 0);
+                BEAST_EXPECT(o.capacity() >= 10);
+            });
+
+            {
+                BEAST_THROWS(
+                    object(object::max_size()+1),
+                    std::length_error);
+            }
         }
-
-        // object(size_type, storage_ptr)
-        fail_loop([&](storage_ptr const& sp)
-        {
-            object o(50, sp);
-            BEAST_EXPECT(o.empty());
-            BEAST_EXPECT(o.size() == 0);
-            BEAST_EXPECT(o.capacity() == 53);
-            check_storage(o, sp);
-        });
 
         // object(InputIt, InputIt, size_type, storage_ptr)
         {
@@ -168,197 +204,250 @@ public:
                 check(o, 7);
                 check_storage(o, sp);
             });
+
+            fail_loop([&](storage_ptr const& sp)
+            {
+                std::initializer_list<std::pair<
+                    string_view, value>> init = {
+                        {"a", 1},
+                        {"b", true},
+                        {"c", "hello"}};
+                object o(
+                    make_input_iterator(init.begin()),
+                    make_input_iterator(init.end()),
+                    5, sp);
+                BEAST_EXPECT(! o.empty());
+                BEAST_EXPECT(o.size() == 3);
+                BEAST_EXPECT(o.capacity() == 7);
+                check(o, 7);
+                check_storage(o, sp);
+            });
+
+            {
+                std::initializer_list<std::pair<
+                    string_view, value>> init = {
+                { "1", 1},{ "2", 2},{ "3", 3},{ "4", 4},{ "5", 5},
+                { "6", 6},{ "7", 7},{ "8", 8},{ "9", 9},{"10",10},
+                {"11",11},{"12",12},{"13",13},{"14",14},{"15",15},
+                {"16",16},{"17",17},{"18",18},{"19",19},{"10",10},
+                {"21",21},{"22",22},{"23",23},{"24",24},{"25",25},
+                {"26",26},{"27",27},{"28",28},{"29",29},{"30",30},
+                {"31",31}};
+                BEAST_EXPECT(init.size() > object::max_size());
+                BEAST_THROWS(
+                    object(init.begin(), init.end()),
+                    std::length_error);
+                BEAST_THROWS(
+                    object(
+                        make_input_iterator(init.begin()),
+                        make_input_iterator(init.end())),
+                    std::length_error);
+            }
         }
 
         // object(object&&)
         {
-            object obj1({
+            object o1({
                 {"a", 1},
                 {"b", true},
                 {"c", "hello"}
                 });
-            check(obj1, 3);
+            check(o1, 3);
             auto const sp =
                 storage_ptr{};
-            object obj2(std::move(obj1));
-            BEAST_EXPECT(obj1.empty());
-            BEAST_EXPECT(obj1.size() == 0);
-            check(obj2, 3);
-            check_storage(obj1, sp);
-            check_storage(obj2, sp);
+            object o2(std::move(o1));
+            BEAST_EXPECT(o1.empty());
+            BEAST_EXPECT(o1.size() == 0);
+            check(o2, 3);
+            check_storage(o1, sp);
+            check_storage(o2, sp);
         }
+
+        // object(object&&, storage_ptr)
+        fail_loop([&](storage_ptr const& sp)
+        {
+            object o1({
+                {"a", 1},
+                {"b", true},
+                {"c", "hello"}
+                });
+            object o2(std::move(o1), sp);
+            BEAST_EXPECT(! o1.empty());
+            check(o2, 3);
+            check_storage(o1,
+                storage_ptr{});
+            check_storage(o2, sp);
+        });
 
         // object(pilfered<object>)
         {
-            object obj1({
+            auto const sp =
+                make_storage<unique_storage>();
+            object o1({
                 {"a", 1},
                 {"b", true},
                 {"c", "hello"}
-                });
-            object obj2(pilfer(obj1));
+                }, sp);
+            object o2(pilfer(o1));
             BEAST_EXPECT(
-                obj1.get_storage() == nullptr);
-            BEAST_EXPECT(obj1.empty());
-            check(obj2, 3);
+                o1.get_storage() == nullptr);
+            BEAST_EXPECT(
+                *o2.get_storage() == *sp);
+            BEAST_EXPECT(o1.empty());
+            check(o2, 3);
         }
 
         auto const sp = make_storage<unique_storage>();
         auto const sp0 = storage_ptr{};
 
-        // object(object&&, storage_ptr)
-        fail_loop([&](storage_ptr const& sp)
-        {
-            object obj1({
-                {"a", 1},
-                {"b", true},
-                {"c", "hello"}
-                });
-            object obj2(std::move(obj1), sp);
-            BEAST_EXPECT(! obj1.empty());
-            check(obj2, 3);
-            check_storage(obj1,
-                storage_ptr{});
-            check_storage(obj2, sp);
-        });
-
         // object(object const&)
         {
-            object obj1({
+            object o1({
                 {"a", 1},
                 {"b", true},
                 {"c", "hello"}
                 });
-            object obj2(obj1);
-            BEAST_EXPECT(! obj1.empty());
-            check(obj2, 3);
+            object o2(o1);
+            BEAST_EXPECT(! o1.empty());
+            check(o2, 3);
         }
 
         // object(object const&, storage_ptr)
         fail_loop([&](storage_ptr const& sp)
         {
-            object obj1({
+            object o1({
                 {"a", 1},
                 {"b", true},
                 {"c", "hello"}
                 });
-            object obj2(obj1, sp);
-            BEAST_EXPECT(! obj1.empty());
-            check(obj2, 3);
-            check_storage(obj2, sp);
+            object o2(o1, sp);
+            BEAST_EXPECT(! o1.empty());
+            check(o2, 3);
+            check_storage(o2, sp);
         });
-
-        // object(initializer_list)
-        {
-            object o({
-                {"a", 1},
-                {"b", true},
-                {"c", "hello"}
-                });
-            check(o, 3);
-        }
-
-        // object(initializer_list, size_type)
-        {
-            object o({
-                {"a", 1},
-                {"b", true},
-                {"c", "hello"}
-                },
-                5);
-            check(o, 7);
-        }
 
         // object(initializer_list, storage_ptr)
-        fail_loop([&](storage_ptr const& sp)
         {
-            object o({
-                {"a", 1},
-                {"b", true},
-                {"c", "hello"}
-                },
-                sp);
-            check(o, 3);
-            check_storage(o, sp);
-        });
+            {
+                object o({
+                    {"a", 1},
+                    {"b", true},
+                    {"c", "hello"}});
+                check(o, 3);
+            }
 
-        // object(initializer_list, size_type, storage_ptr)
-        fail_loop([&](storage_ptr const& sp)
+            fail_loop([&](storage_ptr const& sp)
+            {
+                object o({
+                    {"a", 1},
+                    {"b", true},
+                    {"c", "hello"}},
+                    sp);
+                check(o, 3);
+                check_storage(o, sp);
+            });
+        }
+
+        // object(initializer_list, std::size_t, storage_ptr)
         {
-            object o({
-                {"a", 1},
-                {"b", true},
-                {"c", "hello"}
-                },
-                5, sp);
-            BEAST_EXPECT(
-                *o.get_storage() == *sp);
-            check(o, 7);
-        });
+            {
+                object o({
+                    {"a", 1},
+                    {"b", true},
+                    {"c", "hello"}},
+                    5);
+                check(o, 7);
+            }
+
+            fail_loop([&](storage_ptr const& sp)
+            {
+                object o({
+                    {"a", 1},
+                    {"b", true},
+                    {"c", "hello"}
+                    },
+                    5, sp);
+                BEAST_EXPECT(
+                    *o.get_storage() == *sp);
+                check(o, 7);
+            });
+        }
 
         // operator=(object&&)
         {
             {
-                object obj1({
+                object o1({
                     {"a", 1},
                     {"b", true},
                     {"c", "hello"}});
-                object obj2;
-                obj2 = std::move(obj1);
-                check(obj2, 3);
-                BEAST_EXPECT(obj1.empty());
-                check_storage(obj1,
+                object o2;
+                o2 = std::move(o1);
+                check(o2, 3);
+                BEAST_EXPECT(o1.empty());
+                check_storage(o1,
                     storage_ptr{});
-                check_storage(obj2,
+                check_storage(o2,
                     storage_ptr{});
             }
 
             fail_loop([&](storage_ptr const& sp)
             {
-                object obj1({
+                object o1({
                     {"a", 1},
                     {"b", true},
                     {"c", "hello"}});
-                object obj2(sp);
-                obj2 = std::move(obj1);
-                check(obj1, 3);
-                check(obj2, 3);
-                check_storage(obj1,
+                object o2(sp);
+                o2 = std::move(o1);
+                check(o1, 3);
+                check(o2, 3);
+                check_storage(o1,
                     storage_ptr{});
-                check_storage(obj2, sp);
+                check_storage(o2, sp);
             });
         }
 
         // operator=(object const&)
         {
             {
-                object obj1({
+                object o1({
                     {"a", 1},
                     {"b", true},
                     {"c", "hello"}});
-                object obj2;
-                obj2 = obj1;
-                check(obj1, 3);
-                check(obj2, 3);
-                check_storage(obj1,
+                object o2;
+                o2 = o1;
+                check(o1, 3);
+                check(o2, 3);
+                check_storage(o1,
                     storage_ptr{});
-                check_storage(obj2,
+                check_storage(o2,
                     storage_ptr{});
             }
 
             fail_loop([&](storage_ptr const& sp)
             {
-                object obj1({
+                object o1({
                     {"a", 1},
                     {"b", true},
                     {"c", "hello"}});
-                object obj2(sp);
-                obj2 = obj1;
-                check(obj1, 3);
-                check(obj2, 3);
-                check_storage(obj1,
+                object o2(sp);
+                o2 = o1;
+                check(o1, 3);
+                check(o2, 3);
+                check_storage(o1,
                     storage_ptr{});
-                check_storage(obj2, sp);
+                check_storage(o2, sp);
             });
+
+            // self-assign
+            {
+                object o1({
+                    {"a", 1},
+                    {"b", true},
+                    {"c", "hello"}});
+                object const& o2(o1);
+                o1 = o2;
+                check(o1, 3);
+            }
         }
 
         // operator=(initializer_list)
@@ -532,11 +621,19 @@ public:
     {
         // clear
         {
-            object o;
-            o.emplace("x", 1);
-            BEAST_EXPECT(! o.empty());
-            o.clear();
-            BEAST_EXPECT(o.empty());
+            {
+                object o;
+                o.clear();
+                BEAST_EXPECT(o.empty());
+            }
+
+            {
+                object o;
+                o.emplace("x", 1);
+                BEAST_EXPECT(! o.empty());
+                o.clear();
+                BEAST_EXPECT(o.empty());
+            }
         }
 
         // insert(P&&)
@@ -560,20 +657,49 @@ public:
                 BEAST_EXPECT(result.first->key() == "x");
                 BEAST_EXPECT(result.first->value().as_int64() == 1);
             });
+
+            fail_loop([&](storage_ptr const& sp)
+            {
+                object o({
+                    {"a", 1},
+                    {"b", 2},
+                    {"c", 3}}, sp);
+                auto const result = o.insert(
+                    std::make_pair("b", 4));
+                BEAST_EXPECT(
+                    result.first->value().as_int64() == 2);
+                BEAST_EXPECT(! result.second);
+            });
         }
 
         // insert(InputIt, InputIt)
-        fail_loop([&](storage_ptr const& sp)
         {
-            std::initializer_list<std::pair<
-                string_view, value>> init = {
-                    {"a", 1},
-                    {"b", true},
-                    {"c", "hello"}};
-            object o(sp);
-            o.insert(init.begin(), init.end());
-            check(o, 3);
-        });
+            fail_loop([&](storage_ptr const& sp)
+            {
+                std::initializer_list<std::pair<
+                    string_view, value>> init = {
+                        {"a", 1},
+                        {"b", true},
+                        {"c", "hello"}};
+                object o(sp);
+                o.insert(init.begin(), init.end());
+                check(o, 3);
+            });
+
+            fail_loop([&](storage_ptr const& sp)
+            {
+                std::initializer_list<std::pair<
+                    string_view, value>> init = {
+                        {"a", 1},
+                        {"b", true},
+                        {"c", "hello"}};
+                object o(sp);
+                o.insert(
+                    make_input_iterator(init.begin()),
+                    make_input_iterator(init.end()));
+                check(o, 3);
+            });
+        }
 
         // insert(initializer_list)
         fail_loop([&](storage_ptr const& sp)
@@ -773,13 +899,14 @@ public:
         {
             {
                 object o;
-                for(std::size_t i = 0; i < 100; ++i)
+                for(std::size_t i = 0; i < 10; ++i)
                     o.emplace(std::to_string(i), i);
-                o.reserve(50);
-                BEAST_EXPECT(o.capacity() >= 50);
-                o.reserve(200);
-                BEAST_EXPECT(o.capacity() >= 200);
+                o.reserve(15);
+                BEAST_EXPECT(o.capacity() >= 15);
+                o.reserve(20);
+                BEAST_EXPECT(o.capacity() >= 20);
             }
+
             {
                 object o;
                 o.reserve(3);

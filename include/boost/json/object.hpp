@@ -86,14 +86,14 @@ public:
     /// A random access iterator to an element
     using iterator = value_type*;
 
-    /// A random access const iterator to an element
+    /// A const random access iterator to an element
     using const_iterator = value_type const*;
 
     /// A reverse random access iterator to an element
     using reverse_iterator =
         std::reverse_iterator<iterator>;
 
-    /// A reverse random access const iterator to an element
+    /// A const reverse random access iterator to an element
     using const_reverse_iterator =
         std::reverse_iterator<const_iterator>;
 
@@ -517,7 +517,35 @@ public:
     object(
         object const& other,
         storage_ptr sp);
-       
+
+    /** Construct an object.
+
+        The elements in the initializer list `init` are
+        inserted, preserving their order.
+        If multiple elements in the range have keys that
+        compare equivalent, only the first occurring key
+        will be inserted.
+
+        @par Complexity
+
+        Linear in `init.size()`.
+
+        @par Exception Safety
+
+        Strong guarantee.
+        Calls to @ref storage::allocate may throw.
+
+        @param init The initializer list to insert.
+
+        @param sp The @ref storage to use.
+    */
+    object(
+        init_list init,
+        storage_ptr sp = {})
+        : object(init, 0, std::move(sp))
+    {
+    }
+
     /** Construct an object.
 
         The elements in the initializer list `init` are
@@ -548,7 +576,7 @@ public:
     BOOST_JSON_DECL
     object(
         init_list init,
-        std::size_t min_capacity = 0,
+        std::size_t min_capacity,
         storage_ptr sp = {});
 
     /**

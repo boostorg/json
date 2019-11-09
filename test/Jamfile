@@ -10,23 +10,22 @@
 import testing ;
 import ../../config/checks/config : requires ;
 
-project
-    : requirements
-    <library>/boost/json//boost_json
-    [ requires
-    cxx11_constexpr
-    cxx11_decltype
-    cxx11_hdr_tuple
-    cxx11_template_aliases
-    cxx11_variadic_templates
-    ]
-    <toolset>msvc-14.1:<cxxflags>"/permissive-"
-    <toolset>msvc-14.2:<cxxflags>"/permissive-"
-    <target-os>windows:<define>_WIN32_WINNT=0x0601
-    ;
+#project
+#    : requirements
+#    <library>/boost/json//boost_json
+#    [ requires
+#    cxx11_constexpr
+#    cxx11_decltype
+#    cxx11_hdr_tuple
+#    cxx11_template_aliases
+#    cxx11_variadic_templates
+#    ]
+#    <toolset>msvc-14.1:<cxxflags>"/permissive-"
+#    <toolset>msvc-14.2:<cxxflags>"/permissive-"
+#    <target-os>windows:<define>_WIN32_WINNT=0x0601
+#    ;
 
 local SOURCES =
-    array.cpp
     assign_string.cpp
     assign_vector.cpp
     basic_parser.cpp
@@ -35,22 +34,40 @@ local SOURCES =
     json.cpp
     kind.cpp
     number.cpp
-    object.cpp
     parser.cpp
     serializer.cpp
     storage.cpp
     storage_ptr.cpp
-    string.cpp
     value.cpp
     ryu/d2s_intrinsics_test.cpp
     ryu/d2s_table_test.cpp
     ryu/d2s_test.cpp
     ;
 
+local MOD_SOURCES =
+    array.cpp
+    object.cpp
+    string.cpp
+    ;
+
 local RUN_TESTS ;
+
 for local f in $(SOURCES)
 {
-    RUN_TESTS += [ run $(f) main.cpp ] ;
+    RUN_TESTS += [
+        run $(f) main.cpp : : :
+            <library>/boost/json//boost_json
+        ] ;
+}
+
+for local f in $(MOD_SOURCES)
+{
+    RUN_TESTS += [
+        run $(f) main.cpp ../src/src.cpp : : :
+            <define>BOOST_JSON_MAX_STRING_SIZE=1000
+            <define>BOOST_JSON_MAX_OBJECT_SIZE=30
+            <define>BOOST_JSON_MAX_ARRAY_SIZE=100
+        ] ;
 }
 
 alias run-tests : $(RUN_TESTS) ;

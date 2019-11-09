@@ -1,31 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
-  <Type Name="boost::beast::json::value">
-    <DisplayString Condition="kind_==kind::object">object{obj_}</DisplayString>
-    <DisplayString Condition="kind_==kind::array">array{arr_}</DisplayString>
-    <DisplayString Condition="kind_==kind::string">string{str_}</DisplayString>
-    <DisplayString Condition="kind_==kind::boolean">{nat_.bool_}</DisplayString>
+
+  <Type Name="boost::json::value">
+    <DisplayString Condition="kind_==kind::object">object [{obj_.impl_.tab_?obj_.impl_.tab_->size:0}]</DisplayString>
+    <DisplayString Condition="kind_==kind::array">array [{arr_.impl_.size}]</DisplayString>
+    <DisplayString Condition="kind_==kind::string">
+        {str_.impl_.capacity>sizeof(str_.impl_.buf)?str_.impl_.p:str_.impl_.buf,[str_.impl_.size]s}</DisplayString>
+    <DisplayString Condition="kind_==kind::double_">{sca_.d}</DisplayString>
+    <DisplayString Condition="kind_==kind::int64">{sca_.i}</DisplayString>
+    <DisplayString Condition="kind_==kind::uint64">{sca_.u}u</DisplayString>
+    <DisplayString Condition="kind_==kind::boolean">{sca_.b}</DisplayString>
     <DisplayString Condition="kind_==kind::null">null</DisplayString>
     <Expand>
       <ExpandedItem Condition="kind_==kind::object">obj_</ExpandedItem>
       <ExpandedItem Condition="kind_==kind::array">arr_</ExpandedItem>
       <ExpandedItem Condition="kind_==kind::string">str_</ExpandedItem>
-      <Item Name="storage" Condition="kind_==kind::boolean||kind_==kind::null">nat_.sp_</Item>
-      <ExpandedItem Condition="kind_==kind::number">nat_.num_</ExpandedItem>
-      <ExpandedItem Condition="kind_==kind::boolean">nat_.bool_</ExpandedItem>
-    </Expand>
+    </Expand>    
   </Type>
-  <!--
-  <Type Name="boost::beast::json::storage_ptr">
-    <DisplayString>storage</DisplayString>
+
+  <Type Name="boost::json::object">
+    <DisplayString>{{ size={impl_.tab_?impl_.tab_->size:0} }}</DisplayString>
     <Expand>
-      <ExpandedItem>t_</ExpandedItem>
+      <ArrayItems>
+        <Size>impl_.tab_?impl_.tab_->size:0</Size>
+        <ValuePointer Condition="impl_.tab_!=0">(boost::json::object::value_type*)(impl_.tab_+1)</ValuePointer>
+      </ArrayItems>
+      <Item Name="[capacity]">impl_.tab_?impl_.tab_->capacity:0</Item>
+      <Item Name="[buckets]">impl_.tab_?impl_.tab_->buckets:0</Item>
+      <Item Name="[storage]">sp_</Item>
     </Expand>
   </Type>
-  -->
-  <Type Name="std::pair&lt;const std::string, boost::beast::json::value&gt;">
+
+  <Type Name="boost::json::array">
+    <DisplayString>{{ size={impl_.size} }}</DisplayString>
     <Expand>
-      <ExpandedItem>second</ExpandedItem>
+      <ArrayItems>
+        <Size>impl_.size</Size>
+        <ValuePointer Condition="impl_.vec!=0">impl_.vec</ValuePointer>
+      </ArrayItems>
+      <Item Name="[capacity]">impl_.capacity</Item>
+      <Item Name="[storage]">sp_</Item>
     </Expand>
   </Type>
+
+  <Type Name="boost::json::string">
+    <DisplayString>{{ {impl_.capacity>sizeof(impl_.buf)?impl_.p:impl_.buf,[impl_.size]s} }}</DisplayString>
+    <Expand>
+      <Item Name="[capacity]">impl_.capacity</Item>
+      <Item Name="[storage]">sp_</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="boost::json::object::value_type">
+    <DisplayString Condition="value_.kind_==kind::object">{{ {key_,[len_]s}, object [{value_.obj_.impl_.tab_?value_.obj_.impl_.tab_->size:0}] }}</DisplayString>
+    <DisplayString Condition="value_.kind_==kind::array">{{ {key_,[len_]s}, array [{value_.arr_.impl_.size}] }}</DisplayString>
+    <DisplayString Condition="value_.kind_==kind::string">{{ {key_,[len_]s}, {value_.str_.impl_.capacity>sizeof(value_.str_.impl_.buf)?value_.str_.impl_.p:value_.str_.impl_.buf,[value_.str_.impl_.size]s} }}</DisplayString>
+    <DisplayString Condition="value_.kind_==kind::double_">{{ {key_,[len_]s}, {value_.sca_.d} }}</DisplayString>
+    <DisplayString Condition="value_.kind_==kind::int64">{{ {key_,[len_]s}, {value_.sca_.i} }}</DisplayString>
+    <DisplayString Condition="value_.kind_==kind::uint64">{{ {key_,[len_]s}, {value_.sca_.u} }}</DisplayString>
+    <DisplayString Condition="value_.kind_==kind::boolean">{{ {key_,[len_]s}, {value_.sca_.b} }}</DisplayString>
+    <DisplayString Condition="value_.kind_==kind::null">{{ {key_,[len_]s}, null }}</DisplayString>
+    <Expand>
+      <ExpandedItem>&amp;this->value_</ExpandedItem>
+    </Expand>
+  </Type>
+
 </AutoVisualizer>

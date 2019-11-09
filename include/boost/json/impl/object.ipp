@@ -583,13 +583,10 @@ rehash(std::size_t new_capacity)
                 (unsigned long long)n));
     };
     BOOST_JSON_ASSERT(new_capacity > capacity());
-    if(new_capacity > max_size())
-        BOOST_JSON_THROW(
-            detail::object_too_large_exception());
     auto const f = std::ceil(
         new_capacity / max_load_factor());
-    BOOST_JSON_ASSERT(f < static_cast<
-        unsigned long long>(-1));
+    BOOST_JSON_ASSERT(
+        f < static_cast<std::size_t>(-1));
     auto const new_buckets = next_prime(
         static_cast<std::size_t>(f));
     BOOST_JSON_ASSERT(std::ceil(
@@ -597,6 +594,9 @@ rehash(std::size_t new_capacity)
             new_capacity);
     new_capacity = static_cast<std::size_t>(
         std::ceil(new_buckets * max_load_factor()));
+    if(new_capacity > max_size())
+        BOOST_JSON_THROW(
+            detail::object_too_large_exception());
     impl_type impl(
         new_capacity, new_buckets, sp_);
     if(impl_.size() > 0)

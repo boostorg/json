@@ -112,7 +112,7 @@ private:
         union
         {
             char* p;
-            char buf[4]; // SBO
+            char buf[20]; // SBO
         };
     #endif
 
