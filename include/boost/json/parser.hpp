@@ -55,9 +55,9 @@ class parser final
         std::size_t
         alignup(std::size_t n) noexcept
         {
-            return sizeof(max_align_t) *
-                ((n + sizeof(max_align_t) - 1) /
-                 sizeof(max_align_t));
+            return alignof(max_align_t) *
+                ((n + alignof(max_align_t) - 1) /
+                 alignof(max_align_t));
         }
 
     public:
@@ -264,9 +264,9 @@ class parser final
         push_impl(T t)
         {
             BOOST_JSON_ASSERT((sizeof(T) %
-                sizeof(max_align_t)) == 0);
+                alignof(max_align_t)) == 0);
             BOOST_JSON_ASSERT((size_ %
-                sizeof(max_align_t)) == 0);
+                alignof(max_align_t)) == 0);
             auto const n = sizeof(T);
             if(n > capacity_ - size_)
                 grow(n);
@@ -279,9 +279,9 @@ class parser final
         pop_impl(T& t) noexcept
         {
             BOOST_JSON_ASSERT((sizeof(T) %
-                sizeof(max_align_t)) == 0);
+                alignof(max_align_t)) == 0);
             BOOST_JSON_ASSERT((size_ %
-                sizeof(max_align_t)) == 0);
+                alignof(max_align_t)) == 0);
             auto const n = sizeof(T);
             BOOST_JSON_ASSERT(size_ >= n);
             size_ -= n;
