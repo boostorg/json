@@ -32,7 +32,7 @@ class basic_parser
 {
     enum class state : char;
 
-    detail::static_stack<state, 64> st_;
+    detail::static_stack<state, 1024> st_;
     detail::number_parser iep_;
     std::size_t depth_;
     std::size_t max_depth_ = 32;

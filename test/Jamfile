@@ -10,21 +10,6 @@
 import testing ;
 import ../../config/checks/config : requires ;
 
-#project
-#    : requirements
-#    <library>/boost/json//boost_json
-#    [ requires
-#    cxx11_constexpr
-#    cxx11_decltype
-#    cxx11_hdr_tuple
-#    cxx11_template_aliases
-#    cxx11_variadic_templates
-#    ]
-#    <toolset>msvc-14.1:<cxxflags>"/permissive-"
-#    <toolset>msvc-14.2:<cxxflags>"/permissive-"
-#    <target-os>windows:<define>_WIN32_WINNT=0x0601
-#    ;
-
 local SOURCES =
     assign_string.cpp
     assign_vector.cpp

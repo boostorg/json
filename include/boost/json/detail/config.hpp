@@ -62,6 +62,7 @@
 
 // optimizations
 
+#define BOOST_JSON_NO_SSE2
 #ifndef BOOST_JSON_NO_SSE2
 # if (defined(_M_IX86) && _M_IX86_FP == 2) || \
       defined(_M_X64) || defined(__SSE2__)
