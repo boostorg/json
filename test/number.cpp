@@ -225,6 +225,7 @@ public:
         check_double("-1e1", -1e1);
         check_double( "0e0", 0);
         check_double( "1e0", 1);
+        check_double( "1e10", 1e10);
 
         check_bad("");
         check_bad("x");

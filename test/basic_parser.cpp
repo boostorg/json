@@ -22,120 +22,98 @@ class basic_parser_test : public beast::unit_test::suite
 {
 public:
     void
-    parse_grind(
-        string_view input,
-        error_code ex)
+    grind(string_view s, bool good)
     {
-        if(input.size() > 100)
-            return;
-
-        // iterate each split point
-        if(input.size() > 0)
+        error_code ex;
         {
-            for(std::size_t i = 1;
-                i < input.size() - 1; ++i)
+            fail_parser p;
+            p.write(
+                s.data(),
+                s.size(),
+                ex);
+            if(good)
+                BEAST_EXPECTS(
+                    ! ex, ex.message());
+            else
+                BEAST_EXPECT(!!ex);
+        }
+
+        // make sure all split inputs
+        // produce the same result.
+        for(std::size_t i = 1;
+            i < s.size(); ++i)
+        {
+            if(! BEAST_EXPECT(i < 100000))
+                break;
+            error_code ec;
+            fail_parser p;
+            p.write_some(s.data(), i, ec);
+            if(ec == ex)
+                continue;
+            if(! BEAST_EXPECTS(
+                ! ec, ec.message()))
+                continue;
+            p.write(
+                s.data() + i,
+                s.size() - i, ec);
+            BEAST_EXPECTS(ec == ex,
+                ec.message());
+        }
+
+        // exercise all exception paths
+        for(std::size_t j = 1;;++j)
+        {
+            if(! BEAST_EXPECT(j < 100000))
+                break;
+            error_code ec;
+            throw_parser p(j);
+            try
             {
-                BEAST_EXPECT(i < 10000);
-
-                // test exceptions
-                for(std::size_t j = 1;;++j)
-                {
-                    if(! BEAST_EXPECT(j < 10000))
-                        break;
-                    error_code ec;
-                    throw_parser p(j);
-                    try
-                    {
-                        auto const n = p.write_some(
-                            input.data(), i, ec);
-                        if(! ec)
-                        {
-                            p.write(input.data() + n,
-                                input.size() - n, ec);
-                        }
-                        if(ec)
-                            BEAST_EXPECTS(
-                                ec == ex, std::string(input) +
-                                " : " + ec.message());
-                        break;
-                    }
-                    catch(test_exception const&)
-                    {
-                        continue;
-                    }
-                    catch(...)
-                    {
-                        BEAST_FAIL();
-                    }
-                }
-
-                // test errors
-                for(std::size_t j = 1;;++j)
-                {
-                    if(! BEAST_EXPECT(j < 10000))
-                        break;
-                    error_code ec;
-                    fail_parser p(j);
-                    auto n = p.write_some(
-                        input.data(), i, ec);
-                    if(ec == error::test_failure)
-                        continue;
-                    if(! ec)
-                    {
-                        p.write_some(input.data() + n,
-                            input.size() - n, ec);
-                        if(ec == error::test_failure)
-                            continue;
-                    }
-                    if(! ec)
-                    {
-                        p.write_eof(ec);
-                        if(ec == error::test_failure)
-                            continue;
-                    }
-                    if(ec)
-                        BEAST_EXPECTS(
-                            ec == ex, std::string(input) +
-                            " : " + ec.message());
-                    break;
-                }
+                p.write(
+                    s.data(), s.size(), ec);
+                BEAST_EXPECTS(ec == ex,
+                    ec.message());
+                break;
             }
+            catch(test_exception const&)
+            {
+                continue;
+            }
+            catch(std::exception const& e)
+            {
+                BEAST_FAIL();
+                log << "  " <<
+                    e.what() << std::endl;
+            }
+        }
+
+        // exercise all error paths
+        for(std::size_t j = 1;;++j)
+        {
+            if(! BEAST_EXPECT(j < 100000))
+                break;
+            error_code ec;
+            fail_parser p(j);
+            p.write(
+                s.data(), s.size(), ec);
+            if(ec == error::test_failure)
+                continue;
+            BEAST_EXPECTS(ec == ex,
+                ec.message());
+            break;
         }
     }
 
     void
     good(string_view s)
     {
-        parse_grind(s, error_code{});
+        grind(s, true);
     }
 
     void
     bad(string_view s)
     {
-        error_code ec;
-        fail_parser p;
-        auto const used = p.write_some(
-            s.data(), s.size(), ec);
-        if(! ec)
-        {
-            if(p.is_done())
-            {
-                if(BEAST_EXPECT(used != s.size()))
-                    return;
-            }
-            else
-            {
-                p.write_eof(ec);
-                if(BEAST_EXPECT(ec))
-                    return;
-            }
-        }
-        else
-        {
-            pass();
-            return;
-        }
-        log << "fail: \"" << s << "\"\n";
+        grind(s, false);
     }
 
     void
@@ -254,6 +232,7 @@ public:
         good("\ttrue");
         good("true\t");
         good("\r\n\t true\r\n\t ");
+
         bad ("TRUE");
         bad ("tRUE");
         bad ("trUE");
@@ -269,6 +248,7 @@ public:
         good("\tfalse");
         good("false\t");
         good("\r\n\t false\r\n\t ");
+
         bad ("FALSE");
         bad ("fALSE");
         bad ("faLSE");
@@ -290,6 +270,7 @@ public:
         good("\tnull");
         good("null\t");
         good("\r\n\t null\r\n\t ");
+
         bad ("NULL");
         bad ("nULL");
         bad ("nuLL");
@@ -304,53 +285,25 @@ public:
     testParseVectors()
     {
         parse_vectors pv;
-        std::size_t fail = 0;
-        std::size_t info = 0;
-        auto const tot = pv.size();
         for(auto const& v : pv)
         {
-            error_code ec;
-            fail_parser p;
-            p.write(
-                v.text.data(),
-                v.text.size(),
-                ec);
             if(v.result == 'i')
             {
-                auto const s = ec ?
-                    "reject" : "accept";
-                ++info;
-                log <<
-                    "'" << v.result << "' " <<
-                    v.name << " " << s << "\n";
-                parse_grind(v.text, ec);
+                error_code ec;
+                fail_parser p;
+                p.write(
+                    v.text.data(),
+                    v.text.size(),
+                    ec);
+                grind(v.text,
+                    ec ? false : true);
                 continue;
             }
-            char result;
-            result = ec ? 'n' : 'y';
-            if(result != v.result)
-            {
-                if(v.result == 'i')
-                    ++info;
-                else
-                    ++fail;
-                log <<
-                    "'" << v.result << "' " <<
-                    v.name;
-                if(ec)
-                    log << " " << ec.message() << "\n";
-                else
-                    log << "\n";
-            }
+            if(v.result == 'y')
+                grind(v.text, true);
             else
-            {
-                parse_grind(v.text, ec);
-            }
+                grind(v.text, false);
         }
-        if(fail > 0)
-            log << fail << "/" << tot <<
-            " parse vector failures, " <<
-            info << " informational.\n";
     }
 
     void
@@ -359,7 +312,6 @@ public:
         log <<
             "sizeof(basic_parser) == " <<
             sizeof(basic_parser) << "\n";
-        testParseVectors();
 
         testObject();
         testArray();
@@ -367,6 +319,8 @@ public:
         testNumber();
         testBoolean();
         testNull();
+
+        testParseVectors();
     }
 };
 
