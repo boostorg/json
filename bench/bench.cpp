@@ -381,7 +381,7 @@ benchParse(
                 auto const ms = std::chrono::duration_cast<
                     std::chrono::milliseconds>(
                     clock_type::now() - when).count();
-                //if(k > 4)
+                if(k > 4)
                     dout << " " << vi[j]->name() << ": " <<
                         std::to_string(ms) << "ms" <<
                         std::endl;
@@ -449,7 +449,7 @@ main(
         //vi.emplace_back(new boost_default_impl);
         //vi.emplace_back(new boost_vec_impl);
         vi.emplace_back(new boost_impl);
-        //vi.emplace_back(new rapidjson_impl);
+        vi.emplace_back(new rapidjson_impl);
         //vi.emplace_back(new nlohmann_impl);
 
         benchParse(vs, vi);

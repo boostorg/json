@@ -58,6 +58,18 @@ public:
         return *top_;
     }
 
+    T&
+    operator*() noexcept
+    {
+        return *top_;
+    }
+
+    T const&
+    operator*() const noexcept
+    {
+        return *top_;
+    }
+
     // capacity
 
     bool

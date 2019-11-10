@@ -31,14 +31,8 @@ namespace json {
         '\' escape
 
     escape
-        '"'
-        '\'
-        '/'
-        'b'
-        'f'
-        'n'
-        'r'
-        't'
+        '"' '\' '/' 'b'
+        'f' 'n' 'r' 't'
         'u' hex hex hex hex
 
     hex
@@ -59,24 +53,18 @@ namespace json {
 
 enum class basic_parser::state : char
 {
-    ws,
+    end = 0, // must be 0
+    begin,
+    maybe_end,
 
-    value,
-
-    object1, object2, colon,
-    array1,  array2,
-    string1, string2, string3, string4,
-    true1,   true2,   true3,
-    false1,  false2,  false3,  false4,
-    null1,   null2,   null3,
-
-    u_esc1,  u_esc2,  u_esc3,  u_esc4,
-    u_pair1, u_pair2,
-    u_surr,
-
+    val,
+    obj1, obj2, obj3,
+    arr1, arr2,
+    str0, str1, str2, str3, str4,
+    esc1, esc2, esc3, esc4,
+    sur1, sur2, sur3, 
     num,
-
-    done0, done
+    lit,
 };
 
 //----------------------------------------------------------
@@ -84,6 +72,7 @@ enum class basic_parser::state : char
 basic_parser::
 basic_parser()
 {
+    st_.push(state::begin);
 }
 
 void
@@ -91,6 +80,7 @@ basic_parser::
 reset() noexcept
 {
     st_.clear();
+    st_.push(state::begin);
 }
 
 //----------------------------------------------------------
@@ -112,7 +102,7 @@ write_some(
         [this, &temp](error_code& ec)
         {
             // need 4 chars for largest utf8 code point
-            if(temp.size() < temp.max_size() - 4)
+            if(temp.max_size() - temp.size() >= 4)
                 return true;
             if(is_key_)
                 this->on_key_part(temp, ec);
@@ -124,89 +114,94 @@ write_some(
             return true;
         };
 
-    // begin document
-    if(st_.empty())
-    {
-        u0_ = -1;
-        depth_ = 1;
-        is_key_ = false;
-        this->on_document_begin(ec);
-        if(ec)
-            goto finish;
-        st_.push(state::done0);
-        st_.push(state::ws);
-        st_.push(state::value);
-        st_.push(state::ws);
-        goto loop_ws;
-    }
+    // `true` if p < p1
+    auto const skip_white =
+        [&p, &p1]
+        {
+            while(p < p1)
+            {
+                if( *p == ' ' ||
+                    *p == '\t' ||
+                    *p == '\r' ||
+                    *p == '\n')
+                {
+                    ++p;
+                    continue;
+                }
+                return true;
+            }
+            return false;
+        };
 
 loop:
     switch(st_.front())
     {
-    case state::ws:
-loop_ws:
-        while(p < p1)
-        {
-            if( *p == ' ' ||
-                *p == '\t' ||
-                *p == '\r' ||
-                *p == '\n')
-            {
-                ++p;
-                continue;
-            }
-            st_.pop();
-            goto loop;
-        }
-        break;
+    case state::begin:
+        u0_ = -1;
+        depth_ = 0;
+        is_key_ = false;
+        this->on_document_begin(ec);
+        if(ec)
+            goto yield;
+        *st_ = state::maybe_end;
+        st_.push(state::val);
+        goto loop_val;
 
-    case state::value:
-    {
-        BOOST_JSON_ASSERT(p < p1);
+    case state::end:
+        ec = error::illegal_extra_chars;
+        goto yield;
+
+    case state::maybe_end:
+        if(! skip_white())
+            goto yield;
+        this->on_document_end(ec);
+        if(ec)
+            goto yield;
+        *st_ = state::end;
+        goto yield;
+
+    //------------------------------------------------------
+
+    case state::val:
+loop_val:
+        if(! skip_white())
+            goto yield;
         switch(*p)
         {
         // object
         case '{':
-            if(depth_ > max_depth_)
+            if(depth_ >= max_depth_)
             {
                 ec = error::too_deep;
-                goto finish;
+                goto yield;
             }
-            ++depth_;
-            ++p;
-            st_.front() = state::object1;
-            st_.push(state::ws);
             this->on_object_begin(ec);
             if(ec)
-                goto finish;
-            //prepare_stack(ec);
-            if(ec)
-                goto finish;
-            goto loop_ws;
+                goto yield;
+            ++p;
+            ++depth_;
+            *st_ = state::obj1;
+            goto loop_obj;
 
         // array
         case '[':
-            if(depth_ > max_depth_)
+            if(depth_ >= max_depth_)
             {
                 ec = error::too_deep;
-                goto finish;
+                goto yield;
             }
-            ++depth_;
-            ++p;
-            st_.front() = state::array1;
-            st_.push(state::ws);
             this->on_array_begin(ec);
             if(ec)
-                goto finish;
-            //prepare_stack(ec);
-            if(ec)
-                goto finish;
-            goto loop_ws;
+                goto yield;
+            ++p;
+            ++depth_;
+            *st_ = state::arr1;
+            goto loop_arr;
 
         // string
         case '"':
-            st_.front() = state::string1;
-            goto loop_string;
+            *st_ = state::str1;
+            goto loop_str1;
 
         // true
         case 't':
@@ -216,18 +211,20 @@ loop_ws:
                     p[2] == 'u' &&
                     p[3] == 'e')
                 {
-                    p = p + 4;
                     this->on_bool(true, ec);
                     if(ec)
-                        goto finish;
+                        goto yield;
+                    p = p + 4;
                     st_.pop();
                     goto loop;
                 }
                 ec = error::expected_true;
-                goto finish;
+                goto yield;
             }
             ++p;
-            st_.front() = state::true1;
+            lit_ = "rue";
+            ev_ = error::expected_true;
+            *st_ = state::lit;
             goto loop;
 
         // false
@@ -239,18 +236,20 @@ loop_ws:
                     p[3] == 's' &&
                     p[4] == 'e')
                 {
-                    p = p + 5;
                     this->on_bool(false, ec);
                     if(ec)
-                        goto finish;
+                        goto yield;
+                    p = p + 5;
                     st_.pop();
                     goto loop;
                 }
                 ec = error::expected_false;
-                goto finish;
+                goto yield;
             }
             ++p;
-            st_.front() = state::false1;
+            lit_ = "alse";
+            ev_ = error::expected_false;
+            *st_ = state::lit;
             goto loop;
 
         // null
@@ -261,70 +260,82 @@ loop_ws:
                     p[2] == 'l' &&
                     p[3] == 'l')
                 {
-                    p = p + 4;
                     this->on_null(ec);
                     if(ec)
-                        goto finish;
+                        goto yield;
+                    p = p + 4;
                     st_.pop();
                     goto loop;
                 }
                 ec = error::expected_null;
-                goto finish;
+                goto yield;
             }
             ++p;
-            st_.front() = state::null1;
+            lit_ = "ull";
+            ev_ = error::expected_null;
+            *st_ = state::lit;
             goto loop;
 
         default:
             if(iep_.maybe_init(*p))
             {
                 ++p;
-                st_.front() = state::num;
+                *st_ = state::num;
                 goto loop_num;
             }
             ec = error::illegal_char;
-            goto finish;
+            goto yield;
         }
-        break;
-    }
+        goto yield;
 
     //------------------------------------------------------
+
     //
     // object
     //
 
     // first key or end of object
-    case state::object1:
-        BOOST_JSON_ASSERT(p < p1);
+    case state::obj1:
+loop_obj:
+        if(! skip_white())
+            goto yield;
         if(*p == '}')
         {
-            ++p;
             this->on_object_end(ec);
             if(ec)
-                goto finish;
+                goto yield;
+            ++p;
             --depth_;
             st_.pop();
             goto loop;
         }
-        st_.pop();
-        st_.push(state::object2);
-        st_.push(state::ws);
-        st_.push(state::value);
-        st_.push(state::ws);
-        st_.push(state::colon);
-        st_.push(state::ws);
-        st_.push(state::string1);
+        *st_ = state::obj3;
+        st_.push(state::obj2);
+        st_.push(state::str1);
         is_key_ = true;
         goto loop;
 
-    case state::object2:
-        BOOST_JSON_ASSERT(p < p1);
+    case state::obj2:
+        if(! skip_white())
+            goto yield;
+        if(*p != ':')
+        {
+            ec = error::expected_colon;
+            goto yield;
+        }
+        ++p;
+        *st_ = state::val;
+        goto loop_val;
+
+    case state::obj3:
+        if(! skip_white())
+            goto yield;
         if(*p == '}')
         {
-            ++p;
             this->on_object_end(ec);
             if(ec)
-                goto finish;
+                goto yield;
+            ++p;
             --depth_;
             st_.pop();
             goto loop;
@@ -332,62 +343,47 @@ loop_ws:
         if(*p != ',')
         {
             ec = error::expected_comma;
-            goto finish;
+            goto yield;
         }
         ++p;
-        st_.push(state::ws);
-        st_.push(state::value);
-        st_.push(state::ws);
-        st_.push(state::colon);
-        st_.push(state::ws);
-        st_.push(state::string1);
-        st_.push(state::ws);
         is_key_ = true;
-        goto loop_ws;
-
-    case state::colon:
-        BOOST_JSON_ASSERT(p < p1);
-        if(*p != ':')
-        {
-            ec = error::expected_colon;
-            goto finish;
-        }
-        ++p;
-        st_.pop();
-        goto loop;
+        st_.push(state::obj2);
+        st_.push(state::str0);
+        goto loop_str0;
 
     //------------------------------------------------------
+
     //
     // array
     //
 
-    case state::array1:
-        BOOST_JSON_ASSERT(p < p1);
+    case state::arr1:
+loop_arr:
+        if(! skip_white())
+            goto yield;
         if(*p == ']')
         {
-            ++p;
             this->on_array_end(ec);
             if(ec)
-                goto finish;
+                goto yield;
+            ++p;
             --depth_;
             st_.pop();
             goto loop;
         }
-        st_.pop();
-        st_.push(state::array2);
-        st_.push(state::ws);
-        st_.push(state::value);
-        st_.push(state::ws);
+        *st_ = state::arr2;
+        st_.push(state::val);
         goto loop;
 
-    case state::array2:
-        BOOST_JSON_ASSERT(p < p1);
+    case state::arr2:
+        if(! skip_white())
+            goto yield;
         if(*p == ']')
         {
-            ++p;
             this->on_array_end(ec);
             if(ec)
-                goto finish;
+                goto yield;
+            ++p;
             --depth_;
             st_.pop();
             goto loop;
@@ -395,39 +391,44 @@ loop_ws:
         if(*p != ',')
         {
             ec = error::expected_comma;
-            goto finish;
+            goto yield;
         }
         ++p;
-        st_.push(state::ws);
-        st_.push(state::value);
-        st_.push(state::ws);
+        st_.push(state::val);
         goto loop;
 
     //------------------------------------------------------
+
     //
     // string
     //
 
-    // double quote opening string
-    case state::string1:
-loop_string:
+    case state::str0:
+loop_str0:
+        if(! skip_white())
+            goto yield;
+        *st_ = state::str1;
+        BOOST_FALLTHROUGH;
+
+    // string, opening quotes
+    case state::str1:
+loop_str1:
         BOOST_JSON_ASSERT(p < p1);
         if(*p != '\"')
         {
             ec = error::expected_quotes;
-            goto finish;
+            goto yield;
         }
         ++p;
         st_.pop();
-        st_.push(state::string2);
+        st_.push(state::str2);
         BOOST_FALLTHROUGH;
 
-    // characters
-    // No copies here
-    case state::string2:
+    // string, no-copy loop
+    case state::str2:
     {
         if(p >= p1)
-            break;
+            goto yield;
         auto const start = p;
         while(p < p1)
         {
@@ -442,9 +443,9 @@ loop_string:
                     this->on_string({start,
                         static_cast<std::size_t>(
                             p - start)}, ec);
-                ++p;
                 if(ec)
-                    goto finish;
+                    goto yield;
+                ++p;
                 is_key_ = false;
                 st_.pop();
                 goto loop;
@@ -463,17 +464,17 @@ loop_string:
                                 p - start)}, ec);
                 }
                 if(ec)
-                    goto finish;
+                    goto yield;
                 ++p;
-                st_.front() = state::string4;
+                *st_ = state::str4;
                 goto loop;
             }
             if(is_control(*p))
             {
                 ec = error::illegal_control_char;
-                goto finish;
+                goto yield;
             }
-            // TODO UTF-8?
+            // VFALCO UTF-8 validation here?
             ++p;
         }
         BOOST_JSON_ASSERT(p != start);
@@ -486,13 +487,13 @@ loop_string:
                 static_cast<std::size_t>(
                     p - start)}, ec);
         if(ec)
-            goto finish;
-        break;
+            goto yield;
+        goto yield;
     }
 
-    // characters, including escapes
-    // This algorithm copies unescaped chars to a buffer
-    case state::string3:
+    // string
+    // handles escapes
+    case state::str3:
     {
         while(p < p1)
         {
@@ -503,7 +504,7 @@ loop_string:
                 else
                     this->on_string(temp, ec);
                 if(ec)
-                    goto finish;
+                    goto yield;
                 ++p;
                 st_.pop();
                 temp.clear();
@@ -513,99 +514,106 @@ loop_string:
             if(*p == '\\')
             {
                 ++p;
-                st_.front() = state::string4;
+                *st_ = state::str4;
                 goto loop;
             }
             if(is_control(*p))
             {
                 ec = error::illegal_control_char;
-                goto finish;
+                goto yield;
             }
+            // VFALCO We can move this check to
+            // an outer loop by calculating
+            // (p1 - p) / 4
+            //
             if(! maybe_flush(ec))
-                goto finish;
+                goto yield;
+            // VFALCO could batch this with memcpy 
             temp.push_back(*p++);
         }
-        break;
+        goto yield;
     }
 
-    // escape
-    case state::string4:
+    // char escape
+    case state::str4:
         if(p >= p1)
-           break;
+            goto yield;
         switch(*p)
         {
         case '\"':
             if(! maybe_flush(ec))
-                goto finish;
+                goto yield;
             temp.push_back('\"');
             break;
 
         case '\\':
             if(! maybe_flush(ec))
-                goto finish;
+                goto yield;
             temp.push_back('\\');
             break;
 
         case '/':
             if(! maybe_flush(ec))
-                goto finish;
+                goto yield;
             temp.push_back('/');
             break;
 
         case 'b':
             if(! maybe_flush(ec))
-                goto finish;
+                goto yield;
             temp.push_back('\x08');
             break;
 
         case 'f':
             if(! maybe_flush(ec))
-                goto finish;
+                goto yield;
             temp.push_back('\x0c');
             break;
 
         case 'n':
             if(! maybe_flush(ec))
-                goto finish;
+                goto yield;
             temp.push_back('\x0a');
             break;
 
         case 'r':
             if(! maybe_flush(ec))
-                goto finish;
+                goto yield;
             temp.push_back('\x0d');
             break;
 
         case 't':
             if(! maybe_flush(ec))
-                goto finish;
+                goto yield;
             temp.push_back('\x09');
             break;
 
         case 'u':
             ++p;
-            st_.front() = state::string3;
-            st_.push(state::u_esc1);
+            *st_ = state::str3;
+            st_.push(state::esc1);
             goto loop;
 
         default:
             ec = error::illegal_escape_char;
-            goto finish;
+            goto yield;
         }
         ++p;
-        st_.front() = state::string3;
+        *st_ = state::str3;
         goto loop;
 
+    //----------------------------------
+
     // utf16 escape, got "\u" already
-    case state::u_esc1:
+    case state::esc1:
     {
         if(p >= p1)
-           break;
+            goto yield;
         auto d = hex_digit(*p++);
         if(d == -1)
         {
             ec = error::expected_hex_digit;
-            goto finish;
+            goto yield;
         }
         u_ = d << 12;
         if(p + 3 <= p1)
@@ -615,77 +623,79 @@ loop_string:
             if(d == -1)
             {
                 ec = error::expected_hex_digit;
-                goto finish;
+                goto yield;
             }
             u_ += d << 8;
             d = hex_digit(*p++);
             if(d == -1)
             {
                 ec = error::expected_hex_digit;
-                goto finish;
+                goto yield;
             }
             u_ += d << 4;
             d = hex_digit(*p++);
             if(d == -1)
             {
                 ec = error::expected_hex_digit;
-                goto finish;
+                goto yield;
             }
             u_ += d;
-            st_.front() = state::u_surr;
+            *st_ = state::sur1;
             goto loop;
         }
-        st_.front() = state::u_esc2;
+        *st_ = state::esc2;
         goto loop;
     }
 
-    case state::u_esc2:
+    case state::esc2:
     {
         if(p >= p1)
-           break;
+            goto yield;
         auto d = hex_digit(*p++);
         if(d == -1)
         {
             ec = error::expected_hex_digit;
-            goto finish;
+            goto yield;
         }
         u_ += d << 8;
-        st_.front() = state::u_esc3;
+        *st_ = state::esc3;
         goto loop;
     }
 
-    case state::u_esc3:
+    case state::esc3:
     {
         if(p >= p1)
-           break;
+            goto yield;
         auto d = hex_digit(*p++);
         if(d == -1)
         {
             ec = error::expected_hex_digit;
-            goto finish;
+            goto yield;
         }
         u_ += d << 4;
-        st_.front() = state::u_esc4;
+        *st_ = state::esc4;
         goto loop;
     }
 
-    case state::u_esc4:
+    case state::esc4:
     {
         if(p >= p1)
-           break;
+            goto yield;
         auto d = hex_digit(*p++);
         if(d == -1)
         {
             ec = error::expected_hex_digit;
-            goto finish;
+            goto yield;
         }
         u_ += d;
-        st_.front() = state::u_surr;
+        *st_ = state::sur1;
         goto loop;
     }
+    
+    //----------------------------------
 
     // handles 1 or 2 surrogates
-    case state::u_surr:
+    case state::sur1:
     {
         // one code unit
         if(u0_ == -1)
@@ -696,18 +706,18 @@ loop_string:
                 {
                     // need 2nd surrogate
                     u0_ = u_;
-                    st_.front() = state::u_pair1;
+                    *st_ = state::sur2;
                     goto loop;
                 }
                 else if(u_ <= 0xdfff)
                 {
                     ec = error::illegal_leading_surrogate;
-                    goto finish;
+                    goto yield;
                 }
             }
 
             if(! maybe_flush(ec))
-                goto finish;
+                goto yield;
             temp.append_utf8(u_);
             st_.pop();
             goto loop;
@@ -717,7 +727,7 @@ loop_string:
             u_ >  0xdfff)
         {
             ec = error::illegal_trailing_surrogate;
-            goto finish;
+            goto yield;
         }
         unsigned long cp =
             ((u0_ - 0xd800) << 10) +
@@ -729,48 +739,50 @@ loop_string:
     }
 
     // second utf16 surrogate
-    case state::u_pair1:
+    case state::sur2:
         if(p >= p1)
-           break;
+            goto yield;
         if(*p != '\\')
         {
             ec = error::expected_utf16_escape;
-            goto finish;
+            goto yield;
         }
         ++p;
-        st_.front() = state::u_pair2;
+        *st_ = state::sur3;
         goto loop;
     
-    case state::u_pair2:
+    case state::sur3:
         if(p >= p1)
-           break;
+            goto yield;
         if(*p != 'u')
         {
             ec = error::expected_utf16_escape;
-            goto finish;
+            goto yield;
         }
         ++p;
-        st_.front() = state::u_esc1;
+        *st_ = state::esc1;
         goto loop;
 
     //------------------------------------------------------
-    //
+
     // number
-    //
+
     case state::num:
     {
 loop_num:
         if(p >= p1)
-            break;
+            goto yield;
         p += iep_.write_some(
             p, p1 - p, ec);
         if(ec)
-            goto finish;
+            goto yield;
+        // VFALCO number_parser needs to handle
+        //        is_done inside write_some better
         if(p < p1)
         {
             iep_.write_eof(ec);
             if(ec)
-                goto finish;
+                goto yield;
             BOOST_JSON_ASSERT(iep_.is_done());
             auto const num = iep_.get();
             switch(num.kind)
@@ -787,170 +799,40 @@ loop_num:
                 break;
             }
             if(ec)
-                goto finish;
+                goto yield;
             st_.pop();
             goto loop;
         }
-        break;
+        goto yield;
     }
 
     //------------------------------------------------------
 
-    //
-    // true
-    //
+    // string literal (true, false, null)
 
-    case state::true1:
-        if(p >= p1)
-            break;
-        if(*p != 'r')
+    case state::lit:
+        BOOST_JSON_ASSERT(lit_ != nullptr);
+        while(p < p1)
         {
-            ec = error::expected_true;
-            goto finish;
+            if(*p != *lit_)
+            {
+                ec = ev_;
+                goto yield;
+            }
+            ++p;
+            if(*++lit_ == 0)
+            {
+                st_.pop();
+                goto loop;
+            }
         }
-        ++p;
-        st_.front() = state::true2;
-        BOOST_FALLTHROUGH;
+        goto yield;
 
-    case state::true2:
-        if(p >= p1)
-            break;
-        if(*p != 'u')
-        {
-            ec = error::expected_true;
-            goto finish;
-        }
-        ++p;
-        st_.front() = state::true3;
-        BOOST_FALLTHROUGH;
+    //------------------------------------------------------
 
-    case state::true3:
-        if(p >= p1)
-            break;
-        if(*p != 'e')
-        {
-            ec = error::expected_true;
-            goto finish;
-        }
-        ++p;
-        this->on_bool(true, ec);
-        if(ec)
-            goto finish;
-        st_.pop();
-        goto loop;
-
-    //
-    // false
-    //
-
-    case state::false1:
-        if(p >= p1)
-            break;
-        if(*p != 'a')
-        {
-            ec = error::expected_false;
-            goto finish;
-        }
-        ++p;
-        st_.front() = state::false2;
-        BOOST_FALLTHROUGH;
-
-    case state::false2:
-        if(p >= p1)
-            break;
-        if(*p != 'l')
-        {
-            ec = error::expected_false;
-            goto finish;
-        }
-        ++p;
-        st_.front() = state::false3;
-        BOOST_FALLTHROUGH;
-
-    case state::false3:
-        if(p >= p1)
-            break;
-        if(*p != 's')
-        {
-            ec = error::expected_false;
-            goto finish;
-        }
-        ++p;
-        st_.front() = state::false4;
-        BOOST_FALLTHROUGH;
-
-    case state::false4:
-        if(p >= p1)
-            break;
-        if(*p != 'e')
-        {
-            ec = error::expected_false;
-            goto finish;
-        }
-        ++p;
-        this->on_bool(false, ec);
-        if(ec)
-            goto finish;
-        st_.pop();
-        goto loop;
-
-    //
-    // null
-    //
-
-    case state::null1:
-        if(p >= p1)
-            break;
-        if(*p != 'u')
-        {
-            ec = error::expected_null;
-            goto finish;
-        }
-        ++p;
-        st_.front() = state::null2;
-        BOOST_FALLTHROUGH;
-
-    case state::null2:
-        if(p >= p1)
-            break;
-        if(*p != 'l')
-        {
-            ec = error::expected_null;
-            goto finish;
-        }
-        ++p;
-        st_.front() = state::null3;
-        BOOST_FALLTHROUGH;
-
-    case state::null3:
-        if(p >= p1)
-            break;
-        if(*p != 'l')
-        {
-            ec = error::expected_null;
-            goto finish;
-        }
-        ++p;
-        this->on_null(ec);
-        if(ec)
-            goto finish;
-        st_.pop();
-        goto loop;
-
-    //
-    // done
-    //
-
-    case state::done0:
-        st_.front() = state::done;
-        break;
-
-    case state::done:
-        ec = error::illegal_extra_chars;
-        break;
     }
-
-finish:
+    // never get here
+yield:
     return p - p0;
 }
 
@@ -965,23 +847,16 @@ write(
     std::size_t size,
     error_code& ec)
 {
-    if(is_done() && size > 0) // state::done
-    {
-        ec = error::illegal_extra_chars;
-        return 0;
-    }
     auto n =
         write_some(data, size, ec);
     if(! ec)
     {
-        write_eof(ec);
-        if(! ec)
-        {
-            if( n < size ||
-                ec == error::illegal_char)
-                ec = error::illegal_extra_chars;
-        }
+        if(n < size)
+            n += write_some(
+                data + n, size - n, ec);
     }
+    if(! ec)
+        write_eof(ec);
     return n;
 }
 
@@ -991,20 +866,25 @@ void
 basic_parser::
 write_eof(error_code& ec)
 {
-    if(st_.empty())
-    {
-        // document never started
-        ec = error::syntax;
-        return;
-    }
     for(;;)
     {
         // pop all states that
         // allow "" (empty string)
         switch(st_.front())
         {
-        case state::ws:
-            st_.pop();
+        case state::end:
+            ec = {};
+            return;
+
+        case state::begin:
+            ec = error::syntax;
+            return;
+
+        case state::maybe_end:
+            this->on_document_end(ec);
+            if(ec)
+                return;
+            *st_ = state::end;
             break;
 
         case state::num:
@@ -1032,49 +912,32 @@ write_eof(error_code& ec)
             break;
         }
 
-        case state::done0:
-            this->on_document_end(ec);
-            if(ec)
-                return;
-            st_.front() = state::done;
-            break;
-
-        case state::value:
-        case state::object1:
-        case state::object2:
-        case state::colon:
-        case state::array1:
-        case state::array2:
-        case state::string1:
-        case state::string2:
-        case state::string3:
-        case state::string4:
-        case state::true1:
-        case state::true2:
-        case state::true3:
-        case state::false1:
-        case state::false2:
-        case state::false3:
-        case state::false4:
-        case state::null1:
-        case state::null2:
-        case state::null3:
-        case state::u_esc1:
-        case state::u_esc2:
-        case state::u_esc3:
-        case state::u_esc4:
-        case state::u_pair1:
-        case state::u_pair2:
-        case state::u_surr:
-            ec = error::syntax;
+        case state::lit:
+            ec = ev_;
             return;
 
-        case state::done:
-            goto finish;
+        case state::val:
+        case state::obj1:
+        case state::obj2:
+        case state::obj3:
+        case state::arr1:
+        case state::arr2:
+        case state::str0:
+        case state::str1:
+        case state::str2:
+        case state::str3:
+        case state::str4:
+        case state::esc1:
+        case state::esc2:
+        case state::esc3:
+        case state::esc4:
+        case state::sur2:
+        case state::sur3:
+        case state::sur1:
+            ec = error::syntax;
+            return;
         }
     }
-finish:
-    ec = {};
 }
 
 } // json

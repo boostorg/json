@@ -11,6 +11,7 @@
 #include <boost/json/basic_parser.hpp>
 
 #include <boost/beast/_experimental/unit_test/suite.hpp>
+#include <string>
 
 #include "test.hpp"
 #include "parse-vectors.hpp"
@@ -22,22 +23,10 @@ class basic_parser_test : public beast::unit_test::suite
 {
 public:
     void
-    grind(string_view s, bool good)
+    split_grind(
+        string_view s,
+        error_code ex = {})
     {
-        error_code ex;
-        {
-            fail_parser p;
-            p.write(
-                s.data(),
-                s.size(),
-                ex);
-            if(good)
-                BEAST_EXPECTS(
-                    ! ex, ex.message());
-            else
-                BEAST_EXPECT(!!ex);
-        }
-
         // make sure all split inputs
         // produce the same result.
         for(std::size_t i = 1;
@@ -47,19 +36,50 @@ public:
                 break;
             error_code ec;
             fail_parser p;
-            p.write_some(s.data(), i, ec);
-            if(ec == ex)
+            auto const n =
+                p.write_some(s.data(), i, ec);
+            if(ec)
+            {
+                BEAST_EXPECTS(ec == ex,
+                    ec.message());
                 continue;
-            if(! BEAST_EXPECTS(
-                ! ec, ec.message()))
-                continue;
+            }
             p.write(
-                s.data() + i,
-                s.size() - i, ec);
+                s.data() + n,
+                s.size() - n, ec);
+            if(! BEAST_EXPECTS(ec == ex,
+                ec.message()))
+                log << "should be " << ex.message() << std::endl;
+        }
+    }
+
+    void
+    fail_grind(
+        string_view s,
+        error_code ex = {})
+    {
+        // exercise all error paths
+        for(std::size_t j = 1;;++j)
+        {
+            if(! BEAST_EXPECT(j < 100000))
+                break;
+            error_code ec;
+            fail_parser p(j);
+            p.write(
+                s.data(), s.size(), ec);
+            if(ec == error::test_failure)
+                continue;
             BEAST_EXPECTS(ec == ex,
                 ec.message());
+            break;
         }
+    }
 
+    void
+    throw_grind(
+        string_view s,
+        error_code ex = {})
+    {
         // exercise all exception paths
         for(std::size_t j = 1;;++j)
         {
@@ -86,22 +106,34 @@ public:
                     e.what() << std::endl;
             }
         }
+    }
 
-        // exercise all error paths
-        for(std::size_t j = 1;;++j)
+    void
+    grind(string_view s, bool good)
+    {
+        error_code ex;
         {
-            if(! BEAST_EXPECT(j < 100000))
-                break;
-            error_code ec;
-            fail_parser p(j);
+            fail_parser p;
             p.write(
-                s.data(), s.size(), ec);
-            if(ec == error::test_failure)
-                continue;
-            BEAST_EXPECTS(ec == ex,
-                ec.message());
-            break;
+                s.data(),
+                s.size(),
+                ex);
+            if(good)
+            {
+                if(! BEAST_EXPECTS(
+                    ! ex, ex.message()))
+                    return;
+            }
+            else
+            {
+                if(! BEAST_EXPECT(ex))
+                    return;
+            }
         }
+
+        split_grind(s, ex);
+        throw_grind(s, ex);
+        fail_grind(s, ex);
     }
 
     void
@@ -122,12 +154,40 @@ public:
         good("{}");
         good("{ }");
         good("{ \t }");
+        good("{\"x\":null}");
+        good("{ \"x\":null}");
+        good("{\"x\" :null}");
+        good("{\"x\": null}");
+        good("{\"x\":null }");
         good("{ \"x\" : null }");
         good("{ \"x\" : {} }");
+        good("{ \"x\" : [] }");
         good("{ \"x\" : { \"y\" : null } }");
+        good("{ \"x\" : [{}] }");
+        good("{ \"x\":1, \"y\":null}");
+        good("{\"x\":1,\"y\":2,\"z\":3}");
+        good(" {\"x\":1,\"y\":2,\"z\":3}");
+        good("{\"x\":1,\"y\":2,\"z\":3} ");
+        good(" {\"x\":1,\"y\":2,\"z\":3} ");
+        good("{ \"x\":1,\"y\":2,\"z\":3}");
+        good("{\"x\" :1,\"y\":2,\"z\":3}");
+        good("{\"x\":1 ,\"y\":2,\"z\":3}");
+        good("{\"x\":1,\"y\" :2,\"z\":3}");
+        good("{\"x\":1,\"y\": 2,\"z\":3}");
+        good("{\"x\":1,\"y\":2 ,\"z\":3}");
+        good("{\"x\":1,\"y\":2, \"z\":3}");
+        good("{\"x\":1,\"y\":2, \"z\" :3}");
+        good("{\"x\":1,\"y\":2, \"z\": 3}");
+        good("{\"x\":1,\"y\":2, \"z\":3 }");
+        good(" \t { \"x\" \n  :   1, \"y\" :2, \"z\" : 3} \n");
+
+        good("[{\"x\":[{\"y\":null}]}]");
 
         bad ("{");
+        bad (" {");
+        bad (" {}}");
         bad ("{{}}");
+        bad ("{[]}");
     }
 
     void
@@ -140,7 +200,23 @@ public:
         good("[ \" \" ]");
         good("[ \"x\" ]");
         good("[ \"x\", \"y\" ]");
+        good("[1,2,3]");
+        good(" [1,2,3]");
+        good("[1,2,3] ");
+        good(" [1,2,3] ");
+        good("[1,2,3]");
+        good("[ 1,2,3]");
+        good("[1 ,2,3]");
+        good("[1, 2,3]");
+        good("[1,2 ,3]");
+        good("[1,2, 3]");
+        good("[1,2,3 ]");
+        good(" [  1 , 2 \t\n ,  \n3]");
+
         bad ("[");
+        bad (" [");
+        bad (" []]");
+        bad ("[{]");
         bad ("[ \"x\", ]");
     }
 
@@ -152,37 +228,14 @@ public:
         good("\""   "x y"       "\"");
 
         bad ("\""   "\t"        "\"");
+
+        // control after escape
+        bad ("\"\\\\\n\"");
     }
 
     void
     testNumber()
     {
-#if 0
-        auto const test =
-            []( string_view s,
-                decltype(ieee_decimal::mantissa) m,
-                decltype(ieee_decimal::exponent) e,
-                bool sign)
-            {
-                auto const dec = parse_ieee_decimal(s);
-                BEAST_EXPECTS(dec.mantissa == m, "mantissa=" + std::to_string(dec.mantissa));
-                BEAST_EXPECTS(dec.exponent == e, "exponent=" + std::to_string(dec.exponent));
-                BEAST_EXPECTS(dec.sign == sign, "sign=" + std::to_string(sign));
-            };
-
-        test(" 0", 0, 0, false);
-        test(" 1e2", 1, 2, false);
-        test(" 1E2", 1, 2, false);
-        test("-1E2", 1, 2, true);
-        test("-1E-2", 1, -2, true);
-
-        test(" 9223372036854775807", 9223372036854775807, 0, false);
-        test("-9223372036854775807", 9223372036854775807, 0, true);
-        test(" 18446744073709551615", 18446744073709551615ULL, 0, false);
-        test("-18446744073709551615", 18446744073709551615ULL, 0, true);
-        test("1.0", 10, -1, false);
-#endif
-
         good("0");
         good("0.0");
         good("0.10");
@@ -206,6 +259,14 @@ public:
         good("-1");
         good("-1e1");
         good("1.1e309");
+        good(   "9223372036854775807");
+        good(  "-9223372036854775807");
+        good(  "18446744073709551615");
+        good( "-18446744073709551615");
+        good(  "[9223372036854775807]");
+        good( "[-9223372036854775807]");
+        good( "[18446744073709551615]");
+        good("[-18446744073709551615]");
 
         bad ("");
         bad ("-");
@@ -282,6 +343,149 @@ public:
     }
 
     void
+    testParser()
+    {
+        auto const check =
+        []( string_view s,
+            bool is_done)
+        {
+            fail_parser p;
+            error_code ec;
+            p.write_some(
+                s.data(), s.size(),
+                ec);
+            if(! BEAST_EXPECTS(! ec,
+                ec.message()))
+                return;
+            BEAST_EXPECT(is_done ==
+                p.is_done());
+        };
+
+        // is_done()
+
+        check("{}", false);
+        check("{} ", false);
+        check("{}x", true);
+        check("{} x", true);
+
+        check("[]", false);
+        check("[] ", false);
+        check("[]x", true);
+        check("[] x", true);
+
+        check("\"a\"", false);
+        check("\"a\" ", false);
+        check("\"a\"x", true);
+        check("\"a\" x", true);
+
+        check("0", false);
+        check("0 ", false);
+        check("0x", true);
+        check("0 x", true);
+        check("00", true);
+        check("0.", false);
+        check("0.0", false);
+        check("0.0 ", false);
+        check("0.0 x", true);
+
+        check("true", false);
+        check("true ", false);
+        check("truex", true);
+        check("true x", true);
+
+        check("false", false);
+        check("false ", false);
+        check("falsex", true);
+        check("false x", true);
+
+        check("null", false);
+        check("null ", false);
+        check("nullx", true);
+        check("null x", true);
+
+        // depth(), max_depth(), is_done()
+        {
+            {
+                error_code ec;
+                fail_parser p;
+                BEAST_EXPECT(
+                    p.depth() == 0);
+                BEAST_EXPECT(
+                    p.max_depth() > 0);
+                p.max_depth(1);
+                p.write("[{}]", 4, ec);
+                BEAST_EXPECTS(
+                    ec == error::too_deep,
+                    ec.message());
+                BEAST_EXPECT(! p.is_done());
+            }
+            {
+                error_code ec;
+                fail_parser p;
+                BEAST_EXPECT(
+                    p.max_depth() > 0);
+                p.max_depth(1);
+                p.write_some("[", 1, ec);
+                BEAST_EXPECT(p.depth() == 1);
+                if(BEAST_EXPECTS(! ec,
+                    ec.message()))
+                {
+                    p.write_some("{", 1, ec);
+                    BEAST_EXPECTS(
+                        ec == error::too_deep,
+                        ec.message());
+                }
+                BEAST_EXPECT(! p.is_done());
+                ec = {};
+                p.write_some("{}", 2, ec);
+                BEAST_EXPECT(ec);
+                p.reset();
+                p.write("{}", 2, ec);
+                BEAST_EXPECTS(! ec, ec.message());
+                BEAST_EXPECT(p.is_done());
+            }
+        }
+
+        // maybe_flush
+        {
+            // VFALCO This must be equal to the size
+            // of the temp buffer used in write_some.
+            //
+            int constexpr BUFFER_SIZE = 2048;
+
+            {
+                for(auto esc :
+                    { "\\\"", "\\\\", "\\/", "\\b",
+                      "\\f", "\\n", "\\r", "\\t", "\\u0000" })
+                {
+                    std::string big;
+                    big = "\\\"" + std::string(BUFFER_SIZE-4, '*') + esc;
+                    std::string s;
+                    s = "{\"" + big + "\":\"" + big + "\"}";
+                    fail_grind(s);
+                }
+            }
+
+            {
+                std::string big;
+                big = "\\\"" +
+                    std::string(BUFFER_SIZE + 1, '*');
+                std::string s;
+                s = "{\"" + big + "\":\"" + big + "\"}";
+                fail_grind(s);
+            }
+        }
+
+        // no input
+        {
+            error_code ec;
+            fail_parser p;
+            p.write_eof(ec);
+            BEAST_EXPECT(ec);
+        }
+    }
+
+    void
     testParseVectors()
     {
         parse_vectors pv;
@@ -319,7 +523,7 @@ public:
         testNumber();
         testBoolean();
         testNull();
-
+        testParser();
         testParseVectors();
     }
 };

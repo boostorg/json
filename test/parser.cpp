@@ -211,12 +211,14 @@ R"xx({
     void
     run()
     {
+#if 0
         log <<
             "sizeof(parser) == " <<
             sizeof(parser) << "\n";
         testParser();
         testParse();
         testVectors();
+#endif
 #if 0
         error_code ec;
         auto jv = parse(

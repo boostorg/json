@@ -34,8 +34,10 @@ class basic_parser
 
     detail::static_stack<state, 1024> st_;
     detail::number_parser iep_;
-    std::size_t depth_;
+    std::size_t depth_ = 0;
     std::size_t max_depth_ = 32;
+    char const* lit_;
+    error ev_;
     long u0_;
     unsigned short u_;
     bool is_key_;
@@ -48,11 +50,35 @@ public:
         // link errors on some older toolchains.
     }
 
-    /// Returns `true` if the parser has completed without error
+    /** Return true if a complete JSON has been parsed.
+
+        This function returns `true` when all of these
+        conditions are met:
+
+        @li A complete serialized JSON has been
+            presented to the parser, and
+
+        @li No error has occurred since the parser
+            was constructed, or since the last call
+            to @ref reset,
+
+        @par Complexity
+
+        Constant.
+    */
     bool
     is_done() const noexcept
     {
-        return st_.size() == 1;
+        return static_cast<
+            char>(*st_) == 0;
+    }
+
+    /** Returns the current depth of the JSON being parsed.
+    */
+    std::size_t
+    depth() const noexcept
+    {
+        return depth_;
     }
 
     /** Returns the maximum allowed depth of input JSON.
@@ -70,12 +96,6 @@ public:
     {
         max_depth_ = levels;
     }
-
-    /** Reset the state, to parse a new document.
-    */
-    BOOST_JSON_DECL
-    void
-    reset() noexcept;
 
     BOOST_JSON_DECL
     std::size_t
@@ -99,6 +119,12 @@ protected:
     /// Constructor (default)
     BOOST_JSON_DECL
     basic_parser();
+
+    /** Reset the state, to parse a new document.
+    */
+    BOOST_JSON_DECL
+    void
+    reset() noexcept;
 
     virtual
     void

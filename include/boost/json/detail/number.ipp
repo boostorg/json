@@ -259,7 +259,16 @@ loop:
                     st_ = state::exp1;
                     goto loop;
                 }
-                n_.u = m;
+                if(m <= INT64_MAX)
+                {
+                    n_.i = static_cast<
+                        int64_t>(m);
+                }
+                else
+                {
+                    n_.u = m;
+                    n_.kind = kind::uint64;
+                }
                 st_ = state::done;
                 goto finish;
             }
@@ -546,7 +555,8 @@ write(
     if(! ec)
     {
         if(n < size)
-            ec = error::illegal_extra_chars;
+            n += write_some(
+                data + n, size - n, ec);
     }
     if(! ec)
         write_eof(ec);

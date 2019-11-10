@@ -44,6 +44,7 @@ make_error_code(error e)
     case error::illegal_extra_chars: return "illegal extra characters";
     case error::illegal_leading_surrogate: return "illegal leading surrogate";
     case error::illegal_trailing_surrogate: return "illegal trailing surrogate";
+    case error::need_reset: return "need reset";
 
     case error::expected_comma: return "expected comma";
     case error::expected_colon: return "expected colon";
@@ -66,6 +67,7 @@ make_error_code(error e)
     case error::integer_overflow: return "integer overflowed";
 
     case error::key_not_found: return "key not found";
+
     case error::test_failure: return "test failure";
             }
         }
