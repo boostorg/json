@@ -138,8 +138,7 @@ public:
             {
                 if( BEAST_EXPECT(
                         num.kind == kind::double_))
-                    if(! BEAST_EXPECT(num.d == d))
-                        d = d;
+                    BEAST_EXPECT(num.d == d);
             });
     }
 
@@ -293,7 +292,6 @@ public:
     {
         // maybe_init
         {
-            error_code ec;
             number_parser p;
             BEAST_EXPECT(! p.maybe_init(0));
             BEAST_EXPECT(! p.maybe_init('A'));

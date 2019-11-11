@@ -37,6 +37,7 @@ public:
             ec);
         BEAST_EXPECTS(! ec,
             ec.message());
+        //log << "  " << to_string_test(p.get()) << std::endl;
         return p.release();
     }
 
@@ -140,7 +141,6 @@ R"xx({
     void
     grind(string_view s)
     {
-        log << "grind(\"" << s << "\")" << std::endl;
         {
             auto const jv =
                 from_string_test(s);
@@ -251,6 +251,7 @@ R"xx({
         testParse();
         testObjects();
         testArrays();
+        //testStrings();
         testNumbers();
         testBool();
         testNull();

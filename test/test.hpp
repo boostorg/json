@@ -7,11 +7,12 @@
 // Official repository: https://github.com/vinniefalco/json
 //
 
-#ifndef BOOST_JSON_TEST_STORAGE_HPP
-#define BOOST_JSON_TEST_STORAGE_HPP
+#ifndef BOOST_JSON_TEST_HPP
+#define BOOST_JSON_TEST_HPP
 
 #include <boost/json/basic_parser.hpp>
 #include <boost/json/value.hpp>
+#include <boost/json/serializer.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/detail/format.hpp>
 #include <boost/beast/_experimental/unit_test/suite.hpp>
@@ -669,9 +670,14 @@ to_string_test(
     }
 
     case kind::string:
+    #if 1
+        // safe, but doesn't handle escsapes
         dest.push_back('\"');
         dest.append(jv.get_string());
         dest.push_back('\"');
+    #else
+        dest.append(to_string(jv));
+    #endif
         break;
 
     case kind::int64:
@@ -713,6 +719,11 @@ to_string_test(
 
     case kind::null:
         dest.append("null");
+        break;
+
+    default:
+        // should never get here
+        dest.append("?");
         break;
     }
 }

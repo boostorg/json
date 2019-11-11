@@ -16,7 +16,7 @@
 #include <boost/json/value.hpp>
 #include <boost/json/string.hpp>
 #include <boost/json/detail/except.hpp>
-#include <boost/json/detail/static_stack.hpp>
+#include <boost/json/detail/raw_stack.hpp>
 #include <boost/json/detail/string.hpp>
 #include <new>
 #include <string>
@@ -29,266 +29,17 @@ namespace json {
 class parser final
     : public basic_parser
 {
-    struct level
-    {
-        std::int32_t size;
-        bool obj;
-        char pad[3];
-    };
-
-    class stack
-    {
-        storage_ptr sp_;  // for the values
-        storage_ptr ssp_; // for the stack
-        std::size_t size_ = 0;
-        std::size_t capacity_ = 0;
-        char* base_ = nullptr;
-
-        size_t
-        capacity() const noexcept
-        {
-            return capacity_;
-        }
-
-        static
-        constexpr
-        std::size_t
-        alignup(std::size_t n) noexcept
-        {
-            return alignof(max_align_t) *
-                ((n + alignof(max_align_t) - 1) /
-                 alignof(max_align_t));
-        }
-
-    public:
-        stack() = default;
-
-        ~stack()
-        {
-            if(base_)
-                sp_->deallocate(
-                    base_, capacity_);
-        }
-
-        explicit
-        stack(storage_ptr sp) noexcept
-            : sp_(std::move(sp))
-        {
-        }
-
-        bool
-        empty() const noexcept
-        {
-            return size_ == 0;
-        }
-
-        bool
-        is_aligned()
-        {
-            return (size_ % alignof(max_align_t)) == 0;
-        }
-
-        template<class Arg>
-        value&
-        emplace_value(Arg&& arg)
-        {
-            BOOST_JSON_ASSERT(is_aligned());
-            BOOST_JSON_ASSERT(
-                size_ >= alignup(sizeof(value)));
-            auto& v = *::new(base_ + size_
-                - alignup(sizeof(value))) value(
-                std::forward<Arg>(arg), sp_);
-            return v;
-        }
-
-        template<class Arg>
-        object::value_type&
-        emplace_pair(Arg&& arg)
-        {
-            BOOST_JSON_ASSERT(is_aligned());
-            BOOST_JSON_ASSERT(
-                size_ >= alignup(sizeof(value)));
-            std::size_t len;
-            pop_impl(len);
-            size_ -= alignup(len) - len;
-            auto key = pop_string(len);
-            auto const n =
-                alignup(sizeof(object::value_type));
-            // size for n was placeheld
-            BOOST_JSON_ASSERT(size_ >= n);
-            auto& kvp = *::new(
-                base_ + size_ - n)
-                object::value_type(key,
-                    std::forward<Arg>(arg), sp_);
-            return kvp;
-        }
-
-        void
-        placeholder(
-            std::size_t bytes)
-        {
-            BOOST_JSON_ASSERT(is_aligned());
-            bytes = alignup(bytes);
-            prepare(bytes);
-            size_ += bytes;
-        }
-
-        void
-        unreserve(
-            std::size_t bytes)
-        {
-            BOOST_JSON_ASSERT(is_aligned());
-            bytes = alignup(bytes);
-            size_ -= bytes;
-        }
-
-        void
-        align()
-        {
-            auto const n = alignup(size_);
-            if(n > capacity_)
-                grow(n - size_);
-            size_ = n;
-        }
-
-        void
-        push(std::size_t u)
-        {
-            push_impl(u);
-        }
-
-        void
-        push(level lev)
-        {
-            push_impl(lev);
-        }
-
-        void
-        push(string_view s)
-        {
-            prepare(s.size());
-            std::memcpy(base_ + size_,
-                s.data(), s.size());
-            size_ += s.size();
-        }
-
-        void
-        pop(level& lev)
-        {
-            pop_impl(lev);
-        }
-
-        unchecked_array
-        pop_array(size_type size) noexcept
-        {
-            BOOST_JSON_ASSERT(is_aligned());
-            if(size == 0)
-                return { nullptr, 0, sp_ };
-            auto const n = size *
-                alignup(sizeof(value));
-            BOOST_JSON_ASSERT(n <= size_);
-            size_ -= n;
-            return { reinterpret_cast<
-                value*>(base_ + size_),
-                    size, sp_ };
-        }
-
-        unchecked_object
-        pop_object(size_type size) noexcept
-        {
-            BOOST_JSON_ASSERT(is_aligned());
-            if(size == 0)
-                return { nullptr, 0, sp_ };
-            auto const n = size *
-                alignup(sizeof(object::value_type));
-            BOOST_JSON_ASSERT(n <= size_);
-            size_ -= n;
-            return { reinterpret_cast<
-                object::value_type*>(base_ + size_),
-                    size, sp_ };
-        }
-
-        string_view
-        pop_string(std::size_t len) noexcept
-        {
-            BOOST_JSON_ASSERT(len <= size_);
-            size_ -= len;
-            BOOST_JSON_ASSERT(is_aligned());
-            return { base_ + size_, len };
-        }
-
-    private:
-        static
-        constexpr
-        std::size_t
-        min_capacity_ = 256;
-
-        static
-        constexpr
-        std::size_t
-        max_size_ = std::size_t(-1);
-
-        void
-        prepare(std::size_t n)
-        {
-            if(n > capacity_ - size_)
-                grow(n);
-        }
-
-        void
-        grow(std::size_t n)
-        {
-            if(n > max_size_ - size_)
-                BOOST_JSON_THROW(
-                    detail::stack_overflow_exception());
-            auto new_capacity = size_ + n;
-            if( new_capacity < min_capacity_)
-                new_capacity = min_capacity_;
-            // 2x growth
-            auto const hint = (capacity_ * 2) & ~1;
-            if( new_capacity < hint)
-                new_capacity = hint;
-            auto base = reinterpret_cast<
-                char*>(ssp_->allocate(new_capacity));
-            if(base_)
-            {
-                std::memcpy(base, base_, size_);
-                ssp_->deallocate(base_, size_);
-            }
-            base_ = base;
-            capacity_ = new_capacity;
-        }
-
-        template<class T>
-        void
-        push_impl(T t)
-        {
-            BOOST_JSON_ASSERT(is_aligned());
-            auto const n = alignup(sizeof(T));
-            if(n > capacity_ - size_)
-                grow(n);
-            ::new(base_ + size_) T(t);
-            size_ += n;
-        }
-
-        template<class T>
-        void
-        pop_impl(T& t) noexcept
-        {
-            BOOST_JSON_ASSERT(is_aligned());
-            auto const n = alignup(sizeof(T));
-            BOOST_JSON_ASSERT(size_ >= n);
-            size_ -= n;
-            std::memcpy(
-                &t, base_ + size_, sizeof(T));
-        }
-    };
-
-    stack st_;
     value jv_;
-    level lev_;
-    size_type key_ = 0; // key len
-    size_type str_ = 0; // str len
+    storage_ptr sp_;
+    detail::raw_stack rs_;
+    std::size_t count_;
+    std::size_t key_size_;
+    std::size_t str_size_;
+    bool obj_;
+
+    inline
+    void
+    destroy() noexcept;
 
 public:
     BOOST_JSON_DECL
@@ -310,9 +61,34 @@ public:
     release() noexcept;
 
 private:
-    BOOST_JSON_DECL
+    template<class T>
     void
-    destroy();
+    push(T const& t);
+
+    inline
+    void
+    push_string(string_view s);
+
+    template<class... Args>
+    void
+    emplace(Args&&... args);
+
+    template<class T>
+    void
+    pop(T& t);
+
+    inline
+    unchecked_object
+    pop_object() noexcept;
+
+    inline
+    unchecked_array
+    pop_array() noexcept;
+
+    inline
+    string_view
+    pop_string(
+        std::size_t size) noexcept;
 
     BOOST_JSON_DECL
     void
@@ -406,6 +182,12 @@ parse(
     storage_ptr sp,
     error_code& ec);
 
+BOOST_JSON_DECL
+value
+parse(
+    string_view s,
+    storage_ptr sp);
+
 inline
 value
 parse(
@@ -416,17 +198,12 @@ parse(
         storage_ptr{}, ec);
 }
 
-BOOST_JSON_DECL
-value
-parse(
-    string_view s,
-    storage_ptr sp);
-
 inline
 value
 parse(string_view s)
 {
-    return parse(s, storage_ptr{});
+    return parse(
+        s, storage_ptr{});
 }
 
 } // json

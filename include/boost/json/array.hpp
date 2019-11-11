@@ -22,6 +22,12 @@ namespace boost {
 namespace json {
 
 class value;
+class string;
+
+inline
+string
+to_string_test(
+    value const& jv);
 
 class unchecked_array
 {
