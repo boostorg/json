@@ -29,20 +29,14 @@ namespace json {
 class parser final
     : public basic_parser
 {
-    enum class state : char
-    {
-        need_start,
-        started,
-        end
-    };
+    enum class state : char;
 
     storage_ptr sp_;
     detail::raw_stack rs_;
     std::size_t count_;
     std::size_t key_size_;
     std::size_t str_size_;
-    bool obj_;
-    state st_ = state::need_start;
+    state st_;
 
     inline
     void
@@ -89,7 +83,7 @@ private:
 
     inline
     void
-    push_string(string_view s);
+    push_chars(string_view s);
 
     template<class... Args>
     void
@@ -109,7 +103,7 @@ private:
 
     inline
     string_view
-    pop_string(
+    pop_chars(
         std::size_t size) noexcept;
 
     BOOST_JSON_DECL

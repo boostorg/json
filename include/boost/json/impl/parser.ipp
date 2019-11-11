@@ -23,45 +23,118 @@ namespace json {
 
 //----------------------------------------------------------
 
+/*
+
+Stack Layout:
+    ... denotes 0 or more
+    <> denotes empty storage
+
+array
+    std::size_t
+    state
+    value...
+    <value>
+
+object
+    std::size_t
+    state   
+    value_type...
+    <value_type>
+
+key
+    (chars)...
+    std::size_t
+*/
+
+enum class parser::state : char
+{
+    need_start,
+    begin,
+
+    // These states indicate what is
+    // currently at top of the stack.
+
+    top,    // empty value
+    arr,    // empty array value
+    obj,    // empty object value
+    key,    // complete key
+    end     // final value
+};
+
 void
 parser::
 destroy() noexcept
 {
-#if 0
+    if(st_ == state::need_start)
+        return;
     if(key_size_ > 0)
     {
-        BOOST_JSON_ASSERT(lev_.obj);
-        BOOST_JSON_ASSERT(str_size_ == 0);
-        st_.unreserve(key_size_);
+        // remove partial key
+        BOOST_JSON_ASSERT(
+            st_ == state::obj);
+        BOOST_JSON_ASSERT(
+            str_size_ == 0);
+        rs_.subtract(key_size_);
+        key_size_ = 0;
     }
-    if(str_size_ > 0)
+    else if(str_size_ > 0)
     {
-        st_.unreserve(str_size_);
+        // remove partial string
+        rs_.subtract(str_size_);
+        str_size_ = 0;
     }
-    if(! st_.empty())
+    // unwind the rest
+    while(! rs_.empty())
     {
-        for(;;)
+        switch(st_)
         {
-            if(lev_.obj)
-            {
-                st_.unreserve(sizeof(
-                    object::value_type));
-                auto uo = st_.pop_object(
-                    lev_.size);
-            }
-            else
-            {
-                st_.unreserve(sizeof(
-                    value));
-                auto ua = st_.pop_array(
-                    lev_.size);
-            }
-            if(st_.empty())
-                break;
-            st_.pop(lev_);
+        case state::top:
+            rs_.subtract(
+                sizeof(value));
+            break;
+
+        case state::end:
+        {
+            auto ua =
+                pop_array();
+            BOOST_JSON_ASSERT(
+                ua.size() == 1);
+            break;
+        }
+
+        case state::arr:
+        {
+            pop_array();
+            pop(st_);
+            pop(count_);
+            break;
+        }
+
+        case state::obj:
+        {
+            pop_object();
+            pop(st_);
+            pop(count_);
+            break;
+        }
+
+        case state::key:
+        {
+            std::size_t key_size;
+            pop(key_size);
+            auto const key =
+                pop_chars(key_size);
+            st_ = state::obj;
+            break;
+        }
+
+        default:
+            // should never get here
+            BOOST_JSON_ASSERT(
+                rs_.empty());
+            break;
         }
     }
-#endif
 }
 
 parser::
@@ -72,6 +145,7 @@ parser::
 
 parser::
 parser()
+    : st_(state::need_start)
 {
 }
 
@@ -81,24 +155,28 @@ start(storage_ptr sp) noexcept
 {
     clear();
     sp_ = std::move(sp);
-    st_ = state::started;
+    st_ = state::begin;
 }
 
 void
 parser::
 clear() noexcept
 {
+    destroy();
+    rs_.clear();
+    basic_parser::reset();
+    st_ = state::need_start;
+    sp_ = {};
 }
 
 value
 parser::
 release() noexcept
 {
-    BOOST_JSON_ASSERT(
-        is_done());
-    BOOST_JSON_ASSERT(
-        st_ == state::end);
+    BOOST_JSON_ASSERT(is_done());
+    BOOST_JSON_ASSERT(st_ == state::end);
     auto ua = pop_array();
+    BOOST_JSON_ASSERT(rs_.empty());
     union U
     {
         value v;
@@ -107,7 +185,9 @@ release() noexcept
     };
     U u;
     ua.relocate(&u.v);
+    basic_parser::reset();
     st_ = state::need_start;
+    sp_ = {};
     return std::move(u.v);
 }
 
@@ -125,7 +205,7 @@ push(T const& t)
 
 void
 parser::
-push_string(string_view s)
+push_chars(string_view s)
 {
     std::memcpy(
         rs_.push(s.size()),
@@ -137,7 +217,7 @@ void
 parser::
 emplace(Args&&... args)
 {
-    if(obj_)
+    if(st_ == state::key)
     {
         union U
         {
@@ -149,7 +229,10 @@ emplace(Args&&... args)
         std::size_t key_size;
         pop(key_size);
         auto const key =
-            pop_string(key_size);
+            pop_chars(key_size);
+        st_ = state::obj;
+        // prevent splits from exceptions
+        rs_.prepare(2 * sizeof(u.v));
         ::new(&u.v) object::value_type(
             key, std::forward<Args>(args)...);
         rs_.subtract(sizeof(u.v));
@@ -158,6 +241,9 @@ emplace(Args&&... args)
     }
     else
     {
+        BOOST_JSON_ASSERT(
+            st_ == state::arr ||
+            st_ == state::top);
         union U
         {
             value v;
@@ -165,6 +251,7 @@ emplace(Args&&... args)
             ~U(){}
         };
         U u;
+        rs_.prepare(2 * sizeof(value));
         ::new(&u.v) value(
             std::forward<Args>(args)...);
         rs_.subtract(sizeof(u.v));
@@ -219,7 +306,7 @@ pop_array() noexcept
 
 string_view
 parser::
-pop_string(
+pop_chars(
     std::size_t size) noexcept
 {
     return {
@@ -243,8 +330,11 @@ on_document_begin(
     count_ = 0;
     key_size_ = 0;
     str_size_ = 0;
-    obj_ = false;
+
+    // The top level `value` is kept
+    // inside a notional 1-element array.
     rs_.add(sizeof(value));
+    st_ = state::top;
 }
 
 void
@@ -252,27 +342,35 @@ parser::
 on_document_end(error_code&)
 {
     BOOST_JSON_ASSERT(count_ == 1);
-    st_ = state::end;
+    st_ = state::end; // VFALCO RECONSIDER
 }
 
 void
 parser::
 on_object_begin(error_code&)
 {
+    // prevent splits from exceptions
+    rs_.prepare(
+        sizeof(count_) +
+        sizeof(st_) +
+        sizeof(object::value_type));
     push(count_);
-    push(obj_);
-    count_ = 0;
-    obj_ = true;
+    push(st_);
     rs_.add(sizeof(
         object::value_type));
+
+    count_ = 0;
+    st_ = state::obj;
 }
 
 void
 parser::
 on_object_end(error_code&)
 {
+    BOOST_JSON_ASSERT(
+        st_ == state::obj);
     auto uo = pop_object();
-    pop(obj_);
+    pop(st_);
     pop(count_);
     emplace(std::move(uo));
 }
@@ -281,19 +379,27 @@ void
 parser::
 on_array_begin(error_code&)
 {
+    // prevent splits from exceptions
+    rs_.prepare(
+        sizeof(count_) +
+        sizeof(st_) +
+        sizeof(value));
     push(count_);
-    push(obj_);
-    count_ = 0;
-    obj_ = false;
+    push(st_);
     rs_.add(sizeof(value));
+
+    count_ = 0;
+    st_ = state::arr;
 }
 
 void
 parser::
 on_array_end(error_code&)
 {
+    BOOST_JSON_ASSERT(
+        st_ == state::arr);
     auto ua = pop_array();
-    pop(obj_);
+    pop(st_);
     pop(count_);
     emplace(std::move(ua));
 }
@@ -308,7 +414,7 @@ on_key_part(
         string::max_size() - key_size_)
         BOOST_JSON_THROW(
             detail::key_too_large_exception());  
-    push_string(s);
+    push_chars(s);
     key_size_ += static_cast<size_type>(
         s.size());
 }
@@ -319,9 +425,12 @@ on_key(
     string_view s,
     error_code& ec)
 {
+    BOOST_JSON_ASSERT(
+        st_ == state::obj);
     on_key_part(s, ec);
     push(key_size_);
     key_size_ = 0;
+    st_ = state::key;
 }
 
 void
@@ -334,7 +443,7 @@ on_string_part(
         string::max_size() - str_size_)
         BOOST_JSON_THROW(
             detail::string_too_large_exception());  
-    push_string(s);
+    push_chars(s);
     str_size_ += static_cast<size_type>(
         s.size());
 }
@@ -358,7 +467,7 @@ on_string(
     {
         string str(sp_);
         auto const sv =
-            pop_string(str_size_);
+            pop_chars(str_size_);
         str_size_ = 0;
         str.reserve(
             sv.size() + s.size());
@@ -371,7 +480,6 @@ on_string(
         str.grow(sv.size() + s.size());
         emplace(std::move(str));
     }
-    str_size_ = 0;
 }
 
 void

@@ -138,9 +138,9 @@ public:
     #endif
         auto s1 = to_string(jv0);
         parser p;
+        p.start();
         auto n = p.write(
             s1.data(), s1.size(), ec);
-        auto jv1 = p.release();
     #ifdef SOFT_FAIL
         if(ec)
     #else
@@ -161,6 +161,7 @@ public:
                 "  " << s1 << std::endl << std::endl;
             return;
         }
+        auto jv1 = p.release();
         auto s2 = to_string(jv1);
     #ifdef SOFT_FAIL
         if(s1 != s2)

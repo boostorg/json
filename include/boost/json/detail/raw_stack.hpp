@@ -42,12 +42,22 @@ public:
                 base_, size_);
     }
 
+    bool
+    empty() const noexcept
+    {
+        return size_ == 0;
+    }
+
+    void
+    clear() noexcept
+    {
+        size_ = 0;
+    }
+
     void*
     push(std::size_t n)
     {
-        if(n > capacity_ - size_)
-            grow(n - (
-                capacity_ - size_));
+        prepare(n);
         auto p = base_ + size_;
         size_ += n;
         return p;
@@ -63,11 +73,18 @@ public:
     }
 
     void
+    prepare(std::size_t n)
+    {
+        auto const avail =
+            capacity_ - size_;
+        if(n > avail)
+            grow(n - avail);
+    }
+
+    void
     add(std::size_t n)
     {
-        if(n > capacity_ - size_)
-            grow(n - (
-                capacity_ - size_));
+        prepare(n);
         size_ += n;
     }
 
