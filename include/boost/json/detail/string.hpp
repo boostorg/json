@@ -35,7 +35,7 @@ using is_viewy = typename std::enable_if<
     std::is_convertible<
         T const&, string_view>::value &&
     ! std::is_convertible<
-        T const&, char const&>::value
+        T const&, char const*>::value
             >::type;
 
 } // detail

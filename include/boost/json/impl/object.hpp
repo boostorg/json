@@ -36,9 +36,10 @@ void
 unchecked_object::
 relocate(object::value_type* dest) noexcept
 {
-    std::memcpy(
-        reinterpret_cast<void*>(dest),
-        data_, sizeof(object::value_type) * size_);
+    if(size_ > 0)
+        std::memcpy(
+            reinterpret_cast<void*>(dest),
+            data_, size_ * sizeof(object::value_type));
     data_ = nullptr;
 }
 

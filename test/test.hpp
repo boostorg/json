@@ -90,6 +90,26 @@ struct fail_storage
     }
 };
 
+template<class F>
+void
+fail_loop(F&& f)
+{
+    scoped_storage<fail_storage> ss;
+    while(ss->fail < 200)
+    {
+        try
+        {
+            f(ss);
+        }
+        catch(test_failure const&)
+        {
+            continue;
+        }
+        break;
+    }
+    BEAST_EXPECT(ss->fail < 200);
+}
+
 //----------------------------------------------------------
 
 struct unique_storage
@@ -127,28 +147,6 @@ struct unique_storage
         return ::operator delete(p);
     }
 };
-
-//----------------------------------------------------------
-
-template<class F>
-void
-fail_loop(F&& f)
-{
-    scoped_storage<fail_storage> ss;
-    while(ss->fail < 200)
-    {
-        try
-        {
-            f(ss);
-        }
-        catch(test_failure const&)
-        {
-            continue;
-        }
-        break;
-    }
-    BEAST_EXPECT(ss->fail < 200);
-}
 
 //----------------------------------------------------------
 
@@ -821,5 +819,7 @@ equal(
 
 } // json
 } // boost
+
+#include <boost/json/detail/format.ipp>
 
 #endif

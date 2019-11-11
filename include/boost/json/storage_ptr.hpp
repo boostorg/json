@@ -11,6 +11,8 @@
 #define BOOST_JSON_STORAGE_PTR_HPP
 
 #include <boost/json/detail/config.hpp>
+#include <boost/json/detail/assert.hpp>
+#include <boost/json/detail/exchange.hpp>
 #include <boost/json/storage.hpp>
 #include <cstddef>
 #include <type_traits>
@@ -26,13 +28,13 @@ class storage_ptr
     template<class T>
     friend class scoped_storage;
 
-    storage* p_ = nullptr;
+    storage* p_;
 
     inline
     void
     addref() const noexcept
     {
-        if( p_ && p_->counted_)
+        if(p_->counted_)
             ++p_->refs_;
     }
 
@@ -40,20 +42,21 @@ class storage_ptr
     void
     release() const noexcept
     {
-        if( p_ &&
-            p_->counted_ &&
+        if( p_->counted_ &&
             --p_->refs_ == 0)
             delete p_;
     }
 
     explicit
-    storage_ptr(storage* p) noexcept
+    storage_ptr(
+        storage* p) noexcept
         : p_(p)
     {
+        BOOST_JSON_ASSERT(p);
     }
 
 public:
-    /** Construct a default storage pointer
+    /** Default constructor.
 
         This constructs a default storage pointer.
         The default storage is not reference counted,
@@ -71,12 +74,27 @@ public:
     BOOST_JSON_DECL
     storage_ptr() noexcept;
 
+    /** Construct a pointer to default storage.
+
+        This constructs a default storage pointer.
+        The default storage is not reference counted,
+        uses global operator new and delete to obtain
+        memory, and requires calls to `deallocate`.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
     storage_ptr(std::nullptr_t) noexcept
         : storage_ptr()
     {
     }
 
-    /** Destroy a storage pointer.
+    /** Destructor.
 
         This releases the pointed-to storage. If the
         storage is reference counted and this is the
@@ -100,8 +118,8 @@ public:
 
     /** Move construct a storage pointer.
 
-        After construction, the moved-from pointer
-        will be null.
+        After construction, the moved-from object
+        will point to the default storage.
 
         @par Complexity
 
@@ -115,9 +133,10 @@ public:
     */
     storage_ptr(
         storage_ptr&& other) noexcept
-        : p_(other.p_)
+        : p_(detail::exchange(
+            other.p_,
+            storage_ptr().get()))
     {
-        other.p_ = storage_ptr().get();
     }
 
     /** Copy construct a storage pointer.
@@ -167,12 +186,13 @@ public:
         storage_ptr&& other) noexcept
     {
         release();
-        p_ = other.p_;
-        other.p_ = storage_ptr().get();
+        p_ = detail::exchange(
+            other.p_,
+            storage_ptr().get());
         return *this;
     }
 
-    /** Copy construct a storage pointer.
+    /** Copy assignment.
 
         If `this` points to a valid object, it is
         decremented as if by a call to the destructor.
@@ -203,10 +223,6 @@ public:
 
     /** Return a pointer to the storage object.
 
-        If `this` points to a valid storage object,
-        it is returned. Otherwise the return value
-        is `nullptr`.
-
         @par Complexity
 
         Constant.
@@ -223,10 +239,6 @@ public:
 
     /** Return a pointer to the storage object.
 
-        If `this` points to a valid storage object,
-        it is returned. Otherwise the return value
-        is `nullptr`.
-
         @par Complexity
 
         Constant.
@@ -242,10 +254,6 @@ public:
     }
 
     /** Return a reference to the storage object.
-
-        If `this` points to a valid storage object,
-        it is returned. Otherwise the behavior is
-        undefined.
 
         @par Precondition
 

@@ -1939,7 +1939,8 @@ public:
     string&
     append(string const& s)
     {
-        return append(s.data(), s.size());
+        return append(
+            s.data(), s.size());
     }
 
     string&
@@ -1948,13 +1949,15 @@ public:
         size_type pos,
         size_type count = npos)
     {
-        return append(s.substr(pos, count));
+        return append(
+            s.substr(pos, count));
     }
 
     string&
     append(char const* s)
     {
-        return append(s, traits_type::length(s));
+        return append(s,
+            traits_type::length(s));
     }
 
     BOOST_JSON_DECL

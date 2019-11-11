@@ -40,7 +40,6 @@ class parser final
     {
         storage_ptr sp_;  // for the values
         storage_ptr ssp_; // for the stack
-        storage_ptr vsp_;
         std::size_t size_ = 0;
         std::size_t capacity_ = 0;
         char* base_ = nullptr;

@@ -16,6 +16,7 @@
 #include <sstream>
 
 #include "parse-vectors.hpp"
+#include "test.hpp"
 
 namespace boost {
 namespace json {
@@ -23,8 +24,77 @@ namespace json {
 class parser_test : public beast::unit_test::suite
 {
 public:
+    value
+    from_string_test(
+        string_view s,
+        storage_ptr sp = {})
+    {
+        parser p(sp);
+        error_code ec;
+        p.write(
+            s.data(),
+            s.size(),
+            ec);
+        BEAST_EXPECTS(! ec,
+            ec.message());
+        return p.release();
+    }
+
     void
-    testParser()
+    check_round_trip(
+        value const& jv1,
+        string_view s1)
+    {
+        auto const s2 =
+            to_string_test(jv1);
+        auto jv2 =
+            from_string_test(s2);
+        if(! BEAST_EXPECT(equal(jv1, jv2)))
+            log <<
+                "  " << s1 << "\n" <<
+                "  " << s2 << std::endl;
+    }
+
+    void
+    testParse()
+    {
+        string_view const js =
+            "{\"1\":{},\"2\":[],\"3\":\"x\",\"4\":1,"
+            "\"5\":-1,\"6\":1.0,\"7\":false,\"8\":null}";
+
+        // parse(value)
+        {
+            check_round_trip(
+                parse(js),
+                js);
+        }
+
+        // parse(value, storage_ptr)
+        {
+            check_round_trip(
+                parse(js, storage_ptr{}),
+                js);
+        }
+
+        // parse(value, error_code)
+        {
+            error_code ec;
+            auto jv = parse(js, ec);
+            BEAST_EXPECTS(! ec, ec.message());
+            check_round_trip(jv, js);
+        }
+
+        // parse(value, storage_ptr, error_code)
+        {
+            error_code ec;
+            auto jv = parse(js, storage_ptr{}, ec);
+            BEAST_EXPECTS(! ec, ec.message());
+            check_round_trip(jv, js);
+        }
+    }
+
+    void
+    legacyTests()
     {
         string_view in =
 R"xx({
@@ -55,9 +125,7 @@ R"xx({
         p.write(in.data(), in.size(), ec);
         if(BEAST_EXPECTS(! ec, ec.message()))
         {
-            std::stringstream ss;
-            ss << p.get();
-            BEAST_EXPECT(ss.str() ==
+            BEAST_EXPECT(to_string_test(p.get()) ==
                 "{\"glossary\":{\"title\":\"example glossary\",\"GlossDiv\":"
                 "{\"title\":\"S\",\"GlossList\":{\"GlossEntry\":{\"ID\":\"SGML\","
                 "\"SortAs\":\"SGML\",\"GlossTerm\":\"Standard Generalized Markup "
@@ -70,87 +138,122 @@ R"xx({
     }
 
     void
-    testParse()
+    grind(string_view s)
     {
-        auto const check =
-            [&](json::value const& jv)
-            {
-                BEAST_EXPECT(jv.is_object());
-                BEAST_EXPECT(jv.as_object().find(
-                    "a")->value().is_bool());
-                BEAST_EXPECT(jv.as_object().find(
-                    "b")->value().is_number());
-                BEAST_EXPECT(jv.as_object().find(
-                    "c")->value().is_string());
-            };
-
-        string_view js =
-            "{\"a\":true,\"b\":1,\"c\":\"x\"}";
-
-        // parse(value)
+        log << "grind(\"" << s << "\")" << std::endl;
         {
-            check(parse(js));
+            auto const jv =
+                from_string_test(s);
+            check_round_trip(jv, s);
         }
-
-        // parse(value, storage_ptr)
+#if 0
+        fail_loop([&](storage_ptr const& sp)
         {
-            check(parse(js, storage_ptr{}));
-        }
-
-        // parse(value, error_code)
-        {
-            error_code ec;
-            auto jv = parse(js, ec);
-            BEAST_EXPECTS(! ec, ec.message());
-            check(jv);
-        }
-
-        // parse(value, storage_ptr, error_code)
-        {
-            error_code ec;
-            auto jv = parse(js, storage_ptr{}, ec);
-            BEAST_EXPECTS(! ec, ec.message());
-            check(jv);
-        }
+            auto const jv =
+                from_string_test(s, sp);
+            check_round_trip(jv, s);
+        });
+#endif
     }
 
     void
-    testVectors()
+    testObjects()
     {
-        parse_vectors pv;
-        for(auto const& e : pv)
-        {
-            if(e.result != 'y')
-                continue;
-            auto const jv = parse(e.text);
-        }
+        grind("{}");
+        grind("{\"\":[]}");
+        grind("{\"1\":[],\"2\":[]}");
+        grind(
+            "{\"1\":{\"2\":{}},\"3\":{\"4\":{},\"5\":{}},"
+            "\"6\":{\"7\":{},\"8\":{},\"9\":{}}}");
+        grind(
+            "{\"1\":{},\"2\":[],\"3\":\"x\",\"4\":1,"
+            "\"5\":-1,\"6\":1.0,\"7\":false,\"8\":null}");
+    }
+
+    void
+    testArrays()
+    {
+        grind("[]");
+        grind("[[]]");
+        grind("[[],[]]");
+        grind("[[],[],[]]");
+        grind("[[[]],[[],[]],[[],[],[]]]");
+        grind("[{},[],\"x\",1,-1,1.0,true,null]");
+    }
+
+    void
+    testStrings()
+    {
+        grind("\"\"");
+        grind("\"x\"");
+        grind("\"\\\"\"");
+        grind("\"\\\\\"");
+        grind("\"\\/\"");
+        grind("\"\\b\"");
+        grind("\"\\f\"");
+        grind("\"\\n\"");
+        grind("\"\\r\"");
+        grind("\"\\t\"");
+        grind("\"\\u0000\"");
+        grind("\"xxxxxxxxxx\"");
+        grind("\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"");
+        grind("\""
+            "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            "\"");
+    }
+
+    void
+    testNumbers()
+    {
+        grind("-9223372036854775808"); // INT64_MIN
+        grind("-999999999999999999");
+        grind("-0");
+        grind( "0");
+        grind( "1");
+        grind( "999999999999999999");
+        grind( "9223372036854775807"); // INT64_MAX
+        grind( "9223372036854775808");
+        grind( "18446744073709551615"); // UINT64_MAX
+
+        grind("-1e-10");
+        grind( "1e-10");
+        grind( "1e+10");
+        grind( "1e+100");
+    }
+
+    void
+    testBool()
+    {
+        grind("true");
+        grind("false");
+    }
+
+    void
+    testNull()
+    {
+        grind("null");
     }
 
     void
     run()
     {
-#if 0
         log <<
             "sizeof(parser) == " <<
             sizeof(parser) << "\n";
-        testParser();
-        testParse();
-        testVectors();
-#endif
-#if 0
-        error_code ec;
-        auto jv = parse(
-            "[\"abcdefg\",\"1\",\"2\",[\"a\", \"b\", \"c\"], \"d\"]"
-            //"{ \"k\" : 1, \"j\" : [\"hello\"] }"
-            //"{}"
-            //"[1,2,[3,4],5,[6,7,8],9,true,false,null]"
-            //"[]"
-            //"1"
-        , ec);
-        if(BEAST_EXPECTS(! ec, ec.message()))
-            log << to_string(jv) << std::endl;
 
-#endif
+        testParse();
+        testObjects();
+        testArrays();
+        testNumbers();
+        testBool();
+        testNull();
     }
 };
 

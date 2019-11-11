@@ -10,6 +10,8 @@
 #ifndef BOOST_JSON_DETAIL_EXCHANGE_HPP
 #define BOOST_JSON_DETAIL_EXCHANGE_HPP
 
+#include <utility>
+
 namespace boost {
 namespace json {
 namespace detail {

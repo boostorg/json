@@ -610,14 +610,9 @@ reserve_impl(size_type capacity)
 {
     if(impl_.vec)
     {
-    #if 0
-        // 1.5x growth
-        auto const hint =
-            (impl_.capacity * 3 + 1) / 2;
-    #else
         // 2x growth
-        auto const hint = impl_.capacity * 2;
-    #endif
+        auto const hint =
+            impl_.capacity * 2;
         if(hint < impl_.capacity) // overflow
             capacity = max_size();
         else if(capacity < hint)

@@ -161,11 +161,13 @@ public:
                 BEAST_EXPECT(o.capacity() >= 10);
             });
 
+        #ifndef BOOST_JSON_NO_MAX_ARRAY_SIZE
             {
                 BEAST_THROWS(
                     object(object::max_size()+1),
                     std::length_error);
             }
+        #endif
         }
 
         // object(InputIt, InputIt, size_type, storage_ptr)
@@ -222,7 +224,7 @@ public:
                 check(o, 7);
                 check_storage(o, sp);
             });
-
+        #ifndef BOOST_JSON_NO_MAX_ARRAY_SIZE
             {
                 std::initializer_list<std::pair<
                     string_view, value>> init = {
@@ -243,6 +245,7 @@ public:
                         make_input_iterator(init.end())),
                     std::length_error);
             }
+        #endif
         }
 
         // object(object&&)
