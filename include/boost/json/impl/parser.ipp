@@ -30,12 +30,14 @@ Stack Layout:
     <> denotes empty storage
 
 array
+    saved_state
     std::size_t
     state
     value...
     <value>
 
 object
+    saved_state
     std::size_t
     state   
     value_type...
@@ -107,6 +109,8 @@ destroy() noexcept
             pop_array();
             pop(st_);
             pop(count_);
+            saved_state ss;
+            pop(ss);
             break;
         }
 
@@ -115,6 +119,8 @@ destroy() noexcept
             pop_object();
             pop(st_);
             pop(count_);
+            saved_state ss;
+            pop(ss);
             break;
         }
 
@@ -122,8 +128,7 @@ destroy() noexcept
         {
             std::size_t key_size;
             pop(key_size);
-            auto const key =
-                pop_chars(key_size);
+            pop_chars(key_size);
             st_ = state::obj;
             break;
         }
@@ -351,9 +356,11 @@ on_object_begin(error_code&)
 {
     // prevent splits from exceptions
     rs_.prepare(
+        sizeof(saved_state) +
         sizeof(count_) +
         sizeof(st_) +
         sizeof(object::value_type));
+    push(save_state());
     push(count_);
     push(st_);
     rs_.add(sizeof(
@@ -372,6 +379,9 @@ on_object_end(error_code&)
     auto uo = pop_object();
     pop(st_);
     pop(count_);
+    saved_state ss;
+    pop(ss);
+    restore_state(ss);
     emplace(std::move(uo));
 }
 
@@ -381,9 +391,11 @@ on_array_begin(error_code&)
 {
     // prevent splits from exceptions
     rs_.prepare(
+        sizeof(saved_state) +
         sizeof(count_) +
         sizeof(st_) +
         sizeof(value));
+    push(save_state());
     push(count_);
     push(st_);
     rs_.add(sizeof(value));
@@ -401,6 +413,9 @@ on_array_end(error_code&)
     auto ua = pop_array();
     pop(st_);
     pop(count_);
+    saved_state ss;
+    pop(ss);
+    restore_state(ss);
     emplace(std::move(ua));
 }
 

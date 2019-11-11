@@ -12,7 +12,6 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/error.hpp>
-#include <boost/json/detail/basic_parser.hpp>
 #include <boost/json/detail/number.hpp>
 #include <boost/json/detail/static_stack.hpp>
 #include <boost/json/detail/string.hpp>
@@ -26,13 +25,10 @@ namespace json {
 /** A parser for serialized JSON
 */
 class basic_parser
-#ifndef GENERATING_DOCUMENTATION
-    : private detail::parser_base
-#endif
 {
     enum class state : char;
 
-    detail::static_stack<state, 1024> st_;
+    detail::static_stack<state, 8> st_;
     detail::number_parser iep_;
     std::size_t depth_ = 0;
     std::size_t max_depth_ = 32;
@@ -41,6 +37,14 @@ class basic_parser
     long u0_;
     unsigned short u_;
     bool is_key_;
+
+    inline
+    bool
+    is_control(char c) noexcept;
+
+    inline
+    char
+    hex_digit(char c) noexcept;
 
 public:
     virtual
@@ -116,6 +120,8 @@ public:
     write_eof(error_code& ec);
 
 protected:
+    using saved_state = char;
+
     /// Constructor (default)
     BOOST_JSON_DECL
     basic_parser();
@@ -125,6 +131,23 @@ protected:
     BOOST_JSON_DECL
     void
     reset() noexcept;
+
+    saved_state
+    save_state() noexcept
+    {
+        auto ss = *st_;
+        st_.pop();
+        return static_cast<
+            saved_state>(ss);
+    }
+
+    void
+    restore_state(
+        saved_state ss) noexcept
+    {
+        st_.push(static_cast<
+            state>(ss));
+    }
 
     virtual
     void

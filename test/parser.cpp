@@ -36,8 +36,9 @@ public:
             s.data(),
             s.size(),
             ec);
-        BEAST_EXPECTS(! ec,
-            ec.message());
+        if(! BEAST_EXPECTS(! ec,
+            ec.message()))
+            return nullptr;
         //log << "  " << to_string_test(p.get()) << std::endl;
         return p.release();
     }
@@ -249,6 +250,7 @@ R"xx({
             "sizeof(parser) == " <<
             sizeof(parser) << "\n";
 
+        grind("[{\"x\": [{\"x\": [{\"x\":null}] }] }]");
         testParse();
         testObjects();
         testArrays();

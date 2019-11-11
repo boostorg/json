@@ -69,6 +69,28 @@ enum class basic_parser::state : char
 
 //----------------------------------------------------------
 
+bool
+basic_parser::
+is_control(char c) noexcept
+{
+    return static_cast<unsigned char>(c) < 32;
+}
+
+char
+basic_parser::
+hex_digit(char c) noexcept
+{
+    if (c >= '0' && c <= '9')
+        return c - '0';
+    if (c >= 'A' && c <= 'F')
+        return 10 + c - 'A';
+    if (c >= 'a' && c <= 'f')
+        return 10 + c - 'a';
+    return -1;
+}
+
+//----------------------------------------------------------
+
 basic_parser::
 basic_parser()
 {
@@ -134,7 +156,7 @@ write_some(
         };
 
 loop:
-    switch(st_.front())
+    switch(*st_)
     {
     case state::begin:
         u0_ = -1;
@@ -172,12 +194,13 @@ loop_val:
                 ec = error::too_deep;
                 goto yield;
             }
+            st_.pop();
             this->on_object_begin(ec);
             if(ec)
                 goto yield;
             ++p;
             ++depth_;
-            *st_ = state::obj1;
+            st_.push(state::obj1);
             goto loop_obj;
 
         // array
@@ -187,12 +210,13 @@ loop_val:
                 ec = error::too_deep;
                 goto yield;
             }
+            st_.pop();
             this->on_array_begin(ec);
             if(ec)
                 goto yield;
             ++p;
             ++depth_;
-            *st_ = state::arr1;
+            st_.push(state::arr1);
             goto loop_arr;
 
         // string
@@ -298,12 +322,12 @@ loop_obj:
             goto yield;
         if(*p == '}')
         {
+            --depth_;
+            st_.pop();
             this->on_object_end(ec);
             if(ec)
                 goto yield;
             ++p;
-            --depth_;
-            st_.pop();
             goto loop;
         }
         *st_ = state::obj3;
@@ -329,12 +353,12 @@ loop_obj:
             goto yield;
         if(*p == '}')
         {
+            --depth_;
+            st_.pop();
             this->on_object_end(ec);
             if(ec)
                 goto yield;
             ++p;
-            --depth_;
-            st_.pop();
             goto loop;
         }
         if(*p != ',')
@@ -360,12 +384,12 @@ loop_arr:
             goto yield;
         if(*p == ']')
         {
+            --depth_;
+            st_.pop();
             this->on_array_end(ec);
             if(ec)
                 goto yield;
             ++p;
-            --depth_;
-            st_.pop();
             goto loop;
         }
         *st_ = state::arr2;
@@ -377,12 +401,12 @@ loop_arr:
             goto yield;
         if(*p == ']')
         {
+            --depth_;
+            st_.pop();
             this->on_array_end(ec);
             if(ec)
                 goto yield;
             ++p;
-            --depth_;
-            st_.pop();
             goto loop;
         }
         if(*p != ',')
@@ -867,7 +891,7 @@ write_eof(error_code& ec)
     {
         // pop all states that
         // allow "" (empty string)
-        switch(st_.front())
+        switch(*st_)
         {
         case state::end:
             ec = {};

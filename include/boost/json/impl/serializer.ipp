@@ -80,15 +80,15 @@ serializer::
 reset(value const& jv) noexcept
 {
     stack_.clear();
-    stack_.emplace_front(state::done);
-    stack_.emplace_front(jv);
+    stack_.emplace(state::done);
+    stack_.emplace(jv);
 }
 
 bool
 serializer::
 is_done() const noexcept
 {
-    return stack_.front().st == state::done;
+    return stack_->st == state::done;
 }
 
 std::size_t
@@ -116,30 +116,30 @@ next(char* dest, std::size_t size)
     auto const p1 = dest + size;
     auto p = p0;
 loop:
-    switch(stack_.front().st)
+    switch(stack_->st)
     {
     case state::val:
     {
 loop_init:
         auto const& jv =
-            *stack_.front().pjv;
+            *stack_->pjv;
         switch(jv.kind())
         {
         case kind::object:
             stack_.pop();
-            stack_.emplace_front(
+            stack_.emplace(
                 *jv.if_object());
             goto loop;
 
         case kind::array:
             stack_.pop();
-            stack_.emplace_front(
+            stack_.emplace(
                 *jv.if_array());
             goto loop;
 
         case kind::string:
             str_ = *jv.if_string();
-            stack_.front().st = state::str1;
+            stack_->st = state::str1;
             goto loop_str;
     
         case kind::int64:
@@ -152,7 +152,7 @@ loop_init:
             }
             str_ = { buf_, detail::format_int64(
                 buf_, *jv.if_int64()) };
-            stack_.front().st = state::lit;
+            stack_->st = state::lit;
             goto loop;
 
         case kind::uint64:
@@ -165,7 +165,7 @@ loop_init:
             }
             str_ = { buf_, detail::format_uint64(
                 buf_, *jv.if_uint64()) };
-            stack_.front().st = state::lit;
+            stack_->st = state::lit;
             goto loop;
 
         case kind::double_:
@@ -178,7 +178,7 @@ loop_init:
             }
             str_ = { buf_, detail::format_double(
                 buf_, *jv.if_double()) };
-            stack_.front().st = state::lit;
+            stack_->st = state::lit;
             goto loop;
 
         case kind::boolean:
@@ -194,7 +194,7 @@ loop_init:
                     goto loop;
                 }
                 str_ = {"true", 4U};
-                stack_.front().st = state::lit;
+                stack_->st = state::lit;
                 goto loop;
             }
             if(p1 - p >= 5)
@@ -208,7 +208,7 @@ loop_init:
                 goto loop;
             }
             str_ = {"false", 5U};
-            stack_.front().st = state::lit;
+            stack_->st = state::lit;
             goto loop;
    
         case kind::null:
@@ -222,7 +222,7 @@ loop_init:
                 goto loop;
             }
             str_ = {"null", 4U};
-            stack_.front().st = state::lit;
+            stack_->st = state::lit;
             goto loop;
         }
     }
@@ -232,17 +232,17 @@ loop_init:
         if(p >= p1)
             goto finish;
         *p++ = '{';
-        auto& e = stack_.front().obj;
+        auto& e = stack_->obj;
         if(e.it == e.po->end())
         {
-            stack_.front().st =
+            stack_->st =
                 state::obj3;
             goto loop;
         }
-        stack_.front().st =
+        stack_->st =
             state::obj1;
         str_ = e.it->key();
-        stack_.emplace_front(
+        stack_.emplace(
             state::str1);
         goto loop_str;
     }
@@ -253,10 +253,10 @@ loop_init:
         if(p >= p1)
             goto finish;
         *p++ = ':';
-        auto& e = stack_.front().obj;
-        stack_.front().st =
+        auto& e = stack_->obj;
+        stack_->st =
             state::obj2;
-        stack_.emplace_front(
+        stack_.emplace(
             e.it->value());
         goto loop_init;
     }
@@ -265,7 +265,7 @@ loop_init:
     {
         if(p >= p1)
             goto finish;
-        auto& e = stack_.front().obj;
+        auto& e = stack_->obj;
         ++e.it;
         if(e.it == e.po->end())
         {
@@ -274,10 +274,10 @@ loop_init:
             goto loop;
         }
         *p++ = ',';
-        stack_.front().st =
+        stack_->st =
             state::obj1;
         str_ = e.it->key();
-        stack_.emplace_front(
+        stack_.emplace(
             state::str1);
         goto loop_str;
     }
@@ -294,16 +294,16 @@ loop_init:
         if(p >= p1)
             goto finish;
         *p++ = '[';
-        auto& e = stack_.front().arr;
+        auto& e = stack_->arr;
         if(e.it == e.pa->end())
         {
-            stack_.front().st =
+            stack_->st =
                 state::arr2;
             goto loop;
         }
-        stack_.front().st =
+        stack_->st =
             state::arr1;
-        stack_.emplace_front(*e.it);
+        stack_.emplace(*e.it);
         goto loop_init;
     }
 
@@ -311,7 +311,7 @@ loop_init:
     {
         if(p >= p1)
             goto finish;
-        auto& e = stack_.front().arr;
+        auto& e = stack_->arr;
         ++e.it;
         if(e.it == e.pa->end())
         {
@@ -321,7 +321,7 @@ loop_init:
         }
         *p++ = ',';
         auto const& jv = *e.it;
-        stack_.emplace_front(jv);
+        stack_.emplace(jv);
         goto loop_init;
     }
 
@@ -337,7 +337,7 @@ loop_str:
         if(p >= p1)
             goto finish;
         *p++ = '\"';
-        stack_.front().st = state::str2;
+        stack_->st = state::str2;
         BOOST_FALLTHROUGH;
 
     case state::str2:
@@ -409,7 +409,7 @@ loop_str:
                 nbuf_ = 2;
                 str_ = str_.substr(
                     s - str_.data());
-                stack_.front().st =
+                stack_->st =
                     state::str4;
                 goto loop;
             }
@@ -436,7 +436,7 @@ loop_str:
             nbuf_ = 6;
             str_ = str_.substr(
                 s - str_.data());
-            stack_.front().st =
+            stack_->st =
                 state::str4;
             goto loop;
         }
@@ -446,7 +446,7 @@ loop_str:
                 s - str_.data());
             goto finish;
         }
-        stack_.front().st =
+        stack_->st =
             state::str3;
         BOOST_FALLTHROUGH;
     }
@@ -464,7 +464,7 @@ loop_str:
             *p++ = buf_[--nbuf_];
             if(! nbuf_)
             {
-                stack_.front().st =
+                stack_->st =
                     state::str2;
                 goto loop;
             }
