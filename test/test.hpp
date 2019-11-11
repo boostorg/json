@@ -13,6 +13,7 @@
 #include <boost/json/basic_parser.hpp>
 #include <boost/json/value.hpp>
 #include <boost/json/storage_ptr.hpp>
+#include <boost/json/detail/format.hpp>
 #include <boost/beast/_experimental/unit_test/suite.hpp>
 #include <cstddef>
 #include <iterator>
@@ -21,44 +22,6 @@
 
 namespace boost {
 namespace json {
-
-//----------------------------------------------------------
-
-struct unique_storage
-{
-    static
-    constexpr
-    unsigned long long
-    id()
-    {
-        return 0;
-    }
-
-    static
-    constexpr
-    bool
-    need_free()
-    {
-        return true;
-    }
-
-    void*
-    allocate(
-        std::size_t n,
-        std::size_t)
-    {
-        return ::operator new(n);
-    }
-
-    void
-    deallocate(
-        void* p,
-        std::size_t,
-        std::size_t) noexcept
-    {
-        return ::operator delete(p);
-    }
-};
 
 //----------------------------------------------------------
 
@@ -124,6 +87,44 @@ struct fail_storage
         if(BEAST_EXPECT(nalloc > 0))
             --nalloc;
         ::operator delete(p);
+    }
+};
+
+//----------------------------------------------------------
+
+struct unique_storage
+{
+    static
+    constexpr
+    unsigned long long
+    id()
+    {
+        return 0;
+    }
+
+    static
+    constexpr
+    bool
+    need_free()
+    {
+        return true;
+    }
+
+    void*
+    allocate(
+        std::size_t n,
+        std::size_t)
+    {
+        return ::operator new(n);
+    }
+
+    void
+    deallocate(
+        void* p,
+        std::size_t,
+        std::size_t) noexcept
+    {
+        return ::operator delete(p);
     }
 };
 
@@ -610,6 +611,213 @@ check_storage(
 }
 
 //----------------------------------------------------------
+
+namespace detail {
+
+inline
+void
+to_string_test(
+    string& dest,
+    json::value const& jv)
+{
+    switch(jv.kind())
+    {
+    case kind::object:
+    {
+        dest.push_back('{');
+        auto const& obj(
+            jv.get_object());
+        auto it = obj.begin();
+        if(it != obj.end())
+        {
+            goto obj_first;
+            while(it != obj.end())
+            {
+                dest.push_back(',');
+            obj_first:
+                dest.push_back('\"');
+                dest.append(it->key());
+                dest.push_back('\"');
+                dest.push_back(':');
+                to_string_test(
+                    dest, it->value());
+                ++it;
+            }
+        }
+        dest.push_back('}');
+        break;
+    }
+
+    case kind::array:
+    {
+        dest.push_back('[');
+        auto const& arr(
+            jv.get_array());
+        auto it = arr.begin();
+        if(it != arr.end())
+        {
+            goto arr_first;
+            while(it != arr.end())
+            {
+                dest.push_back(',');
+            arr_first:
+                to_string_test(
+                    dest, *it);
+                ++it;
+            }
+        }
+        dest.push_back(']');
+        break;
+    }
+
+    case kind::string:
+        dest.push_back('\"');
+        dest.append(jv.get_string());
+        dest.push_back('\"');
+        break;
+
+    case kind::int64:
+    {
+        char buf[detail::max_number_chars];
+        auto const n =
+            detail::format_int64(
+                buf, jv.as_int64());
+        dest.append(buf, n);
+        break;
+    }
+
+    case kind::uint64:
+    {
+        char buf[detail::max_number_chars];
+        auto const n =
+            detail::format_uint64(
+                buf, jv.as_uint64());
+        dest.append(buf, n);
+        break;
+    }
+
+    case kind::double_:
+    {
+        char buf[detail::max_number_chars];
+        auto const n =
+            detail::format_double(
+                buf, jv.as_double());
+        dest.append(buf, n);
+        break;
+    }
+
+    case kind::boolean:
+        if(jv.as_bool())
+            dest.append("true");
+        else
+            dest.append("false");
+        break;
+
+    case kind::null:
+        dest.append("null");
+        break;
+    }
+}
+
+} // detail
+
+inline
+string
+to_string_test(
+    json::value const& jv)
+{
+    string s;
+    s.reserve(1024);
+    detail::to_string_test(s, jv);
+    return s;
+}
+
+//----------------------------------------------------------
+
+inline
+bool
+equal(
+    value const& lhs,
+    value const& rhs)
+{
+    if(lhs.kind() != rhs.kind())
+        return false;
+    switch(lhs.kind())
+    {
+    case kind::object:
+    {
+        auto const& obj1 =
+            lhs.get_object();
+        auto const& obj2 =
+            rhs.get_object();
+        auto n = obj1.size();
+        if(obj2.size() != n)
+            return false;
+        auto it1 = obj1.begin();
+        auto it2 = obj2.begin();
+        while(n--)
+        {
+            if( it1->key() !=
+                it2->key())
+                return false;
+            if(! equal(
+                it1->value(),
+                it2->value()))
+                return false;
+            ++it1;
+            ++it2;
+        }
+        return true;
+    }
+
+    case kind::array:
+    {
+        auto const& arr1 =
+            lhs.get_array();
+        auto const& arr2 =
+            rhs.get_array();
+        auto n = arr1.size();
+        if(arr2.size() != n)
+            return false;
+        auto it1 = arr1.begin();
+        auto it2 = arr2.begin();
+        while(n--)
+            if(! equal(*it1++, *it2++))
+                return false;
+        return true;
+    }
+
+    case kind::string:
+        return
+            lhs.get_string() ==
+            rhs.get_string();
+
+    case kind::double_:
+        return
+            lhs.as_double() ==
+            rhs.as_double();
+
+    case kind::int64:
+        return
+            *lhs.if_int64() ==
+            *rhs.if_int64();
+
+    case kind::uint64:
+        return
+            *lhs.if_uint64() ==
+            *rhs.if_uint64();
+
+    case kind::boolean:
+        return
+            *lhs.if_bool() ==
+            *rhs.if_bool();
+
+    case kind::null:
+        return true;
+    }
+
+    return false;
+}
 
 } // json
 } // boost

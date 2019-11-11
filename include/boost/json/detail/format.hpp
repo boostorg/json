@@ -16,7 +16,7 @@ namespace boost {
 namespace json {
 namespace detail {
 
-int constexpr max_string_chars =
+int constexpr max_number_chars =
      1 +    // '-'
     19 +    // unsigned 64-bit mantissa
      1 +    // 'e'

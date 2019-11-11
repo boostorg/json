@@ -143,7 +143,7 @@ loop_init:
             goto loop_str;
     
         case kind::int64:
-            if(p1 - p >= detail::max_string_chars)
+            if(p1 - p >= detail::max_number_chars)
             {
                 p += detail::format_int64(
                     p,  *jv.if_int64());
@@ -156,7 +156,7 @@ loop_init:
             goto loop;
 
         case kind::uint64:
-            if(p1 - p >= detail::max_string_chars)
+            if(p1 - p >= detail::max_number_chars)
             {
                 p += detail::format_int64(
                     p,  *jv.if_uint64());
@@ -169,7 +169,7 @@ loop_init:
             goto loop;
 
         case kind::double_:
-            if(p1 - p >= detail::max_string_chars)
+            if(p1 - p >= detail::max_number_chars)
             {
                 p += detail::format_double(
                     p,  *jv.if_double());

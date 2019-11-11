@@ -70,7 +70,7 @@ class serializer
 
     string_view str_;
     unsigned char nbuf_;
-    char buf_[detail::max_string_chars + 1];
+    char buf_[detail::max_number_chars + 1];
 
 public:
     explicit
