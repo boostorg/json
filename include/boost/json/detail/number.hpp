@@ -39,7 +39,7 @@ class number_parser
         mant,   mantn,  mantd,
         frac1,  frac2,  fracd,
         exp1,   exp2,   exp3,
-        done
+        end
     };
 
     number n_;
@@ -49,6 +49,10 @@ class number_parser
     bool neg_;
     bool eneg_;
     state st_;
+
+    inline
+    void
+    finish_double() noexcept;
 
 public:
     number_parser()
@@ -65,7 +69,7 @@ public:
     bool
     is_done() const noexcept
     {
-        return st_ == state::done;
+        return st_ == state::end;
     }
 
     void

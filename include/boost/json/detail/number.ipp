@@ -147,6 +147,7 @@ write_some(
     auto const p0 = data;
     auto const p1 = data + size;
     ec = {};
+
 loop:
     switch(st_)
     {
@@ -211,7 +212,7 @@ loop:
         }
         // zero
         n_.u = 0;
-        st_ = state::done;
+        st_ = state::end;
         goto finish;
 
     //-----------------------------------
@@ -248,6 +249,7 @@ loop:
                 if(*p == '.')
                 {
                     ++p;
+                    n_.u = m;
                     st_ = state::frac1;
                     goto loop;
                 }
@@ -259,17 +261,7 @@ loop:
                     st_ = state::exp1;
                     goto loop;
                 }
-                if(m <= INT64_MAX)
-                {
-                    n_.i = static_cast<
-                        int64_t>(m);
-                }
-                else
-                {
-                    n_.u = m;
-                    n_.kind = kind::uint64;
-                }
-                st_ = state::done;
+                write_eof(ec);
                 goto finish;
             }
             while(p < p1);
@@ -319,8 +311,9 @@ loop:
                     st_ = state::exp1;
                     goto loop;
                 }
-                n_.u = m;
-                st_ = state::done;
+                n_.i = static_cast<
+                    int64_t>(~n_.u+1);
+                st_ = state::end;
                 goto finish;
             }
             while(p < p1);
@@ -354,8 +347,7 @@ loop:
             if(static_cast<unsigned char>(
                 *p - '0') > 9)
             {
-                n_.d = d;
-                st_ = state::done;
+                write_eof(ec);
                 goto finish;
             }
             ++p;
@@ -415,7 +407,7 @@ loop:
                 if(*p != 'e' && *p != 'E')
                 {
                     n_.u = m;
-                    st_ = state::done;
+                    write_eof(ec);
                     goto finish;
                 }
                 ++p;
@@ -454,7 +446,7 @@ loop:
                 if(*p != 'e' && *p != 'E')
                 {
                     n_.d = m;
-                    st_ = state::done;
+                    write_eof(ec);
                     goto finish;
                 }
                 ++p;
@@ -527,7 +519,7 @@ loop:
                     continue;
                 }
                 exp_ = e;
-                st_ = state::done;
+                write_eof(ec);
                 goto finish;
             }
             while(p < p1);
@@ -536,7 +528,7 @@ loop:
         break;
     }
 
-    case state::done:
+    case state::end:
         ec = error::illegal_extra_chars;
         break;
     }
@@ -551,15 +543,18 @@ write(
     size_t size,
     error_code& ec) noexcept
 {
-    auto n = write_some(data, size, ec);
-    if(! ec)
+    auto n = write_some(
+        data, size, ec);
+    if(ec)
+        return n;
+    if(n < size)
     {
-        if(n < size)
-            n += write_some(
-                data + n, size - n, ec);
+        n += write_some(
+            data + n, size - n, ec);
+        if(ec)
+            return n;
     }
-    if(! ec)
-        write_eof(ec);
+    write_eof(ec);
     return n;
 }
 
@@ -580,7 +575,7 @@ write_eof(
             n_.kind == kind::int64);
         BOOST_JSON_ASSERT(n_.i == 0);
         ec = {};
-        st_ = state::done;
+        st_ = state::end;
         break;
 
     case state::mant:
@@ -593,7 +588,7 @@ write_eof(
                 int64_t>(n_.u);
         else
             n_.kind = kind::uint64;
-        st_ = state::done;
+        st_ = state::end;
         break;
 
     case state::mantn:
@@ -603,7 +598,7 @@ write_eof(
         ec = {};
         n_.i = static_cast<
             int64_t>(~n_.u+1);
-        st_ = state::done;
+        st_ = state::end;
         break;
 
     case state::mantd:
@@ -612,7 +607,7 @@ write_eof(
             n_.d = -n_.d;
         exp_ += off_;
         n_.d *= pow10(exp_);
-        st_ = state::done;
+        st_ = state::end;
         break;
 
     case state::frac1:
@@ -627,7 +622,7 @@ write_eof(
         n_.d = n_.u * pow10(exp_);
         if(neg_)
             n_.d = -n_.d;
-        st_ = state::done;
+        st_ = state::end;
         break;
 
     case state::fracd:
@@ -638,7 +633,7 @@ write_eof(
         n_.d = n_.d * pow10(exp_);
         if(neg_)
             n_.d = -n_.d;
-        st_ = state::done;
+        st_ = state::end;
         break;
 
     case state::exp1: // expected [-,+,0..9]
@@ -657,10 +652,10 @@ write_eof(
         n_.d = n_.d * pow10(exp_);
         if(neg_)
             n_.d = -n_.d;
-        st_ = state::done;
+        st_ = state::end;
         break;
 
-    case state::done:
+    case state::end:
         ec = {};
         break;
     }
