@@ -55,9 +55,9 @@ enum class error
     /// illegal trailing surrogate
     illegal_trailing_surrogate,
 
-    /** The parser needs a reset.
+    /** The parser needs to be started.
     */
-    need_reset,
+    need_start,
 
     /// expected comma
     expected_comma,

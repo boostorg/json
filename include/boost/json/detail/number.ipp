@@ -506,7 +506,7 @@ loop:
     {
         if(p < p1)
         {
-            //auto const lim = 308 - off_;
+            auto const lim = 308 - off_;
             auto e = exp_;
             while(p < p1)
             {
@@ -515,7 +515,11 @@ loop:
                 {
                     ++p;
                     e = 10 * e + d;
-                    //ec = error::exponent_overflow;
+                    if(e > lim)
+                    {
+                        ec = error::exponent_overflow;
+                        goto finish;
+                    }
                     continue;
                 }
                 exp_ = e;

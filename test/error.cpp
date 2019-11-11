@@ -59,7 +59,6 @@ public:
         check(condition::parse_error, error::illegal_extra_chars);
         check(condition::parse_error, error::illegal_leading_surrogate);
         check(condition::parse_error, error::illegal_trailing_surrogate);
-        check(condition::parse_error, error::need_reset);
 
         check(condition::parse_error, error::expected_comma);
         check(condition::parse_error, error::expected_colon);
@@ -81,6 +80,7 @@ public:
         check(condition::assign_error, error::not_null);
         check(condition::assign_error, error::integer_overflow);
     
+        check(error::need_start);
         check(error::key_not_found);
         check(error::test_failure);
     }

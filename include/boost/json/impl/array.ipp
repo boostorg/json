@@ -34,12 +34,15 @@ impl_type(
     // affects the speed of parsing.
 //    if( capacity_ < min_capacity_)
 //        capacity_ = min_capacity_;
-    vec = reinterpret_cast<value*>(
-        sp->allocate(
-            capacity_ * sizeof(value),
-            alignof(value)));
-    size = 0;
+    if(capacity_ > 0)
+        vec = reinterpret_cast<value*>(
+            sp->allocate(
+                capacity_ * sizeof(value),
+                alignof(value)));
+    else
+        vec = nullptr;
     capacity = capacity_;
+    size = 0;
 }
 
 

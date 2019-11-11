@@ -29,33 +29,55 @@ namespace json {
 class parser final
     : public basic_parser
 {
-    value jv_;
+    enum class state : char
+    {
+        need_start,
+        started,
+        end
+    };
+
     storage_ptr sp_;
     detail::raw_stack rs_;
     std::size_t count_;
     std::size_t key_size_;
     std::size_t str_size_;
     bool obj_;
+    state st_ = state::need_start;
 
     inline
     void
     destroy() noexcept;
 
 public:
+    /** Destructor.
+    */
     BOOST_JSON_DECL
     virtual
     ~parser();
 
+    /** Default constructor.
+    */
     BOOST_JSON_DECL
     parser();
 
+    /** Prepare the parser for new serialized JSON.
+
+        @param sp The storage to use for all values.
+    */
     BOOST_JSON_DECL
-    parser(storage_ptr sp);
+    void
+    start(storage_ptr sp = {}) noexcept;
 
     BOOST_JSON_DECL
-    value const&
-    get() const noexcept;
+    void
+    clear() noexcept;
 
+    /**
+
+        @par Preconditions
+
+        `is_done() == true`.
+    */
     BOOST_JSON_DECL
     value
     release() noexcept;

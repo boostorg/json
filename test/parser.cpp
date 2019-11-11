@@ -29,8 +29,9 @@ public:
         string_view s,
         storage_ptr sp = {})
     {
-        parser p(sp);
+        parser p;
         error_code ec;
+        p.start(std::move(sp));
         p.write(
             s.data(),
             s.size(),
@@ -146,7 +147,7 @@ R"xx({
                 from_string_test(s);
             check_round_trip(jv, s);
         }
-#if 0
+#if 1
         fail_loop([&](storage_ptr const& sp)
         {
             auto const jv =

@@ -154,10 +154,7 @@ loop:
     case state::maybe_end:
         if(! skip_white())
             goto yield;
-        this->on_document_end(ec);
-        if(ec)
-            goto yield;
-        *st_ = state::end;
+        write_eof(ec);
         goto yield;
 
     //------------------------------------------------------

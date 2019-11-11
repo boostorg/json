@@ -75,24 +75,40 @@ parser()
 {
 }
 
+void
 parser::
-parser(storage_ptr sp)
-    : sp_(std::move(sp))
+start(storage_ptr sp) noexcept
 {
+    clear();
+    sp_ = std::move(sp);
+    st_ = state::started;
 }
 
-value const&
+void
 parser::
-get() const noexcept
+clear() noexcept
 {
-    return jv_;
 }
 
 value
 parser::
 release() noexcept
 {
-    return std::move(jv_);
+    BOOST_JSON_ASSERT(
+        is_done());
+    BOOST_JSON_ASSERT(
+        st_ == state::end);
+    auto ua = pop_array();
+    union U
+    {
+        value v;
+        U(){}
+        ~U(){}
+    };
+    U u;
+    ua.relocate(&u.v);
+    st_ = state::need_start;
+    return std::move(u.v);
 }
 
 //----------------------------------------------------------
@@ -215,8 +231,15 @@ pop_string(
 
 void
 parser::
-on_document_begin(error_code&)
+on_document_begin(
+    error_code& ec)
 {
+    if(st_ == state::need_start)
+    {
+        ec = error::need_start;
+        return;
+    }
+
     count_ = 0;
     key_size_ = 0;
     str_size_ = 0;
@@ -229,9 +252,7 @@ parser::
 on_document_end(error_code&)
 {
     BOOST_JSON_ASSERT(count_ == 1);
-    auto ua = pop_array();
-    jv_.~value();
-    ua.relocate(&jv_);
+    st_ = state::end;
 }
 
 void
@@ -402,7 +423,8 @@ parse(
     storage_ptr sp,
     error_code& ec)
 {
-    parser p(std::move(sp));
+    parser p;
+    p.start(std::move(sp));
     p.write(s.data(), s.size(), ec);
     return p.release();
 }
