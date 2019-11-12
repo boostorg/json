@@ -16,64 +16,6 @@
 namespace boost {
 namespace json {
 
-//----------------------------------------------------------
-
-template<class InputIt>
-string::
-impl::
-impl(
-    InputIt first,
-    InputIt last,
-    storage_ptr const& sp,
-    std::random_access_iterator_tag)
-    : impl(last - first, sp)
-{
-    std::copy(
-        first, last, data());
-    data()[size()] = 0;
-}
-
-template<class InputIt>
-string::
-impl::
-impl(
-    InputIt first,
-    InputIt last,
-    storage_ptr const& sp,
-    std::input_iterator_tag)
-    : impl()
-{
-    struct undo
-    {
-        impl& s;
-        storage_ptr const& sp;
-        bool commit;
-
-        ~undo()
-        {
-            if(! commit)
-                s.destroy(sp);
-        }
-    };
-
-    undo u{*this, sp, false};
-    auto dest = data();
-    size(1);
-    *dest++ = *first++;
-    while(first != last)
-    {
-        if(size() < capacity())
-            size(size() + 1);
-        else
-            dest = append(1, sp);
-        *dest++ = *first++;
-    }
-    *dest = 0;
-    u.commit = true;
-}
-
-//----------------------------------------------------------
-
 template<class InputIt, class>
 string::
 string(
@@ -119,7 +61,7 @@ insert(
 {
     struct cleanup
     {
-        impl& s;
+        detail::string_impl& s;
         storage_ptr const& sp;
 
         ~cleanup()
@@ -130,7 +72,7 @@ insert(
 
     // We use the global storage since
     // it is a temporary deallocated here.
-    impl tmp(
+    detail::string_impl tmp(
         first, last,
         storage_ptr{},
         iter_cat<InputIt>{});
@@ -172,7 +114,7 @@ assign(
         impl_.term(0);
         return;
     }
-    impl tmp(
+    detail::string_impl tmp(
         first, last, sp_,
         std::input_iterator_tag{});
     impl_.destroy(sp_);
@@ -203,7 +145,7 @@ append(
 {
     struct cleanup
     {
-        impl& s;
+        detail::string_impl& s;
         storage_ptr const& sp;
 
         ~cleanup()
@@ -214,7 +156,7 @@ append(
 
     // We use the global storage since
     // it is a temporary deallocated here.
-    impl tmp(
+    detail::string_impl tmp(
         first, last,
         storage_ptr{},
         std::input_iterator_tag{});

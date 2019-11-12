@@ -37,5 +37,6 @@ the program, with the macro BOOST_BEAST_SPLIT_COMPILATION defined.
 #include <boost/json/detail/number.ipp>
 #include <boost/json/detail/raw_stack.ipp>
 #include <boost/json/detail/ryu/impl/d2s.ipp>
+#include <boost/json/detail/string_impl.ipp>
 
 #endif

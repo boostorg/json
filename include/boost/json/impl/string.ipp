@@ -21,165 +21,6 @@ namespace boost {
 namespace json {
 
 //----------------------------------------------------------
-
-string::
-impl::
-impl(
-    std::size_t size,
-    storage_ptr const& sp)
-{
-    if(size_ < sizeof(buf))
-    {
-        // SBO
-        capacity_ = sizeof(buf) - 1;
-    }
-    else
-    {
-        capacity_ = growth(size,
-            sizeof(buf) - 1);
-        p = static_cast<char*>(
-            sp->allocate(capacity_ + 1, 1));
-    }
-    size_ = static_cast<
-        std::uint32_t>(size);
-}
-
-auto
-string::
-impl::
-growth(
-    std::size_t new_size,
-    std::size_t capacity) ->
-        std::uint32_t
-{
-    if(new_size > max_size())
-        BOOST_JSON_THROW(
-            detail::string_too_large_exception());
-    new_size |= mask_;
-    if( new_size > max_size())
-        return static_cast<
-            std::uint32_t>(max_size());
-    // growth factor 2
-    if( capacity >
-        max_size() - capacity)
-        return static_cast<
-            std::uint32_t>(max_size()); // overflow
-    return static_cast<std::uint32_t>(
-        (std::max)(capacity * 2, new_size));
-}
-
-void
-string::
-impl::
-destroy(
-    storage_ptr const& sp) noexcept
-{
-    if(! in_sbo())
-        sp->deallocate(
-            p, capacity() + 1, 1);
-}
-
-char*
-string::
-impl::
-assign(
-    size_type new_size,
-    storage_ptr const& sp)
-{
-    if(new_size > capacity())
-    {
-        impl tmp(growth(
-            new_size,
-            capacity()), sp);
-        destroy(sp);
-        *this = tmp;
-    }
-    term(new_size);
-    return data();
-}
-
-char*
-string::
-impl::
-append(
-    size_type n,
-    storage_ptr const& sp)
-{
-    if(n > max_size() - size())
-        BOOST_JSON_THROW(
-            detail::string_too_large_exception());
-    if(n <= capacity() - size())
-    {
-        term(size() + n);
-        return end() - n;
-    }
-    impl tmp(growth(
-        size() + n, capacity()), sp);
-    traits_type::copy(
-        tmp.data(), data(), size());
-    tmp.term(size() + n);
-    destroy(sp);
-    *this = tmp;
-    return end() - n;
-}
-
-char*
-string::
-impl::
-insert(
-    size_type pos,
-    size_type n,
-    storage_ptr const& sp)
-{
-    if(pos > size())
-        BOOST_JSON_THROW(
-        detail::string_pos_too_large());
-    if(n <= capacity() - size())
-    {
-        auto const dest =
-            data() + pos;
-        traits_type::move(
-            dest + n,
-            dest,
-            size() + 1 - pos);
-        size(size() + n);
-        return dest;
-    }
-    if(n > max_size() - size())
-        BOOST_JSON_THROW(
-            detail::string_too_large_exception());
-    impl tmp(growth(
-        size() + n, capacity()), sp);
-    tmp.size(size() + n);
-    traits_type::copy(
-        tmp.data(),
-        data(),
-        pos);
-    traits_type::copy(
-        tmp.data() + pos + n,
-        data() + pos,
-        size() + 1 - pos);
-    destroy(sp);
-    *this = tmp;
-    return data() + pos;
-}
-
-void
-string::
-impl::
-unalloc(storage_ptr const& sp) noexcept
-{
-    BOOST_JSON_ASSERT(size() < sizeof(buf));
-    BOOST_JSON_ASSERT(! in_sbo());
-    auto const p_ = p;
-    traits_type::copy(
-        buf, data(), size() + 1);
-    sp->deallocate(
-        p_, capacity() + 1, 1);
-    capacity_ = sizeof(buf) - 1;
-}
-
-//----------------------------------------------------------
 //
 // Assignment
 //
@@ -218,7 +59,7 @@ assign(string&& other)
     {
         impl_.destroy(sp_);
         impl_ = other.impl_;
-        ::new(&other.impl_) impl();
+        ::new(&other.impl_) detail::string_impl();
         return *this;
     }
 
@@ -262,7 +103,7 @@ shrink_to_fit()
     if(new_cap >= impl_.capacity())
         return;
 
-    impl tmp(new_cap, sp_);
+    detail::string_impl tmp(new_cap, sp_);
     traits_type::copy(tmp.data(),
         impl_.data(), impl_.size() + 1);
     tmp.size(impl_.size());
@@ -489,9 +330,9 @@ reserve_impl(size_type new_cap)
     if(new_cap > impl_.capacity())
     {
         // grow
-        new_cap = impl::growth(
+        new_cap = detail::string_impl::growth(
             new_cap, impl_.capacity());
-        impl tmp(new_cap, sp_);
+        detail::string_impl tmp(new_cap, sp_);
         traits_type::copy(tmp.data(),
             impl_.data(), impl_.size() + 1);
         tmp.size(impl_.size());

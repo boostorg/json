@@ -12,6 +12,7 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/storage_ptr.hpp>
+#include <boost/json/detail/string_impl.hpp>
 #include <boost/pilfer.hpp>
 #include <algorithm>
 #include <initializer_list>
@@ -85,7 +86,7 @@ public:
         std::reverse_iterator<const_iterator>;
 
     /// A special index
-    static constexpr size_type npos =
+    static constexpr std::size_t npos =
         string_view::npos;
 
 private:
@@ -97,154 +98,8 @@ private:
 
     static constexpr std::size_t mask_ = 0x0f;
 
-    struct impl
-    {
-        std::uint32_t size_;
-        std::uint32_t capacity_;
-
-    #ifndef GENERATING_DOCUMENTATION
-        // XSL has problems with anonymous unions
-        union
-        {
-            char* p;
-            char buf[20]; // SBO
-        };
-    #endif
-
-        impl() noexcept
-            : size_(0)
-            , capacity_(sizeof(buf) - 1)
-        {
-            buf[0] = 0;
-        }
-
-        template<class InputIt>
-        impl(
-            InputIt first,
-            InputIt last,
-            storage_ptr const& sp,
-            std::random_access_iterator_tag);
-
-        template<class InputIt>
-        impl(
-            InputIt first,
-            InputIt last,
-            storage_ptr const& sp,
-            std::input_iterator_tag);
-
-        inline
-        std::size_t
-        size() const noexcept
-        {
-            return size_;
-        }
-
-        inline
-        std::size_t
-        capacity() const noexcept
-        {
-            return capacity_;
-        }
-
-        inline
-        void
-        size(std::size_t n)
-        {
-            size_ = static_cast<
-                std::uint32_t>(n);
-        }
-
-        BOOST_JSON_DECL
-        impl(
-            size_type new_size,
-            storage_ptr const& sp);
-
-        BOOST_JSON_DECL
-        static
-        std::uint32_t
-        growth(
-            std::size_t new_size,
-            std::size_t capacity);
-
-        BOOST_JSON_DECL
-        void
-        destroy(
-            storage_ptr const& sp) noexcept;
-
-        BOOST_JSON_DECL
-        char*
-        assign(
-            size_type new_size,
-            storage_ptr const& sp);
-
-        BOOST_JSON_DECL
-        char*
-        append(
-            size_type n,
-            storage_ptr const& sp);
-
-        BOOST_JSON_DECL
-        char*
-        insert(
-            size_type pos,
-            size_type n,
-            storage_ptr const& sp);
-
-        BOOST_JSON_DECL
-        void
-        unalloc(storage_ptr const& sp) noexcept;
-
-        bool
-        in_sbo() const noexcept
-        {
-            return capacity_ < sizeof(buf);
-        }
-
-        void
-        term(std::size_t n) noexcept
-        {
-            size(n);
-            data()[size_] = 0;
-        }
-
-        char*
-        data() noexcept
-        {
-            if(in_sbo())
-                return buf;
-            return p;
-        }
-
-        char const*
-        data() const noexcept
-        {
-            if(in_sbo())
-                return buf;
-            return p;
-        }
-
-        char*
-        end() noexcept
-        {
-            return data() + size_;
-        }
-
-        char const*
-        end() const noexcept
-        {
-            return data() + size_;
-        }
-
-        bool
-        contains(char const* s) const noexcept
-        {
-            return s >= data() && s < end();
-        }
-
-    };
-
     storage_ptr sp_; // must come first
-    impl impl_;
+    detail::string_impl impl_;
 
 public:
     /** Destructor.
@@ -312,7 +167,7 @@ public:
         : sp_(std::move(other.get().sp_))
         , impl_(other.get().impl_)
     {
-        ::new(&other.get().impl_) impl();
+        ::new(&other.get().impl_) detail::string_impl();
     }
 
     /** Constructor.
@@ -366,7 +221,7 @@ public:
         @throws std::length_error `count > max_size()`.
     */
     string(
-        size_type count,
+        std::size_t count,
         char ch,
         storage_ptr sp = {})
         : sp_(std::move(sp))
@@ -409,8 +264,8 @@ public:
     */
     string(
         string const& other,
-        size_type pos,
-        size_type count = npos,
+        std::size_t pos,
+        std::size_t count = npos,
         storage_ptr sp = {})
         : sp_(std::move(sp))
     {
@@ -482,7 +337,7 @@ public:
     */
     string(
         char const* s,
-        size_type count,
+        std::size_t count,
         storage_ptr sp = {})
         : sp_(std::move(sp))
     {
@@ -611,7 +466,7 @@ public:
         : sp_(other.sp_)
         , impl_(other.impl_)
     {
-        ::new(&other.impl_) impl();
+        ::new(&other.impl_) detail::string_impl();
     }
 
     /** Constructor.
@@ -756,8 +611,8 @@ public:
     */
     string(
         string_view s,
-        size_type pos,
-        size_type count,
+        std::size_t pos,
+        std::size_t count,
         storage_ptr sp = {})
         : sp_(std::move(sp))
     {
@@ -924,7 +779,7 @@ public:
     BOOST_JSON_DECL
     string&
     assign(
-        size_type count,
+        std::size_t count,
         char ch);
 
     /** Assign characters to a string.
@@ -978,8 +833,8 @@ public:
     string&
     assign(
         string const& other,
-        size_type pos,
-        size_type count)
+        std::size_t pos,
+        std::size_t count)
     {
         return assign(
             other.substr(pos, count));
@@ -1041,7 +896,7 @@ public:
     string&
     assign(
         char const* s,
-        size_type count);
+        std::size_t count);
 
     /** Assign characters to a string.
 
@@ -1190,8 +1045,8 @@ public:
     string&
     assign(
         string_view s,
-        size_type pos,
-        size_type count = npos)
+        std::size_t pos,
+        std::size_t count = npos)
     {
         return assign(s.substr(pos, count));
     }
@@ -1235,7 +1090,7 @@ public:
         @throws std::out_of_range `pos >= size()`
     */
     char&
-    at(size_type pos)
+    at(std::size_t pos)
     {
         if(pos >= size())
             BOOST_JSON_THROW(
@@ -1260,7 +1115,7 @@ public:
         @throws std::out_of_range `pos >= size()`
     */
     char const&
-    at(size_type pos) const
+    at(std::size_t pos) const
     {
         if(pos >= size())
             BOOST_JSON_THROW(
@@ -1285,7 +1140,7 @@ public:
         @param pos A zero-based index
     */
     char&
-    operator[](size_type pos)
+    operator[](std::size_t pos)
     {
         return impl_.data()[pos];
     }
@@ -1306,7 +1161,7 @@ public:
         @param pos A zero-based index
     */
     const char&
-    operator[](size_type pos) const
+    operator[](std::size_t pos) const
     {
         return impl_.data()[pos];
     }
@@ -1687,7 +1542,7 @@ public:
 
         Constant.
     */
-    size_type
+    std::size_t
     size() const noexcept
     {
         return impl_.size();
@@ -1706,7 +1561,7 @@ public:
     */
     static
     constexpr
-    size_type
+    std::size_t
     max_size() noexcept
     {
         return BOOST_JSON_MAX_STRING_SIZE;
@@ -1724,7 +1579,7 @@ public:
 
         Constant.
     */
-    size_type
+    std::size_t
     capacity() const noexcept
     {
         return impl_.capacity();
@@ -1760,7 +1615,7 @@ public:
         @param new_capacity The new capacity of the array.
     */
     void
-    reserve(size_type new_capacity)
+    reserve(std::size_t new_capacity)
     {
         if(new_capacity <= capacity())
             return;
@@ -1816,13 +1671,13 @@ public:
     BOOST_JSON_DECL
     string&
     insert(
-        size_type pos,
-        size_type count,
+        std::size_t pos,
+        std::size_t count,
         char ch);
 
     string&
     insert(
-        size_type pos,
+        std::size_t pos,
         char const* s)
     {
         return insert(pos, s,
@@ -1832,13 +1687,13 @@ public:
     BOOST_JSON_DECL
     string&
     insert(
-        size_type pos,
+        std::size_t pos,
         char const* s,
-        size_type count);
+        std::size_t count);
 
     string&
     insert(
-        size_type pos,
+        std::size_t pos,
         string const& s)
     {
         return insert(pos, s.data(), s.size());
@@ -1846,10 +1701,10 @@ public:
 
     string&
     insert(
-        size_type pos,
+        std::size_t pos,
         string const& s,
-        size_type pos_str,
-        size_type count = npos)
+        std::size_t pos_str,
+        std::size_t count = npos)
     {
         return insert(pos, s.substr(pos_str, count));
     }
@@ -1866,7 +1721,7 @@ public:
     iterator
     insert(
         const_iterator pos,
-        size_type count,
+        std::size_t count,
         char ch);
 
     template<class InputIt
@@ -1893,7 +1748,7 @@ public:
     >
     string&
     insert(
-        size_type pos,
+        std::size_t pos,
         T const& t)
     {
         string_view s(t);
@@ -1907,10 +1762,10 @@ public:
     >
     string&
     insert(
-        size_type pos,
+        std::size_t pos,
         T const& t,
-        size_type pos_str,
-        size_type count = npos)
+        std::size_t pos_str,
+        std::size_t count = npos)
     {
         return insert(pos,
             string_view(t).substr(pos_str, count));
@@ -1921,8 +1776,8 @@ public:
     BOOST_JSON_DECL
     string&
     erase(
-        size_type pos = 0,
-        size_type count = npos);
+        std::size_t pos = 0,
+        std::size_t count = npos);
 
     BOOST_JSON_DECL
     iterator
@@ -1949,7 +1804,7 @@ public:
     BOOST_JSON_DECL
     string&
     append(
-        size_type count,
+        std::size_t count,
         char ch);
 
     string&
@@ -1962,8 +1817,8 @@ public:
     string&
     append(
         string const& s,
-        size_type pos,
-        size_type count = npos)
+        std::size_t pos,
+        std::size_t count = npos)
     {
         return append(
             s.substr(pos, count));
@@ -1980,7 +1835,7 @@ public:
     string&
     append(
         char const* s,
-        size_type count);
+        std::size_t count);
 
     template<class InputIt
     #ifndef GENERATING_DOCUMENTATION
@@ -2016,8 +1871,8 @@ public:
     string&
     append(
         T const& t,
-        size_type pos,
-        size_type count = npos)
+        std::size_t pos,
+        std::size_t count = npos)
     {
         auto s = string_view(t).substr(pos, count);
         return append(s.data(), s.size());
@@ -2072,8 +1927,8 @@ public:
 
     int
     compare(
-        size_type pos1,
-        size_type count1,
+        std::size_t pos1,
+        std::size_t count1,
         string const& s) const
     {
         return string_view(*this).compare(
@@ -2082,11 +1937,11 @@ public:
 
     int
     compare(
-        size_type pos1,
-        size_type count1,
+        std::size_t pos1,
+        std::size_t count1,
         string const& s,
-        size_type pos2,
-        size_type count2 = npos) const
+        std::size_t pos2,
+        std::size_t count2 = npos) const
     {
         return string_view(*this).compare(
             pos1, count1, string_view(s),
@@ -2101,8 +1956,8 @@ public:
 
     int
     compare(
-        size_type pos1,
-        size_type count1,
+        std::size_t pos1,
+        std::size_t count1,
         char const* s) const
     {
         return string_view(*this).compare(
@@ -2111,10 +1966,10 @@ public:
 
     int
     compare(
-        size_type pos1,
-        size_type count1,
+        std::size_t pos1,
+        std::size_t count1,
         char const* s,
-        size_type count2) const
+        std::size_t count2) const
     {
         return string_view(*this).compare(
             pos1, count1, s, count2);
@@ -2128,8 +1983,8 @@ public:
 
     int
     compare(
-        size_type pos1,
-        size_type count1,
+        std::size_t pos1,
+        std::size_t count1,
         string_view s) const
     {
         return string_view(*this).compare(
@@ -2138,11 +1993,11 @@ public:
 
     int
     compare(
-        size_type pos1,
-        size_type count1,
+        std::size_t pos1,
+        std::size_t count1,
         string_view s,
-        size_type pos2,
-        size_type count2 = npos) const
+        std::size_t pos2,
+        std::size_t count2 = npos) const
     {
         return string_view(*this).compare(
             pos1, count1, s, pos2, count2);
@@ -2190,8 +2045,8 @@ public:
 
     string&
     replace(
-        size_type pos,
-        size_type count,
+        std::size_t pos,
+        std::size_t count,
         string const& s);
 
     string&
@@ -2202,11 +2057,11 @@ public:
 
     string&
     replace(
-        size_type pos,
-        size_type count,
+        std::size_t pos,
+        std::size_t count,
         string const& s,
-        size_type pos2,
-        size_type count2 = npos);
+        std::size_t pos2,
+        std::size_t count2 = npos);
 
     template<class InputIt
     #ifndef GENERATING_DOCUMENTATION
@@ -2222,22 +2077,22 @@ public:
 
     string&
     replace(
-        size_type pos,
-        size_type count,
+        std::size_t pos,
+        std::size_t count,
         char const* s,
-        size_type count2);
+        std::size_t count2);
 
     string&
     replace(
         const_iterator first,
         const_iterator last,
         char const* s,
-        size_type count2);
+        std::size_t count2);
 
     string&
     replace(
-        size_type pos,
-        size_type count,
+        std::size_t pos,
+        std::size_t count,
         char const* s);
 
     string&
@@ -2248,16 +2103,16 @@ public:
 
     string&
     replace(
-        size_type pos,
-        size_type count,
-        size_type count2,
+        std::size_t pos,
+        std::size_t count,
+        std::size_t count2,
         char ch);
 
     string&
     replace(
         const_iterator first,
         const_iterator last,
-        size_type count2,
+        std::size_t count2,
         char ch);
 
     string&
@@ -2273,8 +2128,8 @@ public:
     >
     string&
     replace(
-        size_type pos,
-        size_type count,
+        std::size_t pos,
+        std::size_t count,
         T const& t);
 
     template<class T
@@ -2295,29 +2150,29 @@ public:
     >
     string&
     replace(
-        size_type pos,
-        size_type count,
+        std::size_t pos,
+        std::size_t count,
         T const& t,
-        size_type pos2,
-        size_type count2 = npos);
+        std::size_t pos2,
+        std::size_t count2 = npos);
 
     //------------------------------------------------------
 
     string_view
     substr(
-        size_type pos = 0,
-        size_type count = npos) const
+        std::size_t pos = 0,
+        std::size_t count = npos) const
     {
         return string_view(*this).substr(pos, count);
     }
 
     //------------------------------------------------------
 
-    size_type
+    std::size_t
     copy(
         char* dest,
-        size_type count,
-        size_type pos = 0) const
+        std::size_t count,
+        std::size_t pos = 0) const
     {
         return string_view(*this).copy(dest, count, pos);
     }
@@ -2325,14 +2180,14 @@ public:
     //------------------------------------------------------
 
     void
-    resize(size_type count)
+    resize(std::size_t count)
     {
         resize(count, 0);
     }
 
     BOOST_JSON_DECL
     void
-    resize(size_type count, char ch);
+    resize(std::size_t count, char ch);
 
     /** Increase size without changing capacity.
 
@@ -2357,7 +2212,7 @@ public:
         @param n The amount to increase the size by.
     */
     void
-    grow(size_type n) noexcept
+    grow(std::size_t n) noexcept
     {
         BOOST_JSON_ASSERT(
             n <= impl_.capacity() - impl_.size());
@@ -2376,36 +2231,36 @@ public:
     //
     //------------------------------------------------------
 
-    size_type
+    std::size_t
     find(
         string const& s,
-        size_type pos = 0) const noexcept
+        std::size_t pos = 0) const noexcept
     {
         return string_view(*this).find(string_view(s), pos);
     }
 
-    size_type
+    std::size_t
     find(
         char const* s,
-        size_type pos,
-        size_type count) const
+        std::size_t pos,
+        std::size_t count) const
     {
         return string_view(*this).find(s, pos, count);
     }
 
-    size_type
+    std::size_t
     find(
         char const* s,
-        size_type pos = 0) const
+        std::size_t pos = 0) const
     {
         return string_view(*this).find(s, pos);
     }
 
 
-    size_type
+    std::size_t
     find(
         char ch,
-        size_type pos = 0) const noexcept
+        std::size_t pos = 0) const noexcept
     {
         return string_view(*this).find(ch, pos);
     }
@@ -2415,45 +2270,45 @@ public:
         ,class = detail::is_string_viewish<T>
     #endif
     >
-    size_type
+    std::size_t
     find(
         T const &t,
-        size_type pos = 0) const noexcept
+        std::size_t pos = 0) const noexcept
     {
         return string_view(*this).find(t, pos);
     }
 
     //------------------------------------------------------
 
-    size_type
+    std::size_t
     rfind(
         string const& s,
-        size_type pos = npos) const noexcept
+        std::size_t pos = npos) const noexcept
     {
         return string_view(*this).rfind(string_view(s), pos);
     }
 
-    size_type
+    std::size_t
     rfind(
         char const* s,
-        size_type pos,
-        size_type count) const
+        std::size_t pos,
+        std::size_t count) const
     {
         return string_view(*this).rfind(s, pos, count);
     }
 
-    size_type
+    std::size_t
     rfind(
         char const* s,
-        size_type pos = npos) const
+        std::size_t pos = npos) const
     {
         return string_view(*this).rfind(s, pos);
     }
 
-    size_type
+    std::size_t
     rfind(
         char ch,
-        size_type pos = npos) const noexcept
+        std::size_t pos = npos) const noexcept
     {
         return string_view(*this).rfind(ch, pos);
     }
@@ -2463,45 +2318,45 @@ public:
         ,class = detail::is_string_viewish<T>
     #endif
     >
-    size_type
+    std::size_t
     rfind(
         T const& t,
-        size_type pos = npos) const noexcept
+        std::size_t pos = npos) const noexcept
     {
         return string_view(*this).rfind(t, pos);
     }
 
     //------------------------------------------------------
 
-    size_type
+    std::size_t
     find_first_of(
         string const& s,
-        size_type pos = 0) const noexcept
+        std::size_t pos = 0) const noexcept
     {
         return string_view(*this).find_first_of(string_view(s), pos);
     }
 
-    size_type
+    std::size_t
     find_first_of(
         char const* s,
-        size_type pos,
-        size_type count) const
+        std::size_t pos,
+        std::size_t count) const
     {
         return string_view(*this).find_first_of(s, pos, count);
     }
 
-    size_type
+    std::size_t
     find_first_of(
         char const* s,
-        size_type pos = 0) const
+        std::size_t pos = 0) const
     {
         return string_view(*this).find_first_of(s, pos);
     }
 
-    size_type
+    std::size_t
     find_first_of(
         char ch,
-        size_type pos = 0) const noexcept
+        std::size_t pos = 0) const noexcept
     {
         return string_view(*this).find_first_of(ch, pos);
     }
@@ -2511,45 +2366,45 @@ public:
         ,class = detail::is_string_viewish<T>
     #endif
     >
-    size_type
+    std::size_t
     find_first_of(
         T const& t,
-        size_type pos = 0) const noexcept
+        std::size_t pos = 0) const noexcept
     {
         return string_view(*this).find_first_of(t, pos);
     }
 
     //------------------------------------------------------
 
-    size_type
+    std::size_t
     find_first_not_of(
         string const& s,
-        size_type pos = 0) const noexcept
+        std::size_t pos = 0) const noexcept
     {
         return string_view(*this).find_first_not_of(string_view(s), pos);
     }
 
-    size_type
+    std::size_t
     find_first_not_of(
         char const* s,
-        size_type pos,
-        size_type count) const
+        std::size_t pos,
+        std::size_t count) const
     {
         return string_view(*this).find_first_not_of(s, pos, count);
     }
 
-    size_type
+    std::size_t
     find_first_not_of(
         char const* s,
-        size_type pos = 0) const
+        std::size_t pos = 0) const
     {
         return string_view(*this).find_first_not_of(s, pos);
     }
 
-    size_type
+    std::size_t
     find_first_not_of(
         char ch,
-        size_type pos = 0) const noexcept
+        std::size_t pos = 0) const noexcept
     {
         return string_view(*this).find_first_not_of(ch, pos);
     }
@@ -2559,45 +2414,45 @@ public:
         ,class = detail::is_string_viewish<T>
     #endif
     >
-    size_type
+    std::size_t
     find_first_not_of(
         T const& t,
-        size_type pos = 0) const noexcept
+        std::size_t pos = 0) const noexcept
     {
         return string_view(*this).find_first_not_of(t, pos);
     }
 
     //------------------------------------------------------
 
-    size_type
+    std::size_t
     find_last_of(
         string const& s,
-        size_type pos = 0) const noexcept
+        std::size_t pos = 0) const noexcept
     {
         return string_view(*this).find_last_of(string_view(s), pos);
     }
 
-    size_type
+    std::size_t
     find_last_of(
         char const* s,
-        size_type pos,
-        size_type count) const
+        std::size_t pos,
+        std::size_t count) const
     {
         return string_view(*this).find_last_of(s, pos, count);
     }
 
-    size_type
+    std::size_t
     find_last_of(
         char const* s,
-        size_type pos = 0) const
+        std::size_t pos = 0) const
     {
         return string_view(*this).find_last_of(s, pos);
     }
 
-    size_type
+    std::size_t
     find_last_of(
         char ch,
-        size_type pos = 0) const noexcept
+        std::size_t pos = 0) const noexcept
     {
         return string_view(*this).find_last_of(ch, pos);
     }
@@ -2607,45 +2462,45 @@ public:
         ,class = detail::is_string_viewish<T>
     #endif
     >
-    size_type
+    std::size_t
     find_last_of(
         T const& t,
-        size_type pos = 0) const noexcept
+        std::size_t pos = 0) const noexcept
     {
         return string_view(*this).find_last_of(t, pos);
     }
 
     //------------------------------------------------------
 
-    size_type
+    std::size_t
     find_last_not_of(
         string const& s,
-        size_type pos = 0) const noexcept
+        std::size_t pos = 0) const noexcept
     {
         return string_view(*this).find_last_not_of(string_view(s), pos);
     }
 
-    size_type
+    std::size_t
     find_last_not_of(
         char const* s,
-        size_type pos,
-        size_type count) const
+        std::size_t pos,
+        std::size_t count) const
     {
         return string_view(*this).find_last_not_of(s, pos, count);
     }
 
-    size_type
+    std::size_t
     find_last_not_of(
         char const* s,
-        size_type pos = 0) const
+        std::size_t pos = 0) const
     {
         return string_view(*this).find_last_not_of(s, pos);
     }
 
-    size_type
+    std::size_t
     find_last_not_of(
         char ch,
-        size_type pos = 0) const noexcept
+        std::size_t pos = 0) const noexcept
     {
         return string_view(*this).find_last_not_of(ch, pos);
     }
@@ -2655,10 +2510,10 @@ public:
         ,class = detail::is_string_viewish<T>
     #endif
     >
-    size_type
+    std::size_t
     find_last_not_of(
         T const& t,
-        size_type pos = 0) const noexcept
+        std::size_t pos = 0) const noexcept
     {
         return string_view(*this).find_last_not_of(t, pos);
     }
@@ -2703,7 +2558,7 @@ private:
 
     BOOST_JSON_DECL
     void
-    reserve_impl(size_type new_capacity);
+    reserve_impl(std::size_t new_capacity);
 };
 
 //----------------------------------------------------------
