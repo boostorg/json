@@ -28,34 +28,34 @@ namespace json {
 array::
 impl_type::
 impl_type(
-    std::size_t capacity_,
+    std::size_t capacity,
     storage_ptr const& sp)
 {
-    if(capacity_ > max_size())
+    if(capacity > max_size())
         BOOST_JSON_THROW(
             detail::array_too_large_exception());
-    if(capacity_ > 0)
-        vec = reinterpret_cast<value*>(
+    if(capacity > 0)
+        vec_ = reinterpret_cast<value*>(
             sp->allocate(
-                capacity_ * sizeof(value),
+                capacity * sizeof(value),
                 alignof(value)));
     else
-        vec = nullptr;
-    capacity = static_cast<
-        std::uint32_t>(capacity_);
-    size = 0;
+        vec_ = nullptr;
+    capacity_ = static_cast<
+        std::uint32_t>(capacity);
+    size_ = 0;
 }
 
 
 array::
 impl_type::
 impl_type(impl_type&& other) noexcept
-    : vec(detail::exchange(
-        other.vec, nullptr))
-    , size(detail::exchange(
-        other.size, 0))
-    , capacity(detail::exchange(
-        other.capacity, 0))
+    : vec_(detail::exchange(
+        other.vec_, nullptr))
+    , size_(detail::exchange(
+        other.size_, 0))
+    , capacity_(detail::exchange(
+        other.capacity_, 0))
 {
 }
 
@@ -77,9 +77,9 @@ array::
 impl_type::
 swap(impl_type& rhs) noexcept
 {
-    std::swap(vec, rhs.vec);
-    std::swap(size, rhs.size);
-    std::swap(capacity, rhs.capacity);
+    std::swap(vec_, rhs.vec_);
+    std::swap(size_, rhs.size_);
+    std::swap(capacity_, rhs.capacity_);
 }
 
 void
@@ -88,13 +88,13 @@ impl_type::
 destroy(
     storage_ptr const& sp) noexcept
 {
-    if(vec && sp->need_free())
+    if(vec_ && sp->need_free())
     {
-        auto it = vec + size;
-        while(it != vec)
+        auto it = vec_ + size_;
+        while(it != vec_)
             (*--it).~value();
-        sp->deallocate(vec,
-            capacity * sizeof(value),
+        sp->deallocate(vec_,
+            capacity_ * sizeof(value),
             alignof(value));
     }
 }
@@ -125,14 +125,13 @@ undo_insert(
         BOOST_JSON_THROW(
             detail::array_too_large_exception());
     self_.reserve(
-        self_.impl_.size + n_);
+        self_.impl_.size() + n_);
     // (iterators invalidated now)
-    it = self_.impl_.vec + pos;
+    it = self_.impl_.begin() + pos;
     relocate(it + n_, it,
-        self_.impl_.size - pos);
-    self_.impl_.size = static_cast<
-        std::uint32_t>(
-            self_.impl_.size + n_);
+        self_.impl_.size() - pos);
+    self_.impl_.size(
+        self_.impl_.size() + n_);
 }
 
 array::
@@ -142,14 +141,13 @@ undo_insert::
     if(! commit)
     {
         auto const first =
-            self_.impl_.vec + pos;
+            self_.impl_.begin() + pos;
         self_.destroy(first, it);
-        self_.impl_.size = static_cast<
-            std::uint32_t>(
-                self_.impl_.size - n_);
+        self_.impl_.size(
+            self_.impl_.size() - n_);
         relocate(
             first, first + n_,
-            self_.impl_.size - pos);
+            self_.impl_.size() - pos);
     }
 }
 
@@ -174,12 +172,12 @@ array(
 {
     undo_construct u(*this);
     reserve(count);
-    while(impl_.size < count)
+    while(impl_.size() < count)
     {
         ::new(
-            impl_.vec +
-            impl_.size) value(v, sp_);
-        ++impl_.size;
+            impl_.begin() +
+            impl_.size()) value(v, sp_);
+        impl_.size(impl_.size() + 1);
     }
     u.commit = true;
 }
@@ -192,12 +190,12 @@ array(
 {
     undo_construct u(*this);
     reserve(count);
-    while(impl_.size < count)
+    while(impl_.size() < count)
     {
         ::new(
-            impl_.vec +
-            impl_.size) value(sp_);
-        ++impl_.size;
+            impl_.begin() +
+            impl_.size()) value(sp_);
+        impl_.size(impl_.size() + 1);
     }
     u.commit = true;
 }
@@ -271,9 +269,8 @@ array(unchecked_array&& ua)
     : sp_(ua.get_storage())
     , impl_(ua.size(), sp_) // exact
 {
-    impl_.size = static_cast<
-        std::uint32_t>(ua.size());
-    ua.relocate(impl_.vec);
+    impl_.size(ua.size());
+    ua.relocate(impl_.begin());
 }
 
 //----------------------------------------------------------
@@ -321,28 +318,28 @@ void
 array::
 shrink_to_fit() noexcept
 {
-    if(impl_.capacity <= impl_.size)
+    if(impl_.capacity() <= impl_.size())
         return;
-    if(impl_.size == 0)
+    if(impl_.size() == 0)
     {
         impl_.destroy(sp_);
         impl_ = {};
         return;
     }
-    if( impl_.size < min_capacity_ &&
-        impl_.capacity <= min_capacity_)
+    if( impl_.size() < min_capacity_ &&
+        impl_.capacity() <= min_capacity_)
         return;
 
 #ifndef BOOST_NO_EXCEPTIONS
     try
     {
 #endif
-        impl_type impl(impl_.size, sp_);
+        impl_type impl(impl_.size(), sp_);
         relocate(
-            impl.vec,
-            impl_.vec, impl_.size);
-        impl.size = impl_.size;
-        impl_.size = 0;
+            impl.begin(),
+            impl_.begin(), impl_.size());
+        impl.size(impl_.size());
+        impl_.size(0);
         impl_.swap(impl);
         impl.destroy(sp_);
 #ifndef BOOST_NO_EXCEPTIONS
@@ -365,11 +362,11 @@ void
 array::
 clear() noexcept
 {
-    if(! impl_.vec)
+    if(! impl_.begin())
         return;
-    destroy(impl_.vec,
-        impl_.vec + impl_.size);
-    impl_.size = 0;
+    destroy(impl_.begin(),
+        impl_.begin() + impl_.size());
+    impl_.size(0);
 }
 
 auto
@@ -384,7 +381,7 @@ insert(
     while(count--)
         u.emplace(v);
     u.commit = true;
-    return impl_.vec + u.pos;
+    return impl_.begin() + u.pos;
 }
 
 auto
@@ -400,7 +397,7 @@ insert(
     for(auto const& v : init)
         u.emplace(v);
     u.commit = true;
-    return impl_.vec + u.pos;
+    return impl_.begin() + u.pos;
 }
 
 auto
@@ -409,11 +406,11 @@ erase(
     const_iterator pos) noexcept ->
     iterator
 {
-    auto p = impl_.vec +
-        (pos - impl_.vec);
+    auto p = impl_.begin() +
+        (pos - impl_.begin());
     destroy(p, p + 1);
     relocate(p, p + 1, 1);
-    --impl_.size;
+    impl_.size(impl_.size() - 1);
     return p;
 }
 
@@ -427,13 +424,12 @@ erase(
     auto const n = static_cast<
         std::size_t>(last - first);
     auto const p =
-        impl_.vec + impl_.index_of(first);
+        impl_.begin() + impl_.index_of(first);
     destroy(p, p + n);
     relocate(p, p + n,
-        impl_.size -
+        impl_.size() -
             impl_.index_of(last));
-    impl_.size = static_cast<
-        std::uint32_t>(impl_.size - n);
+    impl_.size(impl_.size() - n);
     return p;
 }
 
@@ -443,32 +439,30 @@ pop_back() noexcept
 {
     auto const p = &back();
     destroy(p, p + 1);
-    --impl_.size;
+    impl_.size(impl_.size() - 1);
 }
 
 void
 array::
 resize(std::size_t count)
 {
-    if(count <= impl_.size)
+    if(count <= impl_.size())
     {
         destroy(
-            impl_.vec + count,
-            impl_.vec + impl_.size);
-        impl_.size = static_cast<
-            std::uint32_t>(count);
+            impl_.begin() + count,
+            impl_.begin() + impl_.size());
+        impl_.size(count);
         return;
     }
 
     reserve(count);
     auto it =
-        impl_.vec + impl_.size;
+        impl_.begin() + impl_.size();
     auto const end =
-        impl_.vec + count;
+        impl_.begin() + count;
     while(it != end)
         ::new(it++) value(sp_);
-    impl_.size = static_cast<
-        std::uint32_t>(count);
+    impl_.size(count);
 }
 
 void
@@ -480,10 +474,9 @@ resize(
     if(count <= size())
     {
         destroy(
-            impl_.vec + count,
-            impl_.vec + impl_.size);
-        impl_.size = static_cast<
-            std::uint32_t>(count);
+            impl_.begin() + count,
+            impl_.begin() + impl_.size());
+        impl_.size(count);
         return;
     }
 
@@ -503,18 +496,17 @@ resize(
     };
 
     auto const end =
-        impl_.vec + count;
+        impl_.begin() + count;
     undo u{*this,
-        impl_.vec + impl_.size,
-        impl_.vec + impl_.size};
+        impl_.begin() + impl_.size(),
+        impl_.begin() + impl_.size()};
     do
     {
         ::new(u.it) value(v, sp_);
         ++u.it;
     }
     while(u.it != end);
-    impl_.size = static_cast<
-        std::uint32_t>(count);
+    impl_.size(count);
     u.it = nullptr;
 }
 
@@ -556,11 +548,11 @@ void
 array::
 destroy() noexcept
 {
-    auto it = impl_.vec + impl_.size;
-    while(it != impl_.vec)
+    auto it = impl_.begin() + impl_.size();
+    while(it != impl_.begin())
         (*--it).~value();
-    sp_->deallocate(impl_.vec,
-        impl_.capacity * sizeof(value),
+    sp_->deallocate(impl_.begin(),
+        impl_.capacity() * sizeof(value),
         alignof(value));
 }
 
@@ -572,9 +564,9 @@ copy(array const& other)
     for(auto const& v : other)
     {
         ::new(
-            impl_.vec +
-            impl_.size) value(v, sp_);
-        ++impl_.size;
+            impl_.begin() +
+            impl_.size()) value(v, sp_);
+        impl_.size(impl_.size() + 1);
     }
 }
 
@@ -592,9 +584,9 @@ copy(
     for(auto const& v : init)
     {
         ::new(
-            impl_.vec +
-            impl_.size) value(v, sp_);
-        ++impl_.size;
+            impl_.begin() +
+            impl_.size()) value(v, sp_);
+        impl_.size(impl_.size() + 1);
     }
 }
 
@@ -602,12 +594,12 @@ void
 array::
 reserve_impl(std::size_t capacity)
 {
-    if(impl_.vec)
+    if(impl_.begin())
     {
         // 2x growth
         auto const hint =
-            impl_.capacity * 2;
-        if(hint < impl_.capacity) // overflow
+            impl_.capacity() * 2;
+        if(hint < impl_.capacity()) // overflow
             capacity = max_size();
         else if(capacity < hint)
             capacity = hint;
@@ -616,10 +608,10 @@ reserve_impl(std::size_t capacity)
         capacity = min_capacity_;
     impl_type impl(capacity, sp_);
     relocate(
-        impl.vec,
-        impl_.vec, impl_.size);
-    impl.size = impl_.size;
-    impl_.size = 0;
+        impl.begin(),
+        impl_.begin(), impl_.size());
+    impl.size(impl_.size());
+    impl_.size(0);
     impl_.destroy(sp_);
     impl_ = impl;
 }

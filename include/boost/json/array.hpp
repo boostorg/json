@@ -176,7 +176,7 @@ public:
     */
     ~array()
     {
-        if( impl_.vec &&
+        if( impl_.begin() &&
             sp_->need_free())
             destroy();
     }
@@ -961,7 +961,7 @@ public:
     bool
     empty() const noexcept
     {
-        return impl_.size == 0;
+        return impl_.size() == 0;
     }
 
     /** Return the number of elements in the container
@@ -977,7 +977,7 @@ public:
     std::size_t
     size() const noexcept
     {
-        return impl_.size;
+        return impl_.size();
     }
 
     /** Return the maximum number of elements the container can hold
@@ -1011,7 +1011,7 @@ public:
     std::size_t
     capacity() const noexcept
     {
-        return impl_.capacity;
+        return impl_.capacity();
     }
 
     /** Increase the capacity to at least a certain amount.
@@ -1049,7 +1049,7 @@ public:
     reserve(std::size_t new_capacity)
     {
         // never shrink
-        if(new_capacity <= impl_.capacity)
+        if(new_capacity <= impl_.capacity())
             return;
         reserve_impl(new_capacity);
     }
@@ -1590,12 +1590,13 @@ private:
     constexpr
     unsigned long min_capacity_ = 16;
 
-    struct impl_type
+    class impl_type
     {
-        value* vec = nullptr;
-        std::uint32_t size = 0;
-        std::uint32_t capacity = 0;
+        value* vec_ = nullptr;
+        std::uint32_t size_ = 0;
+        std::uint32_t capacity_ = 0;
 
+    public:
         impl_type() = default;
         impl_type(impl_type const&) = default;
         impl_type& operator=(
@@ -1610,6 +1611,35 @@ private:
         impl_type&
         operator=(
             impl_type&& other) noexcept;
+
+        inline
+        value*
+        begin() const noexcept
+        {
+            return vec_;
+        }
+
+        inline
+        std::size_t
+        size() const noexcept
+        {
+            return size_;
+        }
+
+        inline
+        void
+        size(std::size_t n) noexcept
+        {
+            size_ = static_cast<
+                std::uint32_t>(n);
+        }
+
+        inline
+        std::size_t
+        capacity() const noexcept
+        {
+            return capacity_;
+        }
 
         inline
         std::size_t
