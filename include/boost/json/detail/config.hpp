@@ -87,6 +87,10 @@
 # define BOOST_JSON_NO_MAX_STACK_SIZE
 # define BOOST_JSON_MAX_STACK_SIZE  ((std::size_t)(-1))
 #endif
+#ifndef BOOST_JSON_PARSER_BUFFER_SIZE
+# define BOOST_JSON_NO_PARSER_BUFFER_SIZE
+# define BOOST_JSON_PARSER_BUFFER_SIZE 2048
+#endif
 
 namespace boost {
 namespace json {

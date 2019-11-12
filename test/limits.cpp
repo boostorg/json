@@ -74,7 +74,6 @@ public:
     void
     testArray()
     {
-        // max size
         {
             BEAST_THROWS(
                 array(
@@ -83,7 +82,6 @@ public:
                 std::length_error);
         }
 
-        // max size
         {
             std::vector<int> v(
                 array::max_size()+1, 42);
@@ -92,7 +90,15 @@ public:
                 std::length_error);
         }
 
-        // max size
+        {
+            std::vector<int> v(
+                array::max_size()+1, 42);
+            BEAST_THROWS(array(
+                make_input_iterator(v.begin()),
+                make_input_iterator(v.end())),
+                std::length_error);
+        }
+
         {
             array a;
             BEAST_THROWS(
@@ -106,7 +112,7 @@ public:
     void
     testString()
     {
-        // exceed max size
+        // strings
         {
             {
                 string s;
@@ -137,10 +143,22 @@ public:
             }
     #endif
         }
+
+        // key in parser
+        {
+            parser p;
+            std::string const big(
+                string::max_size() + 1, '*');
+            auto const js =
+                "{\"" + big + "\":null}";
+            BEAST_THROWS(
+                parse(js),
+                std::length_error);
+        }
     }
 
     void
-    testParser()
+    testStack()
     {
         // max raw_stack
         {
@@ -168,8 +186,39 @@ public:
     }
 
     void
+    testParser()
+    {
+        // overflow in on_string_part
+        {
+            std::string big;
+            big = "\\b";
+            big += std::string(
+                string::max_size()*2, '*');
+            auto const js =
+                "\"" + big + "\"";
+            BEAST_THROWS(
+                parse(js),
+                std::length_error);
+        }
+
+        // overflow in on_string
+        {
+            std::string big;
+            big = "\\b";
+            big += std::string(
+                (string::max_size()*3)/2, '*');
+            auto const js =
+                "\"" + big + "\"";
+            BEAST_THROWS(
+                parse(js),
+                std::length_error);
+        }
+    }
+
+    void
     run() override
     {
+testParser();
     #ifndef BOOST_JSON_NO_MAX_OBJECT_SIZE
         testObject();
     #endif
@@ -183,6 +232,10 @@ public:
     #endif
 
     #ifndef BOOST_JSON_NO_MAX_STACK_SIZE
+        testStack();
+    #endif
+
+    #ifndef BOOST_JSON_NO_PARSER_BUFFER_SIZE
         testParser();
     #endif
 

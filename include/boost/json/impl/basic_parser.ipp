@@ -117,7 +117,7 @@ write_some(
     auto p = data;
     auto const p0 = p;
     auto const p1 = p0 + size;
-    detail::buffer<2048> temp;
+    detail::buffer<BOOST_JSON_PARSER_BUFFER_SIZE> temp;
     ec = {};
 
     auto const maybe_flush =

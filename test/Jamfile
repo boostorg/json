@@ -54,6 +54,7 @@ for local f in $(LIMIT_SOURCES)
             <define>BOOST_JSON_MAX_OBJECT_SIZE=30
             <define>BOOST_JSON_MAX_ARRAY_SIZE=100
             <define>BOOST_JSON_MAX_STACK_SIZE=1024
+            <define>BOOST_JSON_PARSER_BUFFER_SIZE=256
         ] ;
 }
 

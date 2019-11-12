@@ -23,34 +23,6 @@ class serializer_test : public beast::unit_test::suite
 {
 public:
     void
-    testMembers()
-    {
-        value jv;
-
-        // serializer(value)
-        {
-            serializer sr(jv);
-        }
-
-        // is_done()
-        {
-            serializer sr(jv);
-            BEAST_EXPECT(! sr.is_done());
-        }
-
-        // read()
-        {
-            serializer sr(jv);
-            char buf[1024];
-            auto n = sr.read(
-                buf, sizeof(buf));
-            BEAST_EXPECT(sr.is_done());
-            BEAST_EXPECT(string_view(
-                buf, n) == "null");
-        }
-    }
-
-    void
     grind_one(
         string_view s,
         value const& jv,
@@ -82,7 +54,7 @@ public:
             string js;
             js.reserve(4096);
             js.grow(sr.read(
-                js.data(), js.size()));
+                js.data(), js.capacity()));
 
             auto const s1 = to_string(jv);
             auto const jv2 = parse(s1, ec);
@@ -146,6 +118,34 @@ public:
     }
 
     void
+    testMembers()
+    {
+        value jv;
+
+        // serializer(value)
+        {
+            serializer sr(jv);
+        }
+
+        // is_done()
+        {
+            serializer sr(jv);
+            BEAST_EXPECT(! sr.is_done());
+        }
+
+        // read()
+        {
+            serializer sr(jv);
+            char buf[1024];
+            auto n = sr.read(
+                buf, sizeof(buf));
+            BEAST_EXPECT(sr.is_done());
+            BEAST_EXPECT(string_view(
+                buf, n) == "null");
+        }
+    }
+
+    void
     check(
         string_view s,
         string_view name = {})
@@ -193,7 +193,7 @@ public:
         check("\"\\r\"");   // carriage return
         check("\"\\t\"");   // horizontal tab
 
-        // contro\l characters
+        // control characters
         check("\"\\u0000\"");
         check("\"\\u0001\"");
         check("\"\\u0002\"");
@@ -407,31 +407,42 @@ public:
         }
     }
 
+    std::string
+    to_ostream(value const& jv)
+    {
+        std::stringstream ss;
+        ss << jv;
+        return ss.str();
+    }
+
     void
     testOstream()
     {
-        std::string js =
+        for(string_view js : {
+        #if 0
             "{\"1\":{},\"2\":[],\"3\":\"x\",\"4\":1,"
-            "\"5\":-1,\"6\":144.0,\"7\":false,\"8\":null}";
-        error_code ec;
-        auto const jv1 = parse(js, ec);
-        if(! BEAST_EXPECTS(! ec,
-            ec.message()))
-            return;
-        std::stringstream ss;
-        ss << jv1;
-        auto const jv2 =
-            parse(ss.str(), ec);
-        if(! BEAST_EXPECTS(! ec,
-            ec.message()))
-            return;
-        if(! BEAST_EXPECT(equal(jv1, jv2)))
-            log <<
-                " " << js << "\n"
-                " " << jv1 << "\n"
-                " " << jv2 <<
-                std::endl;
-
+            "\"5\":-1,\"6\":144.0,\"7\":false,\"8\":null}",
+        #endif
+            "[1,2,3,4,5]"
+            })
+        {
+            error_code ec;
+            auto const jv1 = parse(js, ec);
+            if(! BEAST_EXPECTS(! ec,
+                ec.message()))
+                return;
+            auto const jv2 =
+                parse(to_ostream(jv1), ec);
+            if(! BEAST_EXPECTS(! ec,
+                ec.message()))
+                return;
+            if(! BEAST_EXPECT(equal(jv1, jv2)))
+                log <<
+                    " " << js << "\n"
+                    " " << jv1 << "\n"
+                    " " << jv2 <<
+                    std::endl;
+        }
     }
 
     void
@@ -444,7 +455,7 @@ public:
         testNumber();
         testScalar();
         testVectors();
-        //testOstream();
+        testOstream();
     }
 };
 

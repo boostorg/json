@@ -351,6 +351,12 @@ loop_str:
             auto const d = dist(p, p1);
             if(d >= 6 * dist(s, s1))
                 sn = s1;
+            // VFALCO We can raise this 6 in multiples,
+            //        to balance the additional fixed
+            //        overhead of additional outer loops
+            //        when the amount of remaining output
+            //        is small.
+            //
             else if(d >= 6)
                 sn = s + d / 6;
             else
@@ -412,6 +418,11 @@ loop_str:
                     state::str4;
                 goto loop;
             }
+        #if 0
+            // VFALCO The current tuning makes this
+            //        condition impossible to satisfy,
+            //        see note above.
+            //
             if(p1 - p >= 6)
             {
                 *p++ = '\\';
@@ -424,6 +435,10 @@ loop_str:
                     unsigned char>(ch) & 15];
                 continue;
             }
+        #else
+            BOOST_JSON_ASSERT(p1 - p < 6);
+        #endif
+
             buf_[5] = '\\';
             buf_[4] = 'u';
             buf_[3] = '0';
