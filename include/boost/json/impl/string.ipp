@@ -11,6 +11,7 @@
 #define BOOST_JSON_IMPL_STRING_IPP
 
 #include <boost/json/detail/assert.hpp>
+#include <boost/json/detail/except.hpp>
 #include <algorithm>
 #include <new>
 #include <ostream>
@@ -54,8 +55,7 @@ growth(
 {
     if(new_size > max_size())
         BOOST_JSON_THROW(
-            std::length_error(
-                "size > max_size()"));
+            detail::string_too_large_exception());
     new_size |= mask_;
     if( new_size > max_size())
         return static_cast<
@@ -109,8 +109,7 @@ append(
 {
     if(n > max_size() - size)
         BOOST_JSON_THROW(
-            std::length_error(
-                "size > max_size()"));
+            detail::string_too_large_exception());
     if(n <= capacity - size)
     {
         term(size + n);
@@ -136,8 +135,7 @@ insert(
 {
     if(pos > size)
         BOOST_JSON_THROW(
-            std::out_of_range(
-                "pos > size()"));
+        detail::string_pos_too_large());
     if(n <= capacity - size)
     {
         auto const dest =
@@ -152,8 +150,7 @@ insert(
     }
     if(n > max_size() - size)
         BOOST_JSON_THROW(
-            std::length_error(
-                "size > max_size()"));
+            detail::string_too_large_exception());
     impl tmp(growth(
         size + n, capacity), sp);
     tmp.size = size + static_cast<
@@ -352,10 +349,9 @@ insert(
     char const* s,
     size_type count)
 {
-    if(pos >= impl_.size)
+    if(pos > impl_.size)
         BOOST_JSON_THROW(
-            std::out_of_range(
-                "pos >= size()"));
+            detail::string_pos_too_large());
     if(count > impl_.capacity - impl_.size)
     {
         traits_type::copy(
@@ -412,8 +408,7 @@ erase(
 {
     if(pos > impl_.size)
         BOOST_JSON_THROW(
-            std::out_of_range(
-                "pos > size()"));
+            detail::string_pos_too_large());
     if( count > impl_.size - pos)
         count = impl_.size - pos;
     traits_type::move(

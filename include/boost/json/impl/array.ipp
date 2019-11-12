@@ -33,7 +33,7 @@ impl_type(
 {
     if(capacity_ > max_size())
         BOOST_JSON_THROW(
-            detail::object_too_large_exception());
+            detail::array_too_large_exception());
     if(capacity_ > 0)
         vec = reinterpret_cast<value*>(
             sp->allocate(
@@ -102,30 +102,11 @@ destroy(
 //----------------------------------------------------------
 
 array::
-undo_create::
-~undo_create()
+undo_construct::
+~undo_construct()
 {
     if(! commit)
         self_.impl_.destroy(self_.sp_);
-}
-
-//----------------------------------------------------------
-
-array::
-undo_assign::
-undo_assign(array& self)
-    : self_(self)
-    , impl_(std::move(self.impl_))
-{
-}
-
-array::
-undo_assign::
-~undo_assign()
-{
-    if(! commit)
-        impl_.swap(self_.impl_);
-    impl_.destroy(self_.sp_);
 }
 
 //----------------------------------------------------------
@@ -142,8 +123,7 @@ undo_insert(
 {
     if(n > max_size())
         BOOST_JSON_THROW(
-            std::length_error(
-                "size > max_size()"));
+            detail::array_too_large_exception());
     self_.reserve(
         self_.impl_.size + n_);
     // (iterators invalidated now)
@@ -192,7 +172,7 @@ array(
     storage_ptr sp)
     : sp_(std::move(sp))
 {
-    undo_create u(*this);
+    undo_construct u(*this);
     reserve(count);
     while(impl_.size < count)
     {
@@ -210,7 +190,7 @@ array(
     storage_ptr sp)
     : sp_(std::move(sp))
 {
-    undo_create u(*this);
+    undo_construct u(*this);
     reserve(count);
     while(impl_.size < count)
     {
@@ -226,7 +206,7 @@ array::
 array(array const& other)
     : sp_(other.sp_)
 {
-    undo_create u(*this);
+    undo_construct u(*this);
     copy(other);
     u.commit = true;
 }
@@ -237,7 +217,7 @@ array(
     storage_ptr sp)
     : sp_(std::move(sp))
 {
-    undo_create u(*this);
+    undo_construct u(*this);
     copy(other);
     u.commit = true;
 }
@@ -269,7 +249,7 @@ array(
     }
     else
     {
-        undo_create u(*this);
+        undo_construct u(*this);
         copy(other);
         u.commit = true;
     }
@@ -281,7 +261,7 @@ array(
     storage_ptr sp)
     : sp_(std::move(sp))
 {
-    undo_create u(*this);
+    undo_construct u(*this);
     copy(init);
     u.commit = true;
 }

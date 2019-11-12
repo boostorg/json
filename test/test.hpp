@@ -54,8 +54,7 @@ struct fail_storage
         return true;
     }
 
-    std::size_t fail_max =
-        std::size_t(-1);
+    std::size_t fail_max = 0;
     std::size_t fail = 0;
     std::size_t nalloc = 0;
 
@@ -97,6 +96,7 @@ void
 fail_loop(F&& f)
 {
     scoped_storage<fail_storage> ss;
+    ss->fail_max = 1;
     while(ss->fail < 200)
     {
         try

@@ -184,7 +184,7 @@ value_type(
         {
             if(key.size() > BOOST_JSON_MAX_STRING_SIZE)
                 BOOST_JSON_THROW(
-                    detail::string_too_large_exception());
+                    detail::key_too_large_exception());
             auto s = reinterpret_cast<
                 char*>(value_.get_storage()->
                     allocate(key.size() + 1));

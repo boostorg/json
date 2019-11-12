@@ -110,14 +110,13 @@ build() noexcept
         --end;
         if(p != end)
         {
-            auto& head = bucket(end->key());
-            remove(head, end);
-            end->next_ = head;
-            head = p;
             std::memcpy(
                 reinterpret_cast<void*>(p),
                 reinterpret_cast<void const*>(end),
                 sizeof(*p));
+            auto& head = bucket(p->key());
+            p->next_ = head;
+            head = p;
         }
     }
 }
@@ -234,7 +233,7 @@ object(
     }
     else
     {
-        undo_construct u{this};
+        undo_construct u(this);
         insert_range(
             other.begin(),
             other.end(), 0);
@@ -254,7 +253,7 @@ object(
     object const& other)
     : sp_(other.sp_)
 {
-    undo_construct u{this};
+    undo_construct u(this);
     insert_range(
         other.begin(),
         other.end(), 0);
@@ -267,7 +266,7 @@ object(
     storage_ptr sp)
     : sp_(std::move(sp))
 {
-    undo_construct u{this};
+    undo_construct u(this);
     insert_range(
         other.begin(),
         other.end(), 0);
@@ -281,7 +280,7 @@ object(
     storage_ptr sp)
     : sp_(std::move(sp))
 {
-    undo_construct u{this};
+    undo_construct u(this);
     insert_range(
         init.begin(),
         init.end(),

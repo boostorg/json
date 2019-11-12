@@ -11,6 +11,7 @@
 #define BOOST_JSON_IMPL_ARRAY_HPP
 
 #include <boost/json/value.hpp>
+#include <boost/json/detail/except.hpp>
 #include <algorithm>
 #include <stdexcept>
 #include <type_traits>
@@ -54,7 +55,7 @@ index_of(value const* pos) const noexcept ->
 
 //----------------------------------------------------------
 
-class array::undo_create
+class array::undo_construct
 {
     array& self_;
 
@@ -62,32 +63,14 @@ public:
     bool commit = false;
 
     BOOST_JSON_DECL
-    ~undo_create();
+    ~undo_construct();
 
     explicit
-    undo_create(
+    undo_construct(
         array& self) noexcept
         : self_(self)
     {
     }
-};
-
-//----------------------------------------------------------
-
-class array::undo_assign
-{
-    array& self_;
-    impl_type impl_;
-
-public:
-    bool commit = false;
-
-    explicit
-    BOOST_JSON_DECL
-    undo_assign(array& self);
-
-    BOOST_JSON_DECL
-    ~undo_assign();
 };
 
 //----------------------------------------------------------
@@ -404,7 +387,7 @@ array(
     std::input_iterator_tag)
     : sp_(std::move(sp))
 {
-    undo_create u(*this);
+    undo_construct u(*this);
     while(first != last)
     {
         if(impl_.size >= impl_.capacity)
@@ -424,14 +407,13 @@ array(
     std::forward_iterator_tag)
     : sp_(std::move(sp))
 {
-    undo_create u(*this);
+    undo_construct u(*this);
     auto const n =
         static_cast<std::size_t>(
             std::distance(first, last));
     if(n > max_size())
         BOOST_JSON_THROW(
-            std::length_error(
-                "n > max_size"));
+            detail::array_too_large_exception());
     reserve(static_cast<std::size_t>(n));
     while(impl_.size < n)
     {
@@ -481,8 +463,7 @@ insert(
             std::distance(first, last));
     if(n > max_size())
         BOOST_JSON_THROW(
-            std::length_error(
-                "n > max_size"));
+            detail::array_too_large_exception());
     undo_insert u(pos, static_cast<
         std::size_t>(n), *this);
     while(first != last)

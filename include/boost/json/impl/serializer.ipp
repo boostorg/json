@@ -158,7 +158,7 @@ loop_init:
         case kind::uint64:
             if(p1 - p >= detail::max_number_chars)
             {
-                p += detail::format_int64(
+                p += detail::format_uint64(
                     p,  *jv.if_uint64());
                 stack_.pop();
                 goto loop;
@@ -370,7 +370,6 @@ loop_str:
                 std::memcpy(p, ss, n);
                 ss = s;
                 p += n;
-                //*p++ = ch;
                 *p++ = '\\';
                 *p++ = c;
                 if(c != 'u')

@@ -2633,44 +2633,6 @@ public:
     }
 
     void
-    testImpl()
-    {
-        // exceed max size
-    #ifndef BOOST_JSON_NO_MAX_STRING_SIZE
-        {
-            {
-                string s;
-                BEAST_THROWS(
-                    (s.resize(s.max_size() + 1)),
-                    std::length_error);
-            }
-
-            {
-                string s;
-                s.resize(100);
-                BEAST_THROWS(
-                    (s.append(s.max_size() - 1, '*')),
-                    std::length_error);
-            }
-
-    #if 0
-            {
-                // VFALCO tsan doesn't like this
-                string s;
-                try
-                {
-                    s.resize(s.max_size() - 1);
-                }
-                catch(std::exception const&)
-                {
-                }
-            }
-    #endif
-        }
-    #endif
-    }
-
-    void
     run() override
     {
         testConstruction();
@@ -2702,8 +2664,6 @@ public:
         testFindNotLastOf(); //
 
         testNonMembers();
-
-        testImpl();
     }
 };
 

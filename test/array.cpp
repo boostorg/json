@@ -280,6 +280,15 @@ public:
                 check_storage(a1, storage_ptr{});
                 check_storage(a2, sp);
             });
+
+            // self-assign
+            {
+                array a({1, true, str_});
+                auto& a1 = a;
+                auto& a2 = a;
+                a1 = a2;
+                check(a);
+            }
         }
 
         // operator=(array&&)

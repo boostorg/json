@@ -219,10 +219,6 @@ private:
         inline
         value_type**
         bucket_begin() const noexcept;
-
-        inline
-        value_type**
-        bucket_end() const noexcept;
     };
 
     struct undo_construct;

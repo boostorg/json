@@ -13,8 +13,8 @@
 #include <boost/json/parser.hpp>
 #include <boost/beast/_experimental/unit_test/suite.hpp>
 #include "parse-vectors.hpp"
-
 #include "test.hpp"
+#include <iostream>
 
 namespace boost {
 namespace json {
@@ -56,21 +56,37 @@ public:
         value const& jv,
         string_view name = {})
     {
-        error_code ec;
-        auto const s1 = to_string(jv);
-        auto const jv2 = parse(s1, ec);
-        if(! BEAST_EXPECT(equal(jv, jv2)))
         {
-            if(name.empty())
-                log <<
-                    " " << s << "\n"
-                    " " << s1 <<
-                    std::endl;
-            else
-                log << name << ":\n"
-                    " " << s << "\n"
-                    " " << s1 <<
-                    std::endl;
+            error_code ec;
+            auto const s1 = to_string(jv);
+            auto const jv2 = parse(s1, ec);
+            if(! BEAST_EXPECT(equal(jv, jv2)))
+            {
+                if(name.empty())
+                    log <<
+                        " " << s << "\n"
+                        " " << s1 <<
+                        std::endl;
+                else
+                    log << name << ":\n"
+                        " " << s << "\n"
+                        " " << s1 <<
+                        std::endl;
+            }
+        }
+
+        // large buffer
+        {
+            error_code ec;
+            serializer sr(jv);
+            string js;
+            js.reserve(4096);
+            js.grow(sr.read(
+                js.data(), js.size()));
+
+            auto const s1 = to_string(jv);
+            auto const jv2 = parse(s1, ec);
+            BEAST_EXPECT(equal(jv, jv2));
         }
     }
 
@@ -392,6 +408,33 @@ public:
     }
 
     void
+    testOstream()
+    {
+        std::string js =
+            "{\"1\":{},\"2\":[],\"3\":\"x\",\"4\":1,"
+            "\"5\":-1,\"6\":144.0,\"7\":false,\"8\":null}";
+        error_code ec;
+        auto const jv1 = parse(js, ec);
+        if(! BEAST_EXPECTS(! ec,
+            ec.message()))
+            return;
+        std::stringstream ss;
+        ss << jv1;
+        auto const jv2 =
+            parse(ss.str(), ec);
+        if(! BEAST_EXPECTS(! ec,
+            ec.message()))
+            return;
+        if(! BEAST_EXPECT(equal(jv1, jv2)))
+            log <<
+                " " << js << "\n"
+                " " << jv1 << "\n"
+                " " << jv2 <<
+                std::endl;
+
+    }
+
+    void
     run()
     {
         testMembers();
@@ -401,6 +444,7 @@ public:
         testNumber();
         testScalar();
         testVectors();
+        //testOstream();
     }
 };
 

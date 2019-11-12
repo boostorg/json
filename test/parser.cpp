@@ -87,6 +87,7 @@ public:
             {
                 scoped_storage<
                     fail_storage> ss;
+                ss->fail_max = 0;
                 parser p;
                 error_code ec;
                 p.start(ss);
@@ -283,6 +284,12 @@ R"xx({
             BEAST_EXPECTS(
                 ec == error::need_start,
                 ec.message());
+        }
+
+        // destroy after start
+        {
+            parser p;
+            p.start();
         }
     }
 

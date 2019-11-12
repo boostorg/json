@@ -22,7 +22,7 @@ void
 raw_stack::
 grow(std::size_t n)
 {
-    if(n > max_size() - size_)
+    if(n > max_size() - capacity_)
         BOOST_JSON_THROW(
             stack_overflow_exception());
     auto new_capacity = capacity_ + n;
@@ -37,7 +37,7 @@ grow(std::size_t n)
     if(base_)
     {
         std::memcpy(base, base_, size_);
-        sp_->deallocate(base_, size_);
+        sp_->deallocate(base_, capacity_);
     }
     base_ = base;
     capacity_ = new_capacity;

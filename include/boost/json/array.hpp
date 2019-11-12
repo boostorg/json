@@ -1688,8 +1688,7 @@ private:
         value* src,
         std::size_t n) noexcept;
 
-    class undo_create;
-    class undo_assign;
+    class undo_construct;
     class undo_insert;
 
     storage_ptr sp_; // must come first

@@ -115,21 +115,18 @@ bucket_begin() const noexcept ->
             begin() + capacity());
 }
 
-auto
-object::
-impl_type::
-bucket_end() const noexcept ->
-    value_type**
-{
-    return bucket_begin() + buckets();
-}
-
-
 //----------------------------------------------------------
 
 struct object::undo_construct
 {
     object* self;
+
+    explicit
+    undo_construct(
+        object* self_)
+        : self(self_)
+    {
+    }
 
     ~undo_construct()
     {
@@ -170,7 +167,7 @@ object(
     storage_ptr sp)
     : sp_(std::move(sp))
 {
-    undo_construct u{this};
+    undo_construct u(this);
     insert_range(
         first, last,
         min_capacity);

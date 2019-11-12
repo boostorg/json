@@ -160,14 +160,6 @@ public:
                 BEAST_EXPECT(o.size() == 0);
                 BEAST_EXPECT(o.capacity() >= 10);
             });
-
-        #ifndef BOOST_JSON_NO_MAX_ARRAY_SIZE
-            {
-                BEAST_THROWS(
-                    object(object::max_size()+1),
-                    std::length_error);
-            }
-        #endif
         }
 
         // object(InputIt, InputIt, size_type, storage_ptr)
@@ -224,28 +216,6 @@ public:
                 check(o, 7);
                 check_storage(o, sp);
             });
-        #ifndef BOOST_JSON_NO_MAX_ARRAY_SIZE
-            {
-                std::initializer_list<std::pair<
-                    string_view, value>> init = {
-                { "1", 1},{ "2", 2},{ "3", 3},{ "4", 4},{ "5", 5},
-                { "6", 6},{ "7", 7},{ "8", 8},{ "9", 9},{"10",10},
-                {"11",11},{"12",12},{"13",13},{"14",14},{"15",15},
-                {"16",16},{"17",17},{"18",18},{"19",19},{"10",10},
-                {"21",21},{"22",22},{"23",23},{"24",24},{"25",25},
-                {"26",26},{"27",27},{"28",28},{"29",29},{"30",30},
-                {"31",31}};
-                BEAST_EXPECT(init.size() > object::max_size());
-                BEAST_THROWS(
-                    object(init.begin(), init.end()),
-                    std::length_error);
-                BEAST_THROWS(
-                    object(
-                        make_input_iterator(init.begin()),
-                        make_input_iterator(init.end())),
-                    std::length_error);
-            }
-        #endif
         }
 
         // object(object&&)
@@ -705,15 +675,28 @@ public:
         }
 
         // insert(initializer_list)
-        fail_loop([&](storage_ptr const& sp)
         {
-            object o(sp);
-            o.emplace("a", 1);
-            o.insert({
-                { "b", true },
-                { "c", "hello" }});
-            check(o, 3);
-        });
+            fail_loop([&](storage_ptr const& sp)
+            {
+                object o(sp);
+                o.emplace("a", 1);
+                o.insert({
+                    { "b", true },
+                    { "c", "hello" }});
+                check(o, 3);
+            });
+
+            // do rollback in ~undo_insert
+            fail_loop([&](storage_ptr const& sp)
+            {
+                std::string const big(
+                    string().capacity() + 1, '*');
+                string_view const sv(big);
+                object o(sp);
+                o.insert({
+                    { "a", { 1, 2, 3, 4 } } });
+            });
+        }
 
         // insert_or_assign(key, o);
         {

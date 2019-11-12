@@ -113,7 +113,7 @@ private:
     std::size_t
     max_size() noexcept
     {
-        return std::size_t(-1);
+        return BOOST_JSON_MAX_STACK_SIZE;
     }
 
     BOOST_JSON_DECL

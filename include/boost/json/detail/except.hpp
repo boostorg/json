@@ -18,10 +18,34 @@ namespace detail {
 
 inline
 std::length_error
+object_too_large_exception() noexcept
+{
+    return std::length_error(
+        "object too large");
+}
+
+inline
+std::length_error
+array_too_large_exception() noexcept
+{
+    return std::length_error(
+        "array too large");
+}
+
+inline
+std::length_error
 string_too_large_exception() noexcept
 {
     return std::length_error(
         "string too large");
+}
+
+inline
+std::out_of_range
+string_pos_too_large() noexcept
+{
+    return std::out_of_range(
+        "pos > size()");
 }
 
 inline
@@ -30,14 +54,6 @@ key_too_large_exception() noexcept
 {
     return std::length_error(
         "key too large");
-}
-
-inline
-std::length_error
-object_too_large_exception() noexcept
-{
-    return std::length_error(
-        "object too large");
 }
 
 inline

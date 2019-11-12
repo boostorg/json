@@ -248,21 +248,16 @@ emplace(Args&&... args)
             ~U(){}
         };
         U u;
+        // perform stack reallocation up-front
+        // VFALCO This is more than we need
+        rs_.prepare(sizeof(u.v));
         std::size_t key_size;
         pop(key_size);
-        // remember the offset in case
-        // the stack is reallocated.
-        auto const offset =
-            rs_.pop(key_size) -
-            rs_.begin();
+        auto const key =
+            pop_chars(key_size);
         st_ = state::obj;
-        // prevent splits from exceptions
-        rs_.prepare(2 * sizeof(u.v));
         ::new(&u.v) object::value_type(
-            string_view(
-                rs_.begin() + offset,
-                key_size),
-            std::forward<Args>(args)...);
+            key, std::forward<Args>(args)...);
         rs_.subtract(sizeof(u.v));
         push(u.v);
         rs_.add(sizeof(u.v));
