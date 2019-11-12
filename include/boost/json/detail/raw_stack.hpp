@@ -48,13 +48,19 @@ public:
         return size_ == 0;
     }
 
+    char*
+    begin() noexcept
+    {
+        return base_;
+    }
+
     void
     clear() noexcept
     {
         size_ = 0;
     }
 
-    void*
+    char*
     push(std::size_t n)
     {
         prepare(n);
@@ -63,7 +69,7 @@ public:
         return p;
     }
 
-    void*
+    char*
     pop(std::size_t n) noexcept
     {
         BOOST_JSON_ASSERT(

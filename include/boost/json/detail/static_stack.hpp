@@ -37,8 +37,13 @@ class static_stack
 public:
     using value_type = T;
 
-    BOOST_JSON_DECL
-    ~static_stack();
+    ~static_stack()
+    {
+        if(begin_ != t_)
+            sp_->deallocate(begin_,
+                capacity() * sizeof(T),
+                alignof(T));
+    }
 
     explicit
     static_stack(
@@ -122,17 +127,36 @@ private:
         return end_ - begin_;
     }
 
-    BOOST_JSON_DECL
     void
-    grow();
+    grow()
+    {
+        auto const n = 2 * capacity();
+        auto const begin =
+            reinterpret_cast<T*>(
+                sp_->allocate(
+                    n * sizeof(T),
+                    alignof(T)));
+        if(! empty())
+        {
+            std::memcpy(begin, begin_,
+                size() * sizeof(T));
+            top_ = begin + (top_ - begin_);
+            if(begin_ != t_)
+                sp_->deallocate(begin_,
+                    capacity() * sizeof(T),
+                    alignof(T));
+        }
+        else
+        {
+            top_ = begin;
+        }
+        begin_ = begin;
+        end_ = begin_ + n;
+    }
 };
 
 } // detail
 } // json
 } // boost
-
-#ifdef BOOST_JSON_HEADER_ONLY
-#include <boost/json/detail/static_stack.ipp>
-#endif
 
 #endif

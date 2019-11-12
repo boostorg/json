@@ -331,10 +331,6 @@ public:
     void
     run() override
     {
-        log <<
-            "sizeof(number_parser) == " <<
-            sizeof(number_parser) <<
-            std::endl;
         testParse();
         testMembers();
     }

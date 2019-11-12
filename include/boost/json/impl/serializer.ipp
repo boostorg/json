@@ -93,7 +93,7 @@ is_done() const noexcept
 
 std::size_t
 serializer::
-next(char* dest, std::size_t size)
+read(char* dest, std::size_t size)
 {
     static constexpr char hex[] = "0123456789abcdef";
     static constexpr char esc[] =
@@ -370,7 +370,7 @@ loop_str:
                 std::memcpy(p, ss, n);
                 ss = s;
                 p += n;
-                *p++ = ch;
+                //*p++ = ch;
                 *p++ = '\\';
                 *p++ = c;
                 if(c != 'u')
@@ -505,7 +505,7 @@ to_string(
             s.reserve(s.capacity() + 1);
         s.grow(static_cast<
             string::size_type>(
-            sr.next(s.data() + s.size(),
+            sr.read(s.data() + s.size(),
                 s.capacity() - s.size())));
     }
     return s;
@@ -519,7 +519,7 @@ operator<<(std::ostream& os, value const& jv)
     {
         char buf[4096];
         auto const n =
-            sr.next(buf, sizeof(buf));
+            sr.read(buf, sizeof(buf));
         os.write(buf, n);
     }
     return os;

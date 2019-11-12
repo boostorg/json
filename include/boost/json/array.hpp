@@ -32,7 +32,7 @@ to_string_test(
 class unchecked_array
 {
     value* data_;
-    unsigned long size_;
+    std::size_t size_;
     storage_ptr const& sp_;
 
 public:
@@ -41,7 +41,7 @@ public:
 
     unchecked_array(
         value* data,
-        unsigned long size,
+        std::size_t size,
         storage_ptr const& sp) noexcept
         : data_(data)
         , size_(size)
@@ -64,7 +64,7 @@ public:
         return sp_;
     }
 
-    unsigned long
+    std::size_t
     size() const noexcept
     {
         return size_;
@@ -128,13 +128,13 @@ class array
 {
 public:
     /// The type used to represent unsigned integers
-    using size_type = unsigned long;
+    using size_type = std::size_t;
 
     /// The type of each element
     using value_type = value;
 
     /// The type used to represent signed integers
-    using difference_type = long;
+    using difference_type = std::ptrdiff_t;
 
     /// A reference to an element
     using reference = value&;
@@ -245,7 +245,7 @@ public:
     */
     BOOST_JSON_DECL
     array(
-        size_type count,
+        std::size_t count,
         value const& v,
         storage_ptr sp = {});
 
@@ -273,7 +273,7 @@ public:
     */
     BOOST_JSON_DECL
     array(
-        size_type count,
+        std::size_t count,
         storage_ptr sp = {});
 
     /** Construct a container with the contents of a range
@@ -609,7 +609,7 @@ public:
     */
     inline
     reference
-    at(size_type pos);
+    at(std::size_t pos);
 
     /** Access an element, with bounds checking
 
@@ -628,7 +628,7 @@ public:
     */
     inline
     const_reference
-    at(size_type pos) const;
+    at(std::size_t pos) const;
 
     /** Access an element
 
@@ -647,7 +647,7 @@ public:
     */
     inline
     reference
-    operator[](size_type pos) noexcept;
+    operator[](std::size_t pos) noexcept;
 
     /** Access an element
 
@@ -666,7 +666,7 @@ public:
     */
     inline
     const_reference
-    operator[](size_type pos) const noexcept;
+    operator[](std::size_t pos) const noexcept;
 
     /** Access the first element
 
@@ -974,7 +974,7 @@ public:
 
         Constant.
     */
-    size_type
+    std::size_t
     size() const noexcept
     {
         return impl_.size;
@@ -993,7 +993,7 @@ public:
     */
     static
     constexpr
-    size_type
+    std::size_t
     max_size() noexcept
     {
         return BOOST_JSON_MAX_ARRAY_SIZE;
@@ -1008,7 +1008,7 @@ public:
 
         Constant.
     */
-    size_type
+    std::size_t
     capacity() const noexcept
     {
         return impl_.capacity;
@@ -1046,7 +1046,7 @@ public:
     */
     BOOST_JSON_FORCEINLINE
     void
-    reserve(size_type new_capacity)
+    reserve(std::size_t new_capacity)
     {
         // never shrink
         if(new_capacity <= impl_.capacity)
@@ -1201,7 +1201,7 @@ public:
     iterator
     insert(
         const_iterator pos,
-        size_type count,
+        std::size_t count,
         value const& v);
 
     /** Insert elements before the specified location
@@ -1519,7 +1519,7 @@ public:
     */
     BOOST_JSON_DECL
     void
-    resize(size_type count);
+    resize(std::size_t count);
 
     /** Change the number of elements stored
 
@@ -1552,7 +1552,7 @@ public:
     BOOST_JSON_DECL
     void
     resize(
-        size_type count,
+        std::size_t count,
         value const& v);
 
     /** Swap the contents
@@ -1593,8 +1593,8 @@ private:
     struct impl_type
     {
         value* vec = nullptr;
-        size_type size = 0;
-        size_type capacity = 0;
+        std::uint32_t size = 0;
+        std::uint32_t capacity = 0;
 
         impl_type() = default;
         impl_type(impl_type const&) = default;
@@ -1603,7 +1603,7 @@ private:
 
         inline
         impl_type(
-            size_type capacity,
+            std::size_t capacity,
             storage_ptr const& sp);
 
         inline
@@ -1612,7 +1612,7 @@ private:
             impl_type&& other) noexcept;
 
         inline
-        size_type
+        std::size_t
         index_of(value const*) const noexcept;
 
         inline
@@ -1678,7 +1678,7 @@ private:
 
     BOOST_JSON_DECL
     void
-    reserve_impl(size_type capacity);
+    reserve_impl(std::size_t capacity);
 
     BOOST_JSON_DECL
     static
@@ -1686,7 +1686,7 @@ private:
     relocate(
         value* dest,
         value* src,
-        size_type n) noexcept;
+        std::size_t n) noexcept;
 
     class undo_create;
     class undo_assign;

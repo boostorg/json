@@ -49,6 +49,7 @@ add_executable (json-tests
     ryu/d2s_intrinsics_test.cpp
     ryu/d2s_table_test.cpp
     ryu/d2s_test.cpp
+    ryu/gtest.hpp
 )
 
 add_test(json-tests json-tests)

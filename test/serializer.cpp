@@ -14,200 +14,16 @@
 #include <boost/beast/_experimental/unit_test/suite.hpp>
 #include "parse-vectors.hpp"
 
-#define SOFT_FAIL
+#include "test.hpp"
 
 namespace boost {
 namespace json {
 
-static
-void
-print(
-    std::ostream& os,
-    json::value const& jv);
-
-static
-void
-print(
-    std::ostream& os,
-    object const& obj)
-{
-    os << "{";
-    for(auto it = obj.begin();
-        it != obj.end(); ++it)
-    {
-        if(it != obj.begin())
-            os << ",";
-        os << "\"" << it->key() << "\":";
-        print(os, it->value());
-    }
-    os << "}";
-}
-
-static
-void
-print(
-    std::ostream& os,
-    array const& arr)
-{
-    os << "[";
-    for(auto it = arr.begin();
-        it != arr.end(); ++it)
-    {
-        if(it != arr.begin())
-            os << ",";
-        print(os, *it);
-    }
-    os << "]";
-}
-
-static
-void
-print(
-    std::ostream& os,
-    json::value const& jv)
-{
-    switch(jv.kind())
-    {
-    case kind::object:
-        print(os, jv.get_object());
-        break;
-    case kind::array:
-        print(os, jv.get_array());
-        break;
-    case kind::string:
-        os << "\"" << jv.get_string() << "\"";
-        break;
-    case kind::int64:
-        os << jv.as_int64();
-        break;
-    case kind::uint64:
-        os << jv.as_uint64();
-        break;
-    case kind::double_:
-        os << jv.as_double();
-        break;
-    case kind::boolean:
-        if(jv.as_bool())
-            os << "true";
-        else
-            os << "false";
-        break;
-    case kind::null:
-        os << "null";
-        break;
-    }
-}
-
 class serializer_test : public beast::unit_test::suite
 {
 public:
-    static
-    unsigned
-    common(
-        string_view s1,
-        string_view s2)
-    {
-        unsigned n = 0;
-        auto p1 = s1.data();
-        auto p2 = s2.data();
-        auto end = s1.size() > s2.size() ?
-            s2.end() : s1.end();
-        while(p1 < end)
-        {
-            ++n;
-            if(*p1++ != *p2++)
-                break;
-        }
-        return n;
-    }
-
     void
-    round_trip(
-        string_view name,
-        string_view s0)
-    {
-        error_code ec;
-        auto jv0 = parse(s0, ec);
-    #ifdef SOFT_FAIL
-        if(ec)
-            return;
-    #else
-        if( ! BEAST_EXPECTS(
-            ! ec, ec.message()))
-            return;
-    #endif
-        auto s1 = to_string(jv0);
-        parser p;
-        p.start();
-        auto n = p.write(
-            s1.data(), s1.size(), ec);
-    #ifdef SOFT_FAIL
-        if(ec)
-    #else
-        if( ! BEAST_EXPECTS(
-            ! ec, ec.message()))
-    #endif
-        {
-            auto c1 = s1.data() + n;
-            if( n > 60)
-                n = 60;
-            auto c0 = c1 - n;
-            log <<
-                "context\n"
-                "  " << string_view(c0, c1-c0) << std::endl;
-            log <<
-                name << "\n"
-                "  " << s0 << "\n"
-                "  " << s1 << std::endl << std::endl;
-            return;
-        }
-        auto jv1 = p.release();
-        auto s2 = to_string(jv1);
-    #ifdef SOFT_FAIL
-        if(s1 != s2)
-    #else
-        if(! BEAST_EXPECT(s1 == s2))
-    #endif
-        {
-            auto c = common(s1, s2);
-            log <<
-                name << "\n"
-                "  " << s0 << "\n"
-                "  " << s1.substr(0, c) << "\n"
-                "  " << s2.substr(0, c) << std::endl << std::endl;
-        }
-    }
-
-    void
-    print_grind(
-        string_view name,
-        json::value const& jv)
-    {
-        auto const s0 = to_string(jv);
-        log << s0 << std::endl;
-        round_trip(name, s0);
-        for(std::size_t i = 1;
-            i < s0.size() - 1; ++i)
-        {
-            std::string s;
-            s.resize(s0.size());
-            serializer sr(jv);
-            auto const n1 =
-                sr.next(&s[0], i);
-            if(BEAST_EXPECT(n1 == i))
-                sr.next(
-                    &s[n1], s.size() - n1);
-            if(! BEAST_EXPECT(s == s0))
-            {
-                log <<
-                    "  " << s0 << "\n"
-                    "  " << s << std::endl << std::endl;
-            }
-        }
-    }
-
-    void
-    testSerializer()
+    testMembers()
     {
         value jv;
 
@@ -222,11 +38,11 @@ public:
             BEAST_EXPECT(! sr.is_done());
         }
 
-        // next()
+        // read()
         {
             serializer sr(jv);
             char buf[1024];
-            auto n = sr.next(
+            auto n = sr.read(
                 buf, sizeof(buf));
             BEAST_EXPECT(sr.is_done());
             BEAST_EXPECT(string_view(
@@ -235,114 +51,356 @@ public:
     }
 
     void
-    testRoundTrips()
+    grind_one(
+        string_view s,
+        value const& jv,
+        string_view name = {})
     {
+        error_code ec;
+        auto const s1 = to_string(jv);
+        auto const jv2 = parse(s1, ec);
+        if(! BEAST_EXPECT(equal(jv, jv2)))
+        {
+            if(name.empty())
+                log <<
+                    " " << s << "\n"
+                    " " << s1 <<
+                    std::endl;
+            else
+                log << name << ":\n"
+                    " " << s << "\n"
+                    " " << s1 <<
+                    std::endl;
+        }
+    }
+
+    void
+    grind(
+        string_view s0,
+        value const& jv,
+        string_view name = {})
+    {
+        grind_one(s0, jv, name);
+
+        auto const s1 =
+            to_string(jv);
+        for(std::size_t i = 1;
+            i < s1.size(); ++i)
+        {
+            serializer sr(jv);
+            string s2;
+            s2.reserve(s1.size());
+            s2.grow(sr.read(
+                s2.data(), i));
+            auto const dump =
+            [&]
+            {
+                if(name.empty())
+                    log <<
+                        " " << s0 << "\n"
+                        " " << s1 << "\n"
+                        " " << s2 << std::endl;
+                else
+                    log << name << ":\n"
+                        " " << s0 << "\n"
+                        " " << s1 << "\n"
+                        " " << s2 << std::endl;
+            };
+            if(! BEAST_EXPECT(
+                s2.size() == i))
+            {
+                dump();
+                break;
+            }
+            s2.grow(sr.read(
+                s2.data() + i,
+                s1.size() - i));
+            if(! BEAST_EXPECT(
+                s2.size() == s1.size()))
+            {
+                dump();
+                break;
+            }
+            if(! BEAST_EXPECT(s2 == s1))
+            {
+                dump();
+                break;
+            }
+        }
+    }
+
+    void
+    check(
+        string_view s,
+        string_view name = {})
+    {
+        auto const jv = parse(s);
+        grind(s, jv, name);
+    }
+
+    void
+    testObject()
+    {
+        check("{}");
+        check("{\"x\":1}");
+        check("{\"x\":[]}");
+        check("{\"x\":1,\"y\":null}");
+    }
+
+    void
+    testArray()
+    {
+        check("[]");
+        check("[[]]");
+        check("[[],[],[]]");
+        check("[[[[[[[[[[]]]]]]]]]]");
+        check("[{}]");
+        check("[{},{}]");
+        check("[1,2,3,4,5]");
+        check("[true,false,null]");
+    }
+
+    void
+    testString()
+    {
+        check("\"\"");
+        check("\"x\"");
+        check("\"xyz\"");
+        check("\"x z\"");
+
+        // escapes
+        check("\"\\\"\"");  // double quote
+        check("\"\\\\\"");  // backslash
+        check("\"\\b\"");   // backspace
+        check("\"\\f\"");   // formfeed
+        check("\"\\n\"");   // newline
+        check("\"\\r\"");   // carriage return
+        check("\"\\t\"");   // horizontal tab
+
+        // contro\l characters
+        check("\"\\u0000\"");
+        check("\"\\u0001\"");
+        check("\"\\u0002\"");
+        check("\"\\u0003\"");
+        check("\"\\u0004\"");
+        check("\"\\u0005\"");
+        check("\"\\u0006\"");
+        check("\"\\u0007\"");
+        check("\"\\u0008\"");
+        check("\"\\u0009\"");
+        check("\"\\u000a\"");
+        check("\"\\u000b\"");
+        check("\"\\u000c\"");
+        check("\"\\u000d\"");
+        check("\"\\u000e\"");
+        check("\"\\u000f\"");
+        check("\"\\u0010\"");
+        check("\"\\u0011\"");
+        check("\"\\u0012\"");
+        check("\"\\u0013\"");
+        check("\"\\u0014\"");
+        check("\"\\u0015\"");
+        check("\"\\u0016\"");
+        check("\"\\u0017\"");
+        check("\"\\u0018\"");
+        check("\"\\u0019\"");
+        check("\"\\u0020\"");
+        check("\"\\u0021\"");
+    }
+
+    void
+    testNumber()
+    {
+        // VFALCO These don't perfectly round-trip,
+        // because the representations are not exact.
+        // The test needs to do a better job of comparison.
+
+        check("-999999999999999999999");
+        check("-100000000000000000009");
+        check("-10000000000000000000");
+        //check("-9223372036854775809");
+        check("-9223372036854775808");
+        check("-9223372036854775807");
+        check("-999999999999999999");
+        check("-99999999999999999");
+        check("-9999999999999999");
+        check("-999999999999999");
+        check("-99999999999999");
+        check("-9999999999999");
+        check("-999999999999");
+        check("-99999999999");
+        check("-9999999999");
+        check("-999999999");
+        check("-99999999");
+        check("-9999999");
+        check("-999999");
+        check("-99999");
+        check("-9999");
+        check("-999");
+        check("-99");
+        check("-9");
+        check( "0");
+        check( "9");
+        check( "99");
+        check( "999");
+        check( "9999");
+        check( "99999");
+        check( "999999");
+        check( "9999999");
+        check( "99999999");
+        check( "999999999");
+        check( "9999999999");
+        check( "99999999999");
+        check( "999999999999");
+        check( "9999999999999");
+        check( "99999999999999");
+        check( "999999999999999");
+        check( "9999999999999999");
+        check( "99999999999999999");
+        check( "999999999999999999");
+        check( "9223372036854775807");
+        check( "9223372036854775808");
+        check( "9999999999999999999");
+        check( "18446744073709551615");
+        //check( "18446744073709551616");
+        check( "99999999999999999999");
+        check( "999999999999999999999");
+        check( "1000000000000000000000");
+        check( "9999999999999999999999");
+        check( "99999999999999999999999");
+
+        //check("-0.9999999999999999999999");
+        check("-0.9999999999999999");
+        //check("-0.9007199254740991");
+        //check("-0.999999999999999");
+        //check("-0.99999999999999");
+        //check("-0.9999999999999");
+        //check("-0.999999999999");
+        //check("-0.99999999999");
+        //check("-0.9999999999");
+        //check("-0.999999999");
+        //check("-0.99999999");
+        //check("-0.9999999");
+        //check("-0.999999");
+        //check("-0.99999");
+        //check("-0.9999");
+        //check("-0.8125");
+        //check("-0.999");
+        //check("-0.99");
+        check("-1.0");
+        check("-0.9");
+        check("-0.0");
+        check( "0.0");
+        check( "0.9");
+        //check( "0.99");
+        //check( "0.999");
+        //check( "0.8125");
+        //check( "0.9999");
+        //check( "0.99999");
+        //check( "0.999999");
+        //check( "0.9999999");
+        //check( "0.99999999");
+        //check( "0.999999999");
+        //check( "0.9999999999");
+        //check( "0.99999999999");
+        //check( "0.999999999999");
+        //check( "0.9999999999999");
+        //check( "0.99999999999999");
+        //check( "0.999999999999999");
+        //check( "0.9007199254740991");
+        check( "0.9999999999999999");
+        //check( "0.9999999999999999999999");
+        //check( "0.999999999999999999999999999");
+
+        check("-1e308");
+        check("-1e-308");
+        //check("-9999e300");
+        //check("-999e100");
+        //check("-99e10");
+        check("-9e1");
+        check( "9e1");
+        //check( "99e10");
+        //check( "999e100");
+        //check( "9999e300");
+        check( "999999999999999999.0");
+        check( "999999999999999999999.0");
+        check( "999999999999999999999e5");
+        check( "999999999999999999999.0e5");
+
+        check("-1e-1");
+        check("-1e0");
+        check("-1e1");
+        check( "0e0");
+        check( "1e0");
+        check( "1e10");
+    }
+
+    void
+    testScalar()
+    {
+        check("true");
+        check("false");
+        check("null");
+    }
+
+    void
+    testVectors()
+    {
+#if 0
+        check(
+            R"xx({
+                "glossary": {
+                    "title": "example glossary",
+		            "GlossDiv": {
+                        "title": "S",
+			            "GlossList": {
+                            "GlossEntry": {
+                                "ID": "SGML",
+					            "SortAs": "SGML",
+					            "GlossTerm": "Standard Generalized Markup Language",
+					            "Acronym": "SGML",
+					            "Abbrev": "ISO 8879:1986",
+					            "GlossDef": {
+                                    "para": "A meta-markup language, used to create markup languages such as DocBook.",
+						            "GlossSeeAlso": ["GML", "XML"]
+                                },
+					            "GlossSee": "markup"
+                            }
+                        }
+                    }
+                }
+            })xx");
+#endif
+
         parse_vectors const pv;
         for(auto const e : pv)
         {
             if(e.result != 'y')
                 continue;
-
-            round_trip(e.name, e.text);
-        }
-    }
-
-    bool
-    good(string_view s)
-    {
-        error_code ec;
-        auto jv = parse(s, ec);
-        return !ec;
-    }
-
-    template<std::size_t N>
-    void
-    tv(char const (&s)[N])
-    {
-        round_trip(
-            "",
-            string_view(s, N - 1));
-    }
-
-    void
-    doTestStrings()
-    {
-        tv(R"("")");
-        tv(R"("x")");
-        tv(R"("xyz")");
-        tv(R"("x z")");
-        tv(R"("\"")");
-        tv(R"("\\")");
-        tv(R"("\/")");
-        tv(R"("\b")");
-        tv(R"("\f")");
-        tv(R"("\n")");
-        tv(R"("\r")");
-        tv(R"("\t")");
-        tv(R"("\u0000")");
-        tv(R"("\u0001")");
-        tv(R"("\u0002")");
-        tv(R"("\u0003")");
-        tv(R"("\u0004")");
-        tv(R"("\u0005")");
-        tv(R"("\u0006")");
-        tv(R"("\u0007")");
-        tv(R"("\u0008")");
-        tv(R"("\u0009")");
-        tv(R"("\u000a")");
-        tv(R"("\u000b")");
-        tv(R"("\u000c")");
-        tv(R"("\u000d")");
-        tv(R"("\u000e")");
-        tv(R"("\u000f")");
-        tv(R"("\u0010")");
-        tv(R"("\u0011")");
-        tv(R"("\u0012")");
-        tv(R"("\u0013")");
-        tv(R"("\u0014")");
-        tv(R"("\u0015")");
-        tv(R"("\u0016")");
-        tv(R"("\u0017")");
-        tv(R"("\u0018")");
-        tv(R"("\u0019")");
-        tv(R"("\u0020")");
-        tv(R"("\u0020")");
-
-        tv(R"(0)");
-        tv(R"(-0)");
-        tv(R"(1)");
-        tv(R"(-1)");
-        tv(R"(99999)");
-        tv(R"(-99999)");
-
-        tv(R"(true)");
-        tv(R"(false)");
-
-        tv(R"(null)");
-    }
-
-    void
-    doTestVectors()
-    {
-        parse_vectors const pv;
-        for(auto const e : pv)
-        {
-            if( e.result == 'y' ||
-                good(e.text))
-            {
-                //log << i++ << " " << e.text << std::endl;
-                round_trip(e.name, e.text);
-            }
+            // skip these failures for now
+            if(
+                e.name == "number" ||
+                e.name == "number_real_exponent" ||
+                e.name == "number_real_fraction_exponent" ||
+                e.name == "number_simple_real" ||
+                e.name == "object_extreme_numbers" ||
+                e.name == "pass01"
+                )
+                continue;
+            check(e.text, e.name);
         }
     }
 
     void
     run()
     {
-        //testSerializer();
-        doTestStrings();
-        //doTestVectors();
-        pass();
+        testMembers();
+        testObject();
+        testArray();
+        testString();
+        testNumber();
+        testScalar();
+        testVectors();
     }
 };
 

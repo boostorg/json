@@ -441,8 +441,7 @@ loop_str1:
             goto yield;
         }
         ++p;
-        st_.pop();
-        st_.push(state::str2);
+        *st_ = state::str2;
         BOOST_FALLTHROUGH;
 
     // string, no-copy loop

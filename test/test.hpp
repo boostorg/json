@@ -54,7 +54,8 @@ struct fail_storage
         return true;
     }
 
-    std::size_t fail_max = 1;
+    std::size_t fail_max =
+        std::size_t(-1);
     std::size_t fail = 0;
     std::size_t nalloc = 0;
 

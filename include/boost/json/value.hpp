@@ -1848,7 +1848,7 @@ private:
 class unchecked_object
 {
     object::value_type* data_;
-    unsigned long size_;
+    std::size_t size_;
     storage_ptr const& sp_;
 
 public:
@@ -1857,7 +1857,7 @@ public:
 
     unchecked_object(
         object::value_type* data,
-        unsigned long size,
+        std::size_t size,
         storage_ptr const& sp) noexcept
         : data_(data)
         , size_(size)
@@ -1880,7 +1880,7 @@ public:
         return sp_;
     }
 
-    unsigned long
+    std::size_t
     size() const noexcept
     {
         return size_;

@@ -71,32 +71,6 @@ public:
             string().capacity());
     }
 
-    void
-    testCustomTypes()
-    {
-        using namespace value_test_ns;
-
-        // to_json
-        {
-            T1 t;
-            value jv(t);
-        }
-        {
-            T2 t;
-            value jv(t);
-        }
-        {
-            T3 t;
-            value jv(t);
-        }
-    }
-
-    BOOST_JSON_STATIC_ASSERT(
-        detail::is_range<std::vector<int>>::value);
-
-    BOOST_JSON_STATIC_ASSERT(
-        detail::is_range<std::initializer_list<int>>::value);
-
     //------------------------------------------------------
 
     void
@@ -1443,30 +1417,46 @@ public:
         }
     }
 
+    //------------------------------------------------------
+
+    void
+    testCustomTypes()
+    {
+        using namespace value_test_ns;
+
+        // to_json
+        {
+            T1 t;
+            value jv(t);
+        }
+        {
+            T2 t;
+            value jv(t);
+        }
+        {
+            T3 t;
+            value jv(t);
+        }
+    }
+
+    BOOST_JSON_STATIC_ASSERT(
+        detail::is_range<std::vector<int>>::value);
+
+    BOOST_JSON_STATIC_ASSERT(
+        detail::is_range<std::initializer_list<int>>::value);
+
+    //------------------------------------------------------
+
     void
     run() override
     {
-        log <<
-            "sizeof(value)  == " <<
-            sizeof(value) << "\n";
-        log <<
-            "sizeof(object) == " <<
-            sizeof(object) << "\n";
-        log <<
-            "sizeof(array)  == " <<
-            sizeof(array) << "\n";
-        log <<
-            "sizeof(string) == " <<
-            sizeof(string) << "\n";
-        
-        testCustomTypes();
-
         testConstruction();
         testConversion();
         testModifiers();
         testExchange();
         testObservers();
         testAccessors();
+        testCustomTypes();
     }
 };
 

@@ -25,7 +25,7 @@ grow(std::size_t n)
     if(n > max_size() - size_)
         BOOST_JSON_THROW(
             stack_overflow_exception());
-    auto new_capacity = size_ + n;
+    auto new_capacity = capacity_ + n;
     if( new_capacity < min_capacity_)
         new_capacity = min_capacity_;
     // 2x growth

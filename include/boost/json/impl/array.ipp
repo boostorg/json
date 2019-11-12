@@ -11,8 +11,9 @@
 #define BOOST_JSON_IMPL_ARRAY_IPP
 
 #include <boost/json/array.hpp>
-#include <boost/json/detail/exchange.hpp>
 #include <boost/json/detail/assert.hpp>
+#include <boost/json/detail/except.hpp>
+#include <boost/json/detail/exchange.hpp>
 #include <boost/pilfer.hpp>
 #include <cstdlib>
 #include <limits>
@@ -27,13 +28,12 @@ namespace json {
 array::
 impl_type::
 impl_type(
-    size_type capacity_,
+    std::size_t capacity_,
     storage_ptr const& sp)
 {
-    // The choice of minimum capacity
-    // affects the speed of parsing.
-//    if( capacity_ < min_capacity_)
-//        capacity_ = min_capacity_;
+    if(capacity_ > max_size())
+        BOOST_JSON_THROW(
+            detail::object_too_large_exception());
     if(capacity_ > 0)
         vec = reinterpret_cast<value*>(
             sp->allocate(
@@ -41,7 +41,8 @@ impl_type(
                 alignof(value)));
     else
         vec = nullptr;
-    capacity = capacity_;
+    capacity = static_cast<
+        std::uint32_t>(capacity_);
     size = 0;
 }
 
@@ -133,10 +134,10 @@ array::
 undo_insert::
 undo_insert(
     value const* pos_,
-    unsigned long long n,
+    std::size_t n,
     array& self)
     : self_(self)
-    , n_(static_cast<size_type>(n))
+    , n_(static_cast<std::size_t>(n))
     , pos(self.impl_.index_of(pos_))
 {
     if(n > max_size())
@@ -149,7 +150,9 @@ undo_insert(
     it = self_.impl_.vec + pos;
     relocate(it + n_, it,
         self_.impl_.size - pos);
-    self_.impl_.size += n_;
+    self_.impl_.size = static_cast<
+        std::uint32_t>(
+            self_.impl_.size + n_);
 }
 
 array::
@@ -161,7 +164,9 @@ undo_insert::
         auto const first =
             self_.impl_.vec + pos;
         self_.destroy(first, it);
-        self_.impl_.size -= n_;
+        self_.impl_.size = static_cast<
+            std::uint32_t>(
+                self_.impl_.size - n_);
         relocate(
             first, first + n_,
             self_.impl_.size - pos);
@@ -182,7 +187,7 @@ array(storage_ptr sp) noexcept
 
 array::
 array(
-    size_type count,
+    std::size_t count,
     value const& v,
     storage_ptr sp)
     : sp_(std::move(sp))
@@ -201,7 +206,7 @@ array(
 
 array::
 array(
-    size_type count,
+    std::size_t count,
     storage_ptr sp)
     : sp_(std::move(sp))
 {
@@ -286,7 +291,8 @@ array(unchecked_array&& ua)
     : sp_(ua.get_storage())
     , impl_(ua.size(), sp_) // exact
 {
-    impl_.size = ua.size();
+    impl_.size = static_cast<
+        std::uint32_t>(ua.size());
     ua.relocate(impl_.vec);
 }
 
@@ -390,7 +396,7 @@ auto
 array::
 insert(
     const_iterator pos,
-    size_type count,
+    std::size_t count,
     value const& v) ->
         iterator
 {
@@ -409,7 +415,7 @@ insert(
         iterator
 {
     undo_insert u(pos,
-        static_cast<size_type>(
+        static_cast<std::size_t>(
             init.size()), *this);
     for(auto const& v : init)
         u.emplace(v);
@@ -439,14 +445,15 @@ erase(
         iterator
 {
     auto const n = static_cast<
-        size_type>(last - first);
+        std::size_t>(last - first);
     auto const p =
         impl_.vec + impl_.index_of(first);
     destroy(p, p + n);
     relocate(p, p + n,
         impl_.size -
             impl_.index_of(last));
-    impl_.size -= n;
+    impl_.size = static_cast<
+        std::uint32_t>(impl_.size - n);
     return p;
 }
 
@@ -461,14 +468,15 @@ pop_back() noexcept
 
 void
 array::
-resize(size_type count)
+resize(std::size_t count)
 {
     if(count <= impl_.size)
     {
         destroy(
             impl_.vec + count,
             impl_.vec + impl_.size);
-        impl_.size = count;
+        impl_.size = static_cast<
+            std::uint32_t>(count);
         return;
     }
 
@@ -479,13 +487,14 @@ resize(size_type count)
         impl_.vec + count;
     while(it != end)
         ::new(it++) value(sp_);
-    impl_.size = count;
+    impl_.size = static_cast<
+        std::uint32_t>(count);
 }
 
 void
 array::
 resize(
-    size_type count,
+    std::size_t count,
     value const& v)
 {
     if(count <= size())
@@ -493,7 +502,8 @@ resize(
         destroy(
             impl_.vec + count,
             impl_.vec + impl_.size);
-        impl_.size = count;
+        impl_.size = static_cast<
+            std::uint32_t>(count);
         return;
     }
 
@@ -523,7 +533,8 @@ resize(
         ++u.it;
     }
     while(u.it != end);
-    impl_.size = count;
+    impl_.size = static_cast<
+        std::uint32_t>(count);
     u.it = nullptr;
 }
 
@@ -597,7 +608,7 @@ copy(
             std::length_error(
                 "size > max_size()"));
     reserve(static_cast<
-        size_type>(init.size()));
+        std::size_t>(init.size()));
     for(auto const& v : init)
     {
         ::new(
@@ -609,7 +620,7 @@ copy(
 
 void
 array::
-reserve_impl(size_type capacity)
+reserve_impl(std::size_t capacity)
 {
     if(impl_.vec)
     {
@@ -638,7 +649,7 @@ array::
 relocate(
     value* dest,
     value* src,
-    size_type n) noexcept
+    std::size_t n) noexcept
 {
     if(n == 0)
         return;

@@ -446,8 +446,8 @@ main(
     {
         std::vector<std::unique_ptr<any_impl const>> vi;
         vi.reserve(10);
-        //vi.emplace_back(new boost_default_impl);
         //vi.emplace_back(new boost_vec_impl);
+        vi.emplace_back(new boost_default_impl);
         vi.emplace_back(new boost_impl);
         vi.emplace_back(new rapidjson_impl);
         //vi.emplace_back(new nlohmann_impl);

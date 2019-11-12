@@ -46,10 +46,10 @@ auto
 array::
 impl_type::
 index_of(value const* pos) const noexcept ->
-    size_type
+    std::size_t
 {
     return static_cast<
-        size_type>(pos - vec);
+        std::size_t>(pos - vec);
 }
 
 //----------------------------------------------------------
@@ -95,17 +95,17 @@ public:
 class array::undo_insert
 {
     array& self_;
-    size_type const n_;
+    std::size_t const n_;
 
 public:
     value* it;
-    size_type const pos;
+    std::size_t const pos;
     bool commit = false;
 
     BOOST_JSON_DECL
     undo_insert(
         value const* pos_,
-        unsigned long long n,
+        std::size_t n,
         array& self);
 
     BOOST_JSON_DECL
@@ -130,7 +130,7 @@ public:
 
 auto
 array::
-at(size_type pos) ->
+at(std::size_t pos) ->
     reference
 {
     if(pos >= impl_.size)
@@ -142,7 +142,7 @@ at(size_type pos) ->
 
 auto
 array::
-at(size_type pos) const ->
+at(std::size_t pos) const ->
     const_reference
 {
     if(pos >= impl_.size)
@@ -154,7 +154,7 @@ at(size_type pos) const ->
 
 auto
 array::
-operator[](size_type pos) noexcept ->
+operator[](std::size_t pos) noexcept ->
     reference
 {
     return impl_.vec[pos];
@@ -162,7 +162,7 @@ operator[](size_type pos) noexcept ->
 
 auto
 array::
-operator[](size_type pos) const noexcept ->
+operator[](std::size_t pos) const noexcept ->
 const_reference
 {
     return impl_.vec[pos];
@@ -432,7 +432,7 @@ array(
         BOOST_JSON_THROW(
             std::length_error(
                 "n > max_size"));
-    reserve(static_cast<size_type>(n));
+    reserve(static_cast<std::size_t>(n));
     while(impl_.size < n)
     {
         ::new(
@@ -484,7 +484,7 @@ insert(
             std::length_error(
                 "n > max_size"));
     undo_insert u(pos, static_cast<
-        size_type>(n), *this);
+        std::size_t>(n), *this);
     while(first != last)
         u.emplace(*first++);
     u.commit = true;

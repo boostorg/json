@@ -15,7 +15,7 @@
 
 #define TEST(s1,s2) \
 struct s2 ## s1 ## _test; \
-BEAST_DEFINE_TESTSUITE(boost,ryu,s2##s1); \
+BEAST_DEFINE_TESTSUITE(boost,Ryu,s2##s1); \
 struct s2 ## s1 ## _test : ::boost::beast::unit_test::suite { \
   void run() override; }; void s2##s1##_test::run()
 

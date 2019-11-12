@@ -66,7 +66,7 @@ class serializer
     };
 #endif
 
-    detail::static_stack<node, 50> stack_;
+    detail::static_stack<node, 16> stack_;
 
     string_view str_;
     unsigned char nbuf_;
@@ -91,7 +91,7 @@ public:
 
     BOOST_JSON_DECL
     std::size_t
-    next(char* dest, std::size_t size);
+    read(char* dest, std::size_t size);
 };
 
 BOOST_JSON_DECL

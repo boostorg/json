@@ -23,7 +23,7 @@ public:
     using init_list = std::initializer_list<value>;
 
     string_view const str_;
-    unsigned long min_capacity_;
+    std::size_t min_capacity_;
 
     array_test()
         : str_(

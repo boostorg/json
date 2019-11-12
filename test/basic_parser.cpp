@@ -513,10 +513,6 @@ public:
     void
     run() override
     {
-        log <<
-            "sizeof(basic_parser) == " <<
-            sizeof(basic_parser) << "\n";
-
         testObject();
         testArray();
         testString();

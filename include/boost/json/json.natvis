@@ -44,7 +44,7 @@
   </Type>
 
   <Type Name="boost::json::string">
-    <DisplayString>{{ {impl_.capacity>sizeof(impl_.buf)?impl_.p:impl_.buf,[impl_.size]s} }}</DisplayString>
+    <DisplayString>{impl_.capacity>sizeof(impl_.buf)?impl_.p:impl_.buf,[impl_.size]s}</DisplayString>
     <Expand>
       <Item Name="[capacity]">impl_.capacity</Item>
       <Item Name="[storage]">sp_</Item>

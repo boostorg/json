@@ -50,25 +50,23 @@ key
 
 enum class parser::state : char
 {
-    need_start,
-    begin,
+    need_start, // start() not called yet
+    begin,      // we have a storage_ptr
 
     // These states indicate what is
     // currently at top of the stack.
 
-    top,    // empty value
-    arr,    // empty array value
-    obj,    // empty object value
-    key,    // complete key
-    end     // final value
+    top,        // empty top value
+    arr,        // empty array value
+    obj,        // empty object value
+    key,        // complete key
+    end         // compelte top value
 };
 
 void
 parser::
 destroy() noexcept
 {
-    if(st_ == state::need_start)
-        return;
     if(key_size_ > 0)
     {
         // remove partial key
@@ -86,23 +84,26 @@ destroy() noexcept
         str_size_ = 0;
     }
     // unwind the rest
-    while(! rs_.empty())
+    do
     {
         switch(st_)
         {
+        case state::need_start:
+            BOOST_JSON_ASSERT(
+                rs_.empty());
+            break;
+
+        case state::begin:
+            BOOST_JSON_ASSERT(
+                rs_.empty());
+            break;
+
         case state::top:
             rs_.subtract(
                 sizeof(value));
-            break;
-
-        case state::end:
-        {
-            auto ua =
-                pop_array();
             BOOST_JSON_ASSERT(
-                ua.size() == 1);
+                rs_.empty());
             break;
-        }
 
         case state::arr:
         {
@@ -133,13 +134,20 @@ destroy() noexcept
             break;
         }
 
-        default:
-            // should never get here
+        case state::end:
+        {
+            auto ua =
+                pop_array();
+            BOOST_JSON_ASSERT(
+                ua.size() == 1);
             BOOST_JSON_ASSERT(
                 rs_.empty());
             break;
         }
+
+        }
     }
+    while(! rs_.empty());
 }
 
 parser::
@@ -170,6 +178,9 @@ clear() noexcept
     destroy();
     rs_.clear();
     basic_parser::reset();
+    count_ = 0;
+    key_size_ = 0;
+    str_size_ = 0;
     st_ = state::need_start;
     sp_ = {};
 }
@@ -178,22 +189,28 @@ value
 parser::
 release() noexcept
 {
-    BOOST_JSON_ASSERT(is_done());
-    BOOST_JSON_ASSERT(st_ == state::end);
-    auto ua = pop_array();
-    BOOST_JSON_ASSERT(rs_.empty());
-    union U
+    if(is_done())
     {
-        value v;
-        U(){}
-        ~U(){}
-    };
-    U u;
-    ua.relocate(&u.v);
-    basic_parser::reset();
-    st_ = state::need_start;
-    sp_ = {};
-    return std::move(u.v);
+        BOOST_JSON_ASSERT(st_ == state::end);
+        auto ua = pop_array();
+        BOOST_JSON_ASSERT(rs_.empty());
+        union U
+        {
+            value v;
+            U(){}
+            ~U(){}
+        };
+        U u;
+        ua.relocate(&u.v);
+        basic_parser::reset();
+        st_ = state::need_start;
+        sp_ = {};
+        return std::move(u.v);
+    }
+    // return null
+    value jv(std::move(sp_));
+    clear();
+    return jv;
 }
 
 //----------------------------------------------------------
@@ -233,13 +250,19 @@ emplace(Args&&... args)
         U u;
         std::size_t key_size;
         pop(key_size);
-        auto const key =
-            pop_chars(key_size);
+        // remember the offset in case
+        // the stack is reallocated.
+        auto const offset =
+            rs_.pop(key_size) -
+            rs_.begin();
         st_ = state::obj;
         // prevent splits from exceptions
         rs_.prepare(2 * sizeof(u.v));
         ::new(&u.v) object::value_type(
-            key, std::forward<Args>(args)...);
+            string_view(
+                rs_.begin() + offset,
+                key_size),
+            std::forward<Args>(args)...);
         rs_.subtract(sizeof(u.v));
         push(u.v);
         rs_.add(sizeof(u.v));
@@ -256,6 +279,7 @@ emplace(Args&&... args)
             ~U(){}
         };
         U u;
+        // prevent splits from exceptions
         rs_.prepare(2 * sizeof(value));
         ::new(&u.v) value(
             std::forward<Args>(args)...);
@@ -288,9 +312,7 @@ pop_object() noexcept
         object::value_type);
     return { reinterpret_cast<
         object::value_type*>(rs_.pop(n)),
-        // VFALCO bad narrowing
-        static_cast<std::uint32_t>(count_),
-        sp_ };
+        count_, sp_ };
 }
 
 unchecked_array
@@ -303,10 +325,7 @@ pop_array() noexcept
     auto const n =
         count_ * sizeof(value);
     return { reinterpret_cast<value*>(
-        rs_.pop(n)),
-        // VFALCO bad narrowing
-        static_cast<std::uint32_t>(count_),
-        sp_ };
+        rs_.pop(n)), count_, sp_ };
 }
 
 string_view

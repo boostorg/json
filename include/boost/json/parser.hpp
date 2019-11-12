@@ -33,9 +33,9 @@ class parser final
 
     storage_ptr sp_;
     detail::raw_stack rs_;
-    std::size_t count_;
-    std::size_t key_size_;
-    std::size_t str_size_;
+    std::size_t count_ = 0;
+    std::size_t key_size_ = 0;
+    std::size_t str_size_ = 0;
     state st_;
 
     inline
