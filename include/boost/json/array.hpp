@@ -176,7 +176,7 @@ public:
     */
     ~array()
     {
-        if( impl_.begin() &&
+        if( impl_.data() &&
             sp_->need_free())
             destroy();
     }
@@ -1592,9 +1592,13 @@ private:
 
     class impl_type
     {
-        value* vec_ = nullptr;
-        std::uint32_t size_ = 0;
-        std::uint32_t capacity_ = 0;
+        struct table
+        {
+            std::uint32_t size;
+            std::uint32_t capacity;
+        };
+
+        table* tab_ = nullptr;
 
     public:
         impl_type() = default;
@@ -1614,31 +1618,39 @@ private:
 
         inline
         value*
-        begin() const noexcept
+        data() const noexcept
         {
-            return vec_;
+            return tab_ ?
+                reinterpret_cast<
+                    value*>(tab_ + 1) :
+                nullptr;
         }
 
         inline
         std::size_t
         size() const noexcept
         {
-            return size_;
+            return tab_ ?
+                tab_->size : 0;
         }
 
         inline
         void
         size(std::size_t n) noexcept
         {
-            size_ = static_cast<
-                std::uint32_t>(n);
+            if(tab_)
+                tab_->size = static_cast<
+                    std::uint32_t>(n);
+            else
+                BOOST_JSON_ASSERT(n == 0);
         }
 
         inline
         std::size_t
         capacity() const noexcept
         {
-            return capacity_;
+            return tab_ ?
+                tab_->capacity : 0;
         }
 
         inline
@@ -1652,6 +1664,10 @@ private:
         inline
         void
         swap(impl_type& rhs) noexcept;
+
+        inline
+        void
+        destroy_impl(storage_ptr const& sp) noexcept;
 
         BOOST_JSON_DECL
         void

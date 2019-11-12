@@ -50,7 +50,7 @@ index_of(value const* pos) const noexcept ->
     std::size_t
 {
     return static_cast<
-        std::size_t>(pos - vec_);
+        std::size_t>(pos - data());
 }
 
 //----------------------------------------------------------
@@ -120,7 +120,7 @@ at(std::size_t pos) ->
         BOOST_JSON_THROW(
             std::out_of_range(
                 "bad array index"));
-    return impl_.begin()[pos];
+    return impl_.data()[pos];
 }
 
 auto
@@ -132,7 +132,7 @@ at(std::size_t pos) const ->
         BOOST_JSON_THROW(
             std::out_of_range(
                 "bad array index"));
-    return impl_.begin()[pos];
+    return impl_.data()[pos];
 }
 
 auto
@@ -140,7 +140,7 @@ array::
 operator[](std::size_t pos) noexcept ->
     reference
 {
-    return impl_.begin()[pos];
+    return impl_.data()[pos];
 }
 
 auto
@@ -148,7 +148,7 @@ array::
 operator[](std::size_t pos) const noexcept ->
 const_reference
 {
-    return impl_.begin()[pos];
+    return impl_.data()[pos];
 }
 
 auto
@@ -156,7 +156,7 @@ array::
 front() noexcept ->
     reference
 {
-    return *impl_.begin();
+    return *impl_.data();
 }
 
 auto
@@ -164,7 +164,7 @@ array::
 front() const noexcept ->
     const_reference
 {
-    return *impl_.begin();
+    return *impl_.data();
 }
 
 auto
@@ -172,7 +172,7 @@ array::
 back() noexcept ->
     reference
 {
-    return impl_.begin()[impl_.size() - 1];
+    return impl_.data()[impl_.size() - 1];
 }
 
 auto
@@ -180,7 +180,7 @@ array::
 back() const noexcept ->
     const_reference
 {
-    return impl_.begin()[impl_.size() - 1];
+    return impl_.data()[impl_.size() - 1];
 }
 
 auto
@@ -188,7 +188,7 @@ array::
 data() noexcept ->
     value*
 {
-    return impl_.begin();
+    return impl_.data();
 }
 
 auto
@@ -196,7 +196,7 @@ array::
 data() const noexcept ->
     value const*
 {
-    return impl_.begin();
+    return impl_.data();
 }
 
 //----------------------------------------------------------
@@ -210,7 +210,7 @@ array::
 begin() noexcept ->
     iterator
 {
-    return impl_.begin();
+    return impl_.data();
 }
 
 auto
@@ -218,7 +218,7 @@ array::
 begin() const noexcept ->
     const_iterator
 {
-    return impl_.begin();
+    return impl_.data();
 }
 
 auto
@@ -226,7 +226,7 @@ array::
 cbegin() const noexcept ->
     const_iterator
 {
-    return impl_.begin();
+    return impl_.data();
 }
 
 auto
@@ -234,7 +234,7 @@ array::
 end() noexcept ->
     iterator
 {
-    return impl_.begin() + impl_.size();
+    return impl_.data() + impl_.size();
 }
 
 auto
@@ -242,7 +242,7 @@ array::
 end() const noexcept ->
     const_iterator
 {
-    return impl_.begin() + impl_.size();
+    return impl_.data() + impl_.size();
 }
 
 auto
@@ -250,7 +250,7 @@ array::
 cend() const noexcept ->
     const_iterator
 {
-    return impl_.begin() + impl_.size();
+    return impl_.data() + impl_.size();
 }
 
 auto
@@ -259,7 +259,7 @@ rbegin() noexcept ->
     reverse_iterator
 {
     return reverse_iterator(
-        impl_.begin() + impl_.size());
+        impl_.data() + impl_.size());
 }
 
 auto
@@ -268,7 +268,7 @@ rbegin() const noexcept ->
     const_reverse_iterator
 {
     return const_reverse_iterator(
-        impl_.begin() + impl_.size());
+        impl_.data() + impl_.size());
 }
 
 auto
@@ -277,7 +277,7 @@ crbegin() const noexcept ->
     const_reverse_iterator
 {
     return const_reverse_iterator(
-        impl_.begin() + impl_.size());
+        impl_.data() + impl_.size());
 }
 
 auto
@@ -286,7 +286,7 @@ rend() noexcept ->
     reverse_iterator
 {
     return reverse_iterator(
-        impl_.begin());
+        impl_.data());
 }
 
 auto
@@ -295,7 +295,7 @@ rend() const noexcept ->
     const_reverse_iterator
 {
     return const_reverse_iterator(
-        impl_.begin());
+        impl_.data());
 }
 
 auto
@@ -304,7 +304,7 @@ crend() const noexcept ->
     const_reverse_iterator
 {
     return const_reverse_iterator(
-        impl_.begin());
+        impl_.data());
 }
 
 //----------------------------------------------------------
@@ -356,7 +356,7 @@ emplace(
     undo_insert u(pos, 1, *this);
     u.emplace(std::forward<Arg>(arg));
     u.commit = true;
-    return impl_.begin() + u.pos;
+    return impl_.data() + u.pos;
 }
 
 template<class Arg>
@@ -367,7 +367,7 @@ emplace_back(Arg&& arg) ->
 {
     reserve(impl_.size() + 1);
     auto& v = *::new(
-        impl_.begin() + impl_.size()) value(
+        impl_.data() + impl_.size()) value(
             std::forward<Arg>(arg), sp_);
     impl_.size(impl_.size() + 1);
     return v;
@@ -392,7 +392,7 @@ array(
     {
         if(impl_.size() >= impl_.capacity())
             reserve(impl_.size() + 1);
-        ::new(impl_.begin() + impl_.size()) value(
+        ::new(impl_.data() + impl_.size()) value(
             *first++, sp_);
         impl_.size(impl_.size() + 1);
     }
@@ -418,7 +418,7 @@ array(
     while(impl_.size() < n)
     {
         ::new(
-            impl_.begin() +
+            impl_.data() +
             impl_.size()) value(
                 *first++, sp_);
         impl_.size(impl_.size() + 1);
@@ -436,17 +436,17 @@ insert(
         iterator
 {
     if(first == last)
-        return impl_.begin() +
+        return impl_.data() +
             impl_.index_of(pos);
     array tmp(first, last, sp_);
     undo_insert u(
         pos, tmp.impl_.size(), *this);
     relocate(u.it,
-        tmp.impl_.begin(), tmp.impl_.size());
+        tmp.impl_.data(), tmp.impl_.size());
     // don't destroy values in tmp
     tmp.impl_.size(0);
     u.commit = true;
-    return impl_.begin() + u.pos;
+    return impl_.data() + u.pos;
 }
 
 template<class InputIt>
@@ -469,7 +469,7 @@ insert(
     while(first != last)
         u.emplace(*first++);
     u.commit = true;
-    return begin() + u.pos;
+    return data() + u.pos;
 }
 
 } // json
