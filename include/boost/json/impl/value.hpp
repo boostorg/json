@@ -12,7 +12,6 @@
 
 #include <boost/json/error.hpp>
 #include <boost/json/detail/except.hpp>
-#include <boost/json/detail/make_void.hpp>
 #include <limits>
 #include <type_traits>
 

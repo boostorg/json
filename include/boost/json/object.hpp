@@ -12,8 +12,6 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/storage_ptr.hpp>
-#include <boost/json/detail/assert.hpp>
-#include <boost/json/detail/string.hpp>
 #include <boost/pilfer.hpp>
 #include <cstdlib>
 #include <initializer_list>

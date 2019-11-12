@@ -11,7 +11,6 @@
 #define BOOST_JSON_DETAIL_NUMBER_IPP
 
 #include <boost/json/detail/number.hpp>
-#include <boost/json/detail/assert.hpp>
 #include <boost/json/detail/sse2.hpp>
 
 namespace boost {

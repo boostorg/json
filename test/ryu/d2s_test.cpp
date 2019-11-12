@@ -20,7 +20,6 @@
 */
 
 #include <boost/json/detail/ryu/ryu.hpp>
-#include <boost/json/detail/assert.hpp>
 #include <cmath>
 #include "gtest.hpp"
 

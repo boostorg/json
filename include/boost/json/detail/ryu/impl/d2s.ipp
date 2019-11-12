@@ -35,7 +35,6 @@
 #define BOOST_JSON_DETAIL_RYU_IMPL_D2S_IPP
 
 #include <boost/json/detail/ryu/ryu.hpp>
-#include <boost/json/detail/assert.hpp>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>

@@ -10,7 +10,6 @@
 #ifndef BOOST_JSON_IMPL_STRING_IPP
 #define BOOST_JSON_IMPL_STRING_IPP
 
-#include <boost/json/detail/assert.hpp>
 #include <boost/json/detail/except.hpp>
 #include <algorithm>
 #include <new>

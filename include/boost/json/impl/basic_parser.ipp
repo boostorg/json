@@ -12,7 +12,6 @@
 
 #include <boost/json/basic_parser.hpp>
 #include <boost/json/error.hpp>
-#include <boost/json/detail/assert.hpp>
 #include <boost/json/detail/buffer.hpp>
 #include <boost/json/detail/sse2.hpp>
 

@@ -11,6 +11,16 @@
 #define BOOST_JSON_DETAIL_CONFIG_HPP
 
 #include <boost/config.hpp>
+#ifndef BOOST_JSON_STANDALONE
+# include <boost/assert.hpp>
+# include <boost/system/error_code.hpp>
+# include <boost/system/system_error.hpp>
+# include <boost/utility/string_view.hpp>
+#else
+# include <cassert>
+# include <string_view>
+# include <system_error>
+#endif
 
 #ifndef BOOST_JSON_STANDALONE
 # if defined(GENERATING_DOCUMENTATION)
@@ -58,6 +68,12 @@
 # define BOOST_JSON_THROW(x) do{}while(0)
 #endif
 
+#ifndef BOOST_JSON_STANDALONE
+# define BOOST_JSON_ASSERT BOOST_ASSERT
+#else
+# define BOOST_JSON_ASSERT assert
+#endif
+
 #define BOOST_JSON_STATIC_ASSERT( ... ) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 // optimizations
@@ -95,7 +111,137 @@
 namespace boost {
 namespace json {
 
-using size_type = unsigned long;
+namespace detail {
+
+template<class...>
+struct make_void
+{
+    using type =void;
+};
+
+template<class... Ts>
+using void_t = typename
+    make_void<Ts...>::type;
+
+template<class T>
+struct remove_const
+{
+    using type = T;
+};
+
+template<class T>
+struct remove_const<T const>
+{
+    using type = T;
+};
+
+template<class T>
+struct remove_reference
+{
+    using type = T;
+};
+
+template<class T>
+struct remove_reference<T&>
+{
+    using type = T;
+};
+
+template<class T>
+constexpr
+typename remove_reference<T>::type&&
+move(T&& t) noexcept
+{
+    return static_cast<typename
+        remove_reference<T>::type&&>(t);
+}
+
+template<class T, class U>
+inline
+T
+exchange(T& t, U u) noexcept
+{
+    T v = move(t);
+    t = move(u);
+    return v;
+}
+
+template<class T>
+using is_string_viewish = typename std::enable_if<
+    std::is_convertible<
+        T const&, string_view>::value &&
+    ! std::is_convertible<
+        T const&, char const*>::value
+            >::type;
+
+/*  This is a derivative work, original copyright:
+
+    Copyright Eric Niebler 2013-present
+
+    Use, modification and distribution is subject to the
+    Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at
+    http://www.boost.org/LICENSE_1_0.txt)
+
+    Project home: https://github.com/ericniebler/range-v3
+*/
+template<typename T>
+struct static_const
+{
+    static constexpr T value {};
+};
+template<typename T>
+constexpr T static_const<T>::value;
+
+#define BOOST_JSON_INLINE_VARIABLE(name, type) \
+    namespace \
+    { \
+        constexpr auto& name = \
+            ::boost::json::detail::static_const<type>::value; \
+    }
+
+struct primary_template
+{
+};
+
+template<class T>
+using is_specialized =
+    std::integral_constant<bool,
+        ! std::is_base_of<primary_template, T>::value>;
+
+template<class T>
+using remove_cr =
+    typename remove_const<
+    typename remove_reference<T>::type>::type;
+
+} // detail
+
+#ifndef BOOST_JSON_STANDALONE
+
+/// The type of string view used by the library
+using string_view = boost::string_view;
+
+/// The type of error code used by the library
+using error_code = boost::system::error_code;
+
+/// The type of system error thrown by the library
+using system_error = boost::system::system_error;
+
+/// The type of error category used by the library
+using error_category = boost::system::error_category;
+
+/// The type of error condition used by the library
+using error_condition = boost::system::error_condition;
+
+#else
+
+using string_view = std::string_view;
+using error_code = std::error_code;
+using system_error = std::system_error;
+using error_category = std::error_category;
+using error_condition = std::error_condition;
+
+#endif
 
 } // json
 } // boost

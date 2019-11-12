@@ -11,7 +11,6 @@
 #include <boost/json/object.hpp>
 
 #include <boost/beast/_experimental/unit_test/suite.hpp>
-#include <boost/json/detail/make_void.hpp>
 #include <cmath>
 #include <type_traits>
 

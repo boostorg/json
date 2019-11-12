@@ -11,8 +11,6 @@
 #define BOOST_JSON_STORAGE_PTR_HPP
 
 #include <boost/json/detail/config.hpp>
-#include <boost/json/detail/assert.hpp>
-#include <boost/json/detail/exchange.hpp>
 #include <boost/json/storage.hpp>
 #include <cstddef>
 #include <type_traits>

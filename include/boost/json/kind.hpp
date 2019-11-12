@@ -11,7 +11,6 @@
 #define BOOST_JSON_KIND_HPP
 
 #include <boost/json/detail/config.hpp>
-#include <boost/json/detail/inline_variable.hpp>
 
 namespace boost {
 namespace json {

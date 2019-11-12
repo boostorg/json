@@ -11,7 +11,6 @@
 #define BOOST_JSON_BLOCK_STORAGE_HPP
 
 #include <boost/json/detail/config.hpp>
-#include <boost/json/detail/assert.hpp>
 #include <boost/json/storage.hpp>
 #include <cstdint>
 #include <new>

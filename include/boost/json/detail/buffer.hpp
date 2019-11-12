@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_DETAIL_BUFFER_HPP
 #define BOOST_JSON_DETAIL_BUFFER_HPP
 
-#include <boost/json/detail/string.hpp>
+#include <boost/json/detail/config.hpp>
 #include <cstring>
 
 namespace boost {

@@ -12,8 +12,6 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/storage_ptr.hpp>
-#include <boost/json/detail/assert.hpp>
-#include <boost/json/detail/string.hpp>
 #include <boost/pilfer.hpp>
 #include <algorithm>
 #include <initializer_list>
@@ -1890,7 +1888,7 @@ public:
 
     template<class T
     #ifndef GENERATING_DOCUMENTATION
-        ,class = detail::is_viewy<T>
+        ,class = detail::is_string_viewish<T>
     #endif
     >
     string&
@@ -1904,7 +1902,7 @@ public:
 
     template<class T
     #ifndef GENERATING_DOCUMENTATION
-        ,class = detail::is_viewy<T>
+        ,class = detail::is_string_viewish<T>
     #endif
     >
     string&
@@ -2000,7 +1998,7 @@ public:
 
     template<class T
     #ifndef GENERATING_DOCUMENTATION
-        ,class = detail::is_viewy<T>
+        ,class = detail::is_string_viewish<T>
     #endif
     >
     string&
@@ -2012,7 +2010,7 @@ public:
 
     template<class T
     #ifndef GENERATING_DOCUMENTATION
-        ,class = detail::is_viewy<T>
+        ,class = detail::is_string_viewish<T>
     #endif
     >
     string&
@@ -2054,7 +2052,7 @@ public:
 
     template<class T
     #ifndef GENERATING_DOCUMENTATION
-        ,class = detail::is_viewy<T>
+        ,class = detail::is_string_viewish<T>
     #endif
     >
     string&
@@ -2270,7 +2268,7 @@ public:
 
     template<class T
     #ifndef GENERATING_DOCUMENTATION
-        ,class = detail::is_viewy<T>
+        ,class = detail::is_string_viewish<T>
     #endif
     >
     string&
@@ -2281,7 +2279,7 @@ public:
 
     template<class T
     #ifndef GENERATING_DOCUMENTATION
-        ,class = detail::is_viewy<T>
+        ,class = detail::is_string_viewish<T>
     #endif
     >
     string&
@@ -2292,7 +2290,7 @@ public:
 
     template<class T
     #ifndef GENERATING_DOCUMENTATION
-        ,class = detail::is_viewy<T>
+        ,class = detail::is_string_viewish<T>
     #endif
     >
     string&
@@ -2414,7 +2412,7 @@ public:
 
     template<class T
     #ifndef GENERATING_DOCUMENTATION
-        ,class = detail::is_viewy<T>
+        ,class = detail::is_string_viewish<T>
     #endif
     >
     size_type
@@ -2462,7 +2460,7 @@ public:
 
     template<class T
     #ifndef GENERATING_DOCUMENTATION
-        ,class = detail::is_viewy<T>
+        ,class = detail::is_string_viewish<T>
     #endif
     >
     size_type
@@ -2510,7 +2508,7 @@ public:
 
     template<class T
     #ifndef GENERATING_DOCUMENTATION
-        ,class = detail::is_viewy<T>
+        ,class = detail::is_string_viewish<T>
     #endif
     >
     size_type
@@ -2558,7 +2556,7 @@ public:
 
     template<class T
     #ifndef GENERATING_DOCUMENTATION
-        ,class = detail::is_viewy<T>
+        ,class = detail::is_string_viewish<T>
     #endif
     >
     size_type
@@ -2606,7 +2604,7 @@ public:
 
     template<class T
     #ifndef GENERATING_DOCUMENTATION
-        ,class = detail::is_viewy<T>
+        ,class = detail::is_string_viewish<T>
     #endif
     >
     size_type
@@ -2654,7 +2652,7 @@ public:
 
     template<class T
     #ifndef GENERATING_DOCUMENTATION
-        ,class = detail::is_viewy<T>
+        ,class = detail::is_string_viewish<T>
     #endif
     >
     size_type
@@ -2730,7 +2728,7 @@ operator==(string const& lhs, string const& rhs)
 
 template<class T
 #ifndef GENERATING_DOCUMENTATION
-    ,class = detail::is_viewy<T>
+    ,class = detail::is_string_viewish<T>
 #endif
 >
 bool operator==(string const& lhs, T const& rhs)
@@ -2740,7 +2738,7 @@ bool operator==(string const& lhs, T const& rhs)
 
 template<class T
 #ifndef GENERATING_DOCUMENTATION
-    ,class = detail::is_viewy<T>
+    ,class = detail::is_string_viewish<T>
 #endif
 >
 bool operator==(T const& lhs, string const& rhs)
@@ -2759,7 +2757,7 @@ operator!=(string const& lhs, string const& rhs)
 
 template<class T
 #ifndef GENERATING_DOCUMENTATION
-    ,class = detail::is_viewy<T>
+    ,class = detail::is_string_viewish<T>
 #endif
 >
 bool operator!=(string const& lhs, T const& rhs)
@@ -2769,7 +2767,7 @@ bool operator!=(string const& lhs, T const& rhs)
 
 template<class T
 #ifndef GENERATING_DOCUMENTATION
-    ,class = detail::is_viewy<T>
+    ,class = detail::is_string_viewish<T>
 #endif
 >
 bool operator!=(T const& lhs, string const& rhs)
@@ -2788,7 +2786,7 @@ operator<(string const& lhs, string const& rhs)
 
 template<class T
 #ifndef GENERATING_DOCUMENTATION
-    ,class = detail::is_viewy<T>
+    ,class = detail::is_string_viewish<T>
 #endif
 >
 bool operator<(string const& lhs, T const& rhs)
@@ -2798,7 +2796,7 @@ bool operator<(string const& lhs, T const& rhs)
 
 template<class T
 #ifndef GENERATING_DOCUMENTATION
-    ,class = detail::is_viewy<T>
+    ,class = detail::is_string_viewish<T>
 #endif
 >
 bool operator<(T const& lhs, string const& rhs)
@@ -2817,7 +2815,7 @@ operator<=(string const& lhs, string const& rhs)
 
 template<class T
 #ifndef GENERATING_DOCUMENTATION
-    ,class = detail::is_viewy<T>
+    ,class = detail::is_string_viewish<T>
 #endif
 >
 bool operator<=(string const& lhs, T const& rhs)
@@ -2827,7 +2825,7 @@ bool operator<=(string const& lhs, T const& rhs)
 
 template<class T
 #ifndef GENERATING_DOCUMENTATION
-    ,class = detail::is_viewy<T>
+    ,class = detail::is_string_viewish<T>
 #endif
 >
 bool operator<=(T const& lhs, string const& rhs)
@@ -2846,7 +2844,7 @@ operator>=(string const& lhs, string const& rhs)
 
 template<class T
 #ifndef GENERATING_DOCUMENTATION
-    ,class = detail::is_viewy<T>
+    ,class = detail::is_string_viewish<T>
 #endif
 >
 bool operator>=(string const& lhs, T const& rhs)
@@ -2856,7 +2854,7 @@ bool operator>=(string const& lhs, T const& rhs)
 
 template<class T
 #ifndef GENERATING_DOCUMENTATION
-    ,class = detail::is_viewy<T>
+    ,class = detail::is_string_viewish<T>
 #endif
 >
 bool operator>=(T const& lhs, string const& rhs)
@@ -2875,7 +2873,7 @@ operator>(string const& lhs, string const& rhs)
 
 template<class T
 #ifndef GENERATING_DOCUMENTATION
-    ,class = detail::is_viewy<T>
+    ,class = detail::is_string_viewish<T>
 #endif
 >
 bool operator>(string const& lhs, T const& rhs)
@@ -2885,7 +2883,7 @@ bool operator>(string const& lhs, T const& rhs)
 
 template<class T
 #ifndef GENERATING_DOCUMENTATION
-    ,class = detail::is_viewy<T>
+    ,class = detail::is_string_viewish<T>
 #endif
 >
 bool operator>(T const& lhs, string const& rhs)

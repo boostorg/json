@@ -12,7 +12,6 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/storage_ptr.hpp>
-#include <boost/json/detail/assert.hpp>
 #include <cstdlib>
 #include <utility>
 

@@ -11,7 +11,6 @@
 #define BOOST_JSON_DETAIL_VALUE_HPP
 
 #include <boost/json/error.hpp>
-#include <boost/json/detail/make_void.hpp>
 #include <type_traits>
 
 namespace boost {

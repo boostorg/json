@@ -11,9 +11,7 @@
 #define BOOST_JSON_IMPL_OBJECT_IPP
 
 #include <boost/json/object.hpp>
-#include <boost/json/detail/assert.hpp>
 #include <boost/json/detail/except.hpp>
-#include <boost/json/detail/exchange.hpp>
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>

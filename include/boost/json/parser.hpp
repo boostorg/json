@@ -17,7 +17,6 @@
 #include <boost/json/string.hpp>
 #include <boost/json/detail/except.hpp>
 #include <boost/json/detail/raw_stack.hpp>
-#include <boost/json/detail/string.hpp>
 #include <new>
 #include <string>
 #include <type_traits>

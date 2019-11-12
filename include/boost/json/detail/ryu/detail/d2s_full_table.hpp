@@ -22,6 +22,7 @@
 #ifndef BOOST_JSON_DETAIL_RYU_DETAIL_D2S_FULL_TABLE_HPP
 #define BOOST_JSON_DETAIL_RYU_DETAIL_D2S_FULL_TABLE_HPP
 
+#include <boost/json/detail/config.hpp>
 #include <cstdint>
 
 namespace boost {

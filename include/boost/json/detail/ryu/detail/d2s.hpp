@@ -22,8 +22,8 @@
 #ifndef BOOST_JSON_DETAIL_RYU_DETAIL_D2S_HPP
 #define BOOST_JSON_DETAIL_RYU_DETAIL_D2S_HPP
 
+#include <boost/json/detail/config.hpp>
 #include <boost/json/detail/ryu/detail/common.hpp>
-#include <boost/json/detail/assert.hpp>
 #include <cstdint>
 
 // Only include the full table if we're not optimizing for size.
