@@ -11,6 +11,7 @@
 #define BOOST_JSON_DETAIL_STRING_IMPL_HPP
 
 #include <boost/json/detail/config.hpp>
+#include <boost/json/kind.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <algorithm>
 #include <cstdint>
@@ -18,21 +19,61 @@
 
 namespace boost {
 namespace json {
+
+class value;
+class string_test;
+
 namespace detail {
 
-struct string_impl
+class string_impl
 {
-    static constexpr std::size_t mask_ = 0x0f;
+    friend class string_test;
 
-    std::uint32_t size_;
-    std::uint32_t capacity_;
+    struct table
+    {
+        std::uint32_t size;
+        std::uint32_t capacity;
+    };
+
+    static
+    constexpr
+    std::size_t 
+    sbo_chars_ =
+        sizeof(table*) * 2 -
+        sizeof(kind) - 1;
+
+    static
+    constexpr
+    kind
+    short_string_ =
+        static_cast<kind>(
+            ((unsigned char)
+            kind::string) | 0x80);
+
+    struct sbo
+    {
+        kind k;
+        char buf[sbo_chars_ + 1];
+    };
+
+    struct pointer
+    {
+        kind k;
+        char pad[
+            sizeof(table*) -
+            sizeof(kind)];
+        table* t;
+    };
 
     union
     {
-        char* p;
-        char buf[20]; // SBO
+        sbo s_;
+        pointer p_;
     };
 
+    friend class value;
+
+public:
     static
     constexpr
     std::size_t
@@ -41,12 +82,13 @@ struct string_impl
         return BOOST_JSON_MAX_STRING_SIZE;
     }
 
-    string_impl() noexcept
-        : size_(0)
-        , capacity_(sizeof(buf) - 1)
-    {
-        buf[0] = 0;
-    }
+    BOOST_JSON_DECL
+    string_impl() noexcept;
+
+    BOOST_JSON_DECL
+    string_impl(
+        std::size_t new_size,
+        storage_ptr const& sp);
 
     template<class InputIt>
     string_impl(
@@ -56,9 +98,7 @@ struct string_impl
         std::random_access_iterator_tag)
         : string_impl(last - first, sp)
     {
-        std::copy(
-            first, last, data());
-        data()[size()] = 0;
+        std::copy(first, last, data());
     }
 
     template<class InputIt>
@@ -67,25 +107,22 @@ struct string_impl
         InputIt last,
         storage_ptr const& sp,
         std::input_iterator_tag)
-        : string_impl()
+        : string_impl(0, sp)
     {
         struct undo
         {
-            string_impl& s;
+            string_impl* s;
             storage_ptr const& sp;
-            bool commit;
 
             ~undo()
             {
-                if(! commit)
-                    s.destroy(sp);
+                if(s)
+                    s->destroy(sp);
             }
         };
 
-        undo u{*this, sp, false};
+        undo u{this, sp};
         auto dest = data();
-        size(1);
-        *dest++ = *first++;
         while(first != last)
         {
             if(size() < capacity())
@@ -94,33 +131,38 @@ struct string_impl
                 dest = append(1, sp);
             *dest++ = *first++;
         }
-        *dest = 0;
-        u.commit = true;
+        term(size());
+        u.s = nullptr;
     }
 
     std::size_t
     size() const noexcept
     {
-        return size_;
+        return s_.k == kind::string ?
+            p_.t->size :
+            sbo_chars_ -
+                s_.buf[sbo_chars_];
     }
 
     std::size_t
     capacity() const noexcept
     {
-        return capacity_;
+        return s_.k == kind::string ?
+            p_.t->capacity :
+            sbo_chars_;
     }
 
     void
     size(std::size_t n)
     {
-        size_ = static_cast<
-            std::uint32_t>(n);
+        if(s_.k == kind::string)
+            p_.t->size = static_cast<
+                std::uint32_t>(n);
+        else
+            s_.buf[sbo_chars_] =
+                static_cast<char>(
+                    sbo_chars_ - n);
     }
-
-    BOOST_JSON_DECL
-    string_impl(
-        std::size_t new_size,
-        storage_ptr const& sp);
 
     BOOST_JSON_DECL
     static
@@ -129,10 +171,16 @@ struct string_impl
         std::size_t new_size,
         std::size_t capacity);
 
-    BOOST_JSON_DECL
     void
     destroy(
-        storage_ptr const& sp) noexcept;
+        storage_ptr const& sp) noexcept
+    {
+        if(s_.k != short_string_)
+            sp->deallocate(p_.t,
+                sizeof(table) +
+                    p_.t->capacity + 1,
+                alignof(table));
+    }
 
     BOOST_JSON_DECL
     char*
@@ -155,47 +203,61 @@ struct string_impl
 
     BOOST_JSON_DECL
     void
-    unalloc(storage_ptr const& sp) noexcept;
+    shrink_to_fit(
+        storage_ptr const& sp) noexcept;
 
     bool
     in_sbo() const noexcept
     {
-        return capacity_ < sizeof(buf);
+        return s_.k == short_string_;
     }
 
     void
     term(std::size_t n) noexcept
     {
-        size(n);
-        data()[size_] = 0;
+        if(s_.k == short_string_)
+        {
+            s_.buf[sbo_chars_] =
+                static_cast<char>(
+                    sbo_chars_ - n);
+            s_.buf[n] = 0;
+        }
+        else
+        {
+            p_.t->size = static_cast<
+                std::uint32_t>(n);
+            data()[n] = 0;
+        }
     }
 
     char*
     data() noexcept
     {
-        if(in_sbo())
-            return buf;
-        return p;
+        if(s_.k == short_string_)
+            return s_.buf;
+        return reinterpret_cast<
+            char*>(p_.t + 1);
     }
 
     char const*
     data() const noexcept
     {
-        if(in_sbo())
-            return buf;
-        return p;
+        if(s_.k == short_string_)
+            return s_.buf;
+        return reinterpret_cast<
+            char const*>(p_.t + 1);
     }
 
     char*
     end() noexcept
     {
-        return data() + size_;
+        return data() + size();
     }
 
     char const*
     end() const noexcept
     {
-        return data() + size_;
+        return data() + size();
     }
 };
 

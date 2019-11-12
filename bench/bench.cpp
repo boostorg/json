@@ -450,7 +450,7 @@ main(
         vi.emplace_back(new boost_default_impl);
         vi.emplace_back(new boost_impl);
         vi.emplace_back(new rapidjson_impl);
-        vi.emplace_back(new nlohmann_impl);
+        //vi.emplace_back(new nlohmann_impl);
 
         benchParse(vs, vi);
         benchSerialize(vs, vi);

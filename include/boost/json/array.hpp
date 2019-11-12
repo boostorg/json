@@ -1616,7 +1616,6 @@ private:
         operator=(
             impl_type&& other) noexcept;
 
-        inline
         value*
         data() const noexcept
         {
@@ -1626,7 +1625,6 @@ private:
                 nullptr;
         }
 
-        inline
         std::size_t
         size() const noexcept
         {
@@ -1634,7 +1632,6 @@ private:
                 tab_->size : 0;
         }
 
-        inline
         void
         size(std::size_t n) noexcept
         {
@@ -1645,7 +1642,6 @@ private:
                 BOOST_JSON_ASSERT(n == 0);
         }
 
-        inline
         std::size_t
         capacity() const noexcept
         {

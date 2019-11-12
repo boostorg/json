@@ -19,24 +19,43 @@ namespace json {
 namespace detail {
 
 string_impl::
+string_impl() noexcept
+{
+    s_.k = short_string_;
+    s_.buf[sbo_chars_] =
+        static_cast<char>(
+            sbo_chars_);
+    s_.buf[0] = 0;
+}
+
+string_impl::
 string_impl(
     std::size_t size,
     storage_ptr const& sp)
 {
-    if(size < sizeof(buf))
+    if(size <= sbo_chars_)
     {
-        // SBO
-        capacity_ = sizeof(buf) - 1;
+        s_.k = short_string_;
+        s_.buf[sbo_chars_] =
+            static_cast<char>(
+                sbo_chars_ - size);
+        s_.buf[size] = 0;
     }
     else
     {
-        capacity_ = growth(size,
-            sizeof(buf) - 1);
-        p = static_cast<char*>(
-            sp->allocate(capacity_ + 1, 1));
+        s_.k = kind::string;
+        auto const n = growth(
+            size, sbo_chars_ + 1);
+        p_.t = ::new(sp->allocate(
+            sizeof(table) +
+                n + 1,
+            alignof(table))) table{
+                static_cast<
+                    std::uint32_t>(size),
+                static_cast<
+                    std::uint32_t>(n)};
+        term(size);
     }
-    size_ = static_cast<
-        std::uint32_t>(size);
 }
 
 std::uint32_t
@@ -48,10 +67,6 @@ growth(
     if(new_size > max_size())
         BOOST_JSON_THROW(
             string_too_large_exception());
-    new_size |= mask_;
-    if( new_size > max_size())
-        return static_cast<
-            std::uint32_t>(max_size());
     // growth factor 2
     if( capacity >
         max_size() - capacity)
@@ -59,16 +74,6 @@ growth(
             std::uint32_t>(max_size()); // overflow
     return static_cast<std::uint32_t>(
         (std::max)(capacity * 2, new_size));
-}
-
-void
-string_impl::
-destroy(
-    storage_ptr const& sp) noexcept
-{
-    if(! in_sbo())
-        sp->deallocate(
-            p, capacity() + 1, 1);
 }
 
 char*
@@ -155,16 +160,47 @@ insert(
 
 void
 string_impl::
-unalloc(storage_ptr const& sp) noexcept
+shrink_to_fit(
+    storage_ptr const& sp) noexcept
 {
-    BOOST_JSON_ASSERT(size() < sizeof(buf));
-    BOOST_JSON_ASSERT(! in_sbo());
-    auto const p_ = p;
-    std::memcpy(
-        buf, data(), size() + 1);
-    sp->deallocate(
-        p_, capacity() + 1, 1);
-    capacity_ = sizeof(buf) - 1;
+    if(s_.k == short_string_)
+        return;
+    auto const t = p_.t;
+    if(t->size <= sbo_chars_)
+    {
+        s_.k = short_string_;
+        std::memcpy(
+            s_.buf, data(), t->size);
+        s_.buf[sbo_chars_] =
+            static_cast<char>(
+                sbo_chars_ - t->size);
+        s_.buf[t->size] = 0;
+        sp->deallocate(t,
+            sizeof(table) +
+                t->capacity + 1,
+            alignof(table));
+        return;
+    }
+    if(t->size >= t->capacity)
+        return;
+#ifndef BOOST_NO_EXCEPTIONS
+    try
+    {
+#endif
+        string_impl tmp(t->size, sp);
+        std::memcpy(
+            tmp.data(),
+            data(),
+            size());
+        destroy(sp);
+        *this = tmp;
+#ifndef BOOST_NO_EXCEPTIONS
+    }
+    catch(std::exception const&)
+    {
+        // eat the exception
+    }
+#endif
 }
 
 } // detail

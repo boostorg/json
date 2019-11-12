@@ -89,26 +89,7 @@ void
 string::
 shrink_to_fit()
 {
-    if(impl_.in_sbo())
-        return;
-    if(impl_.size() < sizeof(impl_.buf))
-    {
-        impl_.unalloc(sp_);
-        return;
-    }
-    auto const new_cap =
-        (std::min<size_type>)(
-            impl_.size() | mask_,
-            max_size());
-    if(new_cap >= impl_.capacity())
-        return;
-
-    detail::string_impl tmp(new_cap, sp_);
-    traits_type::copy(tmp.data(),
-        impl_.data(), impl_.size() + 1);
-    tmp.size(impl_.size());
-    impl_.destroy(sp_);
-    impl_ = tmp;
+    impl_.shrink_to_fit(sp_);
 }
 
 //----------------------------------------------------------

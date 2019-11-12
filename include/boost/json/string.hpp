@@ -27,6 +27,8 @@
 namespace boost {
 namespace json {
 
+class value;
+
 /** The native type of string values.
 
     Instances of string store and manipulate sequences
@@ -46,6 +48,8 @@ namespace json {
 */
 class string
 {
+    friend class value;
+
 public:
     /// The traits used to perform character operations
     using traits_type       = std::char_traits<char>;
@@ -113,9 +117,7 @@ public:
     */
     ~string()
     {
-        if(! impl_.in_sbo())
-            sp_->deallocate(impl_.p,
-                impl_.capacity() + 1, 1);
+        impl_.destroy(sp_);
     }
 
     //
