@@ -26,12 +26,11 @@ impl(
     InputIt last,
     storage_ptr const& sp,
     std::random_access_iterator_tag)
-    : impl(static_cast<size_type>(
-        last - first), sp)
+    : impl(last - first, sp)
 {
     std::copy(
         first, last, data());
-    data()[size] = 0;
+    data()[size()] = 0;
 }
 
 template<class InputIt>
@@ -59,12 +58,12 @@ impl(
 
     undo u{*this, sp, false};
     auto dest = data();
-    size = 1;
+    size(1);
     *dest++ = *first++;
     while(first != last)
     {
-        if(size < capacity)
-            ++size;
+        if(size() < capacity())
+            size(size() + 1);
         else
             dest = append(1, sp);
         *dest++ = *first++;
@@ -138,9 +137,9 @@ insert(
     cleanup c{tmp, storage_ptr{}};
     auto const off = pos - impl_.data();
     traits_type::copy(
-        impl_.insert(off, tmp.size, sp_),
+        impl_.insert(off, tmp.size(), sp_),
         tmp.data(),
-        tmp.size);
+        tmp.size());
     return impl_.data() + off;
 }
 
@@ -221,8 +220,8 @@ append(
         std::input_iterator_tag{});
     cleanup c{tmp, storage_ptr{}};
     traits_type::copy(
-        impl_.append(tmp.size, sp_),
-        tmp.data(), tmp.size);
+        impl_.append(tmp.size(), sp_),
+        tmp.data(), tmp.size());
 }
 
 } // json

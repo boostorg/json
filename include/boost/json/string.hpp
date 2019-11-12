@@ -97,15 +97,12 @@ private:
             std::iterator_traits<T>::value_type,
             char>::value>::type;
 
-    using impl_size_type = unsigned long;
-
-    static constexpr
-        impl_size_type mask_ = 0x0f;
+    static constexpr std::size_t mask_ = 0x0f;
 
     struct impl
     {
-        impl_size_type size;
-        impl_size_type capacity;
+        std::uint32_t size_;
+        std::uint32_t capacity_;
 
     #ifndef GENERATING_DOCUMENTATION
         // XSL has problems with anonymous unions
@@ -117,8 +114,8 @@ private:
     #endif
 
         impl() noexcept
-            : size(0)
-            , capacity(sizeof(buf) - 1)
+            : size_(0)
+            , capacity_(sizeof(buf) - 1)
         {
             buf[0] = 0;
         }
@@ -137,6 +134,28 @@ private:
             storage_ptr const& sp,
             std::input_iterator_tag);
 
+        inline
+        std::size_t
+        size() const noexcept
+        {
+            return size_;
+        }
+
+        inline
+        std::size_t
+        capacity() const noexcept
+        {
+            return capacity_;
+        }
+
+        inline
+        void
+        size(std::size_t n)
+        {
+            size_ = static_cast<
+                std::uint32_t>(n);
+        }
+
         BOOST_JSON_DECL
         impl(
             size_type new_size,
@@ -144,10 +163,10 @@ private:
 
         BOOST_JSON_DECL
         static
-        impl_size_type
+        std::uint32_t
         growth(
-            size_type new_size,
-            impl_size_type capacity);
+            std::size_t new_size,
+            std::size_t capacity);
 
         BOOST_JSON_DECL
         void
@@ -180,15 +199,14 @@ private:
         bool
         in_sbo() const noexcept
         {
-            return capacity < sizeof(buf);
+            return capacity_ < sizeof(buf);
         }
 
         void
-        term(size_type n) noexcept
+        term(std::size_t n) noexcept
         {
-            size = static_cast<
-                impl_size_type>(n);
-            data()[size] = 0;
+            size(n);
+            data()[size_] = 0;
         }
 
         char*
@@ -210,13 +228,13 @@ private:
         char*
         end() noexcept
         {
-            return data() + size;
+            return data() + size_;
         }
 
         char const*
         end() const noexcept
         {
-            return data() + size;
+            return data() + size_;
         }
 
         bool
@@ -244,7 +262,7 @@ public:
     {
         if(! impl_.in_sbo())
             sp_->deallocate(impl_.p,
-                impl_.capacity + 1, 1);
+                impl_.capacity() + 1, 1);
     }
 
     //
@@ -1346,7 +1364,7 @@ public:
     char&
     back()
     {
-        return impl_.data()[impl_.size - 1];
+        return impl_.data()[impl_.size() - 1];
     }
 
     /** Access the last character
@@ -1364,7 +1382,7 @@ public:
     char const&
     back() const
     {
-        return impl_.data()[impl_.size - 1];
+        return impl_.data()[impl_.size() - 1];
     }
 
     /** Access the underlying character array directly
@@ -1659,7 +1677,7 @@ public:
     bool
     empty() const noexcept
     {
-        return impl_.size == 0;
+        return impl_.size() == 0;
     }
 
     /** Return the number of characters in the string.
@@ -1674,7 +1692,7 @@ public:
     size_type
     size() const noexcept
     {
-        return impl_.size;
+        return impl_.size();
     }
 
     /** Return the maximum number of characters the string can hold
@@ -1711,7 +1729,7 @@ public:
     size_type
     capacity() const noexcept
     {
-        return impl_.capacity;
+        return impl_.capacity();
     }
 
     /** Increase the capacity to at least a certain amount
@@ -1746,7 +1764,7 @@ public:
     void
     reserve(size_type new_capacity)
     {
-        if(new_capacity <= impl_.capacity)
+        if(new_capacity <= capacity())
             return;
         reserve_impl(new_capacity);
     }
@@ -2344,8 +2362,8 @@ public:
     grow(size_type n) noexcept
     {
         BOOST_JSON_ASSERT(
-            n <= impl_.capacity - impl_.size);
-        impl_.term(impl_.size + n);
+            n <= impl_.capacity() - impl_.size());
+        impl_.term(impl_.size() + n);
     }
 
     //------------------------------------------------------

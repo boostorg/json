@@ -26,32 +26,32 @@ namespace json {
 string::
 impl::
 impl(
-    size_type size_,
+    std::size_t size,
     storage_ptr const& sp)
 {
     if(size_ < sizeof(buf))
     {
         // SBO
-        capacity = sizeof(buf) - 1;
+        capacity_ = sizeof(buf) - 1;
     }
     else
     {
-        capacity = growth(size_,
+        capacity_ = growth(size,
             sizeof(buf) - 1);
         p = static_cast<char*>(
-            sp->allocate(capacity + 1, 1));
+            sp->allocate(capacity_ + 1, 1));
     }
-    size = static_cast<
-        impl_size_type>(size_);
+    size_ = static_cast<
+        std::uint32_t>(size);
 }
 
 auto
 string::
 impl::
 growth(
-    size_type new_size,
-    impl_size_type capacity) ->
-        impl_size_type
+    std::size_t new_size,
+    std::size_t capacity) ->
+        std::uint32_t
 {
     if(new_size > max_size())
         BOOST_JSON_THROW(
@@ -59,15 +59,14 @@ growth(
     new_size |= mask_;
     if( new_size > max_size())
         return static_cast<
-            impl_size_type>(max_size());
+            std::uint32_t>(max_size());
     // growth factor 2
     if( capacity >
         max_size() - capacity)
         return static_cast<
-            impl_size_type>(max_size()); // overflow
-    return (std::max<impl_size_type>)(
-        capacity * 2, static_cast<
-            impl_size_type>(new_size));
+            std::uint32_t>(max_size()); // overflow
+    return static_cast<std::uint32_t>(
+        (std::max)(capacity * 2, new_size));
 }
 
 void
@@ -78,7 +77,7 @@ destroy(
 {
     if(! in_sbo())
         sp->deallocate(
-            p, capacity + 1, 1);
+            p, capacity() + 1, 1);
 }
 
 char*
@@ -88,11 +87,11 @@ assign(
     size_type new_size,
     storage_ptr const& sp)
 {
-    if(new_size > capacity)
+    if(new_size > capacity())
     {
         impl tmp(growth(
             new_size,
-            capacity), sp);
+            capacity()), sp);
         destroy(sp);
         *this = tmp;
     }
@@ -107,19 +106,19 @@ append(
     size_type n,
     storage_ptr const& sp)
 {
-    if(n > max_size() - size)
+    if(n > max_size() - size())
         BOOST_JSON_THROW(
             detail::string_too_large_exception());
-    if(n <= capacity - size)
+    if(n <= capacity() - size())
     {
-        term(size + n);
+        term(size() + n);
         return end() - n;
     }
     impl tmp(growth(
-        size + n, capacity), sp);
+        size() + n, capacity()), sp);
     traits_type::copy(
-        tmp.data(), data(), size);
-    tmp.term(size + n);
+        tmp.data(), data(), size());
+    tmp.term(size() + n);
     destroy(sp);
     *this = tmp;
     return end() - n;
@@ -133,28 +132,26 @@ insert(
     size_type n,
     storage_ptr const& sp)
 {
-    if(pos > size)
+    if(pos > size())
         BOOST_JSON_THROW(
         detail::string_pos_too_large());
-    if(n <= capacity - size)
+    if(n <= capacity() - size())
     {
         auto const dest =
             data() + pos;
         traits_type::move(
             dest + n,
             dest,
-            size + 1 - pos);
-        size += static_cast<
-            impl_size_type>(n);
+            size() + 1 - pos);
+        size(size() + n);
         return dest;
     }
-    if(n > max_size() - size)
+    if(n > max_size() - size())
         BOOST_JSON_THROW(
             detail::string_too_large_exception());
     impl tmp(growth(
-        size + n, capacity), sp);
-    tmp.size = size + static_cast<
-        impl_size_type>(n);
+        size() + n, capacity()), sp);
+    tmp.size(size() + n);
     traits_type::copy(
         tmp.data(),
         data(),
@@ -162,7 +159,7 @@ insert(
     traits_type::copy(
         tmp.data() + pos + n,
         data() + pos,
-        size + 1 - pos);
+        size() + 1 - pos);
     destroy(sp);
     *this = tmp;
     return data() + pos;
@@ -173,14 +170,14 @@ string::
 impl::
 unalloc(storage_ptr const& sp) noexcept
 {
-    BOOST_JSON_ASSERT(size < sizeof(buf));
+    BOOST_JSON_ASSERT(size() < sizeof(buf));
     BOOST_JSON_ASSERT(! in_sbo());
     auto const p_ = p;
     traits_type::copy(
-        buf, data(), size + 1);
+        buf, data(), size() + 1);
     sp->deallocate(
-        p_, capacity + 1, 1);
-    capacity = sizeof(buf) - 1;
+        p_, capacity() + 1, 1);
+    capacity_ = sizeof(buf) - 1;
 }
 
 //----------------------------------------------------------
@@ -254,22 +251,22 @@ shrink_to_fit()
 {
     if(impl_.in_sbo())
         return;
-    if(impl_.size < sizeof(impl_.buf))
+    if(impl_.size() < sizeof(impl_.buf))
     {
         impl_.unalloc(sp_);
         return;
     }
     auto const new_cap =
         (std::min<size_type>)(
-            impl_.size | mask_,
+            impl_.size() | mask_,
             max_size());
-    if(new_cap >= impl_.capacity)
+    if(new_cap >= impl_.capacity())
         return;
 
     impl tmp(new_cap, sp_);
     traits_type::copy(tmp.data(),
-        impl_.data(), impl_.size + 1);
-    tmp.size = impl_.size;
+        impl_.data(), impl_.size() + 1);
+    tmp.size(impl_.size());
     impl_.destroy(sp_);
     impl_ = tmp;
 }
@@ -300,7 +297,8 @@ void
 string::
 pop_back()
 {
-    impl_.data()[--impl_.size] = 0;
+    back() = 0;
+    impl_.size(impl_.size() - 1);
 }
 
 //----------------------------------------------------------
@@ -349,10 +347,10 @@ insert(
     char const* s,
     size_type count)
 {
-    if(pos > impl_.size)
+    if(pos > impl_.size())
         BOOST_JSON_THROW(
             detail::string_pos_too_large());
-    if(count > impl_.capacity - impl_.size)
+    if(count > impl_.capacity() - impl_.size())
     {
         traits_type::copy(
             impl_.insert(pos, count, sp_),
@@ -363,12 +361,11 @@ insert(
     traits_type::move(
         impl_.data() + pos + count,
         impl_.data() + pos,
-        impl_.size - pos + 1);
+        impl_.size() - pos + 1);
     traits_type::copy(
         impl_.data() + pos,
         s, count);
-    impl_.size += static_cast<
-        impl_size_type>(count);
+    impl_.size(impl_.size() + count);
     return *this;
 }
 
@@ -406,18 +403,16 @@ erase(
     size_type pos,
     size_type count)
 {
-    if(pos > impl_.size)
+    if(pos > impl_.size())
         BOOST_JSON_THROW(
             detail::string_pos_too_large());
-    if( count > impl_.size - pos)
-        count = impl_.size - pos;
+    if( count > impl_.size() - pos)
+        count = impl_.size() - pos;
     traits_type::move(
         impl_.data() + pos,
         impl_.data() + pos + count,
-        impl_.size - pos - count + 1);
-    impl_.size -= static_cast<
-        impl_size_type>(count);
-    impl_.data()[impl_.size] = 0;
+        impl_.size() - pos - count + 1);
+    impl_.term(impl_.size() - count);
     return *this;
 }
 
@@ -448,22 +443,18 @@ void
 string::
 resize(size_type count, char ch)
 {
-    if(count <= impl_.size)
+    if(count <= impl_.size())
     {
-        auto const n = static_cast<
-            impl_size_type>(count);
-        impl_.data()[n] = 0;
-        impl_.size = n;
+        impl_.term(count);
         return;
     }
 
     reserve(count);
     traits_type::assign(
         impl_.end(),
-        count + 1 - impl_.size,
+        count - impl_.size(),
         ch);
-    impl_.size = static_cast<
-        impl_size_type>(count);
+    grow(count - size());
 }
 
 //----------------------------------------------------------
@@ -495,16 +486,16 @@ string::
 reserve_impl(size_type new_cap)
 {
     BOOST_JSON_ASSERT(
-        new_cap >= impl_.capacity);
-    if(new_cap > impl_.capacity)
+        new_cap >= impl_.capacity());
+    if(new_cap > impl_.capacity())
     {
         // grow
         new_cap = impl::growth(
-            new_cap, impl_.capacity);
+            new_cap, impl_.capacity());
         impl tmp(new_cap, sp_);
         traits_type::copy(tmp.data(),
-            impl_.data(), impl_.size + 1);
-        tmp.size = impl_.size;
+            impl_.data(), impl_.size() + 1);
+        tmp.size(impl_.size());
         impl_.destroy(sp_);
         impl_ = tmp;
         return;
