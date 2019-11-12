@@ -3,7 +3,7 @@
 
   <Type Name="boost::json::value">
     <DisplayString Condition="kind_==kind::object">object [{obj_.impl_.tab_?obj_.impl_.tab_->size:0}]</DisplayString>
-    <DisplayString Condition="kind_==kind::array">array [{arr_.impl_.size}]</DisplayString>
+    <DisplayString Condition="kind_==kind::array">array [{arr_.impl_.size_}]</DisplayString>
     <DisplayString Condition="kind_==kind::string">
         {str_.impl_.capacity>sizeof(str_.impl_.buf)?str_.impl_.p:str_.impl_.buf,[str_.impl_.size]s}</DisplayString>
     <DisplayString Condition="kind_==kind::double_">{sca_.d}</DisplayString>
@@ -32,13 +32,13 @@
   </Type>
 
   <Type Name="boost::json::array">
-    <DisplayString>{{ size={impl_.size} }}</DisplayString>
+    <DisplayString>{{ size={impl_.size_} }}</DisplayString>
     <Expand>
       <ArrayItems>
-        <Size>impl_.size</Size>
-        <ValuePointer Condition="impl_.vec!=0">impl_.vec</ValuePointer>
+        <Size>impl_.size_</Size>
+        <ValuePointer Condition="impl_.vec_!=0">impl_.vec_</ValuePointer>
       </ArrayItems>
-      <Item Name="[capacity]">impl_.capacity</Item>
+      <Item Name="[capacity]">impl_.capacity_</Item>
       <Item Name="[storage]">sp_</Item>
     </Expand>
   </Type>

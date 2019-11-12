@@ -14,8 +14,7 @@
 #include <boost/json/detail/assert.hpp>
 #include <boost/json/storage.hpp>
 #include <cstdint>
-#include <memory>
-#include <stdexcept>
+#include <new>
 
 namespace boost {
 namespace json {
@@ -81,13 +80,10 @@ public:
 
     ~block_storage()
     {
-        std::allocator<block> a;
-        auto b = head_;
-        while(b)
+        for(auto b = head_; b;)
         {
             auto next = b->next;
-            a.deallocate(b,
-                sizeof(*b) + b->size);
+            ::operator delete(b);
             b = next;
         }
     }
@@ -131,12 +127,13 @@ private:
     block&
     alloc_block(std::size_t size)
     {
-        std::allocator<block> a;
         auto const n = (
             size + sizeof(block) - 1) /
             sizeof(block);
+        auto const bytes =
+            (n + 1) * sizeof(block);
         auto& b = *::new(
-            a.allocate(n + 1)) block(
+            ::operator new(bytes)) block(
                 n * sizeof(block), head_);
         head_ = &b;
         return b;

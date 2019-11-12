@@ -95,7 +95,7 @@ public:
         bool need_free,
         bool counted) noexcept
         : id_(id)
-        , need_free_(need_free)
+        , need_free_(need_free || counted)
         , counted_(counted)
     {
     }

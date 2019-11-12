@@ -10,8 +10,7 @@
 // Test that header file is self-contained.
 #include <boost/json/block_storage.hpp>
 
-#include <boost/json/storage_ptr.hpp>
-
+#include <boost/json/parser.hpp>
 #include <boost/beast/_experimental/unit_test/suite.hpp>
 
 namespace boost {
@@ -20,10 +19,39 @@ namespace json {
 class block_storage_test : public beast::unit_test::suite
 {
 public:
-    void run() override
+    void
+    testStorage()
     {
-        make_storage<block_storage>();
+        parse(
+R"xx({
+    "glossary": {
+        "title": "example glossary",
+		"GlossDiv": {
+            "title": "S",
+			"GlossList": {
+                "GlossEntry": {
+                    "ID": "SGML",
+					"SortAs": "SGML",
+					"GlossTerm": "Standard Generalized Markup Language",
+					"Acronym": "SGML",
+					"Abbrev": "ISO 8879:1986",
+					"GlossDef": {
+                        "para": "A meta-markup language, used to create markup languages such as DocBook.",
+						"GlossSeeAlso": ["GML", "XML"]
+                    },
+					"GlossSee": "markup"
+                }
+            }
+        }
+    }
+})xx", make_storage<block_storage>());
         pass();
+    }
+
+    void
+    run() override
+    {
+        testStorage();
     }
 };
 

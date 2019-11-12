@@ -218,7 +218,6 @@ public:
     void
     run() override
     {
-testParser();
     #ifndef BOOST_JSON_NO_MAX_OBJECT_SIZE
         testObject();
     #endif
