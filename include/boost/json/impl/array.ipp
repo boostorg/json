@@ -24,8 +24,8 @@ namespace json {
 //----------------------------------------------------------
 
 array::
-impl_type::
-impl_type(
+array_impl::
+array_impl(
     std::size_t capacity,
     storage_ptr const& sp)
 {
@@ -55,8 +55,8 @@ impl_type(
 
 
 array::
-impl_type::
-impl_type(impl_type&& other) noexcept
+array_impl::
+array_impl(array_impl&& other) noexcept
     : tab_(detail::exchange(
         other.tab_, nullptr))
 {
@@ -64,20 +64,20 @@ impl_type(impl_type&& other) noexcept
 
 auto
 array::
-impl_type::
+array_impl::
 operator=(
-    impl_type&& other) noexcept ->
-        impl_type&
+    array_impl&& other) noexcept ->
+        array_impl&
 {
-    ::new(this) impl_type(
+    ::new(this) array_impl(
         std::move(other));
     return *this;
 }
 
 void
 array::
-impl_type::
-swap(impl_type& rhs) noexcept
+array_impl::
+swap(array_impl& rhs) noexcept
 {
     auto tmp = tab_;
     tab_ = rhs.tab_;
@@ -86,7 +86,7 @@ swap(impl_type& rhs) noexcept
 
 void
 array::
-impl_type::
+array_impl::
 destroy_impl(
     storage_ptr const& sp) noexcept
 {
@@ -106,7 +106,7 @@ destroy_impl(
 
 void
 array::
-impl_type::
+array_impl::
 destroy(
     storage_ptr const& sp) noexcept
 {
@@ -176,6 +176,8 @@ array::
 array(storage_ptr sp) noexcept
     : sp_(std::move(sp))
 {
+    // silence -Wunused-private-field
+    k_ = kind::array;
 }
 
 array::
@@ -349,7 +351,7 @@ shrink_to_fit() noexcept
     try
     {
 #endif
-        impl_type impl(impl_.size(), sp_);
+        array_impl impl(impl_.size(), sp_);
         relocate(
             impl.data(),
             impl_.data(), impl_.size());
@@ -616,7 +618,7 @@ reserve_impl(std::size_t capacity)
     }
     if( capacity < min_capacity_)
         capacity = min_capacity_;
-    impl_type impl(capacity, sp_);
+    array_impl impl(capacity, sp_);
     relocate(
         impl.data(),
         impl_.data(), impl_.size());

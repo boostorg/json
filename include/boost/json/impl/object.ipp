@@ -28,7 +28,7 @@ namespace json {
 
 void
 object::
-impl_type::
+object_impl::
 do_destroy(storage_ptr const& sp) noexcept
 {
     if(tab_)
@@ -44,8 +44,8 @@ do_destroy(storage_ptr const& sp) noexcept
 
 inline
 object::
-impl_type::
-impl_type(
+object_impl::
+object_impl(
     std::size_t capacity,
     std::size_t buckets,
     storage_ptr const& sp)
@@ -60,8 +60,8 @@ impl_type(
 }
 
 object::
-impl_type::
-impl_type(impl_type&& other) noexcept
+object_impl::
+object_impl(object_impl&& other) noexcept
     : tab_(detail::exchange(
         other.tab_, nullptr))
 {
@@ -69,7 +69,7 @@ impl_type(impl_type&& other) noexcept
 
 void
 object::
-impl_type::
+object_impl::
 clear() noexcept
 {
     if(! tab_)
@@ -84,7 +84,7 @@ clear() noexcept
 // checks for dupes
 void
 object::
-impl_type::
+object_impl::
 build() noexcept
 {
     auto end = this->end();
@@ -122,7 +122,7 @@ build() noexcept
 // does not check for dupes
 void
 object::
-impl_type::
+object_impl::
 rebuild() noexcept
 {
     auto const end = this->end();
@@ -137,8 +137,8 @@ rebuild() noexcept
 
 void
 object::
-impl_type::
-swap(impl_type& rhs) noexcept
+object_impl::
+swap(object_impl& rhs) noexcept
 {
     auto tmp = tab_;
     tab_ = rhs.tab_;
@@ -594,7 +594,7 @@ rehash(std::size_t new_capacity)
     if(new_capacity > max_size())
         BOOST_JSON_THROW(
             detail::object_too_large_exception());
-    impl_type impl(
+    object_impl impl(
         new_capacity, new_buckets, sp_);
     if(impl_.size() > 0)
         std::memcpy(

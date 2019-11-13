@@ -17,8 +17,8 @@
 #include <boost/json/object.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/string.hpp>
+#include <boost/json/detail/kind.hpp>
 #include <boost/json/detail/value.hpp>
-#include <boost/utility/string_view.hpp>
 #include <boost/pilfer.hpp>
 #include <cstdlib>
 #include <initializer_list>
@@ -107,40 +107,34 @@ class value
     friend class value_test;
 
 #ifndef GENERATING_DOCUMENTATION
-    struct scalar
-    {
-        storage_ptr sp; // must come first
-        union
-        {
-            std::uint64_t u;
-            std::int64_t i;
-            double d;
-            bool b;
-        };
-
-        scalar() = default;
-        scalar(storage_ptr sp_)
-            : sp(std::move(sp_))
-        {
-        }
-
-        ~scalar()
-        {
-        }
-    };
-
     // XSL scripts have trouble with private anon unions
+    using int64_k = detail::int64_k;
+    using uint64_k = detail::uint64_k;
+    using double_k = detail::double_k;
+    using bool_k = detail::bool_k;
+    using null_k = detail::null_k;
+
     union
     {
         storage_ptr sp_; // must come first
         object      obj_;
         array       arr_;
         string      str_;
-        scalar      sca_;
+        int64_k     i64_;
+        uint64_k    u64_;
+        double_k    dub_;
+        bool_k      bln_;
+        null_k      nul_;
     };
 #endif
 
-    json::kind kind_;
+    static
+    constexpr
+    json::kind
+    short_string_ =
+        static_cast<json::kind>(
+            ((unsigned char)
+            json::kind::string) | 0x80);
 
 public:
     /** Destructor.
@@ -160,6 +154,25 @@ public:
 
         Default constructed values are null.
         The container and all of its contents will use the
+        default storage.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
+    value() noexcept
+        : nul_()
+    {
+    }
+
+    /** Constructor.
+
+        Construct a null value.
+        The container and all of its contents will use the
         specified storage.
 
         @par Complexity
@@ -170,13 +183,11 @@ public:
 
         No-throw guarantee.
 
-        @param sp The storage to use. If this parameter
-        is omitted, the default storage is used.
+        @param sp The storage to use.
     */
     explicit
-    value(storage_ptr sp = {}) noexcept
-        : sca_(std::move(sp))
-        , kind_(json::kind::null)
+    value(storage_ptr sp) noexcept
+        : nul_(detail::move(sp))
     {
     }
 
@@ -356,25 +367,27 @@ public:
     /** Construct an object.
     */
     value(object obj) noexcept
-        : obj_(std::move(obj))
-        , kind_(json::kind::object)
+        : obj_(detail::move(obj))
     {
     }
 
     /** Construct an object.
     */
-    value(object obj, storage_ptr sp)
-        : obj_(std::move(obj), std::move(sp))
-        , kind_(json::kind::object)
+    value(
+        object obj,
+        storage_ptr sp)
+        : obj_(
+            detail::move(obj),
+            detail::move(sp))
     {
     }
 
     /** Construct an object.
     */
-    value(object_kind_t,
+    value(
+        object_kind_t,
         storage_ptr sp = {}) noexcept
-        : obj_(std::move(sp))
-        , kind_(json::kind::object)
+        : obj_(detail::move(sp))
     {
     }
 
@@ -386,25 +399,27 @@ public:
     /** Construct an array.
     */
     value(array arr) noexcept
-        : arr_(std::move(arr))
-        , kind_(json::kind::array)
+        : arr_(detail::move(arr))
     {
     }
 
     /** Construct an array.
     */
-    value(array arr, storage_ptr sp)
-        : arr_(std::move(arr), std::move(sp))
-        , kind_(json::kind::array)
+    value(
+        array arr,
+        storage_ptr sp)
+        : arr_(
+            detail::move(arr),
+            detail::move(sp))
     {
     }
 
     /** Construct an array.
     */
-    value(array_kind_t,
+    value(
+        array_kind_t,
         storage_ptr sp = {}) noexcept
-        : arr_(std::move(sp))
-        , kind_(json::kind::array)
+        : arr_(detail::move(sp))
     {
     }
 
@@ -417,16 +432,18 @@ public:
     */
     value(
         string str) noexcept
-        : str_(std::move(str))
-        , kind_(json::kind::string)
+        : str_(detail::move(str))
     {
     }
 
     /** Construct a string.
     */
-    value(string str, storage_ptr sp)
-        : str_(std::move(str), std::move(sp))
-        , kind_(json::kind::string)
+    value(
+        string str,
+        storage_ptr sp)
+        : str_(
+            detail::move(str),
+            detail::move(sp))
     {
     }
 
@@ -435,8 +452,7 @@ public:
     value(
         string_view s,
         storage_ptr sp = {})
-        : str_(s, std::move(sp))
-        , kind_(json::kind::string)
+        : str_(s, detail::move(sp))
     {
     }
 
@@ -445,8 +461,7 @@ public:
     value(
         char const* s,
         storage_ptr sp = {})
-        : str_(s, std::move(sp))
-        , kind_(json::kind::string)
+        : str_(s, detail::move(sp))
     {
     }
 
@@ -454,122 +469,99 @@ public:
     */
     value(string_kind_t,
         storage_ptr sp = {}) noexcept
-        : str_(std::move(sp))
-        , kind_(json::kind::string)
+        : str_(detail::move(sp))
     {
     }
 
     /** Construct a signed integer.
     */
-    value(short i, storage_ptr sp = {})
-        : kind_(json::kind::int64)
+    value(
+        short i,
+        storage_ptr sp = {})
+        : i64_(i, detail::move(sp))
     {
-        sca_.i = i;
-        ::new(&sca_.sp) storage_ptr(
-            std::move(sp));
     }
 
     /** Construct a signed integer.
     */
-    value(int i, storage_ptr sp = {})
-        : kind_(json::kind::int64)
+    value(
+        int i,
+        storage_ptr sp = {})
+        : i64_(i, detail::move(sp))
     {
-        sca_.i = i;
-        ::new(&sca_.sp) storage_ptr(
-            std::move(sp));
     }
 
     /** Construct a signed integer.
     */
-    value(long i, storage_ptr sp = {})
-        : kind_(json::kind::int64)
+    value(
+        long i,
+        storage_ptr sp = {})
+        : i64_(i, detail::move(sp))
     {
-        sca_.i = i;
-        ::new(&sca_.sp) storage_ptr(
-            std::move(sp));
     }
 
     /** Construct a signed integer.
     */
-    value(long long i, storage_ptr sp = {})
-        : kind_(json::kind::int64)
+    value(
+        long long i,
+        storage_ptr sp = {})
+        : i64_(i, detail::move(sp))
     {
-        sca_.i = i;
-        ::new(&sca_.sp) storage_ptr(
-            std::move(sp));
     }
 
     /** Construct an unsigned integer.
     */
-    value(unsigned short u, storage_ptr sp = {})
-        : kind_(json::kind::uint64)
+    value(
+        unsigned short u,
+        storage_ptr sp = {})
+        : u64_(u, detail::move(sp))
     {
-        sca_.u = u;
-        ::new(&sca_.sp) storage_ptr(
-            std::move(sp));
     }
 
     /** Construct an unsigned integer.
     */
-    value(unsigned int u, storage_ptr sp = {})
-        : kind_(json::kind::uint64)
+    value(
+        unsigned int u,
+        storage_ptr sp = {})
+        : u64_(u, detail::move(sp))
     {
-        sca_.u = u;
-        ::new(&sca_.sp) storage_ptr(
-            std::move(sp));
     }
 
     /** Construct an unsigned integer.
     */
-    value(unsigned long u, storage_ptr sp = {})
-        : kind_(json::kind::uint64)
+    value(
+        unsigned long u,
+        storage_ptr sp = {})
+        : u64_(u, detail::move(sp))
     {
-        sca_.u = u;
-        ::new(&sca_.sp) storage_ptr(
-            std::move(sp));
     }
 
     /** Construct an unsigned integer.
     */
-    value(unsigned long long u, storage_ptr sp = {})
-        : kind_(json::kind::uint64)
+    value(
+        unsigned long long u,
+        storage_ptr sp = {})
+        : u64_(u, detail::move(sp))
     {
-        sca_.u = u;
-        ::new(&sca_.sp) storage_ptr(
-            std::move(sp));
     }
 
     /** Construct a floating point number.
     */
-    value(float d,
+    value(
+        double d,
         storage_ptr sp = {})
-        : kind_(json::kind::double_)
+        : dub_(d, detail::move(sp))
     {
-        sca_.d = d;
-        ::new(&sca_.sp) storage_ptr(
-            std::move(sp));
     }
 
     /** Construct a floating point number.
     */
-    value(double d,
+    value(
+        long double d,
         storage_ptr sp = {})
-        : kind_(json::kind::double_)
+        : dub_(static_cast<double>(d),
+            detail::move(sp))
     {
-        sca_.d = d;
-        ::new(&sca_.sp) storage_ptr(
-            std::move(sp));
-    }
-
-    /** Construct a floating point number.
-    */
-    value(long double d,
-        storage_ptr sp = {})
-        : kind_(json::kind::double_)
-    {
-        sca_.d = static_cast<double>(d);
-        ::new(&sca_.sp) storage_ptr(
-            std::move(sp));
     }
 
     /** Construct a boolean.
@@ -582,8 +574,12 @@ public:
         ,class = typename std::enable_if<
             std::is_same<Bool, bool>::value>::type
     >
-    value(Bool b,
-        storage_ptr sp = {}) noexcept;
+    value(
+        Bool b,
+        storage_ptr sp = {}) noexcept
+        : bln_(b, detail::move(sp))
+    {
+    }
 #endif
 
     /** Construct a null
@@ -591,8 +587,7 @@ public:
     value(
         std::nullptr_t,
         storage_ptr sp = {})
-        : sca_(std::move(sp))
-        , kind_(json::kind::null)
+        : nul_(detail::move(sp))
     {
     }
 
@@ -771,7 +766,7 @@ public:
     value(
         T const& t,
         storage_ptr sp = {})
-        : value(std::move(sp))
+        : value(detail::move(sp))
     {
         value_exchange<
             detail::remove_cr<T>
@@ -895,7 +890,9 @@ public:
     json::kind
     kind() const noexcept
     {
-        return kind_;
+        return static_cast<json::kind>(
+            static_cast<unsigned char>(
+                nul_.k) & 0x7f);
     }
 
     /** Returns true if this is an object
@@ -910,7 +907,7 @@ public:
     bool
     is_object() const noexcept
     {
-        return kind_ == json::kind::object;
+        return kind() == json::kind::object;
     }
 
     /** Returns true if this is an array
@@ -925,7 +922,7 @@ public:
     bool
     is_array() const noexcept
     {
-        return kind_ == json::kind::array;
+        return kind() == json::kind::array;
     }
 
     /** Returns true if this is a string
@@ -940,7 +937,7 @@ public:
     bool
     is_string() const noexcept
     {
-        return kind_ == json::kind::string;
+        return kind() == json::kind::string;
     }
 
     /** Returns true if this is a number
@@ -957,28 +954,29 @@ public:
     bool
     is_number() const noexcept
     {
+        // VFALCO Could use bit 0x40 for this
         return
-            kind_ == json::kind::int64 ||
-            kind_ == json::kind::uint64 ||
-            kind_ == json::kind::double_;
+            kind() == json::kind::int64 ||
+            kind() == json::kind::uint64 ||
+            kind() == json::kind::double_;
     }
 
     bool
     is_int64() const noexcept
     {
-        return kind_ == json::kind::int64;
+        return kind() == json::kind::int64;
     }
 
     bool
     is_uint64() const noexcept
     {
-        return kind_ == json::kind::uint64;
+        return kind() == json::kind::uint64;
     }
 
     bool
     is_double() const noexcept
     {
-        return kind_ == json::kind::double_;
+        return kind() == json::kind::double_;
     }
 
     /** Returns true if this is a boolean
@@ -993,7 +991,7 @@ public:
     bool
     is_bool() const noexcept
     {
-        return kind_ == json::kind::boolean;
+        return kind() == json::kind::boolean;
     }
 
     /** Returns true if this is a null
@@ -1008,7 +1006,7 @@ public:
     bool
     is_null() const noexcept
     {
-        return kind_ == json::kind::null;
+        return kind() == json::kind::null;
     }
 
     /** Returns true if this is not an array or object
@@ -1024,9 +1022,10 @@ public:
     bool
     is_primitive() const noexcept
     {
-       return
-           kind_ != json::kind::object &&
-           kind_ != json::kind::array;
+        // VFALCO Could use bit 0x20 for this
+        return
+           nul_.k != json::kind::object &&
+           nul_.k != json::kind::array;
     }
 
     /** Returns true if this is an array or object
@@ -1042,9 +1041,10 @@ public:
     bool
     is_structured() const noexcept
     {
-       return
-           kind_ == json::kind::object ||
-           kind_ == json::kind::array;
+        // VFALCO Could use bit 0x20 for this
+        return
+           kind() == json::kind::object ||
+           kind() == json::kind::array;
     }
 
     //------------------------------------------------------
@@ -1089,7 +1089,7 @@ public:
     object*
     if_object() noexcept
     {
-        if(kind_ == json::kind::object)
+        if(is_object())
             return &obj_;
         return nullptr;
     }
@@ -1111,7 +1111,7 @@ public:
     object const*
     if_object() const noexcept
     {
-        if(kind_ == json::kind::object)
+        if(is_object())
             return &obj_;
         return nullptr;
     }
@@ -1133,7 +1133,7 @@ public:
     array*
     if_array() noexcept
     {
-        if(kind_ == json::kind::array)
+        if(is_array())
             return &arr_;
         return nullptr;
     }
@@ -1155,7 +1155,7 @@ public:
     array const*
     if_array() const noexcept
     {
-        if(kind_ == json::kind::array)
+        if(is_array())
             return &arr_;
         return nullptr;
     }
@@ -1177,7 +1177,7 @@ public:
     string*
     if_string() noexcept
     {
-        if(kind_ == json::kind::string)
+        if(is_string())
             return &str_;
         return nullptr;
     }
@@ -1199,7 +1199,7 @@ public:
     string const*
     if_string() const noexcept
     {
-        if(kind_ == json::kind::string)
+        if(is_string())
             return &str_;
         return nullptr;
     }
@@ -1207,48 +1207,48 @@ public:
     std::int64_t*
     if_int64() noexcept
     {
-        if(kind_ == json::kind::int64)
-            return &sca_.i;
+        if(is_int64())
+            return &i64_.i;
         return nullptr;
     }
 
     std::int64_t const*
     if_int64() const noexcept
     {
-        if(kind_ == json::kind::int64)
-            return &sca_.i;
+        if(is_int64())
+            return &i64_.i;
         return nullptr;
     }
 
     std::uint64_t*
     if_uint64() noexcept
     {
-        if(kind_ == json::kind::uint64)
-            return &sca_.u;
+        if(is_uint64())
+            return &u64_.u;
         return nullptr;
     }
 
     std::uint64_t const*
     if_uint64() const noexcept
     {
-        if(kind_ == json::kind::uint64)
-            return &sca_.u;
+        if(is_uint64())
+            return &u64_.u;
         return nullptr;
     }
 
     double*
     if_double() noexcept
     {
-        if(kind_ == json::kind::double_)
-            return &sca_.d;
+        if(is_double())
+            return &dub_.d;
         return nullptr;
     }
 
     double const*
     if_double() const noexcept
     {
-        if(kind_ == json::kind::double_)
-            return &sca_.d;
+        if(is_double())
+            return &dub_.d;
         return nullptr;
     }
 
@@ -1269,8 +1269,8 @@ public:
     bool*
     if_bool() noexcept
     {
-        if(kind_ == json::kind::boolean)
-            return &sca_.b;
+        if(is_bool())
+            return &bln_.b;
         return nullptr;
     }
 
@@ -1291,8 +1291,8 @@ public:
     bool const*
     if_bool() const noexcept
     {
-        if(kind_ == json::kind::boolean)
-            return &sca_.b;
+        if(is_bool())
+            return &bln_.b;
         return nullptr;
     }
 
@@ -1317,7 +1317,7 @@ public:
     object&
     as_object()
     {
-        if(kind_ != json::kind::object)
+        if(! is_object())
             BOOST_JSON_THROW(
                 system_error(
                     error::not_object));
@@ -1343,7 +1343,7 @@ public:
     object const&
     as_object() const
     {
-        if(kind_ != json::kind::object)
+        if(! is_object())
             BOOST_JSON_THROW(
                 system_error(
                     error::not_object));
@@ -1369,7 +1369,7 @@ public:
     array&
     as_array()
     {
-        if(kind_ != json::kind::array)
+        if(! is_array())
             BOOST_JSON_THROW(
                 system_error(
                     error::not_array));
@@ -1395,7 +1395,7 @@ public:
     array const&
     as_array() const
     {
-        if(kind_ != json::kind::array)
+        if(! is_array())
             BOOST_JSON_THROW(
                 system_error(
                     error::not_array));
@@ -1421,7 +1421,7 @@ public:
     string&
     as_string()
     {
-        if(kind_ != json::kind::string)
+        if(! is_string())
             BOOST_JSON_THROW(
                 system_error(
                     error::not_string));
@@ -1447,7 +1447,7 @@ public:
     string const&
     as_string() const
     {
-        if(kind_ != json::kind::string)
+        if(! is_string())
             BOOST_JSON_THROW(
                 system_error(
                     error::not_string));
@@ -1457,64 +1457,64 @@ public:
     std::int64_t&
     as_int64()
     {
-        if(kind_ != json::kind::int64)
+        if(! is_int64())
             BOOST_JSON_THROW(
                 system_error(
                     error::not_number));
-        return sca_.i;
+        return i64_.i;
     }
 
 
     std::int64_t const&
     as_int64() const
     {
-        if(kind_ != json::kind::int64)
+        if(! is_int64())
             BOOST_JSON_THROW(
                 system_error(
                     error::not_number));
-        return sca_.i;
+        return i64_.i;
     }
 
     std::uint64_t&
     as_uint64()
     {
-        if(kind_ != json::kind::uint64)
+        if(! is_uint64())
             BOOST_JSON_THROW(
                 system_error(
                     error::not_number));
-        return sca_.u;
+        return u64_.u;
     }
 
 
     std::uint64_t const&
     as_uint64() const
     {
-        if(kind_ != json::kind::uint64)
+        if(! is_uint64())
             BOOST_JSON_THROW(
                 system_error(
                     error::not_number));
-        return sca_.u;
+        return u64_.u;
     }
 
     double&
     as_double()
     {
-        if(kind_ != json::kind::double_)
+        if(! is_double())
             BOOST_JSON_THROW(
                 system_error(
                     error::not_number));
-        return sca_.d;
+        return dub_.d;
     }
 
 
     double const&
     as_double() const
     {
-        if(kind_ != json::kind::double_)
+        if(! is_double())
             BOOST_JSON_THROW(
                 system_error(
                     error::not_number));
-        return sca_.d;
+        return dub_.d;
     }
 
     /** Return a reference to the bool, or throw an exception.
@@ -1536,11 +1536,11 @@ public:
     bool&
     as_bool()
     {
-        if(kind_ != json::kind::boolean)
+        if(! is_bool())
             BOOST_JSON_THROW(
                 system_error(
                     error::not_bool));
-        return sca_.b;
+        return bln_.b;
     }
 
     /** Return a reference to the bool, or throw an exception.
@@ -1562,11 +1562,11 @@ public:
     bool const&
     as_bool() const
     {
-        if(kind_ != json::kind::boolean)
+        if(! is_bool())
             BOOST_JSON_THROW(
                 system_error(
                     error::not_bool));
-        return sca_.b;
+        return bln_.b;
     }
 
     //------------------------------------------------------
@@ -1779,7 +1779,7 @@ struct object::value_type
         : value_type(
             p.first,
             p.second,
-            std::move(sp))
+            detail::move(sp))
     {
     }
 
@@ -1793,8 +1793,8 @@ struct object::value_type
         storage_ptr sp = {})
         : value_type(
             p.first,
-            std::move(p).second,
-            std::move(sp))
+            detail::move(p).second,
+            detail::move(sp))
     {
     }
 

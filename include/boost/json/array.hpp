@@ -24,11 +24,6 @@ namespace json {
 class value;
 class string;
 
-inline
-string
-to_string_test(
-    value const& jv);
-
 class unchecked_array
 {
     value* data_;
@@ -1590,7 +1585,7 @@ private:
     constexpr
     unsigned long min_capacity_ = 16;
 
-    class impl_type
+    class array_impl
     {
         struct table
         {
@@ -1601,20 +1596,20 @@ private:
         table* tab_ = nullptr;
 
     public:
-        impl_type() = default;
-        impl_type(impl_type const&) = default;
-        impl_type& operator=(
-            impl_type const&) = default;
+        array_impl() = default;
+        array_impl(array_impl const&) = default;
+        array_impl& operator=(
+            array_impl const&) = default;
 
         inline
-        impl_type(
+        array_impl(
             std::size_t capacity,
             storage_ptr const& sp);
 
         inline
-        impl_type&
+        array_impl&
         operator=(
-            impl_type&& other) noexcept;
+            array_impl&& other) noexcept;
 
         value*
         data() const noexcept
@@ -1654,12 +1649,12 @@ private:
         index_of(value const*) const noexcept;
 
         inline
-        impl_type(
-            impl_type&& other) noexcept;
+        array_impl(
+            array_impl&& other) noexcept;
 
         inline
         void
-        swap(impl_type& rhs) noexcept;
+        swap(array_impl& rhs) noexcept;
 
         inline
         void
@@ -1733,8 +1728,10 @@ private:
     class undo_construct;
     class undo_insert;
 
-    storage_ptr sp_; // must come first
-    impl_type impl_;
+    storage_ptr sp_;    // must come first
+    kind k_ =           // must come second
+        kind::array;
+    array_impl impl_;
 };
 
 } // json

@@ -138,25 +138,13 @@ from_json(T& t, value const& v)
 value::
 value(unchecked_object&& uo)
     : obj_(std::move(uo))
-    , kind_(json::kind::object)
 {
 }
 
 value::
 value(unchecked_array&& ua)
     : arr_(std::move(ua))
-    , kind_(json::kind::array)
 {
-}
-
-template<class Bool, class>
-value::
-value(Bool b, storage_ptr sp) noexcept
-    : kind_(json::kind::boolean)
-{
-    ::new(&sca_.b) bool(b);
-    ::new(&sca_.sp) storage_ptr(
-        std::move(sp));
 }
 
 //----------------------------------------------------------

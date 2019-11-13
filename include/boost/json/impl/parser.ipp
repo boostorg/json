@@ -204,7 +204,7 @@ release() noexcept
         basic_parser::reset();
         st_ = state::need_start;
         sp_ = {};
-        return std::move(u.v);
+        return pilfer(u.v);
     }
     // return null
     value jv(std::move(sp_));

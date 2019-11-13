@@ -45,7 +45,7 @@ relocate(value* dest) noexcept
 
 auto
 array::
-impl_type::
+array_impl::
 index_of(value const* pos) const noexcept ->
     std::size_t
 {

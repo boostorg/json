@@ -27,8 +27,6 @@ namespace detail {
 
 class string_impl
 {
-    friend class string_test;
-
     struct table
     {
         std::uint32_t size;
@@ -70,8 +68,6 @@ class string_impl
         sbo s_;
         pointer p_;
     };
-
-    friend class value;
 
 public:
     static
@@ -205,12 +201,6 @@ public:
     void
     shrink_to_fit(
         storage_ptr const& sp) noexcept;
-
-    bool
-    in_sbo() const noexcept
-    {
-        return s_.k == short_string_;
-    }
 
     void
     term(std::size_t n) noexcept

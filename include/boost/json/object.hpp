@@ -11,6 +11,7 @@
 #define BOOST_JSON_OBJECT_HPP
 
 #include <boost/json/detail/config.hpp>
+#include <boost/json/kind.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <boost/pilfer.hpp>
 #include <cstdlib>
@@ -100,7 +101,7 @@ public:
         std::pair<key_type, value>>;
 
 private:
-    class impl_type
+    class object_impl
     {
         struct table
         {
@@ -116,16 +117,16 @@ private:
         do_destroy(storage_ptr const& sp) noexcept;
 
     public:
-        impl_type() = default;
+        object_impl() = default;
 
         inline
-        impl_type(
+        object_impl(
             std::size_t capacity,
             std::size_t buckets,
             storage_ptr const& sp);
 
         inline
-        impl_type(impl_type&& other) noexcept;
+        object_impl(object_impl&& other) noexcept;
 
         void
         destroy(storage_ptr const& sp) noexcept
@@ -205,7 +206,7 @@ private:
 
         inline
         void
-        swap(impl_type& rhs) noexcept;
+        swap(object_impl& rhs) noexcept;
 
     private:
         std::size_t
@@ -236,8 +237,10 @@ private:
         return 1.0;
     }
 
-    storage_ptr sp_; // must come first
-    impl_type impl_;
+    storage_ptr sp_;    // must come first
+    kind k_ =           // must come second
+        kind::object;
+    object_impl impl_;
 
 public:
     //------------------------------------------------------

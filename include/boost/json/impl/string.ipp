@@ -321,15 +321,6 @@ reserve_impl(size_type new_cap)
         impl_ = tmp;
         return;
     }
-    /*
-    if( new_cap >= sizeof(impl_.buf) ||
-        impl_.in_sbo())
-    {
-        // do nothing
-        return;
-    }
-    impl_.unalloc(sp_);
-    */
 }
 
 //----------------------------------------------------------

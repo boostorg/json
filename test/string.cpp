@@ -108,6 +108,7 @@ public:
 
             {
                 string s(string(t.v1), 1, 3);
+                BEAST_EXPECT(s.size() == 3);
                 BEAST_EXPECT(s == "bcd");
             }
 

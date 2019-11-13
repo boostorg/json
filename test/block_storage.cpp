@@ -22,7 +22,7 @@ public:
     void
     testStorage()
     {
-        parse(
+        auto jv = parse(
 R"xx({
     "glossary": {
         "title": "example glossary",
@@ -44,7 +44,8 @@ R"xx({
             }
         }
     }
-})xx", make_storage<block_storage>());
+})xx"
+        , make_storage<block_storage>());
         pass();
     }
 

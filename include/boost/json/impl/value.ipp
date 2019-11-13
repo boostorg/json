@@ -83,7 +83,7 @@ struct value::init_iter
 value::
 ~value()
 {
-    switch(kind_)
+    switch(kind())
     {
     case json::kind::object:
         obj_.~object();
@@ -98,11 +98,23 @@ value::
         break;
 
     case json::kind::int64:
+        i64_.~int64_k();
+        break;
+
     case json::kind::uint64:
+        u64_.~uint64_k();
+        break;
+
     case json::kind::double_:
+        dub_.~double_k();
+        break;
+
     case json::kind::boolean:
+        bln_.~bool_k();
+        break;
+
     case json::kind::null:
-        sca_.sp.~storage_ptr();
+        nul_.~null_k();
         break;
     }
 }
@@ -111,8 +123,7 @@ value::
 value(pilfered<value> p) noexcept
 {
     std::memcpy(this, &p.get(), sizeof(*this));
-    ::new(&p.get().sca_.sp) storage_ptr{};
-    p.get().kind_ = json::kind::null;
+    ::new(&p.get().nul_) null_k;
 }
 
 value::
@@ -120,65 +131,63 @@ value(
     value const& other,
     storage_ptr sp)
 {
-    switch(other.kind_)
+    switch(other.kind())
     {
     case json::kind::object:
         ::new(&obj_) object(
-            other.obj_, std::move(sp));
+            other.obj_,
+            detail::move(sp));
         break;
 
     case json::kind::array:
         ::new(&arr_) array(
-            other.arr_, std::move(sp));
+            other.arr_,
+            detail::move(sp));
         break;
 
     case json::kind::string:
         ::new(&str_) string(
-            other.str_, std::move(sp));
+            other.str_,
+            detail::move(sp));
         break;
 
     case json::kind::int64:
-        ::new(&sca_.i) std::int64_t(
-            other.sca_.i);
-        ::new(&sca_.sp)
-            storage_ptr(std::move(sp));
+        ::new(&i64_) int64_k(
+            other.i64_.i,
+            detail::move(sp));
         break;
 
     case json::kind::uint64:
-        ::new(&sca_.u) std::uint64_t(
-            other.sca_.u);
-        ::new(&sca_.sp)
-            storage_ptr(std::move(sp));
+        ::new(&u64_) uint64_k(
+            other.u64_.u,
+            detail::move(sp));
         break;
 
     case json::kind::double_:
-        ::new(&sca_.d) double(
-            other.sca_.d);
-        ::new(&sca_.sp)
-            storage_ptr(std::move(sp));
+        ::new(&dub_) double_k(
+            other.dub_.d,
+            detail::move(sp));
         break;
 
     case json::kind::boolean:
-        ::new(&sca_.b) bool(
-            other.sca_.b);
-        ::new(&sca_.sp)
-            storage_ptr(std::move(sp));
+        ::new(&bln_) bool_k(
+            other.bln_.b,
+            detail::move(sp));
         break;
 
     case json::kind::null:
-        ::new(&sca_.sp)
-            storage_ptr(std::move(sp));
+        ::new(&nul_) null_k(
+            detail::move(sp));
         break;
     }
-    kind_ = other.kind_;
 }
 
 value::
 value(value&& other) noexcept
 {
-    std::memcpy(this, &other, sizeof(*this));
-    ::new(&other.sca_.sp) storage_ptr{};
-    other.kind_ = json::kind::null;
+    std::memcpy(
+        this, &other, sizeof(*this));
+    ::new(&other.nul_) null_k(sp_);
 }
 
 value::
@@ -186,60 +195,51 @@ value(
     value&& other,
     storage_ptr sp)
 {
-    switch(other.kind_)
+    switch(other.kind())
     {
     case json::kind::object:
         ::new(&obj_) object(
-            std::move(other.obj_),
-            std::move(sp));
+            detail::move(other.obj_),
+            detail::move(sp));
         break;
 
     case json::kind::array:
         ::new(&arr_) array(
-            std::move(other.arr_),
-            std::move(sp));
+            detail::move(other.arr_),
+            detail::move(sp));
         break;
 
     case json::kind::string:
         ::new(&str_) string(
-            std::move(other.str_),
-            std::move(sp));
+            detail::move(other.str_),
+            detail::move(sp));
         break;
 
     case json::kind::int64:
-        ::new(&sca_.i) std::int64_t(
-            other.sca_.i);
-        ::new(&sca_.sp) storage_ptr(
-            std::move(sp));
+        ::new(&i64_) int64_k(
+            other.i64_.i, detail::move(sp));
         break;
 
     case json::kind::uint64:
-        ::new(&sca_.u) std::uint64_t(
-            other.sca_.u);
-        ::new(&sca_.sp) storage_ptr(
-            std::move(sp));
+        ::new(&u64_) uint64_k(
+            other.u64_.u, detail::move(sp));
         break;
 
     case json::kind::double_:
-        ::new(&sca_.d) double(
-            other.sca_.d);
-        ::new(&sca_.sp) storage_ptr(
-            std::move(sp));
+        ::new(&dub_) double_k(
+            other.dub_.d, detail::move(sp));
         break;
 
     case json::kind::boolean:
-        ::new(&sca_.b) bool(
-            other.sca_.b);
-        ::new(&sca_.sp) storage_ptr(
-            std::move(sp));
+        ::new(&bln_) bool_k(
+            other.bln_.b, detail::move(sp));
         break;
 
     case json::kind::null:
-        ::new(&sca_.sp) storage_ptr(
-            std::move(sp));
+        ::new(&nul_) null_k(
+            detail::move(sp));
         break;
     }
-    kind_ = other.kind_;
 }
 
 value&
@@ -248,7 +248,7 @@ operator=(value&& other)
 {
     undo u(this);
     ::new(this) value(
-        std::move(other),
+        detail::move(other),
         u.old.get_storage());
     u.commit();
     return *this;
@@ -290,14 +290,12 @@ value(
             init_iter{init.end()},
             static_cast<
                 object::size_type>(init.size()),
-            std::move(sp));
-        kind_ = json::kind::object;
+            detail::move(sp));
     }
     else
     {
         ::new(&arr_) array(
-            init, std::move(sp));
-        kind_ = json::kind::array;
+            init, detail::move(sp));
     }
 }
 
@@ -312,7 +310,6 @@ value::
 emplace_object() noexcept
 {
     ::new(&obj_) object(destroy());
-    kind_ = json::kind::object;
     return obj_;
 }
 
@@ -321,7 +318,6 @@ value::
 emplace_array() noexcept
 {
     ::new(&arr_) array(destroy());
-    kind_ = json::kind::array;
     return arr_;
 }
 
@@ -330,7 +326,6 @@ value::
 emplace_string() noexcept
 {
     ::new(&str_) string(destroy());
-    kind_ = json::kind::string;
     return str_;
 }
 
@@ -338,48 +333,39 @@ std::int64_t&
 value::
 emplace_int64() noexcept
 {
-    ::new(&sca_.sp) storage_ptr(destroy());
-    kind_ = json::kind::int64;
-    sca_.i = 0;
-    return sca_.i;
+    ::new(&i64_) int64_k(destroy());
+    return i64_.i;
 }
 
 std::uint64_t&
 value::
 emplace_uint64() noexcept
 {
-    ::new(&sca_.sp) storage_ptr(destroy());
-    kind_ = json::kind::uint64;
-    sca_.u = 0;
-    return sca_.u;
+    ::new(&u64_) uint64_k(destroy());
+    return u64_.u;
 }
 
 double&
 value::
 emplace_double() noexcept
 {
-    ::new(&sca_.sp) storage_ptr(destroy());
-    kind_ = json::kind::double_;
-    sca_.d = 0;
-    return sca_.d;
+    ::new(&dub_) double_k(destroy());
+    return dub_.d;
 }
 
 bool&
 value::
 emplace_bool() noexcept
 {
-    ::new(&sca_.sp) storage_ptr(destroy());
-    kind_ = json::kind::boolean;
-    sca_.b = false;
-    return sca_.b;
+    ::new(&bln_) bool_k(destroy());
+    return bln_.b;
 }
 
 void
 value::
 emplace_null() noexcept
 {
-    ::new(&sca_.sp) storage_ptr(destroy());
-    kind_ = json::kind::null;
+    ::new(&nul_) null_k(destroy());
 }
 
 void
@@ -390,10 +376,10 @@ swap(value& other)
     {
         // copy
         value temp1(
-            std::move(*this),
+            detail::move(*this),
             other.get_storage());
         value temp2(
-            std::move(other),
+            detail::move(other),
             this->get_storage());
         other.~value();
         ::new(&other) value(pilfer(temp1));
@@ -420,11 +406,11 @@ bool
 value::
 is_key_value_pair() const noexcept
 {
-    if(kind_ != json::kind::array)
+    if(! is_array())
         return false;
     if(arr_.size() != 2)
         return false;
-    if(arr_[0].kind_ != json::kind::string)
+    if(! arr_[0].is_string())
         return false;
     return true;
 }
@@ -450,7 +436,7 @@ storage_ptr
 value::
 destroy() noexcept
 {
-    switch(kind_)
+    switch(kind())
     {
     case json::kind::object:
     {
@@ -458,30 +444,26 @@ destroy() noexcept
         obj_.~object();
         return sp;
     }
-
     case json::kind::array:
     {
         auto sp = arr_.get_storage();
         arr_.~array();
         return sp;
     }
-
     case json::kind::string:
     {
         auto sp = str_.get_storage();
         str_.~string();
         return sp;
     }
-
     case json::kind::int64:
     case json::kind::uint64:
     case json::kind::double_:
     case json::kind::boolean:
     case json::kind::null:
-    default:
         break;
     }
-    return std::move(sca_.sp);
+    return detail::move(sp_);
 }
 
 //----------------------------------------------------------
@@ -518,7 +500,7 @@ value_type::
 value_type(
     value_type const& other,
     storage_ptr sp)
-    : value_(other.value_, std::move(sp))
+    : value_(other.value_, detail::move(sp))
     , len_(other.len_)
     , key_(
         [&]
@@ -544,8 +526,9 @@ destroy(
         return;
     if(! p->value().get_storage()->need_free())
         return;
+    p += n;
     while(n--)
-        (*p++).~value_type();
+        (*--p).~value_type();
 }
 
 //----------------------------------------------------------

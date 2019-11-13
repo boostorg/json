@@ -45,7 +45,7 @@ relocate(object::value_type* dest) noexcept
 
 void
 object::
-impl_type::
+object_impl::
 remove(
     value_type*& head,
     value_type* p) noexcept
@@ -63,7 +63,7 @@ remove(
 
 auto
 object::
-impl_type::
+object_impl::
 bucket(string_view key) const noexcept ->
     value_type*&
 {
@@ -74,7 +74,7 @@ bucket(string_view key) const noexcept ->
 
 auto
 object::
-impl_type::
+object_impl::
 bucket(std::size_t hash) const noexcept ->
     value_type*&
 {
@@ -83,7 +83,7 @@ bucket(std::size_t hash) const noexcept ->
 
 auto
 object::
-impl_type::
+object_impl::
 begin() const noexcept ->
     value_type*
 {
@@ -95,7 +95,7 @@ begin() const noexcept ->
 
 auto
 object::
-impl_type::
+object_impl::
 end() const noexcept ->
     value_type*
 {
@@ -104,7 +104,7 @@ end() const noexcept ->
 
 auto
 object::
-impl_type::
+object_impl::
 bucket_begin() const noexcept ->
     value_type**
 {
