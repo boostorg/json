@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+// Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_ARRAY_HPP
 #define BOOST_JSON_ARRAY_HPP
 
-#include <boost/json/detail/config.hpp>
+#include <boost/json/config.hpp>
 #include <boost/json/kind.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/detail/array_impl.hpp>
@@ -26,44 +26,57 @@ class value;
 
 /** A dynamically sized array of JSON values
 
-    This is the type used to represent JSON values of kind array.
-    It is modeled for equivalence to `std::vector<json::value>`.
+    This is the type used to represent JSON array values. It
+    is modeled for equivalence to `std::vector<value>`.
 
-    The elements are stored contiguously, which means that elements
-    can be accessed not only through iterators, but also using offsets
-    to regular pointers to elements. This means that a pointer to an
-    element of an @ref array may be passed to any function that expects
-    a pointer to @ref value.
+    <br>
 
-    The storage of the array is handled automatically, being expanded
-    and contracted as needed. Arrays usually occupy more space than
-    array language constructs, because more memory is allocated to
-    handle future growth. This way an array does not need to reallocate
-    each time an element is inserted, but only when the additional
-    memory is exhausted. The total amount of allocated memory can be
-    queried using the @ref capacity function. Extra memory can be
+    The elements are stored contiguously, which means that
+    elements can be accessed not only through iterators, but
+    also using offsets to regular pointers to elements. A
+    pointer to an element of an @ref array may be passed to
+    any function that expects a pointer to @ref value.
+
+    <br>
+
+    The storage of the array is handled automatically, being
+    expanded and contracted as needed. Arrays usually occupy
+    more space than array language constructs, because more
+    memory is allocated to handle future growth. This way an
+    array does not need to reallocate each time an element
+    is inserted, but only when the additional memory is used
+    up. The total amount of allocated memory can be queried
+    using the @ref capacity function. Extra memory can be
     relinquished by calling @ref shrink_to_fit.
 
-    Reallocations are usually costly operations in terms of performance.
-    The @ref reserve function can be used to eliminate reallocations
-    if the number of elements is known beforehand.
+    <br>
 
-    The complexity (efficiency) of common operations on arrays is as follows:
+    Reallocations are usually costly operations in terms of
+    performance. The @ref reserve function can be used to
+    eliminate reallocations if the number of elements is
+    known beforehand.
 
-    @li Random access - constant *O(1)*
-    @li Insertion or removal of elements at the end - amortized constant *O(1)*
-    @li Insertion or removal of elements - linear in the distance to the end of
-      the array *O(n)*
+    <br>
+
+    The complexity (efficiency) of common operations on
+    arrays is as follows:
+
+    @li Random access - constant *O(1)*.
+    @li Insertion or removal of elements at the
+        end - amortized constant *O(1)*.
+    @li Insertion or removal of elements - linear in
+        the distance to the end of the array *O(n)*.
 
     @par Storage
 
-    All elements stored in the container will use the same storage that
-    was used to construct the container, including recursive children
-    of those elements.
+    All elements stored in the container, and their
+    children if any, will use the same storage that
+    was used to construct the container.
 
     @par Thread Safety
 
-    Non-const member functions may not be called concurrently.
+    Non-const member functions may not be called
+    concurrently with any other member functions.
 
     @par Satisfies
 
@@ -123,15 +136,15 @@ public:
 
     //------------------------------------------------------
 
-    /** Destroy the container
+    /** Destructor.
 
-        The destructor for each element is called, any used
-        memory is deallocated, and shared ownership of the
-        underlying storage is released.
+        The destructor for each element is called if needed,
+        any used memory is deallocated, and shared ownership
+        of the @ref storage is released.
 
         @par Complexity
 
-        Linear in @ref size()
+        Constant, or linear in @ref size().
     */
     ~array()
     {
@@ -149,10 +162,10 @@ public:
 
     //------------------------------------------------------
 
-    /** Construct an empty container
+    /** Default constructor.
 
-        The container and all inserted elements will use the
-        @ref storage returned by default storage.
+        The constructed array is empty with zero
+        capacity, using the default storage.
 
         @par Complexity
 
@@ -164,10 +177,10 @@ public:
     */
     array() = default;
 
-    /** Construct an empty container
+    /** Constructor.
 
-        The container and all inserted elements will use the
-        @ref storage owned by `sp`.
+        The constructed array is empty with zero
+        capacity, using the specified storage.
 
         @par Complexity
 
@@ -185,12 +198,11 @@ public:
     explicit
     array(storage_ptr sp) noexcept;
 
-    /** Construct a container with `count` copies of `v`
+    /** Constructor.
 
-        The container and all inserted elements will use the
-        @ref storage owned by `sp`,
-        or the default parameter value returned by
-        default storage if this argument is omitted.
+        The array is constructed with `count`
+        copies of the value `v`, using the
+        specified storage will be used.
 
         @par Complexity
 
@@ -215,12 +227,10 @@ public:
         value const& v,
         storage_ptr sp = {});
 
-    /** Construct a container with `count` null values
+    /** Constructor.
 
-        The container and all inserted elements will use the
-        @ref storage owned by `sp`,
-        or the default parameter value returned by
-        default storage if this argument is omitted.
+        The array is constructed with `count` null values,
+        using the specified storage.
 
         @par Complexity
 
@@ -231,7 +241,7 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param count The number of copies to insert.
+        @param count The number of nulls to insert.
 
         @param sp A pointer to the @ref storage
         to use. The container will acquire shared
@@ -242,14 +252,11 @@ public:
         std::size_t count,
         storage_ptr sp = {});
 
-    /** Construct a container with the contents of a range
+    /** Constructor.
 
-        The elements in the range `[first, last)` are
-        inserted in order.
-        The container and all inserted elements will use the
-        @ref storage owned by `sp`,
-        or the default parameter value returned by
-        default storage if this argument is omitted.
+        The array is constructed with the elements
+        in the range `[first, last)`, preserving order,
+        using the specified storage.
 
         @par Constraints
 
@@ -266,8 +273,9 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param first An input iterator pointing to the first
-        element to insert, or pointing to the end of the range.
+        @param first An input iterator pointing to the
+        first element to insert, or pointing to the end
+        of the range.
 
         @param last An input iterator pointing to the end
         of the range.
@@ -292,12 +300,10 @@ public:
         InputIt first, InputIt last,
         storage_ptr sp = {});
 
-    /** Copy constructor
+    /** Copy constructor.
 
-        Constructs the container with a copy of the contents
-        of `other`.
-        The container and all inserted elements will use the
-        @ref storage returned by default storage.
+        The array is constructed with a copy of the
+        contents of `other`, using the storage of `other`.
 
         @par Complexity
 
@@ -308,17 +314,15 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param other The container to copy
+        @param other The array to copy
     */
     BOOST_JSON_DECL
     array(array const& other);
 
-    /** Copy constructor
+    /** Copy constructor.
 
-        Constructs the container with a copy of the contents
-        of `other`.
-        The container and all inserted elements will use the
-        @ref storage owned by `sp`.
+        The array is constructed with a copy of the
+        contents of `other`, using the specified storage.
 
         @par Complexity
 
@@ -329,7 +333,7 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param other The container to copy
+        @param other The array to copy
 
         @param sp A pointer to the @ref storage
         to use. The container will acquire shared
@@ -340,16 +344,15 @@ public:
         array const& other,
         storage_ptr sp);
 
-    /** Pilfer constructor
+    /** Pilfer constructor.
 
-        Constructs the container with the contents of `other`
-        using pilfer semantics.
-        Ownership of the @ref storage is transferred.
+        The array is constructed by acquiring ownership of
+        the contents of `other` using pilfer semantics.
 
         @note
 
-        After construction, the moved-from object may only be
-        destroyed.
+        After construction, the moved-from array may only
+        be destroyed.
         
         @par Complexity
 
@@ -359,7 +362,7 @@ public:
 
         No-throw guarantee.
 
-        @param other The container to pilfer
+        @param other The array to pilfer
 
         @see
         
@@ -369,18 +372,17 @@ public:
     BOOST_JSON_DECL
     array(pilfered<array> other) noexcept;
 
-    /** Move constructor
+    /** Move constructor.
 
-        Constructs the container with the contents of `other`
-        using move semantics. Ownership of the underlying
-        memory is transferred.
-        The container acquires shared ownership of the
-        @ref storage used by `other`.
+        The array is constructed by acquiring ownership of
+        the contents of `other` and shared ownership of
+        the storage of `other`.
 
         @note
 
-        After construction, the moved-from object behaves as
-        if newly constructed with its current storage pointer.
+        After construction, the moved-from array behaves
+        as if newly constructed with its current storage
+        pointer.
         
         @par Complexity
 
@@ -395,23 +397,23 @@ public:
     BOOST_JSON_DECL
     array(array&& other) noexcept;
 
-    /** Move constructor
+    /** Move constructor.
 
-        Using `*sp` as the @ref storage for the new container,
-        moves all the elements from `other`.
+        The array is constructed with the contents of
+        `other` by move semantics, using the specified
+        storage:
 
-        @li If `*other.get_storage() == *sp`, ownership of the
-        underlying memory is transferred in constant time, with
-        no possibility of exceptions.
-        After construction, the moved-from object behaves as if
-        newly constructed with its current @ref storage pointer.
+        @li If `*other.get_storage() == *sp`, ownership of
+        the underlying memory is transferred in constant
+        time, with no possibility of exceptions.
+        After construction, the moved-from array behaves
+        as if newly constructed with its current storage
+        pointer.
 
-        @li If `*other.get_storage() != *sp`, an element-wise
-        copy is performed. In this case, the moved-from container
-        is not changed.
-
-        The container and all inserted elements will use the
-        specified storage.
+        @li If `*other.get_storage() != *sp`, an
+        element-wise copy is performed, which may throw.
+        In this case, the moved-from array is not
+        changed.
         
         @par Complexity
 
@@ -424,20 +426,20 @@ public:
 
         @param other The container to move
 
-        @param sp A pointer to the @ref storage to use. The
-        container will acquire shared ownership of the pointer.
+        @param sp A pointer to the @ref storage
+        to use. The container will acquire shared
+        ownership of the storage object.
     */
     BOOST_JSON_DECL
     array(
         array&& other,
         storage_ptr sp);
 
-    /** Constructs the container with the contents of an initializer list
+    /** Constructor.
 
-        The container and all inserted elements will use the
-        @ref storage owned by `sp`,
-        or the default parameter value returned by
-        default storage if this argument is omitted.
+        The array is constructed with a copy of the values
+        in the initializer-list in order, using the
+        specified storage.
 
         @par Complexity
 
@@ -461,9 +463,10 @@ public:
 
     //------------------------------------------------------
 
-    /** Copy assignment operator
+    /** Copy assignment.
 
-        Replaces the contents with an element-wise copy of other.
+        The contents of the array are replaced with an
+        element-wise copy of `other`.
 
         @par Complexity
 
@@ -474,46 +477,49 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param other The container to copy
+        @param other The array to copy.
     */
     BOOST_JSON_DECL
     array&
     operator=(array const& other);
 
-    /** Move assignment operator
+    /** Move assignment.
 
-        Replaces the contents with those of `other` using move
-        semantics (the data in `other` is moved into this container).
+        The contents of the array are replaced with the
+        contents of `other` using move semantics:
 
-        @li If `*other.get_storage() == get_storage()`,
-        ownership of the  underlying memory is transferred in
-        constant time, with no possibility of exceptions.
-        After construction, the moved-from object behaves as if
-        newly constructed with its current @ref storage pointer.
+        @li If `*other.get_storage() == *sp`, ownership of
+        the underlying memory is transferred in constant
+        time, with no possibility of exceptions.
+        After assignment, the moved-from array behaves
+        as if newly constructed with its current storage
+        pointer.
 
-        @li If `*other.get_storage() != *sp`, an element-wise
-        copy is performed. In this case the moved-from container
-        is not modified, and exceptions may be thrown.
+        @li If `*other.get_storage() != *sp`, an
+        element-wise copy is performed, which may throw.
+        In this case, the moved-from array is not
+        changed.
 
         @par Complexity
 
-        At most, linear in `this->size()` plus `other.size()`.
+        Constant, or linear in
+        `this->size()` plus `other.size()`.
 
         @par Exception Safety
 
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param other The container to assign from
+        @param other The array to move.
     */
     BOOST_JSON_DECL
     array&
     operator=(array&& other);
 
-    /** Assign the contents of an initializer list
+    /** Assignment.
 
-        Replaces the contents with the contents of an
-        initializer list.
+        The contents of the array are replaced with a
+        copy of the values in the initializer-list.
 
         @par Complexity
 
@@ -524,7 +530,7 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param init The initializer list to assign
+        @param init The initializer list to copy.
     */
     BOOST_JSON_DECL
     array&
@@ -533,10 +539,10 @@ public:
 
     //------------------------------------------------------
 
-    /** Return a pointer to the storage associated with the container
+    /** Return the storage used by the array.
 
-        Shared ownership of the @ref storage is propagated by
-        the container to all of its children recursively.
+        This returns the storage used by the array
+        for all elements and all internal allocations.
 
         @par Complexity
 
@@ -554,18 +560,18 @@ public:
     //
     //------------------------------------------------------
 
-    /** Access an element, with bounds checking
+    /** Access an element, with bounds checking.
 
         Returns a reference to the element specified at
-        location `pos`, with bounds checking. If pos is not
-        within the range of the container, an exception of
-        type `std::out_of_range` is thrown.
+        location `pos`, with bounds checking. If `pos` is
+        not within the range of the container, an exception
+        of type `std::out_of_range` is thrown.
 
         @par Complexity
 
         Constant.
 
-        @param pos A zero-based index
+        @param pos A zero-based index.
 
         @throws std::out_of_range `pos >= size()`
     */
@@ -573,18 +579,18 @@ public:
     reference
     at(std::size_t pos);
 
-    /** Access an element, with bounds checking
+    /** Access an element, with bounds checking.
 
         Returns a reference to the element specified at
-        location `pos`, with bounds checking. If pos is not
-        within the range of the container, an exception of
-        type `std::out_of_range` is thrown.
+        location `pos`, with bounds checking. If `pos` is
+        not within the range of the container, an exception
+        of type `std::out_of_range` is thrown.
 
         @par Complexity
 
         Constant.
 
-        @param pos A zero-based index
+        @param pos A zero-based index.
 
         @throws std::out_of_range `pos >= size()`
     */
@@ -592,14 +598,14 @@ public:
     const_reference
     at(std::size_t pos) const;
 
-    /** Access an element
+    /** Access an element.
 
         Returns a reference to the element specified at
         location `pos`. No bounds checking is performed.
 
         @par Precondition
         
-        `pos >= size`
+        `pos < size()`
 
         @par Complexity
 
@@ -611,14 +617,14 @@ public:
     reference
     operator[](std::size_t pos) noexcept;
 
-    /** Access an element
+    /** Access an element.
 
         Returns a reference to the element specified at
         location `pos`. No bounds checking is performed.
 
         @par Precondition
 
-        `pos >= size`
+        `pos < size()`
 
         @par Complexity
 
@@ -630,7 +636,7 @@ public:
     const_reference
     operator[](std::size_t pos) const noexcept;
 
-    /** Access the first element
+    /** Access the first element.
 
         Returns a reference to the first element.
 
@@ -646,7 +652,7 @@ public:
     reference
     front() noexcept;
 
-    /** Access the first element
+    /** Access the first element.
 
         Returns a reference to the first element.
 
@@ -662,7 +668,7 @@ public:
     const_reference
     front() const noexcept;
 
-    /** Access the last element
+    /** Access the last element.
 
         Returns a reference to the last element.
 
@@ -678,7 +684,7 @@ public:
     reference
     back() noexcept;
 
-    /** Access the last element
+    /** Access the last element.
 
         Returns a reference to the last element.
 
@@ -694,11 +700,11 @@ public:
     const_reference
     back() const noexcept;
 
-    /** Access the underlying array directly
+    /** Access the underlying array directly.
 
         Returns a pointer to the underlying array serving
         as element storage. The value returned is such that
-        the range `[data(), data()+size())` is always a
+        the range `[data(), data() + size())` is always a
         valid range, even if the container is empty.
 
         @par Complexity
@@ -714,11 +720,11 @@ public:
     value*
     data() noexcept;
 
-    /** Access the underlying array directly
+    /** Access the underlying array directly.
 
         Returns a pointer to the underlying array serving
         as element storage. The value returned is such that
-        the range `[data(), data()+size())` is always a
+        the range `[data(), data() + size())` is always a
         valid range, even if the container is empty.
 
         @par Complexity
@@ -740,7 +746,7 @@ public:
     //
     //------------------------------------------------------
 
-    /** Return an iterator to the first element
+    /** Return an iterator to the first element.
 
         If the container is empty, the returned iterator
         will be equal to @ref end().
@@ -753,7 +759,7 @@ public:
     iterator
     begin() noexcept;
 
-    /** Return an iterator to the first element
+    /** Return a const iterator to the first element.
 
         If the container is empty, the returned iterator
         will be equal to @ref end().
@@ -766,7 +772,7 @@ public:
     const_iterator
     begin() const noexcept;
 
-    /** Return an iterator to the first element
+    /** Return a const iterator to the first element.
 
         If the container is empty, the returned iterator
         will be equal to @ref end().
@@ -779,7 +785,7 @@ public:
     const_iterator
     cbegin() const noexcept;
 
-    /** Return an iterator to the element following the last element
+    /** Return an iterator to the element following the last element.
 
         The element acts as a placeholder; attempting to
         access it results in undefined behavior.
@@ -792,7 +798,7 @@ public:
     iterator
     end() noexcept;
 
-    /** Return an iterator to the element following the last element
+    /** Return a const iterator to the element following the last element.
 
         The element acts as a placeholder; attempting to
         access it results in undefined behavior.
@@ -805,7 +811,7 @@ public:
     const_iterator
     end() const noexcept;
 
-    /** Return an iterator to the element following the last element
+    /** Return a const iterator to the element following the last element.
 
         The element acts as a placeholder; attempting to
         access it results in undefined behavior.
@@ -818,7 +824,7 @@ public:
     const_iterator
     cend() const noexcept;
 
-    /** Return a reverse iterator to the first element of the reversed container
+    /** Return a reverse iterator to the first element of the reversed container.
 
         The pointed-to element corresponds to the last element
         of the non-reversed container. If the container is empty,
@@ -832,7 +838,7 @@ public:
     reverse_iterator
     rbegin() noexcept;
 
-    /** Return a reverse iterator to the first element of the reversed container
+    /** Return a const reverse iterator to the first element of the reversed container.
 
         The pointed-to element corresponds to the last element
         of the non-reversed container. If the container is empty,
@@ -846,7 +852,7 @@ public:
     const_reverse_iterator
     rbegin() const noexcept;
 
-    /** Return a reverse iterator to the first element of the reversed container
+    /** Return a const reverse iterator to the first element of the reversed container.
 
         The pointed-to element corresponds to the last element
         of the non-reversed container. If the container is empty,
@@ -860,7 +866,7 @@ public:
     const_reverse_iterator
     crbegin() const noexcept;
 
-    /** Return a reverse iterator to the element following the last element of the reversed container
+    /** Return a reverse iterator to the element following the last element of the reversed container.
 
         The pointed-to element corresponds to the element
         preceding the first element of the non-reversed container.
@@ -875,7 +881,7 @@ public:
     reverse_iterator
     rend() noexcept;
 
-    /** Return a reverse iterator to the element following the last element of the reversed container
+    /** Return a const reverse iterator to the element following the last element of the reversed container.
 
         The pointed-to element corresponds to the element
         preceding the first element of the non-reversed container.
@@ -890,7 +896,7 @@ public:
     const_reverse_iterator
     rend() const noexcept;
 
-    /** Return a reverse iterator to the element following the last element of the reversed container
+    /** Return a const reverse iterator to the element following the last element of the reversed container.
 
         The pointed-to element corresponds to the element
         preceding the first element of the non-reversed container.
@@ -911,10 +917,10 @@ public:
     //
     //------------------------------------------------------
 
-    /** Check if the container has no elements
+    /** Check if the array has no elements.
 
-        Returns `true` if there are no elements in the container,
-        i.e. @ref size() returns 0.
+        Returns `true` if there are no elements in the
+        array, i.e. @ref size() returns 0.
 
         @par Complexity
 
@@ -926,10 +932,10 @@ public:
         return impl_.size() == 0;
     }
 
-    /** Return the number of elements in the container
+    /** Return the number of elements in the array.
 
-        This returns the number of elements in the container.
-        The value returned may be different from the value
+        This returns the number of elements in the array.
+        The value returned may be different from the number
         returned from @ref capacity.
 
         @par Complexity
@@ -942,12 +948,12 @@ public:
         return impl_.size();
     }
 
-    /** Return the maximum number of elements the container can hold
+    /** Return the maximum number of elements the array can hold.
 
-        The maximum is an implementation-defined number dependent
-        on system or library implementation. This value is a
-        theoretical limit; at runtime, the actual maximum size
-        may be less due to resource limits.
+        The maximum is an implementation-defined number.
+        This value is a theoretical limit; at runtime,
+        the actual maximum size may be less due to
+        resource limits.
 
         @par Complexity
 
@@ -961,7 +967,7 @@ public:
         return BOOST_JSON_MAX_ARRAY_SIZE;
     }
 
-    /** Return the number of elements that can be held in currently allocated memory
+    /** Return the number of elements that can be held in currently allocated memory.
 
         This number may be larger than the value returned
         by @ref size().
@@ -1016,13 +1022,15 @@ public:
         reserve_impl(new_capacity);
     }
 
-    /** Request the removal of unused capacity
+    /** Request the removal of unused capacity.
 
-        This performs a non-binding request to reduce @ref capacity()
-        to @ref size(). The request may or may not be fulfilled. If
-        reallocation occurs, all iterators including any past-the-end
-        iterators, and all references to the elements are invalidated.
-        Otherwise, no iterators or references are invalidated.
+        This performs a non-binding request to reduce the
+        capacity to the current size. The request may or
+        may not be fulfilled. If reallocation occurs, all
+        iterators including any past-the-end iterators,
+        and all references to the elements are invalidated.
+        Otherwise, no iterators or references are
+        invalidated.
 
         @par Complexity
 
@@ -1042,7 +1050,7 @@ public:
     //
     //------------------------------------------------------
 
-    /** Clear the contents
+    /** Clear the contents.
 
         Erases all elements from the container. After this
         call, @ref size() returns zero but @ref capacity()
@@ -1058,7 +1066,7 @@ public:
     void
     clear() noexcept;
 
-    /** Insert elements before the specified location
+    /** Insert elements before the specified location.
 
         This inserts a copy of `v` before `pos`.
         If `capacity() < size() + 1`, a reallocation
@@ -1093,7 +1101,7 @@ public:
         return emplace(pos, v);
     }
 
-    /** Insert elements before the specified location
+    /** Insert elements before the specified location.
 
         This inserts `v` before `pos` via move-construction.
         If `capacity() < size() + 1`, a reallocation occurs
@@ -1129,7 +1137,7 @@ public:
         return emplace(pos, std::move(v));
     }
 
-    /** Insert elements before the specified location
+    /** Insert elements before the specified location.
 
         This inserts `count` copies of `v` before `pos`.
         If `capacity() < size() + count`, a reallocation
@@ -1166,7 +1174,7 @@ public:
         std::size_t count,
         value const& v);
 
-    /** Insert elements before the specified location
+    /** Insert elements before the specified location.
 
         The elements in the range `[first, last)` are
         inserted in order.
@@ -1231,7 +1239,7 @@ public:
         const_iterator pos,
         InputIt first, InputIt last);
 
-    /** Insert elements before the specified location
+    /** Insert elements before the specified location.
 
         The elements in the initializer list `init` are
         inserted in order.
@@ -1265,7 +1273,7 @@ public:
         const_iterator pos,
         std::initializer_list<value> init);
 
-    /** Insert a constructed element in-place
+    /** Insert a constructed element in-place.
 
         Inserts a new element into the container directly before
         `pos`. The element is constructed using placement-new
@@ -1300,7 +1308,7 @@ public:
         const_iterator pos,
         Arg&& arg);
 
-    /** Erases elements from the container
+    /** Erase elements from the container.
 
         The element at `pos` is removed.
 
@@ -1322,7 +1330,7 @@ public:
     iterator
     erase(const_iterator pos) noexcept;
 
-    /** Erases elements from the container
+    /** Erase elements from the container.
 
         The elements in the range `[first, last)` are removed.
 
@@ -1406,7 +1414,7 @@ public:
         emplace_back(std::move(v));
     }
 
-    /** Append a constructed element in-place
+    /** Append a constructed element in-place.
 
         Appends a new element to the end of the container's
         list of elements.
@@ -1453,7 +1461,7 @@ public:
     void
     pop_back() noexcept;
 
-    /** Change the number of elements stored
+    /** Change the number of elements stored.
 
         Resizes the container to contain `count` elements.
         If `capacity() < size() + count`, a reallocation
@@ -1483,7 +1491,7 @@ public:
     void
     resize(std::size_t count);
 
-    /** Change the number of elements stored
+    /** Change the number of elements stored.
 
         Resizes the container to contain `count` elements.
         If `capacity() < size() + count`, a reallocation
@@ -1517,10 +1525,10 @@ public:
         std::size_t count,
         value const& v);
 
-    /** Swap the contents
+    /** Swap the contents.
 
-        Exchanges the contents of this container with another
-        container. Ownership of the respective @ref storage
+        Exchanges the contents of this array with another
+        array. Ownership of the respective @ref storage
         objects is not transferred.
 
         @li If `*other.get_storage() == *sp`, ownership of the
@@ -1532,6 +1540,10 @@ public:
         logically swapped by making copies, which can throw.
         In this case all iterators and references are invalidated.
 
+        @par Preconditions
+
+        `&other != this`
+        
         @par Complexity
 
         Constant or linear in @ref size() plus `other.size()`.
@@ -1541,7 +1553,7 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param other The container to swap with
+        @param other The array to swap with.
     */
     BOOST_JSON_DECL
     void
@@ -1608,6 +1620,19 @@ private:
         value* src,
         std::size_t n) noexcept;
 };
+
+/** Exchange the given values.
+
+    @par Preconditions
+
+    `&lhs != &rhs`
+*/
+inline
+void
+swap(array& lhs, array& rhs)
+{
+    lhs.swap(rhs);
+}
 
 } // json
 } // boost

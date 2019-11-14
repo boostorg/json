@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+// Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -19,14 +19,15 @@ namespace json {
 class assign_vector_test : public beast::unit_test::suite
 {
 public:
-    BOOST_JSON_STATIC_ASSERT(
-        has_from_json<int>::value);
-    BOOST_JSON_STATIC_ASSERT(
-        detail::has_adl_from_json<std::vector<int>>::value);
-
     void
     testAssign()
     {
+    #if ! defined(_MSC_VER) || _MSC_VER >= 1910
+        BOOST_JSON_STATIC_ASSERT(
+            has_from_json<int>::value);
+        BOOST_JSON_STATIC_ASSERT(
+            detail::has_adl_from_json<std::vector<int>>::value);
+
         value jv(array{});
         {
             auto& a = jv.as_array();
@@ -47,9 +48,13 @@ public:
         {
             BEAST_FAIL();
         }
+    #else
+        pass();
+    #endif
     }
 
-    void run() override
+    void
+    run() override
     {
         testAssign();
     }

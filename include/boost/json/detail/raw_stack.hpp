@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+// Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_DETAIL_RAW_STACK_HPP
 #define BOOST_JSON_DETAIL_RAW_STACK_HPP
 
-#include <boost/json/detail/config.hpp>
+#include <boost/json/config.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <cstdlib>
 #include <utility>

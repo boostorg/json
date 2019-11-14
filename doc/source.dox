@@ -55,7 +55,7 @@ PREDEFINED             = \
                         BOOST_JSON_DECL \
                         BOOST_JSON_PUBLIC \
                         BOOST_JSON_FORCEINLINE \
-                        "BOOST_JSON_INLINE_VARIABLE(v, t)= "
+                        "BOOST_JSON_INLINE_VARIABLE(v, t)=constexpr t v;"
 
 EXPAND_AS_DEFINED      =
 SKIP_FUNCTION_MACROS   = YES

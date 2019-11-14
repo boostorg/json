@@ -9,7 +9,7 @@
     <DisplayString Condition="nul_.k==kind::double_">{dub_.d}</DisplayString>
     <DisplayString Condition="nul_.k==kind::int64">{i64_.i}</DisplayString>
     <DisplayString Condition="nul_.k==kind::uint64">{u64_.u}u</DisplayString>
-    <DisplayString Condition="nul_.k==kind::boolean">{bln_.b}</DisplayString>
+    <DisplayString Condition="nul_.k==kind::bool_">{bln_.b}</DisplayString>
     <DisplayString Condition="nul_.k==kind::null">null</DisplayString>
     <Expand>
       <ExpandedItem Condition="nul_.k==kind::object">obj_</ExpandedItem>
@@ -62,7 +62,7 @@
     <DisplayString Condition="value_.nul_.k==kind::double_">{{ {key_,[len_]s}, {value_.dub_.d} }}</DisplayString>
     <DisplayString Condition="value_.nul_.k==kind::int64">{{ {key_,[len_]s}, {value_.i64_.i} }}</DisplayString>
     <DisplayString Condition="value_.nul_.k==kind::uint64">{{ {key_,[len_]s}, {value_.u64_.u} }}</DisplayString>
-    <DisplayString Condition="value_.nul_.k==kind::boolean">{{ {key_,[len_]s}, {value_.bln_.b} }}</DisplayString>
+    <DisplayString Condition="value_.nul_.k==kind::bool_">{{ {key_,[len_]s}, {value_.bln_.b} }}</DisplayString>
     <DisplayString Condition="value_.nul_.k==kind::null">{{ {key_,[len_]s}, null }}</DisplayString>
     <Expand>
       <ExpandedItem>&amp;this->value_</ExpandedItem>

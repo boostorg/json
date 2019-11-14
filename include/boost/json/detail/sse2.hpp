@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2019 Peter Dimov (pdimov at gmail dot com),
-//                    Vinnie Falco (vinnie dot falco at gmail dot com)
+//                    Vinnie Falco (vinnie.falco@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -11,7 +11,7 @@
 #ifndef BOOST_JSON_DETAIL_SSE2_HPP
 #define BOOST_JSON_DETAIL_SSE2_HPP
 
-#include <boost/json/detail/config.hpp>
+#include <boost/json/config.hpp>
 #include <stdint.h>
 #ifdef BOOST_JSON_USE_SSE2
 # include <emmintrin.h>

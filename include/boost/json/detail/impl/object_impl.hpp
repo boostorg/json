@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+// Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -20,16 +20,16 @@ struct next_access
 {
     static
     inline
-    object_value_type*&
-    get(object_value_type& e) noexcept
+    key_value_pair*&
+    get(key_value_pair& e) noexcept
     {
         return e.next_;
     }
 
     static
     inline
-    object_value_type const*
-    get(object_value_type const& e) noexcept
+    key_value_pair const*
+    get(key_value_pair const& e) noexcept
     {
         return e.next_;
     }
@@ -161,8 +161,7 @@ unchecked_object::
 ~unchecked_object()
 {
     if(data_)
-        object::value_type::destroy(
-            data_, size_);
+        destroy(data_, size_);
 }
 
 void

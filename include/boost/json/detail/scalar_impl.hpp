@@ -118,7 +118,7 @@ struct bool_k
     bool b;
 
     bool_k() noexcept
-        : k(kind::boolean)
+        : k(kind::bool_)
         , b(false)
     {
     }
@@ -127,16 +127,16 @@ struct bool_k
     bool_k(
         storage_ptr sp_) noexcept
         : sp(move(sp_))
-        , k(kind::boolean)
+        , k(kind::bool_)
         , b(false)
     {
     }
 
     bool_k(
-        double b_,
+        bool b_,
         storage_ptr sp_) noexcept
         : sp(move(sp_))
-        , k(kind::boolean)
+        , k(kind::bool_)
         , b(b_)
     {
     }

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+// Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -896,7 +896,7 @@ public:
         value const i64(std::int64_t{});
         value const u64(std::uint64_t{});
         value const dub(double{});
-        value const boo(true);
+        value const bln(true);
         value const nul(nullptr);
 
         // kind()
@@ -907,7 +907,7 @@ public:
             BEAST_EXPECT(i64.kind() == kind::int64);
             BEAST_EXPECT(u64.kind() == kind::uint64);
             BEAST_EXPECT(dub.kind() == kind::double_);
-            BEAST_EXPECT(boo.kind() == kind::boolean);
+            BEAST_EXPECT(bln.kind() == kind::bool_);
             BEAST_EXPECT(nul.kind() == kind::null);
         }
 
@@ -919,7 +919,7 @@ public:
             BEAST_EXPECT(! i64.is_object());
             BEAST_EXPECT(! u64.is_object());
             BEAST_EXPECT(! dub.is_object());
-            BEAST_EXPECT(! boo.is_object());
+            BEAST_EXPECT(! bln.is_object());
             BEAST_EXPECT(! nul.is_object());
         }
 
@@ -931,7 +931,7 @@ public:
             BEAST_EXPECT(! i64.is_array());
             BEAST_EXPECT(! u64.is_array());
             BEAST_EXPECT(! dub.is_array());
-            BEAST_EXPECT(! boo.is_array());
+            BEAST_EXPECT(! bln.is_array());
             BEAST_EXPECT(! nul.is_array());
         }
 
@@ -943,20 +943,8 @@ public:
             BEAST_EXPECT(! i64.is_string());
             BEAST_EXPECT(! u64.is_string());
             BEAST_EXPECT(! dub.is_string());
-            BEAST_EXPECT(! boo.is_string());
+            BEAST_EXPECT(! bln.is_string());
             BEAST_EXPECT(! nul.is_string());
-        }
-
-        // is_number()
-        {
-            BEAST_EXPECT(! obj.is_number());
-            BEAST_EXPECT(! arr.is_number());
-            BEAST_EXPECT(! str.is_number());
-            BEAST_EXPECT(  i64.is_number());
-            BEAST_EXPECT(  u64.is_number());
-            BEAST_EXPECT(  dub.is_number());
-            BEAST_EXPECT(! boo.is_number());
-            BEAST_EXPECT(! nul.is_number());
         }
 
         // is_int64()
@@ -967,7 +955,7 @@ public:
             BEAST_EXPECT(  i64.is_int64());
             BEAST_EXPECT(! u64.is_int64());
             BEAST_EXPECT(! dub.is_int64());
-            BEAST_EXPECT(! boo.is_int64());
+            BEAST_EXPECT(! bln.is_int64());
             BEAST_EXPECT(! nul.is_int64());
         }
 
@@ -979,7 +967,7 @@ public:
             BEAST_EXPECT(! i64.is_uint64());
             BEAST_EXPECT(  u64.is_uint64());
             BEAST_EXPECT(! dub.is_uint64());
-            BEAST_EXPECT(! boo.is_uint64());
+            BEAST_EXPECT(! bln.is_uint64());
             BEAST_EXPECT(! nul.is_uint64());
         }
 
@@ -991,7 +979,7 @@ public:
             BEAST_EXPECT(! i64.is_double());
             BEAST_EXPECT(! u64.is_double());
             BEAST_EXPECT(  dub.is_double());
-            BEAST_EXPECT(! boo.is_double());
+            BEAST_EXPECT(! bln.is_double());
             BEAST_EXPECT(! nul.is_double());
         }
 
@@ -1003,7 +991,7 @@ public:
             BEAST_EXPECT(! i64.is_bool());
             BEAST_EXPECT(! u64.is_bool());
             BEAST_EXPECT(! dub.is_bool());
-            BEAST_EXPECT(  boo.is_bool());
+            BEAST_EXPECT(  bln.is_bool());
             BEAST_EXPECT(! nul.is_bool());
         }
 
@@ -1015,8 +1003,20 @@ public:
             BEAST_EXPECT(! i64.is_null());
             BEAST_EXPECT(! u64.is_null());
             BEAST_EXPECT(! dub.is_null());
-            BEAST_EXPECT(! boo.is_null());
+            BEAST_EXPECT(! bln.is_null());
             BEAST_EXPECT(  nul.is_null());
+        }
+
+        // is_number()
+        {
+            BEAST_EXPECT(! obj.is_number());
+            BEAST_EXPECT(! arr.is_number());
+            BEAST_EXPECT(! str.is_number());
+            BEAST_EXPECT(  i64.is_number());
+            BEAST_EXPECT(  u64.is_number());
+            BEAST_EXPECT(  dub.is_number());
+            BEAST_EXPECT(! bln.is_number());
+            BEAST_EXPECT(! nul.is_number());
         }
 
         // is_primitive()
@@ -1027,7 +1027,7 @@ public:
             BEAST_EXPECT(  i64.is_primitive());
             BEAST_EXPECT(  u64.is_primitive());
             BEAST_EXPECT(  dub.is_primitive());
-            BEAST_EXPECT(  boo.is_primitive());
+            BEAST_EXPECT(  bln.is_primitive());
             BEAST_EXPECT(  nul.is_primitive());
         }
 
@@ -1039,13 +1039,19 @@ public:
             BEAST_EXPECT(! i64.is_structured());
             BEAST_EXPECT(! u64.is_structured());
             BEAST_EXPECT(! dub.is_structured());
-            BEAST_EXPECT(! boo.is_structured());
+            BEAST_EXPECT(! bln.is_structured());
             BEAST_EXPECT(! nul.is_structured());
         }
     }
 
+    //------------------------------------------------------
+    //
+    // Accessors
+    //
+    //------------------------------------------------------
+
     void
-    testAccessors()
+    testGetStorage()
     {
         auto const sp =
             make_storage<unique_storage>();
@@ -1056,17 +1062,8 @@ public:
         value i64(std::int64_t{}, sp);
         value u64(std::uint64_t{}, sp);
         value dub(double{}, sp);
-        value boo(true, sp);
+        value bln(true, sp);
         value nul(nullptr, sp);
-
-        auto const& cobj(obj);
-        auto const& carr(arr);
-        auto const& cstr(str);
-        auto const& ci64(i64);
-        auto const& cu64(u64);
-        auto const& cdub(dub);
-        auto const& cboo(boo);
-        auto const& cnul(nul);
 
         // get_storage()
         {
@@ -1076,9 +1073,31 @@ public:
             BEAST_EXPECT(*i64.get_storage() == *sp);
             BEAST_EXPECT(*u64.get_storage() == *sp);
             BEAST_EXPECT(*dub.get_storage() == *sp);
-            BEAST_EXPECT(*boo.get_storage() == *sp);
+            BEAST_EXPECT(*bln.get_storage() == *sp);
             BEAST_EXPECT(*nul.get_storage() == *sp);
         }
+    }
+
+    void
+    testIf()
+    {
+        value obj(object{});
+        value arr(array{});
+        value str(string{});
+        value i64(std::int64_t{});
+        value u64(std::uint64_t{});
+        value dub(double{});
+        value bln(true);
+        value nul(nullptr);
+
+        auto const& cobj(obj);
+        auto const& carr(arr);
+        auto const& cstr(str);
+        auto const& ci64(i64);
+        auto const& cu64(u64);
+        auto const& cdub(dub);
+        auto const& cbln(bln);
+        auto const& cnul(nul);
 
         // if_object()
         {
@@ -1088,7 +1107,7 @@ public:
             BEAST_EXPECT(i64.if_object() == nullptr);
             BEAST_EXPECT(u64.if_object() == nullptr);
             BEAST_EXPECT(dub.if_object() == nullptr);
-            BEAST_EXPECT(boo.if_object() == nullptr);
+            BEAST_EXPECT(bln.if_object() == nullptr);
             BEAST_EXPECT(nul.if_object() == nullptr);
         }
 
@@ -1100,7 +1119,7 @@ public:
             BEAST_EXPECT(ci64.if_object() == nullptr);
             BEAST_EXPECT(cu64.if_object() == nullptr);
             BEAST_EXPECT(cdub.if_object() == nullptr);
-            BEAST_EXPECT(cboo.if_object() == nullptr);
+            BEAST_EXPECT(cbln.if_object() == nullptr);
             BEAST_EXPECT(cnul.if_object() == nullptr);
         }
 
@@ -1112,7 +1131,7 @@ public:
             BEAST_EXPECT(i64.if_array() == nullptr);
             BEAST_EXPECT(u64.if_array() == nullptr);
             BEAST_EXPECT(dub.if_array() == nullptr);
-            BEAST_EXPECT(boo.if_array() == nullptr);
+            BEAST_EXPECT(bln.if_array() == nullptr);
             BEAST_EXPECT(nul.if_array() == nullptr);
         }
 
@@ -1124,7 +1143,7 @@ public:
             BEAST_EXPECT(ci64.if_array() == nullptr);
             BEAST_EXPECT(cu64.if_array() == nullptr);
             BEAST_EXPECT(cdub.if_array() == nullptr);
-            BEAST_EXPECT(cboo.if_array() == nullptr);
+            BEAST_EXPECT(cbln.if_array() == nullptr);
             BEAST_EXPECT(cnul.if_array() == nullptr);
         }
 
@@ -1136,7 +1155,7 @@ public:
             BEAST_EXPECT(i64.if_string() == nullptr);
             BEAST_EXPECT(u64.if_string() == nullptr);
             BEAST_EXPECT(dub.if_string() == nullptr);
-            BEAST_EXPECT(boo.if_string() == nullptr);
+            BEAST_EXPECT(bln.if_string() == nullptr);
             BEAST_EXPECT(nul.if_string() == nullptr);
         }
 
@@ -1148,7 +1167,7 @@ public:
             BEAST_EXPECT(ci64.if_string() == nullptr);
             BEAST_EXPECT(cu64.if_string() == nullptr);
             BEAST_EXPECT(cdub.if_string() == nullptr);
-            BEAST_EXPECT(cboo.if_string() == nullptr);
+            BEAST_EXPECT(cbln.if_string() == nullptr);
             BEAST_EXPECT(cnul.if_string() == nullptr);
         }
 
@@ -1160,7 +1179,7 @@ public:
             BEAST_EXPECT(i64.if_int64() != nullptr);
             BEAST_EXPECT(u64.if_int64() == nullptr);
             BEAST_EXPECT(dub.if_int64() == nullptr);
-            BEAST_EXPECT(boo.if_int64() == nullptr);
+            BEAST_EXPECT(bln.if_int64() == nullptr);
             BEAST_EXPECT(nul.if_int64() == nullptr);
         }
 
@@ -1172,7 +1191,7 @@ public:
             BEAST_EXPECT(ci64.if_int64() != nullptr);
             BEAST_EXPECT(cu64.if_int64() == nullptr);
             BEAST_EXPECT(cdub.if_int64() == nullptr);
-            BEAST_EXPECT(cboo.if_int64() == nullptr);
+            BEAST_EXPECT(cbln.if_int64() == nullptr);
             BEAST_EXPECT(cnul.if_int64() == nullptr);
         }
 
@@ -1184,7 +1203,7 @@ public:
             BEAST_EXPECT(i64.if_uint64() == nullptr);
             BEAST_EXPECT(u64.if_uint64() != nullptr);
             BEAST_EXPECT(dub.if_uint64() == nullptr);
-            BEAST_EXPECT(boo.if_uint64() == nullptr);
+            BEAST_EXPECT(bln.if_uint64() == nullptr);
             BEAST_EXPECT(nul.if_uint64() == nullptr);
         }
 
@@ -1196,7 +1215,7 @@ public:
             BEAST_EXPECT(ci64.if_uint64() == nullptr);
             BEAST_EXPECT(cu64.if_uint64() != nullptr);
             BEAST_EXPECT(cdub.if_uint64() == nullptr);
-            BEAST_EXPECT(cboo.if_uint64() == nullptr);
+            BEAST_EXPECT(cbln.if_uint64() == nullptr);
             BEAST_EXPECT(cnul.if_uint64() == nullptr);
         }
 
@@ -1208,7 +1227,7 @@ public:
             BEAST_EXPECT(i64.if_double() == nullptr);
             BEAST_EXPECT(u64.if_double() == nullptr);
             BEAST_EXPECT(dub.if_double() != nullptr);
-            BEAST_EXPECT(boo.if_double() == nullptr);
+            BEAST_EXPECT(bln.if_double() == nullptr);
             BEAST_EXPECT(nul.if_double() == nullptr);
         }
 
@@ -1220,7 +1239,7 @@ public:
             BEAST_EXPECT(ci64.if_double() == nullptr);
             BEAST_EXPECT(cu64.if_double() == nullptr);
             BEAST_EXPECT(cdub.if_double() != nullptr);
-            BEAST_EXPECT(cboo.if_double() == nullptr);
+            BEAST_EXPECT(cbln.if_double() == nullptr);
             BEAST_EXPECT(cnul.if_double() == nullptr);
         }
 
@@ -1232,7 +1251,7 @@ public:
             BEAST_EXPECT(i64.if_bool() == nullptr);
             BEAST_EXPECT(u64.if_bool() == nullptr);
             BEAST_EXPECT(dub.if_bool() == nullptr);
-            BEAST_EXPECT(boo.if_bool() != nullptr);
+            BEAST_EXPECT(bln.if_bool() != nullptr);
             BEAST_EXPECT(nul.if_bool() == nullptr);
         }
 
@@ -1244,80 +1263,108 @@ public:
             BEAST_EXPECT(ci64.if_bool() == nullptr);
             BEAST_EXPECT(cu64.if_bool() == nullptr);
             BEAST_EXPECT(cdub.if_bool() == nullptr);
-            BEAST_EXPECT(cboo.if_bool() != nullptr);
+            BEAST_EXPECT(cbln.if_bool() != nullptr);
             BEAST_EXPECT(cnul.if_bool() == nullptr);
         }
+    }
+
+    void
+    testAs()
+    {
+        value obj(object{});
+        value arr(array{});
+        value str(string{});
+        value i64(std::int64_t{});
+        value u64(std::uint64_t{});
+        value dub(double{});
+        value bln(true);
+        value nul(nullptr);
+
+        auto const& cobj(obj);
+        auto const& carr(arr);
+        auto const& cstr(str);
+        auto const& ci64(i64);
+        auto const& cu64(u64);
+        auto const& cdub(dub);
+        auto const& cbln(bln);
+        auto const& cnul(nul);
 
         // as_object()
         {
-                         obj.as_object();
+             object& x = obj.as_object();
             BEAST_THROWS(arr.as_object(), system_error);
             BEAST_THROWS(str.as_object(), system_error);
             BEAST_THROWS(i64.as_object(), system_error);
             BEAST_THROWS(u64.as_object(), system_error);
             BEAST_THROWS(dub.as_object(), system_error);
-            BEAST_THROWS(boo.as_object(), system_error);
+            BEAST_THROWS(bln.as_object(), system_error);
             BEAST_THROWS(nul.as_object(), system_error);
+            (void)x;
         }
 
         // as_object() const
         {
-                         cobj.as_object();
+       object const& x = cobj.as_object();
             BEAST_THROWS(carr.as_object(), system_error);
             BEAST_THROWS(cstr.as_object(), system_error);
             BEAST_THROWS(ci64.as_object(), system_error);
             BEAST_THROWS(cu64.as_object(), system_error);
             BEAST_THROWS(cdub.as_object(), system_error);
-            BEAST_THROWS(cboo.as_object(), system_error);
+            BEAST_THROWS(cbln.as_object(), system_error);
             BEAST_THROWS(cnul.as_object(), system_error);
+            (void)x;
         }
 
         // as_array()
         {
             BEAST_THROWS(obj.as_array(), system_error);
-                         arr.as_array();
+              array& x = arr.as_array();
             BEAST_THROWS(str.as_array(), system_error);
             BEAST_THROWS(i64.as_array(), system_error);
             BEAST_THROWS(u64.as_array(), system_error);
             BEAST_THROWS(dub.as_array(), system_error);
-            BEAST_THROWS(boo.as_array(), system_error);
+            BEAST_THROWS(bln.as_array(), system_error);
             BEAST_THROWS(nul.as_array(), system_error);
+            (void)x;
         }
 
         // as_array() const
         {
             BEAST_THROWS(cobj.as_array(), system_error);
-                         carr.as_array();
+        array const& x = carr.as_array();
             BEAST_THROWS(cstr.as_array(), system_error);
             BEAST_THROWS(ci64.as_array(), system_error);
             BEAST_THROWS(cu64.as_array(), system_error);
             BEAST_THROWS(cdub.as_array(), system_error);
-            BEAST_THROWS(cboo.as_array(), system_error);
+            BEAST_THROWS(cbln.as_array(), system_error);
             BEAST_THROWS(cnul.as_array(), system_error);
+            (void)x;
         }
 
         // as_string()
         {
             BEAST_THROWS(obj.as_string(), system_error);
             BEAST_THROWS(arr.as_string(), system_error);
-                         str.as_string();
+             string& x = str.as_string();
             BEAST_THROWS(i64.as_string(), system_error);
             BEAST_THROWS(u64.as_string(), system_error);
             BEAST_THROWS(dub.as_string(), system_error);
-            BEAST_THROWS(boo.as_string(), system_error);
+            BEAST_THROWS(bln.as_string(), system_error);
             BEAST_THROWS(nul.as_string(), system_error);
+            (void)x;
         }
 
         // as_string() const
         {
             BEAST_THROWS(cobj.as_string(), system_error);
             BEAST_THROWS(carr.as_string(), system_error);
-                         cstr.as_string();
+       string const& x = cstr.as_string();
             BEAST_THROWS(ci64.as_string(), system_error);
             BEAST_THROWS(cu64.as_string(), system_error);
             BEAST_THROWS(cdub.as_string(), system_error);
-            BEAST_THROWS(cboo.as_string(), system_error);
+            BEAST_THROWS(cbln.as_string(), system_error);
             BEAST_THROWS(cnul.as_string(), system_error);
+            (void)x;
         }
 
         // as_int64()
@@ -1325,11 +1372,12 @@ public:
             BEAST_THROWS(obj.as_int64(), system_error);
             BEAST_THROWS(arr.as_int64(), system_error);
             BEAST_THROWS(str.as_int64(), system_error);
-                         i64.as_int64();
+       std::int64_t& x = i64.as_int64();
             BEAST_THROWS(u64.as_int64(), system_error);
             BEAST_THROWS(dub.as_int64(), system_error);
-            BEAST_THROWS(boo.as_int64(), system_error);
+            BEAST_THROWS(bln.as_int64(), system_error);
             BEAST_THROWS(nul.as_int64(), system_error);
+            (void)x;
         }
 
         // as_int64() const
@@ -1337,11 +1385,12 @@ public:
             BEAST_THROWS(cobj.as_int64(), system_error);
             BEAST_THROWS(carr.as_int64(), system_error);
             BEAST_THROWS(cstr.as_int64(), system_error);
-                         ci64.as_int64();
+ std::int64_t const& x = ci64.as_int64();
             BEAST_THROWS(cu64.as_int64(), system_error);
             BEAST_THROWS(cdub.as_int64(), system_error);
-            BEAST_THROWS(cboo.as_int64(), system_error);
+            BEAST_THROWS(cbln.as_int64(), system_error);
             BEAST_THROWS(cnul.as_int64(), system_error);
+            (void)x;
         }
 
         // as_uint64()
@@ -1350,10 +1399,11 @@ public:
             BEAST_THROWS(arr.as_uint64(), system_error);
             BEAST_THROWS(str.as_uint64(), system_error);
             BEAST_THROWS(i64.as_uint64(), system_error);
-                         u64.as_uint64();
+      std::uint64_t& x = u64.as_uint64();
             BEAST_THROWS(dub.as_uint64(), system_error);
-            BEAST_THROWS(boo.as_uint64(), system_error);
+            BEAST_THROWS(bln.as_uint64(), system_error);
             BEAST_THROWS(nul.as_uint64(), system_error);
+            (void)x;
         }
 
         // as_uint64() const
@@ -1362,10 +1412,11 @@ public:
             BEAST_THROWS(carr.as_uint64(), system_error);
             BEAST_THROWS(cstr.as_uint64(), system_error);
             BEAST_THROWS(ci64.as_uint64(), system_error);
-                         cu64.as_uint64();
+std::uint64_t const& x = cu64.as_uint64();
             BEAST_THROWS(cdub.as_uint64(), system_error);
-            BEAST_THROWS(cboo.as_uint64(), system_error);
+            BEAST_THROWS(cbln.as_uint64(), system_error);
             BEAST_THROWS(cnul.as_uint64(), system_error);
+            (void)x;
         }
 
         // as_double()
@@ -1375,9 +1426,10 @@ public:
             BEAST_THROWS(str.as_double(), system_error);
             BEAST_THROWS(i64.as_double(), system_error);
             BEAST_THROWS(u64.as_double(), system_error);
-                         dub.as_double();
-            BEAST_THROWS(boo.as_double(), system_error);
+             double& x = dub.as_double();
+            BEAST_THROWS(bln.as_double(), system_error);
             BEAST_THROWS(nul.as_double(), system_error);
+            (void)x;
         }
 
         // as_uint64() const
@@ -1387,9 +1439,10 @@ public:
             BEAST_THROWS(cstr.as_double(), system_error);
             BEAST_THROWS(ci64.as_double(), system_error);
             BEAST_THROWS(cu64.as_double(), system_error);
-                         cdub.as_double();
-            BEAST_THROWS(cboo.as_double(), system_error);
+       double const& x = cdub.as_double();
+            BEAST_THROWS(cbln.as_double(), system_error);
             BEAST_THROWS(cnul.as_double(), system_error);
+            (void)x;
         }
 
         // as_bool()
@@ -1400,8 +1453,9 @@ public:
             BEAST_THROWS(i64.as_bool(), system_error);
             BEAST_THROWS(u64.as_bool(), system_error);
             BEAST_THROWS(dub.as_bool(), system_error);
-                         boo.as_bool();
+               bool& x = bln.as_bool();
             BEAST_THROWS(nul.as_bool(), system_error);
+            (void)x;
         }
 
         // as_bool() const
@@ -1412,12 +1466,83 @@ public:
             BEAST_THROWS(ci64.as_bool(), system_error);
             BEAST_THROWS(cu64.as_bool(), system_error);
             BEAST_THROWS(cdub.as_bool(), system_error);
-                         cboo.as_bool();
+          bool const&x = cbln.as_bool();
             BEAST_THROWS(cnul.as_bool(), system_error);
+            (void)x;
         }
     }
 
-    //------------------------------------------------------
+    void
+    testGet()
+    {
+        value obj(object{});
+        value arr(array{});
+        value str(string{});
+        value i64(std::int64_t{});
+        value u64(std::uint64_t{});
+        value dub(double{});
+        value bln(true);
+
+        auto const& cobj(obj);
+        auto const& carr(arr);
+        auto const& cstr(str);
+        auto const& ci64(i64);
+        auto const& cu64(u64);
+        auto const& cdub(dub);
+        auto const& cbln(bln);
+
+        // get_object()
+        // get_array()
+        // get_string()
+        // get_int64()
+        // get_uint64()
+        // get_double()
+        // get_bool()
+        {
+            object&         xobj = obj.get_object();
+            array&          xarr = arr.get_array();
+            string&         xstr = str.get_string();
+            std::int64_t&   xi64 = i64.get_int64();
+            std::uint64_t&  xu64 = u64.get_uint64();
+            double&         xdub = dub.get_double();
+            bool&           xbln = bln.get_bool();
+
+            (void)(xobj);
+            (void)(xarr);
+            (void)(xstr);
+            (void)(xi64);
+            (void)(xu64);
+            (void)(xdub);
+            (void)(xbln);
+        }
+
+        // get_object() const
+        // get_array() const
+        // get_string() const
+        // get_int64() const
+        // get_uint64() const
+        // get_double() const
+        // get_bool() const
+        {
+            object const&   xobj = cobj.get_object();
+            array const&    xarr = carr.get_array();
+            string const&   xstr = cstr.get_string();
+            std::int64_t
+                const&      xi64 = ci64.get_int64();
+            std::uint64_t
+                const&      xu64 = cu64.get_uint64();
+            double const&   xdub = cdub.get_double();
+            bool const&     xbln = cbln.get_bool();
+
+            (void)(xobj);
+            (void)(xarr);
+            (void)(xstr);
+            (void)(xi64);
+            (void)(xu64);
+            (void)(xdub);
+            (void)(xbln);
+        }
+    }
 
     void
     testCustomTypes()
@@ -1455,7 +1580,10 @@ public:
         testModifiers();
         testExchange();
         testObservers();
-        testAccessors();
+        testGetStorage();
+        testIf();
+        testAs();
+        testGet();
         testCustomTypes();
     }
 };

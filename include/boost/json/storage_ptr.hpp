@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+// Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_STORAGE_PTR_HPP
 #define BOOST_JSON_STORAGE_PTR_HPP
 
-#include <boost/json/detail/config.hpp>
+#include <boost/json/config.hpp>
 #include <boost/json/storage.hpp>
 #include <cstddef>
 #include <type_traits>
@@ -267,33 +267,36 @@ public:
         return *get();
     }
 
-    /** Create a new storage object and return a pointer to it.
-
-        This functions similarly to `make_shared`.
-
-        @par Mandates
-
-        `std::is_base_of_v<storage, U>`
-
-        @par Complexity
-
-        Same as `U(std::forward<Args>(args)...)`.
-
-        @par Exception Safety
-
-        Strong guarantee.
-
-        @param args Parameters forwarded to the constructor of `U`.
-
-        @tparam U the type of the storage object to create.
-    */
     template<class U, class... Args>
     friend
     storage_ptr
     make_storage(Args&&... args);
 };
 
-#ifndef GENERATING_DOCUMENTATION
+/** Create a new storage object and return a pointer to it.
+
+    This functions similarly to `make_shared`.
+
+    @par Mandates
+
+    `std::is_base_of_v<storage, U>`
+
+    @par Complexity
+
+    Same as `T(std::forward<Args>(args)...)`.
+
+    @par Exception Safety
+
+    Strong guarantee.
+
+    @param args Parameters forwarded to the constructor of `T`.
+
+    @tparam T the type of the storage object to create.
+*/
+template<class U, class... Args>
+storage_ptr
+make_storage(Args&&... args);
+
 inline
 bool
 operator==(
@@ -311,7 +314,6 @@ operator!=(
 {
     return lhs.get() != rhs.get();
 }
-#endif
 
 //----------------------------------------------------------
 

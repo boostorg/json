@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+// Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_OBJECT_HPP
 #define BOOST_JSON_OBJECT_HPP
 
-#include <boost/json/detail/config.hpp>
+#include <boost/json/config.hpp>
 #include <boost/json/kind.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/detail/object_impl.hpp>
@@ -26,20 +26,48 @@ namespace json {
 
 class value;
 
-/** An associative container of key to JSON value pairs
+/** A dynamically sized associative container of JSON key/value pairs.
 
     This is an associative container whose elements
     are key/value pairs with unique keys.
 
+    <br>
+
+    The elements are stored contiguously, which means that
+    elements can be accessed not only through iterators, but
+    also using offsets to regular pointers to elements. A
+    pointer to an element of an @ref object may be passed to
+    any function that expects a pointer to
+    @ref key_value_pair.
+
+    <br>
+
+    The container also maintains an internal index to speed
+    up find operations, reducing the average complexity
+    for most lookups and insertions
+
+    <br>
+
+    Reallocations are usually costly operations in terms of
+    performance, as elements are copied and the internal
+    index must be rebuilt. The @ref reserve function can
+    be used to eliminate reallocations if the number of
+    elements is known beforehand.
+
     @par Storage
 
-    All elements stored in the container will use the same
-    storage that was used to construct the container,
-    including the children of those elements.
+    All elements stored in the container, and their
+    children if any, will use the same storage that
+    was used to construct the container.
+
+    @par Thread Safety
+
+    Non-const member functions may not be called
+    concurrently with any other member functions.
 
     @par Satisfies
 
-    @ref object models
+    Meets the requirements of
         <em>Container</em>,
         <em>ReversibleContainer</em>,
         <em>SequenceContainer</em>, and
@@ -60,7 +88,7 @@ class object
 
     template<class T>
     using is_inputit = typename std::enable_if<
-        std::is_constructible<object_value_type,
+        std::is_constructible<key_value_pair,
         typename std::iterator_traits<T>::value_type
             >::value>::type;
 
@@ -75,8 +103,8 @@ class object
 public:
     /** The type of keys.
 
-        The implementation imposes a 2GB upper limit
-        on the size of keys.
+        The function @ref string::max_size returns the
+        maximum allowed size of strings used as keys.
     */
     using key_type = string_view;
 
@@ -84,7 +112,7 @@ public:
     using mapped_type = value;
 
     /// The element type
-    using value_type = object_value_type;
+    using value_type = key_value_pair;
 
     /// The type used to represent unsigned integers
     using size_type = std::size_t;
@@ -126,9 +154,9 @@ public:
 
     /** Destructor.
 
-        If `this->get_storage()->need_free() == true`,
-        the destructor for each element is called, and
-        any allocated memory is deallocated.
+        The destructor for each element is called if needed,
+        any used memory is deallocated, and shared ownership
+        of the @ref storage is released.
 
         @par Complexity
 
@@ -140,8 +168,6 @@ public:
         impl_.destroy(sp_);
     }
 
-    //------------------------------------------------------
-
 #ifndef GENERATING_DOCUMENTATION
     // private
     BOOST_JSON_DECL
@@ -149,10 +175,12 @@ public:
     object(detail::unchecked_object&& uo);
 #endif
 
+    //------------------------------------------------------
+
     /** Default constructor.
 
-        The object starts out empty, with @ref capacity()
-        equal to zero.
+        The constructed object is empty with zero
+        capacity, using the default storage.
 
         @par Complexity
 
@@ -164,10 +192,10 @@ public:
     */
     object() = default;
 
-    /** Construct an object.
+    /** Constructor.
 
-        The object starts out empty, with @ref capacity()
-        equal to zero.
+        The constructed object is empty with zero
+        capacity, using the specified storage.
 
         @par Complexity
 
@@ -177,17 +205,19 @@ public:
 
         No-throw guarantee.
 
-        @param sp The @ref storage to use.
+        @param sp A pointer to the @ref storage
+        to use. The container will acquire shared
+        ownership of the storage object.
     */
     BOOST_JSON_DECL
     explicit
-    object(
-        storage_ptr sp) noexcept;
+    object(storage_ptr sp) noexcept;
 
-    /** Construct an object.
+    /** Constructor.
 
-        The object starts out empty, with @ref capacity()
-        greater than or equal to `min_capacity`.
+        The constructed object is empty with capacity
+        equal to the specified minimum capacity,
+        using the specified storage.
 
         @par Complexity
 
@@ -202,17 +232,20 @@ public:
         of elements for which capacity is guaranteed
         without a subsequent reallocation.
 
-        @param sp The @ref storage to use.
+        @param sp A pointer to the @ref storage
+        to use. The container will acquire shared
+        ownership of the storage object.
     */
     BOOST_JSON_DECL
     object(
         std::size_t min_capacity,
         storage_ptr sp = {});
 
-    /** Construct an object.
+    /** Constructor.
 
-        The elements in the range `[first, last)` are
-        inserted, preserving their order.
+        The object is constructed with the elements
+        in the range `[first, last)`, preserving order,
+        using the specified storage.
         If multiple elements in the range have keys that
         compare equivalent, only the first occurring key
         will be inserted.
@@ -234,8 +267,9 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param first An input iterator pointing to the first
-        element to insert, or pointing to the end of the range.
+        @param first An input iterator pointing to the
+        first element to insert, or pointing to the end
+        of the range.
 
         @param last An input iterator pointing to the end
         of the range.
@@ -246,7 +280,9 @@ public:
         Upon construction, @ref capacity() will be greater
         than or equal to this number.
 
-        @param sp The @ref storage to use.
+        @param sp A pointer to the @ref storage
+        to use. The container will acquire shared
+        ownership of the storage object.
 
         @tparam InputIt a type meeting the requirements of
         __InputIterator__.
@@ -265,11 +301,9 @@ public:
 
     /** Move constructor.
 
-        Construct the container with the contents of `other`
-        using move semantics. Ownership of the underlying
-        memory is transferred.
-        The container acquires shared ownership of the
-        @ref storage used by `other`.
+        The object is constructed by acquiring ownership of
+        the contents of `other` and shared ownership of
+        the storage of `other`.
 
         @note
 
@@ -291,21 +325,21 @@ public:
 
     /** Move constructor.
 
-        Using `*sp` as the @ref storage for the new container,
-        moves all the elements from `other`.
+        The object is constructed with the contents of
+        `other` by move semantics, using the specified
+        storage:
 
-        @li If `*other.get_storage() == *sp`, ownership of the
-        underlying memory is transferred in constant time, with
-        no possibility of exceptions.
+        @li If `*other.get_storage() == *sp`, ownership of
+        the underlying memory is transferred in constant
+        time, with no possibility of exceptions.
         After construction, the moved-from object behaves
-        as if newly constructed with its current storage.
+        as if newly constructed with its current storage
+        pointer.
 
-        @li If `*other.get_storage() != *sp`, an element-wise
-        copy is performed. In this case, the moved-from container
-        is not changed.
-
-        The container and all inserted elements will use the
-        @ref storage owned by `sp`.
+        @li If `*other.get_storage() != *sp`, an
+        element-wise copy is performed, which may throw.
+        In this case, the moved-from object is not
+        changed.
         
         @par Complexity
 
@@ -318,7 +352,9 @@ public:
 
         @param other The object to move.
 
-        @param sp The @ref storage to use.
+        @param sp A pointer to the @ref storage
+        to use. The container will acquire shared
+        ownership of the storage object.
     */
     BOOST_JSON_DECL
     object(
@@ -327,14 +363,13 @@ public:
 
     /** Pilfer constructor.
 
-        Construct the container with the contents of `other`
-        using pilfer semantics.
-        Ownership of the @ref storage is transferred.
+        The object is constructed by acquiring ownership of
+        the contents of `other` using pilfer semantics.
 
         @note
 
-        After construction, the moved-from object may only be
-        destroyed.
+        After construction, the moved-from object may only
+        be destroyed.
         
         @par Complexity
 
@@ -344,7 +379,7 @@ public:
 
         No-throw guarantee.
 
-        @param other The container to pilfer.
+        @param other The object to pilfer.
 
         @see
         
@@ -356,10 +391,8 @@ public:
 
     /** Copy constructor.
 
-        Construct the container with a copy of the contents
-        of `other.
-        The container and all inserted elements will use the
-        default storage.
+        The object is constructed with a copy of the
+        contents of `other`, using the storage of `other`.
 
         @par Complexity
 
@@ -378,10 +411,8 @@ public:
 
     /** Copy constructor.
 
-        Construct the container with a copy of the contents
-        of `other.
-        The container and all inserted elements will use the
-        specified storage.
+        The object is constructed with a copy of the
+        contents of `other`, using the specified storage.
 
         @par Complexity
 
@@ -394,17 +425,20 @@ public:
 
         @param other The object to copy.
 
-        @param sp The @ref storage to use.
+        @param sp A pointer to the @ref storage
+        to use. The container will acquire shared
+        ownership of the storage object.
     */
     BOOST_JSON_DECL
     object(
         object const& other,
         storage_ptr sp);
 
-    /** Construct an object.
+    /** Constructor.
 
-        The elements in the initializer list `init` are
-        inserted, preserving their order.
+        The object is constructed with a copy of the values
+        in the initializer-list in order, using the
+        specified storage.
         If multiple elements in the range have keys that
         compare equivalent, only the first occurring key
         will be inserted.
@@ -420,7 +454,9 @@ public:
 
         @param init The initializer list to insert.
 
-        @param sp The @ref storage to use.
+        @param sp A pointer to the @ref storage
+        to use. The container will acquire shared
+        ownership of the storage object.
     */
     object(
         init_list init,
@@ -429,10 +465,13 @@ public:
     {
     }
 
-    /** Construct an object.
+    /** Constructor.
 
-        The elements in the initializer list `init` are
-        inserted, preserving their order.
+        Storage for at least `min_capacity` elements is
+        reserved, and then
+        the object is constructed with a copy of the values
+        in the initializer-list in order, using the
+        specified storage.
         If multiple elements in the range have keys that
         compare equivalent, only the first occurring key
         will be inserted.
@@ -454,7 +493,9 @@ public:
         Upon construction, @ref capacity() will be greater
         than or equal to this number.
 
-        @param sp The @ref storage to use.
+        @param sp A pointer to the @ref storage
+        to use. The container will acquire shared
+        ownership of the storage object.
     */
     BOOST_JSON_DECL
     object(
@@ -462,21 +503,24 @@ public:
         std::size_t min_capacity,
         storage_ptr sp = {});
 
+    //------------------------------------------------------
+
     /** Move assignment.
 
-        Replaces the contents with those of `other`
-        using move semantics (the data in `other` is
-        moved into this container).
+        The contents of the object are replaced with the
+        contents of `other` using move semantics:
 
-        @li If `*other.get_storage() == get_storage()`,
-        ownership of the  underlying memory is transferred in
-        constant time, with no possibility of exceptions.
-        After construction, the moved-from object behaves as if
-        newly constructed with its current @ref storage pointer.
+        @li If `*other.get_storage() == *sp`, ownership of
+        the underlying memory is transferred in constant
+        time, with no possibility of exceptions.
+        After assignment, the moved-from object behaves
+        as if newly constructed with its current storage
+        pointer.
 
-        @li If `*other.get_storage() != *sp`, an element-wise
-        copy is performed. In this case the moved-from container
-        is not modified, and exceptions may be thrown.
+        @li If `*other.get_storage() != *sp`, an
+        element-wise copy is performed, which may throw.
+        In this case, the moved-from object is not
+        changed.
 
         @par Complexity
 
@@ -487,7 +531,7 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param other The obect to assign from.
+        @param other The object to move.
     */
     BOOST_JSON_DECL
     object&
@@ -495,7 +539,8 @@ public:
 
     /** Copy assignment.
 
-        Replaces the contents with an element-wise copy of `other`.
+        The contents of the object are replaced with an
+        element-wise copy of `other`.
 
         @par Complexity
 
@@ -506,36 +551,40 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param other The object to assign from.
+        @param other The object to copy.
     */
     BOOST_JSON_DECL
     object&
     operator=(object const& other);
 
-    /** Assignment operator.
+    /** Assignment.
 
         Replaces the contents with the contents of an
         initializer list.
 
         @par Complexity
 
-        Linear in @ref size() plus `other.size()`.
+        Linear in @ref size() plus
+        average case linear in `init.size()`,
+        worst case quadratic in `init.size()`.
 
         @par Exception Safety
 
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param init The initializer list to assign from.
+        @param init The initializer list to copy.
     */
     BOOST_JSON_DECL
     object&
     operator=(init_list init);
 
-    /** Return the storage associated with the container.
+    //------------------------------------------------------
 
-        Shared ownership of the @ref storage is propagated
-        by the container to all of its children recursively.
+    /** Return the storage used by the object.
+
+        This returns the storage used by the object
+        for all elements and all internal allocations.
 
         @par Complexity
 
@@ -553,7 +602,7 @@ public:
     //
     //------------------------------------------------------
 
-    /** Return an iterator to the first element
+    /** Return an iterator to the first element.
 
         If the container is empty, the returned iterator
         will be equal to @ref end().
@@ -566,7 +615,7 @@ public:
     iterator
     begin() noexcept;
 
-    /** Return an iterator to the first element
+    /** Return a const iterator to the first element.
 
         If the container is empty, the returned iterator
         will be equal to @ref end().
@@ -579,7 +628,7 @@ public:
     const_iterator
     begin() const noexcept;
 
-    /** Return an iterator to the first element
+    /** Return a const iterator to the first element.
 
         If the container is empty, the returned iterator
         will be equal to @ref end().
@@ -592,7 +641,7 @@ public:
     const_iterator
     cbegin() const noexcept;
 
-    /** Return an iterator to the element following the last element
+    /** Return an iterator to the element following the last element.
 
         The element acts as a placeholder; attempting to
         access it results in undefined behavior.
@@ -605,7 +654,7 @@ public:
     iterator
     end() noexcept;
 
-    /** Return an iterator to the element following the last element
+    /** Return a const iterator to the element following the last element.
 
         The element acts as a placeholder; attempting to
         access it results in undefined behavior.
@@ -618,7 +667,7 @@ public:
     const_iterator
     end() const noexcept;
 
-    /** Return an iterator to the element following the last element
+    /** Return a const iterator to the element following the last element.
 
         The element acts as a placeholder; attempting to
         access it results in undefined behavior.
@@ -631,7 +680,7 @@ public:
     const_iterator
     cend() const noexcept;
 
-    /** Return a reverse iterator to the first element of the reversed container
+    /** Return a reverse iterator to the first element of the reversed container.
 
         The pointed-to element corresponds to the last element
         of the non-reversed container. If the container is empty,
@@ -645,7 +694,7 @@ public:
     reverse_iterator
     rbegin() noexcept;
 
-    /** Return a reverse iterator to the first element of the reversed container
+    /** Return a const reverse iterator to the first element of the reversed container.
 
         The pointed-to element corresponds to the last element
         of the non-reversed container. If the container is empty,
@@ -659,7 +708,7 @@ public:
     const_reverse_iterator
     rbegin() const noexcept;
 
-    /** Return a reverse iterator to the first element of the reversed container
+    /** Return a const reverse iterator to the first element of the reversed container.
 
         The pointed-to element corresponds to the last element
         of the non-reversed container. If the container is empty,
@@ -673,7 +722,7 @@ public:
     const_reverse_iterator
     crbegin() const noexcept;
 
-    /** Return a reverse iterator to the element following the last element of the reversed container
+    /** Return a reverse iterator to the element following the last element of the reversed container.
 
         The pointed-to element corresponds to the element
         preceding the first element of the non-reversed container.
@@ -688,7 +737,7 @@ public:
     reverse_iterator
     rend() noexcept;
 
-    /** Return a reverse iterator to the element following the last element of the reversed container
+    /** Return a const reverse iterator to the element following the last element of the reversed container.
 
         The pointed-to element corresponds to the element
         preceding the first element of the non-reversed container.
@@ -703,7 +752,7 @@ public:
     const_reverse_iterator
     rend() const noexcept;
 
-    /** Return a reverse iterator to the element following the last element of the reversed container
+    /** Return a const reverse iterator to the element following the last element of the reversed container.
 
         The pointed-to element corresponds to the element
         preceding the first element of the non-reversed container.
@@ -1074,10 +1123,10 @@ public:
     std::size_t
     erase(key_type key) noexcept;
 
-    /** Swap the contents
+    /** Swap the contents.
 
-        Exchanges the contents of this container with another
-        container. Ownership of the respective @ref storage
+        Exchanges the contents of this object with another
+        object. Ownership of the respective @ref storage
         objects is not transferred.
 
         @li If `*other.get_storage() == *sp`, ownership of the
@@ -1098,7 +1147,7 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @param other The container to swap with
+        @param other The object to swap with.
     */
     BOOST_JSON_DECL
     void
@@ -1331,6 +1380,19 @@ private:
             iter_cat<InputIt>{});
     }
 };
+
+/** Exchange the given values.
+
+    @par Preconditions
+
+    `&lhs != &rhs`
+*/
+inline
+void
+swap(object& lhs, object& rhs)
+{
+    lhs.swap(rhs);
+}
 
 } // json
 } // boost

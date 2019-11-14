@@ -110,8 +110,10 @@ in memory.
 [include usage.qbk]
 [include comparison.qbk]
 [include benchmarks.qbk]
-[include quickref.qbk]
 
+[section:quickref Reference]
+[xinclude quickref.xml]
+[endsect]
 [section:ref Reference]
 [include reference.qbk]
 [endsect]

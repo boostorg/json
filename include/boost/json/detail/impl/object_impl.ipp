@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+// Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -20,8 +20,7 @@ do_destroy(storage_ptr const& sp) noexcept
 {
     if(tab_)
     {
-        value_type::destroy(
-            begin(), size());
+        detail::destroy(begin(), size());
         sp->deallocate(tab_,
             sizeof(table) +
             capacity() * sizeof(value_type) +
@@ -58,8 +57,7 @@ clear() noexcept
 {
     if(! tab_)
         return;
-    value_type::destroy(
-        begin(), size());
+    detail::destroy(begin(), size());
     std::memset(bucket_begin(), 0,
         buckets() * sizeof(value_type*));
     tab_->size = 0;
@@ -124,6 +122,22 @@ swap(object_impl& rhs) noexcept
     auto tmp = tab_;
     tab_ = rhs.tab_;
     rhs.tab_ = tmp;
+}
+
+//----------------------------------------------------------
+
+void
+destroy(
+    key_value_pair* p,
+    std::size_t n) noexcept
+{
+    if(n == 0)
+        return;
+    if(! p->value().get_storage()->need_free())
+        return;
+    p += n;
+    while(n--)
+        (*--p).~key_value_pair();
 }
 
 } // detail

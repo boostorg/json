@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+// Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -2600,58 +2600,84 @@ public:
         string const s2(t.v2);
         auto const v1(t.v1);
         auto const v2(t.v2);
+        auto const c1 = t.s1.c_str();
+        auto const c2 = t.s2.c_str();
 
         BEAST_EXPECT(! operator< (s1, s2));
         BEAST_EXPECT(! operator< (s1, v2));
+        BEAST_EXPECT(! operator< (s1, c2));
         BEAST_EXPECT(! operator<=(s1, s2));
         BEAST_EXPECT(! operator<=(s1, v2));
+        BEAST_EXPECT(! operator<=(s1, c2));
         BEAST_EXPECT(! operator==(s1, s2));
         BEAST_EXPECT(! operator==(s1, v2));
+        BEAST_EXPECT(! operator==(s1, c2));
         BEAST_EXPECT(  operator!=(s1, s2));
         BEAST_EXPECT(  operator!=(s1, v2));
+        BEAST_EXPECT(  operator!=(s1, c2));
         BEAST_EXPECT(  operator>=(s1, s2));
         BEAST_EXPECT(  operator>=(s1, v2));
+        BEAST_EXPECT(  operator>=(s1, c2));
         BEAST_EXPECT(  operator> (s1, s2));
         BEAST_EXPECT(  operator> (s1, v2));
+        BEAST_EXPECT(  operator> (s1, c2));
 
         BEAST_EXPECT(  operator< (s2, s1));
         BEAST_EXPECT(  operator< (s2, v1));
+        BEAST_EXPECT(  operator< (s2, c1));
         BEAST_EXPECT(  operator<=(s2, s1));
         BEAST_EXPECT(  operator<=(s2, v1));
+        BEAST_EXPECT(  operator<=(s2, c1));
         BEAST_EXPECT(  operator!=(s2, s1));
         BEAST_EXPECT(  operator!=(s2, v1));
+        BEAST_EXPECT(  operator!=(s2, c1));
         BEAST_EXPECT(! operator==(s2, s1));
         BEAST_EXPECT(! operator==(s2, v1));
+        BEAST_EXPECT(! operator==(s2, c1));
         BEAST_EXPECT(! operator>=(s2, s1));
         BEAST_EXPECT(! operator>=(s2, v1));
+        BEAST_EXPECT(! operator>=(s2, c1));
         BEAST_EXPECT(! operator> (s2, s1));
         BEAST_EXPECT(! operator> (s2, v1));
+        BEAST_EXPECT(! operator> (s2, c1));
 
         BEAST_EXPECT(  operator< (s2, s1));
         BEAST_EXPECT(  operator< (v2, s1));
+        BEAST_EXPECT(  operator< (c2, s1));
         BEAST_EXPECT(  operator<=(s2, s1));
         BEAST_EXPECT(  operator<=(v2, s1));
+        BEAST_EXPECT(  operator<=(c2, s1));
         BEAST_EXPECT(  operator!=(s2, s1));
         BEAST_EXPECT(  operator!=(v2, s1));
+        BEAST_EXPECT(  operator!=(c2, s1));
         BEAST_EXPECT(! operator==(s2, s1));
         BEAST_EXPECT(! operator==(v2, s1));
+        BEAST_EXPECT(! operator==(c2, s1));
         BEAST_EXPECT(! operator>=(s2, s1));
         BEAST_EXPECT(! operator>=(v2, s1));
+        BEAST_EXPECT(! operator>=(c2, s1));
         BEAST_EXPECT(! operator> (s2, s1));
         BEAST_EXPECT(! operator> (v2, s1));
+        BEAST_EXPECT(! operator> (c2, s1));
 
         BEAST_EXPECT(! operator< (s1, s2));
         BEAST_EXPECT(! operator< (v1, s2));
+        BEAST_EXPECT(! operator< (c1, s2));
         BEAST_EXPECT(! operator<=(s1, s2));
         BEAST_EXPECT(! operator<=(v1, s2));
+        BEAST_EXPECT(! operator<=(c1, s2));
         BEAST_EXPECT(! operator==(s1, s2));
         BEAST_EXPECT(! operator==(v1, s2));
+        BEAST_EXPECT(! operator==(c1, s2));
         BEAST_EXPECT(  operator!=(s1, s2));
         BEAST_EXPECT(  operator!=(v1, s2));
+        BEAST_EXPECT(  operator!=(c1, s2));
         BEAST_EXPECT(  operator>=(s1, s2));
         BEAST_EXPECT(  operator>=(v1, s2));
+        BEAST_EXPECT(  operator>=(c1, s2));
         BEAST_EXPECT(  operator> (s1, s2));
         BEAST_EXPECT(  operator> (v1, s2));
+        BEAST_EXPECT(  operator> (c1, s2));
 
         std::stringstream ss;
         string s = "Hello, world";

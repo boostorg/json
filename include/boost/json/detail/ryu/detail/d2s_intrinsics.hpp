@@ -22,7 +22,7 @@
 #ifndef BOOST_JSON_DETAIL_RYU_DETAIL_D2S_INTRINSICS_HPP
 #define BOOST_JSON_DETAIL_RYU_DETAIL_D2S_INTRINSICS_HPP
 
-#include <boost/json/detail/config.hpp>
+#include <boost/json/config.hpp>
 
 // This sets BOOST_JSON_RYU_32_BIT_PLATFORM as a side effect if applicable.
 #include <boost/json/detail/ryu/detail/common.hpp>

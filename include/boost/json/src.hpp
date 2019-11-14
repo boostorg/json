@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2016-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+// Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -17,7 +17,7 @@ the program, with the macro BOOST_BEAST_SPLIT_COMPILATION defined.
 
 */
 
-#include <boost/json/detail/config.hpp>
+#include <boost/json/config.hpp>
 
 #if defined(BOOST_JSON_HEADER_ONLY)
 # error Do not compile library source with the header only macro defined

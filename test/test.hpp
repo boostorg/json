@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+// Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -575,7 +575,7 @@ equal_storage(
     case json::kind::int64:
     case json::kind::uint64:
     case json::kind::double_:
-    case json::kind::boolean:
+    case json::kind::bool_:
     case json::kind::null:
     break;
     }
@@ -711,7 +711,7 @@ to_string_test(
         break;
     }
 
-    case kind::boolean:
+    case kind::bool_:
         if(jv.as_bool())
             dest.append("true");
         else
@@ -817,7 +817,7 @@ equal(
             *lhs.if_uint64() ==
             *rhs.if_uint64();
 
-    case kind::boolean:
+    case kind::bool_:
         return
             *lhs.if_bool() ==
             *rhs.if_bool();

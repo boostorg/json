@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+// Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_KIND_HPP
 #define BOOST_JSON_KIND_HPP
 
-#include <boost/json/detail/config.hpp>
+#include <boost/json/config.hpp>
 
 namespace boost {
 namespace json {
@@ -27,19 +27,19 @@ enum class kind : unsigned char
     /// A @ref string.
     string,
 
-    /// A signed 64-bit integer.
+    /// A `std::int64_t`
     int64,
 
-    /// An unsigned 64-bit integer.
+    /// A `std::uint64_t`
     uint64,
 
-    /// A double precision floating point.
+    /// A `double`.
     double_,
 
     /// A `bool`.
-    boolean,
+    bool_,
 
-    /// A null.
+    /// The null value.
     null
 };
 

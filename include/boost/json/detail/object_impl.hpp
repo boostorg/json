@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+// Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_DETAIL_OBJECT_IMPL_HPP
 #define BOOST_JSON_DETAIL_OBJECT_IMPL_HPP
 
-#include <boost/json/detail/config.hpp>
+#include <boost/json/config.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <cstddef>
 #include <type_traits>
@@ -18,7 +18,7 @@
 namespace boost {
 namespace json {
 
-struct object_value_type;
+struct key_value_pair;
 
 namespace detail {
 
@@ -30,7 +30,7 @@ class object_impl
 
 public:
     using value_type =
-        object_value_type;
+        key_value_pair;
 
     object_impl() = default;
 
@@ -179,7 +179,7 @@ struct next_access;
 
 class unchecked_object
 {
-    object_value_type* data_;
+    key_value_pair* data_;
     std::size_t size_;
     storage_ptr const& sp_;
 
@@ -188,7 +188,7 @@ public:
     ~unchecked_object();
 
     unchecked_object(
-        object_value_type* data,
+        key_value_pair* data,
         std::size_t size,
         storage_ptr const& sp) noexcept
         : data_(data)
@@ -220,8 +220,16 @@ public:
 
     inline
     void
-    relocate(object_value_type* dest) noexcept;
+    relocate(key_value_pair* dest) noexcept;
 };
+
+//----------------------------------------------------------
+
+BOOST_JSON_DECL
+void
+destroy(
+    key_value_pair* p,
+    std::size_t n) noexcept;
 
 } // detail
 } // json

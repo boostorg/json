@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2018-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+// Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -109,7 +109,7 @@ value::
         dub_.~double_k();
         break;
 
-    case json::kind::boolean:
+    case json::kind::bool_:
         bln_.~bool_k();
         break;
 
@@ -169,7 +169,7 @@ value(
             detail::move(sp));
         break;
 
-    case json::kind::boolean:
+    case json::kind::bool_:
         ::new(&bln_) bool_k(
             other.bln_.b,
             detail::move(sp));
@@ -230,7 +230,7 @@ value(
             other.dub_.d, detail::move(sp));
         break;
 
-    case json::kind::boolean:
+    case json::kind::bool_:
         ::new(&bln_) bool_k(
             other.bln_.b, detail::move(sp));
         break;
@@ -459,7 +459,7 @@ destroy() noexcept
     case json::kind::int64:
     case json::kind::uint64:
     case json::kind::double_:
-    case json::kind::boolean:
+    case json::kind::bool_:
     case json::kind::null:
         break;
     }
@@ -468,17 +468,17 @@ destroy() noexcept
 
 //----------------------------------------------------------
 
-object_value_type::
-~object_value_type()
+key_value_pair::
+~key_value_pair()
 {
     auto const& sp = value_.get_storage();
     if(sp->need_free())
         sp->deallocate(key_, len_ + 1, 1);
 }
 
-object_value_type::
-object_value_type(
-    object_value_type const& other)
+key_value_pair::
+key_value_pair(
+    key_value_pair const& other)
     : value_(other.value_)
     , len_(other.len_)
     , key_(
@@ -494,10 +494,10 @@ object_value_type(
 {
 }
 
-object_value_type::
-object_value_type::
-object_value_type(
-    object_value_type const& other,
+key_value_pair::
+key_value_pair::
+key_value_pair(
+    key_value_pair const& other,
     storage_ptr sp)
     : value_(other.value_, detail::move(sp))
     , len_(other.len_)
@@ -512,21 +512,6 @@ object_value_type(
             return s;
         }())
 {
-}
-
-void
-object_value_type::
-destroy(
-    object_value_type* p,
-    std::size_t n) noexcept
-{
-    if(n == 0)
-        return;
-    if(! p->value().get_storage()->need_free())
-        return;
-    p += n;
-    while(n--)
-        (*--p).~object_value_type();
 }
 
 //----------------------------------------------------------
