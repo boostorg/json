@@ -21,101 +21,6 @@
 namespace boost {
 namespace json {
 
-//----------------------------------------------------------
-
-array::
-array_impl::
-array_impl(
-    std::size_t capacity,
-    storage_ptr const& sp)
-{
-    if(capacity > max_size())
-        BOOST_JSON_THROW(
-            detail::array_too_large_exception());
-    if(capacity > 0)
-    {
-        tab_ = ::new(sp->allocate(
-            (sizeof(table) +
-             capacity * sizeof(value) +
-             sizeof(table) + 1)
-                / sizeof(table)
-                * sizeof(table),
-            std::max(
-                alignof(table),
-                alignof(value)))) table;
-        tab_->capacity = static_cast<
-            std::uint32_t>(capacity);
-        tab_->size = 0;
-    }
-    else
-    {
-        tab_ = nullptr;
-    }
-}
-
-
-array::
-array_impl::
-array_impl(array_impl&& other) noexcept
-    : tab_(detail::exchange(
-        other.tab_, nullptr))
-{
-}
-
-auto
-array::
-array_impl::
-operator=(
-    array_impl&& other) noexcept ->
-        array_impl&
-{
-    ::new(this) array_impl(
-        std::move(other));
-    return *this;
-}
-
-void
-array::
-array_impl::
-swap(array_impl& rhs) noexcept
-{
-    auto tmp = tab_;
-    tab_ = rhs.tab_;
-    rhs.tab_ = tmp;
-}
-
-void
-array::
-array_impl::
-destroy_impl(
-    storage_ptr const& sp) noexcept
-{
-    auto it = data() + tab_->size;
-    while(it != data())
-        (*--it).~value();
-    sp->deallocate(tab_,
-        (sizeof(table) +
-            capacity() * sizeof(value) +
-            sizeof(table) + 1)
-            / sizeof(table)
-            * sizeof(table),
-        std::max(
-            alignof(table),
-            alignof(value)));
-}
-
-void
-array::
-array_impl::
-destroy(
-    storage_ptr const& sp) noexcept
-{
-    if(tab_ && sp->need_free())
-        destroy_impl(sp);
-}
-
-//----------------------------------------------------------
-
 array::
 undo_construct::
 ~undo_construct()
@@ -171,6 +76,15 @@ undo_insert::
 // Special Members
 //
 //----------------------------------------------------------
+
+array::
+array(detail::unchecked_array&& ua)
+    : sp_(ua.get_storage())
+    , impl_(ua.size(), sp_) // exact
+{
+    impl_.size(ua.size());
+    ua.relocate(impl_.data());
+}
 
 array::
 array(storage_ptr sp) noexcept
@@ -281,15 +195,6 @@ array(
     u.commit = true;
 }
 
-array::
-array(unchecked_array&& ua)
-    : sp_(ua.get_storage())
-    , impl_(ua.size(), sp_) // exact
-{
-    impl_.size(ua.size());
-    ua.relocate(impl_.data());
-}
-
 //----------------------------------------------------------
 
 array&
@@ -343,8 +248,10 @@ shrink_to_fit() noexcept
         impl_ = {};
         return;
     }
-    if( impl_.size() < min_capacity_ &&
-        impl_.capacity() <= min_capacity_)
+    if( impl_.size() <
+            array_impl::min_capacity &&
+        impl_.capacity() <=
+            array_impl::min_capacity)
         return;
 
 #ifndef BOOST_NO_EXCEPTIONS
@@ -616,8 +523,8 @@ reserve_impl(std::size_t capacity)
         else if(capacity < hint)
             capacity = hint;
     }
-    if( capacity < min_capacity_)
-        capacity = min_capacity_;
+    if( capacity < array_impl::min_capacity)
+        capacity = array_impl::min_capacity;
     array_impl impl(capacity, sp_);
     relocate(
         impl.data(),

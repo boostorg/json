@@ -17,8 +17,8 @@
 #include <boost/json/object.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/string.hpp>
-#include <boost/json/detail/kind.hpp>
 #include <boost/json/detail/value.hpp>
+#include <boost/json/detail/scalar_impl.hpp>
 #include <boost/pilfer.hpp>
 #include <cstdlib>
 #include <initializer_list>
@@ -29,10 +29,6 @@
 
 namespace boost {
 namespace json {
-
-class value;
-class unchecked_object;
-class unchecked_array;
 
 /** Customization point for assigning to and from class types.
 */
@@ -102,10 +98,6 @@ using has_to_json =
 */
 class value
 {
-    struct undo;
-    struct init_iter;
-    friend class value_test;
-
 #ifndef GENERATING_DOCUMENTATION
     // XSL scripts have trouble with private anon unions
     using int64_k = detail::int64_k;
@@ -136,6 +128,9 @@ class value
             ((unsigned char)
             json::kind::string) | 0x80);
 
+    struct undo;
+    struct init_iter;
+
 public:
     /** Destructor.
 
@@ -149,6 +144,12 @@ public:
     */
     BOOST_JSON_DECL
     ~value();
+
+#ifndef GENERATING_DOCUMENTATION
+    // private
+    inline value(detail::unchecked_object&& uo);
+    inline value(detail::unchecked_array&& ua);
+#endif
 
     /** Default constructor.
 
@@ -393,11 +394,6 @@ public:
 
     /** Construct an array.
     */
-    inline
-    value(unchecked_object&& uo);
-
-    /** Construct an array.
-    */
     value(array arr) noexcept
         : arr_(detail::move(arr))
     {
@@ -422,11 +418,6 @@ public:
         : arr_(detail::move(sp))
     {
     }
-
-    /** Construct an array.
-    */
-    inline
-    value(unchecked_array&& ua);
 
     /** Construct a string.
     */
@@ -1737,46 +1728,51 @@ private:
 
 //----------------------------------------------------------
 
-struct object::value_type
+/** A key/value pair.
+
+    This is the type of element stored in the @ref object
+    container.
+*/
+struct object_value_type
 {
     /** Copy assignment (deleted).
     */
-    value_type&
-    operator=(value_type const&) = delete;
+    object_value_type&
+    operator=(object_value_type const&) = delete;
 
     /** Destructor.
     */
     BOOST_JSON_DECL
-    ~value_type();
+    ~object_value_type();
 
     /** Copy constructor.
     */
     BOOST_JSON_DECL
-    value_type(value_type const& other);
+    object_value_type(object_value_type const& other);
 
     /** Copy constructor.
     */
     BOOST_JSON_DECL
-    value_type(
-        value_type const& other,
+    object_value_type(
+        object_value_type const& other,
         storage_ptr sp);
 
     /** Construct a key and value pair.
     */
     template<class... Args>
-    value_type(
+    object_value_type(
         string_view key,
         Args&&... args);
 
     /** Construct a key and value pair.
     */
     explicit
-    value_type(
+    object_value_type(
         std::pair<
             string_view,
             json::value> const& p,
         storage_ptr sp = {})
-        : value_type(
+        : object_value_type(
             p.first,
             p.second,
             detail::move(sp))
@@ -1786,12 +1782,12 @@ struct object::value_type
     /** Construct a key and value pair.
     */
     explicit
-    value_type(
+    object_value_type(
         std::pair<
             string_view,
             json::value>&& p,
         storage_ptr sp = {})
-        : value_type(
+        : object_value_type(
             p.first,
             detail::move(p).second,
             detail::move(sp))
@@ -1828,73 +1824,32 @@ struct object::value_type
     static
     void
     destroy(
-        value_type* p,
-        size_type n) noexcept;
+        object_value_type* p,
+        std::size_t n) noexcept;
 
 private:
-    friend object;
+    friend struct detail::next_access;
 
-    value_type* next_;
+    object_value_type* next_;
     json::value value_;
-    // VFALCO could SBO this
     std::size_t len_;
     char* key_;
-};
-
-//----------------------------------------------------------
-
-class unchecked_object
-{
-    object::value_type* data_;
-    std::size_t size_;
-    storage_ptr const& sp_;
-
-public:
-    inline
-    ~unchecked_object();
-
-    unchecked_object(
-        object::value_type* data,
-        std::size_t size,
-        storage_ptr const& sp) noexcept
-        : data_(data)
-        , size_(size)
-        , sp_(sp)
-    {
-    }
-
-    unchecked_object(
-        unchecked_object&& other) noexcept
-        : data_(other.data_)
-        , size_(other.size_)
-        , sp_(other.sp_)
-    {
-        other.data_ = nullptr;
-    }
-
-    storage_ptr const&
-    get_storage() const noexcept
-    {
-        return sp_;
-    }
-
-    std::size_t
-    size() const noexcept
-    {
-        return size_;
-    }
-
-    inline
-    void
-    relocate(object::value_type* dest) noexcept;
 };
 
 } // json
 } // boost
 
+// These are here because value, array,
+// and object form cyclic references.
+
+#include <boost/json/detail/impl/array_impl.hpp>
+#include <boost/json/detail/impl/object_impl.hpp>
 #include <boost/json/impl/array.hpp>
 #include <boost/json/impl/object.hpp>
+
 #ifdef BOOST_JSON_HEADER_ONLY
+#include <boost/json/detail/impl/array_impl.ipp>
+#include <boost/json/detail/impl/object_impl.ipp>
 #include <boost/json/impl/array.ipp>
 #include <boost/json/impl/object.ipp>
 #endif

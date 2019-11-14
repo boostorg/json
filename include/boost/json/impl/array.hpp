@@ -19,42 +19,6 @@
 namespace boost {
 namespace json {
 
-//----------------------------------------------------------
-
-unchecked_array::
-~unchecked_array()
-{
-    if(data_ && sp_->need_free())
-        for(unsigned long i = 0;
-            i < size_; ++i)
-            data_[i].~value();
-}
-
-void
-unchecked_array::
-relocate(value* dest) noexcept
-{
-    if(size_ > 0)
-        std::memcpy(
-            reinterpret_cast<void*>(dest),
-            data_, size_ * sizeof(value));
-    data_ = nullptr;
-}
-
-//----------------------------------------------------------
-
-auto
-array::
-array_impl::
-index_of(value const* pos) const noexcept ->
-    std::size_t
-{
-    return static_cast<
-        std::size_t>(pos - data());
-}
-
-//----------------------------------------------------------
-
 class array::undo_construct
 {
     array& self_;

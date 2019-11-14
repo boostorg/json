@@ -285,7 +285,7 @@ pop(T& t)
         sizeof(T));
 }
 
-unchecked_object
+detail::unchecked_object
 parser::
 pop_object() noexcept
 {
@@ -300,7 +300,7 @@ pop_object() noexcept
         lev_.count, sp_ };
 }
 
-unchecked_array
+detail::unchecked_array
 parser::
 pop_array() noexcept
 {

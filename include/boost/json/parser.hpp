@@ -100,11 +100,11 @@ private:
     pop(T& t);
 
     inline
-    unchecked_object
+    detail::unchecked_object
     pop_object() noexcept;
 
     inline
-    unchecked_array
+    detail::unchecked_array
     pop_array() noexcept;
 
     inline

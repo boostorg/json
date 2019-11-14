@@ -468,18 +468,17 @@ destroy() noexcept
 
 //----------------------------------------------------------
 
-object::
-value_type::
-~value_type()
+object_value_type::
+~object_value_type()
 {
     auto const& sp = value_.get_storage();
     if(sp->need_free())
         sp->deallocate(key_, len_ + 1, 1);
 }
 
-object::
-value_type::
-value_type(value_type const& other)
+object_value_type::
+object_value_type(
+    object_value_type const& other)
     : value_(other.value_)
     , len_(other.len_)
     , key_(
@@ -495,10 +494,10 @@ value_type(value_type const& other)
 {
 }
 
-object::
-value_type::
-value_type(
-    value_type const& other,
+object_value_type::
+object_value_type::
+object_value_type(
+    object_value_type const& other,
     storage_ptr sp)
     : value_(other.value_, detail::move(sp))
     , len_(other.len_)
@@ -516,11 +515,10 @@ value_type(
 }
 
 void
-object::
-value_type::
+object_value_type::
 destroy(
-    value_type* p,
-    size_type n) noexcept
+    object_value_type* p,
+    std::size_t n) noexcept
 {
     if(n == 0)
         return;
@@ -528,7 +526,7 @@ destroy(
         return;
     p += n;
     while(n--)
-        (*--p).~value_type();
+        (*--p).~object_value_type();
 }
 
 //----------------------------------------------------------

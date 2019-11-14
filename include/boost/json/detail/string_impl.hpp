@@ -256,7 +256,7 @@ public:
 } // boost
 
 #ifdef BOOST_JSON_HEADER_ONLY
-#include <boost/json/detail/string_impl.ipp>
+#include <boost/json/detail/impl/string_impl.ipp>
 #endif
 
 #endif

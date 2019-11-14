@@ -136,18 +136,16 @@ from_json(T& t, value const& v)
 //----------------------------------------------------------
 
 value::
-value(unchecked_object&& uo)
+value(detail::unchecked_object&& uo)
     : obj_(std::move(uo))
 {
 }
 
 value::
-value(unchecked_array&& ua)
+value(detail::unchecked_array&& ua)
     : arr_(std::move(ua))
 {
 }
-
-//----------------------------------------------------------
 
 inline
 void
@@ -159,9 +157,8 @@ swap(value& lhs, value& rhs)
 //----------------------------------------------------------
 
 template<class... Args>
-object::
-value_type::
-value_type(
+object_value_type::
+object_value_type(
     string_view key,
     Args&&... args)
     : value_(std::forward<Args>(args)...)

@@ -7,8 +7,8 @@
 // Official repository: https://github.com/vinniefalco/json
 //
 
-#ifndef BOOST_JSON_DETAIL_KIND_HPP
-#define BOOST_JSON_DETAIL_KIND_HPP
+#ifndef BOOST_JSON_DETAIL_SCALAR_IMPL_HPP
+#define BOOST_JSON_DETAIL_SCALAR_IMPL_HPP
 
 #include <boost/json/kind.hpp>
 #include <boost/json/storage_ptr.hpp>

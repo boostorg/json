@@ -13,6 +13,7 @@
 #include <boost/json/detail/config.hpp>
 #include <boost/json/kind.hpp>
 #include <boost/json/storage_ptr.hpp>
+#include <boost/json/detail/object_impl.hpp>
 #include <boost/pilfer.hpp>
 #include <cstdlib>
 #include <initializer_list>
@@ -24,10 +25,6 @@ namespace boost {
 namespace json {
 
 class value;
-
-class unchecked_object;
-
-//----------------------------------------------------------
 
 /** An associative container of key to JSON value pairs
 
@@ -50,6 +47,31 @@ class unchecked_object;
 */
 class object
 {
+    using object_impl =
+        detail::object_impl;
+
+    storage_ptr sp_;    // must come first
+    kind k_ =           // must come second
+        kind::object;
+    object_impl impl_;
+
+    struct undo_construct;
+    class undo_insert;
+
+    template<class T>
+    using is_inputit = typename std::enable_if<
+        std::is_constructible<object_value_type,
+        typename std::iterator_traits<T>::value_type
+            >::value>::type;
+
+    static
+    constexpr
+    double
+    max_load_factor() noexcept
+    {
+        return 1.0;
+    }
+
 public:
     /** The type of keys.
 
@@ -62,7 +84,7 @@ public:
     using mapped_type = value;
 
     /// The element type
-    struct value_type;
+    using value_type = object_value_type;
 
     /// The type used to represent unsigned integers
     using size_type = std::size_t;
@@ -100,149 +122,6 @@ public:
     using init_list = std::initializer_list<
         std::pair<key_type, value>>;
 
-private:
-    class object_impl
-    {
-        struct table
-        {
-            std::size_t size;
-            std::size_t const capacity;
-            std::size_t const buckets;
-        };
-
-        table* tab_ = nullptr;
-
-        BOOST_JSON_DECL
-        void
-        do_destroy(storage_ptr const& sp) noexcept;
-
-    public:
-        object_impl() = default;
-
-        inline
-        object_impl(
-            std::size_t capacity,
-            std::size_t buckets,
-            storage_ptr const& sp);
-
-        inline
-        object_impl(object_impl&& other) noexcept;
-
-        void
-        destroy(storage_ptr const& sp) noexcept
-        {
-            if( tab_ == nullptr ||
-                ! sp->need_free())
-                return;
-            do_destroy(sp);
-        }
-
-        std::size_t
-        size() const noexcept
-        {
-            return tab_ ? tab_->size : 0;
-        }
-
-        std::size_t
-        capacity() const noexcept
-        {
-            return tab_ ? tab_->capacity : 0;
-        }
-
-        inline
-        value_type*
-        begin() const noexcept;
-
-        inline
-        value_type*
-        end() const noexcept;
-
-        inline
-        void
-        clear() noexcept;
-
-        inline
-        void
-        grow(std::size_t n) noexcept
-        {
-            if(n == 0)
-                return;
-            BOOST_JSON_ASSERT(
-                n <= capacity() - size());
-            tab_->size += n;
-        }
-
-        inline
-        void
-        shrink(std::size_t n) noexcept
-        {
-            if(n == 0)
-                return;
-            BOOST_JSON_ASSERT(n <= size());
-            tab_->size -= n;
-        }
-
-        inline
-        void
-        build() noexcept;
-
-        inline
-        void
-        rebuild() noexcept;
-
-        inline
-        void
-        remove(
-            value_type*& head,
-            value_type* p) noexcept;
-
-        inline
-        value_type*&
-        bucket(std::size_t hash) const noexcept;
-
-        inline
-        value_type*&
-        bucket(string_view key) const noexcept;
-
-        inline
-        void
-        swap(object_impl& rhs) noexcept;
-
-    private:
-        std::size_t
-        buckets() const noexcept
-        {
-            return tab_ ? tab_->buckets : 0;
-        }
-
-        inline
-        value_type**
-        bucket_begin() const noexcept;
-    };
-
-    struct undo_construct;
-    class undo_insert;
-
-    template<class T>
-    using is_inputit = typename std::enable_if<
-        std::is_constructible<value_type,
-        typename std::iterator_traits<T>::value_type
-            >::value>::type;
-
-    static
-    constexpr
-    double
-    max_load_factor() noexcept
-    {
-        return 1.0;
-    }
-
-    storage_ptr sp_;    // must come first
-    kind k_ =           // must come second
-        kind::object;
-    object_impl impl_;
-
-public:
     //------------------------------------------------------
 
     /** Destructor.
@@ -262,6 +141,13 @@ public:
     }
 
     //------------------------------------------------------
+
+#ifndef GENERATING_DOCUMENTATION
+    // private
+    BOOST_JSON_DECL
+    explicit
+    object(detail::unchecked_object&& uo);
+#endif
 
     /** Default constructor.
 
@@ -575,12 +461,6 @@ public:
         init_list init,
         std::size_t min_capacity,
         storage_ptr sp = {});
-
-    /**
-    */
-    explicit
-    BOOST_JSON_DECL
-    object(unchecked_object&& uo);
 
     /** Move assignment.
 
@@ -1380,22 +1260,13 @@ private:
 
     static
     inline
-    std::uint32_t
-    digest(
-        key_type key,
-        std::false_type) noexcept;
+    value_type*&
+    next(value_type& e) noexcept;
 
     static
     inline
-    std::uint64_t
-    digest(
-        key_type key,
-        std::true_type) noexcept;
-
-    static
-    inline
-    std::size_t
-    digest(key_type key) noexcept;
+    value_type const*
+    next(value_type const& e) noexcept;
 
     BOOST_JSON_DECL
     std::pair<value_type*, std::size_t>
@@ -1467,6 +1338,6 @@ private:
 // Must be included here for this file to stand alone
 #include <boost/json/value.hpp>
 
-// headers for this file are at the bottom of value.hpp
+// includes are at the bottom of <boost/json/value.hpp>
 
 #endif

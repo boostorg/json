@@ -20,101 +20,6 @@
 namespace boost {
 namespace json {
 
-//----------------------------------------------------------
-
-unchecked_object::
-~unchecked_object()
-{
-    if(data_)
-        object::value_type::destroy(
-            data_, size_);
-}
-
-void
-unchecked_object::
-relocate(object::value_type* dest) noexcept
-{
-    if(size_ > 0)
-        std::memcpy(
-            reinterpret_cast<void*>(dest),
-            data_, size_ * sizeof(object::value_type));
-    data_ = nullptr;
-}
-
-//----------------------------------------------------------
-
-void
-object::
-object_impl::
-remove(
-    value_type*& head,
-    value_type* p) noexcept
-{
-    if(head == p)
-    {
-        head = head->next_;
-        return;
-    }
-    auto prev = head;
-    while(prev->next_ != p)
-        prev = prev->next_;
-    prev->next_ = p->next_;
-}
-
-auto
-object::
-object_impl::
-bucket(string_view key) const noexcept ->
-    value_type*&
-{
-    auto const hash = digest(key);
-    auto const i = hash % buckets();
-    return bucket_begin()[i];
-}
-
-auto
-object::
-object_impl::
-bucket(std::size_t hash) const noexcept ->
-    value_type*&
-{
-    return bucket_begin()[hash % buckets()];
-}
-
-auto
-object::
-object_impl::
-begin() const noexcept ->
-    value_type*
-{
-    if(! tab_)
-        return nullptr;
-    return reinterpret_cast<
-        value_type*>(tab_ + 1);
-}
-
-auto
-object::
-object_impl::
-end() const noexcept ->
-    value_type*
-{
-    return begin() + size();
-}
-
-auto
-object::
-object_impl::
-bucket_begin() const noexcept ->
-    value_type**
-{
-    return reinterpret_cast<
-        value_type**>(
-            begin() + capacity());
-}
-
-//----------------------------------------------------------
-
 struct object::undo_construct
 {
     object* self;
@@ -443,42 +348,20 @@ swap(object& lhs, object& rhs)
 //
 //----------------------------------------------------------
 
-std::uint32_t
+auto
 object::
-digest(
-    key_type key,
-    std::false_type) noexcept
+next(value_type& e) noexcept ->
+    value_type*&
 {
-    std::uint32_t prime = 0x01000193UL;
-    std::uint32_t hash  = 0x811C9DC5UL;
-    for(auto p = key.begin(),
-        end = key.end(); p != end; ++p)
-        hash = (*p ^ hash) * prime;
-    return hash;
+    return detail::next_access::get(e);
 }
 
-std::uint64_t
+auto
 object::
-digest(
-    key_type key,
-    std::true_type) noexcept
+next(value_type const& e) noexcept ->
+    value_type const*
 {
-    std::uint64_t prime = 0x100000001B3ULL;
-    std::uint64_t hash  = 0xcbf29ce484222325ULL;
-    for(auto p = key.begin(),
-        end = key.end(); p != end; ++p)
-        hash = (*p ^ hash) * prime;
-    return hash;
-}
-
-std::size_t
-object::
-digest(key_type key) noexcept
-{
-    return digest(key,
-        std::integral_constant<bool,
-            sizeof(std::size_t) ==
-            sizeof(std::uint64_t)>{});
+    return detail::next_access::get(e);
 }
 
 template<class InputIt>

@@ -24,129 +24,6 @@
 namespace boost {
 namespace json {
 
-//----------------------------------------------------------
-
-void
-object::
-object_impl::
-do_destroy(storage_ptr const& sp) noexcept
-{
-    if(tab_)
-    {
-        value_type::destroy(
-            begin(), size());
-        sp->deallocate(tab_,
-            sizeof(table) +
-            capacity() * sizeof(value_type) +
-            buckets() * sizeof(value_type*));
-    }
-}
-
-inline
-object::
-object_impl::
-object_impl(
-    std::size_t capacity,
-    std::size_t buckets,
-    storage_ptr const& sp)
-{
-    tab_ = ::new(sp->allocate(
-        sizeof(table) +
-        capacity * sizeof(value_type) +
-        buckets * sizeof(value_type*))) table{
-            0, capacity, buckets };
-    std::memset(bucket_begin(), 0,
-        buckets * sizeof(value_type*));
-}
-
-object::
-object_impl::
-object_impl(object_impl&& other) noexcept
-    : tab_(detail::exchange(
-        other.tab_, nullptr))
-{
-}
-
-void
-object::
-object_impl::
-clear() noexcept
-{
-    if(! tab_)
-        return;
-    value_type::destroy(
-        begin(), size());
-    std::memset(bucket_begin(), 0,
-        buckets() * sizeof(value_type*));
-    tab_->size = 0;
-}
-
-// checks for dupes
-void
-object::
-object_impl::
-build() noexcept
-{
-    auto end = this->end();
-    for(auto p = begin(); p != end;)
-    {
-        {
-            auto& head = bucket(p->key());
-            auto it = head;
-            while(it && it->key() != p->key())
-                it = it->next_;
-            if(! it)
-            {
-                p->next_ = head;
-                head = p;
-                ++p;
-                continue;
-            }
-        }
-        p->~value_type();
-        --tab_->size;
-        --end;
-        if(p != end)
-        {
-            std::memcpy(
-                reinterpret_cast<void*>(p),
-                reinterpret_cast<void const*>(end),
-                sizeof(*p));
-            auto& head = bucket(p->key());
-            p->next_ = head;
-            head = p;
-        }
-    }
-}
-
-// does not check for dupes
-void
-object::
-object_impl::
-rebuild() noexcept
-{
-    auto const end = this->end();
-    for(auto it = begin();
-        it != end; ++it)
-    {
-        auto& head = bucket(it->key());
-        it->next_ = head;
-        head = it;
-    }
-}
-
-void
-object::
-object_impl::
-swap(object_impl& rhs) noexcept
-{
-    auto tmp = tab_;
-    tab_ = rhs.tab_;
-    rhs.tab_ = tmp;
-}
-
-//----------------------------------------------------------
-
 class object::undo_insert
 {
     object& self_;
@@ -196,6 +73,16 @@ public:
 // object
 //
 //----------------------------------------------------------
+
+object::
+object(detail::unchecked_object&& uo)
+    : sp_(uo.get_storage())
+{
+    reserve(uo.size());
+    uo.relocate(impl_.begin());
+    impl_.grow(uo.size());
+    impl_.build();
+}
 
 object::
 object(storage_ptr sp) noexcept
@@ -286,16 +173,6 @@ object(
     u.self = nullptr;
 }
 
-object::
-object(unchecked_object&& uo)
-    : sp_(uo.get_storage())
-{
-    reserve(uo.size());
-    uo.relocate(impl_.begin());
-    impl_.grow(uo.size());
-    impl_.build();
-}
-
 object&
 object::
 operator=(object&& other)
@@ -373,7 +250,7 @@ erase(const_iterator pos) noexcept ->
             reinterpret_cast<void*>(p),
             reinterpret_cast<void const*>(pb),
             sizeof(*p));
-        p->next_ = head;
+        next(*p) = head;
         head = p;
     }
     return p;
@@ -509,7 +386,8 @@ find_impl(key_type key) const noexcept ->
     std::pair<
         value_type*,
         std::size_t> result;
-    result.second = digest(key);
+    result.second =
+        object_impl::digest(key);
     if(empty())
     {
         result.first = nullptr;
@@ -519,7 +397,7 @@ find_impl(key_type key) const noexcept ->
         impl_.bucket(result.second);
     auto it = head;
     while(it && it->key() != key)
-        it = it->next_;
+        it = next(*it);
     result.first = it;
     return result;
 }
@@ -623,7 +501,7 @@ emplace_impl(
     f(&e);
     auto& head =
         impl_.bucket(result.second);
-    e.next_ = head;
+    next(e) = head;
     head = &e;
     impl_.grow(1);
     return { &e, true };
@@ -647,7 +525,7 @@ insert_impl(
     }
     auto& head =
         impl_.bucket(result.second);
-    e.next_ = head;
+    next(e) = head;
     head = &e;
     impl_.grow(1);
     return { &e, true };
@@ -665,7 +543,7 @@ insert_impl(
     f(&e);
     auto& head =
         impl_.bucket(hash);
-    e.next_ = head;
+    next(e) = head;
     head = &e;
     impl_.grow(1);
     return &e;
@@ -688,7 +566,7 @@ insert_range_impl(
         auto& head =
             impl_.bucket(e.key());
         for(auto it = head;;
-            it = it->next_)
+            it = next(*it))
         {
             if(it)
             {
@@ -698,7 +576,7 @@ insert_range_impl(
             }
             else
             {
-                e.next_ = head;
+                next(e) = head;
                 head = &e;
                 ++u.last;
             }
