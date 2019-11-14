@@ -47,10 +47,10 @@ public:
         return size_ == 0;
     }
 
-    char*
-    begin() noexcept
+    std::size_t
+    top() const noexcept
     {
-        return base_;
+        return size_;
     }
 
     void
@@ -66,6 +66,12 @@ public:
         auto p = base_ + size_;
         size_ += n;
         return p;
+    }
+
+    char*
+    behind(std::size_t n) noexcept
+    {
+        return base_ + size_ - n;
     }
 
     char*
@@ -101,6 +107,11 @@ public:
         size_ -= n;
     }
 
+    template<class T>
+    friend
+    char
+    align_to(raw_stack& rs) noexcept;
+
 private:
     static
     constexpr
@@ -119,6 +130,19 @@ private:
     void
     grow(std::size_t n);
 };
+
+template<class T>
+char
+align_to(raw_stack& rs) noexcept
+{
+    auto const align =
+        static_cast<char>(
+        alignof(T) * ((rs.size_ +
+        alignof(T) - 1) / alignof(T)) -
+        rs.size_);
+    rs.size_ += align;
+    return align;
+}
 
 } // detail
 } // json

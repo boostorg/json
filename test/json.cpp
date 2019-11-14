@@ -21,12 +21,12 @@ struct zjson_test : public beast::unit_test::suite
     run() override
     {
         log <<
-            "sizeof()\n"
-            "  object        == " << sizeof(object) << "\n"
-            "    value_type  == " << sizeof(object::value_type) << "\n"
-            "  array         == " << sizeof(array) << "\n"
-            "  string        == " << sizeof(string) << "\n"
-            "  value         == " << sizeof(value) << "\n"
+            "sizeof(alignof)\n"
+            "  object        == " << sizeof(object) << " (" << alignof(object) << ")\n"
+            "    value_type  == " << sizeof(object::value_type) << " (" << alignof(object::value_type) << ")\n"
+            "  array         == " << sizeof(array) << " (" << alignof(array) << ")\n"
+            "  string        == " << sizeof(string) << " (" << alignof(string) << ")\n"
+            "  value         == " << sizeof(value) << " (" << alignof(value) << ")\n"
             "  serializer    == " << sizeof(serializer) << "\n"
             "  number_parser == " << sizeof(detail::number_parser) << "\n"
             "  basic_parser  == " << sizeof(basic_parser) << "\n"

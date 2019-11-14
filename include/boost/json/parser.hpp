@@ -30,12 +30,19 @@ class parser final
 {
     enum class state : char;
 
+    struct level
+    {
+        std::uint32_t count;
+        saved_state ss;
+        char align;
+        state st;
+    };
+
     storage_ptr sp_;
     detail::raw_stack rs_;
-    std::size_t count_ = 0;
-    std::size_t key_size_ = 0;
-    std::size_t str_size_ = 0;
-    state st_;
+    std::uint32_t key_size_ = 0;
+    std::uint32_t str_size_ = 0;
+    level lev_;
 
     inline
     void

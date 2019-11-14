@@ -70,7 +70,7 @@ destroy() noexcept
     {
         // remove partial key
         BOOST_JSON_ASSERT(
-            st_ == state::obj);
+            lev_.st == state::obj);
         BOOST_JSON_ASSERT(
             str_size_ == 0);
         rs_.subtract(key_size_);
@@ -85,7 +85,7 @@ destroy() noexcept
     // unwind the rest
     do
     {
-        switch(st_)
+        switch(lev_.st)
         {
         case state::need_start:
             BOOST_JSON_ASSERT(
@@ -107,29 +107,25 @@ destroy() noexcept
         case state::arr:
         {
             pop_array();
-            pop(st_);
-            pop(count_);
-            saved_state ss;
-            pop(ss);
+            rs_.subtract(lev_.align);
+            pop(lev_);
             break;
         }
 
         case state::obj:
         {
             pop_object();
-            pop(st_);
-            pop(count_);
-            saved_state ss;
-            pop(ss);
+            rs_.subtract(lev_.align);
+            pop(lev_);
             break;
         }
 
         case state::key:
         {
-            std::size_t key_size;
+            std::uint32_t key_size;
             pop(key_size);
             pop_chars(key_size);
-            st_ = state::obj;
+            lev_.st = state::obj;
             break;
         }
 
@@ -157,8 +153,8 @@ parser::
 
 parser::
 parser()
-    : st_(state::need_start)
 {
+    lev_.st = state::need_start;
 }
 
 void
@@ -167,7 +163,7 @@ start(storage_ptr sp) noexcept
 {
     clear();
     sp_ = std::move(sp);
-    st_ = state::begin;
+    lev_.st = state::begin;
 }
 
 void
@@ -177,10 +173,10 @@ clear() noexcept
     destroy();
     rs_.clear();
     basic_parser::reset();
-    count_ = 0;
+    lev_.count = 0;
     key_size_ = 0;
     str_size_ = 0;
-    st_ = state::need_start;
+    lev_.st = state::need_start;
     sp_ = {};
 }
 
@@ -190,7 +186,7 @@ release() noexcept
 {
     if(is_done())
     {
-        BOOST_JSON_ASSERT(st_ == state::end);
+        BOOST_JSON_ASSERT(lev_.st == state::end);
         auto ua = pop_array();
         BOOST_JSON_ASSERT(rs_.empty());
         union U
@@ -202,7 +198,7 @@ release() noexcept
         U u;
         ua.relocate(&u.v);
         basic_parser::reset();
-        st_ = state::need_start;
+        lev_.st = state::need_start;
         sp_ = {};
         return pilfer(u.v);
     }
@@ -238,7 +234,7 @@ void
 parser::
 emplace(Args&&... args)
 {
-    if(st_ == state::key)
+    if(lev_.st == state::key)
     {
         union U
         {
@@ -249,39 +245,34 @@ emplace(Args&&... args)
         U u;
         // perform stack reallocation up-front
         // VFALCO This is more than we need
-        rs_.prepare(sizeof(u.v));
-        std::size_t key_size;
+        rs_.prepare(sizeof(object::value_type));
+        std::uint32_t key_size;
         pop(key_size);
         auto const key =
             pop_chars(key_size);
-        st_ = state::obj;
-        ::new(&u.v) object::value_type(
+        lev_.st = state::obj;
+        BOOST_JSON_ASSERT((rs_.top() %
+            alignof(object::value_type)) == 0);
+        ::new(rs_.behind(
+            sizeof(object::value_type)))
+                object::value_type(
             key, std::forward<Args>(args)...);
-        rs_.subtract(sizeof(u.v));
-        push(u.v);
         rs_.add(sizeof(u.v));
     }
     else
     {
         BOOST_JSON_ASSERT(
-            st_ == state::arr ||
-            st_ == state::top);
-        union U
-        {
-            value v;
-            U(){}
-            ~U(){}
-        };
-        U u;
+            lev_.st == state::arr ||
+            lev_.st == state::top);
         // prevent splits from exceptions
-        rs_.prepare(2 * sizeof(value));
-        ::new(&u.v) value(
+        rs_.prepare(sizeof(value));
+        BOOST_JSON_ASSERT((rs_.top() %
+            alignof(value)) == 0);
+        ::new(rs_.behind(sizeof(value))) value(
             std::forward<Args>(args)...);
-        rs_.subtract(sizeof(u.v));
-        push(u.v);
-        rs_.add(sizeof(u.v));
+        rs_.add(sizeof(value));
     }
-    ++count_;
+    ++lev_.count;
 }
 
 template<class T>
@@ -300,13 +291,13 @@ pop_object() noexcept
 {
     rs_.subtract(sizeof(
         object::value_type));
-    if(count_ == 0)
+    if(lev_.count == 0)
         return { nullptr, 0, sp_ };
-    auto const n = count_ * sizeof(
+    auto const n = lev_.count * sizeof(
         object::value_type);
     return { reinterpret_cast<
         object::value_type*>(rs_.pop(n)),
-        count_, sp_ };
+        lev_.count, sp_ };
 }
 
 unchecked_array
@@ -314,12 +305,12 @@ parser::
 pop_array() noexcept
 {
     rs_.subtract(sizeof(value));
-    if(count_ == 0)
+    if(lev_.count == 0)
         return { nullptr, 0, sp_ };
     auto const n =
-        count_ * sizeof(value);
+        lev_.count * sizeof(value);
     return { reinterpret_cast<value*>(
-        rs_.pop(n)), count_, sp_ };
+        rs_.pop(n)), lev_.count, sp_ };
 }
 
 string_view
@@ -339,28 +330,29 @@ parser::
 on_document_begin(
     error_code& ec)
 {
-    if(st_ == state::need_start)
+    if(lev_.st == state::need_start)
     {
         ec = error::need_start;
         return;
     }
 
-    count_ = 0;
+    lev_.count = 0;
+    lev_.align = 0;
     key_size_ = 0;
     str_size_ = 0;
 
     // The top level `value` is kept
     // inside a notional 1-element array.
     rs_.add(sizeof(value));
-    st_ = state::top;
+    lev_.st = state::top;
 }
 
 void
 parser::
 on_document_end(error_code&)
 {
-    BOOST_JSON_ASSERT(count_ == 1);
-    st_ = state::end; // VFALCO RECONSIDER
+    BOOST_JSON_ASSERT(lev_.count == 1);
+    lev_.st = state::end; // VFALCO RECONSIDER
 }
 
 void
@@ -369,18 +361,17 @@ on_object_begin(error_code&)
 {
     // prevent splits from exceptions
     rs_.prepare(
-        sizeof(saved_state) +
-        sizeof(count_) +
-        sizeof(st_) +
-        sizeof(object::value_type));
-    push(save_state());
-    push(count_);
-    push(st_);
+        sizeof(level) +
+        sizeof(object::value_type) +
+        alignof(object::value_type) - 1);
+    lev_.ss = save_state();
+    push(lev_);
+    lev_.align = detail::align_to<
+        object::value_type>(rs_);
     rs_.add(sizeof(
         object::value_type));
-
-    count_ = 0;
-    st_ = state::obj;
+    lev_.count = 0;
+    lev_.st = state::obj;
 }
 
 void
@@ -388,13 +379,11 @@ parser::
 on_object_end(error_code&)
 {
     BOOST_JSON_ASSERT(
-        st_ == state::obj);
+        lev_.st == state::obj);
     auto uo = pop_object();
-    pop(st_);
-    pop(count_);
-    saved_state ss;
-    pop(ss);
-    restore_state(ss);
+    rs_.subtract(lev_.align);
+    pop(lev_);
+    restore_state(lev_.ss);
     emplace(std::move(uo));
 }
 
@@ -404,17 +393,16 @@ on_array_begin(error_code&)
 {
     // prevent splits from exceptions
     rs_.prepare(
-        sizeof(saved_state) +
-        sizeof(count_) +
-        sizeof(st_) +
-        sizeof(value));
-    push(save_state());
-    push(count_);
-    push(st_);
+        sizeof(level) +
+        sizeof(value) +
+        alignof(value) - 1);
+    lev_.ss = save_state();
+    push(lev_);
+    lev_.align =
+        detail::align_to<value>(rs_);
     rs_.add(sizeof(value));
-
-    count_ = 0;
-    st_ = state::arr;
+    lev_.count = 0;
+    lev_.st = state::arr;
 }
 
 void
@@ -422,13 +410,11 @@ parser::
 on_array_end(error_code&)
 {
     BOOST_JSON_ASSERT(
-        st_ == state::arr);
+        lev_.st == state::arr);
     auto ua = pop_array();
-    pop(st_);
-    pop(count_);
-    saved_state ss;
-    pop(ss);
-    restore_state(ss);
+    rs_.subtract(lev_.align);
+    pop(lev_);
+    restore_state(lev_.ss);
     emplace(std::move(ua));
 }
 
@@ -454,11 +440,11 @@ on_key(
     error_code& ec)
 {
     BOOST_JSON_ASSERT(
-        st_ == state::obj);
+        lev_.st == state::obj);
     on_key_part(s, ec);
     push(key_size_);
     key_size_ = 0;
-    st_ = state::key;
+    lev_.st = state::key;
 }
 
 void
