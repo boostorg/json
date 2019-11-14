@@ -26,13 +26,13 @@ class storage_ptr
     template<class T>
     friend class scoped_storage;
 
-    storage* p_;
+    storage* p_ = nullptr;
 
     inline
     void
     addref() const noexcept
     {
-        if(p_->counted_)
+        if(p_ && p_->counted_)
             ++p_->refs_;
     }
 
@@ -40,7 +40,7 @@ class storage_ptr
     void
     release() const noexcept
     {
-        if( p_->counted_ &&
+        if( p_ && p_->counted_ &&
             --p_->refs_ == 0)
             delete p_;
     }
@@ -69,8 +69,7 @@ public:
 
         No-throw guarantee.
     */
-    BOOST_JSON_DECL
-    storage_ptr() noexcept;
+    storage_ptr() = default;
 
     /** Construct a pointer to default storage.
 
@@ -132,8 +131,7 @@ public:
     storage_ptr(
         storage_ptr&& other) noexcept
         : p_(detail::exchange(
-            other.p_,
-            storage_ptr().get()))
+            other.p_, nullptr))
     {
     }
 
@@ -186,7 +184,7 @@ public:
         release();
         p_ = detail::exchange(
             other.p_,
-            storage_ptr().get());
+            nullptr);
         return *this;
     }
 
@@ -229,11 +227,9 @@ public:
 
         No-throw guarantee.
     */
+    inline
     storage*
-    get() const noexcept
-    {
-        return p_;
-    }
+    get() const noexcept;
 
     /** Return a pointer to the storage object.
 
@@ -248,7 +244,7 @@ public:
     storage*
     operator->() const noexcept
     {
-        return p_;
+        return get();
     }
 
     /** Return a reference to the storage object.
@@ -268,7 +264,7 @@ public:
     storage&
     operator*() const noexcept
     {
-        return *p_;
+        return *get();
     }
 
     /** Create a new storage object and return a pointer to it.
@@ -389,8 +385,5 @@ public:
 } // boost
 
 #include <boost/json/impl/storage_ptr.hpp>
-#ifdef BOOST_JSON_HEADER_ONLY
-#include <boost/json/impl/storage_ptr.ipp>
-#endif
 
 #endif

@@ -20,6 +20,40 @@ namespace json {
 
 namespace detail {
 
+struct default_storage_impl
+{
+    static
+    constexpr
+    unsigned long long id()
+    { 
+        return 0x3b88990852d58ae4;
+    }
+
+    static
+    constexpr
+    bool need_free()
+    {
+        return true;
+    }
+
+    void*
+    allocate(
+        std::size_t n,
+        std::size_t)
+    {
+        return ::operator new(n);
+    }
+
+    void
+    deallocate(
+        void* p,
+        std::size_t,
+        std::size_t) noexcept
+    {
+        ::operator delete(p);
+    }
+};
+
 template<class T>
 struct counted_storage_impl : storage
 {
@@ -56,6 +90,20 @@ struct counted_storage_impl : storage
 };
 
 } // detail
+
+//----------------------------------------------------------
+
+storage*
+storage_ptr::
+get() const noexcept
+{
+#ifdef __clang__
+    [[clang::require_constant_initialization]] 
+#endif
+    static scoped_storage<
+        detail::default_storage_impl> impl;
+    return p_ ? p_ : impl.get();
+}
 
 //----------------------------------------------------------
 
