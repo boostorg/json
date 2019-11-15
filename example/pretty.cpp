@@ -18,6 +18,45 @@
 
 namespace json = boost::json;
 
+class file
+{
+    FILE* f_ = nullptr;
+
+public:
+    ~file()
+    {
+        if(f_)
+            std::fclose(f_);
+    }
+
+    file() = default;
+
+    void
+    close()
+    {
+        if(f_)
+        {
+            std::fclose(f_);
+            f_ = nullptr;
+        }
+    }
+
+    void
+    open(
+        char const* path,
+        char const* mode,
+        json::error_code& ec)
+    {
+        close();
+        f_ = std::fopen( path, mode );
+        if( ! f_ )
+        {
+            ec.assign( errno, json::generic_category() );
+            return;
+        }
+    }
+};
+
 json::value
 parse_file( char const* filename )
 {
@@ -54,7 +93,7 @@ parse_file( char const* filename )
     while( ! std::feof(f) );
 
     // Tell the parser there is no more serialized JSON.
-    p.write_eof(ec);
+    p.finish(ec);
     if( ec )
         throw json::system_error(ec);
 

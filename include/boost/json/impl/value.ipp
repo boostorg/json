@@ -122,8 +122,7 @@ value::
 value::
 value(pilfered<value> p) noexcept
 {
-    std::memcpy(this,
-        &p.get(), sizeof(*this));
+    relocate(this, p.get());
     ::new(&p.get().nul_) null_k;
 }
 
@@ -186,8 +185,7 @@ value(
 value::
 value(value&& other) noexcept
 {
-    std::memcpy(
-        this, &other, sizeof(*this));
+    relocate(this, other);
     ::new(&other.nul_) null_k(sp_);
 }
 
@@ -394,12 +392,9 @@ swap(value& other)
         ~U(){}
     };
     U u;
-    std::memcpy(&u.tmp,
-        this, sizeof(*this));
-    std::memcpy(this,
-        &other, sizeof(other));
-    std::memcpy(&other,
-        &u.tmp, sizeof(u.tmp));
+    relocate(&u.tmp, *this);
+    relocate(this, other);
+    relocate(&other, u.tmp);
 }
 
 //----------------------------------------------------------

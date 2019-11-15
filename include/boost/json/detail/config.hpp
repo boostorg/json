@@ -54,6 +54,19 @@
 # endif
 #endif
 
+// VFALCO Copied from <boost/config.hpp>
+//        This is a derivative work.
+#ifdef __has_cpp_attribute
+// clang-6 accepts [[nodiscard]] with -std=c++14, but warns about it -pedantic
+# if __has_cpp_attribute(nodiscard) && !(defined(__clang__) && (__cplusplus < 201703L))
+#  define BOOST_JSON_NODISCARD [[nodiscard]]
+# else
+#  define BOOST_JSON_NODISCARD
+# endif
+#else
+# define BOOST_JSON_NODISCARD
+#endif
+
 #ifndef BOOST_JSON_FORCEINLINE
 # ifdef _MSC_VER
 #  define BOOST_JSON_FORCEINLINE __forceinline

@@ -11,7 +11,7 @@
 #include <boost/json/parser.hpp>
 
 #include <boost/beast/_experimental/unit_test/suite.hpp>
-#include <boost/json/parser.hpp>
+#include <boost/json/block_storage.hpp>
 #include <boost/json/serializer.hpp>
 #include <sstream>
 
@@ -36,6 +36,8 @@ public:
             s.data(),
             s.size(),
             ec);
+        if(! ec)
+            p.finish(ec);
         BEAST_EXPECTS(! ec,
             ec.message());
         //log << "  " << to_string_test(p.get()) << std::endl;
@@ -92,6 +94,8 @@ public:
                 error_code ec;
                 p.start(ss);
                 p.write(s.data(), i, ec);
+                if(! ec)
+                    p.finish(ec);
             }
         }
 
@@ -226,11 +230,11 @@ R"xx({
                 error_code ec;
                 parser p;
                 p.start();
-                p.write_some(js.data(), N, ec);
+                p.write(js.data(), N, ec);
                 if(BEAST_EXPECTS(! ec,
                     ec.message()))
                 {
-                    p.write(js.data() + N,
+                    p.finish(js.data() + N,
                         js.size() - N, ec);
                     if(BEAST_EXPECTS(! ec,
                         ec.message()))
@@ -302,7 +306,42 @@ R"xx({
             "{\"1\":{},\"2\":[],\"3\":\"x\",\"4\":1,"
             "\"5\":-1,\"6\":1.0,\"7\":false,\"8\":null}";
 
-        // parse(value)
+        // parse(string_view, error_code)
+        {
+            {
+                error_code ec;
+                auto jv = parse(js, ec);
+                BEAST_EXPECTS(! ec, ec.message());
+                check_round_trip(jv, js);
+            }
+            {
+                error_code ec;
+                auto jv = parse("xxx", ec);
+                BEAST_EXPECT(ec);
+                BEAST_EXPECT(jv.is_null());
+            }
+        }
+
+        // parse(string_view, storage_ptr, error_code)
+        {
+            {
+                error_code ec;
+                scoped_storage<block_storage> sp;
+                auto jv = parse(js, ec, sp);
+                BEAST_EXPECTS(! ec, ec.message());
+                check_round_trip(jv, js);
+            }
+
+            {
+                error_code ec;
+                scoped_storage<block_storage> sp;
+                auto jv = parse("xxx", ec, sp);
+                BEAST_EXPECT(ec);
+                BEAST_EXPECT(jv.is_null());
+            }
+        }
+
+        // parse(string_view)
         {
             {
                 check_round_trip(
@@ -317,27 +356,17 @@ R"xx({
             }
         }
 
-        // parse(value, storage_ptr)
+        // parse(string_view, storage_ptr)
         {
-            check_round_trip(
-                parse(js, storage_ptr{}),
-                js);
-        }
-
-        // parse(value, error_code)
-        {
-            error_code ec;
-            auto jv = parse(js, ec);
-            BEAST_EXPECTS(! ec, ec.message());
-            check_round_trip(jv, js);
-        }
-
-        // parse(value, storage_ptr, error_code)
-        {
-            error_code ec;
-            auto jv = parse(js, storage_ptr{}, ec);
-            BEAST_EXPECTS(! ec, ec.message());
-            check_round_trip(jv, js);
+            {
+                scoped_storage<block_storage> sp;
+                check_round_trip(parse(js, sp), js);
+            }
+            {
+                scoped_storage<block_storage> sp;
+                BEAST_THROWS(parse("xxx", sp),
+                    system_error);
+            }
         }
     }
 

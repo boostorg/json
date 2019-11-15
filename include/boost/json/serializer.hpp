@@ -168,10 +168,10 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
+        @throw std::logic_error if no value is set.
+
         @return The number of characters written
         to `dest`.
-
-        @throw std::logic_error if no value is set.
     */
     BOOST_JSON_DECL
     std::size_t

@@ -34,6 +34,7 @@ make_error_code(error e)
             default:
     case error::syntax: return "syntax error";
     case error::extra_data: return "extra data";
+    case error::incomplete: return "incomplete";
     case error::mantissa_overflow: return "mantissa overflow";
     case error::exponent_overflow: return "exponent overflow";
     case error::too_deep: return "too deep";
@@ -41,7 +42,6 @@ make_error_code(error e)
     case error::illegal_control_char: return "illegal control character";
     case error::illegal_escape_char: return "illegal character in escape sequence";
     case error::illegal_extra_digits: return "illegal extra digits in number";
-    case error::illegal_extra_chars: return "illegal extra characters";
     case error::illegal_leading_surrogate: return "illegal leading surrogate";
     case error::illegal_trailing_surrogate: return "illegal trailing surrogate";
     case error::need_start: return "parser needs start";
@@ -91,7 +91,6 @@ make_error_code(error e)
             case error::illegal_control_char:
             case error::illegal_escape_char:
             case error::illegal_extra_digits:
-            case error::illegal_extra_chars:
             case error::illegal_leading_surrogate:
             case error::illegal_trailing_surrogate:
 

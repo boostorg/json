@@ -220,7 +220,7 @@ public:
         If this parameter is omitted, the default storage
         is used.
 
-        @throws std::length_error `count > max_size()`.
+        @throw std::length_error `count > max_size()`.
     */
     string(
         std::size_t count,
@@ -262,7 +262,7 @@ public:
         If this parameter is omitted, the default storage
         is used.
 
-        @throws std::out_of_range `pos >= other.size()`.
+        @throw std::out_of_range `pos >= other.size()`.
     */
     string(
         string const& other,
@@ -299,7 +299,7 @@ public:
         If this parameter is omitted, the default storage
         is used.
 
-        @throws std::length_error `strlen(s) > max_size()`.
+        @throw std::length_error `strlen(s) > max_size()`.
     */
     string(
         char const* s,
@@ -335,7 +335,7 @@ public:
         If this parameter is omitted, the default storage
         is used.
 
-        @throws std::length_error `count > max_size()`.
+        @throw std::length_error `count > max_size()`.
     */
     string(
         char const* s,
@@ -377,7 +377,7 @@ public:
         If this parameter is omitted, the default storage
         is used.
 
-        @throws std::length_error `std::distance(first, last) > max_size()`.
+        @throw std::length_error `std::distance(first, last) > max_size()`.
     */
     template<class InputIt
     #ifndef GENERATING_DOCUMENTATION
@@ -533,7 +533,7 @@ public:
         If this parameter is omitted, the default storage
         is used.
 
-        @throws std::length_error `init.size() > max_size()`.
+        @throw std::length_error `init.size() > max_size()`.
     */
     string(
         std::initializer_list<char> init,
@@ -566,7 +566,7 @@ public:
         If this parameter is omitted, the default storage
         is used.
 
-        @throws std::length_error `s.size() > max_size()`.
+        @throw std::length_error `s.size() > max_size()`.
     */
     string(
         string_view s,
@@ -607,9 +607,9 @@ public:
         If this parameter is omitted, the default storage
         is used.
 
-        @throws std::out_of_range `pos >= s.size()`
+        @throw std::out_of_range `pos >= s.size()`
 
-        @throws std::length_error `count > max_size()`.
+        @throw std::length_error `count > max_size()`.
     */
     string(
         string_view s,
@@ -698,7 +698,7 @@ public:
         @param s A pointer to a character string used to
         copy from.
 
-        @throws std::length_error `strlen(s) > max_size()`.
+        @throw std::length_error `strlen(s) > max_size()`.
     */
     string&
     operator=(char const* s)
@@ -722,7 +722,7 @@ public:
 
         @param init The initializer list to copy from.
 
-        @throws std::length_error `init.size() > max_size()`.
+        @throw std::length_error `init.size() > max_size()`.
     */
     string&
     operator=(std::initializer_list<char> init)
@@ -747,7 +747,7 @@ public:
 
         @param s The string view to copy from.
 
-        @throws std::length_error `s.size() > max_size()`.
+        @throw std::length_error `s.size() > max_size()`.
     */
     string&
     operator=(string_view s)
@@ -776,7 +776,7 @@ public:
         @param ch THe value to initialize characters
         of the string with.
 
-        @throws std::length_error `count > max_size()`.
+        @throw std::length_error `count > max_size()`.
     */
     BOOST_JSON_DECL
     string&
@@ -830,7 +830,7 @@ public:
 
         @param count The number of characters to copy.
 
-        @throws std::out_of_range `pos >= other.size()`.
+        @throw std::out_of_range `pos >= other.size()`.
     */
     string&
     assign(
@@ -892,7 +892,7 @@ public:
         @param s A pointer to a character string used to
         copy from.
 
-        @throws std::length_error `count > max_size()`.
+        @throw std::length_error `count > max_size()`.
     */
     BOOST_JSON_DECL
     string&
@@ -919,7 +919,7 @@ public:
         @param s A pointer to a character string used to
         copy from.
 
-        @throws std::length_error `strlen(s) > max_size()`.
+        @throw std::length_error `strlen(s) > max_size()`.
     */
     string&
     assign(
@@ -954,7 +954,7 @@ public:
         @param last An input iterator pointing to the end
         of the range.
 
-        @throws std::length_error `std::distance(first, last) > max_size()`.
+        @throw std::length_error `std::distance(first, last) > max_size()`.
     */
     template<class InputIt
     #ifndef GENERATING_DOCUMENTATION
@@ -982,7 +982,7 @@ public:
 
         @param init The initializer list to copy from.
 
-        @throws std::length_error `init.size() > max_size()`.
+        @throw std::length_error `init.size() > max_size()`.
     */
     string&
     assign(std::initializer_list<char> init)
@@ -1007,7 +1007,7 @@ public:
 
         @param s The string view to copy from.
 
-        @throws std::length_error `s.size() > max_size()`.
+        @throw std::length_error `s.size() > max_size()`.
     */
     string&
     assign(string_view s)
@@ -1040,9 +1040,9 @@ public:
 
         @param count The number of characters to copy.
 
-        @throws std::out_of_range `pos >= s.size()`
+        @throw std::out_of_range `pos >= s.size()`
 
-        @throws std::length_error `count > max_size()`.
+        @throw std::length_error `count > max_size()`.
     */
     string&
     assign(
@@ -1089,7 +1089,7 @@ public:
 
         @param pos A zero-based index
 
-        @throws std::out_of_range `pos >= size()`
+        @throw std::out_of_range `pos >= size()`
     */
     char&
     at(std::size_t pos)
@@ -1114,7 +1114,7 @@ public:
 
         @param pos A zero-based index
 
-        @throws std::out_of_range `pos >= size()`
+        @throw std::out_of_range `pos >= size()`
     */
     char const&
     at(std::size_t pos) const
@@ -1612,9 +1612,9 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @throw std::length_error `new_capacity > max_size()`
-
         @param new_capacity The new capacity of the array.
+
+        @throw std::length_error `new_capacity > max_size()`
     */
     void
     reserve(std::size_t new_capacity)

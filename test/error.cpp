@@ -44,7 +44,8 @@ public:
         }
     }
 
-    void run() override
+    void
+    run() override
     {
         check(condition::parse_error, error::syntax);
         check(condition::parse_error, error::extra_data);
@@ -56,7 +57,6 @@ public:
         check(condition::parse_error, error::illegal_control_char);
         check(condition::parse_error, error::illegal_escape_char);
         check(condition::parse_error, error::illegal_extra_digits);
-        check(condition::parse_error, error::illegal_extra_chars);
         check(condition::parse_error, error::illegal_leading_surrogate);
         check(condition::parse_error, error::illegal_trailing_surrogate);
 

@@ -47,6 +47,8 @@ public:
             p.write(
                 s.data() + n,
                 s.size() - n, ec);
+            if(! ec)
+                p.finish(ec);
             if(! BEAST_EXPECTS(ec == ex,
                 ec.message()))
                 log << "should be " << ex.message() << std::endl;
@@ -67,6 +69,8 @@ public:
             fail_parser p(j);
             p.write(
                 s.data(), s.size(), ec);
+            if(! ec)
+                p.finish(ec);
             if(ec == error::test_failure)
                 continue;
             BEAST_EXPECTS(ec == ex,
@@ -91,6 +95,8 @@ public:
             {
                 p.write(
                     s.data(), s.size(), ec);
+                if(! ec)
+                    p.finish(ec);
                 BEAST_EXPECTS(ec == ex,
                     ec.message());
                 break;
@@ -118,6 +124,8 @@ public:
                 s.data(),
                 s.size(),
                 ex);
+            if(! ex)
+                p.finish(ex);
             if(good)
             {
                 if(! BEAST_EXPECTS(
@@ -441,6 +449,8 @@ public:
                 BEAST_EXPECT(ec);
                 p.reset();
                 p.write("{}", 2, ec);
+                if(! ec)
+                    p.finish(ec);
                 BEAST_EXPECTS(! ec, ec.message());
                 BEAST_EXPECT(p.is_done());
             }
@@ -480,8 +490,64 @@ public:
         {
             error_code ec;
             fail_parser p;
-            p.write_eof(ec);
+            p.finish(ec);
             BEAST_EXPECT(ec);
+        }
+    }
+
+    void
+    testMembers()
+    {
+        // write_some(char const*, size_t, error_code&)
+        {
+            error_code ec;
+            fail_parser p;
+            p.write_some("0", 1, ec);
+            BEAST_EXPECTS(! ec, ec.message());
+        }
+
+        // write_some(char const*, size_t)
+        {
+            fail_parser p;
+            BEAST_THROWS(
+                p.write_some("x", 1),
+                system_error);
+        }
+
+        // write(char const*, size_t, error_code&)
+        {
+            error_code ec;
+            fail_parser p;
+            p.write("0x", 2, ec);
+            BEAST_EXPECTS(
+                ec == error::extra_data,
+                ec.message());
+        }
+
+        // write(char const*, size_t)
+        {
+            fail_parser p;
+            BEAST_THROWS(
+                p.write("0x", 2),
+                system_error);
+        }
+
+        // finish(char const*, size_t, error_code&)
+        {
+            error_code ec;
+            fail_parser p;
+            p.finish("{", 1, ec);
+            BEAST_EXPECTS(
+                ec == error::incomplete,
+                ec.message());
+        }
+
+        // finish(char const*, size_t)
+        {
+            fail_parser p;
+            BEAST_THROWS(
+                p.finish("{", 1),
+                system_error);
         }
     }
 
@@ -520,6 +586,7 @@ public:
         testBoolean();
         testNull();
         testParser();
+        testMembers();
         testParseVectors();
     }
 };

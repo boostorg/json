@@ -260,7 +260,7 @@ loop:
                     st_ = state::exp1;
                     goto loop;
                 }
-                write_eof(ec);
+                finish(ec);
                 goto finish;
             }
             while(p < p1);
@@ -346,7 +346,7 @@ loop:
             if(static_cast<unsigned char>(
                 *p - '0') > 9)
             {
-                write_eof(ec);
+                finish(ec);
                 goto finish;
             }
             ++p;
@@ -406,7 +406,7 @@ loop:
                 if(*p != 'e' && *p != 'E')
                 {
                     n_.u = m;
-                    write_eof(ec);
+                    finish(ec);
                     goto finish;
                 }
                 ++p;
@@ -445,7 +445,7 @@ loop:
                 if(*p != 'e' && *p != 'E')
                 {
                     n_.d = m;
-                    write_eof(ec);
+                    finish(ec);
                     goto finish;
                 }
                 ++p;
@@ -522,7 +522,7 @@ loop:
                     continue;
                 }
                 exp_ = e;
-                write_eof(ec);
+                finish(ec);
                 goto finish;
             }
             while(p < p1);
@@ -532,7 +532,7 @@ loop:
     }
 
     case state::end:
-        ec = error::illegal_extra_chars;
+        ec = error::extra_data;
         break;
     }
 finish:
@@ -557,13 +557,13 @@ write(
         if(ec)
             return n;
     }
-    write_eof(ec);
+    finish(ec);
     return n;
 }
 
 void
 number_parser::
-write_eof(
+finish(
     error_code& ec) noexcept
 {
     switch(st_)

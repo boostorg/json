@@ -1407,7 +1407,7 @@ public:
 
         Strong guarantee.
 
-        @throws system error Thrown upon failure
+        @throw system error Thrown upon failure
     */
     template<class T>
     void
@@ -2748,6 +2748,13 @@ public:
     //------------------------------------------------------
 
 private:
+    static
+    inline
+    void
+    relocate(
+        value* dest,
+        value const& src) noexcept;
+
     BOOST_JSON_DECL
     storage_ptr
     destroy() noexcept;

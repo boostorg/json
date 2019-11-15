@@ -98,7 +98,7 @@ public:
 
     BOOST_JSON_DECL
     void
-    write_eof(
+    finish(
         error_code& ec) noexcept;
 };
 

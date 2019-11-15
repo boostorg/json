@@ -40,7 +40,7 @@ namespace json {
     pointer to be used by the @ref value container into
     which the parsed results are stored. After the
     parse is started, the functions @ref write_some,
-    @ref write, and @ref write_eof may be called to
+    @ref write, and @ref finish may be called to
     provide successive buffers of characters of the
     JSON. The caller can check that the parse is
     complete by calling @ref is_done, or that a
@@ -57,6 +57,14 @@ namespace json {
     to bound the amount of work performed in each
     parsing cycle.
 
+    <br>
+
+    The parser may dynamically allocate intermediate
+    storage as needed to accommodate the nesting level
+    of the JSON being parsed. This storage is freed
+    when the parser is destroyed, allowing the parser
+    to cheaply re-use this memory when parsing
+    subsequent JSONs, improving performance.
 */
 class parser final
     : public basic_parser
@@ -83,6 +91,9 @@ class parser final
 
 public:
     /** Destructor.
+
+        All dynamically allocated memory, including
+        any partial parsing results, is freed.
     */
     BOOST_JSON_DECL
     virtual
@@ -96,11 +107,11 @@ public:
     BOOST_JSON_DECL
     parser();
 
-    /** Prepare the parser for new serialized JSON.
+    /** Start parsing JSON incrementally.
 
-        This function must be called once, before
-        any data is presented, to start parsing a
-        new JSON.
+        This function must be called once manually before
+        parsing a new JSON incrementally; that is, when
+        using @ref write_some, @ref write, or @ref finish.
 
         @param sp The storage to use for all values.
     */
@@ -108,16 +119,17 @@ public:
     void
     start(storage_ptr sp = {}) noexcept;
 
-    /** Discard all intermadiate or final parsing results.
+    /** Discard all parsed JSON results.
 
         This function destroys all intermediate parsing
         results, while preserving dynamically allocated
-        internal memory which is reused between parses.
+        internal memory which may be reused on a
+        subsequent parse.
 
         @note
 
-        It is necessary to call @ref start to parse new
-        JSON after calling this function.
+        After this call, it is necessary to call
+        @ref start to parse a new JSON incrementally.
     */
     BOOST_JSON_DECL
     void
@@ -125,34 +137,19 @@ public:
 
     /** Return the parsed JSON as a @ref value.
 
-        If the parse failed, the returned value
-        will be null.
+        If @ref is_done() returns `true`, then the
+        parsed value is returned. Otherwise an
+        exception is thrown.
 
-        @par Preconditions
+        @throw std::logic_error `! is_done()`
 
-        `is_done() == true`.
-
-        @returns The parsed value. Ownership of this
+        @return The parsed value. Ownership of this
         value is transferred to the caller.       
     */
+    BOOST_JSON_NODISCARD
     BOOST_JSON_DECL
     value
-    release() noexcept;
-
-    BOOST_JSON_DECL
-    value
-    parse(
-        char const* data,
-        std::size_t size,
-        error_code& ec,
-        storage_ptr sp = {});
-
-    BOOST_JSON_DECL
-    value
-    parse(
-        char const* data,
-        std::size_t size,
-        storage_ptr sp = {});
+    release();
 
 private:
     template<class T>
@@ -271,8 +268,12 @@ private:
 
 /** Parse a string of JSON.
 
-    The string is parsed as JSON into a @ref value,
-    using the specified storage.
+    This function parses an entire single string in
+    one step to produce a complete JSON object, returned
+    as a @ref value. If the buffer does not contain a
+    complete serialized JSON, an error occurs. In this
+    case the returned value will be null, using the
+    default storage.
 
     @par Complexity
 
@@ -283,28 +284,33 @@ private:
     Strong guarantee.
     Calls to @ref storage::allocate may throw.
 
-    @param s The string containing the JSON to parse.
+    @param s The string to parse.
 
-    @param sp A pointer to the @ref storage
-    to use. The container will acquire shared
-    ownership of the storage object.
+    @param ec Set to the error, if any occurred.
 
-    @param ec Set to the error if any occurred.
+    @param sp The storage that the new value and all of
+    its elements will use. If this parameter is omitted,
+    the default storage is used.
 
     @return A value representing the parsed JSON,
     or a null if any error occurred.
 */
+BOOST_JSON_NODISCARD
 BOOST_JSON_DECL
 value
 parse(
     string_view s,
-    storage_ptr sp,
-    error_code& ec);
+    error_code& ec,
+    storage_ptr sp = {});
 
 /** Parse a string of JSON.
 
-    The string is parsed as JSON into a @ref value
-    using the specified storage.
+    This function parses an entire single string in
+    one step to produce a complete JSON object, returned
+    as a @ref value. If the buffer does not contain a
+    complete serialized JSON, an error occurs. In this
+    case the returned value will be null, using the
+    default storage.
 
     @par Complexity
 
@@ -315,80 +321,23 @@ parse(
     Strong guarantee.
     Calls to @ref storage::allocate may throw.
 
-    @param s The string containing the JSON to parse.
+    @param s The string to parse.
 
-    @param sp A pointer to the @ref storage
-    to use. The container will acquire shared
-    ownership of the storage object.
+    @param sp The storage that the new value and all of
+    its elements will use. If this parameter is omitted,
+    the default storage is used.
 
-    @return A value representing the parsed JSON.
-
-    @throw system_error any errors.
-*/
-BOOST_JSON_DECL
-value
-parse(
-    string_view s,
-    storage_ptr sp);
-
-/** Parse a string of JSON.
-
-    The string is parsed as JSON into a @ref value,
-    using the default storage.
-
-    @par Complexity
-
-    Linear in `s.size()`.
-
-    @par Exception Safety
-
-    Strong guarantee.
-    Calls to @ref storage::allocate may throw.
-
-    @param s The string containing the JSON to parse.
-
-    @param ec Set to the error if any occurred.
+    @throw system_error Thrown on failure.
 
     @return A value representing the parsed JSON,
     or a null if any error occurred.
 */
-inline
+BOOST_JSON_NODISCARD
+BOOST_JSON_DECL
 value
 parse(
     string_view s,
-    error_code& ec)
-{
-    return parse(s,
-        storage_ptr{}, ec);
-}
-
-/** Parse a string of JSON.
-
-    The string is parsed as JSON into a @ref value
-    using the default storage.
-
-    @par Complexity
-
-    Linear in `s.size()`.
-
-    @par Exception Safety
-
-    Strong guarantee.
-    Calls to @ref storage::allocate may throw.
-
-    @param s The string containing the JSON to parse.
-
-    @return A value representing the parsed JSON.
-
-    @throw system_error any errors.
-*/
-inline
-value
-parse(string_view s)
-{
-    return parse(
-        s, storage_ptr{});
-}
+    storage_ptr sp = {});
 
 } // json
 } // boost

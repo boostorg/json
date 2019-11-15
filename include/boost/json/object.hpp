@@ -901,14 +901,14 @@ public:
         
         @param p The value to insert.
 
-        @returns A pair where `first` is an iterator
-        to the existing or inserted element, and `second`
-        is `true` if the insertion took place or `false` if
-        the assignment took place.
-
         @throw std::length_error key is too long.
 
         @throw std::length_error @ref size() >= max_size().
+
+        @return A pair where `first` is an iterator
+        to the existing or inserted element, and `second`
+        is `true` if the insertion took place or `false` if
+        the assignment took place.
     */
      template<class P
 #ifndef GENERATING_DOCUMENTATION
@@ -1016,13 +1016,13 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @throw std::length_error if key is too long
-
         @param key The key used for lookup and insertion
 
         @param m The value to insert or assign
 
-        @returns A `std::pair` where `first` is an iterator
+        @throw std::length_error if key is too long
+
+        @return A `std::pair` where `first` is an iterator
         to the existing or inserted element, and `second`
         is `true` if the insertion took place or `false` if
         the assignment took place.
@@ -1056,15 +1056,15 @@ public:
         Strong guarantee.
         Calls to @ref storage::allocate may throw.
 
-        @throw std::length_error if key is too long
-
         @param key The key used for lookup and insertion
 
         @param arg The argument used to construct the value.
         This will be passed as `std::forward<Arg>(arg)` to
         the @ref value constructor.
 
-        @returns A `std::pair` where `first` is an iterator
+        @throw std::length_error if key is too long
+
+        @return A `std::pair` where `first` is an iterator
         to the existing or inserted element, and `second`
         is `true` if the insertion took place or `false` if
         the assignment took place.
@@ -1094,7 +1094,7 @@ public:
         @param pos An iterator pointing to the element to be
         removed.
 
-        @returns The number of elements removed, which can
+        @return The number of elements removed, which can
         be either 0 or 1.
     */
     BOOST_JSON_DECL
@@ -1116,7 +1116,7 @@ public:
 
         No-throw guarantee.
 
-        @returns The number of elements removed, which can
+        @return The number of elements removed, which can
         be either 0 or 1.
     */
     BOOST_JSON_DECL
@@ -1168,9 +1168,9 @@ public:
 
         Constant on average, worst case linear in @ref size().
 
-        @throw std::out_of_range if no such element exists.
-
         @param key The key of the element to find
+
+        @throw std::out_of_range if no such element exists.
     */
     BOOST_JSON_DECL
     value&
@@ -1185,9 +1185,9 @@ public:
 
         Constant on average, worst case linear in @ref size().
 
-        @throw std::out_of_range if no such element exists.
-
         @param key The key of the element to find
+
+        @throw std::out_of_range if no such element exists.
     */
     BOOST_JSON_DECL
     value const&

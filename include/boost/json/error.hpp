@@ -26,6 +26,9 @@ enum class error
     /// extra data
     extra_data,
 
+    /// incomplete data
+    incomplete,
+
     /// mantissa overflow
     mantissa_overflow,
 
@@ -46,9 +49,6 @@ enum class error
 
     /// illegal extra digits in number
     illegal_extra_digits,
-
-    /// illegal extra characters
-    illegal_extra_chars,
 
     /// illegal leading surrogate
     illegal_leading_surrogate,

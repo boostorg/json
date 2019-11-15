@@ -21,21 +21,30 @@
 namespace boost {
 namespace json {
 
-/** A SAX parser for serialized JSON.
+/** An incremental SAX parser for serialized JSON.
 
     This implements a SAX-style parser. The serialized
     JSON is presented to the parser by calling to
-    @ref write_some, @ref write, and @ref write_eof.
+    @ref write_some, @ref write, and @ref finish.
     The parsing events are realized through calls of
     protected virtual functions, whose implementations
     are in the derived class.
+
+    <br>
+
+    The parser may dynamically allocate intermediate
+    storage as needed to accommodate the nesting level
+    of the JSON being parsed. This storage is freed
+    when the parser is destroyed, allowing the parser
+    to cheaply re-use this memory when parsing
+    subsequent JSONs, improving performance.
 
     @note
 
     The parser is strict: no extensions are supported.
     Only compliant JSON is recognized.
 
-    @see parser
+    @see parse, parser
 */
 class basic_parser
 {
@@ -64,7 +73,7 @@ public:
 
     /** Destructor.
 
-        All internal memory is freed.
+        All dynamically allocated internal memory is freed.
     */
     virtual
     ~basic_parser()
@@ -132,8 +141,36 @@ public:
 
     /** Parse JSON incrementally.
 
-        This function presents the next buffer of serialized
-        JSON as input into the parser.
+        This function parses the JSON in the specified
+        buffer, emitting SAX parsing events by calling
+        the derived class. The parse proceeds from the
+        current state, which is at the beginning of a
+        new JSON or in the middle of the current JSON
+        if any characters were already parsed.
+
+        <br>
+
+        The characters in the buffer are processed
+        starting from the beginning, until one of the
+        following conditions is met:
+
+        @li All of the characters in the buffer have been
+        parsed, or
+
+        @li Some of the characters in the buffer have been
+        parsed and the JSON is complete, or
+
+        @li A parsing error occurs.
+
+        The supplied buffer does not need to contain the
+        entire JSON. Subsequent calls can provide more
+        serialized data, allowing JSON to be processed
+        incrementally. The end of the serialized JSON
+        can be indicated by calling @ref finish().
+
+        @par Complexity
+
+        Linear in `size`.
 
         @param data A pointer to a buffer of `size`
         characters to parse.
@@ -144,7 +181,7 @@ public:
         @param ec Set to the error, if any occurred.
 
         @return The number of characters successfully
-        parsed.
+        parsed, which may be smaller than `size`.
     */
     BOOST_JSON_DECL
     std::size_t
@@ -153,19 +190,85 @@ public:
         std::size_t size,
         error_code& ec);
 
+    /** Parse JSON incrementally.
+
+        This function parses the JSON in the specified
+        buffer, emitting SAX parsing events by calling
+        the derived class. The parse proceeds from the
+        current state, which is at the beginning of a
+        new JSON or in the middle of the current JSON
+        if any characters were already parsed.
+        
+        <br>
+        
+        The characters in the buffer are processed
+        starting from the beginning, until one of the
+        following conditions is met:
+
+        @li All of the characters in the buffer have been
+        parsed, or
+
+        @li Some of the characters in the buffer have been
+        parsed and the JSON is complete, or
+
+        @li A parsing error occurs.
+
+        The supplied buffer does not need to contain the
+        entire JSON. Subsequent calls can provide more
+        serialized data, allowing JSON to be processed
+        incrementally. The end of the serialized JSON
+        can be indicated by calling @ref finish().
+
+        @par Complexity
+
+        Linear in `size`.
+
+        @param data A pointer to a buffer of `size`
+        characters to parse.
+
+        @param size The number of characters pointed to
+        by `data`.
+
+        @throw system_error Thrown on failure.
+
+        @return The number of characters successfully
+        parsed, which may be smaller than `size`.
+    */
     BOOST_JSON_DECL
     std::size_t
     write_some(
         char const* data,
         std::size_t size);
 
-    /** Parse the remaining JSON immediately.
+    /** Parse JSON incrementally.
 
-        This function is used to submit the last buffer,
-        or the only buffer, of serialized JSON as input into
-        the parser. An error occurs if all of the characters
-        could not be successfully parsed, even if a complete
-        JSON object is encountered.
+        This function parses the JSON in the specified
+        buffer, emitting SAX parsing events by calling
+        the derived class. The parse proceeds from the
+        current state, which is at the beginning of a
+        new JSON or in the middle of the current JSON
+        if any characters were already parsed.
+
+        <br>
+
+        The characters in the buffer are processed
+        starting from the beginning, until one of the
+        following conditions is met:
+
+        @li All of the characters in the buffer have been
+        parsed, or
+
+        @li A parsing error occurs.
+
+        The supplied buffer does not need to contain the
+        entire JSON. Subsequent calls can provide more
+        serialized data, allowing JSON to be processed
+        incrementally. The end of the serialized JSON
+        can be indicated by calling @ref finish().
+
+        @par Complexity
+
+        Linear in `size`.
 
         @param data A pointer to a buffer of `size`
         characters to parse.
@@ -182,28 +285,190 @@ public:
         std::size_t size,
         error_code& ec);
 
+    /** Parse JSON incrementally.
+
+        This function parses the JSON in the specified
+        buffer, emitting SAX parsing events by calling
+        the derived class. The parse proceeds from the
+        current state, which is at the beginning of a
+        new JSON or in the middle of the current JSON
+        if any characters were already parsed.
+
+        <br>
+
+        The characters in the buffer are processed
+        starting from the beginning, until one of the
+        following conditions is met:
+
+        @li All of the characters in the buffer have been
+        parsed, or
+
+        @li A parsing error occurs.
+
+        The supplied buffer does not need to contain the
+        entire JSON. Subsequent calls can provide more
+        serialized data, allowing JSON to be processed
+        incrementally. The end of the serialized JSON
+        can be indicated by calling @ref finish().
+
+        @par Complexity
+
+        Linear in `size`.
+
+        @param data A pointer to a buffer of `size`
+        characters to parse.
+
+        @param size The number of characters pointed to
+        by `data`.
+
+        @throw system_error Thrown on failure.
+    */
     BOOST_JSON_DECL
     void
     write(
         char const* data,
         std::size_t size);
 
-    /** Indicate that no more serialized JSON remains.
+    /** Parse JSON incrementally.
 
-        This function informs the parser that there is
-        are no more characters left in the serialized
-        JSON being parsed. If no error occurs, the parse
-        is complete and @ref is_done will return `true`.
-        Otherwise, the error is set to the problem
-        encountered.
+        This function parses the JSON in the specified
+        buffer, emitting SAX parsing events by calling
+        the derived class. The parse proceeds from the
+        current state, which is at the beginning of a
+        new JSON or in the middle of the current JSON
+        if any characters were already parsed.
+
+        <br>
+
+        The characters in the buffer are processed
+        starting from the beginning, until one of the
+        following conditions is met:
+
+        @li All of the characters in the buffer have been
+        parsed and form a complete JSON, or
+
+        @li A parsing error occurs.
+
+        The caller uses this function to inform the
+        parser that there is no more serialized JSON
+        available. If the entire buffer is not consumed
+        or if a complete JSON is not available after
+        consuming the entire buffer, the error is
+        set to indicate failure.
+
+        @par Complexity
+
+        Linear in `size`.
+
+        @param data A pointer to a buffer of `size`
+        characters to parse.
+
+        @param size The number of characters pointed to
+        by `data`.
+
+        @param ec Set to the error, if any occurred.
     */
     BOOST_JSON_DECL
     void
-    write_eof(error_code& ec);
+    finish(
+        char const* data,
+        std::size_t size,
+        error_code& ec);
 
+    /** Parse JSON incrementally.
+
+        This function parses the JSON in the specified
+        buffer, emitting SAX parsing events by calling
+        the derived class. The parse proceeds from the
+        current state, which is at the beginning of a
+        new JSON or in the middle of the current JSON
+        if any characters were already parsed.
+
+        <br>
+
+        The characters in the buffer are processed
+        starting from the beginning, until one of the
+        following conditions is met:
+
+        @li All of the characters in the buffer have been
+        parsed and form a complete JSON, or
+
+        @li A parsing error occurs.
+
+        The caller uses this function to inform the
+        parser that there is no more serialized JSON
+        available. If the entire buffer is not consumed
+        or if a complete JSON is not available after
+        consuming the entire buffer, the error is
+        set to indicate failure.
+
+        @par Complexity
+
+        Linear in `size`.
+
+        @param data A pointer to a buffer of `size`
+        characters to parse.
+
+        @param size The number of characters pointed to
+        by `data`.
+
+        @throw system_error Thrown on failure.
+    */
     BOOST_JSON_DECL
     void
-    write_eof();
+    finish(
+        char const* data,
+        std::size_t size);
+
+    /** Parse JSON incrementally.
+
+        This function finishes parsing the current JSON,
+        emitting SAX parsing events by calling the derived
+        class. The parse is finalized according to the
+        current state, which includes all previously
+        parsed data since the last reset.
+
+        <br>
+
+        The caller uses this function to inform the
+        parser that there is no more serialized JSON
+        available. If a complete JSON is not available
+        the error is set to indicate failure.
+
+        @par Complexity
+
+        Constant.
+
+        @param ec Set to the error, if any occurred.
+    */
+    BOOST_JSON_DECL
+    void
+    finish(error_code& ec);
+
+    /** Parse JSON incrementally.
+
+        This function finishes parsing the current JSON,
+        emitting SAX parsing events by calling the derived
+        class. The parse is finalized according to the
+        current state, which includes all previously
+        parsed data since the last reset.
+
+        <br>
+
+        The caller uses this function to inform the
+        parser that there is no more serialized JSON
+        available. If a complete JSON is not available
+        the error is set to indicate failure.
+
+        @par Complexity
+
+        Constant.
+
+        @throw system_error Thrown on failure.
+    */
+    BOOST_JSON_DECL
+    void
+    finish();
 
 protected:
     using saved_state = char;
@@ -244,7 +509,7 @@ protected:
 
         @param ec The error, if any, which will be
         returned by the current invocation of
-        @ref write_some, @ref write, or @ref write_eof.
+        @ref write_some, @ref write, or @ref finish.
     */
     virtual
     void
@@ -260,7 +525,7 @@ protected:
 
         @param ec The error, if any, which will be
         returned by the current invocation of
-        @ref write_some, @ref write, or @ref write_eof.
+        @ref write_some, @ref write, or @ref finish.
     */
     virtual
     void
@@ -274,7 +539,7 @@ protected:
 
         @param ec The error, if any, which will be
         returned by the current invocation of
-        @ref write_some, @ref write, or @ref write_eof.
+        @ref write_some, @ref write, or @ref finish.
     */
     virtual
     void
@@ -289,7 +554,7 @@ protected:
 
         @param ec The error, if any, which will be
         returned by the current invocation of
-        @ref write_some, @ref write, or @ref write_eof.
+        @ref write_some, @ref write, or @ref finish.
     */
     virtual
     void
@@ -303,7 +568,7 @@ protected:
 
         @param ec The error, if any, which will be
         returned by the current invocation of
-        @ref write_some, @ref write, or @ref write_eof.
+        @ref write_some, @ref write, or @ref finish.
     */
     virtual
     void
@@ -318,7 +583,7 @@ protected:
 
         @param ec The error, if any, which will be
         returned by the current invocation of
-        @ref write_some, @ref write, or @ref write_eof.
+        @ref write_some, @ref write, or @ref finish.
     */
     virtual
     void
@@ -339,7 +604,7 @@ protected:
 
         @param ec The error, if any, which will be
         returned by the current invocation of
-        @ref write_some, @ref write, or @ref write_eof.
+        @ref write_some, @ref write, or @ref finish.
     */
     virtual
     void
@@ -360,7 +625,7 @@ protected:
 
         @param ec The error, if any, which will be
         returned by the current invocation of
-        @ref write_some, @ref write, or @ref write_eof.
+        @ref write_some, @ref write, or @ref finish.
     */
     virtual
     void
@@ -382,7 +647,7 @@ protected:
 
         @param ec The error, if any, which will be
         returned by the current invocation of
-        @ref write_some, @ref write, or @ref write_eof.
+        @ref write_some, @ref write, or @ref finish.
     */
     virtual
     void
@@ -403,7 +668,7 @@ protected:
 
         @param ec The error, if any, which will be
         returned by the current invocation of
-        @ref write_some, @ref write, or @ref write_eof.
+        @ref write_some, @ref write, or @ref finish.
     */
     virtual
     void
@@ -420,7 +685,7 @@ protected:
 
         @param ec The error, if any, which will be
         returned by the current invocation of
-        @ref write_some, @ref write, or @ref write_eof.
+        @ref write_some, @ref write, or @ref finish.
     */
     virtual
     void
@@ -437,7 +702,7 @@ protected:
 
         @param ec The error, if any, which will be
         returned by the current invocation of
-        @ref write_some, @ref write, or @ref write_eof.
+        @ref write_some, @ref write, or @ref finish.
     */
     virtual
     void
@@ -454,7 +719,7 @@ protected:
 
         @param ec The error, if any, which will be
         returned by the current invocation of
-        @ref write_some, @ref write, or @ref write_eof.
+        @ref write_some, @ref write, or @ref finish.
     */
     virtual
     void
@@ -471,7 +736,7 @@ protected:
 
         @param ec The error, if any, which will be
         returned by the current invocation of
-        @ref write_some, @ref write, or @ref write_eof.
+        @ref write_some, @ref write, or @ref finish.
     */
     virtual
     void
@@ -483,7 +748,7 @@ protected:
 
         @param ec The error, if any, which will be
         returned by the current invocation of
-        @ref write_some, @ref write, or @ref write_eof.
+        @ref write_some, @ref write, or @ref finish.
     */
     virtual
     void

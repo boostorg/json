@@ -51,7 +51,7 @@ public:
             if(! BEAST_EXPECT(n == 0))
                 break;
             f(p.get());
-            p.write_eof(ec);
+            p.finish(ec);
             BEAST_EXPECTS(! ec, ec.message());
             break;
         }
@@ -311,7 +311,7 @@ public:
             BEAST_EXPECT(p.maybe_init('-')); p.reset();
         }
 
-        // write_eof
+        // finish
         {
             error_code ec;
             number_parser p;
@@ -319,7 +319,7 @@ public:
             if(BEAST_EXPECTS(! ec,
                 ec.message()))
             {
-                p.write_eof(ec);
+                p.finish(ec);
                 BEAST_EXPECTS(! ec,
                     ec.message());
             }

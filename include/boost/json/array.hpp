@@ -573,7 +573,7 @@ public:
 
         @param pos A zero-based index.
 
-        @throws std::out_of_range `pos >= size()`
+        @throw std::out_of_range `pos >= size()`
     */
     inline
     reference
@@ -592,7 +592,7 @@ public:
 
         @param pos A zero-based index.
 
-        @throws std::out_of_range `pos >= size()`
+        @throw std::out_of_range `pos >= size()`
     */
     inline
     const_reference

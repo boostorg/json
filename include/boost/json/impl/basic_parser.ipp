@@ -169,13 +169,13 @@ loop:
         goto loop_val;
 
     case state::end:
-        ec = error::illegal_extra_chars;
+        ec = error::extra_data;
         goto yield;
 
     case state::maybe_end:
         if(! skip_white())
             goto yield;
-        write_eof(ec);
+        finish(ec);
         goto yield;
 
     //------------------------------------------------------
@@ -799,7 +799,7 @@ loop_num:
         //        is_done inside write_some better
         if(p < p1)
         {
-            iep_.write_eof(ec);
+            iep_.finish(ec);
             if(ec)
                 goto yield;
             BOOST_JSON_ASSERT(iep_.is_done());
@@ -884,8 +884,7 @@ write(
     if(! ec)
     {
         if(n < size)
-            write_some(
-                data + n, size - n, ec);
+            ec = error::extra_data;
     }
 }
 
@@ -906,7 +905,34 @@ write(
 
 void
 basic_parser::
-write_eof(error_code& ec)
+finish(
+    char const* data,
+    std::size_t size,
+    error_code& ec)
+{
+    write(data, size, ec);
+    if(! ec)
+        finish(ec);
+}
+
+void
+basic_parser::
+finish(
+    char const* data,
+    std::size_t size)
+{
+    error_code ec;
+    finish(data, size, ec);
+    if(ec)
+        BOOST_JSON_THROW(
+            system_error(ec));
+}
+
+//----------------------------------------------------------
+
+void
+basic_parser::
+finish(error_code& ec)
 {
     for(;;)
     {
@@ -931,7 +957,7 @@ write_eof(error_code& ec)
 
         case state::num:
         {
-            iep_.write_eof(ec);
+            iep_.finish(ec);
             if(ec)
                 return;
             auto const num = iep_.get();
@@ -976,7 +1002,7 @@ write_eof(error_code& ec)
         case state::sur2:
         case state::sur3:
         case state::sur1:
-            ec = error::syntax;
+            ec = error::incomplete;
             return;
         }
     }
@@ -984,10 +1010,10 @@ write_eof(error_code& ec)
 
 void
 basic_parser::
-write_eof()
+finish()
 {
     error_code ec;
-    write_eof(ec);
+    finish(ec);
     if(ec)
         BOOST_JSON_THROW(
             system_error(ec));

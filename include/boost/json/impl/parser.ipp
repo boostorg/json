@@ -59,7 +59,7 @@ enum class parser::state : char
     arr,        // empty array value
     obj,        // empty object value
     key,        // complete key
-    end         // compelte top value
+    end         // complete top value
 };
 
 void
@@ -182,62 +182,27 @@ clear() noexcept
 
 value
 parser::
-release() noexcept
+release()
 {
-    if(is_done())
-    {
-        BOOST_JSON_ASSERT(lev_.st == state::end);
-        auto ua = pop_array();
-        BOOST_JSON_ASSERT(rs_.empty());
-        union U
-        {
-            value v;
-            U(){}
-            ~U(){}
-        };
-        U u;
-        ua.relocate(&u.v);
-        basic_parser::reset();
-        lev_.st = state::need_start;
-        sp_ = {};
-        return pilfer(u.v);
-    }
-    // return null
-    value jv(std::move(sp_));
-    clear();
-    return jv;
-}
-
-value
-parser::
-parse(
-    char const* data,
-    std::size_t size,
-    error_code& ec,
-    storage_ptr sp)
-{
-    start(std::move(sp));
-    write(data, size, ec);
-    if(! ec)
-        write_eof(ec);
-    return release();
-}
-
-value
-parser::
-parse(
-    char const* data,
-    std::size_t size,
-    storage_ptr sp)
-{
-    error_code ec;
-    auto jv = parse(
-        data, size, ec,
-            std::move(sp));
-    if(ec)
+    if(! is_done())
         BOOST_JSON_THROW(
-            system_error(ec));
-    return release();
+            std::logic_error(
+                "no value"));
+    BOOST_JSON_ASSERT(lev_.st == state::end);
+    auto ua = pop_array();
+    BOOST_JSON_ASSERT(rs_.empty());
+    union U
+    {
+        value v;
+        U(){}
+        ~U(){}
+    };
+    U u;
+    ua.relocate(&u.v);
+    basic_parser::reset();
+    lev_.st = state::need_start;
+    sp_ = {};
+    return pilfer(u.v);
 }
 
 //----------------------------------------------------------
@@ -291,10 +256,19 @@ emplace(Args&&... args)
             key, std::forward<Args>(args)...);
         rs_.add(sizeof(u.v));
     }
+    else if(lev_.st == state::arr)
+    {
+        // prevent splits from exceptions
+        rs_.prepare(sizeof(value));
+        BOOST_JSON_ASSERT((rs_.top() %
+            alignof(value)) == 0);
+        ::new(rs_.behind(sizeof(value))) value(
+            std::forward<Args>(args)...);
+        rs_.add(sizeof(value));
+    }
     else
     {
         BOOST_JSON_ASSERT(
-            lev_.st == state::arr ||
             lev_.st == state::top);
         // prevent splits from exceptions
         rs_.prepare(sizeof(value));
@@ -303,6 +277,7 @@ emplace(Args&&... args)
         ::new(rs_.behind(sizeof(value))) value(
             std::forward<Args>(args)...);
         rs_.add(sizeof(value));
+        lev_.st = state::end; // VFALCO Maybe pre_end
     }
     ++lev_.count;
 }
@@ -384,7 +359,6 @@ parser::
 on_document_end(error_code&)
 {
     BOOST_JSON_ASSERT(lev_.count == 1);
-    lev_.st = state::end; // VFALCO RECONSIDER
 }
 
 void
@@ -574,12 +548,17 @@ on_null(error_code&)
 value
 parse(
     string_view s,
-    storage_ptr sp,
-    error_code& ec)
+    error_code& ec,
+    storage_ptr sp)
 {
     parser p;
     p.start(std::move(sp));
-    p.write(s.data(), s.size(), ec);
+    p.finish(
+        s.data(),
+        s.size(),
+        ec);
+    if(ec)
+        return nullptr;
     return p.release();
 }
 
@@ -589,7 +568,8 @@ parse(
     storage_ptr sp)
 {
     error_code ec;
-    auto jv = parse(s, std::move(sp), ec);
+    auto jv = parse(
+        s, ec, std::move(sp));
     if(ec)
         BOOST_JSON_THROW(
             system_error(ec));

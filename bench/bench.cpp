@@ -256,6 +256,8 @@ public:
             error_code ec;
             vec_parser p;
             p.write(s.data(), s.size(), ec);
+            if(! ec)
+                p.finish(ec);
         }
     }
 

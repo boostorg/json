@@ -33,8 +33,7 @@ struct value::undo
     undo(value* self_) noexcept
         : self(self_)
     {
-        std::memcpy(&saved, self,
-            sizeof(*self));
+        relocate(&saved, *self_);
     }
 
     void
@@ -47,9 +46,7 @@ struct value::undo
     ~undo()
     {
         if(self)
-            std::memcpy(
-                self, &saved,
-                sizeof(*self));
+            relocate(self, saved);
     }
 };
 
@@ -162,6 +159,19 @@ operator=(T&& t)
         u.saved.get_storage());
     u.commit();
     return *this;
+}
+
+void
+value::
+relocate(
+    value* dest,
+    value const& src) noexcept
+{
+    std::memcpy(
+        reinterpret_cast<
+            void*>(dest),
+        &src,
+        sizeof(src));
 }
 
 //----------------------------------------------------------
