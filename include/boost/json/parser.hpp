@@ -25,10 +25,38 @@
 namespace boost {
 namespace json {
 
+//----------------------------------------------------------
+
 /** A DOM parser for serialized JSON.
 
     This parser is used to incrementally parse
-    JSON into a @ref value container.
+    JSON from character buffers into a @ref value
+    container.
+
+    @par Usage
+
+    Before parsing a new JSON, the function @ref start
+    must be called, optionally passing the storage
+    pointer to be used by the @ref value container into
+    which the parsed results are stored. After the
+    parse is started, the functions @ref write_some,
+    @ref write, and @ref write_eof may be called to
+    provide successive buffers of characters of the
+    JSON. The caller can check that the parse is
+    complete by calling @ref is_done, or that a
+    non-successful error code is returned.
+
+    @par Incremental Parsing
+
+    The @ref write_some function allows partial data
+    to be written. This is useful when not all of the
+    serialized JSON is present at once and it is
+    desired to process the data as it becomes available,
+    such as when reading from a network socket or other
+    device. The incremental interface may also be used
+    to bound the amount of work performed in each
+    parsing cycle.
+
 */
 class parser final
     : public basic_parser

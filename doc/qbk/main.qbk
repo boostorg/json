@@ -106,10 +106,20 @@ in memory.
     ]]
 ]
 
-[include overview.qbk]
-[include usage.qbk]
-[include comparison.qbk]
-[include benchmarks.qbk]
+[include 01_overview.qbk]
+
+[section Usage]
+[include 02_usage.qbk]
+[include 03_string.qbk]
+[include 04_array.qbk]
+[include 05_object.qbk]
+[include 06_parsing.qbk]
+[include 07_serialization.qbk]
+[include 08_exchange.qbk]
+[endsect]
+
+[include 09_comparison.qbk]
+[include 10_benchmarks.qbk]
 
 [section:quickref Reference]
 [xinclude quickref.xml]

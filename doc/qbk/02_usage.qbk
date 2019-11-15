@@ -7,9 +7,6 @@
     Official repository: https://github.com/vinniefalco/json
 ]
 
-[section Usage]
-[block'''<?dbhtml stop-chunking?>''']
-
 [note
     Sample code and identifiers used throughout are written as if
     the following declarations are in effect:
@@ -35,19 +32,17 @@ and can dynamically store any of the six defined JSON value types:
 
 * [*number]: An integral or floating point value.
 
-* [*boolean]: A `bool`. Either `true` or `false`.
+* [*boolean]: A boolean: either `true` or `false`.
 
 * [*null]: A ['monostate] value, equivalent to `nullptr`.
 
 [h4 Working With Values]
 
-A default constructed __value__ produces a null JSON element. Alternatively,
-the value may be constructed with a __kind__ constant to produce an empty
-instance of that kind. Here, `jv1` and `jv2` are both null:
-
+A default constructed __value__ and a value constructed from `nullptr`
+produces a null JSON element:
 ```
 value jv1;
-value jv2( kind::null );
+value jv2( nullptr );
 ```
 
 The member function
@@ -65,10 +60,8 @@ assert( jv.is_object() );
 assert( ! jv.is_number() );
 ```
 
-After a __value__ is constructed, its kind can change dynamically by
-assignment from another value, from calling the member function
-[link json.ref.boost__json__value.reset `value::reset`], or by calling
-functions like
+After a __value__ is constructed, its kind can change depending on what
+is assigned to it, or by calling functions like
 [link json.ref.boost__json__value.emplace_array `value::emplace_array`] or
 [link json.ref.boost__json__value.emplace_bool `value::emplace_bool`]. In
 all cases, the previous contents of the value are destroyed:
@@ -80,6 +73,90 @@ assert( jv.is_array() );
 jv.emplace_string();
 assert( jv.is_string() );
 ```
+
+[table [link json.ref.boost__json__value `value`] Accessors
+    [
+        [Kind]
+        [Representation]
+        [Emplacement]
+        [Membership]
+        [Checked Access]
+        [Unchecked Access]
+        [Pointer Access]
+    ]
+    [
+        [[link json.ref.boost__json__kind `kind::object`]]
+        [[link json.ref.boost__json__object `object`]]
+        [[link json.ref.boost__json__value.emplace_object `emplace_object`]]
+        [[link json.ref.boost__json__value.is_object `is_object`]]
+        [[link json.ref.boost__json__value.as_object `as_object`]]
+        [[link json.ref.boost__json__value.get_object `get_object`]]
+        [[link json.ref.boost__json__value.if_object `if_object`]]
+    ]
+    [
+        [[link json.ref.boost__json__kind `kind::array`]]
+        [[link json.ref.boost__json__array `array`]]
+        [[link json.ref.boost__json__value.emplace_array `emplace_array`]]
+        [[link json.ref.boost__json__value.is_array `is_array`]]
+        [[link json.ref.boost__json__value.as_array `as_array`]]
+        [[link json.ref.boost__json__value.get_array `get_array`]]
+        [[link json.ref.boost__json__value.if_array `if_array`]]
+    ]
+    [
+        [[link json.ref.boost__json__kind `kind::string`]]
+        [[link json.ref.boost__json__string `string`]]
+        [[link json.ref.boost__json__value.emplace_string `emplace_string`]]
+        [[link json.ref.boost__json__value.is_string `is_string`]]
+        [[link json.ref.boost__json__value.as_string `as_string`]]
+        [[link json.ref.boost__json__value.get_string `get_string`]]
+        [[link json.ref.boost__json__value.if_string `if_string`]]
+    ]
+    [
+        [[link json.ref.boost__json__kind `kind::int64`]]
+        [[@https://en.cppreference.com/w/cpp/types/integer `std::int64_t`]]
+        [[link json.ref.boost__json__value.emplace_int64 `emplace_int64`]]
+        [[link json.ref.boost__json__value.is_int64 `is_int64`]]
+        [[link json.ref.boost__json__value.as_int64 `as_int64`]]
+        [[link json.ref.boost__json__value.get_int64 `get_int64`]]
+        [[link json.ref.boost__json__value.if_int64 `if_int64`]]
+    ]
+    [
+        [[link json.ref.boost__json__kind `kind::uint64`]]
+        [[@https://en.cppreference.com/w/cpp/types/integer `std::uint64_t`]]
+        [[link json.ref.boost__json__value.emplace_uint64 `emplace_uint64`]]
+        [[link json.ref.boost__json__value.is_uint64 `is_uint64`]]
+        [[link json.ref.boost__json__value.as_uint64 `as_uint64`]]
+        [[link json.ref.boost__json__value.get_uint64 `get_uint64`]]
+        [[link json.ref.boost__json__value.if_uint64 `if_uint64`]]
+    ]
+    [
+        [[link json.ref.boost__json__kind `kind::double_`]]
+        [[@https://en.cppreference.com/w/cpp/language/types `double`]]
+        [[link json.ref.boost__json__value.emplace_double `emplace_double`]]
+        [[link json.ref.boost__json__value.is_double `is_double`]]
+        [[link json.ref.boost__json__value.as_double `as_double`]]
+        [[link json.ref.boost__json__value.get_double `get_double`]]
+        [[link json.ref.boost__json__value.if_double `if_double`]]
+    ]
+    [
+        [[link json.ref.boost__json__kind `kind::bool_`]]
+        [[@https://en.cppreference.com/w/cpp/language/types `bool`]]
+        [[link json.ref.boost__json__value.emplace_bool `emplace_bool`]]
+        [[link json.ref.boost__json__value.is_bool `is_bool`]]
+        [[link json.ref.boost__json__value.as_bool `as_bool`]]
+        [[link json.ref.boost__json__value.get_bool `get_bool`]]
+        [[link json.ref.boost__json__value.if_bool `if_bool`]]
+    ]
+    [
+        [[link json.ref.boost__json__kind `kind::null`]]
+        [[@https://en.cppreference.com/w/cpp/language/nullptr `std::nullptr_t`]]
+        [[link json.ref.boost__json__value.emplace_null `emplace_null`]]
+        [[link json.ref.boost__json__value.is_null `is_null`]]
+        [['---]]
+        [['---]]
+        [['---]]
+    ]
+]
 
 The emplace members of `value` return a suitably typed reference to the
 underlying container representing the kind. For example, the call to
@@ -203,12 +280,3 @@ if(auto ptr = jv.if_string())
     // a null pointer is never dereferenced above.
     ```
 ]
-
-[include string.qbk]
-[include array.qbk]
-[include object.qbk]
-[include parsing.qbk]
-[include serialization.qbk]
-[include exchange.qbk]
-
-[endsect]
