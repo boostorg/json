@@ -20,6 +20,7 @@ namespace json {
 
 enum class serializer::state : char
 {
+    none,   // no value
     val,    // initialize value
     obj0,   // begin object
     obj1,   // key
@@ -75,6 +76,16 @@ node(array const& a) noexcept
 
 //----------------------------------------------------------
 
+serializer::
+serializer() noexcept
+{
+    // ensure room for \uXXXX escape plus one
+    BOOST_JSON_STATIC_ASSERT(
+        sizeof(serializer::buf_) >= 7);
+
+    stack_.emplace(state::none);
+}
+
 void
 serializer::
 reset(value const& jv) noexcept
@@ -118,6 +129,11 @@ read(char* dest, std::size_t size)
 loop:
     switch(stack_->st)
     {
+    case state::none:
+        BOOST_JSON_THROW(
+            std::logic_error(
+                "no value in serializer"));
+
     case state::val:
     {
 loop_init:
@@ -506,6 +522,8 @@ loop_str:
 finish:
     return p - p0;
 }
+
+//----------------------------------------------------------
 
 string
 to_string(

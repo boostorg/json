@@ -19,6 +19,21 @@ namespace boost {
 namespace json {
 
 /** Abstract interface to a memory resource used with JSON.
+
+    This interface is modeled similarly to
+    `std::pmr::memory_resource` with some notable
+    differences:
+
+    @li Instances may be reference counted.
+
+    @li The function @ref is_equal is implemented
+    as a non-virtual member which does not require
+    RTTI or `typeinfo`.
+
+    @li The function @ref need_free is provided to
+    allow the implementation to optionally inform
+    callers that calls to deallocate memory are not
+    required.
 */
 class storage
 {
@@ -37,6 +52,8 @@ public:
     virtual
     ~storage() = default;
 
+    /** Returns `true` if calls to `deallocate` are required.
+    */
     inline
     bool
     need_free() const noexcept
@@ -53,6 +70,18 @@ public:
             this->id_ == other.id_);
     }
 
+    /** Allocate memory.
+
+        Allocates storage with for space of at
+        least `bytes` octets. The returned storage
+        is aligned to the specified alignment is
+        supported, and to `alignof(max_align_t)`
+        otherwise.
+
+        @throw std::exception if storage of the
+        requested size and alignment cannot be
+        obtained.
+    */
     virtual
     void*
     allocate(
@@ -60,6 +89,18 @@ public:
         std::size_t align =
             alignof(max_align_t)) = 0;
 
+    /** Deallocate memory.
+
+        Deallocates the storage pointed to by `p`.
+
+        @par Preconditions
+
+        `p` was returned by a prior call to
+        `u.allocate( bytes, align )` where
+        `this->is_equal(u)`, and the storage
+        `p` points to was not previously
+        deallocated.
+    */
     virtual
     void
     deallocate(
@@ -106,7 +147,7 @@ operator==(
     return lhs.is_equal(rhs);
 }
 
-/** Return true if two values are not equal.
+/** Return true if lhs does not equal rhs.
 */
 inline
 bool

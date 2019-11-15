@@ -59,6 +59,8 @@ struct value_exchange<value_test_ns::T3>
 class value_test : public beast::unit_test::suite
 {
 public:
+    //BOOST_JSON_STATIC_ASSERT(has_to_json<short>::value);
+
     string_view const str_;
 
     value_test()

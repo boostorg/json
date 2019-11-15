@@ -19,7 +19,10 @@
 namespace boost {
 namespace json {
 
-/** Manages a type-erased storage object and options for a set of JSON values.
+/** Manages a type-erased storage object.
+
+    This container is used to hold a shared reference
+    to a @ref storage object.
 */
 class storage_ptr
 {
@@ -86,7 +89,8 @@ public:
 
         No-throw guarantee.
     */
-    storage_ptr(std::nullptr_t) noexcept
+    storage_ptr(
+        std::nullptr_t) noexcept
         : storage_ptr()
     {
     }
@@ -113,7 +117,7 @@ public:
         release();
     }
 
-    /** Move construct a storage pointer.
+    /** Move constructor.
 
         After construction, the moved-from object
         will point to the default storage.
@@ -135,13 +139,10 @@ public:
     {
     }
 
-    /** Copy construct a storage pointer.
+    /** Copy constructor.
 
-        If `other` points to a valid @ref storage
-        object, then this pointer acquires shared
-        ownership of the storage. Otherwise, the
-        newly constructed pointer is the default
-        storage pointer.
+        This function acquires shared ownership of
+        the storage pointed to by `other`.
 
         @par Complexity
 
@@ -160,12 +161,13 @@ public:
         addref();
     }
 
-    /** Move assign a storage pointer.
+    /** Move assignment.
 
-        If `this` points to a valid object, it is
-        decremented as if by a call to the destructor.
-        After construction, the moved-from pointer
-        will be null.
+        Shared ownership of the storage owned by `*this`
+        is released, and shared ownership of the storage
+        owned by `other` is acquired by move construction.
+        After construction, the moved-from object will
+        point to the default storage.
 
         @par Complexity
 
@@ -175,7 +177,7 @@ public:
 
         No-throw guarantee.
 
-        @param other The storage pointer to assign from.
+        @param other The storage pointer to move.
     */
     storage_ptr&
     operator=(
@@ -190,12 +192,9 @@ public:
 
     /** Copy assignment.
 
-        If `this` points to a valid object, it is
-        decremented as if by a call to the destructor.
-        If `other` points to a valid @ref storage
-        object, then this pointer acquires shared
-        ownership of the storage. Otherwise, the
-        newly constructed pointer is equal to null.
+        Shared ownership of the storage owned by `*this`
+        is released, and shared ownership of the storage
+        owned by `other` is acquired by copy construction.
 
         @par Complexity
 
@@ -205,7 +204,7 @@ public:
 
         No-throw guarantee.
 
-        @param other The storage pointer to assign from.
+        @param other The storage pointer to copy.
     */
     storage_ptr&
     operator=(
@@ -297,6 +296,12 @@ template<class U, class... Args>
 storage_ptr
 make_storage(Args&&... args);
 
+/** Return `true` if two storage pointers point to the same object.
+
+    This function returns `true` if the @ref storage
+    objects pointed to by `lhs` and `rhs` have the
+    same address.
+*/
 inline
 bool
 operator==(
@@ -306,6 +311,12 @@ operator==(
     return lhs.get() == rhs.get();
 }
 
+/** Return `true` if two storage pointers point to different objects.
+
+    This function returns `true` if the @ref storage
+    objects pointed to by `lhs` and `rhs` have different
+    addresses.
+*/
 inline
 bool
 operator!=(
@@ -317,6 +328,29 @@ operator!=(
 
 //----------------------------------------------------------
 
+/** A wrapper to provide deterministic lifetime to a @ref storage object.
+
+    This wrapper enables the caller to construct a
+    @ref storage objects whose lifetime is controlled
+    by the lifetime of the wrapper instead of a
+    reference counted.
+
+    @par Example
+
+    This example creates a @ref block_storage with
+    bounded lifetime and uses it to parse a JSON,
+    then print it to `std::cout`.
+
+    @code
+
+    {
+        scoped_storage<block_storage> sp;
+
+        auto jv = parse( str, sp );
+    }
+
+    @endcode
+*/
 template<class T>
 class scoped_storage
 {
@@ -357,6 +391,15 @@ class scoped_storage
     impl impl_;
 
 public:
+    /** Constructor.
+
+        @par Exception Safety
+
+        Any exceptions thrown by `T::T`.
+
+        @param args Arguments forwarded to the
+        constructor of the storage object.
+    */
     template<class... Args>
     constexpr
     explicit
@@ -365,18 +408,27 @@ public:
     {
     }
 
+    /** Return a pointer to the storage object.
+    */
     storage*
     get() noexcept
     {
         return &impl_;
     }
 
+    /** Return a pointer to the storage object.
+    */
     T*
     operator->() noexcept
     {
         return &impl_.t;
     }
 
+    /** Implicit conversion to @ref storage_ptr.
+
+        This function allows `*this` to be passed
+        wherever a @ref storage_ptr is expected.
+    */
     operator storage_ptr() noexcept
     {
         return storage_ptr(&impl_);

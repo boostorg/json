@@ -43,20 +43,61 @@ enum class kind : unsigned char
     null
 };
 
+/** A tag type used to select a @ref value constructor overload.
+
+    The library provides the constant @ref object_kind
+    which may be used to select the @ref value constructor
+    that creates an empty @ref object.
+*/
 struct object_kind_t
 {
 };
 
+/** A tag type used to select a @ref value constructor overload.
+
+    The library provides the constant @ref array_kind
+    which may be used to select the @ref value constructor
+    that creates an empty @ref array.
+*/
 struct array_kind_t
 {
 };
 
+/** A tag type used to select a @ref value constructor overload.
+
+    The library provides the constant @ref string_kind
+    which may be used to select the @ref value constructor
+    that creates an empty @ref string.
+*/
 struct string_kind_t
 {
 };
 
+/** A constant used to select a @ref value constructor overload.
+
+    The library provides this constant to select the
+    @ref value constructor that creates an empty @ref object.
+
+    @see @ref value::value
+*/
 BOOST_JSON_INLINE_VARIABLE(object_kind, object_kind_t);
+
+/** A constant used to select a @ref value constructor overload.
+
+    The library provides this constant to select the
+    @ref value constructor that creates an empty @ref array.
+
+    @see @ref value::value
+*/
 BOOST_JSON_INLINE_VARIABLE(array_kind, array_kind_t);
+
+/** A constant used to select a @ref value constructor overload.
+
+    The library provides this constant to select the
+    @ref value constructor that creates an empty @ref string.
+
+    @see @ref value::value
+*/
 BOOST_JSON_INLINE_VARIABLE(string_kind, string_kind_t);
 
 } // json

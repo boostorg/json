@@ -53,7 +53,7 @@ struct value_exchange final
     }
 };
 
-/** Trait to determine if a type can be assigned to a json value.
+/** Returns `std::true_type` if a JSON value can be assigend to an instance of `T`.
 */
 template<class T>
 using has_from_json =
@@ -69,7 +69,7 @@ using has_from_json =
             detail::remove_cr<T>>::value>;
 #endif
 
-/** Returns `true` if a JSON value can be constructed from `T`
+/** Returns `std::true_type` if a JSON value can be constructed from `T`
 */
 template<class T>
 using has_to_json =
@@ -383,19 +383,93 @@ public:
     //------------------------------------------------------
 
     /** Construct an @ref object.
+
+        The value is constructed from `other`, using the
+        same storage. To transfer ownership, use `std::move`:
+
+        @par Example
+
+        @code
+
+        object obj( {{"a",1}, {"b",2}, {"c"},3}} );
+
+        // transfer ownership
+        value jv( std::move(obj) );
+
+        assert( obj.empty() );
+        assert( *obj.get_storage() == *jv.get_storage() );
+
+        @endcode
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+
+        @param other The object to construct with.
     */
-    value(object obj) noexcept
-        : obj_(detail::move(obj))
+    value(object other) noexcept
+        : obj_(detail::move(other))
     {
     }
 
     /** Construct an @ref object.
+
+        The value is copy constructed from `other`,
+        using the specified storage.
+
+        @par Complexity
+
+        Linear in `other.size()`.
+
+        @par Exception Safety
+
+        Strong guarantee.
+        Calls to @ref storage::allocate may throw.
+
+        @param other The object to construct with.
+
+        @param sp A pointer to the @ref storage
+        to use. The container will acquire shared
+        ownership of the storage object.
     */
     value(
-        object obj,
+        object const& other,
         storage_ptr sp)
         : obj_(
-            detail::move(obj),
+            other,
+            detail::move(sp))
+    {
+    }
+
+    /** Construct an @ref object.
+
+        The value is move constructed from `other`,
+        using the specified storage.
+
+        @par Complexity
+
+        Constant or linear in `other.size()`.
+
+        @par Exception Safety
+
+        Strong guarantee.
+        Calls to @ref storage::allocate may throw.
+
+        @param other The object to construct with.
+
+        @param sp A pointer to the @ref storage
+        to use. The container will acquire shared
+        ownership of the storage object.
+    */
+    value(
+        object&& other,
+        storage_ptr sp)
+        : obj_(
+            other,
             detail::move(sp))
     {
     }
@@ -411,9 +485,11 @@ public:
         @par Example
 
         @code
+
         // Construct an empty object
 
         value jv( object_kind );
+
         @endcode
 
         @par Complexity
@@ -438,19 +514,93 @@ public:
     }
 
     /** Construct an @ref array.
+
+        The value is constructed from `other`, using the
+        same storage. To transfer ownership, use `std::move`:
+
+        @par Example
+
+        @code
+
+        array arr( {1, 2, 3, 4, 5} );
+
+        // transfer ownership
+        value jv( std::move(arr) );
+
+        assert( arr.empty() );
+        assert( *arr.get_storage() == *jv.get_storage() );
+
+        @endcode
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+
+        @param other The array to construct with.
     */
-    value(array arr) noexcept
-        : arr_(detail::move(arr))
+    value(array other) noexcept
+        : arr_(detail::move(other))
     {
     }
 
     /** Construct an @ref array.
+
+        The value is copy constructed from `other`,
+        using the specified storage.
+
+        @par Complexity
+
+        Linear in `other.size()`.
+
+        @par Exception Safety
+
+        Strong guarantee.
+        Calls to @ref storage::allocate may throw.
+
+        @param other The array to construct with.
+
+        @param sp A pointer to the @ref storage
+        to use. The container will acquire shared
+        ownership of the storage object.
     */
     value(
-        array arr,
+        array const& other,
         storage_ptr sp)
         : arr_(
-            detail::move(arr),
+            other,
+            detail::move(sp))
+    {
+    }
+
+    /** Construct an @ref array.
+
+        The value is move-constructed from `other`,
+        using the specified storage.
+
+        @par Complexity
+
+        Constant or linear in `other.size()`.
+
+        @par Exception Safety
+
+        Strong guarantee.
+        Calls to @ref storage::allocate may throw.
+
+        @param other The array to construct with.
+
+        @param sp A pointer to the @ref storage
+        to use. The container will acquire shared
+        ownership of the storage object.
+    */
+    value(
+        array&& other,
+        storage_ptr sp)
+        : arr_(
+            std::move(other),
             detail::move(sp))
     {
     }
@@ -466,9 +616,11 @@ public:
         @par Example
 
         @code
+
         // Construct an empty array
 
         value jv( array_kind );
+
         @endcode
 
         @par Complexity
@@ -494,6 +646,23 @@ public:
 
     /** Construct a @ref string.
 
+        The value is constructed from `other`, using the
+        same storage. To transfer ownership, use `std::move`:
+
+        @par Example
+
+        @code
+
+        string str = "The Boost C++ Library Collection";
+
+        // transfer ownership
+        value jv( std::move(str) );
+
+        assert( str.empty() );
+        assert( *str.get_storage() == *jv.get_storage() );
+
+        @endcode
+
         @par Complexity
 
         Constant.
@@ -502,27 +671,91 @@ public:
 
         No-throw guarantee.
 
-        @param str The initial value.
-
+        @param other The string to construct with.
     */
     value(
-        string str) noexcept
-        : str_(detail::move(str))
+        string other) noexcept
+        : str_(detail::move(other))
     {
     }
 
     /** Construct a @ref string.
+
+        The value is copy constructed from `other`,
+        using the specified storage.
+
+        @par Complexity
+
+        Linear in `other.size()`.
+
+        @par Exception Safety
+
+        Strong guarantee.
+        Calls to @ref storage::allocate may throw.
+
+        @param other The string to construct with.
+
+        @param sp A pointer to the @ref storage
+        to use. The container will acquire shared
+        ownership of the storage object.
     */
     value(
-        string str,
+        string const& other,
         storage_ptr sp)
         : str_(
-            detail::move(str),
+            other,
             detail::move(sp))
     {
     }
 
     /** Construct a @ref string.
+
+        The value is move constructed from `other`,
+        using the specified storage.
+
+        @par Complexity
+
+        Constant or linear in `other.size()`.
+
+        @par Exception Safety
+
+        Strong guarantee.
+        Calls to @ref storage::allocate may throw.
+
+        @param other The string to construct with.
+
+        @param sp A pointer to the @ref storage
+        to use. The container will acquire shared
+        ownership of the storage object.
+    */
+    value(
+        string&& other,
+        storage_ptr sp)
+        : str_(
+            detail::move(other),
+            detail::move(sp))
+    {
+    }
+
+    /** Construct a @ref string.
+
+        The string is constructed with a copy of the
+        string view `s`, using the specified storage.
+
+        @par Complexity
+
+        Linear in `s.size()`.
+
+        @par Exception Safety
+        
+        Strong guarantee.
+        Calls to @ref storage::allocate may throw.
+
+        @param s The string view to construct with.
+
+        @param sp A pointer to the @ref storage
+        to use. The container will acquire shared
+        ownership of the storage object.
     */
     value(
         string_view s,
@@ -532,6 +765,26 @@ public:
     }
 
     /** Construct a @ref string.
+
+        The string is constructed with a copy of the
+        null-terminated string `s`, using the specified
+        storage.
+
+        @par Complexity
+
+        Linear in `std::strlen(s)`.
+
+        @par Exception Safety
+        
+        Strong guarantee.
+        Calls to @ref storage::allocate may throw.
+
+        @param s The null-terminated string to construct
+        with.
+
+        @param sp A pointer to the @ref storage
+        to use. The container will acquire shared
+        ownership of the storage object.
     */
     value(
         char const* s,
@@ -551,9 +804,11 @@ public:
         @par Example
 
         @code
+
         // Construct an empty string
 
         value jv( string_kind );
+
         @endcode
 
         @par Complexity

@@ -19,6 +19,13 @@
 namespace boost {
 namespace json {
 
+/** A serializer for JSON.
+
+    This class traverses a @ref value and emits
+    a serialized JSON object. It can work
+    incrementally, by filling successive
+    caller-provided buffers.
+*/
 class serializer
 {
     enum class state : char;
@@ -72,31 +79,139 @@ class serializer
     char buf_[detail::max_number_chars + 1];
 
 public:
+    /** Default constructor.
+
+        This constructs a serializer without
+        a current @ref value to serialize. Before
+        any serialization can take place, @ref reset
+        must be called.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
+    BOOST_JSON_DECL
+    serializer() noexcept;
+
+    /** Constructor.
+
+        This constructs the serializer and
+        calls @ref reset with `jv`.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+
+        @param jv The value to serialize.
+    */
     explicit
-    serializer(value const& jv)
+    serializer(value const& jv) noexcept
     {
-        // ensure room for \uXXXX escape plus one
-        BOOST_JSON_STATIC_ASSERT(sizeof(buf_) >= 7);
         reset(jv);
     }
 
+    /** Returns `true` if the serialization is complete.
+
+        This function returns `true` when all of the
+        characters in the serialized representation of
+        the value have been read.
+    */
     BOOST_JSON_DECL
     bool
     is_done() const noexcept;
 
+    /** Reset the serializer for a new JSON value.
+
+        This function prepares the serializer to emit
+        a new serialized JSON based on the specified
+        value. Any internally allocated memory is
+        preserved and re-used for the new output.
+
+        @param jv The value to serialize.
+    */
     BOOST_JSON_DECL
     void
     reset(value const& jv) noexcept;
 
+    /** Read the next buffer of serialized JSON.
+
+        This function attempts to fill the caller
+        provided buffer starting at `dest` with
+        up to `size` characters of the serialized
+        JSON that represents the value. If the
+        buffer is not large enough, multiple calls
+        may be required.
+
+        @par Example
+
+        This demonstrates how the serializer may
+        be used to print a JSON value to an output
+        stream.
+
+        @code
+
+        void print( std::ostream& os, value const& jv)
+        {
+            serializer sr( jv );
+            while( ! sr.done() )
+            {
+                char buf[1024];
+                auto const n = sr.read( buf, sizeof(buf) );
+                os << string_view( buf, n );
+            }
+        }
+
+        @endcode
+
+        @par Exception Safety
+
+        Strong guarantee.
+        Calls to @ref storage::allocate may throw.
+
+        @return The number of characters written
+        to `dest`.
+
+        @throw std::logic_error if no value is set.
+    */
     BOOST_JSON_DECL
     std::size_t
     read(char* dest, std::size_t size);
 };
 
+//----------------------------------------------------------
+
+/** Serialize a @ref value into a @ref string.
+
+    This function serializes the specified value
+    and returns it as a @ref string.
+
+    @par Exception Safety
+
+    Strong guarantee.
+    Calls to @ref storage::allocate may throw.
+
+    @param jv The value to serialize.
+*/
 BOOST_JSON_DECL
 string
 to_string(value const& jv);
 
+/** Serialize a @ref value to an output stream.
+
+    This function serializes the specified value
+    into the output stream.
+
+    @par Exception Safety
+
+    Strong guarantee.
+    Calls to @ref storage::allocate may throw.
+
+    @param os The output stream to serialize to.
+
+    @param jv The value to serialize.
+
+    @return `os`.
+*/
 BOOST_JSON_DECL
 std::ostream&
 operator<<(

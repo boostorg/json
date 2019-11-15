@@ -32,11 +32,11 @@ class value;
 /** The native type of string values.
 
     Instances of string store and manipulate sequences
-    of `char` optionally stored using the UTF-8 encoding.
-    The elements of a string are stored contiguously.
-    A pointer to any character in a string may be passed
-    to functions that expect a pointer to the first
-    element of a null-terminated `char[]` array.
+    of `char` using the UTF-8 encoding. The elements of
+    a string are stored contiguously. A pointer to any
+    character in a string may be passed to functions
+    that expect a pointer to the first element of a
+    null-terminated `char[]` array.
 
     String iterators are simple pointers.
 

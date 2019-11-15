@@ -1381,6 +1381,8 @@ private:
     }
 };
 
+//------------------------------------------------------
+
 /** Exchange the given values.
 
     @par Preconditions

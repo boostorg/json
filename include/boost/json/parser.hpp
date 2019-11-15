@@ -25,6 +25,11 @@
 namespace boost {
 namespace json {
 
+/** A DOM parser for serialized JSON.
+
+    This parser is used to incrementally parse
+    JSON into a @ref value container.
+*/
 class parser final
     : public basic_parser
 {
@@ -56,11 +61,18 @@ public:
     ~parser();
 
     /** Default constructor.
+
+        Before any JSON can be parsed, the function
+        @ref start must be called.
     */
     BOOST_JSON_DECL
     parser();
 
     /** Prepare the parser for new serialized JSON.
+
+        This function must be called once, before
+        any data is presented, to start parsing a
+        new JSON.
 
         @param sp The storage to use for all values.
     */
@@ -68,15 +80,32 @@ public:
     void
     start(storage_ptr sp = {}) noexcept;
 
+    /** Discard all intermadiate or final parsing results.
+
+        This function destroys all intermediate parsing
+        results, while preserving dynamically allocated
+        internal memory which is reused between parses.
+
+        @note
+
+        It is necessary to call @ref start to parse new
+        JSON after calling this function.
+    */
     BOOST_JSON_DECL
     void
     clear() noexcept;
 
-    /**
+    /** Return the parsed JSON as a @ref value.
+
+        If the parse failed, the returned value
+        will be null.
 
         @par Preconditions
 
         `is_done() == true`.
+
+        @returns The parsed value. Ownership of this
+        value is transferred to the caller.       
     */
     BOOST_JSON_DECL
     value
@@ -197,6 +226,31 @@ private:
 
 //----------------------------------------------------------
 
+/** Parse a string of JSON.
+
+    The string is parsed as JSON into a @ref value,
+    using the specified storage.
+
+    @par Complexity
+
+    Linear in `s.size()`.
+
+    @par Exception Safety
+
+    Strong guarantee.
+    Calls to @ref storage::allocate may throw.
+
+    @param s The string containing the JSON to parse.
+
+    @param sp A pointer to the @ref storage
+    to use. The container will acquire shared
+    ownership of the storage object.
+
+    @param ec Set to the error if any occurred.
+
+    @return A value representing the parsed JSON,
+    or a null if any error occurred.
+*/
 BOOST_JSON_DECL
 value
 parse(
@@ -204,12 +258,57 @@ parse(
     storage_ptr sp,
     error_code& ec);
 
+/** Parse a string of JSON.
+
+    The string is parsed as JSON into a @ref value
+    using the specified storage.
+
+    @par Complexity
+
+    Linear in `s.size()`.
+
+    @par Exception Safety
+
+    Strong guarantee.
+    Calls to @ref storage::allocate may throw.
+
+    @param s The string containing the JSON to parse.
+
+    @param sp A pointer to the @ref storage
+    to use. The container will acquire shared
+    ownership of the storage object.
+
+    @return A value representing the parsed JSON.
+
+    @throw system_error any errors.
+*/
 BOOST_JSON_DECL
 value
 parse(
     string_view s,
     storage_ptr sp);
 
+/** Parse a string of JSON.
+
+    The string is parsed as JSON into a @ref value,
+    using the default storage.
+
+    @par Complexity
+
+    Linear in `s.size()`.
+
+    @par Exception Safety
+
+    Strong guarantee.
+    Calls to @ref storage::allocate may throw.
+
+    @param s The string containing the JSON to parse.
+
+    @param ec Set to the error if any occurred.
+
+    @return A value representing the parsed JSON,
+    or a null if any error occurred.
+*/
 inline
 value
 parse(
@@ -220,6 +319,26 @@ parse(
         storage_ptr{}, ec);
 }
 
+/** Parse a string of JSON.
+
+    The string is parsed as JSON into a @ref value
+    using the default storage.
+
+    @par Complexity
+
+    Linear in `s.size()`.
+
+    @par Exception Safety
+
+    Strong guarantee.
+    Calls to @ref storage::allocate may throw.
+
+    @param s The string containing the JSON to parse.
+
+    @return A value representing the parsed JSON.
+
+    @throw system_error any errors.
+*/
 inline
 value
 parse(string_view s)
