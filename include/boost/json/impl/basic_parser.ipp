@@ -855,11 +855,24 @@ yield:
     return p - p0;
 }
 
+std::size_t
+basic_parser::
+write_some(
+    char const* const data,
+    std::size_t const size)
+{
+    error_code ec;
+    auto const n =
+        write_some(data, size, ec);
+    if(ec)
+        BOOST_JSON_THROW(
+            system_error(ec));
+    return n;
+}
+
 //----------------------------------------------------------
 
-// Called to parse the rest of the document, this
-// can be optimized by assuming no more data is coming.
-std::size_t
+void
 basic_parser::
 write(
     char const* data,
@@ -871,12 +884,22 @@ write(
     if(! ec)
     {
         if(n < size)
-            n += write_some(
+            write_some(
                 data + n, size - n, ec);
     }
-    if(! ec)
-        write_eof(ec);
-    return n;
+}
+
+void
+basic_parser::
+write(
+    char const* data,
+    std::size_t size)
+{
+    error_code ec;
+    write(data, size, ec);
+    if(ec)
+        BOOST_JSON_THROW(
+            system_error(ec));
 }
 
 //----------------------------------------------------------
@@ -957,6 +980,17 @@ write_eof(error_code& ec)
             return;
         }
     }
+}
+
+void
+basic_parser::
+write_eof()
+{
+    error_code ec;
+    write_eof(ec);
+    if(ec)
+        BOOST_JSON_THROW(
+            system_error(ec));
 }
 
 } // json

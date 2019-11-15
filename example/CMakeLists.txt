@@ -6,3 +6,15 @@
 #
 # Official repository: https://github.com/vinniefalco/json
 #
+
+GroupSources(example "/")
+
+add_executable (pretty
+    pretty.cpp
+)
+set_property(TARGET pretty PROPERTY FOLDER "example")
+
+add_executable (allocator
+    allocator.cpp
+)
+set_property(TARGET allocator PROPERTY FOLDER "example")

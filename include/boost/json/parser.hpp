@@ -139,6 +139,21 @@ public:
     value
     release() noexcept;
 
+    BOOST_JSON_DECL
+    value
+    parse(
+        char const* data,
+        std::size_t size,
+        error_code& ec,
+        storage_ptr sp = {});
+
+    BOOST_JSON_DECL
+    value
+    parse(
+        char const* data,
+        std::size_t size,
+        storage_ptr sp = {});
+
 private:
     template<class T>
     void

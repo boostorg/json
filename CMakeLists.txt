@@ -1,10 +1,10 @@
 #
-# Copyright (c) 2016-2017 Vinnie Falco (vinnie.falco@gmail.com)
+# Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
-# Official repository: https://github.com/boostorg/fixed_string
+# Official repository: https://github.com/vinniefalco/json
 #
 
 cmake_minimum_required (VERSION 3.5.1)
@@ -151,4 +151,5 @@ file (GLOB_RECURSE PROJECT_FILES
 )
 
 add_subdirectory (bench)
+add_subdirectory (example)
 add_subdirectory (test)

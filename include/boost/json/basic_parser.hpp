@@ -153,6 +153,12 @@ public:
         std::size_t size,
         error_code& ec);
 
+    BOOST_JSON_DECL
+    std::size_t
+    write_some(
+        char const* data,
+        std::size_t size);
+
     /** Parse the remaining JSON immediately.
 
         This function is used to submit the last buffer,
@@ -170,11 +176,17 @@ public:
         @param ec Set to the error, if any occurred.
     */
     BOOST_JSON_DECL
-    std::size_t
+    void
     write(
         char const* data,
         std::size_t size,
         error_code& ec);
+
+    BOOST_JSON_DECL
+    void
+    write(
+        char const* data,
+        std::size_t size);
 
     /** Indicate that no more serialized JSON remains.
 
@@ -188,6 +200,10 @@ public:
     BOOST_JSON_DECL
     void
     write_eof(error_code& ec);
+
+    BOOST_JSON_DECL
+    void
+    write_eof();
 
 protected:
     using saved_state = char;

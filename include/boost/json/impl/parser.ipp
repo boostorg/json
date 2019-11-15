@@ -208,6 +208,38 @@ release() noexcept
     return jv;
 }
 
+value
+parser::
+parse(
+    char const* data,
+    std::size_t size,
+    error_code& ec,
+    storage_ptr sp)
+{
+    start(std::move(sp));
+    write(data, size, ec);
+    if(! ec)
+        write_eof(ec);
+    return release();
+}
+
+value
+parser::
+parse(
+    char const* data,
+    std::size_t size,
+    storage_ptr sp)
+{
+    error_code ec;
+    auto jv = parse(
+        data, size, ec,
+            std::move(sp));
+    if(ec)
+        BOOST_JSON_THROW(
+            system_error(ec));
+    return release();
+}
+
 //----------------------------------------------------------
 
 template<class T>
