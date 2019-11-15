@@ -122,6 +122,11 @@ public:
     {
         value jv;
 
+        // serializer()
+        {
+            serializer sr;
+        }
+
         // serializer(value)
         {
             serializer sr(jv);
@@ -135,13 +140,23 @@ public:
 
         // read()
         {
-            serializer sr(jv);
-            char buf[1024];
-            auto n = sr.read(
-                buf, sizeof(buf));
-            BEAST_EXPECT(sr.is_done());
-            BEAST_EXPECT(string_view(
-                buf, n) == "null");
+            {
+                serializer sr(jv);
+                char buf[1024];
+                auto n = sr.read(
+                    buf, sizeof(buf));
+                BEAST_EXPECT(sr.is_done());
+                BEAST_EXPECT(string_view(
+                    buf, n) == "null");
+            }
+
+            {
+                char buf[32];
+                serializer sr;
+                BEAST_THROWS(
+                    sr.read(buf, sizeof(buf)),
+                    std::logic_error);
+            }
         }
     }
 

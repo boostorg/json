@@ -76,7 +76,7 @@ public:
     //------------------------------------------------------
 
     void
-    testConstruction()
+    testSpecial()
     {
         auto dsp = storage_ptr{};
         auto sp = make_storage<unique_storage>();
@@ -103,6 +103,50 @@ public:
         {
             value jv(sp);
             BEAST_EXPECT(*jv.get_storage() == *sp);
+        }
+
+        // value(pilfered<value>)
+        {
+            {
+                value jv1(object{});
+                value jv2(pilfer(jv1));
+                BEAST_EXPECT(jv2.is_object());
+            }
+            {
+                value jv1(array{});
+                value jv2(pilfer(jv1));
+                BEAST_EXPECT(jv2.is_array());
+            }
+            {
+                value jv1(string{});
+                value jv2(pilfer(jv1));
+                BEAST_EXPECT(jv2.is_string());
+            }
+            {
+                value jv1(std::int64_t{});
+                value jv2(pilfer(jv1));
+                BEAST_EXPECT(jv2.is_int64());
+            }
+            {
+                value jv1(std::uint64_t{});
+                value jv2(pilfer(jv1));
+                BEAST_EXPECT(jv2.is_uint64());
+            }
+            {
+                value jv1(double{});
+                value jv2(pilfer(jv1));
+                BEAST_EXPECT(jv2.is_double());
+            }
+            {
+                value jv1(true);
+                value jv2(pilfer(jv1));
+                BEAST_EXPECT(jv2.is_bool());
+            }
+            {
+                value jv1(nullptr);
+                value jv2(pilfer(jv1));
+                BEAST_EXPECT(jv2.is_null());
+            }
         }
 
         // value(value const&)
@@ -201,50 +245,6 @@ public:
             }
         }
 
-        // value(pilfered<value>)
-        {
-            {
-                value jv1(object{});
-                value jv2(pilfer(jv1));
-                BEAST_EXPECT(jv2.is_object());
-            }
-            {
-                value jv1(array{});
-                value jv2(pilfer(jv1));
-                BEAST_EXPECT(jv2.is_array());
-            }
-            {
-                value jv1(string{});
-                value jv2(pilfer(jv1));
-                BEAST_EXPECT(jv2.is_string());
-            }
-            {
-                value jv1(std::int64_t{});
-                value jv2(pilfer(jv1));
-                BEAST_EXPECT(jv2.is_int64());
-            }
-            {
-                value jv1(std::uint64_t{});
-                value jv2(pilfer(jv1));
-                BEAST_EXPECT(jv2.is_uint64());
-            }
-            {
-                value jv1(double{});
-                value jv2(pilfer(jv1));
-                BEAST_EXPECT(jv2.is_double());
-            }
-            {
-                value jv1(true);
-                value jv2(pilfer(jv1));
-                BEAST_EXPECT(jv2.is_bool());
-            }
-            {
-                value jv1(nullptr);
-                value jv2(pilfer(jv1));
-                BEAST_EXPECT(jv2.is_null());
-            }
-        }
-
         // value(value&&)
         {
             {
@@ -330,12 +330,6 @@ public:
                 value jv1(nullptr);
                 value jv2(std::move(jv1), sp);
                 BEAST_EXPECT(jv2.is_null());
-            }
-
-            // self-assign
-            {
-                value jv(object{});
-                jv = static_cast<value const&>(jv);
             }
         }
 
@@ -497,6 +491,12 @@ public:
                 jv2 = jv1;
                 BEAST_EXPECT(jv2.as_string() == str_);
             });
+
+            // self-assign
+            {
+                value jv(object{});
+                jv = static_cast<value const&>(jv);
+            }
         }
     }
 
@@ -771,7 +771,42 @@ public:
             BEAST_EXPECT(value().emplace_double() == 0);
             BEAST_EXPECT(value().emplace_bool() = true);
             {
-                value jv(string{});
+                value jv(object_kind);
+                jv.emplace_null();
+                BEAST_EXPECT(jv.is_null());
+            }
+            {
+                value jv(array_kind);
+                jv.emplace_null();
+                BEAST_EXPECT(jv.is_null());
+            }
+            {
+                value jv(string_kind);
+                jv.emplace_null();
+                BEAST_EXPECT(jv.is_null());
+            }
+            {
+                value jv(-1);
+                jv.emplace_null();
+                BEAST_EXPECT(jv.is_null());
+            }
+            {
+                value jv(1U);
+                jv.emplace_null();
+                BEAST_EXPECT(jv.is_null());
+            }
+            {
+                value jv(1.0);
+                jv.emplace_null();
+                BEAST_EXPECT(jv.is_null());
+            }
+            {
+                value jv(false);
+                jv.emplace_null();
+                BEAST_EXPECT(jv.is_null());
+            }
+            {
+                value jv;
                 jv.emplace_null();
                 BEAST_EXPECT(jv.is_null());
             }
@@ -847,7 +882,7 @@ public:
             { value jv; BEAST_EXPECT((jv = tt<long double>{}).is_double()); }
         }
 
-        // true
+        // bool
         {
             BEAST_EXPECT(value(true).is_bool());
             BEAST_EXPECT(value(false).is_bool());
@@ -1575,9 +1610,27 @@ std::uint64_t const& x = cu64.as_uint64();
     //------------------------------------------------------
 
     void
+    testKeyValuePair()
+    {
+        using kvp = key_value_pair;
+
+        kvp v1("key", "value");
+        kvp v2(v1);
+        BEAST_EXPECT(v2.key() == "key");
+        BEAST_EXPECT(
+            v2.value().get_string() == "value");
+        kvp v3(std::move(v2));
+        BEAST_EXPECT(v3.key() == "key");
+        BEAST_EXPECT(
+            v3.value().get_string() == "value");
+    }
+
+    //------------------------------------------------------
+
+    void
     run() override
     {
-        testConstruction();
+        testSpecial();
         testConversion();
         testModifiers();
         testExchange();
@@ -1587,6 +1640,7 @@ std::uint64_t const& x = cu64.as_uint64();
         testAs();
         testGet();
         testCustomTypes();
+        testKeyValuePair();
     }
 };
 

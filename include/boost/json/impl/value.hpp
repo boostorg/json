@@ -12,6 +12,7 @@
 
 #include <boost/json/error.hpp>
 #include <boost/json/detail/except.hpp>
+#include <cstring>
 #include <limits>
 #include <type_traits>
 
@@ -24,28 +25,31 @@ struct value::undo
 {
     union
     {
-        value old;
+        value saved;
     };
-    value* cur;
+    value* self;
 
     explicit
-    undo(value* cur_) noexcept
-        : cur(cur_)
+    undo(value* self_) noexcept
+        : self(self_)
     {
-        relocate(&old, *cur);
+        std::memcpy(&saved, self,
+            sizeof(*self));
     }
 
     void
     commit() noexcept
     {
-        old.~value();
-        cur = nullptr;
+        saved.~value();
+        self = nullptr;
     }
 
     ~undo()
     {
-        if(cur)
-            relocate(cur, old);
+        if(self)
+            std::memcpy(
+                self, &saved,
+                sizeof(*self));
     }
 };
 
@@ -147,6 +151,19 @@ value(detail::unchecked_array&& ua)
 {
 }
 
+template<class T, class>
+value&
+value::
+operator=(T&& t)
+{
+    undo u(this);
+    ::new(this) value(
+        std::forward<T>(t),
+        u.saved.get_storage());
+    u.commit();
+    return *this;
+}
+
 //----------------------------------------------------------
 
 template<class... Args>
@@ -159,7 +176,7 @@ key_value_pair(
     , key_(
         [&]
         {
-            if(key.size() > BOOST_JSON_MAX_STRING_SIZE)
+            if(key.size() > string::max_size())
                 BOOST_JSON_THROW(
                     detail::key_too_large_exception());
             auto s = reinterpret_cast<

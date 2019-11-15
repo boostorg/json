@@ -355,7 +355,8 @@ public:
         @param other The value to assign from.
     */
     BOOST_JSON_DECL
-    value& operator=(value&& other);
+    value&
+    operator=(value&& other);
 
     /** Copy assignment operator
 
@@ -1141,24 +1142,32 @@ public:
         std::initializer_list<value> init,
         storage_ptr sp = {});
 
-    /** Assign to this value
+    /** Assignment.
+
+        @par Constraints
+
+        @par Complexity
+
+        Constant or linear in the size of
+        `*this` plus `t`.
+
+        @par Exception Safety
+
+        Strong guarantee.
+        Calls to @ref storage::allocate may throw.
     */
     template<class T
 #ifndef GENERATING_DOCUMENTATION
         ,class = typename std::enable_if<
             std::is_constructible<
-            value, T, storage_ptr>::value>::type
+                value, T, storage_ptr>::value &&
+            ! std::is_same<detail::remove_cr<
+                T>, value>::value
+        >::type
 #endif
     >
     value&
-    operator=(T&& t)
-    {
-        value tmp(
-            std::forward<T>(t),
-            get_storage());
-        tmp.swap(*this);
-        return *this;
-    }
+    operator=(T&& t);
 
     //------------------------------------------------------
     //

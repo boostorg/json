@@ -30,6 +30,25 @@ class limits_test : public beast::unit_test::suite
 {
 public:
     void
+    testValue()
+    {
+        // object too large
+        {
+            std::initializer_list<std::pair<
+                string_view, value>> init = {
+            { "1", 1},{ "2", 2},{ "3", 3},{ "4", 4},{ "5", 5},
+            { "6", 6},{ "7", 7},{ "8", 8},{ "9", 9},{"10",10},
+            {"11",11},{"12",12},{"13",13},{"14",14},{"15",15},
+            {"16",16},{"17",17},{"18",18},{"19",19},{"10",10},
+            {"21",21},{"22",22},{"23",23},{"24",24},{"25",25},
+            {"26",26},{"27",27},{"28",28},{"29",29},{"30",30},
+            {"31",31}};
+            BEAST_EXPECT(init.size() > object::max_size());
+            BEAST_THROWS(value{init}, std::length_error);
+        }
+    }
+
+    void
     testObject()
     {
         // max size
@@ -218,27 +237,22 @@ public:
     void
     run() override
     {
-    #ifndef BOOST_JSON_NO_MAX_OBJECT_SIZE
+    #if ! defined(BOOST_JSON_NO_MAX_OBJECT_SIZE) && \
+        ! defined(BOOST_JSON_NO_MAX_ARRAY_SIZE) && \
+        ! defined(BOOST_JSON_NO_MAX_STRING_SIZE) && \
+        ! defined(BOOST_JSON_NO_MAX_STACK_SIZE) && \
+        ! defined(BOOST_JSON_NO_PARSER_BUFFER_SIZE)
+
+        testValue();
         testObject();
-    #endif
-
-    #ifndef BOOST_JSON_NO_MAX_ARRAY_SIZE
         testArray();
-    #endif
-
-    #ifndef BOOST_JSON_NO_MAX_STRING_SIZE
         testString();
-    #endif
-
-    #ifndef BOOST_JSON_NO_MAX_STACK_SIZE
         testStack();
-    #endif
-
-    #ifndef BOOST_JSON_NO_PARSER_BUFFER_SIZE
         testParser();
-    #endif
 
+    #else
         pass();
+    #endif
     }
 };
 

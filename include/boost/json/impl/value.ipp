@@ -30,7 +30,7 @@ struct value::init_iter
     using reference = value_type const&;
     using difference_type = std::ptrdiff_t;
     using iterator_category =
-        std::input_iterator_tag;
+        std::forward_iterator_tag;
 
     std::initializer_list<
         value>::iterator it_;
@@ -122,7 +122,8 @@ value::
 value::
 value(pilfered<value> p) noexcept
 {
-    std::memcpy(this, &p.get(), sizeof(*this));
+    std::memcpy(this,
+        &p.get(), sizeof(*this));
     ::new(&p.get().nul_) null_k;
 }
 
@@ -249,7 +250,7 @@ operator=(value&& other)
     undo u(this);
     ::new(this) value(
         detail::move(other),
-        u.old.get_storage());
+        u.saved.get_storage());
     u.commit();
     return *this;
 }
@@ -263,7 +264,7 @@ operator=(value const& other)
 
     undo u(this);
     ::new(this) value(other,
-        u.old.get_storage());
+        u.saved.get_storage());
     u.commit();
     return *this;
 }
@@ -283,13 +284,11 @@ value(
     {
         if(init.size() > object::max_size())
             BOOST_JSON_THROW(
-                std::length_error(
-                    "count > max_size()"));
+                detail::object_too_large_exception());
         ::new(&obj_) object(
             init_iter{init.begin()},
             init_iter{init.end()},
-            static_cast<
-                object::size_type>(init.size()),
+            init.size(),
             detail::move(sp));
     }
     else
@@ -385,15 +384,22 @@ swap(value& other)
         ::new(&other) value(pilfer(temp1));
         this->~value();
         ::new(this) value(pilfer(temp2));
+        return;
     }
-    else
+
+    union U
     {
-        value tmp(pilfer(*this));
-        this->~value();
-        ::new(this) value(pilfer(other));
-        other.~value();
-        ::new(&other) value(pilfer(tmp));
-    }
+        value tmp;
+        U(){}
+        ~U(){}
+    };
+    U u;
+    std::memcpy(&u.tmp,
+        this, sizeof(*this));
+    std::memcpy(this,
+        &other, sizeof(other));
+    std::memcpy(&other,
+        &u.tmp, sizeof(u.tmp));
 }
 
 //----------------------------------------------------------
@@ -463,7 +469,7 @@ destroy() noexcept
     case json::kind::null:
         break;
     }
-    return detail::move(sp_);
+    return std::move(sp_);
 }
 
 //----------------------------------------------------------
