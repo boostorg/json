@@ -7,10 +7,11 @@
 # Official repository: https://github.com/vinniefalco/json
 #
 
-GroupSources(example "/")
+import ../../config/checks/config : requires ;
 
-add_executable (pretty
-    file.hpp
+exe pretty :
     pretty.cpp
-)
-set_property(TARGET pretty PROPERTY FOLDER "example")
+    :
+    <toolset>msvc:<define>_CRT_SECURE_NO_WARNINGS
+    <library>/boost/json//boost_json
+    ;

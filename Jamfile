@@ -10,3 +10,4 @@
 path-constant LIB_DIR : . ;
 
 build-project test ;
+build-project example ;
