@@ -1,0 +1,80 @@
+[/
+    Copyright (c) 2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+    Official repository: https://github.com/vinniefalco/json
+]
+
+[/-----------------------------------------------------------------------------]
+
+[section Serializing]
+
+Serialization is the process where a JSON document represented in
+memory by a __value__ is turned into a character sequence. The
+library provides these free functions and types to perform
+serialization:
+
+[table Serialization Functions and Types
+    [ [Name] [Description ]]
+    [
+        [[link json.ref.boost__json__operator_lt__lt_ `operator<<`]]
+        [
+            Serializes a __value__ to a
+            [@https://en.cppreference.com/w/cpp/io/basic_ostream `std::ostream`].
+        ]
+    ][
+        [__to_string__]
+        [
+            Returns a __string__ representing a serialized __value__.
+        ]
+    ][
+        [__serializer__]
+        [
+            A stateful object which may be used to efficiently
+            serialize one or more instances of __value__.
+        ]
+    ]
+]
+
+To facilitate debugging and ease of output, instances of __value__ may be
+written to standard output streams using the stream operator:
+
+```
+value jv = { 1, 2, 3 ,4 ,5 };
+
+std::cout << jv << "\n";
+
+```
+
+The function `to_string` may be used to capture the serialized value as
+a string:
+
+```
+value jv = { 1, 2, 3 ,4 ,5 };
+
+string s = to_string( jv );
+```
+
+Instead of emitting the complete serialized JSON at once,
+sometimes it is necessary to produce output incrementally.
+For example, to avoid buffering the entire output, or to
+ensure that a fixed amount of work is performed in each cycle.
+Instances of __serializer__ maintain an output state using
+internal dynamically allocated structures, with an interface
+to retrieve successive buffers of the serialized output into
+a caller provided buffer. Here is an example, demonstrating how
+[link json.ref.boost__json__operator_lt__lt_ `operator<<`]
+may be implemented using a __serializer__:
+
+[example_operator_lt__lt_]
+
+As with the parser, the serializer may be reused by calling
+[link json.ref.boost__json__serializer.reset `serializer::reset`].
+This sets up the object to serialize a new __value__, while
+keeping the existing internal structures. This may result in
+performance improvements when multiple values are serialized
+in a sequence.
+
+[endsect]

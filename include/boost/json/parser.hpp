@@ -113,7 +113,9 @@ public:
         parsing a new JSON incrementally; that is, when
         using @ref write_some, @ref write, or @ref finish.
 
-        @param sp The storage to use for all values.
+        @param sp A pointer to the @ref storage
+        to use. The parser will acquire shared
+        ownership of the storage object.
     */
     BOOST_JSON_DECL
     void

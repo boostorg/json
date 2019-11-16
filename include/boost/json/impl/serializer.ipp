@@ -543,19 +543,31 @@ to_string(
     return s;
 }
 
+//[example_operator_lt__lt_
+// Serialize a value into an output stream
+
 std::ostream&
-operator<<(std::ostream& os, value const& jv)
+operator<<( std::ostream& os, value const& jv )
 {
-    serializer sr(jv);
-    while(! sr.is_done())
+    // Create a serializer that is set to output our value.
+    serializer sr( jv );
+
+    // Loop until all output is produced.
+    while( ! sr.is_done() )
     {
+        // Use a local 4KB buffer.
         char buf[4096];
-        auto const n =
-            sr.read(buf, sizeof(buf));
+
+        // Try to fill up the local buffer.
+        auto const n = sr.read(buf, sizeof(buf));
+
+        // Write the valid portion of the buffer to the output stream.
         os.write(buf, n);
     }
+
     return os;
 }
+//]
 
 } // json
 } // boost

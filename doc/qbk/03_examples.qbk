@@ -9,4 +9,16 @@
 
 [/-----------------------------------------------------------------------------]
 
-[heading Serialization]
+[section Examples]
+[block'''<?dbhtml stop-chunking?>''']
+
+[section Pretty]
+[example_pretty]
+[endsect]
+
+[section Validate]
+[example_validate]
+[endsect]
+
+[endsect]
+

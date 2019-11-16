@@ -38,8 +38,14 @@ class value;
     that expect a pointer to the first element of a
     null-terminated `char[]` array.
 
-    String iterators are simple pointers.
+    String iterators are regular `char` pointers.
 
+    @par Thread Safety
+
+    Non-const member functions may not be called
+    concurrently with any other member functions.
+
+    @par Satisfies
     Meets the requirements of
         <em>Container</em>,
         <em>ContiguousContainer</em>,

@@ -1,0 +1,64 @@
+[/
+    Copyright (c) 2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+    Official repository: https://github.com/vinniefalco/json
+]
+
+[/-----------------------------------------------------------------------------]
+
+[section Arrays]
+
+A __value__ stores an instance of __array__ as the underlying representation
+for a JSON array. Instances of the __array__ type function identically to
+a __std_vector__ of __value__. Additionally:
+
+* All values inserted into the container will use the same __storage__ as
+  the container itself.
+
+An array may be constructed empty without incurring any memory allocations
+using the default storage, or a specified storage:
+
+
+```
+array arr1; // empty array, default storage
+
+array arr2( make_storage<block_storage>() ); // empty array, block storage
+```
+
+Initializer lists can be used to construct objects with initial
+contents. These constructors may allocate memory and throw:
+
+```
+array arr( { "Hello", 42, true } );
+```
+
+Alternatively, elements may be inserted after construction:
+
+```
+array arr;
+
+arr.emplace_back( "Hello" );
+arr.emplace_back( 42 );
+arr.emplace_back( true );
+```
+
+Similar to the `std` counterpart, elements may be accessed directly
+by their 0-based index with bounds checking using
+[link json.ref.boost__json__array.at.overload1 `at`],
+or without bounds checking using
+[link json.ref.boost__json__array.operator_lb__rb_ `operator[]`]:
+
+```
+assert( arr[0] == "Hello" );
+
+// The following line throws std::out_of_range, since the index is out of range
+obj.at( 3 ) = nullptr;
+```
+
+For the complete listing of all available member functions and nested
+types, see the reference page for __array__.
+
+[endsect]

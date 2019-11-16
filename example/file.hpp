@@ -12,10 +12,18 @@
 
 #include <boost/json/config.hpp>
 #include <cstdio>
+#include <string>
 
 class file
 {
     FILE* f_ = nullptr;
+    long size_ = 0;
+
+    void
+    fail(boost::json::error_code& ec)
+    {
+        ec.assign( errno, boost::json::generic_category() );
+    }
 
 public:
     ~file()
@@ -53,6 +61,7 @@ public:
         {
             std::fclose(f_);
             f_ = nullptr;
+            size_ = 0;
         }
     }
 
@@ -65,10 +74,17 @@ public:
         close();
         f_ = std::fopen( path, mode );
         if( ! f_ )
+            return fail(ec);
+        if( std::fseek( f_, 0, SEEK_END ) != 0)
+            return fail(ec);
+        size_ = std::ftell( f_ );
+        if( size_ == -1 )
         {
-            ec.assign( errno, boost::json::generic_category() );
-            return;
+            size_ = 0;
+            return fail(ec);
         }
+        if( std::fseek( f_, 0, SEEK_SET ) != 0)
+            return fail(ec);
     }
 
     void
@@ -80,6 +96,12 @@ public:
         open(path, mode, ec);
         if(ec)
             throw boost::json::system_error(ec);
+    }
+
+    long
+    size() const noexcept
+    {
+        return size_;
     }
 
     bool
@@ -107,5 +129,32 @@ public:
         return nread;
     }
 };
+
+inline
+std::string
+read_file( char const* path, boost::json::error_code& ec )
+{
+    file f;
+    f.open( path, "r", ec );
+    if(ec)
+        return {};
+    std::string s;
+    s.resize( f.size() );
+    s.resize( f.read( &s[0], s.size(), ec) );
+    if(ec)
+        return {};
+    return s;
+}
+
+inline
+std::string
+read_file( char const* path )
+{
+    boost::json::error_code ec;
+    auto s = read_file( path, ec);
+    if(ec)
+        throw boost::json::system_error(ec);
+    return s;
+}
 
 #endif

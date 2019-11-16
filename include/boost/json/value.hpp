@@ -2779,7 +2779,7 @@ swap(value& lhs, value& rhs)
 
 /** A key/value pair.
 
-    This is the type of element stored in the @ref object
+    This is the type of element used by the @ref object
     container.
 */
 struct key_value_pair
@@ -2865,7 +2865,7 @@ struct key_value_pair
     {
     }
 
-    /** Construct a key and value pair.
+    /** Constructor.
 
         This constructs a key/value pair.
         Ownership of the specified value is

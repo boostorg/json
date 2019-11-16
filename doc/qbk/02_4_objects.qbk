@@ -1,0 +1,81 @@
+[/
+    Copyright (c) 2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+    Official repository: https://github.com/vinniefalco/json
+]
+
+[/-----------------------------------------------------------------------------]
+
+[section Objects]
+
+A __value__ stores an instance of __object__ as the underlying representation
+for a JSON object . Instances of the __object__ type are associative
+containers holding key and value pairs, where the key is a non-modifiable
+character string and the mapped type is a __value__. These containers are
+modeled after __std_unordered_map__ with these unique properties:
+
+* The elements are stored contiguously as instances of __key_value_pair__.
+
+* Iterators are ordinary pointers, and may become invalidated on insertions
+  and removals.
+
+* The order of insertions is preserved, as long as there are no removals.
+
+* All inserted values will use the same __storage__ as the container itself.
+
+An object may be constructed empty without incurring any memory allocations
+using the default storage, or a specified storage:
+
+
+```
+object obj1; // empty object, default storage
+
+object obj2( make_storage<block_storage>() ); // empty object, block storage
+```
+
+Initializer lists consisting of two-element key value pairs can be used
+to construct objects with initial contents. These constructors may allocate
+memory and throw:
+
+```
+object obj( {{"key1", "value1" }, { "key2", 42 }, { "key3", false }} );
+```
+
+Alternatively, elements may be inserted after construction:
+
+```
+object obj;
+
+obj.emplace( "key1", "value1" );
+obj.emplace( "key2", 42 );
+obj.emplace( "key3", false );
+```
+
+Similar to the `std` counterpart, elements may be accessed directly
+by their key with bounds checking using
+[link json.ref.boost__json__object.at.overload1 `at`],
+or without bounds checking using
+[link json.ref.boost__json__object.operator_lb__rb_ `operator[]`]
+which creates a null element if the key does not already exist:
+
+```
+object obj;
+
+obj["key1"] = "value1";
+obj["key2"] = 42;
+obj["key3"] = false;
+
+// The following line throws std::out_of_range, since the key does not exist
+obj.at( "key4" );
+```
+
+Internally, the container computes a hash table over the keys so that the
+complexity of lookups is O(1) on average.
+
+For the complete listing of all available member functions and nested
+types, see the reference page for __object__.
+
+[endsect]

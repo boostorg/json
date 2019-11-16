@@ -1285,6 +1285,8 @@ public:
 
     /** Check if the container contains an element with a specific key
 
+        This function returns `true` if an element with the
+        specified key exists, otherwise returns `false`.
         @par Complexity
 
         Constant on average, worst case linear in @ref size().
@@ -1294,6 +1296,8 @@ public:
         No-throw guarantee.
 
         @param key The key of the element to find
+
+        @see find.
     */
     BOOST_JSON_DECL
     bool

@@ -15,3 +15,10 @@ exe pretty :
     <toolset>msvc:<define>_CRT_SECURE_NO_WARNINGS
     <library>/boost/json//boost_json
     ;
+
+exe validate :
+    validate.cpp
+    :
+    <toolset>msvc:<define>_CRT_SECURE_NO_WARNINGS
+    <library>/boost/json//boost_json
+    ;

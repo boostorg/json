@@ -180,7 +180,7 @@ public:
 
 //----------------------------------------------------------
 
-/** Serialize a @ref value into a @ref string.
+/** Return a string representing a serialized @ref value.
 
     This function serializes the specified value
     and returns it as a @ref string.
@@ -194,7 +194,8 @@ public:
 */
 BOOST_JSON_DECL
 string
-to_string(value const& jv);
+to_string(
+    value const& jv);
 
 /** Serialize a @ref value to an output stream.
 

@@ -7,6 +7,17 @@
     Official repository: https://github.com/vinniefalco/json
 ]
 
+[section Usage]
+
+* [link json.usage.values Values]
+* [link json.usage.strings Strings]
+* [link json.usage.arrays Arrays]
+* [link json.usage.objects Objects]
+* [link json.usage.parsing Parsing]
+* [link json.usage.serializing Serializing]
+* [link json.usage.exchange Exchange]
+
+
 [note
     Sample code and identifiers used throughout are written as if
     the following declarations are in effect:
@@ -16,267 +27,13 @@ using namespace json;
 ```
 ]
 
-JSON documents are stored in memory as instances of the
-__SemiRegular__ type __value__, satisfying __DefaultConstructible__
-and __Copyable__. These instances  are implemented as a
-[@https://en.wikipedia.org/wiki/Tagged_union ['tagged union]],
-and can dynamically store any of the six defined JSON value types:
+[include 02_1_values.qbk]
+[include 02_2_strings.qbk]
+[include 02_3_arrays.qbk]
+[include 02_4_objects.qbk]
+[include 02_5_numbers.qbk]
+[include 02_6_parsing.qbk]
+[include 02_7_serializing.qbk]
+[include 02_8_exchange.qbk]
 
-* [*object]: A collection of name/value pairs, also known as an
-  [@https://en.wikipedia.org/wiki/Associative_array ['associative array]].
-
-* [*array]: An ordered list of values, like a __vector__.
-
-* [*string]: A sequence of zero or more Unicode characters,
-  similar to a __std_string__
-
-* [*number]: An integral or floating point value.
-
-* [*boolean]: A boolean: either `true` or `false`.
-
-* [*null]: A ['monostate] value, equivalent to `nullptr`.
-
-[h4 Working With Values]
-
-A default constructed __value__ and a value constructed from `nullptr`
-produces a null JSON element:
-```
-value jv1;
-value jv2( nullptr );
-```
-
-The member function
-[link json.ref.boost__json__value.kind `value::kind`]
-may be used to query the kind stored in the value. Alternatively, member
-functions like
-[link json.ref.boost__json__value.is_object `value::is_object`] or
-[link json.ref.boost__json__value.is_number `value::is_number`]
-may be used to check whether or not the value is a particular kind:
-
-```
-value jv( kind::object );
-assert( jv.kind() == kind::object );
-assert( jv.is_object() );
-assert( ! jv.is_number() );
-```
-
-After a __value__ is constructed, its kind can change depending on what
-is assigned to it, or by calling functions like
-[link json.ref.boost__json__value.emplace_array `value::emplace_array`] or
-[link json.ref.boost__json__value.emplace_bool `value::emplace_bool`]. In
-all cases, the previous contents of the value are destroyed:
-
-```
-value jv;
-jv = value( kind::array )
-assert( jv.is_array() );
-jv.emplace_string();
-assert( jv.is_string() );
-```
-
-[table [link json.ref.boost__json__value `value`] Accessors
-    [
-        [Kind]
-        [Representation]
-        [Emplacement]
-        [Membership]
-        [Checked Access]
-        [Unchecked Access]
-        [Pointer Access]
-    ]
-    [
-        [[link json.ref.boost__json__kind `kind::object`]]
-        [[link json.ref.boost__json__object `object`]]
-        [[link json.ref.boost__json__value.emplace_object `emplace_object`]]
-        [[link json.ref.boost__json__value.is_object `is_object`]]
-        [[link json.ref.boost__json__value.as_object `as_object`]]
-        [[link json.ref.boost__json__value.get_object `get_object`]]
-        [[link json.ref.boost__json__value.if_object `if_object`]]
-    ]
-    [
-        [[link json.ref.boost__json__kind `kind::array`]]
-        [[link json.ref.boost__json__array `array`]]
-        [[link json.ref.boost__json__value.emplace_array `emplace_array`]]
-        [[link json.ref.boost__json__value.is_array `is_array`]]
-        [[link json.ref.boost__json__value.as_array `as_array`]]
-        [[link json.ref.boost__json__value.get_array `get_array`]]
-        [[link json.ref.boost__json__value.if_array `if_array`]]
-    ]
-    [
-        [[link json.ref.boost__json__kind `kind::string`]]
-        [[link json.ref.boost__json__string `string`]]
-        [[link json.ref.boost__json__value.emplace_string `emplace_string`]]
-        [[link json.ref.boost__json__value.is_string `is_string`]]
-        [[link json.ref.boost__json__value.as_string `as_string`]]
-        [[link json.ref.boost__json__value.get_string `get_string`]]
-        [[link json.ref.boost__json__value.if_string `if_string`]]
-    ]
-    [
-        [[link json.ref.boost__json__kind `kind::int64`]]
-        [[@https://en.cppreference.com/w/cpp/types/integer `std::int64_t`]]
-        [[link json.ref.boost__json__value.emplace_int64 `emplace_int64`]]
-        [[link json.ref.boost__json__value.is_int64 `is_int64`]]
-        [[link json.ref.boost__json__value.as_int64 `as_int64`]]
-        [[link json.ref.boost__json__value.get_int64 `get_int64`]]
-        [[link json.ref.boost__json__value.if_int64 `if_int64`]]
-    ]
-    [
-        [[link json.ref.boost__json__kind `kind::uint64`]]
-        [[@https://en.cppreference.com/w/cpp/types/integer `std::uint64_t`]]
-        [[link json.ref.boost__json__value.emplace_uint64 `emplace_uint64`]]
-        [[link json.ref.boost__json__value.is_uint64 `is_uint64`]]
-        [[link json.ref.boost__json__value.as_uint64 `as_uint64`]]
-        [[link json.ref.boost__json__value.get_uint64 `get_uint64`]]
-        [[link json.ref.boost__json__value.if_uint64 `if_uint64`]]
-    ]
-    [
-        [[link json.ref.boost__json__kind `kind::double_`]]
-        [[@https://en.cppreference.com/w/cpp/language/types `double`]]
-        [[link json.ref.boost__json__value.emplace_double `emplace_double`]]
-        [[link json.ref.boost__json__value.is_double `is_double`]]
-        [[link json.ref.boost__json__value.as_double `as_double`]]
-        [[link json.ref.boost__json__value.get_double `get_double`]]
-        [[link json.ref.boost__json__value.if_double `if_double`]]
-    ]
-    [
-        [[link json.ref.boost__json__kind `kind::bool_`]]
-        [[@https://en.cppreference.com/w/cpp/language/types `bool`]]
-        [[link json.ref.boost__json__value.emplace_bool `emplace_bool`]]
-        [[link json.ref.boost__json__value.is_bool `is_bool`]]
-        [[link json.ref.boost__json__value.as_bool `as_bool`]]
-        [[link json.ref.boost__json__value.get_bool `get_bool`]]
-        [[link json.ref.boost__json__value.if_bool `if_bool`]]
-    ]
-    [
-        [[link json.ref.boost__json__kind `kind::null`]]
-        [[@https://en.cppreference.com/w/cpp/language/nullptr `std::nullptr_t`]]
-        [[link json.ref.boost__json__value.emplace_null `emplace_null`]]
-        [[link json.ref.boost__json__value.is_null `is_null`]]
-        [['---]]
-        [['---]]
-        [['---]]
-    ]
-]
-
-The emplace members of `value` return a suitably typed reference to the
-underlying container representing the kind. For example, the call to
-[link json.ref.boost__json__value.emplace_string `value::emplace_string`]
-above returns a
-[link json.ref.boost__json__string `string&`].
-The library provides a suitable type for each possible value of __kind__
-(except for nulls). This table shows the types corresponding to each kind:
-
-[table
-[ [Kind] [Type] [Description] ]
-[
-    [[link json.ref.boost__json__kind `kind::object`]]
-    [[link json.ref.boost__json__object `object`]]
-    [
-        An associative array of string keys mapping to
-        __value__ elements with an interface similar to
-        __std__unordered_map__, that remembers insertion
-        order.
-    ]
-]
-[
-    [[link json.ref.boost__json__kind `kind::array`]]
-    [[link json.ref.boost__json__array `array`]]
-    [
-        An ordered list of __value__ elements with an
-        interface similar to __vector__.
-    ]
-]
-[
-    [[link json.ref.boost__json__string `kind::string`]]
-    [[link json.ref.boost__json__kind `string`]]
-    [
-        A
-        [@https://en.wikipedia.org/wiki/UTF-8 ['UTF-8]]
-        encoded
-        [@https://en.wikipedia.org/wiki/Unicode Unicode]
-        [@https://en.wikipedia.org/wiki/String_(computer_science) string]
-        of characters with an interface similar to
-        __std_string__.
-    ]
-]
-[
-    [[link json.ref.boost__json__kind `kind::number`]]
-    [`long long`, `unsigned long long`, `double`]
-    [
-        A type representing an integral or floating point number.
-    ]
-]
-[
-    [[link json.ref.boost__json__kind `kind::boolean`]]
-    [[@https://en.cppreference.com/w/cpp/keyword/bool `bool`]]
-    [
-        A `bool` holding `true` or `false`.
-    ]
-]
-[
-    [[link json.ref.boost__json__kind `kind::null`]]
-    []
-    [
-        A monostate value representing null.
-    ]
-]
-]
-
-We can use the emplace return value to perform an assignment or
-to capture a reference to the underlying representation for later
-inspection or modification:
-
-```
-value jv;
-jv.emplace_string() = "Hello, world!";
-
-number& num = jv.emplace_number(); // changes to kind::number
-num = 1;
-```
-
-If the __kind__ of a value is already known, functions such as
-[link json.ref.boost__json__value.as_bool `value::as_bool`] or
-[link json.ref.boost__json__value.as_string `value::as_string`]
-may be used to obtain a reference to the underlying representation
-without changing the existing value:
-
-```
-value jv( kind::bool );
-jv.as_bool() = true;
-
-jv.as_string() = "Hello, world!"; // throws system_error !!
-```
-
-However, as shown above these functions throw an exception if the kind
-in the value does not match the kind implied by the function signature.
-This can be used as a concise form of validation: access values as if
-they were the right type, but handle the resulting exception indicating
-if the schema of the JSON is not valid.
-
-We can query a value for its underlying representation of a particular
-kind in a way that does not throw exceptions by requesting a pointer
-which may be null, instead of a reference. Here we use
-[link json.ref.boost__json__value.if_string.overload1 `value::if_string`]
-to conditionally perform an assignment without using exceptions:
-
-```
-value jv( kind::string );
-if(auto ptr = jv.if_string())
-    *ptr = "Hello, world!";
-```
-
-[tip
-    If the value's kind is known statically, a reference to the underlying
-    representation may be obtained by dereferencing the pointer without
-    checking. This avoids the code overhead of the possible exception
-    when using, for example
-    [link json.ref.boost__json__value.as_string `value::as_string`]:
-    ```
-    value jv( kind::string );
-
-    *jv.if_string() = "Hello, world!";
-
-    // The compiler's static analysis can see that
-    // a null pointer is never dereferenced above.
-    ```
-]
+[endsect]

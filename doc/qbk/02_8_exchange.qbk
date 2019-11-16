@@ -9,10 +9,7 @@
 
 [/-----------------------------------------------------------------------------]
 
-[heading Working with string]
+[section Exchange]
 
-Modifiable sequences of characters are represented using instances of type
-[link json.ref.boost__json__string `string`].
-These strings have an interface almost identical to `std::string`, and
-operate the same way, except that string is an ordinary class instead of
-a class template, and uses __storage__ instead of __Allocator__.
+[endsect]
+

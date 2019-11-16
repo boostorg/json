@@ -1,0 +1,1130 @@
+[/
+    Copyright (c) 2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+    Official repository: https://github.com/vinniefalco/json
+]
+
+[section Benchmarks]
+
+[/-----------------------------------------------------------------------------]
+
+This table shows the the total time required to parse and serialize
+various test files for four  implementations:
+
+[variablelist
+    [[
+        boost(default)
+    ][
+        Boost.JSON using the default storage.
+    ]]
+    [[
+        boost(block)
+    ][
+        Boost.JSON using __block_storage__.
+    ]]
+    [[
+        rapidjson
+    ][
+        RapidJson using optimized storage.
+    ]]
+    [[
+        nlohmann
+    ][
+        nlohmann JSON using the default stateless allocator.
+    ]]
+]
+
+[table MSVC Operation Times
+[
+    [64-bit MSVC]
+    [32-bit MSVC]
+][
+
+[
+```
+Parse File 1 array.json (609414 bytes)
+ boost(default): 425ms
+ boost(default): 424ms
+ boost(default): 424ms
+ boost(default): 445ms
+ boost(default): 452ms
+ boost(block): 434ms
+ boost(block): 435ms
+ boost(block): 437ms
+ boost(block): 435ms
+ boost(block): 436ms
+ rapidjson: 370ms
+ rapidjson: 367ms
+ rapidjson: 381ms
+ rapidjson: 370ms
+ rapidjson: 366ms
+ nlohmann: 1315ms
+ nlohmann: 1318ms
+ nlohmann: 1317ms
+ nlohmann: 1316ms
+ nlohmann: 1317ms
+
+Parse File 2 arrays.json (1461524 bytes)
+ boost(default): 1025ms
+ boost(default): 1031ms
+ boost(default): 1027ms
+ boost(default): 1027ms
+ boost(default): 1035ms
+ boost(block): 647ms
+ boost(block): 648ms
+ boost(block): 639ms
+ boost(block): 642ms
+ boost(block): 643ms
+ rapidjson: 872ms
+ rapidjson: 877ms
+ rapidjson: 873ms
+ rapidjson: 872ms
+ rapidjson: 875ms
+ nlohmann: 2635ms
+ nlohmann: 2626ms
+ nlohmann: 2625ms
+ nlohmann: 2630ms
+ nlohmann: 2633ms
+
+Parse File 3 strings.json (1016132 bytes)
+ boost(default): 91ms
+ boost(default): 91ms
+ boost(default): 92ms
+ boost(default): 90ms
+ boost(default): 93ms
+ boost(block): 44ms
+ boost(block): 44ms
+ boost(block): 44ms
+ boost(block): 44ms
+ boost(block): 44ms
+ rapidjson: 468ms
+ rapidjson: 466ms
+ rapidjson: 468ms
+ rapidjson: 468ms
+ rapidjson: 470ms
+ nlohmann: 931ms
+ nlohmann: 929ms
+ nlohmann: 934ms
+ nlohmann: 937ms
+ nlohmann: 934ms
+
+Parse File 4 twitter.json (646995 bytes)
+ boost(default): 737ms
+ boost(default): 739ms
+ boost(default): 738ms
+ boost(default): 740ms
+ boost(default): 735ms
+ boost(block): 396ms
+ boost(block): 394ms
+ boost(block): 395ms
+ boost(block): 396ms
+ boost(block): 394ms
+ rapidjson: 433ms
+ rapidjson: 433ms
+ rapidjson: 435ms
+ rapidjson: 431ms
+ rapidjson: 438ms
+ nlohmann: 1549ms
+ nlohmann: 1543ms
+ nlohmann: 1537ms
+ nlohmann: 1539ms
+ nlohmann: 1539ms
+
+Parse File 5 citm_catalog.json (1777672 bytes)
+ boost(default): 1684ms
+ boost(default): 1679ms
+ boost(default): 1668ms
+ boost(default): 1683ms
+ boost(default): 1680ms
+ boost(block): 935ms
+ boost(block): 934ms
+ boost(block): 935ms
+ boost(block): 949ms
+ boost(block): 938ms
+ rapidjson: 910ms
+ rapidjson: 910ms
+ rapidjson: 911ms
+ rapidjson: 965ms
+ rapidjson: 943ms
+ nlohmann: 3578ms
+ nlohmann: 3579ms
+ nlohmann: 3603ms
+ nlohmann: 3593ms
+ nlohmann: 3591ms
+
+Parse File 6 canada.json (2251060 bytes)
+ boost(default): 2875ms
+ boost(default): 2916ms
+ boost(default): 2889ms
+ boost(default): 2902ms
+ boost(default): 2892ms
+ boost(block): 1833ms
+ boost(block): 1833ms
+ boost(block): 1839ms
+ boost(block): 1834ms
+ boost(block): 1835ms
+ rapidjson: 1461ms
+ rapidjson: 1460ms
+ rapidjson: 1460ms
+ rapidjson: 1458ms
+ rapidjson: 1464ms
+ nlohmann: 13913ms
+ nlohmann: 13971ms
+ nlohmann: 14096ms
+ nlohmann: 13938ms
+ nlohmann: 13930ms
+
+Serialize File 1 array.json (609414 bytes)
+ boost(default): 356ms
+ boost(default): 357ms
+ boost(default): 356ms
+ boost(default): 357ms
+ boost(default): 356ms
+ boost(block): 356ms
+ boost(block): 356ms
+ boost(block): 357ms
+ boost(block): 356ms
+ boost(block): 356ms
+ rapidjson: 793ms
+ rapidjson: 794ms
+ rapidjson: 793ms
+ rapidjson: 793ms
+ rapidjson: 791ms
+ nlohmann: 885ms
+ nlohmann: 886ms
+ nlohmann: 884ms
+ nlohmann: 885ms
+ nlohmann: 885ms
+
+Serialize File 2 arrays.json (1461524 bytes)
+ boost(default): 1386ms
+ boost(default): 1382ms
+ boost(default): 1382ms
+ boost(default): 1384ms
+ boost(default): 1383ms
+ boost(block): 1326ms
+ boost(block): 1325ms
+ boost(block): 1325ms
+ boost(block): 1326ms
+ boost(block): 1326ms
+ rapidjson: 3106ms
+ rapidjson: 3108ms
+ rapidjson: 3108ms
+ rapidjson: 3110ms
+ rapidjson: 3108ms
+ nlohmann: 5428ms
+ nlohmann: 5306ms
+ nlohmann: 5441ms
+ nlohmann: 5466ms
+ nlohmann: 5280ms
+
+Serialize File 3 strings.json (1016132 bytes)
+ boost(default): 654ms
+ boost(default): 653ms
+ boost(default): 655ms
+ boost(default): 654ms
+ boost(default): 655ms
+ boost(block): 634ms
+ boost(block): 635ms
+ boost(block): 634ms
+ boost(block): 635ms
+ boost(block): 634ms
+ rapidjson: 2103ms
+ rapidjson: 2101ms
+ rapidjson: 2103ms
+ rapidjson: 2102ms
+ rapidjson: 2102ms
+ nlohmann: 6816ms
+ nlohmann: 6825ms
+ nlohmann: 6817ms
+ nlohmann: 6810ms
+ nlohmann: 6813ms
+
+Serialize File 4 twitter.json (646995 bytes)
+ boost(default): 627ms
+ boost(default): 627ms
+ boost(default): 628ms
+ boost(default): 628ms
+ boost(default): 628ms
+ boost(block): 608ms
+ boost(block): 603ms
+ boost(block): 606ms
+ boost(block): 604ms
+ boost(block): 604ms
+ rapidjson: 884ms
+ rapidjson: 883ms
+ rapidjson: 883ms
+ rapidjson: 885ms
+ rapidjson: 884ms
+ nlohmann: 1939ms
+ nlohmann: 1936ms
+ nlohmann: 1938ms
+ nlohmann: 1938ms
+ nlohmann: 1938ms
+
+Serialize File 5 citm_catalog.json (1777672 bytes)
+ boost(default): 1025ms
+ boost(default): 1029ms
+ boost(default): 1023ms
+ boost(default): 1025ms
+ boost(default): 1027ms
+ boost(block): 939ms
+ boost(block): 940ms
+ boost(block): 943ms
+ boost(block): 938ms
+ boost(block): 938ms
+ rapidjson: 905ms
+ rapidjson: 905ms
+ rapidjson: 904ms
+ rapidjson: 905ms
+ rapidjson: 904ms
+ nlohmann: 2011ms
+ nlohmann: 2109ms
+ nlohmann: 2107ms
+ nlohmann: 2109ms
+ nlohmann: 2010ms
+
+Serialize File 6 canada.json (2251060 bytes)
+ boost(default): 8524ms
+ boost(default): 8542ms
+ boost(default): 8484ms
+ boost(default): 8492ms
+ boost(default): 8513ms
+ boost(block): 7788ms
+ boost(block): 7793ms
+ boost(block): 7802ms
+ boost(block): 7798ms
+ boost(block): 7793ms
+ rapidjson: 10764ms
+ rapidjson: 10766ms
+ rapidjson: 10778ms
+ rapidjson: 10766ms
+ rapidjson: 10767ms
+ nlohmann: 16247ms
+ nlohmann: 16269ms
+ nlohmann: 16306ms
+ nlohmann: 16278ms
+ nlohmann: 16311ms
+```
+]
+
+[
+```
+Parse File 1 array.json (609414 bytes)
+ boost(default): 760ms
+ boost(default): 753ms
+ boost(default): 755ms
+ boost(default): 750ms
+ boost(default): 749ms
+ boost(block): 730ms
+ boost(block): 729ms
+ boost(block): 730ms
+ boost(block): 727ms
+ boost(block): 730ms
+ rapidjson: 568ms
+ rapidjson: 569ms
+ rapidjson: 570ms
+ rapidjson: 516ms
+ rapidjson: 506ms
+ nlohmann: 2231ms
+ nlohmann: 2232ms
+ nlohmann: 2231ms
+ nlohmann: 2234ms
+ nlohmann: 2232ms
+
+Parse File 2 arrays.json (1461524 bytes)
+ boost(default): 1222ms
+ boost(default): 1220ms
+ boost(default): 1223ms
+ boost(default): 1222ms
+ boost(default): 1220ms
+ boost(block): 797ms
+ boost(block): 796ms
+ boost(block): 793ms
+ boost(block): 798ms
+ boost(block): 799ms
+ rapidjson: 1163ms
+ rapidjson: 1162ms
+ rapidjson: 1161ms
+ rapidjson: 1165ms
+ rapidjson: 1163ms
+ nlohmann: 3767ms
+ nlohmann: 3759ms
+ nlohmann: 3763ms
+ nlohmann: 3769ms
+ nlohmann: 3754ms
+
+Parse File 3 strings.json (1016132 bytes)
+ boost(default): 100ms
+ boost(default): 99ms
+ boost(default): 100ms
+ boost(default): 97ms
+ boost(default): 100ms
+ boost(block): 48ms
+ boost(block): 48ms
+ boost(block): 47ms
+ boost(block): 48ms
+ boost(block): 47ms
+ rapidjson: 567ms
+ rapidjson: 572ms
+ rapidjson: 571ms
+ rapidjson: 568ms
+ rapidjson: 570ms
+ nlohmann: 2141ms
+ nlohmann: 2140ms
+ nlohmann: 2138ms
+ nlohmann: 2140ms
+ nlohmann: 2139ms
+
+Parse File 4 twitter.json (646995 bytes)
+ boost(default): 914ms
+ boost(default): 919ms
+ boost(default): 915ms
+ boost(default): 914ms
+ boost(default): 916ms
+ boost(block): 498ms
+ boost(block): 503ms
+ boost(block): 499ms
+ boost(block): 501ms
+ boost(block): 501ms
+ rapidjson: 581ms
+ rapidjson: 579ms
+ rapidjson: 582ms
+ rapidjson: 585ms
+ rapidjson: 579ms
+ nlohmann: 1943ms
+ nlohmann: 1942ms
+ nlohmann: 1950ms
+ nlohmann: 1961ms
+ nlohmann: 1951ms
+
+Parse File 5 citm_catalog.json (1777672 bytes)
+ boost(default): 2212ms
+ boost(default): 2213ms
+ boost(default): 2211ms
+ boost(default): 2216ms
+ boost(default): 2214ms
+ boost(block): 1415ms
+ boost(block): 1413ms
+ boost(block): 1421ms
+ boost(block): 1425ms
+ boost(block): 1404ms
+ rapidjson: 991ms
+ rapidjson: 991ms
+ rapidjson: 998ms
+ rapidjson: 990ms
+ rapidjson: 1003ms
+ nlohmann: 4053ms
+ nlohmann: 4048ms
+ nlohmann: 4032ms
+ nlohmann: 4032ms
+ nlohmann: 4031ms
+
+Parse File 6 canada.json (2251060 bytes)
+ boost(default): 4687ms
+ boost(default): 4680ms
+ boost(default): 4679ms
+ boost(default): 4686ms
+ boost(default): 4681ms
+ boost(block): 3492ms
+ boost(block): 3491ms
+ boost(block): 3497ms
+ boost(block): 3492ms
+ boost(block): 3492ms
+ rapidjson: 2211ms
+ rapidjson: 2209ms
+ rapidjson: 2209ms
+ rapidjson: 2209ms
+ rapidjson: 2210ms
+ nlohmann: 19133ms
+ nlohmann: 19110ms
+ nlohmann: 19099ms
+ nlohmann: 19050ms
+ nlohmann: 19108ms
+
+Serialize File 1 array.json (609414 bytes)
+ boost(default): 478ms
+ boost(default): 480ms
+ boost(default): 478ms
+ boost(default): 480ms
+ boost(default): 478ms
+ boost(block): 478ms
+ boost(block): 480ms
+ boost(block): 478ms
+ boost(block): 481ms
+ boost(block): 479ms
+ rapidjson: 1942ms
+ rapidjson: 1942ms
+ rapidjson: 1941ms
+ rapidjson: 1941ms
+ rapidjson: 1942ms
+ nlohmann: 3267ms
+ nlohmann: 3267ms
+ nlohmann: 3268ms
+ nlohmann: 3267ms
+ nlohmann: 3268ms
+
+Serialize File 2 arrays.json (1461524 bytes)
+ boost(default): 1832ms
+ boost(default): 1831ms
+ boost(default): 1843ms
+ boost(default): 1835ms
+ boost(default): 1825ms
+ boost(block): 1786ms
+ boost(block): 1791ms
+ boost(block): 1796ms
+ boost(block): 1790ms
+ boost(block): 1784ms
+ rapidjson: 3880ms
+ rapidjson: 3879ms
+ rapidjson: 3879ms
+ rapidjson: 3879ms
+ rapidjson: 3896ms
+ nlohmann: 6870ms
+ nlohmann: 6878ms
+ nlohmann: 7175ms
+ nlohmann: 6876ms
+ nlohmann: 6858ms
+
+Serialize File 3 strings.json (1016132 bytes)
+ boost(default): 916ms
+ boost(default): 914ms
+ boost(default): 918ms
+ boost(default): 917ms
+ boost(default): 915ms
+ boost(block): 891ms
+ boost(block): 891ms
+ boost(block): 891ms
+ boost(block): 889ms
+ boost(block): 891ms
+ rapidjson: 2721ms
+ rapidjson: 2723ms
+ rapidjson: 2715ms
+ rapidjson: 2711ms
+ rapidjson: 2712ms
+ nlohmann: 8890ms
+ nlohmann: 8872ms
+ nlohmann: 8849ms
+ nlohmann: 8880ms
+ nlohmann: 8878ms
+
+Serialize File 4 twitter.json (646995 bytes)
+ boost(default): 1011ms
+ boost(default): 1010ms
+ boost(default): 1013ms
+ boost(default): 1013ms
+ boost(default): 1017ms
+ boost(block): 984ms
+ boost(block): 985ms
+ boost(block): 984ms
+ boost(block): 983ms
+ boost(block): 984ms
+ rapidjson: 1132ms
+ rapidjson: 1132ms
+ rapidjson: 1131ms
+ rapidjson: 1130ms
+ rapidjson: 1134ms
+ nlohmann: 2671ms
+ nlohmann: 2668ms
+ nlohmann: 2684ms
+ nlohmann: 2689ms
+ nlohmann: 2670ms
+
+Serialize File 5 citm_catalog.json (1777672 bytes)
+ boost(default): 1219ms
+ boost(default): 1215ms
+ boost(default): 1222ms
+ boost(default): 1221ms
+ boost(default): 1211ms
+ boost(block): 1346ms
+ boost(block): 1344ms
+ boost(block): 1346ms
+ boost(block): 1352ms
+ boost(block): 1390ms
+ rapidjson: 1181ms
+ rapidjson: 1183ms
+ rapidjson: 1181ms
+ rapidjson: 1181ms
+ rapidjson: 1185ms
+ nlohmann: 3131ms
+ nlohmann: 3138ms
+ nlohmann: 3135ms
+ nlohmann: 3118ms
+ nlohmann: 3198ms
+
+Serialize File 6 canada.json (2251060 bytes)
+ boost(default): 18241ms
+ boost(default): 18485ms
+ boost(default): 18483ms
+ boost(default): 18263ms
+ boost(default): 18555ms
+ boost(block): 18039ms
+ boost(block): 17985ms
+ boost(block): 17962ms
+ boost(block): 17964ms
+ boost(block): 18031ms
+ rapidjson: 20784ms
+ rapidjson: 20690ms
+ rapidjson: 20750ms
+ rapidjson: 20774ms
+ rapidjson: 20772ms
+ nlohmann: 26647ms
+ nlohmann: 26709ms
+ nlohmann: 26731ms
+ nlohmann: 26662ms
+ nlohmann: 26497ms
+```
+]
+
+]]
+
+[table LLVM-clang Operation Times
+[
+    [64-bit LLVM-clang]
+    [32-bit LLVM-clang]
+][
+
+[
+```
+Parse File 1 array.json (609414 bytes)
+ boost(default): 388ms
+ boost(default): 387ms
+ boost(default): 392ms
+ boost(default): 470ms
+ boost(default): 477ms
+ boost(block): 405ms
+ boost(block): 405ms
+ boost(block): 406ms
+ boost(block): 406ms
+ boost(block): 404ms
+ rapidjson: 338ms
+ rapidjson: 340ms
+ rapidjson: 339ms
+ rapidjson: 338ms
+ rapidjson: 341ms
+ nlohmann: 1325ms
+ nlohmann: 1301ms
+ nlohmann: 1296ms
+ nlohmann: 1297ms
+ nlohmann: 1314ms
+
+Parse File 2 arrays.json (1461524 bytes)
+ boost(default): 965ms
+ boost(default): 966ms
+ boost(default): 966ms
+ boost(default): 966ms
+ boost(default): 968ms
+ boost(block): 560ms
+ boost(block): 558ms
+ boost(block): 563ms
+ boost(block): 561ms
+ boost(block): 559ms
+ rapidjson: 901ms
+ rapidjson: 903ms
+ rapidjson: 900ms
+ rapidjson: 903ms
+ rapidjson: 903ms
+ nlohmann: 2627ms
+ nlohmann: 2685ms
+ nlohmann: 2698ms
+ nlohmann: 2674ms
+ nlohmann: 2652ms
+
+Parse File 3 strings.json (1016132 bytes)
+ boost(default): 89ms
+ boost(default): 88ms
+ boost(default): 88ms
+ boost(default): 91ms
+ boost(default): 91ms
+ boost(block): 41ms
+ boost(block): 41ms
+ boost(block): 41ms
+ boost(block): 41ms
+ boost(block): 41ms
+ rapidjson: 523ms
+ rapidjson: 522ms
+ rapidjson: 521ms
+ rapidjson: 526ms
+ rapidjson: 526ms
+ nlohmann: 1059ms
+ nlohmann: 1051ms
+ nlohmann: 1051ms
+ nlohmann: 1059ms
+ nlohmann: 1068ms
+
+Parse File 4 twitter.json (646995 bytes)
+ boost(default): 659ms
+ boost(default): 661ms
+ boost(default): 662ms
+ boost(default): 659ms
+ boost(default): 656ms
+ boost(block): 313ms
+ boost(block): 316ms
+ boost(block): 313ms
+ boost(block): 313ms
+ boost(block): 315ms
+ rapidjson: 383ms
+ rapidjson: 382ms
+ rapidjson: 385ms
+ rapidjson: 382ms
+ rapidjson: 381ms
+ nlohmann: 1632ms
+ nlohmann: 1617ms
+ nlohmann: 1604ms
+ nlohmann: 1604ms
+ nlohmann: 1626ms
+
+Parse File 5 citm_catalog.json (1777672 bytes)
+ boost(default): 1491ms
+ boost(default): 1486ms
+ boost(default): 1493ms
+ boost(default): 1480ms
+ boost(default): 1491ms
+ boost(block): 770ms
+ boost(block): 774ms
+ boost(block): 772ms
+ boost(block): 773ms
+ boost(block): 772ms
+ rapidjson: 825ms
+ rapidjson: 826ms
+ rapidjson: 826ms
+ rapidjson: 825ms
+ rapidjson: 826ms
+ nlohmann: 3628ms
+ nlohmann: 3609ms
+ nlohmann: 3599ms
+ nlohmann: 3606ms
+ nlohmann: 3587ms
+
+Parse File 6 canada.json (2251060 bytes)
+ boost(default): 2693ms
+ boost(default): 2687ms
+ boost(default): 2658ms
+ boost(default): 2664ms
+ boost(default): 2676ms
+ boost(block): 1620ms
+ boost(block): 1623ms
+ boost(block): 1617ms
+ boost(block): 1624ms
+ boost(block): 1616ms
+ rapidjson: 1371ms
+ rapidjson: 1370ms
+ rapidjson: 1371ms
+ rapidjson: 1371ms
+ rapidjson: 1373ms
+ nlohmann: 12979ms
+ nlohmann: 12991ms
+ nlohmann: 12976ms
+ nlohmann: 12976ms
+ nlohmann: 12990ms
+
+Serialize File 1 array.json (609414 bytes)
+ boost(default): 348ms
+ boost(default): 346ms
+ boost(default): 346ms
+ boost(default): 348ms
+ boost(default): 346ms
+ boost(block): 348ms
+ boost(block): 348ms
+ boost(block): 349ms
+ boost(block): 348ms
+ boost(block): 348ms
+ rapidjson: 638ms
+ rapidjson: 640ms
+ rapidjson: 640ms
+ rapidjson: 638ms
+ rapidjson: 640ms
+ nlohmann: 762ms
+ nlohmann: 763ms
+ nlohmann: 764ms
+ nlohmann: 765ms
+ nlohmann: 763ms
+
+Serialize File 2 arrays.json (1461524 bytes)
+ boost(default): 1203ms
+ boost(default): 1199ms
+ boost(default): 1201ms
+ boost(default): 1199ms
+ boost(default): 1199ms
+ boost(block): 1157ms
+ boost(block): 1159ms
+ boost(block): 1158ms
+ boost(block): 1160ms
+ boost(block): 1158ms
+ rapidjson: 3238ms
+ rapidjson: 3235ms
+ rapidjson: 3233ms
+ rapidjson: 3237ms
+ rapidjson: 3232ms
+ nlohmann: 4620ms
+ nlohmann: 4617ms
+ nlohmann: 4618ms
+ nlohmann: 4617ms
+ nlohmann: 4625ms
+
+Serialize File 3 strings.json (1016132 bytes)
+ boost(default): 615ms
+ boost(default): 616ms
+ boost(default): 616ms
+ boost(default): 615ms
+ boost(default): 617ms
+ boost(block): 589ms
+ boost(block): 591ms
+ boost(block): 591ms
+ boost(block): 589ms
+ boost(block): 590ms
+ rapidjson: 2095ms
+ rapidjson: 2101ms
+ rapidjson: 2100ms
+ rapidjson: 2096ms
+ rapidjson: 2101ms
+ nlohmann: 3592ms
+ nlohmann: 3591ms
+ nlohmann: 3585ms
+ nlohmann: 3587ms
+ nlohmann: 3607ms
+
+Serialize File 4 twitter.json (646995 bytes)
+ boost(default): 499ms
+ boost(default): 497ms
+ boost(default): 499ms
+ boost(default): 513ms
+ boost(default): 496ms
+ boost(block): 478ms
+ boost(block): 476ms
+ boost(block): 480ms
+ boost(block): 482ms
+ boost(block): 483ms
+ rapidjson: 890ms
+ rapidjson: 889ms
+ rapidjson: 902ms
+ rapidjson: 894ms
+ rapidjson: 890ms
+ nlohmann: 1879ms
+ nlohmann: 1866ms
+ nlohmann: 1789ms
+ nlohmann: 1870ms
+ nlohmann: 1840ms
+
+Serialize File 5 citm_catalog.json (1777672 bytes)
+ boost(default): 868ms
+ boost(default): 871ms
+ boost(default): 869ms
+ boost(default): 877ms
+ boost(default): 869ms
+ boost(block): 771ms
+ boost(block): 773ms
+ boost(block): 774ms
+ boost(block): 768ms
+ boost(block): 777ms
+ rapidjson: 1011ms
+ rapidjson: 1010ms
+ rapidjson: 1011ms
+ rapidjson: 1007ms
+ rapidjson: 1010ms
+ nlohmann: 1849ms
+ nlohmann: 1907ms
+ nlohmann: 1841ms
+ nlohmann: 1869ms
+ nlohmann: 1832ms
+
+Serialize File 6 canada.json (2251060 bytes)
+ boost(default): 7032ms
+ boost(default): 7433ms
+ boost(default): 7067ms
+ boost(default): 7167ms
+ boost(default): 6774ms
+ boost(block): 6409ms
+ boost(block): 6410ms
+ boost(block): 6407ms
+ boost(block): 6414ms
+ boost(block): 6419ms
+ rapidjson: 10069ms
+ rapidjson: 10065ms
+ rapidjson: 10081ms
+ rapidjson: 10088ms
+ rapidjson: 10124ms
+ nlohmann: 13814ms
+ nlohmann: 13458ms
+ nlohmann: 13863ms
+ nlohmann: 13449ms
+ nlohmann: 13757ms
+```
+]
+
+[
+```
+Parse File 1 array.json (609414 bytes)
+ boost(default): 577ms
+ boost(default): 573ms
+ boost(default): 506ms
+ boost(default): 493ms
+ boost(default): 492ms
+ boost(block): 479ms
+ boost(block): 478ms
+ boost(block): 479ms
+ boost(block): 476ms
+ boost(block): 479ms
+ rapidjson: 498ms
+ rapidjson: 495ms
+ rapidjson: 497ms
+ rapidjson: 446ms
+ rapidjson: 437ms
+ nlohmann: 1959ms
+ nlohmann: 1960ms
+ nlohmann: 1960ms
+ nlohmann: 1960ms
+ nlohmann: 1961ms
+
+Parse File 2 arrays.json (1461524 bytes)
+ boost(default): 1134ms
+ boost(default): 1133ms
+ boost(default): 1134ms
+ boost(default): 1133ms
+ boost(default): 1134ms
+ boost(block): 707ms
+ boost(block): 701ms
+ boost(block): 705ms
+ boost(block): 705ms
+ boost(block): 705ms
+ rapidjson: 1054ms
+ rapidjson: 1049ms
+ rapidjson: 1046ms
+ rapidjson: 1052ms
+ rapidjson: 1052ms
+ nlohmann: 2926ms
+ nlohmann: 2924ms
+ nlohmann: 2918ms
+ nlohmann: 2922ms
+ nlohmann: 2930ms
+
+Parse File 3 strings.json (1016132 bytes)
+ boost(default): 94ms
+ boost(default): 94ms
+ boost(default): 95ms
+ boost(default): 94ms
+ boost(default): 95ms
+ boost(block): 43ms
+ boost(block): 42ms
+ boost(block): 42ms
+ boost(block): 43ms
+ boost(block): 43ms
+ rapidjson: 511ms
+ rapidjson: 509ms
+ rapidjson: 510ms
+ rapidjson: 511ms
+ rapidjson: 510ms
+ nlohmann: 1095ms
+ nlohmann: 1092ms
+ nlohmann: 1093ms
+ nlohmann: 1094ms
+ nlohmann: 1092ms
+
+Parse File 4 twitter.json (646995 bytes)
+ boost(default): 803ms
+ boost(default): 802ms
+ boost(default): 801ms
+ boost(default): 801ms
+ boost(default): 804ms
+ boost(block): 365ms
+ boost(block): 368ms
+ boost(block): 366ms
+ boost(block): 365ms
+ boost(block): 368ms
+ rapidjson: 427ms
+ rapidjson: 430ms
+ rapidjson: 428ms
+ rapidjson: 430ms
+ rapidjson: 428ms
+ nlohmann: 1811ms
+ nlohmann: 1816ms
+ nlohmann: 1805ms
+ nlohmann: 1807ms
+ nlohmann: 1808ms
+
+Parse File 5 citm_catalog.json (1777672 bytes)
+ boost(default): 1724ms
+ boost(default): 1726ms
+ boost(default): 1732ms
+ boost(default): 1730ms
+ boost(default): 1733ms
+ boost(block): 967ms
+ boost(block): 967ms
+ boost(block): 966ms
+ boost(block): 968ms
+ boost(block): 967ms
+ rapidjson: 922ms
+ rapidjson: 921ms
+ rapidjson: 923ms
+ rapidjson: 923ms
+ rapidjson: 922ms
+ nlohmann: 4004ms
+ nlohmann: 4005ms
+ nlohmann: 4007ms
+ nlohmann: 4006ms
+ nlohmann: 4003ms
+
+Parse File 6 canada.json (2251060 bytes)
+ boost(default): 3513ms
+ boost(default): 3509ms
+ boost(default): 3521ms
+ boost(default): 3537ms
+ boost(default): 3525ms
+ boost(block): 2385ms
+ boost(block): 2386ms
+ boost(block): 2391ms
+ boost(block): 2385ms
+ boost(block): 2387ms
+ rapidjson: 1528ms
+ rapidjson: 1527ms
+ rapidjson: 1528ms
+ rapidjson: 1526ms
+ rapidjson: 1529ms
+ nlohmann: 17644ms
+ nlohmann: 17650ms
+ nlohmann: 17648ms
+ nlohmann: 17637ms
+ nlohmann: 17637ms
+
+Serialize File 1 array.json (609414 bytes)
+ boost(default): 403ms
+ boost(default): 401ms
+ boost(default): 401ms
+ boost(default): 403ms
+ boost(default): 401ms
+ boost(block): 403ms
+ boost(block): 401ms
+ boost(block): 402ms
+ boost(block): 404ms
+ boost(block): 402ms
+ rapidjson: 1950ms
+ rapidjson: 1951ms
+ rapidjson: 1952ms
+ rapidjson: 1950ms
+ rapidjson: 1951ms
+ nlohmann: 3437ms
+ nlohmann: 3438ms
+ nlohmann: 3437ms
+ nlohmann: 3440ms
+ nlohmann: 3437ms
+
+Serialize File 2 arrays.json (1461524 bytes)
+ boost(default): 1597ms
+ boost(default): 1591ms
+ boost(default): 1596ms
+ boost(default): 1597ms
+ boost(default): 1595ms
+ boost(block): 1570ms
+ boost(block): 1568ms
+ boost(block): 1569ms
+ boost(block): 1570ms
+ boost(block): 1570ms
+ rapidjson: 3658ms
+ rapidjson: 3659ms
+ rapidjson: 3659ms
+ rapidjson: 3654ms
+ rapidjson: 3651ms
+ nlohmann: 6404ms
+ nlohmann: 6401ms
+ nlohmann: 6405ms
+ nlohmann: 6403ms
+ nlohmann: 6401ms
+
+Serialize File 3 strings.json (1016132 bytes)
+ boost(default): 925ms
+ boost(default): 928ms
+ boost(default): 926ms
+ boost(default): 928ms
+ boost(default): 927ms
+ boost(block): 901ms
+ boost(block): 901ms
+ boost(block): 901ms
+ boost(block): 901ms
+ boost(block): 903ms
+ rapidjson: 2667ms
+ rapidjson: 2663ms
+ rapidjson: 2665ms
+ rapidjson: 2664ms
+ rapidjson: 2664ms
+ nlohmann: 5408ms
+ nlohmann: 5404ms
+ nlohmann: 5410ms
+ nlohmann: 5409ms
+ nlohmann: 5413ms
+
+Serialize File 4 twitter.json (646995 bytes)
+ boost(default): 916ms
+ boost(default): 987ms
+ boost(default): 921ms
+ boost(default): 919ms
+ boost(default): 920ms
+ boost(block): 885ms
+ boost(block): 883ms
+ boost(block): 884ms
+ boost(block): 884ms
+ boost(block): 885ms
+ rapidjson: 1060ms
+ rapidjson: 1060ms
+ rapidjson: 1060ms
+ rapidjson: 1060ms
+ rapidjson: 1060ms
+ nlohmann: 2503ms
+ nlohmann: 2505ms
+ nlohmann: 2507ms
+ nlohmann: 2507ms
+ nlohmann: 2505ms
+
+Serialize File 5 citm_catalog.json (1777672 bytes)
+ boost(default): 1062ms
+ boost(default): 1062ms
+ boost(default): 1056ms
+ boost(default): 1059ms
+ boost(default): 1055ms
+ boost(block): 1211ms
+ boost(block): 1211ms
+ boost(block): 1212ms
+ boost(block): 1213ms
+ boost(block): 1211ms
+ rapidjson: 1187ms
+ rapidjson: 1188ms
+ rapidjson: 1188ms
+ rapidjson: 1190ms
+ rapidjson: 1188ms
+ nlohmann: 3095ms
+ nlohmann: 3105ms
+ nlohmann: 3093ms
+ nlohmann: 3259ms
+ nlohmann: 3261ms
+
+Serialize File 6 canada.json (2251060 bytes)
+ boost(default): 17357ms
+ boost(default): 17579ms
+ boost(default): 17355ms
+ boost(default): 17559ms
+ boost(default): 17577ms
+ boost(block): 17527ms
+ boost(block): 17490ms
+ boost(block): 17501ms
+ boost(block): 17479ms
+ boost(block): 17502ms
+ rapidjson: 16120ms
+ rapidjson: 16124ms
+ rapidjson: 16136ms
+ rapidjson: 16122ms
+ rapidjson: 16180ms
+ nlohmann: 20518ms
+ nlohmann: 20493ms
+ nlohmann: 20510ms
+ nlohmann: 20622ms
+ nlohmann: 20658ms
+```
+]
+
+]]
+
+[/-----------------------------------------------------------------------------]
+
+[endsect]

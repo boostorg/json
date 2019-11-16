@@ -1,0 +1,166 @@
+[/
+    Copyright (c) 2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+    Official repository: https://github.com/vinniefalco/json
+]
+
+[/-----------------------------------------------------------------------------]
+
+[section Parsing]
+
+Parsing is the process where a serialized JSON is validated
+and decomposed into elements. The library provides these
+functions and types to assist with parsing:
+
+[table Parsing Functions and Types
+    [ [Name] [Description ]]
+    [
+        [__parse__]
+        [
+            Parse a string containing a complete serialized JSON, and
+            return a __value__.
+        ]
+    ][
+        [__parser__]
+        [
+            A stateful DOM parser object which may be used to
+            efficiently parse a series of JSONs incrementally,
+            returning each result as a __value__.
+        ]
+    ][
+        [__basic_parser__]
+        [
+            The SAX parser base class which may be derived from in order
+            to implement custom strategies for representing the parsed
+            JSON.
+        ]
+    ]
+]
+
+The `parse` function provides a succinct interface for
+converting a JSON to a __value__ in a single function call
+that uses exceptions to indicate errors:
+
+```
+value jv = parse( "[1,2,3,4,5]" );
+```
+
+An overload is provided to receive an error code upon
+failure instead of an exception:
+
+```
+error_code ec;
+value jv = parse( "[1,2,3,4,5]", ec );
+if( ec )
+    std::cout << "Parsing failed: " << ec.message() << "\n";
+```
+
+The calls above will produce values that use the default
+storage. Each parse function allows an additional parameter
+specifying the storage to use. Here we start the parser with
+a new instance of __block_storage__ for the resulting value:
+
+```
+value jv = parse( "[1,2,3,4,5]", make_storage<block_storage>() );
+```
+
+These free functions use a temporary __parser__ instance, which
+allocates internal structures to assist with performance. If a
+program needs to parse multiple JSONs sequentially, performance
+can be improved by declaring the parser instance explicitly and
+using the parser's buffer-oriented interface. This stateful
+interface uses the functions
+[link json.ref.boost__json__parser.write_some `write_some`] and
+[link json.ref.boost__json__parser.write `write`]
+to supply zero or more sequential character buffers
+representing the JSON, while the function
+[link json.ref.boost__json__parser.finish `finish`]
+is used to inform the parser that an optional final character
+buffer represents the end of the JSON. This example parses
+a complete JSON using the stateful API:
+
+```
+parser p;
+
+// This must be called once before parsing every new JSON.
+p.start();
+
+// Write the entire character buffer, indicating
+// to the parser that there is no more data.
+p.finish( "[1,2,3,4,5]", 11 );
+
+// Take ownership of the resulting value.
+value jv = p.release();
+
+// At this point the parser may be re-used by calling p.start() again.
+```
+
+Explicit parser instances may also be used to process serialized JSON
+incrementally. In the code that follows the JSON is represented by
+two consecutive buffers, and the overloads which return the error
+code are used instead:
+
+```
+parser p;
+error_code ec;
+
+// This must be called once before parsing every new JSON
+p.start();
+
+// Write the first part of the buffer
+p.write( "[1,2,", 5, ec);
+
+// Write the remaining part of the character buffer,
+// indicating to the parser that there is no more data.
+if(! ec )
+    p.finish( "3,4,5]", 6, ec );
+
+// Take ownership of the resulting value.
+if(! ec)
+    value jv = p.release();
+
+// At this point the parser may be re-used by calling p.start() again.
+```
+
+[h4 Storage]
+
+When
+[link json.ref.boost__json__parser.start `start`]
+is called with no arguments, the parser constructs the resulting
+__value__ using the default storage. Alternatively, the storage
+to use may be supplied as an argument. This example uses a scoped
+instance of block storage:
+
+```
+{
+    parser p;
+
+    // Declare a new, scoped instance of the block storage
+    scoped_storage< block_storage > sp;
+
+    // Use the scoped instance for the parsed value
+    p.start( sp );
+
+    // Write the entire JSON
+    p.finish( "[1,2,3,4,5]" );
+
+    // The value will use the instance of block storage created above
+    value jv = p.release();
+}
+```
+
+[h4 SAX]
+
+Users who wish to implement custom parsing strategies may declare
+their own type derived from __basic_parser__, and implement the
+required virtual functions representing the SAX event interface.
+In this example we define the "null" parser, which does nothing
+with the parsed results, to use in writing a function that
+validates a string to determine if it is valid JSON:
+
+[example_validate]
+
+[endsect]

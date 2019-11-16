@@ -14,3 +14,9 @@ add_executable (pretty
     pretty.cpp
 )
 set_property(TARGET pretty PROPERTY FOLDER "example")
+
+add_executable (validate
+    file.hpp
+    validate.cpp
+)
+set_property(TARGET validate PROPERTY FOLDER "example")
