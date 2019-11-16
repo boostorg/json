@@ -7,6 +7,8 @@
 // Official repository: https://github.com/vinniefalco/json
 //
 
+//[example_pretty
+
 /*
     This example parses a JSON file and pretty-prints
     it to standard output.
@@ -153,3 +155,5 @@ main(int argc, char** argv)
 
     return EXIT_SUCCESS;
 }
+
+//]

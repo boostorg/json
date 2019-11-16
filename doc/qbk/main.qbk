@@ -67,6 +67,10 @@
 
 [/-----------------------------------------------------------------------------]
 
+[import ../../example/pretty.cpp]
+
+[/-----------------------------------------------------------------------------]
+
 Boost.JSON is a portable C++ library which implements the
 [@https://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf JSON Data Interchange Syntax],
 providing algorithms for parsing and serialization, as well as a robust
@@ -86,6 +90,12 @@ in memory.
     ][
         How to use the library to perform common tasks with JSON,
         including some examples.
+    ]]
+    [[
+        [link json.examples Examples]
+    ][
+        Some example programs which demonstrate the use of the
+        library to perform specific tasks.
     ]]
     [[
         [link json.comparison Comparison]
@@ -117,9 +127,9 @@ in memory.
 [include 07_serialization.qbk]
 [include 08_exchange.qbk]
 [endsect]
-
-[include 09_comparison.qbk]
-[include 10_benchmarks.qbk]
+[include 09_examples.qbk]
+[include 10_comparison.qbk]
+[include 11_benchmarks.qbk]
 
 [section:quickref Reference]
 [xinclude quickref.xml]
