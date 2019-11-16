@@ -63,7 +63,7 @@ enum class basic_parser::state : char
     esc1, esc2, esc3, esc4,
     sur1, sur2, sur3, 
     num,
-    lit,
+    litt, litf, litn
 };
 
 //----------------------------------------------------------
@@ -244,7 +244,7 @@ loop_val:
             ++p;
             lit_ = "rue";
             ev_ = error::expected_true;
-            *st_ = state::lit;
+            *st_ = state::litt;
             goto loop;
 
         // false
@@ -269,7 +269,7 @@ loop_val:
             ++p;
             lit_ = "alse";
             ev_ = error::expected_false;
-            *st_ = state::lit;
+            *st_ = state::litf;
             goto loop;
 
         // null
@@ -293,7 +293,7 @@ loop_val:
             ++p;
             lit_ = "ull";
             ev_ = error::expected_null;
-            *st_ = state::lit;
+            *st_ = state::litn;
             goto loop;
 
         default:
@@ -829,7 +829,9 @@ loop_num:
 
     // string literal (true, false, null)
 
-    case state::lit:
+    case state::litt:
+    case state::litf:
+    case state::litn:
         BOOST_JSON_ASSERT(lit_ != nullptr);
         while(p < p1)
         {
@@ -841,6 +843,14 @@ loop_num:
             ++p;
             if(*++lit_ == 0)
             {
+                if(*st_ == state::litt)
+                    this->on_bool(true, ec);
+                else if(*st_ == state::litf)
+                    this->on_bool(false, ec);
+                else
+                    this->on_null(ec);
+                if(ec)
+                    goto yield;
                 st_.pop();
                 goto loop;
             }
@@ -980,7 +990,9 @@ finish(error_code& ec)
             break;
         }
 
-        case state::lit:
+        case state::litt:
+        case state::litf:
+        case state::litn:
             ec = ev_;
             return;
 

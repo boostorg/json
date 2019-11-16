@@ -10,11 +10,13 @@
 GroupSources(example "/")
 
 add_executable (pretty
+    file.hpp
     pretty.cpp
 )
 set_property(TARGET pretty PROPERTY FOLDER "example")
 
 add_executable (allocator
+    file.hpp
     allocator.cpp
 )
 set_property(TARGET allocator PROPERTY FOLDER "example")

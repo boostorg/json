@@ -13,96 +13,115 @@
 */
 
 #include <boost/json.hpp>
-#include <cstdio>
+#include <iomanip>
 #include <iostream>
+#include "file.hpp"
 
 namespace json = boost::json;
-
-class file
-{
-    FILE* f_ = nullptr;
-
-public:
-    ~file()
-    {
-        if(f_)
-            std::fclose(f_);
-    }
-
-    file() = default;
-
-    void
-    close()
-    {
-        if(f_)
-        {
-            std::fclose(f_);
-            f_ = nullptr;
-        }
-    }
-
-    void
-    open(
-        char const* path,
-        char const* mode,
-        json::error_code& ec)
-    {
-        close();
-        f_ = std::fopen( path, mode );
-        if( ! f_ )
-        {
-            ec.assign( errno, json::generic_category() );
-            return;
-        }
-    }
-};
 
 json::value
 parse_file( char const* filename )
 {
-    json::error_code ec;
-    auto f = std::fopen( filename, "r" );
-    if( ! f )
-    {
-        ec.assign( errno, json::generic_category() );
-        throw json::system_error(ec);
-    }
+    file f( filename, "r" );
     json::parser p;
     p.start();
     do
     {
         char buf[4096];
-
-        // Read from the file into our buffer.
-        auto const nread = fread( buf, 1, sizeof(buf), f );
-        if( std::ferror(f) )
-        {
-            ec.assign( errno, json::generic_category() );
-            throw json::system_error(ec);
-        }
-
-        auto nparsed = p.write_some( buf, nread, ec);
-
-        // Make sure we use all the characters in the file.
-        if( ! ec && nparsed < nread )
-            nparsed = p.write_some( buf + nparsed, sizeof(buf) - nparsed, ec );
-
-        if( ec )
-            throw json::system_error(ec);
+        auto const nread = f.read( buf, sizeof(buf) );
+        p.write( buf, nread );
     }
-    while( ! std::feof(f) );
-
-    // Tell the parser there is no more serialized JSON.
-    p.finish(ec);
-    if( ec )
-        throw json::system_error(ec);
-
+    while( ! f.eof() );
+    p.finish();
     return p.release();
 }
 
 void
-pretty_print( std::ostream& os, json::value const& jv )
+pretty_print( std::ostream& os, json::value const& jv, std::string* indent = nullptr )
 {
+    std::string indent_;
+    if(! indent)
+        indent = &indent_;
+    switch(jv.kind())
+    {
+    case json::kind::object:
+    {
+        os << "{\n";
+        indent->append(4, ' ');
+        auto const& obj = jv.get_object();
+        if(! obj.empty())
+        {
+            auto it = obj.begin();
+            goto loop_obj;
+            while( ++it != obj.end() )
+            {
+                os << ",\n";
+            loop_obj:
+                os << *indent << json::to_string(it->key()) << " : ";
+                pretty_print( os, it->value(), indent);
+            }
+        }
+        os << "\n";
+        indent->resize(indent->size() - 4);
+        os << *indent << "}";
+        break;
+    }
+
+    case json::kind::array:
+    {
+        os << "[\n";
+        indent->append(4, ' ');
+        auto const& arr = jv.get_array();
+        if(! arr.empty())
+        {
+            auto it = arr.begin();
+            goto loop_arr;
+            while( ++it != arr.end() )
+            {
+                os << ",\n";
+            loop_arr:
+                os << *indent;
+                pretty_print( os, *it, indent);
+            }   
+        }
+        os << "\n";
+        indent->resize(indent->size() - 4);
+        os << *indent << "]";
+        break;
+    }
+
+    case json::kind::string:
+    {
+        os << json::to_string(jv.get_string());
+        break;
+    }
+
+    case json::kind::uint64:
+        os << jv.get_uint64();
+        break;
+
+    case json::kind::int64:
+        os << jv.get_int64();
+        break;
+
+    case json::kind::double_:
+        os << jv.get_double();
+        break;
+
+    case json::kind::bool_:
+        if(jv.get_bool())
+            os << "true";
+        else
+            os << "false";
+        break;
+
+    case json::kind::null:
+        os << "null";
+        break;
+    }
+
+    if(indent->empty())
+        os << "\n";
 }
 
 int
