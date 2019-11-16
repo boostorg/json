@@ -145,7 +145,7 @@ write_some(
     auto p = data;
     auto const p0 = data;
     auto const p1 = data + size;
-    ec = {};
+    //ec = {};
 
 loop:
     switch(st_)
@@ -577,7 +577,7 @@ finish(
         BOOST_JSON_ASSERT(
             n_.kind == kind::int64);
         BOOST_JSON_ASSERT(n_.i == 0);
-        ec = {};
+        //ec = {};
         st_ = state::end;
         break;
 
@@ -585,7 +585,7 @@ finish(
         BOOST_JSON_ASSERT(
             n_.kind == kind::int64);
         BOOST_JSON_ASSERT(! neg_);
-        ec = {};
+        //ec = {};
         if(n_.u <= INT64_MAX)
             n_.i = static_cast<
                 int64_t>(n_.u);
@@ -598,14 +598,14 @@ finish(
         BOOST_JSON_ASSERT(
             n_.kind == kind::int64);
         BOOST_JSON_ASSERT(neg_);
-        ec = {};
+        //ec = {};
         n_.i = static_cast<
             int64_t>(~n_.u+1);
         st_ = state::end;
         break;
 
     case state::mantd:
-        ec = {};
+        //ec = {};
         if(neg_)
             n_.d = -n_.d;
         exp_ += off_;
@@ -620,7 +620,7 @@ finish(
     case state::frac2:
         BOOST_JSON_ASSERT(
             n_.kind == kind::double_);
-        ec = {};
+        //ec = {};
         exp_ += off_;
         n_.d = n_.u * pow10(exp_);
         if(neg_)
@@ -631,7 +631,7 @@ finish(
     case state::fracd:
         BOOST_JSON_ASSERT(
             n_.kind == kind::double_);
-        ec = {};
+        //ec = {};
         exp_ += off_;
         n_.d = n_.d * pow10(exp_);
         if(neg_)
@@ -648,7 +648,7 @@ finish(
         break;
 
     case state::exp3:
-        ec = {};
+        //ec = {};
         exp_ += off_;
         if(eneg_)
             exp_ = -exp_;
@@ -659,7 +659,7 @@ finish(
         break;
 
     case state::end:
-        ec = {};
+        //ec = {};
         break;
     }
 }

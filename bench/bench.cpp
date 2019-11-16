@@ -132,111 +132,26 @@ class boost_vec_impl : public any_impl
         std::vector<double> vec_;
         double d_ = 0;
 
-        vec_parser()
-        {
-        }
-
-        ~vec_parser()
-        {
-        }
-
-        void
-        on_document_begin(
-            error_code&) override
-        {
-        }
-
-        void
-        on_document_end(
-            error_code&) override
-        {
-        }
-
-        void
-        on_object_begin(
-            error_code&) override
-        {
-        }
-
-        void
-        on_object_end(
-            error_code&) override
-        {
-        }
-
-        void
-        on_array_begin(
-            error_code&) override
-        {
-        }
-
-        void
-        on_array_end(
-            error_code&) override
-        {
-        }
-
-        void
-        on_key_part(
-            string_view,
-            error_code&) override
-        {
-        }
-
-        void
-        on_key(
-            string_view,
-            error_code&) override
-        {
-        }
-        
-        void
-        on_string_part(
-            string_view,
-            error_code&) override
-        {
-        }
-
-        void
-        on_string(
-            string_view,
-            error_code&) override
-        {
-        }
-
-        void
-        on_int64(
-            int64_t,
-            error_code&) override
-        {
-        }
-
-        void
-        on_uint64(
-            uint64_t,
-            error_code&) override
-        {
-        }
-
-        void
-        on_double(
-            double d,
-            error_code&) override
+        vec_parser() {}
+        ~vec_parser() {}
+        void on_document_begin(error_code&) override {}
+        void on_document_end(error_code&) override {}
+        void on_object_begin(error_code&) override {}
+        void on_object_end(error_code&) override {}
+        void on_array_begin(error_code&) override {}
+        void on_array_end(error_code&) override {}
+        void on_key_part(string_view, error_code&) override {}
+        void on_key( string_view, error_code&) override {}
+        void on_string_part(string_view, error_code&) override {}
+        void on_string(string_view, error_code&) override {}
+        void on_int64(std::int64_t, error_code&) override {}
+        void on_uint64(std::uint64_t, error_code&) override {}
+        void on_double(double d, error_code&) override
         {
             vec_.push_back(d);
         }
-
-        void
-        on_bool(
-            bool,
-            error_code&) override
-        {
-        }
-
-        void
-        on_null(error_code&) override
-        {
-        }
+        void on_bool(bool, error_code&) override {}
+        void on_null(error_code&) override {}
     };
 
 public:
@@ -255,6 +170,64 @@ public:
         {
             error_code ec;
             vec_parser p;
+            p.write(s.data(), s.size(), ec);
+            if(! ec)
+                p.finish(ec);
+        }
+    }
+
+    void
+    serialize(
+        string_view s,
+        int repeat) const override
+    {
+        auto jv = json::parse(s);
+        while(repeat--)
+            to_string(jv);
+    }
+};
+
+//----------------------------------------------------------
+
+class boost_null_impl : public any_impl
+{
+    struct null_parser : basic_parser
+    {
+        null_parser() {}
+        ~null_parser() {}
+        void on_document_begin(error_code&) override {}
+        void on_document_end(error_code&) override {}
+        void on_object_begin(error_code&) override {}
+        void on_object_end(error_code&) override {}
+        void on_array_begin(error_code&) override {}
+        void on_array_end(error_code&) override {}
+        void on_key_part(string_view, error_code&) override {}
+        void on_key( string_view, error_code&) override {}
+        void on_string_part(string_view, error_code&) override {}
+        void on_string(string_view, error_code&) override {}
+        void on_int64(std::int64_t, error_code&) override {}
+        void on_uint64(std::uint64_t, error_code&) override {}
+        void on_double(double, error_code&) override {}
+        void on_bool(bool, error_code&) override {}
+        void on_null(error_code&) override {}
+    };
+
+public:
+    string_view
+    name() const noexcept override
+    {
+        return "boost(null)";
+    }
+
+    void
+    parse(
+        string_view s,
+        int repeat) const override
+    {
+        while(repeat--)
+        {
+            error_code ec;
+            null_parser p;
             p.write(s.data(), s.size(), ec);
             if(! ec)
                 p.finish(ec);
@@ -448,9 +421,10 @@ main(
     {
         std::vector<std::unique_ptr<any_impl const>> vi;
         vi.reserve(10);
-        //vi.emplace_back(new boost_vec_impl);
-        vi.emplace_back(new boost_default_impl);
+        vi.emplace_back(new boost_null_impl);
         vi.emplace_back(new boost_impl);
+        vi.emplace_back(new boost_default_impl);
+        //vi.emplace_back(new boost_vec_impl);
         vi.emplace_back(new rapidjson_impl);
         //vi.emplace_back(new nlohmann_impl);
 

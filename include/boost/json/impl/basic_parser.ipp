@@ -154,6 +154,7 @@ write_some(
             return false;
         };
 
+
 loop:
     switch(*st_)
     {
@@ -951,7 +952,7 @@ finish(error_code& ec)
         switch(*st_)
         {
         case state::end:
-            ec = {};
+            //ec = {};
             return;
 
         case state::begin:
