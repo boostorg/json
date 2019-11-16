@@ -225,7 +225,7 @@ loop_val:
 
         // true
         case 't':
-            if(p + 4 <= p1)
+            if(p1 - p >= 4)
             {
                 if( p[1] == 'r' &&
                     p[2] == 'u' &&
@@ -249,7 +249,7 @@ loop_val:
 
         // false
         case 'f':
-            if(p + 5 <= p1)
+            if(p1 - p >= 5)
             {
                 if( p[1] == 'a' &&
                     p[2] == 'l' &&
@@ -274,7 +274,7 @@ loop_val:
 
         // null
         case 'n':
-            if(p + 4 <= p1)
+            if(p1 - p >= 4)
             {
                 if( p[1] == 'u' &&
                     p[2] == 'l' &&
