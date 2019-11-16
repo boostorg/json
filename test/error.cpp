@@ -49,6 +49,7 @@ public:
     {
         check(condition::parse_error, error::syntax);
         check(condition::parse_error, error::extra_data);
+        check(condition::parse_error, error::incomplete);
         check(condition::parse_error, error::mantissa_overflow);
         check(condition::parse_error, error::exponent_overflow);
         check(condition::parse_error, error::too_deep);

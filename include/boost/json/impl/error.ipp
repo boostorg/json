@@ -83,6 +83,7 @@ make_error_code(error e)
 
             case error::syntax:
             case error::extra_data:
+            case error::incomplete:
             case error::mantissa_overflow:
             case error::exponent_overflow:
             case error::too_deep:

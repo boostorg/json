@@ -163,6 +163,18 @@ public:
     #endif
         }
 
+        // string in parser
+        {
+            parser p;
+            std::string const big(
+                string::max_size() + 1, '*');
+            auto const js =
+                "\"" + big + "\":null";
+            BEAST_THROWS(
+                parse(js),
+                std::length_error);
+        }
+
         // key in parser
         {
             parser p;

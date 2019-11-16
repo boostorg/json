@@ -500,10 +500,22 @@ public:
     {
         // write_some(char const*, size_t, error_code&)
         {
-            error_code ec;
-            fail_parser p;
-            p.write_some("0", 1, ec);
-            BEAST_EXPECTS(! ec, ec.message());
+            {
+                error_code ec;
+                fail_parser p;
+                p.write_some("0", 1, ec);
+                BEAST_EXPECTS(! ec, ec.message());
+            }
+
+            // partial write
+            {
+                error_code ec;
+                fail_parser p;
+                auto const n =
+                    p.write_some("null x", 6, ec);
+                BEAST_EXPECTS(! ec, ec.message());
+                BEAST_EXPECT(n < 6);
+            }
         }
 
         // write_some(char const*, size_t)
@@ -526,10 +538,17 @@ public:
 
         // write(char const*, size_t)
         {
-            fail_parser p;
-            BEAST_THROWS(
-                p.write("0x", 2),
-                system_error);
+            {
+                fail_parser p;
+                p.write("0", 1);
+            }
+
+            {
+                fail_parser p;
+                BEAST_THROWS(
+                    p.write("0x", 2),
+                    system_error);
+            }
         }
 
         // finish(char const*, size_t, error_code&)
@@ -544,10 +563,37 @@ public:
 
         // finish(char const*, size_t)
         {
-            fail_parser p;
-            BEAST_THROWS(
-                p.finish("{", 1),
-                system_error);
+            {
+                fail_parser p;
+                p.finish("{}", 2);
+            }
+
+            {
+                fail_parser p;
+                BEAST_THROWS(
+                    p.finish("{", 1),
+                    system_error);
+            }
+        }
+
+        // finish()
+        {
+            {
+                fail_parser p;
+                p.write("{}", 2);
+                BEAST_EXPECT(! p.is_done());
+                p.finish();
+                BEAST_EXPECT(p.is_done());
+            }
+
+            {
+                fail_parser p;
+                p.write("{", 1);
+                BEAST_EXPECT(! p.is_done());
+                BEAST_THROWS(
+                    p.finish(),
+                    system_error);
+            }
         }
     }
 
