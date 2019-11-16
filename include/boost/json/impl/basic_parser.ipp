@@ -297,7 +297,7 @@ loop_val:
             goto loop;
 
         default:
-            if(iep_.maybe_init(*p))
+            if(np_.maybe_init(*p))
             {
                 ++p;
                 *st_ = state::num;
@@ -791,7 +791,7 @@ loop_str1:
 loop_num:
         if(p >= p1)
             goto yield;
-        p += iep_.write_some(
+        p += np_.write_some(
             p, p1 - p, ec);
         if(ec)
             goto yield;
@@ -799,11 +799,11 @@ loop_num:
         //        is_done inside write_some better
         if(p < p1)
         {
-            iep_.finish(ec);
+            np_.finish(ec);
             if(ec)
                 goto yield;
-            BOOST_JSON_ASSERT(iep_.is_done());
-            auto const num = iep_.get();
+            BOOST_JSON_ASSERT(np_.is_done());
+            auto const num = np_.get();
             switch(num.kind)
             {
             default:
@@ -967,10 +967,10 @@ finish(error_code& ec)
 
         case state::num:
         {
-            iep_.finish(ec);
+            np_.finish(ec);
             if(ec)
                 return;
-            auto const num = iep_.get();
+            auto const num = np_.get();
             switch(num.kind)
             {
             default:

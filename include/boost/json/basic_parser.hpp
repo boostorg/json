@@ -51,7 +51,7 @@ class basic_parser
     enum class state : char;
 
     detail::static_stack<state, 8> st_;
-    detail::number_parser iep_;
+    detail::number_parser np_;
     std::size_t depth_ = 0;
     std::size_t max_depth_ = 32;
     char const* lit_;
