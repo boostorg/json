@@ -403,14 +403,14 @@ public:
         `other` by move semantics, using the specified
         storage:
 
-        @li If `*other.get_storage() == *sp`, ownership of
+        @li If `*other.storage() == *sp`, ownership of
         the underlying memory is transferred in constant
         time, with no possibility of exceptions.
         After construction, the moved-from array behaves
         as if newly constructed with its current storage
         pointer.
 
-        @li If `*other.get_storage() != *sp`, an
+        @li If `*other.storage() != *sp`, an
         element-wise copy is performed, which may throw.
         In this case, the moved-from array is not
         changed.
@@ -488,14 +488,14 @@ public:
         The contents of the array are replaced with the
         contents of `other` using move semantics:
 
-        @li If `*other.get_storage() == *sp`, ownership of
+        @li If `*other.storage() == *sp`, ownership of
         the underlying memory is transferred in constant
         time, with no possibility of exceptions.
         After assignment, the moved-from array behaves
         as if newly constructed with its current storage
         pointer.
 
-        @li If `*other.get_storage() != *sp`, an
+        @li If `*other.storage() != *sp`, an
         element-wise copy is performed, which may throw.
         In this case, the moved-from array is not
         changed.
@@ -549,7 +549,7 @@ public:
         Constant.
     */
     storage_ptr const&
-    get_storage() const noexcept
+    storage() const noexcept
     {
         return sp_;
     }
@@ -1531,12 +1531,12 @@ public:
         array. Ownership of the respective @ref storage
         objects is not transferred.
 
-        @li If `*other.get_storage() == *sp`, ownership of the
+        @li If `*other.storage() == *sp`, ownership of the
         underlying memory is swapped in constant time, with
         no possibility of exceptions. All iterators and
         references remain valid.
 
-        @li If `*other.get_storage() != *sp`, the contents are
+        @li If `*other.storage() != *sp`, the contents are
         logically swapped by making copies, which can throw.
         In this case all iterators and references are invalidated.
 
@@ -1623,9 +1623,27 @@ private:
 
 /** Exchange the given values.
 
+    Exchanges the contents of the array `lhs` with
+    another array `rhs`. Ownership of the respective
+    @ref storage objects is not transferred.
+
+    @li If `*lhs.storage() == *rhs.storage()`,
+    ownership of the underlying memory is swapped in
+    constant time, with no possibility of exceptions.
+    All iterators and references remain valid.
+
+    @li If `*lhs.storage() != *rhs.storage()`,
+    the contents are logically swapped by making a copy,
+    which can throw. In this case all iterators and
+    references are invalidated.
+
     @par Preconditions
 
     `&lhs != &rhs`
+
+    @param lhs The array to swap.
+
+    @param rhs The array to swap.
 */
 inline
 void

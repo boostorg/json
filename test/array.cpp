@@ -356,7 +356,7 @@ public:
     void
     testGetStorage()
     {
-        // get_storage()
+        // storage()
         {
             // implied
         }

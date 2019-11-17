@@ -113,7 +113,7 @@ public:
         BEAST_EXPECT(o.at("a").as_int64() == 1);
         BEAST_EXPECT(o.at("b").as_bool());
         BEAST_EXPECT(o.at("c").as_string() == "hello");
-        check_storage(o, o.get_storage());
+        check_storage(o, o.storage());
     }
 
     void
@@ -262,9 +262,9 @@ public:
                 }, sp);
             object o2(pilfer(o1));
             BEAST_EXPECT(
-                o1.get_storage() == nullptr);
+                o1.storage() == nullptr);
             BEAST_EXPECT(
-                *o2.get_storage() == *sp);
+                *o2.storage() == *sp);
             BEAST_EXPECT(o1.empty());
             check(o2, 3);
         }
@@ -340,7 +340,7 @@ public:
                     },
                     5, sp);
                 BEAST_EXPECT(
-                    *o.get_storage() == *sp);
+                    *o.storage() == *sp);
                 check(o, 7);
             });
         }
@@ -443,7 +443,7 @@ public:
                     {"b", true},
                     {"c", "hello"} },
                 BEAST_EXPECT(
-                    *o.get_storage() == *sp);
+                    *o.storage() == *sp);
                 check(o, 3);
                 check_storage(o, sp);
             });

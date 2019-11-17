@@ -112,7 +112,7 @@ public:
                 make_storage<unique_storage>();
             string s(sp);
             BEAST_EXPECT(s.empty());
-            BEAST_EXPECT(*s.get_storage() == *sp.get());
+            BEAST_EXPECT(*s.storage() == *sp.get());
         }
 
         // string(size_type, char, storage_ptr)
@@ -294,7 +294,7 @@ public:
                 BEAST_EXPECT(s2 == t.v1);
                 BEAST_EXPECT(s1.empty());
                 BEAST_EXPECT(
-                    s1.get_storage() == nullptr);
+                    s1.storage() == nullptr);
             }
 
             {
@@ -303,7 +303,7 @@ public:
                 BEAST_EXPECT(s2 == t.v2);
                 BEAST_EXPECT(s1.empty());
                 BEAST_EXPECT(
-                    s1.get_storage() == nullptr);
+                    s1.storage() == nullptr);
             }
         }
 
@@ -315,8 +315,8 @@ public:
                 BEAST_EXPECT(s2 == t.v1);
                 BEAST_EXPECT(s1.empty());
                 BEAST_EXPECT(
-                    *s1.get_storage() ==
-                    *s2.get_storage());
+                    *s1.storage() ==
+                    *s2.storage());
             }
 
             {
@@ -325,8 +325,8 @@ public:
                 BEAST_EXPECT(s2 == t.v2);
                 BEAST_EXPECT(s1.empty());
                 BEAST_EXPECT(
-                    *s1.get_storage() ==
-                    *s2.get_storage());
+                    *s1.storage() ==
+                    *s2.storage());
             }
         }
 
@@ -341,8 +341,8 @@ public:
                 BEAST_EXPECT(s2 == t.v1);
                 BEAST_EXPECT(s1.empty());
                 BEAST_EXPECT(
-                    *s1.get_storage() ==
-                    *s2.get_storage());
+                    *s1.storage() ==
+                    *s2.storage());
             });
 
             fail_loop([&](storage_ptr const& sp)
@@ -352,8 +352,8 @@ public:
                 BEAST_EXPECT(s2 == t.v2);
                 BEAST_EXPECT(s1.empty());
                 BEAST_EXPECT(
-                    *s1.get_storage() ==
-                    *s2.get_storage());
+                    *s1.storage() ==
+                    *s2.storage());
             });
 
             // different storage
@@ -365,8 +365,8 @@ public:
                 BEAST_EXPECT(s2 == t.v1);
                 BEAST_EXPECT(s1 == t.v1);
                 BEAST_EXPECT(
-                    *s1.get_storage() !=
-                    *s2.get_storage());
+                    *s1.storage() !=
+                    *s2.storage());
             });
 
             fail_loop([&](storage_ptr const& sp)
@@ -376,8 +376,8 @@ public:
                 BEAST_EXPECT(s2 == t.v2);
                 BEAST_EXPECT(s1 == t.v2);
                 BEAST_EXPECT(
-                    *s1.get_storage() !=
-                    *s2.get_storage());
+                    *s1.storage() !=
+                    *s2.storage());
             });
         }
 
@@ -516,8 +516,8 @@ public:
                 BEAST_EXPECT(s == t.v1);
                 BEAST_EXPECT(s2.empty());
                 BEAST_EXPECT(
-                    *s.get_storage() ==
-                    *s2.get_storage());
+                    *s.storage() ==
+                    *s2.storage());
             });
 
             fail_loop([&](storage_ptr const& sp)
@@ -529,8 +529,8 @@ public:
                 BEAST_EXPECT(s == t.v1);
                 BEAST_EXPECT(s2.empty());
                 BEAST_EXPECT(
-                    *s.get_storage() ==
-                    *s2.get_storage());
+                    *s.storage() ==
+                    *s2.storage());
             });
 
             fail_loop([&](storage_ptr const& sp)
@@ -542,8 +542,8 @@ public:
                 BEAST_EXPECT(s == t.v2);
                 BEAST_EXPECT(s2.empty());
                 BEAST_EXPECT(
-                    *s.get_storage() ==
-                    *s2.get_storage());
+                    *s.storage() ==
+                    *s2.storage());
             });
 
             fail_loop([&](storage_ptr const& sp)
@@ -555,8 +555,8 @@ public:
                 BEAST_EXPECT(s == t.v2);
                 BEAST_EXPECT(s2.empty());
                 BEAST_EXPECT(
-                    *s.get_storage() ==
-                    *s2.get_storage());
+                    *s.storage() ==
+                    *s2.storage());
             });
 
             // different storage
@@ -570,8 +570,8 @@ public:
                 BEAST_EXPECT(s == t.v1);
                 BEAST_EXPECT(s2 == t.v1);
                 BEAST_EXPECT(
-                    *s.get_storage() !=
-                    *s2.get_storage());
+                    *s.storage() !=
+                    *s2.storage());
             });
 
             fail_loop([&](storage_ptr const& sp)
@@ -583,8 +583,8 @@ public:
                 BEAST_EXPECT(s == t.v1);
                 BEAST_EXPECT(s2 == t.v1);
                 BEAST_EXPECT(
-                    *s.get_storage() !=
-                    *s2.get_storage());
+                    *s.storage() !=
+                    *s2.storage());
             });
 
             fail_loop([&](storage_ptr const& sp)
@@ -596,8 +596,8 @@ public:
                 BEAST_EXPECT(s == t.v2);
                 BEAST_EXPECT(s2 == t.v2);
                 BEAST_EXPECT(
-                    *s.get_storage() !=
-                    *s2.get_storage());
+                    *s.storage() !=
+                    *s2.storage());
             });
 
             fail_loop([&](storage_ptr const& sp)
@@ -609,8 +609,8 @@ public:
                 BEAST_EXPECT(s == t.v2);
                 BEAST_EXPECT(s2 == t.v2);
                 BEAST_EXPECT(
-                    *s.get_storage() !=
-                    *s2.get_storage());
+                    *s.storage() !=
+                    *s2.storage());
             });
         }
 
@@ -812,8 +812,8 @@ public:
                 BEAST_EXPECT(s == t.v1);
                 BEAST_EXPECT(s2.empty());
                 BEAST_EXPECT(
-                    *s.get_storage() ==
-                    *s2.get_storage());
+                    *s.storage() ==
+                    *s2.storage());
             });
 
             fail_loop([&](storage_ptr const& sp)
@@ -825,8 +825,8 @@ public:
                 BEAST_EXPECT(s == t.v1);
                 BEAST_EXPECT(s2.empty());
                 BEAST_EXPECT(
-                    *s.get_storage() ==
-                    *s2.get_storage());
+                    *s.storage() ==
+                    *s2.storage());
             });
 
             fail_loop([&](storage_ptr const& sp)
@@ -838,8 +838,8 @@ public:
                 BEAST_EXPECT(s == t.v2);
                 BEAST_EXPECT(s2.empty());
                 BEAST_EXPECT(
-                    *s.get_storage() ==
-                    *s2.get_storage());
+                    *s.storage() ==
+                    *s2.storage());
             });
 
             fail_loop([&](storage_ptr const& sp)
@@ -851,8 +851,8 @@ public:
                 BEAST_EXPECT(s == t.v2);
                 BEAST_EXPECT(s2.empty());
                 BEAST_EXPECT(
-                    *s.get_storage() ==
-                    *s2.get_storage());
+                    *s.storage() ==
+                    *s2.storage());
             });
 
             // different storage
@@ -866,8 +866,8 @@ public:
                 BEAST_EXPECT(s == t.v1);
                 BEAST_EXPECT(s2 == t.v1);
                 BEAST_EXPECT(
-                    *s.get_storage() !=
-                    *s2.get_storage());
+                    *s.storage() !=
+                    *s2.storage());
             });
 
             fail_loop([&](storage_ptr const& sp)
@@ -879,8 +879,8 @@ public:
                 BEAST_EXPECT(s == t.v1);
                 BEAST_EXPECT(s2 == t.v1);
                 BEAST_EXPECT(
-                    *s.get_storage() !=
-                    *s2.get_storage());
+                    *s.storage() !=
+                    *s2.storage());
             });
 
             fail_loop([&](storage_ptr const& sp)
@@ -892,8 +892,8 @@ public:
                 BEAST_EXPECT(s == t.v2);
                 BEAST_EXPECT(s2 == t.v2);
                 BEAST_EXPECT(
-                    *s.get_storage() !=
-                    *s2.get_storage());
+                    *s.storage() !=
+                    *s2.storage());
             });
 
             fail_loop([&](storage_ptr const& sp)
@@ -905,8 +905,8 @@ public:
                 BEAST_EXPECT(s == t.v2);
                 BEAST_EXPECT(s2 == t.v2);
                 BEAST_EXPECT(
-                    *s.get_storage() !=
-                    *s2.get_storage());
+                    *s.storage() !=
+                    *s2.storage());
             });
         }
 

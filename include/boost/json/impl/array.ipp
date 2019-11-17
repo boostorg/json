@@ -79,7 +79,7 @@ undo_insert::
 
 array::
 array(detail::unchecked_array&& ua)
-    : sp_(ua.get_storage())
+    : sp_(ua.storage())
     , impl_(ua.size(), sp_) // exact
 {
     impl_.size(ua.size());
@@ -446,10 +446,10 @@ swap(array& other)
 
     array temp1(
         std::move(*this),
-        other.get_storage());
+        other.storage());
     array temp2(
         std::move(other),
-        this->get_storage());
+        this->storage());
     this->~array();
     ::new(this) array(pilfer(temp2));
     other.~array();

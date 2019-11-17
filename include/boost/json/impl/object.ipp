@@ -76,7 +76,7 @@ public:
 
 object::
 object(detail::unchecked_object&& uo)
-    : sp_(uo.get_storage())
+    : sp_(uo.storage())
 {
     reserve(uo.size());
     uo.relocate(impl_.begin());
@@ -279,10 +279,10 @@ swap(object& other)
     }
     object temp1(
         std::move(*this),
-        other.get_storage());
+        other.storage());
     object temp2(
         std::move(other),
-        this->get_storage());
+        this->storage());
     other.~object();
     ::new(&other) object(pilfer(temp1));
     this->~object();

@@ -133,7 +133,7 @@ destroy(
 {
     if(n == 0)
         return;
-    if(! p->value().get_storage()->need_free())
+    if(! p->value().storage()->need_free())
         return;
     p += n;
     while(n--)

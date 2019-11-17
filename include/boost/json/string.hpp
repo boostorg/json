@@ -482,13 +482,13 @@ public:
         Construct the contents with those of `other`
         using move semantics.
 
-        @li If `*other.get_storage() == *sp`,
+        @li If `*other.storage() == *sp`,
         ownership of the underlying memory is transferred
         in constant time, with no possibility of exceptions.
         After construction, the moved-from string behaves
         as if newly constructed with its current @ref storage.
 
-        @li if `*other.get_storage() != *sp`,
+        @li if `*other.storage() != *sp`,
         a copy of the characters in `other` is made. In this
         case, the moved-from container is not changed.
 
@@ -660,13 +660,13 @@ public:
         Replace the contents with those of `other`
         using move semantics.
 
-        @li If `*other.get_storage() == *this->get_storage()`,
+        @li If `*other.storage() == *this->storage()`,
         ownership of the underlying memory is transferred
         in constant time, with no possibility of exceptions.
         After construction, the moved-from string behaves
         as if newly constructed with its current @ref storage.
 
-        @li if `*other.get_storage() != *this->get_storage()`,
+        @li if `*other.storage() != *this->storage()`,
         a copy of the characters in `other` is made. In this
         case, the moved-from container is not changed.
 
@@ -853,13 +853,13 @@ public:
         Replace the contents with those of `other`
         using move semantics.
 
-        @li If `*other.get_storage() == *this->get_storage()`,
+        @li If `*other.storage() == *this->storage()`,
         ownership of the underlying memory is transferred
         in constant time, with no possibility of exceptions.
         After construction, the moved-from string behaves
         as if newly constructed with its current @ref storage.
 
-        @li if `*other.get_storage() != *this->get_storage()`,
+        @li if `*other.storage() != *this->storage()`,
         a copy of the characters in `other` is made. In this
         case, the moved-from container is not changed.
 
@@ -1071,7 +1071,7 @@ public:
         Constant.
     */
     storage_ptr const&
-    get_storage() const noexcept
+    storage() const noexcept
     {
         return sp_;
     }
@@ -2235,12 +2235,12 @@ public:
         string. Ownership of the respective @ref storage
         objects is not transferred.
 
-        @li If `*other.get_storage() == *sp`, ownership of the
+        @li If `*other.storage() == *sp`, ownership of the
         underlying memory is swapped in constant time, with
         no possibility of exceptions. All iterators and
         references remain valid.
 
-        @li If `*other.get_storage() != *sp`, the contents are
+        @li If `*other.storage() != *sp`, the contents are
         logically swapped by making a copy, which can throw.
         In this case all iterators and references are invalidated.
 
@@ -2603,9 +2603,27 @@ private:
 
 /** Exchange the given values.
 
+    Exchanges the contents of the string `lhs` with
+    another string `rhs`. Ownership of the respective
+    @ref storage objects is not transferred.
+
+    @li If `*lhs.storage() == *rhs.storage()`,
+    ownership of the underlying memory is swapped in
+    constant time, with no possibility of exceptions.
+    All iterators and references remain valid.
+
+    @li If `*lhs.storage() != *rhs.storage()`,
+    the contents are logically swapped by making a copy,
+    which can throw. In this case all iterators and
+    references are invalidated.
+
     @par Preconditions
 
     `&lhs != &rhs`
+
+    @param lhs The string to swap.
+
+    @param rhs The string to swap.
 */
 inline
 void

@@ -237,7 +237,7 @@ public:
         @param other The value to copy.
     */
     value(value const& other)
-        : value(other, other.get_storage())
+        : value(other, other.storage())
     {
     }
 
@@ -291,13 +291,13 @@ public:
         `other` by move semantics, using the specified
         storage:
 
-        @li If `*other.get_storage() == *sp`, ownership of
+        @li If `*other.storage() == *sp`, ownership of
         the underlying memory is transferred in constant
         time, with no possibility of exceptions.
         After construction, the moved-from value becomes
         a null value with its current storage pointer.
 
-        @li If `*other.get_storage() != *sp`, an
+        @li If `*other.storage() != *sp`, an
         element-wise copy is performed if
         `other.is_structured() == true`, which may throw.
         In this case, the moved-from value is not
@@ -330,13 +330,13 @@ public:
         The contents of the value are replaced with the
         contents of `other` using move semantics:
 
-        @li If `*other.get_storage() == *sp`, ownership of
+        @li If `*other.storage() == *sp`, ownership of
         the underlying memory is transferred in constant
         time, with no possibility of exceptions.
         After assignment, the moved-from value becomes
         a null with its current storage pointer.
 
-        @li If `*other.get_storage() != *sp`, an
+        @li If `*other.storage() != *sp`, an
         element-wise copy is performed if
         `other.is_structured() == true`, which may throw.
         In this case, the moved-from value is not
@@ -398,7 +398,7 @@ public:
         value jv( std::move(obj) );
 
         assert( obj.empty() );
-        assert( *obj.get_storage() == *jv.get_storage() );
+        assert( *obj.storage() == *jv.storage() );
 
         @endcode
 
@@ -529,7 +529,7 @@ public:
         value jv( std::move(arr) );
 
         assert( arr.empty() );
-        assert( *arr.get_storage() == *jv.get_storage() );
+        assert( *arr.storage() == *jv.storage() );
 
         @endcode
 
@@ -660,7 +660,7 @@ public:
         value jv( std::move(str) );
 
         assert( str.empty() );
-        assert( *str.get_storage() == *jv.get_storage() );
+        assert( *str.storage() == *jv.storage() );
 
         @endcode
 
@@ -1324,12 +1324,12 @@ public:
         value. Ownership of the respective @ref storage
         objects is not transferred.
 
-        @li If `*other.get_storage() == *sp`, ownership of the
+        @li If `*other.storage() == *sp`, ownership of the
         underlying memory is swapped in constant time, with
         no possibility of exceptions. All iterators and
         references remain valid.
 
-        @li If `*other.get_storage() != *sp`, the contents are
+        @li If `*other.storage() != *sp`, the contents are
         logically swapped by making copies, which can throw.
         In this case all iterators and references are invalidated.
 
@@ -1699,7 +1699,7 @@ public:
         No-throw guarantee.
     */
     storage_ptr const&
-    get_storage() const noexcept
+    storage() const noexcept
     {
         return sp_;
     }

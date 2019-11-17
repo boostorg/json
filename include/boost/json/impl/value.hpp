@@ -89,7 +89,7 @@ template<class T
 void
 to_json(T const& t, value& v)
 {
-    array arr(v.get_storage());
+    array arr(v.storage());
     for(auto const& e : t)
         arr.emplace_back(e);
     v = std::move(arr);
@@ -156,7 +156,7 @@ operator=(T&& t)
     undo u(this);
     ::new(this) value(
         std::forward<T>(t),
-        u.saved.get_storage());
+        u.saved.storage());
     u.commit();
     return *this;
 }
@@ -190,7 +190,7 @@ key_value_pair(
                 BOOST_JSON_THROW(
                     detail::key_too_large_exception());
             auto s = reinterpret_cast<
-                char*>(value_.get_storage()->
+                char*>(value_.storage()->
                     allocate(key.size() + 1));
             std::memcpy(s, key.data(), key.size());
             s[key.size()] = 0;

@@ -530,7 +530,7 @@ equal_storage(
     object const& o,
     storage_ptr const& sp)
 {
-    if(*o.get_storage() != *sp)
+    if(*o.storage() != *sp)
         return false;
     for(auto const& e : o)
         if(! equal_storage(e.value(), sp))
@@ -544,7 +544,7 @@ equal_storage(
     array const& a,
     storage_ptr const& sp)
 {
-    if(*a.get_storage() != *sp)
+    if(*a.storage() != *sp)
         return false;
     for(auto const& v : a)
         if(! equal_storage(v, sp))
@@ -560,17 +560,17 @@ equal_storage(
     switch(v.kind())
     {
     case json::kind::object:
-        if(*v.as_object().get_storage() != *sp)
+        if(*v.as_object().storage() != *sp)
             return false;
         return equal_storage(v.as_object(), sp);
 
     case json::kind::array:
-        if(*v.as_array().get_storage() != *sp)
+        if(*v.as_array().storage() != *sp)
             return false;
         return equal_storage(v.as_array(), sp);
 
     case json::kind::string:
-        return *v.as_string().get_storage() == *sp;
+        return *v.as_string().storage() == *sp;
 
     case json::kind::int64:
     case json::kind::uint64:
@@ -580,7 +580,7 @@ equal_storage(
     break;
     }
 
-    return *v.get_storage() == *sp;
+    return *v.storage() == *sp;
 }
 
 inline

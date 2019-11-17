@@ -145,7 +145,7 @@ public:
     }
 
     storage_ptr const&
-    get_storage() const noexcept
+    storage() const noexcept
     {
         return sp_;
     }

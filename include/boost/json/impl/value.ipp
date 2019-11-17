@@ -248,7 +248,7 @@ operator=(value&& other)
     undo u(this);
     ::new(this) value(
         detail::move(other),
-        u.saved.get_storage());
+        u.saved.storage());
     u.commit();
     return *this;
 }
@@ -262,7 +262,7 @@ operator=(value const& other)
 
     undo u(this);
     ::new(this) value(other,
-        u.saved.get_storage());
+        u.saved.storage());
     u.commit();
     return *this;
 }
@@ -369,15 +369,15 @@ void
 value::
 swap(value& other)
 {
-    if(*get_storage() != *other.get_storage())
+    if(*storage() != *other.storage())
     {
         // copy
         value temp1(
             detail::move(*this),
-            other.get_storage());
+            other.storage());
         value temp2(
             detail::move(other),
-            this->get_storage());
+            this->storage());
         other.~value();
         ::new(&other) value(pilfer(temp1));
         this->~value();
@@ -441,19 +441,19 @@ destroy() noexcept
     {
     case json::kind::object:
     {
-        auto sp = obj_.get_storage();
+        auto sp = obj_.storage();
         obj_.~object();
         return sp;
     }
     case json::kind::array:
     {
-        auto sp = arr_.get_storage();
+        auto sp = arr_.storage();
         arr_.~array();
         return sp;
     }
     case json::kind::string:
     {
-        auto sp = str_.get_storage();
+        auto sp = str_.storage();
         str_.~string();
         return sp;
     }
@@ -472,7 +472,7 @@ destroy() noexcept
 key_value_pair::
 ~key_value_pair()
 {
-    auto const& sp = value_.get_storage();
+    auto const& sp = value_.storage();
     if(sp->need_free())
         sp->deallocate(key_, len_ + 1, 1);
 }
@@ -486,7 +486,7 @@ key_value_pair(
         [&]
         {
             auto s = reinterpret_cast<
-                char*>(value_.get_storage()->
+                char*>(value_.storage()->
                     allocate(other.len_ + 1));
             std::memcpy(s, other.key_, other.len_);
             s[other.len_] = 0;
@@ -506,7 +506,7 @@ key_value_pair(
         [&]
         {
             auto s = reinterpret_cast<
-                char*>(value_.get_storage()->
+                char*>(value_.storage()->
                     allocate(other.len_ + 1));
             std::memcpy(s, other.key_, other.len_);
             s[other.len_] = 0;

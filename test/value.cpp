@@ -96,13 +96,13 @@ public:
         // value()
         {
             value jv;
-            BEAST_EXPECT(*jv.get_storage() == *dsp);
+            BEAST_EXPECT(*jv.storage() == *dsp);
         }
 
         // value(storage_ptr)
         {
             value jv(sp);
-            BEAST_EXPECT(*jv.get_storage() == *sp);
+            BEAST_EXPECT(*jv.storage() == *sp);
         }
 
         // value(pilfered<value>)
@@ -199,49 +199,49 @@ public:
                 value jv1(object{});
                 value jv2(jv1, sp);
                 BEAST_EXPECT(jv2.is_object());
-                BEAST_EXPECT(*jv2.get_storage() == *sp);
+                BEAST_EXPECT(*jv2.storage() == *sp);
             }
             {
                 value jv1(array{});
                 value jv2(jv1, sp);
                 BEAST_EXPECT(jv2.is_array());
-                BEAST_EXPECT(*jv2.get_storage() == *sp);
+                BEAST_EXPECT(*jv2.storage() == *sp);
             }
             {
                 value jv1(string{});
                 value jv2(jv1, sp);
                 BEAST_EXPECT(jv2.is_string());
-                BEAST_EXPECT(*jv2.get_storage() == *sp);
+                BEAST_EXPECT(*jv2.storage() == *sp);
             }
             {
                 value jv1(std::int64_t{});
                 value jv2(jv1, sp);
                 BEAST_EXPECT(jv2.is_int64());
-                BEAST_EXPECT(*jv2.get_storage() == *sp);
+                BEAST_EXPECT(*jv2.storage() == *sp);
             }
             {
                 value jv1(std::uint64_t{});
                 value jv2(jv1, sp);
                 BEAST_EXPECT(jv2.is_uint64());
-                BEAST_EXPECT(*jv2.get_storage() == *sp);
+                BEAST_EXPECT(*jv2.storage() == *sp);
             }
             {
                 value jv1(double{});
                 value jv2(jv1, sp);
                 BEAST_EXPECT(jv2.is_double());
-                BEAST_EXPECT(*jv2.get_storage() == *sp);
+                BEAST_EXPECT(*jv2.storage() == *sp);
             }
             {
                 value jv1(true);
                 value jv2(jv1, sp);
                 BEAST_EXPECT(jv2.is_bool());
-                BEAST_EXPECT(*jv2.get_storage() == *sp);
+                BEAST_EXPECT(*jv2.storage() == *sp);
             }
             {
                 value jv1(nullptr);
                 value jv2(jv1, sp);
                 BEAST_EXPECT(jv2.is_null());
-                BEAST_EXPECT(*jv2.get_storage() == *sp);
+                BEAST_EXPECT(*jv2.storage() == *sp);
             }
         }
 
@@ -513,27 +513,27 @@ public:
             {
                 auto jv = value(object());
                 BEAST_EXPECT(jv.is_object());
-                BEAST_EXPECT(*jv.get_storage() == *dsp);
+                BEAST_EXPECT(*jv.storage() == *dsp);
             }
             {
                 auto jv = value(object(sp));
                 BEAST_EXPECT(jv.is_object());
-                BEAST_EXPECT(*jv.get_storage() == *sp);
+                BEAST_EXPECT(*jv.storage() == *sp);
             }
             {
                 auto jv = value(object(), sp);
                 BEAST_EXPECT(jv.is_object());
-                BEAST_EXPECT(*jv.get_storage() == *sp);
+                BEAST_EXPECT(*jv.storage() == *sp);
             }
             {
                 auto jv = value(object_kind);
                 BEAST_EXPECT(jv.is_object());
-                BEAST_EXPECT(*jv.get_storage() == *dsp);
+                BEAST_EXPECT(*jv.storage() == *dsp);
             }
             {
                 auto jv = value(object_kind, sp);
                 BEAST_EXPECT(jv.is_object());
-                BEAST_EXPECT(*jv.get_storage() == *sp);
+                BEAST_EXPECT(*jv.storage() == *sp);
             }
         }
 
@@ -544,27 +544,27 @@ public:
             {
                 auto jv = value(array());
                 BEAST_EXPECT(jv.is_array());
-                BEAST_EXPECT(*jv.get_storage() == *dsp);
+                BEAST_EXPECT(*jv.storage() == *dsp);
             }
             {
                 auto jv = value(array(sp));
                 BEAST_EXPECT(jv.is_array());
-                BEAST_EXPECT(*jv.get_storage() == *sp);
+                BEAST_EXPECT(*jv.storage() == *sp);
             }
             {
                 auto jv = value(array(), sp);
                 BEAST_EXPECT(jv.is_array());
-                BEAST_EXPECT(*jv.get_storage() == *sp);
+                BEAST_EXPECT(*jv.storage() == *sp);
             }
             {
                 auto jv = value(array_kind);
                 BEAST_EXPECT(jv.is_array());
-                BEAST_EXPECT(*jv.get_storage() == *dsp);
+                BEAST_EXPECT(*jv.storage() == *dsp);
             }
             {
                 auto jv = value(array_kind, sp);
                 BEAST_EXPECT(jv.is_array());
-                BEAST_EXPECT(*jv.get_storage() == *sp);
+                BEAST_EXPECT(*jv.storage() == *sp);
             }
         }
 
@@ -574,17 +574,17 @@ public:
             {
                 auto jv = value(string());
                 BEAST_EXPECT(jv.is_string());
-                BEAST_EXPECT(*jv.get_storage() == *dsp);
+                BEAST_EXPECT(*jv.storage() == *dsp);
             }
             {
                 auto jv = value(string(sp));
                 BEAST_EXPECT(jv.is_string());
-                BEAST_EXPECT(*jv.get_storage() == *sp);
+                BEAST_EXPECT(*jv.storage() == *sp);
             }
             {
                 auto jv = value(string(), sp);
                 BEAST_EXPECT(jv.is_string());
-                BEAST_EXPECT(*jv.get_storage() == *sp);
+                BEAST_EXPECT(*jv.storage() == *sp);
             }
         }
 
@@ -594,12 +594,12 @@ public:
             {
                 auto jv = value(std::int64_t{-65536});
                 BEAST_EXPECT(jv.is_int64());
-                BEAST_EXPECT(*jv.get_storage() == *dsp);
+                BEAST_EXPECT(*jv.storage() == *dsp);
             }
             {
                 auto jv = value(std::int64_t{-65536}, sp);
                 BEAST_EXPECT(jv.is_int64());
-                BEAST_EXPECT(*jv.get_storage() == *sp);
+                BEAST_EXPECT(*jv.storage() == *sp);
             }
         }
 
@@ -609,12 +609,12 @@ public:
             {
                 auto jv = value(std::uint64_t{65536});
                 BEAST_EXPECT(jv.is_uint64());
-                BEAST_EXPECT(*jv.get_storage() == *dsp);
+                BEAST_EXPECT(*jv.storage() == *dsp);
             }
             {
                 auto jv = value(std::uint64_t{65536}, sp);
                 BEAST_EXPECT(jv.is_uint64());
-                BEAST_EXPECT(*jv.get_storage() == *sp);
+                BEAST_EXPECT(*jv.storage() == *sp);
             }
         }
 
@@ -624,12 +624,12 @@ public:
             {
                 auto jv = value(double{3.141});
                 BEAST_EXPECT(jv.is_double());
-                BEAST_EXPECT(*jv.get_storage() == *dsp);
+                BEAST_EXPECT(*jv.storage() == *dsp);
             }
             {
                 auto jv = value(double{3.141}, sp);
                 BEAST_EXPECT(jv.is_double());
-                BEAST_EXPECT(*jv.get_storage() == *sp);
+                BEAST_EXPECT(*jv.storage() == *sp);
             }
         }
 
@@ -639,12 +639,12 @@ public:
             {
                 auto jv = value(true);
                 BEAST_EXPECT(jv.is_bool());
-                BEAST_EXPECT(*jv.get_storage() == *dsp);
+                BEAST_EXPECT(*jv.storage() == *dsp);
             }
             {
                 auto jv = value(true, sp);
                 BEAST_EXPECT(jv.is_bool());
-                BEAST_EXPECT(*jv.get_storage() == *sp);
+                BEAST_EXPECT(*jv.storage() == *sp);
             }
         }
 
@@ -654,12 +654,12 @@ public:
             {
                 auto jv = value(nullptr);
                 BEAST_EXPECT(jv.is_null());
-                BEAST_EXPECT(*jv.get_storage() == *dsp);
+                BEAST_EXPECT(*jv.storage() == *dsp);
             }
             {
                 auto jv = value(nullptr, sp);
                 BEAST_EXPECT(jv.is_null());
-                BEAST_EXPECT(*jv.get_storage() == *sp);
+                BEAST_EXPECT(*jv.storage() == *sp);
             }
         }
 
@@ -669,22 +669,22 @@ public:
             {
                 value jv({1, 2, 3});
                 BEAST_EXPECT(jv.is_array());
-                BEAST_EXPECT(*jv.get_storage() == *dsp);
+                BEAST_EXPECT(*jv.storage() == *dsp);
             }
             {
                 value jv({1, 2, 3}, sp);
                 BEAST_EXPECT(jv.is_array());
-                BEAST_EXPECT(*jv.get_storage() == *sp);
+                BEAST_EXPECT(*jv.storage() == *sp);
             }
             {
                 value jv({{"a",1},{"b",2},{"c",3}});
                 BEAST_EXPECT(jv.is_object());
-                BEAST_EXPECT(*jv.get_storage() == *dsp);
+                BEAST_EXPECT(*jv.storage() == *dsp);
             }
             {
                 value jv({{"a",1},{"b",2},{"c",3}}, sp);
                 BEAST_EXPECT(jv.is_object());
-                BEAST_EXPECT(*jv.get_storage() == *sp);
+                BEAST_EXPECT(*jv.storage() == *sp);
             }
         }
 
@@ -693,14 +693,14 @@ public:
             {
                 value jv;
                 jv = object();
-                BEAST_EXPECT(*jv.get_storage() == *dsp);
+                BEAST_EXPECT(*jv.storage() == *dsp);
                 BEAST_EXPECT(jv.is_object());
             }
             {
                 value jv(sp);
                 jv = object();
                 BEAST_EXPECT(jv.is_object());
-                BEAST_EXPECT(*jv.get_storage() == *sp);
+                BEAST_EXPECT(*jv.storage() == *sp);
             }
         }
 
@@ -710,13 +710,13 @@ public:
                 value jv;
                 jv = array();
                 BEAST_EXPECT(jv.is_array());
-                BEAST_EXPECT(*jv.get_storage() == *dsp);
+                BEAST_EXPECT(*jv.storage() == *dsp);
             }
             {
                 value jv(sp);
                 jv = array();
                 BEAST_EXPECT(jv.is_array());
-                BEAST_EXPECT(*jv.get_storage() == *sp);
+                BEAST_EXPECT(*jv.storage() == *sp);
             }
         }
 
@@ -726,13 +726,13 @@ public:
                 value jv;
                 jv = string();
                 BEAST_EXPECT(jv.is_string());
-                BEAST_EXPECT(*jv.get_storage() == *dsp);
+                BEAST_EXPECT(*jv.storage() == *dsp);
             }
             {
                 value jv(sp);
                 jv = string();
                 BEAST_EXPECT(jv.is_string());
-                BEAST_EXPECT(*jv.get_storage() == *sp);
+                BEAST_EXPECT(*jv.storage() == *sp);
             }
         }
 
@@ -818,7 +818,7 @@ public:
                 value jv1(1);
                 value jv2("abc");
                 BEAST_EXPECT(
-                    *jv1.get_storage() == *jv2.get_storage());
+                    *jv1.storage() == *jv2.storage());
                 swap(jv1, jv2);
                 BEAST_EXPECT(jv1.as_string() == "abc");
                 BEAST_EXPECT(jv2.as_int64() == 1);
@@ -830,7 +830,7 @@ public:
                 value jv1(1);
                 value jv2("abc", sp);
                 BEAST_EXPECT(
-                    *jv1.get_storage() != *jv2.get_storage());
+                    *jv1.storage() != *jv2.storage());
                 swap(jv1, jv2);
                 BEAST_EXPECT(jv1.as_string() == "abc");
                 BEAST_EXPECT(jv2.as_int64() == 1);
@@ -1102,16 +1102,16 @@ public:
         value bln(true, sp);
         value nul(nullptr, sp);
 
-        // get_storage()
+        // storage()
         {
-            BEAST_EXPECT(*obj.get_storage() == *sp);
-            BEAST_EXPECT(*arr.get_storage() == *sp);
-            BEAST_EXPECT(*str.get_storage() == *sp);
-            BEAST_EXPECT(*i64.get_storage() == *sp);
-            BEAST_EXPECT(*u64.get_storage() == *sp);
-            BEAST_EXPECT(*dub.get_storage() == *sp);
-            BEAST_EXPECT(*bln.get_storage() == *sp);
-            BEAST_EXPECT(*nul.get_storage() == *sp);
+            BEAST_EXPECT(*obj.storage() == *sp);
+            BEAST_EXPECT(*arr.storage() == *sp);
+            BEAST_EXPECT(*str.storage() == *sp);
+            BEAST_EXPECT(*i64.storage() == *sp);
+            BEAST_EXPECT(*u64.storage() == *sp);
+            BEAST_EXPECT(*dub.storage() == *sp);
+            BEAST_EXPECT(*bln.storage() == *sp);
+            BEAST_EXPECT(*nul.storage() == *sp);
         }
     }
 
