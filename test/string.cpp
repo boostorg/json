@@ -25,6 +25,17 @@ namespace json {
 class string_test : public beast::unit_test::suite
 {
 public:
+
+#if BOOST_JSON_ARCH == 64
+# define INIT1 { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n' }
+# define INIT2 { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O' }
+#elif BOOST_JSON_ARCH == 32
+# define INIT1 { 'a', 'b', 'c', 'd', 'e', 'f' }
+# define INIT2 { 'A', 'B', 'C', 'D', 'E', 'F', 'G' }
+#else
+# error Unknown architecture
+#endif
+
     struct test_vectors
     {
         // fit in sbo
@@ -54,39 +65,12 @@ public:
         {
             v1 = s1;
             v2 = s2;
+
+            BEAST_EXPECT(std::string(INIT1) == s1);
+            BEAST_EXPECT(std::string(INIT2) == s2);
         }
     };
-#if BOOST_JSON_ARCH == 64
 
-#define DECLARE_INIT_LISTS \
-    std::initializer_list<char> init1 = { \
-        'a', 'b', 'c', 'd', 'e', 'f', 'g', \
-        'h', 'i', 'j', 'k', 'l', 'm', 'n' \
-    }; \
-    BEAST_EXPECT(std::string(init1) == t.s1); \
-    \
-    std::initializer_list<char> init2 = { \
-        'A', 'B', 'C', 'D', 'E', 'F', 'G', \
-        'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O' \
-    }; \
-    BEAST_EXPECT(std::string(init2) == t.s2)
-
-#elif BOOST_JSON_ARCH == 32
-
-#define DECLARE_INIT_LISTS \
-    std::initializer_list<char> init1 = { \
-        'a', 'b', 'c', 'd', 'e', 'f' \
-    }; \
-    BEAST_EXPECT(std::string(init1) == t.s1); \
-    \
-    std::initializer_list<char> init2 = { \
-        'A', 'B', 'C', 'D', 'E', 'F', 'G' \
-    }; \
-    BEAST_EXPECT(std::string(init2) == t.s2);
-
-#else
-# error Unknown architecture
-#endif
     static
     string_view
     last_of(
@@ -383,27 +367,25 @@ public:
 
         // string(initializer_list, storage_ptr)
         {
-            DECLARE_INIT_LISTS;
-
             fail_loop([&](storage_ptr const& sp)
             {
-                string s(init1, sp);
+                string s(INIT1, sp);
                 BEAST_EXPECT(s == t.v1);
             });
 
             fail_loop([&](storage_ptr const& sp)
             {
-                string s(init2, sp);
+                string s(INIT2, sp);
                 BEAST_EXPECT(s == t.v2);
             });
 
             {
-                string s(init1);
+                string s(INIT1);
                 BEAST_EXPECT(s == t.v1);
             }
 
             {
-                string s(init2);
+                string s(INIT2);
                 BEAST_EXPECT(s == t.v2);
             }
         }
@@ -645,26 +627,22 @@ public:
             });
         }
 
-#if 0
         // operator=(std::initializer_list<char>)
         {
-            DECLARE_INIT_LISTS;
-
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(sp);
-                s = init1;
+                s = INIT1;
                 BEAST_EXPECT(s == t.v1);
             });
 
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(sp);
-                s = init2;
+                s = INIT2;
                 BEAST_EXPECT(s == t.v2);
             });
         }
-#endif
 
         // operator=(string_view)
         {
@@ -972,22 +950,19 @@ public:
             });
         }
 
-#if 0
         // assign(InputIt, InputIt)
         {
-            DECLARE_INIT_LISTS;
-
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v1.size(), '*', sp);
-                s.assign(init1.begin(), init1.end());
+                s.assign(t.s1.begin(), t.s1.end());
                 BEAST_EXPECT(s == t.v1);
             });
 
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v2.size(), '*', sp);
-                s.assign(init1.begin(), init1.end());
+                s.assign(t.s1.begin(), t.s1.end());
                 BEAST_EXPECT(s == t.v1);
             });
 
@@ -995,8 +970,8 @@ public:
             {
                 string s(t.v1.size(), '*', sp);
                 s.assign(
-                    make_input_iterator(init1.begin()),
-                    make_input_iterator(init1.end()));
+                    make_input_iterator(t.s1.begin()),
+                    make_input_iterator(t.s1.end()));
                 BEAST_EXPECT(s == t.v1);
             });
 
@@ -1004,22 +979,22 @@ public:
             {
                 string s(t.v2.size(), '*', sp);
                 s.assign(
-                    make_input_iterator(init1.begin()),
-                    make_input_iterator(init1.end()));
+                    make_input_iterator(t.s1.begin()),
+                    make_input_iterator(t.s1.end()));
                 BEAST_EXPECT(s == t.v1);
             });
 
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v1.size(), '*', sp);
-                s.assign(init2.begin(), init2.end());
+                s.assign(t.s2.begin(), t.s2.end());
                 BEAST_EXPECT(s == t.v2);
             });
 
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v2.size(), '*', sp);
-                s.assign(init2.begin(), init2.end());
+                s.assign(t.s2.begin(), t.s2.end());
                 BEAST_EXPECT(s == t.v2);
             });
 
@@ -1027,8 +1002,8 @@ public:
             {
                 string s(t.v1.size(), '*', sp);
                 s.assign(
-                    make_input_iterator(init2.begin()),
-                    make_input_iterator(init2.end()));
+                    make_input_iterator(t.s2.begin()),
+                    make_input_iterator(t.s2.end()));
                 BEAST_EXPECT(s == t.v2);
             });
 
@@ -1036,15 +1011,15 @@ public:
             {
                 string s(t.v2.size(), '*', sp);
                 s.assign(
-                    make_input_iterator(init2.begin()),
-                    make_input_iterator(init2.end()));
+                    make_input_iterator(t.s2.begin()),
+                    make_input_iterator(t.s2.end()));
                 BEAST_EXPECT(s == t.v2);
             });
 
             // empty range
             {
                 string s(t.v1);
-                s.assign(init1.begin(), init1.begin());
+                s.assign(t.s1.begin(), t.s1.begin());
                 BEAST_EXPECT(s.empty());
             }
 
@@ -1052,47 +1027,42 @@ public:
             {
                 string s(t.v1);
                 s.assign(
-                    make_input_iterator(init1.begin()),
-                    make_input_iterator(init1.begin()));
+                    make_input_iterator(t.s1.begin()),
+                    make_input_iterator(t.s1.begin()));
                 BEAST_EXPECT(s.empty());
             }
         }
-#endif
 
-#if 0
         // assign(std::initializer_list<char>)
         {
-            DECLARE_INIT_LISTS;
-
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v1.size(), '*', sp);
-                s.assign(init1);
+                s.assign(INIT1);
                 BEAST_EXPECT(s == t.v1);
             });
 
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v2.size(), '*', sp);
-                s.assign(init1);
+                s.assign(INIT1);
                 BEAST_EXPECT(s == t.v1);
             });
 
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v1.size(), '*', sp);
-                s.assign(init2);
+                s.assign(INIT2);
                 BEAST_EXPECT(s == t.v2);
             });
 
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v2.size(), '*', sp);
-                s.assign(init2);
+                s.assign(INIT2);
                 BEAST_EXPECT(s == t.v2);
             });
         }
-#endif
 
         // assign(string_view)
         {
@@ -1672,71 +1642,69 @@ public:
             });
         }
 
-#if 0
         // insert(const_iterator, InputIt, InputIt)
         {
-            DECLARE_INIT_LISTS;
-
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v1, sp);
-                s.insert(s.begin()+2, init2.begin(), init2.end());
-                BEAST_EXPECT(s == std::string(
-                    t.s1).insert(2, init2.begin(), init2.size()));
+                s.insert(s.begin()+2, t.s2.begin(), t.s2.end());
+                std::string cs(t.s1);
+                cs.insert(2, &t.s2[0], t.s2.size());
+                BEAST_EXPECT(s == cs);
             });
 
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v2, sp);
-                s.insert(s.begin()+2, init1.begin(), init1.end());
-                BEAST_EXPECT(s == std::string(
-                    t.s2).insert(2, init1.begin(), init1.size()));
+                s.insert(s.begin()+2, t.s1.begin(), t.s1.end());
+                std::string cs(t.s2);
+                cs.insert(2, &t.s1[0], t.s1.size());
+                BEAST_EXPECT(s == cs);
             });
 
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v1, sp);
                 s.insert(s.begin()+2,
-                    make_input_iterator(init2.begin()),
-                    make_input_iterator(init2.end()));
-                BEAST_EXPECT(s == std::string(
-                    t.s1).insert(2, init2.begin(), init2.size()));
+                    make_input_iterator(t.s2.begin()),
+                    make_input_iterator(t.s2.end()));
+                std::string cs(t.s1);
+                cs.insert(2, &t.s2[0], t.s2.size());
+                BEAST_EXPECT(s == cs);
             });
 
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v2, sp);
                 s.insert(s.begin()+2,
-                    make_input_iterator(init1.begin()),
-                    make_input_iterator(init1.end()));
-                BEAST_EXPECT(s == std::string(
-                    t.s2).insert(2, init1.begin(), init1.size()));
+                    make_input_iterator(t.s1.begin()),
+                    make_input_iterator(t.s1.end()));
+                std::string cs(t.s2);
+                cs.insert(2, &t.s1[0], t.s1.size());
+                BEAST_EXPECT(s == cs);
             });
         }
-#endif
 
-#if 0
         // insert(const_iterator, initializer_list)
         {
-            DECLARE_INIT_LISTS;
-
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v1, sp);
-                s.insert(s.begin()+2, init2);
-                BEAST_EXPECT(s == std::string(
-                    t.s1).insert(2, init2.begin(), init2.size()));
+                s.insert(s.begin()+2, INIT2);
+                std::string cs(t.s1);
+                cs.insert(2, &t.s2[0], t.s2.size());
+                BEAST_EXPECT(s == cs);
             });
 
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v2, sp);
-                s.insert(s.begin()+2, init1);
-                BEAST_EXPECT(s == std::string(
-                    t.s2).insert(2, init1.begin(), init1.size()));
+                s.insert(s.begin()+2, INIT1);
+                std::string cs(t.s2);
+                cs.insert(2, &t.s1[0], t.s1.size());
+                BEAST_EXPECT(s == cs);
             });
         }
-#endif
 
         // insert(const_iterator, string_view)
         {
@@ -1744,16 +1712,18 @@ public:
             {
                 string s(t.v1, sp);
                 s.insert(2, string_view(t.v2));
-                BEAST_EXPECT(s == std::string(
-                    t.v1).insert(2, t.s2));
+                std::string cs(t.v1);
+                cs.insert(2, t.s2);
+                BEAST_EXPECT(s == cs);
             });
 
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v2, sp);
                 s.insert(2, string_view(t.v1));
-                BEAST_EXPECT(s == std::string(
-                    t.v2).insert(2, t.s1));
+                std::string cs(t.v2);
+                cs.insert(2, t.s1);
+                BEAST_EXPECT(s == cs);
             });
         }
 
@@ -1763,16 +1733,18 @@ public:
             {
                 string s(t.v1, sp);
                 s.insert(2, string_view(t.v2), 2, 3);
-                BEAST_EXPECT(s == std::string(
-                    t.v1).insert(2, t.s2, 2, 3));
+                std::string cs(t.v1);
+                cs.insert(2, t.s2, 2, 3);
+                BEAST_EXPECT(s == cs);
             });
 
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v2, sp);
                 s.insert(2, string_view(t.v1), 2, 3);
-                BEAST_EXPECT(s == std::string(
-                    t.v2).insert(2, t.s1, 2, 3));
+                std::string cs(t.v2);
+                cs.insert(2, t.s1, 2, 3);
+                BEAST_EXPECT(s == cs);
             });
         }
     }
@@ -2013,52 +1985,46 @@ public:
             });
         }
 
-#if 0
         // append(initializer_list)
         {
-            DECLARE_INIT_LISTS;
-
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v1, sp);
-                s.append(init2);
+                s.append(INIT2);
                 BEAST_EXPECT(s == t.s1 + t.s2);
             });
 
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v2, sp);
-                s.append(init1);
+                s.append(INIT1);
                 BEAST_EXPECT(s == t.s2 + t.s1);
             });
         }
-#endif
 
-#if 0
         // append(InputIt, InputIt)
         {
-            DECLARE_INIT_LISTS;
-
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v1, sp);
-                s.append(init2.begin(), init2.end());
+                s.append(t.s2.begin(), t.s2.end());
                 BEAST_EXPECT(s == t.s1 + t.s2);
             });
 
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v2, sp);
-                s.append(init1.begin(), init1.end());
+                s.append(t.s1.begin(), t.s1.end());
                 BEAST_EXPECT(s == t.s2 + t.s1);
             });
 
+            // Fails on Visual Studio 2017 C++2a Strict
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v1, sp);
                 s.append(
-                    make_input_iterator(init2.begin()),
-                    make_input_iterator(init2.end()));
+                    make_input_iterator(t.s2.begin()),
+                    make_input_iterator(t.s2.end()));
                 BEAST_EXPECT(s == t.s1 + t.s2);
             });
 
@@ -2066,12 +2032,11 @@ public:
             {
                 string s(t.v2, sp);
                 s.append(
-                    make_input_iterator(init1.begin()),
-                    make_input_iterator(init1.end()));
+                    make_input_iterator(t.s1.begin()),
+                    make_input_iterator(t.s1.end()));
                 BEAST_EXPECT(s == t.s2 + t.s1);
             });
         }
-#endif
 
         // append(string_view)
         {
@@ -2180,26 +2145,22 @@ public:
             });
         }
 
-#if 0
         // operator+=(initializer_list)
         {
-            DECLARE_INIT_LISTS;
-
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v1, sp);
-                s += init2;
+                s += INIT2;
                 BEAST_EXPECT(s == t.s1 + t.s2);
             });
 
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v2, sp);
-                s += init1;
+                s += INIT1;
                 BEAST_EXPECT(s == t.s2 + t.s1);
             });
         }
-#endif
 
         // operator+=(string_view)
         {

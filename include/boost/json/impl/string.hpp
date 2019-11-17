@@ -70,13 +70,13 @@ insert(
         }
     };
 
-    // We use the global storage since
-    // it is a temporary deallocated here.
+    // We use the default storage because
+    // the allocation is immediately freed.
+    storage_ptr dsp;
     detail::string_impl tmp(
-        first, last,
-        storage_ptr{},
+        first, last, dsp,
         iter_cat<InputIt>{});
-    cleanup c{tmp, storage_ptr{}};
+    cleanup c{tmp, dsp};
     auto const off = pos - impl_.data();
     traits_type::copy(
         impl_.insert(off, tmp.size(), sp_),
@@ -154,13 +154,13 @@ append(
         }
     };
 
-    // We use the global storage since
-    // it is a temporary deallocated here.
+    // We use the default storage because
+    // the allocation is immediately freed.
+    storage_ptr dsp;
     detail::string_impl tmp(
-        first, last,
-        storage_ptr{},
+        first, last, dsp,
         std::input_iterator_tag{});
-    cleanup c{tmp, storage_ptr{}};
+    cleanup c{tmp, dsp};
     traits_type::copy(
         impl_.append(tmp.size(), sp_),
         tmp.data(), tmp.size());
