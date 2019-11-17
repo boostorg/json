@@ -21,37 +21,15 @@
 # include <string_view>
 # include <system_error>
 #endif
+#include <stdint.h>
 
-#ifndef BOOST_JSON_STANDALONE
-# if defined(GENERATING_DOCUMENTATION)
-#  define BOOST_JSON_DECL
-# elif defined(BOOST_JSON_HEADER_ONLY)
-#  define BOOST_JSON_DECL  inline
-# else
-#  if (defined(BOOST_JSON_DYN_LINK) || defined(BOOST_ALL_DYN_LINK)) && !defined(BOOST_JSON_STATIC_LINK)
-#   if defined(BOOST_JSON_SOURCE)
-#    define BOOST_JSON_DECL  BOOST_SYMBOL_EXPORT
-#    define BOOST_JSON_BUILD_DLL
-#   else
-#    define BOOST_JSON_DECL  BOOST_SYMBOL_IMPORT
-#   endif
-#  endif // shared lib
-#  ifndef  BOOST_JSON_DECL
-#   define BOOST_JSON_DECL
-#  endif
-#  if !defined(BOOST_JSON_SOURCE) && !defined(BOOST_ALL_NO_LIB) && !defined(BOOST_JSON_NO_LIB)
-#   define BOOST_LIB_NAME boost_json
-#   if defined(BOOST_ALL_DYN_LINK) || defined(BOOST_JSON_DYN_LINK)
-#    define BOOST_DYN_LINK
-#   endif
-#   include <boost/config/auto_link.hpp>
-#  endif  // auto-linking disabled
-# endif
+// detect 32/64 bit
+#if UINTPTR_MAX == UINT64_MAX
+# define BOOST_JSON_ARCH 64
+#elif UINTPTR_MAX == UINT32_MAX
+# define BOOST_JSON_ARCH 32
 #else
-# define BOOST_JSON_DECL  inline
-# ifndef BOOST_JSON_HEADER_ONLY
-#  error Standalone configuration requires BOOST_JSON_HEADER_ONLY
-# endif
+# error Unknown or unsupported architecture, please open an issue
 #endif
 
 // VFALCO Copied from <boost/config.hpp>
@@ -89,12 +67,43 @@
 
 #define BOOST_JSON_STATIC_ASSERT( ... ) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
-// optimizations
-
 #ifndef BOOST_JSON_NO_SSE2
 # if (defined(_M_IX86) && _M_IX86_FP == 2) || \
       defined(_M_X64) || defined(__SSE2__)
 #  define BOOST_JSON_USE_SSE2
+# endif
+#endif
+
+#ifndef BOOST_JSON_STANDALONE
+# if defined(GENERATING_DOCUMENTATION)
+#  define BOOST_JSON_DECL
+# elif defined(BOOST_JSON_HEADER_ONLY)
+#  define BOOST_JSON_DECL  inline
+# else
+#  if (defined(BOOST_JSON_DYN_LINK) || defined(BOOST_ALL_DYN_LINK)) && !defined(BOOST_JSON_STATIC_LINK)
+#   if defined(BOOST_JSON_SOURCE)
+#    define BOOST_JSON_DECL  BOOST_SYMBOL_EXPORT
+#    define BOOST_JSON_BUILD_DLL
+#   else
+#    define BOOST_JSON_DECL  BOOST_SYMBOL_IMPORT
+#   endif
+#  endif // shared lib
+#  ifndef  BOOST_JSON_DECL
+#   define BOOST_JSON_DECL
+#  endif
+#  if !defined(BOOST_JSON_SOURCE) && !defined(BOOST_ALL_NO_LIB) && !defined(BOOST_JSON_NO_LIB)
+#   define BOOST_LIB_NAME boost_json
+#   if defined(BOOST_ALL_DYN_LINK) || defined(BOOST_JSON_DYN_LINK)
+#    define BOOST_DYN_LINK
+#   endif
+#   include <boost/config/auto_link.hpp>
+#  endif  // auto-linking disabled
+# endif
+#else
+# ifdef BOOST_JSON_HEADER_ONLY
+#  define BOOST_JSON_DECL  inline
+# else
+#  define BOOST_JSON_DECL
 # endif
 #endif
 
@@ -114,7 +123,7 @@
 #endif
 #ifndef BOOST_JSON_MAX_STACK_SIZE
 # define BOOST_JSON_NO_MAX_STACK_SIZE
-# define BOOST_JSON_MAX_STACK_SIZE  ((std::size_t)(-1))
+# define BOOST_JSON_MAX_STACK_SIZE  ((::size_t)(-1))
 #endif
 #ifndef BOOST_JSON_PARSER_BUFFER_SIZE
 # define BOOST_JSON_NO_PARSER_BUFFER_SIZE

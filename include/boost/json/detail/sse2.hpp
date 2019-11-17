@@ -12,7 +12,6 @@
 #define BOOST_JSON_DETAIL_SSE2_HPP
 
 #include <boost/json/config.hpp>
-#include <stdint.h>
 #ifdef BOOST_JSON_USE_SSE2
 # include <emmintrin.h>
 # include <xmmintrin.h>

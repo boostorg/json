@@ -26,7 +26,6 @@
 
 // This sets BOOST_JSON_RYU_32_BIT_PLATFORM as a side effect if applicable.
 #include <boost/json/detail/ryu/detail/common.hpp>
-#include <stdint.h>
 
 #if defined(BOOST_JSON_RYU_HAS_64_BIT_INTRINSICS)
 #include <intrin.h>

@@ -16,7 +16,6 @@
 #include <boost/json/detail/static_stack.hpp>
 #include <string>
 #include <vector>
-#include <stdint.h>
 
 namespace boost {
 namespace json {

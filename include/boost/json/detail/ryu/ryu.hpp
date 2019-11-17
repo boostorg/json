@@ -23,7 +23,6 @@
 #define BOOST_JSON_DETAIL_RYU_HPP
 
 #include <boost/json/config.hpp>
-#include <stdint.h>
 
 namespace boost {
 namespace json {

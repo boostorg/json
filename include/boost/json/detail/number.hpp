@@ -13,7 +13,6 @@
 #include <boost/json/config.hpp>
 #include <boost/json/error.hpp>
 #include <boost/json/kind.hpp>
-#include <stdint.h>
 
 namespace boost {
 namespace json {
