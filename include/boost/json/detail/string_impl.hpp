@@ -102,7 +102,11 @@ public:
         std::random_access_iterator_tag)
         : string_impl(last - first, sp)
     {
+    #ifdef _MSC_VER
         std::copy(first, last, data());
+    #else
+        std::copy(first, last, data(), data() + size());
+    #endif
     }
 
     template<class InputIt>

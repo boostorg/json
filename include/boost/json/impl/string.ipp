@@ -284,12 +284,12 @@ void
 string::
 swap(string& other)
 {
+    BOOST_JSON_ASSERT(this != &other);
     if(*sp_ == *other.sp_)
     {
         std::swap(impl_, other.impl_);
         return;
     }
-
     string temp1(
         std::move(*this), other.sp_);
     string temp2(
@@ -321,14 +321,6 @@ reserve_impl(size_type new_cap)
         impl_ = tmp;
         return;
     }
-}
-
-//----------------------------------------------------------
-
-std::ostream&
-operator<<(std::ostream& os, string const& s)
-{
-    return os << static_cast<string_view>(s);
 }
 
 } // json

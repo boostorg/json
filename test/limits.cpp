@@ -170,8 +170,9 @@ public:
                 string::max_size() + 1, '*');
             auto const js =
                 "\"" + big + "\":null";
+            value jv;
             BEAST_THROWS(
-                parse(js),
+                jv = parse(js),
                 std::length_error);
         }
 
@@ -182,8 +183,9 @@ public:
                 string::max_size() + 1, '*');
             auto const js =
                 "{\"" + big + "\":null}";
+            value jv;
             BEAST_THROWS(
-                parse(js),
+                jv = parse(js),
                 std::length_error);
         }
     }
@@ -194,8 +196,9 @@ public:
         // max raw_stack
         {
             std::string big;
+            value jv;
             BEAST_THROWS(
-                parse(
+                jv = parse(
                    "[1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,"
                     "1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,"
                     "1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,"
@@ -227,8 +230,9 @@ public:
                 string::max_size()*2, '*');
             auto const js =
                 "\"" + big + "\"";
+            value jv;
             BEAST_THROWS(
-                parse(js),
+                jv = parse(js),
                 std::length_error);
         }
 
@@ -240,8 +244,9 @@ public:
                 (string::max_size()*3)/2, '*');
             auto const js =
                 "\"" + big + "\"";
+            value jv;
             BEAST_THROWS(
-                parse(js),
+                jv = parse(js),
                 std::length_error);
         }
     }

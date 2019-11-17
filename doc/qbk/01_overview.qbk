@@ -83,8 +83,6 @@ later.
 
 [heading Terminology]
 
-
-
 [heading Description]
 
 Avoid user-defined customizations for the value type such as template

@@ -1406,10 +1406,19 @@ private:
     @par Preconditions
 
     `&lhs != &rhs`
+        
+    @par Complexity
 
-    @param lhs The array to swap.
+    Constant or linear in `lhs.size() + rhs.size()`.
 
-    @param rhs The array to swap.
+    @par Exception Safety
+
+    Strong guarantee.
+    Calls to @ref storage::allocate may throw.
+
+    @param lhs The object to exchange.
+
+    @param rhs The object to exchange.
 */
 inline
 void

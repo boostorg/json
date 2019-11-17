@@ -272,6 +272,7 @@ void
 object::
 swap(object& other)
 {
+    BOOST_JSON_ASSERT(this != &other);
     if(*sp_ == *other.sp_)
     {
         impl_.swap(other.impl_);

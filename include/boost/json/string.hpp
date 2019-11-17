@@ -2556,17 +2556,6 @@ public:
         return string_view(*this).find_last_not_of(t, pos);
     }
 
-    //------------------------------------------------------
-
-    /** Perform stream output.
-
-        Behaves as a formatted output function.
-    */
-    BOOST_JSON_DECL
-    friend
-    std::ostream&
-    operator<<(std::ostream& os, string const& s);
-
 private:
     class undo;
 
@@ -2620,10 +2609,19 @@ private:
     @par Preconditions
 
     `&lhs != &rhs`
+        
+    @par Complexity
 
-    @param lhs The string to swap.
+    Constant or linear in `lhs.size() + rhs.size()`.
 
-    @param rhs The string to swap.
+    @par Exception Safety
+
+    Strong guarantee.
+    Calls to @ref storage::allocate may throw.
+
+    @param lhs The string to exchange.
+
+    @param rhs The string to exchange.
 */
 inline
 void
@@ -2633,6 +2631,17 @@ swap(string& lhs, string& rhs)
 }
 
 //----------------------------------------------------------
+
+/** Perform stream output.
+
+    Behaves as a formatted output function.
+*/
+inline
+std::ostream&
+operator<<(std::ostream& os, string const& s)
+{
+    return os << static_cast<string_view>(s);
+}
 
 /** Return true if lhs equals rhs.
 

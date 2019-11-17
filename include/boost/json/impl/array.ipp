@@ -438,12 +438,12 @@ void
 array::
 swap(array& other)
 {
+    BOOST_JSON_ASSERT(this != &other);
     if(*sp_ == *other.sp_)
     {
         impl_.swap(other.impl_);
         return;
     }
-
     array temp1(
         std::move(*this),
         other.storage());
