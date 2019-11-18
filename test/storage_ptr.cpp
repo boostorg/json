@@ -20,23 +20,39 @@ namespace json {
 class storage_ptr_test : public beast::unit_test::suite
 {
 public:
+    struct not_storage
+    {
+        void*
+        allocate(
+            std::size_t,
+            std::size_t)
+        {
+            return nullptr;
+        }
+
+        void
+        deallocate(
+            void*,
+            std::size_t,
+            std::size_t) noexcept
+        {
+        }
+    };
+
+    BOOST_JSON_STATIC_ASSERT(
+        ! is_storage<not_storage>::value);
+
     struct throwing
     {
         static
         constexpr
-        unsigned long long
-        id()
-        {
-            return 0;
-        }
+        std::uint64_t
+        id = 0;
 
         static
         constexpr
         bool
-        need_free()
-        {
-            return true;
-        }
+        need_free = true;
 
         throwing()
         {

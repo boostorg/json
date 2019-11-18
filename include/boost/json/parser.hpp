@@ -297,7 +297,6 @@ private:
     @return A value representing the parsed JSON,
     or a null if any error occurred.
 */
-BOOST_JSON_NODISCARD
 BOOST_JSON_DECL
 value
 parse(
@@ -334,7 +333,6 @@ parse(
     @return A value representing the parsed JSON,
     or a null if any error occurred.
 */
-BOOST_JSON_NODISCARD
 BOOST_JSON_DECL
 value
 parse(

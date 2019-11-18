@@ -272,13 +272,14 @@ public:
     make_storage(Args&&... args);
 };
 
-/** Create a new storage object and return a pointer to it.
+/** Create a new, counted storage object and return a pointer to it.
 
     This functions similarly to `make_shared`.
 
     @par Mandates
-
-    `std::is_base_of_v<storage, U>`
+    @code
+    is_storage<T>::value == true
+    @endcode
 
     @par Complexity
 
@@ -292,11 +293,11 @@ public:
 
     @tparam T the type of the storage object to create.
 */
-template<class U, class... Args>
+template<class T, class... Args>
 storage_ptr
 make_storage(Args&&... args);
 
-/** Return `true` if two storage pointers point to the same object.
+/** Return true if lhs equals rhs.
 
     This function returns `true` if the @ref storage
     objects pointed to by `lhs` and `rhs` have the
@@ -311,7 +312,7 @@ operator==(
     return lhs.get() == rhs.get();
 }
 
-/** Return `true` if two storage pointers point to different objects.
+/** Return true if lhs does not equal rhs.
 
     This function returns `true` if the @ref storage
     objects pointed to by `lhs` and `rhs` have different
@@ -351,51 +352,25 @@ operator!=(
 
     @endcode
 */
-template<class T>
+template<class Storage>
 class scoped_storage
 {
-    struct impl : storage
-    {
-        T t;
+    friend storage_ptr;
 
-        template<class... Args>
-        constexpr
-        explicit
-        impl(Args&&... args)
-            : storage(
-                T::id(),
-                T::need_free(),
-                false)
-            , t(std::forward<Args>(args)...)
-        {
-        }
+    detail::storage_impl<Storage> impl_;
 
-        void*
-        allocate(
-            std::size_t n,
-            std::size_t align) override
-        {
-            return t.allocate(n, align);
-        }
-
-        void
-        deallocate(
-            void* p,
-            std::size_t n,
-            std::size_t align) noexcept override
-        {
-            t.deallocate(p, n, align);
-        }
-    };
-
-    impl impl_;
+    // If this generates an error, it means that your
+    // type `Storage` does not meet the named requirements.
+    //
+    static_assert(is_storage<Storage>::value,
+        "Storage requirements not met");
 
 public:
     /** Constructor.
 
         @par Exception Safety
 
-        Any exceptions thrown by `T::T`.
+        Any exceptions thrown by `Storage::Storage`.
 
         @param args Arguments forwarded to the
         constructor of the storage object.
@@ -404,24 +379,33 @@ public:
     constexpr
     explicit
     scoped_storage(Args&&... args)
-        : impl_(std::forward<Args>(args)...)
+        : impl_(false,
+            std::forward<Args>(args)...)
     {
     }
 
-    /** Return a pointer to the storage object.
+    /** Return a pointer to the Storage object.
     */
-    storage*
+    Storage*
     get() noexcept
     {
         return &impl_;
     }
 
-    /** Return a pointer to the storage object.
+    /** Return a pointer to the Storage object.
     */
-    T*
+    Storage*
     operator->() noexcept
     {
         return &impl_.t;
+    }
+
+    /** Return a storage pointer to the Storage object.
+    */
+    storage_ptr
+    get_storage_ptr() noexcept
+    {
+        return storage_ptr(&impl_);
     }
 
     /** Implicit conversion to @ref storage_ptr.
@@ -431,7 +415,7 @@ public:
     */
     operator storage_ptr() noexcept
     {
-        return storage_ptr(&impl_);
+        return get_storage_ptr();
     }
 };
 

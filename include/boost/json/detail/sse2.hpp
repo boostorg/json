@@ -135,10 +135,10 @@ parse_unsigned( uint64_t r, char const* p ) noexcept
 #else
 
 inline
-size_t
+std::size_t
 count_unescaped(
     char const*,
-    unsigned long long) noexcept
+    std::size_t) noexcept
 {
     return 0;
 }

@@ -63,19 +63,13 @@ class block_storage
 public:
     static
     constexpr
-    unsigned long long
-    id()
-    {
-        return 0;
-    }
+    std::uint64_t
+    id = 0;
 
     static
     constexpr
     bool
-    need_free()
-    {
-        return false;
-    }
+    need_free = false;
 
     ~block_storage()
     {

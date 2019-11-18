@@ -40,19 +40,13 @@ struct fail_storage
 {
     static
     constexpr
-    unsigned long long
-    id()
-    {
-        return 0;
-    }
+    std::uint64_t
+    id = 0;
 
     static
     constexpr
     bool
-    need_free()
-    {
-        return true;
-    }
+    need_free = true;
 
     std::size_t fail_max = 0;
     std::size_t fail = 0;
@@ -118,19 +112,13 @@ struct unique_storage
 {
     static
     constexpr
-    unsigned long long
-    id()
-    {
-        return 0;
-    }
+    std::uint64_t
+    id = 0;
 
     static
     constexpr
     bool
-    need_free()
-    {
-        return true;
-    }
+    need_free = true;
 
     void*
     allocate(

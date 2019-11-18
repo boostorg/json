@@ -1,5 +1,5 @@
 [/
-    Copyright (c) 2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+    Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
 
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -13,6 +13,8 @@
 * [link json.usage.strings Strings]
 * [link json.usage.arrays Arrays]
 * [link json.usage.objects Objects]
+* [link json.usage.numbers Numbers]
+* [link json.usage.storage Storage]
 * [link json.usage.parsing Parsing]
 * [link json.usage.serializing Serializing]
 * [link json.usage.exchange Exchange]
@@ -32,8 +34,9 @@ using namespace json;
 [include 02_3_arrays.qbk]
 [include 02_4_objects.qbk]
 [include 02_5_numbers.qbk]
-[include 02_6_parsing.qbk]
-[include 02_7_serializing.qbk]
-[include 02_8_exchange.qbk]
+[include 02_6_storage.qbk]
+[include 02_7_parsing.qbk]
+[include 02_8_serializing.qbk]
+[include 02_9_exchange.qbk]
 
 [endsect]

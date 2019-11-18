@@ -2,7 +2,7 @@
 <!DOCTYPE library PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN" "../../../../tools/boostbook/dtd/boostbook.dtd">
 
 <!--
-  Copyright (c) 2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+  Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
 
   Distributed under the Boost Software License, Version 1.0. (See accompanying
   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -49,6 +49,7 @@
         <simplelist type="vert" columns="1">
           <member><link linkend="json.ref.boost__json__has_from_json">has_from_json</link></member>
           <member><link linkend="json.ref.boost__json__has_to_json">has_to_json</link></member>
+          <member><link linkend="json.ref.boost__json__is_storage">is_storage</link></member>
           <member><link linkend="json.ref.boost__json__value_exchange">value_exchange</link></member>
         </simplelist>
       </entry>

@@ -18,6 +18,11 @@
 namespace boost {
 namespace json {
 
+namespace detail {
+template<class T>
+struct storage_impl;
+} // detail
+
 /** Abstract interface to a memory resource used with JSON.
 
     This interface is modeled similarly to
@@ -37,16 +42,29 @@ namespace json {
 */
 class storage
 {
-    std::atomic<
-        unsigned long long> refs_{ 1 };
-    unsigned long long const id_ = 0;
+    std::atomic<std::size_t> refs_{ 1 };
+    std::uint64_t const id_ = 0;
     bool const need_free_ ;
     bool const counted_;
 
     friend class storage_ptr;
 
     template<class T>
-    friend class scoped_storage;
+    friend struct detail::storage_impl;
+
+    // Choose a unique 64-bit random number from here:
+    // https://www.random.org/cgi-bin/randbyte?nbytes=8&format=h
+    constexpr
+    explicit
+    storage(
+        unsigned long long id,
+        bool need_free,
+        bool counted) noexcept
+        : id_(id)
+        , need_free_(need_free || counted)
+        , counted_(counted)
+    {
+    }
 
 public:
     virtual
@@ -82,6 +100,7 @@ public:
         requested size and alignment cannot be
         obtained.
     */
+    BOOST_JSON_NODISCARD
     virtual
     void*
     allocate(
@@ -120,20 +139,6 @@ public:
     operator!=(
         storage const& lhs,
         storage const& rhs) noexcept;
-
-    // Choose a unique 64-bit random number from here:
-    // https://www.random.org/cgi-bin/randbyte?nbytes=8&format=h
-    constexpr
-    explicit
-    storage(
-        unsigned long long id,
-        bool need_free,
-        bool counted) noexcept
-        : id_(id)
-        , need_free_(need_free || counted)
-        , counted_(counted)
-    {
-    }
 };
 
 /** Return true if lhs equals rhs.
@@ -158,7 +163,57 @@ operator!=(
     return ! lhs.is_equal(rhs);
 }
 
+/** Metafunction to determine if a type meets the requirements of Storage.
+
+    This type alias is `std::true_type` if the type
+    `T` satisfies the syntactic requirements of <em>Storage</em>,
+    otherwise it is equivalent to `std::false_type`.
+
+    @par Exemplar
+
+    For the following declaration,
+    `is_storage<Storage>` is `std::true_type`:
+
+    @code
+    struct Storage
+    {
+        static constexpr std::uint64_t id = 0;
+        static_constexpr bool need_free = true;
+
+        void* allocate( std::size_t bytes, std::size_t align );
+        void deallocate( void* p, std::size_t bytes, std::size_t align );
+    };
+    @endcode
+
+    @tparam T The type to check.
+*/
+#if GENERATING_DOCUMENTATION
+template<class T>
+using is_storage = __see_below__;
+#else
+template<class T, class = void>
+struct is_storage : std::false_type {};
+
+template<class T>
+struct is_storage<T, detail::void_t<decltype(
+    T::id,
+    T::need_free,
+    std::declval<void*&>() =
+        std::declval<T&>().allocate(
+            std::declval<std::size_t>(),
+            std::declval<std::size_t>()),
+    std::declval<T&>().deallocate(
+            std::declval<void*>(),
+            std::declval<std::size_t>(),
+            std::declval<std::size_t>())
+            ) > > : std::true_type
+{
+};
+#endif
+
 } // json
 } // boost
+
+#include <boost/json/impl/storage.hpp>
 
 #endif

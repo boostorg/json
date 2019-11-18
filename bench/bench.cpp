@@ -50,46 +50,17 @@ class any_impl
 {
 public:
     virtual ~any_impl() = default;
+    
     virtual string_view name() const noexcept = 0;
+    
     virtual void parse(string_view s, int repeat) const = 0;
+    
+    virtual void parse_reuse(string_view s, int repeat) const
+    {
+        parse(s, repeat);
+    }
+    
     virtual void serialize(string_view s, int repeat) const = 0;
-};
-
-//----------------------------------------------------------
-
-class boost_impl : public any_impl
-{
-public:
-    string_view
-    name() const noexcept override
-    {
-        return "boost(block)";
-    }
-
-    void
-    parse(
-        string_view s,
-        int repeat) const override
-    {
-        while(repeat--)
-        {
-            scoped_storage<
-                block_storage> ss;
-            json::parse(s, ss);
-        }
-    }
-
-    void
-    serialize(
-        string_view s,
-        int repeat) const override
-    {
-        scoped_storage<
-            block_storage> ss;
-        auto jv = json::parse(s, ss);
-        while(repeat--)
-            to_string(jv);
-    }
 };
 
 //----------------------------------------------------------
@@ -113,11 +84,80 @@ public:
     }
 
     void
+    parse_reuse(
+        string_view s,
+        int repeat) const override
+    {
+        parser p;
+        while(repeat--)
+        {
+            p.start();
+            error_code ec;
+            p.finish(s.data(), s.size(), ec);
+            auto jv = p.release();
+        }
+    }
+
+    void
     serialize(
         string_view s,
         int repeat) const override
     {
         auto jv = json::parse(s);
+        while(repeat--)
+            to_string(jv);
+    }
+};
+
+//----------------------------------------------------------
+
+class boost_block_impl : public any_impl
+{
+public:
+    string_view
+    name() const noexcept override
+    {
+        return "boost(block)";
+    }
+
+    void
+    parse(
+        string_view s,
+        int repeat) const override
+    {
+        while(repeat--)
+        {
+            scoped_storage<
+                block_storage> ss;
+            json::parse(s, ss);
+        }
+    }
+
+    void
+    parse_reuse(
+        string_view s,
+        int repeat) const override
+    {
+        scoped_storage<
+            block_storage> ss;
+        parser p;
+        while(repeat--)
+        {
+            p.start(ss);
+            error_code ec;
+            p.finish(s.data(), s.size(), ec);
+            auto jv = p.release();
+        }
+    }
+
+    void
+    serialize(
+        string_view s,
+        int repeat) const override
+    {
+        scoped_storage<
+            block_storage> ss;
+        auto jv = json::parse(s, ss);
         while(repeat--)
             to_string(jv);
     }
@@ -247,12 +287,67 @@ public:
 
 //----------------------------------------------------------
 
-struct rapidjson_impl : public any_impl
+struct rapidjson_crt_impl : public any_impl
 {
     string_view
     name() const noexcept override
     {
-        return "rapidjson";
+        return "rapidjson(crt)";
+    }
+
+    void
+    parse(string_view s, int repeat) const override
+    {
+        using namespace rapidjson;
+        CrtAllocator alloc;
+        while(repeat--)
+        {
+            GenericDocument<
+                UTF8<>, CrtAllocator> d(&alloc);
+            d.Parse(s.data(), s.size());
+        }
+    }
+
+    void
+    parse_reuse(
+        string_view s, int repeat) const override
+    {
+        using namespace rapidjson;
+        CrtAllocator alloc;
+        GenericDocument<
+            UTF8<>, CrtAllocator> d(&alloc);
+        while(repeat--)
+        {
+            d.Clear();
+            d.Parse(s.data(), s.size());
+        }
+    }
+
+    void
+    serialize(string_view s, int repeat) const override
+    {
+        using namespace rapidjson;
+        CrtAllocator alloc;
+        GenericDocument<
+            UTF8<>, CrtAllocator> d(&alloc);
+        d.Parse(s.data(), s.size());
+        while(repeat--)
+        {
+            rapidjson::StringBuffer st;
+            st.Clear();
+            rapidjson::Writer<
+                rapidjson::StringBuffer> wr(st);
+            d.Accept(wr);
+        }
+    }
+};
+
+struct rapidjson_pool_impl : public any_impl
+{
+    string_view
+    name() const noexcept override
+    {
+        return "rapidjson(pool)";
     }
 
     void
@@ -261,6 +356,18 @@ struct rapidjson_impl : public any_impl
         while(repeat--)
         {
             rapidjson::Document d;
+            d.Parse(s.data(), s.size());
+        }
+    }
+
+    void
+    parse_reuse(
+        string_view s, int repeat) const override
+    {
+        rapidjson::Document d;
+        while(repeat--)
+        {
+            d.Clear();
             d.Parse(s.data(), s.size());
         }
     }
@@ -335,11 +442,66 @@ load_file(char const* path)
 }
 
 void
+benchParseSmall(
+    std::vector<std::unique_ptr<
+        any_impl const>> const& vi)
+{
+    string_view text =
+R"xx({
+    "glossary": {
+        "title": "example glossary",
+		"GlossDiv": {
+            "title": "S",
+			"GlossList": {
+                "GlossEntry": {
+                    "ID": "SGML",
+					"SortAs": "SGML",
+					"GlossTerm": "Standard Generalized Markup Language",
+					"Acronym": "SGML",
+					"Abbrev": "ISO 8879:1986",
+					"GlossDef": {
+                        "para": "A meta-markup language, used to create markup languages such as DocBook.",
+						"GlossSeeAlso": ["GML", "XML"]
+                    },
+					"GlossSee": "markup"
+                }
+            }
+        }
+    }
+})xx";
+    auto const Repeat = 500000U;
+    {
+        dout <<
+            "Parse small JSON (" <<
+                text.size() << " bytes)" <<
+                std::endl;
+        for(unsigned j = 0; j < vi.size(); ++j)
+        {
+            for(unsigned k = 0; k < 10; ++k)
+            {
+                auto const when = clock_type::now();
+                vi[j]->parse_reuse(text, 500000);
+                auto const ms = std::chrono::duration_cast<
+                    std::chrono::milliseconds>(
+                    clock_type::now() - when).count();
+                if(k > 4)
+                    dout << vi[j]->name() << ", " <<
+                        std::to_string(ms) << "ms, " <<
+                        (Repeat * text.size() / ms / 1024) << "Mb/s" <<
+                        std::endl;
+            }
+        }
+        dout << std::endl;
+    }
+}
+
+void
 benchParse(
     file_list const& vs,
     std::vector<std::unique_ptr<
         any_impl const>> const& vi)
 {
+    auto const Repeat = 250U;
     for(unsigned i = 0; i < vs.size(); ++i)
     {
         dout <<
@@ -352,13 +514,14 @@ benchParse(
             for(unsigned k = 0; k < 10; ++k)
             {
                 auto const when = clock_type::now();
-                vi[j]->parse(vs[i].text, 250);
+                vi[j]->parse(vs[i].text, Repeat);
                 auto const ms = std::chrono::duration_cast<
                     std::chrono::milliseconds>(
                     clock_type::now() - when).count();
                 if(k > 4)
-                    dout << " " << vi[j]->name() << ": " <<
-                        std::to_string(ms) << "ms" <<
+                    dout << vi[j]->name() << ", " <<
+                        std::to_string(ms) << "ms, " <<
+                        (Repeat * vs[i].text.size() / ms / 1024) << "Mb/s" <<
                         std::endl;
             }
         }
@@ -372,25 +535,27 @@ benchSerialize(
     std::vector<std::unique_ptr<
         any_impl const>> const& vi)
 {
+    auto const Repeat = 1000U;
     for(unsigned i = 0; i < vs.size(); ++i)
     {
         dout <<
             "Serialize File " << std::to_string(i+1) <<
                 " " << vs[i].name << " (" <<
-                std::to_string(vs[i].text.size()) << " bytes)" <<
+                vs[i].text.size() << " bytes)" <<
                 std::endl;
         for(unsigned j = 0; j < vi.size(); ++j)
         {
             for(unsigned k = 0; k < 10; ++k)
             {
                 auto const when = clock_type::now();
-                vi[j]->serialize(vs[i].text, 1000);
+                vi[j]->serialize(vs[i].text, Repeat);
                 auto const ms = std::chrono::duration_cast<
                     std::chrono::milliseconds>(
                     clock_type::now() - when).count();
                 if(k > 4)
-                    dout << " " << vi[j]->name() << ": " <<
-                        std::to_string(ms) << "ms" <<
+                    dout << vi[j]->name() << ", " <<
+                        std::to_string(ms) << "ms, " <<
+                        (Repeat * vs[i].text.size() / ms / 1024) << "Mb/s" <<
                         std::endl;
             }
         }
@@ -421,15 +586,21 @@ main(
     {
         std::vector<std::unique_ptr<any_impl const>> vi;
         vi.reserve(10);
-        //vi.emplace_back(new boost_null_impl);
+#if 1
+        vi.emplace_back(new boost_null_impl);
         vi.emplace_back(new boost_default_impl);
-        vi.emplace_back(new boost_impl);
+        vi.emplace_back(new boost_block_impl);
         //vi.emplace_back(new boost_vec_impl);
-        vi.emplace_back(new rapidjson_impl);
-        vi.emplace_back(new nlohmann_impl);
+        vi.emplace_back(new rapidjson_crt_impl);
+        vi.emplace_back(new rapidjson_pool_impl);
+        //vi.emplace_back(new nlohmann_impl);
+#else
+        vi.emplace_back(new boost_block_impl);
+#endif
 
-        benchParse(vs, vi);
-        benchSerialize(vs, vi);
+        benchParseSmall(vi);
+        //benchParse(vs, vi);
+        //benchSerialize(vs, vi);
     }
     catch(system_error const& se)
     {

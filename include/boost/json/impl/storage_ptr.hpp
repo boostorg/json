@@ -20,21 +20,17 @@ namespace json {
 
 namespace detail {
 
-struct default_storage_impl
+struct default_impl
 {
     static
     constexpr
-    unsigned long long id()
-    { 
-        return 0x3b88990852d58ae4;
-    }
+    std::uint64_t
+    id = 0x3b88990852d58ae4;
 
     static
     constexpr
-    bool need_free()
-    {
-        return true;
-    }
+    bool
+    need_free = true;
 
     void*
     allocate(
@@ -54,41 +50,6 @@ struct default_storage_impl
     }
 };
 
-template<class T>
-struct counted_storage_impl : storage
-{
-    T t;
-
-    template<class... Args>
-    constexpr
-    explicit
-    counted_storage_impl(Args&&... args)
-        : storage(
-            T::id(),
-            T::need_free(),
-            true)
-        , t(std::forward<Args>(args)...)
-    {
-    }
-
-    void*
-    allocate(
-        std::size_t n,
-        std::size_t align) override
-    {
-        return t.allocate(n, align);
-    }
-
-    void
-    deallocate(
-        void* p,
-        std::size_t n,
-        std::size_t align) noexcept override
-    {
-        t.deallocate(p, n, align);
-    }
-};
-
 } // detail
 
 //----------------------------------------------------------
@@ -101,8 +62,8 @@ get() const noexcept
     [[clang::require_constant_initialization]] 
 #endif
     static scoped_storage<
-        detail::default_storage_impl> impl;
-    return p_ ? p_ : impl.get();
+        detail::default_impl> ss;
+    return p_ ? p_ : &ss.impl_;
 }
 
 //----------------------------------------------------------
@@ -111,8 +72,13 @@ template<class Storage, class... Args>
 storage_ptr
 make_storage(Args&&... args)
 {
+    // If this generates an error, it means that your
+    // type `Storage` does not meet the named requirements.
+    //
+    static_assert(is_storage<Storage>::value,
+        "Storage requirements not met");
     return storage_ptr(new 
-        detail::counted_storage_impl<Storage>(
+        detail::storage_impl<Storage>(true,
             std::forward<Args>(args)...));
 }
 

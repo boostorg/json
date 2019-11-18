@@ -1,5 +1,5 @@
 [/
-    Copyright (c) 2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+    Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
 
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -48,12 +48,15 @@
 [def __basic_parser__           [link json.ref.boost__json__basic_parser `basic_parser`]]
 [def __block_storage__          [link json.ref.boost__json__block_storage `block_storage`]]
 [def __key_value_pair__         [link json.ref.boost__json__key_value_pair `key_value_pair`]]
+[def __is_storage__             [link json.ref.boost__json__is_storage `is_storage`]]
 [def __kind__                   [link json.ref.boost__json__kind `kind`]]
+[def __make_storage__           [link json.ref.boost__json__make_storage `make_storage`]]
 [def __number__                 [link json.ref.boost__json__number `number`]]
 [def __object__                 [link json.ref.boost__json__object `object`]]
 [def __parse__                  [link json.ref.boost__json__parse `parse`]]
 [def __parser__                 [link json.ref.boost__json__parser `parser`]]
 [def __value__                  [link json.ref.boost__json__value `value`]]
+[def __scoped_storage__         [link json.ref.boost__json__scoped_storage `scoped_storage`]]
 [def __serializer__             [link json.ref.boost__json__serializer `serializer`]]
 [def __storage__                [link json.ref.boost__json__storage `storage`]]
 [def __storage_ptr__            [link json.ref.boost__json__storage_ptr `storage_ptr`]]
