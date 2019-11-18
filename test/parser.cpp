@@ -102,51 +102,6 @@ public:
     }
     
     void
-    legacyTests()
-    {
-        string_view in =
-R"xx({
-    "glossary": {
-        "title": "example glossary",
-		"GlossDiv": {
-            "title": "S",
-			"GlossList": {
-                "GlossEntry": {
-                    "ID": "SGML",
-					"SortAs": "SGML",
-					"GlossTerm": "Standard Generalized Markup Language",
-					"Acronym": "SGML",
-					"Abbrev": "ISO 8879:1986",
-					"GlossDef": {
-                        "para": "A meta-markup language, used to create markup languages such as DocBook.",
-						"GlossSeeAlso": ["GML", "XML"]
-                    },
-					"GlossSee": "markup"
-                }
-            }
-        }
-    }
-})xx"
-        ;
-        parser p;
-        error_code ec;
-        p.start();
-        p.write(in.data(), in.size(), ec);
-        if(BEAST_EXPECTS(! ec, ec.message()))
-        {
-            BEAST_EXPECT(to_string_test(p.release()) ==
-                "{\"glossary\":{\"title\":\"example glossary\",\"GlossDiv\":"
-                "{\"title\":\"S\",\"GlossList\":{\"GlossEntry\":{\"ID\":\"SGML\","
-                "\"SortAs\":\"SGML\",\"GlossTerm\":\"Standard Generalized Markup "
-                "Language\",\"Acronym\":\"SGML\",\"Abbrev\":\"ISO 8879:1986\","
-                "\"GlossDef\":{\"para\":\"A meta-markup language, used to create "
-                "markup languages such as DocBook.\",\"GlossSeeAlso\":[\"GML\",\"XML\"]},"
-                "\"GlossSee\":\"markup\"}}}}}"
-            );
-        }
-    }
-
-    void
     testObjects()
     {
         grind("{}");
@@ -350,8 +305,9 @@ R"xx({
             }
 
             {
-                BEAST_THROWS(parse(
-                    "{,"),
+                value jv;
+                BEAST_THROWS(
+                    jv = parse("{,"),
                     system_error);
             }
         }
@@ -362,11 +318,59 @@ R"xx({
                 scoped_storage<block_storage> sp;
                 check_round_trip(parse(js, sp), js);
             }
+
             {
                 scoped_storage<block_storage> sp;
-                BEAST_THROWS(parse("xxx", sp),
+                value jv;
+                BEAST_THROWS(
+                    jv = parse("xxx", sp),
                     system_error);
             }
+        }
+    }
+
+    void
+    testSampleJson()
+    {
+        string_view in =
+R"xx({
+    "glossary": {
+        "title": "example glossary",
+		"GlossDiv": {
+            "title": "S",
+			"GlossList": {
+                "GlossEntry": {
+                    "ID": "SGML",
+					"SortAs": "SGML",
+					"GlossTerm": "Standard Generalized Markup Language",
+					"Acronym": "SGML",
+					"Abbrev": "ISO 8879:1986",
+					"GlossDef": {
+                        "para": "A meta-markup language, used to create markup languages such as DocBook.",
+						"GlossSeeAlso": ["GML", "XML"]
+                    },
+					"GlossSee": "markup"
+                }
+            }
+        }
+    }
+})xx"
+        ;
+        parser p;
+        error_code ec;
+        p.start();
+        p.finish(in.data(), in.size(), ec);
+        if(BEAST_EXPECTS(! ec, ec.message()))
+        {
+            BEAST_EXPECT(to_string(p.release()) ==
+                "{\"glossary\":{\"title\":\"example glossary\",\"GlossDiv\":"
+                "{\"title\":\"S\",\"GlossList\":{\"GlossEntry\":{\"ID\":\"SGML\","
+                "\"SortAs\":\"SGML\",\"GlossTerm\":\"Standard Generalized Markup "
+                "Language\",\"Acronym\":\"SGML\",\"Abbrev\":\"ISO 8879:1986\","
+                "\"GlossDef\":{\"para\":\"A meta-markup language, used to create "
+                "markup languages such as DocBook.\",\"GlossSeeAlso\":[\"GML\",\"XML\"]},"
+                "\"GlossSee\":\"markup\"}}}}}"
+            );
         }
     }
 
@@ -381,9 +385,7 @@ R"xx({
         testNull();
         testMembers();
         testFreeFunctions();
-
-        // This still doesn't work..
-        //legacyTests();
+        testSampleJson();
     }
 };
 
