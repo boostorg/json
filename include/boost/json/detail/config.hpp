@@ -133,6 +133,33 @@
 namespace boost {
 namespace json {
 
+#ifndef BOOST_JSON_STANDALONE
+
+/// The type of string view used by the library
+using string_view = boost::string_view;
+
+/// The type of error code used by the library
+using error_code = boost::system::error_code;
+
+/// The type of system error thrown by the library
+using system_error = boost::system::system_error;
+
+/// The type of error category used by the library
+using error_category = boost::system::error_category;
+
+/// The type of error condition used by the library
+using error_condition = boost::system::error_condition;
+
+#else
+
+using error_code = std::error_code;
+using error_category = std::error_category;
+using error_condition = std::error_condition;
+using string_view = std::string_view;
+using system_error = std::system_error;
+
+#endif
+
 namespace detail {
 
 template<class...>
@@ -237,33 +264,6 @@ using remove_cr =
     typename remove_reference<T>::type>::type;
 
 } // detail
-
-#ifndef BOOST_JSON_STANDALONE
-
-/// The type of string view used by the library
-using string_view = boost::string_view;
-
-/// The type of error code used by the library
-using error_code = boost::system::error_code;
-
-/// The type of system error thrown by the library
-using system_error = boost::system::system_error;
-
-/// The type of error category used by the library
-using error_category = boost::system::error_category;
-
-/// The type of error condition used by the library
-using error_condition = boost::system::error_condition;
-
-#else
-
-using error_code = std::error_code;
-using error_category = std::error_category;
-using error_condition = std::error_condition;
-using string_view = std::string_view;
-using system_error = std::system_error;
-
-#endif
 
 } // json
 } // boost

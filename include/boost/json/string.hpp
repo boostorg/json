@@ -2016,37 +2016,38 @@ public:
     bool
     starts_with(string_view s) const noexcept
     {
-        return string_view(*this).starts_with(s);
+        return substr(0, s.size()) == s;
     }
 
     bool
     starts_with(char ch) const noexcept
     {
-        return string_view(*this).starts_with(ch);
+        return ! empty() && front() == ch;
     }
 
     bool 
     starts_with(char const* s) const
     {
-        return string_view(*this).starts_with(s);
+        return starts_with(string_view(s));
     }
 
     bool
     ends_with(string_view s) const noexcept
     {
-        return string_view(*this).ends_with(s);
+        return size() >= s.size() &&
+            substr(size() - s.size()) == s;
     }
 
     bool
     ends_with(char ch) const noexcept
     {
-        return string_view(*this).ends_with(ch);
+        return ! empty() && back() == ch;
     }
 
     bool 
     ends_with(char const* s) const
     {
-        return string_view(*this).ends_with(s);
+        return ends_with(string_view(s));
     }
 
     //------------------------------------------------------
@@ -2646,46 +2647,22 @@ operator<<(std::ostream& os, string const& s)
 /** Return true if lhs equals rhs.
 
     A lexicographical comparison is used.
-
-    @par Constraints
-    @code
-    std::is_convertible_v<T const&, string_view>
-    @endcode
 */
-template<class T>
 #ifdef GENERATING_DOCUMENTATION
 bool
+operator==(string const& lhs, string const& rhs) noexcept
 #else
+template<class T, class U>
 typename std::enable_if<
-    std::is_convertible<
-        T const&, string_view>::value,
+    (std::is_same<T, string>::value &&
+     std::is_convertible<
+        U const&, string_view>::value) ||
+    (std::is_same<U, string>::value &&
+     std::is_convertible<
+        T const&, string_view>::value),
     bool>::type
+operator==(T const& lhs, U const& rhs) noexcept
 #endif
-operator==(string const& lhs, T const& rhs) noexcept
-{
-    return string_view(lhs) == string_view(rhs);
-}
-
-/** Return true if lhs equals rhs.
-
-    A lexicographical comparison is used.
-
-    @par Constraints
-    @code
-    std::is_convertible_v<T const&, string_view> && ! std::is_base_of_v<string, T>
-    @endcode
-*/
-template<class T>
-#ifdef GENERATING_DOCUMENTATION
-bool
-#else
-typename std::enable_if<
-    std::is_convertible<
-        T const&, string_view>::value &&
-    ! std::is_base_of<string, T>::value,
-        bool>::type
-#endif
-operator==(T const& lhs, string const& rhs) noexcept
 {
     return string_view(lhs) == string_view(rhs);
 }
@@ -2693,46 +2670,22 @@ operator==(T const& lhs, string const& rhs) noexcept
 /** Return true if lhs does not equal rhs.
 
     A lexicographical comparison is used.
-
-    @par Constraints
-    @code
-    std::is_convertible_v<T const&, string_view>
-    @endcode
 */
-template<class T>
 #ifdef GENERATING_DOCUMENTATION
 bool
+operator!=(string const& lhs, string const& rhs) noexcept
 #else
+template<class T, class U>
 typename std::enable_if<
-    std::is_convertible<
-        T const&, string_view>::value,
+    (std::is_same<T, string>::value &&
+     std::is_convertible<
+        U const&, string_view>::value) ||
+    (std::is_same<U, string>::value &&
+     std::is_convertible<
+        T const&, string_view>::value),
     bool>::type
+operator!=(T const& lhs, U const& rhs) noexcept
 #endif
-operator!=(string const& lhs, T const& rhs) noexcept
-{
-    return string_view(lhs) != string_view(rhs);
-}
-
-/** Return true if lhs does not equal rhs.
-
-    A lexicographical comparison is used.
-
-    @par Constraints
-    @code
-    std::is_convertible_v<T const&, string_view> && ! std::is_base_of_v<string, T>
-    @endcode
-*/
-template<class T>
-#ifdef GENERATING_DOCUMENTATION
-bool
-#else
-typename std::enable_if<
-    std::is_convertible<
-        T const&, string_view>::value &&
-    ! std::is_base_of<string, T>::value,
-        bool>::type
-#endif
-operator!=(T const& lhs, string const& rhs) noexcept
 {
     return string_view(lhs) != string_view(rhs);
 }
@@ -2740,46 +2693,22 @@ operator!=(T const& lhs, string const& rhs) noexcept
 /** Return true if lhs is less than rhs.
 
     A lexicographical comparison is used.
-
-    @par Constraints
-    @code
-    std::is_convertible_v<T const&, string_view>
-    @endcode
 */
-template<class T>
 #ifdef GENERATING_DOCUMENTATION
 bool
+operator<(string const& lhs, string const& rhs) noexcept
 #else
+template<class T, class U>
 typename std::enable_if<
-    std::is_convertible<
-        T const&, string_view>::value,
+    (std::is_same<T, string>::value &&
+     std::is_convertible<
+        U const&, string_view>::value) ||
+    (std::is_same<U, string>::value &&
+     std::is_convertible<
+        T const&, string_view>::value),
     bool>::type
+operator<(T const& lhs, U const& rhs) noexcept
 #endif
-operator<(string const& lhs, T const& rhs) noexcept
-{
-    return string_view(lhs) < string_view(rhs);
-}
-
-/** Return true if lhs is less than rhs.
-
-    A lexicographical comparison is used.
-
-    @par Constraints
-    @code
-    std::is_convertible_v<T const&, string_view> && ! std::is_base_of_v<string, T>
-    @endcode
-*/
-template<class T>
-#ifdef GENERATING_DOCUMENTATION
-bool
-#else
-typename std::enable_if<
-    std::is_convertible<
-        T const&, string_view>::value &&
-    ! std::is_base_of<string, T>::value,
-        bool>::type
-#endif
-operator<(T const& lhs, string const& rhs) noexcept
 {
     return string_view(lhs) < string_view(rhs);
 }
@@ -2787,93 +2716,41 @@ operator<(T const& lhs, string const& rhs) noexcept
 /** Return true if lhs is less than or equal to rhs.
 
     A lexicographical comparison is used.
-
-    @par Constraints
-    @code
-    std::is_convertible_v<T const&, string_view>
-    @endcode
 */
-template<class T>
 #ifdef GENERATING_DOCUMENTATION
 bool
+operator<=(string const& lhs, string const& rhs) noexcept
 #else
+template<class T, class U>
 typename std::enable_if<
-    std::is_convertible<
-        T const&, string_view>::value,
+    (std::is_same<T, string>::value &&
+     std::is_convertible<
+        U const&, string_view>::value) ||
+    (std::is_same<U, string>::value &&
+     std::is_convertible<
+        T const&, string_view>::value),
     bool>::type
+operator<=(T const& lhs, U const& rhs) noexcept
 #endif
-operator<=(string const& lhs, T const& rhs) noexcept
 {
     return string_view(lhs) <= string_view(rhs);
 }
 
-/** Return true if lhs is less than or equal to rhs.
-
-    A lexicographical comparison is used.
-
-    @par Constraints
-    @code
-    std::is_convertible_v<T const&, string_view> && ! std::is_base_of_v<string, T>
-    @endcode
-*/
-template<class T>
 #ifdef GENERATING_DOCUMENTATION
 bool
+operator>=(string const& lhs, string const& rhs) noexcept
 #else
+template<class T, class U>
 typename std::enable_if<
-    std::is_convertible<
-        T const&, string_view>::value &&
-    ! std::is_base_of<string, T>::value,
-        bool>::type
-#endif
-operator<=(T const& lhs, string const& rhs) noexcept
-{
-    return string_view(lhs) <= string_view(rhs);
-}
-
-/** Return true if lhs is greater than or equal to rhs.
-
-    A lexicographical comparison is used.
-
-    @par Constraints
-    @code
-    std::is_convertible_v<T const&, string_view>
-    @endcode
-*/
-template<class T>
-#ifdef GENERATING_DOCUMENTATION
-bool
-#else
-typename std::enable_if<
-    std::is_convertible<
-        T const&, string_view>::value,
+    (std::is_same<T, string>::value &&
+     std::is_convertible<
+        U const&, string_view>::value) ||
+    (std::is_same<U, string>::value &&
+     std::is_convertible<
+        T const&, string_view>::value),
     bool>::type
+operator>=(T const& lhs, U const& rhs) noexcept
 #endif
-operator>=(string const& lhs, T const& rhs) noexcept
-{
-    return string_view(lhs) >= string_view(rhs);
-}
-
-/** Return true if lhs is greater than or equal to rhs.
-
-    A lexicographical comparison is used.
-
-    @par Constraints
-    @code
-    std::is_convertible_v<T const&, string_view> && ! std::is_base_of_v<string, T>
-    @endcode
-*/
-template<class T>
-#ifdef GENERATING_DOCUMENTATION
-bool
-#else
-typename std::enable_if<
-    std::is_convertible<
-        T const&, string_view>::value &&
-    ! std::is_base_of<string, T>::value,
-        bool>::type
-#endif
-operator>=(T const& lhs, string const& rhs) noexcept
 {
     return string_view(lhs) >= string_view(rhs);
 }
@@ -2881,46 +2758,22 @@ operator>=(T const& lhs, string const& rhs) noexcept
 /** Return true if lhs is greater than rhs.
 
     A lexicographical comparison is used.
-
-    @par Constraints
-    @code
-    std::is_convertible_v<T const&, string_view>
-    @endcode
 */
-template<class T>
 #ifdef GENERATING_DOCUMENTATION
 bool
+operator>(string const& lhs, string const& rhs) noexcept
 #else
+template<class T, class U>
 typename std::enable_if<
-    std::is_convertible<
-        T const&, string_view>::value,
+    (std::is_same<T, string>::value &&
+     std::is_convertible<
+        U const&, string_view>::value) ||
+    (std::is_same<U, string>::value &&
+     std::is_convertible<
+        T const&, string_view>::value),
     bool>::type
+operator>(T const& lhs, U const& rhs) noexcept
 #endif
-operator>(string const& lhs, T const& rhs) noexcept
-{
-    return string_view(lhs) > string_view(rhs);
-}
-
-/** Return true if lhs equals rhs.
-
-    A lexicographical comparison is used.
-
-    @par Constraints
-    @code
-    std::is_convertible_v<T const&, string_view> && ! std::is_base_of_v<string, T>
-    @endcode
-*/
-template<class T>
-#ifdef GENERATING_DOCUMENTATION
-bool
-#else
-typename std::enable_if<
-    std::is_convertible<
-        T const&, string_view>::value &&
-    ! std::is_base_of<string, T>::value,
-        bool>::type
-#endif
-operator>(T const& lhs, string const& rhs) noexcept
 {
     return string_view(lhs) > string_view(rhs);
 }

@@ -13,6 +13,7 @@
 #include <boost/json/config.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <cstdint>
+#include <cstring>
 
 namespace boost {
 namespace json {

@@ -10,6 +10,20 @@
 import testing ;
 import ../../config/checks/config : requires ;
 
+import os ;
+STANDALONE = [ os.environ STANDALONE ] ;
+if $(STANDALONE)
+{
+    LIB =
+        <define>BOOST_JSON_STANDALONE=1
+        <source>../src/src.cpp
+        ;
+}
+else
+{
+    LIB = <library>/boost/json//boost_json ;
+}
+
 local SOURCES =
     array.cpp
     assign_string.cpp
@@ -42,14 +56,15 @@ for local f in $(SOURCES)
 {
     RUN_TESTS += [
         run $(f) main.cpp : : :
-            <library>/boost/json//boost_json
+            $(LIB)
         ] ;
 }
 
 for local f in $(LIMIT_SOURCES)
 {
     RUN_TESTS += [
-        run $(f) main.cpp ../src/src.cpp : : :
+        run $(f) main.cpp : : :
+            <source>../src/src.cpp
             <define>BOOST_JSON_MAX_STRING_SIZE=1000
             <define>BOOST_JSON_MAX_OBJECT_SIZE=30
             <define>BOOST_JSON_MAX_ARRAY_SIZE=100

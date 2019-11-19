@@ -12,6 +12,7 @@
 
 #include <boost/json/config.hpp>
 #include <boost/json/storage_ptr.hpp>
+#include <cstring>
 #include <new>
 #include <utility>
 

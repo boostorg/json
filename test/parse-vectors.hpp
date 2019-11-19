@@ -15,13 +15,16 @@
 #include <cstdlib>
 #include <type_traits>
 
+namespace boost {
+namespace json {
+
 struct parse_vectors
 {
     struct item
     {
         char result;
-        ::boost::string_view name;
-        ::boost::string_view text;
+        string_view name;
+        string_view text;
     };
 
     using iterator = item const*;
@@ -47,7 +50,7 @@ struct parse_vectors
 private:
     template<std::size_t N>
     static
-    ::boost::string_view
+    string_view
     lit(char const (&s)[N])
     {
         return {s, N - 1};
@@ -1468,5 +1471,8 @@ parse_vectors() noexcept
     last_ = &list[std::extent<
         decltype(list)>::value - 1];
 }
+
+} // json
+} // boost
 
 #endif

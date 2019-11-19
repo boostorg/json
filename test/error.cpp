@@ -22,7 +22,7 @@ public:
     void check(error e)
     {
         auto const ec = make_error_code(e);
-        ec.category().name();
+        BEAST_EXPECT(ec.category().name() != nullptr);
         BEAST_EXPECT(! ec.message().empty());
         BEAST_EXPECT(ec.category().default_error_condition(
             static_cast<int>(e)).category() == ec.category());

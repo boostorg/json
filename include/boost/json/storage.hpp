@@ -196,8 +196,8 @@ struct is_storage : std::false_type {};
 
 template<class T>
 struct is_storage<T, detail::void_t<decltype(
-    T::id,
-    T::need_free,
+    std::declval<std::uint64_t&>() = T::id,
+    std::declval<bool&>() = T::need_free,
     std::declval<void*&>() =
         std::declval<T&>().allocate(
             std::declval<std::size_t>(),

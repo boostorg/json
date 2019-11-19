@@ -7,18 +7,31 @@
 # Official repository: https://github.com/vinniefalco/json
 #
 
+import testing ;
 import ../../config/checks/config : requires ;
+
+import os ;
+STANDALONE = [ os.environ STANDALONE ] ;
+if $(STANDALONE)
+{
+    LIB =
+        <define>BOOST_JSON_STANDALONE=1
+        <source>../src/src.cpp
+        ;
+}
+else
+{
+    LIB = <library>/boost/json//boost_json ;
+}
 
 exe pretty :
     pretty.cpp
-    :
-    <toolset>msvc:<define>_CRT_SECURE_NO_WARNINGS
-    <library>/boost/json//boost_json
+    : :
+    $(LIB)
     ;
 
 exe validate :
     validate.cpp
-    :
-    <toolset>msvc:<define>_CRT_SECURE_NO_WARNINGS
-    <library>/boost/json//boost_json
+    : :
+    $(LIB)
     ;

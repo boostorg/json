@@ -94,6 +94,15 @@ environment:
       B2_TOOLSET: msvc-14.1
       B2_VARIANT: variant=debug
 
+    - FLAVOR: Visual Studio 2017 C++17 Standalone
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      B2_ADDRESS_MODEL: address-model=64
+      B2_CXXSTD: 17
+      B2_DEFINES: define=BOOST_JSON_STANDALONE
+      B2_TOOLSET: msvc-14.1
+      B2_VARIANT: variant=debug
+      STANDALONE: 1
+
     - FLAVOR: Visual Studio 2017 C++14 (Default)
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       B2_ADDRESS_MODEL: address-model=64,32

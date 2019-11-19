@@ -688,9 +688,6 @@ public:
             // do rollback in ~undo_insert
             fail_loop([&](storage_ptr const& sp)
             {
-                std::string const big(
-                    string().capacity() + 1, '*');
-                string_view const sv(big);
                 object o(sp);
                 o.insert({
                     { "a", { 1, 2, 3, 4 } } });
