@@ -61,10 +61,10 @@ if( ec )
 The calls above will produce values that use the default
 storage. Each parse function allows an additional parameter
 specifying the storage to use. Here we start the parser with
-a new instance of __block_storage__ for the resulting value:
+a new instance of __pool__ for the resulting value:
 
 ```
-value jv = parse( "[1,2,3,4,5]", make_storage<block_storage>() );
+value jv = parse( "[1,2,3,4,5]", make_storage<pool>() );
 ```
 
 These free functions use a temporary __parser__ instance, which
@@ -139,7 +139,7 @@ instance of block storage:
     parser p;
 
     // Declare a new, scoped instance of the block storage
-    scoped_storage< block_storage > sp;
+    scoped_storage< pool > sp;
 
     // Use the scoped instance for the parsed value
     p.start( sp );

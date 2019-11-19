@@ -33,7 +33,7 @@ using the default storage, or a specified storage:
 ```
 object obj1; // empty object, default storage
 
-object obj2( make_storage<block_storage>() ); // empty object, block storage
+object obj2( make_storage<pool>() ); // empty object, pool storage
 ```
 
 Initializer lists consisting of two-element key value pairs can be used

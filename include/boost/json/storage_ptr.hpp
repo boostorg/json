@@ -338,14 +338,14 @@ operator!=(
 
     @par Example
 
-    This example creates a @ref block_storage with
+    This example creates a @ref pool with
     bounded lifetime and uses it to parse a JSON,
     then print it to `std::cout`.
 
     @code
 
     {
-        scoped_storage<block_storage> sp;
+        scoped_storage<pool> sp;
 
         auto jv = parse( str, sp );
     }

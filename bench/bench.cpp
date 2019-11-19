@@ -111,13 +111,13 @@ public:
 
 //----------------------------------------------------------
 
-class boost_block_impl : public any_impl
+class boost_pool_impl : public any_impl
 {
 public:
     string_view
     name() const noexcept override
     {
-        return "boost(block)";
+        return "boost(pool)";
     }
 
     void
@@ -128,7 +128,7 @@ public:
         while(repeat--)
         {
             scoped_storage<
-                block_storage> ss;
+                pool> ss;
             json::parse(s, ss);
         }
     }
@@ -139,7 +139,7 @@ public:
         int repeat) const override
     {
         scoped_storage<
-            block_storage> ss;
+            pool> ss;
         parser p;
         while(repeat--)
         {
@@ -156,7 +156,7 @@ public:
         int repeat) const override
     {
         scoped_storage<
-            block_storage> ss;
+            pool> ss;
         auto jv = json::parse(s, ss);
         while(repeat--)
             to_string(jv);
@@ -589,13 +589,13 @@ main(
 #if 1
         vi.emplace_back(new boost_null_impl);
         vi.emplace_back(new boost_default_impl);
-        vi.emplace_back(new boost_block_impl);
+        vi.emplace_back(new boost_pool_impl);
         //vi.emplace_back(new boost_vec_impl);
         vi.emplace_back(new rapidjson_crt_impl);
         vi.emplace_back(new rapidjson_pool_impl);
         //vi.emplace_back(new nlohmann_impl);
 #else
-        vi.emplace_back(new boost_block_impl);
+        vi.emplace_back(new boost_pool_impl);
 #endif
 
         benchParseSmall(vi);

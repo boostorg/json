@@ -23,7 +23,7 @@ various test files for four  implementations:
     [[
         boost(block)
     ][
-        Boost.JSON using __block_storage__.
+        Boost.JSON using __pool__.
     ]]
     [[
         rapidjson

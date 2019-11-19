@@ -11,7 +11,7 @@
 #include <boost/json/parser.hpp>
 
 #include <boost/beast/_experimental/unit_test/suite.hpp>
-#include <boost/json/block_storage.hpp>
+#include <boost/json/pool.hpp>
 #include <boost/json/serializer.hpp>
 #include <sstream>
 
@@ -281,7 +281,7 @@ public:
         {
             {
                 error_code ec;
-                scoped_storage<block_storage> sp;
+                scoped_storage<pool> sp;
                 auto jv = parse(js, ec, sp);
                 BEAST_EXPECTS(! ec, ec.message());
                 check_round_trip(jv, js);
@@ -289,7 +289,7 @@ public:
 
             {
                 error_code ec;
-                scoped_storage<block_storage> sp;
+                scoped_storage<pool> sp;
                 auto jv = parse("xxx", ec, sp);
                 BEAST_EXPECT(ec);
                 BEAST_EXPECT(jv.is_null());
@@ -315,12 +315,12 @@ public:
         // parse(string_view, storage_ptr)
         {
             {
-                scoped_storage<block_storage> sp;
+                scoped_storage<pool> sp;
                 check_round_trip(parse(js, sp), js);
             }
 
             {
-                scoped_storage<block_storage> sp;
+                scoped_storage<pool> sp;
                 value jv;
                 BEAST_THROWS(
                     jv = parse("xxx", sp),

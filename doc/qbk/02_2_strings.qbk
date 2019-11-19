@@ -28,7 +28,7 @@ memory allocations using the default storage, or a specified storage:
 ```
 string str1; // empty string, default storage
 
-string str2( make_storage<block_storage>() ); // empty string, block storage
+string str2( make_storage<pool>() ); // empty string, pool storage
 ```
 
 As with `std` strings, space may be reserved upon construction.

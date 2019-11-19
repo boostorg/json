@@ -25,7 +25,7 @@ using the default storage, or a specified storage:
 ```
 array arr1; // empty array, default storage
 
-array arr2( make_storage<block_storage>() ); // empty array, block storage
+array arr2( make_storage<pool>() ); // empty array, pool storage
 ```
 
 Initializer lists can be used to construct objects with initial

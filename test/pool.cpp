@@ -8,7 +8,7 @@
 //
 
 // Test that header file is self-contained.
-#include <boost/json/block_storage.hpp>
+#include <boost/json/pool.hpp>
 
 #include <boost/json/parser.hpp>
 #include <boost/beast/_experimental/unit_test/suite.hpp>
@@ -16,7 +16,7 @@
 namespace boost {
 namespace json {
 
-class block_storage_test : public beast::unit_test::suite
+class pool_test : public beast::unit_test::suite
 {
 public:
     void
@@ -45,7 +45,7 @@ R"xx({
         }
     }
 })xx"
-        , make_storage<block_storage>());
+        , make_storage<pool>());
         pass();
     }
 
@@ -56,7 +56,7 @@ R"xx({
     }
 };
 
-BEAST_DEFINE_TESTSUITE(boost,json,block_storage);
+BEAST_DEFINE_TESTSUITE(boost,json,pool);
 
 } // json
 } // boost

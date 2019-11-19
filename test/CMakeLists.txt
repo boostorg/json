@@ -28,7 +28,6 @@ add_executable (json-tests
     assign_string.cpp
     assign_vector.cpp
     basic_parser.cpp
-    block_storage.cpp
     error.cpp
     json.cpp
     kind.cpp
@@ -36,6 +35,7 @@ add_executable (json-tests
     number.cpp
     object.cpp
     parser.cpp
+    pool.cpp
     serializer.cpp
     storage.cpp
     storage_ptr.cpp

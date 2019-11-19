@@ -29,14 +29,6 @@ These types and functions are available:
 [table Storage Functions and Types
 [ [Name] [Description] ]
 [
-    [__block_storage__]
-    [
-        An implementation of ['Storage] using zero or more large, fixed-size
-        blocks from which allocations are made. Allocated memory is not
-        freed until ownership of the storage is released, which makes it
-        fast for parsing but less well-suited for mutation.
-    ]
-][
     [__is_storage__]
     [
         Metafunction to determine if a type meets the requirements of
@@ -47,6 +39,14 @@ These types and functions are available:
     [
         Function to create a new storage of the specified type and
         return it in a smart pointer container.
+    ]
+][
+    [__pool__]
+    [
+        An implementation of ['Storage] using zero or more large, fixed-size
+        blocks from which allocations are made. Allocated memory is not
+        freed until ownership of the storage is released, which makes it
+        fast for parsing but less well-suited for mutation.
     ]
 ][
     [__scoped_storage__]
@@ -91,38 +91,35 @@ only what is needed, and frees memory immediately when destructors run.
 When making changes to a __value__ containing a JSON document, it is a
 good choice.
 
-[heading Block Storage]
+[heading Pool Storage]
 
-The library provides another implementation called
-__block_storage__ which is optimized for parsing without subsequent
-modification. This implementation allocates large equal-sized blocks
-and divides them up as needed to satisfy allocation requests, and only
-deallocates when the lifetime of the storage ends. This example shows
-how a function accepting a string can parse the string into a value
-using a block storage and return the result:
+The library provides another implementation called __pool__, optimized
+for parsing without subsequent modification. This implementation allocates
+large equal-sized blocks and divides them up as needed to satisfy allocation
+requests, and only deallocates when the lifetime of the storage ends. This
+example shows how a function accepting a string can parse the string into
+a value using a pool and return the result:
 
 ```
 value parse_fast( string_view s )
 {
-    return parse( s, make_storage<block_storage>() );
+    return parse( s, make_storage<pool>() );
 }
 ```
 
-In the sample code above, ownership of the block storage instance
-is shared by the returned value and all of its children. The block
-storage is destroyed only when the last value referencing it goes
-away. This is accomplished by using an atomic reference count,
-incrementing and decrementing as appropriate, and destroying the
-storage object when the count is decremented to zero.
+In the sample code above, ownership of the pool is shared by the returned
+value and all of its children. The pool is destroyed only when the last
+value referencing it goes away. This is accomplished by using an atomic
+reference count, incrementing and decrementing as appropriate, and
+destroying the storage object when the count is decremented to zero.
 
-Block storage is faster for parsing and insertion, but consumes
-more memory than the default storage especially if elements are
-added and removed over time, since no allocations are not freed
-until the storage is destroyed.
+Pools are faster for parsing and insertion, but consume more memory
+than default storage especially if elements are added and removed over
+time, since allocations are not freed until the storage is destroyed.
 
 [heading Scoped Storage]
 
-Since atomic operations are relatively expensive compared to their
+As atomic operations are relatively expensive compared to their
 non-atomic counterparts, sometimes it is desirable to avoid these
 operations when the lifetime of the JSON object can be bounded.
 For example, consider a network server which receives a JSON
@@ -136,7 +133,7 @@ for the storage instead:
 ```
 void do_rpc( string_view cmd )
 {
-    scoped_storage<block_storage> sp;
+    scoped_storage<pool> sp;
 
     auto jv = parse( cmd, sp );
 
@@ -193,8 +190,8 @@ In this table:
     [
         A boolean value indicating whether or not the library needs to call
         `deallocate` for every memory buffer obtained using a corresponding
-        call to `allocate`. This is false for the default storage, which uses
-        global operator `new` and `delete`. But it is true for __block_storage__,
+        call to `allocate`. This is `true` for the default storage, which uses
+        global operator `new` and `delete`. But it is `false` for __pool__,
         since it frees all the memory when it goes out of scope.
 
         Skipping calls to `deallocate` can have significant performance

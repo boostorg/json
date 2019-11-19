@@ -7,8 +7,8 @@
 // Official repository: https://github.com/vinniefalco/json
 //
 
-#ifndef BOOST_JSON_BLOCK_STORAGE_HPP
-#define BOOST_JSON_BLOCK_STORAGE_HPP
+#ifndef BOOST_JSON_POOL_HPP
+#define BOOST_JSON_POOL_HPP
 
 #include <boost/json/config.hpp>
 #include <boost/json/storage.hpp>
@@ -20,7 +20,7 @@ namespace json {
 
 /** A storage which uses a multiple fixed size blocks
 */
-class block_storage
+class pool
 {
     struct block
     {
@@ -71,7 +71,7 @@ public:
     bool
     need_free = false;
 
-    ~block_storage()
+    ~pool()
     {
         for(auto b = head_; b;)
         {
@@ -82,7 +82,7 @@ public:
     }
 
     explicit
-    block_storage(
+    pool(
         std::size_t block_size = 64 * 1024)
         : block_size_(block_size)
     {

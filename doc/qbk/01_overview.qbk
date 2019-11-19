@@ -163,14 +163,16 @@ Lorem ipsum.
     with respect to ownership. Boost.JSON uses a reference counted
     smart pointer container to simplify the lifetime management of
     memory  resources. The library defines its own __storage__ type
-    which defines the reference counter intrusively, allowing a 50%
+    which declares the reference counter intrusively, allowing a 50%
     space savings over using a __shared_ptr__.
 ]]
 
 [[
     "Why __string__ instead of __std_string__?"
 ][
-    
+    The string provided by the library uses the __storage__ allocator
+    model, has the same interface on all C++ versions, and has an
+    optimized class layout to keep the size of JSON values small.
 ]]
 
 ]

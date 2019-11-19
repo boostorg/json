@@ -46,7 +46,6 @@
 
 [def __array__                  [link json.ref.boost__json__array `array`]]
 [def __basic_parser__           [link json.ref.boost__json__basic_parser `basic_parser`]]
-[def __block_storage__          [link json.ref.boost__json__block_storage `block_storage`]]
 [def __key_value_pair__         [link json.ref.boost__json__key_value_pair `key_value_pair`]]
 [def __is_storage__             [link json.ref.boost__json__is_storage `is_storage`]]
 [def __kind__                   [link json.ref.boost__json__kind `kind`]]
@@ -55,6 +54,7 @@
 [def __object__                 [link json.ref.boost__json__object `object`]]
 [def __parse__                  [link json.ref.boost__json__parse `parse`]]
 [def __parser__                 [link json.ref.boost__json__parser `parser`]]
+[def __pool__                   [link json.ref.boost__json__pool `pool`]]
 [def __value__                  [link json.ref.boost__json__value `value`]]
 [def __scoped_storage__         [link json.ref.boost__json__scoped_storage `scoped_storage`]]
 [def __serializer__             [link json.ref.boost__json__serializer `serializer`]]
