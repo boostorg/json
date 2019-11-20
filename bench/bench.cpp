@@ -18,6 +18,7 @@
 
 #include <boost/json.hpp>
 #include <boost/beast/_experimental/unit_test/dstream.hpp>
+#include <algorithm>
 #include <chrono>
 #include <iostream>
 #include <memory>
@@ -43,25 +44,188 @@ using clock_type = std::chrono::steady_clock;
 using string_view = boost::string_view;
 
 beast::unit_test::dstream dout{std::cerr};
+std::stringstream strout;
 
 //----------------------------------------------------------
+
+struct file_item
+{
+    string_view name;
+    std::string text;
+};
+
+using file_list = std::vector<file_item>;
 
 class any_impl
 {
 public:
     virtual ~any_impl() = default;
-    
     virtual string_view name() const noexcept = 0;
-    
     virtual void parse(string_view s, int repeat) const = 0;
-    
-    virtual void parse_reuse(string_view s, int repeat) const
-    {
-        parse(s, repeat);
-    }
-    
     virtual void serialize(string_view s, int repeat) const = 0;
 };
+
+using impl_list = std::vector<
+    std::unique_ptr<any_impl const>>;
+
+std::string
+load_file(char const* path)
+{
+    FILE* f = fopen(path, "rb");
+    fseek(f, 0, SEEK_END);
+    auto const size = ftell(f);
+    std::string s;
+    s.resize(size);
+    fseek(f, 0, SEEK_SET);
+    fread(&s[0], 1, size, f);
+    fclose(f);
+    return s;
+}
+
+struct sample
+{
+    std::size_t calls;
+    std::size_t millis;
+    std::size_t mbs;
+};
+
+// Returns the number of invocations per second
+template<
+    class Rep,
+    class Period,
+    class F>
+sample
+run_for(
+    std::chrono::duration<
+        Rep, Period> interval,
+    F&& f)
+{
+    using clock_type =
+        std::chrono::high_resolution_clock;
+    auto const when = clock_type::now();
+    auto elapsed = clock_type::now() - when;
+    std::size_t n = 0;
+    do
+    {
+        elapsed = clock_type::now() - when;
+        ++n;
+        f();
+    }
+    while(elapsed < interval);
+    return { n, static_cast<std::size_t>(
+        std::chrono::duration_cast<
+            std::chrono::milliseconds>(
+                elapsed).count()), 0 };
+}
+
+void
+bench(
+    string_view verb,
+    file_list const& vf,
+    impl_list const& vi)
+{
+    std::size_t Trials = 1;
+    int repeat = 0;
+    if(verb == "parse")
+        repeat = 1000;
+    else if(verb == "serialize")
+        repeat = 1000;
+
+    std::vector<sample> trial;
+    for(unsigned i = 0; i < vf.size(); ++i)
+    {
+        for(unsigned j = 0; j < vi.size(); ++j)
+        {
+            trial.clear();
+            for(unsigned k = 0; k < Trials; ++k)
+            {
+                auto result = run_for(
+                    std::chrono::seconds(5),
+                    [&]
+                    {
+                        if(verb == "parse")
+                            vi[j]->parse(
+                                vf[i].text,
+                                repeat);
+                        else if(verb == "serialize")
+                            vi[j]->serialize(
+                                vf[i].text,
+                                repeat);
+                    });
+                result.mbs = static_cast<
+                    std::size_t>(( 0.5 + 1000.0 *
+                        result.calls * repeat *
+                        vf[i].text.size() /
+                        result.millis / 1024 / 1024));
+            #if 1
+                dout <<
+                    verb << "," <<
+                    vf[i].name << "," <<
+                    vi[j]->name() << "," <<
+                    result.calls * repeat << "," <<
+                    result.millis << "," <<
+                    result.mbs <<
+                    "\n";
+            #endif
+                trial.push_back(result);
+            }
+
+            // clean up the samples
+            std::sort(
+                trial.begin(),
+                trial.end(),
+                []( sample const& lhs,
+                    sample const& rhs)
+                {
+                    return lhs.mbs < rhs.mbs;
+                });
+            if(Trials >= 6)
+            {
+                // discard worst 2
+                trial.erase(
+                    trial.begin(),
+                    trial.begin() + 2);
+                // discard best 1
+                trial.resize(3);
+            }
+            else if(Trials > 3)
+            {
+                trial.erase(
+                    trial.begin(),
+                    trial.begin() + Trials - 3);
+            }
+            // average
+            auto const calls =
+                std::accumulate(
+                trial.begin(), trial.end(),
+                std::size_t{},
+                []( std::size_t lhs,
+                    sample const& rhs)
+                {
+                    return lhs + rhs.calls;
+                });
+            auto const millis =
+                std::accumulate(
+                trial.begin(), trial.end(),
+                std::size_t{},
+                []( std::size_t lhs,
+                    sample const& rhs)
+                {
+                    return lhs + rhs.millis;
+                });
+            auto const mbs = static_cast<
+                std::size_t>(( 0.5 + 1000.0 *
+                calls * repeat * vf[i].text.size() /
+                    millis / 1024 / 1024));
+            strout <<
+                verb << "," <<
+                vf[i].name << "," <<
+                vi[j]->name() << "," <<
+                mbs <<
+                "\n";
+        }
+    }
+}
 
 //----------------------------------------------------------
 
@@ -71,20 +235,11 @@ public:
     string_view
     name() const noexcept override
     {
-        return "boost(default)";
+        return "boost.default";
     }
 
     void
     parse(
-        string_view s,
-        int repeat) const override
-    {
-        while(repeat--)
-            json::parse(s);
-    }
-
-    void
-    parse_reuse(
         string_view s,
         int repeat) const override
     {
@@ -104,8 +259,25 @@ public:
         int repeat) const override
     {
         auto jv = json::parse(s);
+        serializer sr;
+        string out;
+        out.reserve(512);
         while(repeat--)
-            to_string(jv);
+        {
+            sr.reset(jv);
+            out.clear();
+            for(;;)
+            {
+                out.grow(sr.read(
+                    out.end(),
+                    out.capacity() -
+                        out.size()));
+                if(sr.is_done())
+                    break;
+                out.reserve(
+                    out.capacity() + 1);
+            }
+        }
     }
 };
 
@@ -117,7 +289,7 @@ public:
     string_view
     name() const noexcept override
     {
-        return "boost(pool)";
+        return "boost.pool";
     }
 
     void
@@ -125,24 +297,10 @@ public:
         string_view s,
         int repeat) const override
     {
-        while(repeat--)
-        {
-            scoped_storage<
-                pool> ss;
-            json::parse(s, ss);
-        }
-    }
-
-    void
-    parse_reuse(
-        string_view s,
-        int repeat) const override
-    {
-        scoped_storage<
-            pool> ss;
         parser p;
         while(repeat--)
         {
+            scoped_storage<pool> ss;
             p.start(ss);
             error_code ec;
             p.finish(s.data(), s.size(), ec);
@@ -155,11 +313,27 @@ public:
         string_view s,
         int repeat) const override
     {
-        scoped_storage<
-            pool> ss;
-        auto jv = json::parse(s, ss);
+        scoped_storage<pool> sp;
+        auto jv = json::parse(s, sp);
+        serializer sr;
+        string out;
+        out.reserve(512);
         while(repeat--)
-            to_string(jv);
+        {
+            sr.reset(jv);
+            out.clear();
+            for(;;)
+            {
+                out.grow(sr.read(
+                    out.end(),
+                    out.capacity() -
+                        out.size()));
+                if(sr.is_done())
+                    break;
+                out.reserve(
+                    out.capacity() + 1);
+            }
+        }
     }
 };
 
@@ -198,7 +372,7 @@ public:
     string_view
     name() const noexcept override
     {
-        return "boost(vec)";
+        return "boost.vec";
     }
 
     void
@@ -250,13 +424,17 @@ class boost_null_impl : public any_impl
         void on_double(double, error_code&) override {}
         void on_bool(bool, error_code&) override {}
         void on_null(error_code&) override {}
+        void reset()
+        {
+            basic_parser::reset();
+        }
     };
 
 public:
     string_view
     name() const noexcept override
     {
-        return "boost(null)";
+        return "boost.null";
     }
 
     void
@@ -264,24 +442,19 @@ public:
         string_view s,
         int repeat) const override
     {
+        null_parser p;
         while(repeat--)
         {
+            p.reset();
             error_code ec;
-            null_parser p;
-            p.write(s.data(), s.size(), ec);
-            if(! ec)
-                p.finish(ec);
+            p.finish(s.data(), s.size(), ec);
         }
     }
 
     void
     serialize(
-        string_view s,
-        int repeat) const override
+        string_view, int) const override
     {
-        auto jv = json::parse(s);
-        while(repeat--)
-            to_string(jv);
     }
 };
 
@@ -292,32 +465,19 @@ struct rapidjson_crt_impl : public any_impl
     string_view
     name() const noexcept override
     {
-        return "rapidjson(crt)";
+        return "rapidjson.crt";
     }
 
     void
-    parse(string_view s, int repeat) const override
-    {
-        using namespace rapidjson;
-        CrtAllocator alloc;
-        while(repeat--)
-        {
-            GenericDocument<
-                UTF8<>, CrtAllocator> d(&alloc);
-            d.Parse(s.data(), s.size());
-        }
-    }
-
-    void
-    parse_reuse(
+    parse(
         string_view s, int repeat) const override
     {
         using namespace rapidjson;
-        CrtAllocator alloc;
-        GenericDocument<
-            UTF8<>, CrtAllocator> d(&alloc);
         while(repeat--)
         {
+            CrtAllocator alloc;
+            GenericDocument<
+                UTF8<>, CrtAllocator> d(&alloc);
             d.Clear();
             d.Parse(s.data(), s.size());
         }
@@ -331,9 +491,9 @@ struct rapidjson_crt_impl : public any_impl
         GenericDocument<
             UTF8<>, CrtAllocator> d(&alloc);
         d.Parse(s.data(), s.size());
+        rapidjson::StringBuffer st;
         while(repeat--)
         {
-            rapidjson::StringBuffer st;
             st.Clear();
             rapidjson::Writer<
                 rapidjson::StringBuffer> wr(st);
@@ -342,16 +502,17 @@ struct rapidjson_crt_impl : public any_impl
     }
 };
 
-struct rapidjson_pool_impl : public any_impl
+struct rapidjson_memory_impl : public any_impl
 {
     string_view
     name() const noexcept override
     {
-        return "rapidjson(pool)";
+        return "rapidjson.memory";
     }
 
     void
-    parse(string_view s, int repeat) const override
+    parse(
+        string_view s, int repeat) const override
     {
         while(repeat--)
         {
@@ -361,25 +522,13 @@ struct rapidjson_pool_impl : public any_impl
     }
 
     void
-    parse_reuse(
-        string_view s, int repeat) const override
-    {
-        rapidjson::Document d;
-        while(repeat--)
-        {
-            d.Clear();
-            d.Parse(s.data(), s.size());
-        }
-    }
-
-    void
     serialize(string_view s, int repeat) const override
     {
         rapidjson::Document d;
         d.Parse(s.data(), s.size());
+        rapidjson::StringBuffer st;
         while(repeat--)
         {
-            rapidjson::StringBuffer st;
             st.Clear();
             rapidjson::Writer<
                 rapidjson::StringBuffer> wr(st);
@@ -419,150 +568,6 @@ struct nlohmann_impl : public any_impl
 
 //----------------------------------------------------------
 
-struct file_item
-{
-    string_view name;
-    std::string text;
-};
-
-using file_list = std::vector<file_item>;
-
-std::string
-load_file(char const* path)
-{
-    FILE* f = fopen(path, "rb");
-    fseek(f, 0, SEEK_END);
-    auto const size = ftell(f);
-    std::string s;
-    s.resize(size);
-    fseek(f, 0, SEEK_SET);
-    fread(&s[0], 1, size, f);
-    fclose(f);
-    return s;
-}
-
-void
-benchParseSmall(
-    std::vector<std::unique_ptr<
-        any_impl const>> const& vi)
-{
-    string_view text =
-R"xx({
-    "glossary": {
-        "title": "example glossary",
-		"GlossDiv": {
-            "title": "S",
-			"GlossList": {
-                "GlossEntry": {
-                    "ID": "SGML",
-					"SortAs": "SGML",
-					"GlossTerm": "Standard Generalized Markup Language",
-					"Acronym": "SGML",
-					"Abbrev": "ISO 8879:1986",
-					"GlossDef": {
-                        "para": "A meta-markup language, used to create markup languages such as DocBook.",
-						"GlossSeeAlso": ["GML", "XML"]
-                    },
-					"GlossSee": "markup"
-                }
-            }
-        }
-    }
-})xx";
-    auto const Repeat = 500000U;
-    {
-        dout <<
-            "Parse small JSON (" <<
-                text.size() << " bytes)" <<
-                std::endl;
-        for(unsigned j = 0; j < vi.size(); ++j)
-        {
-            for(unsigned k = 0; k < 10; ++k)
-            {
-                auto const when = clock_type::now();
-                vi[j]->parse_reuse(text, 500000);
-                auto const ms = std::chrono::duration_cast<
-                    std::chrono::milliseconds>(
-                    clock_type::now() - when).count();
-                if(k > 4)
-                    dout << vi[j]->name() << ", " <<
-                        std::to_string(ms) << "ms, " <<
-                        (Repeat * text.size() / ms / 1024) << "Mb/s" <<
-                        std::endl;
-            }
-        }
-        dout << std::endl;
-    }
-}
-
-void
-benchParse(
-    file_list const& vs,
-    std::vector<std::unique_ptr<
-        any_impl const>> const& vi)
-{
-    auto const Repeat = 250U;
-    for(unsigned i = 0; i < vs.size(); ++i)
-    {
-        dout <<
-            "Parse File " << std::to_string(i+1) <<
-                " " << vs[i].name << " (" <<
-                std::to_string(vs[i].text.size()) << " bytes)" <<
-                std::endl;
-        for(unsigned j = 0; j < vi.size(); ++j)
-        {
-            for(unsigned k = 0; k < 10; ++k)
-            {
-                auto const when = clock_type::now();
-                vi[j]->parse(vs[i].text, Repeat);
-                auto const ms = std::chrono::duration_cast<
-                    std::chrono::milliseconds>(
-                    clock_type::now() - when).count();
-                if(k > 4)
-                    dout << vi[j]->name() << ", " <<
-                        std::to_string(ms) << "ms, " <<
-                        (Repeat * vs[i].text.size() / ms / 1024) << "Mb/s" <<
-                        std::endl;
-            }
-        }
-        dout << std::endl;
-    }
-}
-
-void
-benchSerialize(
-    file_list const& vs,
-    std::vector<std::unique_ptr<
-        any_impl const>> const& vi)
-{
-    auto const Repeat = 1000U;
-    for(unsigned i = 0; i < vs.size(); ++i)
-    {
-        dout <<
-            "Serialize File " << std::to_string(i+1) <<
-                " " << vs[i].name << " (" <<
-                vs[i].text.size() << " bytes)" <<
-                std::endl;
-        for(unsigned j = 0; j < vi.size(); ++j)
-        {
-            for(unsigned k = 0; k < 10; ++k)
-            {
-                auto const when = clock_type::now();
-                vi[j]->serialize(vs[i].text, Repeat);
-                auto const ms = std::chrono::duration_cast<
-                    std::chrono::milliseconds>(
-                    clock_type::now() - when).count();
-                if(k > 4)
-                    dout << vi[j]->name() << ", " <<
-                        std::to_string(ms) << "ms, " <<
-                        (Repeat * vs[i].text.size() / ms / 1024) << "Mb/s" <<
-                        std::endl;
-            }
-        }
-        dout << std::endl;
-    }
-}
-
 } // json
 } // boost
 
@@ -572,35 +577,31 @@ main(
     char const* const* const argv)
 {
     using namespace boost::json;
-    file_list vs;
+    file_list vf;
     if(argc > 1)
     {
-        vs.reserve(argc - 1);
+        vf.reserve(argc - 1);
         for(int i = 1; i < argc; ++i)
-            vs.emplace_back(
+            vf.emplace_back(
                 file_item{argv[i],
                 load_file(argv[i])});
     }
 
     try
     {
-        std::vector<std::unique_ptr<any_impl const>> vi;
+        impl_list vi;
         vi.reserve(10);
-#if 1
-        vi.emplace_back(new boost_null_impl);
-        vi.emplace_back(new boost_default_impl);
-        vi.emplace_back(new boost_pool_impl);
+        //vi.emplace_back(new boost_null_impl);
         //vi.emplace_back(new boost_vec_impl);
-        vi.emplace_back(new rapidjson_crt_impl);
-        vi.emplace_back(new rapidjson_pool_impl);
-        //vi.emplace_back(new nlohmann_impl);
-#else
         vi.emplace_back(new boost_pool_impl);
-#endif
+        vi.emplace_back(new rapidjson_memory_impl);
+        vi.emplace_back(new boost_default_impl);
+        vi.emplace_back(new rapidjson_crt_impl);
+        vi.emplace_back(new nlohmann_impl);
+        bench("parse", vf, vi);
+        bench("serialize", vf, vi);
 
-        benchParseSmall(vi);
-        //benchParse(vs, vi);
-        //benchSerialize(vs, vi);
+        dout << "\n" << strout.str();
     }
     catch(system_error const& se)
     {

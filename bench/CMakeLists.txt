@@ -32,6 +32,7 @@ add_executable (bench
     ${PROJECT_FILES}
     ${PROJECT_SOURCE_DIR}/include/boost/json.hpp
     ${PROJECT_SOURCE_DIR}/include/boost/pilfer.hpp
+    ${PROJECT_SOURCE_DIR}/src/src.cpp
     Jamfile
     bench.cpp
 )

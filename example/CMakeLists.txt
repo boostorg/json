@@ -10,12 +10,14 @@
 GroupSources(example "/")
 
 add_executable (pretty
+    ${PROJECT_SOURCE_DIR}/src/src.cpp
     file.hpp
     pretty.cpp
 )
 set_property(TARGET pretty PROPERTY FOLDER "example")
 
 add_executable (validate
+    ${PROJECT_SOURCE_DIR}/src/src.cpp
     file.hpp
     validate.cpp
 )

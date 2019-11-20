@@ -143,8 +143,6 @@ endif()
 # Tests and examples
 #
 
-add_definitions(-DBOOST_JSON_HEADER_ONLY=1)
-
 file (GLOB_RECURSE PROJECT_FILES
     ${PROJECT_SOURCE_DIR}/include/boost/json/*.hpp
     ${PROJECT_SOURCE_DIR}/include/boost/json/*.ipp

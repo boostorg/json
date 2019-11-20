@@ -13,6 +13,8 @@ source_group (TREE ${PROJECT_SOURCE_DIR}/include/boost/json PREFIX json FILES ${
 
 GroupSources(test "/")
 
+add_definitions(-DBOOST_JSON_HEADER_ONLY=1)
+
 add_executable (json-tests
     ${BEAST_FILES}
     ${PROJECT_FILES}
