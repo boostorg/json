@@ -133,6 +133,8 @@ stages:
           CXX: clang++-3.5
           PACKAGES: clang-3.5
     steps:
+    - checkout: self
+      submodules: true
     - bash: |
         set -e
         uname -a
@@ -202,6 +204,8 @@ stages:
     pool:
       vmImage: $(VM_IMAGE)
     steps:
+    - checkout: self
+      submodules: true
     - script: |
         set SELF=%BUILD_REPOSITORY_NAME:-=_%
         for /f "tokens=2 delims=/" %%a in ("%SELF%") do set SELF=%%a
@@ -213,6 +217,7 @@ stages:
 
         echo ##vso[task.setvariable variable=SELF]%SELF%
         echo ##vso[task.setvariable variable=BOOST_ROOT]%BOOST_ROOT%
+
       displayName: 'Install'
     - script: |
         PATH=%ADDPATH%%PATH%
@@ -273,6 +278,8 @@ stages:
           B2_CXXSTD: 11
           XCODE_APP: /Applications/Xcode_8.3.3.app
     steps:
+    - checkout: self
+      submodules: true
     - bash: |
         set -e
         uname -a

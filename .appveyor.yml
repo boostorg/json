@@ -21,7 +21,7 @@
 
 version: 1.0.{build}-{branch}
 
-shallow_clone: true
+#clone_depth: 1
 
 branches:
   only:
@@ -134,6 +134,7 @@ environment:
       SCRIPT: ci\appveyor\mingw.bat
 
 install:
+  - git submodule update --init --recursive
   - set SELF=%APPVEYOR_PROJECT_NAME:-=_%
   - git clone https://github.com/boostorg/boost-ci.git C:\boost-ci
   - xcopy /s /e /q /i C:\boost-ci\ci .\ci

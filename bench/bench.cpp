@@ -43,17 +43,18 @@ namespace boost {
 namespace json {
 
 using clock_type = std::chrono::steady_clock;
-using string_view = boost::string_view;
 
-beast::unit_test::dstream dout{std::cerr};
+beast::unit_test::dstream dout(std::cerr);
 std::stringstream strout;
 
 #if defined(BOOST_MSVC)
 string_view toolset = "msvc";
 #elif defined(BOOST_CLANG)
 string_view toolset = "clang";
+#elif defined(BOOST_GCC)
+string_view toolset = "gcc";
 #else
-#error Unknown toolset.
+string_view toolset = "unknown";
 #endif
 
 #if BOOST_JSON_ARCH == 32
@@ -95,7 +96,9 @@ load_file(char const* path)
     std::string s;
     s.resize(size);
     fseek(f, 0, SEEK_SET);
-    fread(&s[0], 1, size, f);
+    auto const nread =
+        fread(&s[0], 1, size, f);
+    s.resize(nread);
     fclose(f);
     return s;
 }

@@ -7,10 +7,8 @@
 # Official repository: https://github.com/vinniefalco/json
 #
 
-import testing ;
-import ../../config/checks/config : requires ;
-
 import os ;
+
 STANDALONE = [ os.environ STANDALONE ] ;
 if $(STANDALONE)
 {

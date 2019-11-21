@@ -9,5 +9,6 @@
 
 path-constant LIB_DIR : . ;
 
+build-project bench ;
 build-project test ;
 build-project example ;

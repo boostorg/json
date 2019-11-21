@@ -6,3 +6,24 @@
 #
 # Official repository: https://github.com/vinniefalco/json
 #
+
+import os ;
+
+STANDALONE = [ os.environ STANDALONE ] ;
+if $(STANDALONE)
+{
+    LIB =
+        <define>BOOST_JSON_STANDALONE=1
+        <source>../src/src.cpp
+        ;
+}
+else
+{
+    LIB = <library>/boost/json//boost_json ;
+}
+
+exe bench :
+    bench.cpp
+    : :
+    $(LIB)
+    ;
