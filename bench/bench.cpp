@@ -9,6 +9,8 @@
 
 //#define RAPIDJSON_SSE42
 
+#include <boost/config.hpp>
+
 #include "lib/nlohmann/single_include/nlohmann/json.hpp"
 
 #include "lib/rapidjson/include/rapidjson/rapidjson.h"
@@ -45,6 +47,22 @@ using string_view = boost::string_view;
 
 beast::unit_test::dstream dout{std::cerr};
 std::stringstream strout;
+
+#if defined(BOOST_MSVC)
+string_view toolset = "msvc";
+#elif defined(BOOST_CLANG)
+string_view toolset = "clang";
+#else
+#error Unknown toolset.
+#endif
+
+#if BOOST_JSON_ARCH == 32
+string_view arch = "32";
+#elif BOOST_JSON_ARCH == 64
+string_view arch = "64";
+#else
+#error Unknown architecture.
+#endif
 
 //----------------------------------------------------------
 
@@ -107,9 +125,9 @@ run_for(
     std::size_t n = 0;
     do
     {
+        f();
         elapsed = clock_type::now() - when;
         ++n;
-        f();
     }
     while(elapsed < interval);
     return { n, static_cast<std::size_t>(
@@ -124,7 +142,7 @@ bench(
     file_list const& vf,
     impl_list const& vi)
 {
-    std::size_t Trials = 1;
+    std::size_t Trials = 6;
     int repeat = 0;
     if(verb == "parse")
         repeat = 1000;
@@ -161,6 +179,7 @@ bench(
                 dout <<
                     verb << "," <<
                     vf[i].name << "," <<
+                    toolset << "," << arch << "," <<
                     vi[j]->name() << "," <<
                     result.calls * repeat << "," <<
                     result.millis << "," <<
@@ -220,6 +239,7 @@ bench(
             strout <<
                 verb << "," <<
                 vf[i].name << "," <<
+                toolset << "," << arch << "," <<
                 vi[j]->name() << "," <<
                 mbs <<
                 "\n";
@@ -235,7 +255,7 @@ public:
     string_view
     name() const noexcept override
     {
-        return "boost.default";
+        return "boost";
     }
 
     void
@@ -289,7 +309,7 @@ public:
     string_view
     name() const noexcept override
     {
-        return "boost.pool";
+        return "boost (pool)";
     }
 
     void
@@ -465,7 +485,7 @@ struct rapidjson_crt_impl : public any_impl
     string_view
     name() const noexcept override
     {
-        return "rapidjson.crt";
+        return "rapidjson";
     }
 
     void
@@ -507,7 +527,7 @@ struct rapidjson_memory_impl : public any_impl
     string_view
     name() const noexcept override
     {
-        return "rapidjson.memory";
+        return "rapidjson (pool)";
     }
 
     void

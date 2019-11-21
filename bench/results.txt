@@ -1,0 +1,286 @@
+parse,strings.json,msvc,64,boost (pool),5819
+parse,strings.json,msvc,64,rapidjson (pool),528
+parse,strings.json,msvc,64,boost,2894
+parse,strings.json,msvc,64,rapidjson,468
+parse,strings.json,msvc,64,nlohmann,259
+parse,strings.json,clang,64,boost (pool),6351
+parse,strings.json,clang,64,rapidjson (pool),462
+parse,strings.json,clang,64,boost,3003
+parse,strings.json,clang,64,rapidjson,428
+parse,strings.json,clang,64,nlohmann,245
+parse,strings.json,msvc,32,boost (pool),2645
+parse,strings.json,msvc,32,rapidjson (pool),355
+parse,strings.json,msvc,32,boost,2522
+parse,strings.json,msvc,32,rapidjson,356
+parse,strings.json,msvc,32,nlohmann,100
+parse,strings.json,clang,32,boost (pool),2586
+parse,strings.json,clang,32,rapidjson (pool),408
+parse,strings.json,clang,32,boost,2407
+parse,strings.json,clang,32,rapidjson,385
+parse,strings.json,clang,32,nlohmann,199
+serialize,strings.json,msvc,64,boost (pool),6265
+serialize,strings.json,msvc,64,rapidjson (pool),629
+serialize,strings.json,msvc,64,boost,5550
+serialize,strings.json,msvc,64,rapidjson,629
+serialize,strings.json,msvc,64,nlohmann,148
+serialize,strings.json,clang,64,boost (pool),7831
+serialize,strings.json,clang,64,rapidjson (pool),628
+serialize,strings.json,clang,64,boost,6568
+serialize,strings.json,clang,64,rapidjson,627
+serialize,strings.json,clang,64,nlohmann,269
+serialize,strings.json,msvc,32,boost (pool),6352
+serialize,strings.json,msvc,32,rapidjson (pool),469
+serialize,strings.json,msvc,32,boost,5658
+serialize,strings.json,msvc,32,rapidjson,468
+serialize,strings.json,msvc,32,nlohmann,96
+serialize,strings.json,clang,32,boost (pool),6202
+serialize,strings.json,clang,32,rapidjson (pool),474
+serialize,strings.json,clang,32,boost,5478
+serialize,strings.json,clang,32,rapidjson,476
+serialize,strings.json,clang,32,nlohmann,158
+parse,small.json,msvc,64,boost (pool),272
+parse,small.json,msvc,64,rapidjson (pool),269
+parse,small.json,msvc,64,boost,163
+parse,small.json,msvc,64,rapidjson,242
+parse,small.json,msvc,64,nlohmann,67
+parse,small.json,clang,64,boost (pool),339
+parse,small.json,clang,64,rapidjson (pool),298
+parse,small.json,clang,64,boost,196
+parse,small.json,clang,64,rapidjson,267
+parse,small.json,clang,64,nlohmann,68
+parse,small.json,msvc,32,boost (pool),201
+parse,small.json,msvc,32,rapidjson (pool),210
+parse,small.json,msvc,32,boost,122
+parse,small.json,msvc,32,rapidjson,190
+parse,small.json,msvc,32,nlohmann,54
+parse,small.json,clang,32,boost (pool),258
+parse,small.json,clang,32,rapidjson (pool),225
+parse,small.json,clang,32,boost,142
+parse,small.json,clang,32,rapidjson,209
+parse,small.json,clang,32,nlohmann,58
+serialize,small.json,msvc,64,boost (pool),910
+serialize,small.json,msvc,64,rapidjson (pool),791
+serialize,small.json,msvc,64,boost,938
+serialize,small.json,msvc,64,rapidjson,765
+serialize,small.json,msvc,64,nlohmann,274
+serialize,small.json,clang,64,boost (pool),1289
+serialize,small.json,clang,64,rapidjson (pool),717
+serialize,small.json,clang,64,boost,1285
+serialize,small.json,clang,64,rapidjson,717
+serialize,small.json,clang,64,nlohmann,264
+serialize,small.json,msvc,32,boost (pool),714
+serialize,small.json,msvc,32,rapidjson (pool),596
+serialize,small.json,msvc,32,boost,716
+serialize,small.json,msvc,32,rapidjson,599
+serialize,small.json,msvc,32,nlohmann,193
+serialize,small.json,clang,32,boost (pool),770
+serialize,small.json,clang,32,rapidjson (pool),618
+serialize,small.json,clang,32,boost,785
+serialize,small.json,clang,32,rapidjson,618
+serialize,small.json,clang,32,nlohmann,185
+parse,random.json,msvc,64,boost (pool),270
+parse,random.json,msvc,64,rapidjson (pool),297
+parse,random.json,msvc,64,boost,169
+parse,random.json,msvc,64,rapidjson,285
+parse,random.json,msvc,64,nlohmann,70
+parse,random.json,clang,64,boost (pool),346
+parse,random.json,clang,64,rapidjson (pool),389
+parse,random.json,clang,64,boost,199
+parse,random.json,clang,64,rapidjson,366
+parse,random.json,clang,64,nlohmann,69
+parse,random.json,msvc,32,boost (pool),212
+parse,random.json,msvc,32,rapidjson (pool),238
+parse,random.json,msvc,32,boost,131
+parse,random.json,msvc,32,rapidjson,232
+parse,random.json,msvc,32,nlohmann,54
+parse,random.json,clang,32,boost (pool),260
+parse,random.json,clang,32,rapidjson (pool),288
+parse,random.json,clang,32,boost,148
+parse,random.json,clang,32,rapidjson,288
+parse,random.json,clang,32,nlohmann,54
+serialize,random.json,msvc,64,boost (pool),682
+serialize,random.json,msvc,64,rapidjson (pool),690
+serialize,random.json,msvc,64,boost,679
+serialize,random.json,msvc,64,rapidjson,684
+serialize,random.json,msvc,64,nlohmann,316
+serialize,random.json,clang,64,boost (pool),873
+serialize,random.json,clang,64,rapidjson (pool),727
+serialize,random.json,clang,64,boost,865
+serialize,random.json,clang,64,rapidjson,730
+serialize,random.json,clang,64,nlohmann,316
+serialize,random.json,msvc,32,boost (pool),373
+serialize,random.json,msvc,32,rapidjson (pool),411
+serialize,random.json,msvc,32,boost,371
+serialize,random.json,msvc,32,rapidjson,410
+serialize,random.json,msvc,32,nlohmann,196
+serialize,random.json,clang,32,boost (pool),389
+serialize,random.json,clang,32,rapidjson (pool),481
+serialize,random.json,clang,32,boost,394
+serialize,random.json,clang,32,rapidjson,484
+serialize,random.json,clang,32,nlohmann,199
+parse,array.json,msvc,64,boost (pool),235
+parse,array.json,msvc,64,rapidjson (pool),247
+parse,array.json,msvc,64,boost,214
+parse,array.json,msvc,64,rapidjson,239
+parse,array.json,msvc,64,nlohmann,81
+parse,array.json,clang,64,boost (pool),290
+parse,array.json,clang,64,rapidjson (pool),281
+parse,array.json,clang,64,boost,262
+parse,array.json,clang,64,rapidjson,269
+parse,array.json,clang,64,nlohmann,81
+parse,array.json,msvc,32,boost (pool),179
+parse,array.json,msvc,32,rapidjson (pool),147
+parse,array.json,msvc,32,boost,150
+parse,array.json,msvc,32,rapidjson,144
+parse,array.json,msvc,32,nlohmann,53
+parse,array.json,clang,32,boost (pool),184
+parse,array.json,clang,32,rapidjson (pool),166
+parse,array.json,clang,32,boost,162
+parse,array.json,clang,32,rapidjson,167
+parse,array.json,clang,32,nlohmann,54
+serialize,array.json,msvc,64,boost (pool),427
+serialize,array.json,msvc,64,rapidjson (pool),378
+serialize,array.json,msvc,64,boost,427
+serialize,array.json,msvc,64,rapidjson,375
+serialize,array.json,msvc,64,nlohmann,278
+serialize,array.json,clang,64,boost (pool),480
+serialize,array.json,clang,64,rapidjson (pool),396
+serialize,array.json,clang,64,boost,480
+serialize,array.json,clang,64,rapidjson,397
+serialize,array.json,clang,64,nlohmann,286
+serialize,array.json,msvc,32,boost (pool),201
+serialize,array.json,msvc,32,rapidjson (pool),229
+serialize,array.json,msvc,32,boost,201
+serialize,array.json,msvc,32,rapidjson,229
+serialize,array.json,msvc,32,nlohmann,141
+serialize,array.json,clang,32,boost (pool),204
+serialize,array.json,clang,32,rapidjson (pool),257
+serialize,array.json,clang,32,boost,204
+serialize,array.json,clang,32,rapidjson,256
+serialize,array.json,clang,32,nlohmann,151
+parse,twitter.json,msvc,64,boost (pool),388
+parse,twitter.json,msvc,64,rapidjson (pool),352
+parse,twitter.json,msvc,64,boost,205
+parse,twitter.json,msvc,64,rapidjson,241
+parse,twitter.json,msvc,64,nlohmann,100
+parse,twitter.json,clang,64,boost (pool),490
+parse,twitter.json,clang,64,rapidjson (pool),406
+parse,twitter.json,clang,64,boost,232
+parse,twitter.json,clang,64,rapidjson,254
+parse,twitter.json,clang,64,nlohmann,96
+parse,twitter.json,msvc,32,boost (pool),282
+parse,twitter.json,msvc,32,rapidjson (pool),255
+parse,twitter.json,msvc,32,boost,155
+parse,twitter.json,msvc,32,rapidjson,185
+parse,twitter.json,msvc,32,nlohmann,70
+parse,twitter.json,clang,32,boost (pool),345
+parse,twitter.json,clang,32,rapidjson (pool),318
+parse,twitter.json,clang,32,boost,173
+parse,twitter.json,clang,32,rapidjson,208
+parse,twitter.json,clang,32,nlohmann,75
+serialize,twitter.json,msvc,64,boost (pool),1085
+serialize,twitter.json,msvc,64,rapidjson (pool),783
+serialize,twitter.json,msvc,64,boost,1003
+serialize,twitter.json,msvc,64,rapidjson,784
+serialize,twitter.json,msvc,64,nlohmann,320
+serialize,twitter.json,clang,64,boost (pool),1443
+serialize,twitter.json,clang,64,rapidjson (pool),781
+serialize,twitter.json,clang,64,boost,1360
+serialize,twitter.json,clang,64,rapidjson,776
+serialize,twitter.json,clang,64,nlohmann,333
+serialize,twitter.json,msvc,32,boost (pool),802
+serialize,twitter.json,msvc,32,rapidjson (pool),660
+serialize,twitter.json,msvc,32,boost,860
+serialize,twitter.json,msvc,32,rapidjson,661
+serialize,twitter.json,msvc,32,nlohmann,230
+serialize,twitter.json,clang,32,boost (pool),859
+serialize,twitter.json,clang,32,rapidjson (pool),643
+serialize,twitter.json,clang,32,boost,805
+serialize,twitter.json,clang,32,rapidjson,642
+serialize,twitter.json,clang,32,nlohmann,216
+parse,citm_catalog.json,msvc,64,boost (pool),444
+parse,citm_catalog.json,msvc,64,rapidjson (pool),471
+parse,citm_catalog.json,msvc,64,boost,252
+parse,citm_catalog.json,msvc,64,rapidjson,338
+parse,citm_catalog.json,msvc,64,nlohmann,116
+parse,citm_catalog.json,clang,64,boost (pool),541
+parse,citm_catalog.json,clang,64,rapidjson (pool),510
+parse,citm_catalog.json,clang,64,boost,282
+parse,citm_catalog.json,clang,64,rapidjson,367
+parse,citm_catalog.json,clang,64,nlohmann,118
+parse,citm_catalog.json,msvc,32,boost (pool),268
+parse,citm_catalog.json,msvc,32,rapidjson (pool),379
+parse,citm_catalog.json,msvc,32,boost,173
+parse,citm_catalog.json,msvc,32,rapidjson,274
+parse,citm_catalog.json,msvc,32,nlohmann,90
+parse,citm_catalog.json,clang,32,boost (pool),385
+parse,citm_catalog.json,clang,32,rapidjson (pool),403
+parse,citm_catalog.json,clang,32,boost,217
+parse,citm_catalog.json,clang,32,rapidjson,300
+parse,citm_catalog.json,clang,32,nlohmann,94
+serialize,citm_catalog.json,msvc,64,boost (pool),1898
+serialize,citm_catalog.json,msvc,64,rapidjson (pool),1922
+serialize,citm_catalog.json,msvc,64,boost,1731
+serialize,citm_catalog.json,msvc,64,rapidjson,1882
+serialize,citm_catalog.json,msvc,64,nlohmann,929
+serialize,citm_catalog.json,clang,64,boost (pool),2296
+serialize,citm_catalog.json,clang,64,rapidjson (pool),1774
+serialize,citm_catalog.json,clang,64,boost,2030
+serialize,citm_catalog.json,clang,64,rapidjson,1744
+serialize,citm_catalog.json,clang,64,nlohmann,917
+serialize,citm_catalog.json,msvc,32,boost (pool),1679
+serialize,citm_catalog.json,msvc,32,rapidjson (pool),1738
+serialize,citm_catalog.json,msvc,32,boost,1603
+serialize,citm_catalog.json,msvc,32,rapidjson,1734
+serialize,citm_catalog.json,msvc,32,nlohmann,549
+serialize,citm_catalog.json,clang,32,boost (pool),1548
+serialize,citm_catalog.json,clang,32,rapidjson (pool),1493
+serialize,citm_catalog.json,clang,32,boost,1594
+serialize,citm_catalog.json,clang,32,rapidjson,1684
+serialize,citm_catalog.json,clang,32,nlohmann,548
+parse,canada.json,msvc,64,boost (pool),253
+parse,canada.json,msvc,64,rapidjson (pool),365
+parse,canada.json,msvc,64,boost,173
+parse,canada.json,msvc,64,rapidjson,230
+parse,canada.json,msvc,64,nlohmann,39
+parse,canada.json,clang,64,boost (pool),319
+parse,canada.json,clang,64,rapidjson (pool),392
+parse,canada.json,clang,64,boost,197
+parse,canada.json,clang,64,rapidjson,237
+parse,canada.json,clang,64,nlohmann,41
+parse,canada.json,msvc,32,boost (pool),137
+parse,canada.json,msvc,32,rapidjson (pool),212
+parse,canada.json,msvc,32,boost,105
+parse,canada.json,msvc,32,rapidjson,151
+parse,canada.json,msvc,32,nlohmann,24
+parse,canada.json,clang,32,boost (pool),201
+parse,canada.json,clang,32,rapidjson (pool),303
+parse,canada.json,clang,32,boost,145
+parse,canada.json,clang,32,rapidjson,194
+parse,canada.json,clang,32,nlohmann,27
+serialize,canada.json,msvc,64,boost (pool),350
+serialize,canada.json,msvc,64,rapidjson (pool),235
+serialize,canada.json,msvc,64,boost,333
+serialize,canada.json,msvc,64,rapidjson,233
+serialize,canada.json,msvc,64,nlohmann,134
+serialize,canada.json,clang,64,boost (pool),431
+serialize,canada.json,clang,64,rapidjson (pool),263
+serialize,canada.json,clang,64,boost,414
+serialize,canada.json,clang,64,rapidjson,258
+serialize,canada.json,clang,64,nlohmann,160
+serialize,canada.json,msvc,32,boost (pool),136
+serialize,canada.json,msvc,32,rapidjson (pool),114
+serialize,canada.json,msvc,32,boost,135
+serialize,canada.json,msvc,32,rapidjson,113
+serialize,canada.json,msvc,32,nlohmann,82
+serialize,canada.json,clang,32,boost (pool),136
+serialize,canada.json,clang,32,rapidjson (pool),145
+serialize,canada.json,clang,32,boost,135
+serialize,canada.json,clang,32,rapidjson,143
+serialize,canada.json,clang,32,nlohmann,104
+
+
+
+
+
+

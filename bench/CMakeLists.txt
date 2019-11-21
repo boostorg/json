@@ -13,6 +13,9 @@ source_group (TREE ${PROJECT_SOURCE_DIR}/include/boost/json PREFIX json FILES ${
 
 GroupSources(bench "/")
 
+# Disable auto-linking
+add_definitions(-DBOOST_ALL_NO_LIB=1)
+
 if (MSVC)
     if (CMAKE_BUILD_TYPE EQUAL "Debug")
     else()

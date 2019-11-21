@@ -1,0 +1,1683 @@
+parse,strings.json,msvc,64,boost (pool),26000,5013,5026
+parse,strings.json,msvc,64,boost (pool),30000,5000,5814
+parse,strings.json,msvc,64,boost (pool),31000,5158,5824
+parse,strings.json,msvc,64,boost (pool),31000,5160,5822
+parse,strings.json,msvc,64,boost (pool),31000,5160,5822
+parse,strings.json,msvc,64,boost (pool),30000,5001,5813
+parse,strings.json,msvc,64,rapidjson (pool),3000,5508,528
+parse,strings.json,msvc,64,rapidjson (pool),3000,5544,524
+parse,strings.json,msvc,64,rapidjson (pool),3000,5502,528
+parse,strings.json,msvc,64,rapidjson (pool),3000,5503,528
+parse,strings.json,msvc,64,rapidjson (pool),3000,5500,529
+parse,strings.json,msvc,64,rapidjson (pool),3000,5506,528
+parse,strings.json,msvc,64,boost,15000,5046,2881
+parse,strings.json,msvc,64,boost,15000,5022,2894
+parse,strings.json,msvc,64,boost,15000,5024,2893
+parse,strings.json,msvc,64,boost,15000,5032,2889
+parse,strings.json,msvc,64,boost,15000,5020,2896
+parse,strings.json,msvc,64,boost,15000,5021,2895
+parse,strings.json,msvc,64,rapidjson,3000,6227,467
+parse,strings.json,msvc,64,rapidjson,3000,6224,467
+parse,strings.json,msvc,64,rapidjson,3000,6186,470
+parse,strings.json,msvc,64,rapidjson,3000,6178,471
+parse,strings.json,msvc,64,rapidjson,3000,6230,467
+parse,strings.json,msvc,64,rapidjson,3000,6223,467
+parse,strings.json,msvc,64,nlohmann,2000,7468,260
+parse,strings.json,msvc,64,nlohmann,2000,7478,259
+parse,strings.json,msvc,64,nlohmann,2000,7471,259
+parse,strings.json,msvc,64,nlohmann,2000,7482,259
+parse,strings.json,msvc,64,nlohmann,2000,7463,260
+parse,strings.json,msvc,64,nlohmann,2000,7477,259
+parse,small.json,msvc,64,boost (pool),2363000,5001,272
+parse,small.json,msvc,64,boost (pool),2364000,5001,272
+parse,small.json,msvc,64,boost (pool),2363000,5000,272
+parse,small.json,msvc,64,boost (pool),2364000,5001,272
+parse,small.json,msvc,64,boost (pool),2364000,5001,272
+parse,small.json,msvc,64,boost (pool),2364000,5000,272
+parse,small.json,msvc,64,rapidjson (pool),2335000,5001,269
+parse,small.json,msvc,64,rapidjson (pool),2336000,5001,269
+parse,small.json,msvc,64,rapidjson (pool),2336000,5001,269
+parse,small.json,msvc,64,rapidjson (pool),2337000,5001,269
+parse,small.json,msvc,64,rapidjson (pool),2336000,5001,269
+parse,small.json,msvc,64,rapidjson (pool),2330000,5000,268
+parse,small.json,msvc,64,boost,1413000,5000,163
+parse,small.json,msvc,64,boost,1415000,5003,163
+parse,small.json,msvc,64,boost,1415000,5003,163
+parse,small.json,msvc,64,boost,1416000,5002,163
+parse,small.json,msvc,64,boost,1413000,5001,162
+parse,small.json,msvc,64,boost,1415000,5003,163
+parse,small.json,msvc,64,rapidjson,2104000,5002,242
+parse,small.json,msvc,64,rapidjson,2104000,5000,242
+parse,small.json,msvc,64,rapidjson,2104000,5001,242
+parse,small.json,msvc,64,rapidjson,2107000,5002,242
+parse,small.json,msvc,64,rapidjson,2105000,5001,242
+parse,small.json,msvc,64,rapidjson,2103000,5001,242
+parse,small.json,msvc,64,nlohmann,586000,5001,67
+parse,small.json,msvc,64,nlohmann,586000,5004,67
+parse,small.json,msvc,64,nlohmann,586000,5001,67
+parse,small.json,msvc,64,nlohmann,587000,5006,67
+parse,small.json,msvc,64,nlohmann,587000,5007,67
+parse,small.json,msvc,64,nlohmann,587000,5007,67
+parse,random.json,msvc,64,boost (pool),631000,5005,270
+parse,random.json,msvc,64,boost (pool),631000,5005,270
+parse,random.json,msvc,64,boost (pool),631000,5007,270
+parse,random.json,msvc,64,boost (pool),628000,5000,269
+parse,random.json,msvc,64,boost (pool),628000,5002,269
+parse,random.json,msvc,64,boost (pool),629000,5006,269
+parse,random.json,msvc,64,rapidjson (pool),692000,5004,296
+parse,random.json,msvc,64,rapidjson (pool),693000,5004,296
+parse,random.json,msvc,64,rapidjson (pool),694000,5001,297
+parse,random.json,msvc,64,rapidjson (pool),694000,5000,297
+parse,random.json,msvc,64,rapidjson (pool),695000,5003,297
+parse,random.json,msvc,64,rapidjson (pool),694000,5000,297
+parse,random.json,msvc,64,boost,395000,5006,169
+parse,random.json,msvc,64,boost,395000,5009,169
+parse,random.json,msvc,64,boost,394000,5001,169
+parse,random.json,msvc,64,boost,395000,5010,169
+parse,random.json,msvc,64,boost,395000,5008,169
+parse,random.json,msvc,64,boost,395000,5010,169
+parse,random.json,msvc,64,rapidjson,667000,5005,285
+parse,random.json,msvc,64,rapidjson,666000,5006,285
+parse,random.json,msvc,64,rapidjson,666000,5003,285
+parse,random.json,msvc,64,rapidjson,666000,5003,285
+parse,random.json,msvc,64,rapidjson,666000,5003,285
+parse,random.json,msvc,64,rapidjson,666000,5004,285
+parse,random.json,msvc,64,nlohmann,165000,5015,70
+parse,random.json,msvc,64,nlohmann,165000,5023,70
+parse,random.json,msvc,64,nlohmann,165000,5027,70
+parse,random.json,msvc,64,nlohmann,164000,5002,70
+parse,random.json,msvc,64,nlohmann,165000,5022,70
+parse,random.json,msvc,64,nlohmann,165000,5018,70
+parse,array.json,msvc,64,boost (pool),2000,5548,235
+parse,array.json,msvc,64,boost (pool),2000,5544,235
+parse,array.json,msvc,64,boost (pool),2000,5546,235
+parse,array.json,msvc,64,boost (pool),2000,5547,235
+parse,array.json,msvc,64,boost (pool),2000,5555,235
+parse,array.json,msvc,64,boost (pool),2000,5547,235
+parse,array.json,msvc,64,rapidjson (pool),2000,5302,246
+parse,array.json,msvc,64,rapidjson (pool),2000,5297,246
+parse,array.json,msvc,64,rapidjson (pool),2000,5284,247
+parse,array.json,msvc,64,rapidjson (pool),2000,5285,247
+parse,array.json,msvc,64,rapidjson (pool),2000,5274,247
+parse,array.json,msvc,64,rapidjson (pool),2000,5282,247
+parse,array.json,msvc,64,boost,2000,6088,214
+parse,array.json,msvc,64,boost,2000,6091,214
+parse,array.json,msvc,64,boost,2000,6086,214
+parse,array.json,msvc,64,boost,2000,6095,214
+parse,array.json,msvc,64,boost,2000,6088,214
+parse,array.json,msvc,64,boost,2000,6088,214
+parse,array.json,msvc,64,rapidjson,2000,5455,239
+parse,array.json,msvc,64,rapidjson,2000,5453,239
+parse,array.json,msvc,64,rapidjson,2000,5444,239
+parse,array.json,msvc,64,rapidjson,2000,5442,240
+parse,array.json,msvc,64,rapidjson,2000,5442,240
+parse,array.json,msvc,64,rapidjson,2000,5451,239
+parse,array.json,msvc,64,nlohmann,1000,8033,81
+parse,array.json,msvc,64,nlohmann,1000,8027,81
+parse,array.json,msvc,64,nlohmann,1000,8028,81
+parse,array.json,msvc,64,nlohmann,1000,8026,81
+parse,array.json,msvc,64,nlohmann,1000,8031,81
+parse,array.json,msvc,64,nlohmann,1000,8037,81
+parse,twitter.json,msvc,64,boost (pool),4000,6359,388
+parse,twitter.json,msvc,64,boost (pool),4000,6359,388
+parse,twitter.json,msvc,64,boost (pool),4000,6362,388
+parse,twitter.json,msvc,64,boost (pool),4000,6357,388
+parse,twitter.json,msvc,64,boost (pool),4000,6360,388
+parse,twitter.json,msvc,64,boost (pool),4000,6367,388
+parse,twitter.json,msvc,64,rapidjson (pool),3000,5271,351
+parse,twitter.json,msvc,64,rapidjson (pool),3000,5241,353
+parse,twitter.json,msvc,64,rapidjson (pool),3000,5267,351
+parse,twitter.json,msvc,64,rapidjson (pool),3000,5252,352
+parse,twitter.json,msvc,64,rapidjson (pool),3000,5263,352
+parse,twitter.json,msvc,64,rapidjson (pool),3000,5239,353
+parse,twitter.json,msvc,64,boost,2000,6013,205
+parse,twitter.json,msvc,64,boost,2000,6035,204
+parse,twitter.json,msvc,64,boost,2000,6030,205
+parse,twitter.json,msvc,64,boost,2000,6035,204
+parse,twitter.json,msvc,64,boost,2000,6024,205
+parse,twitter.json,msvc,64,boost,2000,6024,205
+parse,twitter.json,msvc,64,rapidjson,2000,5098,242
+parse,twitter.json,msvc,64,rapidjson,2000,5123,241
+parse,twitter.json,msvc,64,rapidjson,2000,5084,243
+parse,twitter.json,msvc,64,rapidjson,2000,5142,240
+parse,twitter.json,msvc,64,rapidjson,2000,5161,239
+parse,twitter.json,msvc,64,rapidjson,2000,5119,241
+parse,twitter.json,msvc,64,nlohmann,1000,6159,100
+parse,twitter.json,msvc,64,nlohmann,1000,6163,100
+parse,twitter.json,msvc,64,nlohmann,1000,6157,100
+parse,twitter.json,msvc,64,nlohmann,1000,6158,100
+parse,twitter.json,msvc,64,nlohmann,1000,6156,100
+parse,twitter.json,msvc,64,nlohmann,1000,6157,100
+parse,citm_catalog.json,msvc,64,boost (pool),2000,7643,444
+parse,citm_catalog.json,msvc,64,boost (pool),2000,7638,444
+parse,citm_catalog.json,msvc,64,boost (pool),2000,7635,444
+parse,citm_catalog.json,msvc,64,boost (pool),2000,7643,444
+parse,citm_catalog.json,msvc,64,boost (pool),2000,7640,444
+parse,citm_catalog.json,msvc,64,boost (pool),2000,7637,444
+parse,citm_catalog.json,msvc,64,rapidjson (pool),2000,7199,471
+parse,citm_catalog.json,msvc,64,rapidjson (pool),2000,7203,471
+parse,citm_catalog.json,msvc,64,rapidjson (pool),2000,7204,471
+parse,citm_catalog.json,msvc,64,rapidjson (pool),2000,7199,471
+parse,citm_catalog.json,msvc,64,rapidjson (pool),2000,7199,471
+parse,citm_catalog.json,msvc,64,rapidjson (pool),2000,7200,471
+parse,citm_catalog.json,msvc,64,boost,1000,6749,251
+parse,citm_catalog.json,msvc,64,boost,1000,6730,252
+parse,citm_catalog.json,msvc,64,boost,1000,6738,252
+parse,citm_catalog.json,msvc,64,boost,1000,6731,252
+parse,citm_catalog.json,msvc,64,boost,1000,6739,252
+parse,citm_catalog.json,msvc,64,boost,1000,6738,252
+parse,citm_catalog.json,msvc,64,rapidjson,1000,5028,337
+parse,citm_catalog.json,msvc,64,rapidjson,1000,5065,335
+parse,citm_catalog.json,msvc,64,rapidjson,2000,10023,338
+parse,citm_catalog.json,msvc,64,rapidjson,1000,5017,338
+parse,citm_catalog.json,msvc,64,rapidjson,1000,5009,338
+parse,citm_catalog.json,msvc,64,rapidjson,2000,9988,339
+parse,citm_catalog.json,msvc,64,nlohmann,1000,14571,116
+parse,citm_catalog.json,msvc,64,nlohmann,1000,14558,116
+parse,citm_catalog.json,msvc,64,nlohmann,1000,14559,116
+parse,citm_catalog.json,msvc,64,nlohmann,1000,14533,117
+parse,citm_catalog.json,msvc,64,nlohmann,1000,14570,116
+parse,citm_catalog.json,msvc,64,nlohmann,1000,14536,117
+parse,canada.json,msvc,64,boost (pool),1000,8744,246
+parse,canada.json,msvc,64,boost (pool),1000,8481,253
+parse,canada.json,msvc,64,boost (pool),1000,8477,253
+parse,canada.json,msvc,64,boost (pool),1000,8476,253
+parse,canada.json,msvc,64,boost (pool),1000,8475,253
+parse,canada.json,msvc,64,boost (pool),1000,8477,253
+parse,canada.json,msvc,64,rapidjson (pool),1000,5885,365
+parse,canada.json,msvc,64,rapidjson (pool),1000,5884,365
+parse,canada.json,msvc,64,rapidjson (pool),1000,5878,365
+parse,canada.json,msvc,64,rapidjson (pool),1000,5882,365
+parse,canada.json,msvc,64,rapidjson (pool),1000,5878,365
+parse,canada.json,msvc,64,rapidjson (pool),1000,5882,365
+parse,canada.json,msvc,64,boost,1000,12317,174
+parse,canada.json,msvc,64,boost,1000,12322,174
+parse,canada.json,msvc,64,boost,1000,12454,172
+parse,canada.json,msvc,64,boost,1000,12424,173
+parse,canada.json,msvc,64,boost,1000,12420,173
+parse,canada.json,msvc,64,boost,1000,12426,173
+parse,canada.json,msvc,64,rapidjson,1000,9322,230
+parse,canada.json,msvc,64,rapidjson,1000,9350,230
+parse,canada.json,msvc,64,rapidjson,1000,9360,229
+parse,canada.json,msvc,64,rapidjson,1000,9352,230
+parse,canada.json,msvc,64,rapidjson,1000,9368,229
+parse,canada.json,msvc,64,rapidjson,1000,9364,229
+parse,canada.json,msvc,64,nlohmann,1000,55691,39
+parse,canada.json,msvc,64,nlohmann,1000,55651,39
+parse,canada.json,msvc,64,nlohmann,1000,55683,39
+parse,canada.json,msvc,64,nlohmann,1000,55723,39
+parse,canada.json,msvc,64,nlohmann,1000,55717,39
+parse,canada.json,msvc,64,nlohmann,1000,55681,39
+serialize,strings.json,msvc,64,boost (pool),33000,5104,6265
+serialize,strings.json,msvc,64,boost (pool),33000,5108,6261
+serialize,strings.json,msvc,64,boost (pool),33000,5104,6265
+serialize,strings.json,msvc,64,boost (pool),33000,5104,6265
+serialize,strings.json,msvc,64,boost (pool),33000,5104,6265
+serialize,strings.json,msvc,64,boost (pool),33000,5103,6267
+serialize,strings.json,msvc,64,rapidjson (pool),4000,6165,629
+serialize,strings.json,msvc,64,rapidjson (pool),4000,6164,629
+serialize,strings.json,msvc,64,rapidjson (pool),4000,6164,629
+serialize,strings.json,msvc,64,rapidjson (pool),4000,6166,629
+serialize,strings.json,msvc,64,rapidjson (pool),4000,6164,629
+serialize,strings.json,msvc,64,rapidjson (pool),4000,6164,629
+serialize,strings.json,msvc,64,boost,29000,5062,5552
+serialize,strings.json,msvc,64,boost,29000,5060,5554
+serialize,strings.json,msvc,64,boost,29000,5070,5543
+serialize,strings.json,msvc,64,boost,29000,5066,5547
+serialize,strings.json,msvc,64,boost,29000,5062,5552
+serialize,strings.json,msvc,64,boost,29000,5068,5545
+serialize,strings.json,msvc,64,rapidjson,4000,6172,628
+serialize,strings.json,msvc,64,rapidjson,4000,6167,629
+serialize,strings.json,msvc,64,rapidjson,4000,6168,628
+serialize,strings.json,msvc,64,rapidjson,4000,6168,628
+serialize,strings.json,msvc,64,rapidjson,4000,6167,629
+serialize,strings.json,msvc,64,rapidjson,4000,6167,629
+serialize,strings.json,msvc,64,nlohmann,1000,6563,148
+serialize,strings.json,msvc,64,nlohmann,1000,6561,148
+serialize,strings.json,msvc,64,nlohmann,1000,6564,148
+serialize,strings.json,msvc,64,nlohmann,1000,6576,147
+serialize,strings.json,msvc,64,nlohmann,1000,6569,148
+serialize,strings.json,msvc,64,nlohmann,1000,6568,148
+serialize,small.json,msvc,64,boost (pool),7905000,5000,909
+serialize,small.json,msvc,64,boost (pool),7911000,5000,910
+serialize,small.json,msvc,64,boost (pool),7935000,5000,913
+serialize,small.json,msvc,64,boost (pool),7896000,5000,908
+serialize,small.json,msvc,64,boost (pool),7913000,5000,910
+serialize,small.json,msvc,64,boost (pool),7906000,5000,909
+serialize,small.json,msvc,64,rapidjson (pool),6900000,5000,794
+serialize,small.json,msvc,64,rapidjson (pool),6854000,5000,788
+serialize,small.json,msvc,64,rapidjson (pool),6896000,5000,793
+serialize,small.json,msvc,64,rapidjson (pool),6856000,5000,789
+serialize,small.json,msvc,64,rapidjson (pool),6892000,5000,793
+serialize,small.json,msvc,64,rapidjson (pool),6854000,5000,788
+serialize,small.json,msvc,64,boost,8161000,5000,939
+serialize,small.json,msvc,64,boost,8152000,5000,938
+serialize,small.json,msvc,64,boost,8157000,5000,938
+serialize,small.json,msvc,64,boost,8156000,5000,938
+serialize,small.json,msvc,64,boost,8167000,5000,939
+serialize,small.json,msvc,64,boost,8152000,5000,938
+serialize,small.json,msvc,64,rapidjson,6659000,5000,766
+serialize,small.json,msvc,64,rapidjson,6660000,5000,766
+serialize,small.json,msvc,64,rapidjson,6628000,5000,762
+serialize,small.json,msvc,64,rapidjson,6641000,5000,764
+serialize,small.json,msvc,64,rapidjson,6619000,5000,761
+serialize,small.json,msvc,64,rapidjson,6698000,5000,770
+serialize,small.json,msvc,64,nlohmann,2388000,5001,275
+serialize,small.json,msvc,64,nlohmann,2386000,5001,274
+serialize,small.json,msvc,64,nlohmann,2386000,5001,274
+serialize,small.json,msvc,64,nlohmann,2385000,5000,274
+serialize,small.json,msvc,64,nlohmann,2391000,5001,275
+serialize,small.json,msvc,64,nlohmann,2377000,5001,273
+serialize,random.json,msvc,64,boost (pool),1591000,5002,681
+serialize,random.json,msvc,64,boost (pool),1595000,5002,682
+serialize,random.json,msvc,64,boost (pool),1594000,5001,682
+serialize,random.json,msvc,64,boost (pool),1594000,5001,682
+serialize,random.json,msvc,64,boost (pool),1595000,5002,682
+serialize,random.json,msvc,64,boost (pool),1596000,5001,683
+serialize,random.json,msvc,64,rapidjson (pool),1611000,5000,690
+serialize,random.json,msvc,64,rapidjson (pool),1612000,5000,690
+serialize,random.json,msvc,64,rapidjson (pool),1612000,5000,690
+serialize,random.json,msvc,64,rapidjson (pool),1612000,5000,690
+serialize,random.json,msvc,64,rapidjson (pool),1612000,5002,690
+serialize,random.json,msvc,64,rapidjson (pool),1612000,5002,690
+serialize,random.json,msvc,64,boost,1587000,5001,679
+serialize,random.json,msvc,64,boost,1580000,5002,676
+serialize,random.json,msvc,64,boost,1586000,5002,679
+serialize,random.json,msvc,64,boost,1583000,5001,677
+serialize,random.json,msvc,64,boost,1588000,5000,680
+serialize,random.json,msvc,64,boost,1588000,5003,679
+serialize,random.json,msvc,64,rapidjson,1603000,5002,686
+serialize,random.json,msvc,64,rapidjson,1599000,5000,684
+serialize,random.json,msvc,64,rapidjson,1599000,5002,684
+serialize,random.json,msvc,64,rapidjson,1598000,5000,684
+serialize,random.json,msvc,64,rapidjson,1600000,5000,685
+serialize,random.json,msvc,64,rapidjson,1598000,5002,684
+serialize,random.json,msvc,64,nlohmann,739000,5001,316
+serialize,random.json,msvc,64,nlohmann,738000,5002,316
+serialize,random.json,msvc,64,nlohmann,738000,5003,316
+serialize,random.json,msvc,64,nlohmann,744000,5006,318
+serialize,random.json,msvc,64,nlohmann,740000,5001,317
+serialize,random.json,msvc,64,nlohmann,741000,5006,317
+serialize,array.json,msvc,64,boost (pool),4000,6104,427
+serialize,array.json,msvc,64,boost (pool),4000,6102,427
+serialize,array.json,msvc,64,boost (pool),4000,6102,427
+serialize,array.json,msvc,64,boost (pool),4000,6102,427
+serialize,array.json,msvc,64,boost (pool),4000,6100,427
+serialize,array.json,msvc,64,boost (pool),4000,6105,427
+serialize,array.json,msvc,64,rapidjson (pool),3000,5179,378
+serialize,array.json,msvc,64,rapidjson (pool),3000,5175,378
+serialize,array.json,msvc,64,rapidjson (pool),3000,5180,378
+serialize,array.json,msvc,64,rapidjson (pool),3000,5176,378
+serialize,array.json,msvc,64,rapidjson (pool),3000,5180,378
+serialize,array.json,msvc,64,rapidjson (pool),3000,5183,377
+serialize,array.json,msvc,64,boost,4000,6102,427
+serialize,array.json,msvc,64,boost,4000,6102,427
+serialize,array.json,msvc,64,boost,4000,6104,427
+serialize,array.json,msvc,64,boost,4000,6102,427
+serialize,array.json,msvc,64,boost,4000,6104,427
+serialize,array.json,msvc,64,boost,4000,6102,427
+serialize,array.json,msvc,64,rapidjson,3000,5218,375
+serialize,array.json,msvc,64,rapidjson,3000,5217,375
+serialize,array.json,msvc,64,rapidjson,3000,5215,375
+serialize,array.json,msvc,64,rapidjson,3000,5218,375
+serialize,array.json,msvc,64,rapidjson,3000,5217,375
+serialize,array.json,msvc,64,rapidjson,3000,5221,375
+serialize,array.json,msvc,64,nlohmann,3000,7038,278
+serialize,array.json,msvc,64,nlohmann,3000,7048,277
+serialize,array.json,msvc,64,nlohmann,3000,7052,277
+serialize,array.json,msvc,64,nlohmann,3000,7035,278
+serialize,array.json,msvc,64,nlohmann,3000,7034,278
+serialize,array.json,msvc,64,nlohmann,3000,7046,278
+serialize,twitter.json,msvc,64,boost (pool),9000,5104,1088
+serialize,twitter.json,msvc,64,boost (pool),9000,5146,1079
+serialize,twitter.json,msvc,64,boost (pool),9000,5115,1086
+serialize,twitter.json,msvc,64,boost (pool),9000,5111,1087
+serialize,twitter.json,msvc,64,boost (pool),9000,5144,1080
+serialize,twitter.json,msvc,64,boost (pool),9000,5124,1084
+serialize,twitter.json,msvc,64,rapidjson (pool),7000,5524,782
+serialize,twitter.json,msvc,64,rapidjson (pool),7000,5520,782
+serialize,twitter.json,msvc,64,rapidjson (pool),7000,5519,783
+serialize,twitter.json,msvc,64,rapidjson (pool),7000,5514,783
+serialize,twitter.json,msvc,64,rapidjson (pool),7000,5468,790
+serialize,twitter.json,msvc,64,rapidjson (pool),7000,5522,782
+serialize,twitter.json,msvc,64,boost,9000,5585,994
+serialize,twitter.json,msvc,64,boost,9000,5532,1004
+serialize,twitter.json,msvc,64,boost,9000,5654,982
+serialize,twitter.json,msvc,64,boost,9000,5413,1026
+serialize,twitter.json,msvc,64,boost,9000,5506,1009
+serialize,twitter.json,msvc,64,boost,9000,5570,997
+serialize,twitter.json,msvc,64,rapidjson,7000,5647,765
+serialize,twitter.json,msvc,64,rapidjson,7000,5601,771
+serialize,twitter.json,msvc,64,rapidjson,7000,5544,779
+serialize,twitter.json,msvc,64,rapidjson,7000,5495,786
+serialize,twitter.json,msvc,64,rapidjson,7000,5497,786
+serialize,twitter.json,msvc,64,rapidjson,7000,5494,786
+serialize,twitter.json,msvc,64,nlohmann,3000,5825,318
+serialize,twitter.json,msvc,64,nlohmann,3000,5788,320
+serialize,twitter.json,msvc,64,nlohmann,3000,5793,320
+serialize,twitter.json,msvc,64,nlohmann,3000,5789,320
+serialize,twitter.json,msvc,64,nlohmann,3000,5871,315
+serialize,twitter.json,msvc,64,nlohmann,3000,5797,319
+serialize,citm_catalog.json,msvc,64,boost (pool),6000,5371,1894
+serialize,citm_catalog.json,msvc,64,boost (pool),6000,5359,1898
+serialize,citm_catalog.json,msvc,64,boost (pool),6000,5363,1897
+serialize,citm_catalog.json,msvc,64,boost (pool),6000,5362,1897
+serialize,citm_catalog.json,msvc,64,boost (pool),6000,5360,1898
+serialize,citm_catalog.json,msvc,64,boost (pool),6000,5355,1900
+serialize,citm_catalog.json,msvc,64,rapidjson (pool),6000,5293,1922
+serialize,citm_catalog.json,msvc,64,rapidjson (pool),6000,5296,1921
+serialize,citm_catalog.json,msvc,64,rapidjson (pool),6000,5288,1924
+serialize,citm_catalog.json,msvc,64,rapidjson (pool),6000,5293,1922
+serialize,citm_catalog.json,msvc,64,rapidjson (pool),6000,5288,1924
+serialize,citm_catalog.json,msvc,64,rapidjson (pool),6000,5307,1917
+serialize,citm_catalog.json,msvc,64,boost,6000,5877,1731
+serialize,citm_catalog.json,msvc,64,boost,6000,5882,1729
+serialize,citm_catalog.json,msvc,64,boost,6000,5876,1731
+serialize,citm_catalog.json,msvc,64,boost,6000,5872,1732
+serialize,citm_catalog.json,msvc,64,boost,6000,5874,1732
+serialize,citm_catalog.json,msvc,64,boost,6000,5896,1725
+serialize,citm_catalog.json,msvc,64,rapidjson,6000,5411,1880
+serialize,citm_catalog.json,msvc,64,rapidjson,6000,5412,1880
+serialize,citm_catalog.json,msvc,64,rapidjson,6000,5398,1884
+serialize,citm_catalog.json,msvc,64,rapidjson,6000,5401,1883
+serialize,citm_catalog.json,msvc,64,rapidjson,6000,5404,1882
+serialize,citm_catalog.json,msvc,64,rapidjson,6000,5418,1877
+serialize,citm_catalog.json,msvc,64,nlohmann,3000,5347,951
+serialize,citm_catalog.json,msvc,64,nlohmann,3000,5442,935
+serialize,citm_catalog.json,msvc,64,nlohmann,3000,5487,927
+serialize,citm_catalog.json,msvc,64,nlohmann,3000,5495,926
+serialize,citm_catalog.json,msvc,64,nlohmann,3000,5590,910
+serialize,citm_catalog.json,msvc,64,nlohmann,3000,5577,912
+serialize,canada.json,msvc,64,boost (pool),1000,6139,350
+serialize,canada.json,msvc,64,boost (pool),1000,6145,349
+serialize,canada.json,msvc,64,boost (pool),1000,6135,350
+serialize,canada.json,msvc,64,boost (pool),1000,6143,349
+serialize,canada.json,msvc,64,boost (pool),1000,6137,350
+serialize,canada.json,msvc,64,boost (pool),1000,6139,350
+serialize,canada.json,msvc,64,rapidjson (pool),1000,9143,235
+serialize,canada.json,msvc,64,rapidjson (pool),1000,9142,235
+serialize,canada.json,msvc,64,rapidjson (pool),1000,9141,235
+serialize,canada.json,msvc,64,rapidjson (pool),1000,9145,235
+serialize,canada.json,msvc,64,rapidjson (pool),1000,9144,235
+serialize,canada.json,msvc,64,rapidjson (pool),1000,9146,235
+serialize,canada.json,msvc,64,boost,1000,6439,333
+serialize,canada.json,msvc,64,boost,1000,6456,333
+serialize,canada.json,msvc,64,boost,1000,6429,334
+serialize,canada.json,msvc,64,boost,1000,6458,332
+serialize,canada.json,msvc,64,boost,1000,6427,334
+serialize,canada.json,msvc,64,boost,1000,6434,334
+serialize,canada.json,msvc,64,rapidjson,1000,9218,233
+serialize,canada.json,msvc,64,rapidjson,1000,9233,233
+serialize,canada.json,msvc,64,rapidjson,1000,9224,233
+serialize,canada.json,msvc,64,rapidjson,1000,9218,233
+serialize,canada.json,msvc,64,rapidjson,1000,9214,233
+serialize,canada.json,msvc,64,rapidjson,1000,9223,233
+serialize,canada.json,msvc,64,nlohmann,1000,15887,135
+serialize,canada.json,msvc,64,nlohmann,1000,15973,134
+serialize,canada.json,msvc,64,nlohmann,1000,15986,134
+serialize,canada.json,msvc,64,nlohmann,1000,15973,134
+serialize,canada.json,msvc,64,nlohmann,1000,16060,134
+serialize,canada.json,msvc,64,nlohmann,1000,15892,135
+
+parse,strings.json,msvc,32,boost (pool),14000,5283,2568
+parse,strings.json,msvc,32,boost (pool),14000,5117,2651
+parse,strings.json,msvc,32,boost (pool),14000,5121,2649
+parse,strings.json,msvc,32,boost (pool),14000,5131,2644
+parse,strings.json,msvc,32,boost (pool),14000,5135,2642
+parse,strings.json,msvc,32,boost (pool),14000,5142,2638
+parse,strings.json,msvc,32,rapidjson (pool),2000,5746,337
+parse,strings.json,msvc,32,rapidjson (pool),2000,5692,340
+parse,strings.json,msvc,32,rapidjson (pool),2000,5678,341
+parse,strings.json,msvc,32,rapidjson (pool),2000,5352,362
+parse,strings.json,msvc,32,rapidjson (pool),2000,5329,364
+parse,strings.json,msvc,32,rapidjson (pool),2000,5342,363
+parse,strings.json,msvc,32,boost,13000,5065,2487
+parse,strings.json,msvc,32,boost,14000,5380,2522
+parse,strings.json,msvc,32,boost,14000,5382,2521
+parse,strings.json,msvc,32,boost,14000,5380,2522
+parse,strings.json,msvc,32,boost,14000,5375,2524
+parse,strings.json,msvc,32,boost,14000,5380,2522
+parse,strings.json,msvc,32,rapidjson,2000,5445,356
+parse,strings.json,msvc,32,rapidjson,2000,5448,356
+parse,strings.json,msvc,32,rapidjson,2000,5446,356
+parse,strings.json,msvc,32,rapidjson,2000,5448,356
+parse,strings.json,msvc,32,rapidjson,2000,5444,356
+parse,strings.json,msvc,32,rapidjson,2000,5451,356
+parse,strings.json,msvc,32,nlohmann,1000,9741,99
+parse,strings.json,msvc,32,nlohmann,1000,9731,100
+parse,strings.json,msvc,32,nlohmann,1000,9736,100
+parse,strings.json,msvc,32,nlohmann,1000,9734,100
+parse,strings.json,msvc,32,nlohmann,1000,9729,100
+parse,strings.json,msvc,32,nlohmann,1000,9729,100
+parse,small.json,msvc,32,boost (pool),1744000,5001,201
+parse,small.json,msvc,32,boost (pool),1741000,5001,200
+parse,small.json,msvc,32,boost (pool),1744000,5001,201
+parse,small.json,msvc,32,boost (pool),1743000,5001,200
+parse,small.json,msvc,32,boost (pool),1750000,5000,201
+parse,small.json,msvc,32,boost (pool),1749000,5001,201
+parse,small.json,msvc,32,rapidjson (pool),1828000,5002,210
+parse,small.json,msvc,32,rapidjson (pool),1827000,5002,210
+parse,small.json,msvc,32,rapidjson (pool),1824000,5002,210
+parse,small.json,msvc,32,rapidjson (pool),1827000,5000,210
+parse,small.json,msvc,32,rapidjson (pool),1826000,5000,210
+parse,small.json,msvc,32,rapidjson (pool),1827000,5000,210
+parse,small.json,msvc,32,boost,1061000,5003,122
+parse,small.json,msvc,32,boost,1060000,5003,122
+parse,small.json,msvc,32,boost,1059000,5000,122
+parse,small.json,msvc,32,boost,1061000,5000,122
+parse,small.json,msvc,32,boost,1063000,5003,122
+parse,small.json,msvc,32,boost,1063000,5003,122
+parse,small.json,msvc,32,rapidjson,1649000,5000,190
+parse,small.json,msvc,32,rapidjson,1648000,5000,190
+parse,small.json,msvc,32,rapidjson,1649000,5000,190
+parse,small.json,msvc,32,rapidjson,1649000,5000,190
+parse,small.json,msvc,32,rapidjson,1649000,5000,190
+parse,small.json,msvc,32,rapidjson,1646000,5000,189
+parse,small.json,msvc,32,nlohmann,474000,5005,54
+parse,small.json,msvc,32,nlohmann,474000,5005,54
+parse,small.json,msvc,32,nlohmann,474000,5006,54
+parse,small.json,msvc,32,nlohmann,474000,5005,54
+parse,small.json,msvc,32,nlohmann,474000,5004,54
+parse,small.json,msvc,32,nlohmann,474000,5005,54
+parse,random.json,msvc,32,boost (pool),495000,5000,212
+parse,random.json,msvc,32,boost (pool),495000,5006,212
+parse,random.json,msvc,32,boost (pool),495000,5005,212
+parse,random.json,msvc,32,boost (pool),495000,5004,212
+parse,random.json,msvc,32,boost (pool),495000,5001,212
+parse,random.json,msvc,32,boost (pool),496000,5007,212
+parse,random.json,msvc,32,rapidjson (pool),556000,5002,238
+parse,random.json,msvc,32,rapidjson (pool),556000,5003,238
+parse,random.json,msvc,32,rapidjson (pool),555000,5006,237
+parse,random.json,msvc,32,rapidjson (pool),556000,5000,238
+parse,random.json,msvc,32,rapidjson (pool),556000,5001,238
+parse,random.json,msvc,32,rapidjson (pool),557000,5000,238
+parse,random.json,msvc,32,boost,307000,5007,131
+parse,random.json,msvc,32,boost,307000,5006,131
+parse,random.json,msvc,32,boost,307000,5005,131
+parse,random.json,msvc,32,boost,307000,5006,131
+parse,random.json,msvc,32,boost,307000,5014,131
+parse,random.json,msvc,32,boost,306000,5000,131
+parse,random.json,msvc,32,rapidjson,541000,5000,232
+parse,random.json,msvc,32,rapidjson,543000,5002,232
+parse,random.json,msvc,32,rapidjson,542000,5000,232
+parse,random.json,msvc,32,rapidjson,541000,5006,231
+parse,random.json,msvc,32,rapidjson,542000,5004,232
+parse,random.json,msvc,32,rapidjson,542000,5004,232
+parse,random.json,msvc,32,nlohmann,125000,5003,53
+parse,random.json,msvc,32,nlohmann,125000,5000,54
+parse,random.json,msvc,32,nlohmann,126000,5038,54
+parse,random.json,msvc,32,nlohmann,125000,5001,53
+parse,random.json,msvc,32,nlohmann,126000,5038,54
+parse,random.json,msvc,32,nlohmann,126000,5039,54
+parse,array.json,msvc,32,boost (pool),2000,7305,178
+parse,array.json,msvc,32,boost (pool),2000,7303,179
+parse,array.json,msvc,32,boost (pool),2000,7299,179
+parse,array.json,msvc,32,boost (pool),2000,7296,179
+parse,array.json,msvc,32,boost (pool),2000,7297,179
+parse,array.json,msvc,32,boost (pool),2000,7298,179
+parse,array.json,msvc,32,rapidjson (pool),2000,8880,147
+parse,array.json,msvc,32,rapidjson (pool),2000,8889,147
+parse,array.json,msvc,32,rapidjson (pool),2000,8885,147
+parse,array.json,msvc,32,rapidjson (pool),2000,8893,147
+parse,array.json,msvc,32,rapidjson (pool),2000,8887,147
+parse,array.json,msvc,32,rapidjson (pool),2000,8883,147
+parse,array.json,msvc,32,boost,2000,8677,150
+parse,array.json,msvc,32,boost,2000,8671,150
+parse,array.json,msvc,32,boost,2000,8675,150
+parse,array.json,msvc,32,boost,2000,8676,150
+parse,array.json,msvc,32,boost,2000,8675,150
+parse,array.json,msvc,32,boost,2000,8675,150
+parse,array.json,msvc,32,rapidjson,2000,9051,144
+parse,array.json,msvc,32,rapidjson,2000,9056,144
+parse,array.json,msvc,32,rapidjson,2000,9049,144
+parse,array.json,msvc,32,rapidjson,2000,9052,144
+parse,array.json,msvc,32,rapidjson,2000,9047,144
+parse,array.json,msvc,32,rapidjson,2000,9055,144
+parse,array.json,msvc,32,nlohmann,1000,12357,53
+parse,array.json,msvc,32,nlohmann,1000,12347,53
+parse,array.json,msvc,32,nlohmann,1000,12356,53
+parse,array.json,msvc,32,nlohmann,1000,12354,53
+parse,array.json,msvc,32,nlohmann,1000,12358,53
+parse,array.json,msvc,32,nlohmann,1000,12354,53
+parse,twitter.json,msvc,32,boost (pool),3000,6576,281
+parse,twitter.json,msvc,32,boost (pool),3000,6582,281
+parse,twitter.json,msvc,32,boost (pool),3000,6576,281
+parse,twitter.json,msvc,32,boost (pool),3000,6573,282
+parse,twitter.json,msvc,32,boost (pool),3000,6574,282
+parse,twitter.json,msvc,32,boost (pool),3000,6573,282
+parse,twitter.json,msvc,32,rapidjson (pool),3000,7251,255
+parse,twitter.json,msvc,32,rapidjson (pool),3000,7322,253
+parse,twitter.json,msvc,32,rapidjson (pool),3000,7311,253
+parse,twitter.json,msvc,32,rapidjson (pool),3000,7274,254
+parse,twitter.json,msvc,32,rapidjson (pool),3000,7272,255
+parse,twitter.json,msvc,32,rapidjson (pool),3000,7263,255
+parse,twitter.json,msvc,32,boost,2000,7992,154
+parse,twitter.json,msvc,32,boost,2000,7989,154
+parse,twitter.json,msvc,32,boost,2000,7990,154
+parse,twitter.json,msvc,32,boost,2000,7938,155
+parse,twitter.json,msvc,32,boost,2000,7894,156
+parse,twitter.json,msvc,32,boost,2000,7972,155
+parse,twitter.json,msvc,32,rapidjson,2000,6700,184
+parse,twitter.json,msvc,32,rapidjson,2000,6701,184
+parse,twitter.json,msvc,32,rapidjson,2000,6710,184
+parse,twitter.json,msvc,32,rapidjson,2000,6650,186
+parse,twitter.json,msvc,32,rapidjson,2000,6625,186
+parse,twitter.json,msvc,32,rapidjson,2000,6637,186
+parse,twitter.json,msvc,32,nlohmann,1000,8870,70
+parse,twitter.json,msvc,32,nlohmann,1000,8869,70
+parse,twitter.json,msvc,32,nlohmann,1000,8865,70
+parse,twitter.json,msvc,32,nlohmann,1000,8861,70
+parse,twitter.json,msvc,32,nlohmann,1000,8862,70
+parse,twitter.json,msvc,32,nlohmann,1000,8863,70
+parse,citm_catalog.json,msvc,32,boost (pool),1000,6336,268
+parse,citm_catalog.json,msvc,32,boost (pool),1000,6338,267
+parse,citm_catalog.json,msvc,32,boost (pool),1000,6330,268
+parse,citm_catalog.json,msvc,32,boost (pool),1000,6328,268
+parse,citm_catalog.json,msvc,32,boost (pool),1000,6331,268
+parse,citm_catalog.json,msvc,32,boost (pool),1000,6332,268
+parse,citm_catalog.json,msvc,32,rapidjson (pool),2000,8946,379
+parse,citm_catalog.json,msvc,32,rapidjson (pool),2000,8938,379
+parse,citm_catalog.json,msvc,32,rapidjson (pool),2000,8938,379
+parse,citm_catalog.json,msvc,32,rapidjson (pool),2000,8938,379
+parse,citm_catalog.json,msvc,32,rapidjson (pool),2000,8937,379
+parse,citm_catalog.json,msvc,32,rapidjson (pool),2000,8935,379
+parse,citm_catalog.json,msvc,32,boost,1000,9814,173
+parse,citm_catalog.json,msvc,32,boost,1000,9794,173
+parse,citm_catalog.json,msvc,32,boost,1000,9839,172
+parse,citm_catalog.json,msvc,32,boost,1000,9839,172
+parse,citm_catalog.json,msvc,32,boost,1000,9804,173
+parse,citm_catalog.json,msvc,32,boost,1000,9806,173
+parse,citm_catalog.json,msvc,32,rapidjson,1000,6153,276
+parse,citm_catalog.json,msvc,32,rapidjson,1000,6185,274
+parse,citm_catalog.json,msvc,32,rapidjson,1000,6185,274
+parse,citm_catalog.json,msvc,32,rapidjson,1000,6261,271
+parse,citm_catalog.json,msvc,32,rapidjson,1000,6230,272
+parse,citm_catalog.json,msvc,32,rapidjson,1000,6213,273
+parse,citm_catalog.json,msvc,32,nlohmann,1000,18762,90
+parse,citm_catalog.json,msvc,32,nlohmann,1000,18769,90
+parse,citm_catalog.json,msvc,32,nlohmann,1000,18756,90
+parse,citm_catalog.json,msvc,32,nlohmann,1000,18741,90
+parse,citm_catalog.json,msvc,32,nlohmann,1000,18740,90
+parse,citm_catalog.json,msvc,32,nlohmann,1000,18727,91
+parse,canada.json,msvc,32,boost (pool),1000,15695,137
+parse,canada.json,msvc,32,boost (pool),1000,15665,137
+parse,canada.json,msvc,32,boost (pool),1000,15683,137
+parse,canada.json,msvc,32,boost (pool),1000,15692,137
+parse,canada.json,msvc,32,boost (pool),1000,15677,137
+parse,canada.json,msvc,32,boost (pool),1000,15683,137
+parse,canada.json,msvc,32,rapidjson (pool),1000,10124,212
+parse,canada.json,msvc,32,rapidjson (pool),1000,10126,212
+parse,canada.json,msvc,32,rapidjson (pool),1000,10131,212
+parse,canada.json,msvc,32,rapidjson (pool),1000,10132,212
+parse,canada.json,msvc,32,rapidjson (pool),1000,10126,212
+parse,canada.json,msvc,32,rapidjson (pool),1000,10121,212
+parse,canada.json,msvc,32,boost,1000,20348,106
+parse,canada.json,msvc,32,boost,1000,20362,105
+parse,canada.json,msvc,32,boost,1000,20393,105
+parse,canada.json,msvc,32,boost,1000,20395,105
+parse,canada.json,msvc,32,boost,1000,20386,105
+parse,canada.json,msvc,32,boost,1000,20423,105
+parse,canada.json,msvc,32,rapidjson,1000,14169,152
+parse,canada.json,msvc,32,rapidjson,1000,14165,152
+parse,canada.json,msvc,32,rapidjson,1000,14189,151
+parse,canada.json,msvc,32,rapidjson,1000,14193,151
+parse,canada.json,msvc,32,rapidjson,1000,14186,151
+parse,canada.json,msvc,32,rapidjson,1000,14174,151
+parse,canada.json,msvc,32,nlohmann,1000,87705,24
+parse,canada.json,msvc,32,nlohmann,1000,87713,24
+parse,canada.json,msvc,32,nlohmann,1000,87614,25
+parse,canada.json,msvc,32,nlohmann,1000,87648,24
+parse,canada.json,msvc,32,nlohmann,1000,87626,24
+parse,canada.json,msvc,32,nlohmann,1000,87667,24
+serialize,strings.json,msvc,32,boost (pool),33000,5034,6353
+serialize,strings.json,msvc,32,boost (pool),33000,5034,6353
+serialize,strings.json,msvc,32,boost (pool),33000,5035,6351
+serialize,strings.json,msvc,32,boost (pool),33000,5036,6350
+serialize,strings.json,msvc,32,boost (pool),33000,5036,6350
+serialize,strings.json,msvc,32,boost (pool),33000,5035,6351
+serialize,strings.json,msvc,32,rapidjson (pool),3000,6195,469
+serialize,strings.json,msvc,32,rapidjson (pool),3000,6196,469
+serialize,strings.json,msvc,32,rapidjson (pool),3000,6196,469
+serialize,strings.json,msvc,32,rapidjson (pool),3000,6194,469
+serialize,strings.json,msvc,32,rapidjson (pool),3000,6196,469
+serialize,strings.json,msvc,32,rapidjson (pool),3000,6195,469
+serialize,strings.json,msvc,32,boost,30000,5134,5663
+serialize,strings.json,msvc,32,boost,30000,5140,5656
+serialize,strings.json,msvc,32,boost,30000,5140,5656
+serialize,strings.json,msvc,32,boost,30000,5157,5637
+serialize,strings.json,msvc,32,boost,30000,5141,5655
+serialize,strings.json,msvc,32,boost,30000,5135,5661
+serialize,strings.json,msvc,32,rapidjson,3000,6220,467
+serialize,strings.json,msvc,32,rapidjson,3000,6215,468
+serialize,strings.json,msvc,32,rapidjson,3000,6217,468
+serialize,strings.json,msvc,32,rapidjson,3000,6219,467
+serialize,strings.json,msvc,32,rapidjson,3000,6214,468
+serialize,strings.json,msvc,32,rapidjson,3000,6216,468
+serialize,strings.json,msvc,32,nlohmann,1000,10082,96
+serialize,strings.json,msvc,32,nlohmann,1000,10091,96
+serialize,strings.json,msvc,32,nlohmann,1000,10078,96
+serialize,strings.json,msvc,32,nlohmann,1000,10086,96
+serialize,strings.json,msvc,32,nlohmann,1000,10089,96
+serialize,strings.json,msvc,32,nlohmann,1000,10090,96
+serialize,small.json,msvc,32,boost (pool),6215000,5000,715
+serialize,small.json,msvc,32,boost (pool),6203000,5000,713
+serialize,small.json,msvc,32,boost (pool),6201000,5000,713
+serialize,small.json,msvc,32,boost (pool),6198000,5000,713
+serialize,small.json,msvc,32,boost (pool),6192000,5000,712
+serialize,small.json,msvc,32,boost (pool),6252000,5000,719
+serialize,small.json,msvc,32,rapidjson (pool),5180000,5000,596
+serialize,small.json,msvc,32,rapidjson (pool),5179000,5000,596
+serialize,small.json,msvc,32,rapidjson (pool),5179000,5000,596
+serialize,small.json,msvc,32,rapidjson (pool),5180000,5000,596
+serialize,small.json,msvc,32,rapidjson (pool),5179000,5000,596
+serialize,small.json,msvc,32,rapidjson (pool),5179000,5000,596
+serialize,small.json,msvc,32,boost,6218000,5000,715
+serialize,small.json,msvc,32,boost,6222000,5000,716
+serialize,small.json,msvc,32,boost,6219000,5000,715
+serialize,small.json,msvc,32,boost,6223000,5000,716
+serialize,small.json,msvc,32,boost,6221000,5000,715
+serialize,small.json,msvc,32,boost,6243000,5000,718
+serialize,small.json,msvc,32,rapidjson,5207000,5000,599
+serialize,small.json,msvc,32,rapidjson,5207000,5000,599
+serialize,small.json,msvc,32,rapidjson,5207000,5000,599
+serialize,small.json,msvc,32,rapidjson,5207000,5000,599
+serialize,small.json,msvc,32,rapidjson,5207000,5000,599
+serialize,small.json,msvc,32,rapidjson,5207000,5000,599
+serialize,small.json,msvc,32,nlohmann,1677000,5001,193
+serialize,small.json,msvc,32,nlohmann,1676000,5001,193
+serialize,small.json,msvc,32,nlohmann,1680000,5001,193
+serialize,small.json,msvc,32,nlohmann,1674000,5001,192
+serialize,small.json,msvc,32,nlohmann,1675000,5000,193
+serialize,small.json,msvc,32,nlohmann,1677000,5001,193
+serialize,random.json,msvc,32,boost (pool),872000,5000,373
+serialize,random.json,msvc,32,boost (pool),873000,5003,373
+serialize,random.json,msvc,32,boost (pool),870000,5003,372
+serialize,random.json,msvc,32,boost (pool),870000,5001,372
+serialize,random.json,msvc,32,boost (pool),870000,5001,372
+serialize,random.json,msvc,32,boost (pool),870000,5001,372
+serialize,random.json,msvc,32,rapidjson (pool),961000,5002,411
+serialize,random.json,msvc,32,rapidjson (pool),961000,5000,411
+serialize,random.json,msvc,32,rapidjson (pool),960000,5001,411
+serialize,random.json,msvc,32,rapidjson (pool),961000,5000,411
+serialize,random.json,msvc,32,rapidjson (pool),962000,5004,411
+serialize,random.json,msvc,32,rapidjson (pool),961000,5004,411
+serialize,random.json,msvc,32,boost,867000,5002,371
+serialize,random.json,msvc,32,boost,867000,5005,371
+serialize,random.json,msvc,32,boost,867000,5000,371
+serialize,random.json,msvc,32,boost,868000,5002,371
+serialize,random.json,msvc,32,boost,868000,5000,372
+serialize,random.json,msvc,32,boost,868000,5002,371
+serialize,random.json,msvc,32,rapidjson,959000,5000,410
+serialize,random.json,msvc,32,rapidjson,959000,5000,410
+serialize,random.json,msvc,32,rapidjson,959000,5004,410
+serialize,random.json,msvc,32,rapidjson,959000,5002,410
+serialize,random.json,msvc,32,rapidjson,958000,5001,410
+serialize,random.json,msvc,32,rapidjson,960000,5003,411
+serialize,random.json,msvc,32,nlohmann,458000,5000,196
+serialize,random.json,msvc,32,nlohmann,459000,5006,196
+serialize,random.json,msvc,32,nlohmann,458000,5007,196
+serialize,random.json,msvc,32,nlohmann,458000,5010,196
+serialize,random.json,msvc,32,nlohmann,458000,5005,196
+serialize,random.json,msvc,32,nlohmann,458000,5001,196
+serialize,array.json,msvc,32,boost (pool),2000,6493,201
+serialize,array.json,msvc,32,boost (pool),2000,6494,201
+serialize,array.json,msvc,32,boost (pool),2000,6493,201
+serialize,array.json,msvc,32,boost (pool),2000,6493,201
+serialize,array.json,msvc,32,boost (pool),2000,6494,201
+serialize,array.json,msvc,32,boost (pool),2000,6494,201
+serialize,array.json,msvc,32,rapidjson (pool),2000,5688,229
+serialize,array.json,msvc,32,rapidjson (pool),2000,5691,229
+serialize,array.json,msvc,32,rapidjson (pool),2000,5691,229
+serialize,array.json,msvc,32,rapidjson (pool),2000,5689,229
+serialize,array.json,msvc,32,rapidjson (pool),2000,5690,229
+serialize,array.json,msvc,32,rapidjson (pool),2000,5689,229
+serialize,array.json,msvc,32,boost,2000,6499,201
+serialize,array.json,msvc,32,boost,2000,6499,201
+serialize,array.json,msvc,32,boost,2000,6499,201
+serialize,array.json,msvc,32,boost,2000,6501,201
+serialize,array.json,msvc,32,boost,2000,6500,201
+serialize,array.json,msvc,32,boost,2000,6499,201
+serialize,array.json,msvc,32,rapidjson,2000,5699,229
+serialize,array.json,msvc,32,rapidjson,2000,5697,229
+serialize,array.json,msvc,32,rapidjson,2000,5699,229
+serialize,array.json,msvc,32,rapidjson,2000,5698,229
+serialize,array.json,msvc,32,rapidjson,2000,5699,229
+serialize,array.json,msvc,32,rapidjson,2000,5699,229
+serialize,array.json,msvc,32,nlohmann,2000,9230,141
+serialize,array.json,msvc,32,nlohmann,2000,9229,141
+serialize,array.json,msvc,32,nlohmann,2000,9231,141
+serialize,array.json,msvc,32,nlohmann,2000,9237,141
+serialize,array.json,msvc,32,nlohmann,2000,9232,141
+serialize,array.json,msvc,32,nlohmann,2000,9238,141
+serialize,twitter.json,msvc,32,boost (pool),7000,5484,788
+serialize,twitter.json,msvc,32,boost (pool),7000,5480,788
+serialize,twitter.json,msvc,32,boost (pool),7000,5519,783
+serialize,twitter.json,msvc,32,boost (pool),7000,5476,789
+serialize,twitter.json,msvc,32,boost (pool),7000,5191,832
+serialize,twitter.json,msvc,32,boost (pool),8000,5551,889
+serialize,twitter.json,msvc,32,rapidjson (pool),6000,5606,660
+serialize,twitter.json,msvc,32,rapidjson (pool),6000,5601,661
+serialize,twitter.json,msvc,32,rapidjson (pool),6000,5613,660
+serialize,twitter.json,msvc,32,rapidjson (pool),6000,5598,661
+serialize,twitter.json,msvc,32,rapidjson (pool),6000,5608,660
+serialize,twitter.json,msvc,32,rapidjson (pool),6000,5614,659
+serialize,twitter.json,msvc,32,boost,8000,5740,860
+serialize,twitter.json,msvc,32,boost,7000,5197,831
+serialize,twitter.json,msvc,32,boost,7000,5057,854
+serialize,twitter.json,msvc,32,boost,8000,5698,866
+serialize,twitter.json,msvc,32,boost,8000,5681,869
+serialize,twitter.json,msvc,32,boost,7000,5084,850
+serialize,twitter.json,msvc,32,rapidjson,6000,5599,661
+serialize,twitter.json,msvc,32,rapidjson,6000,5596,662
+serialize,twitter.json,msvc,32,rapidjson,6000,5601,661
+serialize,twitter.json,msvc,32,rapidjson,6000,5598,661
+serialize,twitter.json,msvc,32,rapidjson,6000,5600,661
+serialize,twitter.json,msvc,32,rapidjson,6000,5595,662
+serialize,twitter.json,msvc,32,nlohmann,2000,5371,230
+serialize,twitter.json,msvc,32,nlohmann,2000,5362,230
+serialize,twitter.json,msvc,32,nlohmann,2000,5371,230
+serialize,twitter.json,msvc,32,nlohmann,2000,5367,230
+serialize,twitter.json,msvc,32,nlohmann,2000,5373,230
+serialize,twitter.json,msvc,32,nlohmann,2000,5368,230
+serialize,citm_catalog.json,msvc,32,boost (pool),5000,5051,1678
+serialize,citm_catalog.json,msvc,32,boost (pool),5000,5046,1680
+serialize,citm_catalog.json,msvc,32,boost (pool),5000,5049,1679
+serialize,citm_catalog.json,msvc,32,boost (pool),5000,5045,1680
+serialize,citm_catalog.json,msvc,32,boost (pool),5000,5052,1678
+serialize,citm_catalog.json,msvc,32,boost (pool),5000,5049,1679
+serialize,citm_catalog.json,msvc,32,rapidjson (pool),6000,5851,1738
+serialize,citm_catalog.json,msvc,32,rapidjson (pool),6000,5853,1738
+serialize,citm_catalog.json,msvc,32,rapidjson (pool),6000,5851,1738
+serialize,citm_catalog.json,msvc,32,rapidjson (pool),6000,5851,1738
+serialize,citm_catalog.json,msvc,32,rapidjson (pool),6000,5850,1739
+serialize,citm_catalog.json,msvc,32,rapidjson (pool),6000,5853,1738
+serialize,citm_catalog.json,msvc,32,boost,5000,5294,1601
+serialize,citm_catalog.json,msvc,32,boost,5000,5293,1601
+serialize,citm_catalog.json,msvc,32,boost,5000,5284,1604
+serialize,citm_catalog.json,msvc,32,boost,5000,5294,1601
+serialize,citm_catalog.json,msvc,32,boost,5000,5287,1603
+serialize,citm_catalog.json,msvc,32,boost,5000,5283,1605
+serialize,citm_catalog.json,msvc,32,rapidjson,6000,5868,1733
+serialize,citm_catalog.json,msvc,32,rapidjson,6000,5877,1731
+serialize,citm_catalog.json,msvc,32,rapidjson,6000,5869,1733
+serialize,citm_catalog.json,msvc,32,rapidjson,6000,5866,1734
+serialize,citm_catalog.json,msvc,32,rapidjson,6000,5864,1735
+serialize,citm_catalog.json,msvc,32,rapidjson,6000,5866,1734
+serialize,citm_catalog.json,msvc,32,nlohmann,2000,5843,580
+serialize,citm_catalog.json,msvc,32,nlohmann,2000,6250,543
+serialize,citm_catalog.json,msvc,32,nlohmann,2000,6226,545
+serialize,citm_catalog.json,msvc,32,nlohmann,2000,6236,544
+serialize,citm_catalog.json,msvc,32,nlohmann,2000,6216,545
+serialize,citm_catalog.json,msvc,32,nlohmann,2000,6092,557
+serialize,canada.json,msvc,32,boost (pool),1000,15750,136
+serialize,canada.json,msvc,32,boost (pool),1000,15748,136
+serialize,canada.json,msvc,32,boost (pool),1000,15742,136
+serialize,canada.json,msvc,32,boost (pool),1000,15751,136
+serialize,canada.json,msvc,32,boost (pool),1000,15761,136
+serialize,canada.json,msvc,32,boost (pool),1000,15748,136
+serialize,canada.json,msvc,32,rapidjson (pool),1000,18803,114
+serialize,canada.json,msvc,32,rapidjson (pool),1000,18816,114
+serialize,canada.json,msvc,32,rapidjson (pool),1000,18807,114
+serialize,canada.json,msvc,32,rapidjson (pool),1000,18810,114
+serialize,canada.json,msvc,32,rapidjson (pool),1000,18809,114
+serialize,canada.json,msvc,32,rapidjson (pool),1000,18810,114
+serialize,canada.json,msvc,32,boost,1000,15897,135
+serialize,canada.json,msvc,32,boost,1000,15881,135
+serialize,canada.json,msvc,32,boost,1000,15891,135
+serialize,canada.json,msvc,32,boost,1000,15886,135
+serialize,canada.json,msvc,32,boost,1000,15870,135
+serialize,canada.json,msvc,32,boost,1000,15888,135
+serialize,canada.json,msvc,32,rapidjson,1000,18927,113
+serialize,canada.json,msvc,32,rapidjson,1000,18921,113
+serialize,canada.json,msvc,32,rapidjson,1000,18926,113
+serialize,canada.json,msvc,32,rapidjson,1000,18919,113
+serialize,canada.json,msvc,32,rapidjson,1000,18925,113
+serialize,canada.json,msvc,32,rapidjson,1000,18912,114
+serialize,canada.json,msvc,32,nlohmann,1000,25996,83
+serialize,canada.json,msvc,32,nlohmann,1000,26018,83
+serialize,canada.json,msvc,32,nlohmann,1000,26018,83
+serialize,canada.json,msvc,32,nlohmann,1000,26029,82
+serialize,canada.json,msvc,32,nlohmann,1000,26308,82
+serialize,canada.json,msvc,32,nlohmann,1000,26452,81
+
+parse,strings.json,clang,64,boost (pool),28000,5026,5399
+parse,strings.json,clang,64,boost (pool),33000,5028,6360
+parse,strings.json,clang,64,boost (pool),33000,5032,6355
+parse,strings.json,clang,64,boost (pool),33000,5043,6341
+parse,strings.json,clang,64,boost (pool),33000,5030,6358
+parse,strings.json,clang,64,boost (pool),33000,5048,6335
+parse,strings.json,clang,64,rapidjson (pool),3000,6264,464
+parse,strings.json,clang,64,rapidjson (pool),3000,6328,459
+parse,strings.json,clang,64,rapidjson (pool),3000,6294,462
+parse,strings.json,clang,64,rapidjson (pool),3000,6295,462
+parse,strings.json,clang,64,rapidjson (pool),3000,6294,462
+parse,strings.json,clang,64,rapidjson (pool),3000,6285,463
+parse,strings.json,clang,64,boost,16000,5187,2989
+parse,strings.json,clang,64,boost,16000,5159,3005
+parse,strings.json,clang,64,boost,16000,5170,2999
+parse,strings.json,clang,64,boost,16000,5169,3000
+parse,strings.json,clang,64,boost,16000,5160,3005
+parse,strings.json,clang,64,boost,16000,5157,3007
+parse,strings.json,clang,64,rapidjson,3000,6794,428
+parse,strings.json,clang,64,rapidjson,3000,6795,428
+parse,strings.json,clang,64,rapidjson,3000,6793,428
+parse,strings.json,clang,64,rapidjson,3000,6790,428
+parse,strings.json,clang,64,rapidjson,3000,6805,427
+parse,strings.json,clang,64,rapidjson,3000,6796,428
+parse,strings.json,clang,64,nlohmann,2000,7902,245
+parse,strings.json,clang,64,nlohmann,2000,7888,246
+parse,strings.json,clang,64,nlohmann,2000,7905,245
+parse,strings.json,clang,64,nlohmann,2000,7906,245
+parse,strings.json,clang,64,nlohmann,2000,7883,246
+parse,strings.json,clang,64,nlohmann,2000,7914,245
+parse,small.json,clang,64,boost (pool),2951000,5000,339
+parse,small.json,clang,64,boost (pool),2951000,5000,339
+parse,small.json,clang,64,boost (pool),2943000,5001,338
+parse,small.json,clang,64,boost (pool),2953000,5001,340
+parse,small.json,clang,64,boost (pool),2942000,5001,338
+parse,small.json,clang,64,boost (pool),2943000,5000,338
+parse,small.json,clang,64,rapidjson (pool),2584000,5000,297
+parse,small.json,clang,64,rapidjson (pool),2590000,5000,298
+parse,small.json,clang,64,rapidjson (pool),2585000,5000,297
+parse,small.json,clang,64,rapidjson (pool),2590000,5001,298
+parse,small.json,clang,64,rapidjson (pool),2584000,5000,297
+parse,small.json,clang,64,rapidjson (pool),2587000,5001,297
+parse,small.json,clang,64,boost,1703000,5000,196
+parse,small.json,clang,64,boost,1705000,5001,196
+parse,small.json,clang,64,boost,1700000,5000,196
+parse,small.json,clang,64,boost,1701000,5000,196
+parse,small.json,clang,64,boost,1704000,5002,196
+parse,small.json,clang,64,boost,1705000,5000,196
+parse,small.json,clang,64,rapidjson,2321000,5001,267
+parse,small.json,clang,64,rapidjson,2320000,5000,267
+parse,small.json,clang,64,rapidjson,2318000,5001,267
+parse,small.json,clang,64,rapidjson,2322000,5001,267
+parse,small.json,clang,64,rapidjson,2320000,5000,267
+parse,small.json,clang,64,rapidjson,2320000,5001,267
+parse,small.json,clang,64,nlohmann,594000,5000,68
+parse,small.json,clang,64,nlohmann,595000,5004,68
+parse,small.json,clang,64,nlohmann,595000,5002,68
+parse,small.json,clang,64,nlohmann,595000,5001,68
+parse,small.json,clang,64,nlohmann,595000,5003,68
+parse,small.json,clang,64,nlohmann,594000,5000,68
+parse,random.json,clang,64,boost (pool),810000,5005,346
+parse,random.json,clang,64,boost (pool),809000,5005,346
+parse,random.json,clang,64,boost (pool),809000,5003,346
+parse,random.json,clang,64,boost (pool),808000,5003,346
+parse,random.json,clang,64,boost (pool),809000,5003,346
+parse,random.json,clang,64,boost (pool),809000,5004,346
+parse,random.json,clang,64,rapidjson (pool),908000,5003,388
+parse,random.json,clang,64,rapidjson (pool),909000,5004,389
+parse,random.json,clang,64,rapidjson (pool),909000,5002,389
+parse,random.json,clang,64,rapidjson (pool),908000,5000,389
+parse,random.json,clang,64,rapidjson (pool),907000,5001,388
+parse,random.json,clang,64,rapidjson (pool),905000,5001,387
+parse,random.json,clang,64,boost,465000,5009,199
+parse,random.json,clang,64,boost,465000,5012,199
+parse,random.json,clang,64,boost,465000,5003,199
+parse,random.json,clang,64,boost,465000,5008,199
+parse,random.json,clang,64,boost,465000,5003,199
+parse,random.json,clang,64,boost,465000,5008,199
+parse,random.json,clang,64,rapidjson,854000,5000,366
+parse,random.json,clang,64,rapidjson,856000,5002,366
+parse,random.json,clang,64,rapidjson,856000,5003,366
+parse,random.json,clang,64,rapidjson,853000,5000,365
+parse,random.json,clang,64,rapidjson,854000,5004,365
+parse,random.json,clang,64,rapidjson,856000,5003,366
+parse,random.json,clang,64,nlohmann,163000,5016,70
+parse,random.json,clang,64,nlohmann,163000,5014,70
+parse,random.json,clang,64,nlohmann,163000,5014,70
+parse,random.json,clang,64,nlohmann,163000,5023,69
+parse,random.json,clang,64,nlohmann,163000,5024,69
+parse,random.json,clang,64,nlohmann,162000,5000,69
+parse,array.json,clang,64,boost (pool),3000,6755,290
+parse,array.json,clang,64,boost (pool),3000,6751,290
+parse,array.json,clang,64,boost (pool),3000,6746,290
+parse,array.json,clang,64,boost (pool),3000,6744,290
+parse,array.json,clang,64,boost (pool),3000,6749,290
+parse,array.json,clang,64,boost (pool),3000,6750,290
+parse,array.json,clang,64,rapidjson (pool),3000,6949,281
+parse,array.json,clang,64,rapidjson (pool),3000,6951,281
+parse,array.json,clang,64,rapidjson (pool),3000,6948,281
+parse,array.json,clang,64,rapidjson (pool),3000,6951,281
+parse,array.json,clang,64,rapidjson (pool),3000,6948,281
+parse,array.json,clang,64,rapidjson (pool),3000,6952,281
+parse,array.json,clang,64,boost,3000,7474,262
+parse,array.json,clang,64,boost,3000,7480,261
+parse,array.json,clang,64,boost,3000,7475,262
+parse,array.json,clang,64,boost,3000,7477,262
+parse,array.json,clang,64,boost,3000,7476,262
+parse,array.json,clang,64,boost,3000,7474,262
+parse,array.json,clang,64,rapidjson,3000,7273,269
+parse,array.json,clang,64,rapidjson,3000,7271,269
+parse,array.json,clang,64,rapidjson,3000,7273,269
+parse,array.json,clang,64,rapidjson,3000,7272,269
+parse,array.json,clang,64,rapidjson,3000,7271,269
+parse,array.json,clang,64,rapidjson,3000,7271,269
+parse,array.json,clang,64,nlohmann,1000,8057,81
+parse,array.json,clang,64,nlohmann,1000,8061,81
+parse,array.json,clang,64,nlohmann,1000,8043,81
+parse,array.json,clang,64,nlohmann,1000,8043,81
+parse,array.json,clang,64,nlohmann,1000,8047,81
+parse,array.json,clang,64,nlohmann,1000,8044,81
+parse,twitter.json,clang,64,boost (pool),4000,5044,489
+parse,twitter.json,clang,64,boost (pool),4000,5040,490
+parse,twitter.json,clang,64,boost (pool),4000,5043,489
+parse,twitter.json,clang,64,boost (pool),4000,5041,490
+parse,twitter.json,clang,64,boost (pool),4000,5041,490
+parse,twitter.json,clang,64,boost (pool),4000,5040,490
+parse,twitter.json,clang,64,rapidjson (pool),4000,6084,406
+parse,twitter.json,clang,64,rapidjson (pool),4000,6084,406
+parse,twitter.json,clang,64,rapidjson (pool),4000,6084,406
+parse,twitter.json,clang,64,rapidjson (pool),4000,6082,406
+parse,twitter.json,clang,64,rapidjson (pool),4000,6084,406
+parse,twitter.json,clang,64,rapidjson (pool),4000,6088,405
+parse,twitter.json,clang,64,boost,2000,5316,232
+parse,twitter.json,clang,64,boost,2000,5330,232
+parse,twitter.json,clang,64,boost,2000,5333,231
+parse,twitter.json,clang,64,boost,2000,5337,231
+parse,twitter.json,clang,64,boost,2000,5337,231
+parse,twitter.json,clang,64,boost,2000,5329,232
+parse,twitter.json,clang,64,rapidjson,3000,7312,253
+parse,twitter.json,clang,64,rapidjson,3000,7320,253
+parse,twitter.json,clang,64,rapidjson,3000,7287,254
+parse,twitter.json,clang,64,rapidjson,3000,7302,254
+parse,twitter.json,clang,64,rapidjson,3000,7244,256
+parse,twitter.json,clang,64,rapidjson,3000,7259,255
+parse,twitter.json,clang,64,nlohmann,1000,6396,96
+parse,twitter.json,clang,64,nlohmann,1000,6394,97
+parse,twitter.json,clang,64,nlohmann,1000,6423,96
+parse,twitter.json,clang,64,nlohmann,1000,6403,96
+parse,twitter.json,clang,64,nlohmann,1000,6428,96
+parse,twitter.json,clang,64,nlohmann,1000,6395,96
+parse,citm_catalog.json,clang,64,boost (pool),2000,6250,543
+parse,citm_catalog.json,clang,64,boost (pool),2000,6265,541
+parse,citm_catalog.json,clang,64,boost (pool),2000,6258,542
+parse,citm_catalog.json,clang,64,boost (pool),2000,6263,541
+parse,citm_catalog.json,clang,64,boost (pool),2000,6266,541
+parse,citm_catalog.json,clang,64,boost (pool),2000,6263,541
+parse,citm_catalog.json,clang,64,rapidjson (pool),2000,6653,510
+parse,citm_catalog.json,clang,64,rapidjson (pool),2000,6649,510
+parse,citm_catalog.json,clang,64,rapidjson (pool),2000,6643,510
+parse,citm_catalog.json,clang,64,rapidjson (pool),2000,6639,511
+parse,citm_catalog.json,clang,64,rapidjson (pool),2000,6640,511
+parse,citm_catalog.json,clang,64,rapidjson (pool),2000,6649,510
+parse,citm_catalog.json,clang,64,boost,1000,6009,282
+parse,citm_catalog.json,clang,64,boost,1000,6021,282
+parse,citm_catalog.json,clang,64,boost,1000,6024,281
+parse,citm_catalog.json,clang,64,boost,1000,6018,282
+parse,citm_catalog.json,clang,64,boost,1000,6019,282
+parse,citm_catalog.json,clang,64,boost,1000,6022,282
+parse,citm_catalog.json,clang,64,rapidjson,2000,9314,364
+parse,citm_catalog.json,clang,64,rapidjson,2000,9251,367
+parse,citm_catalog.json,clang,64,rapidjson,2000,9223,368
+parse,citm_catalog.json,clang,64,rapidjson,2000,9229,367
+parse,citm_catalog.json,clang,64,rapidjson,2000,9229,367
+parse,citm_catalog.json,clang,64,rapidjson,2000,9211,368
+parse,citm_catalog.json,clang,64,nlohmann,1000,14360,118
+parse,citm_catalog.json,clang,64,nlohmann,1000,14405,118
+parse,citm_catalog.json,clang,64,nlohmann,1000,14390,118
+parse,citm_catalog.json,clang,64,nlohmann,1000,14384,118
+parse,citm_catalog.json,clang,64,nlohmann,1000,14403,118
+parse,citm_catalog.json,clang,64,nlohmann,1000,14355,118
+parse,canada.json,clang,64,boost (pool),1000,6736,319
+parse,canada.json,clang,64,boost (pool),1000,6730,319
+parse,canada.json,clang,64,boost (pool),1000,6707,320
+parse,canada.json,clang,64,boost (pool),1000,6735,319
+parse,canada.json,clang,64,boost (pool),1000,6718,320
+parse,canada.json,clang,64,boost (pool),1000,6729,319
+parse,canada.json,clang,64,rapidjson (pool),1000,5487,391
+parse,canada.json,clang,64,rapidjson (pool),1000,5476,392
+parse,canada.json,clang,64,rapidjson (pool),1000,5482,392
+parse,canada.json,clang,64,rapidjson (pool),1000,5480,392
+parse,canada.json,clang,64,rapidjson (pool),1000,5480,392
+parse,canada.json,clang,64,rapidjson (pool),1000,5479,392
+parse,canada.json,clang,64,boost,1000,10894,197
+parse,canada.json,clang,64,boost,1000,10868,198
+parse,canada.json,clang,64,boost,1000,10861,198
+parse,canada.json,clang,64,boost,1000,10881,197
+parse,canada.json,clang,64,boost,1000,10885,197
+parse,canada.json,clang,64,boost,1000,10887,197
+parse,canada.json,clang,64,rapidjson,1000,9038,238
+parse,canada.json,clang,64,rapidjson,1000,9023,238
+parse,canada.json,clang,64,rapidjson,1000,9059,237
+parse,canada.json,clang,64,rapidjson,1000,9062,237
+parse,canada.json,clang,64,rapidjson,1000,9052,237
+parse,canada.json,clang,64,rapidjson,1000,9064,237
+parse,canada.json,clang,64,nlohmann,1000,52889,41
+parse,canada.json,clang,64,nlohmann,1000,52897,41
+parse,canada.json,clang,64,nlohmann,1000,52920,41
+parse,canada.json,clang,64,nlohmann,1000,52879,41
+parse,canada.json,clang,64,nlohmann,1000,52777,41
+parse,canada.json,clang,64,nlohmann,1000,52808,41
+serialize,strings.json,clang,64,boost (pool),41000,5074,7830
+serialize,strings.json,clang,64,boost (pool),41000,5073,7832
+serialize,strings.json,clang,64,boost (pool),41000,5074,7830
+serialize,strings.json,clang,64,boost (pool),41000,5072,7833
+serialize,strings.json,clang,64,boost (pool),41000,5073,7832
+serialize,strings.json,clang,64,boost (pool),41000,5076,7827
+serialize,strings.json,clang,64,rapidjson (pool),4000,6173,628
+serialize,strings.json,clang,64,rapidjson (pool),4000,6172,628
+serialize,strings.json,clang,64,rapidjson (pool),4000,6172,628
+serialize,strings.json,clang,64,rapidjson (pool),4000,6173,628
+serialize,strings.json,clang,64,rapidjson (pool),4000,6173,628
+serialize,strings.json,clang,64,rapidjson (pool),4000,6175,628
+serialize,strings.json,clang,64,boost,34000,5019,6565
+serialize,strings.json,clang,64,boost,34000,5020,6563
+serialize,strings.json,clang,64,boost,34000,5014,6571
+serialize,strings.json,clang,64,boost,34000,5021,6562
+serialize,strings.json,clang,64,boost,34000,5017,6567
+serialize,strings.json,clang,64,boost,34000,5011,6575
+serialize,strings.json,clang,64,rapidjson,4000,6181,627
+serialize,strings.json,clang,64,rapidjson,4000,6179,627
+serialize,strings.json,clang,64,rapidjson,4000,6179,627
+serialize,strings.json,clang,64,rapidjson,4000,6181,627
+serialize,strings.json,clang,64,rapidjson,4000,6185,627
+serialize,strings.json,clang,64,rapidjson,4000,6178,627
+serialize,strings.json,clang,64,nlohmann,2000,7233,268
+serialize,strings.json,clang,64,nlohmann,2000,7230,268
+serialize,strings.json,clang,64,nlohmann,2000,7188,270
+serialize,strings.json,clang,64,nlohmann,2000,7189,270
+serialize,strings.json,clang,64,nlohmann,2000,7206,269
+serialize,strings.json,clang,64,nlohmann,2000,7280,266
+serialize,small.json,clang,64,boost (pool),11208000,5000,1289
+serialize,small.json,clang,64,boost (pool),11217000,5000,1290
+serialize,small.json,clang,64,boost (pool),11210000,5000,1289
+serialize,small.json,clang,64,boost (pool),11199000,5000,1288
+serialize,small.json,clang,64,boost (pool),11184000,5000,1286
+serialize,small.json,clang,64,boost (pool),11199000,5000,1288
+serialize,small.json,clang,64,rapidjson (pool),6228000,5000,716
+serialize,small.json,clang,64,rapidjson (pool),6238000,5000,717
+serialize,small.json,clang,64,rapidjson (pool),6230000,5000,717
+serialize,small.json,clang,64,rapidjson (pool),6229000,5000,716
+serialize,small.json,clang,64,rapidjson (pool),6235000,5000,717
+serialize,small.json,clang,64,rapidjson (pool),6227000,5000,716
+serialize,small.json,clang,64,boost,11168000,5000,1284
+serialize,small.json,clang,64,boost,11174000,5000,1285
+serialize,small.json,clang,64,boost,11158000,5000,1283
+serialize,small.json,clang,64,boost,11179000,5000,1286
+serialize,small.json,clang,64,boost,11148000,5000,1282
+serialize,small.json,clang,64,boost,11177000,5000,1286
+serialize,small.json,clang,64,rapidjson,6239000,5000,718
+serialize,small.json,clang,64,rapidjson,6246000,5000,718
+serialize,small.json,clang,64,rapidjson,6230000,5000,717
+serialize,small.json,clang,64,rapidjson,6227000,5000,716
+serialize,small.json,clang,64,rapidjson,6218000,5000,715
+serialize,small.json,clang,64,rapidjson,6221000,5000,715
+serialize,small.json,clang,64,nlohmann,2293000,5000,264
+serialize,small.json,clang,64,nlohmann,2293000,5001,264
+serialize,small.json,clang,64,nlohmann,2293000,5001,264
+serialize,small.json,clang,64,nlohmann,2292000,5000,264
+serialize,small.json,clang,64,nlohmann,2293000,5000,264
+serialize,small.json,clang,64,nlohmann,2291000,5000,263
+serialize,random.json,clang,64,boost (pool),2038000,5000,872
+serialize,random.json,clang,64,boost (pool),2039000,5001,873
+serialize,random.json,clang,64,boost (pool),2039000,5001,873
+serialize,random.json,clang,64,boost (pool),2038000,5000,872
+serialize,random.json,clang,64,boost (pool),2040000,5000,873
+serialize,random.json,clang,64,boost (pool),2043000,5000,874
+serialize,random.json,clang,64,rapidjson (pool),1701000,5002,728
+serialize,random.json,clang,64,rapidjson (pool),1700000,5001,727
+serialize,random.json,clang,64,rapidjson (pool),1702000,5000,728
+serialize,random.json,clang,64,rapidjson (pool),1698000,5001,727
+serialize,random.json,clang,64,rapidjson (pool),1698000,5000,727
+serialize,random.json,clang,64,rapidjson (pool),1692000,5001,724
+serialize,random.json,clang,64,boost,2020000,5002,864
+serialize,random.json,clang,64,boost,2019000,5000,864
+serialize,random.json,clang,64,boost,2023000,5001,866
+serialize,random.json,clang,64,boost,2024000,5001,866
+serialize,random.json,clang,64,boost,2018000,5000,864
+serialize,random.json,clang,64,boost,2025000,5002,866
+serialize,random.json,clang,64,rapidjson,1702000,5002,728
+serialize,random.json,clang,64,rapidjson,1705000,5000,730
+serialize,random.json,clang,64,rapidjson,1703000,5001,729
+serialize,random.json,clang,64,rapidjson,1707000,5002,730
+serialize,random.json,clang,64,rapidjson,1705000,5001,730
+serialize,random.json,clang,64,rapidjson,1707000,5002,730
+serialize,random.json,clang,64,nlohmann,738000,5001,316
+serialize,random.json,clang,64,nlohmann,739000,5006,316
+serialize,random.json,clang,64,nlohmann,737000,5004,315
+serialize,random.json,clang,64,nlohmann,737000,5001,315
+serialize,random.json,clang,64,nlohmann,738000,5003,316
+serialize,random.json,clang,64,nlohmann,739000,5005,316
+serialize,array.json,clang,64,boost (pool),4000,5427,480
+serialize,array.json,clang,64,boost (pool),4000,5427,480
+serialize,array.json,clang,64,boost (pool),4000,5428,480
+serialize,array.json,clang,64,boost (pool),4000,5425,481
+serialize,array.json,clang,64,boost (pool),4000,5425,481
+serialize,array.json,clang,64,boost (pool),4000,5430,480
+serialize,array.json,clang,64,rapidjson (pool),4000,6583,396
+serialize,array.json,clang,64,rapidjson (pool),4000,6582,396
+serialize,array.json,clang,64,rapidjson (pool),4000,6586,396
+serialize,array.json,clang,64,rapidjson (pool),4000,6584,396
+serialize,array.json,clang,64,rapidjson (pool),4000,6586,396
+serialize,array.json,clang,64,rapidjson (pool),4000,6585,396
+serialize,array.json,clang,64,boost,4000,5433,480
+serialize,array.json,clang,64,boost,4000,5432,480
+serialize,array.json,clang,64,boost,4000,5436,480
+serialize,array.json,clang,64,boost,4000,5430,480
+serialize,array.json,clang,64,boost,4000,5433,480
+serialize,array.json,clang,64,boost,4000,5431,480
+serialize,array.json,clang,64,rapidjson,4000,6573,397
+serialize,array.json,clang,64,rapidjson,4000,6573,397
+serialize,array.json,clang,64,rapidjson,4000,6581,396
+serialize,array.json,clang,64,rapidjson,4000,6575,397
+serialize,array.json,clang,64,rapidjson,4000,6579,396
+serialize,array.json,clang,64,rapidjson,4000,6576,397
+serialize,array.json,clang,64,nlohmann,3000,6841,286
+serialize,array.json,clang,64,nlohmann,3000,6858,285
+serialize,array.json,clang,64,nlohmann,3000,6850,285
+serialize,array.json,clang,64,nlohmann,3000,6849,286
+serialize,array.json,clang,64,nlohmann,3000,6847,286
+serialize,array.json,clang,64,nlohmann,3000,6854,285
+serialize,twitter.json,clang,64,boost (pool),12000,5128,1444
+serialize,twitter.json,clang,64,boost (pool),12000,5126,1444
+serialize,twitter.json,clang,64,boost (pool),12000,5138,1441
+serialize,twitter.json,clang,64,boost (pool),12000,5133,1442
+serialize,twitter.json,clang,64,boost (pool),12000,5151,1437
+serialize,twitter.json,clang,64,boost (pool),12000,5133,1442
+serialize,twitter.json,clang,64,rapidjson (pool),7000,5534,780
+serialize,twitter.json,clang,64,rapidjson (pool),7000,5537,780
+serialize,twitter.json,clang,64,rapidjson (pool),7000,5531,781
+serialize,twitter.json,clang,64,rapidjson (pool),7000,5528,781
+serialize,twitter.json,clang,64,rapidjson (pool),7000,5528,781
+serialize,twitter.json,clang,64,rapidjson (pool),7000,5529,781
+serialize,twitter.json,clang,64,boost,12000,5408,1369
+serialize,twitter.json,clang,64,boost,11000,5021,1352
+serialize,twitter.json,clang,64,boost,12000,5415,1367
+serialize,twitter.json,clang,64,boost,12000,5518,1342
+serialize,twitter.json,clang,64,boost,11000,5033,1349
+serialize,twitter.json,clang,64,boost,12000,5441,1361
+serialize,twitter.json,clang,64,rapidjson,7000,5575,775
+serialize,twitter.json,clang,64,rapidjson,7000,5575,775
+serialize,twitter.json,clang,64,rapidjson,7000,5558,777
+serialize,twitter.json,clang,64,rapidjson,7000,5566,776
+serialize,twitter.json,clang,64,rapidjson,7000,5557,777
+serialize,twitter.json,clang,64,rapidjson,7000,5573,775
+serialize,twitter.json,clang,64,nlohmann,3000,5550,334
+serialize,twitter.json,clang,64,nlohmann,3000,5549,334
+serialize,twitter.json,clang,64,nlohmann,3000,5510,336
+serialize,twitter.json,clang,64,nlohmann,3000,5598,331
+serialize,twitter.json,clang,64,nlohmann,3000,5556,333
+serialize,twitter.json,clang,64,nlohmann,3000,5589,331
+serialize,citm_catalog.json,clang,64,boost (pool),7000,5172,2295
+serialize,citm_catalog.json,clang,64,boost (pool),7000,5171,2295
+serialize,citm_catalog.json,clang,64,boost (pool),7000,5170,2295
+serialize,citm_catalog.json,clang,64,boost (pool),7000,5168,2296
+serialize,citm_catalog.json,clang,64,boost (pool),7000,5168,2296
+serialize,citm_catalog.json,clang,64,boost (pool),7000,5166,2297
+serialize,citm_catalog.json,clang,64,rapidjson (pool),6000,5735,1774
+serialize,citm_catalog.json,clang,64,rapidjson (pool),6000,5735,1774
+serialize,citm_catalog.json,clang,64,rapidjson (pool),6000,5732,1775
+serialize,citm_catalog.json,clang,64,rapidjson (pool),6000,5734,1774
+serialize,citm_catalog.json,clang,64,rapidjson (pool),6000,5735,1774
+serialize,citm_catalog.json,clang,64,rapidjson (pool),6000,5737,1773
+serialize,citm_catalog.json,clang,64,boost,6000,5009,2031
+serialize,citm_catalog.json,clang,64,boost,6000,5012,2030
+serialize,citm_catalog.json,clang,64,boost,6000,5018,2027
+serialize,citm_catalog.json,clang,64,boost,6000,5010,2030
+serialize,citm_catalog.json,clang,64,boost,6000,5014,2029
+serialize,citm_catalog.json,clang,64,boost,6000,5011,2030
+serialize,citm_catalog.json,clang,64,rapidjson,6000,5835,1743
+serialize,citm_catalog.json,clang,64,rapidjson,6000,5830,1745
+serialize,citm_catalog.json,clang,64,rapidjson,6000,5833,1744
+serialize,citm_catalog.json,clang,64,rapidjson,6000,5833,1744
+serialize,citm_catalog.json,clang,64,rapidjson,6000,5836,1743
+serialize,citm_catalog.json,clang,64,rapidjson,6000,5835,1743
+serialize,citm_catalog.json,clang,64,nlohmann,3000,5550,916
+serialize,citm_catalog.json,clang,64,nlohmann,3000,5546,917
+serialize,citm_catalog.json,clang,64,nlohmann,3000,5550,916
+serialize,citm_catalog.json,clang,64,nlohmann,3000,5542,918
+serialize,citm_catalog.json,clang,64,nlohmann,3000,5546,917
+serialize,citm_catalog.json,clang,64,nlohmann,3000,5542,918
+serialize,canada.json,clang,64,boost (pool),2000,9958,431
+serialize,canada.json,clang,64,boost (pool),2000,9953,431
+serialize,canada.json,clang,64,boost (pool),2000,9956,431
+serialize,canada.json,clang,64,boost (pool),2000,9953,431
+serialize,canada.json,clang,64,boost (pool),2000,9951,431
+serialize,canada.json,clang,64,boost (pool),2000,9953,431
+serialize,canada.json,clang,64,rapidjson (pool),1000,8166,263
+serialize,canada.json,clang,64,rapidjson (pool),1000,8162,263
+serialize,canada.json,clang,64,rapidjson (pool),1000,8162,263
+serialize,canada.json,clang,64,rapidjson (pool),1000,8163,263
+serialize,canada.json,clang,64,rapidjson (pool),1000,8166,263
+serialize,canada.json,clang,64,rapidjson (pool),1000,8164,263
+serialize,canada.json,clang,64,boost,1000,5186,414
+serialize,canada.json,clang,64,boost,1000,5191,414
+serialize,canada.json,clang,64,boost,1000,5179,415
+serialize,canada.json,clang,64,boost,1000,5182,414
+serialize,canada.json,clang,64,boost,1000,5185,414
+serialize,canada.json,clang,64,boost,1000,5184,414
+serialize,canada.json,clang,64,rapidjson,1000,8298,259
+serialize,canada.json,clang,64,rapidjson,1000,8304,259
+serialize,canada.json,clang,64,rapidjson,1000,8326,258
+serialize,canada.json,clang,64,rapidjson,1000,8318,258
+serialize,canada.json,clang,64,rapidjson,1000,8303,259
+serialize,canada.json,clang,64,rapidjson,1000,8317,258
+serialize,canada.json,clang,64,nlohmann,1000,13429,160
+serialize,canada.json,clang,64,nlohmann,1000,13379,160
+serialize,canada.json,clang,64,nlohmann,1000,13368,161
+serialize,canada.json,clang,64,nlohmann,1000,13357,161
+serialize,canada.json,clang,64,nlohmann,1000,13371,161
+serialize,canada.json,clang,64,nlohmann,1000,13411,160
+
+parse,strings.json,clang,32,boost (pool),13000,5046,2497
+parse,strings.json,clang,32,boost (pool),14000,5237,2591
+parse,strings.json,clang,32,boost (pool),14000,5243,2588
+parse,strings.json,clang,32,boost (pool),14000,5248,2585
+parse,strings.json,clang,32,boost (pool),14000,5250,2584
+parse,strings.json,clang,32,boost (pool),14000,5254,2582
+parse,strings.json,clang,32,rapidjson (pool),2000,5056,383
+parse,strings.json,clang,32,rapidjson (pool),2000,5116,379
+parse,strings.json,clang,32,rapidjson (pool),2000,5131,378
+parse,strings.json,clang,32,rapidjson (pool),3000,6964,417
+parse,strings.json,clang,32,rapidjson (pool),3000,6961,418
+parse,strings.json,clang,32,rapidjson (pool),3000,6994,416
+parse,strings.json,clang,32,boost,13000,5357,2352
+parse,strings.json,clang,32,boost,13000,5225,2411
+parse,strings.json,clang,32,boost,13000,5233,2407
+parse,strings.json,clang,32,boost,13000,5242,2403
+parse,strings.json,clang,32,boost,13000,5249,2400
+parse,strings.json,clang,32,boost,13000,5228,2410
+parse,strings.json,clang,32,rapidjson,2000,5058,383
+parse,strings.json,clang,32,rapidjson,2000,5033,385
+parse,strings.json,clang,32,rapidjson,2000,5035,385
+parse,strings.json,clang,32,rapidjson,2000,5040,385
+parse,strings.json,clang,32,rapidjson,2000,5030,385
+parse,strings.json,clang,32,rapidjson,2000,5027,386
+parse,strings.json,clang,32,nlohmann,2000,9744,199
+parse,strings.json,clang,32,nlohmann,2000,9736,199
+parse,strings.json,clang,32,nlohmann,2000,9752,199
+parse,strings.json,clang,32,nlohmann,2000,9733,199
+parse,strings.json,clang,32,nlohmann,2000,9724,199
+parse,strings.json,clang,32,nlohmann,2000,9725,199
+parse,small.json,clang,32,boost (pool),2248000,5001,258
+parse,small.json,clang,32,boost (pool),2248000,5000,259
+parse,small.json,clang,32,boost (pool),2249000,5000,259
+parse,small.json,clang,32,boost (pool),2248000,5002,258
+parse,small.json,clang,32,boost (pool),2247000,5000,258
+parse,small.json,clang,32,boost (pool),2245000,5001,258
+parse,small.json,clang,32,rapidjson (pool),1960000,5001,225
+parse,small.json,clang,32,rapidjson (pool),1960000,5000,225
+parse,small.json,clang,32,rapidjson (pool),1960000,5000,225
+parse,small.json,clang,32,rapidjson (pool),1956000,5001,225
+parse,small.json,clang,32,rapidjson (pool),1960000,5002,225
+parse,small.json,clang,32,rapidjson (pool),1960000,5002,225
+parse,small.json,clang,32,boost,1232000,5002,142
+parse,small.json,clang,32,boost,1233000,5003,142
+parse,small.json,clang,32,boost,1233000,5002,142
+parse,small.json,clang,32,boost,1229000,5003,141
+parse,small.json,clang,32,boost,1230000,5000,141
+parse,small.json,clang,32,boost,1233000,5001,142
+parse,small.json,clang,32,rapidjson,1820000,5001,209
+parse,small.json,clang,32,rapidjson,1820000,5001,209
+parse,small.json,clang,32,rapidjson,1820000,5001,209
+parse,small.json,clang,32,rapidjson,1821000,5002,209
+parse,small.json,clang,32,rapidjson,1820000,5000,209
+parse,small.json,clang,32,rapidjson,1820000,5001,209
+parse,small.json,clang,32,nlohmann,508000,5009,58
+parse,small.json,clang,32,nlohmann,508000,5007,58
+parse,small.json,clang,32,nlohmann,508000,5006,58
+parse,small.json,clang,32,nlohmann,508000,5000,58
+parse,small.json,clang,32,nlohmann,508000,5001,58
+parse,small.json,clang,32,nlohmann,508000,5004,58
+parse,random.json,clang,32,boost (pool),612000,5000,262
+parse,random.json,clang,32,boost (pool),609000,5001,261
+parse,random.json,clang,32,boost (pool),610000,5007,261
+parse,random.json,clang,32,boost (pool),609000,5004,260
+parse,random.json,clang,32,boost (pool),608000,5004,260
+parse,random.json,clang,32,boost (pool),607000,5006,259
+parse,random.json,clang,32,rapidjson (pool),673000,5001,288
+parse,random.json,clang,32,rapidjson (pool),673000,5003,288
+parse,random.json,clang,32,rapidjson (pool),673000,5006,288
+parse,random.json,clang,32,rapidjson (pool),672000,5006,287
+parse,random.json,clang,32,rapidjson (pool),671000,5005,287
+parse,random.json,clang,32,rapidjson (pool),672000,5005,287
+parse,random.json,clang,32,boost,346000,5003,148
+parse,random.json,clang,32,boost,346000,5008,148
+parse,random.json,clang,32,boost,346000,5001,148
+parse,random.json,clang,32,boost,346000,5003,148
+parse,random.json,clang,32,boost,346000,5002,148
+parse,random.json,clang,32,boost,346000,5005,148
+parse,random.json,clang,32,rapidjson,674000,5002,288
+parse,random.json,clang,32,rapidjson,673000,5002,288
+parse,random.json,clang,32,rapidjson,675000,5007,289
+parse,random.json,clang,32,rapidjson,675000,5006,289
+parse,random.json,clang,32,rapidjson,672000,5007,287
+parse,random.json,clang,32,rapidjson,675000,5004,289
+parse,random.json,clang,32,nlohmann,126000,5008,54
+parse,random.json,clang,32,nlohmann,126000,5004,54
+parse,random.json,clang,32,nlohmann,127000,5038,54
+parse,random.json,clang,32,nlohmann,126000,5007,54
+parse,random.json,clang,32,nlohmann,126000,5001,54
+parse,random.json,clang,32,nlohmann,126000,5003,54
+parse,array.json,clang,32,boost (pool),2000,7084,184
+parse,array.json,clang,32,boost (pool),2000,7129,183
+parse,array.json,clang,32,boost (pool),2000,7107,183
+parse,array.json,clang,32,boost (pool),2000,7112,183
+parse,array.json,clang,32,boost (pool),2000,7101,184
+parse,array.json,clang,32,boost (pool),2000,7113,183
+parse,array.json,clang,32,rapidjson (pool),2000,7863,166
+parse,array.json,clang,32,rapidjson (pool),2000,7871,166
+parse,array.json,clang,32,rapidjson (pool),2000,7876,166
+parse,array.json,clang,32,rapidjson (pool),2000,7871,166
+parse,array.json,clang,32,rapidjson (pool),2000,7869,166
+parse,array.json,clang,32,rapidjson (pool),2000,7875,166
+parse,array.json,clang,32,boost,2000,8070,162
+parse,array.json,clang,32,boost,2000,8061,162
+parse,array.json,clang,32,boost,2000,8059,162
+parse,array.json,clang,32,boost,2000,8061,162
+parse,array.json,clang,32,boost,2000,8063,162
+parse,array.json,clang,32,boost,2000,8064,162
+parse,array.json,clang,32,rapidjson,2000,7804,167
+parse,array.json,clang,32,rapidjson,2000,7813,167
+parse,array.json,clang,32,rapidjson,2000,7806,167
+parse,array.json,clang,32,rapidjson,2000,7802,167
+parse,array.json,clang,32,rapidjson,2000,7803,167
+parse,array.json,clang,32,rapidjson,2000,7803,167
+parse,array.json,clang,32,nlohmann,1000,12132,54
+parse,array.json,clang,32,nlohmann,1000,12141,54
+parse,array.json,clang,32,nlohmann,1000,12138,54
+parse,array.json,clang,32,nlohmann,1000,12132,54
+parse,array.json,clang,32,nlohmann,1000,12134,54
+parse,array.json,clang,32,nlohmann,1000,12128,54
+parse,twitter.json,clang,32,boost (pool),3000,5369,345
+parse,twitter.json,clang,32,boost (pool),3000,5372,345
+parse,twitter.json,clang,32,boost (pool),3000,5379,344
+parse,twitter.json,clang,32,boost (pool),3000,5371,345
+parse,twitter.json,clang,32,boost (pool),3000,5371,345
+parse,twitter.json,clang,32,boost (pool),3000,5370,345
+parse,twitter.json,clang,32,rapidjson (pool),3000,5815,318
+parse,twitter.json,clang,32,rapidjson (pool),3000,5812,318
+parse,twitter.json,clang,32,rapidjson (pool),3000,5814,318
+parse,twitter.json,clang,32,rapidjson (pool),3000,5812,318
+parse,twitter.json,clang,32,rapidjson (pool),3000,5814,318
+parse,twitter.json,clang,32,rapidjson (pool),3000,5815,318
+parse,twitter.json,clang,32,boost,2000,7124,173
+parse,twitter.json,clang,32,boost,2000,7143,173
+parse,twitter.json,clang,32,boost,2000,7145,173
+parse,twitter.json,clang,32,boost,2000,7148,173
+parse,twitter.json,clang,32,boost,2000,7149,173
+parse,twitter.json,clang,32,boost,2000,7151,173
+parse,twitter.json,clang,32,rapidjson,2000,5897,209
+parse,twitter.json,clang,32,rapidjson,2000,5939,208
+parse,twitter.json,clang,32,rapidjson,2000,5920,208
+parse,twitter.json,clang,32,rapidjson,2000,5914,209
+parse,twitter.json,clang,32,rapidjson,2000,5940,208
+parse,twitter.json,clang,32,rapidjson,2000,5923,208
+parse,twitter.json,clang,32,nlohmann,1000,8198,75
+parse,twitter.json,clang,32,nlohmann,1000,8189,75
+parse,twitter.json,clang,32,nlohmann,1000,8190,75
+parse,twitter.json,clang,32,nlohmann,1000,8197,75
+parse,twitter.json,clang,32,nlohmann,1000,8189,75
+parse,twitter.json,clang,32,nlohmann,1000,8192,75
+parse,citm_catalog.json,clang,32,boost (pool),2000,8811,385
+parse,citm_catalog.json,clang,32,boost (pool),2000,8816,385
+parse,citm_catalog.json,clang,32,boost (pool),2000,8814,385
+parse,citm_catalog.json,clang,32,boost (pool),2000,8816,385
+parse,citm_catalog.json,clang,32,boost (pool),2000,8817,385
+parse,citm_catalog.json,clang,32,boost (pool),2000,8812,385
+parse,citm_catalog.json,clang,32,rapidjson (pool),2000,8418,403
+parse,citm_catalog.json,clang,32,rapidjson (pool),2000,8417,403
+parse,citm_catalog.json,clang,32,rapidjson (pool),2000,8418,403
+parse,citm_catalog.json,clang,32,rapidjson (pool),2000,8416,403
+parse,citm_catalog.json,clang,32,rapidjson (pool),2000,8419,403
+parse,citm_catalog.json,clang,32,rapidjson (pool),2000,8418,403
+parse,citm_catalog.json,clang,32,boost,1000,7807,217
+parse,citm_catalog.json,clang,32,boost,1000,7807,217
+parse,citm_catalog.json,clang,32,boost,1000,7810,217
+parse,citm_catalog.json,clang,32,boost,1000,7813,217
+parse,citm_catalog.json,clang,32,boost,1000,7813,217
+parse,citm_catalog.json,clang,32,boost,1000,7817,217
+parse,citm_catalog.json,clang,32,rapidjson,1000,5649,300
+parse,citm_catalog.json,clang,32,rapidjson,1000,5649,300
+parse,citm_catalog.json,clang,32,rapidjson,1000,5664,299
+parse,citm_catalog.json,clang,32,rapidjson,1000,5669,299
+parse,citm_catalog.json,clang,32,rapidjson,1000,5674,299
+parse,citm_catalog.json,clang,32,rapidjson,1000,5639,301
+parse,citm_catalog.json,clang,32,nlohmann,1000,18057,94
+parse,citm_catalog.json,clang,32,nlohmann,1000,18056,94
+parse,citm_catalog.json,clang,32,nlohmann,1000,18028,94
+parse,citm_catalog.json,clang,32,nlohmann,1000,18069,94
+parse,citm_catalog.json,clang,32,nlohmann,1000,18085,94
+parse,citm_catalog.json,clang,32,nlohmann,1000,18095,94
+parse,canada.json,clang,32,boost (pool),1000,10698,201
+parse,canada.json,clang,32,boost (pool),1000,10698,201
+parse,canada.json,clang,32,boost (pool),1000,10694,201
+parse,canada.json,clang,32,boost (pool),1000,10699,201
+parse,canada.json,clang,32,boost (pool),1000,10693,201
+parse,canada.json,clang,32,boost (pool),1000,10693,201
+parse,canada.json,clang,32,rapidjson (pool),1000,7102,302
+parse,canada.json,clang,32,rapidjson (pool),1000,7098,302
+parse,canada.json,clang,32,rapidjson (pool),1000,7095,303
+parse,canada.json,clang,32,rapidjson (pool),1000,7096,303
+parse,canada.json,clang,32,rapidjson (pool),1000,7097,302
+parse,canada.json,clang,32,rapidjson (pool),1000,7096,303
+parse,canada.json,clang,32,boost,1000,14837,145
+parse,canada.json,clang,32,boost,1000,14834,145
+parse,canada.json,clang,32,boost,1000,14883,144
+parse,canada.json,clang,32,boost,1000,14859,144
+parse,canada.json,clang,32,boost,1000,14882,144
+parse,canada.json,clang,32,boost,1000,14850,145
+parse,canada.json,clang,32,rapidjson,1000,11040,194
+parse,canada.json,clang,32,rapidjson,1000,11042,194
+parse,canada.json,clang,32,rapidjson,1000,11062,194
+parse,canada.json,clang,32,rapidjson,1000,11045,194
+parse,canada.json,clang,32,rapidjson,1000,11054,194
+parse,canada.json,clang,32,rapidjson,1000,11055,194
+parse,canada.json,clang,32,nlohmann,1000,80207,27
+parse,canada.json,clang,32,nlohmann,1000,80180,27
+parse,canada.json,clang,32,nlohmann,1000,80165,27
+parse,canada.json,clang,32,nlohmann,1000,80138,27
+parse,canada.json,clang,32,nlohmann,1000,80078,27
+parse,canada.json,clang,32,nlohmann,1000,80059,27
+serialize,strings.json,clang,32,boost (pool),33000,5155,6203
+serialize,strings.json,clang,32,boost (pool),32000,5001,6201
+serialize,strings.json,clang,32,boost (pool),32000,5000,6202
+serialize,strings.json,clang,32,boost (pool),32000,5000,6202
+serialize,strings.json,clang,32,boost (pool),32000,5001,6201
+serialize,strings.json,clang,32,boost (pool),32000,5000,6202
+serialize,strings.json,clang,32,rapidjson (pool),3000,6132,474
+serialize,strings.json,clang,32,rapidjson (pool),3000,6132,474
+serialize,strings.json,clang,32,rapidjson (pool),3000,6131,474
+serialize,strings.json,clang,32,rapidjson (pool),3000,6132,474
+serialize,strings.json,clang,32,rapidjson (pool),3000,6133,474
+serialize,strings.json,clang,32,rapidjson (pool),3000,6132,474
+serialize,strings.json,clang,32,boost,29000,5128,5480
+serialize,strings.json,clang,32,boost,29000,5132,5476
+serialize,strings.json,clang,32,boost,29000,5129,5479
+serialize,strings.json,clang,32,boost,29000,5134,5474
+serialize,strings.json,clang,32,boost,29000,5136,5472
+serialize,strings.json,clang,32,boost,29000,5125,5483
+serialize,strings.json,clang,32,rapidjson,3000,6108,476
+serialize,strings.json,clang,32,rapidjson,3000,6108,476
+serialize,strings.json,clang,32,rapidjson,3000,6111,476
+serialize,strings.json,clang,32,rapidjson,3000,6111,476
+serialize,strings.json,clang,32,rapidjson,3000,6110,476
+serialize,strings.json,clang,32,rapidjson,3000,6109,476
+serialize,strings.json,clang,32,nlohmann,1000,6121,158
+serialize,strings.json,clang,32,nlohmann,1000,6127,158
+serialize,strings.json,clang,32,nlohmann,1000,6132,158
+serialize,strings.json,clang,32,nlohmann,1000,6126,158
+serialize,strings.json,clang,32,nlohmann,1000,6124,158
+serialize,strings.json,clang,32,nlohmann,1000,6128,158
+serialize,small.json,clang,32,boost (pool),6695000,5000,770
+serialize,small.json,clang,32,boost (pool),6693000,5000,770
+serialize,small.json,clang,32,boost (pool),6691000,5000,770
+serialize,small.json,clang,32,boost (pool),6702000,5000,771
+serialize,small.json,clang,32,boost (pool),6692000,5000,770
+serialize,small.json,clang,32,boost (pool),6692000,5000,770
+serialize,small.json,clang,32,rapidjson (pool),5369000,5000,618
+serialize,small.json,clang,32,rapidjson (pool),5370000,5000,618
+serialize,small.json,clang,32,rapidjson (pool),5370000,5000,618
+serialize,small.json,clang,32,rapidjson (pool),5370000,5000,618
+serialize,small.json,clang,32,rapidjson (pool),5370000,5000,618
+serialize,small.json,clang,32,rapidjson (pool),5370000,5000,618
+serialize,small.json,clang,32,boost,6814000,5000,784
+serialize,small.json,clang,32,boost,6824000,5000,785
+serialize,small.json,clang,32,boost,6816000,5000,784
+serialize,small.json,clang,32,boost,6820000,5000,784
+serialize,small.json,clang,32,boost,6819000,5000,784
+serialize,small.json,clang,32,boost,6823000,5000,785
+serialize,small.json,clang,32,rapidjson,5377000,5000,618
+serialize,small.json,clang,32,rapidjson,5376000,5000,618
+serialize,small.json,clang,32,rapidjson,5377000,5000,618
+serialize,small.json,clang,32,rapidjson,5374000,5000,618
+serialize,small.json,clang,32,rapidjson,5376000,5000,618
+serialize,small.json,clang,32,rapidjson,5374000,5000,618
+serialize,small.json,clang,32,nlohmann,1607000,5000,185
+serialize,small.json,clang,32,nlohmann,1607000,5000,185
+serialize,small.json,clang,32,nlohmann,1607000,5001,185
+serialize,small.json,clang,32,nlohmann,1608000,5000,185
+serialize,small.json,clang,32,nlohmann,1609000,5001,185
+serialize,small.json,clang,32,nlohmann,1608000,5001,185
+serialize,random.json,clang,32,boost (pool),909000,5001,389
+serialize,random.json,clang,32,boost (pool),909000,5003,389
+serialize,random.json,clang,32,boost (pool),910000,5005,389
+serialize,random.json,clang,32,boost (pool),909000,5003,389
+serialize,random.json,clang,32,boost (pool),909000,5000,389
+serialize,random.json,clang,32,boost (pool),905000,5001,387
+serialize,random.json,clang,32,rapidjson (pool),1120000,5000,479
+serialize,random.json,clang,32,rapidjson (pool),1124000,5004,481
+serialize,random.json,clang,32,rapidjson (pool),1125000,5004,481
+serialize,random.json,clang,32,rapidjson (pool),1124000,5003,481
+serialize,random.json,clang,32,rapidjson (pool),1124000,5001,481
+serialize,random.json,clang,32,rapidjson (pool),1123000,5002,480
+serialize,random.json,clang,32,boost,921000,5004,394
+serialize,random.json,clang,32,boost,922000,5004,394
+serialize,random.json,clang,32,boost,923000,5004,395
+serialize,random.json,clang,32,boost,921000,5003,394
+serialize,random.json,clang,32,boost,921000,5000,394
+serialize,random.json,clang,32,boost,922000,5004,394
+serialize,random.json,clang,32,rapidjson,1132000,5000,485
+serialize,random.json,clang,32,rapidjson,1131000,5003,484
+serialize,random.json,clang,32,rapidjson,1128000,5003,483
+serialize,random.json,clang,32,rapidjson,1132000,5001,484
+serialize,random.json,clang,32,rapidjson,1133000,5003,485
+serialize,random.json,clang,32,rapidjson,1131000,5003,484
+serialize,random.json,clang,32,nlohmann,463000,5007,198
+serialize,random.json,clang,32,nlohmann,463000,5006,198
+serialize,random.json,clang,32,nlohmann,464000,5000,199
+serialize,random.json,clang,32,nlohmann,464000,5003,198
+serialize,random.json,clang,32,nlohmann,464000,5004,198
+serialize,random.json,clang,32,nlohmann,464000,5001,199
+serialize,array.json,clang,32,boost (pool),2000,6378,204
+serialize,array.json,clang,32,boost (pool),2000,6375,205
+serialize,array.json,clang,32,boost (pool),2000,6376,204
+serialize,array.json,clang,32,boost (pool),2000,6379,204
+serialize,array.json,clang,32,boost (pool),2000,6374,205
+serialize,array.json,clang,32,boost (pool),2000,6376,204
+serialize,array.json,clang,32,rapidjson (pool),2000,5077,257
+serialize,array.json,clang,32,rapidjson (pool),2000,5078,257
+serialize,array.json,clang,32,rapidjson (pool),2000,5079,257
+serialize,array.json,clang,32,rapidjson (pool),2000,5078,257
+serialize,array.json,clang,32,rapidjson (pool),2000,5077,257
+serialize,array.json,clang,32,rapidjson (pool),2000,5077,257
+serialize,array.json,clang,32,boost,2000,6383,204
+serialize,array.json,clang,32,boost,2000,6379,204
+serialize,array.json,clang,32,boost,2000,6385,204
+serialize,array.json,clang,32,boost,2000,6382,204
+serialize,array.json,clang,32,boost,2000,6377,204
+serialize,array.json,clang,32,boost,2000,6379,204
+serialize,array.json,clang,32,rapidjson,2000,5089,256
+serialize,array.json,clang,32,rapidjson,2000,5090,256
+serialize,array.json,clang,32,rapidjson,2000,5091,256
+serialize,array.json,clang,32,rapidjson,2000,5091,256
+serialize,array.json,clang,32,rapidjson,2000,5091,256
+serialize,array.json,clang,32,rapidjson,2000,5092,256
+serialize,array.json,clang,32,nlohmann,2000,8653,151
+serialize,array.json,clang,32,nlohmann,2000,8655,151
+serialize,array.json,clang,32,nlohmann,2000,8653,151
+serialize,array.json,clang,32,nlohmann,2000,8658,151
+serialize,array.json,clang,32,nlohmann,2000,8657,151
+serialize,array.json,clang,32,nlohmann,2000,8650,151
+serialize,twitter.json,clang,32,boost (pool),7000,5035,858
+serialize,twitter.json,clang,32,boost (pool),7000,5019,861
+serialize,twitter.json,clang,32,boost (pool),7000,5039,857
+serialize,twitter.json,clang,32,boost (pool),7000,5020,860
+serialize,twitter.json,clang,32,boost (pool),7000,5131,842
+serialize,twitter.json,clang,32,boost (pool),7000,5026,859
+serialize,twitter.json,clang,32,rapidjson (pool),6000,5759,643
+serialize,twitter.json,clang,32,rapidjson (pool),6000,5762,643
+serialize,twitter.json,clang,32,rapidjson (pool),6000,5761,643
+serialize,twitter.json,clang,32,rapidjson (pool),6000,5762,643
+serialize,twitter.json,clang,32,rapidjson (pool),6000,5761,643
+serialize,twitter.json,clang,32,rapidjson (pool),6000,5762,643
+serialize,twitter.json,clang,32,boost,7000,5575,775
+serialize,twitter.json,clang,32,boost,7000,5343,808
+serialize,twitter.json,clang,32,boost,6000,5045,734
+serialize,twitter.json,clang,32,boost,7000,5480,788
+serialize,twitter.json,clang,32,boost,7000,5276,819
+serialize,twitter.json,clang,32,boost,7000,5181,834
+serialize,twitter.json,clang,32,rapidjson,6000,5765,642
+serialize,twitter.json,clang,32,rapidjson,6000,5764,642
+serialize,twitter.json,clang,32,rapidjson,6000,5764,642
+serialize,twitter.json,clang,32,rapidjson,6000,5764,642
+serialize,twitter.json,clang,32,rapidjson,6000,5760,643
+serialize,twitter.json,clang,32,rapidjson,6000,5764,642
+serialize,twitter.json,clang,32,nlohmann,2000,5717,216
+serialize,twitter.json,clang,32,nlohmann,2000,5717,216
+serialize,twitter.json,clang,32,nlohmann,2000,5716,216
+serialize,twitter.json,clang,32,nlohmann,2000,5720,216
+serialize,twitter.json,clang,32,nlohmann,2000,5717,216
+serialize,twitter.json,clang,32,nlohmann,2000,5720,216
+serialize,citm_catalog.json,clang,32,boost (pool),5000,5475,1548
+serialize,citm_catalog.json,clang,32,boost (pool),5000,5479,1547
+serialize,citm_catalog.json,clang,32,boost (pool),5000,5472,1549
+serialize,citm_catalog.json,clang,32,boost (pool),5000,5477,1548
+serialize,citm_catalog.json,clang,32,boost (pool),5000,5475,1548
+serialize,citm_catalog.json,clang,32,boost (pool),5000,5477,1548
+serialize,citm_catalog.json,clang,32,rapidjson (pool),5000,5677,1493
+serialize,citm_catalog.json,clang,32,rapidjson (pool),5000,5677,1493
+serialize,citm_catalog.json,clang,32,rapidjson (pool),5000,5678,1493
+serialize,citm_catalog.json,clang,32,rapidjson (pool),5000,5681,1492
+serialize,citm_catalog.json,clang,32,rapidjson (pool),5000,5679,1493
+serialize,citm_catalog.json,clang,32,rapidjson (pool),5000,5679,1493
+serialize,citm_catalog.json,clang,32,boost,5000,5814,1458
+serialize,citm_catalog.json,clang,32,boost,5000,5811,1459
+serialize,citm_catalog.json,clang,32,boost,5000,5697,1488
+serialize,citm_catalog.json,clang,32,boost,5000,5130,1652
+serialize,citm_catalog.json,clang,32,boost,5000,5131,1652
+serialize,citm_catalog.json,clang,32,boost,5000,5120,1656
+serialize,citm_catalog.json,clang,32,rapidjson,5000,5034,1684
+serialize,citm_catalog.json,clang,32,rapidjson,5000,5034,1684
+serialize,citm_catalog.json,clang,32,rapidjson,5000,5038,1683
+serialize,citm_catalog.json,clang,32,rapidjson,5000,5031,1685
+serialize,citm_catalog.json,clang,32,rapidjson,5000,5032,1685
+serialize,citm_catalog.json,clang,32,rapidjson,5000,5035,1684
+serialize,citm_catalog.json,clang,32,nlohmann,2000,6096,556
+serialize,citm_catalog.json,clang,32,nlohmann,2000,6098,556
+serialize,citm_catalog.json,clang,32,nlohmann,2000,6241,543
+serialize,citm_catalog.json,clang,32,nlohmann,2000,6236,544
+serialize,citm_catalog.json,clang,32,nlohmann,2000,6238,544
+serialize,citm_catalog.json,clang,32,nlohmann,2000,6241,543
+serialize,canada.json,clang,32,boost (pool),1000,15840,136
+serialize,canada.json,clang,32,boost (pool),1000,15833,136
+serialize,canada.json,clang,32,boost (pool),1000,15836,136
+serialize,canada.json,clang,32,boost (pool),1000,15833,136
+serialize,canada.json,clang,32,boost (pool),1000,15831,136
+serialize,canada.json,clang,32,boost (pool),1000,15836,136
+serialize,canada.json,clang,32,rapidjson (pool),1000,14805,145
+serialize,canada.json,clang,32,rapidjson (pool),1000,14811,145
+serialize,canada.json,clang,32,rapidjson (pool),1000,14813,145
+serialize,canada.json,clang,32,rapidjson (pool),1000,14806,145
+serialize,canada.json,clang,32,rapidjson (pool),1000,14816,145
+serialize,canada.json,clang,32,rapidjson (pool),1000,14808,145
+serialize,canada.json,clang,32,boost,1000,15935,135
+serialize,canada.json,clang,32,boost,1000,15914,135
+serialize,canada.json,clang,32,boost,1000,15927,135
+serialize,canada.json,clang,32,boost,1000,15938,135
+serialize,canada.json,clang,32,boost,1000,15949,135
+serialize,canada.json,clang,32,boost,1000,15942,135
+serialize,canada.json,clang,32,rapidjson,1000,15065,143
+serialize,canada.json,clang,32,rapidjson,1000,15074,142
+serialize,canada.json,clang,32,rapidjson,1000,15057,143
+serialize,canada.json,clang,32,rapidjson,1000,15065,143
+serialize,canada.json,clang,32,rapidjson,1000,15070,142
+serialize,canada.json,clang,32,rapidjson,1000,15069,142
+serialize,canada.json,clang,32,nlohmann,1000,20633,104
+serialize,canada.json,clang,32,nlohmann,1000,20640,104
+serialize,canada.json,clang,32,nlohmann,1000,20612,104
+serialize,canada.json,clang,32,nlohmann,1000,20511,105
+serialize,canada.json,clang,32,nlohmann,1000,20616,104
+serialize,canada.json,clang,32,nlohmann,1000,20687,104

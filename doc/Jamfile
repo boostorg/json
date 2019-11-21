@@ -148,6 +148,9 @@ install qbk : reference.qbk ;
 # Produce the Boost.Book XML from the QuickBook
 #
 
+# stylesheets and callouts are for
+# out-of-tree docs on vinniefalco.github.io
+
 install stylesheets
     :
         $(broot)/doc/src/boostbook.css
@@ -157,16 +160,6 @@ install stylesheets
 
 explicit stylesheets ;
 
-install images
-    :
-        [ glob $(broot)/doc/src/images/*.png ]
-        images/doc-logo.png
-    :
-        <location>$(out)/html/images
-    ;
-
-explicit images ;
-
 install callouts
     :
         [ glob $(broot)/doc/src/images/callouts/*.png ]
@@ -175,6 +168,27 @@ install callouts
     ;
 
 explicit callout ;
+
+install treeimages
+    :
+        [ glob $(broot)/doc/src/images/*.png ]
+        images/doc-logo.png
+    :
+        <location>$(out)/html/images
+    ;
+
+explicit treeimages ;
+
+
+
+install images
+    :
+        [ glob images/*.png ]
+    :
+        <location>html/json/images
+    ;
+
+explicit images ;
 
 xml json_doc
     :
@@ -209,6 +223,7 @@ boostbook json
         <xsl:param>generate.toc="chapter nop section nop"
     :
         <dependency>stylesheets
+        <dependency>treeimages
         <dependency>images
     ;
 

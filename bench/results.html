@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<!--
+    Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+    Official repository: https://github.com/vinniefalco/json
+-->
+<html>
+<head>
+</head>
+<body>
+<h1>Boost.JSON Benchmarks</h1>
+<canvas id="charts" width="800" height="600"></canvas>
+<br>
+<textarea id="data" cols="60" rows="20" overflow="hidden" onkeyup="autosize(this)">
+parse,strings.json,msvc,64,boost (pool),5819
+parse,strings.json,msvc,64,rapidjson (pool),528
+parse,strings.json,msvc,64,boost,2894
+parse,strings.json,msvc,64,rapidjson,468
+parse,strings.json,msvc,64,nlohmann,259
+parse,strings.json,clang,64,boost (pool),6351
+parse,strings.json,clang,64,rapidjson (pool),462
+parse,strings.json,clang,64,boost,3003
+parse,strings.json,clang,64,rapidjson,428
+parse,strings.json,clang,64,nlohmann,245
+parse,strings.json,msvc,32,boost (pool),2645
+parse,strings.json,msvc,32,rapidjson (pool),355
+parse,strings.json,msvc,32,boost,2522
+parse,strings.json,msvc,32,rapidjson,356
+parse,strings.json,msvc,32,nlohmann,100
+parse,strings.json,clang,32,boost (pool),2586
+parse,strings.json,clang,32,rapidjson (pool),408
+parse,strings.json,clang,32,boost,2407
+parse,strings.json,clang,32,rapidjson,385
+parse,strings.json,clang,32,nlohmann,199
+</textarea>
+
+<script>
+
+var mbsMax = 0;
+var Width = 600;
+
+function autosize (f) {
+  if (f.scrollHeight > f.clientHeight) {
+    f.style.height = f.scrollHeight + "px";
+  }
+}
+
+function draw_one_chart(ctx, title, rows) {
+    var xMax = Math.max(...Object.values(rows));
+
+    // gray separator
+    ctx.beginPath();
+    ctx.strokeStyle = "#A0A0A0";
+    ctx.moveTo(0, 0.5);
+    ctx.lineTo(Width, 0.5);
+    ctx.stroke();
+    ctx.translate(0, 28);
+
+    // title
+    ctx.textAlign = "left";
+    ctx.fillStyle = "#000000";
+    ctx.font = 'bold 16px sans-serif';
+    ctx.fillText(title, 0, 0);
+    ctx.translate(0, 26);
+
+    // chart rows
+    Object.entries(rows).forEach(([name, mbs]) =>
+    {
+        var dy = 4;
+
+        ctx.textAlign = "left";
+        ctx.fillStyle = "#000000";
+        ctx.font = '14px sans-serif';
+        ctx.fillText(name, 0, 0);
+
+        var xMbs = 195;
+        if(name.startsWith("boost"))
+            ctx.fillStyle = "#eb342a";
+        else
+            ctx.fillStyle = "#909090";
+        var w = (Width - 170) * mbs / mbsMax
+        if(w < xMbs - 120)
+            w = xMbs - 120;
+        ctx.fillRect(130, -20+dy, w, 20);
+
+        ctx.textAlign = "right";
+        ctx.font = '13px sans-serif';
+        ctx.fillStyle = "#000000";
+        ctx.fillText(mbs + " MB/s", xMbs + 1, 1);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(mbs + " MB/s", xMbs, 0);
+
+        ctx.translate(0, 24);
+    });
+
+    // gray separator
+    ctx.translate(0, -4);
+    ctx.beginPath();
+    ctx.strokeStyle = "#A0A0A0";
+    ctx.moveTo(0, 0.5);
+    ctx.lineTo(Width, 0.5);
+    ctx.stroke();
+}
+
+function draw_charts(ctx, title, tab)
+{
+    // top margin
+    ctx.translate(0, 16);
+
+/*
+    // chart title
+    ctx.translate(0, 20);
+    ctx.textAlign = "center";
+    ctx.font = 'bold 24px sans-serif';
+    ctx.fillStyle = "#000000";
+    ctx.fillText(title, Width / 2, 0);
+    ctx.translate(0, 20);
+*/
+
+    // draw each chart
+    Object.entries(tab).forEach(([name, rows]) =>
+    {
+        draw_one_chart(ctx, name, rows);
+    });
+
+    // bottom margin
+    ctx.translate(0, 16);
+}
+
+function update()
+{
+    var tab = new Object();
+    var lines = data.value.split('\n');
+    var chartTitle;
+    mbsMax = 0;
+    for (var i = 0; i < lines.length; i++)
+    {
+        if(lines[i].length == 0)
+            continue;
+        items = lines[i].split(',');
+        chartTitle = items[0] + ' ' + items[1];
+        var title =
+            items[2] + ' ' +
+            items[3] + '-bit';
+        var name = items[4];
+        var mbs = items[5];
+        if(! (title in tab))
+            tab[title] = new Object();
+        if(! (name in tab[title]))
+            tab[title][name] = new Object();           
+        tab[title][name] = mbs;
+    }
+    Object.entries(tab).forEach(([name, rows]) =>
+    {
+        mbsMax = Math.max(mbsMax, ...Object.values(rows));
+    });
+
+    var ctx = charts.getContext("2d");
+    ctx.save();
+
+    var LeftMargin = 48;
+
+    // Measure the height needed
+    charts.width = Width;
+    charts.height = 30000;
+    draw_charts(ctx, chartTitle, tab);
+    var tx = ctx.getTransform();
+    var height = tx["f"];
+
+    // Resize the canvas to fit
+    charts.width = LeftMargin + Width + 20;
+    charts.height = height;
+
+    // Make everything opaque
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(0, 0, charts.width, charts.height);
+    ctx.translate(LeftMargin, 0);
+    draw_charts(ctx, chartTitle, tab);
+
+    ctx.restore();
+}
+
+data.oninput = function()
+{
+    update();
+}
+
+update();
+
+</script>
+</body>
+</html>

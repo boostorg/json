@@ -96,7 +96,7 @@
 #   if defined(BOOST_ALL_DYN_LINK) || defined(BOOST_JSON_DYN_LINK)
 #    define BOOST_DYN_LINK
 #   endif
-#   include <boost/config/auto_link.hpp>
+//#   include <boost/config/auto_link.hpp>
 #  endif  // auto-linking disabled
 # endif
 #else
