@@ -18,7 +18,7 @@ and can dynamically store any of the six defined JSON value types:
 * [*object]: A collection of name/value pairs, also known as an
   [@https://en.wikipedia.org/wiki/Associative_array ['associative array]].
 
-* [*array]: An ordered list of values, like a __vector__.
+* [*array]: An ordered list of values, like a __std_vector__.
 
 * [*string]: A sequence of zero or more Unicode characters,
   similar to a __std_string__

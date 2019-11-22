@@ -41,12 +41,13 @@ return types in public interfaces.
 
 The design of the library also achieves these goals:
 
-* Requires only C++11
-* Support stateful allocators
-* Uniform interface on all C++ versions
-* Strict parser and serializer which work incrementally
-* Security-aware treatment of untrusted inputs
-* Fast compilation performance
+* Require only C++11.
+* Safe, easy to use interfaces.
+* Stateful allocator support.
+* Uniform interface on all C++ versions.
+* Strict parser and serializer which work incrementally.
+* Security-aware treatment of untrusted inputs.
+* Fast compilation performance.
 
 [endsect]
 
@@ -73,48 +74,7 @@ desired header files.
 
 Boost.JSON may also be used without the rest of Boost, simply by defining
 the macro `BOOST_JSON_STANDALONE`. This configuration requires C++17 or
-later.
-
-[endsect]
-
-[/-----------------------------------------------------------------------------]
-
-[section Design]
-
-[heading Terminology]
-
-[heading Description]
-
-Avoid user-defined customizations for the value type such as template
-parameters or alternate container choices.
-
-Avoid standard library containers. Custom container types for object,
-array, and string values present the same interface in each version of C++.
-
-The parser adheres strictly to the JSON specification and avoids calling
-into external code. This facilitates security auditing and insulates from
-upstream changes.
-
-The serializer adheres strictly to the JSON specification and avoids
-calling into external code. This ensures that the serialized output is
-predictable, uniform, and insulated from upstream changes.
-
-Arrays and objects are represented by their own distinct and constructible
-types. This allows the caller to work with the native container instead of
-going through the value type.
-
-Provide a minimal API.
-
-No single parser is going to meet the needs of all JSON consumers.
-This library thus provides a straightforward parser with a narrow
-contract, it only parses strictly valid JSON according to the
-specification. Users with parsing needs that are not covered by this
-use-case can and should use other available parsers, by adapting them
-to store their results in the __value__ type.
-
-[heading Allocators]
-
-Lorem ipsum.
+later, and the addition of the file src/src.cpp to the target application.
 
 [endsect]
 
@@ -153,7 +113,6 @@ Lorem ipsum.
     in the library can be excluded from the headers and emitted in a
     separate static or dynamic library.
 ]]
-
 
 [[
     "Why __storage__ and __storage_ptr__ instead of `std` types?"

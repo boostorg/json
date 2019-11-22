@@ -123,7 +123,7 @@ in memory.
         against the performance of other popular existing libraries.
     ]]
     [[
-        [link json.quickref Reference]
+        [link json.ref Reference]
     ][
         Detailed function and type reference.
     ]]
@@ -135,10 +135,8 @@ in memory.
 [include 04_comparison.qbk]
 [include 05_benchmarks.qbk]
 
-[section:quickref Reference]
-[xinclude quickref.xml]
-[endsect]
 [section:ref Reference]
+[xinclude quickref.xml]
 [include reference.qbk]
 [endsect]
 

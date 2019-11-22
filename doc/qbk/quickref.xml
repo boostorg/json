@@ -11,9 +11,6 @@
 -->
 
 <informaltable frame="all">
-<!--
-  JSON
--->
   <tgroup cols="5">
     <colspec colname="a"/><colspec colname="b"/><colspec colname="c"/><colspec colname="d"/><colspec colname="e"/>
     <thead><row>

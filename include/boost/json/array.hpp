@@ -255,7 +255,7 @@ public:
     /** Constructor.
 
         The array is constructed with the elements
-        in the range `[first, last)`, preserving order,
+        in the range `{first, last)`, preserving order,
         using the specified storage.
 
         @par Constraints
@@ -704,7 +704,7 @@ public:
 
         Returns a pointer to the underlying array serving
         as element storage. The value returned is such that
-        the range `[data(), data() + size())` is always a
+        the range `{data(), data() + size())` is always a
         valid range, even if the container is empty.
 
         @par Complexity
@@ -724,7 +724,7 @@ public:
 
         Returns a pointer to the underlying array serving
         as element storage. The value returned is such that
-        the range `[data(), data() + size())` is always a
+        the range `{data(), data() + size())` is always a
         valid range, even if the container is empty.
 
         @par Complexity
@@ -1176,7 +1176,7 @@ public:
 
     /** Insert elements before the specified location.
 
-        The elements in the range `[first, last)` are
+        The elements in the range `{first, last)` are
         inserted in order.
         If `capacity() < size() + std::distance(first, last)`,
         a reallocation occurs first, and all iterators and
@@ -1332,7 +1332,7 @@ public:
 
     /** Erase elements from the container.
 
-        The elements in the range `[first, last)` are removed.
+        The elements in the range `{first, last)` are removed.
 
         @par Complexity
 

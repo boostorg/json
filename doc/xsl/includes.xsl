@@ -1,5 +1,15 @@
-<!-- INCLUDES_TEMPLATE BEGIN -->
-  <xsl:text>Defined in header [include_file </xsl:text>
-  <xsl:value-of select="substring-after($file,'include/')"/>
-  <xsl:text>]&#xd;&#xd;</xsl:text>
-<!-- INCLUDES_TEMPLATE END -->
+<!-- INCLUDES_FOOT_TEMPLATE BEGIN -->
+  <xsl:template mode="includes-template-footer" match="location">
+    <xsl:variable name="convenience-header" as="xs:string?">
+      <xsl:apply-templates mode="convenience-header" select="@file"/>
+    </xsl:variable>
+    <xsl:if test="$convenience-header">
+      <xsl:text>{$nl}</xsl:text>
+      <xsl:text>Convenience header [include_file boost/{$convenience-header}]</xsl:text>
+      <xsl:text>{$nl}</xsl:text>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template mode="convenience-header" match="@file[contains(., 'boost/json')]">json.hpp</xsl:template>
+  <xsl:template mode="convenience-header" match="@file"/>
+<!-- INCLUDES_FOOT_TEMPLATE END -->

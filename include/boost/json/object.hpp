@@ -244,7 +244,7 @@ public:
     /** Constructor.
 
         The object is constructed with the elements
-        in the range `[first, last)`, preserving order,
+        in the range `{first, last)`, preserving order,
         using the specified storage.
         If multiple elements in the range have keys that
         compare equivalent, only the first occurring key
@@ -922,7 +922,7 @@ public:
 
     /** Insert elements.
 
-        The elements in the range `[first, last)` are
+        The elements in the range `{first, last)` are
         appended to the end, in order.
         If multiple elements in the range have keys that
         compare equivalent, only the first occurring key

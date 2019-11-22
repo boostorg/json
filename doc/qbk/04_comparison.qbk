@@ -10,6 +10,13 @@
 [section:comparison Comparison to Other Libraries]
 [block'''<?dbhtml stop-chunking?>''']
 
+There are a great many C++ JSON libraries, but two are noteworthy
+for the purpose of comparison:
+[@https://rapidjson.org/ RapidJSON]
+and
+[@https://nlohmann.github.io/json/ JSON for Modern C++]
+(referred to herein as nlohmann's JSON, or nlohmann).
+
 [/-----------------------------------------------------------------------------]
 
 [heading Comparison to nlohmann JSON]
@@ -38,10 +45,10 @@ class basic_json
 
 ```
 
-This library adopts a "kitchen sink" approach. It contains a great many
-features, even those which have niche uses. Its weakness is that the
-many template parameters, while allowing for configurability, inhibit
-the best possible optimizations. The consequence is that the library
+This library adopts a "kitchen sink" approach. It contains a wealth of
+features, even those with niche uses. Its weakness is that the many
+template parameters, while allowing for configurability, inhibit the
+best possible optimizations. The consequence is that the library
 performs poorly. The ability to configure every aspect of the value
 type has the paradoxical effect of making it less suitable as a
 vocabulary type.
@@ -82,7 +89,9 @@ template <bool Const, typename ValueT>
 class GenericObject;
 ```
 
-* __bad__ The value type is not regular.
+* __bad__ The value type is not regular. Assignment is destructive,
+  performing `a = b` is equivalent to `a = std::move(b)`. No copy
+  construction or copy assignment allowed.
 
 * __bad__ Object types have no hash table or index to reduce
   the cost of lookups.

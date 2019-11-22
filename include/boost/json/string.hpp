@@ -240,10 +240,10 @@ public:
     /** Constructor.
 
         Construct the contents with a copy of the
-        substring `[pos, pos+count)` of `other`. If
+        substring `{pos, pos+count)` of `other`. If
         the requested substring lasts past the
         end of the string, or if `count == npos`,
-        the resulting substring is `[pos, other.size())`.
+        the resulting substring is `{pos, other.size())`.
 
         @par Complexity
 
@@ -318,7 +318,7 @@ public:
     /** Constructor.
 
         Construct the contents with copies of the characters
-        in the range `[s, s+count)`. This range can contain
+        in the range `{s, s+count)`. This range can contain
         null characters.
 
         @par Complexity
@@ -355,7 +355,7 @@ public:
     /** Constructor.
 
         Construct the contents with copies of characters
-        in the range `[first, last)`.
+        in the range `{first, last)`.
 
         @par Constraints
 
@@ -585,10 +585,10 @@ public:
     /** Constructor.
 
         Constructs the contents with the characters
-        from the substring `[pos, pos+count)` of `s`.
+        from the substring `{pos, pos+count)` of `s`.
         If `count == npos`, if `count` is not specified,
         or if the requested substring lasts past the end
-        of the string, the resulting substring is `[pos, s.size())`.
+        of the string, the resulting substring is `{pos, s.size())`.
         The substring can contain null characters.
 
         @par Complexity
@@ -814,10 +814,10 @@ public:
     /** Assign characters to a string.
 
         Replace the contents with a copy of the
-        substring `[pos, pos+count)` of `other`. If
+        substring `{pos, pos+count)` of `other`. If
         the requested substring lasts past the
         end of the string, or if `count == npos`,
-        the resulting substring is `[pos, other.size())`.
+        the resulting substring is `{pos, other.size())`.
 
         @par Complexity
 
@@ -881,7 +881,7 @@ public:
     /** Assign characters to a string.
 
         Replaces the contents with copies of the characters
-        in the range `[s, s+count)`. This range can contain
+        in the range `{s, s+count)`. This range can contain
         null characters.
 
         @par Complexity
@@ -938,7 +938,7 @@ public:
     /** Assign characters to a string.
 
         Replaces the contents with copies of characters
-        in the range `[first, last)`.
+        in the range `{first, last)`.
 
         @par Constraints
 
@@ -1024,10 +1024,10 @@ public:
     /** Assign characters to a string.
 
         Replaces the contents with the characters
-        from the substring `[pos, pos+count)` of `s`.
+        from the substring `{pos, pos+count)` of `s`.
         If `count == npos`, if `count` is not specified,
         or if the requested substring lasts past the end
-        of the string, the resulting substring is `[pos, s.size())`.
+        of the string, the resulting substring is `{pos, s.size())`.
         The substring can contain null characters.
 
         @par Complexity
@@ -1250,7 +1250,7 @@ public:
 
         Returns a pointer to the underlying array
         serving as storage. The value returned is such that
-        the range `[data(), data()+size())` is always a
+        the range `{data(), data()+size())` is always a
         valid range, even if the container is empty.
 
         @par Complexity
@@ -1271,7 +1271,7 @@ public:
 
         Returns a pointer to the underlying array
         serving as storage. The value returned is such that
-        the range `[data(), data()+size())` is always a
+        the range `{data(), data()+size())` is always a
         valid range, even if the container is empty.
 
         @par Complexity
@@ -1292,7 +1292,7 @@ public:
 
         Returns a pointer to the underlying array
         serving as storage. The value returned is such that
-        the range `[data(), data()+size())` is always a
+        the range `{data(), data()+size())` is always a
         valid range, even if the container is empty.
 
         @par Complexity

@@ -23,10 +23,10 @@
 [note
     Sample code and identifiers used throughout are written as if
     the following declarations are in effect:
-```
-#include <boost/json.hpp>
-using namespace json;
-```
+    ```
+    #include <boost/json.hpp>
+    using namespace json;
+    ```
 ]
 
 [include 02_1_values.qbk]
