@@ -9,7 +9,80 @@
 
 [/-----------------------------------------------------------------------------]
 
-[section Exchange]
+[section:exchange Value Exchange]
+
+While the __value__ container makes it easy to create ad-hoc structures,
+often it is necessary to convert between JSON and specific user-defined
+types. The library provides a set of supporting features called
+"value exchange" to support this use case. Three mechanisms for
+handling a user-defined type `T` are possible:
+
+* Using member functions:
+  * `void T::to_json( value& ) const`
+  * `void T::from_json( value const& )`
+
+* With free functions in the same namespace as `T`:
+  * `void to_json( T const&, value& )`
+  * `void from_json( T&, value const& )`
+
+* Specializing __value_exchange__ for `T`, with static member functions:
+  * `void value_exchange<T>::to_json( T const&, value& )` and
+  * `void value_exchange<T>::from_json( T&, value const& )`
+
+Only one of these mechanisms will be selected. If more than one is
+available, the implementation prioritizes the specialization of
+__value_exchange__ first, the free functions second, and the member
+functions last.
+
+[heading Member Functions]
+
+The example code that follows uses the user-defined type `customer`,
+declared thusly:
+
+[snippet_exchange_1]
+
+Since the author has control of the type, it uses member functions
+to enable value exchange. An implementation of `to_json` may look
+like this:
+
+[snippet_exchange_2]
+
+Turning a JSON value back into a customer is a bit more complicated,
+as it must handle the case where the value does not have the necessary
+keys, or if the values have the wrong kind. The implementation of
+`from_json` throws an exception when the JSON value does not precisely
+match the expected schema for customer:
+
+[snippet_exchange_3]
+
+Once value exchange is enabled for a type, it may be assigned and
+stored:
+
+[snippet_exchange_4]
+
+[heading Trait Specialization]
+
+Sometimes value exchange is needed, but the author cannot modify the
+type in question to add member functions. One alternative is to
+specialize __value_exchange__ for the type and provide the necessary
+conversion functions. Here we enable value exchange for __std_complex__:
+
+[snippet_exchange_5]
+
+The implementation for `to_json` is straightforward:
+
+[snippet_exchange_6]
+
+As before, the implementation for `from_json` must use exceptions
+to indicate that the value does not have the right schema:
+
+[snippet_exchange_7]
+
+Conversion to and from __std_complex__ is now possible:
+
+[snippet_exchange_8]
+
+[heading Free Functions]
 
 [endsect]
 

@@ -9,7 +9,7 @@
 
 [/-----------------------------------------------------------------------------]
 
-[section Strings]
+[section:strings Using Strings]
 
 Modifiable sequences of characters are represented using instances of type
 [link json.ref.boost__json__string `string`].

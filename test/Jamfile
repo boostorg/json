@@ -26,8 +26,6 @@ else
 
 local SOURCES =
     array.cpp
-    assign_string.cpp
-    assign_vector.cpp
     basic_parser.cpp
     error.cpp
     json.cpp

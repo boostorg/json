@@ -12,8 +12,8 @@
 
 /*
 
-This file is meant to be included once, in a translation unit of
-the program, with the macro BOOST_BEAST_SPLIT_COMPILATION defined.
+This file is meant to be included once,
+in a translation unit of the program.
 
 */
 

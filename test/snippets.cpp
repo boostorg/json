@@ -10,6 +10,7 @@
 #include <boost/json.hpp>
 
 #include <boost/beast/_experimental/unit_test/suite.hpp>
+#include <complex>
 #include <iostream>
 
 namespace boost {
@@ -308,7 +309,173 @@ usingSerializing()
 
 //----------------------------------------------------------
 
+//[snippet_exchange_1
+
+struct customer
+{
+    std::uint64_t id;
+    std::string name;
+    bool delinquent;
+
+    void to_json( value& jv) const;
+    void from_json( value const& jv );
+};
+
+//]
+
+BOOST_JSON_STATIC_ASSERT(
+    ::boost::json::detail::has_mf_to_json<customer>::value);
+
+BOOST_JSON_STATIC_ASSERT(
+    has_to_json<customer>::value);
+
+BOOST_JSON_STATIC_ASSERT(
+    has_from_json<customer>::value);
+
+//[snippet_exchange_2
+
+void customer::to_json( value& jv ) const
+{
+    // Turn jv into an object
+    auto& obj = jv.emplace_object();
+
+    // Each field has its own key/value pair in the object
+
+    obj.emplace( "id", this->id );
+    obj.emplace( "name", string_view( this->name ));
+    obj.emplace( "delinquent", this->delinquent );
+}
+
+//]
+
+//[snippet_exchange_3
+
+void customer::from_json( value const& jv )
+{
+    // as_object() will throw if jv.kind() != kind::object
+    auto const& obj = jv.as_object();
+
+    // at() will throw if the key is not found,
+    // and as_uint64() will throw if the value is
+    // not an unsigned 64-bit integer.
+    this->id = obj.at( "id" ).as_uint64();
+
+    // as_string() will throw if jv.kind() != kind::string
+    this->name = std::string( string_view( obj.at( "name" ).as_string() ) );
+
+    // as_bool() will throw if kv.kind() != kind::bool
+    this->delinquent = obj.at( "delinquent" ).as_bool();
+}
+
+//]
+
+void
+usingExchange1()
+{
+    //[snippet_exchange_4
+
+    customer cust{ 1, "John Doe", false };
+
+    // Convert customer to value
+    value jv = cust;
+
+    // Store value in customer
+    customer cust2;
+    jv.store( cust2 );
+
+    //]
+}
+
 } // (anon)
+
+} // json
+} // boost
+//[snippet_exchange_5
+
+// Specializations of value_exchange must be
+// declared in the namespace ::boost::json.
+namespace boost {
+namespace json {
+
+template<>
+struct value_exchange< ::std::complex< double > >
+{
+    static void to_json( ::std::complex< double > const& t, value& jv );
+    static void from_json( ::std::complex< double >& t, value const& jv );
+};
+
+} // namespace json
+} // namespace boost
+
+//]
+namespace boost {
+namespace json {
+
+BOOST_JSON_STATIC_ASSERT(
+    has_to_json<std::complex<double>>::value);
+
+BOOST_JSON_STATIC_ASSERT(
+    has_from_json<std::complex<double>>::value);
+
+//[snippet_exchange_6
+
+void
+value_exchange< ::std::complex< double > >::
+to_json( ::std::complex< double > const& t, value& jv )
+{
+    // Store a complex number as a 2-element array
+    auto& arr = jv.emplace_array();
+
+    // Real part first
+    arr.emplace_back( t.real() );
+
+    // Imaginary part last
+    arr.emplace_back( t.imag() );
+}
+
+//]
+
+//[snippet_exchange_7]
+
+void
+value_exchange< ::std::complex< double > >::
+from_json( ::std::complex< double >& t, value const& jv )
+{
+    // as_array() throws if jv.kind() != kind::array
+    auto const& arr = jv.as_array();
+
+    // at() throws if index is out of range
+    // as_double() throws if kind() != kind::double_
+    t.real( arr.at(0).as_double() );
+
+    // imaginary part last
+    t.imag( arr.at(1).as_double() );
+}
+
+//]
+
+namespace {
+
+void
+usingExchange2()
+{
+    //[snippet_exchange_8
+
+    std::complex<double> c = { 3.14159, 2.71727 };
+
+    // Convert std::complex<double> to value
+    value jv = c;
+
+    // Store value in std::complex<double>
+    std::complex<double> c2;
+    jv.store( c2 );
+
+    //]
+}
+
+} // (anon)
+
+//----------------------------------------------------------
 
 class snippets_test : public beast::unit_test::suite
 {
@@ -316,6 +483,17 @@ public:
     void
     run() override
     {
+        (void)&usingStrings;
+        (void)&usingArrays;
+        (void)&usingObjects;
+        (void)&usingStorage;
+        (void)&parse_fast;
+        (void)&do_json;
+        (void)&do_rpc;
+        (void)&usingParsing;
+        (void)&usingSerializing;
+        (void)&usingExchange1;
+        (void)&usingExchange2;
         pass();
     }
 };

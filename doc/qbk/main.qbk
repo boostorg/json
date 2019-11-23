@@ -62,11 +62,13 @@
 [def __storage_ptr__            [link json.ref.boost__json__storage_ptr `storage_ptr`]]
 [def __string__                 [link json.ref.boost__json__string `string`]]
 [def __to_string__              [link json.ref.boost__json__to_string `to_string`]]
+[def __value_exchange__         [link json.ref.boost__json__value_exchange `value_exchange`]]
 
 [def __initializer_list__       [@https://en.cppreference.com/w/cpp/utility/initializer_list]]
 [def __memory_resource__        [@https://en.cppreference.com/w/cpp/memory/memory_resource `std::pmr::memory_resource`]]
 [def __polymorphic_allocator__  [@https://en.cppreference.com/w/cpp/memory/polymorphic_allocator `std::pmr::polymorphic_allocator`]]
 [def __shared_ptr__             [@https://en.cppreference.com/w/cpp/memory/shared_ptr `std::shared_ptr`]]
+[def __std_complex__            [@https://en.cppreference.com/w/cpp/numeric/complex `std::complex`]]
 [def __std_string__             [@https://en.cppreference.com/w/cpp/string/basic_string `std::string`]]
 [def __std_unordered_map__      [@https://en.cppreference.com/w/cpp/container/unordered_map `std::unordered_map`]]
 [def __std_vector__             [@https://en.cppreference.com/w/cpp/container/vector `std::vector`]]

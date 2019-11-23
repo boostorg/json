@@ -13,8 +13,6 @@
 #include <boost/json/config.hpp>
 
 #include <boost/json/array.hpp>
-#include <boost/json/assign_string.hpp>
-#include <boost/json/assign_vector.hpp>
 #include <boost/json/basic_parser.hpp>
 #include <boost/json/error.hpp>
 #include <boost/json/kind.hpp>
