@@ -22,18 +22,12 @@ operate the same way, with these variations:
 
 * New characters are 
 
-A string may be constructed initially empty without incurrent any
+A string may be constructed initially empty without incurrening any
 memory allocations using the default storage, or a specified storage:
 
-```
-string str1; // empty string, default storage
-
-string str2( make_storage<pool>() ); // empty string, pool storage
-```
+[snippet_strings_1]
 
 As with `std` strings, space may be reserved upon construction.
 Exceptions are possible here:
-
-
 
 [endsect]

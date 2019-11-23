@@ -41,21 +41,12 @@ serialization:
 To facilitate debugging and ease of output, instances of __value__ may be
 written to standard output streams using the stream operator:
 
-```
-value jv = { 1, 2, 3 ,4 ,5 };
-
-std::cout << jv << "\n";
-
-```
+[snippet_serializing_1]
 
 The function `to_string` may be used to capture the serialized value as
 a string:
 
-```
-value jv = { 1, 2, 3 ,4 ,5 };
-
-string s = to_string( jv );
-```
+[snippet_serializing_2]
 
 Instead of emitting the complete serialized JSON at once,
 sometimes it is necessary to produce output incrementally.

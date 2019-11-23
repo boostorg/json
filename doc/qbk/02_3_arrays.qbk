@@ -21,29 +21,16 @@ a __std_vector__ of __value__. Additionally:
 An array may be constructed empty without incurring any memory allocations
 using the default storage, or a specified storage:
 
-
-```
-array arr1; // empty array, default storage
-
-array arr2( make_storage<pool>() ); // empty array, pool storage
-```
+[snippet_arrays_1]
 
 Initializer lists can be used to construct objects with initial
 contents. These constructors may allocate memory and throw:
 
-```
-array arr( { "Hello", 42, true } );
-```
+[snippet_arrays_2]
 
 Alternatively, elements may be inserted after construction:
 
-```
-array arr;
-
-arr.emplace_back( "Hello" );
-arr.emplace_back( 42 );
-arr.emplace_back( true );
-```
+[snippet_arrays_3]
 
 Similar to the `std` counterpart, elements may be accessed directly
 by their 0-based index with bounds checking using
@@ -51,12 +38,7 @@ by their 0-based index with bounds checking using
 or without bounds checking using
 [link json.ref.boost__json__array.operator_lb__rb_ `operator[]`]:
 
-```
-assert( arr[0] == "Hello" );
-
-// The following line throws std::out_of_range, since the index is out of range
-obj.at( 3 ) = nullptr;
-```
+[snippet_arrays_4]
 
 For the complete listing of all available member functions and nested
 types, see the reference page for __array__.

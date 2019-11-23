@@ -44,28 +44,19 @@ The `parse` function provides a succinct interface for
 converting a JSON to a __value__ in a single function call
 that uses exceptions to indicate errors:
 
-```
-value jv = parse( "[1,2,3,4,5]" );
-```
+[snippet_parsing_1]
 
 An overload is provided to receive an error code upon
 failure instead of an exception:
 
-```
-error_code ec;
-value jv = parse( "[1,2,3,4,5]", ec );
-if( ec )
-    std::cout << "Parsing failed: " << ec.message() << "\n";
-```
+[snippet_parsing_2]
 
 The calls above will produce values that use the default
 storage. Each parse function allows an additional parameter
 specifying the storage to use. Here we start the parser with
 a new instance of __pool__ for the resulting value:
 
-```
-value jv = parse( "[1,2,3,4,5]", make_storage<pool>() );
-```
+[snippet_parsing_3]
 
 These free functions use a temporary __parser__ instance, which
 allocates internal structures to assist with performance. If a
@@ -82,48 +73,14 @@ is used to inform the parser that an optional final character
 buffer represents the end of the JSON. This example parses
 a complete JSON using the stateful API:
 
-```
-parser p;
-
-// This must be called once before parsing every new JSON.
-p.start();
-
-// Write the entire character buffer, indicating
-// to the parser that there is no more data.
-p.finish( "[1,2,3,4,5]", 11 );
-
-// Take ownership of the resulting value.
-value jv = p.release();
-
-// At this point the parser may be re-used by calling p.start() again.
-```
+[snippet_parsing_4]
 
 Explicit parser instances may also be used to process serialized JSON
 incrementally. In the code that follows the JSON is represented by
 two consecutive buffers, and the overloads which return the error
 code are used instead:
 
-```
-parser p;
-error_code ec;
-
-// This must be called once before parsing every new JSON
-p.start();
-
-// Write the first part of the buffer
-p.write( "[1,2,", 5, ec);
-
-// Write the remaining part of the character buffer,
-// indicating to the parser that there is no more data.
-if(! ec )
-    p.finish( "3,4,5]", 6, ec );
-
-// Take ownership of the resulting value.
-if(! ec)
-    value jv = p.release();
-
-// At this point the parser may be re-used by calling p.start() again.
-```
+[snippet_parsing_5]
 
 [h4 Storage]
 
@@ -134,23 +91,7 @@ __value__ using the default storage. Alternatively, the storage
 to use may be supplied as an argument. This example uses a scoped
 instance of block storage:
 
-```
-{
-    parser p;
-
-    // Declare a new, scoped instance of the block storage
-    scoped_storage< pool > sp;
-
-    // Use the scoped instance for the parsed value
-    p.start( sp );
-
-    // Write the entire JSON
-    p.finish( "[1,2,3,4,5]" );
-
-    // The value will use the instance of block storage created above
-    value jv = p.release();
-}
-```
+[snippet_parsing_6]
 
 [h4 SAX]
 
