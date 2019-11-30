@@ -55,13 +55,13 @@ pretty_print( std::ostream& os, json::value const& jv, std::string* indent = nul
         if(! obj.empty())
         {
             auto it = obj.begin();
-            goto loop_obj;
-            while( ++it != obj.end() )
+            for(;;)
             {
-                os << ",\n";
-            loop_obj:
                 os << *indent << json::to_string(it->key()) << " : ";
-                pretty_print( os, it->value(), indent);
+                pretty_print(os, it->value(), indent);
+                if(++it == obj.end())
+                    break;
+                os << ",\n";
             }
         }
         os << "\n";
@@ -78,13 +78,13 @@ pretty_print( std::ostream& os, json::value const& jv, std::string* indent = nul
         if(! arr.empty())
         {
             auto it = arr.begin();
-            goto loop_arr;
-            while( ++it != arr.end() )
+            for(;;)
             {
-                os << ",\n";
-            loop_arr:
                 os << *indent;
                 pretty_print( os, *it, indent);
+                if(++it == arr.end())
+                    break;
+                os << ",\n";
             }   
         }
         os << "\n";
