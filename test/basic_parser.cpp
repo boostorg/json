@@ -19,6 +19,47 @@
 namespace boost {
 namespace json {
 
+namespace {
+
+bool
+validate( string_view s )
+{
+    // The null parser discards all the data
+
+    struct null_parser : basic_parser
+    {
+        null_parser() {}
+        ~null_parser() {}
+        void on_document_begin( error_code& ) override {}
+        void on_document_end( error_code& ) override {}
+        void on_object_begin( error_code& ) override {}
+        void on_object_end( error_code& ) override {}
+        void on_array_begin( error_code& ) override {}
+        void on_array_end( error_code& ) override {}
+        void on_key_part( string_view, error_code& ) override {}
+        void on_key( string_view, error_code& ) override {}
+        void on_string_part( string_view, error_code& ) override {}
+        void on_string( string_view, error_code& ) override {}
+        void on_int64( std::int64_t, error_code& ) override {}
+        void on_uint64( std::uint64_t, error_code& ) override {}
+        void on_double( double, error_code& ) override {}
+        void on_bool( bool, error_code& ) override {}
+        void on_null( error_code& ) override {}
+    };
+
+    // Parse with the null parser and return false on error
+    null_parser p;
+    error_code ec;
+    p.finish( s.data(), s.size(), ec );
+    if( ec )
+        return false;
+
+    // The string is valid JSON.
+    return true;
+}
+
+} // (anon)
+
 class basic_parser_test : public beast::unit_test::suite
 {
 public:
@@ -622,6 +663,13 @@ public:
         }
     }
 
+    // https://github.com/vinniefalco/json/issues/13
+    void
+    testIssue13()
+    {
+        validate("\"~QQ36644632   {n");
+    }
+
     void
     run() override
     {
@@ -634,6 +682,8 @@ public:
         testParser();
         testMembers();
         testParseVectors();
+
+        testIssue13();
     }
 };
 
