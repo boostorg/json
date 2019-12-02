@@ -41,9 +41,9 @@ class string_impl
         sizeof(kind) - 1;
 
 #if BOOST_JSON_ARCH == 64
-    BOOST_JSON_STATIC_ASSERT(sbo_chars_ == 14);
+    BOOST_STATIC_ASSERT(sbo_chars_ == 14);
 #elif BOOST_JSON_ARCH == 32
-    BOOST_JSON_STATIC_ASSERT(sbo_chars_ == 6);
+    BOOST_STATIC_ASSERT(sbo_chars_ == 6);
 #else
 # error Unknown architecture
 #endif

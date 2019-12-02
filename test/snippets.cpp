@@ -182,7 +182,7 @@ struct Storage
 
 //]
 
-BOOST_JSON_STATIC_ASSERT(
+BOOST_STATIC_ASSERT(
     is_storage<Storage>::value);
 
 //----------------------------------------------------------
@@ -323,13 +323,13 @@ struct customer
 
 //]
 
-BOOST_JSON_STATIC_ASSERT(
+BOOST_STATIC_ASSERT(
     ::boost::json::detail::has_mf_to_json<customer>::value);
 
-BOOST_JSON_STATIC_ASSERT(
+BOOST_STATIC_ASSERT(
     has_to_json<customer>::value);
 
-BOOST_JSON_STATIC_ASSERT(
+BOOST_STATIC_ASSERT(
     has_from_json<customer>::value);
 
 //[snippet_exchange_2
@@ -411,10 +411,10 @@ struct value_exchange< ::std::complex< double > >
 namespace boost {
 namespace json {
 
-BOOST_JSON_STATIC_ASSERT(
+BOOST_STATIC_ASSERT(
     has_to_json<std::complex<double>>::value);
 
-BOOST_JSON_STATIC_ASSERT(
+BOOST_STATIC_ASSERT(
     has_from_json<std::complex<double>>::value);
 
 //[snippet_exchange_6

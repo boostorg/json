@@ -30,7 +30,7 @@ public:
     {
         // ensure this string does
         // not fit in the SBO area.
-        BOOST_JSON_ASSERT(str_.size() >
+        BOOST_ASSERT(str_.size() >
             string().capacity());
     }
 
@@ -50,55 +50,55 @@ public:
         std::declval<T const&>() != std::declval<U const&>()
             )>> : std::true_type {};
 
-    BOOST_JSON_STATIC_ASSERT(  std::is_constructible<object::iterator, object::iterator>::value);
-    BOOST_JSON_STATIC_ASSERT(! std::is_constructible<object::iterator, object::const_iterator>::value);
+    BOOST_STATIC_ASSERT(  std::is_constructible<object::iterator, object::iterator>::value);
+    BOOST_STATIC_ASSERT(! std::is_constructible<object::iterator, object::const_iterator>::value);
 
-    BOOST_JSON_STATIC_ASSERT(  std::is_constructible<object::const_iterator, object::iterator>::value);
-    BOOST_JSON_STATIC_ASSERT(  std::is_constructible<object::const_iterator, object::const_iterator>::value);
+    BOOST_STATIC_ASSERT(  std::is_constructible<object::const_iterator, object::iterator>::value);
+    BOOST_STATIC_ASSERT(  std::is_constructible<object::const_iterator, object::const_iterator>::value);
 
-    BOOST_JSON_STATIC_ASSERT(  std::is_assignable<object::iterator&, object::iterator>::value);
-    BOOST_JSON_STATIC_ASSERT(! std::is_assignable<object::iterator&, object::const_iterator>::value);
+    BOOST_STATIC_ASSERT(  std::is_assignable<object::iterator&, object::iterator>::value);
+    BOOST_STATIC_ASSERT(! std::is_assignable<object::iterator&, object::const_iterator>::value);
 
-    BOOST_JSON_STATIC_ASSERT(  std::is_assignable<object::const_iterator&, object::iterator>::value);
-    BOOST_JSON_STATIC_ASSERT(  std::is_assignable<object::const_iterator&, object::const_iterator>::value);
+    BOOST_STATIC_ASSERT(  std::is_assignable<object::const_iterator&, object::iterator>::value);
+    BOOST_STATIC_ASSERT(  std::is_assignable<object::const_iterator&, object::const_iterator>::value);
 
-    BOOST_JSON_STATIC_ASSERT(is_equal_comparable<object::iterator, object::iterator>::value);
-    BOOST_JSON_STATIC_ASSERT(is_equal_comparable<object::iterator, object::const_iterator>::value);
+    BOOST_STATIC_ASSERT(is_equal_comparable<object::iterator, object::iterator>::value);
+    BOOST_STATIC_ASSERT(is_equal_comparable<object::iterator, object::const_iterator>::value);
 
-    BOOST_JSON_STATIC_ASSERT(is_equal_comparable<object::const_iterator, object::iterator>::value);
-    BOOST_JSON_STATIC_ASSERT(is_equal_comparable<object::const_iterator, object::const_iterator>::value);
+    BOOST_STATIC_ASSERT(is_equal_comparable<object::const_iterator, object::iterator>::value);
+    BOOST_STATIC_ASSERT(is_equal_comparable<object::const_iterator, object::const_iterator>::value);
 
-    BOOST_JSON_STATIC_ASSERT(is_unequal_comparable<object::iterator, object::iterator>::value);
-    BOOST_JSON_STATIC_ASSERT(is_unequal_comparable<object::iterator, object::const_iterator>::value);
+    BOOST_STATIC_ASSERT(is_unequal_comparable<object::iterator, object::iterator>::value);
+    BOOST_STATIC_ASSERT(is_unequal_comparable<object::iterator, object::const_iterator>::value);
 
-    BOOST_JSON_STATIC_ASSERT(is_unequal_comparable<object::const_iterator, object::iterator>::value);
-    BOOST_JSON_STATIC_ASSERT(is_unequal_comparable<object::const_iterator, object::const_iterator>::value);
+    BOOST_STATIC_ASSERT(is_unequal_comparable<object::const_iterator, object::iterator>::value);
+    BOOST_STATIC_ASSERT(is_unequal_comparable<object::const_iterator, object::const_iterator>::value);
 
-    BOOST_JSON_STATIC_ASSERT(  std::is_constructible<object::reverse_iterator, object::reverse_iterator>::value);
+    BOOST_STATIC_ASSERT(  std::is_constructible<object::reverse_iterator, object::reverse_iterator>::value);
     // std::reverse_iterator ctor is not SFINAEd
-    //BOOST_JSON_STATIC_ASSERT(! std::is_constructible<object::reverse_iterator, object::const_reverse_iterator>::value);
+    //BOOST_STATIC_ASSERT(! std::is_constructible<object::reverse_iterator, object::const_reverse_iterator>::value);
 
-    BOOST_JSON_STATIC_ASSERT(  std::is_constructible<object::const_reverse_iterator, object::reverse_iterator>::value);
-    BOOST_JSON_STATIC_ASSERT(  std::is_constructible<object::const_reverse_iterator, object::const_reverse_iterator>::value);
+    BOOST_STATIC_ASSERT(  std::is_constructible<object::const_reverse_iterator, object::reverse_iterator>::value);
+    BOOST_STATIC_ASSERT(  std::is_constructible<object::const_reverse_iterator, object::const_reverse_iterator>::value);
 
-    BOOST_JSON_STATIC_ASSERT(  std::is_assignable<object::reverse_iterator&, object::reverse_iterator>::value);
+    BOOST_STATIC_ASSERT(  std::is_assignable<object::reverse_iterator&, object::reverse_iterator>::value);
     // std::reverse_iterator assignment is not SFINAEd
-    //BOOST_JSON_STATIC_ASSERT(! std::is_assignable<object::reverse_iterator&, object::const_reverse_iterator>::value);
+    //BOOST_STATIC_ASSERT(! std::is_assignable<object::reverse_iterator&, object::const_reverse_iterator>::value);
 
-    BOOST_JSON_STATIC_ASSERT(  std::is_assignable<object::const_reverse_iterator&, object::reverse_iterator>::value);
-    BOOST_JSON_STATIC_ASSERT(  std::is_assignable<object::const_reverse_iterator&, object::const_reverse_iterator>::value);
+    BOOST_STATIC_ASSERT(  std::is_assignable<object::const_reverse_iterator&, object::reverse_iterator>::value);
+    BOOST_STATIC_ASSERT(  std::is_assignable<object::const_reverse_iterator&, object::const_reverse_iterator>::value);
 
-    BOOST_JSON_STATIC_ASSERT(is_equal_comparable<object::reverse_iterator, object::reverse_iterator>::value);
-    BOOST_JSON_STATIC_ASSERT(is_equal_comparable<object::reverse_iterator, object::const_reverse_iterator>::value);
+    BOOST_STATIC_ASSERT(is_equal_comparable<object::reverse_iterator, object::reverse_iterator>::value);
+    BOOST_STATIC_ASSERT(is_equal_comparable<object::reverse_iterator, object::const_reverse_iterator>::value);
 
-    BOOST_JSON_STATIC_ASSERT(is_equal_comparable<object::const_reverse_iterator, object::reverse_iterator>::value);
-    BOOST_JSON_STATIC_ASSERT(is_equal_comparable<object::const_reverse_iterator, object::const_reverse_iterator>::value);
+    BOOST_STATIC_ASSERT(is_equal_comparable<object::const_reverse_iterator, object::reverse_iterator>::value);
+    BOOST_STATIC_ASSERT(is_equal_comparable<object::const_reverse_iterator, object::const_reverse_iterator>::value);
 
-    BOOST_JSON_STATIC_ASSERT(is_unequal_comparable<object::reverse_iterator, object::reverse_iterator>::value);
-    BOOST_JSON_STATIC_ASSERT(is_unequal_comparable<object::reverse_iterator, object::const_reverse_iterator>::value);
+    BOOST_STATIC_ASSERT(is_unequal_comparable<object::reverse_iterator, object::reverse_iterator>::value);
+    BOOST_STATIC_ASSERT(is_unequal_comparable<object::reverse_iterator, object::const_reverse_iterator>::value);
 
-    BOOST_JSON_STATIC_ASSERT(is_unequal_comparable<object::const_reverse_iterator, object::reverse_iterator>::value);
-    BOOST_JSON_STATIC_ASSERT(is_unequal_comparable<object::const_reverse_iterator, object::const_reverse_iterator>::value);
+    BOOST_STATIC_ASSERT(is_unequal_comparable<object::const_reverse_iterator, object::reverse_iterator>::value);
+    BOOST_STATIC_ASSERT(is_unequal_comparable<object::const_reverse_iterator, object::const_reverse_iterator>::value);
     
     static
     void

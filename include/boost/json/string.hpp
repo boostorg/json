@@ -1101,7 +1101,7 @@ public:
     at(std::size_t pos)
     {
         if(pos >= size())
-            BOOST_JSON_THROW(
+            BOOST_THROW_EXCEPTION(
                 std::out_of_range(
                     "pos >= size()"));
         return impl_.data()[pos];
@@ -1126,7 +1126,7 @@ public:
     at(std::size_t pos) const
     {
         if(pos >= size())
-            BOOST_JSON_THROW(
+            BOOST_THROW_EXCEPTION(
                 std::out_of_range(
                     "pos >= size()"));
         return impl_.data()[pos];
@@ -2223,7 +2223,7 @@ public:
     void
     grow(std::size_t n) noexcept
     {
-        BOOST_JSON_ASSERT(
+        BOOST_ASSERT(
             n <= impl_.capacity() - impl_.size());
         impl_.term(impl_.size() + n);
     }

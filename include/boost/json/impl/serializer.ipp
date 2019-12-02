@@ -80,7 +80,7 @@ serializer::
 serializer() noexcept
 {
     // ensure room for \uXXXX escape plus one
-    BOOST_JSON_STATIC_ASSERT(
+    BOOST_STATIC_ASSERT(
         sizeof(serializer::buf_) >= 7);
 
     stack_.emplace(state::none);
@@ -130,7 +130,7 @@ loop:
     switch(stack_->st)
     {
     case state::none:
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
             std::logic_error(
                 "no value in serializer"));
 
@@ -452,7 +452,7 @@ loop_str:
                 continue;
             }
         #else
-            BOOST_JSON_ASSERT(p1 - p < 6);
+            BOOST_ASSERT(p1 - p < 6);
         #endif
 
             buf_[5] = '\\';
@@ -512,7 +512,7 @@ loop_str:
             goto loop;
         }
         str_ = str_.substr(n);
-        BOOST_JSON_ASSERT(p >= p1);
+        BOOST_ASSERT(p >= p1);
         goto finish;
     }
 

@@ -53,7 +53,7 @@ class storage_ptr
         storage* p) noexcept
         : p_(p)
     {
-        BOOST_JSON_ASSERT(p);
+        BOOST_ASSERT(p);
     }
 
 public:

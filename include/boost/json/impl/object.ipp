@@ -272,7 +272,7 @@ void
 object::
 swap(object& other)
 {
-    BOOST_JSON_ASSERT(this != &other);
+    BOOST_ASSERT(this != &other);
     if(*sp_ == *other.sp_)
     {
         impl_.swap(other.impl_);
@@ -303,7 +303,7 @@ at(key_type key) ->
 {
     auto it = find(key);
     if(it == end())
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
          std::out_of_range(
             "key not found"));
     return it->value();
@@ -316,7 +316,7 @@ at(key_type key) const ->
 {
     auto it = find(key);
     if(it == end())
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
          std::out_of_range(
             "key not found"));
     return it->value();
@@ -458,20 +458,20 @@ rehash(std::size_t new_capacity)
                     decltype(list)>::value],
                 (unsigned long long)n));
     };
-    BOOST_JSON_ASSERT(new_capacity > capacity());
+    BOOST_ASSERT(new_capacity > capacity());
     auto const f = std::ceil(
         new_capacity / max_load_factor());
-    BOOST_JSON_ASSERT(
+    BOOST_ASSERT(
         f < static_cast<std::size_t>(-1));
     auto const new_buckets = next_prime(
         static_cast<std::size_t>(f));
-    BOOST_JSON_ASSERT(std::ceil(
+    BOOST_ASSERT(std::ceil(
         new_buckets * max_load_factor()) >=
             new_capacity);
     new_capacity = static_cast<std::size_t>(
         std::ceil(new_buckets * max_load_factor()));
     if(new_capacity > max_size())
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
             detail::object_too_large_exception());
     object_impl impl(
         new_capacity, new_buckets, sp_);

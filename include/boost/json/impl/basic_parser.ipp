@@ -434,7 +434,7 @@ loop_str0:
     // string, opening quotes
     case state::str1:
 loop_str1:
-        BOOST_JSON_ASSERT(p < p1);
+        BOOST_ASSERT(p < p1);
         if(*p != '\"')
         {
             ec = error::expected_quotes;
@@ -497,7 +497,7 @@ loop_str1:
             // VFALCO UTF-8 validation here?
             ++p;
         }
-        BOOST_JSON_ASSERT(p != start);
+        BOOST_ASSERT(p != start);
         if(is_key_)
             this->on_key_part({start,
                 static_cast<std::size_t>(
@@ -803,7 +803,7 @@ loop_num:
             np_.finish(ec);
             if(ec)
                 goto yield;
-            BOOST_JSON_ASSERT(np_.is_done());
+            BOOST_ASSERT(np_.is_done());
             auto const num = np_.get();
             switch(num.kind)
             {
@@ -833,7 +833,7 @@ loop_num:
     case state::litt:
     case state::litf:
     case state::litn:
-        BOOST_JSON_ASSERT(lit_ != nullptr);
+        BOOST_ASSERT(lit_ != nullptr);
         while(p < p1)
         {
             if(*p != *lit_)
@@ -876,7 +876,7 @@ write_some(
     auto const n =
         write_some(data, size, ec);
     if(ec)
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
             system_error(ec));
     return n;
 }
@@ -908,7 +908,7 @@ write(
     error_code ec;
     write(data, size, ec);
     if(ec)
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
             system_error(ec));
 }
 
@@ -935,7 +935,7 @@ finish(
     error_code ec;
     finish(data, size, ec);
     if(ec)
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
             system_error(ec));
 }
 
@@ -1028,7 +1028,7 @@ finish()
     error_code ec;
     finish(ec);
     if(ec)
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
             system_error(ec));
 }
 

@@ -19,7 +19,7 @@ namespace json {
 class kind_test : public beast::unit_test::suite
 {
 public:
-    BOOST_JSON_STATIC_ASSERT(
+    BOOST_STATIC_ASSERT(
         std::is_enum<kind>::value);
 
     void

@@ -83,7 +83,7 @@ public:
             tab_->size = static_cast<
                 std::uint32_t>(n);
         else
-            BOOST_JSON_ASSERT(n == 0);
+            BOOST_ASSERT(n == 0);
     }
 
     std::size_t

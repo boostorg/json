@@ -42,7 +42,7 @@ undo_insert(
     , pos(self.impl_.index_of(pos_))
 {
     if(n > max_size())
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
             detail::array_too_large_exception());
     self_.reserve(
         self_.impl_.size() + n_);
@@ -438,7 +438,7 @@ void
 array::
 swap(array& other)
 {
-    BOOST_JSON_ASSERT(this != &other);
+    BOOST_ASSERT(this != &other);
     if(*sp_ == *other.sp_)
     {
         impl_.swap(other.impl_);
@@ -495,7 +495,7 @@ copy(
     std::initializer_list<value> init)
 {
     if(init.size() > max_size())
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
             std::length_error(
                 "size > max_size()"));
     reserve(static_cast<

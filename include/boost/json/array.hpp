@@ -1012,7 +1012,7 @@ public:
 
         @throw std::length_error `new_capacity > max_size()`
     */
-    BOOST_JSON_FORCEINLINE
+    BOOST_FORCEINLINE
     void
     reserve(std::size_t new_capacity)
     {

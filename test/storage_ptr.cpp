@@ -39,7 +39,7 @@ public:
         }
     };
 
-    BOOST_JSON_STATIC_ASSERT(
+    BOOST_STATIC_ASSERT(
         ! is_storage<not_storage>::value);
 
     struct throwing

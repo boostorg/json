@@ -23,7 +23,7 @@ raw_stack::
 grow(std::size_t n)
 {
     if(n > max_size() - capacity_)
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
             stack_overflow_exception());
     auto new_capacity = capacity_ + n;
     if( new_capacity < min_capacity_)

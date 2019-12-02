@@ -93,7 +93,7 @@ pow10(int exp) noexcept
         1e+300, 1e+301, 1e+302, 1e+303, 1e+304, 1e+305, 1e+306, 1e+307, 1e+308 };
 
     exp += 308;
-    BOOST_JSON_ASSERT(exp >= 0 && exp < 618);
+    BOOST_ASSERT(exp >= 0 && exp < 618);
     return tab[exp];
 }
 
@@ -166,9 +166,9 @@ loop:
     // [0,1..9]
     case state::init0:
     {
-        BOOST_JSON_ASSERT(
+        BOOST_ASSERT(
             n_.kind == kind::int64);
-        BOOST_JSON_ASSERT(neg_);
+        BOOST_ASSERT(neg_);
         if(p >= p1)
             break;
         unsigned char const d = *p - '0';
@@ -191,7 +191,7 @@ loop:
 
     // [.eE]
     case state::init1:
-        BOOST_JSON_ASSERT(
+        BOOST_ASSERT(
             n_.kind == kind::int64);
         if(p >= p1)
             break;
@@ -219,9 +219,9 @@ loop:
     // *[0..9]
     case state::mant:
     {
-        BOOST_JSON_ASSERT(
+        BOOST_ASSERT(
             n_.kind == kind::int64);
-        BOOST_JSON_ASSERT(! neg_);
+        BOOST_ASSERT(! neg_);
         if(p < p1)
         {
             auto m = n_.u;
@@ -272,8 +272,8 @@ loop:
     // *[0..9] (negative)
     case state::mantn:
     {
-        BOOST_JSON_ASSERT(n_.kind == kind::int64);
-        BOOST_JSON_ASSERT(neg_);
+        BOOST_ASSERT(n_.kind == kind::int64);
+        BOOST_ASSERT(neg_);
         if(p < p1)
         {
             auto m = n_.u;
@@ -324,7 +324,7 @@ loop:
     // *[0..9] (double)
     case state::mantd:
     {
-        BOOST_JSON_ASSERT(
+        BOOST_ASSERT(
             n_.kind == kind::double_);
         auto d = n_.d;
         while(p < p1)
@@ -361,7 +361,7 @@ loop:
     // [0..9]
     case state::frac1:
     {
-        BOOST_JSON_ASSERT(
+        BOOST_ASSERT(
             n_.kind == kind::int64);
         if(p >= p1)
             break;
@@ -379,7 +379,7 @@ loop:
     // zero or more [0..9]
     case state::frac2:
     {
-        BOOST_JSON_ASSERT(
+        BOOST_ASSERT(
             n_.kind == kind::double_);
         if(p < p1)
         {
@@ -422,7 +422,7 @@ loop:
     // zero or more [0..9] (double)
     case state::fracd:
     {
-        BOOST_JSON_ASSERT(
+        BOOST_ASSERT(
             n_.kind == kind::double_);
         if(p < p1)
         {
@@ -464,7 +464,7 @@ loop:
     // + or -
     case state::exp1:
     {
-        BOOST_JSON_ASSERT(
+        BOOST_ASSERT(
             n_.kind == kind::double_);
         if(p >= p1)
             break;
@@ -574,17 +574,17 @@ finish(
         break;
 
     case state::init1:
-        BOOST_JSON_ASSERT(
+        BOOST_ASSERT(
             n_.kind == kind::int64);
-        BOOST_JSON_ASSERT(n_.i == 0);
+        BOOST_ASSERT(n_.i == 0);
         //ec = {};
         st_ = state::end;
         break;
 
     case state::mant:
-        BOOST_JSON_ASSERT(
+        BOOST_ASSERT(
             n_.kind == kind::int64);
-        BOOST_JSON_ASSERT(! neg_);
+        BOOST_ASSERT(! neg_);
         //ec = {};
         if(n_.u <= INT64_MAX)
             n_.i = static_cast<
@@ -595,9 +595,9 @@ finish(
         break;
 
     case state::mantn:
-        BOOST_JSON_ASSERT(
+        BOOST_ASSERT(
             n_.kind == kind::int64);
-        BOOST_JSON_ASSERT(neg_);
+        BOOST_ASSERT(neg_);
         //ec = {};
         n_.i = static_cast<
             int64_t>(~n_.u+1);
@@ -618,7 +618,7 @@ finish(
         break;
 
     case state::frac2:
-        BOOST_JSON_ASSERT(
+        BOOST_ASSERT(
             n_.kind == kind::double_);
         //ec = {};
         exp_ += off_;
@@ -629,7 +629,7 @@ finish(
         break;
 
     case state::fracd:
-        BOOST_JSON_ASSERT(
+        BOOST_ASSERT(
             n_.kind == kind::double_);
         //ec = {};
         exp_ += off_;

@@ -169,7 +169,7 @@ insert(
     size_type count)
 {
     if(pos > impl_.size())
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
             detail::string_pos_too_large());
     if(count > impl_.capacity() - impl_.size())
     {
@@ -225,7 +225,7 @@ erase(
     size_type count)
 {
     if(pos > impl_.size())
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
             detail::string_pos_too_large());
     if( count > impl_.size() - pos)
         count = impl_.size() - pos;
@@ -284,7 +284,7 @@ void
 string::
 swap(string& other)
 {
-    BOOST_JSON_ASSERT(this != &other);
+    BOOST_ASSERT(this != &other);
     if(*sp_ == *other.sp_)
     {
         std::swap(impl_, other.impl_);
@@ -306,7 +306,7 @@ void
 string::
 reserve_impl(size_type new_cap)
 {
-    BOOST_JSON_ASSERT(
+    BOOST_ASSERT(
         new_cap >= impl_.capacity());
     if(new_cap > impl_.capacity())
     {

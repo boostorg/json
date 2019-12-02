@@ -88,7 +88,7 @@ pilfer(T&& t) noexcept ->
 {
     using U =
         typename std::remove_reference<T>::type;
-    BOOST_JSON_STATIC_ASSERT(
+    BOOST_STATIC_ASSERT(
         is_pilfer_constructible<U>::value);
     return typename std::conditional<
         std::is_nothrow_constructible<
@@ -103,7 +103,7 @@ template<class T>
 void
 relocate(T* dest, T& src) noexcept
 {
-    BOOST_JSON_STATIC_ASSERT(
+    BOOST_STATIC_ASSERT(
         is_pilfer_constructible<T>::value);
     ::new(dest) T(pilfer(src));
     src.~T();

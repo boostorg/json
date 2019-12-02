@@ -414,7 +414,7 @@ insert_range(
         std::distance(first, last));
     auto const n0 = size();
     if(n > max_size() - n0)
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
             detail::object_too_large_exception());
     if( min_capacity < n0 + n)
         min_capacity = n0 + n;

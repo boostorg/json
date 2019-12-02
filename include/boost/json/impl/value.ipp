@@ -72,7 +72,7 @@ struct value::init_iter
         return it_ != other.it_;
     }
 
-    BOOST_JSON_STATIC_ASSERT(
+    BOOST_STATIC_ASSERT(
         std::is_constructible<
             object::value_type,
             init_iter::value_type>::value);
@@ -281,7 +281,7 @@ value(
     if(maybe_object(init))
     {
         if(init.size() > object::max_size())
-            BOOST_JSON_THROW(
+            BOOST_THROW_EXCEPTION(
                 detail::object_too_large_exception());
         ::new(&obj_) object(
             init_iter{init.begin()},

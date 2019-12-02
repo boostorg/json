@@ -2034,7 +2034,7 @@ public:
     as_object()
     {
         if(! is_object())
-            BOOST_JSON_THROW(
+            BOOST_THROW_EXCEPTION(
                 system_error(
                     error::not_object));
         return obj_;
@@ -2060,7 +2060,7 @@ public:
     as_object() const
     {
         if(! is_object())
-            BOOST_JSON_THROW(
+            BOOST_THROW_EXCEPTION(
                 system_error(
                     error::not_object));
         return obj_;
@@ -2086,7 +2086,7 @@ public:
     as_array()
     {
         if(! is_array())
-            BOOST_JSON_THROW(
+            BOOST_THROW_EXCEPTION(
                 system_error(
                     error::not_array));
         return arr_;
@@ -2112,7 +2112,7 @@ public:
     as_array() const
     {
         if(! is_array())
-            BOOST_JSON_THROW(
+            BOOST_THROW_EXCEPTION(
                 system_error(
                     error::not_array));
         return arr_;
@@ -2138,7 +2138,7 @@ public:
     as_string()
     {
         if(! is_string())
-            BOOST_JSON_THROW(
+            BOOST_THROW_EXCEPTION(
                 system_error(
                     error::not_string));
         return str_;
@@ -2164,7 +2164,7 @@ public:
     as_string() const
     {
         if(! is_string())
-            BOOST_JSON_THROW(
+            BOOST_THROW_EXCEPTION(
                 system_error(
                     error::not_string));
         return str_;
@@ -2190,7 +2190,7 @@ public:
     as_int64()
     {
         if(! is_int64())
-            BOOST_JSON_THROW(
+            BOOST_THROW_EXCEPTION(
                 system_error(
                     error::not_number));
         return i64_.i;
@@ -2216,7 +2216,7 @@ public:
     as_int64() const
     {
         if(! is_int64())
-            BOOST_JSON_THROW(
+            BOOST_THROW_EXCEPTION(
                 system_error(
                     error::not_number));
         return i64_.i;
@@ -2242,7 +2242,7 @@ public:
     as_uint64()
     {
         if(! is_uint64())
-            BOOST_JSON_THROW(
+            BOOST_THROW_EXCEPTION(
                 system_error(
                     error::not_number));
         return u64_.u;
@@ -2269,7 +2269,7 @@ public:
     as_uint64() const
     {
         if(! is_uint64())
-            BOOST_JSON_THROW(
+            BOOST_THROW_EXCEPTION(
                 system_error(
                     error::not_number));
         return u64_.u;
@@ -2295,7 +2295,7 @@ public:
     as_double()
     {
         if(! is_double())
-            BOOST_JSON_THROW(
+            BOOST_THROW_EXCEPTION(
                 system_error(
                     error::not_number));
         return dub_.d;
@@ -2321,7 +2321,7 @@ public:
     as_double() const
     {
         if(! is_double())
-            BOOST_JSON_THROW(
+            BOOST_THROW_EXCEPTION(
                 system_error(
                     error::not_number));
         return dub_.d;
@@ -2347,7 +2347,7 @@ public:
     as_bool()
     {
         if(! is_bool())
-            BOOST_JSON_THROW(
+            BOOST_THROW_EXCEPTION(
                 system_error(
                     error::not_bool));
         return bln_.b;
@@ -2373,7 +2373,7 @@ public:
     as_bool() const
     {
         if(! is_bool())
-            BOOST_JSON_THROW(
+            BOOST_THROW_EXCEPTION(
                 system_error(
                     error::not_bool));
         return bln_.b;
@@ -2403,7 +2403,7 @@ public:
     object&
     get_object() noexcept
     {
-        BOOST_JSON_ASSERT(is_object());
+        BOOST_ASSERT(is_object());
         return obj_;
     }
 
@@ -2429,7 +2429,7 @@ public:
     object const&
     get_object() const noexcept
     {
-        BOOST_JSON_ASSERT(is_object());
+        BOOST_ASSERT(is_object());
         return obj_;
     }
 
@@ -2455,7 +2455,7 @@ public:
     array&
     get_array() noexcept
     {
-        BOOST_JSON_ASSERT(is_array());
+        BOOST_ASSERT(is_array());
         return arr_;
     }
 
@@ -2481,7 +2481,7 @@ public:
     array const&
     get_array() const noexcept
     {
-        BOOST_JSON_ASSERT(is_array());
+        BOOST_ASSERT(is_array());
         return arr_;
     }
 
@@ -2507,7 +2507,7 @@ public:
     string&
     get_string() noexcept
     {
-        BOOST_JSON_ASSERT(is_string());
+        BOOST_ASSERT(is_string());
         return str_;
     }
 
@@ -2533,7 +2533,7 @@ public:
     string const&
     get_string() const noexcept
     {
-        BOOST_JSON_ASSERT(is_string());
+        BOOST_ASSERT(is_string());
         return str_;
     }
 
@@ -2559,7 +2559,7 @@ public:
     std::int64_t&
     get_int64() noexcept
     {
-        BOOST_JSON_ASSERT(is_int64());
+        BOOST_ASSERT(is_int64());
         return i64_.i;
     }
 
@@ -2585,7 +2585,7 @@ public:
     std::int64_t
     get_int64() const noexcept
     {
-        BOOST_JSON_ASSERT(is_int64());
+        BOOST_ASSERT(is_int64());
         return i64_.i;
     }
 
@@ -2611,7 +2611,7 @@ public:
     std::uint64_t&
     get_uint64() noexcept
     {
-        BOOST_JSON_ASSERT(is_uint64());
+        BOOST_ASSERT(is_uint64());
         return u64_.u;
     }
 
@@ -2637,7 +2637,7 @@ public:
     std::uint64_t
     get_uint64() const noexcept
     {
-        BOOST_JSON_ASSERT(is_uint64());
+        BOOST_ASSERT(is_uint64());
         return u64_.u;
     }
 
@@ -2663,7 +2663,7 @@ public:
     double&
     get_double() noexcept
     {
-        BOOST_JSON_ASSERT(is_double());
+        BOOST_ASSERT(is_double());
         return dub_.d;
     }
 
@@ -2689,7 +2689,7 @@ public:
     double
     get_double() const noexcept
     {
-        BOOST_JSON_ASSERT(is_double());
+        BOOST_ASSERT(is_double());
         return dub_.d;
     }
 
@@ -2715,7 +2715,7 @@ public:
     bool&
     get_bool() noexcept
     {
-        BOOST_JSON_ASSERT(is_bool());
+        BOOST_ASSERT(is_bool());
         return bln_.b;
     }
 
@@ -2741,7 +2741,7 @@ public:
     bool
     get_bool() const noexcept
     {
-        BOOST_JSON_ASSERT(is_bool());
+        BOOST_ASSERT(is_bool());
         return bln_.b;
     }
 
@@ -2762,9 +2762,9 @@ private:
 
 // Make sure things are as big as we think they should be
 #if BOOST_JSON_ARCH == 64
-BOOST_JSON_STATIC_ASSERT(sizeof(value) == 24);
+BOOST_STATIC_ASSERT(sizeof(value) == 24);
 #elif BOOST_JSON_ARCH == 32
-BOOST_JSON_STATIC_ASSERT(sizeof(value) == 16);
+BOOST_STATIC_ASSERT(sizeof(value) == 16);
 #else 
 # error Unknown architecture
 #endif

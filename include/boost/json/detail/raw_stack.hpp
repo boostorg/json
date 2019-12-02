@@ -77,7 +77,7 @@ public:
     char*
     pop(std::size_t n) noexcept
     {
-        BOOST_JSON_ASSERT(
+        BOOST_ASSERT(
             n <= size_);
         size_ -= n;
         return base_ + size_;
@@ -102,7 +102,7 @@ public:
     void
     subtract(std::size_t n)
     {
-        BOOST_JSON_ASSERT(
+        BOOST_ASSERT(
             n <= size_);
         size_ -= n;
     }

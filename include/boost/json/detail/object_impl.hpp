@@ -83,7 +83,7 @@ public:
     {
         if(n == 0)
             return;
-        BOOST_JSON_ASSERT(
+        BOOST_ASSERT(
             n <= capacity() - size());
         tab_->size += n;
     }
@@ -94,7 +94,7 @@ public:
     {
         if(n == 0)
             return;
-        BOOST_JSON_ASSERT(n <= size());
+        BOOST_ASSERT(n <= size());
         tab_->size -= n;
     }
 

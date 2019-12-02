@@ -59,7 +59,7 @@ struct value_exchange<value_test_ns::T3>
 class value_test : public beast::unit_test::suite
 {
 public:
-    //BOOST_JSON_STATIC_ASSERT(has_to_json<short>::value);
+    //BOOST_STATIC_ASSERT(has_to_json<short>::value);
 
     string_view const str_;
 
@@ -69,7 +69,7 @@ public:
     {
         // ensure this string does
         // not fit in the SBO area.
-        BOOST_JSON_ASSERT(str_.size() >
+        BOOST_ASSERT(str_.size() >
             string().capacity());
     }
 
@@ -1601,10 +1601,10 @@ std::uint64_t const& x = cu64.as_uint64();
         }
     }
 
-    BOOST_JSON_STATIC_ASSERT(
+    BOOST_STATIC_ASSERT(
         detail::is_range<std::vector<int>>::value);
 
-    BOOST_JSON_STATIC_ASSERT(
+    BOOST_STATIC_ASSERT(
         detail::is_range<std::initializer_list<int>>::value);
 
     //------------------------------------------------------

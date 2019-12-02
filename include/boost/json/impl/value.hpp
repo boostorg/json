@@ -115,7 +115,7 @@ from_json(T& t, value const& v)
         auto const rhs = v.as_int64();
         if( rhs > (std::numeric_limits<T>::max)() ||
             rhs < (std::numeric_limits<T>::min)())
-            BOOST_JSON_THROW(system_error(
+            BOOST_THROW_EXCEPTION(system_error(
                 error::integer_overflow));
         t = static_cast<T>(rhs);
     }
@@ -123,13 +123,13 @@ from_json(T& t, value const& v)
     {
         auto const rhs = v.as_uint64();
         if(rhs > (std::numeric_limits<T>::max)())
-            BOOST_JSON_THROW(system_error(
+            BOOST_THROW_EXCEPTION(system_error(
                 error::integer_overflow));
         t = static_cast<T>(rhs);
     }
     else
     {
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
             system_error(error::not_number));
     }
 }
@@ -187,7 +187,7 @@ key_value_pair(
         [&]
         {
             if(key.size() > string::max_size())
-                BOOST_JSON_THROW(
+                BOOST_THROW_EXCEPTION(
                     detail::key_too_large_exception());
             auto s = reinterpret_cast<
                 char*>(value_.storage()->

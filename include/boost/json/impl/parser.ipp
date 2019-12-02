@@ -69,9 +69,9 @@ destroy() noexcept
     if(key_size_ > 0)
     {
         // remove partial key
-        BOOST_JSON_ASSERT(
+        BOOST_ASSERT(
             lev_.st == state::obj);
-        BOOST_JSON_ASSERT(
+        BOOST_ASSERT(
             str_size_ == 0);
         rs_.subtract(key_size_);
         key_size_ = 0;
@@ -88,19 +88,19 @@ destroy() noexcept
         switch(lev_.st)
         {
         case state::need_start:
-            BOOST_JSON_ASSERT(
+            BOOST_ASSERT(
                 rs_.empty());
             break;
 
         case state::begin:
-            BOOST_JSON_ASSERT(
+            BOOST_ASSERT(
                 rs_.empty());
             break;
 
         case state::top:
             rs_.subtract(
                 sizeof(value));
-            BOOST_JSON_ASSERT(
+            BOOST_ASSERT(
                 rs_.empty());
             break;
 
@@ -133,9 +133,9 @@ destroy() noexcept
         {
             auto ua =
                 pop_array();
-            BOOST_JSON_ASSERT(
+            BOOST_ASSERT(
                 ua.size() == 1);
-            BOOST_JSON_ASSERT(
+            BOOST_ASSERT(
                 rs_.empty());
             break;
         }
@@ -185,12 +185,12 @@ parser::
 release()
 {
     if(! is_done())
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
             std::logic_error(
                 "no value"));
-    BOOST_JSON_ASSERT(lev_.st == state::end);
+    BOOST_ASSERT(lev_.st == state::end);
     auto ua = pop_array();
-    BOOST_JSON_ASSERT(rs_.empty());
+    BOOST_ASSERT(rs_.empty());
     union U
     {
         value v;
@@ -248,7 +248,7 @@ emplace(Args&&... args)
         auto const key =
             pop_chars(key_size);
         lev_.st = state::obj;
-        BOOST_JSON_ASSERT((rs_.top() %
+        BOOST_ASSERT((rs_.top() %
             alignof(object::value_type)) == 0);
         ::new(rs_.behind(
             sizeof(object::value_type)))
@@ -260,7 +260,7 @@ emplace(Args&&... args)
     {
         // prevent splits from exceptions
         rs_.prepare(sizeof(value));
-        BOOST_JSON_ASSERT((rs_.top() %
+        BOOST_ASSERT((rs_.top() %
             alignof(value)) == 0);
         ::new(rs_.behind(sizeof(value))) value(
             std::forward<Args>(args)...);
@@ -268,11 +268,11 @@ emplace(Args&&... args)
     }
     else
     {
-        BOOST_JSON_ASSERT(
+        BOOST_ASSERT(
             lev_.st == state::top);
         // prevent splits from exceptions
         rs_.prepare(sizeof(value));
-        BOOST_JSON_ASSERT((rs_.top() %
+        BOOST_ASSERT((rs_.top() %
             alignof(value)) == 0);
         ::new(rs_.behind(sizeof(value))) value(
             std::forward<Args>(args)...);
@@ -358,7 +358,7 @@ void
 parser::
 on_document_end(error_code&)
 {
-    BOOST_JSON_ASSERT(lev_.count == 1);
+    BOOST_ASSERT(lev_.count == 1);
 }
 
 void
@@ -384,7 +384,7 @@ void
 parser::
 on_object_end(error_code&)
 {
-    BOOST_JSON_ASSERT(
+    BOOST_ASSERT(
         lev_.st == state::obj);
     auto uo = pop_object();
     rs_.subtract(lev_.align);
@@ -415,7 +415,7 @@ void
 parser::
 on_array_end(error_code&)
 {
-    BOOST_JSON_ASSERT(
+    BOOST_ASSERT(
         lev_.st == state::arr);
     auto ua = pop_array();
     rs_.subtract(lev_.align);
@@ -432,7 +432,7 @@ on_key_part(
 {
     if( s.size() >
         string::max_size() - key_size_)
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
             detail::key_too_large_exception());  
     push_chars(s);
     key_size_ += static_cast<
@@ -445,7 +445,7 @@ on_key(
     string_view s,
     error_code& ec)
 {
-    BOOST_JSON_ASSERT(
+    BOOST_ASSERT(
         lev_.st == state::obj);
     on_key_part(s, ec);
     push(key_size_);
@@ -461,7 +461,7 @@ on_string_part(
 {
     if( s.size() >
         string::max_size() - str_size_)
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
             detail::string_too_large_exception());  
     push_chars(s);
     str_size_ += static_cast<
@@ -476,7 +476,7 @@ on_string(
 {
     if( s.size() >
         string::max_size() - str_size_)
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
             detail::string_too_large_exception());  
     if(str_size_ == 0)
     {
@@ -571,7 +571,7 @@ parse(
     auto jv = parse(
         s, ec, std::move(sp));
     if(ec)
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
             system_error(ec));
     return jv;
 }

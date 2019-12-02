@@ -10,12 +10,13 @@
 #ifndef BOOST_JSON_DETAIL_CONFIG_HPP
 #define BOOST_JSON_DETAIL_CONFIG_HPP
 
-#include <boost/config.hpp>
 #ifndef BOOST_JSON_STANDALONE
+# include <boost/config.hpp>
 # include <boost/assert.hpp>
 # include <boost/system/error_code.hpp>
 # include <boost/system/system_error.hpp>
 # include <boost/utility/string_view.hpp>
+# include <boost/throw_exception.hpp>
 #else
 # include <cassert>
 # include <string_view>
@@ -45,27 +46,33 @@
 # define BOOST_JSON_NODISCARD
 #endif
 
-#ifndef BOOST_JSON_FORCEINLINE
+#ifndef BOOST_ASSERT
+#define BOOST_ASSERT assert
+#endif
+
+#ifndef BOOST_STATIC_ASSERT
+#define BOOST_STATIC_ASSERT( ... ) static_assert(__VA_ARGS__, #__VA_ARGS__)
+#endif
+
+#ifndef BOOST_FALLTHROUGH
+#define BOOST_FALLTHROUGH ((void)0)
+#endif
+
+#ifndef BOOST_FORCEINLINE
 # ifdef _MSC_VER
-#  define BOOST_JSON_FORCEINLINE __forceinline
+#  define BOOST_FORCEINLINE __forceinline
 # else
-#  define BOOST_JSON_FORCEINLINE inline
+#  define BOOST_FORCEINLINE inline
 # endif
 #endif
 
-#ifndef BOOST_NO_EXCEPTIONS
-# define BOOST_JSON_THROW(x) throw(x)
-#else
-# define BOOST_JSON_THROW(x) do{}while(0)
+#ifndef BOOST_THROW_EXCEPTION
+# ifndef BOOST_NO_EXCEPTIONS
+#  define BOOST_THROW_EXCEPTION(x) throw(x)
+# else
+#  define BOOST_THROW_EXCEPTION(x) do{}while(0)
+# endif
 #endif
-
-#ifndef BOOST_JSON_STANDALONE
-# define BOOST_JSON_ASSERT BOOST_ASSERT
-#else
-# define BOOST_JSON_ASSERT assert
-#endif
-
-#define BOOST_JSON_STATIC_ASSERT( ... ) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 #ifndef BOOST_JSON_NO_SSE2
 # if (defined(_M_IX86) && _M_IX86_FP == 2) || \
@@ -78,7 +85,7 @@
 # if defined(GENERATING_DOCUMENTATION)
 #  define BOOST_JSON_DECL
 # elif defined(BOOST_JSON_HEADER_ONLY)
-#  define BOOST_JSON_DECL  inline
+#  define BOOST_JSON_DECL inline
 # else
 #  if (defined(BOOST_JSON_DYN_LINK) || defined(BOOST_ALL_DYN_LINK)) && !defined(BOOST_JSON_STATIC_LINK)
 #   if defined(BOOST_JSON_SOURCE)

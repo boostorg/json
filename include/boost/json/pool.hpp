@@ -44,7 +44,7 @@ class pool
             std::size_t align) noexcept
         {
             // must be power of 2
-            BOOST_JSON_ASSERT(
+            BOOST_ASSERT(
                 (align & (align - 1)) == 0);
             auto i = top;
             if((i & (align - 1)) != 0)
@@ -104,7 +104,7 @@ public:
         else
             alloc_block(block_size_);
         auto p = head_->alloc(n, align);
-        BOOST_JSON_ASSERT(p);
+        BOOST_ASSERT(p);
         return p;
     }
 
