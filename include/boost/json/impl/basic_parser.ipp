@@ -453,6 +453,8 @@ loop_str1:
         while(p < p1)
         {
             p += detail::count_unescaped(p, p1 - p);
+            if(p >= p1)
+                break;
             if(*p == '\"')
             {
                 if(is_key_)
