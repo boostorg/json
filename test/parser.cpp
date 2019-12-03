@@ -374,6 +374,17 @@ R"xx({
         }
     }
 
+    // https://github.com/vinniefalco/json/issues/15
+    void
+    testIssue15()
+    {
+        BEAST_EXPECT(
+            json::parse("{\"port\": 12345}")
+                .as_object()
+                .at("port")
+                .as_int64() == 12345);
+    }
+
     void
     run()
     {
@@ -386,6 +397,7 @@ R"xx({
         testMembers();
         testFreeFunctions();
         testSampleJson();
+        testIssue15();
     }
 };
 

@@ -53,7 +53,7 @@
     </Expand>
   </Type>
 
-  <Type Name="boost::json::object::value_type">
+  <Type Name="boost::json::key_value_pair">
     <DisplayString Condition="value_.nul_.k==kind::object">{{ {key_,[len_]s}, object [{value_.obj_.impl_.tab_?value_.obj_.impl_.tab_->size:0}] }}</DisplayString>
     <DisplayString Condition="value_.nul_.k==kind::array">{{ {key_,[len_]s}, array [{value_.arr_.impl_.tab_?value_.arr_.impl_.tab_->size:0}] }}</DisplayString>
     <DisplayString Condition="value_.nul_.k==kind::string">{{ {key_,[len_]s}, {((char*)value_.str_.impl_.p_.t+1),[value_.str_.impl_.p_.t->size]s }}</DisplayString>

@@ -260,6 +260,7 @@ loop:
                     st_ = state::exp1;
                     goto loop;
                 }
+                n_.u = m;
                 finish(ec);
                 goto finish;
             }
