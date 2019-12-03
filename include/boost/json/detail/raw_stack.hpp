@@ -53,6 +53,10 @@ public:
         return size_;
     }
 
+    BOOST_JSON_DECL
+    void
+    reserve(std::size_t bytes);
+
     void
     clear() noexcept
     {

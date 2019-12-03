@@ -235,6 +235,12 @@ public:
     void
     testMembers()
     {
+        // reserve
+        {
+            parser p;
+            p.reserve(1024);
+        }
+
         // need start error
         {
             parser p;

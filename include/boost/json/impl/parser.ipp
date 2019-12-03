@@ -159,6 +159,14 @@ parser()
 
 void
 parser::
+reserve(
+    std::size_t bytes) noexcept
+{
+    rs_.reserve(bytes);
+}
+
+void
+parser::
 start(storage_ptr sp) noexcept
 {
     clear();

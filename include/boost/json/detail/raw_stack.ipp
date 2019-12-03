@@ -20,27 +20,47 @@ namespace detail {
 
 void
 raw_stack::
-grow(std::size_t n)
+reserve(std::size_t bytes)
 {
-    if(n > max_size() - capacity_)
+    if(bytes <= capacity_)
+        return;
+    if(bytes > max_size())
         BOOST_THROW_EXCEPTION(
             stack_overflow_exception());
-    auto new_capacity = capacity_ + n;
-    if( new_capacity < min_capacity_)
-        new_capacity = min_capacity_;
-    // 2x growth
-    auto const hint = (capacity_ * 2) & ~1;
-    if( new_capacity < hint)
-        new_capacity = hint;
+    if( bytes < min_capacity_)
+        bytes = min_capacity_;
+    if( capacity_ >
+        max_size() - capacity_)
+    {
+        bytes = max_size();
+    }
+    else
+    {
+        // 2x growth factor
+        auto hint =
+            (capacity_ * 2) & ~1;
+        if( bytes < hint)
+            bytes = hint;
+    }
     auto base = reinterpret_cast<
-        char*>(sp_->allocate(new_capacity));
+        char*>(sp_->allocate(bytes));
     if(base_)
     {
         std::memcpy(base, base_, size_);
         sp_->deallocate(base_, capacity_);
     }
     base_ = base;
-    capacity_ = new_capacity;
+    capacity_ = bytes;
+}
+
+void
+raw_stack::
+grow(std::size_t n)
+{
+    if(n > max_size() - capacity_)
+        BOOST_THROW_EXCEPTION(
+            stack_overflow_exception());
+    reserve(capacity_ + n);
 }
 
 } // detail

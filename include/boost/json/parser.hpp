@@ -107,6 +107,26 @@ public:
     BOOST_JSON_DECL
     parser();
 
+    /** Reserve internal storage space.
+
+        This function reserves space for `n` bytes
+        in the parser's internal temporary storage.
+        The request is only a hint to the
+        implementation. 
+
+        @par Exception Safety
+
+        No-throw guarantee.
+
+        @param n The number of bytes to reserve. A
+        good choices is `C * sizeof(value)` where
+        `C` is the total number of @ref value elements
+        in a typical parsed JSON.
+    */
+    BOOST_JSON_DECL
+    void
+    reserve(std::size_t count) noexcept;
+
     /** Start parsing JSON incrementally.
 
         This function must be called once manually before
