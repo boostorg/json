@@ -7,8 +7,8 @@
 // Official repository: https://github.com/vinniefalco/json
 //
 
-#ifndef BOOST_JSON_DETAIL_NUMBER_IPP
-#define BOOST_JSON_DETAIL_NUMBER_IPP
+#ifndef BOOST_JSON_DETAIL_IMPL_NUMBER_IPP
+#define BOOST_JSON_DETAIL_IMPL_NUMBER_IPP
 
 #include <boost/json/detail/number.hpp>
 #include <boost/json/detail/sse2.hpp>

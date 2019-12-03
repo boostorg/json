@@ -7,8 +7,8 @@
 // Official repository: https://github.com/vinniefalco/json
 //
 
-#ifndef BOOST_JSON_DETAIL_FORMAT_IPP
-#define BOOST_JSON_DETAIL_FORMAT_IPP
+#ifndef BOOST_JSON_DETAIL_IMPL_FORMAT_IPP
+#define BOOST_JSON_DETAIL_IMPL_FORMAT_IPP
 
 #include <boost/json/detail/ryu/ryu.hpp>
 #include <cstdint>

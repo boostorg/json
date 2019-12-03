@@ -820,6 +820,4 @@ equal(
 } // json
 } // boost
 
-#include <boost/json/detail/format.ipp>
-
 #endif

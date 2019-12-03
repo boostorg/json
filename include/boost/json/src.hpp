@@ -32,13 +32,13 @@ in a translation unit of the program.
 #include <boost/json/impl/string.ipp>
 #include <boost/json/impl/value.ipp>
 
-#include <boost/json/detail/format.ipp>
-#include <boost/json/detail/number.ipp>
-#include <boost/json/detail/raw_stack.ipp>
-#include <boost/json/detail/ryu/impl/d2s.ipp>
-
 #include <boost/json/detail/impl/array_impl.ipp>
+#include <boost/json/detail/impl/format.ipp>
+#include <boost/json/detail/impl/number.ipp>
 #include <boost/json/detail/impl/object_impl.ipp>
+#include <boost/json/detail/impl/raw_stack.ipp>
 #include <boost/json/detail/impl/string_impl.ipp>
+
+#include <boost/json/detail/ryu/impl/d2s.ipp>
 
 #endif

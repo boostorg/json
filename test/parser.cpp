@@ -256,6 +256,21 @@ public:
             parser p;
             p.start();
         }
+
+        // release before done
+        {
+            parser p;
+            BEAST_THROWS(
+                p.release(),
+                std::logic_error);
+        }
+
+        // reserve
+        {
+            parser p;
+            p.reserve(16384);
+            p.reserve(100);
+        }
     }
 
     //------------------------------------------------------

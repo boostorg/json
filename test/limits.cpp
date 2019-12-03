@@ -231,9 +231,8 @@ public:
             auto const js =
                 "\"" + big + "\"";
             value jv;
-            BEAST_THROWS(
-                jv = parse(js),
-                std::length_error);
+            BEAST_THROWS(jv = parse(js),
+                decltype(detail::string_too_large_exception()));
         }
 
         // overflow in on_string
@@ -245,9 +244,8 @@ public:
             auto const js =
                 "\"" + big + "\"";
             value jv;
-            BEAST_THROWS(
-                jv = parse(js),
-                std::length_error);
+            BEAST_THROWS(jv = parse(js),
+                decltype(detail::string_too_large_exception()));
         }
     }
 

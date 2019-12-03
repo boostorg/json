@@ -7,8 +7,8 @@
 // Official repository: https://github.com/vinniefalco/json
 //
 
-#ifndef BOOST_JSON_DETAIL_RAW_STACK_IPP
-#define BOOST_JSON_DETAIL_RAW_STACK_IPP
+#ifndef BOOST_JSON_DETAIL_IMPL_RAW_STACK_IPP
+#define BOOST_JSON_DETAIL_IMPL_RAW_STACK_IPP
 
 #include <boost/json/detail/raw_stack.hpp>
 #include <boost/json/detail/except.hpp>
@@ -29,19 +29,23 @@ reserve(std::size_t bytes)
             stack_overflow_exception());
     if( bytes < min_capacity_)
         bytes = min_capacity_;
-    if( capacity_ >
-        max_size() - capacity_)
+
+    // 2x growth factor
     {
-        bytes = max_size();
+        if( capacity_ <=
+            max_size() - capacity_)
+        {
+            auto hint =
+                (capacity_ * 2) & ~1;
+            if( bytes < hint)
+                bytes = hint;
+        }
+        else
+        {
+            bytes = max_size();
+        }
     }
-    else
-    {
-        // 2x growth factor
-        auto hint =
-            (capacity_ * 2) & ~1;
-        if( bytes < hint)
-            bytes = hint;
-    }
+
     auto base = reinterpret_cast<
         char*>(sp_->allocate(bytes));
     if(base_)

@@ -44,7 +44,7 @@ format_double(
 } // boost
 
 #ifdef BOOST_JSON_HEADER_ONLY
-#include <boost/json/detail/format.ipp>
+#include <boost/json/detail/impl/format.ipp>
 #endif
 
 #endif

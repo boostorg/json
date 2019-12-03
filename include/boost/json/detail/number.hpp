@@ -106,7 +106,7 @@ public:
 } // boost
 
 #ifdef BOOST_JSON_HEADER_ONLY
-#include <boost/json/detail/number.ipp>
+#include <boost/json/detail/impl/number.ipp>
 #endif
 
 #endif
