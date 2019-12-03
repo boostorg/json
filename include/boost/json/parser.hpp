@@ -125,7 +125,7 @@ public:
     */
     BOOST_JSON_DECL
     void
-    reserve(std::size_t count) noexcept;
+    reserve(std::size_t n) noexcept;
 
     /** Start parsing JSON incrementally.
 

@@ -23,18 +23,18 @@ int constexpr max_number_chars =
      1 +    // '-'
      5;     // unsigned 16-bit exponent
 
-inline
+BOOST_JSON_DECL
 unsigned
 format_uint64(
     char* dest,
     std::uint64_t value) noexcept;
 
-inline
+BOOST_JSON_DECL
 unsigned
 format_int64(
     char* dest, int64_t i) noexcept;
 
-inline
+BOOST_JSON_DECL
 unsigned
 format_double(
     char* dest, double d) noexcept;

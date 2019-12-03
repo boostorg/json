@@ -114,6 +114,9 @@ enum class error
     /// integer overflow
     integer_overflow,
 
+    /// number cast is not exact
+    not_exact,
+
     /// key not found
     key_not_found,
 

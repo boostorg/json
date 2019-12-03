@@ -80,6 +80,7 @@ public:
         check(condition::assign_error, error::not_bool);
         check(condition::assign_error, error::not_null);
         check(condition::assign_error, error::integer_overflow);
+        check(condition::assign_error, error::not_exact);
     
         check(error::need_start);
         check(error::key_not_found);

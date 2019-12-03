@@ -17,7 +17,7 @@ namespace boost {
 namespace json {
 namespace detail {
 
-class number_test : public beast::unit_test::suite
+class number_parser_test : public beast::unit_test::suite
 {
 public:
     template<class F>
@@ -336,7 +336,7 @@ public:
     }
 };
 
-BEAST_DEFINE_TESTSUITE(boost,json,number);
+BEAST_DEFINE_TESTSUITE(boost,json,number_parser);
 
 } // detail
 } // json

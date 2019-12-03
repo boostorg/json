@@ -26,13 +26,14 @@ add_executable (json-tests
     test.hpp
     parse-vectors.hpp
     main.cpp
+    _detail_number.cpp
     array.cpp
     basic_parser.cpp
     error.cpp
     json.cpp
     kind.cpp
     limits.cpp
-    number.cpp
+    number_cast.cpp
     object.cpp
     parser.cpp
     pool.cpp
