@@ -67,6 +67,7 @@ public:
     void
     push_back(char ch) noexcept
     {
+        BOOST_ASSERT(size_ <= N - 1);
         buf_[size_++] = ch;
     }
 
@@ -87,6 +88,7 @@ public:
         auto dest = buf_ + size_;
         if(cp < 0x80)
         {
+            BOOST_ASSERT(size_ <= N - 1);
             dest[0] = static_cast<char>(cp);
             size_ += 1;
             return;
@@ -94,6 +96,7 @@ public:
 
         if(cp < 0x800)
         {
+            BOOST_ASSERT(size_ <= N - 2);
             dest[0] = static_cast<char>( (cp >> 6)          | 0xc0);
             dest[1] = static_cast<char>( (cp & 0x3f)        | 0x80);
             size_ += 2;
@@ -102,6 +105,7 @@ public:
 
         if(cp < 0x10000)
         {
+            BOOST_ASSERT(size_ <= N - 3);
             dest[0] = static_cast<char>( (cp >> 12)         | 0xe0);
             dest[1] = static_cast<char>(((cp >> 6) & 0x3f)  | 0x80);
             dest[2] = static_cast<char>( (cp       & 0x3f)  | 0x80);
@@ -110,6 +114,7 @@ public:
         }
 
         {
+            BOOST_ASSERT(size_ <= N - 4);
             dest[0] = static_cast<char>( (cp >> 18)         | 0xf0);
             dest[1] = static_cast<char>(((cp >> 12) & 0x3f) | 0x80);
             dest[2] = static_cast<char>(((cp >> 6)  & 0x3f) | 0x80);

@@ -123,7 +123,7 @@ write_some(
         [this, &temp](error_code& ec)
         {
             // need 4 chars for largest utf8 code point
-            if(temp.max_size() - temp.size() >= 4)
+            if(temp.size() < temp.max_size() - 4)
                 return true;
             if(is_key_)
                 this->on_key_part(temp, ec);
@@ -754,6 +754,8 @@ loop_str1:
         unsigned long cp =
             ((u0_ - 0xd800) << 10) +
              (u_  - 0xdc00);
+        if(! maybe_flush(ec))
+            goto yield;
         temp.append_utf8(cp);
         u0_ = -1;
         st_.pop();
