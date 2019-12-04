@@ -42,7 +42,7 @@ undo_insert(
     , pos(self.impl_.index_of(pos_))
 {
     if(n > max_size())
-        BOOST_THROW_EXCEPTION(
+        BOOST_JSON_THROW(
             detail::array_too_large_exception());
     self_.reserve(
         self_.impl_.size() + n_);
@@ -495,7 +495,7 @@ copy(
     std::initializer_list<value> init)
 {
     if(init.size() > max_size())
-        BOOST_THROW_EXCEPTION(
+        BOOST_JSON_THROW(
             std::length_error(
                 "size > max_size()"));
     reserve(static_cast<

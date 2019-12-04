@@ -193,7 +193,7 @@ parser::
 release()
 {
     if(! is_done())
-        BOOST_THROW_EXCEPTION(
+        BOOST_JSON_THROW(
             std::logic_error(
                 "no value"));
     BOOST_ASSERT(lev_.st == state::end);
@@ -440,7 +440,7 @@ on_key_part(
 {
     if( s.size() >
         string::max_size() - key_size_)
-        BOOST_THROW_EXCEPTION(
+        BOOST_JSON_THROW(
             detail::key_too_large_exception());  
     push_chars(s);
     key_size_ += static_cast<
@@ -469,7 +469,7 @@ on_string_part(
 {
     if( s.size() >
         string::max_size() - str_size_)
-        BOOST_THROW_EXCEPTION(
+        BOOST_JSON_THROW(
             detail::string_too_large_exception());  
     push_chars(s);
     str_size_ += static_cast<
@@ -484,7 +484,7 @@ on_string(
 {
     if( s.size() >
         string::max_size() - str_size_)
-        BOOST_THROW_EXCEPTION(
+        BOOST_JSON_THROW(
             detail::string_too_large_exception());  
     if(str_size_ == 0)
     {
@@ -579,7 +579,7 @@ parse(
     auto jv = parse(
         s, ec, std::move(sp));
     if(ec)
-        BOOST_THROW_EXCEPTION(
+        BOOST_JSON_THROW(
             system_error(ec));
     return jv;
 }

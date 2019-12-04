@@ -65,7 +65,7 @@ growth(
     std::size_t capacity)
 {
     if(new_size > max_size())
-        BOOST_THROW_EXCEPTION(
+        BOOST_JSON_THROW(
             string_too_large_exception());
     // growth factor 2
     if( capacity >
@@ -101,7 +101,7 @@ append(
     storage_ptr const& sp)
 {
     if(n > max_size() - size())
-        BOOST_THROW_EXCEPTION(
+        BOOST_JSON_THROW(
             string_too_large_exception());
     if(n <= capacity() - size())
     {
@@ -126,7 +126,7 @@ insert(
     storage_ptr const& sp)
 {
     if(pos > size())
-        BOOST_THROW_EXCEPTION(
+        BOOST_JSON_THROW(
             string_pos_too_large());
     if(n <= capacity() - size())
     {
@@ -140,7 +140,7 @@ insert(
         return dest;
     }
     if(n > max_size() - size())
-        BOOST_THROW_EXCEPTION(
+        BOOST_JSON_THROW(
             string_too_large_exception());
     string_impl tmp(growth(
         size() + n, capacity()), sp);

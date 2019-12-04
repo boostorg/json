@@ -281,7 +281,7 @@ value(
     if(maybe_object(init))
     {
         if(init.size() > object::max_size())
-            BOOST_THROW_EXCEPTION(
+            BOOST_JSON_THROW(
                 detail::object_too_large_exception());
         ::new(&obj_) object(
             init_iter{init.begin()},

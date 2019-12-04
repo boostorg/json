@@ -2034,7 +2034,7 @@ public:
     as_object()
     {
         if(! is_object())
-            BOOST_THROW_EXCEPTION(
+            BOOST_JSON_THROW(
                 system_error(
                     error::not_object));
         return obj_;
@@ -2060,7 +2060,7 @@ public:
     as_object() const
     {
         if(! is_object())
-            BOOST_THROW_EXCEPTION(
+            BOOST_JSON_THROW(
                 system_error(
                     error::not_object));
         return obj_;
@@ -2086,7 +2086,7 @@ public:
     as_array()
     {
         if(! is_array())
-            BOOST_THROW_EXCEPTION(
+            BOOST_JSON_THROW(
                 system_error(
                     error::not_array));
         return arr_;
@@ -2112,7 +2112,7 @@ public:
     as_array() const
     {
         if(! is_array())
-            BOOST_THROW_EXCEPTION(
+            BOOST_JSON_THROW(
                 system_error(
                     error::not_array));
         return arr_;
@@ -2138,7 +2138,7 @@ public:
     as_string()
     {
         if(! is_string())
-            BOOST_THROW_EXCEPTION(
+            BOOST_JSON_THROW(
                 system_error(
                     error::not_string));
         return str_;
@@ -2164,7 +2164,7 @@ public:
     as_string() const
     {
         if(! is_string())
-            BOOST_THROW_EXCEPTION(
+            BOOST_JSON_THROW(
                 system_error(
                     error::not_string));
         return str_;
@@ -2190,7 +2190,7 @@ public:
     as_int64()
     {
         if(! is_int64())
-            BOOST_THROW_EXCEPTION(
+            BOOST_JSON_THROW(
                 system_error(
                     error::not_number));
         return i64_.i;
@@ -2216,7 +2216,7 @@ public:
     as_int64() const
     {
         if(! is_int64())
-            BOOST_THROW_EXCEPTION(
+            BOOST_JSON_THROW(
                 system_error(
                     error::not_number));
         return i64_.i;
@@ -2242,7 +2242,7 @@ public:
     as_uint64()
     {
         if(! is_uint64())
-            BOOST_THROW_EXCEPTION(
+            BOOST_JSON_THROW(
                 system_error(
                     error::not_number));
         return u64_.u;
@@ -2269,7 +2269,7 @@ public:
     as_uint64() const
     {
         if(! is_uint64())
-            BOOST_THROW_EXCEPTION(
+            BOOST_JSON_THROW(
                 system_error(
                     error::not_number));
         return u64_.u;
@@ -2295,7 +2295,7 @@ public:
     as_double()
     {
         if(! is_double())
-            BOOST_THROW_EXCEPTION(
+            BOOST_JSON_THROW(
                 system_error(
                     error::not_number));
         return dub_.d;
@@ -2321,7 +2321,7 @@ public:
     as_double() const
     {
         if(! is_double())
-            BOOST_THROW_EXCEPTION(
+            BOOST_JSON_THROW(
                 system_error(
                     error::not_number));
         return dub_.d;
@@ -2347,7 +2347,7 @@ public:
     as_bool()
     {
         if(! is_bool())
-            BOOST_THROW_EXCEPTION(
+            BOOST_JSON_THROW(
                 system_error(
                     error::not_bool));
         return bln_.b;
@@ -2373,7 +2373,7 @@ public:
     as_bool() const
     {
         if(! is_bool())
-            BOOST_THROW_EXCEPTION(
+            BOOST_JSON_THROW(
                 system_error(
                     error::not_bool));
         return bln_.b;

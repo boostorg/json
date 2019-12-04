@@ -23,7 +23,7 @@ array_impl(
     storage_ptr const& sp)
 {
     if(capacity > max_size())
-        BOOST_THROW_EXCEPTION(
+        BOOST_JSON_THROW(
             array_too_large_exception());
     if(capacity > 0)
     {

@@ -68,10 +68,12 @@
 
 #ifndef BOOST_THROW_EXCEPTION
 # ifndef BOOST_NO_EXCEPTIONS
-#  define BOOST_THROW_EXCEPTION(x) throw(x)
+#  define BOOST_JSON_THROW(x) throw(x)
 # else
-#  define BOOST_THROW_EXCEPTION(x) do{}while(0)
+#  define BOOST_JSON_THROW(x) do{}while(0)
 # endif
+#else
+# define BOOST_JSON_THROW(x) BOOST_THROW_EXCEPTION(x)
 #endif
 
 #ifndef BOOST_JSON_NO_SSE2
