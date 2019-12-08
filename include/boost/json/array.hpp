@@ -23,6 +23,7 @@ namespace boost {
 namespace json {
 
 class value;
+class value_ref;
 
 /** A dynamically sized array of JSON values
 
@@ -458,7 +459,7 @@ public:
     */
     BOOST_JSON_DECL
     array(
-        std::initializer_list<value> init,
+        std::initializer_list<value_ref> init,
         storage_ptr sp = {});
 
     //------------------------------------------------------
@@ -535,7 +536,7 @@ public:
     BOOST_JSON_DECL
     array&
     operator=(
-        std::initializer_list<value> init);
+        std::initializer_list<value_ref> init);
 
     //------------------------------------------------------
 
@@ -1271,7 +1272,7 @@ public:
     iterator
     insert(
         const_iterator pos,
-        std::initializer_list<value> init);
+        std::initializer_list<value_ref> init);
 
     /** Insert a constructed element in-place.
 
@@ -1603,10 +1604,6 @@ private:
     inline
     void
     copy(array const& other);
-
-    inline
-    void
-    copy(std::initializer_list<value> init);
 
     BOOST_JSON_DECL
     void

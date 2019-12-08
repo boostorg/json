@@ -20,7 +20,8 @@ namespace json {
 class array_test : public beast::unit_test::suite
 {
 public:
-    using init_list = std::initializer_list<value>;
+    using init_list =
+        std::initializer_list<value_ref>;
 
     string_view const str_;
     std::size_t min_capacity_;
@@ -766,7 +767,7 @@ public:
             // random iterator (multiple growth)
             fail_loop([&](storage_ptr const& sp)
             {
-                std::initializer_list<value> init = {
+                std::initializer_list<value_ref> init = {
                      1, str_, true,  1,  2,  3,  4,  5,  6,
                      7,  8,  9, 10, 11, 12, 13, 14, 15, 16,
                     17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
@@ -779,7 +780,7 @@ public:
 
             // input iterator (empty range)
             {
-                std::initializer_list<value> init;
+                std::initializer_list<value_ref> init;
                 array a;
                 a.insert(a.begin(),
                     make_input_iterator(init.begin()),
@@ -802,8 +803,8 @@ public:
             // input iterator (multiple growth)
             fail_loop([&](storage_ptr const& sp)
             {
-                std::initializer_list<
-                    value> init = {1, true, 1, 2, 3, 4, 5, 6, 7};
+                std::initializer_list<value_ref> init =
+                    {1, true, 1, 2, 3, 4, 5, 6, 7};
                 array a({str_}, sp);
                 a.insert(a.begin(),
                     make_input_iterator(init.begin()),
@@ -814,7 +815,7 @@ public:
             // backward relocate
             fail_loop([&](storage_ptr const& sp)
             {
-                std::initializer_list<value> init = {1, 2};
+                std::initializer_list<value_ref> init = {1, 2};
                 array a({"a", "b", "c", "d", "e"}, sp);
                 a.insert(
                     a.begin() + 1,

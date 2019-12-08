@@ -168,7 +168,6 @@ public:
         @return The parsed value. Ownership of this
         value is transferred to the caller.       
     */
-    BOOST_JSON_NODISCARD
     BOOST_JSON_DECL
     value
     release();

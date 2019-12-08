@@ -43,6 +43,7 @@ add_executable (json-tests
     storage_ptr.cpp
     string.cpp
     value.cpp
+    value_ref.cpp
     ryu/d2s_intrinsics_test.cpp
     ryu/d2s_table_test.cpp
     ryu/d2s_test.cpp

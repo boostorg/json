@@ -17,6 +17,7 @@
 #include <boost/json/object.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/string.hpp>
+#include <boost/json/value_ref.hpp>
 #include <boost/json/detail/value.hpp>
 #include <boost/json/detail/scalar_impl.hpp>
 #include <boost/pilfer.hpp>
@@ -1139,7 +1140,7 @@ public:
     */
     BOOST_JSON_DECL
     value(
-        std::initializer_list<value> init,
+        std::initializer_list<value_ref> init,
         storage_ptr sp = {});
 
     /** Assignment.
@@ -1432,48 +1433,6 @@ public:
             detail::remove_cr<T>
                 >::from_json(t, *this);
     }
-
-    //------------------------------------------------------
-
-    /** Returns `true` if this is an array containing only a key and value.
-
-        This function returns `true` if all the following
-        conditions are met:
-
-        @li @ref kind() returns `kind::array`
-        @li `this->as_array().size() == 2`
-        @li `this->as_array()[0].is_string() == true`
-        
-        Otherwise, the function returns `false`.
-
-        @par Complexity
-
-        Constant.
-    */
-    BOOST_JSON_DECL
-    bool
-    is_key_value_pair() const noexcept;
-
-    /** Returns `true` if the initializer list consists only of key-value pairs.
-
-        This function returns `true` if @ref is_key_value_pair()
-        is true for every element in the initializer list.
-
-        @par Complexity
-
-        Linear in `init.size()`.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-
-        @param init The initializer list to inspect.
-    */
-    static
-    BOOST_JSON_DECL
-    bool
-    maybe_object(
-        std::initializer_list<value> init) noexcept;
 
     //------------------------------------------------------
     //
@@ -2961,6 +2920,7 @@ private:
 #include <boost/json/impl/value.hpp>
 #ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/impl/value.ipp>
+#include <boost/json/impl/value_ref.ipp>
 #endif
 
 #endif

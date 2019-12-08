@@ -131,8 +131,6 @@ destroy(
     key_value_pair* p,
     std::size_t n) noexcept
 {
-    if(n == 0)
-        return;
     if(! p->value().storage()->need_free())
         return;
     p += n;
