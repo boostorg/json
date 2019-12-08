@@ -10,7 +10,6 @@
 // Test that header file is self-contained.
 #include <boost/json/string.hpp>
 
-#include <boost/config.hpp>
 #include <boost/beast/_experimental/unit_test/suite.hpp>
 #include <numeric>
 #include <sstream>

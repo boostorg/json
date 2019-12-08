@@ -160,16 +160,48 @@ object(
 
 object::
 object(
-    init_list init,
+    std::initializer_list<std::pair<
+        key_type, value_ref>> init,
     std::size_t min_capacity,
     storage_ptr sp)
     : sp_(std::move(sp))
 {
     undo_construct u(this);
-    insert_range(
-        init.begin(),
-        init.end(),
-        min_capacity);
+    using FwdIt = std::pair<
+        key_type, value_ref> const*;
+    struct place_impl : place_range
+    {
+        FwdIt it;
+        std::size_t n;
+        storage_ptr const& sp;
+
+        place_impl(
+            FwdIt it_,
+            std::size_t n_,
+            storage_ptr const& sp_)
+            : it(it_)
+            , n(n_)
+            , sp(sp_)
+        {
+        }
+
+        bool
+        operator()(void* dest) override
+        {
+            if(n-- == 0)
+                return false;
+            ::new(dest) value_type(
+                it->first,
+                it->second.make_value(sp));
+            ++it;
+            return true;
+        }
+    };
+    if( min_capacity < init.size())
+        min_capacity = init.size();
+    place_impl f(
+        init.begin(), init.size(), sp_);
+    insert_range_impl(min_capacity, f);
     u.self = nullptr;
 }
 
@@ -198,7 +230,8 @@ operator=(object const& other)
 object&
 object::
 operator=(
-    init_list init)
+    std::initializer_list<std::pair<
+        key_type, value_ref>> init)
 {
     object tmp(init, sp_);
     this->~object();
@@ -221,12 +254,47 @@ clear() noexcept
 
 void
 object::
-insert(init_list init)
+insert(
+    std::initializer_list<std::pair<
+        key_type, value_ref>> init)
 {
-    insert_range(
-        init.begin(),
-        init.end(),
-        init.size());
+    using FwdIt = std::pair<
+        key_type, value_ref> const*;
+    struct place_impl : place_range
+    {
+        FwdIt it;
+        std::size_t n;
+        storage_ptr const& sp;
+
+        place_impl(
+            FwdIt it_,
+            std::size_t n_,
+            storage_ptr const& sp_)
+            : it(it_)
+            , n(n_)
+            , sp(sp_)
+        {
+        }
+
+        bool
+        operator()(void* dest) override
+        {
+            if(n-- == 0)
+                return false;
+            ::new(dest) value_type(
+                it->first,
+                it->second.make_value(sp));
+            ++it;
+            return true;
+        }
+    };
+    auto const n0 = size();
+    if(init.size() > max_size() - n0)
+        BOOST_JSON_THROW(
+            detail::object_too_large_exception());
+    place_impl f(
+        init.begin(), init.size(), sp_);
+    insert_range_impl(n0 + init.size(), f);
 }
 
 auto

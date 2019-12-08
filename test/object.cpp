@@ -10,6 +10,8 @@
 // Test that header file is self-contained.
 #include <boost/json/object.hpp>
 
+#include <boost/json/pool.hpp>
+
 #include <boost/beast/_experimental/unit_test/suite.hpp>
 #include <cmath>
 #include <type_traits>
@@ -925,6 +927,15 @@ public:
             BEAST_EXPECT(o.find("a") == o.end());
         }
 
+        // destroy key_value_pair array with need_free=false
+        {
+            scoped_storage<pool> sp;
+            object o({
+                {"a", 1},
+                {"b", true},
+                {"b", {1,2,3}},
+                {"c", "hello"}}, sp);
+        }
     }
 
     void

@@ -33,7 +33,7 @@
 # error Unknown or unsupported architecture, please open an issue
 #endif
 
-// VFALCO Copied from <boost/config.hpp>
+// VFALCO Copied from Boost.Config
 //        This is a derivative work.
 #ifdef __has_cpp_attribute
 // clang-6 accepts [[nodiscard]] with -std=c++14, but warns about it -pedantic

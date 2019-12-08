@@ -25,6 +25,7 @@ namespace boost {
 namespace json {
 
 class value;
+class value_ref;
 
 /** A dynamically sized associative container of JSON key/value pairs.
 
@@ -145,10 +146,6 @@ public:
     /// A const reverse random access iterator to an element
     using const_reverse_iterator =
         std::reverse_iterator<const_iterator>;
-
-    /// The type of initializer lists
-    using init_list = std::initializer_list<
-        std::pair<key_type, value>>;
 
     //------------------------------------------------------
 
@@ -459,7 +456,8 @@ public:
         ownership of the storage object.
     */
     object(
-        init_list init,
+        std::initializer_list<
+            std::pair<key_type, value_ref>> init,
         storage_ptr sp = {})
         : object(init, 0, std::move(sp))
     {
@@ -499,7 +497,8 @@ public:
     */
     BOOST_JSON_DECL
     object(
-        init_list init,
+        std::initializer_list<
+            std::pair<key_type, value_ref>> init,
         std::size_t min_capacity,
         storage_ptr sp = {});
 
@@ -577,7 +576,8 @@ public:
     */
     BOOST_JSON_DECL
     object&
-    operator=(init_list init);
+    operator=(std::initializer_list<
+        std::pair<key_type, value_ref>> init);
 
     //------------------------------------------------------
 
@@ -989,7 +989,8 @@ public:
     */
     BOOST_JSON_DECL
     void
-    insert(init_list init);
+    insert(std::initializer_list<
+        std::pair<key_type, value_ref>> init);
 
     /** Insert an element or assign to the current element if the key already exists.
 

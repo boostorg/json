@@ -899,29 +899,6 @@ public:
         }
 
         // VFALCO TODO store()
-
-        // is_key_value_pair()
-        {
-            BEAST_EXPECT(value().is_key_value_pair() == false);
-            BEAST_EXPECT(value(array{}).is_key_value_pair() == false);
-            BEAST_EXPECT(value({1, 2}).is_key_value_pair() == false);
-            BEAST_EXPECT(value({"x", 2}).is_key_value_pair() == true);
-        }
-
-        // maybe_object()
-        {
-            // empty list can be an empty object
-            BEAST_EXPECT(value::maybe_object({}));
-
-            BEAST_EXPECT(! value::maybe_object({1}));
-            BEAST_EXPECT(! value::maybe_object({1, 2}));
-            BEAST_EXPECT(! value::maybe_object({"x", 1}));
-            BEAST_EXPECT(! value::maybe_object({{1, 2}}));
-            BEAST_EXPECT(! value::maybe_object({{1, 2}, {"y", 2}}));
-
-            BEAST_EXPECT(value::maybe_object({{"x", 1}}));
-            BEAST_EXPECT(value::maybe_object({{"x", 1}, {"y", 2}}));
-        }
     }
 
     void
