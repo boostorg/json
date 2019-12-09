@@ -43,6 +43,7 @@ public:
     {
 #define EQAL(T) BEAST_EXPECT(number_cast<T>(jv) == V)
 #define EQUS(T) BEAST_EXPECT((V >= 0) && number_cast<T>(jv) == static_cast<std::uint64_t>(V))
+#define EQUF(T) BEAST_EXPECT(static_cast<float>(V) == static_cast<float>(number_cast<T>(jv)))
 #define THRO(T) BEAST_THROWS(number_cast<T>(jv), system_error)
 
         BEAST_THROWS(number_cast<int>(value(object_kind)), system_error);
@@ -107,7 +108,7 @@ public:
             THRO(std::uint16_t);
             EQUS(std::uint32_t);
             EQUS(std::uint64_t);
-            EQAL(float);
+            EQUF(float);
             EQAL(double);
             EQAL(long double);
         }
@@ -122,9 +123,9 @@ public:
             THRO(std::uint16_t);
             THRO(std::uint32_t);
             EQUS(std::uint64_t);
-            EQAL(float);
-            EQAL(double);
-            EQAL(long double);
+            EQUF(float);
+            EQUF(double);
+            EQUF(long double);
         }
         //---
         {
@@ -168,7 +169,7 @@ public:
             THRO(std::uint16_t);
             EQAL(std::uint32_t);
             EQAL(std::uint64_t);
-            EQAL(float);
+            EQUF(float);
             EQAL(double);
             EQAL(long double);
         }
@@ -183,9 +184,9 @@ public:
             THRO(std::uint16_t);
             THRO(std::uint32_t);
             EQAL(std::uint64_t);
-            EQAL(float);
-            EQAL(double);
-            EQAL(long double);
+            EQUF(float);
+            EQUF(double);
+            EQUF(long double);
         }
         //---
         {
@@ -229,7 +230,7 @@ public:
             THRO(std::uint16_t);
             THRO(std::uint32_t);
             THRO(std::uint64_t);
-            EQAL(float);
+            EQUF(float);
             EQAL(double);
             EQAL(long double);
         }
@@ -244,9 +245,9 @@ public:
             THRO(std::uint16_t);
             THRO(std::uint32_t);
             THRO(std::uint64_t);
-            EQAL(float);
-            EQAL(double);
-            EQAL(long double);
+            EQUF(float);
+            EQUF(double);
+            EQUF(long double);
         }
         //---
         {
