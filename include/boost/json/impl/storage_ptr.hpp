@@ -58,9 +58,7 @@ storage*
 storage_ptr::
 get() const noexcept
 {
-#ifdef __clang__
-    [[clang::require_constant_initialization]] 
-#endif
+    BOOST_JSON_REQUIRE_CONST_INIT
     static scoped_storage<
         detail::default_impl> ss;
     return p_ ? p_ : &ss.impl_;

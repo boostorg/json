@@ -46,6 +46,16 @@
 # define BOOST_JSON_NODISCARD
 #endif
 
+#ifndef BOOST_JSON_REQUIRE_CONST_INIT
+# define BOOST_JSON_REQUIRE_CONST_INIT		
+# if defined(__clang__) && defined(__has_cpp_attribute)		
+#  if __has_cpp_attribute(clang::require_constant_initialization)		
+#   undef BOOST_JSON_REQUIRE_CONST_INIT		
+#   define BOOST_JSON_REQUIRE_CONST_INIT [[clang::require_constant_initialization]]		
+#  endif
+# endif
+#endif
+
 #ifndef BOOST_ASSERT
 #define BOOST_ASSERT assert
 #endif
