@@ -169,8 +169,20 @@ public:
     //---
 
     value_ref(
-        string_view s) noexcept
-        : sv_(s)
+        string_view sv) noexcept
+        : sv_(sv)
+        , what_(what::svw)
+    {
+    }
+
+    template<class T>
+    value_ref(
+        T const& t
+        ,typename std::enable_if<
+            std::is_same<
+            std::string, T>::value>::type* = 0
+                ) noexcept
+        : sv_(t)
         , what_(what::svw)
     {
     }

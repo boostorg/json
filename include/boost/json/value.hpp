@@ -18,7 +18,6 @@
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/string.hpp>
 #include <boost/json/value_ref.hpp>
-#include <boost/json/detail/value.hpp>
 #include <boost/json/detail/scalar_impl.hpp>
 #include <boost/pilfer.hpp>
 #include <cstdlib>
@@ -30,63 +29,6 @@
 
 namespace boost {
 namespace json {
-
-/** Customization point for assigning to and from class types.
-*/
-template<class T>
-struct value_exchange final
-#ifndef GENERATING_DOCUMENTATION
-    : detail::primary_template
-#endif
-{
-    static
-    void
-    to_json(T const& t, value& v)
-    {
-        detail::call_to_json(t, v);
-    }
-
-    static
-    void
-    from_json(T& t, value const& v)
-    {
-        detail::call_from_json(t, v);
-    }
-};
-
-/** Returns `std::true_type` if a JSON value can be assigend to an instance of `T`.
-*/
-template<class T>
-using has_from_json =
-#ifdef GENERATING_DOCUMENTATION
-    __see_below__;
-#else
-    std::integral_constant<bool,
-        detail::is_specialized<value_exchange<
-            detail::remove_cr<T>>>::value ||
-        detail::has_adl_from_json<
-            detail::remove_cr<T>>::value ||
-        detail::has_mf_from_json<
-            detail::remove_cr<T>>::value>;
-#endif
-
-/** Returns `std::true_type` if a JSON value can be constructed from `T`
-*/
-template<class T>
-using has_to_json =
-#ifdef GENERATING_DOCUMENTATION
-    __see_below__;
-#else
-    std::integral_constant<bool,
-        detail::is_specialized<value_exchange<
-            detail::remove_cr<T>>>::value ||
-        detail::has_adl_to_json<
-            detail::remove_cr<T>>::value ||
-        detail::has_mf_to_json<
-            detail::remove_cr<T>>::value>;
-#endif
-
-//----------------------------------------------------------
 
 /** The type used to represent any JSON value
 
@@ -213,7 +155,7 @@ public:
 
         @param other The value to pilfer.
 
-        @see
+        @see @ref pilfer
         
         Pilfering constructors are described in
         <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0308r0.html">Valueless Variants Considered Harmful</a>, by Peter Dimov.
@@ -506,7 +448,7 @@ public:
         to use. The container will acquire shared
         ownership of the storage object.
 
-        @see object_kind
+        @see @ref object_kind
     */
     value(
         object_kind_t,
@@ -637,7 +579,7 @@ public:
         to use. The container will acquire shared
         ownership of the storage object.
 
-        @see array_kind
+        @see @ref array_kind
     */
     value(
         array_kind_t,
@@ -825,7 +767,7 @@ public:
         to use. The container will acquire shared
         ownership of the storage object.
 
-        @see string_kind
+        @see @ref string_kind
     */
     value(
         string_kind_t,
@@ -1162,7 +1104,7 @@ public:
         ,class = typename std::enable_if<
             std::is_constructible<
                 value, T, storage_ptr>::value &&
-            ! std::is_same<detail::remove_cr<
+            ! std::is_same<detail::remove_cvref<
                 T>, value>::value
         >::type
 #endif
@@ -1353,86 +1295,6 @@ public:
     BOOST_JSON_DECL
     void
     swap(value& other);
-
-    //------------------------------------------------------
-    //
-    // Exchange
-    //
-    //------------------------------------------------------
-
-    /// Construct from another type using the specified storage
-    template<
-        class T
-    #ifndef GENERATING_DOCUMENTATION
-        ,class = typename std::enable_if<
-            has_to_json<T>::value>::type
-    #endif
-    >
-    value(
-        T const& t,
-        storage_ptr sp = {})
-        : value(detail::move(sp))
-    {
-        value_exchange<
-            detail::remove_cr<T>
-                >::to_json(t, *this);
-    }
-
-    /// Assign a value from another type
-    template<
-        class T
-    #ifndef GENERATING_DOCUMENTATION
-        ,class = typename std::enable_if<
-            has_to_json<T>::value>::type
-    #endif
-    >
-    value&
-    operator=(T const& t)
-    {
-        value_exchange<
-            detail::remove_cr<T>
-                >::to_json(t, *this);
-        return *this;
-    }
-
-    /** Try to assign a value to another type
-
-        This function attempts to assign the contents of
-        `*this` to the variable `t`.
-
-        @par Complexity
-
-        Linear in the size of `*this`.
-
-        @par Exception Safety
-
-        Strong guarantee.
-
-        @throw system error Thrown upon failure
-    */
-    template<class T>
-    void
-    store(T& t) const
-    {
-        // If this assert goes off, it means that there are no known
-        // ways to convert a JSON value into a user defined type `T`.
-        // There are three ways to fix this:
-        //
-        // 1. Add the member function `T::from_json(value const&)`,
-        //
-        // 2. Add the free function `from_json(T&, value const&)`
-        //    in the same namespace as T, or
-        //
-        // 3. Specialize `json::value_exchange` for `T`, and provide
-        //    the static member `from_json(T&, value const&)`.
-
-        static_assert(
-            has_from_json<T>::value,
-            "Destination type is unknown");
-        value_exchange<
-            detail::remove_cr<T>
-                >::from_json(t, *this);
-    }
 
     //------------------------------------------------------
     //

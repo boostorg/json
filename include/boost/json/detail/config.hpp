@@ -183,6 +183,18 @@ struct remove_const<T const>
 };
 
 template<class T>
+struct remove_volatile
+{
+    using type = T;
+};
+
+template<class T>
+struct remove_volatile<T volatile>
+{
+    using type = T;
+};
+
+template<class T>
 struct remove_reference
 {
     using type = T;
@@ -193,6 +205,16 @@ struct remove_reference<T&>
 {
     using type = T;
 };
+
+template<class T>
+using remove_cv = typename
+    remove_const<typename
+    remove_reference<T>::type>::type;
+
+template<class T>
+using remove_cvref =
+    typename remove_reference<
+        remove_cv<T>>::type;
 
 template<class T>
 constexpr
@@ -244,20 +266,6 @@ constexpr T static_const<T>::value;
     namespace { constexpr auto& name = \
         ::boost::json::detail::static_const<type>::value; \
     } struct _unused_ ## name ## _semicolon_bait_
-
-struct primary_template
-{
-};
-
-template<class T>
-using is_specialized =
-    std::integral_constant<bool,
-        ! std::is_base_of<primary_template, T>::value>;
-
-template<class T>
-using remove_cr =
-    typename remove_const<
-    typename remove_reference<T>::type>::type;
 
 } // detail
 } // json

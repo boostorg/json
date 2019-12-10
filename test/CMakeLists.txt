@@ -18,7 +18,6 @@ add_definitions(-DBOOST_JSON_HEADER_ONLY=1)
 include_directories(.)
 
 add_executable (json-tests
-    ${BEAST_FILES}
     ${PROJECT_FILES}
     ${PROJECT_SOURCE_DIR}/include/boost/json.hpp
     ${PROJECT_SOURCE_DIR}/include/boost/pilfer.hpp
@@ -45,7 +44,10 @@ add_executable (json-tests
     storage.cpp
     storage_ptr.cpp
     string.cpp
+    to_value.cpp
+    traits.cpp
     value.cpp
+    value_cast.cpp
     value_ref.cpp
     ryu/d2s_intrinsics_test.cpp
     ryu/d2s_table_test.cpp

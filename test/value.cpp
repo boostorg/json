@@ -11,6 +11,7 @@
 #include <boost/json/value.hpp>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "test.hpp"
@@ -19,47 +20,10 @@
 namespace boost {
 namespace json {
 
-namespace value_test_ns {
-
-struct T1
-{
-    void
-    to_json(value&) const
-    {
-    }
-};
-
-struct T2
-{
-};
-
-void
-to_json(T2 const&, value&)
-{
-}
-
-struct T3
-{
-};
-
-} // value_test_ns
-
-template<>
-struct value_exchange<value_test_ns::T3>
-{
-    static
-    void
-    to_json(value_test_ns::T3, value&)
-    {
-    }
-};
-
-//----------------------------------------------------------
-
 class value_test
 {
 public:
-    //BOOST_STATIC_ASSERT(has_to_json<short>::value);
+    //BOOST_STATIC_ASSERT(has_to_value<short>::value);
 
     string_view const str_;
 
@@ -1305,7 +1269,7 @@ public:
 
         // as_object()
         {
-             object& x = obj.as_object();
+                  object& x = obj.as_object();
             BOOST_TEST_THROWS(arr.as_object(), system_error);
             BOOST_TEST_THROWS(str.as_object(), system_error);
             BOOST_TEST_THROWS(i64.as_object(), system_error);
@@ -1318,7 +1282,7 @@ public:
 
         // as_object() const
         {
-       object const& x = cobj.as_object();
+            object const& x = cobj.as_object();
             BOOST_TEST_THROWS(carr.as_object(), system_error);
             BOOST_TEST_THROWS(cstr.as_object(), system_error);
             BOOST_TEST_THROWS(ci64.as_object(), system_error);
@@ -1332,7 +1296,7 @@ public:
         // as_array()
         {
             BOOST_TEST_THROWS(obj.as_array(), system_error);
-              array& x = arr.as_array();
+                   array& x = arr.as_array();
             BOOST_TEST_THROWS(str.as_array(), system_error);
             BOOST_TEST_THROWS(i64.as_array(), system_error);
             BOOST_TEST_THROWS(u64.as_array(), system_error);
@@ -1345,7 +1309,7 @@ public:
         // as_array() const
         {
             BOOST_TEST_THROWS(cobj.as_array(), system_error);
-        array const& x = carr.as_array();
+             array const& x = carr.as_array();
             BOOST_TEST_THROWS(cstr.as_array(), system_error);
             BOOST_TEST_THROWS(ci64.as_array(), system_error);
             BOOST_TEST_THROWS(cu64.as_array(), system_error);
@@ -1359,7 +1323,7 @@ public:
         {
             BOOST_TEST_THROWS(obj.as_string(), system_error);
             BOOST_TEST_THROWS(arr.as_string(), system_error);
-             string& x = str.as_string();
+                  string& x = str.as_string();
             BOOST_TEST_THROWS(i64.as_string(), system_error);
             BOOST_TEST_THROWS(u64.as_string(), system_error);
             BOOST_TEST_THROWS(dub.as_string(), system_error);
@@ -1372,7 +1336,7 @@ public:
         {
             BOOST_TEST_THROWS(cobj.as_string(), system_error);
             BOOST_TEST_THROWS(carr.as_string(), system_error);
-       string const& x = cstr.as_string();
+            string const& x = cstr.as_string();
             BOOST_TEST_THROWS(ci64.as_string(), system_error);
             BOOST_TEST_THROWS(cu64.as_string(), system_error);
             BOOST_TEST_THROWS(cdub.as_string(), system_error);
@@ -1386,7 +1350,7 @@ public:
             BOOST_TEST_THROWS(obj.as_int64(), system_error);
             BOOST_TEST_THROWS(arr.as_int64(), system_error);
             BOOST_TEST_THROWS(str.as_int64(), system_error);
-       std::int64_t& x = i64.as_int64();
+            std::int64_t& x = i64.as_int64();
             BOOST_TEST_THROWS(u64.as_int64(), system_error);
             BOOST_TEST_THROWS(dub.as_int64(), system_error);
             BOOST_TEST_THROWS(bln.as_int64(), system_error);
@@ -1399,7 +1363,7 @@ public:
             BOOST_TEST_THROWS(cobj.as_int64(), system_error);
             BOOST_TEST_THROWS(carr.as_int64(), system_error);
             BOOST_TEST_THROWS(cstr.as_int64(), system_error);
- std::int64_t const& x = ci64.as_int64();
+      std::int64_t const& x = ci64.as_int64();
             BOOST_TEST_THROWS(cu64.as_int64(), system_error);
             BOOST_TEST_THROWS(cdub.as_int64(), system_error);
             BOOST_TEST_THROWS(cbln.as_int64(), system_error);
@@ -1413,7 +1377,7 @@ public:
             BOOST_TEST_THROWS(arr.as_uint64(), system_error);
             BOOST_TEST_THROWS(str.as_uint64(), system_error);
             BOOST_TEST_THROWS(i64.as_uint64(), system_error);
-      std::uint64_t& x = u64.as_uint64();
+           std::uint64_t& x = u64.as_uint64();
             BOOST_TEST_THROWS(dub.as_uint64(), system_error);
             BOOST_TEST_THROWS(bln.as_uint64(), system_error);
             BOOST_TEST_THROWS(nul.as_uint64(), system_error);
@@ -1426,7 +1390,7 @@ public:
             BOOST_TEST_THROWS(carr.as_uint64(), system_error);
             BOOST_TEST_THROWS(cstr.as_uint64(), system_error);
             BOOST_TEST_THROWS(ci64.as_uint64(), system_error);
-std::uint64_t const& x = cu64.as_uint64();
+     std::uint64_t const& x = cu64.as_uint64();
             BOOST_TEST_THROWS(cdub.as_uint64(), system_error);
             BOOST_TEST_THROWS(cbln.as_uint64(), system_error);
             BOOST_TEST_THROWS(cnul.as_uint64(), system_error);
@@ -1440,7 +1404,7 @@ std::uint64_t const& x = cu64.as_uint64();
             BOOST_TEST_THROWS(str.as_double(), system_error);
             BOOST_TEST_THROWS(i64.as_double(), system_error);
             BOOST_TEST_THROWS(u64.as_double(), system_error);
-             double& x = dub.as_double();
+                  double& x = dub.as_double();
             BOOST_TEST_THROWS(bln.as_double(), system_error);
             BOOST_TEST_THROWS(nul.as_double(), system_error);
             (void)x;
@@ -1453,7 +1417,7 @@ std::uint64_t const& x = cu64.as_uint64();
             BOOST_TEST_THROWS(cstr.as_double(), system_error);
             BOOST_TEST_THROWS(ci64.as_double(), system_error);
             BOOST_TEST_THROWS(cu64.as_double(), system_error);
-       double const& x = cdub.as_double();
+            double const& x = cdub.as_double();
             BOOST_TEST_THROWS(cbln.as_double(), system_error);
             BOOST_TEST_THROWS(cnul.as_double(), system_error);
             (void)x;
@@ -1467,7 +1431,7 @@ std::uint64_t const& x = cu64.as_uint64();
             BOOST_TEST_THROWS(i64.as_bool(), system_error);
             BOOST_TEST_THROWS(u64.as_bool(), system_error);
             BOOST_TEST_THROWS(dub.as_bool(), system_error);
-               bool& x = bln.as_bool();
+                    bool& x = bln.as_bool();
             BOOST_TEST_THROWS(nul.as_bool(), system_error);
             (void)x;
         }
@@ -1480,7 +1444,7 @@ std::uint64_t const& x = cu64.as_uint64();
             BOOST_TEST_THROWS(ci64.as_bool(), system_error);
             BOOST_TEST_THROWS(cu64.as_bool(), system_error);
             BOOST_TEST_THROWS(cdub.as_bool(), system_error);
-          bool const&x = cbln.as_bool();
+               bool const&x = cbln.as_bool();
             BOOST_TEST_THROWS(cnul.as_bool(), system_error);
             (void)x;
         }
@@ -1558,32 +1522,6 @@ std::uint64_t const& x = cu64.as_uint64();
         }
     }
 
-    void
-    testCustomTypes()
-    {
-        using namespace value_test_ns;
-
-        // to_json
-        {
-            T1 t;
-            value jv(t);
-        }
-        {
-            T2 t;
-            value jv(t);
-        }
-        {
-            T3 t;
-            value jv(t);
-        }
-    }
-
-    BOOST_STATIC_ASSERT(
-        detail::is_range<std::vector<int>>::value);
-
-    BOOST_STATIC_ASSERT(
-        detail::is_range<std::initializer_list<int>>::value);
-
     //------------------------------------------------------
 
     void
@@ -1605,6 +1543,16 @@ std::uint64_t const& x = cu64.as_uint64();
     //------------------------------------------------------
 
     void
+    testStdConstruction()
+    {
+        {
+            value jv(std::string("test"));
+        }
+    }
+
+    //------------------------------------------------------
+
+    void
     run()
     {
         testSpecial();
@@ -1616,8 +1564,8 @@ std::uint64_t const& x = cu64.as_uint64();
         testIf();
         testAs();
         testGet();
-        testCustomTypes();
         testKeyValuePair();
+        testStdConstruction();
     }
 };
 

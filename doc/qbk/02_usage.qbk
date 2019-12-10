@@ -17,15 +17,14 @@
 * [link json.usage.storage Storage]
 * [link json.usage.parsing Parsing]
 * [link json.usage.serializing Serializing]
-* [link json.usage.exchange Value Exchange]
-
+* [link json.usage.conversion Value Conversion]
 
 [note
     Sample code and identifiers used throughout are written as if
     the following declarations are in effect:
     ```
     #include <boost/json.hpp>
-    using namespace json;
+    using namespace boost::json;
     ```
 ]
 
@@ -37,6 +36,6 @@
 [include 02_6_storage.qbk]
 [include 02_7_parsing.qbk]
 [include 02_8_serializing.qbk]
-[include 02_9_exchange.qbk]
+[include 02_9_conversion.qbk]
 
 [endsect]

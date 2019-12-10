@@ -42,13 +42,16 @@
           <member><link linkend="json.ref.boost__json__parse">parse</link></member>
           <member><link linkend="json.ref.boost__json__swap">swap</link></member>
           <member><link linkend="json.ref.boost__json__to_string">to_string</link></member>
+          <member><link linkend="json.ref.boost__json__to_value">to_value</link></member>
+          <member><link linkend="json.ref.boost__json__value_cast">value_cast</link></member>
         </simplelist>
         <bridgehead renderas="sect3">Type Traits</bridgehead>
         <simplelist type="vert" columns="1">
-          <member><link linkend="json.ref.boost__json__has_from_json">has_from_json</link></member>
-          <member><link linkend="json.ref.boost__json__has_to_json">has_to_json</link></member>
+          <member><link linkend="json.ref.boost__json__has_to_value">has_to_value</link></member>
+          <member><link linkend="json.ref.boost__json__has_value_cast">has_value_cast</link></member>
           <member><link linkend="json.ref.boost__json__is_storage">is_storage</link></member>
-          <member><link linkend="json.ref.boost__json__value_exchange">value_exchange</link></member>
+          <member><link linkend="json.ref.boost__json__to_value_traits">to_value_traits</link></member>
+          <member><link linkend="json.ref.boost__json__value_cast_traits">value_cast_traits</link></member>
         </simplelist>
       </entry>
       <entry valign="top">

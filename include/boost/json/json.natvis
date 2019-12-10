@@ -47,7 +47,7 @@
     <DisplayString Condition="impl_.s_.k==kind::string">{((char*)(impl_.p_.t+1)),[impl_.p_.t->size]s}</DisplayString>
     <DisplayString Condition="impl_.s_.k==130">{impl_.s_.buf,[detail::string_impl::sbo_chars_-impl_.s_.buf[detail::string_impl::sbo_chars_]]s}</DisplayString>
     <Expand>
-      <Item Name="[Size]">impl_.s_.k==kind::string?impl_.p_.t->size:detail::string_impl::sbo_chars_-impl_.s_.buf[detail::string_impl::sbo_chars_]</Item>
+      <Item Name="[size]">impl_.s_.k==kind::string?impl_.p_.t->size:detail::string_impl::sbo_chars_-impl_.s_.buf[detail::string_impl::sbo_chars_]</Item>
       <Item Name="[capacity]">impl_.s_.k==kind::string?impl_.p_.t->capacity:detail::string_impl::sbo_chars_</Item>
       <Item Name="[storage]">sp_</Item>
     </Expand>

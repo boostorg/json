@@ -378,7 +378,7 @@ public:
 
         @param other The object to pilfer.
 
-        @see
+        @see @ref pilfer
         
         Pilfering constructors are described in
         <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0308r0.html">Valueless Variants Considered Harmful</a>, by Peter Dimov.

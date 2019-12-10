@@ -9,30 +9,34 @@
 
 [/-----------------------------------------------------------------------------]
 
-[section:exchange Value Exchange]
+[section:conversion Value Conversion]
 
 While the __value__ container makes it easy to create ad-hoc structures,
 often it is necessary to convert between JSON and specific user-defined
-types. The library provides a set of supporting features called
-"value exchange" to support this use case. Three mechanisms for
-handling a user-defined type `T` are possible:
+types. The library provides a set of customization points to enable
+conversions between objects of type `T` and a JSON value by:
 
-* Using member functions:
-  * `void T::to_json( value& ) const`
-  * `void T::from_json( value const& )`
+* A specialization of __to_json_traits__ for `T` containing
+  the public static member function
+  `value to_json_traits<T>::construct( T const&, storage_ptr )`,
 
-* With free functions in the same namespace as `T`:
-  * `void to_json( T const&, value& )`
-  * `void from_json( T&, value const& )`
+* A specialization of __value_cast_traits__ for `T` containing
+  the public static member function
+  `T value_cast_Traits<T>::construct( value const& )`,
 
-* Specializing __value_exchange__ for `T`, with static member functions:
-  * `void value_exchange<T>::to_json( T const&, value& )` and
-  * `void value_exchange<T>::from_json( T&, value const& )`
+* A public member function `value T::to_json( storage_ptr ) const`,
 
-Only one of these mechanisms will be selected. If more than one is
-available, the implementation prioritizes the specialization of
-__value_exchange__ first, the free functions second, and the member
-functions last.
+* A public constructor `T::T( value const& )`,
+
+The library provides built-in support for converting between a __value__
+and the type `T` when:
+
+* `std::is_constructible< value, T, storage_ptr >::value == true`, or
+
+* `T` is a container meeting generic requirements.
+
+When more than one conversion is available for a given type, one
+will be chosen according to a defined set of priorities.
 
 [heading Member Functions]
 

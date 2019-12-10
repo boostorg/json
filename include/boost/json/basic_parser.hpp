@@ -43,7 +43,7 @@ namespace json {
     The parser is strict: no extensions are supported.
     Only compliant JSON is recognized.
 
-    @see parse, parser
+    @see @ref parse, @ref parser
 */
 class basic_parser
 {

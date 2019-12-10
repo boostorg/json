@@ -33,7 +33,6 @@ if (MSVC)
 endif()
 
 add_executable (bench
-    ${BEAST_FILES}
     ${PROJECT_FILES}
     ${PROJECT_SOURCE_DIR}/include/boost/json.hpp
     ${PROJECT_SOURCE_DIR}/include/boost/pilfer.hpp

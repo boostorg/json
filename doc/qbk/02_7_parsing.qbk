@@ -16,29 +16,28 @@ and decomposed into elements. The library provides these
 functions and types to assist with parsing:
 
 [table Parsing Functions and Types
-    [ [Name] [Description ]]
+[ [Name] [Description ]]
+[
+    [__parse__]
     [
-        [__parse__]
-        [
-            Parse a string containing a complete serialized JSON, and
-            return a __value__.
-        ]
-    ][
-        [__parser__]
-        [
-            A stateful DOM parser object which may be used to
-            efficiently parse a series of JSONs incrementally,
-            returning each result as a __value__.
-        ]
-    ][
-        [__basic_parser__]
-        [
-            The SAX parser base class which may be derived from in order
-            to implement custom strategies for representing the parsed
-            JSON.
-        ]
+        Parse a string containing a complete serialized JSON, and
+        return a __value__.
     ]
-]
+][
+    [__parser__]
+    [
+        A stateful DOM parser object which may be used to
+        efficiently parse a series of JSONs incrementally,
+        returning each result as a __value__.
+    ]
+][
+    [__basic_parser__]
+    [
+        The SAX parser base class which may be derived from in order
+        to implement custom strategies for representing the parsed
+        JSON.
+    ]
+]]
 
 The `parse` function provides a succinct interface for
 converting a JSON to a __value__ in a single function call

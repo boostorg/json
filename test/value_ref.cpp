@@ -294,6 +294,15 @@ public:
             }, "{\"k1\":{\"k2\":2,\"k3\":3}}");
     }
 
+    struct FT
+    {
+        value
+        to_value(storage_ptr sp) const
+        {
+            return nullptr;
+        }
+    };
+
     void
     run()
     {
