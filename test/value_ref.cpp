@@ -13,14 +13,12 @@
 #include <boost/json/value.hpp>
 #include <boost/json/serializer.hpp>
 
-#include <boost/beast/_experimental/unit_test/suite.hpp>
-
-#include "test.hpp"
+#include "test_suite.hpp"
 
 namespace boost {
 namespace json {
 
-class value_ref_test : public beast::unit_test::suite
+class value_ref_test
 {
 public:
     using init_list =
@@ -177,7 +175,7 @@ public:
         auto const jv =
             value_ref(init).make_value({});
         auto const js = to_string(jv);
-        BEAST_EXPECT(js == s);
+        BOOST_TEST(js == s);
     }
 
     void
@@ -276,7 +274,7 @@ public:
     {
         auto const jv = value(object(init));
         auto const js = to_string(jv);
-        BEAST_EXPECT(js == s);
+        BOOST_TEST(js == s);
     }
 
     void
@@ -297,7 +295,7 @@ public:
     }
 
     void
-    run() override
+    run()
     {
         testCtors();
         testInitList();
@@ -306,7 +304,7 @@ public:
     }
 };
 
-BEAST_DEFINE_TESTSUITE(boost,json,value_ref);
+TEST_SUITE(value_ref_test, "boost.json.value_ref");
 
 } // json
 } // boost

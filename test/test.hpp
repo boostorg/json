@@ -15,11 +15,13 @@
 #include <boost/json/serializer.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/detail/format.hpp>
-#include <boost/beast/_experimental/unit_test/suite.hpp>
+
 #include <cstddef>
 #include <iterator>
 #include <memory>
 #include <type_traits>
+
+#include "test_suite.hpp"
 
 namespace boost {
 namespace json {
@@ -54,7 +56,7 @@ struct fail_storage
 
     ~fail_storage()
     {
-        BEAST_EXPECT(nalloc == 0);
+        BOOST_TEST(nalloc == 0);
     }
 
     void*
@@ -79,7 +81,7 @@ struct fail_storage
         std::size_t,
         std::size_t) noexcept
     {
-        if(BEAST_EXPECT(nalloc > 0))
+        if(BOOST_TEST(nalloc > 0))
             --nalloc;
         ::operator delete(p);
     }
@@ -103,7 +105,7 @@ fail_loop(F&& f)
         }
         break;
     }
-    BEAST_EXPECT(ss->fail < 200);
+    BOOST_TEST(ss->fail < 200);
 }
 
 //----------------------------------------------------------
@@ -577,7 +579,7 @@ check_storage(
     object const& o,
     storage_ptr const& sp)
 {
-    BEAST_EXPECT(equal_storage(o, sp));
+    BOOST_TEST(equal_storage(o, sp));
 }
 
 inline
@@ -586,7 +588,7 @@ check_storage(
     array const& a,
     storage_ptr const& sp)
 {
-    BEAST_EXPECT(equal_storage(a, sp));
+    BOOST_TEST(equal_storage(a, sp));
 }
 
 inline
@@ -595,7 +597,7 @@ check_storage(
     value const& v,
     storage_ptr const& sp)
 {
-    BEAST_EXPECT(equal_storage(v, sp));
+    BOOST_TEST(equal_storage(v, sp));
 }
 
 //----------------------------------------------------------

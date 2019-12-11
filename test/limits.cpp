@@ -13,9 +13,10 @@
 #include <boost/json/value.hpp>
 #include <boost/json/parser.hpp>
 
-#include <boost/beast/_experimental/unit_test/suite.hpp>
-#include "test.hpp"
 #include <vector>
+
+#include "test_suite.hpp"
+#include "test.hpp"
 
 namespace boost {
 namespace json {
@@ -26,7 +27,7 @@ namespace json {
     length.
 */
 
-class limits_test : public beast::unit_test::suite
+class limits_test
 {
 public:
     void
@@ -43,8 +44,8 @@ public:
             {"21",21},{"22",22},{"23",23},{"24",24},{"25",25},
             {"26",26},{"27",27},{"28",28},{"29",29},{"30",30},
             {"31",31}};
-            BEAST_EXPECT(init.size() > object::max_size());
-            BEAST_THROWS(value{init}, std::length_error);
+            BOOST_TEST(init.size() > object::max_size());
+            BOOST_TEST_THROWS(value{init}, std::length_error);
         }
     }
 
@@ -53,7 +54,7 @@ public:
     {
         // max size
         {
-            BEAST_THROWS(
+            BOOST_TEST_THROWS(
                 object(object::max_size()+1),
                 std::length_error);
         }
@@ -69,11 +70,11 @@ public:
             {"21",21},{"22",22},{"23",23},{"24",24},{"25",25},
             {"26",26},{"27",27},{"28",28},{"29",29},{"30",30},
             {"31",31}};
-            BEAST_EXPECT(init.size() > object::max_size());
-            BEAST_THROWS(
+            BOOST_TEST(init.size() > object::max_size());
+            BOOST_TEST_THROWS(
                 object(init.begin(), init.end()),
                 std::length_error);
-            BEAST_THROWS(
+            BOOST_TEST_THROWS(
                 object(
                     make_input_iterator(init.begin()),
                     make_input_iterator(init.end())),
@@ -84,7 +85,7 @@ public:
         {
             std::string const big(
                 string::max_size() + 1, '*');
-            BEAST_THROWS(
+            BOOST_TEST_THROWS(
                 object({ {big, nullptr} }),
                 std::length_error);
         }
@@ -94,7 +95,7 @@ public:
     testArray()
     {
         {
-            BEAST_THROWS(
+            BOOST_TEST_THROWS(
                 array(
                     array::max_size()+1,
                     value(nullptr)),
@@ -104,7 +105,7 @@ public:
         {
             std::vector<int> v(
                 array::max_size()+1, 42);
-            BEAST_THROWS(
+            BOOST_TEST_THROWS(
                 array(v.begin(), v.end()),
                 std::length_error);
         }
@@ -112,7 +113,7 @@ public:
         {
             std::vector<int> v(
                 array::max_size()+1, 42);
-            BEAST_THROWS(array(
+            BOOST_TEST_THROWS(array(
                 make_input_iterator(v.begin()),
                 make_input_iterator(v.end())),
                 std::length_error);
@@ -120,7 +121,7 @@ public:
 
         {
             array a;
-            BEAST_THROWS(
+            BOOST_TEST_THROWS(
                 a.insert(a.begin(),
                     array::max_size() + 1,
                     nullptr),
@@ -135,7 +136,7 @@ public:
         {
             {
                 string s;
-                BEAST_THROWS(
+                BOOST_TEST_THROWS(
                     (s.resize(s.max_size() + 1)),
                     std::length_error);
             }
@@ -143,7 +144,7 @@ public:
             {
                 string s;
                 s.resize(100);
-                BEAST_THROWS(
+                BOOST_TEST_THROWS(
                     (s.append(s.max_size() - 1, '*')),
                     std::length_error);
             }
@@ -171,7 +172,7 @@ public:
             auto const js =
                 "\"" + big + "\":null";
             value jv;
-            BEAST_THROWS(
+            BOOST_TEST_THROWS(
                 jv = parse(js),
                 std::length_error);
         }
@@ -184,7 +185,7 @@ public:
             auto const js =
                 "{\"" + big + "\":null}";
             value jv;
-            BEAST_THROWS(
+            BOOST_TEST_THROWS(
                 jv = parse(js),
                 std::length_error);
         }
@@ -197,7 +198,7 @@ public:
         {
             std::string big;
             value jv;
-            BEAST_THROWS(
+            BOOST_TEST_THROWS(
                 jv = parse(
                    "[1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,"
                     "1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,"
@@ -231,7 +232,7 @@ public:
             auto const js =
                 "\"" + big + "\"";
             value jv;
-            BEAST_THROWS(jv = parse(js),
+            BOOST_TEST_THROWS(jv = parse(js),
                 decltype(detail::string_too_large_exception()));
         }
 
@@ -244,13 +245,13 @@ public:
             auto const js =
                 "\"" + big + "\"";
             value jv;
-            BEAST_THROWS(jv = parse(js),
+            BOOST_TEST_THROWS(jv = parse(js),
                 decltype(detail::string_too_large_exception()));
         }
     }
 
     void
-    run() override
+    run()
     {
     #if ! defined(BOOST_JSON_NO_MAX_OBJECT_SIZE) && \
         ! defined(BOOST_JSON_NO_MAX_ARRAY_SIZE) && \
@@ -266,12 +267,12 @@ public:
         testParser();
 
     #else
-        pass();
+        BOOST_TEST_PASS();
     #endif
     }
 };
 
-BEAST_DEFINE_TESTSUITE(boost,json,limits);
+TEST_SUITE(limits_test, "boost.json.limits");
 
 } // json
 } // boost

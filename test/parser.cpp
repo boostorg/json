@@ -10,20 +10,23 @@
 // Test that header file is self-contained.
 #include <boost/json/parser.hpp>
 
-#include <boost/beast/_experimental/unit_test/suite.hpp>
 #include <boost/json/pool.hpp>
 #include <boost/json/serializer.hpp>
+
 #include <sstream>
 
 #include "parse-vectors.hpp"
 #include "test.hpp"
+#include "test_suite.hpp"
 
 namespace boost {
 namespace json {
 
-class parser_test : public beast::unit_test::suite
+class parser_test
 {
 public:
+    ::test_suite::log_type log;
+
     value
     from_string_test(
         string_view s,
@@ -38,8 +41,7 @@ public:
             ec);
         if(! ec)
             p.finish(ec);
-        BEAST_EXPECTS(! ec,
-            ec.message());
+        BOOST_TEST(! ec);
         //log << "  " << to_string_test(p.get()) << std::endl;
         return p.release();
     }
@@ -54,7 +56,7 @@ public:
             to_string(jv1);
         auto jv2 =
             from_string_test(s2);
-        if(! BEAST_EXPECT(equal(jv1, jv2)))
+        if(! BOOST_TEST(equal(jv1, jv2)))
             log <<
                 "  " << s1 << "\n" <<
                 "  " << s2 << std::endl;
@@ -186,13 +188,11 @@ public:
                 parser p;
                 p.start();
                 p.write(js.data(), N, ec);
-                if(BEAST_EXPECTS(! ec,
-                    ec.message()))
+                if(BOOST_TEST(! ec))
                 {
                     p.finish(js.data() + N,
                         js.size() - N, ec);
-                    if(BEAST_EXPECTS(! ec,
-                        ec.message()))
+                    if(BOOST_TEST(! ec))
                         check_round_trip(
                             p.release(), js);
                 }   
@@ -246,9 +246,8 @@ public:
             parser p;
             error_code ec;
             p.write("", 0, ec);
-            BEAST_EXPECTS(
-                ec == error::need_start,
-                ec.message());
+            BOOST_TEST(
+                ec == error::need_start);
         }
 
         // destroy after start
@@ -260,7 +259,7 @@ public:
         // release before done
         {
             parser p;
-            BEAST_THROWS(
+            BOOST_TEST_THROWS(
                 p.release(),
                 std::logic_error);
         }
@@ -287,14 +286,14 @@ public:
             {
                 error_code ec;
                 auto jv = parse(js, ec);
-                BEAST_EXPECTS(! ec, ec.message());
+                BOOST_TEST(! ec);
                 check_round_trip(jv, js);
             }
             {
                 error_code ec;
                 auto jv = parse("xxx", ec);
-                BEAST_EXPECT(ec);
-                BEAST_EXPECT(jv.is_null());
+                BOOST_TEST(ec);
+                BOOST_TEST(jv.is_null());
             }
         }
 
@@ -304,7 +303,7 @@ public:
                 error_code ec;
                 scoped_storage<pool> sp;
                 auto jv = parse(js, ec, sp);
-                BEAST_EXPECTS(! ec, ec.message());
+                BOOST_TEST(! ec);
                 check_round_trip(jv, js);
             }
 
@@ -312,8 +311,8 @@ public:
                 error_code ec;
                 scoped_storage<pool> sp;
                 auto jv = parse("xxx", ec, sp);
-                BEAST_EXPECT(ec);
-                BEAST_EXPECT(jv.is_null());
+                BOOST_TEST(ec);
+                BOOST_TEST(jv.is_null());
             }
         }
 
@@ -327,7 +326,7 @@ public:
 
             {
                 value jv;
-                BEAST_THROWS(
+                BOOST_TEST_THROWS(
                     jv = parse("{,"),
                     system_error);
             }
@@ -343,7 +342,7 @@ public:
             {
                 scoped_storage<pool> sp;
                 value jv;
-                BEAST_THROWS(
+                BOOST_TEST_THROWS(
                     jv = parse("xxx", sp),
                     system_error);
             }
@@ -381,9 +380,9 @@ R"xx({
         error_code ec;
         p.start();
         p.finish(in.data(), in.size(), ec);
-        if(BEAST_EXPECTS(! ec, ec.message()))
+        if(BOOST_TEST(! ec))
         {
-            BEAST_EXPECT(to_string(p.release()) ==
+            BOOST_TEST(to_string(p.release()) ==
                 "{\"glossary\":{\"title\":\"example glossary\",\"GlossDiv\":"
                 "{\"title\":\"S\",\"GlossList\":{\"GlossEntry\":{\"ID\":\"SGML\","
                 "\"SortAs\":\"SGML\",\"GlossTerm\":\"Standard Generalized Markup "
@@ -399,7 +398,7 @@ R"xx({
     void
     testIssue15()
     {
-        BEAST_EXPECT(
+        BOOST_TEST(
             json::parse("{\"port\": 12345}")
                 .as_object()
                 .at("port")
@@ -422,7 +421,7 @@ R"xx({
     }
 };
 
-BEAST_DEFINE_TESTSUITE(boost,json,parser);
+TEST_SUITE(parser_test, "boost.json.parser");
 
 } // json
 } // boost

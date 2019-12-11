@@ -58,6 +58,7 @@ for local f in $(SOURCES)
     RUN_TESTS += [
         run $(f) main.cpp : : :
             $(LIB)
+            <include>.
         ] ;
 }
 
@@ -66,6 +67,7 @@ for local f in $(LIMIT_SOURCES)
     RUN_TESTS += [
         run $(f) main.cpp : : :
             <source>../src/src.cpp
+            <include>.
             <define>BOOST_JSON_MAX_STRING_SIZE=1000
             <define>BOOST_JSON_MAX_OBJECT_SIZE=30
             <define>BOOST_JSON_MAX_ARRAY_SIZE=100

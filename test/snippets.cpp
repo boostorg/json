@@ -9,9 +9,10 @@
 
 #include <boost/json.hpp>
 
-#include <boost/beast/_experimental/unit_test/suite.hpp>
 #include <complex>
 #include <iostream>
+
+#include "test_suite.hpp"
 
 namespace boost {
 namespace json {
@@ -477,11 +478,11 @@ usingExchange2()
 
 //----------------------------------------------------------
 
-class snippets_test : public beast::unit_test::suite
+class snippets_test
 {
 public:
     void
-    run() override
+    run()
     {
         (void)&usingStrings;
         (void)&usingArrays;
@@ -494,11 +495,11 @@ public:
         (void)&usingSerializing;
         (void)&usingExchange1;
         (void)&usingExchange2;
-        pass();
+        BOOST_TEST_PASS();
     }
 };
 
-BEAST_DEFINE_TESTSUITE(boost,json,snippets);
+TEST_SUITE(snippets_test, "boost.json.snippets");
 
 } // json
 } // boost

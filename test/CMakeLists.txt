@@ -7,13 +7,15 @@
 # Official repository: https://github.com/vinniefalco/json
 #
 
-source_group (json FILES ${PROJECT_SOURCE_DIR}/include/boost/json.hpp)
-source_group (json FILES ${PROJECT_SOURCE_DIR}/include/boost/pilfer.hpp)
+source_group (boost FILES ${PROJECT_SOURCE_DIR}/include/boost/json.hpp)
+source_group (boost FILES ${PROJECT_SOURCE_DIR}/include/boost/pilfer.hpp)
 source_group (TREE ${PROJECT_SOURCE_DIR}/include/boost/json PREFIX json FILES ${PROJECT_FILES})
 
 GroupSources(test "/")
 
 add_definitions(-DBOOST_JSON_HEADER_ONLY=1)
+
+include_directories(.)
 
 add_executable (json-tests
     ${BEAST_FILES}
@@ -24,6 +26,7 @@ add_executable (json-tests
     ${PROJECT_SOURCE_DIR}/src/src.cpp
     Jamfile
     test.hpp
+    test_suite.hpp
     parse-vectors.hpp
     main.cpp
     _detail_number.cpp

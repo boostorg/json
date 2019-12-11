@@ -33,7 +33,7 @@ array_impl(
              sizeof(table) + 1)
                 / sizeof(table)
                 * sizeof(table),
-            std::max(
+            (std::max)(
                 alignof(table),
                 alignof(value)))) table;
         tab_->capacity = static_cast<
@@ -88,7 +88,7 @@ destroy_impl(
             sizeof(table) + 1)
             / sizeof(table)
             * sizeof(table),
-        std::max(
+        (std::max)(
             alignof(table),
             alignof(value)));
 }

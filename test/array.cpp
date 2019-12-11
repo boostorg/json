@@ -10,14 +10,13 @@
 // Test that header file is self-contained.
 #include <boost/json/array.hpp>
 
-#include <boost/beast/_experimental/unit_test/suite.hpp>
-
 #include "test.hpp"
+#include "test_suite.hpp"
 
 namespace boost {
 namespace json {
 
-class array_test : public beast::unit_test::suite
+class array_test
 {
 public:
     using init_list =
@@ -44,10 +43,10 @@ public:
     void
     check(array const& a)
     {
-        BEAST_EXPECT(a.size() == 3);
-        BEAST_EXPECT(a[0].is_number());
-        BEAST_EXPECT(a[1].is_bool());
-        BEAST_EXPECT(a[2].is_string());
+        BOOST_TEST(a.size() == 3);
+        BOOST_TEST(a[0].is_number());
+        BOOST_TEST(a[1].is_bool());
+        BOOST_TEST(a[2].is_string());
     }
 
     void
@@ -70,8 +69,8 @@ public:
         // array()
         {
             array a;
-            BEAST_EXPECT(a.empty());
-            BEAST_EXPECT(a.size() == 0);
+            BOOST_TEST(a.empty());
+            BOOST_TEST(a.size() == 0);
         }
 
         // array(storage_ptr)
@@ -85,9 +84,9 @@ public:
             // default storage
             {
                 array a(3, true);
-                BEAST_EXPECT(a.size() == 3);
+                BOOST_TEST(a.size() == 3);
                 for(auto const& v : a)
-                    BEAST_EXPECT(v.is_bool());
+                    BOOST_TEST(v.is_bool());
                 check_storage(a, storage_ptr{});
             }
 
@@ -100,7 +99,7 @@ public:
             fail_loop([&](storage_ptr const& sp)
             {
                 array a(3, true, sp);
-                BEAST_EXPECT(a.size() == 3);
+                BOOST_TEST(a.size() == 3);
                 check_storage(a, sp);
             });
         }
@@ -110,18 +109,18 @@ public:
             // default storage
             {
                 array a(3);
-                BEAST_EXPECT(a.size() == 3);
+                BOOST_TEST(a.size() == 3);
                 for(auto const& v : a)
-                    BEAST_EXPECT(v.is_null());
+                    BOOST_TEST(v.is_null());
                 check_storage(a, storage_ptr{});
             }
 
             fail_loop([&](storage_ptr const& sp)
             {
                 array a(3, sp);
-                BEAST_EXPECT(a.size() == 3);
+                BOOST_TEST(a.size() == 3);
                 for(auto const& v : a)
-                    BEAST_EXPECT(v.is_null());
+                    BOOST_TEST(v.is_null());
                 check_storage(a, sp);
             });
         }
@@ -133,11 +132,11 @@ public:
                 init_list init{ 0, 1, str_, 3, 4 };
                 array a(init.begin(), init.end());
                 check_storage(a, storage_ptr{});
-                BEAST_EXPECT(a[0].as_int64() == 0);
-                BEAST_EXPECT(a[1].as_int64() == 1);
-                BEAST_EXPECT(a[2].as_string() == str_);
-                BEAST_EXPECT(a[3].as_int64() == 3);
-                BEAST_EXPECT(a[4].as_int64() == 4);
+                BOOST_TEST(a[0].as_int64() == 0);
+                BOOST_TEST(a[1].as_int64() == 1);
+                BOOST_TEST(a[2].as_string() == str_);
+                BOOST_TEST(a[3].as_int64() == 3);
+                BOOST_TEST(a[4].as_int64() == 4);
             }
 
             // random iterator
@@ -198,7 +197,7 @@ public:
             init_list init{ 1, true, str_ };
             array a1(init.begin(), init.end());
             array a2(pilfer(a1));
-            BEAST_EXPECT(a1.empty());
+            BOOST_TEST(a1.empty());
             check(a2);
             check_storage(a2, storage_ptr{});
         }
@@ -208,7 +207,7 @@ public:
             init_list init{ 1, true, str_ };
             array a1(init.begin(), init.end());
             array a2 = std::move(a1);
-            BEAST_EXPECT(a1.empty());
+            BOOST_TEST(a1.empty());
             check(a2);
             check_storage(a2, storage_ptr{});
         }
@@ -220,7 +219,7 @@ public:
                 array a1(init.begin(), init.end());
                 array a2(
                     std::move(a1), storage_ptr{});
-                BEAST_EXPECT(a1.empty());
+                BOOST_TEST(a1.empty());
                 check(a2);
                 check_storage(a1, storage_ptr{});
                 check_storage(a2, storage_ptr{});
@@ -231,7 +230,7 @@ public:
                 init_list init{ 1, true, str_ };
                 array a1(init.begin(), init.end());
                 array a2(std::move(a1), sp);
-                BEAST_EXPECT(! a1.empty());
+                BOOST_TEST(! a1.empty());
                 check(a2);
                 check_storage(a1, storage_ptr{});
                 check_storage(a2, sp);
@@ -298,7 +297,7 @@ public:
                 array a1({1, true, str_});
                 array a2({nullptr, object{}, 1.f});
                 a2 = std::move(a1);
-                BEAST_EXPECT(a1.empty());
+                BOOST_TEST(a1.empty());
                 check(a2);
             }
 
@@ -307,8 +306,8 @@ public:
                 array a1;
                 array a2;
                 a2 = std::move(a1);
-                BEAST_EXPECT(a1.empty());
-                BEAST_EXPECT(a2.empty());
+                BOOST_TEST(a1.empty());
+                BOOST_TEST(a2.empty());
             }
 
             fail_loop([&](storage_ptr const& sp)
@@ -369,85 +368,85 @@ public:
         // at(pos)
         {
             array a({1, true, str_});
-            BEAST_EXPECT(a.at(0).is_number());
-            BEAST_EXPECT(a.at(1).is_bool());
-            BEAST_EXPECT(a.at(2).is_string());
+            BOOST_TEST(a.at(0).is_number());
+            BOOST_TEST(a.at(1).is_bool());
+            BOOST_TEST(a.at(2).is_string());
             try
             {
                 a.at(3);
-                BEAST_FAIL();
+                BOOST_TEST_FAIL();
             }
             catch(std::out_of_range const&)
             {
-                BEAST_PASS();
+                BOOST_TEST_PASS();
             }
         }
 
         // at(pos) const
         {
             array const a({1, true, str_});
-            BEAST_EXPECT(a.at(0).is_number());
-            BEAST_EXPECT(a.at(1).is_bool());
-            BEAST_EXPECT(a.at(2).is_string());
+            BOOST_TEST(a.at(0).is_number());
+            BOOST_TEST(a.at(1).is_bool());
+            BOOST_TEST(a.at(2).is_string());
             try
             {
                 a.at(3);
-                BEAST_FAIL();
+                BOOST_TEST_FAIL();
             }
             catch(std::out_of_range const&)
             {
-                BEAST_PASS();
+                BOOST_TEST_PASS();
             }
         }
 
         // operator[&](size_type)
         {
             array a({1, true, str_});
-            BEAST_EXPECT(a[0].is_number());
-            BEAST_EXPECT(a[1].is_bool());
-            BEAST_EXPECT(a[2].is_string());
+            BOOST_TEST(a[0].is_number());
+            BOOST_TEST(a[1].is_bool());
+            BOOST_TEST(a[2].is_string());
         }
 
         // operator[&](size_type) const
         {
             array const a({1, true, str_});
-            BEAST_EXPECT(a[0].is_number());
-            BEAST_EXPECT(a[1].is_bool());
-            BEAST_EXPECT(a[2].is_string());
+            BOOST_TEST(a[0].is_number());
+            BOOST_TEST(a[1].is_bool());
+            BOOST_TEST(a[2].is_string());
         }
 
         // front()
         {
             array a({1, true, str_});
-            BEAST_EXPECT(a.front().is_number());
+            BOOST_TEST(a.front().is_number());
         }
 
         // front() const
         {
             array const a({1, true, str_});
-            BEAST_EXPECT(a.front().is_number());
+            BOOST_TEST(a.front().is_number());
         }
 
         // back()
         {
             array a({1, true, str_});
-            BEAST_EXPECT(a.back().is_string());
+            BOOST_TEST(a.back().is_string());
         }
 
         // back() const
         {
             array const a({1, true, str_});
-            BEAST_EXPECT(a.back().is_string());
+            BOOST_TEST(a.back().is_string());
         }
 
         // data()
         {
             {
                 array a({1, true, str_});
-                BEAST_EXPECT(a.data() == &a[0]);
+                BOOST_TEST(a.data() == &a[0]);
             }
             {
-                BEAST_EXPECT(array{}.data() == nullptr);
+                BOOST_TEST(array{}.data() == nullptr);
             }
         }
 
@@ -455,11 +454,11 @@ public:
         {
             {
                 array const a({1, true, str_});
-                BEAST_EXPECT(a.data() == &a[0]);
+                BOOST_TEST(a.data() == &a[0]);
             }
             {
                 array const a{};
-                BEAST_EXPECT(a.data() == nullptr);
+                BOOST_TEST(a.data() == nullptr);
             }
         }
     }
@@ -472,104 +471,104 @@ public:
 
         {
             auto it = a.begin();
-            BEAST_EXPECT(it->is_number()); ++it;
-            BEAST_EXPECT(it->is_bool());   it++;
-            BEAST_EXPECT(it->is_string()); ++it;
-            BEAST_EXPECT(it == a.end());
+            BOOST_TEST(it->is_number()); ++it;
+            BOOST_TEST(it->is_bool());   it++;
+            BOOST_TEST(it->is_string()); ++it;
+            BOOST_TEST(it == a.end());
         }
         {
             auto it = a.cbegin();
-            BEAST_EXPECT(it->is_number()); ++it;
-            BEAST_EXPECT(it->is_bool());   it++;
-            BEAST_EXPECT(it->is_string()); ++it;
-            BEAST_EXPECT(it == a.cend());
+            BOOST_TEST(it->is_number()); ++it;
+            BOOST_TEST(it->is_bool());   it++;
+            BOOST_TEST(it->is_string()); ++it;
+            BOOST_TEST(it == a.cend());
         }
         {
             auto it = ac.begin();
-            BEAST_EXPECT(it->is_number()); ++it;
-            BEAST_EXPECT(it->is_bool());   it++;
-            BEAST_EXPECT(it->is_string()); ++it;
-            BEAST_EXPECT(it == ac.end());
+            BOOST_TEST(it->is_number()); ++it;
+            BOOST_TEST(it->is_bool());   it++;
+            BOOST_TEST(it->is_string()); ++it;
+            BOOST_TEST(it == ac.end());
         }
         {
             auto it = a.end();
-            --it; BEAST_EXPECT(it->is_string());
-            it--; BEAST_EXPECT(it->is_bool());
-            --it; BEAST_EXPECT(it->is_number());
-            BEAST_EXPECT(it == a.begin());
+            --it; BOOST_TEST(it->is_string());
+            it--; BOOST_TEST(it->is_bool());
+            --it; BOOST_TEST(it->is_number());
+            BOOST_TEST(it == a.begin());
         }
         {
             auto it = a.cend();
-            --it; BEAST_EXPECT(it->is_string());
-            it--; BEAST_EXPECT(it->is_bool());
-            --it; BEAST_EXPECT(it->is_number());
-            BEAST_EXPECT(it == a.cbegin());
+            --it; BOOST_TEST(it->is_string());
+            it--; BOOST_TEST(it->is_bool());
+            --it; BOOST_TEST(it->is_number());
+            BOOST_TEST(it == a.cbegin());
         }
         {
             auto it = ac.end();
-            --it; BEAST_EXPECT(it->is_string());
-            it--; BEAST_EXPECT(it->is_bool());
-            --it; BEAST_EXPECT(it->is_number());
-            BEAST_EXPECT(it == ac.begin());
+            --it; BOOST_TEST(it->is_string());
+            it--; BOOST_TEST(it->is_bool());
+            --it; BOOST_TEST(it->is_number());
+            BOOST_TEST(it == ac.begin());
         }
 
         {
             auto it = a.rbegin();
-            BEAST_EXPECT(it->is_string()); ++it;
-            BEAST_EXPECT(it->is_bool());   it++;
-            BEAST_EXPECT(it->is_number()); ++it;
-            BEAST_EXPECT(it == a.rend());
+            BOOST_TEST(it->is_string()); ++it;
+            BOOST_TEST(it->is_bool());   it++;
+            BOOST_TEST(it->is_number()); ++it;
+            BOOST_TEST(it == a.rend());
         }
         {
             auto it = a.crbegin();
-            BEAST_EXPECT(it->is_string()); ++it;
-            BEAST_EXPECT(it->is_bool());   it++;
-            BEAST_EXPECT(it->is_number()); ++it;
-            BEAST_EXPECT(it == a.crend());
+            BOOST_TEST(it->is_string()); ++it;
+            BOOST_TEST(it->is_bool());   it++;
+            BOOST_TEST(it->is_number()); ++it;
+            BOOST_TEST(it == a.crend());
         }
         {
             auto it = ac.rbegin();
-            BEAST_EXPECT(it->is_string()); ++it;
-            BEAST_EXPECT(it->is_bool());   it++;
-            BEAST_EXPECT(it->is_number()); ++it;
-            BEAST_EXPECT(it == ac.rend());
+            BOOST_TEST(it->is_string()); ++it;
+            BOOST_TEST(it->is_bool());   it++;
+            BOOST_TEST(it->is_number()); ++it;
+            BOOST_TEST(it == ac.rend());
         }
         {
             auto it = a.rend();
-            --it; BEAST_EXPECT(it->is_number());
-            it--; BEAST_EXPECT(it->is_bool());
-            --it; BEAST_EXPECT(it->is_string());
-            BEAST_EXPECT(it == a.rbegin());
+            --it; BOOST_TEST(it->is_number());
+            it--; BOOST_TEST(it->is_bool());
+            --it; BOOST_TEST(it->is_string());
+            BOOST_TEST(it == a.rbegin());
         }
         {
             auto it = a.crend();
-            --it; BEAST_EXPECT(it->is_number());
-            it--; BEAST_EXPECT(it->is_bool());
-            --it; BEAST_EXPECT(it->is_string());
-            BEAST_EXPECT(it == a.crbegin());
+            --it; BOOST_TEST(it->is_number());
+            it--; BOOST_TEST(it->is_bool());
+            --it; BOOST_TEST(it->is_string());
+            BOOST_TEST(it == a.crbegin());
         }
         {
             auto it = ac.rend();
-            --it; BEAST_EXPECT(it->is_number());
-            it--; BEAST_EXPECT(it->is_bool());
-            --it; BEAST_EXPECT(it->is_string());
-            BEAST_EXPECT(it == ac.rbegin());
+            --it; BOOST_TEST(it->is_number());
+            it--; BOOST_TEST(it->is_bool());
+            --it; BOOST_TEST(it->is_string());
+            BOOST_TEST(it == ac.rbegin());
         }
 
         {
             array a2;
             array const& ca2(a2);
-            BEAST_EXPECT(std::distance(
+            BOOST_TEST(std::distance(
                 a2.begin(), a2.end()) == 0);
-            BEAST_EXPECT(std::distance(
+            BOOST_TEST(std::distance(
                 ca2.begin(), ca2.end()) == 0);
-            BEAST_EXPECT(std::distance(
+            BOOST_TEST(std::distance(
                 ca2.cbegin(), ca2.cend()) == 0);
-            BEAST_EXPECT(std::distance(
+            BOOST_TEST(std::distance(
                 a2.rbegin(), a2.rend()) == 0);
-            BEAST_EXPECT(std::distance(
+            BOOST_TEST(std::distance(
                 ca2.rbegin(), ca2.rend()) == 0);
-            BEAST_EXPECT(std::distance(
+            BOOST_TEST(std::distance(
                 ca2.crbegin(), ca2.crend()) == 0);
         }
     }
@@ -581,32 +580,32 @@ public:
         {
             {
                 array a;
-                BEAST_EXPECT(a.empty());
+                BOOST_TEST(a.empty());
                 a.emplace_back(1);
-                BEAST_EXPECT(! a.empty());
+                BOOST_TEST(! a.empty());
             }
 
             {
                 array a({1, 2});
-                BEAST_EXPECT(! a.empty());
+                BOOST_TEST(! a.empty());
                 a.clear();
-                BEAST_EXPECT(a.empty());
-                BEAST_EXPECT(a.capacity() > 0);
+                BOOST_TEST(a.empty());
+                BOOST_TEST(a.capacity() > 0);
             }
         }
 
         // size()
         {
             array a;
-            BEAST_EXPECT(a.size() == 0);
+            BOOST_TEST(a.size() == 0);
             a.emplace_back(1);
-            BEAST_EXPECT(a.size() == 1);
+            BOOST_TEST(a.size() == 1);
         }
 
         // max_size()
         {
             array a;
-            BEAST_EXPECT(a.max_size() > 0);
+            BOOST_TEST(a.max_size() > 0);
         }
 
         // reserve()
@@ -629,7 +628,7 @@ public:
             {
                 array a;
                 a.reserve(50);
-                BEAST_EXPECT(a.capacity() >= 50);
+                BOOST_TEST(a.capacity() >= 50);
             }
 
             fail_loop([&](storage_ptr const& sp)
@@ -637,16 +636,16 @@ public:
                 array a(min_capacity_, 'c', sp);
                 a.reserve(a.capacity() + 1);
                 auto const new_cap = a.capacity();
-                BEAST_EXPECT(new_cap > min_capacity_);
+                BOOST_TEST(new_cap > min_capacity_);
                 a.reserve((min_capacity_ + new_cap) / 2);
-                BEAST_EXPECT(a.capacity() == new_cap);
+                BOOST_TEST(a.capacity() == new_cap);
             });
         }
 
         // capacity()
         {
             array a;
-            BEAST_EXPECT(a.capacity() == 0);
+            BOOST_TEST(a.capacity() == 0);
         }
 
         // shrink_to_fit()
@@ -654,16 +653,16 @@ public:
             {
                 array a(1);
                 a.shrink_to_fit();
-                BEAST_EXPECT(a.size() == 1);
-                BEAST_EXPECT(a.capacity() >= 1);
+                BOOST_TEST(a.size() == 1);
+                BOOST_TEST(a.capacity() >= 1);
             }
 
             {
                 array a(min_capacity_, 'c');
-                BEAST_EXPECT(a.capacity() >= min_capacity_);
+                BOOST_TEST(a.capacity() >= min_capacity_);
                 a.erase(a.begin(), a.begin() + 2);
                 a.shrink_to_fit();
-                BEAST_EXPECT(a.capacity() == min_capacity_);
+                BOOST_TEST(a.capacity() == min_capacity_);
             }
 
             fail_loop([&](storage_ptr const& sp)
@@ -671,23 +670,23 @@ public:
                 array a(1, sp);
                 a.resize(a.capacity());
                 a.shrink_to_fit();
-                BEAST_EXPECT(a.size() == a.capacity());
+                BOOST_TEST(a.size() == a.capacity());
             });
 
             fail_loop([&](storage_ptr const& sp)
             {
                 array a(sp);
                 a.reserve(10);
-                BEAST_EXPECT(a.capacity() >= 10);
+                BOOST_TEST(a.capacity() >= 10);
                 a.shrink_to_fit();
-                BEAST_EXPECT(a.capacity() == 0);
+                BOOST_TEST(a.capacity() == 0);
             });
 
             fail_loop([&](storage_ptr const& sp)
             {
                 array a(min_capacity_, sp);
                 a.reserve(min_capacity_ * 2);
-                BEAST_EXPECT(a.capacity() >=
+                BOOST_TEST(a.capacity() >=
                     min_capacity_ * 2);
                 a.shrink_to_fit();
                 if(a.capacity() > min_capacity_)
@@ -703,17 +702,17 @@ public:
         {
             {
                 array a;
-                BEAST_EXPECT(a.size() == 0);
-                BEAST_EXPECT(a.capacity() == 0);
+                BOOST_TEST(a.size() == 0);
+                BOOST_TEST(a.capacity() == 0);
                 a.clear();
-                BEAST_EXPECT(a.size() == 0);
-                BEAST_EXPECT(a.capacity() == 0);
+                BOOST_TEST(a.size() == 0);
+                BOOST_TEST(a.capacity() == 0);
             }
             {
                 array a({1, true, str_});
                 a.clear();
-                BEAST_EXPECT(a.size() == 0);
-                BEAST_EXPECT(a.capacity() > 0);
+                BOOST_TEST(a.size() == 0);
+                BOOST_TEST(a.capacity() > 0);
             }
         }
 
@@ -744,11 +743,11 @@ public:
             value v({1,2,3});
             array a({1, str_}, sp);
             a.insert(a.begin() + 1, 3, v);
-            BEAST_EXPECT(a[0].is_number());
-            BEAST_EXPECT(a[1].as_array().size() == 3);
-            BEAST_EXPECT(a[2].as_array().size() == 3);
-            BEAST_EXPECT(a[3].as_array().size() == 3);
-            BEAST_EXPECT(a[4].is_string());
+            BOOST_TEST(a[0].is_number());
+            BOOST_TEST(a[1].as_array().size() == 3);
+            BOOST_TEST(a[2].as_array().size() == 3);
+            BOOST_TEST(a[3].as_array().size() == 3);
+            BOOST_TEST(a[4].is_string());
         });
 
         // insert(const_iterator, InputIt, InputIt)
@@ -772,7 +771,7 @@ public:
                      7,  8,  9, 10, 11, 12, 13, 14, 15, 16,
                     17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
                     27, 28, 29, 30 };
-                BEAST_EXPECT(init.size() > min_capacity_);
+                BOOST_TEST(init.size() > min_capacity_);
                 array a(sp);
                 a.insert(a.begin(),
                     init.begin(), init.end());
@@ -785,7 +784,7 @@ public:
                 a.insert(a.begin(),
                     make_input_iterator(init.begin()),
                     make_input_iterator(init.end()));
-                BEAST_EXPECT(a.empty());
+                BOOST_TEST(a.empty());
             }
 
             // input iterator
@@ -809,7 +808,7 @@ public:
                 a.insert(a.begin(),
                     make_input_iterator(init.begin()),
                     make_input_iterator(init.end()));
-                BEAST_EXPECT(a.size() == init.size() + 1);
+                BOOST_TEST(a.size() == init.size() + 1);
             });
 
             // backward relocate
@@ -829,12 +828,12 @@ public:
             array a({0, 3, 4}, sp);
             auto it = a.insert(
                 a.begin() + 1, {1, str_});
-            BEAST_EXPECT(it == a.begin() + 1);
-            BEAST_EXPECT(a[0].as_int64() == 0);
-            BEAST_EXPECT(a[1].as_int64() == 1);
-            BEAST_EXPECT(a[2].as_string() == str_);
-            BEAST_EXPECT(a[3].as_int64() == 3);
-            BEAST_EXPECT(a[4].as_int64() == 4);
+            BOOST_TEST(it == a.begin() + 1);
+            BOOST_TEST(a[0].as_int64() == 0);
+            BOOST_TEST(a[1].as_int64() == 1);
+            BOOST_TEST(a[2].as_string() == str_);
+            BOOST_TEST(a[3].as_int64() == 3);
+            BOOST_TEST(a[4].as_int64() == 4);
         });
 
         // emplace(const_iterator, arg)
@@ -843,12 +842,12 @@ public:
             array a({0, 2, 3, 4}, sp);
             auto it = a.emplace(
                 a.begin() + 1, str_);
-            BEAST_EXPECT(it == a.begin() + 1);
-            BEAST_EXPECT(a[0].as_int64() == 0);
-            BEAST_EXPECT(a[1].as_string() == str_);
-            BEAST_EXPECT(a[2].as_int64() == 2);
-            BEAST_EXPECT(a[3].as_int64() == 3);
-            BEAST_EXPECT(a[4].as_int64() == 4);
+            BOOST_TEST(it == a.begin() + 1);
+            BOOST_TEST(a[0].as_int64() == 0);
+            BOOST_TEST(a[1].as_string() == str_);
+            BOOST_TEST(a[2].as_int64() == 2);
+            BOOST_TEST(a[3].as_int64() == 3);
+            BOOST_TEST(a[4].as_int64() == 4);
         });
 
         // erase(pos)
@@ -873,7 +872,7 @@ public:
             array a({1, true}, sp);
             value v(str_);
             a.push_back(v);
-            BEAST_EXPECT(
+            BOOST_TEST(
                 v.as_string() == str_);
             check(a);
             check_storage(a, sp);
@@ -920,7 +919,7 @@ public:
             {
                 array a(5, sp);
                 a.resize(3);
-                BEAST_EXPECT(a.size() == 3);
+                BOOST_TEST(a.size() == 3);
                 check_storage(a, sp);
             });
 
@@ -928,7 +927,7 @@ public:
             {
                 array a(sp);
                 a.resize(3);
-                BEAST_EXPECT(a.size() == 3);
+                BOOST_TEST(a.size() == 3);
                 check_storage(a, sp);
             });
         }
@@ -944,7 +943,7 @@ public:
             {
                 array a(5, v, sp);
                 a.resize(3, v);
-                BEAST_EXPECT(a.size() == 3);
+                BOOST_TEST(a.size() == 3);
                 check_storage(a, sp);
             });
 
@@ -952,7 +951,7 @@ public:
             {
                 array a(3, v, sp);
                 a.resize(5, v);
-                BEAST_EXPECT(a.size() == 5);
+                BOOST_TEST(a.size() == 5);
                 check_storage(a, sp);
             });
         }
@@ -965,9 +964,9 @@ public:
                 array a2 = {1.};
                 a1.swap(a2);
                 check(a2);
-                BEAST_EXPECT(a1.size() == 1);
-                BEAST_EXPECT(a1.front().is_number());
-                BEAST_EXPECT(a1.front().as_double() == 1.);
+                BOOST_TEST(a1.size() == 1);
+                BOOST_TEST(a1.front().is_number());
+                BOOST_TEST(a1.front().as_double() == 1.);
             }
 
             // different storage
@@ -977,7 +976,7 @@ public:
                 array a2 = {1.};
                 a1.swap(a2);
                 check(a2);
-                BEAST_EXPECT(a1.size() == 1);
+                BOOST_TEST(a1.size() == 1);
             });
             fail_loop([&](storage_ptr const& sp)
             {
@@ -985,7 +984,7 @@ public:
                 array a2({1, true, str_}, sp);
                 a1.swap(a2);
                 check(a1);
-                BEAST_EXPECT(a2.size() == 1);
+                BOOST_TEST(a2.size() == 1);
             });
         }
     }
@@ -1025,12 +1024,12 @@ public:
             a.insert(a.begin() + 1,
                 3, nullptr);
             a1 = a;
-            BEAST_EXPECT(a1.size() == 5);
-            BEAST_EXPECT(a1[0].is_number());
-            BEAST_EXPECT(a1[1].is_null());
-            BEAST_EXPECT(a1[2].is_null());
-            BEAST_EXPECT(a1[3].is_null());
-            BEAST_EXPECT(a1[4].is_bool());
+            BOOST_TEST(a1.size() == 5);
+            BOOST_TEST(a1[0].is_number());
+            BOOST_TEST(a1[1].is_null());
+            BOOST_TEST(a1[2].is_null());
+            BOOST_TEST(a1[3].is_null());
+            BOOST_TEST(a1[4].is_bool());
         });
 
         // insert(const_iterator, InputIt, InputIt)
@@ -1052,10 +1051,10 @@ public:
             array a({1, nullptr}, sp);
             a.emplace(a.begin() + 1, true);
             a1 = a;
-            BEAST_EXPECT(a1.size() == 3);
-            BEAST_EXPECT(a1[0].is_number());
-            BEAST_EXPECT(a1[1].is_bool());
-            BEAST_EXPECT(a1[2].is_null());
+            BOOST_TEST(a1.size() == 3);
+            BOOST_TEST(a1[0].is_number());
+            BOOST_TEST(a1[1].is_bool());
+            BOOST_TEST(a1[2].is_null());
         });
 
         // emplace(const_iterator, arg)
@@ -1066,15 +1065,15 @@ public:
             a.emplace(a.begin() + 1, true);
             a1 = a;
             check(a1);
-            BEAST_EXPECT(a1.size() == 3);
-            BEAST_EXPECT(a1[0].is_number());
-            BEAST_EXPECT(a1[1].is_bool());
-            BEAST_EXPECT(a1[2].is_string());
+            BOOST_TEST(a1.size() == 3);
+            BOOST_TEST(a1[0].is_number());
+            BOOST_TEST(a1[1].is_bool());
+            BOOST_TEST(a1[2].is_string());
         });
     }
 
     void
-    run() override
+    run()
     {
         testCtors();
         testAssignment();
@@ -1087,7 +1086,7 @@ public:
     }
 };
 
-BEAST_DEFINE_TESTSUITE(boost,json,array);
+TEST_SUITE(array_test, "boost.json.array");
 
 } // json
 } // boost

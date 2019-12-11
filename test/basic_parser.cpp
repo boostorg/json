@@ -10,13 +10,13 @@
 // Test that header file is self-contained.
 #include <boost/json/basic_parser.hpp>
 
-#include <boost/beast/_experimental/unit_test/suite.hpp>
 #include <memory>
 #include <string>
 #include <utility>
 
-#include "test.hpp"
 #include "parse-vectors.hpp"
+#include "test.hpp"
+#include "test_suite.hpp"
 
 namespace boost {
 namespace json {
@@ -140,9 +140,11 @@ validate( string_view s )
 
 } // (anon)
 
-class basic_parser_test : public beast::unit_test::suite
+class basic_parser_test
 {
 public:
+    ::test_suite::log_type log;
+
     void
     split_grind(
         string_view s,
@@ -153,7 +155,7 @@ public:
         for(std::size_t i = 1;
             i < s.size(); ++i)
         {
-            if(! BEAST_EXPECT(i < 100000))
+            if(! BOOST_TEST(i < 100000))
                 break;
             error_code ec;
             fail_parser p;
@@ -161,8 +163,7 @@ public:
                 p.write_some(s.data(), i, ec);
             if(ec)
             {
-                BEAST_EXPECTS(ec == ex,
-                    ec.message());
+                BOOST_TEST(ec == ex);
                 continue;
             }
             p.write(
@@ -170,8 +171,7 @@ public:
                 s.size() - n, ec);
             if(! ec)
                 p.finish(ec);
-            if(! BEAST_EXPECTS(ec == ex,
-                ec.message()))
+            if(! BOOST_TEST(ec == ex))
                 log << "should be " << ex.message() << std::endl;
         }
     }
@@ -184,7 +184,7 @@ public:
         // exercise all error paths
         for(std::size_t j = 1;;++j)
         {
-            if(! BEAST_EXPECT(j < 100000))
+            if(! BOOST_TEST(j < 100000))
                 break;
             error_code ec;
             fail_parser p(j);
@@ -194,8 +194,7 @@ public:
                 p.finish(ec);
             if(ec == error::test_failure)
                 continue;
-            BEAST_EXPECTS(ec == ex,
-                ec.message());
+            BOOST_TEST(ec == ex);
             break;
         }
     }
@@ -208,7 +207,7 @@ public:
         // exercise all exception paths
         for(std::size_t j = 1;;++j)
         {
-            if(! BEAST_EXPECT(j < 100000))
+            if(! BOOST_TEST(j < 100000))
                 break;
             error_code ec;
             throw_parser p(j);
@@ -218,8 +217,7 @@ public:
                     s.data(), s.size(), ec);
                 if(! ec)
                     p.finish(ec);
-                BEAST_EXPECTS(ec == ex,
-                    ec.message());
+                BOOST_TEST(ec == ex);
                 break;
             }
             catch(test_exception const&)
@@ -228,7 +226,7 @@ public:
             }
             catch(std::exception const& e)
             {
-                BEAST_FAIL();
+                BOOST_TEST_FAIL();
                 log << "  " <<
                     e.what() << std::endl;
             }
@@ -249,13 +247,12 @@ public:
                 p.finish(ex);
             if(good)
             {
-                if(! BEAST_EXPECTS(
-                    ! ex, ex.message()))
+                if(! BOOST_TEST(! ex))
                     return;
             }
             else
             {
-                if(! BEAST_EXPECT(ex))
+                if(! BOOST_TEST(ex))
                     return;
             }
         }
@@ -483,10 +480,9 @@ public:
             p.write_some(
                 s.data(), s.size(),
                 ec);
-            if(! BEAST_EXPECTS(! ec,
-                ec.message()))
+            if(! BOOST_TEST(! ec))
                 return;
-            BEAST_EXPECT(is_done ==
+            BOOST_TEST(is_done ==
                 p.is_done());
         };
 
@@ -537,43 +533,40 @@ public:
             {
                 error_code ec;
                 fail_parser p;
-                BEAST_EXPECT(
+                BOOST_TEST(
                     p.depth() == 0);
-                BEAST_EXPECT(
+                BOOST_TEST(
                     p.max_depth() > 0);
                 p.max_depth(1);
                 p.write("[{}]", 4, ec);
-                BEAST_EXPECTS(
-                    ec == error::too_deep,
-                    ec.message());
-                BEAST_EXPECT(! p.is_done());
+                BOOST_TEST(
+                    ec == error::too_deep);
+                BOOST_TEST(! p.is_done());
             }
             {
                 error_code ec;
                 fail_parser p;
-                BEAST_EXPECT(
+                BOOST_TEST(
                     p.max_depth() > 0);
                 p.max_depth(1);
                 p.write_some("[", 1, ec);
-                BEAST_EXPECT(p.depth() == 1);
-                if(BEAST_EXPECTS(! ec,
-                    ec.message()))
+                BOOST_TEST(p.depth() == 1);
+                if(BOOST_TEST(! ec))
                 {
                     p.write_some("{", 1, ec);
-                    BEAST_EXPECTS(
-                        ec == error::too_deep,
-                        ec.message());
+                    BOOST_TEST(
+                        ec == error::too_deep);
                 }
-                BEAST_EXPECT(! p.is_done());
+                BOOST_TEST(! p.is_done());
                 ec = {};
                 p.write_some("{}", 2, ec);
-                BEAST_EXPECT(ec);
+                BOOST_TEST(ec);
                 p.reset();
                 p.write("{}", 2, ec);
                 if(! ec)
                     p.finish(ec);
-                BEAST_EXPECTS(! ec, ec.message());
-                BEAST_EXPECT(p.is_done());
+                BOOST_TEST(! ec);
+                BOOST_TEST(p.is_done());
             }
         }
 
@@ -612,7 +605,7 @@ public:
             error_code ec;
             fail_parser p;
             p.finish(ec);
-            BEAST_EXPECT(ec);
+            BOOST_TEST(ec);
         }
     }
 
@@ -625,7 +618,7 @@ public:
                 error_code ec;
                 fail_parser p;
                 p.write_some("0", 1, ec);
-                BEAST_EXPECTS(! ec, ec.message());
+                BOOST_TEST(! ec);
             }
 
             // partial write
@@ -634,15 +627,15 @@ public:
                 fail_parser p;
                 auto const n =
                     p.write_some("null x", 6, ec);
-                BEAST_EXPECTS(! ec, ec.message());
-                BEAST_EXPECT(n < 6);
+                BOOST_TEST(! ec);
+                BOOST_TEST(n < 6);
             }
         }
 
         // write_some(char const*, size_t)
         {
             fail_parser p;
-            BEAST_THROWS(
+            BOOST_TEST_THROWS(
                 p.write_some("x", 1),
                 system_error);
         }
@@ -652,9 +645,8 @@ public:
             error_code ec;
             fail_parser p;
             p.write("0x", 2, ec);
-            BEAST_EXPECTS(
-                ec == error::extra_data,
-                ec.message());
+            BOOST_TEST(
+                ec == error::extra_data);
         }
 
         // write(char const*, size_t)
@@ -666,7 +658,7 @@ public:
 
             {
                 fail_parser p;
-                BEAST_THROWS(
+                BOOST_TEST_THROWS(
                     p.write("0x", 2),
                     system_error);
             }
@@ -677,9 +669,8 @@ public:
             error_code ec;
             fail_parser p;
             p.finish("{", 1, ec);
-            BEAST_EXPECTS(
-                ec == error::incomplete,
-                ec.message());
+            BOOST_TEST(
+                ec == error::incomplete);
         }
 
         // finish(char const*, size_t)
@@ -691,7 +682,7 @@ public:
 
             {
                 fail_parser p;
-                BEAST_THROWS(
+                BOOST_TEST_THROWS(
                     p.finish("{", 1),
                     system_error);
             }
@@ -702,16 +693,16 @@ public:
             {
                 fail_parser p;
                 p.write("{}", 2);
-                BEAST_EXPECT(! p.is_done());
+                BOOST_TEST(! p.is_done());
                 p.finish();
-                BEAST_EXPECT(p.is_done());
+                BOOST_TEST(p.is_done());
             }
 
             {
                 fail_parser p;
                 p.write("{", 1);
-                BEAST_EXPECT(! p.is_done());
-                BEAST_THROWS(
+                BOOST_TEST(! p.is_done());
+                BOOST_TEST_THROWS(
                     p.finish(),
                     system_error);
             }
@@ -797,11 +788,11 @@ public:
         base64::decode(
             p.get(), s.data(), s.size());
         string_view const js(p.get(), len);
-        BEAST_EXPECT(! validate(js));
+        BOOST_TEST(! validate(js));
     }
 
     void
-    run() override
+    run()
     {
         testObject();
         testArray();
@@ -818,7 +809,7 @@ public:
     }
 };
 
-BEAST_DEFINE_TESTSUITE(boost,json,basic_parser);
+TEST_SUITE(basic_parser_test, "boost.json.basic_parser");
 
 } // json
 } // boost

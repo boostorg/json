@@ -11,12 +11,13 @@
 #include <boost/json/pool.hpp>
 
 #include <boost/json/parser.hpp>
-#include <boost/beast/_experimental/unit_test/suite.hpp>
+
+#include "test_suite.hpp"
 
 namespace boost {
 namespace json {
 
-class pool_test : public beast::unit_test::suite
+class pool_test
 {
 public:
     void
@@ -46,17 +47,17 @@ R"xx({
     }
 })xx"
         , make_storage<pool>());
-        pass();
+        BOOST_TEST_PASS();
     }
 
     void
-    run() override
+    run()
     {
         testStorage();
     }
 };
 
-BEAST_DEFINE_TESTSUITE(boost,json,pool);
+TEST_SUITE(pool_test, "boost.json.pool");
 
 } // json
 } // boost

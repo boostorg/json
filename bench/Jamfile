@@ -24,6 +24,8 @@ else
 
 exe bench :
     bench.cpp
-    : :
+    :
+    <include>../test
+    :
     $(LIB)
     ;

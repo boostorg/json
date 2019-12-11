@@ -10,14 +10,13 @@
 // Test that header file is self-contained.
 #include <boost/json/storage_ptr.hpp>
 
-#include <boost/beast/_experimental/unit_test/suite.hpp>
-
 #include "test.hpp"
+#include "test_suite.hpp"
 
 namespace boost {
 namespace json {
 
-class storage_ptr_test : public beast::unit_test::suite
+class storage_ptr_test
 {
 public:
     struct not_storage
@@ -91,22 +90,22 @@ public:
         // storage_ptr()
         {
             storage_ptr sp;
-            BEAST_EXPECT(sp.get());
+            BOOST_TEST(sp.get());
         }
 
         // storage_ptr(storage_ptr&&)
         {
             storage_ptr sp1 = dsp;
             storage_ptr sp2(std::move(sp1));
-            BEAST_EXPECT(sp1.get());
-            BEAST_EXPECT(*sp2 == *dsp);
+            BOOST_TEST(sp1.get());
+            BOOST_TEST(*sp2 == *dsp);
         }
 
         // storage_ptr(storage_ptr const&)
         {
             storage_ptr sp1 = dsp;
             storage_ptr sp2(sp1);
-            BEAST_EXPECT(sp1 == sp2);
+            BOOST_TEST(sp1 == sp2);
         }
 
         // operator=(storage_ptr&&)
@@ -114,7 +113,7 @@ public:
             storage_ptr sp1(dsp);
             storage_ptr sp2(usp);
             sp2 = std::move(sp1);
-            BEAST_EXPECT(*sp2 == *dsp);
+            BOOST_TEST(*sp2 == *dsp);
         }
 
         // operator=(storage_ptr const&)
@@ -122,43 +121,43 @@ public:
             storage_ptr sp1(dsp);
             storage_ptr sp2(usp);
             sp2 = sp1;
-            BEAST_EXPECT(*sp1 == *sp2);
+            BOOST_TEST(*sp1 == *sp2);
         }
 
         // get()
         {
             storage_ptr sp(dsp);
-            BEAST_EXPECT(sp.get() == dsp.get());
+            BOOST_TEST(sp.get() == dsp.get());
         }
 
         // operator->()
         {
             storage_ptr sp(dsp);
-            BEAST_EXPECT(sp.operator->() == dsp.get());
+            BOOST_TEST(sp.operator->() == dsp.get());
         }
 
         // operator*()
         {
             storage_ptr sp(dsp);
-            BEAST_EXPECT(&sp.operator*() == dsp.get());
+            BOOST_TEST(&sp.operator*() == dsp.get());
         }
 
         // exception in make_storage
         {
-            BEAST_THROWS(
+            BOOST_TEST_THROWS(
                 make_storage<throwing>(),
                 std::exception);
         }
     }
 
     void
-    run() override
+    run()
     {
         testMembers();
     }
 };
 
-BEAST_DEFINE_TESTSUITE(boost,json,storage_ptr);
+TEST_SUITE(storage_ptr_test, "boost.json.storage_ptr");
 
 } // json
 } // boost

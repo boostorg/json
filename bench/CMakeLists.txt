@@ -16,6 +16,8 @@ GroupSources(bench "/")
 # Disable auto-linking
 add_definitions(-DBOOST_ALL_NO_LIB=1)
 
+include_directories(../test)
+
 if (MSVC)
     if (CMAKE_BUILD_TYPE EQUAL "Debug")
     else()

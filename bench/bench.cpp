@@ -19,13 +19,14 @@
 #include "lib/rapidjson/include/rapidjson/stringbuffer.h"
 
 #include <boost/json.hpp>
-#include <boost/beast/_experimental/unit_test/dstream.hpp>
 #include <algorithm>
 #include <chrono>
 #include <iostream>
 #include <memory>
 #include <cstdio>
 #include <vector>
+
+#include "test_suite.hpp"
 
 /*
 
@@ -37,14 +38,12 @@ http://seriot.ch/parsing_json.php
 
 */
 
-namespace beast = boost::beast;
-
 namespace boost {
 namespace json {
 
 using clock_type = std::chrono::steady_clock;
 
-beast::unit_test::dstream dout(std::cerr);
+::test_suite::debug_stream dout(std::cerr);
 std::stringstream strout;
 
 #if defined(BOOST_MSVC)

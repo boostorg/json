@@ -10,18 +10,24 @@
 #ifndef GTEST_HPP
 #define GTEST_HPP
 
-#include <boost/beast/_experimental/unit_test/suite.hpp>
 #include <boost/utility/string_view.hpp>
 
-#define TEST(s1,s2) \
-struct s2 ## s1 ## _test; \
-BEAST_DEFINE_TESTSUITE(boost,Ryu,s2##s1); \
-struct s2 ## s1 ## _test : ::boost::beast::unit_test::suite { \
-  void run() override; }; void s2##s1##_test::run()
+#include "test_suite.hpp"
 
-#define EXPECT_STREQ(s1, s2) BEAST_EXPECT(::boost::string_view(s1) == ::boost::string_view(s2))
-#define ASSERT_STREQ(s1, s2) { auto const s1_ = (s1); auto const s2_ = (s2); \
+#define TEST(s1,s2) \
+struct s1 ## _ ## s2 ## _test; \
+TEST_SUITE(s1 ## _ ## s2 ## _test, "boost.Ryu." #s1 "." #s2); \
+struct s1 ## _ ## s2 ## _test { \
+  void run(); }; void s1 ## _ ## s2 ## _test::run()
+
+#define EXPECT_STREQ(s1, s2) \
+    BOOST_TEST(::boost::json::string_view(s1) == \
+               ::boost::json::string_view(s2))
+
+#define ASSERT_STREQ(s1, s2) \
+    { auto const s1_ = (s1); auto const s2_ = (s2); \
     EXPECT_STREQ(s1_, s2_); }
-#define ASSERT_EQ(e1, e2) BEAST_EXPECT((e1)==(e2))
+
+#define ASSERT_EQ(e1, e2) BOOST_TEST((e1)==(e2))
 
 #endif

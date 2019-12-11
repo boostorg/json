@@ -10,9 +10,10 @@
 // Test that header file is self-contained.
 #include <boost/json/number_cast.hpp>
 
-#include <boost/beast/_experimental/unit_test/suite.hpp>
 #include <type_traits>
 #include <limits.h>
+
+#include "test_suite.hpp"
 
 namespace boost {
 namespace json {
@@ -35,22 +36,22 @@ T min_of()
 
 } // (anon)
 
-class number_cast_test : public beast::unit_test::suite
+class number_cast_test
 {
 public:
     void
     testNumberCast()
     {
-#define EQAL(T) BEAST_EXPECT(number_cast<T>(jv) == V)
-#define EQUS(T) BEAST_EXPECT((V >= 0) && number_cast<T>(jv) == static_cast<std::uint64_t>(V))
-#define EQUF(T) BEAST_EXPECT(static_cast<float>(V) == static_cast<float>(number_cast<T>(jv)))
-#define THRO(T) BEAST_THROWS(number_cast<T>(jv), system_error)
+#define EQAL(T) BOOST_TEST(number_cast<T>(jv) == V)
+#define EQUS(T) BOOST_TEST((V >= 0) && number_cast<T>(jv) == static_cast<std::uint64_t>(V))
+#define EQUF(T) BOOST_TEST(static_cast<float>(V) == static_cast<float>(number_cast<T>(jv)))
+#define THRO(T) BOOST_TEST_THROWS(number_cast<T>(jv), system_error)
 
-        BEAST_THROWS(number_cast<int>(value(object_kind)), system_error);
-        BEAST_THROWS(number_cast<int>(value(array_kind)), system_error);
-        BEAST_THROWS(number_cast<int>(value(string_kind)), system_error);
-        BEAST_THROWS(number_cast<int>(value(false)), system_error);
-        BEAST_THROWS(number_cast<int>(value(nullptr)), system_error);
+        BOOST_TEST_THROWS(number_cast<int>(value(object_kind)), system_error);
+        BOOST_TEST_THROWS(number_cast<int>(value(array_kind)), system_error);
+        BOOST_TEST_THROWS(number_cast<int>(value(string_kind)), system_error);
+        BOOST_TEST_THROWS(number_cast<int>(value(false)), system_error);
+        BOOST_TEST_THROWS(number_cast<int>(value(nullptr)), system_error);
 
         {
             unsigned char V = 0;
@@ -298,13 +299,13 @@ public:
     }
 
     void
-    run() override
+    run()
     {
         testNumberCast();
     }
 };
 
-BEAST_DEFINE_TESTSUITE(boost,json,number_cast);
+TEST_SUITE(number_cast_test, "boost.json.number_cast");
 
 } // json
 } // boost

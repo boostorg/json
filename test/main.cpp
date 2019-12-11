@@ -7,4 +7,25 @@
 // Official repository: https://github.com/vinniefalco/json
 //
 
-#include <boost/beast/_experimental/unit_test/main.ipp>
+#include "test_suite.hpp"
+
+#include <iostream>
+#ifdef _MSC_VER
+#include <crtdbg.h>
+#endif
+
+// Simple main used to produce stand
+// alone executables that run unit tests.
+int main(int argc, char const* const* argv)
+{
+#ifdef _MSC_VER
+    {
+        int flags = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
+        flags |= _CRTDBG_LEAK_CHECK_DF;
+        _CrtSetDbgFlag(flags);
+    }
+#endif
+
+    ::test_suite::debug_stream log(std::cerr);
+    return ::test_suite::run(log, argc, argv);
+}

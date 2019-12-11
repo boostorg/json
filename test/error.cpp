@@ -10,21 +10,22 @@
 // Test that header file is self-contained.
 #include <boost/json/error.hpp>
 
-#include <boost/beast/_experimental/unit_test/suite.hpp>
 #include <memory>
+
+#include "test_suite.hpp"
 
 namespace boost {
 namespace json {
 
-class error_test : public beast::unit_test::suite
+class error_test
 {
 public:
     void check(error e)
     {
         auto const ec = make_error_code(e);
-        BEAST_EXPECT(ec.category().name() != nullptr);
-        BEAST_EXPECT(! ec.message().empty());
-        BEAST_EXPECT(ec.category().default_error_condition(
+        BOOST_TEST(ec.category().name() != nullptr);
+        BOOST_TEST(! ec.message().empty());
+        BOOST_TEST(ec.category().default_error_condition(
             static_cast<int>(e)).category() == ec.category());
     }
 
@@ -32,20 +33,20 @@ public:
     {
         {
             auto const ec = make_error_code(e);
-            BEAST_EXPECT(ec.category().name() != nullptr);
-            BEAST_EXPECT(! ec.message().empty());
-            BEAST_EXPECT(ec == c);
+            BOOST_TEST(ec.category().name() != nullptr);
+            BOOST_TEST(! ec.message().empty());
+            BOOST_TEST(ec == c);
         }
         {
             auto ec = make_error_condition(c);
-            BEAST_EXPECT(ec.category().name() != nullptr);
-            BEAST_EXPECT(! ec.message().empty());
-            BEAST_EXPECT(ec == c);
+            BOOST_TEST(ec.category().name() != nullptr);
+            BOOST_TEST(! ec.message().empty());
+            BOOST_TEST(ec == c);
         }
     }
 
     void
-    run() override
+    run()
     {
         check(condition::parse_error, error::syntax);
         check(condition::parse_error, error::extra_data);
@@ -88,7 +89,7 @@ public:
     }
 };
 
-BEAST_DEFINE_TESTSUITE(boost,json,error);
+TEST_SUITE(error_test, "boost.json.error");
 
 } // json
 } // boost

@@ -10,14 +10,15 @@
 // Test that header file is self-contained.
 #include <boost/json/detail/number.hpp>
 
-#include <boost/beast/_experimental/unit_test/suite.hpp>
 #include <type_traits>
+
+#include "test_suite.hpp"
 
 namespace boost {
 namespace json {
 namespace detail {
 
-class number_parser_test : public beast::unit_test::suite
+class number_parser_test
 {
 public:
     template<class F>
@@ -30,9 +31,9 @@ public:
             error_code ec;
             number_parser p;
             p.write(s.data(), s.size(), ec);
-            if(BEAST_EXPECTS(! ec, ec.message()))
+            if(BOOST_TEST(! ec))
             {
-                BEAST_EXPECT(p.is_done());
+                BOOST_TEST(p.is_done());
                 f(p.get());
             }
         }
@@ -41,18 +42,17 @@ public:
             error_code ec;
             number_parser p;
             p.write_some(s.data(), s.size(), ec);
-            if(! BEAST_EXPECTS(
-                ! ec, ec.message()))
+            if(! BOOST_TEST(! ec))
                 break;
             auto n = p.write_some("x", 1, ec);
-            if(! BEAST_EXPECT(
+            if(! BOOST_TEST(
                 p.is_done()))
                 break;
-            if(! BEAST_EXPECT(n == 0))
+            if(! BOOST_TEST(n == 0))
                 break;
             f(p.get());
             p.finish(ec);
-            BEAST_EXPECTS(! ec, ec.message());
+            BOOST_TEST(! ec);
             break;
         }
         for(size_t i = 1; i < s.size(); ++i)
@@ -60,13 +60,13 @@ public:
             error_code ec;
             number_parser p;
             p.write_some(s.data(), i, ec);
-            if(! BEAST_EXPECTS(! ec, ec.message()))
+            if(! BOOST_TEST(! ec))
                 continue;
             p.write(
                 s.data() + i, s.size() - i, ec);
-            if(! BEAST_EXPECTS(! ec, ec.message()))
+            if(! BOOST_TEST(! ec))
                 continue;
-            BEAST_EXPECT(p.is_done());
+            BOOST_TEST(p.is_done());
             f(p.get());
         }
     }
@@ -78,7 +78,7 @@ public:
         {
             number_parser p;
             p.write(s.data(), s.size(), xec);
-            BEAST_EXPECT(xec);
+            BOOST_TEST(xec);
         }
         for(size_t i = 1; i < s.size(); ++i)
         {
@@ -87,14 +87,14 @@ public:
             p.write_some(s.data(), i, ec);
             if(ec == xec)
             {
-                BEAST_PASS();
+                BOOST_TEST_PASS();
                 continue;
             }
-            if(! BEAST_EXPECTS(! ec, ec.message()))
+            if(! BOOST_TEST(! ec))
                 continue;
             p.write(
                 s.data() + i, s.size() - i, ec);
-            BEAST_EXPECT(ec == xec);
+            BOOST_TEST(ec == xec);
         }
     }
 
@@ -106,9 +106,9 @@ public:
         grind(s,
             [&](detail::number num)
             {
-                if( BEAST_EXPECT(
+                if( BOOST_TEST(
                         num.kind == kind::int64))
-                    BEAST_EXPECT(num.i == i);
+                    BOOST_TEST(num.i == i);
             });
     }
 
@@ -120,9 +120,9 @@ public:
         grind(s,
             [&](detail::number num)
             {
-                if( BEAST_EXPECT(
+                if( BOOST_TEST(
                         num.kind == kind::uint64))
-                    BEAST_EXPECT(num.u == u);
+                    BOOST_TEST(num.u == u);
             });
     }
 
@@ -134,9 +134,9 @@ public:
         grind(s,
             [&](detail::number num)
             {
-                if( BEAST_EXPECT(
+                if( BOOST_TEST(
                         num.kind == kind::double_))
-                    BEAST_EXPECT(num.d == d);
+                    BOOST_TEST(num.d == d);
             });
     }
 
@@ -293,24 +293,24 @@ public:
         // maybe_init
         {
             number_parser p;
-            BEAST_EXPECT(! p.maybe_init(0));
-            BEAST_EXPECT(! p.maybe_init('A'));
-            BEAST_EXPECT(! p.maybe_init('a'));
-            BEAST_EXPECT(! p.maybe_init('.'));
-            BEAST_EXPECT(! p.maybe_init('!'));
-            BEAST_EXPECT(! p.maybe_init(' '));
-            BEAST_EXPECT(p.maybe_init('0')); p.reset();
-            BEAST_EXPECT(p.maybe_init('1')); p.reset();
-            BEAST_EXPECT(p.maybe_init('2')); p.reset();
-            BEAST_EXPECT(p.maybe_init('3')); p.reset();
-            BEAST_EXPECT(p.maybe_init('4')); p.reset();
-            BEAST_EXPECT(p.maybe_init('5')); p.reset();
-            BEAST_EXPECT(p.maybe_init('6')); p.reset();
-            BEAST_EXPECT(p.maybe_init('7')); p.reset();
-            BEAST_EXPECT(p.maybe_init('8')); p.reset();
-            BEAST_EXPECT(p.maybe_init('9')); p.reset();
-            BEAST_EXPECT(p.maybe_init('0')); p.reset();
-            BEAST_EXPECT(p.maybe_init('-')); p.reset();
+            BOOST_TEST(! p.maybe_init(0));
+            BOOST_TEST(! p.maybe_init('A'));
+            BOOST_TEST(! p.maybe_init('a'));
+            BOOST_TEST(! p.maybe_init('.'));
+            BOOST_TEST(! p.maybe_init('!'));
+            BOOST_TEST(! p.maybe_init(' '));
+            BOOST_TEST(p.maybe_init('0')); p.reset();
+            BOOST_TEST(p.maybe_init('1')); p.reset();
+            BOOST_TEST(p.maybe_init('2')); p.reset();
+            BOOST_TEST(p.maybe_init('3')); p.reset();
+            BOOST_TEST(p.maybe_init('4')); p.reset();
+            BOOST_TEST(p.maybe_init('5')); p.reset();
+            BOOST_TEST(p.maybe_init('6')); p.reset();
+            BOOST_TEST(p.maybe_init('7')); p.reset();
+            BOOST_TEST(p.maybe_init('8')); p.reset();
+            BOOST_TEST(p.maybe_init('9')); p.reset();
+            BOOST_TEST(p.maybe_init('0')); p.reset();
+            BOOST_TEST(p.maybe_init('-')); p.reset();
         }
 
         // finish
@@ -318,25 +318,23 @@ public:
             error_code ec;
             number_parser p;
             p.write_some("0x", 2, ec);
-            if(BEAST_EXPECTS(! ec,
-                ec.message()))
+            if(BOOST_TEST(! ec))
             {
                 p.finish(ec);
-                BEAST_EXPECTS(! ec,
-                    ec.message());
+                BOOST_TEST(! ec);
             }
         }
     }
 
     void
-    run() override
+    run()
     {
         testParse();
         testMembers();
     }
 };
 
-BEAST_DEFINE_TESTSUITE(boost,json,number_parser);
+TEST_SUITE(number_parser_test, "boost.json.detail.number_parser");
 
 } // detail
 } // json

@@ -10,16 +10,18 @@
 // Test that header file is self-contained.
 #include <boost/json.hpp>
 
-#include <boost/beast/_experimental/unit_test/suite.hpp>
+#include "test_suite.hpp"
 
 namespace boost {
-namespace json {
 
-struct zjson_test : public beast::unit_test::suite
+struct json_test
 {
+    ::test_suite::log_type log;
+
     void
-    run() override
+    run()
     {
+        using namespace json;
         log <<
             "sizeof(alignof)\n"
             "  object        == " << sizeof(object) << " (" << alignof(object) << ")\n"
@@ -28,16 +30,14 @@ struct zjson_test : public beast::unit_test::suite
             "  string        == " << sizeof(string) << " (" << alignof(string) << ")\n"
             "  value         == " << sizeof(value) << " (" << alignof(value) << ")\n"
             "  serializer    == " << sizeof(serializer) << "\n"
-            "  number_parser == " << sizeof(detail::number_parser) << "\n"
+            "  number_parser == " << sizeof(json::detail::number_parser) << "\n"
             "  basic_parser  == " << sizeof(basic_parser) << "\n"
-            "  parser        == " << sizeof(parser) << "\n"
-            << std::endl;
+            "  parser        == " << sizeof(parser)
             ;
-        pass();
+        BOOST_TEST_PASS();
     }
 };
 
-BEAST_DEFINE_TESTSUITE(boost,json,zjson);
+TEST_SUITE(json_test, "boost.json.zsizes");
 
-} // json
 } // boost
