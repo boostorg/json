@@ -226,7 +226,8 @@ loop_init:
             str_ = {"false", 5U};
             stack_->st = state::lit;
             goto loop;
-   
+
+        default: // silences a warning
         case kind::null:
             if(p1 - p >= 4)
             {

@@ -65,7 +65,7 @@
 #endif
 
 #ifndef BOOST_FALLTHROUGH
-#define BOOST_FALLTHROUGH ((void)0)
+#define BOOST_FALLTHROUGH [[fallthrough]]
 #endif
 
 #ifndef BOOST_FORCEINLINE
@@ -241,11 +241,9 @@ template<typename T>
 constexpr T static_const<T>::value;
 
 #define BOOST_JSON_INLINE_VARIABLE(name, type) \
-    namespace \
-    { \
-        constexpr auto& name = \
-            ::boost::json::detail::static_const<type>::value; \
-    }
+    namespace { constexpr auto& name = \
+        ::boost::json::detail::static_const<type>::value; \
+    } struct _unused_ ## name ## _semicolon_bait_
 
 struct primary_template
 {

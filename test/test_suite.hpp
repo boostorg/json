@@ -577,7 +577,7 @@ using log_type = detail::log_ostream<char>;
 #endif
 
 #define TEST_SUITE(type, name) \
-    namespace { static ::test_suite::detail::instance<type> type##_(name); } 
+    static ::test_suite::detail::instance<type> type##_(name)
 
 inline
 int

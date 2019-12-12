@@ -89,7 +89,7 @@ count_unescaped(
     }
 
     return s - s0;
-};
+}
 
 // assumes p..p+15 are valid
 inline
