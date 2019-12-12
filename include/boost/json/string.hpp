@@ -2637,12 +2637,9 @@ swap(string& lhs, string& rhs)
 
     Behaves as a formatted output function.
 */
-inline
+BOOST_JSON_DECL
 std::ostream&
-operator<<(std::ostream& os, string const& s)
-{
-    return os << static_cast<string_view>(s);
-}
+operator<<(std::ostream& os, string const& s);
 
 /** Return true if lhs equals rhs.
 

@@ -9,7 +9,7 @@
 
 //#define RAPIDJSON_SSE42
 
-#include <boost/config.hpp>
+#include <boost/json/config.hpp>
 
 #include "lib/nlohmann/single_include/nlohmann/json.hpp"
 
@@ -46,11 +46,11 @@ using clock_type = std::chrono::steady_clock;
 ::test_suite::debug_stream dout(std::cerr);
 std::stringstream strout;
 
-#if defined(BOOST_MSVC)
+#if defined(_MSC_VER)
 string_view toolset = "msvc";
-#elif defined(BOOST_CLANG)
+#elif defined(__clang__)
 string_view toolset = "clang";
-#elif defined(BOOST_GCC)
+#elif defined(__GNUC__)
 string_view toolset = "gcc";
 #else
 string_view toolset = "unknown";

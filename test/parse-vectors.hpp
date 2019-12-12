@@ -11,7 +11,7 @@
 #ifndef PARSE_VECTORS
 #define PARSE_VECTORS
 
-#include <boost/utility/string_view.hpp>
+#include <boost/json/config.hpp>
 #include <cstdlib>
 #include <type_traits>
 
