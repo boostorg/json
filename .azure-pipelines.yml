@@ -236,46 +236,57 @@ stages:
         Xcode 10.1:
           B2_TOOLSET: clang
           B2_CXXSTD: 14,17,2a
+          B2_LINKFLAGS: linkflags="-stdlib=libc++"
           XCODE_APP: /Applications/Xcode_10.1.app
         Xcode 10.0:
           B2_TOOLSET: clang
           B2_CXXSTD: 14,17,2a
+          B2_LINKFLAGS: linkflags="-stdlib=libc++"
           XCODE_APP: /Applications/Xcode_10.app
         Xcode 9.4.1:
           B2_TOOLSET: clang
           B2_CXXSTD: 11,14,17
+          B2_LINKFLAGS: linkflags="-stdlib=libc++"
           XCODE_APP: /Applications/Xcode_9.4.1.app
         Xcode 9.4:
           B2_TOOLSET: clang
           B2_CXXSTD: 11,14,17
+          B2_LINKFLAGS: linkflags="-stdlib=libc++"
           XCODE_APP: /Applications/Xcode_9.4.app
         Xcode 9.3.1:
           B2_TOOLSET: clang
           B2_CXXSTD: 11,14,17
+          B2_LINKFLAGS: linkflags="-stdlib=libc++"
           XCODE_APP: /Applications/Xcode_9.3.1.app
         Xcode 9.3:
           B2_TOOLSET: clang
           B2_CXXSTD: 11,14
+          B2_LINKFLAGS: linkflags="-stdlib=libc++"
           XCODE_APP: /Applications/Xcode_9.3.app
         Xcode 9.2:
           B2_TOOLSET: clang
           B2_CXXSTD: 11,14
+          B2_LINKFLAGS: linkflags="-stdlib=libc++"
           XCODE_APP: /Applications/Xcode_9.2.app
         Xcode 9.1:
           B2_TOOLSET: clang
           B2_CXXSTD: 11
+          B2_LINKFLAGS: linkflags="-stdlib=libc++"
           XCODE_APP: /Applications/Xcode_9.1.app
         Xcode 9.0.1:
           B2_TOOLSET: clang
           B2_CXXSTD: 11
+          B2_LINKFLAGS: linkflags="-stdlib=libc++"
           XCODE_APP: /Applications/Xcode_9.0.1.app
         Xcode 9.0:
           B2_TOOLSET: clang
           B2_CXXSTD: 11
+          B2_LINKFLAGS: linkflags="-stdlib=libc++"
           XCODE_APP: /Applications/Xcode_9.app
         Xcode 8.3.3:
           B2_TOOLSET: clang
           B2_CXXSTD: 11
+          B2_LINKFLAGS: linkflags="-stdlib=libc++"
           XCODE_APP: /Applications/Xcode_8.3.3.app
     steps:
     - checkout: self
