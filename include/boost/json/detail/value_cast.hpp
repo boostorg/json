@@ -41,7 +41,7 @@ struct has_value_cast_traits<
 // e.g. std::string
 template<class T>
 T
-value_cast_impl_3(
+value_cast_impl_4(
     value const& jv,
     typename std::integral_constant<bool,
         std::is_same<char*, decltype(
@@ -54,6 +54,28 @@ value_cast_impl_3(
 {
     auto const& a = jv.as_string();
     return T(a.data(), a.size());
+}
+
+//----------------------------------------------------------
+
+// T::T(value const&)
+template<class T>
+T
+value_cast_impl_3(
+    value const& jv,
+    std::true_type)
+{
+    return T(jv);
+}
+
+template<class T>
+auto
+value_cast_impl_3(
+    value const& jv,
+    std::false_type) ->
+    decltype(value_cast_impl_4<T>(jv))
+{
+    return value_cast_impl_4<T>(jv);
 }
 
 //----------------------------------------------------------
@@ -150,10 +172,14 @@ template<class T>
 auto
 value_cast_impl_2(
     value const& jv,
-    std::false_type) -> decltype(
-        value_cast_impl_3<T>(jv))
+    std::false_type) ->
+    decltype(value_cast_impl_3<T>(jv,
+        std::is_constructible<
+            T, value const&>{}))
 {
-    return value_cast_impl_3<T>(jv);
+    return value_cast_impl_3<T>(jv,
+        std::is_constructible<
+            T, value const&>{});
 }
 
 //----------------------------------------------------------

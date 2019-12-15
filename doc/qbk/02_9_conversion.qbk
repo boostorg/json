@@ -16,15 +16,15 @@ often it is necessary to convert between JSON and specific user-defined
 types. The library provides a set of customization points to enable
 conversions between objects of type `T` and a JSON value by:
 
-* A specialization of __to_json_traits__ for `T` containing
+* A specialization of __to_value_traits__ for `T` containing
   the public static member function
-  `value to_json_traits<T>::construct( T const&, storage_ptr )`,
+  `void to_json_traits<T>::assign( value&, T const& )`,
 
 * A specialization of __value_cast_traits__ for `T` containing
   the public static member function
-  `T value_cast_Traits<T>::construct( value const& )`,
+  `T value_cast_traits<T>::construct( value const& )`,
 
-* A public member function `value T::to_json( storage_ptr ) const`,
+* A public non-static member function `void T::to_json( value& ) const`,
 
 * A public constructor `T::T( value const& )`,
 
@@ -33,10 +33,12 @@ and the type `T` when:
 
 * `std::is_constructible< value, T, storage_ptr >::value == true`, or
 
-* `T` is a container meeting generic requirements.
+* `T` is a container meeting a built-in list of supported generic requirements.
 
 When more than one conversion is available for a given type, one
 will be chosen according to a defined set of priorities.
+
+
 
 [heading Member Functions]
 
@@ -46,8 +48,8 @@ declared thusly:
 [snippet_exchange_1]
 
 Since the author has control of the type, it uses member functions
-to enable value exchange. An implementation of `to_json` may look
-like this:
+to enable conversions with JSON. An implementation of `to_json` may
+look like this:
 
 [snippet_exchange_2]
 
@@ -59,17 +61,24 @@ match the expected schema for customer:
 
 [snippet_exchange_3]
 
-Once value exchange is enabled for a type, it may be assigned and
-stored:
+When conversion between `T` and __value__ is defined in both directions,
+round trips are possible:
 
 [snippet_exchange_4]
 
+
+
 [heading Trait Specialization]
 
-Sometimes value exchange is needed, but the author cannot modify the
-type in question to add member functions. One alternative is to
-specialize __value_exchange__ for the type and provide the necessary
-conversion functions. Here we enable value exchange for __std_complex__:
+Sometimes it is desired to perform JSON conversion, but the type in
+question cannot be modified. This can happen for `std` types, or
+for types from other libraries. Or, because the user wants to make
+keep the convertibility to and from JSON private and thus forgo
+adding a public member function.
+For these cases, it is possible to specialize the library class
+templates __to_value_traits__ and __value_cast_traits__ for the
+type and provide the necessary conversion functions. Here we
+enable conversion in both directions for the type __std_complex__:
 
 [snippet_exchange_5]
 
@@ -86,7 +95,11 @@ Conversion to and from __std_complex__ is now possible:
 
 [snippet_exchange_8]
 
-[heading Free Functions]
+Since the specializations of __to_value_traits__ and __value_cast_traits__
+are class templates themselves, conversion to complex numbers using
+different floating point representations are also possible:
+
+[snippet_exchange_9]
 
 [endsect]
 

@@ -24,14 +24,11 @@ namespace json {
     public static member function with this signature:
 
     @code
-    value construct( T const& t, storage_ptr )
+    void assign( value&, T const& t )
     @endcode
 
-    An implementation of `construct` should ensure that
-    any of the @ref value instances it constructs use
-    the passed storage pointer. Otherwise, an inefficient
-    copy is performed. The specialization must be in
-    the same namespace as the library.
+    The specialization must be in the same namespace as
+    the library.
 
     @par Example
 
@@ -54,11 +51,10 @@ namespace json {
     template<>
     struct to_value_traits< T >
     {
-        static value construct( T const& t, storage_ptr sp )
+        static void assign( value& jv, T const& t )
         {
-            return value( { t.i, t.b }, std::move( sp ) );
+            jv = { t.i, t.b };
         }
-            
     };
     } // namespace json
     } // naemspace boost
@@ -67,6 +63,8 @@ namespace json {
 
     @tparam T The type for which the conversion should
     be customized.
+
+    @see @ref to_value, @ref value_cast, @ref value_cast_traits
 */
 template<class T>
 struct to_value_traits
@@ -75,7 +73,7 @@ struct to_value_traits
 
 //----------------------------------------------------------
 
-/** Customization point to construct a user-defined type fomr a JSON value.
+/** Customization point to construct a user-defined type for a JSON value.
 */
 template<class T>
 struct value_cast_traits

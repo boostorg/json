@@ -163,7 +163,7 @@ void do_rpc( string_view cmd )
 {
     scoped_storage<pool> sp;
 
-    auto jv = parse( cmd, sp );
+    value const jv = parse( cmd, sp );
 
     do_json( jv );
 }
@@ -350,20 +350,31 @@ void customer::to_json( value& jv ) const
 //[snippet_exchange_3
 
 customer::customer( value const& jv )
-{
-    // as_object() will throw if jv.kind() != kind::object
-    auto const& obj = jv.as_object();
 
+    // as_object() will throw if jv.kind() != kind::object.
+    //
     // at() will throw if the key is not found,
     // and as_uint64() will throw if the value is
     // not an unsigned 64-bit integer.
-    this->id = obj.at( "id" ).as_uint64();
 
-    // as_string() will throw if jv.kind() != kind::string
-    this->name = std::string( string_view( obj.at( "name" ).as_string() ) );
+    : id( jv.as_object().at( "id" ).as_uint64() )
 
+    // We already know that jv is an object from
+    // the previous call to jv.as_object() suceeding,
+    // now we use jv.get_object() which skips the
+    // check.
+    //
+    // value_cast will throw if jv.kind() != kind::string
+
+    , name( value_cast< std::string >( jv.get_object().at( "name" ) ) )
+{
+    // id and name are constructed from JSON in the member
+    // initializer list above, but we can also use regular
+    // assignments in the body of the function as shown below.
+    //
     // as_bool() will throw if kv.kind() != kind::bool
-    this->delinquent = obj.at( "delinquent" ).as_bool();
+    
+    this->delinquent = jv.get_object().at( "delinquent" ).as_bool();
 }
 
 //]
@@ -382,8 +393,8 @@ usingExchange1()
     value jv = to_value( cust );
 
     // Store value in customer
-    //customer cust2;
-    //cust2 = value_cast<customer>( jv );
+    customer cust2;
+    cust2 = value_cast< customer >( jv );
 
     //]
 }
@@ -394,17 +405,22 @@ usingExchange1()
 } // boost
 //[snippet_exchange_5
 
-// Specializations of conversion must be
-// declared in the namespace ::boost::json.
+// Specializations of to_value_traits and value_cast_traits
+// must be declared in the boost::json namespace.
+
 namespace boost {
 namespace json {
 
-template<>
-struct to_value_traits< ::std::complex< double > >
+template<class T>
+struct to_value_traits< std::complex< T > >
 {
-    static void assign(
-        ::boost::json::value& jv,
-        ::std::complex< double > const& t );
+    static void assign( value& jv, std::complex< T > const& t );
+};
+
+template<class T>
+struct value_cast_traits< std::complex< T > >
+{
+    static std::complex< T > construct( value const& jv );
 };
 
 } // namespace json
@@ -415,19 +431,28 @@ namespace boost {
 namespace json {
 
 BOOST_STATIC_ASSERT(
+    has_to_value<std::complex<float>>::value);
+BOOST_STATIC_ASSERT(
     has_to_value<std::complex<double>>::value);
+BOOST_STATIC_ASSERT(
+    has_to_value<std::complex<long double>>::value);
 
-//BOOST_STATIC_ASSERT(
-//    has_from_json<std::complex<double>>::value);
+BOOST_STATIC_ASSERT(
+    has_value_cast<std::complex<float>>::value);
+BOOST_STATIC_ASSERT(
+    has_value_cast<std::complex<double>>::value);
+BOOST_STATIC_ASSERT(
+    has_value_cast<std::complex<long double>>::value);
 
 //[snippet_exchange_6
 
+template< class T >
 void
-to_value_traits< ::std::complex< double > >::
-assign( ::boost::json::value& jv, ::std::complex< double > const& t )
+to_value_traits< std::complex< T > >::
+assign( boost::json::value& jv, std::complex< T > const& t )
 {
     // Store a complex number as a 2-element array
-    auto& a = jv.emplace_array();
+    array& a = jv.emplace_array();
 
     // Real part first
     a.emplace_back( t.real() );
@@ -440,22 +465,28 @@ assign( ::boost::json::value& jv, ::std::complex< double > const& t )
 
 //[snippet_exchange_7]
 
-#if 0
-void
-conversion< ::std::complex< double > >::
-from_json( ::std::complex< double >& t, value const& jv )
+template< class T >
+std::complex< T >
+value_cast_traits< std::complex< T > >::
+construct( value const& jv )
 {
-    // as_array() throws if jv.kind() != kind::array
-    auto const& arr = jv.as_array();
+    // as_array() throws if jv.kind() != kind::array.
 
-    // at() throws if index is out of range
-    // as_double() throws if kind() != kind::double_
-    t.real( arr.at(0).as_double() );
+    array const& a = jv.as_array();
 
-    // imaginary part last
-    t.imag( arr.at(1).as_double() );
+    // We store the complex number as a two element
+    // array with the real part first, and the imaginary
+    // part last.
+    //
+    // at() throws if index is out of range.
+    //
+    // value_cast() throws if the JSON value does
+    // not contain an applicable kind for the type T.
+
+    return {
+        value_cast< T >( a.at(0) ),
+        value_cast< T >( a.at(1) ) };
 }
-#endif
 
 //]
 
@@ -464,18 +495,37 @@ namespace {
 void
 usingExchange2()
 {
+    {
     //[snippet_exchange_8
 
-    std::complex<double> c = { 3.14159, 2.71727 };
+    std::complex< double > c = { 3.14159, 2.71828 };
 
-    // Convert std::complex<double> to value
+    // Convert std::complex< double > to value
     value jv = to_value(c);
 
-    // Store value in std::complex<double>
-    //std::complex<double> c2;
-    //c2 = value_cast<std::complex<double>>(jv);
+    // Store value in std::complex< double >
+    std::complex< double > c2;
+
+    c2 = value_cast< std::complex< double > >( jv );
 
     //]
+    }
+
+    {
+    //[snippet_exchange_9
+
+    // Use float instead of double.
+
+    std::complex< float > c = { -42.f, 1.41421f };
+
+    value jv = to_value(c);
+
+    std::complex< float > c2;
+
+    c2 = value_cast< std::complex< float > >( jv );
+
+    //]
+    }
 }
 
 } // (anon)

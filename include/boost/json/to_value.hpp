@@ -27,7 +27,8 @@ namespace json {
     @li If @ref value is constructible `T` then the
         function returns `value( t, sp )`.
 
-    @li If `T::to_json` exists then the function invokes
+    @li If the public non-static member
+        `T::to_json` exists then the function invokes
         `t.to_json( value& jv )` with `jv` set to a
         null @ref value using storage `sp`, and returns
         `jv`.
@@ -54,7 +55,7 @@ namespace json {
 
     @param t The instance of `T` to convert.
 
-    @param jv The value to assign to.
+    @param sp The storage to use for the returned value.
 
     @returns The JSON value representing `t`.
 
@@ -88,6 +89,24 @@ to_value(
 }
 
 /** Determine if T can be converted to a JSON value.
+
+    This template type alias is `std::true_type` when one
+    or more of the following are true:
+
+    @li @ref value is constructible with the signature
+        `(T, storage_ptr)`
+
+    @li A public non-static member function
+        `T::to_json( value& jv ) const` exists.
+
+    @li A specialization of @ref to_value_traits exists
+        which contains the public static member function
+        `to_value_traits<T>:: assign( value&, T const&)`.
+
+    @li The type T matches one of the generic types
+        supported by the library.
+
+    Otherwise, this template type alias is `std::false_type`.
 */
 #ifdef GENERATING_DOCUMENTATION
 template<class T>
