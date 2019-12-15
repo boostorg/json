@@ -345,15 +345,41 @@ public:
         log_ << msg << "\n";
     }
 
+    char const*
+    filename(
+        char const* file)
+    {
+        auto const p0 = file;
+        auto p = p0 + std::strlen(file);
+        while(p-- != p0)
+        {
+        #ifdef _MSC_VER
+            if(*p == '\\')
+        #else
+            if(*p == '/')
+        #endif
+                break;
+        }
+        return p + 1;
+    }
+
     void
-    pass(char const*, char const*, int, char const*) override
+    pass(
+        char const*,
+        char const*,
+        int,
+        char const*) override
     {
         ++all_.total;
         ++v_.back().total;
     }
 
     void
-    fail(char const* expr, char const* file, int line, char const* func) override
+    fail(
+        char const* expr,
+        char const* file,
+        int line,
+        char const*) override
     {
         ++all_.failed;
         ++v_.back().total;
@@ -361,10 +387,9 @@ public:
         auto const id = ++all_.total;
         log_ <<
             "#" << id <<
-            " failed: " << expr <<
-            ", file: " << file <<
-            "(" << line << ") " <<
-            func << "\n";
+            " " << filename(file) <<
+            "(" << line << ") "
+            "failed: " << expr << "\n";
     }
 };
 

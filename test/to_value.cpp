@@ -34,11 +34,12 @@ template<>
 struct to_value_traits<::to_value_test_ns::T1>
 {
     static
-    value
-    construct(
-        ::to_value_test_ns::T1 const& t, storage_ptr sp)
+    void
+    assign(
+        value& jv,
+        ::to_value_test_ns::T1 const& t)
     {
-        return value(t.i, std::move(sp));
+        jv = t.i;
     }
 };
 } // json
@@ -52,10 +53,10 @@ struct T2
 {
     bool b = false;
 
-    ::boost::json::value
-    to_json(::boost::json::storage_ptr sp) const
+    void
+    to_json(::boost::json::value& jv) const
     {
-        return ::boost::json::value(b, std::move(sp));
+        jv = b;
     }
 };
 BOOST_STATIC_ASSERT(::boost::json::detail::has_to_json_mf<T2>::value);
@@ -75,15 +76,17 @@ template<>
 struct to_value_traits<::to_value_test_ns::T3>
 {
     static
-    value
-    construct(
-        ::to_value_test_ns::T3 const& t, storage_ptr sp)
+    void
+    assign(
+        ::boost::json::value& jv,
+        ::to_value_test_ns::T3 const& t)
     {
-        return ::boost::json::array({
-            to_value(t.t1, sp),
-            to_value(t.t2, sp)}, sp);
+        jv = { t.t1, t.t2 };
     }
 };
+
+BOOST_STATIC_ASSERT(detail::has_to_value_generic<std::vector<int>>::value);
+
 } // json
 } // boost
 namespace to_value_test_ns {
@@ -103,12 +106,10 @@ struct T4
     {
     }
 
-    ::boost::json::value
-    to_json(::boost::json::storage_ptr sp) const
+    void
+    to_json(::boost::json::value& jv) const
     {
-        return {
-            ::boost::json::to_value(v, sp),
-            ::boost::json::to_value(s, sp) };
+        jv = { v, s };
     }
 };
 

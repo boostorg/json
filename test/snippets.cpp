@@ -322,7 +322,7 @@ struct customer
     
     explicit customer( value const& );
 
-    value to_json( storage_ptr sp ) const;
+    void to_json( value& jv ) const;
 };
 
 //]
@@ -335,13 +335,14 @@ BOOST_STATIC_ASSERT(
 
 //[snippet_exchange_2
 
-value customer::to_json( storage_ptr sp ) const
+void customer::to_json( value& jv ) const
 {
-    // Return a JSON object
-    return value({
+    // Assign a JSON value
+    jv = {
         { "id", id },
         { "name", name },
-        { "delinquent", delinquent } }, sp);
+        { "delinquent", delinquent }
+    };
 }
 
 //]
@@ -401,8 +402,9 @@ namespace json {
 template<>
 struct to_value_traits< ::std::complex< double > >
 {
-    static ::boost::json::value construct(
-        ::std::complex< double > const& t, ::boost::json::storage_ptr sp );
+    static void assign(
+        ::boost::json::value& jv,
+        ::std::complex< double > const& t );
 };
 
 } // namespace json
@@ -420,21 +422,18 @@ BOOST_STATIC_ASSERT(
 
 //[snippet_exchange_6
 
-::boost::json::value
+void
 to_value_traits< ::std::complex< double > >::
-construct( ::std::complex< double > const& t, ::boost::json::storage_ptr sp )
+assign( ::boost::json::value& jv, ::std::complex< double > const& t )
 {
     // Store a complex number as a 2-element array
-    ::boost::json::value jv( ::boost::json::array_kind, std::move(sp) );
-    auto& arr = jv.get_array();
+    auto& a = jv.emplace_array();
 
     // Real part first
-    arr.emplace_back( t.real() );
+    a.emplace_back( t.real() );
 
     // Imaginary part last
-    arr.emplace_back( t.imag() );
-
-    return jv;
+    a.emplace_back( t.imag() );
 }
 
 //]

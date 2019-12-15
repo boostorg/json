@@ -24,17 +24,29 @@ value() const
     return make_value({});
 }
 
+value
+value_ref::
+from_init_list(
+    void const* p,
+    storage_ptr sp)
+{
+    return make_value(
+        *reinterpret_cast<
+            init_list const*>(p),
+        detail::move(sp));
+}
+
 bool
 value_ref::
 is_key_value_pair() const noexcept
 {
     if(what_ != what::ini)
         return false;
-    if(ini_.size() != 2)
+    if(arg_.init_list_.size() != 2)
         return false;
-    auto const& e = *ini_.begin();
-    if( e.what_ != what::str &&
-        e.what_ != what::svw)
+    auto const& e =
+        *arg_.init_list_.begin();
+    if( e.what_ != what::str)
         return false;
     return true;
 }
@@ -55,10 +67,8 @@ string_view
 value_ref::
 get_string() const noexcept
 {
-    if(what_ == what::svw)
-        return { sv_.data, sv_.size };
     BOOST_ASSERT(what_ == what::str);
-    return *str_;
+    return arg_.str_;
 }
 
 value
@@ -68,73 +78,25 @@ make_value(
 {
     switch(what_)
     {
-    case what::val:
-        return value(
-            std::move(*val_),
-            std::move(sp));
-
-    case what::cval:
-        return value(*cval_,
-            std::move(sp));
-
-    case what::obj:
-        return object(
-            std::move(*obj_),
-            std::move(sp));
-
-    case what::cobj:
-        return object(*cobj_,
-            std::move(sp));
-
-    case what::arr:
-        return array(
-            std::move(*arr_),
-            std::move(sp));
-
-    case what::carr:
-        return array(*carr_,
-            std::move(sp));
-
+    default:
     case what::str:
         return string(
-            std::move(*str_),
-            std::move(sp));
-
-    case what::svw:
-        return string(
-            string_view(
-                sv_.data, sv_.size),
-            std::move(sp));
-
-    case what::i64:
-        return value(i64_,
-            std::move(sp));
-
-    case what::u64:
-        return value(u64_,
-            std::move(sp));
-
-    case what::dub:
-        return value(dub_,
-            std::move(sp));
-
-    case what::boo:
-        return value(boo_,
-            std::move(sp));
-
-    case what::nul:
-        return value(nullptr,
-            std::move(sp));
+            arg_.str_,
+            detail::move(sp));
 
     case what::ini:
-        return make_value(ini_,
-            std::move(sp));
+        return make_value(
+            arg_.init_list_,
+            detail::move(sp));
 
-    case what::fun:
-        break;
+    case what::func:
+        return f_.f(f_.p,
+            detail::move(sp));
+
+    case what::cfunc:
+        return cf_.f(cf_.p,
+            detail::move(sp));
     }
-    value jv(std::move(sp));
-    return jv;
 }
 
 value
@@ -146,9 +108,9 @@ make_value(
 {
     if(maybe_object(init))
         return make_object(
-            init, std::move(sp));
+            init, detail::move(sp));
     return make_array(
-        init, std::move(sp));
+        init, detail::move(sp));
 }
 
 object
@@ -157,12 +119,12 @@ make_object(
     std::initializer_list<value_ref> init,
     storage_ptr sp)
 {
-    object obj(std::move(sp));
+    object obj(detail::move(sp));
     obj.reserve(init.size());
     for(auto const& e : init)
         obj.emplace(
-            e.ini_.begin()[0].get_string(),
-            e.ini_.begin()[1].make_value(
+            e.arg_.init_list_.begin()[0].get_string(),
+            e.arg_.init_list_.begin()[1].make_value(
                 obj.storage()));
     return obj;
 }
@@ -174,7 +136,7 @@ make_array(
         value_ref> init,
     storage_ptr sp)
 {
-    array arr(std::move(sp));
+    array arr(detail::move(sp));
     arr.reserve(init.size());
     for(auto const& e : init)
         arr.emplace_back(

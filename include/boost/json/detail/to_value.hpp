@@ -30,10 +30,9 @@ struct has_to_value_traits : std::false_type
 template<class T>
 struct has_to_value_traits<T,
     detail::void_t<decltype(
-        std::declval<value&>() =
-            to_value_traits<T>::construct(
-                std::declval<T&&>(),
-                std::declval<storage_ptr const&>())
+        to_value_traits<T>::assign(
+            std::declval<value&>(),
+            std::declval<T&&>())
     )>> : std::true_type
 {
 };
@@ -46,9 +45,8 @@ struct has_to_json_mf : std::false_type
 template<class T>
 struct has_to_json_mf<T,
     detail::void_t<decltype(
-        std::declval<value&>() =
-            std::declval<T const&>().to_json(
-                std::declval<storage_ptr const&>())
+        std::declval<T const&>().to_json(
+            std::declval<value&>())
     )>> : std::true_type
 {
 };
@@ -69,85 +67,109 @@ to_value_impl_4( ... )
 
 // generic algorithms
 
+// ForwardRange
 template<class T>
 typename std::enable_if<
     has_to_value<decltype(
         *std::declval<T const&>().begin())>::value &&
     std::is_same<
         decltype(std::declval<T const&>().begin()),
-        decltype(std::declval<T const&>().end())>::value,
-    value>::type
+        decltype(std::declval<T const&>().end())>::value
+    >::type
 to_value_impl_4(
-    T const& t, storage_ptr const& sp)
+    value& jv,
+    T const& t)
 {
-    array a(sp);
+    auto& a = jv.emplace_array();
     for(auto const& e : t)
-        a.emplace_back(to_value(e, sp));
-    return a;
+        a.emplace_back(
+            to_value(e, a.storage()));
 }
+
+// ContiguousContainer<char>
+template<class T>
+typename std::enable_if<
+    std::is_same<char, decltype(
+        *std::declval<T const&>().data())>::value &&
+    std::is_convertible<decltype(
+        std::declval<T const&>().size()),
+        std::size_t>::value
+    >::type
+to_value_impl_4(
+    value& jv,
+    T const& t)
+{
+    jv = string_view(t.data(), t.size());
+}
+
+//----------------------------------------------------------
+
+// These declarations must come after
+// all the declarations of `to_value_impl_4`
+
+template<class T, class = void>
+struct has_to_value_generic : std::false_type
+{
+};
+
+template<class T>
+struct has_to_value_generic<T,
+    detail::void_t<decltype(
+        to_value_impl_4(
+            std::declval<value&>(),
+            std::declval<T const&>())
+    )>> : std::true_type
+{
+};
 
 //----------------------------------------------------------
 
 // Use T::to_value
 template<class T>
-auto
+void
 to_value_impl_3(
-    T&& t, storage_ptr sp,
-    std::true_type) -> decltype(
-        std::forward<T>(
-            t).to_json(move(sp)))
+    value& jv,
+    T&& t,
+    std::true_type)
 {
-    return std::forward<T>(
-        t).to_json(move(sp));
+    return std::forward<T>(t).to_json(jv);
 }
 
 template<class T>
-auto
+void
 to_value_impl_3(
-    T&& t, storage_ptr sp,
-    std::false_type) -> decltype(
-        to_value_impl_4(
-            std::forward<T>(t),
-            std::move(sp)))
+    value& jv,
+    T&& t,
+    std::false_type)
 {
-    return to_value_impl_4(
-        std::forward<T>(t),
-        std::move(sp));
+    to_value_impl_4(jv,
+        std::forward<T>(t));
 }
 
 //----------------------------------------------------------
 
 // Use to_value_traits
 template<class T>
-auto
+void
 to_value_impl_2(
-    T&& t, storage_ptr sp,
-    std::true_type) -> decltype(
-        to_value_traits<
-            remove_cvref<T>>::construct(
-                std::forward<T>(t),
-                move(sp)))
+    value& jv,
+    T&& t,
+    std::true_type)
 {
     return to_value_traits<
-        remove_cvref<T>>::construct(
-            std::forward<T>(t),
-            move(sp));
+        remove_cvref<T>>::assign(jv,
+            std::forward<T>(t));
 }
 
 template<class T>
-auto
+void
 to_value_impl_2(
-    T&& t, storage_ptr sp,
-    std::false_type) -> decltype(
-        to_value_impl_3(
-            std::forward<T>(t),
-            detail::move(sp),
-            has_to_json_mf<
-                remove_cvref<T>>{}))
+    value& jv,
+    T&& t,
+    std::false_type)
 {
-    return to_value_impl_3(
+    to_value_impl_3(jv,
         std::forward<T>(t),
-        detail::move(sp),
         has_to_json_mf<
             remove_cvref<T>>{});
 }
@@ -167,21 +189,19 @@ to_value_impl_1(
 }
 
 template<class T>
-auto
+value
 to_value_impl_1(
-    T&& t, storage_ptr sp,
-    std::false_type) -> decltype(
-        to_value_impl_2(
-            std::forward<T>(t),
-            detail::move(sp),
-            has_to_value_traits<
-                remove_cvref<T>>{}))
+    T&& t,
+    storage_ptr sp,
+    std::false_type)
+
 {
-    return to_value_impl_2(
+    value jv(move(sp));
+    to_value_impl_2(jv,
         std::forward<T>(t),
-        detail::move(sp),
         has_to_value_traits<
             remove_cvref<T>>{});
+    return jv;
 }
 
 } // detail

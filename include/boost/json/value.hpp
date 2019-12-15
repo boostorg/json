@@ -2780,6 +2780,7 @@ private:
 
 // These must come after array and object
 #include <boost/json/impl/value.hpp>
+#include <boost/json/impl/value_ref.hpp>
 #ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/impl/value.ipp>
 #include <boost/json/impl/value_ref.ipp>

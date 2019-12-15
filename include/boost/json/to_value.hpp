@@ -27,12 +27,16 @@ namespace json {
     @li If @ref value is constructible `T` then the
         function returns `value( t, sp )`.
 
-    @li If `T::to_json` exists then the function returns
-        `t.to_json( sp )`.
+    @li If `T::to_json` exists then the function invokes
+        `t.to_json( value& jv )` with `jv` set to a
+        null @ref value using storage `sp`, and returns
+        `jv`.
 
     @li If @ref to_value_traits contains a specialization
-        for `T`, then the function returns
-        `to_value_traits<T>:: construct( t, sp )`.
+        for `T`, then the function invokes
+        `to_value_traits<T>:: assign( jv, t )` with
+        `jv` set to a null @ref value constructed with
+        storage `sp`, and returns `jv`.
 
     @li Otherwise if `T` matches any from a set of
         generic requirements implemented by the library,
@@ -50,32 +54,30 @@ namespace json {
 
     @param t The instance of `T` to convert.
 
-    @param sp The storage to use for the new JSON
-        value. If this parameter is omitted, the
-        default storage is used.
+    @param jv The value to assign to.
 
     @returns The JSON value representing `t`.
 
     @see @ref value_cast
 */
-#ifdef GENERATING_DOCUMENTATION
-template<class T>
-value
-to_value(
-    T&& t,
-    storage_ptr sp = {});
-#else
 template<class T>
 auto
 to_value(
     T&& t,
-    storage_ptr sp = {})
-    -> decltype(
-        detail::to_value_impl_1(
-            std::forward<T>(t),
-            std::move(sp),
-            std::is_constructible<
-                value, T&&, storage_ptr>{}))
+    storage_ptr sp = {}) ->
+#ifdef GENERATING_DOCUMENTATION
+        value
+#else
+    typename std::enable_if<
+        std::is_constructible<
+            value, T&&, storage_ptr>::value ||
+        detail::has_to_value_traits<
+            detail::remove_cvref<T> >::value ||
+        detail::has_to_json_mf<
+            detail::remove_cvref<T> >::value ||
+        detail::has_to_value_generic<
+            detail::remove_cvref<T> >::value,
+    value>::type
 #endif
 {
     return detail::to_value_impl_1(

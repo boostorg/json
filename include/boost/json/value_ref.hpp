@@ -36,24 +36,12 @@ class value_ref
 
     friend class value_ref_test;
 
-    using func_ptr =
-        value(*)(void const*);
     enum class what
     {
-        val, cval,
-        obj, cobj,
-        arr, carr,
         str,
-
-        svw,
-        i64,
-        u64,
-        dub,
-        boo,
-        nul,
-
         ini,
-        fun
+        func,
+        cfunc
     };
 
     struct string_type
@@ -69,213 +57,227 @@ class value_ref
         }
     };
 
+    using init_list =
+        std::initializer_list<value_ref>;
+
     struct func_type
     {
-        func_ptr fp;
+        value(*f)(void*, storage_ptr);
+        void* p;
+    };
+
+    struct cfunc_type
+    {
+        value(*f)(void const*, storage_ptr);
         void const* p;
     };
 
-    union
+    union arg_type
     {
-        value*        const val_;
-        object*       const obj_;
-        array*        const arr_;
-        value const*  const cval_;
-        object const* const cobj_;
-        array const*  const carr_;
-        string*       const str_;
+        string_view         str_;
+        init_list           init_list_;
 
-        string_type   const sv_;
-        std::int64_t  const i64_;
-        std::uint64_t const u64_;
-        double        const dub_;
-        bool          const boo_;
+        short               short_;
+        int                 int_;
+        long                long_;
+        long long           long_long_;
+        unsigned short      ushort_;
+        unsigned int        uint_;
+        unsigned long       ulong_;
+        unsigned long long  ulong_long_;
+        float               float_;
+        double              double_;
+        long double         long_double_;
+        bool                bool_;
+        std::nullptr_t      nullptr_;
 
-        std::initializer_list<
-            value_ref> const ini_;
-        func_type const fun_;
+        arg_type() {}
+        explicit arg_type(string_view t) noexcept : str_(t) {}
+        explicit arg_type(init_list t) noexcept : init_list_(t) {}
+        explicit arg_type(short t) noexcept : short_(t) {}
+        explicit arg_type(int t) noexcept : int_(t) {}
+        explicit arg_type(long t) noexcept : long_(t) {}
+        explicit arg_type(long long t) noexcept : long_long_(t) {}
+        explicit arg_type(unsigned short t) noexcept : ushort_(t) {}
+        explicit arg_type(unsigned int t) noexcept : uint_(t) {}
+        explicit arg_type(unsigned long t) noexcept : ulong_(t) {}
+        explicit arg_type(unsigned long long t) noexcept : ulong_long_(t) {}
+        explicit arg_type(float t) noexcept : float_(t) {}
+        explicit arg_type(double t) noexcept : double_(t) {}
+        explicit arg_type(long double t) noexcept : long_double_(t) {}
+        explicit arg_type(bool t) noexcept : bool_(t) {}
+        explicit arg_type(std::nullptr_t) noexcept : nullptr_() {}
     };
 
-    what const what_;
+    template<class T>
+    using is_builtin =
+        std::integral_constant<bool,
+            std::is_same<T, short>::value ||
+            std::is_same<T, int>::value ||
+            std::is_same<T, long>::value ||
+            std::is_same<T, long long>::value ||
+            std::is_same<T, unsigned short>::value ||
+            std::is_same<T, unsigned int>::value ||
+            std::is_same<T, unsigned long>::value ||
+            std::is_same<T, unsigned long long>::value ||
+            std::is_same<T, float>::value ||
+            std::is_same<T, double>::value ||
+            std::is_same<T, long double>::value ||
+            std::is_same<T, std::nullptr_t>::value>;
+
+    arg_type arg_;
+    union
+    {
+        func_type f_;
+        cfunc_type cf_;
+    };
+    what what_;
 
 public:
     value_ref(
         value_ref const&) = default;
 
-    value_ref(
-        std::initializer_list<
-            value_ref> init) noexcept
-        : ini_(init)
-        , what_(what::ini)
-    {
-    }
-
-    value_ref(
-        value&& v) noexcept
-        : val_(&v)
-        , what_(what::val)
-    {
-    }
-
-    value_ref(
-        value const& v) noexcept
-        : cval_(&v)
-        , what_(what::cval)
-    {
-    }
-
-    value_ref(
-        object&& o) noexcept
-        : obj_(&o)
-        , what_(what::obj)
-    {
-    }
-
-    value_ref(
-        object const& o) noexcept
-        : cobj_(&o)
-        , what_(what::cobj)
-    {
-    }
-
-    value_ref(
-        array&& a) noexcept
-        : arr_(&a)
-        , what_(what::arr)
-    {
-    }
-
-    value_ref(
-        array const& a) noexcept
-        : carr_(&a)
-        , what_(what::carr)
-    {
-    }
-
-    value_ref(
-        string&& s) noexcept
-        : str_(&s)
+    template<class T
+        , class = typename
+            std::enable_if<
+                std::is_constructible<
+                    string_view, T>::value>::type
+    >
+    value_ref(T const& t)
+        : arg_(string_view(t))
         , what_(what::str)
     {
-    }
 
-    value_ref(
-        string const& s) noexcept
-        : sv_(static_cast<string_view>(s))
-        , what_(what::svw)
-    {
-    }
-
-    //---
-
-    value_ref(
-        string_view sv) noexcept
-        : sv_(sv)
-        , what_(what::svw)
-    {
     }
 
     template<class T>
-    value_ref(
-        T const& t
+    value_ref(T const& t
         ,typename std::enable_if<
-            std::is_same<
-            std::string, T>::value>::type* = 0
-                ) noexcept
-        : sv_(t)
-        , what_(what::svw)
+            ! std::is_constructible<
+                string_view, T>::value &&
+            ! std::is_same<bool, T>::value
+                >::type* = 0)
+        : cf_{&from_const<T>, &t}
+        , what_(what::cfunc)
     {
+
     }
 
-    value_ref(
-        char const* s) noexcept
-        : sv_(string_view(s))
-        , what_(what::svw)
+#if 0
+    template<class T>
+    value_ref(T&& t
+        ,typename std::enable_if<
+            ! std::is_constructible<
+                string_view, T>::value &&
+            ! std::is_same<bool, T>::value
+                >::type* = 0)
+        : cf_{&from_rvalue<T>, &t}
+        , what_(what::func)
     {
-    }
 
-    value_ref(
-        short i)
-        : i64_(i)
-        , what_(what::i64)
-    {
     }
-
-    value_ref(
-        int i)
-        : i64_(i)
-        , what_(what::i64)
-    {
-    }
-
-    value_ref(
-        long i)
-        : i64_(i)
-        , what_(what::i64)
-    {
-    }
-
-    value_ref(
-        long long i)
-        : i64_(i)
-        , what_(what::i64)
-    {
-    }
-
-    value_ref(
-        unsigned short u)
-        : u64_(u)
-        , what_(what::u64)
-    {
-    }
-
-    value_ref(
-        unsigned int u)
-        : u64_(u)
-        , what_(what::u64)
-    {
-    }
-
-    value_ref(
-        unsigned long u)
-        : u64_(u)
-        , what_(what::u64)
-    {
-    }
-
-    value_ref(
-        unsigned long long u)
-        : u64_(u)
-        , what_(what::u64)
-    {
-    }
-
-    value_ref(
-        double d)
-        : dub_(d)
-        , what_(what::dub)
-    {
-    }
-
-    value_ref(
-        long double d)
-        : dub_(static_cast<double>(d))
-        , what_(what::dub)
-    {
-    }
+#endif
 
     template<class Bool
         ,class = typename std::enable_if<
             std::is_same<Bool, bool>::value>::type
     >
     value_ref(Bool b) noexcept
-        : boo_(b)
-        , what_(what::boo)
+        : arg_(b)
+        , cf_{&from_builtin<bool>, &arg_.bool_}
+        , what_(what::cfunc)
     {
     }
 
-    value_ref(std::nullptr_t)
-        : what_(what::nul)
+    value_ref(
+        std::initializer_list<
+            value_ref> t) noexcept
+        : arg_(t)
+        , what_(what::ini)
+    {
+    }
+
+    value_ref(short t) noexcept
+        : arg_(t)
+        , cf_{&from_builtin<short>, &arg_.short_}
+        , what_(what::cfunc)
+    {
+    }
+
+    value_ref(int t) noexcept
+        : arg_(t)
+        , cf_{&from_builtin<int>, &arg_.int_}
+        , what_(what::cfunc)
+    {
+    }
+
+    value_ref(long t) noexcept
+        : arg_(t)
+        , cf_{&from_builtin<long>, &arg_.long_}
+        , what_(what::cfunc)
+    {
+    }
+
+    value_ref(long long t) noexcept
+        : arg_(t)
+        , cf_{&from_builtin<long long>, &arg_.long_long_}
+        , what_(what::cfunc)
+    {
+    }
+
+    value_ref(unsigned short t) noexcept
+        : arg_(t)
+        , cf_{&from_builtin<unsigned short>, &arg_.ushort_}
+        , what_(what::cfunc)
+    {
+    }
+
+    value_ref(unsigned int t) noexcept
+        : arg_(t)
+        , cf_{&from_builtin<int>, &arg_.uint_}
+        , what_(what::cfunc)
+    {
+    }
+
+    value_ref(unsigned long t) noexcept
+        : arg_(t)
+        , cf_{&from_builtin<long>, &arg_.ulong_}
+        , what_(what::cfunc)
+    {
+    }
+
+    value_ref(unsigned long long t) noexcept
+        : arg_(t)
+        , cf_{&from_builtin<unsigned long long>, &arg_.ulong_long_}
+        , what_(what::cfunc)
+    {
+    }
+
+    value_ref(float t) noexcept
+        : arg_(t)
+        , cf_{&from_builtin<float>, &arg_.float_}
+        , what_(what::cfunc)
+    {
+    }
+
+    value_ref(double t) noexcept
+        : arg_(t)
+        , cf_{&from_builtin<double>, &arg_.double_}
+        , what_(what::cfunc)
+    {
+    }
+
+    value_ref(long double t) noexcept
+        : arg_(t)
+        , cf_{&from_builtin<long double>, &arg_.long_double_}
+        , what_(what::cfunc)
+    {
+    }
+
+    value_ref(std::nullptr_t) noexcept
+        : arg_(nullptr)
+        , cf_{&from_builtin<std::nullptr_t>, &arg_.nullptr_}
+        , what_(what::cfunc)
     {
     }
 
@@ -283,6 +285,34 @@ public:
     operator value() const;
 
 private:
+    template<class T>
+    static
+    value
+    from_builtin(
+        void const* p,
+        storage_ptr sp) noexcept;
+
+    template<class T>
+    static
+    value
+    from_const(
+        void const* p,
+        storage_ptr sp);
+
+    template<class T>
+    static
+    value
+    from_rvalue(
+        void* p,
+        storage_ptr sp);
+
+    static
+    BOOST_JSON_DECL
+    value
+    from_init_list(
+        void const* p,
+        storage_ptr sp);
+
     inline
     bool
     is_key_value_pair() const noexcept;
@@ -345,5 +375,7 @@ private:
 #include <boost/json/value.hpp>
 
 // includes are at the bottom of <boost/json/value.hpp>
+//#include <boost/json/impl/value.hpp>
+//#include <boost/json/impl/value.ipp>
 
 #endif
