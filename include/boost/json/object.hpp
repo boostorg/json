@@ -1169,7 +1169,7 @@ public:
 
         Constant on average, worst case linear in @ref size().
 
-        @param key The key of the element to find
+        @param key The key of the element to find.
 
         @throw std::out_of_range if no such element exists.
     */
@@ -1186,7 +1186,7 @@ public:
 
         Constant on average, worst case linear in @ref size().
 
-        @param key The key of the element to find
+        @param key The key of the element to find.
 
         @throw std::out_of_range if no such element exists.
     */
@@ -1218,7 +1218,7 @@ public:
         If an exception is thrown by any operation, the
         insertion has no effect.
 
-        @param key The key of the element to find
+        @param key The key of the element to find.
     */
     BOOST_JSON_DECL
     value&
@@ -1238,7 +1238,7 @@ public:
 
         No-throw guarantee.
 
-        @param key The key of the element to find
+        @param key The key of the element to find.
     */
     BOOST_JSON_DECL
     std::size_t
@@ -1258,7 +1258,7 @@ public:
 
         No-throw guarantee.
 
-        @param key The key of the element to find
+        @param key The key of the element to find.
     */
     BOOST_JSON_DECL
     iterator
@@ -1278,7 +1278,7 @@ public:
 
         No-throw guarantee.
 
-        @param key The key of the element to find
+        @param key The key of the element to find.
     */
     BOOST_JSON_DECL
     const_iterator
@@ -1296,7 +1296,7 @@ public:
 
         No-throw guarantee.
 
-        @param key The key of the element to find
+        @param key The key of the element to find.
 
         @see find.
     */

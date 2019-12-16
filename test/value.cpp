@@ -1522,6 +1522,26 @@ public:
         }
     }
 
+    void
+    testAt()
+    {
+        // object
+        BOOST_TEST(value(
+            {{"k1", "value"}, {"k2", nullptr}}
+                ).at("k1").as_string() == "value");
+        BOOST_TEST_THROWS(value(
+            {{"k1", "value"}, {"k2", nullptr}}
+                ).at("null"),
+            std::out_of_range);
+
+        // array
+        BOOST_TEST(
+            value({true,2,"3"}).at(1).as_int64() == 2);
+        BOOST_TEST_THROWS(
+            value({false,2,"3"}).at(4),
+            std::out_of_range);
+    }
+
     //------------------------------------------------------
 
     void
@@ -1564,6 +1584,7 @@ public:
         testIf();
         testAs();
         testGet();
+        testAt();
         testKeyValuePair();
         testStdConstruction();
     }

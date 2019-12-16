@@ -61,6 +61,14 @@ namespace json {
 
     @endcode
 
+    @note
+
+    Member function `to_json` or specializations of
+    the `to_value_traits` template should never be
+    invoked directly. Callers should instead use the
+    @ref to_value function, even when implementing
+    customization points.
+
     @tparam T The type for which the conversion should
     be customized.
 
@@ -74,6 +82,62 @@ struct to_value_traits
 //----------------------------------------------------------
 
 /** Customization point to construct a user-defined type for a JSON value.
+    
+    This class template is used by the implementation as
+    needed to construct a user-defined type T from a
+    @ref value. The customization point is used by declaring
+    a specialization for the type `T` and providing a
+    public static member function with this signature:
+
+    @code
+    void assign( value&, T const& t )
+    @endcode
+
+    The specialization must be in the same namespace as
+    the library.
+
+    @par Example
+
+    This example declares a struct T and specializes the
+    trait to provide a means of construction:
+
+    @code
+
+    struct T
+    {
+        int i;
+        bool b;
+    };
+
+    // Specialization of to_value_traits must be in the
+    // same namespace of the library in order to compile.
+
+    namespace boost {
+    namespace json {
+    template<>
+    struct to_value_traits< T >
+    {
+        static void assign( value& jv, T const& t )
+        {
+            jv = { t.i, t.b };
+        }
+    };
+    } // namespace json
+    } // naemspace boost
+
+    @endcode
+
+    @note
+
+    Specializations of the `value_cast_traits` template
+    should never be invoked directly. Callers should
+    instead use the @ref value_cast function, even when
+    implementing customization points.
+    
+    @tparam T The type for which the conversion should
+    be customized.
+
+    @see @ref to_value, @ref to_value_traits, @ref value_cast
 */
 template<class T>
 struct value_cast_traits

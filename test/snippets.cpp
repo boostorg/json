@@ -351,13 +351,11 @@ void customer::to_json( value& jv ) const
 
 customer::customer( value const& jv )
 
-    // as_object() will throw if jv.kind() != kind::object.
+    // at() throws if `jv` is not an object, or if the key is not found.
     //
-    // at() will throw if the key is not found,
-    // and as_uint64() will throw if the value is
-    // not an unsigned 64-bit integer.
+    // as_uint64() will throw if the value is not an unsigned 64-bit integer.
 
-    : id( jv.as_object().at( "id" ).as_uint64() )
+    : id( jv.at( "id" ).as_uint64() )
 
     // We already know that jv is an object from
     // the previous call to jv.as_object() suceeding,

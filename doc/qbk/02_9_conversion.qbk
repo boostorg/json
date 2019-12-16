@@ -101,5 +101,13 @@ different floating point representations are also possible:
 
 [snippet_exchange_9]
 
-[endsect]
+[warning
+    Users should not directly invoke any `to_json` member
+    functions or the library class templates __to_value_traits__
+    and __value_cast_traits__, otherwise the behavior may be undefined.
+    Instead, callers should always use the functions __to_value__
+    and __value_cast__, even in their implementation of the
+    customization points for desired types.
+]
 
+[endsect]

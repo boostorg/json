@@ -2568,6 +2568,54 @@ public:
 
     //------------------------------------------------------
 
+    /** Access an element, with bounds checking.
+
+        This function is used to access elements of
+        the underlying object, or throw an exception
+        if the value is not an object.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        Strong guarantee.
+
+        @param key The key of the element to find.
+
+        @return `this->as_object().at( key )`.
+    */
+    value const&
+    at(string_view key) const
+    {
+        return as_object().at(key);
+    }
+
+    /** Access an element, with bounds checking.
+
+        This function is used to access elements of
+        the underlying array, or throw an exception
+        if the value is not an array.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        Strong guarantee.
+
+        @param pos A zero-based array index.
+
+        @return `this->as_array().at( pos )`.
+    */
+    value const&
+    at(std::size_t pos) const
+    {
+        return as_array().at(pos);
+    }
+
 private:
     static
     inline
