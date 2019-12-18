@@ -65,8 +65,6 @@
           <member><link linkend="json.ref.boost__json__operator_gt_">operator&gt;</link></member>
           <member><link linkend="json.ref.boost__json__operator_lt__lt_">operator&lt;&lt;</link></member>
         </simplelist>
-      </entry>
-      <entry valign="top">
         <bridgehead renderas="sect3">Constants</bridgehead>
         <simplelist type="vert" columns="1">
           <member><link linkend="json.ref.boost__json__array_kind">array_kind</link></member>
@@ -75,6 +73,28 @@
           <member><link linkend="json.ref.boost__json__kind">kind</link></member>
           <member><link linkend="json.ref.boost__json__object_kind">object_kind</link></member>
           <member><link linkend="json.ref.boost__json__string_kind">string_kind</link></member>
+        </simplelist>
+      </entry>
+      <entry valign="top">
+        <bridgehead renderas="sect3">Exceptions</bridgehead>
+        <simplelist type="vert" columns="1">
+          <member><link linkend="json.ref.boost__json__array_index_error">array_index_error</link></member>
+          <member><link linkend="json.ref.boost__json__array_required_error">array_required_error</link></member>
+          <member><link linkend="json.ref.boost__json__array_too_large">array_too_large</link></member>
+          <member><link linkend="json.ref.boost__json__bool_required_error">bool_required_error</link></member>
+          <member><link linkend="json.ref.boost__json__char_pos_error">char_pos_error</link></member>
+          <member><link linkend="json.ref.boost__json__double_required_error">double_required_error</link></member>
+          <member><link linkend="json.ref.boost__json__int64_required_error">int64_required_error</link></member>
+          <member><link linkend="json.ref.boost__json__key_not_found">key_not_found</link></member>
+          <member><link linkend="json.ref.boost__json__key_too_large">key_too_large</link></member>
+          <member><link linkend="json.ref.boost__json__number_required_error">number_required_error</link></member>
+          <member><link linkend="json.ref.boost__json__object_required_error">object_required_error</link></member>
+          <member><link linkend="json.ref.boost__json__object_too_large">object_too_large</link></member>
+          <member><link linkend="json.ref.boost__json__stack_overflow">stack_overflow</link></member>
+          <member><link linkend="json.ref.boost__json__string_required_error">string_required_error</link></member>
+          <member><link linkend="json.ref.boost__json__string_too_large">string_too_large</link></member>
+          <member><link linkend="json.ref.boost__json__type_error">type_error</link></member>
+          <member><link linkend="json.ref.boost__json__uint64_required_error">uint64_required_error</link></member>
         </simplelist>
       </entry>
       <entry valign="top">

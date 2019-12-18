@@ -11,7 +11,6 @@
 #define BOOST_JSON_IMPL_VALUE_HPP
 
 #include <boost/json/error.hpp>
-#include <boost/json/detail/except.hpp>
 #include <cstring>
 #include <limits>
 #include <type_traits>
@@ -104,7 +103,7 @@ key_value_pair(
         {
             if(key.size() > string::max_size())
                 BOOST_THROW_EXCEPTION(
-                    detail::key_too_large_exception());
+                    key_too_large());
             auto s = reinterpret_cast<
                 char*>(value_.storage()->
                     allocate(key.size() + 1));

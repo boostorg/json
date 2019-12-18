@@ -10,8 +10,8 @@
 #ifndef BOOST_JSON_DETAIL_IMPL_STRING_IMPL_IPP
 #define BOOST_JSON_DETAIL_IMPL_STRING_IMPL_IPP
 
+#include <boost/json/error.hpp>
 #include <boost/json/detail/string_impl.hpp>
-#include <boost/json/detail/except.hpp>
 #include <cstring>
 
 namespace boost {
@@ -66,7 +66,7 @@ growth(
 {
     if(new_size > max_size())
         BOOST_THROW_EXCEPTION(
-            string_too_large_exception());
+            string_too_large());
     // growth factor 2
     if( capacity >
         max_size() - capacity)
@@ -102,7 +102,7 @@ append(
 {
     if(n > max_size() - size())
         BOOST_THROW_EXCEPTION(
-            string_too_large_exception());
+            string_too_large());
     if(n <= capacity() - size())
     {
         term(size() + n);
@@ -127,7 +127,7 @@ insert(
 {
     if(pos > size())
         BOOST_THROW_EXCEPTION(
-            string_pos_too_large());
+            char_pos_error());
     if(n <= capacity() - size())
     {
         auto const dest =
@@ -141,7 +141,7 @@ insert(
     }
     if(n > max_size() - size())
         BOOST_THROW_EXCEPTION(
-            string_too_large_exception());
+            string_too_large());
     string_impl tmp(growth(
         size() + n, capacity()), sp);
     tmp.size(size() + n);

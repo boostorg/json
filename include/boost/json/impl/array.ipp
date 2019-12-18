@@ -11,7 +11,6 @@
 #define BOOST_JSON_IMPL_ARRAY_IPP
 
 #include <boost/json/array.hpp>
-#include <boost/json/detail/except.hpp>
 #include <boost/pilfer.hpp>
 #include <cstdlib>
 #include <limits>
@@ -43,7 +42,7 @@ undo_insert(
 {
     if(n > max_size())
         BOOST_THROW_EXCEPTION(
-            detail::array_too_large_exception());
+            array_too_large());
     self_.reserve(
         self_.impl_.size() + n_);
     // (iterators invalidated now)

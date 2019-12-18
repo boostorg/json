@@ -11,7 +11,6 @@
 #define BOOST_JSON_IMPL_OBJECT_HPP
 
 #include <boost/json/value.hpp>
-#include <boost/json/detail/except.hpp>
 #include <iterator>
 #include <cmath>
 #include <type_traits>
@@ -415,7 +414,7 @@ insert_range(
     auto const n0 = size();
     if(n > max_size() - n0)
         BOOST_THROW_EXCEPTION(
-            detail::object_too_large_exception());
+            object_too_large());
     if( min_capacity < n0 + n)
         min_capacity = n0 + n;
     place_impl f(first, n, sp_);

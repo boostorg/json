@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_IMPL_STRING_IPP
 #define BOOST_JSON_IMPL_STRING_IPP
 
-#include <boost/json/detail/except.hpp>
+#include <boost/json/error.hpp>
 #include <algorithm>
 #include <new>
 #include <ostream>
@@ -170,7 +170,7 @@ insert(
 {
     if(pos > impl_.size())
         BOOST_THROW_EXCEPTION(
-            detail::string_pos_too_large());
+            char_pos_error());
     if(count > impl_.capacity() - impl_.size())
     {
         traits_type::copy(
@@ -226,7 +226,7 @@ erase(
 {
     if(pos > impl_.size())
         BOOST_THROW_EXCEPTION(
-            detail::string_pos_too_large());
+            char_pos_error());
     if( count > impl_.size() - pos)
         count = impl_.size() - pos;
     traits_type::move(

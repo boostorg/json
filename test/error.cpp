@@ -84,7 +84,6 @@ public:
         check(condition::assign_error, error::not_exact);
     
         check(error::need_start);
-        check(error::key_not_found);
         check(error::test_failure);
     }
 };

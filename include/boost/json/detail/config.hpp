@@ -93,6 +93,10 @@
 # endif
 #endif
 
+#ifndef BOOST_SYMBOL_VISIBLE
+#define BOOST_SYMBOL_VISIBLE
+#endif
+
 #ifndef BOOST_JSON_STANDALONE
 # if defined(GENERATING_DOCUMENTATION)
 #  define BOOST_JSON_DECL

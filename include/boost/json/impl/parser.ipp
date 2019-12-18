@@ -12,7 +12,6 @@
 
 #include <boost/json/parser.hpp>
 #include <boost/json/error.hpp>
-#include <boost/json/detail/except.hpp>
 #include <cstring>
 #include <stdexcept>
 #include <utility>
@@ -441,7 +440,7 @@ on_key_part(
     if( s.size() >
         string::max_size() - key_size_)
         BOOST_THROW_EXCEPTION(
-            detail::key_too_large_exception());  
+            key_too_large());
     push_chars(s);
     key_size_ += static_cast<
         std::uint32_t>(s.size());
@@ -470,7 +469,7 @@ on_string_part(
     if( s.size() >
         string::max_size() - str_size_)
         BOOST_THROW_EXCEPTION(
-            detail::string_too_large_exception());  
+            string_too_large());  
     push_chars(s);
     str_size_ += static_cast<
         std::uint32_t>(s.size());
@@ -485,7 +484,7 @@ on_string(
     if( s.size() >
         string::max_size() - str_size_)
         BOOST_THROW_EXCEPTION(
-            detail::string_too_large_exception());  
+            string_too_large());  
     if(str_size_ == 0)
     {
         // fast path

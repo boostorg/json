@@ -10,8 +10,8 @@
 #ifndef BOOST_JSON_IMPL_OBJECT_IPP
 #define BOOST_JSON_IMPL_OBJECT_IPP
 
+#include <boost/json/error.hpp>
 #include <boost/json/object.hpp>
-#include <boost/json/detail/except.hpp>
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -291,7 +291,7 @@ insert(
     auto const n0 = size();
     if(init.size() > max_size() - n0)
         BOOST_THROW_EXCEPTION(
-            detail::object_too_large_exception());
+            object_too_large());
     place_impl f(
         init.begin(), init.size(), sp_);
     insert_range_impl(n0 + init.size(), f);
@@ -372,8 +372,7 @@ at(key_type key) ->
     auto it = find(key);
     if(it == end())
         BOOST_THROW_EXCEPTION(
-         std::out_of_range(
-            "key not found"));
+            key_not_found());
     return it->value();
 }
     
@@ -385,8 +384,7 @@ at(key_type key) const ->
     auto it = find(key);
     if(it == end())
         BOOST_THROW_EXCEPTION(
-         std::out_of_range(
-            "key not found"));
+         key_not_found());
     return it->value();
 }
 
@@ -540,7 +538,7 @@ rehash(std::size_t new_capacity)
         std::ceil(new_buckets * max_load_factor()));
     if(new_capacity > max_size())
         BOOST_THROW_EXCEPTION(
-            detail::object_too_large_exception());
+            object_too_large());
     object_impl impl(
         new_capacity, new_buckets, sp_);
     if(impl_.size() > 0)

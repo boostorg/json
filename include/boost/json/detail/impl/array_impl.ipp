@@ -11,7 +11,6 @@
 #define BOOST_JSON_DETAIL_IMPL_ARRAY_IMPL_IPP
 
 #include <boost/json/detail/array_impl.hpp>
-#include <boost/json/detail/except.hpp>
 
 namespace boost {
 namespace json {
@@ -24,7 +23,7 @@ array_impl(
 {
     if(capacity > max_size())
         BOOST_THROW_EXCEPTION(
-            array_too_large_exception());
+            array_too_large());
     if(capacity > 0)
     {
         tab_ = ::new(sp->allocate(

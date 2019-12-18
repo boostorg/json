@@ -45,7 +45,7 @@ public:
             {"26",26},{"27",27},{"28",28},{"29",29},{"30",30},
             {"31",31}};
             BOOST_TEST(init.size() > object::max_size());
-            BOOST_TEST_THROWS(value{init}, std::length_error);
+            BOOST_TEST_THROWS(value{init}, object_too_large);
         }
     }
 
@@ -73,12 +73,12 @@ public:
             BOOST_TEST(init.size() > object::max_size());
             BOOST_TEST_THROWS(
                 object(init.begin(), init.end()),
-                std::length_error);
+                object_too_large);
             BOOST_TEST_THROWS(
                 object(
                     make_input_iterator(init.begin()),
                     make_input_iterator(init.end())),
-                std::length_error);
+                object_too_large);
         }
 
         // max key size
@@ -87,7 +87,7 @@ public:
                 string::max_size() + 1, '*');
             BOOST_TEST_THROWS(
                 object({ {big, nullptr} }),
-                std::length_error);
+                key_too_large);
         }
     }
 
@@ -99,7 +99,7 @@ public:
                 array(
                     array::max_size()+1,
                     value(nullptr)),
-                std::length_error);
+                array_too_large);
         }
 
         {
@@ -107,7 +107,7 @@ public:
                 array::max_size()+1, 42);
             BOOST_TEST_THROWS(
                 array(v.begin(), v.end()),
-                std::length_error);
+                array_too_large);
         }
 
         {
@@ -116,7 +116,7 @@ public:
             BOOST_TEST_THROWS(array(
                 make_input_iterator(v.begin()),
                 make_input_iterator(v.end())),
-                std::length_error);
+                array_too_large);
         }
 
         {
@@ -125,7 +125,7 @@ public:
                 a.insert(a.begin(),
                     array::max_size() + 1,
                     nullptr),
-                std::length_error);
+                array_too_large);
         }
     }
 
@@ -138,7 +138,7 @@ public:
                 string s;
                 BOOST_TEST_THROWS(
                     (s.resize(s.max_size() + 1)),
-                    std::length_error);
+                    string_too_large);
             }
 
             {
@@ -146,7 +146,7 @@ public:
                 s.resize(100);
                 BOOST_TEST_THROWS(
                     (s.append(s.max_size() - 1, '*')),
-                    std::length_error);
+                    string_too_large);
             }
 
     #if 0
@@ -174,7 +174,7 @@ public:
             value jv;
             BOOST_TEST_THROWS(
                 jv = parse(js),
-                std::length_error);
+                string_too_large);
         }
 
         // key in parser
@@ -187,7 +187,7 @@ public:
             value jv;
             BOOST_TEST_THROWS(
                 jv = parse(js),
-                std::length_error);
+                key_too_large);
         }
     }
 
@@ -216,7 +216,7 @@ public:
                     "1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,"
                     "1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,"
                     "1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0]"),
-                std::length_error);
+                stack_overflow);
         }
     }
 
@@ -232,8 +232,9 @@ public:
             auto const js =
                 "\"" + big + "\"";
             value jv;
-            BOOST_TEST_THROWS(jv = parse(js),
-                decltype(detail::string_too_large_exception()));
+            BOOST_TEST_THROWS(
+                jv = parse(js),
+                string_too_large);
         }
 
         // overflow in on_string
@@ -245,8 +246,9 @@ public:
             auto const js =
                 "\"" + big + "\"";
             value jv;
-            BOOST_TEST_THROWS(jv = parse(js),
-                decltype(detail::string_too_large_exception()));
+            BOOST_TEST_THROWS(
+                jv = parse(js),
+                string_too_large);
         }
     }
 

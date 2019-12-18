@@ -68,8 +68,6 @@ case error::not_null: return "not a null";
 case error::integer_overflow: return "integer overflowed";
 case error::not_exact: return "not exact";
 
-case error::key_not_found: return "key not found";
-
 case error::test_failure: return "test failure";
             }
         }

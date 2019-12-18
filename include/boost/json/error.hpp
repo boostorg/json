@@ -11,9 +11,192 @@
 #define BOOST_JSON_ERROR_HPP
 
 #include <boost/json/config.hpp>
+#include <stdexcept>
 
 namespace boost {
 namespace json {
+
+/** Exception thrown when a value's kind is mismatched.
+*/
+struct BOOST_SYMBOL_VISIBLE
+    type_error : std::invalid_argument
+{
+    /// Default constructor
+    type_error()
+        : std::invalid_argument(
+            "type error") {}
+
+    /** Constructor.
+
+        Construct the exception using
+        the specified message.
+
+        @param what The exception message text.
+    */
+    explicit type_error(char const* what)
+        : std::invalid_argument(what) {}
+};
+
+/** Exception thrown when a number is required.
+
+    @see
+        @ref value::as_int64,
+        @ref value::as_uint64,
+        @ref value::as_double
+*/
+struct BOOST_SYMBOL_VISIBLE
+    number_required_error : type_error
+{
+    /// Default constructor.
+    number_required_error()
+        : type_error("number required") {}
+
+    /** Constructor.
+
+        Construct the exception using
+        the specified message.
+
+        @param what The exception message text.
+    */
+    explicit number_required_error(char const* what)
+        : type_error(what) {}
+};
+
+//----------------------------------------------------------
+
+/** Exception thrown when an object is required.
+
+    @see @ref value::as_object
+*/
+struct BOOST_SYMBOL_VISIBLE
+    object_required_error : type_error {
+    /// Default constructor.
+    object_required_error() : type_error(
+        "object required") { } };
+
+/** Exception thrown when an array is required.
+
+    @see @ref value::as_array
+*/
+struct BOOST_SYMBOL_VISIBLE
+    array_required_error : type_error {
+    /// Default constructor.
+    array_required_error() : type_error(
+        "array required") { } };
+
+/** Exception thrown when a string is required.
+
+    @see @ref value::as_string
+*/
+struct string_required_error : type_error {
+    string_required_error() : type_error(
+        "string required") { } };
+
+/** Exception thrown when a signed 64-bit integer is required.
+
+    @see @ref value::as_int64
+*/
+struct BOOST_SYMBOL_VISIBLE
+    int64_required_error : number_required_error {
+    /// Default constructor.
+    int64_required_error() : number_required_error(
+        "int64 required") { } };
+
+/** Exception thrown when an unsigned 64-bit integer is required.
+
+    @see @ref value::as_uint64
+*/
+struct BOOST_SYMBOL_VISIBLE
+    uint64_required_error : number_required_error {
+    /// Default constructor.
+    uint64_required_error() : number_required_error(
+        "uint64 required") { } };
+
+/** Exception thrown when a double is required.
+
+    @see @ref value::as_double
+*/
+struct BOOST_SYMBOL_VISIBLE
+    double_required_error : number_required_error {
+    /// Default constructor.
+    double_required_error() : number_required_error(
+        "double required") { } };
+
+/** Exception thrown when a bool is required.
+
+    @see @ref value::as_bool
+*/
+struct BOOST_SYMBOL_VISIBLE
+    bool_required_error : type_error {
+    /// Default constructor.
+    bool_required_error() : type_error(
+        "bool required") { } };
+
+/** Exception thrown when a key is too large.
+*/
+struct BOOST_SYMBOL_VISIBLE
+    key_too_large : std::length_error {
+    /// Default constructor
+    key_too_large() : std::length_error(
+        "key too large") { } };
+
+/** Exception thrown when an array index is out of range.
+*/
+struct BOOST_SYMBOL_VISIBLE
+    array_index_error : std::out_of_range {
+    /// Default constructor
+    array_index_error() : std::out_of_range(
+        "array index error") { } };
+
+/** Exception thrown when an object's maximum size would be exceeded.
+*/
+struct BOOST_SYMBOL_VISIBLE
+    object_too_large : std::length_error {
+    /// Default constructor
+    object_too_large() : std::length_error(
+        "object too large") { } };
+
+/** Exception thrown when an array's maximum size would be exceeded.
+*/
+struct BOOST_SYMBOL_VISIBLE
+    array_too_large : std::length_error {
+    /// Default constructor
+    array_too_large() : std::length_error(
+        "array too large") { } };
+
+/** Exception thrown when a string's maximum size would be exceeded.
+*/
+struct BOOST_SYMBOL_VISIBLE
+    string_too_large : std::length_error {
+    /// Default constructor
+    string_too_large() : std::length_error(
+        "string too large") { } };
+
+/** Exception thrown when a character offset is out of range.
+*/
+struct BOOST_SYMBOL_VISIBLE
+    char_pos_error : std::out_of_range {
+    /// Default constructor
+    char_pos_error() : std::out_of_range(
+        "char index error") { } };
+
+/** Exception thrown when a key is not find in an object.
+*/
+struct BOOST_SYMBOL_VISIBLE
+    key_not_found : std::invalid_argument {
+    /// Default constructor
+    key_not_found() : std::invalid_argument(
+        "key not found") { } };
+
+/** Exception thrown when a stack limit is exceeded.
+*/
+struct BOOST_SYMBOL_VISIBLE
+    stack_overflow : std::runtime_error {
+    /// Default constructor
+    stack_overflow() : std::runtime_error(
+        "stack overflow") { } };
+
+//----------------------------------------------------------
 
 /** Error codes returned by JSON operations
 
@@ -116,9 +299,6 @@ enum class error
 
     /// number cast is not exact
     not_exact,
-
-    /// key not found
-    key_not_found,
 
     /// test failure
     test_failure

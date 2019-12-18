@@ -15,7 +15,6 @@
 #include <boost/json/storage.hpp>
 #include <boost/json/value.hpp>
 #include <boost/json/string.hpp>
-#include <boost/json/detail/except.hpp>
 #include <boost/json/detail/raw_stack.hpp>
 #include <new>
 #include <string>

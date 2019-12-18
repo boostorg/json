@@ -874,7 +874,7 @@ public:
         value const i64(std::int64_t{});
         value const u64(std::uint64_t{});
         value const dub(double{});
-        value const bln(true);
+        value const boo(true);
         value const nul(nullptr);
 
         // kind()
@@ -885,7 +885,7 @@ public:
             BOOST_TEST(i64.kind() == kind::int64);
             BOOST_TEST(u64.kind() == kind::uint64);
             BOOST_TEST(dub.kind() == kind::double_);
-            BOOST_TEST(bln.kind() == kind::bool_);
+            BOOST_TEST(boo.kind() == kind::bool_);
             BOOST_TEST(nul.kind() == kind::null);
         }
 
@@ -897,7 +897,7 @@ public:
             BOOST_TEST(! i64.is_object());
             BOOST_TEST(! u64.is_object());
             BOOST_TEST(! dub.is_object());
-            BOOST_TEST(! bln.is_object());
+            BOOST_TEST(! boo.is_object());
             BOOST_TEST(! nul.is_object());
         }
 
@@ -909,7 +909,7 @@ public:
             BOOST_TEST(! i64.is_array());
             BOOST_TEST(! u64.is_array());
             BOOST_TEST(! dub.is_array());
-            BOOST_TEST(! bln.is_array());
+            BOOST_TEST(! boo.is_array());
             BOOST_TEST(! nul.is_array());
         }
 
@@ -921,7 +921,7 @@ public:
             BOOST_TEST(! i64.is_string());
             BOOST_TEST(! u64.is_string());
             BOOST_TEST(! dub.is_string());
-            BOOST_TEST(! bln.is_string());
+            BOOST_TEST(! boo.is_string());
             BOOST_TEST(! nul.is_string());
         }
 
@@ -933,7 +933,7 @@ public:
             BOOST_TEST(  i64.is_int64());
             BOOST_TEST(! u64.is_int64());
             BOOST_TEST(! dub.is_int64());
-            BOOST_TEST(! bln.is_int64());
+            BOOST_TEST(! boo.is_int64());
             BOOST_TEST(! nul.is_int64());
         }
 
@@ -945,7 +945,7 @@ public:
             BOOST_TEST(! i64.is_uint64());
             BOOST_TEST(  u64.is_uint64());
             BOOST_TEST(! dub.is_uint64());
-            BOOST_TEST(! bln.is_uint64());
+            BOOST_TEST(! boo.is_uint64());
             BOOST_TEST(! nul.is_uint64());
         }
 
@@ -957,7 +957,7 @@ public:
             BOOST_TEST(! i64.is_double());
             BOOST_TEST(! u64.is_double());
             BOOST_TEST(  dub.is_double());
-            BOOST_TEST(! bln.is_double());
+            BOOST_TEST(! boo.is_double());
             BOOST_TEST(! nul.is_double());
         }
 
@@ -969,7 +969,7 @@ public:
             BOOST_TEST(! i64.is_bool());
             BOOST_TEST(! u64.is_bool());
             BOOST_TEST(! dub.is_bool());
-            BOOST_TEST(  bln.is_bool());
+            BOOST_TEST(  boo.is_bool());
             BOOST_TEST(! nul.is_bool());
         }
 
@@ -981,7 +981,7 @@ public:
             BOOST_TEST(! i64.is_null());
             BOOST_TEST(! u64.is_null());
             BOOST_TEST(! dub.is_null());
-            BOOST_TEST(! bln.is_null());
+            BOOST_TEST(! boo.is_null());
             BOOST_TEST(  nul.is_null());
         }
 
@@ -993,7 +993,7 @@ public:
             BOOST_TEST(  i64.is_number());
             BOOST_TEST(  u64.is_number());
             BOOST_TEST(  dub.is_number());
-            BOOST_TEST(! bln.is_number());
+            BOOST_TEST(! boo.is_number());
             BOOST_TEST(! nul.is_number());
         }
 
@@ -1005,7 +1005,7 @@ public:
             BOOST_TEST(  i64.is_primitive());
             BOOST_TEST(  u64.is_primitive());
             BOOST_TEST(  dub.is_primitive());
-            BOOST_TEST(  bln.is_primitive());
+            BOOST_TEST(  boo.is_primitive());
             BOOST_TEST(  nul.is_primitive());
         }
 
@@ -1017,7 +1017,7 @@ public:
             BOOST_TEST(! i64.is_structured());
             BOOST_TEST(! u64.is_structured());
             BOOST_TEST(! dub.is_structured());
-            BOOST_TEST(! bln.is_structured());
+            BOOST_TEST(! boo.is_structured());
             BOOST_TEST(! nul.is_structured());
         }
     }
@@ -1040,7 +1040,7 @@ public:
         value i64(std::int64_t{}, sp);
         value u64(std::uint64_t{}, sp);
         value dub(double{}, sp);
-        value bln(true, sp);
+        value boo(true, sp);
         value nul(nullptr, sp);
 
         // storage()
@@ -1051,7 +1051,7 @@ public:
             BOOST_TEST(*i64.storage() == *sp);
             BOOST_TEST(*u64.storage() == *sp);
             BOOST_TEST(*dub.storage() == *sp);
-            BOOST_TEST(*bln.storage() == *sp);
+            BOOST_TEST(*boo.storage() == *sp);
             BOOST_TEST(*nul.storage() == *sp);
         }
     }
@@ -1065,7 +1065,7 @@ public:
         value i64(std::int64_t{});
         value u64(std::uint64_t{});
         value dub(double{});
-        value bln(true);
+        value boo(true);
         value nul(nullptr);
 
         auto const& cobj(obj);
@@ -1074,7 +1074,7 @@ public:
         auto const& ci64(i64);
         auto const& cu64(u64);
         auto const& cdub(dub);
-        auto const& cbln(bln);
+        auto const& cboo(boo);
         auto const& cnul(nul);
 
         // if_object()
@@ -1085,7 +1085,7 @@ public:
             BOOST_TEST(i64.if_object() == nullptr);
             BOOST_TEST(u64.if_object() == nullptr);
             BOOST_TEST(dub.if_object() == nullptr);
-            BOOST_TEST(bln.if_object() == nullptr);
+            BOOST_TEST(boo.if_object() == nullptr);
             BOOST_TEST(nul.if_object() == nullptr);
         }
 
@@ -1097,7 +1097,7 @@ public:
             BOOST_TEST(ci64.if_object() == nullptr);
             BOOST_TEST(cu64.if_object() == nullptr);
             BOOST_TEST(cdub.if_object() == nullptr);
-            BOOST_TEST(cbln.if_object() == nullptr);
+            BOOST_TEST(cboo.if_object() == nullptr);
             BOOST_TEST(cnul.if_object() == nullptr);
         }
 
@@ -1109,7 +1109,7 @@ public:
             BOOST_TEST(i64.if_array() == nullptr);
             BOOST_TEST(u64.if_array() == nullptr);
             BOOST_TEST(dub.if_array() == nullptr);
-            BOOST_TEST(bln.if_array() == nullptr);
+            BOOST_TEST(boo.if_array() == nullptr);
             BOOST_TEST(nul.if_array() == nullptr);
         }
 
@@ -1121,7 +1121,7 @@ public:
             BOOST_TEST(ci64.if_array() == nullptr);
             BOOST_TEST(cu64.if_array() == nullptr);
             BOOST_TEST(cdub.if_array() == nullptr);
-            BOOST_TEST(cbln.if_array() == nullptr);
+            BOOST_TEST(cboo.if_array() == nullptr);
             BOOST_TEST(cnul.if_array() == nullptr);
         }
 
@@ -1133,7 +1133,7 @@ public:
             BOOST_TEST(i64.if_string() == nullptr);
             BOOST_TEST(u64.if_string() == nullptr);
             BOOST_TEST(dub.if_string() == nullptr);
-            BOOST_TEST(bln.if_string() == nullptr);
+            BOOST_TEST(boo.if_string() == nullptr);
             BOOST_TEST(nul.if_string() == nullptr);
         }
 
@@ -1145,7 +1145,7 @@ public:
             BOOST_TEST(ci64.if_string() == nullptr);
             BOOST_TEST(cu64.if_string() == nullptr);
             BOOST_TEST(cdub.if_string() == nullptr);
-            BOOST_TEST(cbln.if_string() == nullptr);
+            BOOST_TEST(cboo.if_string() == nullptr);
             BOOST_TEST(cnul.if_string() == nullptr);
         }
 
@@ -1157,7 +1157,7 @@ public:
             BOOST_TEST(i64.if_int64() != nullptr);
             BOOST_TEST(u64.if_int64() == nullptr);
             BOOST_TEST(dub.if_int64() == nullptr);
-            BOOST_TEST(bln.if_int64() == nullptr);
+            BOOST_TEST(boo.if_int64() == nullptr);
             BOOST_TEST(nul.if_int64() == nullptr);
         }
 
@@ -1169,7 +1169,7 @@ public:
             BOOST_TEST(ci64.if_int64() != nullptr);
             BOOST_TEST(cu64.if_int64() == nullptr);
             BOOST_TEST(cdub.if_int64() == nullptr);
-            BOOST_TEST(cbln.if_int64() == nullptr);
+            BOOST_TEST(cboo.if_int64() == nullptr);
             BOOST_TEST(cnul.if_int64() == nullptr);
         }
 
@@ -1181,7 +1181,7 @@ public:
             BOOST_TEST(i64.if_uint64() == nullptr);
             BOOST_TEST(u64.if_uint64() != nullptr);
             BOOST_TEST(dub.if_uint64() == nullptr);
-            BOOST_TEST(bln.if_uint64() == nullptr);
+            BOOST_TEST(boo.if_uint64() == nullptr);
             BOOST_TEST(nul.if_uint64() == nullptr);
         }
 
@@ -1193,7 +1193,7 @@ public:
             BOOST_TEST(ci64.if_uint64() == nullptr);
             BOOST_TEST(cu64.if_uint64() != nullptr);
             BOOST_TEST(cdub.if_uint64() == nullptr);
-            BOOST_TEST(cbln.if_uint64() == nullptr);
+            BOOST_TEST(cboo.if_uint64() == nullptr);
             BOOST_TEST(cnul.if_uint64() == nullptr);
         }
 
@@ -1205,7 +1205,7 @@ public:
             BOOST_TEST(i64.if_double() == nullptr);
             BOOST_TEST(u64.if_double() == nullptr);
             BOOST_TEST(dub.if_double() != nullptr);
-            BOOST_TEST(bln.if_double() == nullptr);
+            BOOST_TEST(boo.if_double() == nullptr);
             BOOST_TEST(nul.if_double() == nullptr);
         }
 
@@ -1217,7 +1217,7 @@ public:
             BOOST_TEST(ci64.if_double() == nullptr);
             BOOST_TEST(cu64.if_double() == nullptr);
             BOOST_TEST(cdub.if_double() != nullptr);
-            BOOST_TEST(cbln.if_double() == nullptr);
+            BOOST_TEST(cboo.if_double() == nullptr);
             BOOST_TEST(cnul.if_double() == nullptr);
         }
 
@@ -1229,7 +1229,7 @@ public:
             BOOST_TEST(i64.if_bool() == nullptr);
             BOOST_TEST(u64.if_bool() == nullptr);
             BOOST_TEST(dub.if_bool() == nullptr);
-            BOOST_TEST(bln.if_bool() != nullptr);
+            BOOST_TEST(boo.if_bool() != nullptr);
             BOOST_TEST(nul.if_bool() == nullptr);
         }
 
@@ -1241,7 +1241,7 @@ public:
             BOOST_TEST(ci64.if_bool() == nullptr);
             BOOST_TEST(cu64.if_bool() == nullptr);
             BOOST_TEST(cdub.if_bool() == nullptr);
-            BOOST_TEST(cbln.if_bool() != nullptr);
+            BOOST_TEST(cboo.if_bool() != nullptr);
             BOOST_TEST(cnul.if_bool() == nullptr);
         }
     }
@@ -1255,7 +1255,7 @@ public:
         value i64(std::int64_t{});
         value u64(std::uint64_t{});
         value dub(double{});
-        value bln(true);
+        value boo(true);
         value nul(nullptr);
 
         auto const& cobj(obj);
@@ -1264,188 +1264,188 @@ public:
         auto const& ci64(i64);
         auto const& cu64(u64);
         auto const& cdub(dub);
-        auto const& cbln(bln);
+        auto const& cboo(boo);
         auto const& cnul(nul);
 
         // as_object()
         {
                   object& x = obj.as_object();
-            BOOST_TEST_THROWS(arr.as_object(), system_error);
-            BOOST_TEST_THROWS(str.as_object(), system_error);
-            BOOST_TEST_THROWS(i64.as_object(), system_error);
-            BOOST_TEST_THROWS(u64.as_object(), system_error);
-            BOOST_TEST_THROWS(dub.as_object(), system_error);
-            BOOST_TEST_THROWS(bln.as_object(), system_error);
-            BOOST_TEST_THROWS(nul.as_object(), system_error);
+            BOOST_TEST_THROWS(arr.as_object(), object_required_error);
+            BOOST_TEST_THROWS(str.as_object(), object_required_error);
+            BOOST_TEST_THROWS(i64.as_object(), object_required_error);
+            BOOST_TEST_THROWS(u64.as_object(), object_required_error);
+            BOOST_TEST_THROWS(dub.as_object(), object_required_error);
+            BOOST_TEST_THROWS(boo.as_object(), object_required_error);
+            BOOST_TEST_THROWS(nul.as_object(), object_required_error);
             (void)x;
         }
 
         // as_object() const
         {
             object const& x = cobj.as_object();
-            BOOST_TEST_THROWS(carr.as_object(), system_error);
-            BOOST_TEST_THROWS(cstr.as_object(), system_error);
-            BOOST_TEST_THROWS(ci64.as_object(), system_error);
-            BOOST_TEST_THROWS(cu64.as_object(), system_error);
-            BOOST_TEST_THROWS(cdub.as_object(), system_error);
-            BOOST_TEST_THROWS(cbln.as_object(), system_error);
-            BOOST_TEST_THROWS(cnul.as_object(), system_error);
+            BOOST_TEST_THROWS(carr.as_object(), object_required_error);
+            BOOST_TEST_THROWS(cstr.as_object(), object_required_error);
+            BOOST_TEST_THROWS(ci64.as_object(), object_required_error);
+            BOOST_TEST_THROWS(cu64.as_object(), object_required_error);
+            BOOST_TEST_THROWS(cdub.as_object(), object_required_error);
+            BOOST_TEST_THROWS(cboo.as_object(), object_required_error);
+            BOOST_TEST_THROWS(cnul.as_object(), object_required_error);
             (void)x;
         }
 
         // as_array()
         {
-            BOOST_TEST_THROWS(obj.as_array(), system_error);
+            BOOST_TEST_THROWS(obj.as_array(), array_required_error);
                    array& x = arr.as_array();
-            BOOST_TEST_THROWS(str.as_array(), system_error);
-            BOOST_TEST_THROWS(i64.as_array(), system_error);
-            BOOST_TEST_THROWS(u64.as_array(), system_error);
-            BOOST_TEST_THROWS(dub.as_array(), system_error);
-            BOOST_TEST_THROWS(bln.as_array(), system_error);
-            BOOST_TEST_THROWS(nul.as_array(), system_error);
+            BOOST_TEST_THROWS(str.as_array(), array_required_error);
+            BOOST_TEST_THROWS(i64.as_array(), array_required_error);
+            BOOST_TEST_THROWS(u64.as_array(), array_required_error);
+            BOOST_TEST_THROWS(dub.as_array(), array_required_error);
+            BOOST_TEST_THROWS(boo.as_array(), array_required_error);
+            BOOST_TEST_THROWS(nul.as_array(), array_required_error);
             (void)x;
         }
 
         // as_array() const
         {
-            BOOST_TEST_THROWS(cobj.as_array(), system_error);
+            BOOST_TEST_THROWS(cobj.as_array(), array_required_error);
              array const& x = carr.as_array();
-            BOOST_TEST_THROWS(cstr.as_array(), system_error);
-            BOOST_TEST_THROWS(ci64.as_array(), system_error);
-            BOOST_TEST_THROWS(cu64.as_array(), system_error);
-            BOOST_TEST_THROWS(cdub.as_array(), system_error);
-            BOOST_TEST_THROWS(cbln.as_array(), system_error);
-            BOOST_TEST_THROWS(cnul.as_array(), system_error);
+            BOOST_TEST_THROWS(cstr.as_array(), array_required_error);
+            BOOST_TEST_THROWS(ci64.as_array(), array_required_error);
+            BOOST_TEST_THROWS(cu64.as_array(), array_required_error);
+            BOOST_TEST_THROWS(cdub.as_array(), array_required_error);
+            BOOST_TEST_THROWS(cboo.as_array(), array_required_error);
+            BOOST_TEST_THROWS(cnul.as_array(), array_required_error);
             (void)x;
         }
 
         // as_string()
         {
-            BOOST_TEST_THROWS(obj.as_string(), system_error);
-            BOOST_TEST_THROWS(arr.as_string(), system_error);
+            BOOST_TEST_THROWS(obj.as_string(), string_required_error);
+            BOOST_TEST_THROWS(arr.as_string(), string_required_error);
                   string& x = str.as_string();
-            BOOST_TEST_THROWS(i64.as_string(), system_error);
-            BOOST_TEST_THROWS(u64.as_string(), system_error);
-            BOOST_TEST_THROWS(dub.as_string(), system_error);
-            BOOST_TEST_THROWS(bln.as_string(), system_error);
-            BOOST_TEST_THROWS(nul.as_string(), system_error);
+            BOOST_TEST_THROWS(i64.as_string(), string_required_error);
+            BOOST_TEST_THROWS(u64.as_string(), string_required_error);
+            BOOST_TEST_THROWS(dub.as_string(), string_required_error);
+            BOOST_TEST_THROWS(boo.as_string(), string_required_error);
+            BOOST_TEST_THROWS(nul.as_string(), string_required_error);
             (void)x;
         }
 
         // as_string() const
         {
-            BOOST_TEST_THROWS(cobj.as_string(), system_error);
-            BOOST_TEST_THROWS(carr.as_string(), system_error);
+            BOOST_TEST_THROWS(cobj.as_string(), string_required_error);
+            BOOST_TEST_THROWS(carr.as_string(), string_required_error);
             string const& x = cstr.as_string();
-            BOOST_TEST_THROWS(ci64.as_string(), system_error);
-            BOOST_TEST_THROWS(cu64.as_string(), system_error);
-            BOOST_TEST_THROWS(cdub.as_string(), system_error);
-            BOOST_TEST_THROWS(cbln.as_string(), system_error);
-            BOOST_TEST_THROWS(cnul.as_string(), system_error);
+            BOOST_TEST_THROWS(ci64.as_string(), string_required_error);
+            BOOST_TEST_THROWS(cu64.as_string(), string_required_error);
+            BOOST_TEST_THROWS(cdub.as_string(), string_required_error);
+            BOOST_TEST_THROWS(cboo.as_string(), string_required_error);
+            BOOST_TEST_THROWS(cnul.as_string(), string_required_error);
             (void)x;
         }
 
         // as_int64()
         {
-            BOOST_TEST_THROWS(obj.as_int64(), system_error);
-            BOOST_TEST_THROWS(arr.as_int64(), system_error);
-            BOOST_TEST_THROWS(str.as_int64(), system_error);
+            BOOST_TEST_THROWS(obj.as_int64(), int64_required_error);
+            BOOST_TEST_THROWS(arr.as_int64(), int64_required_error);
+            BOOST_TEST_THROWS(str.as_int64(), int64_required_error);
             std::int64_t& x = i64.as_int64();
-            BOOST_TEST_THROWS(u64.as_int64(), system_error);
-            BOOST_TEST_THROWS(dub.as_int64(), system_error);
-            BOOST_TEST_THROWS(bln.as_int64(), system_error);
-            BOOST_TEST_THROWS(nul.as_int64(), system_error);
+            BOOST_TEST_THROWS(u64.as_int64(), int64_required_error);
+            BOOST_TEST_THROWS(dub.as_int64(), int64_required_error);
+            BOOST_TEST_THROWS(boo.as_int64(), int64_required_error);
+            BOOST_TEST_THROWS(nul.as_int64(), int64_required_error);
             (void)x;
         }
 
         // as_int64() const
         {
-            BOOST_TEST_THROWS(cobj.as_int64(), system_error);
-            BOOST_TEST_THROWS(carr.as_int64(), system_error);
-            BOOST_TEST_THROWS(cstr.as_int64(), system_error);
+            BOOST_TEST_THROWS(cobj.as_int64(), int64_required_error);
+            BOOST_TEST_THROWS(carr.as_int64(), int64_required_error);
+            BOOST_TEST_THROWS(cstr.as_int64(), int64_required_error);
       std::int64_t const& x = ci64.as_int64();
-            BOOST_TEST_THROWS(cu64.as_int64(), system_error);
-            BOOST_TEST_THROWS(cdub.as_int64(), system_error);
-            BOOST_TEST_THROWS(cbln.as_int64(), system_error);
-            BOOST_TEST_THROWS(cnul.as_int64(), system_error);
+            BOOST_TEST_THROWS(cu64.as_int64(), int64_required_error);
+            BOOST_TEST_THROWS(cdub.as_int64(), int64_required_error);
+            BOOST_TEST_THROWS(cboo.as_int64(), int64_required_error);
+            BOOST_TEST_THROWS(cnul.as_int64(), int64_required_error);
             (void)x;
         }
 
         // as_uint64()
         {
-            BOOST_TEST_THROWS(obj.as_uint64(), system_error);
-            BOOST_TEST_THROWS(arr.as_uint64(), system_error);
-            BOOST_TEST_THROWS(str.as_uint64(), system_error);
-            BOOST_TEST_THROWS(i64.as_uint64(), system_error);
+            BOOST_TEST_THROWS(obj.as_uint64(), uint64_required_error);
+            BOOST_TEST_THROWS(arr.as_uint64(), uint64_required_error);
+            BOOST_TEST_THROWS(str.as_uint64(), uint64_required_error);
+            BOOST_TEST_THROWS(i64.as_uint64(), uint64_required_error);
            std::uint64_t& x = u64.as_uint64();
-            BOOST_TEST_THROWS(dub.as_uint64(), system_error);
-            BOOST_TEST_THROWS(bln.as_uint64(), system_error);
-            BOOST_TEST_THROWS(nul.as_uint64(), system_error);
+            BOOST_TEST_THROWS(dub.as_uint64(), uint64_required_error);
+            BOOST_TEST_THROWS(boo.as_uint64(), uint64_required_error);
+            BOOST_TEST_THROWS(nul.as_uint64(), uint64_required_error);
             (void)x;
         }
 
         // as_uint64() const
         {
-            BOOST_TEST_THROWS(cobj.as_uint64(), system_error);
-            BOOST_TEST_THROWS(carr.as_uint64(), system_error);
-            BOOST_TEST_THROWS(cstr.as_uint64(), system_error);
-            BOOST_TEST_THROWS(ci64.as_uint64(), system_error);
+            BOOST_TEST_THROWS(cobj.as_uint64(), uint64_required_error);
+            BOOST_TEST_THROWS(carr.as_uint64(), uint64_required_error);
+            BOOST_TEST_THROWS(cstr.as_uint64(), uint64_required_error);
+            BOOST_TEST_THROWS(ci64.as_uint64(), uint64_required_error);
      std::uint64_t const& x = cu64.as_uint64();
-            BOOST_TEST_THROWS(cdub.as_uint64(), system_error);
-            BOOST_TEST_THROWS(cbln.as_uint64(), system_error);
-            BOOST_TEST_THROWS(cnul.as_uint64(), system_error);
+            BOOST_TEST_THROWS(cdub.as_uint64(), uint64_required_error);
+            BOOST_TEST_THROWS(cboo.as_uint64(), uint64_required_error);
+            BOOST_TEST_THROWS(cnul.as_uint64(), uint64_required_error);
             (void)x;
         }
 
         // as_double()
         {
-            BOOST_TEST_THROWS(obj.as_double(), system_error);
-            BOOST_TEST_THROWS(arr.as_double(), system_error);
-            BOOST_TEST_THROWS(str.as_double(), system_error);
-            BOOST_TEST_THROWS(i64.as_double(), system_error);
-            BOOST_TEST_THROWS(u64.as_double(), system_error);
+            BOOST_TEST_THROWS(obj.as_double(), double_required_error);
+            BOOST_TEST_THROWS(arr.as_double(), double_required_error);
+            BOOST_TEST_THROWS(str.as_double(), double_required_error);
+            BOOST_TEST_THROWS(i64.as_double(), double_required_error);
+            BOOST_TEST_THROWS(u64.as_double(), double_required_error);
                   double& x = dub.as_double();
-            BOOST_TEST_THROWS(bln.as_double(), system_error);
-            BOOST_TEST_THROWS(nul.as_double(), system_error);
+            BOOST_TEST_THROWS(boo.as_double(), double_required_error);
+            BOOST_TEST_THROWS(nul.as_double(), double_required_error);
             (void)x;
         }
 
         // as_uint64() const
         {
-            BOOST_TEST_THROWS(cobj.as_double(), system_error);
-            BOOST_TEST_THROWS(carr.as_double(), system_error);
-            BOOST_TEST_THROWS(cstr.as_double(), system_error);
-            BOOST_TEST_THROWS(ci64.as_double(), system_error);
-            BOOST_TEST_THROWS(cu64.as_double(), system_error);
+            BOOST_TEST_THROWS(cobj.as_double(), double_required_error);
+            BOOST_TEST_THROWS(carr.as_double(), double_required_error);
+            BOOST_TEST_THROWS(cstr.as_double(), double_required_error);
+            BOOST_TEST_THROWS(ci64.as_double(), double_required_error);
+            BOOST_TEST_THROWS(cu64.as_double(), double_required_error);
             double const& x = cdub.as_double();
-            BOOST_TEST_THROWS(cbln.as_double(), system_error);
-            BOOST_TEST_THROWS(cnul.as_double(), system_error);
+            BOOST_TEST_THROWS(cboo.as_double(), double_required_error);
+            BOOST_TEST_THROWS(cnul.as_double(), double_required_error);
             (void)x;
         }
 
         // as_bool()
         {
-            BOOST_TEST_THROWS(obj.as_bool(), system_error);
-            BOOST_TEST_THROWS(arr.as_bool(), system_error);
-            BOOST_TEST_THROWS(str.as_bool(), system_error);
-            BOOST_TEST_THROWS(i64.as_bool(), system_error);
-            BOOST_TEST_THROWS(u64.as_bool(), system_error);
-            BOOST_TEST_THROWS(dub.as_bool(), system_error);
-                    bool& x = bln.as_bool();
-            BOOST_TEST_THROWS(nul.as_bool(), system_error);
+            BOOST_TEST_THROWS(obj.as_bool(), bool_required_error);
+            BOOST_TEST_THROWS(arr.as_bool(), bool_required_error);
+            BOOST_TEST_THROWS(str.as_bool(), bool_required_error);
+            BOOST_TEST_THROWS(i64.as_bool(), bool_required_error);
+            BOOST_TEST_THROWS(u64.as_bool(), bool_required_error);
+            BOOST_TEST_THROWS(dub.as_bool(), bool_required_error);
+                    bool& x = boo.as_bool();
+            BOOST_TEST_THROWS(nul.as_bool(), bool_required_error);
             (void)x;
         }
 
         // as_bool() const
         {
-            BOOST_TEST_THROWS(cobj.as_bool(), system_error);
-            BOOST_TEST_THROWS(carr.as_bool(), system_error);
-            BOOST_TEST_THROWS(cstr.as_bool(), system_error);
-            BOOST_TEST_THROWS(ci64.as_bool(), system_error);
-            BOOST_TEST_THROWS(cu64.as_bool(), system_error);
-            BOOST_TEST_THROWS(cdub.as_bool(), system_error);
-               bool const&x = cbln.as_bool();
-            BOOST_TEST_THROWS(cnul.as_bool(), system_error);
+            BOOST_TEST_THROWS(cobj.as_bool(), bool_required_error);
+            BOOST_TEST_THROWS(carr.as_bool(), bool_required_error);
+            BOOST_TEST_THROWS(cstr.as_bool(), bool_required_error);
+            BOOST_TEST_THROWS(ci64.as_bool(), bool_required_error);
+            BOOST_TEST_THROWS(cu64.as_bool(), bool_required_error);
+            BOOST_TEST_THROWS(cdub.as_bool(), bool_required_error);
+               bool const&x = cboo.as_bool();
+            BOOST_TEST_THROWS(cnul.as_bool(), bool_required_error);
             (void)x;
         }
     }
@@ -1459,7 +1459,7 @@ public:
         value i64(std::int64_t{});
         value u64(std::uint64_t{});
         value dub(double{});
-        value bln(true);
+        value boo(true);
 
         auto const& cobj(obj);
         auto const& carr(arr);
@@ -1467,7 +1467,7 @@ public:
         auto const& ci64(i64);
         auto const& cu64(u64);
         auto const& cdub(dub);
-        auto const& cbln(bln);
+        auto const& cboo(boo);
 
         // get_object()
         // get_array()
@@ -1483,7 +1483,7 @@ public:
             std::int64_t&   xi64 = i64.get_int64();
             std::uint64_t&  xu64 = u64.get_uint64();
             double&         xdub = dub.get_double();
-            bool&           xbln = bln.get_bool();
+            bool&           xboo = boo.get_bool();
 
             (void)(xobj);
             (void)(xarr);
@@ -1491,7 +1491,7 @@ public:
             (void)(xi64);
             (void)(xu64);
             (void)(xdub);
-            (void)(xbln);
+            (void)(xboo);
         }
 
         // get_object() const
@@ -1510,7 +1510,7 @@ public:
             std::uint64_t
                 const&      xu64 = cu64.get_uint64();
             double const&   xdub = cdub.get_double();
-            bool const&     xbln = cbln.get_bool();
+            bool const&     xboo = cboo.get_bool();
 
             (void)(xobj);
             (void)(xarr);
@@ -1518,7 +1518,7 @@ public:
             (void)(xi64);
             (void)(xu64);
             (void)(xdub);
-            (void)(xbln);
+            (void)(xboo);
         }
     }
 
@@ -1532,14 +1532,14 @@ public:
         BOOST_TEST_THROWS(value(
             {{"k1", "value"}, {"k2", nullptr}}
                 ).at("null"),
-            std::out_of_range);
+            key_not_found);
 
         // array
         BOOST_TEST(
             value({true,2,"3"}).at(1).as_int64() == 2);
         BOOST_TEST_THROWS(
             value({false,2,"3"}).at(4),
-            std::out_of_range);
+            array_index_error);
     }
 
     //------------------------------------------------------

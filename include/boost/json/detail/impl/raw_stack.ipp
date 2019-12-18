@@ -11,7 +11,6 @@
 #define BOOST_JSON_DETAIL_IMPL_RAW_STACK_IPP
 
 #include <boost/json/detail/raw_stack.hpp>
-#include <boost/json/detail/except.hpp>
 #include <cstring>
 
 namespace boost {
@@ -26,7 +25,7 @@ reserve(std::size_t bytes)
         return;
     if(bytes > max_size())
         BOOST_THROW_EXCEPTION(
-            stack_overflow_exception());
+            stack_overflow());
     if( bytes < min_capacity_)
         bytes = min_capacity_;
 
@@ -63,7 +62,7 @@ grow(std::size_t n)
 {
     if(n > max_size() - capacity_)
         BOOST_THROW_EXCEPTION(
-            stack_overflow_exception());
+            stack_overflow());
     reserve(capacity_ + n);
 }
 

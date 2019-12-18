@@ -1849,15 +1849,14 @@ public:
 
         Strong guarantee.
 
-        @throw system_error `! this->is_object()`
+        @throw object_required_error `! this->is_object()`
     */
     object&
     as_object()
     {
         if(! is_object())
             BOOST_THROW_EXCEPTION(
-                system_error(
-                    error::not_object));
+                object_required_error());
         return obj_;
     }
 
@@ -1875,15 +1874,14 @@ public:
 
         Strong guarantee.
 
-        @throw system_error `! this->is_object()`
+        @throw object_required_error `! this->is_object()`
     */
     object const&
     as_object() const
     {
         if(! is_object())
             BOOST_THROW_EXCEPTION(
-                system_error(
-                    error::not_object));
+                object_required_error());
         return obj_;
     }
 
@@ -1901,15 +1899,14 @@ public:
 
         Strong guarantee.
 
-        @throw system_error `! this->is_array()`
+        @throw array_required_error `! this->is_array()`
     */
     array&
     as_array()
     {
         if(! is_array())
             BOOST_THROW_EXCEPTION(
-                system_error(
-                    error::not_array));
+                array_required_error());
         return arr_;
     }
 
@@ -1927,15 +1924,14 @@ public:
 
         Strong guarantee.
 
-        @throw system_error `! this->is_array()`
+        @throw array_required_error `! this->is_array()`
     */
     array const&
     as_array() const
     {
         if(! is_array())
             BOOST_THROW_EXCEPTION(
-                system_error(
-                    error::not_array));
+                array_required_error());
         return arr_;
     }
 
@@ -1953,15 +1949,14 @@ public:
 
         Strong guarantee.
 
-        @throw system_error `! this->is_string()`
+        @throw string_required_error `! this->is_string()`
     */
     string&
     as_string()
     {
         if(! is_string())
             BOOST_THROW_EXCEPTION(
-                system_error(
-                    error::not_string));
+                string_required_error());
         return str_;
     }
 
@@ -1979,15 +1974,14 @@ public:
 
         Strong guarantee.
 
-        @throw system_error `! this->is_string()`
+        @throw string_required_error `! this->is_string()`
     */
     string const&
     as_string() const
     {
         if(! is_string())
             BOOST_THROW_EXCEPTION(
-                system_error(
-                    error::not_string));
+                string_required_error());
         return str_;
     }
 
@@ -2005,15 +1999,14 @@ public:
 
         Strong guarantee.
 
-        @throw system_error `! this->is_int64()`
+        @throw int64_required_error `! this->is_int64()`
     */
     std::int64_t&
     as_int64()
     {
         if(! is_int64())
             BOOST_THROW_EXCEPTION(
-                system_error(
-                    error::not_number));
+                int64_required_error());
         return i64_.i;
     }
 
@@ -2031,15 +2024,14 @@ public:
 
         Strong guarantee.
 
-        @throw system_error `! this->is_int64()`
+        @throw int64_required_error `! this->is_int64()`
     */
     std::int64_t
     as_int64() const
     {
         if(! is_int64())
             BOOST_THROW_EXCEPTION(
-                system_error(
-                    error::not_number));
+                int64_required_error());
         return i64_.i;
     }
 
@@ -2057,18 +2049,16 @@ public:
 
         Strong guarantee.
 
-        @throw system_error `! this->is_uint64()`
+        @throw uint64_required_error `! this->is_uint64()`
     */
     std::uint64_t&
     as_uint64()
     {
         if(! is_uint64())
             BOOST_THROW_EXCEPTION(
-                system_error(
-                    error::not_number));
+                uint64_required_error());
         return u64_.u;
     }
-
 
     /** Return the underlying `std::uint64_t`, or throw an exception.
 
@@ -2084,15 +2074,14 @@ public:
 
         Strong guarantee.
 
-        @throw system_error `! this->is_uint64()`
+        @throw uint64_required_error `! this->is_uint64()`
     */
     std::uint64_t
     as_uint64() const
     {
         if(! is_uint64())
             BOOST_THROW_EXCEPTION(
-                system_error(
-                    error::not_number));
+                uint64_required_error());
         return u64_.u;
     }
 
@@ -2110,15 +2099,14 @@ public:
 
         Strong guarantee.
 
-        @throw system_error `! this->is_double()`
+        @throw double_required_error `! this->is_double()`
     */
     double&
     as_double()
     {
         if(! is_double())
             BOOST_THROW_EXCEPTION(
-                system_error(
-                    error::not_number));
+                double_required_error());
         return dub_.d;
     }
 
@@ -2136,15 +2124,14 @@ public:
 
         Strong guarantee.
 
-        @throw system_error `! this->is_double()`
+        @throw double_required_error `! this->is_double()`
     */
     double
     as_double() const
     {
         if(! is_double())
             BOOST_THROW_EXCEPTION(
-                system_error(
-                    error::not_number));
+                double_required_error());
         return dub_.d;
     }
 
@@ -2162,15 +2149,14 @@ public:
 
         Strong guarantee.
 
-        @throw system_error `! this->is_bool()`
+        @throw bool_required_error `! this->is_bool()`
     */
     bool&
     as_bool()
     {
         if(! is_bool())
             BOOST_THROW_EXCEPTION(
-                system_error(
-                    error::not_bool));
+                bool_required_error());
         return bln_.b;
     }
 
@@ -2188,15 +2174,14 @@ public:
 
         Strong guarantee.
 
-        @throw system_error `! this->is_bool()`
+        @throw bool_required_error `! this->is_bool()`
     */
     bool
     as_bool() const
     {
         if(! is_bool())
             BOOST_THROW_EXCEPTION(
-                system_error(
-                    error::not_bool));
+                bool_required_error());
         return bln_.b;
     }
 
