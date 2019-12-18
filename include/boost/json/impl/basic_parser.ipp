@@ -880,7 +880,7 @@ write_some(
     auto const n =
         write_some(data, size, ec);
     if(ec)
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
             system_error(ec));
     return n;
 }
@@ -912,7 +912,7 @@ write(
     error_code ec;
     write(data, size, ec);
     if(ec)
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
             system_error(ec));
 }
 
@@ -939,7 +939,7 @@ finish(
     error_code ec;
     finish(data, size, ec);
     if(ec)
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
             system_error(ec));
 }
 
@@ -1032,7 +1032,7 @@ finish()
     error_code ec;
     finish(ec);
     if(ec)
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
             system_error(ec));
 }
 

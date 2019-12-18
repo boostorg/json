@@ -1101,7 +1101,7 @@ public:
     at(std::size_t pos)
     {
         if(pos >= size())
-            BOOST_JSON_THROW(
+            BOOST_THROW_EXCEPTION(
                 std::out_of_range(
                     "pos >= size()"));
         return impl_.data()[pos];
@@ -1126,7 +1126,7 @@ public:
     at(std::size_t pos) const
     {
         if(pos >= size())
-            BOOST_JSON_THROW(
+            BOOST_THROW_EXCEPTION(
                 std::out_of_range(
                     "pos >= size()"));
         return impl_.data()[pos];

@@ -103,7 +103,7 @@ key_value_pair(
         [&]
         {
             if(key.size() > string::max_size())
-                BOOST_JSON_THROW(
+                BOOST_THROW_EXCEPTION(
                     detail::key_too_large_exception());
             auto s = reinterpret_cast<
                 char*>(value_.storage()->

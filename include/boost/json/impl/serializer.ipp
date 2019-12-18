@@ -130,7 +130,7 @@ loop:
     switch(stack_->st)
     {
     case state::none:
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
             std::logic_error(
                 "no value in serializer"));
 

@@ -42,7 +42,7 @@ undo_insert(
     , pos(self.impl_.index_of(pos_))
 {
     if(n > max_size())
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
             detail::array_too_large_exception());
     self_.reserve(
         self_.impl_.size() + n_);

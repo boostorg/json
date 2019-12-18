@@ -35,15 +35,17 @@
 
 // VFALCO Copied from Boost.Config
 //        This is a derivative work.
-#ifdef __has_cpp_attribute
+#ifndef BOOST_JSON_NODISCARD
+# ifdef __has_cpp_attribute
 // clang-6 accepts [[nodiscard]] with -std=c++14, but warns about it -pedantic
-# if __has_cpp_attribute(nodiscard) && !(defined(__clang__) && (__cplusplus < 201703L))
-#  define BOOST_JSON_NODISCARD [[nodiscard]]
+#  if __has_cpp_attribute(nodiscard) && !(defined(__clang__) && (__cplusplus < 201703L))
+#   define BOOST_JSON_NODISCARD [[nodiscard]]
+#  else
+#   define BOOST_JSON_NODISCARD
+#  endif
 # else
 #  define BOOST_JSON_NODISCARD
 # endif
-#else
-# define BOOST_JSON_NODISCARD
 #endif
 
 #ifndef BOOST_JSON_REQUIRE_CONST_INIT
@@ -78,12 +80,10 @@
 
 #ifndef BOOST_THROW_EXCEPTION
 # ifndef BOOST_NO_EXCEPTIONS
-#  define BOOST_JSON_THROW(x) throw(x)
+#  define BOOST_THROW_EXCEPTION(x) throw(x)
 # else
-#  define BOOST_JSON_THROW(x) do{}while(0)
+#  define BOOST_THROW_EXCEPTION(x) do{}while(0)
 # endif
-#else
-# define BOOST_JSON_THROW(x) BOOST_THROW_EXCEPTION(x)
 #endif
 
 #ifndef BOOST_JSON_NO_SSE2
@@ -115,8 +115,8 @@
 #   if defined(BOOST_ALL_DYN_LINK) || defined(BOOST_JSON_DYN_LINK)
 #    define BOOST_DYN_LINK
 #   endif
-//#   include <boost/config/auto_link.hpp>
-#  endif  // auto-linking disabled
+#   include <boost/config/auto_link.hpp>
+#  endif
 # endif
 #else
 # ifdef BOOST_JSON_HEADER_ONLY
@@ -128,23 +128,23 @@
 
 // These macros are private, for tests, do not change
 // them or else previously built libraries won't match.
-#ifndef BOOST_JSON_MAX_OBJECT_SIZE
+#ifndef  BOOST_JSON_MAX_OBJECT_SIZE
 # define BOOST_JSON_NO_MAX_OBJECT_SIZE
 # define BOOST_JSON_MAX_OBJECT_SIZE  0x7ffffffe
 #endif
-#ifndef BOOST_JSON_MAX_ARRAY_SIZE
+#ifndef  BOOST_JSON_MAX_ARRAY_SIZE
 # define BOOST_JSON_NO_MAX_ARRAY_SIZE
 # define BOOST_JSON_MAX_ARRAY_SIZE   0x7ffffffe
 #endif
-#ifndef BOOST_JSON_MAX_STRING_SIZE
+#ifndef  BOOST_JSON_MAX_STRING_SIZE
 # define BOOST_JSON_NO_MAX_STRING_SIZE
 # define BOOST_JSON_MAX_STRING_SIZE  0x7ffffffe
 #endif
-#ifndef BOOST_JSON_MAX_STACK_SIZE
+#ifndef  BOOST_JSON_MAX_STACK_SIZE
 # define BOOST_JSON_NO_MAX_STACK_SIZE
 # define BOOST_JSON_MAX_STACK_SIZE  ((::size_t)(-1))
 #endif
-#ifndef BOOST_JSON_PARSER_BUFFER_SIZE
+#ifndef  BOOST_JSON_PARSER_BUFFER_SIZE
 # define BOOST_JSON_NO_PARSER_BUFFER_SIZE
 # define BOOST_JSON_PARSER_BUFFER_SIZE 2048
 #endif

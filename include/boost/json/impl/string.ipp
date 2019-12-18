@@ -169,7 +169,7 @@ insert(
     size_type count)
 {
     if(pos > impl_.size())
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
             detail::string_pos_too_large());
     if(count > impl_.capacity() - impl_.size())
     {
@@ -225,7 +225,7 @@ erase(
     size_type count)
 {
     if(pos > impl_.size())
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
             detail::string_pos_too_large());
     if( count > impl_.size() - pos)
         count = impl_.size() - pos;

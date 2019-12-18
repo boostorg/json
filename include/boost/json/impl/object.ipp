@@ -290,7 +290,7 @@ insert(
     };
     auto const n0 = size();
     if(init.size() > max_size() - n0)
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
             detail::object_too_large_exception());
     place_impl f(
         init.begin(), init.size(), sp_);
@@ -371,7 +371,7 @@ at(key_type key) ->
 {
     auto it = find(key);
     if(it == end())
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
          std::out_of_range(
             "key not found"));
     return it->value();
@@ -384,7 +384,7 @@ at(key_type key) const ->
 {
     auto it = find(key);
     if(it == end())
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
          std::out_of_range(
             "key not found"));
     return it->value();
@@ -539,7 +539,7 @@ rehash(std::size_t new_capacity)
     new_capacity = static_cast<std::size_t>(
         std::ceil(new_buckets * max_load_factor()));
     if(new_capacity > max_size())
-        BOOST_JSON_THROW(
+        BOOST_THROW_EXCEPTION(
             detail::object_too_large_exception());
     object_impl impl(
         new_capacity, new_buckets, sp_);
