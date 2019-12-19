@@ -230,64 +230,37 @@ stages:
 
   - job: 'macOS'
     pool:
-      vmImage: 'macOS-10.13'
+      vmImage: 'macOS-10.14'
     strategy:
       matrix:
-        Xcode 10.1:
+        Xcode 11.3:
           B2_TOOLSET: clang
           B2_CXXSTD: 14,17,2a
-          B2_LINKFLAGS: linkflags="-stdlib=libc++"
-          XCODE_APP: /Applications/Xcode_10.1.app
-        Xcode 10.0:
+          XCODE_APP: /Applications/Xcode_11.3.app
+        Xcode 11.2.1:
           B2_TOOLSET: clang
           B2_CXXSTD: 14,17,2a
-          B2_LINKFLAGS: linkflags="-stdlib=libc++"
-          XCODE_APP: /Applications/Xcode_10.app
-        Xcode 9.4.1:
+          XCODE_APP: /Applications/Xcode_11.2.1.app
+        Xcode 11.2:
           B2_TOOLSET: clang
-          B2_CXXSTD: 11,14,17
-          B2_LINKFLAGS: linkflags="-stdlib=libc++"
-          XCODE_APP: /Applications/Xcode_9.4.1.app
-        Xcode 9.4:
+          B2_CXXSTD: 14,17,2a
+          XCODE_APP: /Applications/Xcode_11.2.app
+        Xcode 11.1:
           B2_TOOLSET: clang
-          B2_CXXSTD: 11,14,17
-          B2_LINKFLAGS: linkflags="-stdlib=libc++"
-          XCODE_APP: /Applications/Xcode_9.4.app
-        Xcode 9.3.1:
+          B2_CXXSTD: 14,17,2a
+          XCODE_APP: /Applications/Xcode_11.1.app
+        Xcode 10.3:
           B2_TOOLSET: clang
-          B2_CXXSTD: 11,14,17
-          B2_LINKFLAGS: linkflags="-stdlib=libc++"
-          XCODE_APP: /Applications/Xcode_9.3.1.app
-        Xcode 9.3:
+          B2_CXXSTD: 14,17,2a
+          XCODE_APP: /Applications/Xcode_10.3.app
+        Xcode 10.2.1:
           B2_TOOLSET: clang
-          B2_CXXSTD: 11,14
-          B2_LINKFLAGS: linkflags="-stdlib=libc++"
-          XCODE_APP: /Applications/Xcode_9.3.app
-        Xcode 9.2:
+          B2_CXXSTD: 14,17,2a
+          XCODE_APP: /Applications/Xcode_10.2.1.app
+        Xcode 10.2:
           B2_TOOLSET: clang
-          B2_CXXSTD: 11,14
-          B2_LINKFLAGS: linkflags="-stdlib=libc++"
-          XCODE_APP: /Applications/Xcode_9.2.app
-        Xcode 9.1:
-          B2_TOOLSET: clang
-          B2_CXXSTD: 11
-          B2_LINKFLAGS: linkflags="-stdlib=libc++"
-          XCODE_APP: /Applications/Xcode_9.1.app
-        Xcode 9.0.1:
-          B2_TOOLSET: clang
-          B2_CXXSTD: 11
-          B2_LINKFLAGS: linkflags="-stdlib=libc++"
-          XCODE_APP: /Applications/Xcode_9.0.1.app
-        Xcode 9.0:
-          B2_TOOLSET: clang
-          B2_CXXSTD: 11
-          B2_LINKFLAGS: linkflags="-stdlib=libc++"
-          XCODE_APP: /Applications/Xcode_9.app
-        Xcode 8.3.3:
-          B2_TOOLSET: clang
-          B2_CXXSTD: 11
-          B2_LINKFLAGS: linkflags="-stdlib=libc++"
-          XCODE_APP: /Applications/Xcode_8.3.3.app
+          B2_CXXSTD: 14,17,2a
+          XCODE_APP: /Applications/Xcode_10.2.app
     steps:
     - checkout: self
       submodules: true
