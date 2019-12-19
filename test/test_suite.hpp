@@ -199,7 +199,7 @@ public:
         int line,
         char const* func)
     {
-        if(static_cast<bool>(cond))
+        if(!!cond)
         {
             pass(expr, file, line, func);
             return true;
