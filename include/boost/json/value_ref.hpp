@@ -171,10 +171,9 @@ public:
                 string_view, T>::value &&
             ! std::is_same<bool, T>::value
                 >::type* = 0)
-        : cf_{&from_rvalue<T>, &t}
+        : f_{&from_rvalue<T>, &t}
         , what_(what::func)
     {
-
     }
 #endif
 

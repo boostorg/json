@@ -652,6 +652,17 @@ public:
             }
         }
 
+        // operator=(initializer_list)
+        {
+            value jv;
+            jv = {1, 2, 3};
+            BOOST_TEST(jv.is_array());
+            BOOST_TEST(*jv.storage() == *dsp);
+            BOOST_TEST(jv.at(0).as_int64() == 1);
+            BOOST_TEST(jv.at(1).as_int64() == 2);
+            BOOST_TEST(jv.at(2).as_int64() == 3);
+        }
+
         // operator=(object)
         {
             {

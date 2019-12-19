@@ -16,22 +16,8 @@ namespace boost {
 namespace json {
 
 type_error::
-type_error()
-    : std::invalid_argument(
-        "type error")
-{
-}
-
-type_error::
 type_error(char const* what)
     : std::invalid_argument(what)
-{
-}
-
-number_required_error::
-number_required_error()
-    : type_error(
-        "number required")
 {
 }
 

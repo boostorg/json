@@ -116,6 +116,14 @@ public:
         (void)init_list{true};
         (void)init_list{nullptr};
 
+        // bool
+        {
+            bool b = true;
+            auto const cb = b;
+            BOOST_TEST(value_ref::make_value(init_list{b}, {}).at(0).is_bool());
+            BOOST_TEST(value_ref::make_value(init_list{cb}, {}).at(0).is_bool());
+        }
+
         // value
         (void)init_list{value()};
         {
@@ -205,6 +213,7 @@ public:
             make_value({value(1)}, "[1]");
             value const v(1);
             make_value({v}, "[1]");
+            make_value({value(2)}, "[2]");
         }
 
         // object

@@ -1074,7 +1074,16 @@ public:
         the initializer list are copied to the newly
         constructed value using the specified storage.
 
-        @param init The initializer list to copy. 
+        @par Complexity
+
+        Linear in `init.size()`.
+
+        @par Exception Safety
+
+        Strong guarantee.
+        Calls to @ref storage::allocate may throw.
+
+        @param init The initializer list to construct from. 
 
         @param sp A pointer to the @ref storage
         to use. The container will acquire shared
@@ -1084,6 +1093,32 @@ public:
     value(
         std::initializer_list<value_ref> init,
         storage_ptr sp = {});
+
+    /** Assign an object or array
+
+        If the initializer list consists of key/value
+        pairs, the resulting @ref object is assigned.
+        Otherwise an @ref array is assigned. The contents
+        of the initializer list are moved to `*this`
+        using the existing storage.
+
+        @par Complexity
+
+        Linear in `init.size()`.
+
+        @par Exception Safety
+
+        Strong guarantee.
+        Calls to @ref storage::allocate may throw.
+
+        @param init The initializer list to assign from.
+    */
+    value&
+    operator=(
+        std::initializer_list<value_ref> init)
+    {
+        return *this = value(init, storage());
+    }
 
     /** Assignment.
 

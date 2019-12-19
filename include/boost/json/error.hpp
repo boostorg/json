@@ -21,10 +21,6 @@ namespace json {
 struct BOOST_SYMBOL_VISIBLE
     type_error : std::invalid_argument
 {
-    /// Default constructor
-    BOOST_JSON_DECL
-    type_error();
-
     /** Constructor.
 
         Construct the exception using
@@ -47,10 +43,6 @@ struct BOOST_SYMBOL_VISIBLE
 struct BOOST_SYMBOL_VISIBLE
     number_required_error : type_error
 {
-    /// Default constructor.
-    BOOST_JSON_DECL
-    number_required_error();
-
     /** Constructor.
 
         Construct the exception using
