@@ -476,14 +476,15 @@ construct( value const& jv )
     // array with the real part first, and the imaginary
     // part last.
     //
-    // at() throws if index is out of range.
-    //
     // value_cast() throws if the JSON value does
     // not contain an applicable kind for the type T.
 
+    if(a.size() != 2)
+        throw std::invalid_argument(
+            "invalid json for std::complex");
     return {
-        value_cast< T >( a.at(0) ),
-        value_cast< T >( a.at(1) ) };
+        value_cast< T >( a[0] ),
+        value_cast< T >( a[1] ) };
 }
 
 //]

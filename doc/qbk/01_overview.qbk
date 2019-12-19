@@ -59,7 +59,7 @@ Boost.JSON requires:
 
 * [*C++11]: Robust support for most language features
 
-Tested with these compilers: msvc-14+, gcc 4.8.4+, clang 3.6+.
+Tested with these compilers: msvc-14.1+, gcc 4.8.4+, clang 3.6+.
 
 Typically a program will need to link statically or dynamically with the
 Boost.JSON library, which is either delivered with boost or built
