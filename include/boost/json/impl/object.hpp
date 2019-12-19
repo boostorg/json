@@ -413,8 +413,7 @@ insert_range(
         std::distance(first, last));
     auto const n0 = size();
     if(n > max_size() - n0)
-        BOOST_THROW_EXCEPTION(
-            object_too_large());
+        object_too_large::raise();
     if( min_capacity < n0 + n)
         min_capacity = n0 + n;
     place_impl f(first, n, sp_);

@@ -102,8 +102,7 @@ key_value_pair(
         [&]
         {
             if(key.size() > string::max_size())
-                BOOST_THROW_EXCEPTION(
-                    key_too_large());
+                key_too_large::raise();
             auto s = reinterpret_cast<
                 char*>(value_.storage()->
                     allocate(key.size() + 1));

@@ -1855,8 +1855,7 @@ public:
     as_object()
     {
         if(! is_object())
-            BOOST_THROW_EXCEPTION(
-                object_required_error());
+            object_required_error::raise();
         return obj_;
     }
 
@@ -1880,8 +1879,7 @@ public:
     as_object() const
     {
         if(! is_object())
-            BOOST_THROW_EXCEPTION(
-                object_required_error());
+            object_required_error::raise();
         return obj_;
     }
 
@@ -1905,8 +1903,7 @@ public:
     as_array()
     {
         if(! is_array())
-            BOOST_THROW_EXCEPTION(
-                array_required_error());
+            array_required_error::raise();
         return arr_;
     }
 
@@ -1930,8 +1927,7 @@ public:
     as_array() const
     {
         if(! is_array())
-            BOOST_THROW_EXCEPTION(
-                array_required_error());
+            array_required_error::raise();
         return arr_;
     }
 
@@ -1955,8 +1951,7 @@ public:
     as_string()
     {
         if(! is_string())
-            BOOST_THROW_EXCEPTION(
-                string_required_error());
+            string_required_error::raise();
         return str_;
     }
 
@@ -1980,8 +1975,7 @@ public:
     as_string() const
     {
         if(! is_string())
-            BOOST_THROW_EXCEPTION(
-                string_required_error());
+            string_required_error::raise();
         return str_;
     }
 
@@ -2005,8 +1999,7 @@ public:
     as_int64()
     {
         if(! is_int64())
-            BOOST_THROW_EXCEPTION(
-                int64_required_error());
+            int64_required_error::raise();
         return i64_.i;
     }
 
@@ -2030,8 +2023,7 @@ public:
     as_int64() const
     {
         if(! is_int64())
-            BOOST_THROW_EXCEPTION(
-                int64_required_error());
+            int64_required_error::raise();
         return i64_.i;
     }
 
@@ -2055,8 +2047,7 @@ public:
     as_uint64()
     {
         if(! is_uint64())
-            BOOST_THROW_EXCEPTION(
-                uint64_required_error());
+            uint64_required_error::raise();
         return u64_.u;
     }
 
@@ -2080,8 +2071,7 @@ public:
     as_uint64() const
     {
         if(! is_uint64())
-            BOOST_THROW_EXCEPTION(
-                uint64_required_error());
+            uint64_required_error::raise();
         return u64_.u;
     }
 
@@ -2105,8 +2095,7 @@ public:
     as_double()
     {
         if(! is_double())
-            BOOST_THROW_EXCEPTION(
-                double_required_error());
+            double_required_error::raise();
         return dub_.d;
     }
 
@@ -2130,8 +2119,7 @@ public:
     as_double() const
     {
         if(! is_double())
-            BOOST_THROW_EXCEPTION(
-                double_required_error());
+            double_required_error::raise();
         return dub_.d;
     }
 
@@ -2155,8 +2143,7 @@ public:
     as_bool()
     {
         if(! is_bool())
-            BOOST_THROW_EXCEPTION(
-                bool_required_error());
+            bool_required_error::raise();
         return bln_.b;
     }
 
@@ -2180,8 +2167,7 @@ public:
     as_bool() const
     {
         if(! is_bool())
-            BOOST_THROW_EXCEPTION(
-                bool_required_error());
+            bool_required_error::raise();
         return bln_.b;
     }
 

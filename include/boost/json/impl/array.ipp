@@ -41,8 +41,7 @@ undo_insert(
     , pos(self.impl_.index_of(pos_))
 {
     if(n > max_size())
-        BOOST_THROW_EXCEPTION(
-            array_too_large());
+        array_too_large::raise();
     self_.reserve(
         self_.impl_.size() + n_);
     // (iterators invalidated now)

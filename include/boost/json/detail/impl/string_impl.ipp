@@ -65,8 +65,7 @@ growth(
     std::size_t capacity)
 {
     if(new_size > max_size())
-        BOOST_THROW_EXCEPTION(
-            string_too_large());
+        string_too_large::raise();
     // growth factor 2
     if( capacity >
         max_size() - capacity)
@@ -101,8 +100,7 @@ append(
     storage_ptr const& sp)
 {
     if(n > max_size() - size())
-        BOOST_THROW_EXCEPTION(
-            string_too_large());
+        string_too_large::raise();
     if(n <= capacity() - size())
     {
         term(size() + n);
@@ -126,8 +124,7 @@ insert(
     storage_ptr const& sp)
 {
     if(pos > size())
-        BOOST_THROW_EXCEPTION(
-            char_pos_error());
+        char_pos_error::raise();
     if(n <= capacity() - size())
     {
         auto const dest =
@@ -140,8 +137,7 @@ insert(
         return dest;
     }
     if(n > max_size() - size())
-        BOOST_THROW_EXCEPTION(
-            string_too_large());
+        string_too_large::raise();
     string_impl tmp(growth(
         size() + n, capacity()), sp);
     tmp.size(size() + n);

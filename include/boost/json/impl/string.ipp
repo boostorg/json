@@ -169,8 +169,7 @@ insert(
     size_type count)
 {
     if(pos > impl_.size())
-        BOOST_THROW_EXCEPTION(
-            char_pos_error());
+        char_pos_error::raise();
     if(count > impl_.capacity() - impl_.size())
     {
         traits_type::copy(
@@ -225,8 +224,7 @@ erase(
     size_type count)
 {
     if(pos > impl_.size())
-        BOOST_THROW_EXCEPTION(
-            char_pos_error());
+        char_pos_error::raise();
     if( count > impl_.size() - pos)
         count = impl_.size() - pos;
     traits_type::move(

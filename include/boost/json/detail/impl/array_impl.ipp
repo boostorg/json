@@ -22,8 +22,7 @@ array_impl(
     storage_ptr const& sp)
 {
     if(capacity > max_size())
-        BOOST_THROW_EXCEPTION(
-            array_too_large());
+        array_too_large::raise();
     if(capacity > 0)
     {
         tab_ = ::new(sp->allocate(

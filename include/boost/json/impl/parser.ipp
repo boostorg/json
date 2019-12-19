@@ -439,8 +439,7 @@ on_key_part(
 {
     if( s.size() >
         string::max_size() - key_size_)
-        BOOST_THROW_EXCEPTION(
-            key_too_large());
+        key_too_large::raise();
     push_chars(s);
     key_size_ += static_cast<
         std::uint32_t>(s.size());
@@ -468,8 +467,7 @@ on_string_part(
 {
     if( s.size() >
         string::max_size() - str_size_)
-        BOOST_THROW_EXCEPTION(
-            string_too_large());  
+        string_too_large::raise();
     push_chars(s);
     str_size_ += static_cast<
         std::uint32_t>(s.size());
@@ -483,8 +481,7 @@ on_string(
 {
     if( s.size() >
         string::max_size() - str_size_)
-        BOOST_THROW_EXCEPTION(
-            string_too_large());  
+        string_too_large::raise();
     if(str_size_ == 0)
     {
         // fast path

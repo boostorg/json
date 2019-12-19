@@ -290,8 +290,7 @@ insert(
     };
     auto const n0 = size();
     if(init.size() > max_size() - n0)
-        BOOST_THROW_EXCEPTION(
-            object_too_large());
+        object_too_large::raise();
     place_impl f(
         init.begin(), init.size(), sp_);
     insert_range_impl(n0 + init.size(), f);
@@ -371,8 +370,7 @@ at(key_type key) ->
 {
     auto it = find(key);
     if(it == end())
-        BOOST_THROW_EXCEPTION(
-            key_not_found());
+        key_not_found::raise();
     return it->value();
 }
     
@@ -383,8 +381,7 @@ at(key_type key) const ->
 {
     auto it = find(key);
     if(it == end())
-        BOOST_THROW_EXCEPTION(
-         key_not_found());
+        key_not_found::raise();
     return it->value();
 }
 
@@ -537,8 +534,7 @@ rehash(std::size_t new_capacity)
     new_capacity = static_cast<std::size_t>(
         std::ceil(new_buckets * max_load_factor()));
     if(new_capacity > max_size())
-        BOOST_THROW_EXCEPTION(
-            object_too_large());
+        object_too_large::raise();
     object_impl impl(
         new_capacity, new_buckets, sp_);
     if(impl_.size() > 0)

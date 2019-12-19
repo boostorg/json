@@ -80,8 +80,7 @@ at(std::size_t pos) ->
     reference
 {
     if(pos >= impl_.size())
-        BOOST_THROW_EXCEPTION(
-            array_index_error());
+        array_index_error::raise();
     return impl_.data()[pos];
 }
 
@@ -91,8 +90,7 @@ at(std::size_t pos) const ->
     const_reference
 {
     if(pos >= impl_.size())
-        BOOST_THROW_EXCEPTION(
-            array_index_error());
+        array_index_error::raise();
     return impl_.data()[pos];
 }
 
@@ -373,8 +371,7 @@ array(
         static_cast<std::size_t>(
             std::distance(first, last));
     if(n > max_size())
-        BOOST_THROW_EXCEPTION(
-            array_too_large());
+        array_too_large::raise();
     reserve(static_cast<std::size_t>(n));
     while(impl_.size() < n)
     {
@@ -423,8 +420,7 @@ insert(
         static_cast<std::size_t>(
             std::distance(first, last));
     if(n > max_size())
-        BOOST_THROW_EXCEPTION(
-            array_too_large());
+        array_too_large::raise();
     undo_insert u(pos, static_cast<
         std::size_t>(n), *this);
     while(first != last)

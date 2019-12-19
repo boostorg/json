@@ -24,8 +24,7 @@ reserve(std::size_t bytes)
     if(bytes <= capacity_)
         return;
     if(bytes > max_size())
-        BOOST_THROW_EXCEPTION(
-            stack_overflow());
+        stack_overflow::raise();
     if( bytes < min_capacity_)
         bytes = min_capacity_;
 
@@ -61,8 +60,7 @@ raw_stack::
 grow(std::size_t n)
 {
     if(n > max_size() - capacity_)
-        BOOST_THROW_EXCEPTION(
-            stack_overflow());
+        stack_overflow::raise();
     reserve(capacity_ + n);
 }
 
