@@ -163,19 +163,19 @@ public:
 
     }
 
-#if 0
     template<class T>
     value_ref(T&& t
         ,typename std::enable_if<
             ! std::is_constructible<
                 string_view, T>::value &&
-            ! std::is_same<bool, T>::value
+            ! std::is_same<bool,
+                detail::remove_cvref<T>>::value
                 >::type* = 0)
-        : f_{&from_rvalue<T>, &t}
+        : f_{&from_rvalue<
+            detail::remove_cvref<T>>, &t}
         , what_(what::func)
     {
     }
-#endif
 
     template<class Bool
         ,class = typename std::enable_if<

@@ -173,6 +173,10 @@ public:
         (void)init_list{{{1,2},{3,4,5}}};
         (void)init_list{{1,2,{3,{4,5}}}};
 
+        {
+            init_list init = 
+                { { "key", true } };
+        }
     }
 
     void
