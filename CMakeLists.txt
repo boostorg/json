@@ -7,148 +7,67 @@
 # Official repository: https://github.com/vinniefalco/json
 #
 
-cmake_minimum_required (VERSION 3.5.1)
+cmake_minimum_required(VERSION 3.5...3.16)
 
-if (POLICY CMP0074)
-    cmake_policy (SET CMP0074 NEW)
+set(BOOST_JSON_VERSION 1)
+if(BOOST_SUPERPROJECT_VERSION)
+    set(BOOST_JSON_VERSION ${BOOST_SUPERPROJECT_VERSION})
 endif()
 
-#-------------------------------------------------------------------------------
+project(boost_json VERSION ${BOOST_JSON_VERSION} LANGUAGES CXX)
 
-function (DoGroupSources curdir rootdir folder)
-    file (GLOB children RELATIVE ${PROJECT_SOURCE_DIR}/${curdir} ${PROJECT_SOURCE_DIR}/${curdir}/*)
-    foreach (child ${children})
-        if (IS_DIRECTORY ${PROJECT_SOURCE_DIR}/${curdir}/${child})
-            DoGroupSources (${curdir}/${child} ${rootdir} ${folder})
-        elseif (${child} STREQUAL "CMakeLists.txt")
-            source_group("" FILES ${PROJECT_SOURCE_DIR}/${curdir}/${child})
-        else()
-            string (REGEX REPLACE ^${rootdir} ${folder} groupname ${curdir})
-            string (REPLACE "/" "\\" groupname ${groupname})
-            source_group (${groupname} FILES ${PROJECT_SOURCE_DIR}/${curdir}/${child})
-        endif()
-    endforeach()
-endfunction()
-
-function (GroupSources curdir folder)
-    DoGroupSources (${curdir} ${curdir} ${folder})
-endfunction()
-
-#-------------------------------------------------------------------------------
-#
-# JSON
-#
-#-------------------------------------------------------------------------------
-
-project (JSON VERSION 1)
-
-set_property (GLOBAL PROPERTY USE_FOLDERS ON)
-
-if (MSVC)
-    set (CMAKE_VERBOSE_MAKEFILE FALSE)
-
-    add_definitions (
-        -D_WIN32_WINNT=0x0601
-        -D_CRT_SECURE_NO_WARNINGS
-    )
-
-    add_compile_options(
-        /permissive-  # strict C++
-        /W4           # enable all warnings
-        /MP           # Multi-processor compilation
-        )
-
-    add_link_options(
-        /INCREMENTAL:NO
-    )
-
-    set (Boost_USE_STATIC_LIBS ON)
-    set (Boost_USE_STATIC_RUNTIME ON)
-
-    set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
-    set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Ob2 /Oi /Ot /GL /MT")
-    set (CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /Oi /Ot /MT")
-
-    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SAFESEH:NO")
-    set (CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LTCG")
-
-    # for RelWithDebInfo builds, disable incremental linking
-    # since CMake sets it ON by default for that build type and it
-    # causes warnings
-    #
-    string (REPLACE "/INCREMENTAL" "/INCREMENTAL:NO" replacement_flags
-        ${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO})
-    set (CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO ${replacement_flags})
-
-else()
-    set (THREADS_PREFER_PTHREAD_FLAG ON)
-    find_package (Threads)
-
-    set( CMAKE_CXX_FLAGS
-      "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -Wpedantic -Wno-unused-parameter")
-
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wrange-loop-analysis")
-    endif ()
-endif()
-
-# Must come before Boost includes, otherwise the
-# IDE sees the wrong file due to boost/ symlinks.
-include_directories (include)
-
-#-------------------------------------------------------------------------------
-#
-# Boost
-#
-#-------------------------------------------------------------------------------
-
-get_filename_component (BOOST_ROOT ../../ ABSOLUTE)
-
-# VFALCO I want static but "b2 stage" builds a minimal set which excludes static
-add_definitions (-DBOOST_ALL_STATIC_LINK=1)
-
-include_directories (${BOOST_ROOT})
-
-link_directories(${BOOST_ROOT}/stage/lib)
-
-#-------------------------------------------------------------------------------
-
-if ("${VARIANT}" STREQUAL "coverage")
-    if (MSVC)
-    else()
-        set (CMAKE_BUILD_TYPE DEBUG)
-        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.2 --coverage")
-        set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
-    endif()
-
-elseif ("${VARIANT}" STREQUAL "ubasan")
-    if (MSVC)
-    else()
-        set (CMAKE_BUILD_TYPE RELWITHDEBINFO)
-        set (CMAKE_CXX_FLAGS
-          "${CMAKE_CXX_FLAGS} -msse4.2 -funsigned-char -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=address,undefined -fsanitize-blacklist=${PROJECT_SOURCE_DIR}/tools/blacklist.supp")
-        set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address,undefined -fno-sanitize-recover=address,undefined")
-    endif()
-
-elseif ("${VARIANT}" STREQUAL "debug")
-    set (CMAKE_BUILD_TYPE DEBUG)
-
-elseif ("${VARIANT}" STREQUAL "release")
-    set (CMAKE_BUILD_TYPE RELEASE)
-
-endif()
-
-#-------------------------------------------------------------------------------
-#
-# Tests and examples
-#
-
-file (GLOB_RECURSE PROJECT_FILES
-    ${PROJECT_SOURCE_DIR}/include/boost/json/*.hpp
-    ${PROJECT_SOURCE_DIR}/include/boost/json/*.ipp
-    ${PROJECT_SOURCE_DIR}/include/boost/json/*.natvis
+file(GLOB_RECURSE BOOST_JSON_HEADERS CONFIGURE_DEPENDS
+    include/boost/*.hpp
+    include/boost/*.ipp
+    include/boost/*.natvis
 )
 
-add_subdirectory (bench)
-add_subdirectory (example)
-add_subdirectory (test)
+set(BOOST_JSON_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/src.cpp
+)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+if(${CMAKE_VERSION} VERSION_GREATER 3.7.2)
+    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/include/boost PREFIX "" FILES ${BOOST_JSON_HEADERS})
+    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX "" FILES ${BOOST_JSON_SOURCES})
+endif()
+
+add_library(boost_json ${BOOST_JSON_HEADERS} ${BOOST_JSON_SOURCES})
+add_library(Boost::json ALIAS boost_json)
+
+target_compile_features(boost_json PUBLIC cxx_constexpr)
+
+target_include_directories(boost_json PUBLIC include)
+
+target_compile_definitions(boost_json PUBLIC BOOST_JSON_NO_LIB=1)
+
+if(BUILD_SHARED_LIBS)
+    target_compile_definitions(boost_json PUBLIC BOOST_JSON_DYN_LINK=1)
+else()
+    target_compile_definitions(boost_json PUBLIC BOOST_JSON_STATIC_LINK=1)
+endif()
+
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    if(${CMAKE_VERSION} VERSION_LESS 3.16)
+        message(FATAL_ERROR "Boost.JSON development requires CMake 3.16 or newer.")
+    endif()
+
+    get_filename_component(BOOST_ROOT ../.. ABSOLUTE)
+    target_include_directories(boost_json PUBLIC ${BOOST_ROOT})
+    target_link_directories(boost_json PUBLIC ${BOOST_ROOT}/stage/lib)
+
+    add_subdirectory(bench)
+    add_subdirectory(example)
+    add_subdirectory(test)
+else()
+    target_link_libraries(boost_json
+        PUBLIC
+            Boost::assert
+            Boost::config
+            Boost::core
+            Boost::exception
+            Boost::system
+            Boost::utility
+    )
+endif()

@@ -7,38 +7,17 @@
 # Official repository: https://github.com/vinniefalco/json
 #
 
-source_group (json FILES ${PROJECT_SOURCE_DIR}/include/boost/json.hpp)
-source_group (json FILES ${PROJECT_SOURCE_DIR}/include/boost/pilfer.hpp)
-source_group (TREE ${PROJECT_SOURCE_DIR}/include/boost/json PREFIX json FILES ${PROJECT_FILES})
-
-GroupSources(bench "/")
-
-# Disable auto-linking
-add_definitions(-DBOOST_ALL_NO_LIB=1)
-
-include_directories(../test)
-
-if (MSVC)
-    if (CMAKE_BUILD_TYPE EQUAL "Debug")
-    else()
-        add_compile_options(
-            /GL         # Whole program optimization
-            /Ob2        # inline any suitable
-            )
-
-        add_link_options(
-            /LTCG       # Link Time Code Generation
-            )
-    endif()
-endif()
-
-add_executable (bench
-    ${PROJECT_FILES}
-    ${PROJECT_SOURCE_DIR}/include/boost/json.hpp
-    ${PROJECT_SOURCE_DIR}/include/boost/pilfer.hpp
-    ${PROJECT_SOURCE_DIR}/src/src.cpp
+source_group("" FILES
     Jamfile
     bench.cpp
 )
+
+add_executable(bench
+    Jamfile
+    bench.cpp
+)
+
+target_include_directories(bench PRIVATE ../test)
+target_link_libraries(bench PRIVATE boost_json)
 
 add_test(json-tests json-tests)

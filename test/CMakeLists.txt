@@ -7,52 +7,12 @@
 # Official repository: https://github.com/vinniefalco/json
 #
 
-source_group (boost FILES ${PROJECT_SOURCE_DIR}/include/boost/json.hpp)
-source_group (boost FILES ${PROJECT_SOURCE_DIR}/include/boost/pilfer.hpp)
-source_group (TREE ${PROJECT_SOURCE_DIR}/include/boost/json PREFIX json FILES ${PROJECT_FILES})
+file(GLOB_RECURSE BOOST_JSON_TESTS_FILES CONFIGURE_DEPENDS Jamfile *.cpp *.hpp)
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX "" FILES ${BOOST_JSON_TESTS_FILES})
 
-GroupSources(test "/")
+add_executable(tests ${BOOST_JSON_TESTS_FILES})
 
-add_definitions(-DBOOST_JSON_HEADER_ONLY=1)
+target_include_directories(tests PRIVATE .)
+target_link_libraries(tests PRIVATE boost_json)
 
-include_directories(.)
-
-add_executable (json-tests
-    ${PROJECT_FILES}
-    ${PROJECT_SOURCE_DIR}/include/boost/json.hpp
-    ${PROJECT_SOURCE_DIR}/include/boost/pilfer.hpp
-    ${PROJECT_SOURCE_DIR}/include/boost/json/json.natvis
-    ${PROJECT_SOURCE_DIR}/src/src.cpp
-    Jamfile
-    test.hpp
-    test_suite.hpp
-    parse-vectors.hpp
-    main.cpp
-    _detail_number.cpp
-    array.cpp
-    basic_parser.cpp
-    error.cpp
-    json.cpp
-    kind.cpp
-    limits.cpp
-    number_cast.cpp
-    object.cpp
-    parser.cpp
-    pool.cpp
-    serializer.cpp
-    snippets.cpp
-    storage.cpp
-    storage_ptr.cpp
-    string.cpp
-    to_value.cpp
-    traits.cpp
-    value.cpp
-    value_cast.cpp
-    value_ref.cpp
-    ryu/d2s_intrinsics_test.cpp
-    ryu/d2s_table_test.cpp
-    ryu/d2s_test.cpp
-    ryu/gtest.hpp
-)
-
-add_test(json-tests json-tests)
+add_test(json-tests tests)

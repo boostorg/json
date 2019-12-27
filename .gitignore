@@ -1,10 +1,13 @@
-bin
-bin64
-*.*#
+/bin
+/bin64
 temp
 
-# Because of CMake and VS2017
-Win32/
-x64/
-out/
-.vs/
+# Emacs
+*#
+
+# Vim
+*~
+
+# Visual Studio
+/.vs
+/out
