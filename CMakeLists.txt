@@ -49,6 +49,10 @@ else()
 endif()
 
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    #
+    # Root project such as on Travis or other CI,
+    # or when producing Visual Studio Solution and Projects
+    #
     if(${CMAKE_VERSION} VERSION_LESS 3.16)
         message(FATAL_ERROR "Boost.JSON development requires CMake 3.16 or newer.")
     endif()
@@ -60,7 +64,11 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     add_subdirectory(bench)
     add_subdirectory(example)
     add_subdirectory(test)
-else()
+
+elseif(BOOST_SUPERPROJECT_VERSION)
+    #
+    # Building with Boost superproject cmake
+    #
     target_link_libraries(boost_json
         PUBLIC
             Boost::assert
@@ -69,5 +77,14 @@ else()
             Boost::exception
             Boost::system
             Boost::utility
+    )
+else()
+    #
+    # Out-of-tree, non-standalone build
+    #
+    find_package(Boost COMPONENTS system)
+    target_link_libraries(boost_json
+        PUBLIC
+            Boost::system
     )
 endif()
