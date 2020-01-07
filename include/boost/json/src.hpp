@@ -17,6 +17,8 @@ in a translation unit of the program.
 
 */
 
+#define BOOST_JSON_SOURCE
+
 #include <boost/json/config.hpp>
 
 #if defined(BOOST_JSON_HEADER_ONLY)
