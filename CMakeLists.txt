@@ -48,7 +48,13 @@ else()
     target_compile_definitions(boost_json PUBLIC BOOST_JSON_STATIC_LINK=1)
 endif()
 
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+option(BOOST_JSON_STANDALONE "Build boost::json as a static standalone library" FALSE)
+
+if(BOOST_JSON_STANDALONE)
+    target_compile_features(boost_json PUBLIC cxx_std_17)
+    target_compile_definitions(boost_json PUBLIC BOOST_JSON_STANDALONE)
+    add_subdirectory(example)
+elseif(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     #
     # Root project such as on Travis or other CI,
     # or when producing Visual Studio Solution and Projects
