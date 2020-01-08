@@ -500,7 +500,6 @@ struct rapidjson_crt_impl : public any_impl
             CrtAllocator alloc;
             GenericDocument<
                 UTF8<>, CrtAllocator> d(&alloc);
-            d.Clear();
             d.Parse(s.data(), s.size());
         }
     }
