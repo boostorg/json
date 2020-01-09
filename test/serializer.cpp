@@ -273,6 +273,8 @@ public:
         check("-999");
         check("-99");
         check("-9");
+        check("-0");
+        check("-0.0");
         check( "0");
         check( "9");
         check( "99");
@@ -462,6 +464,21 @@ public:
     }
 
     void
+    testNumberRoundTrips()
+    {
+        BOOST_TEST(std::signbit(parse("-0.0").as_double()));
+        BOOST_TEST(to_string(value(-0.0)) == "-0E0");
+
+        //BOOST_TEST(parse("-0.0").as_double() == -0);
+        //BOOST_TEST(parse("-0").as_int64() == 0);
+        //BOOST_TEST(to_string(parse("0.0")) == "0");
+        //BOOST_TEST(to_string(parse("-0.0")) == "-0.0");
+
+        // VFALCO Peter is unsure what this should do
+        //BOOST_TEST(to_string(parse("-0")) == "-0");
+    }
+
+    void
     run()
     {
         testMembers();
@@ -472,6 +489,7 @@ public:
         testScalar();
         testVectors();
         testOstream();
+        testNumberRoundTrips();
     }
 };
 

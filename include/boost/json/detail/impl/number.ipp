@@ -166,9 +166,9 @@ loop:
     // [0,1..9]
     case state::init0:
     {
+        BOOST_ASSERT(neg_);
         BOOST_ASSERT(
             n_.kind == kind::int64);
-        BOOST_ASSERT(neg_);
         if(p >= p1)
             break;
         unsigned char const d = *p - '0';
@@ -209,7 +209,7 @@ loop:
             st_ = state::frac1;
             goto loop;
         }
-        // zero
+        // just a zero
         n_.u = 0;
         st_ = state::end;
         goto finish;
@@ -219,10 +219,11 @@ loop:
     // *[0..9]
     case state::mant:
     {
+        BOOST_ASSERT(! neg_);
+        BOOST_ASSERT(dig_ > 0);
         BOOST_ASSERT(
             n_.kind == kind::int64);
-        BOOST_ASSERT(! neg_);
-        if(p < p1)
+        if(p < p1) // VFALCO see if the compiler can do this for us
         {
             auto m = n_.u;
             do
@@ -234,6 +235,8 @@ loop:
                     if( m  > 1844674407370955161 || (
                         m == 1844674407370955161 && d > 5))
                     {
+                        // VFALCO Conversion to double may
+                        //        require intelligent rounding
                         ++p;
                         n_.d = static_cast<double>(m) * 10;
                         n_.kind = kind::double_;
@@ -260,6 +263,7 @@ loop:
                     st_ = state::exp1;
                     goto loop;
                 }
+                // reached end of number
                 n_.u = m;
                 finish(ec);
                 goto finish;
@@ -273,9 +277,10 @@ loop:
     // *[0..9] (negative)
     case state::mantn:
     {
-        BOOST_ASSERT(n_.kind == kind::int64);
         BOOST_ASSERT(neg_);
-        if(p < p1)
+        BOOST_ASSERT(dig_ > 0);
+        BOOST_ASSERT(n_.kind == kind::int64);
+        if(p < p1) // VFALCO see if the compiler can do this for us
         {
             auto m = n_.u;
             do
@@ -287,6 +292,9 @@ loop:
                     if( m  > 922337203685477580 || (
                         m == 922337203685477580 && d > 8))
                     {
+                        // VFALCO Conversion to double may
+                        //        require intelligent rounding.
+                        //        Need to do the right thing for neg_ == true
                         n_.d = static_cast<double>(m);
                         n_.kind = kind::double_;
                         st_ = state::mantd;
@@ -300,6 +308,7 @@ loop:
                 if(*p == '.')
                 {
                     ++p;
+                    n_.u = m;
                     st_ = state::frac1;
                     goto loop;
                 }
@@ -311,9 +320,9 @@ loop:
                     st_ = state::exp1;
                     goto loop;
                 }
-                n_.i = static_cast<
-                    int64_t>(~n_.u+1);
-                st_ = state::end;
+                // reached end of number
+                n_.u = m;
+                finish(ec);
                 goto finish;
             }
             while(p < p1);
@@ -583,9 +592,10 @@ finish(
         break;
 
     case state::mant:
+        BOOST_ASSERT(! neg_);
+        BOOST_ASSERT(dig_ > 0);
         BOOST_ASSERT(
             n_.kind == kind::int64);
-        BOOST_ASSERT(! neg_);
         //ec = {};
         if(n_.u <= INT64_MAX)
             n_.i = static_cast<
@@ -596,9 +606,10 @@ finish(
         break;
 
     case state::mantn:
+        BOOST_ASSERT(neg_);
+        BOOST_ASSERT(dig_ > 0);
         BOOST_ASSERT(
             n_.kind == kind::int64);
-        BOOST_ASSERT(neg_);
         //ec = {};
         n_.i = static_cast<
             int64_t>(~n_.u+1);

@@ -20,6 +20,28 @@ namespace boost {
 namespace json {
 namespace detail {
 
+bool
+operator==(
+    number const& lhs,
+    number const& rhs) noexcept
+{
+    if(lhs.kind != rhs.kind)
+        return false;
+    switch(lhs.kind)
+    {
+    case json::kind::int64:
+        return lhs.i == rhs.i;
+    case json::kind::uint64:
+        return lhs.u == rhs.u;
+    default:
+        break;
+    }
+    return 
+        std::signbit(lhs.d) ==
+            std::signbit(rhs.d) &&
+        lhs.d == rhs.d;
+}
+
 class number_test
 {
 public:
@@ -152,7 +174,7 @@ public:
         int64_t i)
     {
         grind(s,
-            [&](detail::number num)
+            [&](number num)
             {
                 if( BOOST_TEST(
                         num.kind == kind::int64))
@@ -166,7 +188,7 @@ public:
         uint64_t u)
     {
         grind(s,
-            [&](detail::number num)
+            [&](number num)
             {
                 if( BOOST_TEST(
                         num.kind == kind::uint64))
@@ -275,7 +297,7 @@ public:
                 num.kind == kind::double_);
 
             grind(s,
-                [&](detail::number num1)
+                [&](number num1)
                 {
                     if( BOOST_TEST(
                             num1.kind == kind::double_))
@@ -406,14 +428,14 @@ public:
         fc( "1e0" );
         fc( "1e10" );
 
-        fc(
-            "0."
+        fc( "0."
+            "00000000000000000000000000000000000000000000000000" // 50 zeroes
+            "1e50" );
+        fc( "-0."
             "00000000000000000000000000000000000000000000000000" // 50 zeroes
             "1e50" );
 
-        fc(
-            "0."
-            "00000000000000000000000000000000000000000000000000" // 50 zeroes
+        fc("0."
             "00000000000000000000000000000000000000000000000000"
             "00000000000000000000000000000000000000000000000000"
             "00000000000000000000000000000000000000000000000000"
@@ -423,13 +445,88 @@ public:
             "00000000000000000000000000000000000000000000000000"
             "00000000000000000000000000000000000000000000000000"
             "00000000000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000000000" // 500 zeroes
             "1e600" );
+        fc("-0."
+            "00000000000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000000000" // 500 zeroes
+            "1e600" );
+
+        fc( "0e"
+            "00000000000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000000000" // 500 zeroes
+            );
+
     }
 
     void
     testDoubles()
     {
         check_numbers(f_boost{});
+    }
+
+    static
+    number
+    int64_num(int64_t i) noexcept
+    {
+        number num;
+        num.i = i;
+        num.kind = kind::int64;
+        return num;
+    }
+
+    static
+    number
+    uint64_num(uint64_t u) noexcept
+    {
+        number num;
+        num.u = u;
+        num.kind = kind::uint64;
+        return num;
+    }
+
+    static
+    number
+    double_num(double d) noexcept
+    {
+        number num;
+        num.d = d;
+        num.kind = kind::double_;
+        return num;
+    }
+
+    void
+    testEdgeCases()
+    {
+        auto const parse =
+            [&](string_view s)
+            {
+                error_code ec;
+                number_parser p;
+                p.write(s.data(), s.size(), ec);
+                BOOST_TEST(! ec);
+                return p.get();
+            };
+
+        BOOST_TEST(parse("-0.0") == double_num(-0.0));
+        BOOST_TEST(parse("-0E0") == double_num(-0.0));
+        BOOST_TEST(parse("-0") == int64_num(0));
     }
 
     void
@@ -439,6 +536,7 @@ public:
         testIntegers();
         testBad();
         testDoubles();
+        testEdgeCases();
     }
 };
 

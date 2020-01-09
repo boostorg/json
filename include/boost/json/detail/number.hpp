@@ -13,6 +13,7 @@
 #include <boost/json/config.hpp>
 #include <boost/json/error.hpp>
 #include <boost/json/kind.hpp>
+#include <cmath>
 #include <type_traits>
 
 namespace boost {
@@ -46,7 +47,7 @@ class number_parser
 
     number n_;
     short exp_;
-    short dig_;
+    short dig_; // significant digits in mantissa
     short off_;
     bool neg_;
     bool eneg_;
