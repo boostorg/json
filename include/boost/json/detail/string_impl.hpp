@@ -58,7 +58,7 @@ class string_impl
 
     struct sbo
     {
-        kind k;
+        kind k; // must come first
         char buf[sbo_chars_ + 1];
     };
 
