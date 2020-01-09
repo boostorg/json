@@ -13,6 +13,7 @@
 #include <boost/json/config.hpp>
 #include <boost/json/error.hpp>
 #include <boost/json/kind.hpp>
+#include <cmath>
 #include <type_traits>
 
 namespace boost {
@@ -38,16 +39,18 @@ class number_parser
     enum class state
     {
         init,   init0,  init1,
+        mantf,
+        zeroes,
         mant,   mantn,  mantd,
-        frac1,  frac2,  fracd,
         exp1,   exp2,   exp3,
         end
     };
 
     number n_;
-    short exp_;
-    short dig_;
-    short off_;
+    short exp_; // exponent string as integer
+    short dig_; // digits in mantissa
+    short pos_; // position of decimal point
+    short sig_; // significant digits in mantissa
     bool neg_;
     bool eneg_;
     state st_;

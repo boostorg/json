@@ -87,4 +87,11 @@ else()
         PUBLIC
             Boost::system
     )
+    option(BUILD_TESTING "Build the tests" ON)
+    if (BUILD_TESTING)
+        add_subdirectory(bench)
+        add_subdirectory(example)
+        add_subdirectory(test)
+    endif()
+
 endif()
