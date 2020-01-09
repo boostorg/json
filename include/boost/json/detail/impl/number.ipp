@@ -300,9 +300,9 @@ loop:
                         st_ = state::mantd;
                         goto loop;
                     }
-                    m = 10 * m + d;
-                    ++dig_;
                     ++p;
+                    ++dig_;
+                    m = 10 * m + d;
                     continue;
                 }
                 if(*p == '.')
@@ -332,6 +332,8 @@ loop:
     }
 
     // *[0..9] (double)
+    // Accumulate mantissa digits to the left
+    // of the decimal point, beyond double precision.
     case state::mantd:
     {
         BOOST_ASSERT(
