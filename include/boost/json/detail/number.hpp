@@ -46,9 +46,10 @@ class number_parser
     };
 
     number n_;
-    short exp_;
+    short exp_; // exponent string as integer
     short dig_; // significant digits in mantissa
-    short off_;
+    short off_; // mantissa's contribution to exponent
+    short left_; // number of digits to the left of the decimal
     bool neg_;
     bool eneg_;
     state st_;

@@ -235,13 +235,8 @@ loop:
                     if( m  > 1844674407370955161 || (
                         m == 1844674407370955161 && d > 5))
                     {
-                        // VFALCO Conversion to double may
-                        //        require intelligent rounding
-                        ++p;
-                        n_.d = static_cast<double>(m) * 10;
-                        n_.kind = kind::double_;
-                        st_ = state::mantd;
-                        goto loop;
+                        n_.u = m;
+                        goto enter_mantd;
                     }
                     ++p;
                     ++dig_;
@@ -292,13 +287,8 @@ loop:
                     if( m  > 922337203685477580 || (
                         m == 922337203685477580 && d > 8))
                     {
-                        // VFALCO Conversion to double may
-                        //        require intelligent rounding.
-                        //        Need to do the right thing for neg_ == true
-                        n_.d = static_cast<double>(m);
-                        n_.kind = kind::double_;
-                        st_ = state::mantd;
-                        goto loop;
+                        n_.u = m;
+                        goto enter_mantd;
                     }
                     ++p;
                     ++dig_;
@@ -331,40 +321,49 @@ loop:
         break;
     }
 
+    enter_mantd:
+        BOOST_ASSERT(off_ == 0);
+        ++p;
+        off_ = 1;
+        st_ = state::mantd;
+        n_.kind = kind::double_;
+        // VFALCO Conversion to double may
+        //        require intelligent rounding.
+        //        Need to do the right thing for neg_ == true
+        n_.d = static_cast<double>(n_.u);
+        BOOST_FALLTHROUGH;
+
     // *[0..9] (double)
-    // Accumulate mantissa digits to the left
-    // of the decimal point, beyond double precision.
     case state::mantd:
     {
+        // make sure we are past the
+        // limit of double precision.
+        BOOST_ASSERT(dig_ >= 18);
         BOOST_ASSERT(
             n_.kind == kind::double_);
-        auto d = n_.d;
         while(p < p1)
         {
             if(*p == '.')
             {
                 ++p;
-                n_.d = d;
                 st_ = state::fracd;
                 goto loop;
             }
             if(*p == 'e' || *p == 'E')
             {
                 ++p;
-                n_.d = d;
                 st_ = state::exp1;
                 goto loop;
             }
-            if(static_cast<unsigned char>(
-                *p - '0') > 9)
+            unsigned char const d = *p - '0';
+            if(d >= 10)
             {
                 finish(ec);
                 goto finish;
             }
             ++p;
-            d = d * 10;
+            ++off_;
         }
-        n_.d = d;
         break;
     }
 
@@ -385,15 +384,16 @@ loop:
         }
         n_.kind = kind::double_;
         st_ = state::frac2;
+        // don't consume *p here
         BOOST_FALLTHROUGH;
     }
 
-    // zero or more [0..9]
+    // *[0..9]
     case state::frac2:
     {
         BOOST_ASSERT(
             n_.kind == kind::double_);
-        if(p < p1)
+        if(p < p1) // VFALCO see if the compiler can do this for us
         {
             auto m = n_.u;
             do
@@ -431,7 +431,7 @@ loop:
         break;
     }
 
-    // zero or more [0..9] (double)
+    // *[0..9] (double)
     case state::fracd:
     {
         BOOST_ASSERT(
