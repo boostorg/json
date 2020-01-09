@@ -250,13 +250,9 @@ public:
     {
         check_bad("");
         check_bad("x");
-        check_bad("00");
         check_bad("e");
         check_bad("1ex");
         check_bad("-");
-        check_bad("00");
-        check_bad("00.");
-        check_bad("00.0");
         check_bad("1a");
         check_bad(".");
         check_bad("1.");
@@ -269,6 +265,16 @@ public:
         check_bad("0.0e");
         check_bad("-e");
         check_bad("-x");
+
+        // leading 0 must be followed by [.eE] or nothing
+        check_bad( "00");
+        check_bad( "01");
+        check_bad( "00.");
+        check_bad( "00.0");
+        check_bad("-00");
+        check_bad("-01");
+        check_bad("-00.");
+        check_bad("-00.0");
     }
 
     //------------------------------------------------------
@@ -310,7 +316,7 @@ public:
 
     // Verify that f converts to the
     // same double produced by `strtod`.
-    // Requires `s` does not fit in an integral type.
+    // Requires `s` is not represented by an integral type.
     template<class F>
     void
     fcheck(std::string const& s, F const& f)
@@ -527,16 +533,35 @@ public:
         BOOST_TEST(parse("-0.0") == double_num(-0.0));
         BOOST_TEST(parse("-0E0") == double_num(-0.0));
         BOOST_TEST(parse("-0") == int64_num(0));
+
+        BOOST_TEST(parse("0") == int64_num(0));
+        BOOST_TEST(parse("0.010") == double_num(0.01));
+        BOOST_TEST(parse("-0.010") == double_num(-0.01));
+        BOOST_TEST(parse("1.010") == double_num(1.01));
+        BOOST_TEST(parse("-1.010") == double_num(-1.01));
     }
 
     void
     run()
     {
+        fcheck(
+            "0."
+            "00000000000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000000000"
+            "00000000000000000000000000000000000000000000000000" // 500 zeroes
+            "1e600", f_boost{} );
+        testEdgeCases();
         testMembers();
         testIntegers();
         testBad();
         testDoubles();
-        testEdgeCases();
     }
 };
 
@@ -545,3 +570,44 @@ TEST_SUITE(number_test, "boost.json.detail.number");
 } // detail
 } // json
 } // boost
+
+#if 0
+
+(for positive)
+A. accumulate digits into unsigned u
+    if(got('.'))
+        if( have_dot )
+            return error;
+        dot_pos = pos
+    else if(u > UINT64_MAX)
+        goto state C
+    else
+        ++dig_;
+        accumulate digit
+
+(for negative)
+B. accumulate digits into unsigned u
+    if(got('.'))
+        if( have_dot )
+            return error;
+        dot_pos = pos
+    else if(u > abs(INT64_MIN))
+        goto state C
+    else
+        ++dig_;
+        accumulate digit
+
+C. accumulate exponent offset
+    if(got('e', 'E', '-', '+')
+        ...
+    else if(got('.'))
+        if( have_dot )
+            return error;
+        dot_pos = pos
+    else
+        if( have_dot )
+            // do nothing
+        else
+            ++dig_;
+
+#endif

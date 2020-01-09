@@ -39,17 +39,18 @@ class number_parser
     enum class state
     {
         init,   init0,  init1,
+        zeroes,
         mant,   mantn,  mantd,
-        frac1,  frac2,  fracd,
         exp1,   exp2,   exp3,
         end
     };
 
     number n_;
     short exp_; // exponent string as integer
-    short dig_; // significant digits in mantissa
+    short dig_; // digits in mantissa
     short off_; // mantissa's contribution to exponent
-    short left_; // number of digits to the left of the decimal
+    short pos_; // position of decimal point
+    short sig_; // significant digits in mantissa
     bool neg_;
     bool eneg_;
     state st_;

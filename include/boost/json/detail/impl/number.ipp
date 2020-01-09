@@ -110,6 +110,8 @@ maybe_init(char ch) noexcept
         exp_ = 0;
         dig_ = 0;
         off_ = 0;
+        pos_ = -1;
+        sig_ = 0;
         neg_ = true;
         st_ = state::init0;
         return true;
@@ -120,6 +122,8 @@ maybe_init(char ch) noexcept
     n_.u = d;
     exp_ = 0;
     off_ = 0;
+    pos_ = -1;
+    sig_ = 0;
     neg_ = false;
     n_.kind = kind::int64;
     if(ch == '0')
@@ -166,6 +170,7 @@ loop:
     // [0,1..9]
     case state::init0:
     {
+        // got minus sign
         BOOST_ASSERT(neg_);
         BOOST_ASSERT(
             n_.kind == kind::int64);
@@ -191,6 +196,8 @@ loop:
 
     // [.eE]
     case state::init1:
+    {
+        // got leading 0
         BOOST_ASSERT(
             n_.kind == kind::int64);
         if(p >= p1)
@@ -198,21 +205,61 @@ loop:
         if(*p == 'e' || *p == 'E')
         {
             ++p;
-            n_.d = 0;
             n_.kind = kind::double_;
             st_ = state::exp1;
             goto loop;
         }
         if(*p == '.')
         {
+            BOOST_ASSERT(pos_ < 0);
+            BOOST_ASSERT(dig_ == 0);
             ++p;
-            st_ = state::frac1;
+            pos_ = 0;
+            st_ = state::zeroes;
+            n_.kind = kind::double_;
             goto loop;
         }
-        // just a zero
-        n_.u = 0;
+        unsigned char const d = *p - '0';
+        if(d < 10)
+        {
+            ec = error::expected_fraction;
+            goto finish;
+        }
+        // reached end of number
         st_ = state::end;
         goto finish;
+    }
+
+    //-----------------------------------
+
+    // *[0] 
+    case state::zeroes:
+    {
+        BOOST_ASSERT(pos_ == 0);
+        while(p < p1)
+        {
+            unsigned char const d = *p - '0';
+            if(d == 0)
+            {
+                ++p;
+                ++dig_;
+                continue;
+            }
+            if(d < 10 ||
+                *p == 'e' || *p == 'E')
+            {
+                if(neg_)
+                    st_ = state::mantn;
+                else
+                    st_ = state::mant;
+                goto loop;
+            }
+            // reached end of number
+            st_ = state::end;
+            goto finish;
+        }
+        break;
+    }
 
     //-----------------------------------
 
@@ -220,9 +267,6 @@ loop:
     case state::mant:
     {
         BOOST_ASSERT(! neg_);
-        BOOST_ASSERT(dig_ > 0);
-        BOOST_ASSERT(
-            n_.kind == kind::int64);
         if(p < p1) // VFALCO see if the compiler can do this for us
         {
             auto m = n_.u;
@@ -239,21 +283,24 @@ loop:
                         goto enter_mantd;
                     }
                     ++p;
+                    // VFALCO Check dig_ for overflow
+                    // Could use an implementation-defined limit
+                    // which is lower than USHRT_MAX
                     ++dig_;
                     m = 10 * m + d;
                     continue;
                 }
-                if(*p == '.')
+                if(*p == '.' && pos_ < 0)
                 {
                     ++p;
-                    n_.u = m;
-                    st_ = state::frac1;
-                    goto loop;
+                    pos_ = dig_;
+                    n_.kind = kind::double_;
+                    continue;
                 }
                 if(*p == 'e' || *p == 'E')
                 {
                     ++p;
-                    n_.d = static_cast<double>(m);
+                    n_.u = m;
                     n_.kind = kind::double_;
                     st_ = state::exp1;
                     goto loop;
@@ -273,8 +320,6 @@ loop:
     case state::mantn:
     {
         BOOST_ASSERT(neg_);
-        BOOST_ASSERT(dig_ > 0);
-        BOOST_ASSERT(n_.kind == kind::int64);
         if(p < p1) // VFALCO see if the compiler can do this for us
         {
             auto m = n_.u;
@@ -291,21 +336,24 @@ loop:
                         goto enter_mantd;
                     }
                     ++p;
+                    // VFALCO Check dig_ for overflow
+                    // Could use an implementation-defined limit
+                    // which is lower than USHRT_MAX
                     ++dig_;
                     m = 10 * m + d;
                     continue;
                 }
-                if(*p == '.')
+                if(*p == '.' && pos_ < 0)
                 {
                     ++p;
-                    n_.u = m;
-                    st_ = state::frac1;
-                    goto loop;
+                    pos_ = dig_;
+                    n_.kind = kind::double_;
+                    continue;
                 }
                 if(*p == 'e' || *p == 'E')
                 {
                     ++p;
-                    n_.d = static_cast<double>(m);
+                    n_.u = m;
                     n_.kind = kind::double_;
                     st_ = state::exp1;
                     goto loop;
@@ -322,32 +370,29 @@ loop:
     }
 
     enter_mantd:
+        // make sure we are past the
+        // limit of double precision.
+        BOOST_ASSERT(dig_ >= 18);
         BOOST_ASSERT(off_ == 0);
         ++p;
-        off_ = 1;
+        // VFALCO Check dig_ for overflow
+        // Could use an implementation-defined limit
+        // which is lower than USHRT_MAX
+        sig_ = dig_++;
         st_ = state::mantd;
         n_.kind = kind::double_;
-        // VFALCO Conversion to double may
-        //        require intelligent rounding.
-        //        Need to do the right thing for neg_ == true
-        n_.d = static_cast<double>(n_.u);
         BOOST_FALLTHROUGH;
 
     // *[0..9] (double)
     case state::mantd:
     {
-        // make sure we are past the
-        // limit of double precision.
-        BOOST_ASSERT(dig_ >= 18);
-        BOOST_ASSERT(
-            n_.kind == kind::double_);
         while(p < p1)
         {
-            if(*p == '.')
+            if(*p == '.' && pos_ < 0)
             {
                 ++p;
-                st_ = state::fracd;
-                goto loop;
+                pos_ = dig_;
+                continue;
             }
             if(*p == 'e' || *p == 'E')
             {
@@ -358,122 +403,22 @@ loop:
             unsigned char const d = *p - '0';
             if(d >= 10)
             {
+                // reached end of number
                 finish(ec);
                 goto finish;
             }
             ++p;
-            ++off_;
+            // VFALCO Check dig_ for overflow
+            // Could use an implementation-defined limit
+            // which is lower than USHRT_MAX
+            ++dig_;
         }
         break;
     }
 
     //-----------------------------------
 
-    // [0..9]
-    case state::frac1:
-    {
-        BOOST_ASSERT(
-            n_.kind == kind::int64);
-        if(p >= p1)
-            break;
-        unsigned char const d = *p - '0';
-        if(d >= 10)
-        {
-            ec = error::expected_fraction;
-            goto finish;
-        }
-        n_.kind = kind::double_;
-        st_ = state::frac2;
-        // don't consume *p here
-        BOOST_FALLTHROUGH;
-    }
-
-    // *[0..9]
-    case state::frac2:
-    {
-        BOOST_ASSERT(
-            n_.kind == kind::double_);
-        if(p < p1) // VFALCO see if the compiler can do this for us
-        {
-            auto m = n_.u;
-            do
-            {
-                unsigned char const d = *p - '0';
-                if(d < 10)
-                {
-                    if(m > 9007199254740991) // (2^53-1)
-                    {
-                        ++p;
-                        n_.d = static_cast<double>(m);
-                        st_ = state::fracd;
-                        goto loop;
-                    }
-                    ++p;
-                    m = 10 * m + d;
-                    --off_;
-                    if(m != 0)
-                        ++dig_;
-                    continue;
-                }
-                if(*p != 'e' && *p != 'E')
-                {
-                    n_.u = m;
-                    finish(ec);
-                    goto finish;
-                }
-                ++p;
-                st_ = state::exp1;
-                goto loop;
-            }
-            while(p < p1);
-            n_.u = m;
-        }
-        break;
-    }
-
-    // *[0..9] (double)
-    case state::fracd:
-    {
-        BOOST_ASSERT(
-            n_.kind == kind::double_);
-        if(p < p1)
-        {
-            auto m = n_.d;
-            do
-            {
-                unsigned char const d = *p - '0';
-                if(d < 10)
-                {
-                    if(dig_ < 17)
-                    {
-                        m = 10 * m + d;
-                        --off_;
-                        if(m > 0)
-                            ++dig_;
-                    }
-                    ++p;
-                    continue;
-                }
-                if(*p != 'e' && *p != 'E')
-                {
-                    n_.d = m;
-                    finish(ec);
-                    goto finish;
-                }
-                ++p;
-                n_.d = m;
-                st_ = state::exp1;
-                goto loop;
-            }
-            while(p < p1);
-            n_.d = m;
-        }
-        break;
-    }
-
-    //-----------------------------------
-
-    // + or -
+    // [-+,0..9]
     case state::exp1:
     {
         BOOST_ASSERT(
@@ -501,7 +446,7 @@ loop:
         if(p >= p1)
             break;
         unsigned char const d = *p - '0';
-        if(d > 9)
+        if(d >= 10)
         {
             ec = error::expected_exponent;
             goto finish;
@@ -517,7 +462,8 @@ loop:
     {
         if(p < p1)
         {
-            auto const lim = 308 - off_;
+            // VFALCO FIX
+            auto const lim = 700;//308 - off_;
             auto e = exp_;
             while(p < p1)
             {
@@ -586,70 +532,98 @@ finish(
         break;
 
     case state::init1:
+        BOOST_ASSERT(n_.u == 0);
         BOOST_ASSERT(
             n_.kind == kind::int64);
-        BOOST_ASSERT(n_.i == 0);
         //ec = {};
+        st_ = state::end;
+        break;
+
+    case state::zeroes:
+        BOOST_ASSERT(n_.u == 0);
+        if(pos_ == dig_)
+        {
+            ec = error::expected_fraction;
+            break;
+        }
+        if(pos_ >= 0)
+        {
+            BOOST_ASSERT(
+                n_.kind == kind::double_);
+            if(neg_)
+                n_.d = -0.0;
+            else
+                n_.d = 0;
+        }
+        else
+        {
+            BOOST_ASSERT(
+                n_.kind == kind::int64);
+            n_.i = 0;
+        }
         st_ = state::end;
         break;
 
     case state::mant:
         BOOST_ASSERT(! neg_);
-        BOOST_ASSERT(dig_ > 0);
-        BOOST_ASSERT(
-            n_.kind == kind::int64);
-        //ec = {};
-        if(n_.u <= INT64_MAX)
-            n_.i = static_cast<
-                int64_t>(n_.u);
-        else
-            n_.kind = kind::uint64;
-        st_ = state::end;
-        break;
-
+        BOOST_FALLTHROUGH;
     case state::mantn:
-        BOOST_ASSERT(neg_);
         BOOST_ASSERT(dig_ > 0);
-        BOOST_ASSERT(
-            n_.kind == kind::int64);
-        //ec = {};
-        n_.i = static_cast<
-            int64_t>(~n_.u+1);
+        if(pos_ == dig_)
+        {
+            ec = error::expected_fraction;
+            break;
+        }
+        if(n_.kind == kind::double_)
+        {
+            if( pos_ < 0)
+                pos_ = dig_;
+            if(neg_)
+                n_.d = (-static_cast<
+                    double>(n_.u)) *
+                    pow10(pos_ - dig_);
+            else
+                n_.d = static_cast<
+                    double>(n_.u) *
+                    pow10(pos_ - dig_);
+        }
+        else
+        {
+            BOOST_ASSERT(
+                n_.kind == kind::int64);
+            if(st_ == state::mantn)
+            {
+                n_.i = static_cast<
+                    int64_t>(~n_.u+1);
+            }
+            else
+            {
+                if( n_.u <= INT64_MAX)
+                    n_.i = static_cast<
+                        int64_t>(n_.u);
+                else
+                    n_.kind = kind::uint64;
+            }
+        }
         st_ = state::end;
         break;
 
     case state::mantd:
-        //ec = {};
+        BOOST_ASSERT(
+            n_.kind == kind::double_);
+        if(pos_ == dig_)
+        {
+            ec = error::expected_fraction;
+            break;
+        }
+        if( pos_ < 0)
+            pos_ = dig_;
+        n_.d = static_cast<double>(n_.u) *
+            pow10(pos_ - sig_);
         if(neg_)
             n_.d = -n_.d;
         exp_ += off_;
         n_.d *= pow10(exp_);
-        st_ = state::end;
-        break;
-
-    case state::frac1:
-        ec = error::expected_fraction;
-        break;
-
-    case state::frac2:
-        BOOST_ASSERT(
-            n_.kind == kind::double_);
-        //ec = {};
-        exp_ += off_;
-        n_.d = n_.u * pow10(exp_);
-        if(neg_)
-            n_.d = -n_.d;
-        st_ = state::end;
-        break;
-
-    case state::fracd:
-        BOOST_ASSERT(
-            n_.kind == kind::double_);
-        //ec = {};
-        exp_ += off_;
-        n_.d = n_.d * pow10(exp_);
-        if(neg_)
-            n_.d = -n_.d;
         st_ = state::end;
         break;
 
@@ -662,18 +636,17 @@ finish(
         break;
 
     case state::exp3:
-        //ec = {};
         exp_ += off_;
         if(eneg_)
             exp_ = -exp_;
-        n_.d = n_.d * pow10(exp_);
+        n_.d = static_cast<double>(n_.u) *
+            pow10(exp_ - dig_);
         if(neg_)
             n_.d = -n_.d;
         st_ = state::end;
         break;
 
     case state::end:
-        //ec = {};
         break;
     }
 }
