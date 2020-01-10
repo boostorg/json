@@ -481,7 +481,10 @@ public:
                 s.data(), s.size(),
                 ec);
             if(! BOOST_TEST(! ec))
+            {
+                ::test_suite::log_type() << "    failed to parse: " << s;
                 return;
+            }
             BOOST_TEST(is_done ==
                 p.is_done());
         };
@@ -507,7 +510,6 @@ public:
         check("0 ", false);
         check("0x", true);
         check("0 x", true);
-        check("00", true);
         check("0.", false);
         check("0.0", false);
         check("0.0 ", false);

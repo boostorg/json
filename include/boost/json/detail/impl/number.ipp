@@ -92,9 +92,16 @@ pow10(int exp) noexcept
 
         1e+300, 1e+301, 1e+302, 1e+303, 1e+304, 1e+305, 1e+306, 1e+307, 1e+308 };
 
-    exp += 308;
-    BOOST_ASSERT(exp >= 0 && exp < 618);
-    return tab[exp];
+    if (exp < -308 || exp > 308)
+    {
+        return std::pow(10.0, exp);
+    }
+    else
+    {
+        exp += 308;
+        BOOST_ASSERT(exp >= 0 && exp < 618);
+        return tab[exp];
+    }
 }
 
 // return true on '-' '0' '1'..'9'.
@@ -109,7 +116,6 @@ maybe_init(char ch) noexcept
         n_.kind = kind::int64;
         exp_ = 0;
         dig_ = 0;
-        off_ = 0;
         pos_ = -1;
         sig_ = 0;
         neg_ = true;
@@ -121,7 +127,6 @@ maybe_init(char ch) noexcept
         return false;
     n_.u = d;
     exp_ = 0;
-    off_ = 0;
     pos_ = -1;
     sig_ = 0;
     neg_ = false;
@@ -134,6 +139,7 @@ maybe_init(char ch) noexcept
     else
     {
         dig_ = 1;
+        sig_ = 1;
         st_ = state::mant;
     }
     return true;
@@ -190,6 +196,7 @@ loop:
         }
         n_.u = d;
         dig_ = 1;
+        sig_ = 1;
         st_ = state::mantn;
         goto loop;
     }
@@ -215,7 +222,7 @@ loop:
             BOOST_ASSERT(dig_ == 0);
             ++p;
             pos_ = 0;
-            st_ = state::zeroes;
+            st_ = state::mantf;
             n_.kind = kind::double_;
             goto loop;
         }
@@ -230,7 +237,34 @@ loop:
         goto finish;
     }
 
-    //-----------------------------------
+    // 1*digit
+    case state::mantf:
+    {
+        if (p >= p1)
+            break;
+        unsigned char const d = *p - '0';
+        if(d < 10)
+        {
+            if ( d == 0 && n_.u == 0)
+            {
+                st_ = state::zeroes;
+                ++p;
+                ++dig_;
+            }
+            else if(neg_)
+            {
+                st_ = state::mantn;
+            }
+            else
+            {
+                st_ = state::mant;
+            }
+            goto loop;
+        }
+
+        ec = error::expected_fraction;
+        goto finish;
+    }
 
     // *[0] 
     case state::zeroes:
@@ -287,6 +321,7 @@ loop:
                     // Could use an implementation-defined limit
                     // which is lower than USHRT_MAX
                     ++dig_;
+                    ++sig_;
                     m = 10 * m + d;
                     continue;
                 }
@@ -295,10 +330,15 @@ loop:
                     ++p;
                     pos_ = dig_;
                     n_.kind = kind::double_;
-                    continue;
+                    st_ = state::mantf;
+                    n_.u = m;
+                    goto loop;
                 }
                 if(*p == 'e' || *p == 'E')
                 {
+                    // 'E' implies '.' if not already encountered
+                    if (pos_ < 0)
+                        pos_ = dig_;
                     ++p;
                     n_.u = m;
                     n_.kind = kind::double_;
@@ -339,6 +379,7 @@ loop:
                     // VFALCO Check dig_ for overflow
                     // Could use an implementation-defined limit
                     // which is lower than USHRT_MAX
+                    ++sig_;
                     ++dig_;
                     m = 10 * m + d;
                     continue;
@@ -348,10 +389,15 @@ loop:
                     ++p;
                     pos_ = dig_;
                     n_.kind = kind::double_;
-                    continue;
+                    n_.u = m;
+                    st_ = state::mantf;
+                    goto loop;
                 }
                 if(*p == 'e' || *p == 'E')
                 {
+                    // 'E' implies '.' if not already encountered
+                    if (pos_ < 0)
+                        pos_ = dig_;
                     ++p;
                     n_.u = m;
                     n_.kind = kind::double_;
@@ -372,13 +418,13 @@ loop:
     enter_mantd:
         // make sure we are past the
         // limit of double precision.
+        BOOST_ASSERT(sig_ == dig_);
         BOOST_ASSERT(dig_ >= 18);
-        BOOST_ASSERT(off_ == 0);
         ++p;
         // VFALCO Check dig_ for overflow
         // Could use an implementation-defined limit
         // which is lower than USHRT_MAX
-        sig_ = dig_++;
+        ++dig_;
         st_ = state::mantd;
         n_.kind = kind::double_;
         BOOST_FALLTHROUGH;
@@ -396,6 +442,9 @@ loop:
             }
             if(*p == 'e' || *p == 'E')
             {
+                // 'E' implies '.' if not already encountered
+                if (pos_ < 0)
+                    pos_ = dig_;
                 ++p;
                 st_ = state::exp1;
                 goto loop;
@@ -564,6 +613,10 @@ finish(
         st_ = state::end;
         break;
 
+    case state::mantf:
+        ec = error::expected_fraction;
+        break;
+
     case state::mant:
         BOOST_ASSERT(! neg_);
         BOOST_FALLTHROUGH;
@@ -622,7 +675,6 @@ finish(
             pow10(pos_ - sig_);
         if(neg_)
             n_.d = -n_.d;
-        exp_ += off_;
         n_.d *= pow10(exp_);
         st_ = state::end;
         break;
@@ -636,16 +688,31 @@ finish(
         break;
 
     case state::exp3:
-        exp_ += off_;
-        if(eneg_)
+    {
+        if (eneg_)
             exp_ = -exp_;
+
+        if (pos_ == 0)
+        {
+            // |mantissa| < 1.0
+            auto start = dig_ - sig_;
+            auto exponent_adjust = -start - 1;
+            exp_ += exponent_adjust;
+        }
+        else
+        {
+            // mantissa >= 1.0
+            auto exponent_adjust = -sig_ + pos_;
+            exp_ += exponent_adjust;
+        }
+
         n_.d = static_cast<double>(n_.u) *
-            pow10(exp_ - dig_);
-        if(neg_)
+               pow10(exp_);
+        if (neg_)
             n_.d = -n_.d;
         st_ = state::end;
         break;
-
+    }
     case state::end:
         break;
     }

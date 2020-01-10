@@ -39,6 +39,7 @@ class number_parser
     enum class state
     {
         init,   init0,  init1,
+        mantf,
         zeroes,
         mant,   mantn,  mantd,
         exp1,   exp2,   exp3,
@@ -48,7 +49,6 @@ class number_parser
     number n_;
     short exp_; // exponent string as integer
     short dig_; // digits in mantissa
-    short off_; // mantissa's contribution to exponent
     short pos_; // position of decimal point
     short sig_; // significant digits in mantissa
     bool neg_;
