@@ -336,7 +336,7 @@ loop:
                 }
                 if(*p == 'e' || *p == 'E')
                 {
-                    // 'E' implies '.' if not already encountered
+                    // treat 'E' as '.'
                     if (pos_ < 0)
                         pos_ = dig_;
                     ++p;
@@ -395,7 +395,7 @@ loop:
                 }
                 if(*p == 'e' || *p == 'E')
                 {
-                    // 'E' implies '.' if not already encountered
+                    // treat 'E' as '.'
                     if (pos_ < 0)
                         pos_ = dig_;
                     ++p;
@@ -442,7 +442,7 @@ loop:
             }
             if(*p == 'e' || *p == 'E')
             {
-                // 'E' implies '.' if not already encountered
+                // treat 'E' as '.'
                 if (pos_ < 0)
                     pos_ = dig_;
                 ++p;
