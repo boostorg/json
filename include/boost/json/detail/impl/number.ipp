@@ -694,14 +694,14 @@ finish(
 
         if (pos_ == 0)
         {
-            // |mantissa| < 1.0
+            // abs(mantissa) < 1
             auto start = dig_ - sig_;
             auto exponent_adjust = -start - 1;
             exp_ += exponent_adjust;
         }
         else
         {
-            // mantissa >= 1.0
+            // abs(mantissa) >= 1
             auto exponent_adjust = -sig_ + pos_;
             exp_ += exponent_adjust;
         }
