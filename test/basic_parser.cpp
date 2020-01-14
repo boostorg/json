@@ -472,7 +472,7 @@ public:
     testParser()
     {
         auto const check =
-        []( string_view s,
+        [this]( string_view s,
             bool is_done)
         {
             fail_parser p;
@@ -482,7 +482,7 @@ public:
                 ec);
             if(! BOOST_TEST(! ec))
             {
-                ::test_suite::log_type() << "    failed to parse: " << s;
+                log << "    failed to parse: " << s;
                 return;
             }
             BOOST_TEST(is_done ==
