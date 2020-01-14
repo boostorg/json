@@ -89,8 +89,9 @@ struct double_diagnoser
         auto oldflags = os.flags();
         try
         {
-            constexpr auto digits = std::numeric_limits<double>::max_digits10;
-            os << std::setprecision(digits) << d;
+            os
+            << std::setprecision(std::numeric_limits<double>::max_digits10)
+            << d;
             os.flags(oldflags);
         }
         catch(...)
