@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+// Copyright (c) 2020 Krystian Stasiowski (sdkrystian@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -13,10 +14,22 @@
 #include <boost/json/error.hpp>
 #include <boost/json/detail/string_impl.hpp>
 #include <cstring>
+#include <functional>
 
 namespace boost {
 namespace json {
 namespace detail {
+
+inline
+bool
+ptr_in_range(
+    const char* first,
+    const char* last,
+    const char* ptr) noexcept
+{
+    return std::less<const char*>()(ptr, last) &&
+        std::greater_equal<const char*>()(ptr, first);
+}
 
 string_impl::
 string_impl() noexcept
@@ -116,39 +129,234 @@ append(
     return end() - n;
 }
 
-char*
+void
 string_impl::
 insert(
+    std::size_t pos,
+    const char* s,
+    std::size_t n,
+    storage_ptr const& sp)
+{
+    const auto curr_size = size();
+    if(pos > curr_size)
+        char_pos_error::raise();
+    const auto curr_data = data();
+    if(n <= capacity() - curr_size)
+    {
+        const bool inside = detail::ptr_in_range(curr_data, curr_data + curr_size, s);
+        if (!inside || (inside && ((s - curr_data) + n <= pos)))
+        {
+            std::memmove(&curr_data[pos + n], &curr_data[pos], curr_size - pos + 1);
+            std::memcpy(&curr_data[pos], s, n);
+        }
+        else
+        {
+            const std::size_t offset = s - curr_data;
+            std::memmove(&curr_data[pos + n], &curr_data[pos], curr_size - pos + 1);
+            if (offset < pos)
+            {
+                const std::size_t diff = pos - offset;
+                std::memcpy(&curr_data[pos], &curr_data[offset], diff);
+                std::memcpy(&curr_data[pos + diff], &curr_data[pos + n], n - diff);
+            }
+            else
+            {
+                std::memcpy(&curr_data[pos], &curr_data[offset + n], n);
+            }
+        }
+        size(curr_size + n);
+    }
+    else
+    { 
+        if(n > max_size() - curr_size)
+            string_too_large::raise();
+        string_impl tmp(growth(
+            curr_size + n, capacity()), sp);
+        tmp.size(curr_size + n);
+        std::memcpy(
+            tmp.data(),
+            curr_data,
+            pos);
+        std::memcpy(
+            tmp.data() + pos + n,
+            curr_data + pos,
+            curr_size + 1 - pos);
+        std::memcpy(
+            tmp.data() + pos,
+            s,
+            n);
+        destroy(sp);
+        *this = tmp;
+    }
+}
+
+char*
+string_impl::
+insert_unchecked(
     std::size_t pos,
     std::size_t n,
     storage_ptr const& sp)
 {
-    if(pos > size())
+    const auto curr_size = size();
+    if(pos > curr_size)
         char_pos_error::raise();
+    const auto curr_data = data();
     if(n <= capacity() - size())
     {
         auto const dest =
-            data() + pos;
+            curr_data + pos;
         std::memmove(
             dest + n,
             dest,
-            size() + 1 - pos);
-        size(size() + n);
+            curr_size + 1 - pos);
+        size(curr_size + n);
         return dest;
     }
-    if(n > max_size() - size())
+    if(n > max_size() - curr_size)
         string_too_large::raise();
     string_impl tmp(growth(
-        size() + n, capacity()), sp);
-    tmp.size(size() + n);
+        curr_size + n, capacity()), sp);
+    tmp.size(curr_size + n);
     std::memcpy(
         tmp.data(),
-        data(),
+        curr_data,
         pos);
     std::memcpy(
         tmp.data() + pos + n,
-        data() + pos,
-        size() + 1 - pos);
+        curr_data + pos,
+        curr_size + 1 - pos);
+    destroy(sp);
+    *this = tmp;
+    return data() + pos;
+}
+
+void
+string_impl::
+replace(
+    std::size_t pos,
+    std::size_t n1,
+    const char* s,
+    std::size_t n2,
+    storage_ptr const& sp)
+{
+    const auto curr_size = size();
+    if (pos > curr_size)
+        char_pos_error::raise();
+    const auto curr_data = data();
+    n1 = (std::min)(n1, curr_size - pos);
+    const auto delta = std::max(n1, n2) -
+        std::min(n1, n2);
+    // if we are shrinking in size or we have enough
+    // capacity, dont reallocate
+    if (n1 > n2 || delta <= capacity() - curr_size)
+    {
+        const bool inside = detail::ptr_in_range(curr_data, curr_data + curr_size, s);
+        // there is nothing to replace; return
+        if (inside && s - curr_data == pos && n1 == n2)
+            return;
+        if (!inside || (inside && ((s - curr_data) + n2 <= pos)))
+        {
+            // source outside
+            std::memmove(&curr_data[pos + n2], &curr_data[pos + n1], curr_size - pos - n1 + 1);
+            std::memcpy(&curr_data[pos], s, n2);
+        }
+        else
+        {
+            // source inside
+            const std::size_t offset = s - curr_data;
+            if (n2 >= n1)
+            {
+                // grow/unchanged
+                const std::size_t diff = offset <= pos + n1 ? (std::min)((pos + n1) - offset, n2) : 0;
+                // shift all right of splice point by n2 - n1 to the right
+                std::memmove(&curr_data[pos + n2], &curr_data[pos + n1], curr_size - pos - n1 + 1);
+                // copy all before splice point
+                std::memmove(&curr_data[pos], &curr_data[offset], diff);
+                // copy all after splice point
+                std::memmove(&curr_data[pos + diff], &curr_data[(offset - n1) + n2 + diff], n2 - diff);
+            }
+            else
+            {
+                // shrink
+                // copy all elements into place
+                std::memmove(&curr_data[pos], &curr_data[offset], n2);
+                // shift all elements after splice point left
+                std::memmove(&curr_data[pos + n2], &curr_data[pos + n1], curr_size - pos - n1 + 1);
+            }
+        }
+        size((curr_size - n1) + n2);
+    }
+    else
+    {
+        if (delta > max_size() - curr_size)
+          string_too_large::raise();
+        // would exceed capacity, reallocate
+        string_impl tmp(growth(
+            curr_size + delta, capacity()), sp);
+        tmp.size(curr_size + delta);
+        std::memcpy(
+            tmp.data(),
+            curr_data,
+            pos);
+        std::memcpy(
+            tmp.data() + pos + n2,
+            curr_data + pos + n1,
+            curr_size - pos - n1 + 1);
+        std::memcpy(
+            tmp.data() + pos,
+            s,
+            n2);
+        destroy(sp);
+        *this = tmp;
+    }
+}
+
+// unlike the replace overload, this function does 
+// not move any characters
+char*
+string_impl::
+replace_unchecked(
+    std::size_t pos,
+    std::size_t n1,
+    std::size_t n2,
+    storage_ptr const& sp)
+{
+    const auto curr_size = size();
+    if(pos > curr_size)
+        char_pos_error::raise();
+    const auto curr_data = data();
+    const auto delta = std::max(n1, n2) -
+        std::min(n1, n2);
+    // if the size doesn't change, we don't need to
+    // do anything
+    if (!delta)
+      return curr_data + pos;
+    // if we are shrinking in size or we have enough
+    // capacity, dont reallocate
+    if(n1 > n2 || delta <= capacity() - curr_size)
+    {
+        auto const replace_pos = curr_data + pos;
+        std::memmove(
+            replace_pos + n2,
+            replace_pos + n1,
+            curr_size - pos - n1 + 1);
+        size((curr_size - n1) + n2);
+        return replace_pos;
+    }
+    if(delta > max_size() - curr_size)
+        string_too_large::raise();
+    // would exceed capacity, reallocate
+    string_impl tmp(growth(
+        curr_size + delta, capacity()), sp);
+    tmp.size(curr_size + delta);
+    std::memcpy(
+        tmp.data(),
+        curr_data,
+        pos);
+    std::memcpy(
+        tmp.data() + pos + n2,
+        curr_data + pos + n1,
+        curr_size - pos - n1 + 1);
     destroy(sp);
     *this = tmp;
     return data() + pos;

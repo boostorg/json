@@ -136,13 +136,11 @@ append(size_type count, char ch)
 
 string&
 string::
-append(
-    char const* s,
-    size_type count)
+append(string_view sv)
 {
     traits_type::copy(
-        impl_.append(count, sp_),
-        s, count);
+        impl_.append(sv.size(), sp_),
+        sv.data(), sv.size());
     return *this;
 }
 
@@ -152,68 +150,51 @@ string&
 string::
 insert(
     size_type pos,
-    size_type count,
-    char ch)
+    string_view sv)
 {
-    traits_type::assign(
-        impl_.insert(pos, count, sp_),
-        count, ch);
+    impl_.insert(pos, sv.data(), sv.size(), sp_);
     return *this;
 }
 
 string&
 string::
 insert(
-    size_type pos,
-    char const* s,
-    size_type count)
+    std::size_t pos,
+    std::size_t count,
+    char ch)
 {
-    if(pos > impl_.size())
-        char_pos_error::raise();
-    if(count > impl_.capacity() - impl_.size())
-    {
-        traits_type::copy(
-            impl_.insert(pos, count, sp_),
-            s, count);
-        return *this;
-    }
-    // VFALCO TODO handle [s, s+count) inside *this
-    traits_type::move(
-        impl_.data() + pos + count,
-        impl_.data() + pos,
-        impl_.size() - pos + 1);
-    traits_type::copy(
-        impl_.data() + pos,
-        s, count);
-    impl_.size(impl_.size() + count);
+    traits_type::assign(
+        impl_.insert_unchecked(pos, count, sp_),
+        count, ch);
     return *this;
 }
 
-auto
+//----------------------------------------------------------
+
+string&
 string::
-insert(
-    const_iterator pos,
-    size_type count,
-    char ch) ->
-        iterator
+replace(
+    std::size_t pos,
+    std::size_t count,
+    string_view sv)
 {
-    auto const off = pos - begin();
-    insert(off, count, ch);
-    return begin() + off;
+    impl_.replace(pos, count, sv.data(), sv.size(), sp_);
+    return *this;
 }
 
-auto
+string&
 string::
-insert(
-    const_iterator pos,
-    std::initializer_list<char> init) ->
-        iterator
+replace(
+    std::size_t pos,
+    std::size_t count,
+    std::size_t count2,
+    char ch)
 {
-    auto const off = pos - begin();
-    insert(off, init.begin(), init.size());
-    return begin() + off;
+    traits_type::assign(
+        impl_.replace_unchecked(pos, count, count2, sp_),
+        count2, ch);
+    return *this;
 }
-
 
 //----------------------------------------------------------
 

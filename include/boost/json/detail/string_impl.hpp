@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+// Copyright (c) 2020 Krystian Stasiowski (sdkrystian@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -199,10 +200,35 @@ public:
         storage_ptr const& sp);
 
     BOOST_JSON_DECL
-    char*
+    void
     insert(
         std::size_t pos,
+        const char* s,
         std::size_t n,
+        storage_ptr const& sp);
+
+    BOOST_JSON_DECL
+    char*
+    insert_unchecked(
+        std::size_t pos,
+        std::size_t n,
+        storage_ptr const& sp);
+
+    BOOST_JSON_DECL
+    void
+    replace(
+        std::size_t pos,
+        std::size_t n1,
+        const char* s,
+        std::size_t n2,
+        storage_ptr const& sp);
+
+    BOOST_JSON_DECL
+    char*
+    replace_unchecked(
+        std::size_t pos,
+        std::size_t n1,
+        std::size_t n2,
         storage_ptr const& sp);
 
     BOOST_JSON_DECL

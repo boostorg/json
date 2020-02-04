@@ -677,7 +677,7 @@ to_string_test(
         auto const n =
             detail::format_int64(
                 buf, jv.as_int64());
-        dest.append(buf, n);
+        dest.append(string_view(buf).substr(0, n));
         break;
     }
 
@@ -687,7 +687,7 @@ to_string_test(
         auto const n =
             detail::format_uint64(
                 buf, jv.as_uint64());
-        dest.append(buf, n);
+        dest.append(string_view(buf).substr(0, n));
         break;
     }
 
@@ -697,7 +697,7 @@ to_string_test(
         auto const n =
             detail::format_double(
                 buf, jv.as_double());
-        dest.append(buf, n);
+        dest.append(string_view(buf).substr(0, n));
         break;
     }
 

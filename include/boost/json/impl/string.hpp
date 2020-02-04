@@ -50,14 +50,17 @@ append(InputIt first, InputIt last)
     return *this;
 }
 
+// KRYSTIAN TODO: this can be done without copies when
+// reallocation is not needed, when the iterator is a 
+// FowardIterator or better, as we can use std::distance
 template<class InputIt, class>
 auto
 string::
 insert(
-    const_iterator pos,
+    size_type pos,
     InputIt first,
     InputIt last) ->
-        iterator
+        string&
 {
     struct cleanup
     {
@@ -77,12 +80,53 @@ insert(
         first, last, dsp,
         iter_cat<InputIt>{});
     cleanup c{tmp, dsp};
-    auto const off = pos - impl_.data();
     traits_type::copy(
-        impl_.insert(off, tmp.size(), sp_),
+        impl_.insert_unchecked(pos, tmp.size(), sp_),
         tmp.data(),
         tmp.size());
-    return impl_.data() + off;
+    return *this;
+}
+
+// KRYSTIAN TODO: this can be done without copies when
+// reallocation is not needed, when the iterator is a 
+// FowardIterator or better, as we can use std::distance
+template<class InputIt, class>
+auto
+string::
+replace(
+    const_iterator first,
+    const_iterator last,
+    InputIt first2,
+    InputIt last2) ->
+        string&
+{
+    struct cleanup
+    {
+        detail::string_impl& s;
+        storage_ptr const& sp;
+
+        ~cleanup()
+        {
+            s.destroy(sp);
+        }
+    };
+
+    // We use the default storage because
+    // the allocation is immediately freed.
+    storage_ptr dsp;
+    detail::string_impl tmp(
+        first2, last2, dsp,
+        iter_cat<InputIt>{});
+    cleanup c{tmp, dsp};
+    traits_type::copy(
+        impl_.replace_unchecked(
+            first - begin(), 
+            last - first, 
+            tmp.size(), 
+            sp_),
+        tmp.data(),
+        tmp.size());
+    return *this;
 }
 
 //----------------------------------------------------------

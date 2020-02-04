@@ -1500,7 +1500,7 @@ public:
             {
                 string s(t.v1);
                 BOOST_TEST_THROWS(
-                    (s.insert(1, "", s.max_size())),
+                    (s.insert(1, s.max_size(), 'a')),
                     std::length_error);
             }
         }
@@ -1527,7 +1527,7 @@ public:
             {
                 string s(t.v1);
                 BOOST_TEST_THROWS(
-                    (s.insert(s.size() + 2, "*", 1)),
+                    (s.insert(s.size() + 2, "*")),
                     std::out_of_range);
             }
         }
@@ -1537,17 +1537,17 @@ public:
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v1, sp);
-                s.insert(1, "*****", 3);
+                s.insert(1, "*****");
                 BOOST_TEST(s == std::string(
-                    t.v1).insert(1, "*****", 3));
+                    t.v1).insert(1, "*****"));
             });
 
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v2, sp);
-                s.insert(1, "*****", 3);
+                s.insert(1, "*****");
                 BOOST_TEST(s == std::string(
-                    t.v2).insert(1, "*****", 3));
+                    t.v2).insert(1, "*****"));
             });
         }
 
@@ -1570,55 +1570,56 @@ public:
             });
         }
 
-        // insert(size_type, string const&, size_type, size_type)
-        {
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(t.v1, sp);
-                s.insert(1, string(t.v2), 1, 3);
-                BOOST_TEST(s == std::string(
-                    t.v1).insert(1, t.s2, 1, 3));
-            });
+        // KRYSTIAN These tests are superseded by the new string_view overloads
+        //// insert(size_type, string const&, size_type, size_type)
+        //{
+        //    fail_loop([&](storage_ptr const& sp)
+        //    {
+        //        string s(t.v1, sp);
+        //        s.insert(1, string(t.v2), 1, 3);
+        //        BOOST_TEST(s == std::string(
+        //            t.v1).insert(1, t.s2, 1, 3));
+        //    });
 
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(t.v2, sp);
-                s.insert(1, string(t.v1), 1, 3);
-                BOOST_TEST(s == std::string(
-                    t.v2).insert(1, t.s1, 1, 3));
-            });
+        //    fail_loop([&](storage_ptr const& sp)
+        //    {
+        //        string s(t.v2, sp);
+        //        s.insert(1, string(t.v1), 1, 3);
+        //        BOOST_TEST(s == std::string(
+        //            t.v2).insert(1, t.s1, 1, 3));
+        //    });
 
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(t.v1, sp);
-                s.insert(1, string(t.v2), 1);
-                BOOST_TEST(s == std::string(
-                    t.v1).insert(1, t.s2, 1, std::string::npos));
-            });
+        //    fail_loop([&](storage_ptr const& sp)
+        //    {
+        //        string s(t.v1, sp);
+        //        s.insert(1, string(t.v2), 1);
+        //        BOOST_TEST(s == std::string(
+        //            t.v1).insert(1, t.s2, 1, std::string::npos));
+        //    });
 
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(t.v2, sp);
-                s.insert(1, string(t.v1), 1);
-                BOOST_TEST(s == std::string(
-                    t.v2).insert(1, t.s1, 1, std::string::npos));
-            });
-        }
+        //    fail_loop([&](storage_ptr const& sp)
+        //    {
+        //        string s(t.v2, sp);
+        //        s.insert(1, string(t.v1), 1);
+        //        BOOST_TEST(s == std::string(
+        //            t.v2).insert(1, t.s1, 1, std::string::npos));
+        //    });
+        //}
 
-        // insert(const_iterator, char)
+        // insert(size_type, char)
         {
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v1, sp);
                 BOOST_TEST(
-                    *s.insert(s.begin()+2, '*') == '*');
+                    s.insert(2, '*')[2] == '*');
             });
 
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v2, sp);
                 BOOST_TEST(
-                    *s.insert(s.begin()+2, '*') == '*');
+                    s.insert(2, '*')[2] == '*');
             });
         }
 
@@ -1628,7 +1629,7 @@ public:
             {
                 string s(t.v1, sp);
                 BOOST_TEST(string_view(
-                    s.insert(s.begin()+2, 3, '*'), 5) ==
+                    &(s.insert(2, 3, '*')[2]), 5) ==
                         "***cd");
             });
 
@@ -1636,7 +1637,7 @@ public:
             {
                 string s(t.v2, sp);
                 BOOST_TEST(string_view(
-                    s.insert(s.begin()+2, 3, '*'), 5) ==
+                    &(s.insert(2, 3, '*')[2]), 5) ==
                         "***CD");
             });
         }
@@ -1646,7 +1647,7 @@ public:
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v1, sp);
-                s.insert(s.begin()+2, t.s2.begin(), t.s2.end());
+                s.insert(2, t.s2.begin(), t.s2.end());
                 std::string cs(t.s1);
                 cs.insert(2, &t.s2[0], t.s2.size());
                 BOOST_TEST(s == cs);
@@ -1655,7 +1656,7 @@ public:
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v2, sp);
-                s.insert(s.begin()+2, t.s1.begin(), t.s1.end());
+                s.insert(2, t.s1.begin(), t.s1.end());
                 std::string cs(t.s2);
                 cs.insert(2, &t.s1[0], t.s1.size());
                 BOOST_TEST(s == cs);
@@ -1664,7 +1665,7 @@ public:
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v1, sp);
-                s.insert(s.begin()+2,
+                s.insert(2,
                     make_input_iterator(t.s2.begin()),
                     make_input_iterator(t.s2.end()));
                 std::string cs(t.s1);
@@ -1675,30 +1676,9 @@ public:
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v2, sp);
-                s.insert(s.begin()+2,
+                s.insert(2,
                     make_input_iterator(t.s1.begin()),
                     make_input_iterator(t.s1.end()));
-                std::string cs(t.s2);
-                cs.insert(2, &t.s1[0], t.s1.size());
-                BOOST_TEST(s == cs);
-            });
-        }
-
-        // insert(const_iterator, initializer_list)
-        {
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(t.v1, sp);
-                s.insert(s.begin()+2, INIT2);
-                std::string cs(t.s1);
-                cs.insert(2, &t.s2[0], t.s2.size());
-                BOOST_TEST(s == cs);
-            });
-
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(t.v2, sp);
-                s.insert(s.begin()+2, INIT1);
                 std::string cs(t.s2);
                 cs.insert(2, &t.s1[0], t.s1.size());
                 BOOST_TEST(s == cs);
@@ -1731,7 +1711,7 @@ public:
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v1, sp);
-                s.insert(2, string_view(t.v2), 2, 3);
+                s.insert(2, string_view(t.v2).substr(2, 3));
                 std::string cs(t.v1);
                 cs.insert(2, t.s2, 2, 3);
                 BOOST_TEST(s == cs);
@@ -1740,7 +1720,7 @@ public:
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v2, sp);
-                s.insert(2, string_view(t.v1), 2, 3);
+                s.insert(2, string_view(t.v1).substr(2, 3));
                 std::string cs(t.v2);
                 cs.insert(2, t.s1, 2, 3);
                 BOOST_TEST(s == cs);
@@ -1902,7 +1882,7 @@ public:
             });
         }
 
-        // append(string)
+        // append(string_view)
         {
             fail_loop([&](storage_ptr const& sp)
             {
@@ -1919,33 +1899,33 @@ public:
             });
         }
 
-        // append(string, size_type, size_type)
+        // append(string_view)
         {
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v1, sp);
-                s.append(string(t.v2), 3);
+                s.append(string(t.v2).subview(3));
                 BOOST_TEST(s == t.s1 + t.s2.substr(3));
             });
 
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v2, sp);
-                s.append(string(t.v1), 3);
+                s.append(string(t.v1).subview(3));
                 BOOST_TEST(s == t.s2 + t.s1.substr(3));
             });
 
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v1, sp);
-                s.append(string(t.v2), 2, 3);
+                s.append(string(t.v2).subview(2, 3));
                 BOOST_TEST(s == t.s1 + t.s2.substr(2, 3));
             });
 
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v2, sp);
-                s.append(string(t.v1), 2, 3);
+                s.append(string(t.v1).subview(2, 3));
                 BOOST_TEST(s == t.s2 + t.s1.substr(2, 3));
             });
         }
@@ -1963,40 +1943,6 @@ public:
             {
                 string s(t.v2, sp);
                 s.append(t.s1.c_str());
-                BOOST_TEST(s == t.s2 + t.s1);
-            });
-        }
-
-        // append(char const*, size_type)
-        {
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(t.v1, sp);
-                s.append(t.s2.c_str(), 5);
-                BOOST_TEST(s == t.s1 + t.s2.substr(0, 5));
-            });
-
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(t.v2, sp);
-                s.append(t.s1.c_str(), 5);
-                BOOST_TEST(s == t.s2 + t.s1.substr(0, 5));
-            });
-        }
-
-        // append(initializer_list)
-        {
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(t.v1, sp);
-                s.append(INIT2);
-                BOOST_TEST(s == t.s1 + t.s2);
-            });
-
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(t.v2, sp);
-                s.append(INIT1);
                 BOOST_TEST(s == t.s2 + t.s1);
             });
         }
@@ -2059,28 +2005,28 @@ public:
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v1, sp);
-                s.append(t.v2, 2);
+                s.append(t.v2.substr(2));
                 BOOST_TEST(s == t.s1 + t.s2.substr(2));
             });
 
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v2, sp);
-                s.append(t.v1, 2);
+                s.append(t.v1.substr(2));
                 BOOST_TEST(s == t.s2 + t.s1.substr(2));
             });
 
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v1, sp);
-                s.append(t.v2, 2, 3);
+                s.append(t.v2.substr(2, 3));
                 BOOST_TEST(s == t.s1 + t.s2.substr(2, 3));
             });
 
             fail_loop([&](storage_ptr const& sp)
             {
                 string s(t.v2, sp);
-                s.append(t.v1, 2, 3);
+                s.append(t.v1.substr(2, 3));
                 BOOST_TEST(s == t.s2 + t.s1.substr(2, 3));
             });
         }
@@ -2144,23 +2090,6 @@ public:
             });
         }
 
-        // operator+=(initializer_list)
-        {
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(t.v1, sp);
-                s += INIT2;
-                BOOST_TEST(s == t.s1 + t.s2);
-            });
-
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(t.v2, sp);
-                s += INIT1;
-                BOOST_TEST(s == t.s2 + t.s1);
-            });
-        }
-
         // operator+=(string_view)
         {
             fail_loop([&](storage_ptr const& sp)
@@ -2190,45 +2119,15 @@ public:
         BOOST_TEST(v1.compare(string(t.v1)) == 0);
         BOOST_TEST(v1.compare(string("bbbbbbb")) < 0);
 
-        // compare(size_type, size_type, string)
-        BOOST_TEST(v1.compare(2, 3, string("ccc")) > 0);
-        BOOST_TEST(v1.compare(2, 3, string("cde")) == 0);
-        BOOST_TEST(v1.compare(2, 3, string("eee")) < 0);
-
-        // compare(size_type, size_type, string, size_type, size_type)
-        BOOST_TEST(v1.compare(2, 3, string("bbbbb"), 1, 3) > 0);
-        BOOST_TEST(v1.compare(2, 3, string("bcdef"), 1, 3) == 0);
-        BOOST_TEST(v1.compare(2, 3, string("fffff"), 1, 3) < 0);
-
         // compare(char const*)
         BOOST_TEST(v1.compare("aaaaaaa") > 0);
         BOOST_TEST(v1.compare(t.s1.c_str()) == 0);
         BOOST_TEST(v1.compare("bbbbbbb") < 0);
 
-        // compare(size_type, size_type, char const*)
-        BOOST_TEST(v1.compare(2, 3, "ccc") > 0);
-        BOOST_TEST(v1.compare(2, 3, "cde") == 0);
-        BOOST_TEST(v1.compare(2, 3, "eee") < 0);
-
-        // compare(size_type, size_type, char const*, size_type)
-        BOOST_TEST(v1.compare(2, 4, "cccc", 4) > 0);
-        BOOST_TEST(v1.compare(2, 4, "cdef", 4) == 0);
-        BOOST_TEST(v1.compare(2, 4, "ffff", 4) < 0);
-
         // compare(string_view s)
         BOOST_TEST(v1.compare(string_view("aaaaaaa")) > 0);
         BOOST_TEST(v1.compare(t.v1) == 0);
         BOOST_TEST(v1.compare(string_view("bbbbbbb")) < 0);
-
-        // compare(size_type, size_type, string_view)
-        BOOST_TEST(v1.compare(2, 3, string_view("ccc")) > 0);
-        BOOST_TEST(v1.compare(2, 3, string_view("cde")) == 0);
-        BOOST_TEST(v1.compare(2, 3, string_view("eee")) < 0);
-
-        // compare(size_type, size_type, string_view, size_type, size_type)
-        BOOST_TEST(v1.compare(2, 3, string_view("bbbbb"), 1, 3) > 0);
-        BOOST_TEST(v1.compare(2, 3, string_view("bcdef"), 1, 3) == 0);
-        BOOST_TEST(v1.compare(2, 3, string_view("fffff"), 1, 3) < 0);
     }
 
     void
@@ -2290,6 +2189,184 @@ public:
     void
     testReplace()
     {
+        test_vectors const t;
+
+        // replace(std::size_t, std::size_t, string_view)
+        {
+            // outside, shrink
+            fail_loop([&](storage_ptr const& sp)
+            {
+                std::string s1(t.v2.data(), t.v2.size());
+                string s2(t.v2, sp);
+                BOOST_TEST(s2.replace(0, 4, t.v2.substr(4, 2)) == 
+                           s1.replace(0, 4, t.v2.data() + 4, 2));
+            });
+
+            // outside, grow
+            fail_loop([&](storage_ptr const& sp)
+            {
+                std::string s1(t.v2.data(), t.v2.size());
+                string s2(t.v2, sp);
+                BOOST_TEST(s2.replace(0, 1, t.v2.substr(0)) == 
+                           s1.replace(0, 1, t.v2.data(), t.v2.size()));
+            });
+
+            // outside, same
+            fail_loop([&](storage_ptr const& sp)
+            {
+                std::string s1(t.v2.data(), t.v2.size());
+                string s2(t.v2, sp);
+                BOOST_TEST(s2.replace(0, 2, t.v2.substr(0, 2)) == 
+                           s1.replace(0, 2, t.v2.data(), 2));
+            });
+
+            // inside, shrink
+            fail_loop([&](storage_ptr const& sp)
+            {
+                std::string s1(t.v2.data(), t.v2.size());
+                string s2(t.v2, sp);
+                BOOST_TEST(s2.replace(1, 4, s2.substr(4, 2)) == 
+                           s1.replace(1, 4, s1.data() + 4, 2));
+            });
+
+            // inside, grow
+            fail_loop([&](storage_ptr const& sp)
+            {
+                std::string s1(t.v2.data(), t.v2.size());
+                string s2(t.v2, sp);
+                BOOST_TEST(s2.replace(1, 1, s2.substr(0)) == 
+                           s1.replace(1, 1, s1.data(), s1.size()));
+            });
+
+            // inside, same
+            fail_loop([&](storage_ptr const& sp)
+            {
+                std::string s1(t.v2.data(), t.v2.size());
+                string s2(t.v2, sp);
+                BOOST_TEST(s2.replace(1, 2, s2.subview(0, 2)) == 
+                           s1.replace(1, 2, s1.data(), 2));
+            });
+        }
+
+        // replace(const_iterator, const_iterator, string_view)
+        {
+            // outside, shrink
+            fail_loop([&](storage_ptr const& sp)
+            {
+                std::string s1(t.v2.data(), t.v2.size());
+                string s2(t.v2, sp);
+                BOOST_TEST(
+                  s2.replace(
+                      s2.begin(), 
+                      s2.begin() + 4,
+                      t.v2.substr(4, 2)) == 
+                  s1.replace(0, 
+                      4, t.v2.data() + 4, 
+                      2));
+            });
+
+            // outside, grow
+            fail_loop([&](storage_ptr const& sp)
+            {
+                std::string s1(t.v2.data(), t.v2.size());
+                string s2(t.v2, sp);
+                BOOST_TEST(
+                    s2.replace(
+                        s2.begin(), 
+                        s2.begin() + 1, 
+                        t.v2.substr(0)) == 
+                    s1.replace(0, 
+                        1, t.v2.data(), 
+                        t.v2.size()));
+            });
+
+            // outside, same
+            fail_loop([&](storage_ptr const& sp)
+            {
+                std::string s1(t.v2.data(), t.v2.size());
+                string s2(t.v2, sp);
+                BOOST_TEST(
+                    s2.replace(
+                        s2.begin(), 
+                        s2.begin() + 2, 
+                        t.v2.substr(0, 2)) == 
+                    s1.replace(
+                        0, 2, 
+                        t.v2.data(), 
+                        2));
+            });
+
+            // inside, shrink
+            fail_loop([&](storage_ptr const& sp)
+            {
+                std::string s1(t.v2.data(), t.v2.size());
+                string s2(t.v2, sp);
+                BOOST_TEST(
+                    s2.replace(
+                        s2.begin() + 1,
+                        s2.begin() + 5,
+                        s2.substr(4, 2)) ==
+                    s1.replace(
+                        1, 4,
+                        s1.data() + 4,
+                        2));
+            });
+
+            // inside, grow
+            fail_loop([&](storage_ptr const& sp)
+            {
+                std::string s1(t.v2.data(), t.v2.size());
+                string s2(t.v2, sp);
+                BOOST_TEST(
+                    s2.replace(
+                        s2.begin() + 1, 
+                        s2.begin() + 2, 
+                        s2.substr(0)) == 
+                    s1.replace(
+                        1, 1, 
+                        s1.data(),
+                        s1.size()));
+            });
+
+            // inside, same
+            fail_loop([&](storage_ptr const& sp)
+            {
+                std::string s1(t.v2.data(), t.v2.size());
+                string s2(t.v2, sp);
+                BOOST_TEST(
+                    s2.replace(
+                        s2.begin() + 1, 
+                        s2.begin() + 3, 
+                        s2.subview(0, 2)) == 
+                    s1.replace(
+                        1, 2, 
+                        s1.data(), 
+                        2));
+            });
+        }
+
+        // replace(std::size_t, std::size_t, std::size_t, char)
+        {
+            fail_loop([&](storage_ptr const& sp)
+            {
+                std::string s1(t.v2.data(), t.v2.size());
+                string s2(t.v2, sp);
+                BOOST_TEST(s2.replace(0, 4, 10, 'a') == 
+                           s1.replace(0, 4, 10, 'a'));
+            });
+        }
+
+        // replace(const_iterator, const_iterator, std::size_t, char)
+        {
+            fail_loop([&](storage_ptr const& sp)
+            {
+                std::string s1(t.v2.data(), t.v2.size());
+                string s2(t.v2, sp);
+                BOOST_TEST(
+                  s2.replace(s2.begin(), s2.begin() + 4, 10, 'a') ==
+                  s1.replace(0, 4, 10, 'a'));
+            });
+        }
     }
 
     void
@@ -2299,13 +2376,13 @@ public:
         string const s1 = t.v1;
         string const s2 = t.v2;
 
-        // substr(size_type, size_type)
-        BOOST_TEST(s1.substr() == t.v1);
-        BOOST_TEST(s1.substr(1) == t.v1.substr(1));
-        BOOST_TEST(s1.substr(1, 3) == t.v1.substr(1, 3));
-        BOOST_TEST(s2.substr() == t.v2);
-        BOOST_TEST(s2.substr(1) == t.v2.substr(1));
-        BOOST_TEST(s2.substr(1, 3) == t.v2.substr(1, 3));
+        // subview(size_type, size_type)
+        BOOST_TEST(s1.subview() == t.v1);
+        BOOST_TEST(s1.subview(1) == t.v1.substr(1));
+        BOOST_TEST(s1.subview(1, 3) == t.v1.substr(1, 3));
+        BOOST_TEST(s2.subview() == t.v2);
+        BOOST_TEST(s2.subview(1) == t.v2.substr(1));
+        BOOST_TEST(s2.subview(1, 3) == t.v2.substr(1, 3));
     }
 
     void
@@ -2440,17 +2517,16 @@ public:
         string const s1 = t.v1;
         string const s2 = t.v2;
 
-        // find(string, size_type)
+        // find(string_view, size_type)
         BOOST_TEST(s1.find(string("bcd")) == 1);
         BOOST_TEST(s1.find(string("cde"), 1) == 2);
         BOOST_TEST(s1.find(string("efg"), 5) == string::npos);
-
-        // find(char const*, size_type, size_type)
-        BOOST_TEST(s1.find("bcd*", 0, 3) == 1);
-        BOOST_TEST(s1.find("cde*", 1, 3) == 2);
-        BOOST_TEST(s1.find("efg*", 5, 3) == string::npos);
-
-        // find(char const*, size_type)
+        BOOST_TEST(s1.find("bcd", 0) == 1);
+        BOOST_TEST(s1.find("cde", 1) == 2);
+        BOOST_TEST(s1.find("efg", 5) == string::npos);
+        BOOST_TEST(s1.find(string_view("bcd")) == 1);
+        BOOST_TEST(s1.find(string_view("cde"), 1) == 2);
+        BOOST_TEST(s1.find(string_view("efg"), 5) == string::npos);
         BOOST_TEST(s1.find("bcd", 0) == 1);
         BOOST_TEST(s1.find("cde", 1) == 2);
         BOOST_TEST(s1.find("efg", 5) == string::npos);
@@ -2459,11 +2535,6 @@ public:
         BOOST_TEST(s1.find('b') == 1);
         BOOST_TEST(s1.find('c', 1) == 2);
         BOOST_TEST(s1.find('e', 5) == string::npos);
-
-        // find(T const, size_type pos)
-        BOOST_TEST(s1.find(string_view("bcd")) == 1);
-        BOOST_TEST(s1.find(string_view("cde"), 1) == 2);
-        BOOST_TEST(s1.find(string_view("efg"), 5) == string::npos);
     }
 
     void
