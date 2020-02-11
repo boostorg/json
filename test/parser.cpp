@@ -406,6 +406,40 @@ R"xx({
     }
 
     void
+    testUnicodeStrings()
+    {
+        // Embedded NULL correctly converted
+        {
+            auto expected = string_view("Hello\x00World", 11);
+            {
+                auto s = string_view(R"json("Hello\u0000World")json");
+                grind(s);
+                BOOST_TEST(json::parse(s).as_string() == expected);
+            }
+            {
+                auto s = string_view(R"json(["Hello\u0000World"])json");
+                grind(s);
+                BOOST_TEST(json::parse(s).as_array().at(0).as_string() == expected);
+            }
+        }
+
+        // surrogate pairs correctly converted to UTF-8
+        {
+            auto expected = string_view("\xF0\x9D\x84\x9E", 4);
+            {
+                auto s = string_view(R"json("\uD834\uDD1E")json");
+                grind(s);
+                BOOST_TEST(json::parse(s).as_string() == expected);
+            }
+            {
+                auto s = string_view(R"json(["\uD834\uDD1E"])json");
+                grind(s);
+                BOOST_TEST(json::parse(s).as_array().at(0).as_string() == expected);
+            }
+        }
+    }
+
+    void
     run()
     {
         testObjects();
@@ -418,6 +452,7 @@ R"xx({
         testFreeFunctions();
         testSampleJson();
         testIssue15();
+        testUnicodeStrings();
     }
 };
 

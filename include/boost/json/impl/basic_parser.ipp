@@ -751,9 +751,11 @@ loop_str1:
             ec = error::illegal_trailing_surrogate;
             goto yield;
         }
+
         unsigned long cp =
             ((u0_ - 0xd800) << 10) +
-             (u_  - 0xdc00);
+             (u_  - 0xdc00) +
+             0x10000;
         if(! maybe_flush(ec))
             goto yield;
         temp.append_utf8(cp);
