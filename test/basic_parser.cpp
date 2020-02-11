@@ -357,6 +357,9 @@ public:
 
         // control after escape
         bad ("\"\\\\\n\"");
+
+        // embedded NULL character
+        good(R"json("Hello\u0000World")json");
     }
 
     void
