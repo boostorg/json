@@ -244,8 +244,8 @@ replace(
         char_pos_error::raise();
     const auto curr_data = data();
     n1 = (std::min)(n1, curr_size - pos);
-    const auto delta = std::max(n1, n2) -
-        std::min(n1, n2);
+    const auto delta = (std::max)(n1, n2) -
+        (std::min)(n1, n2);
     // if we are shrinking in size or we have enough
     // capacity, dont reallocate
     if (n1 > n2 || delta <= capacity() - curr_size)
@@ -325,8 +325,8 @@ replace_unchecked(
     if(pos > curr_size)
         char_pos_error::raise();
     const auto curr_data = data();
-    const auto delta = std::max(n1, n2) -
-        std::min(n1, n2);
+    const auto delta = (std::max)(n1, n2) -
+        (std::min)(n1, n2);
     // if the size doesn't change, we don't need to
     // do anything
     if (!delta)

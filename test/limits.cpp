@@ -149,6 +149,30 @@ public:
                     string_too_large);
             }
 
+            {
+                string s;
+                s.resize(s.max_size() - 5);
+                BOOST_TEST_THROWS(
+                    (s.replace(0, 1, s.subview(0, 10))),
+                    string_too_large);
+            }
+
+            {
+                string s;
+                s.resize(s.max_size() - 5);
+                BOOST_TEST_THROWS(
+                    (s.replace(0, 1, 10, 'a')),
+                    string_too_large);
+            }
+
+            {
+                string s;
+                s.resize(s.max_size() - 5);
+                BOOST_TEST_THROWS(
+                    (s.insert(0, s.subview(0, 10))),
+                    string_too_large);
+            }
+
     #if 0
             {
                 // VFALCO tsan doesn't like this
