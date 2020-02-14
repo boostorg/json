@@ -252,7 +252,7 @@ replace(
     {
         const bool inside = detail::ptr_in_range(curr_data, curr_data + curr_size, s);
         // there is nothing to replace; return
-        if (inside && s - curr_data == pos && n1 == n2)
+        if (inside && static_cast<std::size_t>(s - curr_data) == pos && n1 == n2)
             return;
         if (!inside || (inside && ((s - curr_data) + n2 <= pos)))
         {

@@ -1570,7 +1570,7 @@ public:
             });
         }
 
-        // KRYSTIAN These tests are superseded by the new string_view overloads
+        //// KRYSTIAN These tests are superseded by the new string_view overloads
         //// insert(size_type, string const&, size_type, size_type)
         //{
         //    fail_loop([&](storage_ptr const& sp)
@@ -1724,6 +1724,84 @@ public:
                 std::string cs(t.v2);
                 cs.insert(2, t.s1, 2, 3);
                 BOOST_TEST(s == cs);
+            });
+        }
+
+        // insert(size_type, char const*)
+        {
+            fail_loop([&](storage_ptr const& sp)
+            {
+                string s(t.v1, sp);
+                s.insert(1, "***");
+                BOOST_TEST(s == std::string(
+                    t.v1).insert(1, "***"));
+            });
+
+            fail_loop([&](storage_ptr const& sp)
+            {
+                string s(t.v2, sp);
+                s.insert(1, "***");
+                BOOST_TEST(s == std::string(
+                    t.v2).insert(1, "***"));
+            });
+
+            // pos out of range
+            {
+                string s(t.v1);
+                BOOST_TEST_THROWS(
+                    (s.insert(s.size() + 2, "*")),
+                    std::out_of_range);
+            }
+        }
+
+        // insert tests for when source is within destination
+        {
+            // start before splice point
+            fail_loop([&](storage_ptr const& sp)
+            {
+                string s(t.v1, sp);
+                s.reserve(s.size() + 10);
+                s.insert(4, s.subview(0, 3));
+                std::string cs(t.v1);
+                cs.insert(4, cs.substr(0, 3));
+                BOOST_TEST(s == cs);
+            });
+
+            // start after splice point
+            fail_loop([&](storage_ptr const& sp)
+            {
+                string s(t.v1, sp);
+                s.reserve(s.size() + 10);
+                s.insert(0, s.subview(3, 3));
+                std::string cs(t.v1);
+                cs.insert(0, cs.substr(3, 3));
+                BOOST_TEST(s == cs);
+            });
+
+            // insert pos bisects the inserted string
+            fail_loop([&](storage_ptr const& sp)
+            {
+                string s(t.v1, sp);
+                s.reserve(s.size() + 10);
+                s.insert(2, s.subview(0, 5));
+                std::string cs(t.v1);
+                cs.insert(2, cs.substr(0, 5));
+                BOOST_TEST(s == cs);
+            });
+        }
+
+        // insert reallocation test
+        {
+            fail_loop([&](storage_ptr const& sp)
+            {
+              string s(t.v2, sp);
+              std::string cs(t.v2);
+              const auto view = t.v2.substr(0, 4);
+              s.append(s);
+              cs.append(cs);
+              s.insert(2, view);
+              cs.insert(2, view.data(), view.size());
+              BOOST_TEST(s == cs);
             });
         }
     }
@@ -2193,6 +2271,14 @@ public:
 
         // replace(std::size_t, std::size_t, string_view)
         {
+            // pos out of range
+            fail_loop([&](storage_ptr const& sp)
+            {
+                string s(t.v2, sp);
+                BOOST_TEST_THROWS(s.replace(s.size() + 1, 1, t.v2),
+                    std::out_of_range);
+            });
+
             // outside, shrink
             fail_loop([&](storage_ptr const& sp)
             {
@@ -2211,6 +2297,17 @@ public:
                            s1.replace(0, 1, t.v2.data(), t.v2.size()));
             });
 
+            // outside, grow, reallocate
+            fail_loop([&](storage_ptr const& sp)
+            {
+                std::string s1(t.v2.data(), t.v2.size());
+                string s2(t.v2, sp);
+                s1.append(s1);
+                s2.append(s2);
+                BOOST_TEST(s2.replace(0, 1, t.v2.substr(0)) == 
+                           s1.replace(0, 1, t.v2.data(), t.v2.size()));
+            });
+
             // outside, same
             fail_loop([&](storage_ptr const& sp)
             {
@@ -2220,25 +2317,47 @@ public:
                            s1.replace(0, 2, t.v2.data(), 2));
             });
 
-            // inside, shrink
+            // replace tests for full coverage
+
+            // inside, no effect
             fail_loop([&](storage_ptr const& sp)
             {
                 std::string s1(t.v2.data(), t.v2.size());
                 string s2(t.v2, sp);
-                BOOST_TEST(s2.replace(1, 4, s2.substr(4, 2)) == 
+                BOOST_TEST(s2.replace(0, 4, s2.subview(0, 4)) == 
+                           s1.replace(0, 4, s1.data() + 0, 4));
+            });
+
+            // inside, shrink, split
+            fail_loop([&](storage_ptr const& sp)
+            {
+                std::string s1(t.v2.data(), t.v2.size());
+                string s2(t.v2, sp);
+                BOOST_TEST(s2.replace(1, 4, s2.subview(4, 2)) == 
                            s1.replace(1, 4, s1.data() + 4, 2));
             });
 
-            // inside, grow
+            // inside, grow no reallocate, split
             fail_loop([&](storage_ptr const& sp)
             {
                 std::string s1(t.v2.data(), t.v2.size());
                 string s2(t.v2, sp);
-                BOOST_TEST(s2.replace(1, 1, s2.substr(0)) == 
+                BOOST_TEST(s2.replace(1, 1, s2.subview(0)) == 
                            s1.replace(1, 1, s1.data(), s1.size()));
             });
 
-            // inside, same
+            // inside, reallocate, split
+            fail_loop([&](storage_ptr const& sp)
+            {
+                std::string s1(t.v2.data(), t.v2.size());
+                string s2(t.v2, sp);
+                s1.append(s1);
+                s2.append(s2);
+                BOOST_TEST(s2.replace(1, 1, s2.subview(0)) == 
+                           s1.replace(1, 1, s1.data(), s1.size()));
+            });
+
+            // inside, same, split
             fail_loop([&](storage_ptr const& sp)
             {
                 std::string s1(t.v2.data(), t.v2.size());
@@ -2305,7 +2424,7 @@ public:
                     s2.replace(
                         s2.begin() + 1,
                         s2.begin() + 5,
-                        s2.substr(4, 2)) ==
+                        s2.subview(4, 2)) ==
                     s1.replace(
                         1, 4,
                         s1.data() + 4,
@@ -2321,7 +2440,7 @@ public:
                     s2.replace(
                         s2.begin() + 1, 
                         s2.begin() + 2, 
-                        s2.substr(0)) == 
+                        s2.subview(0)) == 
                     s1.replace(
                         1, 1, 
                         s1.data(),
@@ -2347,12 +2466,40 @@ public:
 
         // replace(std::size_t, std::size_t, std::size_t, char)
         {
+            // grow, no realloc
             fail_loop([&](storage_ptr const& sp)
             {
                 std::string s1(t.v2.data(), t.v2.size());
                 string s2(t.v2, sp);
                 BOOST_TEST(s2.replace(0, 4, 10, 'a') == 
                            s1.replace(0, 4, 10, 'a'));
+            });
+
+            // grow, realloc
+            fail_loop([&](storage_ptr const& sp)
+            {
+                std::string s1(t.v2.data(), t.v2.size());
+                string s2(t.v2, sp);
+                const auto grow = (std::max)(s1.capacity(), s2.capacity());
+                BOOST_TEST(s2.replace(0, 4, grow, 'a') ==
+                           s1.replace(0, 4, grow, 'a'));
+            });
+
+            // no change in size
+            fail_loop([&](storage_ptr const& sp)
+            {
+                std::string s1(t.v2.data(), t.v2.size());
+                string s2(t.v2, sp);
+                BOOST_TEST(s2.replace(0, 1, 1, 'a') ==
+                           s1.replace(0, 1, 1, 'a'));
+            });
+
+            // pos out of range
+            fail_loop([&](storage_ptr const& sp)
+            {
+                string s(t.v2, sp);
+                BOOST_TEST_THROWS(s.replace(s.size() + 1, 1, 1, 'a'), 
+                    std::out_of_range);
             });
         }
 
