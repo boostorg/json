@@ -394,17 +394,6 @@ R"xx({
         }
     }
 
-    // https://github.com/vinniefalco/json/issues/15
-    void
-    testIssue15()
-    {
-        BOOST_TEST(
-            json::parse("{\"port\": 12345}")
-                .as_object()
-                .at("port")
-                .as_int64() == 12345);
-    }
-
     void
     testUnicodeStrings()
     {
@@ -439,6 +428,40 @@ R"xx({
         }
     }
 
+    //------------------------------------------------------
+
+    // https://github.com/vinniefalco/json/issues/15
+    void
+    testIssue15()
+    {
+        BOOST_TEST(
+            json::parse("{\"port\": 12345}")
+                .as_object()
+                .at("port")
+                .as_int64() == 12345);
+    }
+
+    // https://github.com/vinniefalco/json/issues/45
+    void
+    testIssue45()
+    {
+        struct T
+        {
+            value jv;
+
+            T(value jv_)
+                : jv(jv_)
+            {
+            }
+        };
+
+        auto const jv = parse("[]");
+        auto const t = T{jv};
+        BOOST_TEST(to_string(t.jv) == "[]");
+    }
+
+    //------------------------------------------------------
+
     void
     run()
     {
@@ -453,6 +476,8 @@ R"xx({
         testSampleJson();
         testIssue15();
         testUnicodeStrings();
+
+        testIssue45();
     }
 };
 
