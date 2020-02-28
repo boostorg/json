@@ -161,6 +161,62 @@ inline
 runner*&
 current() noexcept;
 
+inline
+void
+debug_break()
+{
+#ifdef _MSC_VER
+    ::DebugBreak();
+#else
+    //?? profit?
+#endif
+}
+
+//----------------------------------------------------------
+
+struct checkpoint
+{
+    char const* const file;
+    int const line;
+    std::size_t const id;
+
+    static
+    checkpoint*&
+    current() noexcept
+    {
+        static checkpoint* p = nullptr;
+        return p;
+    }
+
+    checkpoint(
+        char const* file_,
+        int line_,
+        std::size_t id_ = 0)
+        : file(file_)
+        , line(line_)
+        , id([]
+        {
+            static std::size_t n = 0;
+            return ++n;
+        }())
+        , prev_(current())
+    {
+        current() = this;
+        if(id_ == id)
+            debug_break();
+    }
+
+    ~checkpoint()
+    {
+        current() = prev_;
+    }
+
+private:
+    checkpoint* prev_;
+};
+
+//----------------------------------------------------------
+
 class runner
 {
     runner* saved_;
@@ -385,11 +441,21 @@ public:
         ++v_.back().total;
         ++v_.back().failed;
         auto const id = ++all_.total;
-        log_ <<
-            "#" << id <<
-            " " << filename(file) <<
-            "(" << line << ") "
-            "failed: " << expr << "\n";
+        auto const cp =
+            checkpoint::current();
+        if(cp)
+            log_ <<
+                "case " << cp->id <<
+                "(#" << id << ") " <<
+                filename(cp->file) <<
+                "(" << cp->line << ") "
+                "failed:" << expr << "\n";
+        else
+            log_ <<
+                "#" << id <<
+                " " << filename(file) <<
+                "(" << line << ") "
+                "failed: " << expr << "\n";
     }
 };
 
@@ -559,6 +625,11 @@ current_function_helper()
 /** The type of log for output to the currently running suite.
 */
 using log_type = detail::log_ostream<char>;
+
+#define BOOST_TEST_CHECKPOINT(...) \
+    ::test_suite::detail::checkpoint \
+        _BOOST_TEST_CHECKPOINT ## __LINE__ ( \
+            __FILE__, __LINE__, __VA_ARGS__ + 0)
 
 #define BOOST_TEST(expr) \
     ::test_suite::detail::current()->maybe_fail( \
