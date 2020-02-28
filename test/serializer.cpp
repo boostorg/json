@@ -168,8 +168,15 @@ public:
         string_view s,
         string_view name = {})
     {
-        auto const jv = parse(s);
-        grind(s, jv, name);
+        try
+        {
+            auto const jv = parse(s);
+            grind(s, jv, name);
+        }
+        catch(std::exception const&)
+        {
+            BOOST_TEST_FAIL();
+        }
     }
 
     void

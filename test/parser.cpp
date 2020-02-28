@@ -63,44 +63,50 @@ public:
     }
 
     void
-    grind_one(string_view s)
+    grind_one(
+        string_view s,
+        storage_ptr sp = {})
     {
         auto const jv =
-            from_string_test(s);
+            from_string_test(s, sp);
         check_round_trip(jv, s);
     }
 
     void
     grind(string_view s)
     {
-        grind_one(s);
-
-        fail_loop([&](storage_ptr const& sp)
+        try
         {
-            auto const jv =
-                from_string_test(s, sp);
-            check_round_trip(jv, s);
-        });
+            grind_one(s);
 
-        if(s.size() > 1)
-        {
-            // Destroy the parser at every
-            // split point to check leaks.
-            for(std::size_t i = 1;
-                i < s.size(); ++i)
+            fail_loop([&](storage_ptr const& sp)
             {
-                scoped_storage<
-                    fail_storage> ss;
-                ss->fail_max = 0;
-                parser p;
-                error_code ec;
-                p.start(ss);
-                p.write(s.data(), i, ec);
-                if(! ec)
-                    p.finish(ec);
+                grind_one(s, sp);
+            });
+
+            if(s.size() > 1)
+            {
+                // Destroy the parser at every
+                // split point to check leaks.
+                for(std::size_t i = 1;
+                    i < s.size(); ++i)
+                {
+                    scoped_storage<
+                        fail_storage> ss;
+                    ss->fail_max = 0;
+                    parser p;
+                    error_code ec;
+                    p.start(ss);
+                    p.write(s.data(), i, ec);
+                    if(! ec)
+                        p.finish(ec);
+                }
             }
         }
-
+        catch(std::exception const&)
+        {
+            BOOST_TEST_FAIL();
+        }
     }
     
     void
