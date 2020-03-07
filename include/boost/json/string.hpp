@@ -37,7 +37,7 @@ class value;
     a string are stored contiguously. A pointer to any
     character in a string may be passed to functions
     that expect a pointer to the first element of a
-    null-terminated `char[]` array.
+    null-terminated `char` array.
 
     String iterators are regular `char` pointers.
 
@@ -1853,7 +1853,7 @@ public:
 
         @param pos The index to insert at.
 
-        @param s The `string_view` to insert.
+        @param sv The `string_view` to insert.
 
         @throw std::length_error `size() + s.size() > max_size()`
 
@@ -2041,9 +2041,9 @@ public:
 
         @par Precondition
 
-        {first, last]` shall be valid within
+        `{first, last}` shall be valid within
         @code
-        {data(), data() + size()]
+        {data(), data() + size()}
         @endcode
 
         @par Exception Safety
@@ -2814,7 +2814,7 @@ public:
     /** Find the last occurrence of a character within the string.
 
         Returns index corrosponding to the last occurrence
-        of `ch` within `{begin(), begin() + pos]` if it
+        of `ch` within `{begin(), begin() + pos}` if it
         exists, and @ref npos otherwise.
 
         @par Complexity
@@ -2933,7 +2933,7 @@ public:
 
         Returns the index corrosponding to the last
         occurrence of any of the characters of `sv` within
-        `{begin(), begin() + pos]` if it exists,
+        `{begin(), begin() + pos}` if it exists,
         and @ref npos otherwise.
 
         @par Complexity
@@ -2964,7 +2964,7 @@ public:
     /** Find the last occurrence of a character not within the string.
 
         Returns the index corrosponding to the last
-        character of `{begin(), begin() + pos]` that is not
+        character of `{begin(), begin() + pos}` that is not
         within `sv` if it exists, and @ref npos otherwise.
 
         @par Complexity
@@ -2992,7 +2992,7 @@ public:
     /** Find the last occurrence of a character not equal to `ch`.
 
         Returns the index corrosponding to the last
-        character of `{begin(), begin() + pos]` that is
+        character of `{begin(), begin() + pos}` that is
         not equal to `ch` if it exists, and @ref npos
         otherwise.
 

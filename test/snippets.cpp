@@ -31,6 +31,58 @@ usingStrings()
 
         //]
     }
+    {
+        //[snippet_strings_2
+
+        std::string sstr1 = "helloworld";
+        std::string sstr2 = "world";
+
+        json::string jstr1 = "helloworld";
+        json::string jstr2 = "world";
+
+
+        assert(jstr2.insert(0, jstr1.subview(0, 6)) == "helloworld");
+
+        // this is equivalent to
+
+        assert(sstr1.insert(0, sstr2, 0, 6) == "helloworld");
+
+        //]
+    }
+    {
+        //[snippet_strings_3
+
+        std::string sstr = "hello";
+
+        json::string jstr = "hello";
+
+        assert(sstr.append({'w', 'o', 'r', 'l', 'd'}) == "helloworld");
+
+        // such syntax is inefficient, and the same can
+        // be achieved with a character array.
+
+        assert(jstr.append("world") == "helloworld");
+
+        //]
+    }
+
+    {
+        //[snippet_strings_4
+
+        json::string str = "Boost.JSON";
+        json::string_view sv = str;
+
+        // all of these call compare(string_view)
+        str.compare(sv);
+
+        str.compare(sv.substr(0, 5));
+
+        str.compare(str);
+
+        str.compare("Boost");
+
+        //]
+    }
 }
 
 //----------------------------------------------------------
