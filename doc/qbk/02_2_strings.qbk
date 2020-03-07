@@ -22,7 +22,7 @@ operate the same way, with these variations:
 
 * New characters are 
 
-A string may be constructed initially empty without incurrening any
+A string may be constructed initially empty without incurring any
 memory allocations using the default storage, or a specified storage:
 
 [snippet_strings_1]
