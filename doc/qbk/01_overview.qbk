@@ -18,9 +18,9 @@ This library provides containers and algorithms which implement JSON
 ([@https://json.org/ "JavaScript Object Notation"]), a lightweight
 data-interchange format. This format is easy for humans to read and
 write, and easy for machines to parse and generate. It is based on a
-subset of the Javascript Programming Language,
+subset of the JavaScript Programming Language,
 [@https://www.ecma-international.org/ecma-262/10.0/index.html Standard ECMA-262].
-JSON is a text format that is language-indepdent but uses conventions
+JSON is a text format that is language-independent but uses conventions
 that are familiar to programmers of the C-family of languages, including
 C, C++, C#, Java, JavaScript, Perl, Python, and many others. These
 properties make JSON an ideal data-interchange language.
@@ -74,7 +74,7 @@ desired header files.
 
 Boost.JSON may also be used without the rest of Boost, simply by defining
 the macro `BOOST_JSON_STANDALONE`. This configuration requires C++17 or
-later, and the addition of the file src/src.cpp to the target application.
+later, and the addition of the file `src/src.cpp` to the target application.
 
 [endsect]
 
