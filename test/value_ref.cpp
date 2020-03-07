@@ -176,6 +176,7 @@ public:
         {
             init_list init = 
                 { { "key", true } };
+            (void)init;
         }
     }
 
