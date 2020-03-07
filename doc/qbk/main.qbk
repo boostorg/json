@@ -75,6 +75,7 @@
 [def __std_string__             [@https://en.cppreference.com/w/cpp/string/basic_string `std::string`]]
 [def __std_unordered_map__      [@https://en.cppreference.com/w/cpp/container/unordered_map `std::unordered_map`]]
 [def __std_vector__             [@https://en.cppreference.com/w/cpp/container/vector `std::vector`]]
+[def __string_view__            [@https://en.cppreference.com/w/cpp/string/basic_string_view `std::string_view`]]
 
 [/ Dingbats ]
 
