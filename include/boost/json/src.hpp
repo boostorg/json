@@ -17,7 +17,9 @@ in a translation unit of the program.
 
 */
 
+#ifndef BOOST_JSON_SOURCE
 #define BOOST_JSON_SOURCE
+#endif
 
 #include <boost/json/config.hpp>
 
