@@ -41,20 +41,8 @@ class value_ref
         str,
         ini,
         func,
-        cfunc
-    };
-
-    struct string_type
-    {
-        char const* data;
-        std::size_t size;
-
-        string_type(
-            string_view s)
-            : data(s.data())
-            , size(s.size())
-        {
-        }
+        cfunc,
+        strfunc,
     };
 
     using init_list =
@@ -166,14 +154,18 @@ public:
     template<class T>
     value_ref(T&& t
         ,typename std::enable_if<
-            ! std::is_constructible<
-                string_view, T>::value &&
+            (! std::is_constructible<
+                string_view, T>::value ||
+            std::is_same<string, 
+                detail::remove_cvref<T>>::value) &&
             ! std::is_same<bool,
                 detail::remove_cvref<T>>::value
                 >::type* = 0)
         : f_{&from_rvalue<
             detail::remove_cvref<T>>, &t}
-        , what_(what::func)
+        , what_(std::is_same<string,
+            detail::remove_cvref<T>>::value ?
+                what::strfunc : what::func)
     {
     }
 

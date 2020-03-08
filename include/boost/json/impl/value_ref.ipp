@@ -46,7 +46,8 @@ is_key_value_pair() const noexcept
         return false;
     auto const& e =
         *arg_.init_list_.begin();
-    if( e.what_ != what::str)
+    if( e.what_ != what::str &&
+        e.what_ != what::strfunc)
         return false;
     return true;
 }
@@ -67,7 +68,11 @@ string_view
 value_ref::
 get_string() const noexcept
 {
-    BOOST_ASSERT(what_ == what::str);
+    BOOST_ASSERT(
+        what_ == what::str ||
+        what_ == what::strfunc);
+    if (what_ == what::strfunc)
+        return *static_cast<const string*>(f_.p);
     return arg_.str_;
 }
 
@@ -92,7 +97,11 @@ make_value(
     case what::func:
         return f_.f(f_.p,
             detail::move(sp));
-
+    
+    case what::strfunc:
+        return f_.f(f_.p,
+            detail::move(sp));
+    
     case what::cfunc:
         return cf_.f(cf_.p,
             detail::move(sp));
