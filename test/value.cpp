@@ -499,6 +499,13 @@ public:
                 BOOST_TEST(jv.is_object());
                 BOOST_TEST(*jv.storage() == *sp);
             }
+            {
+                // verify moved from
+                object obj{{"a", 1}, {"b", 2}};
+                BOOST_TEST(obj.capacity() > 0);
+                value jv(std::move(obj), {});
+                BOOST_TEST(obj.capacity() == 0);
+            }
         }
 
         // value(array)
