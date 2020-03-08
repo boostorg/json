@@ -307,6 +307,29 @@ public:
             }, "{\"k1\":{\"k2\":2,\"k3\":3}}");
     }
 
+    void
+    testMoveFrom()
+    {
+        {
+            string a = "abcdefghijklmnopqrstuvwxyz";
+            BOOST_TEST(!a.empty());
+            array b{std::move(a), string()};
+            BOOST_TEST(a.empty());
+        }
+        {
+            array a{value()};
+            BOOST_TEST(a.data() != nullptr);
+            array b{std::move(a), array()};
+            BOOST_TEST(a.data() == nullptr);
+        }
+        {
+            object a{{"a", 1}, {"b", 2}};
+            BOOST_TEST(a.capacity() > 0);
+            array b{std::move(a), object()};
+            BOOST_TEST(a.capacity() == 0);
+        }
+    }
+
     struct FT
     {
         value
@@ -323,6 +346,7 @@ public:
         testInitList();
         testMakeValue();
         testObjects();
+        testMoveFrom();
     }
 };
 
