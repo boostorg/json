@@ -413,7 +413,7 @@ public:
         object&& other,
         storage_ptr sp)
         : obj_(
-            other,
+            detail::move(other),
             detail::move(sp))
     {
     }
