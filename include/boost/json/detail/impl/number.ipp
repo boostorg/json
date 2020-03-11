@@ -230,13 +230,6 @@ loop:
             n_.kind == kind::int64);
         if(p >= p1)
             break;
-        if(*p == 'e' || *p == 'E')
-        {
-            ++p;
-            n_.kind = kind::double_;
-            st_ = state::exp1;
-            goto loop;
-        }
         if(*p == '.')
         {
             BOOST_ASSERT(pos_ < 0);
@@ -245,6 +238,13 @@ loop:
             pos_ = 0;
             st_ = state::mantf;
             n_.kind = kind::double_;
+            goto do_mantf;
+        }
+        if((*p | 32) == 'e') // 'E' or 'e'
+        {
+            ++p;
+            n_.kind = kind::double_;
+            st_ = state::exp1;
             goto loop;
         }
         unsigned char const d = *p - '0';
@@ -259,6 +259,7 @@ loop:
     }
 
     // 1*digit
+    do_mantf:
     case state::mantf:
     {
         if (p >= p1)
@@ -266,28 +267,28 @@ loop:
         unsigned char const d = *p - '0';
         if(d < 10)
         {
-            if ( d == 0 && n_.u == 0)
+            if(d == 0 && n_.u == 0)
             {
-                st_ = state::zeroes;
                 ++p;
                 ++dig_;
+                st_ = state::zeroes;
+                goto do_zeroes;
             }
-            else if(neg_)
+            if(neg_)
             {
                 st_ = state::mantn;
+                goto do_mantn;
             }
-            else
-            {
-                st_ = state::mant;
-            }
-            goto loop;
+            st_ = state::mant;
+            goto do_mant;
         }
 
         ec = error::expected_fraction;
         goto finish;
     }
 
-    // *[0] 
+    // *[0]
+    do_zeroes:
     case state::zeroes:
     {
         BOOST_ASSERT(pos_ == 0);
@@ -319,120 +320,120 @@ loop:
     //-----------------------------------
 
     // *[0..9]
+    do_mant:
     case state::mant:
     {
         BOOST_ASSERT(! neg_);
-        if(p < p1) // VFALCO see if the compiler can do this for us
+        if(p >= p1)
+            break;
+        auto m = n_.u;
+        do
         {
-            auto m = n_.u;
-            do
+            unsigned char const d = *p - '0';
+            if(d < 10)
             {
-                unsigned char const d = *p - '0';
-                if(d < 10)
+                //       18446744073709551615 UINT64_MAX
+                if( m  > 1844674407370955161 || (
+                    m == 1844674407370955161 && d > 5))
                 {
-                    //       18446744073709551615 UINT64_MAX
-                    if( m  > 1844674407370955161 || (
-                        m == 1844674407370955161 && d > 5))
-                    {
-                        n_.u = m;
-                        goto enter_mantd;
-                    }
-                    ++p;
-                    // VFALCO Check dig_ for overflow
-                    // Could use an implementation-defined limit
-                    // which is lower than USHRT_MAX
-                    ++dig_;
-                    ++sig_;
-                    m = 10 * m + d;
-                    continue;
-                }
-                if(*p == '.' && pos_ < 0)
-                {
-                    ++p;
-                    pos_ = dig_;
-                    n_.kind = kind::double_;
-                    st_ = state::mantf;
                     n_.u = m;
-                    goto loop;
+                    goto enter_mantd;
                 }
-                if(*p == 'e' || *p == 'E')
-                {
-                    // treat 'E' as '.'
-                    if (pos_ < 0)
-                        pos_ = dig_;
-                    ++p;
-                    n_.u = m;
-                    n_.kind = kind::double_;
-                    st_ = state::exp1;
-                    goto loop;
-                }
-                // reached end of number
-                n_.u = m;
-                finish(ec);
-                goto finish;
+                ++p;
+                // VFALCO Check dig_ for overflow
+                // Could use an implementation-defined limit
+                // which is lower than USHRT_MAX
+                ++dig_;
+                ++sig_;
+                m = 10 * m + d;
+                continue;
             }
-            while(p < p1);
+            if(*p == '.' && pos_ < 0)
+            {
+                ++p;
+                pos_ = dig_;
+                n_.kind = kind::double_;
+                st_ = state::mantf;
+                n_.u = m;
+                goto loop;
+            }
+            if(*p == 'e' || *p == 'E')
+            {
+                // treat 'E' as '.'
+                if (pos_ < 0)
+                    pos_ = dig_;
+                ++p;
+                n_.u = m;
+                n_.kind = kind::double_;
+                st_ = state::exp1;
+                goto loop;
+            }
+            // reached end of number
             n_.u = m;
+            finish(ec);
+            goto finish;
         }
+        while(p < p1);
+        n_.u = m;
         break;
     }
 
     // *[0..9] (negative)
+    do_mantn:
     case state::mantn:
     {
         BOOST_ASSERT(neg_);
-        if(p < p1) // VFALCO see if the compiler can do this for us
+        if(p >= p1)
+            break;
+        auto m = n_.u;
+        do
         {
-            auto m = n_.u;
-            do
+            unsigned char const d = *p - '0';
+            if(d < 10)
             {
-                unsigned char const d = *p - '0';
-                if(d < 10)
+                //       9223372036854775808 INT64_MIN
+                if( m  > 922337203685477580 || (
+                    m == 922337203685477580 && d > 8))
                 {
-                    //       9223372036854775808 INT64_MIN
-                    if( m  > 922337203685477580 || (
-                        m == 922337203685477580 && d > 8))
-                    {
-                        n_.u = m;
-                        goto enter_mantd;
-                    }
-                    ++p;
-                    // VFALCO Check dig_ for overflow
-                    // Could use an implementation-defined limit
-                    // which is lower than USHRT_MAX
-                    ++sig_;
-                    ++dig_;
-                    m = 10 * m + d;
-                    continue;
-                }
-                if(*p == '.' && pos_ < 0)
-                {
-                    ++p;
-                    pos_ = dig_;
-                    n_.kind = kind::double_;
                     n_.u = m;
-                    st_ = state::mantf;
-                    goto loop;
+                    goto enter_mantd;
                 }
-                if(*p == 'e' || *p == 'E')
-                {
-                    // treat 'E' as '.'
-                    if (pos_ < 0)
-                        pos_ = dig_;
-                    ++p;
-                    n_.u = m;
-                    n_.kind = kind::double_;
-                    st_ = state::exp1;
-                    goto loop;
-                }
-                // reached end of number
-                n_.u = m;
-                finish(ec);
-                goto finish;
+                ++p;
+                // VFALCO Check dig_ for overflow
+                // Could use an implementation-defined limit
+                // which is lower than USHRT_MAX
+                ++sig_;
+                ++dig_;
+                m = 10 * m + d;
+                continue;
             }
-            while(p < p1);
+            if(*p == '.' && pos_ < 0)
+            {
+                ++p;
+                pos_ = dig_;
+                n_.kind = kind::double_;
+                n_.u = m;
+                st_ = state::mantf;
+                goto loop;
+            }
+            if(*p == 'e' || *p == 'E')
+            {
+                // treat 'E' as '.'
+                if (pos_ < 0)
+                    pos_ = dig_;
+                ++p;
+                n_.u = m;
+                n_.kind = kind::double_;
+                st_ = state::exp1;
+                goto loop;
+            }
+            // reached end of number
             n_.u = m;
+            finish(ec);
+            goto finish;
         }
+        while(p < p1);
+        n_.u = m;
         break;
     }
 
