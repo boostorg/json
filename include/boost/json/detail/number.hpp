@@ -55,10 +55,6 @@ class number_parser
     bool eneg_;
     state st_;
 
-    inline
-    void
-    finish_double() noexcept;
-
 public:
     number_parser()
         : st_(state::init)

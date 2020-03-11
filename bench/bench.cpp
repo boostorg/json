@@ -616,11 +616,11 @@ main(
         //vi.emplace_back(new boost_vec_impl);
         vi.emplace_back(new boost_pool_impl);
         vi.emplace_back(new rapidjson_memory_impl);
-        vi.emplace_back(new boost_default_impl);
-        vi.emplace_back(new rapidjson_crt_impl);
-        vi.emplace_back(new nlohmann_impl);
+        //vi.emplace_back(new boost_default_impl);
+        //vi.emplace_back(new rapidjson_crt_impl);
+        //vi.emplace_back(new nlohmann_impl);
         bench("parse", vf, vi);
-        bench("serialize", vf, vi);
+        //bench("serialize", vf, vi);
 
         dout << "\n" << strout.str();
     }

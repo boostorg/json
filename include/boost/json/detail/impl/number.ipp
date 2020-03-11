@@ -109,6 +109,22 @@ pow10(int exp) noexcept
     }
 }
 
+inline
+double
+dec_to_float(
+    std::uint64_t m,
+    std::int64_t e,
+    bool neg) noexcept
+{
+    if(neg)
+        return (-static_cast<
+            double>(m)) *
+            pow10(e);
+    return (static_cast<
+        double>(m)) *
+        pow10(e);
+}
+
 // return true on '-' '0' '1'..'9'.
 // caller consumes ch on true
 bool
@@ -636,14 +652,8 @@ finish(
         {
             if( pos_ < 0)
                 pos_ = dig_;
-            if(neg_)
-                n_.d = (-static_cast<
-                    double>(n_.u)) *
-                    pow10(pos_ - dig_);
-            else
-                n_.d = static_cast<
-                    double>(n_.u) *
-                    pow10(pos_ - dig_);
+            n_.d = dec_to_float(
+                n_.u, pos_ - dig_, neg_);
         }
         else
         {
@@ -676,11 +686,16 @@ finish(
         }
         if( pos_ < 0)
             pos_ = dig_;
+    #if 0
         n_.d = static_cast<double>(n_.u) *
             pow10(pos_ - sig_);
         if(neg_)
             n_.d = -n_.d;
         n_.d *= pow10(exp_);
+    #else
+        n_.d = dec_to_float(n_.u,
+            pos_ - sig_ + exp_, neg_);
+    #endif
         st_ = state::end;
         break;
 
@@ -710,10 +725,8 @@ finish(
                 exp_ + pos_ - sig_);
         }
 
-        n_.d = static_cast<double>(n_.u) *
-               pow10(exp_);
-        if (neg_)
-            n_.d = -n_.d;
+        n_.d = dec_to_float(
+            n_.u, exp_, neg_);
         st_ = state::end;
         break;
     }
