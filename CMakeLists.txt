@@ -53,15 +53,18 @@ include(CTest)
 option(BOOST_JSON_STANDALONE "Build boost::json as a static standalone library" FALSE)
 
 if(BOOST_JSON_STANDALONE)
+    #
+    # Building standalone, out of Boost superproject tree, without Boost as dependency.
+    #
     target_compile_features(boost_json PUBLIC cxx_std_17)
     target_compile_definitions(boost_json PUBLIC BOOST_JSON_STANDALONE)
     add_subdirectory(example)
 elseif(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     #
-    # Root project such as on Travis or other CI,
-    # or when producing Visual Studio Solution and Projects
+    # Building as root project, out of Boost superproject tree, with Boost as dependency.
+    # e.g. on Travis or other CI, or when producing Visual Studio Solution and Projects.
     #
-    if(${CMAKE_VERSION} VERSION_LESS 3.16)
+    if(${CMAKE_VERSION} VERSION_LESS 3.15)
         message(FATAL_ERROR "Boost.JSON development requires CMake 3.16 or newer.")
     endif()
 
@@ -80,7 +83,7 @@ elseif(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
 
 elseif(BOOST_SUPERPROJECT_VERSION)
     #
-    # Building with Boost superproject cmake
+    # Building as part of Boost superproject tree, with Boost as dependency.
     #
     target_link_libraries(boost_json
         PUBLIC
