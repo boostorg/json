@@ -64,7 +64,7 @@ elseif(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     # Building as root project, out of Boost superproject tree, with Boost as dependency.
     # e.g. on Travis or other CI, or when producing Visual Studio Solution and Projects.
     #
-    if(${CMAKE_VERSION} VERSION_LESS 3.15)
+    if(${CMAKE_VERSION} VERSION_LESS 3.16)
         message(FATAL_ERROR "Boost.JSON development requires CMake 3.16 or newer.")
     endif()
 
