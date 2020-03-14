@@ -20,4 +20,4 @@ add_executable(bench
 target_include_directories(bench PRIVATE ../test)
 target_link_libraries(bench PRIVATE boost_json)
 
-add_test(json-tests json-tests)
+add_test(NAME json-bench COMMAND bench)
