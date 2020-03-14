@@ -48,6 +48,8 @@ else()
     target_compile_definitions(boost_json PUBLIC BOOST_JSON_STATIC_LINK=1)
 endif()
 
+include(CTest)
+
 option(BOOST_JSON_STANDALONE "Build boost::json as a static standalone library" FALSE)
 
 if(BOOST_JSON_STANDALONE)
@@ -98,7 +100,7 @@ else()
         PUBLIC
             Boost::system
     )
-    option(BUILD_TESTING "Build the tests" ON)
+
     if (BUILD_TESTING)
         add_subdirectory(bench)
         add_subdirectory(example)
