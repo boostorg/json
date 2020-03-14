@@ -15,4 +15,4 @@ add_executable(tests ${BOOST_JSON_TESTS_FILES})
 target_include_directories(tests PRIVATE .)
 target_link_libraries(tests PRIVATE boost_json)
 
-add_test(json-tests tests)
+add_test(NAME json-tests COMMAND tests)
