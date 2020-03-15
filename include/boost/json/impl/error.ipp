@@ -304,7 +304,7 @@ make_error_code(error e)
             default:
 case error::syntax: return "syntax error";
 case error::extra_data: return "extra data";
-case error::incomplete: return "incomplete";
+case error::incomplete: return "incomplete JSON";
 case error::mantissa_overflow: return "mantissa overflow";
 case error::exponent_overflow: return "exponent overflow";
 case error::too_deep: return "too deep";

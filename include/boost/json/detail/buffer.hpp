@@ -29,6 +29,12 @@ public:
 
     buffer() = default;
 
+    bool
+    empty() const noexcept
+    {
+        return size_ == 0;
+    }
+
     string_view
     get() const noexcept
     {
@@ -53,6 +59,12 @@ public:
     }
 
     size_type
+    capacity() const noexcept
+    {
+        return N - size_;
+    }
+
+    size_type
     max_size() const noexcept
     {
         return N;
@@ -67,17 +79,19 @@ public:
     void
     push_back(char ch) noexcept
     {
-        BOOST_ASSERT(size_ <= N - 1);
+        BOOST_ASSERT(capacity() > 0);
         buf_[size_++] = ch;
     }
 
-    // returns true if cp is a valid utf-32 code point
-    static
-    bool
-    is_valid(unsigned long cp) noexcept
+    // append an unescaped string
+    void
+    append(
+        char const* s,
+        std::size_t n)
     {
-        return cp <= 0x0010ffffu &&
-            (cp < 0xd800u || cp > 0xdfffu);
+        BOOST_ASSERT(n <= N - size_);
+        std::memcpy(buf_ + size_, s, n);
+        size_ += n;
     }
 
     // append valid 32-bit code point as utf8

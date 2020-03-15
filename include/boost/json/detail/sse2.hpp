@@ -47,7 +47,7 @@ count_unescaped(
     char const* s,
     size_t n) noexcept
 {
-    __m128i const q1 = _mm_set1_epi8( '"' );
+    __m128i const q1 = _mm_set1_epi8( '\x22' ); // '"'
     __m128i const q2 = _mm_set1_epi8( '\\' );
     __m128i const q3 = _mm_set1_epi8( 0x20 );
     __m128i const q4 = _mm_set1_epi8( -1 );

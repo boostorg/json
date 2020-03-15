@@ -30,7 +30,6 @@ struct json_test
             "  string        == " << sizeof(string) << " (" << alignof(string) << ")\n"
             "  value         == " << sizeof(value) << " (" << alignof(value) << ")\n"
             "  serializer    == " << sizeof(serializer) << "\n"
-            "  number_parser == " << sizeof(json::detail::number_parser) << "\n"
             "  basic_parser  == " << sizeof(basic_parser) << "\n"
             "  parser        == " << sizeof(parser)
             ;

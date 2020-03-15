@@ -178,6 +178,7 @@ class fail_parser
 
     void
     on_object_end(
+        std::size_t,
         error_code& ec) override
     {
         maybe_fail(ec);
@@ -192,6 +193,7 @@ class fail_parser
 
     void
     on_array_end(
+        std::size_t,
         error_code& ec) override
     {
         maybe_fail(ec);
@@ -333,6 +335,7 @@ class throw_parser
 
     void
     on_object_end(
+        std::size_t,
         error_code&) override
     {
         maybe_throw();
@@ -347,6 +350,7 @@ class throw_parser
 
     void
     on_array_end(
+        std::size_t,
         error_code&) override
     {
         maybe_throw();
@@ -818,6 +822,8 @@ equal(
 
     return false;
 }
+
+//----------------------------------------------------------
 
 } // json
 } // boost

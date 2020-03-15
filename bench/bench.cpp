@@ -46,12 +46,12 @@ using clock_type = std::chrono::steady_clock;
 ::test_suite::debug_stream dout(std::cerr);
 std::stringstream strout;
 
-#if defined(_MSC_VER)
-string_view toolset = "msvc";
-#elif defined(__clang__)
+#if defined(__clang__)
 string_view toolset = "clang";
 #elif defined(__GNUC__)
 string_view toolset = "gcc";
+#elif defined(_MSC_VER)
+string_view toolset = "msvc";
 #else
 string_view toolset = "unknown";
 #endif
@@ -373,9 +373,9 @@ class boost_vec_impl : public any_impl
         void on_document_begin(error_code&) override {}
         void on_document_end(error_code&) override {}
         void on_object_begin(error_code&) override {}
-        void on_object_end(error_code&) override {}
+        void on_object_end(std::size_t, error_code&) override {}
         void on_array_begin(error_code&) override {}
-        void on_array_end(error_code&) override {}
+        void on_array_end(std::size_t, error_code&) override {}
         void on_key_part(string_view, error_code&) override {}
         void on_key( string_view, error_code&) override {}
         void on_string_part(string_view, error_code&) override {}
@@ -434,9 +434,9 @@ class boost_null_impl : public any_impl
         void on_document_begin(error_code&) override {}
         void on_document_end(error_code&) override {}
         void on_object_begin(error_code&) override {}
-        void on_object_end(error_code&) override {}
+        void on_object_end(std::size_t, error_code&) override {}
         void on_array_begin(error_code&) override {}
-        void on_array_end(error_code&) override {}
+        void on_array_end(std::size_t, error_code&) override {}
         void on_key_part(string_view, error_code&) override {}
         void on_key( string_view, error_code&) override {}
         void on_string_part(string_view, error_code&) override {}

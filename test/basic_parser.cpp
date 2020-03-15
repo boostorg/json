@@ -113,9 +113,9 @@ validate( string_view s )
         void on_document_begin( error_code& ) override {}
         void on_document_end( error_code& ) override {}
         void on_object_begin( error_code& ) override {}
-        void on_object_end( error_code& ) override {}
+        void on_object_end( std::size_t, error_code& ) override {}
         void on_array_begin( error_code& ) override {}
-        void on_array_end( error_code& ) override {}
+        void on_array_end( std::size_t, error_code& ) override {}
         void on_key_part( string_view, error_code& ) override {}
         void on_key( string_view, error_code& ) override {}
         void on_string_part( string_view, error_code& ) override {}
@@ -159,20 +159,19 @@ public:
                 break;
             error_code ec;
             fail_parser p;
-            auto const n =
-                p.write_some(s.data(), i, ec);
+            p.write(s.data(), i, ec);
             if(ec)
             {
                 BOOST_TEST(ec == ex);
                 continue;
             }
-            p.write(
-                s.data() + n,
-                s.size() - n, ec);
-            if(! ec)
-                p.finish(ec);
+            p.finish(
+                s.data() + i,
+                s.size() - i, ec);
             if(! BOOST_TEST(ec == ex))
-                log << "should be " << ex.message() << std::endl;
+                log <<
+                    "should be " <<
+                    ex.message() << std::endl;
         }
     }
 
@@ -188,10 +187,8 @@ public:
                 break;
             error_code ec;
             fail_parser p(j);
-            p.write(
+            p.finish(
                 s.data(), s.size(), ec);
-            if(! ec)
-                p.finish(ec);
             if(ec == error::test_failure)
                 continue;
             BOOST_TEST(ec == ex);
@@ -213,10 +210,8 @@ public:
             throw_parser p(j);
             try
             {
-                p.write(
+                p.finish(
                     s.data(), s.size(), ec);
-                if(! ec)
-                    p.finish(ec);
                 BOOST_TEST(ec == ex);
                 break;
             }
@@ -239,12 +234,10 @@ public:
         error_code ex;
         {
             fail_parser p;
-            p.write(
+            p.finish(
                 s.data(),
                 s.size(),
                 ex);
-            if(! ex)
-                p.finish(ex);
             if(good)
             {
                 if(! BOOST_TEST(! ex))
@@ -271,79 +264,120 @@ public:
     void
     bad(string_view s)
     {
-        grind(s, false);
+        {
+            error_code ec;
+            fail_parser p;
+
+            p.finish(s.data(), s.size(), ec);
+            BOOST_TEST(ec);
+
+            p.reset();
+            p.write(s.data(), s.size(), ec);
+            if(! ec)
+                p.finish(ec);
+            BOOST_TEST(ec);
+
+            {
+                p.reset();
+                auto const n = p.write_some(
+                    s.data(), s.size(), ec);
+                if(n != s.size())
+                {
+                    if(! ec)
+                        p.finish(ec);
+                    BOOST_TEST(ec);
+                }
+            }
+
+            if(! s.empty())
+            {
+                for(std::size_t i = 1;
+                    i < s.size() - 1; ++i)
+                {
+                    p.reset();
+                    p.write(s.data(), i, ec);
+                    if(! ec)
+                        p.finish(s.data() + i,
+                            s.size() - i, ec);
+                    BOOST_TEST(ec);
+                }
+            }
+        }
+
+        for(std::size_t j = 1;;++j)
+        {
+            if(! BOOST_TEST(j < 100000))
+                break;
+            error_code ec;
+            fail_parser p(j);
+            p.finish(
+                s.data(), s.size(), ec);
+            if(ec != error::test_failure)
+            {
+                BOOST_TEST(ec);
+                break;
+            }
+        }
+    }
+
+    //------------------------------------------------------
+
+    void
+    testNull()
+    {
+        good("null");
+        good(" null");
+        good("null ");
+        good("\tnull");
+        good("null\t");
+        good("\r\n\t null\r\n\t ");
+
+        bad ("NULL");
+        bad ("nULL");
+        bad ("nuLL");
+        bad ("nulL");
+        bad ("nullx");
+        bad ("nul");
+        bad ("nu");
+        bad ("n");
     }
 
     void
-    testObject()
+    testBoolean()
     {
-        good("{}");
-        good("{ }");
-        good("{ \t }");
-        good("{\"x\":null}");
-        good("{ \"x\":null}");
-        good("{\"x\" :null}");
-        good("{\"x\": null}");
-        good("{\"x\":null }");
-        good("{ \"x\" : null }");
-        good("{ \"x\" : {} }");
-        good("{ \"x\" : [] }");
-        good("{ \"x\" : { \"y\" : null } }");
-        good("{ \"x\" : [{}] }");
-        good("{ \"x\":1, \"y\":null}");
-        good("{\"x\":1,\"y\":2,\"z\":3}");
-        good(" {\"x\":1,\"y\":2,\"z\":3}");
-        good("{\"x\":1,\"y\":2,\"z\":3} ");
-        good(" {\"x\":1,\"y\":2,\"z\":3} ");
-        good("{ \"x\":1,\"y\":2,\"z\":3}");
-        good("{\"x\" :1,\"y\":2,\"z\":3}");
-        good("{\"x\":1 ,\"y\":2,\"z\":3}");
-        good("{\"x\":1,\"y\" :2,\"z\":3}");
-        good("{\"x\":1,\"y\": 2,\"z\":3}");
-        good("{\"x\":1,\"y\":2 ,\"z\":3}");
-        good("{\"x\":1,\"y\":2, \"z\":3}");
-        good("{\"x\":1,\"y\":2, \"z\" :3}");
-        good("{\"x\":1,\"y\":2, \"z\": 3}");
-        good("{\"x\":1,\"y\":2, \"z\":3 }");
-        good(" \t { \"x\" \n  :   1, \"y\" :2, \"z\" : 3} \n");
+        good("true");
+        good(" true");
+        good("true ");
+        good("\ttrue");
+        good("true\t");
+        good("\r\n\t true\r\n\t ");
 
-        good("[{\"x\":[{\"y\":null}]}]");
+        bad ("TRUE");
+        bad ("tRUE");
+        bad ("trUE");
+        bad ("truE");
+        bad ("truex");
+        bad ("tru");
+        bad ("tr");
+        bad ("t");
 
-        bad ("{");
-        bad (" {");
-        bad (" {}}");
-        bad ("{{}}");
-        bad ("{[]}");
-    }
+        good("false");
+        good(" false");
+        good("false ");
+        good("\tfalse");
+        good("false\t");
+        good("\r\n\t false\r\n\t ");
 
-    void
-    testArray()
-    {
-        good("[]");
-        good("[ ]");
-        good("[ \t ]");
-        good("[ \"\" ]");
-        good("[ \" \" ]");
-        good("[ \"x\" ]");
-        good("[ \"x\", \"y\" ]");
-        good("[1,2,3]");
-        good(" [1,2,3]");
-        good("[1,2,3] ");
-        good(" [1,2,3] ");
-        good("[1,2,3]");
-        good("[ 1,2,3]");
-        good("[1 ,2,3]");
-        good("[1, 2,3]");
-        good("[1,2 ,3]");
-        good("[1,2, 3]");
-        good("[1,2,3 ]");
-        good(" [  1 , 2 \t\n ,  \n3]");
-
-        bad ("[");
-        bad (" [");
-        bad (" []]");
-        bad ("[{]");
-        bad ("[ \"x\", ]");
+        bad ("FALSE");
+        bad ("fALSE");
+        bad ("faLSE");
+        bad ("falSE");
+        bad ("falsE");
+        bad ("falsex");
+        bad ("fals");
+        bad ("fal");
+        bad ("fa");
+        bad ("f");
     }
 
     void
@@ -414,61 +448,75 @@ public:
     }
 
     void
-    testBoolean()
+    testArray()
     {
-        good("true");
-        good(" true");
-        good("true ");
-        good("\ttrue");
-        good("true\t");
-        good("\r\n\t true\r\n\t ");
+        good("[]");
+        good("[ ]");
+        good("[ \t ]");
+        good("[ \"\" ]");
+        good("[ \" \" ]");
+        good("[ \"x\" ]");
+        good("[ \"x\", \"y\" ]");
+        good("[1,2,3]");
+        good(" [1,2,3]");
+        good("[1,2,3] ");
+        good(" [1,2,3] ");
+        good("[1,2,3]");
+        good("[ 1,2,3]");
+        good("[1 ,2,3]");
+        good("[1, 2,3]");
+        good("[1,2 ,3]");
+        good("[1,2, 3]");
+        good("[1,2,3 ]");
+        good(" [  1 , 2 \t\n ,  \n3]");
 
-        bad ("TRUE");
-        bad ("tRUE");
-        bad ("trUE");
-        bad ("truE");
-        bad ("truex");
-        bad ("tru");
-        bad ("tr");
-        bad ("t");
-
-        good("false");
-        good(" false");
-        good("false ");
-        good("\tfalse");
-        good("false\t");
-        good("\r\n\t false\r\n\t ");
-
-        bad ("FALSE");
-        bad ("fALSE");
-        bad ("faLSE");
-        bad ("falSE");
-        bad ("falsE");
-        bad ("falsex");
-        bad ("fals");
-        bad ("fal");
-        bad ("fa");
-        bad ("f");
+        bad ("[");
+        bad (" [");
+        bad (" []]");
+        bad ("[{]");
+        bad ("[ \"x\", ]");
     }
 
     void
-    testNull()
+    testObject()
     {
-        good("null");
-        good(" null");
-        good("null ");
-        good("\tnull");
-        good("null\t");
-        good("\r\n\t null\r\n\t ");
+        good("{}");
+        good("{ }");
+        good("{ \t }");
+        good("{\"x\":null}");
+        good("{ \"x\":null}");
+        good("{\"x\" :null}");
+        good("{\"x\": null}");
+        good("{\"x\":null }");
+        good("{ \"x\" : null }");
+        good("{ \"x\" : {} }");
+        good("{ \"x\" : [] }");
+        good("{ \"x\" : { \"y\" : null } }");
+        good("{ \"x\" : [{}] }");
+        good("{ \"x\":1, \"y\":null}");
+        good("{\"x\":1,\"y\":2,\"z\":3}");
+        good(" {\"x\":1,\"y\":2,\"z\":3}");
+        good("{\"x\":1,\"y\":2,\"z\":3} ");
+        good(" {\"x\":1,\"y\":2,\"z\":3} ");
+        good("{ \"x\":1,\"y\":2,\"z\":3}");
+        good("{\"x\" :1,\"y\":2,\"z\":3}");
+        good("{\"x\":1 ,\"y\":2,\"z\":3}");
+        good("{\"x\":1,\"y\" :2,\"z\":3}");
+        good("{\"x\":1,\"y\": 2,\"z\":3}");
+        good("{\"x\":1,\"y\":2 ,\"z\":3}");
+        good("{\"x\":1,\"y\":2, \"z\":3}");
+        good("{\"x\":1,\"y\":2, \"z\" :3}");
+        good("{\"x\":1,\"y\":2, \"z\": 3}");
+        good("{\"x\":1,\"y\":2, \"z\":3 }");
+        good(" \t { \"x\" \n  :   1, \"y\" :2, \"z\" : 3} \n");
 
-        bad ("NULL");
-        bad ("nULL");
-        bad ("nuLL");
-        bad ("nulL");
-        bad ("nullx");
-        bad ("nul");
-        bad ("nu");
-        bad ("n");
+        good("[{\"x\":[{\"y\":null}]}]");
+
+        bad ("{");
+        bad (" {");
+        bad (" {}}");
+        bad ("{{}}");
+        bad ("{[]}");
     }
 
     void
@@ -551,44 +599,25 @@ public:
             {
                 error_code ec;
                 fail_parser p;
-                BOOST_TEST(
-                    p.max_depth() > 0);
-                p.max_depth(1);
-                p.write_some("[", 1, ec);
-                BOOST_TEST(p.depth() == 1);
-                if(BOOST_TEST(! ec))
-                {
-                    p.write_some("{", 1, ec);
-                    BOOST_TEST(
-                        ec == error::too_deep);
-                }
-                BOOST_TEST(! p.is_done());
-                ec = {};
-                p.write_some("{}", 2, ec);
-                BOOST_TEST(ec);
-                p.reset();
-                p.write("{}", 2, ec);
-                if(! ec)
-                    p.finish(ec);
+                p.write("{", 1, ec);
                 BOOST_TEST(! ec);
+                auto const n =
+                    p.write_some("}x", 2, ec);
+                BOOST_TEST(n == 1);
                 BOOST_TEST(p.is_done());
             }
         }
 
-        // maybe_flush
+        // flush
         {
-            // VFALCO This must be equal to the size
-            // of the temp buffer used in write_some.
-            //
-            int constexpr BUFFER_SIZE = 2048;
-
             {
                 for(auto esc :
                     { "\\\"", "\\\\", "\\/", "\\b",
                       "\\f", "\\n", "\\r", "\\t", "\\u0000" })
                 {
                     std::string big;
-                    big = "\\\"" + std::string(BUFFER_SIZE-4, '*') + esc;
+                    big = "\\\"" + std::string(
+                        BOOST_JSON_PARSER_BUFFER_SIZE-4, '*') + esc;
                     std::string s;
                     s = "{\"" + big + "\":\"" + big + "\"}";
                     fail_grind(s);
@@ -598,7 +627,8 @@ public:
             {
                 std::string big;
                 big = "\\\"" +
-                    std::string(BUFFER_SIZE + 1, '*');
+                    std::string(
+                        BOOST_JSON_PARSER_BUFFER_SIZE+ 1, '*');
                 std::string s;
                 s = "{\"" + big + "\":\"" + big + "\"}";
                 fail_grind(s);
@@ -799,16 +829,15 @@ public:
     void
     run()
     {
-        testObject();
-        testArray();
+        testNull();
+        testBoolean();
         testString();
         testNumber();
-        testBoolean();
-        testNull();
+        testArray();
+        testObject();
         testParser();
         testMembers();
         testParseVectors();
-
         testIssue13();
         testIssue20();
     }

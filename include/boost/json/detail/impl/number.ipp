@@ -113,7 +113,7 @@ inline
 double
 dec_to_float(
     std::uint64_t m,
-    std::int64_t e,
+    std::int32_t e,
     bool neg) noexcept
 {
     if(neg)

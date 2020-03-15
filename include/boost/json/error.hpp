@@ -309,7 +309,7 @@ enum class error
     /// extra data
     extra_data,
 
-    /// incomplete data
+    /// incomplete JSON
     incomplete,
 
     /// mantissa overflow
@@ -401,7 +401,7 @@ enum class error
     not_exact,
 
     /// test failure
-    test_failure
+    test_failure,
 };
 
 /** Error conditions corresponding to JSON errors

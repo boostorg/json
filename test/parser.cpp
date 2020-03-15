@@ -35,14 +35,8 @@ public:
         parser p;
         error_code ec;
         p.start(std::move(sp));
-        p.write(
-            s.data(),
-            s.size(),
-            ec);
-        if(! ec)
-            p.finish(ec);
+        p.finish(s.data(), s.size(), ec);
         BOOST_TEST(! ec);
-        //log << "  " << to_string_test(p.get()) << std::endl;
         return p.release();
     }
 
@@ -62,26 +56,37 @@ public:
                 "  " << s2 << std::endl;
     }
 
+    template<class F>
     void
     grind_one(
         string_view s,
-        storage_ptr sp = {})
+        storage_ptr sp,
+        F const& f)
     {
         auto const jv =
             from_string_test(s, sp);
-        check_round_trip(jv, s);
+        f(jv);
     }
 
     void
-    grind(string_view s)
+    grind_one(string_view s)
+    {
+        auto const jv =
+            from_string_test(s);
+        check_round_trip(jv, s);
+    }
+
+    template<class F>
+    void
+    grind(string_view s, F const& f)
     {
         try
         {
-            grind_one(s);
+            grind_one(s, {}, f);
 
             fail_loop([&](storage_ptr const& sp)
             {
-                grind_one(s, sp);
+                grind_one(s, sp, f);
             });
 
             if(s.size() > 1)
@@ -98,8 +103,12 @@ public:
                     error_code ec;
                     p.start(ss);
                     p.write(s.data(), i, ec);
-                    if(! ec)
-                        p.finish(ec);
+                    if(BOOST_TEST(! ec))
+                        p.finish(
+                            s.data() + i,
+                            s.size() - i, ec);
+                    if(BOOST_TEST(! ec))
+                        f(p.release());
                 }
             }
         }
@@ -108,59 +117,114 @@ public:
             BOOST_TEST_FAIL();
         }
     }
-    
+
     void
-    testObjects()
+    grind(string_view s)
     {
-        grind("{}");
-        grind("{\"\":[]}");
-        grind("{\"1\":[],\"2\":[]}");
-        grind(
-            "{\"1\":{\"2\":{}},\"3\":{\"4\":{},\"5\":{}},"
-            "\"6\":{\"7\":{},\"8\":{},\"9\":{}}}");
-        grind(
-            "{\"1\":{},\"2\":[],\"3\":\"x\",\"4\":1,"
-            "\"5\":-1,\"6\":1.0,\"7\":false,\"8\":null}");
-
-        // big strings
-        {
-            std::string const big(4000, '*');
+        grind(s,
+            [this, &s](value const& jv)
             {
-                std::string js;
-                js = "{\"" + big + "\":null}";
-                grind(js);
-            }
-
-            {
-                std::string js;
-                js = "{\"x\":\"" + big + "\"}";
-                grind(js);
-            }
-
-            {
-                std::string js;
-                js = "{\"" + big + "\":\"" + big + "\"}";
-                grind(js);
-            }
-        }
+                check_round_trip(jv, s);
+            });
     }
 
     void
-    testArrays()
+    grind_int64(string_view s, int64_t v)
     {
-        grind("[]");
-        grind("[[]]");
-        grind("[[],[]]");
-        grind("[[],[],[]]");
-        grind("[[[]],[[],[]],[[],[],[]]]");
-        grind("[{},[],\"x\",1,-1,1.0,true,null]");
+        grind(s,
+            [v](value const& jv)
+            {
+                if(! BOOST_TEST(jv.is_int64()))
+                    return;
+                BOOST_TEST(jv.get_int64() == v);
+            });
     }
 
     void
-    testStrings()
+    grind_uint64(string_view s, uint64_t v)
+    {
+        grind(s,
+            [v](value const& jv)
+            {
+                if(! BOOST_TEST(jv.is_uint64()))
+                    return;
+                BOOST_TEST(jv.get_uint64() == v);
+            });
+    }
+
+    void
+    grind_double(string_view s, double v)
+    {
+        grind(s,
+            [v](value const& jv)
+            {
+                if(! BOOST_TEST(jv.is_double()))
+                    return;
+                BOOST_TEST(jv.get_double() == v);
+            });
+    }
+
+    //------------------------------------------------------
+
+    void
+    testNull()
+    {
+        grind("null");
+        grind(" null");
+        grind("  null");
+        grind("null\n");
+        grind("null\n\n");
+        grind("\r null\t ");
+    }
+
+    void
+    testBool()
+    {
+        grind("true");
+        grind(" true");
+        grind("  true");
+        grind("true\n");
+        grind("true\n\n");
+        grind("\r true\t ");
+
+        grind("false");
+        grind(" false");
+        grind("  false");
+        grind("false\n");
+        grind("false\n\n");
+        grind("\r false\t ");
+    }
+
+    //------------------------------------------------------
+
+    void
+    testString()
     {
         grind("\"\"");
         grind("\"x\"");
+        grind(" \"x\"");
+        grind("  \"x\"");
+        grind("\"x\"\n");
+        grind("\"x\"\n\n");
+        grind("\r \"x\"\t ");
+
+        grind("\"abcdefghij\"");
+        grind("\""
+            "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
+            "\"");
+        grind("\""
+            "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
+            "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
+            "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
+            "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
+            "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
+            "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
+            "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
+            "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
+            "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
+            "\"");
+
+        // escapes
         grind("\"\\\"\"");
         grind("\"\\\\\"");
         grind("\"\\/\"");
@@ -169,19 +233,14 @@ public:
         grind("\"\\n\"");
         grind("\"\\r\"");
         grind("\"\\t\"");
+
+        // unicode
         grind("\"\\u0000\"");
-        grind("\"xxxxxxxxxx\"");
-        grind("\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"");
-        grind("\""
-            "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-            "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-            "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-            "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-            "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-            "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-            "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-            "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-            "\"");
+        grind("\"\\ud7fF\"");
+        grind("\"\\ue000\"");
+        grind("\"\\ufFfF\"");
+        grind("\"\\ud800\\udc00\"");
+        grind("\"\\udbff\\udffF\"");
 
         // big string
         {
@@ -206,36 +265,171 @@ public:
         }
     }
 
-    void
-    testNumbers()
-    {
-        grind("-9223372036854775808"); // INT64_MIN
-        grind("-999999999999999999");
-        grind("-0");
-        grind( "0");
-        grind( "1");
-        grind( "999999999999999999");
-        grind( "9223372036854775807"); // INT64_MAX
-        grind( "9223372036854775808");
-        grind( "18446744073709551615"); // UINT64_MAX
+    //------------------------------------------------------
 
-        grind("-1e-10");
-        grind( "1e-10");
-        grind( "1e+10");
-        grind( "1e+100");
+    void
+    testNumber()
+    {
+        grind("0");
+        grind(" 0");
+        grind("  0");
+        grind("0\n");
+        grind("0\n\n");
+        grind("\r 0\t ");
+
+        grind_int64( "-9223372036854775808", INT64_MIN);
+        grind_int64( "-9223372036854775807", -9223372036854775807);
+        grind_int64( "-999999999999999999", -999999999999999999);
+        grind_int64( "-99999999999999999", -99999999999999999);
+        grind_int64( "-9999999999999999", -9999999999999999);
+        grind_int64( "-999999999999999", -999999999999999);
+        grind_int64( "-99999999999999", -99999999999999);
+        grind_int64( "-9999999999999", -9999999999999);
+        grind_int64( "-999999999999", -999999999999);
+        grind_int64( "-99999999999", -99999999999);
+        grind_int64( "-9999999999", -9999999999);
+        grind_int64( "-999999999", -999999999);
+        grind_int64( "-99999999", -99999999);
+        grind_int64( "-9999999", -9999999);
+        grind_int64( "-999999", -999999);
+        grind_int64( "-99999", -99999);
+        grind_int64( "-9999", -9999);
+        grind_int64( "-999", -999);
+        grind_int64( "-99", -99);
+        grind_int64( "-9", -9);
+        grind_int64( "-0", 0);
+        grind_int64(  "0", 0);
+        grind_int64(  "1", 1);
+        grind_int64(  "9", 9);
+        grind_int64(  "99", 99);
+        grind_int64(  "999", 999);
+        grind_int64(  "9999", 9999);
+        grind_int64(  "99999", 99999);
+        grind_int64(  "999999", 999999);
+        grind_int64(  "9999999", 9999999);
+        grind_int64(  "99999999", 99999999);
+        grind_int64(  "999999999", 999999999);
+        grind_int64(  "9999999999", 9999999999);
+        grind_int64(  "99999999999", 99999999999);
+        grind_int64(  "999999999999", 999999999999);
+        grind_int64(  "9999999999999", 9999999999999);
+        grind_int64(  "99999999999999", 99999999999999);
+        grind_int64(  "999999999999999", 999999999999999);
+        grind_int64(  "9999999999999999", 9999999999999999);
+        grind_int64(  "99999999999999999", 99999999999999999);
+        grind_int64(  "999999999999999999", 999999999999999999);
+        grind_int64(  "9223372036854775807", INT64_MAX);
+
+        grind_uint64( "9223372036854775808", 9223372036854775808ULL);
+        grind_uint64( "9999999999999999999", 9999999999999999999ULL);
+        grind_uint64( "18446744073709551615", UINT64_MAX);
+
+        grind_double( "18446744073709551616",  1.8446744073709552e+19);
+        grind_double("-18446744073709551616", -1.8446744073709552e+19);
+        grind_double( "18446744073709551616.0",  1.8446744073709552e+19);
+        grind_double( "18446744073709551616.00009",  1.8446744073709552e+19);
+        grind_double( "1844674407370955161600000",  1.8446744073709552e+24);
+        grind_double("-1844674407370955161600000", -1.8446744073709552e+24);
+        grind_double( "1844674407370955161600000.0",  1.8446744073709552e+24);
+        grind_double( "1844674407370955161600000.00009",  1.8446744073709552e+24);
+
+        grind_double( "1.0", 1.0);
+        grind_double( "1.1", 1.1);
+        grind_double( "1.11", 1.11);
+        grind_double( "1.11111", 1.11111);
+        grind_double( "11.1111", 11.1111);
+        grind_double( "111.111", 111.111);
+
+        grind("1.0");
     }
 
-    void
-    testBool()
-    {
-        grind("true");
-        grind("false");
-    }
+    //------------------------------------------------------
 
     void
-    testNull()
+    testArray()
     {
-        grind("null");
+        grind("[]");
+        grind(" []");
+        grind("[] ");
+        grind(" [] ");
+        grind(" [ ] ");
+        grind("[1]");
+        grind("[ 1]");
+        grind("[1 ]");
+        grind("[ 1 ]");
+        grind("[1,2]");
+        grind("[ 1,2]");
+        grind("[1 ,2]");
+        grind("[1, 2]");
+        grind("[1,2 ]");
+        grind("[ 1 ,2]");
+        grind("[1 , 2]");
+        grind("[1, 2 ]");
+
+        grind("[[]]");
+        grind("[[],[]]");
+        grind("[[],[],[]]");
+        grind("[[[]],[[],[]],[[],[],[]]]");
+#if 0
+        grind("[{},[],\"x\",1,-1,1.0,true,null]");
+#endif
+    }
+
+    //------------------------------------------------------
+
+    void
+    testObject()
+    {
+        grind("{}");
+        grind(" {}");
+        grind("{} ");
+        grind(" {} ");
+        grind(" { } ");
+        grind("{\"1\":1}");
+        grind("{ \"1\":1}");
+        grind("{\"1\" :1}");
+        grind("{\"1\": 1}");
+        grind("{\"1\":1 }");
+        grind("{ \"1\" :1 }");
+        grind("{\"1\" : 1 }");
+        grind("{\"1\":1,\"2\":2}");
+        grind("{\"1\":1, \"2\":2}");
+        grind("{\"1\":1, \"2\" : 2 }");
+
+        grind("{\"\":[]}");
+        grind("{\"1\":[],\"2\":[]}");
+
+#if 0
+        grind(
+            "{\"1\":{\"2\":{}},\"3\":{\"4\":{},\"5\":{}},"
+            "\"6\":{\"7\":{},\"8\":{},\"9\":{}}}");
+
+        grind(
+            "{\"1\":{},\"2\":[],\"3\":\"x\",\"4\":1,"
+            "\"5\":-1,\"6\":1.0,\"7\":false,\"8\":null}");
+#endif
+
+        // big keys
+        {
+            std::string const big(4000, '*');
+            {
+                std::string js;
+                js = "{\"" + big + "\":null}";
+                grind(js);
+            }
+
+            {
+                std::string js;
+                js = "{\"x\":\"" + big + "\"}";
+                grind(js);
+            }
+
+            {
+                std::string js;
+                js = "{\"" + big + "\":\"" + big + "\"}";
+                grind(js);
+            }
+        }
     }
 
     void
@@ -471,18 +665,19 @@ R"xx({
     void
     run()
     {
-        testObjects();
-        testArrays();
-        testStrings();
-        testNumbers();
-        testBool();
         testNull();
+        testBool();
+        testString();
+        testNumber();
+        testArray();
+        testObject();
+        
         testMembers();
         testFreeFunctions();
         testSampleJson();
-        testIssue15();
         testUnicodeStrings();
 
+        testIssue15();
         testIssue45();
     }
 };

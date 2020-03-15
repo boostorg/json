@@ -73,7 +73,6 @@ class parser final
     struct level
     {
         std::uint32_t count;
-        saved_state ss;
         char align;
         state st;
     };
@@ -219,6 +218,7 @@ private:
     BOOST_JSON_DECL
     void
     on_object_end(
+        std::size_t n,
         error_code& ec) override;
 
     BOOST_JSON_DECL
@@ -229,6 +229,7 @@ private:
     BOOST_JSON_DECL
     void
     on_array_end(
+        std::size_t n,
         error_code& ec) override;
 
     BOOST_JSON_DECL

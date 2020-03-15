@@ -12,8 +12,10 @@
 
 #include <boost/json/config.hpp>
 #include <boost/json/error.hpp>
-#include <boost/json/detail/number.hpp>
+#include <boost/json/kind.hpp>
+#include <boost/json/detail/stack.hpp>
 #include <boost/json/detail/static_stack.hpp>
+#include <boost/json/detail/stream.hpp>
 #include <string>
 #include <vector>
 
@@ -48,24 +50,42 @@ namespace json {
 class basic_parser
 {
     enum class state : char;
+    using char_stream = detail::char_stream;
+    struct number
+    {
+        uint64_t mant;
+        int bias;
+        int exp;
+        bool frac;
+        bool neg;
+    };
 
-    detail::static_stack<state, 8> st_;
-    detail::number_parser np_;
+    number num_;
+    error_code ec_;
+    detail::stack st_;
     std::size_t depth_ = 0;
     std::size_t max_depth_ = 32;
-    char const* lit_;
-    error ev_;
-    long u0_;
-    unsigned short u_;
+    unsigned u1_;
+    unsigned u2_;
+    bool done_; // true on complete parse
+    bool more_; // false for final buffer
     bool is_key_;
 
-    inline
-    bool
-    is_control(char c) noexcept;
-
-    inline
-    char
-    hex_digit(char c) noexcept;
+    inline static bool is_control(char c) noexcept;
+    inline static char hex_digit(char c) noexcept;
+    inline void suspend(state st);
+    inline void suspend(state st, std::size_t n);
+    inline void suspend(state st, number const& num);
+    inline void parse_element(char_stream& cs);
+    inline void parse_white(char_stream& cs);
+    inline void parse_value(char_stream& cs);
+    inline void parse_null(char_stream& cs);
+    inline void parse_true(char_stream& cs);
+    inline void parse_false(char_stream& cs);
+    inline void parse_string(char_stream& cs);
+    inline void parse_object(char_stream& cs);
+    inline void parse_array(char_stream& cs);
+    inline void parse_number(char_stream& cs);
 
 public:
     //------------------------------------------------------
@@ -78,7 +98,7 @@ public:
     ~basic_parser()
     {
         // VFALCO defaulting this causes link
-        // link errors on some older toolchains.
+        // errors on some older toolchains.
     }
 
     /** Return true if a complete JSON has been parsed.
@@ -100,8 +120,7 @@ public:
     bool
     is_done() const noexcept
     {
-        return static_cast<
-            char>(*st_) == 0;
+        return done_;
     }
 
     /** Returns the current depth of the JSON being parsed.
@@ -470,8 +489,6 @@ public:
     finish();
 
 protected:
-    using saved_state = char;
-
     /// Constructor (default)
     BOOST_JSON_DECL
     basic_parser();
@@ -481,23 +498,6 @@ protected:
     BOOST_JSON_DECL
     void
     reset() noexcept;
-
-    saved_state
-    save_state() noexcept
-    {
-        auto ss = *st_;
-        st_.pop();
-        return static_cast<
-            saved_state>(ss);
-    }
-
-    void
-    restore_state(
-        saved_state ss) noexcept
-    {
-        st_.push(static_cast<
-            state>(ss));
-    }
 
     /** Called once when the JSON parsing begins.
 
@@ -551,6 +551,8 @@ protected:
         the elements of an object have been parsed, and the
         closing brace for the object is reached.
 
+        @param n The number of elements in the object.
+
         @param ec The error, if any, which will be
         returned by the current invocation of
         @ref write_some, @ref write, or @ref finish.
@@ -558,6 +560,7 @@ protected:
     virtual
     void
     on_object_end(
+        std::size_t n,
         error_code& ec) = 0;
 
     /** Called when the beginning of an array is encountered.
@@ -580,6 +583,8 @@ protected:
         the elements of an array have been parsed, and the
         closing bracket for the array is reached.
 
+        @param n The number of elements in the array.
+
         @param ec The error, if any, which will be
         returned by the current invocation of
         @ref write_some, @ref write, or @ref finish.
@@ -587,6 +592,7 @@ protected:
     virtual
     void
     on_array_end(
+        std::size_t n,
         error_code& ec) = 0;
 
     /** Called with characters corresponding to part of the current key.

@@ -150,6 +150,22 @@
 # endif
 #endif
 
+#ifndef BOOST_JSON_LIKELY
+# if defined(__GNUC__) || defined(__clang__)
+#  define BOOST_JSON_LIKELY(x) __builtin_expect(!!(x), 1)
+# else
+#  define BOOST_JSON_LIKELY(x) x
+# endif
+#endif
+
+#ifndef BOOST_JSON_UNLIKELY
+# if defined(__GNUC__) || defined(__clang__)
+#  define BOOST_JSON_UNLIKELY(x) __builtin_expect(!!(x), 0)
+# else
+#  define BOOST_JSON_UNLIKELY(x) x
+# endif
+#endif
+
 // These macros are private, for tests, do not change
 // them or else previously built libraries won't match.
 #ifndef  BOOST_JSON_MAX_OBJECT_SIZE

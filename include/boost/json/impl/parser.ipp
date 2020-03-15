@@ -275,8 +275,7 @@ emplace(Args&&... args)
     }
     else
     {
-        BOOST_ASSERT(
-            lev_.st == state::top);
+        //BOOST_ASSERT(lev_.st == state::top);
         // prevent splits from exceptions
         rs_.prepare(sizeof(value));
         BOOST_ASSERT((rs_.top() %
@@ -377,7 +376,6 @@ on_object_begin(error_code&)
         sizeof(level) +
         sizeof(object::value_type) +
         alignof(object::value_type) - 1);
-    lev_.ss = save_state();
     push(lev_);
     lev_.align = detail::align_to<
         object::value_type>(rs_);
@@ -389,14 +387,15 @@ on_object_begin(error_code&)
 
 void
 parser::
-on_object_end(error_code&)
+on_object_end(
+    std::size_t,
+    error_code&)
 {
     BOOST_ASSERT(
         lev_.st == state::obj);
     auto uo = pop_object();
     rs_.subtract(lev_.align);
     pop(lev_);
-    restore_state(lev_.ss);
     emplace(std::move(uo));
 }
 
@@ -409,7 +408,6 @@ on_array_begin(error_code&)
         sizeof(level) +
         sizeof(value) +
         alignof(value) - 1);
-    lev_.ss = save_state();
     push(lev_);
     lev_.align =
         detail::align_to<value>(rs_);
@@ -420,14 +418,15 @@ on_array_begin(error_code&)
 
 void
 parser::
-on_array_end(error_code&)
+on_array_end(
+    std::size_t,
+    error_code&)
 {
     BOOST_ASSERT(
         lev_.st == state::arr);
     auto ua = pop_array();
     rs_.subtract(lev_.align);
     pop(lev_);
-    restore_state(lev_.ss);
     emplace(std::move(ua));
 }
 
