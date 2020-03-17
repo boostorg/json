@@ -37,11 +37,15 @@ if(${CMAKE_VERSION} VERSION_GREATER 3.7.2)
     source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX "" FILES ${BOOST_JSON_SOURCES})
 endif()
 
+# TODO: For Boost superproject, do we want to support header-only mode?
+#       Then, this needs to read `add_library(boost_json INTERFACE)`
+#       and related settings need to be INTERFACE-ed as well.
 add_library(boost_json ${BOOST_JSON_HEADERS} ${BOOST_JSON_SOURCES})
 add_library(Boost::json ALIAS boost_json)
 
 target_compile_features(boost_json PUBLIC cxx_constexpr)
 
+# TODO: For Boost superproject, this may need to be INTERFACE setting
 target_include_directories(boost_json PUBLIC include)
 
 target_compile_definitions(boost_json PUBLIC BOOST_JSON_NO_LIB=1)
@@ -62,7 +66,6 @@ if(BOOST_JSON_STANDALONE)
     #
     target_compile_features(boost_json PUBLIC cxx_std_17)
     target_compile_definitions(boost_json PUBLIC BOOST_JSON_STANDALONE)
-    add_subdirectory(example)
 elseif(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     #
     # Building as root project, out of Boost superproject tree, with Boost as dependency.
@@ -80,15 +83,12 @@ elseif(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
         target_include_directories(boost_json PUBLIC ${BOOST_ROOT})
         target_link_directories(boost_json PUBLIC ${BOOST_ROOT}/stage/lib)
     endif()
-
-    add_subdirectory(bench)
-    add_subdirectory(example)
-    add_subdirectory(test)
-
 elseif(BOOST_SUPERPROJECT_VERSION)
     #
     # Building as part of Boost superproject tree, with Boost as dependency.
     #
+    # TODO: This CMake support for Boost.Json is currently experimental.
+    #       This needs to be reviewed, tested
     target_link_libraries(boost_json
         PUBLIC
             Boost::assert
@@ -98,6 +98,9 @@ elseif(BOOST_SUPERPROJECT_VERSION)
             Boost::system
             Boost::utility
     )
+
+    include(BoostInstall)
+    boost_install(TARGETS boost_json HEADER_DIRECTORY include/)
 else()
     #
     # Out-of-tree, non-standalone build
@@ -107,11 +110,13 @@ else()
         PUBLIC
             Boost::system
     )
+endif()
 
-    if (BUILD_TESTING)
-        add_subdirectory(bench)
-        add_subdirectory(example)
-        add_subdirectory(test)
-    endif()
+if (BUILD_TESTING)
+    add_subdirectory(test)
+endif()
 
+if (BUILD_TESTING AND NOT BOOST_SUPERPROJECT_VERSION)
+    add_subdirectory(bench)
+    add_subdirectory(example)
 endif()
