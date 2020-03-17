@@ -1,0 +1,83 @@
+##############################################################################
+# GitHub Actions Workflow for Boost.Json
+#
+# Copyright (c) 2020 Mateusz Loskot <mateusz@loskot.net>
+#
+# Use, modification and distribution is subject to the Boost Software License,
+# Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+##############################################################################
+name: cmake-with-boost-stage
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up environment
+        id: setenv
+        run: |
+          if [[ "$GITHUB_REF" == *master ]]; then
+            echo "::set-env name=BOOST_BRANCH::master"
+          else
+            echo "::set-env name=BOOST_BRANCH::develop"
+          fi
+          echo "::set-env name=BOOST_SELF::$(basename $GITHUB_WORKSPACE)"
+          echo "::set-env name=BOOST_ROOT::$GITHUB_WORKSPACE/boost-root"
+          echo "::set-output name=boost_self::$(basename $GITHUB_WORKSPACE)"
+          echo "::set-output name=boost_root::$GITHUB_WORKSPACE/boost-root"
+
+      - name: Uninstall Boost
+        run: |
+          sudo apt-get remove -y -q --purge libboost-all-dev libboost-doc libboost-tools-dev 
+          sudo apt-get autoremove -y -q
+          sudo apt-get autoclean -y -q
+
+      - name: Clone Boost
+        run: |
+          git clone -b $BOOST_BRANCH --depth 1 https://github.com/boostorg/boost.git $BOOST_ROOT
+          cd $BOOST_ROOT
+          git submodule update -q --init libs/headers
+          git submodule update -q --init tools/boost_install
+          git submodule update -q --init tools/boostdep
+          git submodule update -q --init tools/build
+
+      - uses: actions/checkout@v2
+        with:
+          path: ${{ steps.setenv.outputs.boost_root }}/libs/${{ steps.setenv.outputs.boost_self }}
+
+      - name: Checkout submodules
+        shell: bash
+        run: |
+          cd "$BOOST_ROOT/libs/$BOOST_SELF"
+          auth_header="$(git config --local --get http.https://github.com/.extraheader)"
+          git submodule sync --recursive
+          git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+
+      - name: Run tools/boostdep/depinst/depinst.py
+        run: |
+          cd $BOOST_ROOT
+          python tools/boostdep/depinst/depinst.py --include bench --include benchmark --include example --include examples --include tools $BOOST_SELF
+
+      - name: Bootstrap Boost
+        run: |
+          cd $BOOST_ROOT
+          ./bootstrap.sh
+          ./b2 headers
+          ./b2 variant=release --no-cmake-config --with-system stage
+
+      - name: CMake
+        run: |
+          cd "$BOOST_ROOT/libs/$BOOST_SELF"
+          cmake -B "$GITHUB_WORKSPACE/build" -DCMAKE_VERBOSE_MAKEFILE=ON
+      
+      - name: Build
+        run: |
+          export VER
+          cmake --build "$GITHUB_WORKSPACE/build" --config Release
+
+      - name: Test
+        run: |
+          cd "$GITHUB_WORKSPACE/build"
+          ctest --build-config Release --output-on-failure

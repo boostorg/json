@@ -1,0 +1,61 @@
+##############################################################################
+# GitHub Actions Workflow for Boost.Json
+#
+# Copyright (c) 2020 Mateusz Loskot <mateusz@loskot.net>
+#
+# Use, modification and distribution is subject to the Boost Software License,
+# Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+##############################################################################
+name: cmake-find-boost-install
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Checkout submodules
+        shell: bash
+        run: |
+          auth_header="$(git config --local --get http.https://github.com/.extraheader)"
+          git submodule sync --recursive
+          git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+ 
+      - name: Uninstall Boost
+        run: |
+          sudo apt-get remove -y -q --purge libboost-all-dev libboost-doc libboost-tools-dev 
+          sudo apt-get autoremove -y -q
+          sudo apt-get autoclean -y -q
+
+      - name: Install Boost
+        run: |
+          git clone -b master --depth 1 https://github.com/boostorg/boost.git "$GITHUB_WORKSPACE/boost-root"
+          cd "$GITHUB_WORKSPACE/boost-root"
+          git submodule update -q --init libs/headers
+          git submodule update -q --init libs/system
+          git submodule update -q --init libs/utility
+          git submodule update -q --init tools/boost_install
+          git submodule update -q --init tools/boostdep
+          git submodule update -q --init tools/build
+          python tools/boostdep/depinst/depinst.py system
+          python tools/boostdep/depinst/depinst.py utility
+          ./bootstrap.sh
+          sudo ./b2 install variant=release --with-system
+
+      - name: CMake
+        run: |
+          cmake -B "$GITHUB_WORKSPACE/build" -DCMAKE_VERBOSE_MAKEFILE=ON -DBOOST_JSON_FIND_BOOST=ON
+      
+      - name: Build
+        run: |
+          cmake --build "$GITHUB_WORKSPACE/build" --config Release
+
+      - name: Test
+        run: |
+          cd "$GITHUB_WORKSPACE/build"
+          ctest --build-config Release --output-on-failure
+
+      
