@@ -46,16 +46,13 @@ jobs:
           sudo ./b2 install variant=release --with-system
 
       - name: CMake
-        run: |
-          cmake -B "$GITHUB_WORKSPACE/build" -DCMAKE_VERBOSE_MAKEFILE=ON -DBOOST_JSON_FIND_BOOST=ON
+        run: cmake -B _build -DCMAKE_VERBOSE_MAKEFILE=ON -DBOOST_JSON_FIND_BOOST=ON
       
       - name: Build
-        run: |
-          cmake --build "$GITHUB_WORKSPACE/build" --config Release
+        run: cmake --build _build --config Release
 
       - name: Test
-        run: |
-          cd "$GITHUB_WORKSPACE/build"
-          ctest --build-config Release --output-on-failure
+        working-directory: _build
+        run: ctest --build-config Release --output-on-failure
 
       
