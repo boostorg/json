@@ -31,14 +31,11 @@ jobs:
           git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
 
       - name: CMake
-        run: |
-          cmake -B "$GITHUB_WORKSPACE/build" -DCMAKE_VERBOSE_MAKEFILE=ON -DBOOST_JSON_STANDALONE=ON
+        run: cmake -B _build -DCMAKE_VERBOSE_MAKEFILE=ON  -DBOOST_JSON_STANDALONE=ON
       
       - name: Build
-        run: |
-          cmake --build "$GITHUB_WORKSPACE/build" --config Release
+        run: cmake --build _build --config Release
 
       - name: Test
-        run: |
-          cd "$GITHUB_WORKSPACE/build"
-          ctest --build-config Release --output-on-failure
+        working-directory: _build
+        run: ctest --build-config Release --output-on-failure
