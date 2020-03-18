@@ -16,7 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up environment
-        id: setenv
         run: |
           if [[ "$GITHUB_REF" == *master ]]; then
             echo "::set-env name=BOOST_BRANCH::master"
