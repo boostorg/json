@@ -8,11 +8,24 @@
 #
 
 file(GLOB_RECURSE BOOST_JSON_TESTS_FILES CONFIGURE_DEPENDS Jamfile *.cpp *.hpp)
+
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX "" FILES ${BOOST_JSON_TESTS_FILES})
-
 add_executable(tests ${BOOST_JSON_TESTS_FILES})
-
 target_include_directories(tests PRIVATE .)
 target_link_libraries(tests PRIVATE boost_json)
-
 add_test(NAME json-tests COMMAND tests)
+
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX "" FILES limits.cpp main.cpp)
+add_executable(limits limits.cpp main.cpp)
+target_include_directories(limits PUBLIC ${BOOST_ROOT})
+target_include_directories(limits PRIVATE .)
+add_test(NAME json-limits COMMAND limits)
+target_compile_definitions(limits PUBLIC
+    BOOST_JSON_HEADER_ONLY=1
+    BOOST_JSON_DYN_LINK=1
+    BOOST_JSON_MAX_STRING_SIZE=1000
+    BOOST_JSON_MAX_OBJECT_SIZE=30
+    BOOST_JSON_MAX_ARRAY_SIZE=100
+    BOOST_JSON_MAX_STACK_SIZE=1024
+    BOOST_JSON_PARSER_BUFFER_SIZE=256
+    )
