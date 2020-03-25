@@ -112,7 +112,8 @@ public:
     void
     clip(std::size_t n)
     {
-        if(remain() > n)
+        if(static_cast<std::size_t>(
+            src_.end_ - p_) > n)
             end_ = p_ + n;
         else
             end_ = src_.end_;
