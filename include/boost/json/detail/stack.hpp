@@ -11,6 +11,7 @@
 #define BOOST_JSON_DETAIL_STACK_HPP
 
 #include <boost/json/config.hpp>
+#include <boost/json/storage_ptr.hpp>
 #include <cstring>
 
 namespace boost {
@@ -19,58 +20,75 @@ namespace detail {
 
 class stack
 {
-    char buf_[1024];
-    char* top_;
+    storage_ptr sp_;
+    std::size_t cap_ = 0;
+    std::size_t size_ = 0;
+    char* buf_ = nullptr;
 
 public:
-    stack() noexcept
-        : top_(buf_)
-    {
-    }
+    BOOST_JSON_DECL
+    ~stack();
 
     bool
     empty() const noexcept
     {
-        return top_ == buf_;
+        return size_ == 0;
     }
 
     void
     clear() noexcept
     {
-        top_ = buf_;
+        size_ = 0;
     }
+
+    BOOST_JSON_DECL
+    void
+    reserve(std::size_t n);
 
     template<class T>
     void
     push(T const& t)
     {
-        auto const n = sizeof(t);
-        std::memcpy(top_, &t, n);
-        top_ += n;
+        auto const n = sizeof(T);
+        // If this assert goes off, it
+        // means the calling code did not
+        // reserve enough to prevent a
+        // reallocation.
+        BOOST_ASSERT(cap_ >= size_ + n);
+        reserve(size_ + n);
+        std::memcpy(
+            buf_ + size_, &t, n);
+        size_ += n;
     }
 
     template<class T>
     void
     peek(T& t)
     {
-        auto const n = sizeof(t);
-        BOOST_ASSERT(top_ >= buf_ + n);
-        std::memcpy(&t, top_ - n, n);
+        auto const n = sizeof(T);
+        BOOST_ASSERT(size_ >= n);
+        std::memcpy(&t,
+            buf_ + size_ - n, n);
     }
 
     template<class T>
     void
     pop(T& t)
     {
-        auto const n = sizeof(t);
-        BOOST_ASSERT(top_ >= buf_ + n);
-        top_ -= n;
-        std::memcpy(&t, top_, n);
+        auto const n = sizeof(T);
+        BOOST_ASSERT(size_ >= n);
+        size_ -= n;
+        std::memcpy(
+            &t, buf_ + size_, n);
     }
 };
 
 } // detail
 } // json
 } // boost
+
+#ifdef BOOST_JSON_HEADER_ONLY
+#include <boost/json/detail/impl/stack.ipp>
+#endif
 
 #endif

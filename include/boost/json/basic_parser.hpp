@@ -14,7 +14,6 @@
 #include <boost/json/error.hpp>
 #include <boost/json/kind.hpp>
 #include <boost/json/detail/stack.hpp>
-#include <boost/json/detail/static_stack.hpp>
 #include <boost/json/detail/stream.hpp>
 #include <string>
 #include <vector>
@@ -73,6 +72,7 @@ class basic_parser
 
     inline static bool is_control(char c) noexcept;
     inline static char hex_digit(char c) noexcept;
+    inline void reserve();
     inline void suspend(state st);
     inline void suspend(state st, std::size_t n);
     inline void suspend(state st, number const& num);

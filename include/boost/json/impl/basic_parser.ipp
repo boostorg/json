@@ -116,8 +116,23 @@ hex_digit(char c) noexcept
 
 void
 basic_parser::
+reserve()
+{
+    // Reserve the largest stack we need,
+    // to avoid reallocation during suspend.
+    auto const n =
+        1 +
+        (1 + sizeof(std::size_t)) * depth_ +
+        1
+        ;
+    st_.reserve(n);
+}
+
+void
+basic_parser::
 suspend(state st)
 {
+    reserve();
     st_.push(st);
 }
 
@@ -125,6 +140,7 @@ void
 basic_parser::
 suspend(state st, std::size_t n)
 {
+    reserve();
     st_.push(n);
     st_.push(st);
 }
@@ -133,6 +149,7 @@ void
 basic_parser::
 suspend(state st, number const& num)
 {
+    reserve();
     num_ = num;
     st_.push(st);
 }

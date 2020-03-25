@@ -84,7 +84,7 @@ public:
     }
 
     void
-    skip(int n) noexcept
+    skip(std::size_t n) noexcept
     {
         BOOST_ASSERT(n <= remain());
         p_ += n;
