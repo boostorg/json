@@ -1576,6 +1576,37 @@ parse_number(const_stream& cs0)
         num.neg = false;
     }
 
+    // fast path
+
+    if( cs.remain() >= 16 + 1 + 16 + 1 + 1 + 16 ) // digits . digits e + digits
+    {
+        if( *cs == '0' ) // 0. floating point
+        {
+            // TODO optimize this
+            goto do_num1;
+        }
+
+        std::size_t n = detail::count_digits( cs.data() );
+
+        if( n == 0 )
+        {
+            ec_ = error::syntax; // error::digit_expected?
+            return;
+        }
+
+        uint64_t r = detail::parse_unsigned( 0, cs.data(), n );
+        cs.skip( n );
+
+        num.mant = r;
+
+        if( n == 16 )
+        {
+            goto do_num2;
+        }
+
+        goto do_num6; // TODO optimize this
+    }
+
     //----------------------------------
     //
     // DIGIT

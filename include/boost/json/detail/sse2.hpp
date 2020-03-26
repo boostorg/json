@@ -24,21 +24,6 @@ namespace boost {
 namespace json {
 namespace detail {
 
-struct parse_unsigned_result
-{
-    uint64_t m;
-    int n;
-};
-
-inline
-bool
-operator==(
-    parse_unsigned_result const& lhs,
-    parse_unsigned_result const& rhs) noexcept
-{
-    return lhs.m == rhs.m && lhs.n == rhs.n;
-}
-
 #ifdef BOOST_JSON_USE_SSE2
 
 inline
@@ -92,9 +77,7 @@ count_unescaped(
 }
 
 // assumes p..p+15 are valid
-inline
-parse_unsigned_result
-parse_unsigned( uint64_t r, char const* p ) noexcept
+inline std::size_t count_digits( char const* p ) noexcept
 {
     __m128i const q1 = _mm_set1_epi8( '0' );
     __m128i const q2 = _mm_set1_epi8( '9' );
@@ -107,7 +90,7 @@ parse_unsigned( uint64_t r, char const* p ) noexcept
 
     int m = _mm_movemask_epi8( v1 );
 
-    int n;
+    std::size_t n;
 
     if( m == 0 )
     {
@@ -124,12 +107,7 @@ parse_unsigned( uint64_t r, char const* p ) noexcept
 #endif
     }
 
-    for( int i = 0; i < n; ++i )
-    {
-        r = r * 10 + p[ i ] - '0';
-    }
-
-    return { r, n };
+    return n;
 }
 
 #else
@@ -143,22 +121,49 @@ count_unescaped(
     return 0;
 }
 
-inline
-parse_unsigned_result
-parse_unsigned( uint64_t r, char const* p ) noexcept
+// assumes p..p+15 are valid
+inline std::size_t count_digits( char const* p ) noexcept
 {
-    int n = 0;
-    for(; n< 16; ++n )
+    std::size_t n = 0;
+
+	for( ; n < 16; ++n )
     {
         unsigned char const d = *p++ - '0';
-        if(d > 9)
-            break;
-        r = r * 10 + d;
+        if(d > 9) break;
     }
-    return { r, n };
+
+	return n;
 }
 
 #endif
+
+inline uint64_t parse_unsigned( uint64_t r, char const * p, std::size_t n ) noexcept
+{
+    while( n >= 4 )
+    {
+        uint32_t v;
+        memcpy( &v, p, 4 );
+
+        unsigned w0 = v & 0xFF;
+        unsigned w1 = (v >> 8) & 0xFF;
+        unsigned w2 = (v >> 16) & 0xFF;
+        unsigned w3 = (v >> 24);
+
+        r = (((r * 10 + w0) * 10 + w1) * 10 + w2) * 10 + w3;
+
+        p += 4;
+        n -= 4;
+    }
+
+    while( n > 0 )
+    {
+        r = r * 10 + *p - '0';
+        ++p;
+        --n;
+    }
+
+    return r;
+}
 
 } // detail
 } // json
