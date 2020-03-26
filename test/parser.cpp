@@ -14,6 +14,7 @@
 #include <boost/json/serializer.hpp>
 
 #include <sstream>
+#include <iostream>
 
 #include "parse-vectors.hpp"
 #include "test.hpp"
@@ -327,18 +328,23 @@ public:
         char* str_end;
         double const need =
             std::strtod(s.c_str(), &str_end);
-        BOOST_TEST(str_end == &s.back() + 1);
+        // BOOST_TEST(str_end == &s.back() + 1);
         double const got = f(s);
         auto same = got == need;
         auto close = same ?
             true : within_1ulp(got, need);
-        BOOST_TEST(close);
+
+        if( !BOOST_TEST(close) )
+        {
+            std::cerr << "Failure on '" << s << "': " << got << " != " << need << "\n";
+        }
     }
 
     void
     fc(std::string const& s)
     {
         fc(s, f_boost{});
+        fc(s + std::string( 64, ' ' ), f_boost{});
     }
 
     void

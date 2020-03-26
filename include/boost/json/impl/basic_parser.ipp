@@ -1578,33 +1578,75 @@ parse_number(const_stream& cs0)
 
     // fast path
 
-    if( cs.remain() >= 16 + 1 + 16 + 1 + 1 + 16 ) // digits . digits e + digits
+    if( cs.remain() >= 16 + 1 + 16 ) // digits . digits
     {
+        std::size_t n1 = 0;
+
         if( *cs == '0' ) // 0. floating point
         {
-            // TODO optimize this
-            goto do_num1;
+            num.mant = 0;
+            ++cs;
+
+            goto do_num_fast1;
         }
 
-        std::size_t n = detail::count_digits( cs.data() );
+        n1 = detail::count_digits( cs.data() );
 
-        if( n == 0 )
+        if( n1 == 0 )
         {
             ec_ = error::syntax; // error::digit_expected?
             return;
         }
 
-        uint64_t r = detail::parse_unsigned( 0, cs.data(), n );
-        cs.skip( n );
+        num.mant = detail::parse_unsigned( 0, cs.data(), n1 );
 
-        num.mant = r;
+        cs.skip( n1 );
 
-        if( n == 16 )
+        if( n1 == 16 )
         {
             goto do_num2;
         }
 
-        goto do_num6; // TODO optimize this
+        do_num_fast1:
+
+        if( *cs != '.' )
+        {
+            goto do_num6;
+        }
+
+        ++cs;
+
+        std::size_t n2 = detail::count_digits( cs.data() );
+
+        if( n2 == 0 )
+        {
+            ec_ = error::syntax; // error::digit_expected?
+            return;
+        }
+
+        if( n1 + n2 >= 19 ) // int64 overflow
+        {
+            goto do_num6;
+        }
+
+        num.mant = detail::parse_unsigned( num.mant, cs.data(), n2 );
+        num.bias -= n2;
+
+        cs.skip( n2 );
+
+        char ch = *cs;
+
+        if( (ch | 32) == 'e' )
+        {
+            ++cs;
+            goto do_exp1;
+        }
+        else if( ch >= '0' && ch <= '9' )
+        {
+            goto do_num8;
+        }
+
+        goto finish_dub;
     }
 
     //----------------------------------
