@@ -126,13 +126,13 @@ inline std::size_t count_digits( char const* p ) noexcept
 {
     std::size_t n = 0;
 
-	for( ; n < 16; ++n )
+    for( ; n < 16; ++n )
     {
         unsigned char const d = *p++ - '0';
         if(d > 9) break;
     }
 
-	return n;
+    return n;
 }
 
 #endif
@@ -143,6 +143,8 @@ inline uint64_t parse_unsigned( uint64_t r, char const * p, std::size_t n ) noex
     {
         uint32_t v;
         memcpy( &v, p, 4 );
+
+        v -= 0x30303030;
 
         unsigned w0 = v & 0xFF;
         unsigned w1 = (v >> 8) & 0xFF;
