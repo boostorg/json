@@ -791,6 +791,7 @@ function update()
         set[name] = mbs;
     }
 
+    benchmarks.innerHTML = "";
     Object.entries(tab).forEach(([title, charts]) =>
     {
         benchmarks.innerHTML +=

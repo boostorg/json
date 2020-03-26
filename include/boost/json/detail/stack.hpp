@@ -54,7 +54,7 @@ public:
         // means the calling code did not
         // reserve enough to prevent a
         // reallocation.
-        BOOST_ASSERT(cap_ >= size_ + n);
+        //BOOST_ASSERT(cap_ >= size_ + n);
         reserve(size_ + n);
         std::memcpy(
             buf_ + size_, &t, n);

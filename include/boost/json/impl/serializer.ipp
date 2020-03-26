@@ -20,92 +20,240 @@ namespace json {
 
 enum class serializer::state : char
 {
-    none,   // no value
-    val,    // initialize value
-    obj0,   // begin object
-    obj1,   // key
-    obj2,   // ':'
-    obj3,   // end object
-    arr0,   // begin array
-    arr1,   // array
-    arr2,   // end array
-    str1,   // '"'
-    str2,   // escaped string
-    str3,   // '"'
-    str4,   // literal (ctrl or utf16 escape)
-    lit,    // literal string ({number}, true, false, null)
-    done
+    nul1, nul2, nul3, nul4,
+    tru1, tru2, tru3, tru4,
+    fal1, fal2, fal3, fal4, fal5,
+    str1, str2, str3, str4, esc1,
+    utf1, utf2, utf3, utf4, utf5,
+    num,
+    arr1, arr2, arr3, arr4,
+    obj1, obj2, obj3, obj4, obj5, obj6
 };
 
 //----------------------------------------------------------
 
+bool
 serializer::
-node::
-node(state st_) noexcept
+suspend(state st)
 {
-    st = st_;
-}
-
-serializer::
-node::
-node(value const& jv) noexcept
-{
-    pjv = &jv;
-    st = state::val;
-}
-
-serializer::
-node::
-node(object const& o) noexcept
-{
-    obj.po = &o;
-    ::new(&obj.it) object::
-        const_iterator(o.begin());
-    st = state::obj0;
-}
-
-serializer::
-node::
-node(array const& a) noexcept
-{
-    arr.pa = &a;
-    ::new(&arr.it) array::
-        const_iterator(a.begin());
-    st = state::arr0;
-}
-
-//----------------------------------------------------------
-
-serializer::
-serializer() noexcept
-{
-    // ensure room for \uXXXX escape plus one
-    BOOST_STATIC_ASSERT(
-        sizeof(serializer::buf_) >= 7);
-
-    stack_.emplace(state::none);
-}
-
-void
-serializer::
-reset(value const& jv) noexcept
-{
-    stack_.clear();
-    stack_.emplace(state::done);
-    stack_.emplace(jv);
+    st_.push(st);
+    return false;
 }
 
 bool
 serializer::
-is_done() const noexcept
+suspend(
+    state st,
+    array::const_iterator it,
+    value const* jv)
 {
-    return stack_->st == state::done;
+    st_.push(jv);
+    st_.push(it);
+    st_.push(st);
+    return false;
 }
 
-std::size_t
+bool
 serializer::
-read(char* dest, std::size_t size)
+suspend(
+    state st,
+    object::const_iterator it,
+    value const* jv)
 {
+    st_.push(jv);
+    st_.push(it);
+    st_.push(st);
+    return false;
+}
+
+bool
+serializer::
+write_null(stream& ss0)
+{
+    local_stream ss(ss0);
+    if(BOOST_JSON_LIKELY(
+        st_.empty()))
+    {
+        if(BOOST_JSON_LIKELY(
+            ss.remain() >= 4))
+        {
+            ss.append("null", 4);
+            return true;
+        }
+    }
+    else
+    {
+        state st;
+        st_.pop(st);
+        switch(st)
+        {
+        default:
+        case state::nul1: goto do_nul1;
+        case state::nul2: goto do_nul2;
+        case state::nul3: goto do_nul3;
+        case state::nul4: goto do_nul4;
+        }
+    }
+do_nul1:
+    if(BOOST_JSON_LIKELY(ss))
+        ss.append('n');
+    else
+        return suspend(state::nul1);
+do_nul2:
+    if(BOOST_JSON_LIKELY(ss))
+        ss.append('u');
+    else
+        return suspend(state::nul2);
+do_nul3:
+    if(BOOST_JSON_LIKELY(ss))
+        ss.append('l');
+    else
+        return suspend(state::nul3);
+do_nul4:
+    if(BOOST_JSON_LIKELY(ss))
+        ss.append('l');
+    else
+        return suspend(state::nul4);
+    return true;
+}
+
+bool
+serializer::
+write_true(stream& ss0)
+{
+    local_stream ss(ss0);
+    if(BOOST_JSON_LIKELY(
+        st_.empty()))
+    {
+        if(BOOST_JSON_LIKELY(
+            ss.remain() >= 4))
+        {
+            ss.append("true", 4);
+            return true;
+        }
+    }
+    else
+    {
+        state st;
+        st_.pop(st);
+        switch(st)
+        {
+        default:
+        case state::tru1: goto do_tru1;
+        case state::tru2: goto do_tru2;
+        case state::tru3: goto do_tru3;
+        case state::tru4: goto do_tru4;
+        }
+    }
+do_tru1:
+    if(BOOST_JSON_LIKELY(ss))
+        ss.append('t');
+    else
+        return suspend(state::tru1);
+do_tru2:
+    if(BOOST_JSON_LIKELY(ss))
+        ss.append('r');
+    else
+        return suspend(state::tru2);
+do_tru3:
+    if(BOOST_JSON_LIKELY(ss))
+        ss.append('u');
+    else
+        return suspend(state::tru3);
+do_tru4:
+    if(BOOST_JSON_LIKELY(ss))
+        ss.append('e');
+    else
+        return suspend(state::tru4);
+    return true;
+}
+
+bool
+serializer::
+write_false(stream& ss0)
+{
+    local_stream ss(ss0);
+    if(BOOST_JSON_LIKELY(
+        st_.empty()))
+    {
+        if(BOOST_JSON_LIKELY(
+            ss.remain() >= 5))
+        {
+            ss.append("false", 5);
+            return true;
+        }
+    }
+    else
+    {
+        state st;
+        st_.pop(st);
+        switch(st)
+        {
+        default:
+        case state::fal1: goto do_fal1;
+        case state::fal2: goto do_fal2;
+        case state::fal3: goto do_fal3;
+        case state::fal4: goto do_fal4;
+        case state::fal5: goto do_fal5;
+        }
+    }
+do_fal1:
+    if(BOOST_JSON_LIKELY(ss))
+        ss.append('f');
+    else
+        return suspend(state::fal1);
+do_fal2:
+    if(BOOST_JSON_LIKELY(ss))
+        ss.append('a');
+    else
+        return suspend(state::fal2);
+do_fal3:
+    if(BOOST_JSON_LIKELY(ss))
+        ss.append('l');
+    else
+        return suspend(state::fal3);
+do_fal4:
+    if(BOOST_JSON_LIKELY(ss))
+        ss.append('s');
+    else
+        return suspend(state::fal4);
+do_fal5:
+    if(BOOST_JSON_LIKELY(ss))
+        ss.append('e');
+    else
+        return suspend(state::fal5);
+    return true;
+}
+
+bool
+serializer::
+write_string(stream& ss0)
+{
+    local_stream ss(ss0);
+    local_const_stream cs(cs0_);
+    if(BOOST_JSON_LIKELY(
+        st_.empty()))
+    {
+    }
+    else
+    {
+        state st;
+        st_.pop(st);
+        switch(st)
+        {
+        default:
+        case state::str1: goto do_str1;
+        case state::str2: goto do_str2;
+        case state::str3: goto do_str3;
+        case state::str4: goto do_str4;
+        case state::esc1: goto do_esc1;
+        case state::utf1: goto do_utf1;
+        case state::utf2: goto do_utf2;
+        case state::utf3: goto do_utf3;
+        case state::utf4: goto do_utf4;
+        case state::utf5: goto do_utf5;
+        }
+    }
     static constexpr char hex[] = "0123456789abcdef";
     static constexpr char esc[] =
         "uuuuuuuubtnufruuuuuuuuuuuuuuuuuu"
@@ -116,412 +264,482 @@ read(char* dest, std::size_t size)
         "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
         "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
         "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
-    auto const dist =
-        []( char const* first,
-            char const* last)
-        {
-            return static_cast<
-                std::size_t>(last - first);
-        };
-    auto const p0 = dest;
-    auto const p1 = dest + size;
-    auto p = p0;
-loop:
-    switch(stack_->st)
+
+    // opening quote
+do_str1:
+    if(BOOST_JSON_LIKELY(ss))
+        ss.append('\x22'); // '"'
+    else
+        return suspend(state::str1);
+
+    // fast loop,
+    // copy unescaped
+do_str2:
+    if(BOOST_JSON_LIKELY(ss))
     {
-    case state::none:
+        std::size_t n = cs.remain();
+        if(BOOST_JSON_LIKELY(n > 0))
+        {
+            if(ss.remain() > n)
+                n = detail::count_unescaped(
+                    cs.data(), n);
+            else
+                n = detail::count_unescaped(
+                    cs.data(), ss.remain());
+            if(n > 0)
+            {
+                ss.append(cs.data(), n);
+                cs.skip(n);
+                if(! ss)
+                    return suspend(state::str2);
+            }
+        }
+        else
+        {
+            ss.append('\x22'); // '"'
+            return true;
+        }
+    }
+    else
+    {
+        return suspend(state::str2);
+    }
+
+    // slow loop,
+    // handle escapes
+do_str3:
+    while(BOOST_JSON_LIKELY(ss))
+    {
+        if(BOOST_JSON_LIKELY(cs))
+        {
+            auto const ch = *cs;
+            auto const c = esc[static_cast<
+                unsigned char>(ch)];
+            ++cs;
+            if(! c)
+            {
+                ss.append(ch);
+            }
+            else if(c != 'u')
+            {
+                ss.append('\\');
+                if(BOOST_JSON_LIKELY(ss))
+                {
+                    ss.append(c);
+                }
+                else
+                {
+                    buf_[0] = c;
+                    return suspend(
+                        state::esc1);
+                }
+            }
+            else
+            {
+                if(BOOST_JSON_LIKELY(
+                    ss.remain() >= 6))
+                {
+                    ss.append("\\u00", 4);
+                    ss.append(hex[static_cast<
+                        unsigned char>(ch) >> 4]);
+                    ss.append(hex[static_cast<
+                        unsigned char>(ch) & 15]);
+                }
+                else
+                {
+                    ss.append('\\');
+                    buf_[0] = hex[static_cast<
+                        unsigned char>(ch) >> 4];
+                    buf_[1] = hex[static_cast<
+                        unsigned char>(ch) & 15];
+                    goto do_utf1;
+                }
+            }
+        }
+        else
+        {
+            ss.append('\x22'); // '"'
+            return true;
+        }
+    }
+    return suspend(state::str3);
+
+do_str4:
+    if(BOOST_JSON_LIKELY(ss))
+        ss.append('\x22'); // '"'
+    else
+        return suspend(state::str4);
+
+do_esc1:
+    if(BOOST_JSON_LIKELY(ss))
+        ss.append(buf_[0]);
+    else
+        return suspend(state::esc1);
+    goto do_str3;
+
+do_utf1:
+    if(BOOST_JSON_LIKELY(ss))
+        ss.append('u');
+    else
+        return suspend(state::utf1);
+do_utf2:
+    if(BOOST_JSON_LIKELY(ss))
+        ss.append('0');
+    else
+        return suspend(state::utf2);
+do_utf3:
+    if(BOOST_JSON_LIKELY(ss))
+        ss.append('0');
+    else
+        return suspend(state::utf3);
+do_utf4:
+    if(BOOST_JSON_LIKELY(ss))
+        ss.append(buf_[0]);
+    else
+        return suspend(state::utf4);
+do_utf5:
+    if(BOOST_JSON_LIKELY(ss))
+        ss.append(buf_[1]);
+    else
+        return suspend(state::utf5);
+    goto do_str3;
+}
+
+bool
+serializer::
+write_number(stream& ss0)
+{
+    local_stream ss(ss0);
+    if(BOOST_JSON_LIKELY(
+        st_.empty()))
+    {
+        switch(jv_->kind())
+        {
+        case kind::int64:
+            if(BOOST_JSON_LIKELY(
+                ss.remain() >=
+                    detail::max_number_chars))
+            {
+                ss.advance(detail::format_int64(
+                    ss.data(), jv_->get_int64()));
+                return true;
+            }
+            cs0_ = { buf_, detail::format_int64(
+                buf_, jv_->get_int64()) };
+            break;
+
+        case kind::uint64:
+            if(BOOST_JSON_LIKELY(
+                ss.remain() >=
+                    detail::max_number_chars))
+            {
+                ss.advance(detail::format_uint64(
+                    ss.data(), jv_->get_uint64()));
+                return true;
+            }
+            cs0_ = { buf_, detail::format_uint64(
+                buf_, jv_->get_uint64()) };
+            break;
+
+        case kind::double_:
+            if(BOOST_JSON_LIKELY(
+                ss.remain() >=
+                    detail::max_number_chars))
+            {
+                ss.advance(detail::format_double(
+                    ss.data(), jv_->get_double()));
+                return true;
+            }
+            cs0_ = { buf_, detail::format_double(
+                buf_, jv_->get_double()) };
+            break;
+        }
+    }
+    else
+    {
+        state st;
+        st_.pop(st);
+        BOOST_ASSERT(
+            st == state::num);
+    }
+    auto const n = ss.remain();
+    if(n < cs0_.remain())
+    {
+        ss.append(cs0_.data(), n);
+        cs0_.skip(n);
+        return suspend(state::num);
+    }
+    ss.append(
+        cs0_.data(), cs0_.remain());
+    return true;
+}
+
+bool
+serializer::
+write_array(stream& ss0)
+{
+    value const* jv;
+    array::const_iterator it;
+    array::const_iterator end;
+    local_stream ss(ss0);
+    if(BOOST_JSON_LIKELY(st_.empty()))
+    {
+        jv = jv_;
+        it = jv->get_array().begin();
+        end = jv->get_array().end();
+    }
+    else
+    {
+        state st;
+        st_.pop(st);
+        st_.pop(it);
+        st_.pop(jv);
+        end = jv->get_array().end();
+        switch(st)
+        {
+        case state::arr1: goto do_arr1;
+        case state::arr2: goto do_arr2;
+        case state::arr3: goto do_arr3;
+        case state::arr4: goto do_arr4;
+            break;
+        }
+    }
+do_arr1:
+    if(ss)
+        ss.append('[');
+    else
+        return suspend(
+            state::arr1, it, jv);
+    if(it == end)
+        goto do_arr4;
+    for(;;)
+    {
+do_arr2:
+        jv_ = &*it;
+        if(! write_value(ss))
+            return suspend(
+                state::arr2, it, jv);
+        ++it;
+        if(it == end)
+            break;
+do_arr3:
+        if(ss)
+            ss.append(',');
+        else
+            return suspend(
+                state::arr3, it, jv);
+    }
+do_arr4:
+    if(ss)
+        ss.append(']');
+    else
+        return suspend(
+            state::arr4, it, jv);
+    return true;
+}
+
+bool
+serializer::
+write_object(stream& ss0)
+{
+    value const* jv;
+    object::const_iterator it;
+    object::const_iterator end;
+    local_stream ss(ss0);
+    if(BOOST_JSON_LIKELY(st_.empty()))
+    {
+        jv = jv_;
+        it = jv->get_object().begin();
+        end = jv->get_object().end();
+    }
+    else
+    {
+        state st;
+        st_.pop(st);
+        st_.pop(it);
+        st_.pop(jv);
+        end = jv->get_object().end();
+        switch(st)
+        {
+        case state::obj1: goto do_obj1;
+        case state::obj2: goto do_obj2;
+        case state::obj3: goto do_obj3;
+        case state::obj4: goto do_obj4;
+        case state::obj5: goto do_obj5;
+        case state::obj6: goto do_obj6;
+            break;
+        }
+    }
+do_obj1:
+    if(ss)
+        ss.append('{');
+    else
+        return suspend(
+            state::obj1, it, jv);
+    if(it == end)
+        goto do_obj6;
+    for(;;)
+    {
+        cs0_ = {
+            it->key().data(),
+            it->key().size() };
+do_obj2:
+        if(! write_string(ss))
+            return suspend(
+                state::obj2, it, jv);
+do_obj3:
+        if(ss)
+            ss.append(':');
+        else
+            return suspend(
+                state::obj3, it, jv);
+do_obj4:
+        jv_ = &it->value();
+        if(! write_value(ss))
+            return suspend(
+                state::obj4, it, jv);
+        ++it;
+        if(it == end)
+            break;
+do_obj5:
+        if(ss)
+            ss.append(',');
+        else
+            return suspend(
+                state::obj5, it, jv);
+    }
+do_obj6:
+    if(ss)
+        ss.append('}');
+    else
+        return suspend(
+            state::obj6, it, jv);
+    return true;
+}
+
+bool
+serializer::
+write_value(stream& ss)
+{
+    if(BOOST_JSON_LIKELY(st_.empty()))
+    {
+        auto const& jv(*jv_);
+        switch(jv.kind())
+        {
+        default:
+        case kind::object:
+            return write_object(ss);
+
+        case kind::array:
+            return write_array(ss);
+
+        case kind::string:
+        {
+            auto const& js = jv.get_string();
+            cs0_ = { js.data(), js.size() };
+            return write_string(ss);
+        }
+
+        case kind::int64:
+        case kind::uint64:
+        case kind::double_:
+            return write_number(ss);
+
+        case kind::bool_:
+            if(jv.get_bool())
+                return write_true(ss);
+            return write_false(ss);
+
+        case kind::null:
+            return write_null(ss);
+        }
+    }
+    else
+    {
+        state st;
+        st_.peek(st);
+        switch(st)
+        {
+        default:
+        case state::nul1: case state::nul2:
+        case state::nul3: case state::nul4:
+            return write_null(ss);
+
+        case state::tru1: case state::tru2:
+        case state::tru3: case state::tru4:
+            return write_true(ss);
+
+        case state::fal1: case state::fal2:
+        case state::fal3: case state::fal4:
+        case state::fal5:
+            return write_false(ss);
+
+        case state::str1: case state::str2:
+        case state::str3: case state::str4:
+        case state::esc1:
+        case state::utf1: case state::utf2:
+        case state::utf3: case state::utf4:
+        case state::utf5:
+            return write_string(ss);
+
+        case state::num:
+            return write_number(ss);
+
+        case state::arr1: case state::arr2:
+        case state::arr3: case state::arr4:
+            return write_array(ss);
+
+        case state::obj1: case state::obj2:
+        case state::obj3: case state::obj4:
+        case state::obj5: case state::obj6:
+            return write_object(ss);
+        }
+    }
+}
+
+std::size_t
+serializer::
+write_some(
+    char* dest, std::size_t size)
+{
+    if(! jv_)
         BOOST_THROW_EXCEPTION(
             std::logic_error(
                 "no value in serializer"));
-
-    case state::val:
+    stream ss(dest, size);
+    write_value(ss);
+    if(st_.empty())
     {
-loop_init:
-        auto const& jv =
-            *stack_->pjv;
-        switch(jv.kind())
-        {
-        case kind::object:
-            stack_.pop();
-            stack_.emplace(
-                *jv.if_object());
-            goto loop;
-
-        case kind::array:
-            stack_.pop();
-            stack_.emplace(
-                *jv.if_array());
-            goto loop;
-
-        case kind::string:
-            str_ = *jv.if_string();
-            stack_->st = state::str1;
-            goto loop_str;
-    
-        case kind::int64:
-            if(p1 - p >= detail::max_number_chars)
-            {
-                p += detail::format_int64(
-                    p,  *jv.if_int64());
-                stack_.pop();
-                goto loop;
-            }
-            str_ = { buf_, detail::format_int64(
-                buf_, *jv.if_int64()) };
-            stack_->st = state::lit;
-            goto loop;
-
-        case kind::uint64:
-            if(p1 - p >= detail::max_number_chars)
-            {
-                p += detail::format_uint64(
-                    p,  *jv.if_uint64());
-                stack_.pop();
-                goto loop;
-            }
-            str_ = { buf_, detail::format_uint64(
-                buf_, *jv.if_uint64()) };
-            stack_->st = state::lit;
-            goto loop;
-
-        case kind::double_:
-            if(p1 - p >= detail::max_number_chars)
-            {
-                p += detail::format_double(
-                    p,  *jv.if_double());
-                stack_.pop();
-                goto loop;
-            }
-            str_ = { buf_, detail::format_double(
-                buf_, *jv.if_double()) };
-            stack_->st = state::lit;
-            goto loop;
-
-        case kind::bool_:
-            if(*jv.if_bool())
-            {
-                if(p1 - p >= 4)
-                {
-                    *p++ = 't';
-                    *p++ = 'r';
-                    *p++ = 'u';
-                    *p++ = 'e';
-                    stack_.pop();
-                    goto loop;
-                }
-                str_ = {"true", 4U};
-                stack_->st = state::lit;
-                goto loop;
-            }
-            if(p1 - p >= 5)
-            {
-                *p++ = 'f';
-                *p++ = 'a';
-                *p++ = 'l';
-                *p++ = 's';
-                *p++ = 'e';
-                stack_.pop();
-                goto loop;
-            }
-            str_ = {"false", 5U};
-            stack_->st = state::lit;
-            goto loop;
-
-        default: // silences a warning
-        case kind::null:
-            if(p1 - p >= 4)
-            {
-                *p++ = 'n';
-                *p++ = 'u';
-                *p++ = 'l';
-                *p++ = 'l';
-                stack_.pop();
-                goto loop;
-            }
-            str_ = {"null", 4U};
-            stack_->st = state::lit;
-            goto loop;
-        }
+        done_ = true;
+        jv_ = nullptr;
     }
+    return ss.used(dest);
+}
 
-    case state::obj0:
-    {
-        if(p >= p1)
-            goto finish;
-        *p++ = '{';
-        auto& e = stack_->obj;
-        if(e.it == e.po->end())
-        {
-            stack_->st =
-                state::obj3;
-            goto loop;
-        }
-        stack_->st =
-            state::obj1;
-        str_ = e.it->key();
-        stack_.emplace(
-            state::str1);
-        goto loop_str;
-    }
+//----------------------------------------------------------
 
-    // key done
-    case state::obj1:
-    {
-        if(p >= p1)
-            goto finish;
-        *p++ = ':';
-        auto& e = stack_->obj;
-        stack_->st =
-            state::obj2;
-        stack_.emplace(
-            e.it->value());
-        goto loop_init;
-    }
+serializer::
+serializer() noexcept
+{
+    // ensure room for \uXXXX escape plus one
+    BOOST_STATIC_ASSERT(
+        sizeof(serializer::buf_) >= 7);
+}
 
-    case state::obj2:
-    {
-        if(p >= p1)
-            goto finish;
-        auto& e = stack_->obj;
-        ++e.it;
-        if(e.it == e.po->end())
-        {
-            *p++ = '}';
-            stack_.pop();
-            goto loop;
-        }
-        *p++ = ',';
-        stack_->st =
-            state::obj1;
-        str_ = e.it->key();
-        stack_.emplace(
-            state::str1);
-        goto loop_str;
-    }
+void
+serializer::
+reset(value const& jv) noexcept
+{
+    jv_ = &jv;
+    st_.clear();
+    done_ = false;
+}
 
-    case state::obj3:
-        if(p >= p1)
-            goto finish;
-        *p++ = '}';
-        stack_.pop();
-        goto loop;
-
-    case state::arr0:
-    {
-        if(p >= p1)
-            goto finish;
-        *p++ = '[';
-        auto& e = stack_->arr;
-        if(e.it == e.pa->end())
-        {
-            stack_->st =
-                state::arr2;
-            goto loop;
-        }
-        stack_->st =
-            state::arr1;
-        stack_.emplace(*e.it);
-        goto loop_init;
-    }
-
-    case state::arr1:
-    {
-        if(p >= p1)
-            goto finish;
-        auto& e = stack_->arr;
-        ++e.it;
-        if(e.it == e.pa->end())
-        {
-            *p++ = ']';
-            stack_.pop();
-            goto loop;
-        }
-        *p++ = ',';
-        auto const& jv = *e.it;
-        stack_.emplace(jv);
-        goto loop_init;
-    }
-
-    case state::arr2:
-        if(p >= p1)
-            goto finish;
-        *p++ = ']';
-        stack_.pop();
-        goto loop;
-
-    case state::str1:
-loop_str:
-        if(p >= p1)
-            goto finish;
-        *p++ = '\"';
-        stack_->st = state::str2;
-        BOOST_FALLTHROUGH;
-
-    case state::str2:
-    {
-        auto s = str_.data();
-        auto const s1 =
-            s + str_.size();
-        while(s < s1)
-        {
-            char const* sn;
-            auto const d = dist(p, p1);
-            if(d >= 6 * dist(s, s1))
-                sn = s1;
-            // VFALCO We can raise this 6 in multiples,
-            //        to balance the additional fixed
-            //        overhead of additional outer loops
-            //        when the amount of remaining output
-            //        is small.
-            //
-            else if(d >= 6)
-                sn = s + d / 6;
-            else
-                break;
-
-            // fast loop
-            char const* ss = s;
-            s += detail::count_unescaped(s, sn - s);
-            while(s < sn)
-            {
-                auto const ch = *s++;
-                auto const c = esc[static_cast<
-                    unsigned char>(ch)];
-                if(! c)
-                    continue;
-                auto const n = (s - ss) - 1;
-                std::memcpy(p, ss, n);
-                ss = s;
-                p += n;
-                *p++ = '\\';
-                *p++ = c;
-                if(c != 'u')
-                    continue;
-                *p++ = '0';
-                *p++ = '0';
-                *p++ = hex[static_cast<
-                    unsigned char>(ch) >> 4];
-                *p++ = hex[static_cast<
-                    unsigned char>(ch) & 15];
-            }
-            auto const n = s - ss;
-            std::memcpy(p, ss, n);
-            p += n;
-        }
-        while(p < p1 && s < s1)
-        {
-            auto const ch = *s++;
-            auto const c = esc[static_cast<
-                unsigned char>(ch)];
-            if(! c)
-            {
-                *p++ = ch;
-                continue;
-            }
-            if(c != 'u')
-            {
-                if(p1 - p >= 2)
-                {
-                    *p++ = '\\';
-                    *p++ = c;
-                    continue;
-                }
-                buf_[1] = '\\';
-                buf_[0] = c;
-                nbuf_ = 2;
-                str_ = str_.substr(
-                    s - str_.data());
-                stack_->st =
-                    state::str4;
-                goto loop;
-            }
-        #if 0
-            // VFALCO The current tuning makes this
-            //        condition impossible to satisfy,
-            //        see note above.
-            //
-            if(p1 - p >= 6)
-            {
-                *p++ = '\\';
-                *p++ = 'u';
-                *p++ = '0';
-                *p++ = '0';
-                *p++ = hex[static_cast<
-                    unsigned char>(ch) >> 4];
-                *p++ = hex[static_cast<
-                    unsigned char>(ch) & 15];
-                continue;
-            }
-        #else
-            BOOST_ASSERT(p1 - p < 6);
-        #endif
-
-            buf_[5] = '\\';
-            buf_[4] = 'u';
-            buf_[3] = '0';
-            buf_[2] = '0';
-            buf_[1] = hex[static_cast<
-                unsigned char>(ch) >> 4];
-            buf_[0] = hex[static_cast<
-                unsigned char>(ch) & 15];
-            nbuf_ = 6;
-            str_ = str_.substr(
-                s - str_.data());
-            stack_->st =
-                state::str4;
-            goto loop;
-        }
-        if(s < s1)
-        {
-            str_ = str_.substr(
-                s - str_.data());
-            goto finish;
-        }
-        stack_->st =
-            state::str3;
-        BOOST_FALLTHROUGH;
-    }
-
-    case state::str3:
-        if(p >= p1)
-            goto finish;
-        *p++ = '\"';
-        stack_.pop();
-        goto loop;
-
-    case state::str4:
-        while(p < p1)
-        {
-            *p++ = buf_[--nbuf_];
-            if(! nbuf_)
-            {
-                stack_->st =
-                    state::str2;
-                goto loop;
-            }
-        }
-        goto finish;
-
-    case state::lit:
-    {
-        auto const n =
-            str_.copy(p, p1 - p);
-        p += n;
-        if(n == str_.size())
-        {
-            stack_.pop();
-            goto loop;
-        }
-        str_ = str_.substr(n);
-        BOOST_ASSERT(p >= p1);
-        goto finish;
-    }
-
-    case state::done:
-        goto finish;
-    }
-finish:
-    return p - p0;
+std::size_t
+serializer::
+read(char* dest, std::size_t size)
+{
+    return write_some(dest, size);
 }
 
 //----------------------------------------------------------

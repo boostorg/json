@@ -13,7 +13,9 @@
 #include <boost/json/config.hpp>
 #include <boost/json/value.hpp>
 #include <boost/json/detail/format.hpp>
+#include <boost/json/detail/stack.hpp>
 #include <boost/json/detail/static_stack.hpp>
+#include <boost/json/detail/stream.hpp>
 #include <iosfwd>
 
 namespace boost {
@@ -29,54 +31,33 @@ namespace json {
 class serializer
 {
     enum class state : char;
+    using stream = detail::stream;
+    using const_stream = detail::const_stream;
+    using local_stream = detail::local_stream;
+    using local_const_stream =
+        detail::local_const_stream;
 
-#ifndef GENERATING_DOCUMENTATION
-    // The xsl has problems with anonymous unions
-    struct nobj
-    {
-        object const* po;
-        object::const_iterator it;
-    };
-
-    struct narr
-    {
-        array const* pa;
-        array::const_iterator it;
-    };
-
-    struct node
-    {
-        union
-        {
-            value const* pjv;
-            nobj obj;
-            narr arr;
-        };
-        state st;
-
-        inline
-        explicit
-        node(state st_) noexcept;
-
-        inline
-        explicit
-        node(value const& jv) noexcept;
-
-        inline
-        explicit
-        node(object const& o) noexcept;
-
-        inline
-        explicit
-        node(array const& a) noexcept;
-    };
-#endif
-
-    detail::static_stack<node, 16> stack_;
-
-    string_view str_;
-    unsigned char nbuf_;
+    value const* jv_ = nullptr;
+    detail::stack st_;
+    const_stream cs0_;
     char buf_[detail::max_number_chars + 1];
+    bool done_ = false;
+
+    inline bool suspend(state st);
+    inline bool suspend(state st,
+        array::const_iterator it, value const* jv);
+    inline bool suspend(state st,
+        object::const_iterator it, value const* jv);
+    inline bool write_null(stream& ss);
+    inline bool write_true(stream& ss);
+    inline bool write_false(stream& ss);
+    inline bool write_string(stream& ss);
+    inline bool write_number(stream& ss);
+    inline bool write_array(stream& ss);
+    inline bool write_object(stream& ss);
+    inline bool write_value(stream& ss);
+    inline std::size_t write_some(
+        char* dest, std::size_t size);
 
 public:
     /** Default constructor.
@@ -116,9 +97,11 @@ public:
         characters in the serialized representation of
         the value have been read.
     */
-    BOOST_JSON_DECL
     bool
-    is_done() const noexcept;
+    is_done() const noexcept
+    {
+        return done_;
+    }
 
     /** Reset the serializer for a new JSON value.
 

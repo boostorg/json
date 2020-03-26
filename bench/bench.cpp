@@ -7,7 +7,7 @@
 // Official repository: https://github.com/vinniefalco/json
 //
 
-//#define RAPIDJSON_SSE42
+#define RAPIDJSON_SSE2
 
 #include <boost/json/config.hpp>
 
@@ -28,14 +28,11 @@
 
 #include "test_suite.hpp"
 
-/*
+/*  References
 
-References
+    https://github.com/nst/JSONTestSuite
 
-https://github.com/nst/JSONTestSuite
-
-http://seriot.ch/parsing_json.php
-
+    http://seriot.ch/parsing_json.php
 */
 
 namespace boost {
@@ -614,16 +611,14 @@ main(
         strings.json integers-32.json integers-64.json twitter.json small.json array.json random.json citm_catalog.json canada.json
 */
         impl_list vi;
-#if 0
         //vi.emplace_back(new boost_null_impl);
         //vi.emplace_back(new boost_vec_impl);
-#else
         vi.emplace_back(new boost_pool_impl);
         vi.emplace_back(new boost_default_impl);
         vi.emplace_back(new rapidjson_memory_impl);
         vi.emplace_back(new rapidjson_crt_impl);
         vi.emplace_back(new nlohmann_impl);
-#endif
+
         bench("Parse", vf, vi);
         bench("Serialize", vf, vi);
 

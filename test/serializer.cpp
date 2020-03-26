@@ -120,85 +120,19 @@ public:
         }
     }
 
+    //------------------------------------------------------
+
     void
-    testMembers()
+    testNull()
     {
-        value jv;
-
-        // serializer()
-        {
-            serializer sr;
-        }
-
-        // serializer(value)
-        {
-            serializer sr(jv);
-        }
-
-        // is_done()
-        {
-            serializer sr(jv);
-            BOOST_TEST(! sr.is_done());
-        }
-
-        // read()
-        {
-            {
-                serializer sr(jv);
-                char buf[1024];
-                auto n = sr.read(
-                    buf, sizeof(buf));
-                BOOST_TEST(sr.is_done());
-                BOOST_TEST(string_view(
-                    buf, n) == "null");
-            }
-
-            {
-                char buf[32];
-                serializer sr;
-                BOOST_TEST_THROWS(
-                    sr.read(buf, sizeof(buf)),
-                    std::logic_error);
-            }
-        }
+        check("null");
     }
 
     void
-    check(
-        string_view s,
-        string_view name = {})
+    testBoolean()
     {
-        try
-        {
-            auto const jv = parse(s);
-            grind(s, jv, name);
-        }
-        catch(std::exception const&)
-        {
-            BOOST_TEST_FAIL();
-        }
-    }
-
-    void
-    testObject()
-    {
-        check("{}");
-        check("{\"x\":1}");
-        check("{\"x\":[]}");
-        check("{\"x\":1,\"y\":null}");
-    }
-
-    void
-    testArray()
-    {
-        check("[]");
-        check("[[]]");
-        check("[[],[],[]]");
-        check("[[[[[[[[[[]]]]]]]]]]");
-        check("[{}]");
-        check("[{},{}]");
-        check("[1,2,3,4,5]");
-        check("[true,false,null]");
+        check("true");
+        check("false");
     }
 
     void
@@ -379,11 +313,86 @@ public:
     }
 
     void
-    testScalar()
+    testArray()
     {
-        check("true");
-        check("false");
-        check("null");
+        check("[]");
+        check("[[]]");
+        check("[[],[],[]]");
+        check("[[[[[[[[[[]]]]]]]]]]");
+        check("[{}]");
+        check("[{},{}]");
+        check("[1,2,3,4,5]");
+        check("[true,false,null]");
+    }
+
+    void
+    testObject()
+    {
+        check("{}");
+        check("{\"x\":1}");
+        check("{\"x\":[]}");
+        check("{\"x\":1,\"y\":null}");
+    }
+
+    //------------------------------------------------------
+
+    void
+    testMembers()
+    {
+        value jv;
+
+        // serializer()
+        {
+            serializer sr;
+        }
+
+        // serializer(value)
+        {
+            serializer sr(jv);
+        }
+
+        // is_done()
+        {
+            serializer sr(jv);
+            BOOST_TEST(! sr.is_done());
+        }
+
+        // read()
+        {
+            {
+                serializer sr(jv);
+                char buf[1024];
+                auto n = sr.read(
+                    buf, sizeof(buf));
+                BOOST_TEST(sr.is_done());
+                BOOST_TEST(string_view(
+                    buf, n) == "null");
+            }
+
+            {
+                char buf[32];
+                serializer sr;
+                BOOST_TEST_THROWS(
+                    sr.read(buf, sizeof(buf)),
+                    std::logic_error);
+            }
+        }
+    }
+
+    void
+    check(
+        string_view s,
+        string_view name = {})
+    {
+        try
+        {
+            auto const jv = parse(s);
+            grind(s, jv, name);
+        }
+        catch(std::exception const&)
+        {
+            BOOST_TEST_FAIL();
+        }
     }
 
     void
@@ -488,12 +497,14 @@ public:
     void
     run()
     {
-        testMembers();
-        testObject();
-        testArray();
+        testNull();
+        testBoolean();
         testString();
         testNumber();
-        testScalar();
+        testArray();
+        testObject();
+
+        testMembers();
         testVectors();
         testOstream();
         testNumberRoundTrips();
