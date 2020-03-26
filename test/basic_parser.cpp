@@ -146,113 +146,89 @@ public:
     ::test_suite::log_type log;
 
     void
-    split_grind(
-        string_view s,
-        error_code ex = {})
-    {
-        // make sure all split inputs
-        // produce the same result.
-        for(std::size_t i = 1;
-            i < s.size(); ++i)
-        {
-            if(! BOOST_TEST(i < 100000))
-                break;
-            error_code ec;
-            fail_parser p;
-            p.write(s.data(), i, ec);
-            if(ec)
-            {
-                BOOST_TEST(ec == ex);
-                continue;
-            }
-            p.finish(
-                s.data() + i,
-                s.size() - i, ec);
-            if(! BOOST_TEST(ec == ex))
-                log <<
-                    "should be " <<
-                    ex.message() << std::endl;
-        }
-    }
-
-    void
-    fail_grind(
-        string_view s,
-        error_code ex = {})
-    {
-        // exercise all error paths
-        for(std::size_t j = 1;;++j)
-        {
-            if(! BOOST_TEST(j < 100000))
-                break;
-            error_code ec;
-            fail_parser p(j);
-            p.finish(
-                s.data(), s.size(), ec);
-            if(ec == error::test_failure)
-                continue;
-            BOOST_TEST(ec == ex);
-            break;
-        }
-    }
-
-    void
-    throw_grind(
-        string_view s,
-        error_code ex = {})
-    {
-        // exercise all exception paths
-        for(std::size_t j = 1;;++j)
-        {
-            if(! BOOST_TEST(j < 100000))
-                break;
-            error_code ec;
-            throw_parser p(j);
-            try
-            {
-                p.finish(
-                    s.data(), s.size(), ec);
-                BOOST_TEST(ec == ex);
-                break;
-            }
-            catch(test_exception const&)
-            {
-                continue;
-            }
-            catch(std::exception const& e)
-            {
-                BOOST_TEST_FAIL();
-                log << "  " <<
-                    e.what() << std::endl;
-            }
-        }
-    }
-
-    void
     grind(string_view s, bool good)
     {
-        error_code ex;
         {
+            error_code ec;
             fail_parser p;
-            p.finish(
-                s.data(),
-                s.size(),
-                ex);
-            if(good)
+            p.finish(s.data(), s.size(), ec);
+            BOOST_TEST((good && !ec) || (
+                ! good && ec));
+
+            p.reset();
+            p.write(s.data(), s.size(), ec);
+            if(! ec)
+                p.finish(ec);
+            BOOST_TEST((good && !ec) || (
+                ! good && ec));
+        }
+
+        // split/errors matrix
+        if(! s.empty())
+        {
+            for(std::size_t i = 1;
+                i < s.size(); ++i)
             {
-                if(! BOOST_TEST(! ex))
-                    return;
-            }
-            else
-            {
-                if(! BOOST_TEST(ex))
-                    return;
+                for(std::size_t j = 1;;++j)
+                {
+                    error_code ec;
+                    fail_parser p(j);
+                    p.write(s.data(), i, ec);
+                    if(ec == error::test_failure)
+                        continue;
+                    if(! ec)
+                    {
+                        p.finish(s.data() + i,
+                            s.size() - i, ec);
+                        if(ec == error::test_failure)
+                            continue;
+                    }
+                    BOOST_TEST((good && !ec) || (
+                        ! good && ec));
+                    break;
+                }
             }
         }
 
-        split_grind(s, ex);
-        throw_grind(s, ex);
-        fail_grind(s, ex);
+        // split/exceptions matrix
+        if(! s.empty())
+        {
+            for(std::size_t i = 1;
+                i < s.size(); ++i)
+            {
+                for(std::size_t j = 1;;++j)
+                {
+                    error_code ec;
+                    throw_parser p(j);
+                    try
+                    {
+                        p.write(s.data(), i, ec);
+                        if(! ec)
+                            p.finish(s.data() + i,
+                                s.size() - i, ec);
+                        BOOST_TEST((good && !ec) || (
+                            ! good && ec));
+                        break;
+                    }
+                    catch(test_exception const&)
+                    {
+                        continue;
+                    }
+                    catch(std::exception const& e)
+                    {
+                        BOOST_TEST_FAIL();
+                        log << "  " <<
+                            e.what() << std::endl;
+                    }
+                }
+            }
+        }
+    }
+
+    void
+    bad(string_view s)
+    {
+        grind(s, false);
     }
 
     void
@@ -262,62 +238,21 @@ public:
     }
 
     void
-    bad(string_view s)
+    bad_one(string_view s)
     {
-        {
-            error_code ec;
-            fail_parser p;
+        error_code ec;
+        fail_parser p;
+        p.finish(s.data(), s.size(), ec);
+        BOOST_TEST(ec);
+    }
 
-            p.finish(s.data(), s.size(), ec);
-            BOOST_TEST(ec);
-
-            p.reset();
-            p.write(s.data(), s.size(), ec);
-            if(! ec)
-                p.finish(ec);
-            BOOST_TEST(ec);
-
-            {
-                p.reset();
-                auto const n = p.write_some(
-                    s.data(), s.size(), ec);
-                if(n != s.size())
-                {
-                    if(! ec)
-                        p.finish(ec);
-                    BOOST_TEST(ec);
-                }
-            }
-
-            if(! s.empty())
-            {
-                for(std::size_t i = 1;
-                    i < s.size() - 1; ++i)
-                {
-                    p.reset();
-                    p.write(s.data(), i, ec);
-                    if(! ec)
-                        p.finish(s.data() + i,
-                            s.size() - i, ec);
-                    BOOST_TEST(ec);
-                }
-            }
-        }
-
-        for(std::size_t j = 1;;++j)
-        {
-            if(! BOOST_TEST(j < 100000))
-                break;
-            error_code ec;
-            fail_parser p(j);
-            p.finish(
-                s.data(), s.size(), ec);
-            if(ec != error::test_failure)
-            {
-                BOOST_TEST(ec);
-                break;
-            }
-        }
+    void
+    good_one(string_view s)
+    {
+        error_code ec;
+        fail_parser p;
+        p.finish(s.data(), s.size(), ec);
+        BOOST_TEST(! ec);
     }
 
     //------------------------------------------------------
@@ -332,14 +267,16 @@ public:
         good("null\t");
         good("\r\n\t null\r\n\t ");
 
+        bad ("n     ");
+        bad ("nu    ");
+        bad ("nul   ");
+        bad ("n---  ");
+        bad ("nu--  ");
+        bad ("nul-  ");
+
         bad ("NULL");
-        bad ("nULL");
-        bad ("nuLL");
-        bad ("nulL");
-        bad ("nullx");
-        bad ("nul");
-        bad ("nu");
-        bad ("n");
+        bad ("Null");
+        bad ("nulls");
     }
 
     void
@@ -352,14 +289,15 @@ public:
         good("true\t");
         good("\r\n\t true\r\n\t ");
 
+        bad ("t     ");
+        bad ("tr    ");
+        bad ("tru   ");
+        bad ("t---  ");
+        bad ("tr--  ");
+        bad ("tru-  ");
         bad ("TRUE");
-        bad ("tRUE");
-        bad ("trUE");
-        bad ("truE");
-        bad ("truex");
-        bad ("tru");
-        bad ("tr");
-        bad ("t");
+        bad ("True");
+        bad ("truer");
 
         good("false");
         good(" false");
@@ -368,68 +306,150 @@ public:
         good("false\t");
         good("\r\n\t false\r\n\t ");
 
+        bad ("f     ");
+        bad ("fa    ");
+        bad ("fal   ");
+        bad ("fals  ");
+        bad ("f---- ");
+        bad ("fa--- ");
+        bad ("fal-- ");
+        bad ("fals- ");
         bad ("FALSE");
-        bad ("fALSE");
-        bad ("faLSE");
-        bad ("falSE");
-        bad ("falsE");
-        bad ("falsex");
-        bad ("fals");
-        bad ("fal");
-        bad ("fa");
-        bad ("f");
+        bad ("False");
+        bad ("falser");
     }
 
     void
     testString()
     {
-        good("\""   "x"         "\"");
-        good("\""   "xy"        "\"");
-        good("\""   "x y"       "\"");
+        good(R"jv( "x"   )jv");
+        good(R"jv( "xy"  )jv");
+        good(R"jv( "x y" )jv");
 
-        bad ("\""   "\t"        "\"");
+        // escapes
+        good(R"jv(" \" ")jv");
+        good(R"jv(" \\ ")jv");
+        good(R"jv(" \/ ")jv");
+        good(R"jv(" \b ")jv");
+        good(R"jv(" \f ")jv");
+        good(R"jv(" \n ")jv");
+        good(R"jv(" \r ")jv");
+        good(R"jv(" \t ")jv");
 
-        // control after escape
-        bad ("\"\\\\\n\"");
+        // utf-16 escapes
+        good(R"jv( " \u0000 "       )jv");
+        good(R"jv( " \ud7ff "       )jv");
+        good(R"jv( " \ue000 "       )jv");
+        good(R"jv( " \uffff "       )jv");
+        good(R"jv( " \ud800\udc00 " )jv");
+        good(R"jv( " \udbff\udfff " )jv");
+        good(R"jv( " \n\u0000     " )jv");
 
-        // embedded NULL character
-        good(R"json("Hello\u0000World")json");
+        // escape in key
+        good(R"jv( {" \n":null} )jv");
+
+        // illegal control character
+        bad ("\"" "\x00" "\"");
+        bad ("\"" "\x1f" "\"");
+        bad ("\"" "\\n" "\x1f" "\"");
+
+        // incomplete escape
+        bad (R"jv( "\" )jv");
+
+        // utf-16 escape, fast path,
+        // invalid surrogate
+        bad (R"jv( " \u----       " )jv");
+        bad (R"jv( " \ud---       " )jv");
+        bad (R"jv( " \ud8--       " )jv");
+        bad (R"jv( " \ud80-       " )jv");
+        // invalid low surrogate
+        bad (R"jv( " \ud800------ " )jv");
+        bad (R"jv( " \ud800\----- " )jv");
+        bad (R"jv( " \ud800\u---- " )jv");
+        bad (R"jv( " \ud800\ud--- " )jv");
+        bad (R"jv( " \ud800\udc-- " )jv");
+        bad (R"jv( " \ud800\udc0- " )jv");
+        // illegal leading surrogate
+        bad (R"jv( " \udc00       " )jv");
+        bad (R"jv( " \udfff       " )jv");
+        // illegal trailing surrogate
+        bad (R"jv( " \ud800\udbff " )jv");
+        bad (R"jv( " \ud800\ue000 " )jv");
     }
 
     void
     testNumber()
     {
         good("0");
-        good("0.0");
-        good("0.10");
-        good("0.01");
-        good("1");
-        good("10");
-        good("1.5");
-        good("10.5");
-        good("10.25");
-        good("10.25e0");
-        good("1e1");
-        good("1e10");
-        good("1e+0");
-        good("1e+1");
-        good("0e+10");
+        good("0e0");
+        good("0E0");
+        good("0e00");
+        good("0E01");
+        good("0e+0");
         good("0e-0");
-        good("0e-1");
-        good("0e-10");
-        good("1E+1");
+        good("0.0");
+        good("0.01");
+        good("0.0e0");
+        good("0.01e+0");
+        good("0.02E-0");
+        good("1");
+        good("12");
+        good("1");
+        good("1e0");
+        good("1E0");
+        good("1e00");
+        good("1E01");
+        good("1e+0");
+        good("1e-0");
+        good("1.0");
+        good("1.01");
+        good("1.0e0");
+        good("1.01e+0");
+        good("1.02E-0");
+
         good("-0");
+        good("-0e0");
+        good("-0E0");
+        good("-0e00");
+        good("-0E01");
+        good("-0e+0");
+        good("-0e-0");
+        good("-0.0");
+        good("-0.01");
+        good("-0.0e0");
+        good("-0.01e+0");
+        good("-0.02E-0");
         good("-1");
-        good("-1e1");
+        good("-12");
+        good("-1");
+        good("-1e0");
+        good("-1E0");
+        good("-1e00");
+        good("-1E01");
+        good("-1e+0");
+        good("-1e-0");
+        good("-1.0");
+        good("-1.01");
+        good("-1.0e0");
+        good("-1.01e+0");
+        good("-1.02E-0");
+
         good("1.1e309");
         good(   "9223372036854775807");
         good(  "-9223372036854775807");
         good(  "18446744073709551615");
         good( "-18446744073709551615");
-        good(  "[9223372036854775807]");
-        good( "[-9223372036854775807]");
-        good( "[18446744073709551615]");
-        good("[-18446744073709551615]");
+
+        good("0.900719925474099178");
+
+        // non-significant digits
+        good("1000000000000000000000000");
+        good("1000000000000000000000000e1");
+        good("1000000000000000000000000.0");
+        good("1000000000000000000000000.00");
+        good("1000000000000000000000000.000000000001");
+        good("1000000000000000000000000.0e1");
+        good("1000000000000000000000000.0 ");
 
         bad ("");
         bad ("-");
@@ -445,6 +465,7 @@ public:
         bad ("0.0e-");
         bad ("0.0e0-");
         bad ("0.0e");
+        bad ("1000000000000000000000000.e");
     }
 
     void
@@ -475,6 +496,24 @@ public:
         bad (" []]");
         bad ("[{]");
         bad ("[ \"x\", ]");
+
+        bad (R"jv( [ null ; 1 ] )jv");
+
+        // depth
+        {
+            error_code ec;
+            fail_parser p;
+            BOOST_TEST(
+                p.depth() == 0);
+            BOOST_TEST(
+                p.max_depth() > 0);
+            p.max_depth(0);
+            BOOST_TEST(
+                p.max_depth() == 0);
+            p.finish("[]", 2, ec);
+            BOOST_TEST(
+                ec == error::too_deep);
+        }
     }
 
     void
@@ -517,6 +556,25 @@ public:
         bad (" {}}");
         bad ("{{}}");
         bad ("{[]}");
+
+        bad (R"jv( {"x";null} )jv");
+        bad (R"jv( {"x":null . "y":0} )jv");
+
+        // depth
+        {
+            error_code ec;
+            fail_parser p;
+            BOOST_TEST(
+                p.depth() == 0);
+            BOOST_TEST(
+                p.max_depth() > 0);
+            p.max_depth(0);
+            BOOST_TEST(
+                p.max_depth() == 0);
+            p.finish("{}", 2, ec);
+            BOOST_TEST(
+                ec == error::too_deep);
+        }
     }
 
     void
@@ -581,49 +639,22 @@ public:
         check("nullx", true);
         check("null x", true);
 
-        // depth(), max_depth(), is_done()
-        {
-            {
-                error_code ec;
-                fail_parser p;
-                BOOST_TEST(
-                    p.depth() == 0);
-                BOOST_TEST(
-                    p.max_depth() > 0);
-                p.max_depth(1);
-                p.write("[{}]", 4, ec);
-                BOOST_TEST(
-                    ec == error::too_deep);
-                BOOST_TEST(! p.is_done());
-            }
-            {
-                error_code ec;
-                fail_parser p;
-                p.write("{", 1, ec);
-                BOOST_TEST(! ec);
-                auto const n =
-                    p.write_some("}x", 2, ec);
-                BOOST_TEST(n == 1);
-                BOOST_TEST(p.is_done());
-            }
-        }
-
         // flush
         {
             {
                 for(auto esc :
                     { "\\\"", "\\\\", "\\/", "\\b",
-                      "\\f", "\\n", "\\r", "\\t", "\\u0000" })
+                      "\\f", "\\n", "\\r", "\\t", "\\u0000"
+                    })
                 {
-                    std::string big;
-                    big = "\\\"" + std::string(
+                    std::string const big =
+                        "\\\"" + std::string(
                         BOOST_JSON_PARSER_BUFFER_SIZE-4, '*') + esc;
-                    std::string s;
-                    s = "{\"" + big + "\":\"" + big + "\"}";
-                    fail_grind(s);
+                    std::string const s =
+                        "{\"" + big + "\":\"" + big + "\"}";
+                    good_one(s);
                 }
             }
-
             {
                 std::string big;
                 big = "\\\"" +
@@ -631,7 +662,7 @@ public:
                         BOOST_JSON_PARSER_BUFFER_SIZE+ 1, '*');
                 std::string s;
                 s = "{\"" + big + "\":\"" + big + "\"}";
-                fail_grind(s);
+                good_one(s);
             }
         }
 
@@ -669,10 +700,17 @@ public:
 
         // write_some(char const*, size_t)
         {
-            fail_parser p;
-            BOOST_TEST_THROWS(
-                p.write_some("x", 1),
-                system_error);
+            {
+                fail_parser p;
+                BOOST_TEST(p.write_some(
+                    "nullx", 5) == 4);
+            }
+            {
+                fail_parser p;
+                BOOST_TEST_THROWS(
+                    p.write_some("x", 1),
+                    system_error);
+            }
         }
 
         // write(char const*, size_t, error_code&)
@@ -754,18 +792,20 @@ public:
             {
                 error_code ec;
                 fail_parser p;
-                p.write(
+                p.finish(
                     v.text.data(),
                     v.text.size(),
                     ec);
-                grind(v.text,
-                    ec ? false : true);
+                if(! ec)
+                    good_one(v.text);
+                else
+                    bad_one(v.text);
                 continue;
             }
             if(v.result == 'y')
-                grind(v.text, true);
+                good_one(v.text);
             else
-                grind(v.text, false);
+                bad_one(v.text);
         }
     }
 

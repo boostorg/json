@@ -20,36 +20,12 @@
 namespace boost {
 namespace json {
 
-/*  References:
+/*  Reference:
 
     https://www.json.org/
 
     RFC 7159: The JavaScript Object Notation (JSON) Data Interchange Format
     https://tools.ietf.org/html/rfc7159
-
-    character
-        '0020' . '10ffff' - '"' - '\'
-        '\' escape
-
-    escape
-        '"' '\' '/' 'b'
-        'f' 'n' 'r' 't'
-        'u' hex hex hex hex
-
-    hex
-        digit
-        'A' . 'F'
-        'a' . 'f'
-
-    number
-        int frac exp
-
-    ws
-        ""
-        '0009' ws
-        '000A' ws
-        '000D' ws
-        '0020' ws
 */
 
 enum class basic_parser::state : char
@@ -92,6 +68,7 @@ hex_digit(char c) noexcept
         return 10 + c - 'A';
     return -1;
 #else
+    // VFALCO This is a tad slower and makes the binary larger
     static constexpr char tab[] = {
         -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1, //   0
         -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1, //  16
@@ -912,9 +889,12 @@ do_str3:
                     temp.append_utf8(cp);
                     continue;
                 }
-                if( BOOST_JSON_LIKELY(flush()) &&
-                    BOOST_JSON_UNLIKELY(ec_))
-                    return;
+                if( BOOST_JSON_LIKELY(flush()))
+                {
+                    if(BOOST_JSON_UNLIKELY(ec_))
+                        return;
+                    cs.clip(temp.capacity());
+                }
                 ++cs;
                 goto do_str4;
 
@@ -1535,17 +1515,22 @@ do_num2:
                         num.mant == 1844674407370955161 && c > '5'))
                         break;
                     num.mant = 10 * num.mant + c - '0';
-                    continue;
                 }
-                goto do_num6; // [.eE]
+                else
+                {
+                    goto do_num6; // [.eE]
+                }
             }
-            else if(BOOST_JSON_UNLIKELY(more_))
+            else
             {
-                suspend(state::num2, num);
-                ec_ = error::incomplete;
-                return;
+                if(BOOST_JSON_UNLIKELY(more_))
+                {
+                    suspend(state::num2, num);
+                    ec_ = error::incomplete;
+                    return;
+                }
+                goto finish_int;
             }
-            goto finish_int;
         }
     }
     ++num.bias;
@@ -1567,7 +1552,6 @@ do_num3:
                 ++cs;
                 // VFALCO check overflow
                 ++num.bias;
-                continue;
             }
             else if(BOOST_JSON_LIKELY(
                 c == '.'))
@@ -1580,14 +1564,21 @@ do_num3:
                 ++cs;
                 goto do_exp1;
             }
+            else
+            {
+                goto finish_dub;
+            }
         }
-        else if(BOOST_JSON_UNLIKELY(more_))
+        else
         {
-            suspend(state::num3, num);
-            ec_ = error::incomplete;
-            return;
+            if(BOOST_JSON_UNLIKELY(more_))
+            {
+                suspend(state::num3, num);
+                ec_ = error::incomplete;
+                return;
+            }
+            goto finish_dub;
         }
-        goto finish_dub;
     }
 
     //----------------------------------
@@ -1637,21 +1628,27 @@ do_num5:
                 c >= '0' && c <= '9'))
             {
                 ++cs;
-                continue;
             }
             else if((c | 32) == 'e')
             {
                 ++cs;
                 goto do_exp1;
             }
+            else
+            {
+                goto finish_dub;
+            }
         }
-        else if(BOOST_JSON_UNLIKELY(more_))
+        else
         {
-            suspend(state::num5, num);
-            ec_ = error::incomplete;
-            return;
+            if(BOOST_JSON_UNLIKELY(more_))
+            {
+                suspend(state::num5, num);
+                ec_ = error::incomplete;
+                return;
+            }
+            goto finish_dub;
         }
-        goto finish_dub;
     }
 
     //----------------------------------
@@ -1740,23 +1737,32 @@ do_num8:
                 {
                     --num.bias;
                     num.mant = 10 * num.mant + c - '0';
-                    continue;
                 }
-                goto do_num5;
+                else
+                {
+                    goto do_num5;
+                }
             }
             else if((c | 32) == 'e')
             {
                 ++cs;
                 goto do_exp1;
             }
+            else
+            {
+                goto finish_dub;
+            }
         }
-        else if(BOOST_JSON_UNLIKELY(more_))
+        else
         {
-            suspend(state::num8, num);
-            ec_ = error::incomplete;
-            return;
+            if(BOOST_JSON_UNLIKELY(more_))
+            {
+                suspend(state::num8, num);
+                ec_ = error::incomplete;
+                return;
+            }
+            goto finish_dub;
         }
-        goto finish_dub;
     }
 
     //----------------------------------
@@ -1904,16 +1910,19 @@ write_some(
     // to the parser.
     BOOST_ASSERT(! done_);
 
+    ec_ = {};
     if(BOOST_JSON_LIKELY(st_.empty()))
     {
         // first time
         depth_ = 0;
         is_key_ = false;
-        this->on_document_begin(ec);
-        if(BOOST_JSON_UNLIKELY(ec))
+        this->on_document_begin(ec_);
+        if(BOOST_JSON_UNLIKELY(ec_))
+        {
+            ec = ec_;
             return 0;
+        }
     }
-    ec_ = {};
     char_stream cs = { data, size };
     parse_element(cs);
     if(BOOST_JSON_LIKELY(! ec_))
