@@ -27,6 +27,7 @@ class parser_test
 public:
     ::test_suite::log_type log;
 
+    static
     value
     from_string_test(
         string_view s,
@@ -41,23 +42,20 @@ public:
     }
 
     void
-    check_round_trip(
-        value const& jv1,
-        string_view s1)
+    static
+    check_round_trip(value const& jv1)
     {
         auto const s2 =
             //to_string_test(jv1); // use this if serializer is broken
             to_string(jv1);
         auto jv2 =
             from_string_test(s2);
-        if(! BOOST_TEST(equal(jv1, jv2)))
-            log <<
-                "  " << s1 << "\n" <<
-                "  " << s2 << std::endl;
+        BOOST_TEST(equal(jv1, jv2));
     }
 
     template<class F>
     void
+    static
     grind_one(
         string_view s,
         storage_ptr sp,
@@ -68,15 +66,17 @@ public:
         f(jv);
     }
 
+    static
     void
     grind_one(string_view s)
     {
         auto const jv =
             from_string_test(s);
-        check_round_trip(jv, s);
+        check_round_trip(jv);
     }
 
     template<class F>
+    static
     void
     grind(string_view s, F const& f)
     {
@@ -118,16 +118,18 @@ public:
         }
     }
 
+    static
     void
     grind(string_view s)
     {
         grind(s,
-            [this, &s](value const& jv)
+            [&s](value const& jv)
             {
-                check_round_trip(jv, s);
+                check_round_trip(jv);
             });
     }
 
+    static
     void
     grind_int64(string_view s, int64_t v)
     {
@@ -140,6 +142,7 @@ public:
             });
     }
 
+    static
     void
     grind_uint64(string_view s, uint64_t v)
     {
@@ -152,6 +155,7 @@ public:
             });
     }
 
+    static
     void
     grind_double(string_view s, double v)
     {
@@ -259,13 +263,83 @@ public:
                         js.size() - N, ec);
                     if(BOOST_TEST(! ec))
                         check_round_trip(
-                            p.release(), js);
+                            p.release());
                 }   
             }
         }
     }
 
     //------------------------------------------------------
+    
+    struct f_boost
+    {
+        static
+        string_view
+        name() noexcept
+        {
+            return "boost";
+        }
+
+        double
+        operator()(string_view s) const
+        {
+            BOOST_TEST_CHECKPOINT();
+            error_code ec;
+            parser p;
+            p.start();
+            p.finish(s.data(), s.size(), ec);
+            if(! BOOST_TEST(! ec))
+                return 0;
+            auto const jv = p.release();
+            double const d = jv.as_double();
+            grind_double(s, d);
+            return d;
+        }
+    };
+
+    bool
+    within_1ulp(double x, double y)
+    {
+        std::uint64_t bx, by;
+        std::memcpy(&bx, &x, sizeof(x));
+        std::memcpy(&by, &y, sizeof(y));
+
+        auto diff = bx - by;
+        switch (diff)
+        {
+        case 0:
+        case 1:
+        case 0xffffffffffffffff:
+            return true;
+        default:
+            break;
+        }
+        return false;
+    }
+
+    // Verify that f converts to the
+    // same double produced by `strtod`.
+    // Requires `s` is not represented by an integral type.
+    template<class F>
+    void
+    fc(std::string const& s, F const& f)
+    {
+        char* str_end;
+        double const need =
+            std::strtod(s.c_str(), &str_end);
+        BOOST_TEST(str_end == &s.back() + 1);
+        double const got = f(s);
+        auto same = got == need;
+        auto close = same ?
+            true : within_1ulp(got, need);
+        BOOST_TEST(close);
+    }
+
+    void
+    fc(std::string const& s)
+    {
+        fc(s, f_boost{});
+    }
 
     void
     testNumber()
@@ -324,6 +398,10 @@ public:
         grind_uint64( "9999999999999999999", 9999999999999999999ULL);
         grind_uint64( "18446744073709551615", UINT64_MAX);
 
+        grind_double("-1.010", -1.01);
+        grind_double("-0.010", -0.01);
+        grind_double("-0.0", -0.0);
+        grind_double("-0e0", -0.0);
         grind_double( "18446744073709551616",  1.8446744073709552e+19);
         grind_double("-18446744073709551616", -1.8446744073709552e+19);
         grind_double( "18446744073709551616.0",  1.8446744073709552e+19);
@@ -340,7 +418,129 @@ public:
         grind_double( "11.1111", 11.1111);
         grind_double( "111.111", 111.111);
 
-        grind("1.0");
+        fc("-999999999999999999999");
+        fc("-100000000000000000009");
+        fc("-10000000000000000000");
+        fc("-9223372036854775809");
+
+        fc("18446744073709551616");
+        fc("99999999999999999999");
+        fc("999999999999999999999");
+        fc("1000000000000000000000");
+        fc("9999999999999999999999");
+        fc("99999999999999999999999");
+
+        fc("-0.9999999999999999999999");
+        fc("-0.9999999999999999");
+        fc("-0.9007199254740991");
+        fc("-0.999999999999999");
+        fc("-0.99999999999999");
+        fc("-0.9999999999999");
+        fc("-0.999999999999");
+        fc("-0.99999999999");
+        fc("-0.9999999999");
+        fc("-0.999999999");
+        fc("-0.99999999");
+        fc("-0.9999999");
+        fc("-0.999999");
+        fc("-0.99999");
+        fc("-0.9999");
+        fc("-0.8125");
+        fc("-0.999");
+        fc("-0.99");
+        fc("-1.0");
+        fc("-0.9");
+        fc("-0.0");
+        fc("0.0");
+        fc("0.9");
+        fc("0.99");
+        fc("0.999");
+        fc("0.8125");
+        fc("0.9999");
+        fc("0.99999");
+        fc("0.999999");
+        fc("0.9999999");
+        fc("0.99999999");
+        fc("0.999999999");
+        fc("0.9999999999");
+        fc("0.99999999999");
+        fc("0.999999999999");
+        fc("0.9999999999999");
+        fc("0.99999999999999");
+        fc("0.999999999999999");
+        fc("0.9007199254740991");
+        fc("0.9999999999999999");
+        fc("0.9999999999999999999999");
+        fc("0.999999999999999999999999999");
+
+        fc("-1e308");
+        fc("-1e-308");
+        fc("-9999e300");
+        fc("-999e100");
+        fc("-99e10");
+        fc("-9e1");
+        fc("9e1");
+        fc("99e10");
+        fc("999e100");
+        fc("9999e300");
+        fc("999999999999999999.0");
+        fc("999999999999999999999.0");
+        fc("999999999999999999999e5");
+        fc("999999999999999999999.0e5");
+
+        fc("0.00000000000000001");
+
+        fc("-1e-1");
+        fc("-1e0");
+        fc("-1e1");
+        fc("0e0");
+        fc("1e0");
+        fc("1e10");
+
+        fc("0."
+           "00000000000000000000000000000000000000000000000000" // 50 zeroes
+           "1e50");
+        fc("-0."
+           "00000000000000000000000000000000000000000000000000" // 50 zeroes
+           "1e50");
+
+        fc("0."
+           "00000000000000000000000000000000000000000000000000"
+           "00000000000000000000000000000000000000000000000000"
+           "00000000000000000000000000000000000000000000000000"
+           "00000000000000000000000000000000000000000000000000"
+           "00000000000000000000000000000000000000000000000000"
+           "00000000000000000000000000000000000000000000000000"
+           "00000000000000000000000000000000000000000000000000"
+           "00000000000000000000000000000000000000000000000000"
+           "00000000000000000000000000000000000000000000000000"
+           "00000000000000000000000000000000000000000000000000" // 500 zeroes
+           "1e600");
+        fc("-0."
+           "00000000000000000000000000000000000000000000000000"
+           "00000000000000000000000000000000000000000000000000"
+           "00000000000000000000000000000000000000000000000000"
+           "00000000000000000000000000000000000000000000000000"
+           "00000000000000000000000000000000000000000000000000"
+           "00000000000000000000000000000000000000000000000000"
+           "00000000000000000000000000000000000000000000000000"
+           "00000000000000000000000000000000000000000000000000"
+           "00000000000000000000000000000000000000000000000000"
+           "00000000000000000000000000000000000000000000000000" // 500 zeroes
+           "1e600");
+
+        fc("0e"
+           "00000000000000000000000000000000000000000000000000"
+           "00000000000000000000000000000000000000000000000000"
+           "00000000000000000000000000000000000000000000000000"
+           "00000000000000000000000000000000000000000000000000"
+           "00000000000000000000000000000000000000000000000000"
+           "00000000000000000000000000000000000000000000000000"
+           "00000000000000000000000000000000000000000000000000"
+           "00000000000000000000000000000000000000000000000000"
+           "00000000000000000000000000000000000000000000000000"
+           "00000000000000000000000000000000000000000000000000" // 500 zeroes
+        );
     }
 
     //------------------------------------------------------
@@ -487,7 +687,7 @@ public:
                 error_code ec;
                 auto jv = parse(js, ec);
                 BOOST_TEST(! ec);
-                check_round_trip(jv, js);
+                check_round_trip(jv);
             }
             {
                 error_code ec;
@@ -504,7 +704,7 @@ public:
                 scoped_storage<pool> sp;
                 auto jv = parse(js, ec, sp);
                 BOOST_TEST(! ec);
-                check_round_trip(jv, js);
+                check_round_trip(jv);
             }
 
             {
@@ -520,8 +720,7 @@ public:
         {
             {
                 check_round_trip(
-                    parse(js),
-                    js);
+                    parse(js));
             }
 
             {
@@ -536,7 +735,7 @@ public:
         {
             {
                 scoped_storage<pool> sp;
-                check_round_trip(parse(js, sp), js);
+                check_round_trip(parse(js, sp));
             }
 
             {

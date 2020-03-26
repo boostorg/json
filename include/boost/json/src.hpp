@@ -39,7 +39,6 @@ in a translation unit of the program.
 
 #include <boost/json/detail/impl/array_impl.ipp>
 #include <boost/json/detail/impl/format.ipp>
-#include <boost/json/detail/impl/number.ipp>
 #include <boost/json/detail/impl/object_impl.ipp>
 #include <boost/json/detail/impl/raw_stack.ipp>
 #include <boost/json/detail/impl/stack.ipp>

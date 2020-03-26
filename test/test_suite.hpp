@@ -449,7 +449,7 @@ public:
                 "(#" << id << ") " <<
                 filename(cp->file) <<
                 "(" << cp->line << ") "
-                "failed:" << expr << "\n";
+                "failed: " << expr << "\n";
         else
             log_ <<
                 "#" << id <<

@@ -25,7 +25,6 @@ else
 }
 
 local SOURCES =
-    _detail_number.cpp
     array.cpp
     basic_parser.cpp
     error.cpp
