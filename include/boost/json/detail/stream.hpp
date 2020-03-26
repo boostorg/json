@@ -14,9 +14,9 @@ namespace boost {
 namespace json {
 namespace detail {
 
-class char_stream
+class const_stream
 {
-    friend class local_char_stream;
+    friend class local_const_stream;
 
     char const* p_;
     char const* end_;
@@ -24,9 +24,10 @@ class char_stream
 public:
     using char_type = char;
 
-    char_stream(char_stream const&) = default;
+    const_stream(
+        const_stream const&) = default;
 
-    char_stream(
+    const_stream(
         char const* data,
         std::size_t size)
         : p_(data)
@@ -60,14 +61,6 @@ public:
 
     // unchecked
     char
-    operator[](int i) const noexcept
-    {
-        BOOST_ASSERT(i < remain());
-        return p_[i];
-    }
-
-    // unchecked
-    char
     operator*() const noexcept
     {
         BOOST_ASSERT(p_ < end_);
@@ -75,7 +68,7 @@ public:
     }
 
     // unchecked
-    char_stream&
+    const_stream&
     operator++() noexcept
     {
         BOOST_ASSERT(p_ < end_);
@@ -91,20 +84,21 @@ public:
     }
 };
 
-class local_char_stream : public char_stream
+class local_const_stream
+    : public const_stream
 {
-    char_stream& src_;
+    const_stream& src_;
 
 public:
     explicit
-    local_char_stream(
-        char_stream& src)
-        : char_stream(src)
+    local_const_stream(
+        const_stream& src)
+        : const_stream(src)
         , src_(src)
     {
     }
 
-    ~local_char_stream()
+    ~local_const_stream()
     {
         src_.p_ = p_;
     }
@@ -120,20 +114,7 @@ public:
     }
 };
 
-template<class Stream>
-bool
-consume(
-    Stream& s,
-    typename Stream::char_type ch)
-{
-    if(BOOST_JSON_LIKELY(
-        s.peek() == ch))
-    {
-        s.get();
-        return true;
-    }
-    return false;
-}
+//--------------------------------------
 
 } // detail
 } // json

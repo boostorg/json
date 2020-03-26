@@ -15,6 +15,7 @@
 #include <boost/json/detail/buffer.hpp>
 #include <boost/json/detail/sse2.hpp>
 #include <cmath>
+#include <cstring>
 
 namespace boost {
 namespace json {
@@ -246,7 +247,7 @@ suspend(state st, number const& num)
 
 void
 basic_parser::
-parse_element(char_stream& cs)
+parse_element(const_stream& cs)
 {
     if(BOOST_JSON_UNLIKELY(! st_.empty()))
     {
@@ -296,7 +297,7 @@ do_ele3:
 
 void
 basic_parser::
-parse_white(char_stream& cs)
+parse_white(const_stream& cs)
 {
     while(BOOST_JSON_LIKELY(cs))
     {
@@ -313,7 +314,7 @@ parse_white(char_stream& cs)
 
 void
 basic_parser::
-parse_value(char_stream& cs)
+parse_value(const_stream& cs)
 {
     if(BOOST_JSON_LIKELY(st_.empty()))
     {
@@ -400,9 +401,9 @@ parse_value(char_stream& cs)
 
 void
 basic_parser::
-parse_null(char_stream& cs0)
+parse_null(const_stream& cs0)
 {
-    detail::local_char_stream cs(cs0);
+    detail::local_const_stream cs(cs0);
     if(BOOST_JSON_LIKELY(st_.empty()))
     {
         BOOST_ASSERT(*cs == 'n');
@@ -492,9 +493,9 @@ do_nul3:
 
 void
 basic_parser::
-parse_true(char_stream& cs0)
+parse_true(const_stream& cs0)
 {
-    detail::local_char_stream cs(cs0);
+    detail::local_const_stream cs(cs0);
     if(BOOST_JSON_LIKELY(st_.empty()))
     {
         BOOST_ASSERT(*cs == 't');
@@ -584,9 +585,9 @@ do_tru3:
 
 void
 basic_parser::
-parse_false(char_stream& cs0)
+parse_false(const_stream& cs0)
 {
-    detail::local_char_stream cs(cs0);
+    detail::local_const_stream cs(cs0);
     if(BOOST_JSON_LIKELY(st_.empty()))
     {
         BOOST_ASSERT(*cs == 'f');
@@ -697,9 +698,9 @@ do_fal4:
 
 void
 basic_parser::
-parse_string(char_stream& cs0)
+parse_string(const_stream& cs0)
 {
-    detail::local_char_stream cs(cs0);
+    detail::local_const_stream cs(cs0);
     detail::buffer<BOOST_JSON_PARSER_BUFFER_SIZE> temp;
     auto const flush =
         [this, &temp]()
@@ -925,10 +926,28 @@ do_str3:
                 if(BOOST_JSON_LIKELY(
                     cs.remain() >= 11))
                 {
-                    int d1 = hex_digit(cs[1]);
-                    int d2 = hex_digit(cs[2]);
-                    int d3 = hex_digit(cs[3]);
-                    int d4 = hex_digit(cs[4]);
+                    int32_t d;
+                    std::memcpy(
+                        &d, cs.data() + 1, 4);
+                #if ! BOOST_JSON_BIG_ENDIAN
+                    int d4 = hex_digit(static_cast<
+                        unsigned char>(d >> 24));
+                    int d3 = hex_digit(static_cast<
+                        unsigned char>(d >> 16));
+                    int d2 = hex_digit(static_cast<
+                        unsigned char>(d >> 8));
+                    int d1 = hex_digit(static_cast<
+                        unsigned char>(d));
+                #else
+                    int d1 = hex_digit(static_cast<
+                        unsigned char>(d >> 24));
+                    int d2 = hex_digit(static_cast<
+                        unsigned char>(d >> 16));
+                    int d3 = hex_digit(static_cast<
+                        unsigned char>(d >> 8));
+                    int d4 = hex_digit(static_cast<
+                        unsigned char>(d));
+                #endif
                     if(BOOST_JSON_UNLIKELY(
                         (d1 | d2 | d3 | d4) == -1))
                     {
@@ -969,10 +988,26 @@ do_str3:
                         return;
                     }
                     ++cs;
-                    d1 = hex_digit(cs[0]);
-                    d2 = hex_digit(cs[1]);
-                    d3 = hex_digit(cs[2]);
-                    d4 = hex_digit(cs[3]);
+                    std::memcpy(&d, cs.data(), 4);
+                #if ! BOOST_JSON_BIG_ENDIAN
+                    d4 = hex_digit(static_cast<
+                        unsigned char>(d >> 24));
+                    d3 = hex_digit(static_cast<
+                        unsigned char>(d >> 16));
+                    d2 = hex_digit(static_cast<
+                        unsigned char>(d >> 8));
+                    d1 = hex_digit(static_cast<
+                        unsigned char>(d));
+                #else
+                    d1 = hex_digit(static_cast<
+                        unsigned char>(d >> 24));
+                    d2 = hex_digit(static_cast<
+                        unsigned char>(d >> 16));
+                    d3 = hex_digit(static_cast<
+                        unsigned char>(d >> 8));
+                    d4 = hex_digit(static_cast<
+                        unsigned char>(d));
+                #endif
                     if(BOOST_JSON_UNLIKELY(
                         (d1 | d2 | d3 | d4) == -1))
                     {
@@ -1246,11 +1281,11 @@ do_str3:
 
 void
 basic_parser::
-parse_object(char_stream& cs0)
+parse_object(const_stream& cs0)
 {
     char c;
     std::size_t n;
-    detail::local_char_stream cs(cs0);
+    detail::local_const_stream cs(cs0);
     if(BOOST_JSON_LIKELY(st_.empty()))
     {
         BOOST_ASSERT(*cs == '{');
@@ -1389,11 +1424,11 @@ do_obj7:
 
 void
 basic_parser::
-parse_array(char_stream& cs0)
+parse_array(const_stream& cs0)
 {
     char c;
     std::size_t n;
-    detail::local_char_stream cs(cs0);
+    detail::local_const_stream cs(cs0);
     if(BOOST_JSON_LIKELY(st_.empty()))
     {
         BOOST_ASSERT(*cs == '[');
@@ -1493,10 +1528,10 @@ do_arr4:
 
 void
 basic_parser::
-parse_number(char_stream& cs0)
+parse_number(const_stream& cs0)
 {
     number num;
-    detail::local_char_stream cs(cs0);
+    detail::local_const_stream cs(cs0);
     if(BOOST_JSON_LIKELY(st_.empty()))
     {
         num.bias = 0;
@@ -2036,7 +2071,7 @@ write_some(
             return 0;
         }
     }
-    char_stream cs = { data, size };
+    const_stream cs = { data, size };
     parse_element(cs);
     if(BOOST_JSON_LIKELY(! ec_))
     {

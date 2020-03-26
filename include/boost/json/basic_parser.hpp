@@ -49,7 +49,7 @@ namespace json {
 class basic_parser
 {
     enum class state : char;
-    using char_stream = detail::char_stream;
+    using const_stream = detail::const_stream;
     struct number
     {
         uint64_t mant;
@@ -76,16 +76,16 @@ class basic_parser
     inline void suspend(state st);
     inline void suspend(state st, std::size_t n);
     inline void suspend(state st, number const& num);
-    inline void parse_element(char_stream& cs);
-    inline void parse_white(char_stream& cs);
-    inline void parse_value(char_stream& cs);
-    inline void parse_null(char_stream& cs);
-    inline void parse_true(char_stream& cs);
-    inline void parse_false(char_stream& cs);
-    inline void parse_string(char_stream& cs);
-    inline void parse_object(char_stream& cs);
-    inline void parse_array(char_stream& cs);
-    inline void parse_number(char_stream& cs);
+    inline void parse_element(const_stream& cs);
+    inline void parse_white(const_stream& cs);
+    inline void parse_value(const_stream& cs);
+    inline void parse_null(const_stream& cs);
+    inline void parse_true(const_stream& cs);
+    inline void parse_false(const_stream& cs);
+    inline void parse_string(const_stream& cs);
+    inline void parse_object(const_stream& cs);
+    inline void parse_array(const_stream& cs);
+    inline void parse_number(const_stream& cs);
 
 public:
     //------------------------------------------------------
