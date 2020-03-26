@@ -9,6 +9,13 @@
 
 import os ;
 
+project
+    : default-build
+        <variant>release
+        <link>static
+        <address-model>64
+    ;
+
 STANDALONE = [ os.environ STANDALONE ] ;
 if $(STANDALONE)
 {

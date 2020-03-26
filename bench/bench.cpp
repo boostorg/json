@@ -57,9 +57,9 @@ string_view toolset = "unknown";
 #endif
 
 #if BOOST_JSON_ARCH == 32
-string_view arch = "32";
+string_view arch = "x86";
 #elif BOOST_JSON_ARCH == 64
-string_view arch = "64";
+string_view arch = "x64";
 #else
 #error Unknown architecture.
 #endif
@@ -79,8 +79,8 @@ class any_impl
 public:
     virtual ~any_impl() = default;
     virtual string_view name() const noexcept = 0;
-    virtual void parse(string_view s, int repeat) const = 0;
-    virtual void serialize(string_view s, int repeat) const = 0;
+    virtual void parse(string_view s, std::size_t repeat) const = 0;
+    virtual void serialize(string_view s, std::size_t repeat) const = 0;
 };
 
 using impl_list = std::vector<
@@ -145,11 +145,6 @@ bench(
     impl_list const& vi)
 {
     std::size_t Trials = 6;
-    int repeat = 0;
-    if(verb == "parse")
-        repeat = 1000;
-    else if(verb == "serialize")
-        repeat = 1000;
 
     std::vector<sample> trial;
     for(unsigned i = 0; i < vf.size(); ++i)
@@ -157,38 +152,39 @@ bench(
         for(unsigned j = 0; j < vi.size(); ++j)
         {
             trial.clear();
+            std::size_t repeat = 1000;
             for(unsigned k = 0; k < Trials; ++k)
             {
                 auto result = run_for(
                     std::chrono::seconds(5),
                     [&]
                     {
-                        if(verb == "parse")
+                        if(verb == "Parse")
                             vi[j]->parse(
                                 vf[i].text,
                                 repeat);
-                        else if(verb == "serialize")
+                        else if(verb == "Serialize")
                             vi[j]->serialize(
                                 vf[i].text,
                                 repeat);
                     });
+                result.calls *= repeat;
                 result.mbs = static_cast<
                     std::size_t>(( 0.5 + 1000.0 *
-                        result.calls * repeat *
+                        result.calls *
                         vf[i].text.size() /
                         result.millis / 1024 / 1024));
-            #if 1
                 dout <<
-                    verb << "," <<
-                    vf[i].name << "," <<
-                    toolset << "," << arch << "," <<
+                    verb << " " << vf[i].name << "," <<
+                    toolset << " " << arch << "," <<
                     vi[j]->name() << "," <<
-                    result.calls * repeat << "," <<
+                    result.calls << "," <<
                     result.millis << "," <<
                     result.mbs <<
                     "\n";
-            #endif
                 trial.push_back(result);
+                // adjust repeat to avoid overlong tests
+                repeat = 250 * result.calls / result.millis;
             }
 
             // clean up the samples
@@ -236,12 +232,11 @@ bench(
                 });
             auto const mbs = static_cast<
                 std::size_t>(( 0.5 + 1000.0 *
-                calls * repeat * vf[i].text.size() /
+                calls * vf[i].text.size() /
                     millis / 1024 / 1024));
             strout <<
-                verb << "," <<
-                vf[i].name << "," <<
-                toolset << "," << arch << "," <<
+                verb << " " << vf[i].name << "," <<
+                toolset << " " << arch << "," <<
                 vi[j]->name() << "," <<
                 mbs <<
                 "\n";
@@ -263,7 +258,7 @@ public:
     void
     parse(
         string_view s,
-        int repeat) const override
+        std::size_t repeat) const override
     {
         parser p;
         while(repeat--)
@@ -278,7 +273,7 @@ public:
     void
     serialize(
         string_view s,
-        int repeat) const override
+        std::size_t repeat) const override
     {
         auto jv = json::parse(s);
         serializer sr;
@@ -317,7 +312,7 @@ public:
     void
     parse(
         string_view s,
-        int repeat) const override
+        std::size_t repeat) const override
     {
         parser p;
         while(repeat--)
@@ -333,7 +328,7 @@ public:
     void
     serialize(
         string_view s,
-        int repeat) const override
+        std::size_t repeat) const override
     {
         scoped_storage<pool> sp;
         auto jv = json::parse(s, sp);
@@ -400,7 +395,7 @@ public:
     void
     parse(
         string_view s,
-        int repeat) const override
+        std::size_t repeat) const override
     {
         while(repeat--)
         {
@@ -415,7 +410,7 @@ public:
     void
     serialize(
         string_view s,
-        int repeat) const override
+        std::size_t repeat) const override
     {
         auto jv = json::parse(s);
         while(repeat--)
@@ -462,7 +457,7 @@ public:
     void
     parse(
         string_view s,
-        int repeat) const override
+        std::size_t repeat) const override
     {
         null_parser p;
         while(repeat--)
@@ -475,7 +470,7 @@ public:
 
     void
     serialize(
-        string_view, int) const override
+        string_view, std::size_t) const override
     {
     }
 };
@@ -492,7 +487,7 @@ struct rapidjson_crt_impl : public any_impl
 
     void
     parse(
-        string_view s, int repeat) const override
+        string_view s, std::size_t repeat) const override
     {
         using namespace rapidjson;
         while(repeat--)
@@ -505,7 +500,7 @@ struct rapidjson_crt_impl : public any_impl
     }
 
     void
-    serialize(string_view s, int repeat) const override
+    serialize(string_view s, std::size_t repeat) const override
     {
         using namespace rapidjson;
         CrtAllocator alloc;
@@ -533,7 +528,7 @@ struct rapidjson_memory_impl : public any_impl
 
     void
     parse(
-        string_view s, int repeat) const override
+        string_view s, std::size_t repeat) const override
     {
         while(repeat--)
         {
@@ -543,7 +538,7 @@ struct rapidjson_memory_impl : public any_impl
     }
 
     void
-    serialize(string_view s, int repeat) const override
+    serialize(string_view s, std::size_t repeat) const override
     {
         rapidjson::Document d;
         d.Parse(s.data(), s.size());
@@ -569,7 +564,7 @@ struct nlohmann_impl : public any_impl
     }
 
     void
-    parse(string_view s, int repeat) const override
+    parse(string_view s, std::size_t repeat) const override
     {
         while(repeat--)
             nlohmann::json::parse(
@@ -577,7 +572,7 @@ struct nlohmann_impl : public any_impl
     }
 
     void
-    serialize(string_view s, int repeat) const override
+    serialize(string_view s, std::size_t repeat) const override
     {
         auto jv = nlohmann::json::parse(
             s.begin(), s.end());
@@ -607,20 +602,30 @@ main(
                 file_item{argv[i],
                 load_file(argv[i])});
     }
+    else
+    {
+        std::cerr <<
+            "Usage: bench <file>...";
+    }
 
     try
     {
+/*
+        strings.json integers-32.json integers-64.json twitter.json small.json array.json random.json citm_catalog.json canada.json
+*/
         impl_list vi;
-        vi.reserve(10);
+#if 0
         //vi.emplace_back(new boost_null_impl);
         //vi.emplace_back(new boost_vec_impl);
+#else
         vi.emplace_back(new boost_pool_impl);
+        vi.emplace_back(new boost_default_impl);
         vi.emplace_back(new rapidjson_memory_impl);
-        //vi.emplace_back(new boost_default_impl);
-        //vi.emplace_back(new rapidjson_crt_impl);
-        //vi.emplace_back(new nlohmann_impl);
-        bench("parse", vf, vi);
-        //bench("serialize", vf, vi);
+        vi.emplace_back(new rapidjson_crt_impl);
+        vi.emplace_back(new nlohmann_impl);
+#endif
+        bench("Parse", vf, vi);
+        bench("Serialize", vf, vi);
 
         dout << "\n" << strout.str();
     }
