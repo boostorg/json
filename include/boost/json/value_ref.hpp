@@ -159,7 +159,8 @@ public:
             std::is_same<string, 
                 detail::remove_cvref<T>>::value) &&
             ! std::is_same<bool,
-                detail::remove_cvref<T>>::value
+                detail::remove_cvref<T>>::value &&
+            ! std::is_const<T>::value
                 >::type* = 0)
         : f_{&from_rvalue<
             detail::remove_cvref<T>>, &t}
