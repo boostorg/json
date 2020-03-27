@@ -9,8 +9,12 @@ add_compile_options(
     /permissive-  # strict C++
     /W3           # enable all warnings
     /MP           # multi-processor compilation
-    /arch:SSE2
 )
+if("${CMAKE_GENERATOR_PLATFORM}" STREQUAL "Win32") # 32-bit
+    add_compile_options(
+        /arch:SSE2
+    )
+endif()
 
 # Linker options.
 add_link_options(
