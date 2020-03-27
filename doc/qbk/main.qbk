@@ -67,7 +67,7 @@
 [def __value_cast__             [link json.ref.boost__json__value_cast `value_cast`]]
 [def __value_cast_traits__      [link json.ref.boost__json__value_cast_traits `value_cast_traits`]]
 
-[def __initializer_list__       [@https://en.cppreference.com/w/cpp/utility/initializer_list]]
+[def __initializer_list__       [@https://en.cppreference.com/w/cpp/utility/initializer_list `std::initializer_list`]]
 [def __memory_resource__        [@https://en.cppreference.com/w/cpp/memory/memory_resource `std::pmr::memory_resource`]]
 [def __polymorphic_allocator__  [@https://en.cppreference.com/w/cpp/memory/polymorphic_allocator `std::pmr::polymorphic_allocator`]]
 [def __shared_ptr__             [@https://en.cppreference.com/w/cpp/memory/shared_ptr `std::shared_ptr`]]
