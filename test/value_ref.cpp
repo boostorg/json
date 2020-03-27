@@ -92,6 +92,12 @@ public:
             string const s{};
             (value_ref)s;
         }
+
+        // construct from a const rvalue
+        {
+            const value val;
+            (void)value_ref(std::move(val));
+        }
     }
     
     void
