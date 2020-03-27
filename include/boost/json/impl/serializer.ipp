@@ -415,6 +415,7 @@ write_number(stream& ss0)
     {
         switch(jv_->kind())
         {
+        default:
         case kind::int64:
             if(BOOST_JSON_LIKELY(
                 ss.remain() >=
@@ -497,6 +498,7 @@ write_array(stream& ss0)
         end = jv->get_array().end();
         switch(st)
         {
+        default:
         case state::arr1: goto do_arr1;
         case state::arr2: goto do_arr2;
         case state::arr3: goto do_arr3;
@@ -561,6 +563,7 @@ write_object(stream& ss0)
         end = jv->get_object().end();
         switch(st)
         {
+        default:
         case state::obj1: goto do_obj1;
         case state::obj2: goto do_obj2;
         case state::obj3: goto do_obj3;

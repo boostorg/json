@@ -42,6 +42,7 @@ The design of the library also achieves these goals:
 
 * Requires only C++11
 * Support stateful allocators
+* Top performance of general libraries
 * Uniform interface on all C++ versions
 * Strict parser and serializer which work incrementally
 * Security-aware treatment of untrusted inputs

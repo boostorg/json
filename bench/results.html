@@ -16,641 +16,151 @@
 <div id="benchmarks">
 </div>
 <br>
-<!
-Parse strings.json,msvc x64,boost (pool),23000,5043,4420
-Parse strings.json,msvc x64,boost (pool),27360,5064,5236
-Parse strings.json,msvc x64,boost (pool),27000,5002,5231
-Parse strings.json,msvc x64,boost (pool),28329,5241,5238
-Parse strings.json,msvc x64,boost (pool),27020,5004,5233
-Parse strings.json,msvc x64,boost (pool),28329,5237,5242
-Parse strings.json,msvc x64,boost,15000,5050,2878
-Parse strings.json,msvc x64,boost,15582,5195,2907
-Parse strings.json,msvc x64,boost,14980,5006,2900
-Parse strings.json,msvc x64,boost,15708,5253,2898
-Parse strings.json,msvc x64,boost,15687,5229,2907
-Parse strings.json,msvc x64,boost,15000,5006,2904
-Parse strings.json,msvc x64,rapidjson (pool),2000,6930,280
-Parse strings.json,msvc x64,rapidjson (pool),1512,5234,280
-Parse strings.json,msvc x64,rapidjson (pool),1440,5005,279
-Parse strings.json,msvc x64,rapidjson (pool),1491,5169,280
-Parse strings.json,msvc x64,rapidjson (pool),1512,5253,279
-Parse strings.json,msvc x64,rapidjson (pool),1491,5158,280
-Parse strings.json,msvc x64,rapidjson,2000,7229,268
-Parse strings.json,msvc x64,rapidjson,1449,5229,269
-Parse strings.json,msvc x64,rapidjson,1380,5002,267
-Parse strings.json,msvc x64,rapidjson,1428,5147,269
-Parse strings.json,msvc x64,rapidjson,1449,5244,268
-Parse strings.json,msvc x64,rapidjson,1380,5019,266
-Parse strings.json,msvc x64,nlohmann,1000,5725,169
-Parse strings.json,msvc x64,nlohmann,903,5146,170
-Parse strings.json,msvc x64,nlohmann,903,5189,169
-Parse strings.json,msvc x64,nlohmann,903,5175,169
-Parse strings.json,msvc x64,nlohmann,903,5169,169
-Parse strings.json,msvc x64,nlohmann,903,5154,170
-Parse integers-32.json,msvc x64,boost (pool),2000,7421,356
-Parse integers-32.json,msvc x64,boost (pool),1340,5002,354
-Parse integers-32.json,msvc x64,boost (pool),1386,5169,354
-Parse integers-32.json,msvc x64,boost (pool),1407,5242,355
-Parse integers-32.json,msvc x64,boost (pool),1407,5243,354
-Parse integers-32.json,msvc x64,boost (pool),1407,5264,353
-Parse integers-32.json,msvc x64,boost,2000,7934,333
-Parse integers-32.json,msvc x64,boost,1260,5059,329
-Parse integers-32.json,msvc x64,boost,1302,5211,330
-Parse integers-32.json,msvc x64,boost,1302,5209,330
-Parse integers-32.json,msvc x64,boost,1302,5203,331
-Parse integers-32.json,msvc x64,boost,1302,5209,330
-Parse integers-32.json,msvc x64,rapidjson (pool),1000,5074,260
-Parse integers-32.json,msvc x64,rapidjson (pool),1029,5234,260
-Parse integers-32.json,msvc x64,rapidjson (pool),1029,5217,261
-Parse integers-32.json,msvc x64,rapidjson (pool),1029,5217,261
-Parse integers-32.json,msvc x64,rapidjson (pool),1029,5217,261
-Parse integers-32.json,msvc x64,rapidjson (pool),1029,5232,260
-Parse integers-32.json,msvc x64,rapidjson,1000,5245,252
-Parse integers-32.json,msvc x64,rapidjson,987,5178,252
-Parse integers-32.json,msvc x64,rapidjson,987,5187,251
-Parse integers-32.json,msvc x64,rapidjson,987,5186,251
-Parse integers-32.json,msvc x64,rapidjson,987,5211,250
-Parse integers-32.json,msvc x64,rapidjson,987,5205,250
-Parse integers-32.json,msvc x64,nlohmann,1000,15938,83
-Parse integers-32.json,msvc x64,nlohmann,330,5236,83
-Parse integers-32.json,msvc x64,nlohmann,315,5000,83
-Parse integers-32.json,msvc x64,nlohmann,315,5002,83
-Parse integers-32.json,msvc x64,nlohmann,315,5002,83
-Parse integers-32.json,msvc x64,nlohmann,315,5001,83
-Parse integers-64.json,msvc x64,boost (pool),5000,5052,575
-Parse integers-64.json,msvc x64,boost (pool),5187,5243,575
-Parse integers-64.json,msvc x64,boost (pool),4940,5006,574
-Parse integers-64.json,msvc x64,boost (pool),5166,5236,573
-Parse integers-64.json,msvc x64,boost (pool),5166,5230,574
-Parse integers-64.json,msvc x64,boost (pool),5166,5221,575
-Parse integers-64.json,msvc x64,boost,5000,5435,535
-Parse integers-64.json,msvc x64,boost,4809,5243,533
-Parse integers-64.json,msvc x64,boost,4809,5227,535
-Parse integers-64.json,msvc x64,boost,4600,5010,534
-Parse integers-64.json,msvc x64,boost,4809,5232,534
-Parse integers-64.json,msvc x64,boost,4809,5225,535
-Parse integers-64.json,msvc x64,rapidjson (pool),4000,5816,400
-Parse integers-64.json,msvc x64,rapidjson (pool),3591,5207,401
-Parse integers-64.json,msvc x64,rapidjson (pool),3612,5255,399
-Parse integers-64.json,msvc x64,rapidjson (pool),3591,5207,401
-Parse integers-64.json,msvc x64,rapidjson (pool),3612,5236,401
-Parse integers-64.json,msvc x64,rapidjson (pool),3612,5242,400
-Parse integers-64.json,msvc x64,rapidjson,4000,6000,387
-Parse integers-64.json,msvc x64,rapidjson,3486,5222,388
-Parse integers-64.json,msvc x64,rapidjson,3486,5207,389
-Parse integers-64.json,msvc x64,rapidjson,3507,5238,389
-Parse integers-64.json,msvc x64,rapidjson,3340,5001,388
-Parse integers-64.json,msvc x64,rapidjson,3486,5202,389
-Parse integers-64.json,msvc x64,nlohmann,1000,6452,90
-Parse integers-64.json,msvc x64,nlohmann,798,5138,90
-Parse integers-64.json,msvc x64,nlohmann,798,5137,90
-Parse integers-64.json,msvc x64,nlohmann,798,5133,90
-Parse integers-64.json,msvc x64,nlohmann,798,5137,90
-Parse integers-64.json,msvc x64,nlohmann,798,5139,90
-Parse twitter.json,msvc x64,boost (pool),4000,6508,379
-Parse twitter.json,msvc x64,boost (pool),3213,5214,380
-Parse twitter.json,msvc x64,boost (pool),3080,5006,380
-Parse twitter.json,msvc x64,boost (pool),3213,5231,379
-Parse twitter.json,msvc x64,boost (pool),3213,5256,377
-Parse twitter.json,msvc x64,boost (pool),3192,5189,380
-Parse twitter.json,msvc x64,boost,2000,6113,202
-Parse twitter.json,msvc x64,boost,1701,5174,203
-Parse twitter.json,msvc x64,boost,1722,5235,203
-Parse twitter.json,msvc x64,boost,1722,5253,202
-Parse twitter.json,msvc x64,boost,1701,5176,203
-Parse twitter.json,msvc x64,boost,1722,5240,203
-Parse twitter.json,msvc x64,rapidjson (pool),3000,7430,249
-Parse twitter.json,msvc x64,rapidjson (pool),2100,5222,248
-Parse twitter.json,msvc x64,rapidjson (pool),2100,5224,248
-Parse twitter.json,msvc x64,rapidjson (pool),2100,5204,249
-Parse twitter.json,msvc x64,rapidjson (pool),2100,5202,249
-Parse twitter.json,msvc x64,rapidjson (pool),2100,5198,249
-Parse twitter.json,msvc x64,rapidjson,2000,6457,191
-Parse twitter.json,msvc x64,rapidjson,1617,5225,191
-Parse twitter.json,msvc x64,rapidjson,1617,5184,192
-Parse twitter.json,msvc x64,rapidjson,1617,5234,191
-Parse twitter.json,msvc x64,rapidjson,1617,5223,191
-Parse twitter.json,msvc x64,rapidjson,1617,5212,191
-Parse twitter.json,msvc x64,nlohmann,1000,7173,86
-Parse twitter.json,msvc x64,nlohmann,714,5128,86
-Parse twitter.json,msvc x64,nlohmann,714,5140,86
-Parse twitter.json,msvc x64,nlohmann,714,5147,86
-Parse twitter.json,msvc x64,nlohmann,714,5120,86
-Parse twitter.json,msvc x64,nlohmann,714,5126,86
-Parse small.json,msvc x64,boost (pool),2190000,5001,252
-Parse small.json,msvc x64,boost (pool),2189560,5005,252
-Parse small.json,msvc x64,boost (pool),2296728,5236,252
-Parse small.json,msvc x64,boost (pool),2193200,5012,252
-Parse small.json,msvc x64,boost (pool),2297337,5239,252
-Parse small.json,msvc x64,boost (pool),2192520,5009,252
-Parse small.json,msvc x64,boost,1353000,5000,156
-Parse small.json,msvc x64,boost,1353000,5003,156
-Parse small.json,msvc x64,boost,1352180,5000,156
-Parse small.json,msvc x64,boost,1352180,5003,155
-Parse small.json,msvc x64,boost,1351360,5000,155
-Parse small.json,msvc x64,boost,1418928,5256,155
-Parse small.json,msvc x64,rapidjson (pool),1678000,5002,193
-Parse small.json,msvc x64,rapidjson (pool),1677320,5001,193
-Parse small.json,msvc x64,rapidjson (pool),1676980,5001,193
-Parse small.json,msvc x64,rapidjson (pool),1760472,5235,193
-Parse small.json,msvc x64,rapidjson (pool),1681440,5010,193
-Parse small.json,msvc x64,rapidjson (pool),1678080,5019,192
-Parse small.json,msvc x64,rapidjson,1593000,5000,183
-Parse small.json,msvc x64,rapidjson,1672650,5240,184
-Parse small.json,msvc x64,rapidjson,1596040,5003,183
-Parse small.json,msvc x64,rapidjson,1595080,5006,183
-Parse small.json,msvc x64,rapidjson,1593160,5014,183
-Parse small.json,msvc x64,rapidjson,1668135,5239,183
-Parse small.json,msvc x64,nlohmann,556000,5001,64
-Parse small.json,msvc x64,nlohmann,555880,5007,64
-Parse small.json,msvc x64,nlohmann,555100,5000,64
-Parse small.json,msvc x64,nlohmann,555100,5000,64
-Parse small.json,msvc x64,nlohmann,582855,5258,64
-Parse small.json,msvc x64,nlohmann,581952,5244,64
-Parse array.json,msvc x64,boost (pool),3000,7335,267
-Parse array.json,msvc x64,boost (pool),2040,5006,266
-Parse array.json,msvc x64,boost (pool),2121,5226,265
-Parse array.json,msvc x64,boost (pool),2121,5202,266
-Parse array.json,msvc x64,boost (pool),2121,5215,265
-Parse array.json,msvc x64,boost (pool),2121,5203,266
-Parse array.json,msvc x64,boost,2000,5470,238
-Parse array.json,msvc x64,boost,1911,5234,238
-Parse array.json,msvc x64,boost,1911,5232,238
-Parse array.json,msvc x64,boost,1911,5238,238
-Parse array.json,msvc x64,boost,1911,5245,238
-Parse array.json,msvc x64,boost,1911,5231,238
-Parse array.json,msvc x64,rapidjson (pool),2000,5735,227
-Parse array.json,msvc x64,rapidjson (pool),1827,5230,228
-Parse array.json,msvc x64,rapidjson (pool),1827,5224,228
-Parse array.json,msvc x64,rapidjson (pool),1827,5229,228
-Parse array.json,msvc x64,rapidjson (pool),1740,5038,225
-Parse array.json,msvc x64,rapidjson (pool),1634,5019,212
-Parse array.json,msvc x64,rapidjson,2000,5894,221
-Parse array.json,msvc x64,rapidjson,1764,5194,221
-Parse array.json,msvc x64,rapidjson,1764,5214,221
-Parse array.json,msvc x64,rapidjson,1764,5198,221
-Parse array.json,msvc x64,rapidjson,1764,5191,222
-Parse array.json,msvc x64,rapidjson,1764,5202,221
-Parse array.json,msvc x64,nlohmann,1000,8928,73
-Parse array.json,msvc x64,nlohmann,560,5003,73
-Parse array.json,msvc x64,nlohmann,567,5058,73
-Parse array.json,msvc x64,nlohmann,560,5000,73
-Parse array.json,msvc x64,nlohmann,560,5001,73
-Parse array.json,msvc x64,nlohmann,567,5060,73
-Parse random.json,msvc x64,boost (pool),625000,5004,267
-Parse random.json,msvc x64,boost (pool),655725,5260,267
-Parse random.json,msvc x64,boost (pool),654465,5236,267
-Parse random.json,msvc x64,boost (pool),624960,5003,267
-Parse random.json,msvc x64,boost (pool),655809,5242,268
-Parse random.json,msvc x64,boost (pool),625520,5005,267
-Parse random.json,msvc x64,boost,398000,5001,170
-Parse random.json,msvc x64,boost,397920,5001,170
-Parse random.json,msvc x64,boost,417732,5243,171
-Parse random.json,msvc x64,boost,398360,5006,170
-Parse random.json,msvc x64,boost,397880,5008,170
-Parse random.json,msvc x64,boost,417102,5252,170
-Parse random.json,msvc x64,rapidjson (pool),548000,5001,235
-Parse random.json,msvc x64,rapidjson (pool),547880,5014,234
-Parse random.json,msvc x64,rapidjson (pool),573657,5241,234
-Parse random.json,msvc x64,rapidjson (pool),547260,5006,234
-Parse random.json,msvc x64,rapidjson (pool),573930,5232,235
-Parse random.json,msvc x64,rapidjson (pool),548480,5012,234
-Parse random.json,msvc x64,rapidjson,533000,5003,228
-Parse random.json,msvc x64,rapidjson,532680,5001,228
-Parse random.json,msvc x64,rapidjson,559188,5242,228
-Parse random.json,msvc x64,rapidjson,533360,5002,228
-Parse random.json,msvc x64,rapidjson,533140,5004,228
-Parse random.json,msvc x64,rapidjson,532700,5003,228
-Parse random.json,msvc x64,nlohmann,153000,5022,65
-Parse random.json,msvc x64,nlohmann,159936,5241,65
-Parse random.json,msvc x64,nlohmann,152580,5004,65
-Parse random.json,msvc x64,nlohmann,152440,5009,65
-Parse random.json,msvc x64,nlohmann,159768,5221,65
-Parse random.json,msvc x64,nlohmann,160650,5246,66
-Parse citm_catalog.json,msvc x64,boost (pool),2000,7466,454
-Parse citm_catalog.json,msvc x64,boost (pool),1386,5167,455
-Parse citm_catalog.json,msvc x64,boost (pool),1340,5001,454
-Parse citm_catalog.json,msvc x64,boost (pool),1386,5164,455
-Parse citm_catalog.json,msvc x64,boost (pool),1340,5000,454
-Parse citm_catalog.json,msvc x64,boost (pool),1340,5003,454
-Parse citm_catalog.json,msvc x64,boost,1000,6705,253
-Parse citm_catalog.json,msvc x64,boost,777,5203,253
-Parse citm_catalog.json,msvc x64,boost,777,5203,253
-Parse citm_catalog.json,msvc x64,boost,777,5206,253
-Parse citm_catalog.json,msvc x64,boost,777,5208,253
-Parse citm_catalog.json,msvc x64,boost,777,5225,252
-Parse citm_catalog.json,msvc x64,rapidjson (pool),2000,9962,340
-Parse citm_catalog.json,msvc x64,rapidjson (pool),1050,5224,341
-Parse citm_catalog.json,msvc x64,rapidjson (pool),1050,5238,340
-Parse citm_catalog.json,msvc x64,rapidjson (pool),1050,5235,340
-Parse citm_catalog.json,msvc x64,rapidjson (pool),1050,5253,339
-Parse citm_catalog.json,msvc x64,rapidjson (pool),1029,5125,340
-Parse citm_catalog.json,msvc x64,rapidjson,1000,6276,270
-Parse citm_catalog.json,msvc x64,rapidjson,819,5151,270
-Parse citm_catalog.json,msvc x64,rapidjson,819,5153,269
-Parse citm_catalog.json,msvc x64,rapidjson,819,5158,269
-Parse citm_catalog.json,msvc x64,rapidjson,819,5152,270
-Parse citm_catalog.json,msvc x64,rapidjson,819,5112,272
-Parse citm_catalog.json,msvc x64,nlohmann,1000,16429,103
-Parse citm_catalog.json,msvc x64,nlohmann,315,5200,103
-Parse citm_catalog.json,msvc x64,nlohmann,315,5235,102
-Parse citm_catalog.json,msvc x64,nlohmann,315,5159,104
-Parse citm_catalog.json,msvc x64,nlohmann,315,5151,104
-Parse citm_catalog.json,msvc x64,nlohmann,315,5160,103
-Parse canada.json,msvc x64,boost (pool),1000,6482,331
-Parse canada.json,msvc x64,boost (pool),798,5191,330
-Parse canada.json,msvc x64,boost (pool),798,5193,330
-Parse canada.json,msvc x64,boost (pool),798,5189,330
-Parse canada.json,msvc x64,boost (pool),798,5187,330
-Parse canada.json,msvc x64,boost (pool),798,5205,329
-Parse canada.json,msvc x64,boost,1000,10240,210
-Parse canada.json,msvc x64,boost,504,5176,209
-Parse canada.json,msvc x64,boost,504,5192,208
-Parse canada.json,msvc x64,boost,504,5202,208
-Parse canada.json,msvc x64,boost,504,5212,208
-Parse canada.json,msvc x64,boost,504,5209,208
-Parse canada.json,msvc x64,rapidjson (pool),1000,5875,365
-Parse canada.json,msvc x64,rapidjson (pool),882,5172,366
-Parse canada.json,msvc x64,rapidjson (pool),882,5192,365
-Parse canada.json,msvc x64,rapidjson (pool),882,5173,366
-Parse canada.json,msvc x64,rapidjson (pool),882,5183,365
-Parse canada.json,msvc x64,rapidjson (pool),882,5193,365
-Parse canada.json,msvc x64,rapidjson,1000,9305,231
-Parse canada.json,msvc x64,rapidjson,546,5076,231
-Parse canada.json,msvc x64,rapidjson,546,5077,231
-Parse canada.json,msvc x64,rapidjson,546,5097,230
-Parse canada.json,msvc x64,rapidjson,546,5093,230
-Parse canada.json,msvc x64,rapidjson,546,5096,230
-Parse canada.json,msvc x64,nlohmann,1000,58613,37
-Parse canada.json,msvc x64,nlohmann,88,5164,37
-Parse canada.json,msvc x64,nlohmann,88,5158,37
-Parse canada.json,msvc x64,nlohmann,88,5171,37
-Parse canada.json,msvc x64,nlohmann,88,5191,36
-Parse canada.json,msvc x64,nlohmann,88,5157,37
-Serialize strings.json,msvc x64,boost (pool),38000,5057,7282
-Serialize strings.json,msvc x64,boost (pool),39438,5256,7271
-Serialize strings.json,msvc x64,boost (pool),39375,5236,7287
-Serialize strings.json,msvc x64,boost (pool),39480,5257,7278
-Serialize strings.json,msvc x64,boost (pool),39417,5228,7306
-Serialize strings.json,msvc x64,boost (pool),37680,5008,7291
-Serialize strings.json,msvc x64,boost,34000,5138,6413
-Serialize strings.json,msvc x64,boost,34734,5231,6435
-Serialize strings.json,msvc x64,boost,34860,5235,6453
-Serialize strings.json,msvc x64,boost,33280,5037,6403
-Serialize strings.json,msvc x64,boost,34671,5226,6429
-Serialize strings.json,msvc x64,boost,33160,5000,6427
-Serialize strings.json,msvc x64,rapidjson (pool),4000,6294,616
-Serialize strings.json,msvc x64,rapidjson (pool),3160,5046,607
-Serialize strings.json,msvc x64,rapidjson (pool),3276,5229,607
-Serialize strings.json,msvc x64,rapidjson (pool),3276,5245,605
-Serialize strings.json,msvc x64,rapidjson (pool),3276,5230,607
-Serialize strings.json,msvc x64,rapidjson (pool),3120,5000,605
-Serialize strings.json,msvc x64,rapidjson,4000,6303,615
-Serialize strings.json,msvc x64,rapidjson,3160,5052,606
-Serialize strings.json,msvc x64,rapidjson,3276,5224,608
-Serialize strings.json,msvc x64,rapidjson,3276,5248,605
-Serialize strings.json,msvc x64,rapidjson,3276,5232,607
-Serialize strings.json,msvc x64,rapidjson,3276,5234,607
-Serialize strings.json,msvc x64,nlohmann,1000,6637,146
-Serialize strings.json,msvc x64,nlohmann,740,5017,143
-Serialize strings.json,msvc x64,nlohmann,756,5106,143
-Serialize strings.json,msvc x64,nlohmann,740,5040,142
-Serialize strings.json,msvc x64,nlohmann,756,5112,143
-Serialize strings.json,msvc x64,nlohmann,756,5098,144
-Serialize integers-32.json,msvc x64,boost (pool),3000,6764,586
-Serialize integers-32.json,msvc x64,boost (pool),2200,5061,574
-Serialize integers-32.json,msvc x64,boost (pool),2268,5216,574
-Serialize integers-32.json,msvc x64,boost (pool),2268,5211,575
-Serialize integers-32.json,msvc x64,boost (pool),2268,5234,572
-Serialize integers-32.json,msvc x64,boost (pool),2268,5221,574
-Serialize integers-32.json,msvc x64,boost,3000,6755,587
-Serialize integers-32.json,msvc x64,boost,2220,5114,573
-Serialize integers-32.json,msvc x64,boost,2268,5222,574
-Serialize integers-32.json,msvc x64,boost,2268,5227,573
-Serialize integers-32.json,msvc x64,boost,2268,5217,574
-Serialize integers-32.json,msvc x64,boost,2268,5239,572
-Serialize integers-32.json,msvc x64,rapidjson (pool),3000,5516,718
-Serialize integers-32.json,msvc x64,rapidjson (pool),2700,5062,705
-Serialize integers-32.json,msvc x64,rapidjson (pool),2793,5236,705
-Serialize integers-32.json,msvc x64,rapidjson (pool),2793,5258,702
-Serialize integers-32.json,msvc x64,rapidjson (pool),2772,5196,705
-Serialize integers-32.json,msvc x64,rapidjson (pool),2793,5235,705
-Serialize integers-32.json,msvc x64,rapidjson,3000,5569,712
-Serialize integers-32.json,msvc x64,rapidjson,2680,5073,698
-Serialize integers-32.json,msvc x64,rapidjson,2640,5001,697
-Serialize integers-32.json,msvc x64,rapidjson,2751,5206,698
-Serialize integers-32.json,msvc x64,rapidjson,2640,5000,697
-Serialize integers-32.json,msvc x64,rapidjson,2772,5237,699
-Serialize integers-32.json,msvc x64,nlohmann,2000,5142,514
-Serialize integers-32.json,msvc x64,nlohmann,1843,5023,485
-Serialize integers-32.json,msvc x64,nlohmann,1911,5235,482
-Serialize integers-32.json,msvc x64,nlohmann,1911,5209,485
-Serialize integers-32.json,msvc x64,nlohmann,1911,5213,484
-Serialize integers-32.json,msvc x64,nlohmann,1911,5223,483
-Serialize integers-64.json,msvc x64,boost (pool),6000,5332,654
-Serialize integers-64.json,msvc x64,boost (pool),5901,5242,654
-Serialize integers-64.json,msvc x64,boost (pool),5620,5002,653
-Serialize integers-64.json,msvc x64,boost (pool),5880,5228,654
-Serialize integers-64.json,msvc x64,boost (pool),5620,5003,653
-Serialize integers-64.json,msvc x64,boost (pool),5880,5222,654
-Serialize integers-64.json,msvc x64,boost,6000,5334,654
-Serialize integers-64.json,msvc x64,boost,5620,5002,653
-Serialize integers-64.json,msvc x64,boost,5880,5225,654
-Serialize integers-64.json,msvc x64,boost,5620,5002,653
-Serialize integers-64.json,msvc x64,boost,5880,5229,654
-Serialize integers-64.json,msvc x64,boost,5620,5002,653
-Serialize integers-64.json,msvc x64,rapidjson (pool),7000,5121,794
-Serialize integers-64.json,msvc x64,rapidjson (pool),6820,5009,791
-Serialize integers-64.json,msvc x64,rapidjson (pool),7140,5260,789
-Serialize integers-64.json,msvc x64,rapidjson (pool),7119,5227,792
-Serialize integers-64.json,msvc x64,rapidjson (pool),6800,5000,790
-Serialize integers-64.json,msvc x64,rapidjson (pool),7140,5242,792
-Serialize integers-64.json,msvc x64,rapidjson,7000,5126,794
-Serialize integers-64.json,msvc x64,rapidjson,6820,5013,791
-Serialize integers-64.json,msvc x64,rapidjson,6800,5000,790
-Serialize integers-64.json,msvc x64,rapidjson,7140,5240,792
-Serialize integers-64.json,msvc x64,rapidjson,6800,5000,790
-Serialize integers-64.json,msvc x64,rapidjson,7140,5262,789
-Serialize integers-64.json,msvc x64,nlohmann,6000,5721,610
-Serialize integers-64.json,msvc x64,nlohmann,5240,5109,596
-Serialize integers-64.json,msvc x64,nlohmann,5376,5231,597
-Serialize integers-64.json,msvc x64,nlohmann,5120,5022,593
-Serialize integers-64.json,msvc x64,nlohmann,5334,5192,597
-Serialize integers-64.json,msvc x64,nlohmann,5376,5229,598
-Serialize twitter.json,msvc x64,boost (pool),10000,5455,1131
-Serialize twitter.json,msvc x64,boost (pool),9618,5247,1131
-Serialize twitter.json,msvc x64,boost (pool),9160,5026,1125
-Serialize twitter.json,msvc x64,boost (pool),9555,5218,1130
-Serialize twitter.json,msvc x64,boost (pool),9140,5000,1128
-Serialize twitter.json,msvc x64,boost (pool),9597,5242,1130
-Serialize twitter.json,msvc x64,boost,9000,5098,1089
-Serialize twitter.json,msvc x64,boost,8820,5011,1086
-Serialize twitter.json,msvc x64,boost,9240,5238,1088
-Serialize twitter.json,msvc x64,boost,8820,5019,1084
-Serialize twitter.json,msvc x64,boost,8780,5010,1081
-Serialize twitter.json,msvc x64,boost,8760,5012,1078
-Serialize twitter.json,msvc x64,rapidjson (pool),7000,5418,797
-Serialize twitter.json,msvc x64,rapidjson (pool),6440,5041,788
-Serialize twitter.json,msvc x64,rapidjson (pool),6699,5231,790
-Serialize twitter.json,msvc x64,rapidjson (pool),6400,5012,788
-Serialize twitter.json,msvc x64,rapidjson (pool),6699,5231,790
-Serialize twitter.json,msvc x64,rapidjson (pool),6400,5022,786
-Serialize twitter.json,msvc x64,rapidjson,6000,5016,738
-Serialize twitter.json,msvc x64,rapidjson,5980,5052,730
-Serialize twitter.json,msvc x64,rapidjson,6195,5223,732
-Serialize twitter.json,msvc x64,rapidjson,5920,5004,730
-Serialize twitter.json,msvc x64,rapidjson,6195,5225,732
-Serialize twitter.json,msvc x64,rapidjson,6216,5247,731
-Serialize twitter.json,msvc x64,nlohmann,3000,6531,283
-Serialize twitter.json,msvc x64,nlohmann,2280,5112,275
-Serialize twitter.json,msvc x64,nlohmann,2331,5216,276
-Serialize twitter.json,msvc x64,nlohmann,2331,5235,275
-Serialize twitter.json,msvc x64,nlohmann,2331,5222,275
-Serialize twitter.json,msvc x64,nlohmann,2331,5220,276
-Serialize small.json,msvc x64,boost (pool),8689000,5000,999
-Serialize small.json,msvc x64,boost (pool),9123450,5217,1006
-Serialize small.json,msvc x64,boost (pool),9181158,5262,1003
-Serialize small.json,msvc x64,boost (pool),9160200,5234,1006
-Serialize small.json,msvc x64,boost (pool),8750660,5009,1005
-Serialize small.json,msvc x64,boost (pool),8734920,5000,1005
-Serialize small.json,msvc x64,boost,8646000,5000,994
-Serialize small.json,msvc x64,boost,9078300,5216,1001
-Serialize small.json,msvc x64,boost,9137457,5243,1002
-Serialize small.json,msvc x64,boost,8713940,5015,999
-Serialize small.json,msvc x64,boost,8687860,5005,998
-Serialize small.json,msvc x64,boost,8679180,5012,996
-Serialize small.json,msvc x64,rapidjson (pool),6812000,5000,783
-Serialize small.json,msvc x64,rapidjson (pool),7152600,5200,791
-Serialize small.json,msvc x64,rapidjson (pool),7221375,5228,794
-Serialize small.json,msvc x64,rapidjson (pool),6906440,5062,785
-Serialize small.json,msvc x64,rapidjson (pool),7162932,5191,794
-Serialize small.json,msvc x64,rapidjson (pool),7244328,5170,806
-Serialize small.json,msvc x64,rapidjson,6820000,5000,784
-Serialize small.json,msvc x64,rapidjson,7161000,5179,795
-Serialize small.json,msvc x64,rapidjson,6913480,5041,789
-Serialize small.json,msvc x64,rapidjson,7200102,5206,795
-Serialize small.json,msvc x64,rapidjson,7260939,5218,800
-Serialize small.json,msvc x64,rapidjson,6957580,5057,791
-Serialize small.json,msvc x64,nlohmann,2190000,5000,252
-Serialize small.json,msvc x64,nlohmann,2299500,5218,253
-Serialize small.json,msvc x64,nlohmann,2203420,5007,253
-Serialize small.json,msvc x64,nlohmann,2310336,5227,254
-Serialize small.json,msvc x64,nlohmann,2320500,5248,254
-Serialize small.json,msvc x64,nlohmann,2321382,5241,255
-Serialize array.json,msvc x64,boost (pool),4000,6313,413
-Serialize array.json,msvc x64,boost (pool),3160,5041,409
-Serialize array.json,msvc x64,boost (pool),3276,5224,409
-Serialize array.json,msvc x64,boost (pool),3276,5243,407
-Serialize array.json,msvc x64,boost (pool),3276,5228,408
-Serialize array.json,msvc x64,boost (pool),3276,5228,408
-Serialize array.json,msvc x64,boost,4000,6310,413
-Serialize array.json,msvc x64,boost,3160,5072,406
-Serialize array.json,msvc x64,boost,3255,5206,408
-Serialize array.json,msvc x64,boost,3276,5234,408
-Serialize array.json,msvc x64,boost,3276,5234,408
-Serialize array.json,msvc x64,boost,3276,5233,408
-Serialize array.json,msvc x64,rapidjson (pool),3000,5103,383
-Serialize array.json,msvc x64,rapidjson (pool),3066,5244,381
-Serialize array.json,msvc x64,rapidjson (pool),2920,5002,381
-Serialize array.json,msvc x64,rapidjson (pool),3045,5209,381
-Serialize array.json,msvc x64,rapidjson (pool),3066,5241,381
-Serialize array.json,msvc x64,rapidjson (pool),3066,5257,380
-Serialize array.json,msvc x64,rapidjson,4000,6632,393
-Serialize array.json,msvc x64,rapidjson,3000,5033,389
-Serialize array.json,msvc x64,rapidjson,2980,5000,389
-Serialize array.json,msvc x64,rapidjson,3129,5244,389
-Serialize array.json,msvc x64,rapidjson,2980,5001,388
-Serialize array.json,msvc x64,rapidjson,3108,5232,387
-Serialize array.json,msvc x64,nlohmann,2000,5335,244
-Serialize array.json,msvc x64,nlohmann,1860,5131,236
-Serialize array.json,msvc x64,nlohmann,1890,5215,236
-Serialize array.json,msvc x64,nlohmann,1890,5240,235
-Serialize array.json,msvc x64,nlohmann,1890,5218,236
-Serialize array.json,msvc x64,nlohmann,1890,5218,236
-Serialize random.json,msvc x64,boost (pool),1607000,5001,688
-Serialize random.json,msvc x64,boost (pool),1686993,5234,690
-Serialize random.json,msvc x64,boost (pool),1611560,5014,688
-Serialize random.json,msvc x64,boost (pool),1687413,5253,687
-Serialize random.json,msvc x64,boost (pool),1686447,5234,690
-Serialize random.json,msvc x64,boost (pool),1611040,5000,690
-Serialize random.json,msvc x64,boost,1603000,5001,686
-Serialize random.json,msvc x64,boost,1682793,5234,688
-Serialize random.json,msvc x64,boost,1687917,5240,689
-Serialize random.json,msvc x64,boost,1610600,5004,689
-Serialize random.json,msvc x64,boost,1609300,5011,687
-Serialize random.json,msvc x64,boost,1686048,5249,687
-Serialize random.json,msvc x64,rapidjson (pool),1721000,5000,737
-Serialize random.json,msvc x64,rapidjson (pool),1807050,5229,740
-Serialize random.json,msvc x64,rapidjson (pool),1727900,5018,737
-Serialize random.json,msvc x64,rapidjson (pool),1807785,5234,739
-Serialize random.json,msvc x64,rapidjson (pool),1726960,5023,736
-Serialize random.json,msvc x64,rapidjson (pool),1804992,5234,738
-Serialize random.json,msvc x64,rapidjson,1730000,5000,740
-Serialize random.json,msvc x64,rapidjson,1816500,5247,741
-Serialize random.json,msvc x64,rapidjson,1817529,5235,743
-Serialize random.json,msvc x64,rapidjson,1822716,5238,745
-Serialize random.json,msvc x64,rapidjson,1739880,5016,742
-Serialize random.json,msvc x64,rapidjson,1734320,5004,742
-Serialize random.json,msvc x64,nlohmann,644000,5003,275
-Serialize random.json,msvc x64,nlohmann,675780,5208,278
-Serialize random.json,msvc x64,nlohmann,648780,5017,277
-Serialize random.json,msvc x64,nlohmann,678909,5229,278
-Serialize random.json,msvc x64,nlohmann,681618,5235,279
-Serialize random.json,msvc x64,nlohmann,651020,5026,277
-Serialize citm_catalog.json,msvc x64,boost (pool),5000,5150,1646
-Serialize citm_catalog.json,msvc x64,boost (pool),4840,5047,1626
-Serialize citm_catalog.json,msvc x64,boost (pool),5019,5231,1627
-Serialize citm_catalog.json,msvc x64,boost (pool),5019,5231,1627
-Serialize citm_catalog.json,msvc x64,boost (pool),5019,5246,1622
-Serialize citm_catalog.json,msvc x64,boost (pool),5019,5229,1627
-Serialize citm_catalog.json,msvc x64,boost,5000,5606,1512
-Serialize citm_catalog.json,msvc x64,boost,4440,5067,1486
-Serialize citm_catalog.json,msvc x64,boost,4380,5005,1484
-Serialize citm_catalog.json,msvc x64,boost,4578,5232,1483
-Serialize citm_catalog.json,msvc x64,boost,4578,5231,1484
-Serialize citm_catalog.json,msvc x64,boost,4578,5224,1486
-Serialize citm_catalog.json,msvc x64,rapidjson (pool),6000,5030,2022
-Serialize citm_catalog.json,msvc x64,rapidjson (pool),5960,5058,1998
-Serialize citm_catalog.json,msvc x64,rapidjson (pool),5880,5009,1990
-Serialize citm_catalog.json,msvc x64,rapidjson (pool),6153,5235,1993
-Serialize citm_catalog.json,msvc x64,rapidjson (pool),6153,5227,1996
-Serialize citm_catalog.json,msvc x64,rapidjson (pool),6174,5240,1998
-Serialize citm_catalog.json,msvc x64,rapidjson,6000,5283,1925
-Serialize citm_catalog.json,msvc x64,rapidjson,5660,5052,1899
-Serialize citm_catalog.json,msvc x64,rapidjson,5600,5011,1895
-Serialize citm_catalog.json,msvc x64,rapidjson,5859,5249,1892
-Serialize citm_catalog.json,msvc x64,rapidjson,5580,5018,1885
-Serialize citm_catalog.json,msvc x64,rapidjson,5817,5200,1896
-Serialize citm_catalog.json,msvc x64,nlohmann,3000,6488,784
-Serialize citm_catalog.json,msvc x64,nlohmann,2185,5012,739
-Serialize citm_catalog.json,msvc x64,nlohmann,2268,5228,735
-Serialize citm_catalog.json,msvc x64,nlohmann,2268,5226,736
-Serialize citm_catalog.json,msvc x64,nlohmann,2268,5213,738
-Serialize citm_catalog.json,msvc x64,nlohmann,2268,5197,740
-Serialize canada.json,msvc x64,boost (pool),1000,6291,341
-Serialize canada.json,msvc x64,boost (pool),780,5060,331
-Serialize canada.json,msvc x64,boost (pool),798,5178,331
-Serialize canada.json,msvc x64,boost (pool),798,5181,331
-Serialize canada.json,msvc x64,boost (pool),798,5177,331
-Serialize canada.json,msvc x64,boost (pool),798,5178,331
-Serialize canada.json,msvc x64,boost,1000,6537,328
-Serialize canada.json,msvc x64,boost,760,5214,313
-Serialize canada.json,msvc x64,boost,756,5179,313
-Serialize canada.json,msvc x64,boost,756,5221,311
-Serialize canada.json,msvc x64,boost,756,5181,313
-Serialize canada.json,msvc x64,boost,756,5200,312
-Serialize canada.json,msvc x64,rapidjson (pool),1000,8804,244
-Serialize canada.json,msvc x64,rapidjson (pool),560,5056,238
-Serialize canada.json,msvc x64,rapidjson (pool),567,5122,238
-Serialize canada.json,msvc x64,rapidjson (pool),567,5121,238
-Serialize canada.json,msvc x64,rapidjson (pool),567,5127,237
-Serialize canada.json,msvc x64,rapidjson (pool),567,5117,238
-Serialize canada.json,msvc x64,rapidjson,1000,8622,249
-Serialize canada.json,msvc x64,rapidjson,560,5053,238
-Serialize canada.json,msvc x64,rapidjson,567,5115,238
-Serialize canada.json,msvc x64,rapidjson,567,5123,238
-Serialize canada.json,msvc x64,rapidjson,567,5199,234
-Serialize canada.json,msvc x64,rapidjson,567,5157,236
-Serialize canada.json,msvc x64,nlohmann,1000,17061,126
-Serialize canada.json,msvc x64,nlohmann,238,5052,101
-Serialize canada.json,msvc x64,nlohmann,231,5146,96
-Serialize canada.json,msvc x64,nlohmann,231,5140,96
-Serialize canada.json,msvc x64,nlohmann,231,5171,96
-Serialize canada.json,msvc x64,nlohmann,231,5176,96
-
--->
-
 <textarea id="data" cols="60" rows="20" overflow="hidden" onkeyup="autosize(this)">
-Parse strings.json,msvc x64,boost (pool),5235
-Parse strings.json,msvc x64,boost,2903
-Parse strings.json,msvc x64,rapidjson (pool),280
-Parse strings.json,msvc x64,rapidjson,268
-Parse strings.json,msvc x64,nlohmann,169
-Parse integers-32.json,msvc x64,boost (pool),354
-Parse integers-32.json,msvc x64,boost,330
-Parse integers-32.json,msvc x64,rapidjson (pool),260
-Parse integers-32.json,msvc x64,rapidjson,252
-Parse integers-32.json,msvc x64,nlohmann,83
-Parse integers-64.json,msvc x64,boost (pool),575
-Parse integers-64.json,msvc x64,boost,535
-Parse integers-64.json,msvc x64,rapidjson (pool),401
-Parse integers-64.json,msvc x64,rapidjson,389
-Parse integers-64.json,msvc x64,nlohmann,90
-Parse twitter.json,msvc x64,boost (pool),380
-Parse twitter.json,msvc x64,boost,203
-Parse twitter.json,msvc x64,rapidjson (pool),249
-Parse twitter.json,msvc x64,rapidjson,191
-Parse twitter.json,msvc x64,nlohmann,86
-Parse small.json,msvc x64,boost (pool),252
-Parse small.json,msvc x64,boost,155
-Parse small.json,msvc x64,rapidjson (pool),193
-Parse small.json,msvc x64,rapidjson,183
-Parse small.json,msvc x64,nlohmann,64
-Parse array.json,msvc x64,boost (pool),266
-Parse array.json,msvc x64,boost,238
-Parse array.json,msvc x64,rapidjson (pool),228
-Parse array.json,msvc x64,rapidjson,221
-Parse array.json,msvc x64,nlohmann,73
-Parse random.json,msvc x64,boost (pool),267
-Parse random.json,msvc x64,boost,170
-Parse random.json,msvc x64,rapidjson (pool),234
-Parse random.json,msvc x64,rapidjson,228
-Parse random.json,msvc x64,nlohmann,65
-Parse citm_catalog.json,msvc x64,boost (pool),454
-Parse citm_catalog.json,msvc x64,boost,253
-Parse citm_catalog.json,msvc x64,rapidjson (pool),340
-Parse citm_catalog.json,msvc x64,rapidjson,270
-Parse citm_catalog.json,msvc x64,nlohmann,103
-Parse canada.json,msvc x64,boost (pool),330
-Parse canada.json,msvc x64,boost,208
-Parse canada.json,msvc x64,rapidjson (pool),365
-Parse canada.json,msvc x64,rapidjson,231
-Parse canada.json,msvc x64,nlohmann,37
-Serialize strings.json,msvc x64,boost (pool),7287
-Serialize strings.json,msvc x64,boost,6430
-Serialize strings.json,msvc x64,rapidjson (pool),607
-Serialize strings.json,msvc x64,rapidjson,607
-Serialize strings.json,msvc x64,nlohmann,143
-Serialize integers-32.json,msvc x64,boost (pool),574
-Serialize integers-32.json,msvc x64,boost,574
-Serialize integers-32.json,msvc x64,rapidjson (pool),705
-Serialize integers-32.json,msvc x64,rapidjson,698
-Serialize integers-32.json,msvc x64,nlohmann,485
-Serialize integers-64.json,msvc x64,boost (pool),654
-Serialize integers-64.json,msvc x64,boost,654
-Serialize integers-64.json,msvc x64,rapidjson (pool),791
-Serialize integers-64.json,msvc x64,rapidjson,791
-Serialize integers-64.json,msvc x64,nlohmann,597
-Serialize twitter.json,msvc x64,boost (pool),1130
-Serialize twitter.json,msvc x64,boost,1086
-Serialize twitter.json,msvc x64,rapidjson (pool),789
-Serialize twitter.json,msvc x64,rapidjson,731
-Serialize twitter.json,msvc x64,nlohmann,276
-Serialize small.json,msvc x64,boost (pool),1005
-Serialize small.json,msvc x64,boost,999
-Serialize small.json,msvc x64,rapidjson (pool),793
-Serialize small.json,msvc x64,rapidjson,794
-Serialize small.json,msvc x64,nlohmann,254
-Serialize array.json,msvc x64,boost (pool),409
-Serialize array.json,msvc x64,boost,408
-Serialize array.json,msvc x64,rapidjson (pool),381
-Serialize array.json,msvc x64,rapidjson,389
-Serialize array.json,msvc x64,nlohmann,236
-Serialize random.json,msvc x64,boost (pool),689
-Serialize random.json,msvc x64,boost,688
-Serialize random.json,msvc x64,rapidjson (pool),738
-Serialize random.json,msvc x64,rapidjson,742
-Serialize random.json,msvc x64,nlohmann,278
-Serialize citm_catalog.json,msvc x64,boost (pool),1627
-Serialize citm_catalog.json,msvc x64,boost,1485
-Serialize citm_catalog.json,msvc x64,rapidjson (pool),1997
-Serialize citm_catalog.json,msvc x64,rapidjson,1897
-Serialize citm_catalog.json,msvc x64,nlohmann,739
-Serialize canada.json,msvc x64,boost (pool),331
-Serialize canada.json,msvc x64,boost,313
-Serialize canada.json,msvc x64,rapidjson (pool),238
-Serialize canada.json,msvc x64,rapidjson,238
-Serialize canada.json,msvc x64,nlohmann,98
+Parse strings.json,msvc x64,boost (pool),5042
+Parse strings.json,msvc x64,rapidjson (pool),278
+Parse integers-32.json,msvc x64,boost (pool),343
+Parse integers-32.json,msvc x64,rapidjson (pool),276
+Parse integers-64.json,msvc x64,boost (pool),587
+Parse integers-64.json,msvc x64,rapidjson (pool),396
+Parse twitter.json,msvc x64,boost (pool),368
+Parse twitter.json,msvc x64,rapidjson (pool),295
+Parse small.json,msvc x64,boost (pool),249
+Parse small.json,msvc x64,rapidjson (pool),249
+Parse array.json,msvc x64,boost (pool),238
+Parse array.json,msvc x64,rapidjson (pool),239
+Parse random.json,msvc x64,boost (pool),244
+Parse random.json,msvc x64,rapidjson (pool),294
+Parse citm_catalog.json,msvc x64,boost (pool),482
+Parse citm_catalog.json,msvc x64,rapidjson (pool),741
+Parse canada.json,msvc x64,boost (pool),339
+Parse canada.json,msvc x64,rapidjson (pool),330
+Serialize strings.json,msvc x64,boost (pool),6493
+Serialize strings.json,msvc x64,rapidjson (pool),5668
+Serialize integers-32.json,msvc x64,boost (pool),687
+Serialize integers-32.json,msvc x64,rapidjson (pool),738
+Serialize integers-64.json,msvc x64,boost (pool),796
+Serialize integers-64.json,msvc x64,rapidjson (pool),804
+Serialize twitter.json,msvc x64,boost (pool),1149
+Serialize twitter.json,msvc x64,rapidjson (pool),716
+Serialize small.json,msvc x64,boost (pool),1062
+Serialize small.json,msvc x64,rapidjson (pool),645
+Serialize array.json,msvc x64,boost (pool),422
+Serialize array.json,msvc x64,rapidjson (pool),347
+Serialize random.json,msvc x64,boost (pool),774
+Serialize random.json,msvc x64,rapidjson (pool),528
+Serialize citm_catalog.json,msvc x64,boost (pool),1608
+Serialize citm_catalog.json,msvc x64,rapidjson (pool),1522
+Serialize canada.json,msvc x64,boost (pool),360
+Serialize canada.json,msvc x64,rapidjson (pool),248
+Parse strings.json,clang x64,boost (pool),5649
+Parse strings.json,clang x64,rapidjson (pool),454
+Parse integers-32.json,clang x64,boost (pool),372
+Parse integers-32.json,clang x64,rapidjson (pool),276
+Parse integers-64.json,clang x64,boost (pool),629
+Parse integers-64.json,clang x64,rapidjson (pool),397
+Parse twitter.json,clang x64,boost (pool),425
+Parse twitter.json,clang x64,rapidjson (pool),436
+Parse small.json,clang x64,boost (pool),285
+Parse small.json,clang x64,rapidjson (pool),335
+Parse array.json,clang x64,boost (pool),258
+Parse array.json,clang x64,rapidjson (pool),265
+Parse random.json,clang x64,boost (pool),285
+Parse random.json,clang x64,rapidjson (pool),404
+Parse citm_catalog.json,clang x64,boost (pool),530
+Parse citm_catalog.json,clang x64,rapidjson (pool),836
+Parse canada.json,clang x64,boost (pool),370
+Parse canada.json,clang x64,rapidjson (pool),324
+Serialize strings.json,clang x64,boost (pool),7681
+Serialize strings.json,clang x64,rapidjson (pool),6391
+Serialize integers-32.json,clang x64,boost (pool),700
+Serialize integers-32.json,clang x64,rapidjson (pool),677
+Serialize integers-64.json,clang x64,boost (pool),1047
+Serialize integers-64.json,clang x64,rapidjson (pool),1001
+Serialize twitter.json,clang x64,boost (pool),1674
+Serialize twitter.json,clang x64,rapidjson (pool),1048
+Serialize small.json,clang x64,boost (pool),1707
+Serialize small.json,clang x64,rapidjson (pool),833
+Serialize array.json,clang x64,boost (pool),455
+Serialize array.json,clang x64,rapidjson (pool),378
+Serialize random.json,clang x64,boost (pool),1160
+Serialize random.json,clang x64,rapidjson (pool),654
+Serialize citm_catalog.json,clang x64,boost (pool),2232
+Serialize citm_catalog.json,clang x64,rapidjson (pool),1669
+Serialize canada.json,clang x64,boost (pool),455
+Serialize canada.json,clang x64,rapidjson (pool),256
+Parse strings.json,msvc x86,boost (pool),2531
+Parse strings.json,msvc x86,rapidjson (pool),283
+Parse integers-32.json,msvc x86,boost (pool),318
+Parse integers-32.json,msvc x86,rapidjson (pool),209
+Parse integers-64.json,msvc x86,boost (pool),407
+Parse integers-64.json,msvc x86,rapidjson (pool),263
+Parse twitter.json,msvc x86,boost (pool),318
+Parse twitter.json,msvc x86,rapidjson (pool),283
+Parse small.json,msvc x86,boost (pool),237
+Parse small.json,msvc x86,rapidjson (pool),240
+Parse array.json,msvc x86,boost (pool),208
+Parse array.json,msvc x86,rapidjson (pool),172
+Parse random.json,msvc x86,boost (pool),242
+Parse random.json,msvc x86,rapidjson (pool),263
+Parse citm_catalog.json,msvc x86,boost (pool),410
+Parse citm_catalog.json,msvc x86,rapidjson (pool),666
+Parse canada.json,msvc x86,boost (pool),252
+Parse canada.json,msvc x86,rapidjson (pool),217
+Serialize strings.json,msvc x86,boost (pool),6733
+Serialize strings.json,msvc x86,rapidjson (pool),5745
+Serialize integers-32.json,msvc x86,boost (pool),461
+Serialize integers-32.json,msvc x86,rapidjson (pool),515
+Serialize integers-64.json,msvc x86,boost (pool),348
+Serialize integers-64.json,msvc x86,rapidjson (pool),354
+Serialize twitter.json,msvc x86,boost (pool),1054
+Serialize twitter.json,msvc x86,rapidjson (pool),777
+Serialize small.json,msvc x86,boost (pool),1026
+Serialize small.json,msvc x86,rapidjson (pool),679
+Serialize array.json,msvc x86,boost (pool),281
+Serialize array.json,msvc x86,rapidjson (pool),240
+Serialize random.json,msvc x86,boost (pool),560
+Serialize random.json,msvc x86,rapidjson (pool),392
+Serialize citm_catalog.json,msvc x86,boost (pool),1545
+Serialize citm_catalog.json,msvc x86,rapidjson (pool),1509
+Serialize canada.json,msvc x86,boost (pool),160
+Serialize canada.json,msvc x86,rapidjson (pool),109
+Parse strings.json,clang x86,boost (pool),2669
+Parse strings.json,clang x86,rapidjson (pool),444
+Parse integers-32.json,clang x86,boost (pool),294
+Parse integers-32.json,clang x86,rapidjson (pool),233
+Parse integers-64.json,clang x86,boost (pool),385
+Parse integers-64.json,clang x86,rapidjson (pool),325
+Parse twitter.json,clang x86,boost (pool),348
+Parse twitter.json,clang x86,rapidjson (pool),399
+Parse small.json,clang x86,boost (pool),258
+Parse small.json,clang x86,rapidjson (pool),297
+Parse array.json,clang x86,boost (pool),213
+Parse array.json,clang x86,rapidjson (pool),199
+Parse random.json,clang x86,boost (pool),278
+Parse random.json,clang x86,rapidjson (pool),369
+Parse citm_catalog.json,clang x86,boost (pool),458
+Parse citm_catalog.json,clang x86,rapidjson (pool),797
+Parse canada.json,clang x86,boost (pool),256
+Parse canada.json,clang x86,rapidjson (pool),316
+Serialize strings.json,clang x86,boost (pool),7075
+Serialize strings.json,clang x86,rapidjson (pool),6364
+Serialize integers-32.json,clang x86,boost (pool),366
+Serialize integers-32.json,clang x86,rapidjson (pool),443
+Serialize integers-64.json,clang x86,boost (pool),325
+Serialize integers-64.json,clang x86,rapidjson (pool),330
+Serialize twitter.json,clang x86,boost (pool),1025
+Serialize twitter.json,clang x86,rapidjson (pool),1005
+Serialize small.json,clang x86,boost (pool),1036
+Serialize small.json,clang x86,rapidjson (pool),819
+Serialize array.json,clang x86,boost (pool),256
+Serialize array.json,clang x86,rapidjson (pool),287
+Serialize random.json,clang x86,boost (pool),551
+Serialize random.json,clang x86,rapidjson (pool),514
+Serialize citm_catalog.json,clang x86,boost (pool),1332
+Serialize citm_catalog.json,clang x86,rapidjson (pool),1658
+Serialize canada.json,clang x86,boost (pool),125
+Serialize canada.json,clang x86,rapidjson (pool),144
 </textarea>
 
 <script>
