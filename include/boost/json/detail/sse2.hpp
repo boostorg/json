@@ -12,6 +12,8 @@
 #define BOOST_JSON_DETAIL_SSE2_HPP
 
 #include <boost/json/config.hpp>
+#include <cstddef>
+#include <cstring>
 #ifdef BOOST_JSON_USE_SSE2
 # include <emmintrin.h>
 # include <xmmintrin.h>
@@ -154,7 +156,7 @@ inline uint64_t parse_unsigned( uint64_t r, char const * p, std::size_t n ) noex
     while( n >= 4 )
     {
         uint32_t v;
-        memcpy( &v, p, 4 );
+        std::memcpy( &v, p, 4 );
 
         v -= 0x30303030;
 
@@ -162,6 +164,8 @@ inline uint64_t parse_unsigned( uint64_t r, char const * p, std::size_t n ) noex
         unsigned w1 = (v >> 8) & 0xFF;
         unsigned w2 = (v >> 16) & 0xFF;
         unsigned w3 = (v >> 24);
+
+        // NOTE: assumes little-endian; on BE, w0..w3 need to be reversed
 
         r = (((r * 10 + w0) * 10 + w1) * 10 + w2) * 10 + w3;
 
@@ -254,6 +258,55 @@ inline std::size_t count_whitespace( char const * p )
         char const c = *p;
         if( c != ' ' && c != '\n' && c != '\r' && c != '\t' ) break;
     }
+
+    return n;
+}
+
+#endif
+
+// count_leading
+
+#ifdef BOOST_JSON_USE_SSE2
+
+// assumes p..p+15
+inline std::size_t count_leading( char const * p, char ch )
+{
+    __m128i const q1 = _mm_set1_epi8( ch );
+
+    __m128i v = _mm_loadu_si128( (__m128i const*)p );
+
+    __m128i w = _mm_cmpeq_epi8( v, q1 );
+
+    int m = _mm_movemask_epi8( w ) ^ 0xFFFF;
+
+    std::size_t n;
+
+    if( m == 0 )
+    {
+        n = 16;
+    }
+    else
+    {
+#if defined(__GNUC__) || defined(__clang__)
+        n = __builtin_ffs( m ) - 1;
+#else
+        unsigned long index;
+        _BitScanForward( &index, m );
+        n = index;
+#endif
+    }
+
+    return n;
+}
+
+#else
+
+// assumes p..p+15
+inline std::size_t count_leading( char const * p, char ch )
+{
+    std::size_t n = 0;
+
+    for( ; n < 16 && *p == ch; ++p, ++n );
 
     return n;
 }
