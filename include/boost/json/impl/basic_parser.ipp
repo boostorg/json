@@ -320,6 +320,8 @@ parse_white(const_stream& cs)
 
         while( cs.remain() >= 16 )
         {
+            if( static_cast<unsigned char>( *cs ) > 0x20 ) return;
+
             std::size_t n = detail::count_leading( cs.data(), ch );
             cs.skip( n );
 
