@@ -299,6 +299,16 @@ void
 basic_parser::
 parse_white(const_stream& cs)
 {
+    while( cs.remain() >= 16 )
+    {
+        if( static_cast<unsigned char>( *cs ) > 0x20 ) return;
+
+        std::size_t n = detail::count_whitespace( cs.data() );
+        cs.skip( n );
+
+        if( n < 16 ) return;
+    }
+
     while(BOOST_JSON_LIKELY(cs))
     {
         char const c = *cs;

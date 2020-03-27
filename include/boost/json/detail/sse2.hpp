@@ -24,6 +24,8 @@ namespace boost {
 namespace json {
 namespace detail {
 
+// count_unescaped
+
 #ifdef BOOST_JSON_USE_SSE2
 
 inline
@@ -76,6 +78,23 @@ count_unescaped(
     return s - s0;
 }
 
+#else
+
+inline
+std::size_t
+count_unescaped(
+    char const*,
+    std::size_t) noexcept
+{
+    return 0;
+}
+
+#endif
+
+// count_digits
+
+#ifdef BOOST_JSON_USE_SSE2
+
 // assumes p..p+15 are valid
 inline std::size_t count_digits( char const* p ) noexcept
 {
@@ -112,15 +131,6 @@ inline std::size_t count_digits( char const* p ) noexcept
 
 #else
 
-inline
-std::size_t
-count_unescaped(
-    char const*,
-    std::size_t) noexcept
-{
-    return 0;
-}
-
 // assumes p..p+15 are valid
 inline std::size_t count_digits( char const* p ) noexcept
 {
@@ -136,6 +146,8 @@ inline std::size_t count_digits( char const* p ) noexcept
 }
 
 #endif
+
+// parse_unsigned
 
 inline uint64_t parse_unsigned( uint64_t r, char const * p, std::size_t n ) noexcept
 {
@@ -186,6 +198,67 @@ inline uint64_t parse_unsigned( uint64_t r, char const * p, std::size_t n ) noex
 
     return r;
 }
+
+// count_whitespace
+
+#ifdef BOOST_JSON_USE_SSE2
+
+// assumes p..p+15
+inline std::size_t count_whitespace( char const * p )
+{
+    // if( static_cast<unsigned char>( p[0] ) > 0x20 ) return 0;
+
+    __m128i const q1 = _mm_set1_epi8( ' ' );
+    __m128i const q2 = _mm_set1_epi8( '\n' );
+    __m128i const q3 = _mm_set1_epi8( '\r' );
+    __m128i const q4 = _mm_set1_epi8( '\t' );
+
+    __m128i v = _mm_loadu_si128( (__m128i const*)p );
+
+    __m128i w = _mm_cmpeq_epi8( v, q1 );
+    w = _mm_or_si128( w, _mm_cmpeq_epi8( v, q2 ) );
+    w = _mm_or_si128( w, _mm_cmpeq_epi8( v, q3 ) );
+    w = _mm_or_si128( w, _mm_cmpeq_epi8( v, q4 ) );
+
+    int m = _mm_movemask_epi8( w ) ^ 0xFFFF;
+
+    std::size_t n;
+
+    if( m == 0 )
+    {
+        n = 16;
+    }
+    else
+    {
+#if defined(__GNUC__) || defined(__clang__)
+        n = __builtin_ffs( m ) - 1;
+#else
+        unsigned long index;
+        _BitScanForward( &index, m );
+        n = index;
+#endif
+    }
+
+    return n;
+}
+
+#else
+
+// assumes p..p+15
+inline std::size_t count_whitespace( char const * p )
+{
+    std::size_t n = 0;
+
+    for( ; n < 16; ++p, ++n )
+    {
+        char const c = *p;
+        if( c != ' ' && c != '\n' && c != '\r' && c != '\t' ) break;
+    }
+
+    return n;
+}
+
+#endif
 
 } // detail
 } // json
