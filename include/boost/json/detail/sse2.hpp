@@ -203,6 +203,55 @@ inline uint64_t parse_unsigned( uint64_t r, char const * p, std::size_t n ) noex
     return r;
 }
 
+// count_leading
+
+#ifdef BOOST_JSON_USE_SSE2
+
+// assumes p..p+15
+inline std::size_t count_leading( char const * p, char ch ) noexcept
+{
+    __m128i const q1 = _mm_set1_epi8( ch );
+
+    __m128i v = _mm_loadu_si128( (__m128i const*)p );
+
+    __m128i w = _mm_cmpeq_epi8( v, q1 );
+
+    int m = _mm_movemask_epi8( w ) ^ 0xFFFF;
+
+    std::size_t n;
+
+    if( m == 0 )
+    {
+        n = 16;
+    }
+    else
+    {
+#if defined(__GNUC__) || defined(__clang__)
+        n = __builtin_ffs( m ) - 1;
+#else
+        unsigned long index;
+        _BitScanForward( &index, m );
+        n = index;
+#endif
+    }
+
+    return n;
+}
+
+#else
+
+// assumes p..p+15
+inline std::size_t count_leading( char const * p, char ch ) noexcept
+{
+    std::size_t n = 0;
+
+    for( ; n < 16 && *p == ch; ++p, ++n );
+
+    return n;
+}
+
+#endif
+
 // count_whitespace
 
 #ifdef BOOST_JSON_USE_SSE2
@@ -269,6 +318,51 @@ inline std::size_t count_whitespace( char const * p, std::size_t n ) noexcept
     return p - p0;
 }
 
+/*
+
+// slightly faster on msvc-14.2, slightly slower on clang-win
+
+inline std::size_t count_whitespace( char const * p, std::size_t n ) noexcept
+{
+    char const * p0 = p;
+
+    while( n > 0 )
+    {
+        char ch = *p;
+
+        if( ch == '\n' || ch == '\r' )
+        {
+            ++p;
+            --n;
+            continue;
+        }
+
+        if( ch != ' ' && ch != '\t' )
+        {
+            break;
+        }
+
+        ++p;
+        --n;
+
+        while( n >= 16 )
+        {
+            std::size_t n2 = count_leading( p, ch );
+
+            p += n2;
+            n -= n2;
+
+            if( n2 < 16 )
+            {
+                break;
+            }
+        }
+    }
+
+    return p - p0;
+}
+*/
+
 #else
 
 inline std::size_t count_whitespace( char const * p, std::size_t n ) noexcept
@@ -282,55 +376,6 @@ inline std::size_t count_whitespace( char const * p, std::size_t n ) noexcept
     }
 
     return i;
-}
-
-#endif
-
-// count_leading
-
-#ifdef BOOST_JSON_USE_SSE2
-
-// assumes p..p+15
-inline std::size_t count_leading( char const * p, char ch ) noexcept
-{
-    __m128i const q1 = _mm_set1_epi8( ch );
-
-    __m128i v = _mm_loadu_si128( (__m128i const*)p );
-
-    __m128i w = _mm_cmpeq_epi8( v, q1 );
-
-    int m = _mm_movemask_epi8( w ) ^ 0xFFFF;
-
-    std::size_t n;
-
-    if( m == 0 )
-    {
-        n = 16;
-    }
-    else
-    {
-#if defined(__GNUC__) || defined(__clang__)
-        n = __builtin_ffs( m ) - 1;
-#else
-        unsigned long index;
-        _BitScanForward( &index, m );
-        n = index;
-#endif
-    }
-
-    return n;
-}
-
-#else
-
-// assumes p..p+15
-inline std::size_t count_leading( char const * p, char ch ) noexcept
-{
-    std::size_t n = 0;
-
-    for( ; n < 16 && *p == ch; ++p, ++n );
-
-    return n;
 }
 
 #endif
