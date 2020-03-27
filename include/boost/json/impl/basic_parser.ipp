@@ -299,37 +299,16 @@ void
 basic_parser::
 parse_white(const_stream& cs)
 {
-    while( BOOST_JSON_LIKELY(cs) )
+    char const * p = cs.data();
+    std::size_t n = cs.remain();
+
+    std::size_t n2 = detail::count_whitespace( p, n );
+    cs.skip( n2 );
+
+    if( n2 == n )
     {
-        char const ch = *cs;
-
-        if( static_cast<unsigned char>( ch ) > 0x20 ) return;
-
-        if( ch == '\n' || ch == '\r' )
-        {
-            ++cs;
-            continue;
-        }
-
-        if( ch != ' ' && ch != '\t' )
-        {
-            return;
-        }
-
-        ++cs;
-
-        while( cs.remain() >= 16 )
-        {
-            if( static_cast<unsigned char>( *cs ) > 0x20 ) return;
-
-            std::size_t n = detail::count_leading( cs.data(), ch );
-            cs.skip( n );
-
-            if( n < 16 ) break;
-        }
+        ec_ = error::incomplete;
     }
-
-    ec_ = error::incomplete;
 }
 
 void
