@@ -13,6 +13,7 @@
 * [link json.usage.strings Using Strings]
 * [link json.usage.arrays Using Arrays]
 * [link json.usage.objects Using Objects]
+* [link json.usage.initializer_lists Initializer Lists]
 * [link json.usage.numbers Using Numbers]
 * [link json.usage.storage Storage]
 * [link json.usage.parsing Parsing]
@@ -37,5 +38,6 @@
 [include 02_7_parsing.qbk]
 [include 02_8_serializing.qbk]
 [include 02_9_conversion.qbk]
+[include 02_10_init_lists.qbk]
 
 [endsect]

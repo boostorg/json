@@ -88,6 +88,163 @@ usingStrings()
 //----------------------------------------------------------
 
 void
+usingInitLists()
+{
+    {
+        //[snippet_init_list_1
+
+        value jv = {
+            { "name", "John Doe" },
+            { "active", true },
+            { "associated-accounts", nullptr },
+            { "total-balance", 330.00 },
+            { "account-balances", { 84, 120, 126 } } };
+
+        //]
+        (void)jv;
+    }
+
+    {
+        //[snippet_init_list_2
+
+        value jv = { true, 2, "hello", nullptr };
+
+        assert( jv.is_array() );
+
+        assert( jv.as_array().size() == 4 );
+
+        assert( to_string(jv) == "[true,2,\"hello\",null]" );
+
+        //]
+        (void)jv;
+    }
+
+    {
+        //[snippet_init_list_3
+
+        value jv = { true, 2, "hello", { "bye", nullptr, false } };
+
+        assert( jv.is_array() );
+
+        assert( jv.as_array().back().is_array() );
+
+        assert( to_string(jv) == "[true,2,\"hello\",[\"bye\",null,false]]" );
+
+        //]
+        (void)jv;
+    }
+
+    {
+        //[snippet_init_list_4
+
+        // Should this be an array or an object?
+        value jv = { { "hello", 42 }, { "world", 43 } }; 
+
+        //]
+        (void)jv;
+    }
+
+    {
+        //[snippet_init_list_5
+
+        value jv1 = { { "hello", 42 }, { "world", 43 } };
+
+        assert( jv1.is_object() );
+
+        assert( jv1.as_object().size() == 2 );
+
+        assert( to_string(jv1) == R"({"hello":42,"world":43})" );
+
+        // All of the following are arrays
+
+        value jv2 = { { "make", "Tesla" }, { "model", 3 }, "black" };
+
+        value jv3 = { { "library", "JSON" }, { "Boost", "C++", "Fast", "JSON" } };
+
+        value jv4 = { { "color", "blue" }, { 1, "red" } };
+
+        assert( jv2.is_array() && jv3.is_array() && jv4.is_array() );
+        
+        //]
+        (void)jv1;
+        (void)jv2;
+        (void)jv3;
+        (void)jv4;
+    }
+
+    {
+        //[snippet_init_list_6
+
+        value jv = { { "hello", 42 }, array{ "world", 43 } };
+
+        assert( jv.is_array() );
+
+        array& ja = jv.as_array();
+
+        assert( ja[0].is_array() && ja[1].is_array());
+
+        assert ( to_string(jv) == R"([["hello",42],["world",43]])" );
+
+        //]
+        (void)jv;
+    }
+
+    {
+        //[snippet_init_list_7
+
+        value jv1 = { { "mercury", 36 }, { "venus", 67 }, { "earth", 93 } };
+
+        assert( jv1.is_object() );
+
+        assert( to_string(jv1) == "{\"mercury\":36,\"venus\":67,\"earth\":93}" );
+
+        array ja = { { "mercury", 36 }, { "venus", 67 }, { "earth", 93 } };
+        
+        for (value& jv2 : ja)
+          assert( jv2.is_array() );
+
+        assert( to_string(ja) == "[[\"mercury\",36],[\"venus\",67],[\"earth\",93]]" );
+
+        //]
+        (void)jv1;
+        (void)ja;
+    }
+    
+    {
+        //[snippet_init_list_8
+        
+        object jo = { { "mercury", { { "distance", 36 } } }, { "venus", { 67, "million miles" } }, { "earth", 93 } };
+
+        assert( jo["mercury"].is_object() );
+
+        assert( jo["venus"].is_array() );
+
+        //]
+        (void)jo;
+    }
+
+    {
+        //[snippet_init_list_9
+        
+        object jo1 = { { "john", 100 }, { "dave", 500 }, { "joe", 300 } };
+        
+        value jv = { { "clients", std::move(jo1) } };
+
+        object& jo2 = jv.as_object()["clients"].as_object();
+        
+        assert( ! jo2.empty() && jo1.empty() );
+
+        assert( to_string(jv) == R"({"clients":{"john":100,"dave":500,"joe":300}})" );
+
+        //]
+        (void)jo1;
+        (void)jv;
+    }
+}
+
+//----------------------------------------------------------
+
+void
 usingArrays()
 {
     {
@@ -590,6 +747,7 @@ public:
     run()
     {
         (void)&usingStrings;
+        usingInitLists();
         (void)&usingArrays;
         (void)&usingObjects;
         (void)&usingStorage;
