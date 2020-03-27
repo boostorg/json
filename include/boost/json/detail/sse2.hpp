@@ -157,11 +157,31 @@ inline uint64_t parse_unsigned( uint64_t r, char const * p, std::size_t n ) noex
         n -= 4;
     }
 
-    while( n > 0 )
+    // assert( n < 4 );
+
+    switch( n )
     {
-        r = r * 10 + *p - '0';
-        ++p;
-        --n;
+    case 0:
+
+        break;
+
+    case 1:
+
+        r = r * 10 + p[0] - '0';
+        break;
+
+    case 2:
+
+        r = r * 10 + p[0] - '0';
+        r = r * 10 + p[1] - '0';
+        break;
+
+    case 3:
+
+        r = r * 10 + p[0] - '0';
+        r = r * 10 + p[1] - '0';
+        r = r * 10 + p[2] - '0';
+        break;
     }
 
     return r;
