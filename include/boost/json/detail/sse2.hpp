@@ -98,7 +98,7 @@ count_unescaped(
 #ifdef BOOST_JSON_USE_SSE2
 
 // assumes p..p+15 are valid
-inline std::size_t count_digits( char const* p ) noexcept
+inline int count_digits( char const* p ) noexcept
 {
     __m128i const q1 = _mm_set1_epi8( '0' );
     __m128i const q2 = _mm_set1_epi8( '9' );
@@ -111,7 +111,7 @@ inline std::size_t count_digits( char const* p ) noexcept
 
     int m = _mm_movemask_epi8( v1 );
 
-    std::size_t n;
+    int n;
 
     if( m == 0 )
     {
@@ -124,7 +124,7 @@ inline std::size_t count_digits( char const* p ) noexcept
 #else
         unsigned long index;
         _BitScanForward( &index, m );
-        n = index;
+        n = static_cast<int>(index);
 #endif
     }
 
@@ -134,9 +134,9 @@ inline std::size_t count_digits( char const* p ) noexcept
 #else
 
 // assumes p..p+15 are valid
-inline std::size_t count_digits( char const* p ) noexcept
+inline int count_digits( char const* p ) noexcept
 {
-    std::size_t n = 0;
+    int n = 0;
 
     for( ; n < 16; ++n )
     {

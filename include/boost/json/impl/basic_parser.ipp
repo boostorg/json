@@ -1598,34 +1598,36 @@ parse_number(const_stream& cs0)
 
     if( cs.remain() >= 16 + 1 + 16 ) // digits . digits
     {
-        std::size_t n1 = 0;
+        int n1;
 
-        if( *cs == '0' ) // 0. floating point
+        if( *cs != '0' )
         {
+            n1 = detail::count_digits( cs.data() );
+            BOOST_ASSERT(n1 >= 0 && n1 <= 16);
+
+            if( n1 == 0 )
+            {
+                // digit required
+                ec_ = error::syntax;
+                return;
+            }
+
+            num.mant = detail::parse_unsigned( 0, cs.data(), n1 );
+
+            cs.skip( n1 );
+
+            if( n1 == 16 )
+            {
+                goto do_num2;
+            }
+        }
+        else
+        {
+            // 0. floating point
             num.mant = 0;
+            n1 = 0;
             ++cs;
-
-            goto do_num_fast1;
         }
-
-        n1 = detail::count_digits( cs.data() );
-
-        if( n1 == 0 )
-        {
-            ec_ = error::syntax; // error::digit_expected?
-            return;
-        }
-
-        num.mant = detail::parse_unsigned( 0, cs.data(), n1 );
-
-        cs.skip( n1 );
-
-        if( n1 == 16 )
-        {
-            goto do_num2;
-        }
-
-        do_num_fast1:
 
         if( *cs != '.' )
         {
@@ -1634,11 +1636,13 @@ parse_number(const_stream& cs0)
 
         ++cs;
 
-        std::size_t n2 = detail::count_digits( cs.data() );
+        int n2 = detail::count_digits( cs.data() );
+        BOOST_ASSERT(n2 >= 0 && n2 <= 16);
 
         if( n2 == 0 )
         {
-            ec_ = error::syntax; // error::digit_expected?
+            // digit required
+            ec_ = error::syntax;
             return;
         }
 
@@ -1648,6 +1652,8 @@ parse_number(const_stream& cs0)
         }
 
         num.mant = detail::parse_unsigned( num.mant, cs.data(), n2 );
+
+        BOOST_ASSERT(num.bias == 0);
         num.bias -= n2;
 
         cs.skip( n2 );
