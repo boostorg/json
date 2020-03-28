@@ -313,7 +313,11 @@ erase(const_iterator pos) noexcept ->
         auto& head =
             impl_.bucket(pb->key());
         impl_.remove(head, *pb);
-        std::memcpy(p, pb, sizeof(*p));
+        // the casts silence warnings
+        std::memcpy(
+            static_cast<void*>(p),
+            static_cast<void const*>(pb),
+            sizeof(*p));
         impl_.next(*p) = head;
         head = impl_.index_of(*p);
     }
@@ -457,10 +461,10 @@ find_impl(key_type key) const noexcept ->
     auto const& head =
         impl_.bucket(result.second);
     auto i = head;
-    while(i != -1 &&
+    while(i != null_index &&
         impl_.get(i).key() != key)
         i = impl_.next(impl_.get(i));
-    if(i != -1)
+    if(i != null_index)
         result.first = &impl_.get(i);
     else
         result.first = nullptr;
@@ -539,7 +543,9 @@ rehash(std::size_t new_capacity)
     object_impl impl(
         new_capacity, new_buckets, sp_);
     if(impl_.size() > 0)
-        std::memcpy(impl.begin(), impl_.begin(),
+        std::memcpy(
+            static_cast<void*>(impl.begin()),
+            static_cast<void const*>(impl_.begin()),
             impl_.size() * sizeof(value_type));
     impl.grow(impl_.size());
     impl_.shrink(impl_.size());
@@ -630,7 +636,7 @@ insert_range_impl(
         for(auto i = head;;
             i = impl_.next(impl_.get(i)))
         {
-            if(i != -1)
+            if(i != null_index)
             {
                 if(impl_.get(i).key() != e.key())
                     continue;

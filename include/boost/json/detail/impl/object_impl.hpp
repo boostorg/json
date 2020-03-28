@@ -102,7 +102,7 @@ object_impl::
 get(index_t i) const noexcept ->
     value_type&
 {
-    BOOST_ASSERT(i != -1);
+    BOOST_ASSERT(i != null_index);
     return (reinterpret_cast<
         value_type*>(tab_ + 1))[i];
 }
@@ -198,8 +198,8 @@ relocate(object::value_type* dest) noexcept
 {
     if(size_ > 0)
         std::memcpy(
-            reinterpret_cast<void*>(dest),
-            data_, size_ * sizeof(object::value_type));
+            static_cast<void*>(dest), data_,
+            size_ * sizeof(object::value_type));
     data_ = nullptr;
 }
 

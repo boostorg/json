@@ -79,6 +79,8 @@ class object
     using object_impl =
         detail::object_impl;
     using index_t = std::uint32_t;
+    static index_t const null_index =
+        std::uint32_t(-1);
 
     storage_ptr sp_;    // must come first
     kind k_ =           // must come second

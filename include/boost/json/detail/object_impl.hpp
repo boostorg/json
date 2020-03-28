@@ -27,6 +27,8 @@ namespace detail {
 class object_impl
 {
     using index_t = std::uint32_t;
+    static index_t const null_index =
+        std::uint32_t(-1);
 
     BOOST_JSON_DECL
     void

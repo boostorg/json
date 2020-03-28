@@ -40,7 +40,7 @@ object_impl(
         capacity * sizeof(value_type) +
         buckets * sizeof(index_t))) table{
             0, capacity, buckets };
-    std::memset(bucket_begin(), 0xff, // index_t(-1)
+    std::memset(bucket_begin(), 0xff, // null_index
         buckets * sizeof(index_t));
 }
 
@@ -58,7 +58,7 @@ clear() noexcept
     if(! tab_)
         return;
     detail::destroy(begin(), size());
-    std::memset(bucket_begin(), 0xff, // index_t(-1)
+    std::memset(bucket_begin(), 0xff, // null_index
         buckets() * sizeof(index_t));
     tab_->size = 0;
 }
@@ -74,10 +74,10 @@ build() noexcept
         {
             auto& head = bucket(p->key());
             auto i = head;
-            while(i != -1 &&
+            while(i != null_index &&
                 get(i).key() != p->key())
                 i = next(get(i));
-            if(i == -1)
+            if(i == null_index)
             {
                 next(*p) = head;
                 head = index_of(*p);
@@ -90,7 +90,10 @@ build() noexcept
         --end;
         if(p != end)
         {
-            std::memcpy(p, end, sizeof(*p));
+            std::memcpy(
+                static_cast<void*>(p),
+                static_cast<void const*>(end),
+                sizeof(*p));
             auto& head = bucket(p->key());
             next(*p) = head;
             head = index_of(*p);
