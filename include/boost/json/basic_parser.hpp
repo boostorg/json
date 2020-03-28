@@ -50,6 +50,14 @@ class basic_parser
 {
     enum class state : char;
     using const_stream = detail::const_stream;
+
+    enum result
+    {
+        ok = 0,
+        fail,
+        partial
+    };
+
     struct number
     {
         uint64_t mant;
@@ -76,16 +84,16 @@ class basic_parser
     inline void suspend(state st);
     inline void suspend(state st, std::size_t n);
     inline void suspend(state st, number const& num);
-    inline void parse_element(const_stream& cs);
-    inline void parse_white(const_stream& cs);
-    inline void parse_value(const_stream& cs);
-    inline void parse_null(const_stream& cs);
-    inline void parse_true(const_stream& cs);
-    inline void parse_false(const_stream& cs);
-    inline void parse_string(const_stream& cs);
-    inline void parse_object(const_stream& cs);
-    inline void parse_array(const_stream& cs);
-    inline void parse_number(const_stream& cs);
+    inline bool skip_white(const_stream& cs);
+    inline result parse_element(const_stream& cs);
+    inline result parse_value(const_stream& cs);
+    inline result parse_null(const_stream& cs);
+    inline result parse_true(const_stream& cs);
+    inline result parse_false(const_stream& cs);
+    inline result parse_string(const_stream& cs);
+    inline result parse_object(const_stream& cs);
+    inline result parse_array(const_stream& cs);
+    inline result parse_number(const_stream& cs);
 
 public:
     //------------------------------------------------------
@@ -506,12 +514,14 @@ protected:
         presented. The call happens before any other
         events.
 
+        @return `true` on success.
+
         @param ec The error, if any, which will be
         returned by the current invocation of
         @ref write_some, @ref write, or @ref finish.
     */
     virtual
-    void
+    bool
     on_document_begin(
         error_code& ec) = 0;
 
@@ -522,12 +532,14 @@ protected:
         The call happens last; no other calls are made
         before the parser is reset.
 
+        @return `true` on success.
+
         @param ec The error, if any, which will be
         returned by the current invocation of
         @ref write_some, @ref write, or @ref finish.
     */
     virtual
-    void
+    bool
     on_document_end(
         error_code& ec) = 0;
 
@@ -536,12 +548,14 @@ protected:
         This function is called during parsing when a new
         object is started.
 
+        @return `true` on success.
+
         @param ec The error, if any, which will be
         returned by the current invocation of
         @ref write_some, @ref write, or @ref finish.
     */
     virtual
-    void
+    bool
     on_object_begin(
         error_code& ec) = 0;
 
@@ -551,6 +565,8 @@ protected:
         the elements of an object have been parsed, and the
         closing brace for the object is reached.
 
+        @return `true` on success.
+
         @param n The number of elements in the object.
 
         @param ec The error, if any, which will be
@@ -558,7 +574,7 @@ protected:
         @ref write_some, @ref write, or @ref finish.
     */
     virtual
-    void
+    bool
     on_object_end(
         std::size_t n,
         error_code& ec) = 0;
@@ -568,12 +584,14 @@ protected:
         This function is called during parsing when a new
         array is started.
 
+        @return `true` on success.
+
         @param ec The error, if any, which will be
         returned by the current invocation of
         @ref write_some, @ref write, or @ref finish.
     */
     virtual
-    void
+    bool
     on_array_begin(
         error_code& ec) = 0;
 
@@ -583,6 +601,8 @@ protected:
         the elements of an array have been parsed, and the
         closing bracket for the array is reached.
 
+        @return `true` on success.
+
         @param n The number of elements in the array.
 
         @param ec The error, if any, which will be
@@ -590,7 +610,7 @@ protected:
         @ref write_some, @ref write, or @ref finish.
     */
     virtual
-    void
+    bool
     on_array_end(
         std::size_t n,
         error_code& ec) = 0;
@@ -603,6 +623,8 @@ protected:
         by zero or more calls to @ref on_key_part, followed
         by a final call to @ref on_key.
 
+        @return `true` on success.
+
         @param s The string view holding the next buffer of
         key data, with escapes converted to their actual
         characters.
@@ -612,7 +634,7 @@ protected:
         @ref write_some, @ref write, or @ref finish.
     */
     virtual
-    void
+    bool
     on_key_part(
         string_view s,
         error_code& ec) = 0;
@@ -624,6 +646,8 @@ protected:
         being parsed as part of an object. The key is
         considered complete with these characters.
 
+        @return `true` on success.
+
         @param s The string view holding the final buffer of
         key data, with escapes converted to their actual
         characters.
@@ -633,7 +657,7 @@ protected:
         @ref write_some, @ref write, or @ref finish.
     */
     virtual
-    void
+    bool
     on_key(
         string_view s,
         error_code& ec) = 0;
@@ -646,6 +670,8 @@ protected:
         more calls to @ref on_string_part, followed by a
         final call to @ref on_string.
 
+        @return `true` on success.
+
         @param s The string view holding the next buffer of
         string data, with escapes converted to their actual
         characters.
@@ -655,7 +681,7 @@ protected:
         @ref write_some, @ref write, or @ref finish.
     */
     virtual
-    void
+    bool
     on_string_part(
         string_view s,
         error_code& ec) = 0;
@@ -667,6 +693,8 @@ protected:
         string being parsed. The string element is
         considered complete with these characters.
 
+        @return `true` on success.
+
         @param s The string view holding the final buffer of
         string data, with escapes converted to their actual
         characters.
@@ -676,7 +704,7 @@ protected:
         @ref write_some, @ref write, or @ref finish.
     */
     virtual
-    void
+    bool
     on_string(
         string_view s,
         error_code& ec) = 0;
@@ -686,6 +714,8 @@ protected:
         This function is called when a suitable
         number is parsed.
 
+        @return `true` on success.
+
         @param i The number encountered.
 
         @param ec The error, if any, which will be
@@ -693,7 +723,7 @@ protected:
         @ref write_some, @ref write, or @ref finish.
     */
     virtual
-    void
+    bool
     on_int64(
         int64_t i,
         error_code& ec) = 0;
@@ -703,6 +733,8 @@ protected:
         This function is called when a suitable
         number is parsed.
 
+        @return `true` on success.
+
         @param u The number encountered.
 
         @param ec The error, if any, which will be
@@ -710,7 +742,7 @@ protected:
         @ref write_some, @ref write, or @ref finish.
     */
     virtual
-    void
+    bool
     on_uint64(
         uint64_t u,
         error_code& ec) = 0;
@@ -720,6 +752,8 @@ protected:
         This function is called when a suitable
         number is parsed.
 
+        @return `true` on success.
+
         @param d The number encountered.
 
         @param ec The error, if any, which will be
@@ -727,7 +761,7 @@ protected:
         @ref write_some, @ref write, or @ref finish.
     */
     virtual
-    void
+    bool
     on_double(
         double d,
         error_code& ec) = 0;
@@ -737,6 +771,8 @@ protected:
         This function is called when a
         boolean value is encountered.
 
+        @return `true` on success.
+
         @param b The boolean value.
 
         @param ec The error, if any, which will be
@@ -744,19 +780,21 @@ protected:
         @ref write_some, @ref write, or @ref finish.
     */
     virtual
-    void
+    bool
     on_bool(bool b, error_code& ec) = 0;
 
     /** Called when a null is parsed.
 
         This function is called when a null is encountered.
 
+        @return `true` on success.
+
         @param ec The error, if any, which will be
         returned by the current invocation of
         @ref write_some, @ref write, or @ref finish.
     */
     virtual
-    void
+    bool
     on_null(error_code& ec) = 0;
 };
 

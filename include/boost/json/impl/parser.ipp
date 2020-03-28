@@ -338,7 +338,7 @@ pop_chars(
 
 //----------------------------------------------------------
 
-void
+bool
 parser::
 on_document_begin(
     error_code& ec)
@@ -346,7 +346,7 @@ on_document_begin(
     if(lev_.st == state::need_start)
     {
         ec = error::need_start;
-        return;
+        return false;
     }
 
     lev_.count = 0;
@@ -358,16 +358,19 @@ on_document_begin(
     // inside a notional 1-element array.
     rs_.add(sizeof(value));
     lev_.st = state::top;
+
+    return true;
 }
 
-void
+bool
 parser::
 on_document_end(error_code&)
 {
     BOOST_ASSERT(lev_.count == 1);
+    return true;
 }
 
-void
+bool
 parser::
 on_object_begin(error_code&)
 {
@@ -383,9 +386,10 @@ on_object_begin(error_code&)
         object::value_type));
     lev_.count = 0;
     lev_.st = state::obj;
+    return true;
 }
 
-void
+bool
 parser::
 on_object_end(
     std::size_t,
@@ -397,9 +401,10 @@ on_object_end(
     rs_.subtract(lev_.align);
     pop(lev_);
     emplace(std::move(uo));
+    return true;
 }
 
-void
+bool
 parser::
 on_array_begin(error_code&)
 {
@@ -414,9 +419,10 @@ on_array_begin(error_code&)
     rs_.add(sizeof(value));
     lev_.count = 0;
     lev_.st = state::arr;
+    return true;
 }
 
-void
+bool
 parser::
 on_array_end(
     std::size_t,
@@ -428,9 +434,10 @@ on_array_end(
     rs_.subtract(lev_.align);
     pop(lev_);
     emplace(std::move(ua));
+    return true;
 }
 
-void
+bool
 parser::
 on_key_part(
     string_view s,
@@ -442,9 +449,10 @@ on_key_part(
     push_chars(s);
     key_size_ += static_cast<
         std::uint32_t>(s.size());
+    return true;
 }
 
-void
+bool
 parser::
 on_key(
     string_view s,
@@ -452,13 +460,15 @@ on_key(
 {
     BOOST_ASSERT(
         lev_.st == state::obj);
-    on_key_part(s, ec);
+    if(! on_key_part(s, ec))
+        return false;
     push(key_size_);
     key_size_ = 0;
     lev_.st = state::key;
+    return true;
 }
 
-void
+bool
 parser::
 on_string_part(
     string_view s,
@@ -470,9 +480,10 @@ on_string_part(
     push_chars(s);
     str_size_ += static_cast<
         std::uint32_t>(s.size());
+    return true;
 }
 
-void
+bool
 parser::
 on_string(
     string_view s,
@@ -503,47 +514,54 @@ on_string(
         str.grow(sv.size() + s.size());
         emplace(std::move(str));
     }
+    return true;
 }
 
-void
+bool
 parser::
 on_int64(
     int64_t i,
     error_code&)
 {
     emplace(i, sp_);
+    return true;
 }
 
-void
+bool
 parser::
 on_uint64(
     uint64_t u,
     error_code&)
 {
     emplace(u, sp_);
+    return true;
 }
 
-void
+bool
 parser::
 on_double(
     double d,
     error_code&)
 {
     emplace(d, sp_);
+    return true;
 }
 
-void
+bool
 parser::
-on_bool(bool b, error_code&)
+on_bool(
+    bool b, error_code&)
 {
     emplace(b, sp_);
+    return true;
 }
 
-void
+bool
 parser::
 on_null(error_code&)
 {
     emplace(nullptr, sp_);
+    return true;
 }
 
 //----------------------------------------------------------

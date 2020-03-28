@@ -110,21 +110,21 @@ validate( string_view s )
     {
         null_parser() {}
         ~null_parser() {}
-        void on_document_begin( error_code& ) override {}
-        void on_document_end( error_code& ) override {}
-        void on_object_begin( error_code& ) override {}
-        void on_object_end( std::size_t, error_code& ) override {}
-        void on_array_begin( error_code& ) override {}
-        void on_array_end( std::size_t, error_code& ) override {}
-        void on_key_part( string_view, error_code& ) override {}
-        void on_key( string_view, error_code& ) override {}
-        void on_string_part( string_view, error_code& ) override {}
-        void on_string( string_view, error_code& ) override {}
-        void on_int64( std::int64_t, error_code& ) override {}
-        void on_uint64( std::uint64_t, error_code& ) override {}
-        void on_double( double, error_code& ) override {}
-        void on_bool( bool, error_code& ) override {}
-        void on_null( error_code& ) override {}
+        bool on_document_begin( error_code& ) override { return true; }
+        bool on_document_end( error_code& ) override { return true; }
+        bool on_object_begin( error_code& ) override { return true; }
+        bool on_object_end( std::size_t, error_code& ) override { return true; }
+        bool on_array_begin( error_code& ) override { return true; }
+        bool on_array_end( std::size_t, error_code& ) override { return true; }
+        bool on_key_part( string_view, error_code& ) override { return true; }
+        bool on_key( string_view, error_code& ) override { return true; }
+        bool on_string_part( string_view, error_code& ) override { return true; }
+        bool on_string( string_view, error_code& ) override { return true; }
+        bool on_int64( std::int64_t, error_code& ) override { return true; }
+        bool on_uint64( std::uint64_t, error_code& ) override { return true; }
+        bool on_double( double, error_code& ) override { return true; }
+        bool on_bool( bool, error_code& ) override { return true; }
+        bool on_null( error_code& ) override { return true; }
     };
 
     // Parse with the null parser and return false on error
@@ -348,8 +348,11 @@ public:
         // escape in key
         good(R"jv( {" \n":null} )jv");
 
+        // incomplete
+        bad ("\"");
+        
         // illegal control character
-        bad ("\"" "\x00" "\"");
+        bad ({ "\"" "\x00" "\"", 3 });
         bad ("\"" "\x1f" "\"");
         bad ("\"" "\\n" "\x1f" "\"");
 

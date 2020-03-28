@@ -201,87 +201,87 @@ private:
         std::size_t size) noexcept;
 
     BOOST_JSON_DECL
-    void
+    bool
     on_document_begin(
         error_code& ec) override;
 
     BOOST_JSON_DECL
-    void
+    bool
     on_document_end(
         error_code& ec) override;
 
     BOOST_JSON_DECL
-    void
+    bool
     on_object_begin(
         error_code& ec) override;
 
     BOOST_JSON_DECL
-    void
+    bool
     on_object_end(
         std::size_t n,
         error_code& ec) override;
 
     BOOST_JSON_DECL
-    void
+    bool
     on_array_begin(
         error_code& ec) override;
 
     BOOST_JSON_DECL
-    void
+    bool
     on_array_end(
         std::size_t n,
         error_code& ec) override;
 
     BOOST_JSON_DECL
-    void
+    bool
     on_key_part(
         string_view s,
         error_code& ec) override;
 
     BOOST_JSON_DECL
-    void
+    bool
     on_key(
         string_view s,
         error_code& ec) override;
 
     BOOST_JSON_DECL
-    void
+    bool
     on_string_part(
         string_view s,
         error_code& ec) override;
 
     BOOST_JSON_DECL
-    void
+    bool
     on_string(
         string_view s,
         error_code& ec) override;
 
     BOOST_JSON_DECL
-    void
+    bool
     on_int64(
         int64_t i,
         error_code& ec) override;
 
     BOOST_JSON_DECL
-    void
+    bool
     on_uint64(
         uint64_t u,
         error_code& ec) override;
 
     BOOST_JSON_DECL
-    void
+    bool
     on_double(
         double d,
         error_code& ec) override;
 
     BOOST_JSON_DECL
-    void
+    bool
     on_bool(
         bool b,
         error_code& ec) override;
 
     BOOST_JSON_DECL
-    void
+    bool
     on_null(error_code&) override;
 };
 

@@ -147,126 +147,127 @@ class fail_parser
 {
     std::size_t n_ = std::size_t(-1);
 
-    void
+    bool
     maybe_fail(error_code& ec)
     {
         if(n_ && --n_ > 0)
-            return;
+            return true;
         ec = error::test_failure;
+        return false;
     }
 
-    void
+    bool
     on_document_begin(
         error_code& ec) override
     {
-        maybe_fail(ec);
+        return maybe_fail(ec);
     }
 
-    void
+    bool
     on_document_end(
         error_code& ec) override
     {
-        maybe_fail(ec);
+        return maybe_fail(ec);
     }
 
-    void
+    bool
     on_object_begin(
         error_code& ec) override
     {
-        maybe_fail(ec);
+        return maybe_fail(ec);
     }
 
-    void
+    bool
     on_object_end(
         std::size_t,
         error_code& ec) override
     {
-        maybe_fail(ec);
+        return maybe_fail(ec);
     }
 
-    void
+    bool
     on_array_begin(
         error_code& ec) override
     {
-        maybe_fail(ec);
+        return maybe_fail(ec);
     }
 
-    void
+    bool
     on_array_end(
         std::size_t,
         error_code& ec) override
     {
-        maybe_fail(ec);
+        return maybe_fail(ec);
     }
 
-    void
+    bool
     on_key_part(
         string_view,
         error_code& ec) override
     {
-        maybe_fail(ec);
+        return maybe_fail(ec);
     }
 
-    void
+    bool
     on_key(
         string_view,
         error_code& ec) override
     {
-        maybe_fail(ec);
+        return maybe_fail(ec);
     }
         
-    void
+    bool
     on_string_part(
         string_view,
         error_code& ec) override
     {
-        maybe_fail(ec);
+        return maybe_fail(ec);
     }
 
-    void
+    bool
     on_string(
         string_view,
         error_code& ec) override
     {
-        maybe_fail(ec);
+        return maybe_fail(ec);
     }
 
-    void
+    bool
     on_int64(
         int64_t,
         error_code& ec) override
     {
-        maybe_fail(ec);
+        return maybe_fail(ec);
     }
 
-    void
+    bool
     on_uint64(
         uint64_t,
         error_code& ec) override
     {
-        maybe_fail(ec);
+        return maybe_fail(ec);
     }
 
-    void
+    bool
     on_double(
         double,
         error_code& ec) override
     {
-        maybe_fail(ec);
+        return maybe_fail(ec);
     }
 
-    void
+    bool
     on_bool(
         bool,
         error_code& ec) override
     {
-        maybe_fail(ec);
+        return maybe_fail(ec);
     }
 
-    void
+    bool
     on_null(error_code& ec) override
     {
-        maybe_fail(ec);
+        return maybe_fail(ec);
     }
 
 public:
@@ -304,126 +305,126 @@ class throw_parser
 {
     std::size_t n_ = std::size_t(-1);
 
-    void
+    bool
     maybe_throw()
     {
         if(n_ && --n_ > 0)
-            return;
+            return true;
         throw test_exception{};
     }
 
-    void
+    bool
     on_document_begin(
         error_code&) override
     {
-        maybe_throw();
+        return maybe_throw();
     }
 
-    void
+    bool
     on_document_end(
         error_code&) override
     {
-        maybe_throw();
+        return maybe_throw();
     }
 
-    void
+    bool
     on_object_begin(
         error_code&) override
     {
-        maybe_throw();
+        return maybe_throw();
     }
 
-    void
+    bool
     on_object_end(
         std::size_t,
         error_code&) override
     {
-        maybe_throw();
+        return maybe_throw();
     }
 
-    void
+    bool
     on_array_begin(
         error_code&) override
     {
-        maybe_throw();
+        return maybe_throw();
     }
 
-    void
+    bool
     on_array_end(
         std::size_t,
         error_code&) override
     {
-        maybe_throw();
+        return maybe_throw();
     }
 
-    void
+    bool
     on_key_part(
         string_view,
         error_code&) override
     {
-        maybe_throw();
+        return maybe_throw();
     }
 
-    void
+    bool
     on_key(
         string_view,
         error_code&) override
     {
-        maybe_throw();
+        return maybe_throw();
     }
         
-    void
+    bool
     on_string_part(
         string_view,
         error_code&) override
     {
-        maybe_throw();
+        return maybe_throw();
     }
 
-    void
+    bool
     on_string(
         string_view,
         error_code&) override
     {
-        maybe_throw();
+        return maybe_throw();
     }
 
-    void
+    bool
     on_int64(
         int64_t,
         error_code&) override
     {
-        maybe_throw();
+        return maybe_throw();
     }
 
-    void
+    bool
     on_uint64(
         uint64_t,
         error_code&) override
     {
-        maybe_throw();
+        return maybe_throw();
     }
 
-    void
+    bool
     on_double(
         double,
         error_code&) override
     {
-        maybe_throw();
+        return maybe_throw();
     }
 
-    void
+    bool
     on_bool(
         bool,
         error_code&) override
     {
-        maybe_throw();
+        return maybe_throw();
     }
 
-    void
+    bool
     on_null(error_code&) override
     {
-        maybe_throw();
+        return maybe_throw();
     }
 
 public:
@@ -444,7 +445,6 @@ template<class FwdIt>
 class input_iterator
 {
     FwdIt it_;
-
 
 public:
     using value_type = typename std::iterator_traits<FwdIt>::value_type;
