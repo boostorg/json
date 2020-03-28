@@ -313,32 +313,46 @@ parse_white(const_stream& cs)
 
 void
 basic_parser::
-parse_value(const_stream& cs)
+parse_value(const_stream& cs0)
 {
     if(BOOST_JSON_LIKELY(st_.empty()))
     {
-        switch(*cs)
+        switch(*cs0)
         {
         case 'n':
-            parse_null(cs);
+            if(BOOST_JSON_LIKELY(cs0.remain() >= 4))
+            {
+                if(BOOST_JSON_LIKELY(std::memcmp(
+                    cs0.data(), "null", 4) == 0))
+                {
+                    this->on_null(ec_);
+                    if(BOOST_JSON_LIKELY(! ec_))
+                        cs0.skip(4);
+                    return;
+                }
+                ec_ = error::syntax;
+                return;
+            }
+            ++cs0;
+            parse_null(cs0);
             break;
         case 't':
-            parse_true(cs);
+            parse_true(cs0);
             break;
         case 'f':
-            parse_false(cs);
+            parse_false(cs0);
             break;
         case '\x22': // '"'
-            parse_string(cs);
+            parse_string(cs0);
             break;
         case '{':
-            parse_object(cs);
+            parse_object(cs0);
             break;
         case '[':
-            parse_array(cs);
+            parse_array(cs0);
             break;
         default:
-            parse_number(cs);
+            parse_number(cs0);
             break;
         }
     }
@@ -351,17 +365,17 @@ parse_value(const_stream& cs)
         default:
         case state::nul1: case state::nul2:
         case state::nul3:
-            parse_null(cs);
+            parse_null(cs0);
             break;
 
         case state::tru1: case state::tru2:
         case state::tru3:
-            parse_true(cs);
+            parse_true(cs0);
             break;
 
         case state::fal1: case state::fal2:
         case state::fal3: case state::fal4:
-            parse_false(cs);
+            parse_false(cs0);
             break;
 
         case state::str1: case state::str2:
@@ -371,19 +385,19 @@ parse_value(const_stream& cs)
         case state::sur1: case state::sur2:
         case state::sur3: case state::sur4:
         case state::sur5: case state::sur6:
-            parse_string(cs);
+            parse_string(cs0);
             break;
 
         case state::arr1: case state::arr2:
         case state::arr3: case state::arr4:
-            parse_array(cs);
+            parse_array(cs0);
             break;
         
         case state::obj1: case state::obj2:
         case state::obj3: case state::obj4:
         case state::obj5: case state::obj6:
         case state::obj7:
-            parse_object(cs);
+            parse_object(cs0);
             break;
         
         case state::num1: case state::num2:
@@ -392,7 +406,7 @@ parse_value(const_stream& cs)
         case state::num7: case state::num8:
         case state::exp1: case state::exp2:
         case state::exp3:
-            parse_number(cs);
+            parse_number(cs0);
             break;
         }
     }
@@ -403,25 +417,7 @@ basic_parser::
 parse_null(const_stream& cs0)
 {
     detail::local_const_stream cs(cs0);
-    if(BOOST_JSON_LIKELY(st_.empty()))
-    {
-        BOOST_ASSERT(*cs == 'n');
-        if(BOOST_JSON_LIKELY(cs.remain() >= 4))
-        {
-            if(BOOST_JSON_LIKELY(std::memcmp(
-                cs.data(), "null", 4) == 0))
-            {
-                this->on_null(ec_);
-                if(BOOST_JSON_LIKELY(! ec_))
-                    cs.skip(4);
-                return;
-            }
-            ec_ = error::syntax;
-            return;
-        }
-        ++cs;
-    }
-    else
+    if(! st_.empty())
     {
         state st;
         st_.pop(st);
