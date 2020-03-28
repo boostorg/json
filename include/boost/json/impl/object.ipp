@@ -45,7 +45,7 @@ public:
             auto p1 = self_.impl_.begin() + last;
             for(auto it = p0; it != p1; ++it)
                 self_.impl_.remove(
-                    self_.impl_.bucket(it->key()), it);
+                    self_.impl_.bucket(it->key()), *it);
             detail::destroy(p0, last - first);
         }
     }
@@ -304,7 +304,7 @@ erase(const_iterator pos) noexcept ->
     auto p = impl_.begin() +
         (pos - impl_.begin());
     impl_.remove(
-        impl_.bucket(p->key()), p);
+        impl_.bucket(p->key()), *p);
     p->~value_type();
     impl_.shrink(1);
     if(p != impl_.end())
@@ -312,13 +312,10 @@ erase(const_iterator pos) noexcept ->
         auto pb = impl_.end();
         auto& head =
             impl_.bucket(pb->key());
-        impl_.remove(head, pb);
-        std::memcpy(
-            reinterpret_cast<void*>(p),
-            reinterpret_cast<void const*>(pb),
-            sizeof(*p));
-        next(*p) = head;
-        head = p;
+        impl_.remove(head, *pb);
+        std::memcpy(p, pb, sizeof(*p));
+        impl_.next(*p) = head;
+        head = impl_.index_of(*p);
     }
     return p;
 }
@@ -459,10 +456,14 @@ find_impl(key_type key) const noexcept ->
     }
     auto const& head =
         impl_.bucket(result.second);
-    auto it = head;
-    while(it && it->key() != key)
-        it = next(*it);
-    result.first = it;
+    auto i = head;
+    while(i != -1 &&
+        impl_.get(i).key() != key)
+        i = impl_.next(impl_.get(i));
+    if(i != -1)
+        result.first = &impl_.get(i);
+    else
+        result.first = nullptr;
     return result;
 }
 
@@ -538,9 +539,7 @@ rehash(std::size_t new_capacity)
     object_impl impl(
         new_capacity, new_buckets, sp_);
     if(impl_.size() > 0)
-        std::memcpy(
-            reinterpret_cast<void*>(impl.begin()),
-            reinterpret_cast<void const*>(impl_.begin()),
+        std::memcpy(impl.begin(), impl_.begin(),
             impl_.size() * sizeof(value_type));
     impl.grow(impl_.size());
     impl_.shrink(impl_.size());
@@ -564,8 +563,8 @@ emplace_impl(
     f(&e);
     auto& head =
         impl_.bucket(result.second);
-    next(e) = head;
-    head = &e;
+    impl_.next(e) = head;
+    head = impl_.index_of(e);
     impl_.grow(1);
     return { &e, true };
 }
@@ -588,8 +587,8 @@ insert_impl(
     }
     auto& head =
         impl_.bucket(result.second);
-    next(e) = head;
-    head = &e;
+    impl_.next(e) = head;
+    head = impl_.index_of(e);
     impl_.grow(1);
     return { &e, true };
 }
@@ -606,8 +605,8 @@ insert_impl(
     f(&e);
     auto& head =
         impl_.bucket(hash);
-    next(e) = head;
-    head = &e;
+    impl_.next(e) = head;
+    head = impl_.index_of(e);
     impl_.grow(1);
     return &e;
 }
@@ -628,19 +627,19 @@ insert_range_impl(
             break;
         auto& head =
             impl_.bucket(e.key());
-        for(auto it = head;;
-            it = next(*it))
+        for(auto i = head;;
+            i = impl_.next(impl_.get(i)))
         {
-            if(it)
+            if(i != -1)
             {
-                if(it->key() != e.key())
+                if(impl_.get(i).key() != e.key())
                     continue;
                 e.~value_type();
             }
             else
             {
-                next(e) = head;
-                head = &e;
+                impl_.next(e) = head;
+                head = impl_.index_of(e);
                 ++u.last;
             }
             break;

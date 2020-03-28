@@ -13,6 +13,7 @@
 #include <boost/json/config.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <type_traits>
 
@@ -25,6 +26,8 @@ namespace detail {
 
 class object_impl
 {
+    using index_t = std::uint32_t;
+
     BOOST_JSON_DECL
     void
     do_destroy(storage_ptr const& sp) noexcept;
@@ -74,6 +77,14 @@ public:
     end() const noexcept;
 
     inline
+    value_type&
+    get(index_t i) const noexcept;
+
+    inline
+    index_t
+    index_of(value_type const& p) const noexcept;
+
+    inline
     void
     clear() noexcept;
 
@@ -109,16 +120,26 @@ public:
     inline
     void
     remove(
-        value_type*& head,
-        value_type* p) noexcept;
+        index_t& head,
+        value_type& p) noexcept;
 
     inline
-    value_type*&
+    index_t&
     bucket(std::size_t hash) const noexcept;
 
     inline
-    value_type*&
+    index_t&
     bucket(string_view key) const noexcept;
+
+    static
+    inline
+    index_t&
+    next(value_type& e) noexcept;
+
+    static
+    inline
+    index_t
+    next(value_type const& e) noexcept;
 
     inline
     void
@@ -151,18 +172,8 @@ private:
     }
 
     inline
-    value_type**
+    index_t*
     bucket_begin() const noexcept;
-
-    static
-    inline
-    value_type*&
-    next(value_type& e) noexcept;
-
-    static
-    inline
-    value_type const*
-    next(value_type const& e) noexcept;
 
     struct table
     {

@@ -18,9 +18,11 @@ namespace detail {
 
 struct next_access
 {
+    using index_t = std::uint32_t;
+
     static
     inline
-    key_value_pair*&
+    index_t&
     get(key_value_pair& e) noexcept
     {
         return e.next_;
@@ -28,7 +30,7 @@ struct next_access
 
     static
     inline
-    key_value_pair const*
+    index_t
     get(key_value_pair const& e) noexcept
     {
         return e.next_;
@@ -38,24 +40,30 @@ struct next_access
 void
 object_impl::
 remove(
-    value_type*& head,
-    value_type* p) noexcept
+    index_t& head,
+    value_type& p) noexcept
 {
-    if(head == p)
+    auto const i = index_of(p);
+    if(head == i)
     {
-        head = next(*head);
+        head = next(p);
         return;
     }
     auto prev = head;
-    while(next(*prev) != p)
-        prev = next(*prev);
-    next(*prev) = next(*p);
+    auto* pn = &next(get(prev));
+    for(;;)
+    {
+        if(*pn == i)
+            break;
+        prev = *pn;
+    }
+    *pn = next(p);
 }
 
 auto
 object_impl::
 bucket(string_view key) const noexcept ->
-    value_type*&
+    index_t&
 {
     auto const hash = digest(key);
     auto const i = hash % buckets();
@@ -65,7 +73,7 @@ bucket(string_view key) const noexcept ->
 auto
 object_impl::
 bucket(std::size_t hash) const noexcept ->
-    value_type*&
+    index_t&
 {
     return bucket_begin()[hash % buckets()];
 }
@@ -91,11 +99,31 @@ end() const noexcept ->
 
 auto
 object_impl::
+get(index_t i) const noexcept ->
+    value_type&
+{
+    BOOST_ASSERT(i != -1);
+    return (reinterpret_cast<
+        value_type*>(tab_ + 1))[i];
+}
+
+auto
+object_impl::
+index_of(value_type const& p) const noexcept ->
+    index_t
+{
+    return static_cast<index_t>(
+        &p - reinterpret_cast<
+            value_type const*>(tab_ + 1));
+}
+
+auto
+object_impl::
 bucket_begin() const noexcept ->
-    value_type**
+    index_t*
 {
     return reinterpret_cast<
-        value_type**>(
+        index_t*>(
             begin() + capacity());
 }
 
@@ -142,7 +170,7 @@ digest(
 auto
 object_impl::
 next(value_type& e) noexcept ->
-    value_type*&
+    index_t&
 {
     return next_access::get(e);
 }
@@ -150,7 +178,7 @@ next(value_type& e) noexcept ->
 auto
 object_impl::
 next(value_type const& e) noexcept ->
-    value_type const*
+    index_t
 {
     return next_access::get(e);
 }

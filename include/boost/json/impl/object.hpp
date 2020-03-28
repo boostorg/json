@@ -338,22 +338,6 @@ emplace(
 //
 //----------------------------------------------------------
 
-auto
-object::
-next(value_type& e) noexcept ->
-    value_type*&
-{
-    return detail::next_access::get(e);
-}
-
-auto
-object::
-next(value_type const& e) noexcept ->
-    value_type const*
-{
-    return detail::next_access::get(e);
-}
-
 template<class InputIt>
 void
 object::

@@ -24,7 +24,7 @@ do_destroy(storage_ptr const& sp) noexcept
         sp->deallocate(tab_,
             sizeof(table) +
             capacity() * sizeof(value_type) +
-            buckets() * sizeof(value_type*));
+            buckets() * sizeof(index_t));
     }
 }
 
@@ -38,10 +38,10 @@ object_impl(
     tab_ = ::new(sp->allocate(
         sizeof(table) +
         capacity * sizeof(value_type) +
-        buckets * sizeof(value_type*))) table{
+        buckets * sizeof(index_t))) table{
             0, capacity, buckets };
-    std::memset(bucket_begin(), 0,
-        buckets * sizeof(value_type*));
+    std::memset(bucket_begin(), 0xff, // index_t(-1)
+        buckets * sizeof(index_t));
 }
 
 object_impl::
@@ -58,8 +58,8 @@ clear() noexcept
     if(! tab_)
         return;
     detail::destroy(begin(), size());
-    std::memset(bucket_begin(), 0,
-        buckets() * sizeof(value_type*));
+    std::memset(bucket_begin(), 0xff, // index_t(-1)
+        buckets() * sizeof(index_t));
     tab_->size = 0;
 }
 
@@ -73,13 +73,14 @@ build() noexcept
     {
         {
             auto& head = bucket(p->key());
-            auto it = head;
-            while(it && it->key() != p->key())
-                it = next(*it);
-            if(! it)
+            auto i = head;
+            while(i != -1 &&
+                get(i).key() != p->key())
+                i = next(get(i));
+            if(i == -1)
             {
                 next(*p) = head;
-                head = p;
+                head = index_of(*p);
                 ++p;
                 continue;
             }
@@ -89,13 +90,10 @@ build() noexcept
         --end;
         if(p != end)
         {
-            std::memcpy(
-                reinterpret_cast<void*>(p),
-                reinterpret_cast<void const*>(end),
-                sizeof(*p));
+            std::memcpy(p, end, sizeof(*p));
             auto& head = bucket(p->key());
             next(*p) = head;
-            head = p;
+            head = index_of(*p);
         }
     }
 }
@@ -106,12 +104,12 @@ object_impl::
 rebuild() noexcept
 {
     auto const end = this->end();
-    for(auto it = begin();
-        it != end; ++it)
+    for(auto p = begin();
+        p != end; ++p)
     {
-        auto& head = bucket(it->key());
-        next(*it) = head;
-        head = it;
+        auto& head = bucket(p->key());
+        next(*p) = head;
+        head = index_of(*p);
     }
 }
 

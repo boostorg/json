@@ -20,6 +20,7 @@
 #include <boost/json/value_ref.hpp>
 #include <boost/json/detail/scalar_impl.hpp>
 #include <boost/pilfer.hpp>
+#include <cstdint>
 #include <cstdlib>
 #include <initializer_list>
 #include <iosfwd>
@@ -2803,15 +2804,20 @@ struct key_value_pair
     }
 
 private:
+    static
+    inline
+    std::uint32_t
+    key_size(std::size_t n);
+
 #ifndef GENERATING_DOCUMENTATION
     // docca emits this when it shouldn't
     friend struct detail::next_access;
 #endif
 
-    key_value_pair* next_;
     json::value value_;
-    std::size_t len_;
     char* key_;
+    std::uint32_t len_;
+    std::uint32_t next_;
 };
 
 } // json

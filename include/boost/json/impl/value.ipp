@@ -379,7 +379,6 @@ key_value_pair::
 key_value_pair(
     key_value_pair const& other)
     : value_(other.value_)
-    , len_(other.len_)
     , key_(
         [&]
         {
@@ -390,6 +389,7 @@ key_value_pair(
             s[other.len_] = 0;
             return s;
         }())
+    , len_(other.len_)
 {
 }
 
@@ -399,7 +399,6 @@ key_value_pair(
     key_value_pair const& other,
     storage_ptr sp)
     : value_(other.value_, detail::move(sp))
-    , len_(other.len_)
     , key_(
         [&]
         {
@@ -410,6 +409,7 @@ key_value_pair(
             s[other.len_] = 0;
             return s;
         }())
+    , len_(other.len_)
 {
 }
 

@@ -91,13 +91,23 @@ relocate(
 
 //----------------------------------------------------------
 
+inline
+std::uint32_t
+key_value_pair::
+key_size(std::size_t n)
+{
+    if(n > BOOST_JSON_MAX_STRING_SIZE)
+        string_too_large::raise();
+    return static_cast<
+        std::uint32_t>(n);
+}
+
 template<class... Args>
 key_value_pair::
 key_value_pair(
     string_view key,
     Args&&... args)
     : value_(std::forward<Args>(args)...)
-    , len_(key.size())
     , key_(
         [&]
         {
@@ -110,6 +120,7 @@ key_value_pair(
             s[key.size()] = 0;
             return s;
         }())
+    , len_(key_size(key.size()))
 {
 }
 

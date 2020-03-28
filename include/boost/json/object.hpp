@@ -78,6 +78,7 @@ class object
 {
     using object_impl =
         detail::object_impl;
+    using index_t = std::uint32_t;
 
     storage_ptr sp_;    // must come first
     kind k_ =           // must come second
@@ -1311,16 +1312,6 @@ private:
     template<class It>
     using iter_cat = typename
         std::iterator_traits<It>::iterator_category;
-
-    static
-    inline
-    value_type*&
-    next(value_type& e) noexcept;
-
-    static
-    inline
-    value_type const*
-    next(value_type const& e) noexcept;
 
     BOOST_JSON_DECL
     std::pair<value_type*, std::size_t>
