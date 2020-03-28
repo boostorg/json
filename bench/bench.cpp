@@ -7,9 +7,14 @@
 // Official repository: https://github.com/vinniefalco/json
 //
 
-#define RAPIDJSON_SSE2
-
 #include <boost/json/config.hpp>
+
+#if defined(BOOST_JSON_USE_SSE2)
+#  define RAPIDJSON_SSE2
+#  define SSE2_ARCH_SUFFIX "/sse2"
+#else
+#  define SSE2_ARCH_SUFFIX ""
+#endif
 
 #include "lib/nlohmann/single_include/nlohmann/json.hpp"
 
@@ -54,9 +59,9 @@ string_view toolset = "unknown";
 #endif
 
 #if BOOST_JSON_ARCH == 32
-string_view arch = "x86";
+string_view arch = "x86" SSE2_ARCH_SUFFIX;
 #elif BOOST_JSON_ARCH == 64
-string_view arch = "x64";
+string_view arch = "x64" SSE2_ARCH_SUFFIX;
 #else
 #error Unknown architecture.
 #endif
