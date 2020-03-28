@@ -144,10 +144,8 @@ void
 bench(
     string_view verb,
     file_list const& vf,
-    impl_list const& vi)
+    impl_list const& vi, std::size_t Trials)
 {
-    std::size_t Trials = 6;
-
     std::vector<sample> trial;
     for(unsigned i = 0; i < vf.size(); ++i)
     {
@@ -589,25 +587,164 @@ struct nlohmann_impl : public any_impl
 } // json
 } // boost
 
+//
+
+using namespace boost::json;
+
+std::string s_tests = "ps";
+std::string s_impls = "bdrcn";
+std::size_t s_trials = 6;
+
+static bool parse_option( char const * s )
+{
+    if( *s == 0 )
+    {
+        return false;
+    }
+
+    char opt = *s++;
+
+    if( *s++ != ':' )
+    {
+        return false;
+    }
+
+    switch( opt )
+    {
+    case 't':
+
+        s_tests = s;
+        break;
+
+    case 'i':
+
+        s_impls = s;
+        break;
+
+    case 'n':
+
+        {
+            int k = std::atoi( s );
+
+            if( k > 0 )
+            {
+                s_trials = k;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        break;
+    }
+
+    return true;
+}
+
+static bool add_impl( impl_list & vi, char impl )
+{
+    switch( impl )
+    {
+    case 'b':
+
+        vi.emplace_back(new boost_pool_impl);
+        break;
+
+    case 'd':
+
+        vi.emplace_back(new boost_default_impl);
+        break;
+
+    case 'r':
+
+        vi.emplace_back(new rapidjson_memory_impl);
+        break;
+
+    case 'c':
+
+        vi.emplace_back(new rapidjson_crt_impl);
+        break;
+
+    case 'n':
+
+        vi.emplace_back(new nlohmann_impl);
+        break;
+
+    default:
+
+        std::cerr << "Unknown implementation: '" << impl << "'\n";
+        return false;
+    }
+
+    return true;
+}
+
+static bool do_test( file_list const & vf, impl_list const & vi, char test )
+{
+    switch( test )
+    {
+    case 'p':
+
+        bench("Parse", vf, vi, s_trials);
+        break;
+
+    case 's':
+
+        bench("Serialize", vf, vi, s_trials);
+        break;
+
+    default:
+
+        std::cerr << "Unknown test type: '" << test << "'\n";
+        return false;
+    }
+
+    return true;
+}
+
 int
 main(
     int const argc,
     char const* const* const argv)
 {
-    using namespace boost::json;
-    file_list vf;
-    if(argc > 1)
-    {
-        vf.reserve(argc - 1);
-        for(int i = 1; i < argc; ++i)
-            vf.emplace_back(
-                file_item{argv[i],
-                load_file(argv[i])});
-    }
-    else
+    if( argc < 2 )
     {
         std::cerr <<
-            "Usage: bench <file>...";
+            "Usage: bench [options...] <file>...\n"
+            "\n"
+            "Options:  -t:[p][s]            Test parsing, serialization or both\n"
+			"                                 (default both)\n"
+            "          -i:[b][d][r][c][n]   Test the specified implementations\n"
+            "                                 (b: Boost.JSON, pool storage)\n"
+            "                                 (d: Boost.JSON, default storage)\n"
+            "                                 (r: RapidJSON, memory storage)\n"
+            "                                 (c: RapidJSON, CRT storage)\n"
+            "                                 (n: nlohmann/json)\n"
+			"                                 (default all)\n"
+            "          -n:<number>          Number of trials (default 6)\n"
+        ;
+
+        return 4;
+    }
+
+    file_list vf;
+
+    for( int i = 1; i < argc; ++i )
+    {
+        char const * s = argv[ i ];
+
+        if( *s == '-' )
+        {
+            if( !parse_option( s+1 ) )
+            {
+                std::cerr << "Unrecognized or incorrect option: '" << s << "'\n";
+            }
+        }
+        else
+        {
+            vf.emplace_back( file_item{ argv[i], load_file( s ) } );
+        }
     }
 
     try
@@ -616,16 +753,16 @@ main(
         strings.json integers-32.json integers-64.json twitter.json small.json array.json random.json citm_catalog.json canada.json
 */
         impl_list vi;
-        //vi.emplace_back(new boost_null_impl);
-        //vi.emplace_back(new boost_vec_impl);
-        vi.emplace_back(new boost_pool_impl);
-        vi.emplace_back(new boost_default_impl);
-        vi.emplace_back(new rapidjson_memory_impl);
-        vi.emplace_back(new rapidjson_crt_impl);
-        vi.emplace_back(new nlohmann_impl);
 
-        bench("Parse", vf, vi);
-        bench("Serialize", vf, vi);
+        for( char ch: s_impls )
+        {
+            add_impl( vi, ch );
+        }
+
+        for( char ch: s_tests )
+        {
+            do_test( vf, vi, ch );
+        }
 
         dout << "\n" << strout.str();
     }
