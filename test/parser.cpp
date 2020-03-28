@@ -576,9 +576,24 @@ public:
         grind("[[],[]]");
         grind("[[],[],[]]");
         grind("[[[]],[[],[]],[[],[],[]]]");
-#if 0
         grind("[{},[],\"x\",1,-1,1.0,true,null]");
-#endif
+
+        // depth
+        {
+            error_code ec;
+            parser p;
+            p.start();
+            BOOST_TEST(
+                p.depth() == 0);
+            BOOST_TEST(
+                p.max_depth() > 0);
+            p.max_depth(0);
+            BOOST_TEST(
+                p.max_depth() == 0);
+            p.finish("[]", 2, ec);
+            BOOST_TEST(
+                ec == error::too_deep);
+        }
     }
 
     //------------------------------------------------------
@@ -605,7 +620,6 @@ public:
         grind("{\"\":[]}");
         grind("{\"1\":[],\"2\":[]}");
 
-#if 0
         grind(
             "{\"1\":{\"2\":{}},\"3\":{\"4\":{},\"5\":{}},"
             "\"6\":{\"7\":{},\"8\":{},\"9\":{}}}");
@@ -613,7 +627,6 @@ public:
         grind(
             "{\"1\":{},\"2\":[],\"3\":\"x\",\"4\":1,"
             "\"5\":-1,\"6\":1.0,\"7\":false,\"8\":null}");
-#endif
 
         // big keys
         {
@@ -635,6 +648,23 @@ public:
                 js = "{\"" + big + "\":\"" + big + "\"}";
                 grind(js);
             }
+        }
+
+        // depth
+        {
+            error_code ec;
+            parser p;
+            p.start();
+            BOOST_TEST(
+                p.depth() == 0);
+            BOOST_TEST(
+                p.max_depth() > 0);
+            p.max_depth(0);
+            BOOST_TEST(
+                p.max_depth() == 0);
+            p.finish("{}", 2, ec);
+            BOOST_TEST(
+                ec == error::too_deep);
         }
     }
 
@@ -675,6 +705,23 @@ public:
             parser p;
             p.reserve(16384);
             p.reserve(100);
+        }
+
+        // write_some(char const*, size_t)
+        {
+            {
+                parser p;
+                p.start();
+                BOOST_TEST(p.write_some(
+                    "nullx", 5) == 4);
+            }
+            {
+                parser p;
+                p.start();
+                BOOST_TEST_THROWS(
+                    p.write_some("x", 1),
+                    system_error);
+            }
         }
     }
 

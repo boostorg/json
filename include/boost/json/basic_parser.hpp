@@ -71,7 +71,6 @@ class basic_parser
     error_code ec_;
     detail::stack st_;
     std::size_t depth_ = 0;
-    std::size_t max_depth_ = 32;
     unsigned u1_;
     unsigned u2_;
     bool done_; // true on complete parse
@@ -85,18 +84,47 @@ class basic_parser
     inline void suspend(state st, std::size_t n);
     inline void suspend(state st, number const& num);
     inline bool skip_white(const_stream& cs);
-    inline result parse_element(const_stream& cs);
-    inline result parse_value(const_stream& cs);
-    inline result parse_null(const_stream& cs);
-    inline result parse_true(const_stream& cs);
-    inline result parse_false(const_stream& cs);
-    inline result parse_string(const_stream& cs);
-    inline result parse_object(const_stream& cs);
-    inline result parse_array(const_stream& cs);
-    inline result parse_number(const_stream& cs);
+    template<class Handler> inline result parse_element(Handler h, const_stream& cs);
+    template<class Handler> inline result parse_value(Handler h, const_stream& cs);
+    template<class Handler> inline result parse_null(Handler h, const_stream& cs);
+    template<class Handler> inline result parse_true(Handler h, const_stream& cs);
+    template<class Handler> inline result parse_false(Handler h, const_stream& cs);
+    template<class Handler> inline result parse_string(Handler h, const_stream& cs);
+    template<class Handler> inline result parse_object(Handler h, const_stream& cs);
+    template<class Handler> inline result parse_array(Handler h, const_stream& cs);
+    template<class Handler> inline result parse_number(Handler h, const_stream& cs);
 
 public:
     //------------------------------------------------------
+
+    template<class T>
+    struct handler_ref
+    {
+        T& p;
+        bool on_document_begin( error_code& ec ) { return p.on_document_begin(ec); }
+        bool on_document_end( error_code& ec ) { return p.on_document_end(ec); }
+        bool on_object_begin( error_code& ec ) { return p.on_object_begin(ec); }
+        bool on_object_end( std::size_t n, error_code& ec ) { return p.on_object_end(n, ec); }
+        bool on_array_begin( error_code& ec ) { return p.on_array_begin(ec); }
+        bool on_array_end( std::size_t n, error_code& ec ) { return p.on_array_end(n, ec); }
+        bool on_key_part( string_view s, error_code& ec ) { return p.on_key_part(s, ec); }
+        bool on_key( string_view s, error_code& ec ) { return p.on_key(s, ec); }
+        bool on_string_part( string_view s, error_code& ec ) { return p.on_string_part(s, ec); }
+        bool on_string( string_view s, error_code& ec ) { return p.on_string(s, ec); }
+        bool on_int64( std::int64_t i, error_code& ec ) { return p.on_int64(i, ec); }
+        bool on_uint64( std::uint64_t u, error_code& ec ) { return p.on_uint64(u, ec); }
+        bool on_double( double d, error_code& ec ) { return p.on_double(d, ec); }
+        bool on_bool( bool b, error_code& ec ) { return p.on_bool(b, ec); }
+        bool on_null( error_code& ec ) { return p.on_null(ec); }
+    };
+
+    template<class T>
+    static
+    handler_ref<T>
+    handler(T& t)
+    {
+        return handler_ref<T>{t};
+    }
 
     /** Destructor.
 
@@ -108,6 +136,10 @@ public:
         // VFALCO defaulting this causes link
         // errors on some older toolchains.
     }
+
+    /// Constructor (default)
+    BOOST_JSON_DECL
+    basic_parser();
 
     /** Return true if a complete JSON has been parsed.
 
@@ -142,28 +174,70 @@ public:
         return depth_;
     }
 
-    /** Returns the maximum allowed depth of input JSON.
-
-        The maximum allowed depth may be configured.
+    /** Reset the state, to parse a new document.
     */
-    std::size_t
-    max_depth() const noexcept
-    {
-        return max_depth_;
-    }
-
-    /** Set the maximum allowed depth of input JSON.
-
-        When the maximum depth is exceeded, parser
-        operations will return @ref error::too_deep.
-
-        @param levels The maximum depth.
-    */
+    BOOST_JSON_DECL
     void
-    max_depth(unsigned long levels) noexcept
-    {
-        max_depth_ = levels;
-    }
+    reset() noexcept;
+
+    /** Parse JSON incrementally.
+
+        This function parses the JSON in the specified
+        buffer, calling the handler to emit each SAX
+        parsing event. The parse proceeds from the
+        current state, which is at the beginning of a
+        new JSON or in the middle of the current JSON
+        if any characters were already parsed.
+
+        <br>
+
+        The characters in the buffer are processed
+        starting from the beginning, until one of the
+        following conditions is met:
+
+        @li All of the characters in the buffer have been
+        parsed, or
+
+        @li Some of the characters in the buffer have been
+        parsed and the JSON is complete, or
+
+        @li A parsing error occurs.
+
+        The supplied buffer does not need to contain the
+        entire JSON. Subsequent calls can provide more
+        serialized data, allowing JSON to be processed
+        incrementally. The end of the serialized JSON
+        can be indicated by calling @ref finish().
+
+        @par Complexity
+
+        Linear in `size`.
+
+        @param h The handler to invoke for each element
+        of the parsed JSON.
+
+        @param more `true` if there are possibly more
+        buffers in the current JSON, otherwise `false`.
+
+        @param data A pointer to a buffer of `size`
+        characters to parse.
+
+        @param size The number of characters pointed to
+        by `data`.
+
+        @param ec Set to the error, if any occurred.
+
+        @return The number of characters successfully
+        parsed, which may be smaller than `size`.
+    */
+    template<class Handler>
+    std::size_t
+    write_some(
+        Handler h,
+        bool more,
+        char const* data,
+        std::size_t size,
+        error_code& ec);
 
     /** Parse JSON incrementally.
 
@@ -215,56 +289,6 @@ public:
         char const* data,
         std::size_t size,
         error_code& ec);
-
-    /** Parse JSON incrementally.
-
-        This function parses the JSON in the specified
-        buffer, emitting SAX parsing events by calling
-        the derived class. The parse proceeds from the
-        current state, which is at the beginning of a
-        new JSON or in the middle of the current JSON
-        if any characters were already parsed.
-        
-        <br>
-        
-        The characters in the buffer are processed
-        starting from the beginning, until one of the
-        following conditions is met:
-
-        @li All of the characters in the buffer have been
-        parsed, or
-
-        @li Some of the characters in the buffer have been
-        parsed and the JSON is complete, or
-
-        @li A parsing error occurs.
-
-        The supplied buffer does not need to contain the
-        entire JSON. Subsequent calls can provide more
-        serialized data, allowing JSON to be processed
-        incrementally. The end of the serialized JSON
-        can be indicated by calling @ref finish().
-
-        @par Complexity
-
-        Linear in `size`.
-
-        @param data A pointer to a buffer of `size`
-        characters to parse.
-
-        @param size The number of characters pointed to
-        by `data`.
-
-        @throw system_error Thrown on failure.
-
-        @return The number of characters successfully
-        parsed, which may be smaller than `size`.
-    */
-    BOOST_JSON_DECL
-    std::size_t
-    write_some(
-        char const* data,
-        std::size_t size);
 
     /** Parse JSON incrementally.
 
@@ -497,16 +521,6 @@ public:
     finish();
 
 protected:
-    /// Constructor (default)
-    BOOST_JSON_DECL
-    basic_parser();
-
-    /** Reset the state, to parse a new document.
-    */
-    BOOST_JSON_DECL
-    void
-    reset() noexcept;
-
     /** Called once when the JSON parsing begins.
 
         This function is invoked at the beginning of
@@ -514,16 +528,16 @@ protected:
         presented. The call happens before any other
         events.
 
-        @return `true` on success.
-
         @param ec The error, if any, which will be
         returned by the current invocation of
         @ref write_some, @ref write, or @ref finish.
+
+        @return `true` on success.
     */
     virtual
     bool
     on_document_begin(
-        error_code& ec) = 0;
+        error_code& ec) { return false; }
 
     /** Called when the JSON parsing is done.
 
@@ -532,32 +546,32 @@ protected:
         The call happens last; no other calls are made
         before the parser is reset.
 
-        @return `true` on success.
-
         @param ec The error, if any, which will be
         returned by the current invocation of
         @ref write_some, @ref write, or @ref finish.
+
+        @return `true` on success.
     */
     virtual
     bool
     on_document_end(
-        error_code& ec) = 0;
+        error_code& ec) { return false; }
 
     /** Called when the beginning of an object is encountered.
 
         This function is called during parsing when a new
         object is started.
 
-        @return `true` on success.
-
         @param ec The error, if any, which will be
         returned by the current invocation of
         @ref write_some, @ref write, or @ref finish.
+
+        @return `true` on success.
     */
     virtual
     bool
     on_object_begin(
-        error_code& ec) = 0;
+        error_code& ec) { return false; }
 
     /** Called when the end of the current object is encountered.
 
@@ -565,35 +579,35 @@ protected:
         the elements of an object have been parsed, and the
         closing brace for the object is reached.
 
-        @return `true` on success.
-
         @param n The number of elements in the object.
 
         @param ec The error, if any, which will be
         returned by the current invocation of
         @ref write_some, @ref write, or @ref finish.
+
+        @return `true` on success.
     */
     virtual
     bool
     on_object_end(
         std::size_t n,
-        error_code& ec) = 0;
+        error_code& ec) { return false; }
 
     /** Called when the beginning of an array is encountered.
 
         This function is called during parsing when a new
         array is started.
 
-        @return `true` on success.
-
         @param ec The error, if any, which will be
         returned by the current invocation of
         @ref write_some, @ref write, or @ref finish.
+
+        @return `true` on success.
     */
     virtual
     bool
     on_array_begin(
-        error_code& ec) = 0;
+        error_code& ec) { return false; }
 
     /** Called when the end of the current array is encountered.
 
@@ -601,19 +615,19 @@ protected:
         the elements of an array have been parsed, and the
         closing bracket for the array is reached.
 
-        @return `true` on success.
-
         @param n The number of elements in the array.
 
         @param ec The error, if any, which will be
         returned by the current invocation of
         @ref write_some, @ref write, or @ref finish.
+
+        @return `true` on success.
     */
     virtual
     bool
     on_array_end(
         std::size_t n,
-        error_code& ec) = 0;
+        error_code& ec) { return false; }
 
     /** Called with characters corresponding to part of the current key.
 
@@ -623,8 +637,6 @@ protected:
         by zero or more calls to @ref on_key_part, followed
         by a final call to @ref on_key.
 
-        @return `true` on success.
-
         @param s The string view holding the next buffer of
         key data, with escapes converted to their actual
         characters.
@@ -632,12 +644,14 @@ protected:
         @param ec The error, if any, which will be
         returned by the current invocation of
         @ref write_some, @ref write, or @ref finish.
+
+        @return `true` on success.
     */
     virtual
     bool
     on_key_part(
         string_view s,
-        error_code& ec) = 0;
+        error_code& ec) { return false; }
 
     /** Called with the last characters corresponding to the current key.
 
@@ -646,8 +660,6 @@ protected:
         being parsed as part of an object. The key is
         considered complete with these characters.
 
-        @return `true` on success.
-
         @param s The string view holding the final buffer of
         key data, with escapes converted to their actual
         characters.
@@ -655,12 +667,14 @@ protected:
         @param ec The error, if any, which will be
         returned by the current invocation of
         @ref write_some, @ref write, or @ref finish.
+
+        @return `true` on success.
     */
     virtual
     bool
     on_key(
         string_view s,
-        error_code& ec) = 0;
+        error_code& ec) { return false; }
 
     /** Called with characters corresponding to part of the current string.
 
@@ -670,8 +684,6 @@ protected:
         more calls to @ref on_string_part, followed by a
         final call to @ref on_string.
 
-        @return `true` on success.
-
         @param s The string view holding the next buffer of
         string data, with escapes converted to their actual
         characters.
@@ -679,12 +691,14 @@ protected:
         @param ec The error, if any, which will be
         returned by the current invocation of
         @ref write_some, @ref write, or @ref finish.
+
+        @return `true` on success.
     */
     virtual
     bool
     on_string_part(
         string_view s,
-        error_code& ec) = 0;
+        error_code& ec) { return false; }
 
     /** Called with the last characters corresponding to the current string.
 
@@ -693,8 +707,6 @@ protected:
         string being parsed. The string element is
         considered complete with these characters.
 
-        @return `true` on success.
-
         @param s The string view holding the final buffer of
         string data, with escapes converted to their actual
         characters.
@@ -702,100 +714,102 @@ protected:
         @param ec The error, if any, which will be
         returned by the current invocation of
         @ref write_some, @ref write, or @ref finish.
+
+        @return `true` on success.
     */
     virtual
     bool
     on_string(
         string_view s,
-        error_code& ec) = 0;
+        error_code& ec) { return false; }
 
     /** Called when a `std::int64_t` is parsed.
 
         This function is called when a suitable
         number is parsed.
 
-        @return `true` on success.
-
         @param i The number encountered.
 
         @param ec The error, if any, which will be
         returned by the current invocation of
         @ref write_some, @ref write, or @ref finish.
+
+        @return `true` on success.
     */
     virtual
     bool
     on_int64(
         int64_t i,
-        error_code& ec) = 0;
+        error_code& ec) { return false; }
 
     /** Called when a `std::uint64_t` is parsed.
 
         This function is called when a suitable
         number is parsed.
 
-        @return `true` on success.
-
         @param u The number encountered.
 
         @param ec The error, if any, which will be
         returned by the current invocation of
         @ref write_some, @ref write, or @ref finish.
+
+        @return `true` on success.
     */
     virtual
     bool
     on_uint64(
         uint64_t u,
-        error_code& ec) = 0;
+        error_code& ec) { return false; }
 
     /** Called when a `double` is parsed.
 
         This function is called when a suitable
         number is parsed.
 
-        @return `true` on success.
-
         @param d The number encountered.
 
         @param ec The error, if any, which will be
         returned by the current invocation of
         @ref write_some, @ref write, or @ref finish.
+
+        @return `true` on success.
     */
     virtual
     bool
     on_double(
         double d,
-        error_code& ec) = 0;
+        error_code& ec) { return false; }
 
     /** Called when a `bool` is parsed.
 
         This function is called when a
         boolean value is encountered.
 
-        @return `true` on success.
-
         @param b The boolean value.
 
         @param ec The error, if any, which will be
         returned by the current invocation of
         @ref write_some, @ref write, or @ref finish.
+
+        @return `true` on success.
     */
     virtual
     bool
-    on_bool(bool b, error_code& ec) = 0;
+    on_bool(bool b, error_code& ec) { return false; }
 
     /** Called when a null is parsed.
 
         This function is called when a null is encountered.
 
-        @return `true` on success.
-
         @param ec The error, if any, which will be
         returned by the current invocation of
         @ref write_some, @ref write, or @ref finish.
+
+        @return `true` on success.
     */
     virtual
     bool
-    on_null(error_code& ec) = 0;
+    on_null(error_code& ec) { return false; }
 };
 
 } // json

@@ -506,22 +506,6 @@ public:
         bad ("[ \"x\", ]");
 
         bad (R"jv( [ null ; 1 ] )jv");
-
-        // depth
-        {
-            error_code ec;
-            fail_parser p;
-            BOOST_TEST(
-                p.depth() == 0);
-            BOOST_TEST(
-                p.max_depth() > 0);
-            p.max_depth(0);
-            BOOST_TEST(
-                p.max_depth() == 0);
-            p.finish("[]", 2, ec);
-            BOOST_TEST(
-                ec == error::too_deep);
-        }
     }
 
     void
@@ -567,22 +551,6 @@ public:
 
         bad (R"jv( {"x";null} )jv");
         bad (R"jv( {"x":null . "y":0} )jv");
-
-        // depth
-        {
-            error_code ec;
-            fail_parser p;
-            BOOST_TEST(
-                p.depth() == 0);
-            BOOST_TEST(
-                p.max_depth() > 0);
-            p.max_depth(0);
-            BOOST_TEST(
-                p.max_depth() == 0);
-            p.finish("{}", 2, ec);
-            BOOST_TEST(
-                ec == error::too_deep);
-        }
     }
 
     void
@@ -706,21 +674,6 @@ public:
             }
         }
 
-        // write_some(char const*, size_t)
-        {
-            {
-                fail_parser p;
-                BOOST_TEST(p.write_some(
-                    "nullx", 5) == 4);
-            }
-            {
-                fail_parser p;
-                BOOST_TEST_THROWS(
-                    p.write_some("x", 1),
-                    system_error);
-            }
-        }
-
         // write(char const*, size_t, error_code&)
         {
             error_code ec;
@@ -796,6 +749,13 @@ public:
         parse_vectors pv;
         for(auto const& v : pv)
         {
+            // skip these , because basic_parser
+            // doesn't have a max_depth setting.
+            if( v.name == "structure_100000_opening_arrays" ||
+                v.name == "structure_open_array_object")
+            {
+                continue;
+            }
             if(v.result == 'i')
             {
                 error_code ec;

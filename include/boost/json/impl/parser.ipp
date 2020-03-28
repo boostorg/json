@@ -10,8 +10,9 @@
 #ifndef BOOST_JSON_IMPL_PARSER_IPP
 #define BOOST_JSON_IMPL_PARSER_IPP
 
-#include <boost/json/parser.hpp>
+#include <boost/json/basic_parser_impl.hpp>
 #include <boost/json/error.hpp>
+#include <boost/json/parser.hpp>
 #include <cstring>
 #include <stdexcept>
 #include <utility>
@@ -45,6 +46,26 @@ key
     (chars)...
     std::size_t
 */
+
+struct parser::handler
+{
+    parser& p;
+    bool on_document_begin( error_code& ec ) { return p.on_document_begin(ec); }
+    bool on_document_end( error_code& ec ) { return p.on_document_end(ec); }
+    bool on_object_begin( error_code& ec ) { return p.on_object_begin(ec); }
+    bool on_object_end( std::size_t n, error_code& ec ) { return p.on_object_end(n, ec); }
+    bool on_array_begin( error_code& ec ) { return p.on_array_begin(ec); }
+    bool on_array_end( std::size_t n, error_code& ec ) { return p.on_array_end(n, ec); }
+    bool on_key_part( string_view s, error_code& ec ) { return p.on_key_part(s, ec); }
+    bool on_key( string_view s, error_code& ec ) { return p.on_key(s, ec); }
+    bool on_string_part( string_view s, error_code& ec ) { return p.on_string_part(s, ec); }
+    bool on_string( string_view s, error_code& ec ) { return p.on_string(s, ec); }
+    bool on_int64( std::int64_t i, error_code& ec ) { return p.on_int64(i, ec); }
+    bool on_uint64( std::uint64_t u, error_code& ec ) { return p.on_uint64(u, ec); }
+    bool on_double( double d, error_code& ec ) { return p.on_double(d, ec); }
+    bool on_bool( bool b, error_code& ec ) { return p.on_bool(b, ec); }
+    bool on_null( error_code& ec ) { return p.on_null(ec); }
+};
 
 enum class parser::state : char
 {
@@ -179,12 +200,117 @@ clear() noexcept
 {
     destroy();
     rs_.clear();
-    basic_parser::reset();
+    p_.reset();
     lev_.count = 0;
     key_size_ = 0;
     str_size_ = 0;
     lev_.st = state::need_start;
     sp_ = {};
+}
+
+std::size_t
+parser::
+write_some(
+    char const* const data,
+    std::size_t const size,
+    error_code& ec)
+{
+    return p_.write_some(
+        handler{*this}, true,
+            data, size, ec);
+}
+
+std::size_t
+parser::
+write_some(
+    char const* const data,
+    std::size_t const size)
+{
+    error_code ec;
+    auto const n = write_some(
+        data, size, ec);
+    if(ec)
+        BOOST_THROW_EXCEPTION(
+            system_error(ec));
+    return n;
+}
+
+void
+parser::
+write(
+    char const* data,
+    std::size_t size,
+    error_code& ec)
+{
+    auto const n = p_.write_some(
+        handler{*this}, true,
+            data, size, ec);
+    if(! ec)
+    {
+        if(n < size)
+            ec = error::extra_data;
+    }
+}
+
+void
+parser::
+write(
+    char const* data,
+    std::size_t size)
+{
+    error_code ec;
+    write(data, size, ec);
+    if(ec)
+        BOOST_THROW_EXCEPTION(
+            system_error(ec));
+}
+
+void
+parser::
+finish(
+    char const* data,
+    std::size_t size,
+    error_code& ec)
+{
+    auto const n = p_.write_some(
+        handler{*this}, false,
+            data, size, ec);
+    if(! ec)
+    {
+        if(n < size)
+            ec = error::extra_data;
+    }
+}
+
+void
+parser::
+finish(
+    char const* data,
+    std::size_t size)
+{
+    error_code ec;
+    finish(data, size, ec);
+    if(ec)
+        BOOST_THROW_EXCEPTION(
+            system_error(ec));
+}
+
+void
+parser::
+finish(error_code& ec)
+{
+    finish(nullptr, 0, ec);
+}
+
+void
+parser::
+finish()
+{
+    error_code ec;
+    finish(ec);
+    if(ec)
+        BOOST_THROW_EXCEPTION(
+            system_error(ec));
 }
 
 value
@@ -206,7 +332,7 @@ release()
     };
     U u;
     ua.relocate(&u.v);
-    basic_parser::reset();
+    p_.reset();
     lev_.st = state::need_start;
     sp_ = {};
     return pilfer(u.v);
@@ -372,8 +498,13 @@ on_document_end(error_code&)
 
 bool
 parser::
-on_object_begin(error_code&)
+on_object_begin(error_code& ec)
 {
+    if(p_.depth() >= max_depth_)
+    {
+        ec = error::too_deep;
+        return false;
+    }
     // prevent splits from exceptions
     rs_.prepare(
         sizeof(level) +
@@ -406,8 +537,13 @@ on_object_end(
 
 bool
 parser::
-on_array_begin(error_code&)
+on_array_begin(error_code& ec)
 {
+    if(p_.depth() >= max_depth_)
+    {
+        ec = error::too_deep;
+        return false;
+    }
     // prevent splits from exceptions
     rs_.prepare(
         sizeof(level) +
