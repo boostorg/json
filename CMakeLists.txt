@@ -33,6 +33,14 @@ if(${CMAKE_VERSION} VERSION_GREATER 3.7.2)
     source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX "" FILES ${BOOST_JSON_SOURCES})
 endif()
 
+if(BOOST_JSON_STANDALONE)
+    # Building standalone, out of Boost superproject tree, without Boost as dependency.
+    set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard (17 or higher is required)")
+    if(CMAKE_CXX_STANDARD LESS 17)
+        message(FATAL_ERROR "Boost.JSON requires C++17 in standalone mode, but CMAKE_CXX_STANDARD is '${CMAKE_CXX_STANDARD}'; please set it to 17 or higher")
+    endif()
+endif()
+
 # TODO: For Boost superproject, do we want to support header-only mode?
 #       Then, this needs to read `add_library(boost_json INTERFACE)`
 #       and related settings need to be INTERFACE-ed as well.
@@ -57,11 +65,9 @@ include(CTest)
 option(BOOST_JSON_STANDALONE "Build boost::json as a static standalone library" FALSE)
 
 if(BOOST_JSON_STANDALONE)
-    #
     # Building standalone, out of Boost superproject tree, without Boost as dependency.
-    #
-    target_compile_features(boost_json PUBLIC cxx_std_17)
     target_compile_definitions(boost_json PUBLIC BOOST_JSON_STANDALONE)
+
 elseif(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     #
     # Building as root project, out of Boost superproject tree, with Boost as dependency.
