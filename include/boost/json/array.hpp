@@ -154,7 +154,7 @@ public:
             destroy();
     }
 
-#ifndef GENERATING_DOCUMENTATION
+#ifndef BOOST_JSON_DOCS
     // private
     explicit
     BOOST_JSON_DECL
@@ -290,7 +290,7 @@ public:
     */
     template<
         class InputIt
-    #ifndef GENERATING_DOCUMENTATION
+    #ifndef BOOST_JSON_DOCS
         ,class = typename std::enable_if<
             std::is_constructible<value,
                 typename std::iterator_traits<
@@ -1228,7 +1228,7 @@ public:
     */
     template<
         class InputIt
-    #ifndef GENERATING_DOCUMENTATION
+    #ifndef BOOST_JSON_DOCS
         ,class = typename std::enable_if<
             std::is_constructible<value,
                 typename std::iterator_traits<

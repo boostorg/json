@@ -32,7 +32,7 @@ using error_category = boost::system::error_category;
 /// The type of error condition used by the library.
 using error_condition = boost::system::error_condition;
 
-#ifdef GENERATING_DOCUMENTATION
+#ifdef BOOST_JSON_DOCS
 /// Returns the generic error category used by the library.
 error_category const&
 generic_category();

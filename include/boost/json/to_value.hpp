@@ -66,7 +66,7 @@ auto
 to_value(
     T&& t,
     storage_ptr sp = {}) ->
-#ifdef GENERATING_DOCUMENTATION
+#ifdef BOOST_JSON_DOCS
         value
 #else
     typename std::enable_if<
@@ -108,7 +108,7 @@ to_value(
 
     Otherwise, this template type alias is `std::false_type`.
 */
-#ifdef GENERATING_DOCUMENTATION
+#ifdef BOOST_JSON_DOCS
 template<class T>
 using has_to_value = __see_below__;
 #else

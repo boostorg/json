@@ -187,7 +187,7 @@ operator!=(
 
     @tparam T The type to check.
 */
-#if GENERATING_DOCUMENTATION
+#if BOOST_JSON_DOCS
 template<class T>
 using is_storage = __see_below__;
 #else

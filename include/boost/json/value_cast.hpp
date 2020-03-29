@@ -59,7 +59,7 @@ namespace json {
 template<class T>
 auto
 value_cast(value const& jv)
-#ifndef GENERATING_DOCUMENTATION
+#ifndef BOOST_JSON_DOCS
     -> decltype(
         detail::value_cast_impl_1<T>(jv,
         detail::has_value_cast_traits<T>{}))
@@ -72,7 +72,7 @@ value_cast(value const& jv)
 
 /** Determine if T can be constructed from a JSON value.
 */
-#ifdef GENERATING_DOCUMENTATION
+#ifdef BOOST_JSON_DOCS
 template<class T>
 using has_value_cast = __see_below__;
 #else

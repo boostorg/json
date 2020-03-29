@@ -390,7 +390,7 @@ public:
         @throw std::length_error `std::distance(first, last) > max_size()`.
     */
     template<class InputIt
-    #ifndef GENERATING_DOCUMENTATION
+    #ifndef BOOST_JSON_DOCS
         ,class = is_inputit<InputIt>
     #endif
     >
@@ -1042,7 +1042,7 @@ public:
         @throw std::length_error `std::distance(first, last) > max_size()`.
     */
     template<class InputIt
-    #ifndef GENERATING_DOCUMENTATION
+    #ifndef BOOST_JSON_DOCS
         ,class = is_inputit<InputIt>
     #endif
     >
@@ -1963,7 +1963,7 @@ public:
         @throw std::out_of_range `pos > size()`
     */
     template<class InputIt
-    #ifndef GENERATING_DOCUMENTATION
+    #ifndef BOOST_JSON_DOCS
         ,class = is_inputit<InputIt>
     #endif
     >
@@ -2175,7 +2175,7 @@ public:
         @throw std::length_error `size() + insert_count > max_size()`
     */
     template<class InputIt
-    #ifndef GENERATING_DOCUMENTATION
+    #ifndef BOOST_JSON_DOCS
         ,class = is_inputit<InputIt>
     #endif
     >
@@ -2435,7 +2435,7 @@ public:
         @throw std::length_error `size() + (inserted - std::distance(first, last)) > max_size()`
     */
     template<class InputIt
-    #ifndef GENERATING_DOCUMENTATION
+    #ifndef BOOST_JSON_DOCS
         ,class = is_inputit<InputIt>
     #endif
     >
@@ -3111,7 +3111,7 @@ operator<<(std::ostream& os, string const& s);
 
     A lexicographical comparison is used.
 */
-#ifdef GENERATING_DOCUMENTATION
+#ifdef BOOST_JSON_DOCS
 bool
 operator==(string const& lhs, string const& rhs) noexcept
 #else
@@ -3134,7 +3134,7 @@ operator==(T const& lhs, U const& rhs) noexcept
 
     A lexicographical comparison is used.
 */
-#ifdef GENERATING_DOCUMENTATION
+#ifdef BOOST_JSON_DOCS
 bool
 operator!=(string const& lhs, string const& rhs) noexcept
 #else
@@ -3157,7 +3157,7 @@ operator!=(T const& lhs, U const& rhs) noexcept
 
     A lexicographical comparison is used.
 */
-#ifdef GENERATING_DOCUMENTATION
+#ifdef BOOST_JSON_DOCS
 bool
 operator<(string const& lhs, string const& rhs) noexcept
 #else
@@ -3180,7 +3180,7 @@ operator<(T const& lhs, U const& rhs) noexcept
 
     A lexicographical comparison is used.
 */
-#ifdef GENERATING_DOCUMENTATION
+#ifdef BOOST_JSON_DOCS
 bool
 operator<=(string const& lhs, string const& rhs) noexcept
 #else
@@ -3199,7 +3199,7 @@ operator<=(T const& lhs, U const& rhs) noexcept
     return string_view(lhs) <= string_view(rhs);
 }
 
-#ifdef GENERATING_DOCUMENTATION
+#ifdef BOOST_JSON_DOCS
 bool
 operator>=(string const& lhs, string const& rhs) noexcept
 #else
@@ -3222,7 +3222,7 @@ operator>=(T const& lhs, U const& rhs) noexcept
 
     A lexicographical comparison is used.
 */
-#ifdef GENERATING_DOCUMENTATION
+#ifdef BOOST_JSON_DOCS
 bool
 operator>(string const& lhs, string const& rhs) noexcept
 #else

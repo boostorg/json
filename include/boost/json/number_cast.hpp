@@ -46,7 +46,7 @@ namespace json {
     @param ec Set to the error, if any occurred.
 */
 template<class T>
-#ifdef GENERATING_DOCUMENTATION
+#ifdef BOOST_JSON_DOCS
 T
 #else
 typename std::enable_if<
@@ -90,7 +90,7 @@ number_cast(value const& jv, error_code& ec)
     @throws system_error on error.
 */
 template<class T>
-#ifdef GENERATING_DOCUMENTATION
+#ifdef BOOST_JSON_DOCS
 T
 #else
 typename std::enable_if<

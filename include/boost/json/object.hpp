@@ -168,7 +168,7 @@ public:
         impl_.destroy(sp_);
     }
 
-#ifndef GENERATING_DOCUMENTATION
+#ifndef BOOST_JSON_DOCS
     // private
     BOOST_JSON_DECL
     explicit
@@ -289,7 +289,7 @@ public:
     */
     template<
         class InputIt
-    #ifndef GENERATING_DOCUMENTATION
+    #ifndef BOOST_JSON_DOCS
         ,class = is_inputit<InputIt>
     #endif
     >
@@ -914,7 +914,7 @@ public:
         the assignment took place.
     */
      template<class P
-#ifndef GENERATING_DOCUMENTATION
+#ifndef BOOST_JSON_DOCS
         ,class = typename std::enable_if<
             std::is_constructible<
                 value_type, P, storage_ptr>::value>::type
@@ -961,7 +961,7 @@ public:
     */
     template<
         class InputIt
-    #ifndef GENERATING_DOCUMENTATION
+    #ifndef BOOST_JSON_DOCS
         ,class = is_inputit<InputIt>
     #endif
     >

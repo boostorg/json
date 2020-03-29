@@ -42,7 +42,7 @@ namespace json {
 */
 class value
 {
-#ifndef GENERATING_DOCUMENTATION
+#ifndef BOOST_JSON_DOCS
     // XSL scripts have trouble with private anon unions
     using int64_k = detail::int64_k;
     using uint64_k = detail::uint64_k;
@@ -89,7 +89,7 @@ public:
     BOOST_JSON_DECL
     ~value();
 
-#ifndef GENERATING_DOCUMENTATION
+#ifndef BOOST_JSON_DOCS
     // private
     inline value(detail::unchecked_object&& uo);
     inline value(detail::unchecked_array&& ua);
@@ -1027,7 +1027,7 @@ public:
         to use. The container will acquire shared
         ownership of the storage object.
     */
-#ifdef GENERATING_DOCUMENTATION
+#ifdef BOOST_JSON_DOCS
     value(
         bool b,
         storage_ptr sp = {}) noexcept;
@@ -1136,7 +1136,7 @@ public:
         Calls to @ref storage::allocate may throw.
     */
     template<class T
-#ifndef GENERATING_DOCUMENTATION
+#ifndef BOOST_JSON_DOCS
         ,class = typename std::enable_if<
             std::is_constructible<
                 value, T, storage_ptr>::value &&
@@ -2809,7 +2809,7 @@ private:
     std::uint32_t
     key_size(std::size_t n);
 
-#ifndef GENERATING_DOCUMENTATION
+#ifndef BOOST_JSON_DOCS
     // docca emits this when it shouldn't
     friend struct detail::next_access;
 #endif

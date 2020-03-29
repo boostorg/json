@@ -51,7 +51,7 @@ INCLUDE_PATH           = ../
 INCLUDE_FILE_PATTERNS  =
 
 PREDEFINED             = \
-                        GENERATING_DOCUMENTATION \
+                        BOOST_JSON_DOCS \
                         BOOST_JSON_DECL \
                         BOOST_JSON_PUBLIC \
                         BOOST_JSON_FORCEINLINE \

@@ -32,7 +32,7 @@
     https://ampl.com/netlib/fp/dtoa.c
 */
 
-#ifndef GENERATING_DOCUMENTATION
+#ifndef BOOST_JSON_DOCS
 
 namespace boost {
 namespace json {

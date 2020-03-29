@@ -21,7 +21,7 @@
 namespace boost {
 namespace json {
 
-#ifndef GENERATING_DOCUMENTATION
+#ifndef BOOST_JSON_DOCS
 
 class value;
 class object;

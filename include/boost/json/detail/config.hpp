@@ -119,7 +119,7 @@
 #endif
 
 #ifndef BOOST_JSON_STANDALONE
-# if defined(GENERATING_DOCUMENTATION)
+# if defined(BOOST_JSON_DOCS)
 #  define BOOST_JSON_DECL
 # elif defined(BOOST_JSON_HEADER_ONLY)
 #  define BOOST_JSON_DECL inline

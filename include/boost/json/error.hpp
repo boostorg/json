@@ -66,7 +66,7 @@ struct BOOST_SYMBOL_VISIBLE
     BOOST_JSON_DECL
     array_index_error();
 
-#ifndef GENERATING_DOCUMENTATION
+#ifndef BOOST_JSON_DOCS
     BOOST_JSON_DECL
     static BOOST_NORETURN void raise();
 #endif
@@ -83,7 +83,7 @@ struct BOOST_SYMBOL_VISIBLE
     BOOST_JSON_DECL
     array_required_error();
 
-#ifndef GENERATING_DOCUMENTATION
+#ifndef BOOST_JSON_DOCS
     BOOST_JSON_DECL
     static BOOST_NORETURN void raise();
 #endif
@@ -98,7 +98,7 @@ struct BOOST_SYMBOL_VISIBLE
     BOOST_JSON_DECL
     array_too_large();
 
-#ifndef GENERATING_DOCUMENTATION
+#ifndef BOOST_JSON_DOCS
     BOOST_JSON_DECL
     static BOOST_NORETURN void raise();
 #endif
@@ -115,7 +115,7 @@ struct BOOST_SYMBOL_VISIBLE
     BOOST_JSON_DECL
     bool_required_error();
 
-#ifndef GENERATING_DOCUMENTATION
+#ifndef BOOST_JSON_DOCS
     BOOST_JSON_DECL
     static BOOST_NORETURN void raise();
 #endif
@@ -130,7 +130,7 @@ struct BOOST_SYMBOL_VISIBLE
     BOOST_JSON_DECL
     char_pos_error();
 
-#ifndef GENERATING_DOCUMENTATION
+#ifndef BOOST_JSON_DOCS
     BOOST_JSON_DECL
     static BOOST_NORETURN void raise();
 #endif
@@ -147,7 +147,7 @@ struct BOOST_SYMBOL_VISIBLE
     BOOST_JSON_DECL
     double_required_error();
 
-#ifndef GENERATING_DOCUMENTATION
+#ifndef BOOST_JSON_DOCS
     BOOST_JSON_DECL
     static BOOST_NORETURN void raise();
 #endif
@@ -164,7 +164,7 @@ struct BOOST_SYMBOL_VISIBLE
     BOOST_JSON_DECL
     int64_required_error();
 
-#ifndef GENERATING_DOCUMENTATION
+#ifndef BOOST_JSON_DOCS
     BOOST_JSON_DECL
     static BOOST_NORETURN void raise();
 #endif
@@ -179,7 +179,7 @@ struct BOOST_SYMBOL_VISIBLE
     BOOST_JSON_DECL
     key_not_found();
 
-#ifndef GENERATING_DOCUMENTATION
+#ifndef BOOST_JSON_DOCS
     BOOST_JSON_DECL
     static BOOST_NORETURN void raise();
 #endif
@@ -194,7 +194,7 @@ struct BOOST_SYMBOL_VISIBLE
     BOOST_JSON_DECL
     key_too_large();
 
-#ifndef GENERATING_DOCUMENTATION
+#ifndef BOOST_JSON_DOCS
     BOOST_JSON_DECL
     static BOOST_NORETURN void raise();
 #endif
@@ -211,7 +211,7 @@ struct BOOST_SYMBOL_VISIBLE
     BOOST_JSON_DECL
     object_required_error();
 
-#ifndef GENERATING_DOCUMENTATION
+#ifndef BOOST_JSON_DOCS
     BOOST_JSON_DECL
     static BOOST_NORETURN void raise();
 #endif
@@ -226,7 +226,7 @@ struct BOOST_SYMBOL_VISIBLE
     BOOST_JSON_DECL
     object_too_large();
 
-#ifndef GENERATING_DOCUMENTATION
+#ifndef BOOST_JSON_DOCS
     BOOST_JSON_DECL
     static BOOST_NORETURN void raise();
 #endif
@@ -241,7 +241,7 @@ struct BOOST_SYMBOL_VISIBLE
     BOOST_JSON_DECL
     stack_overflow();
 
-#ifndef GENERATING_DOCUMENTATION
+#ifndef BOOST_JSON_DOCS
     BOOST_JSON_DECL
     static BOOST_NORETURN void raise();
 #endif
@@ -258,7 +258,7 @@ struct BOOST_SYMBOL_VISIBLE
     BOOST_JSON_DECL
     string_required_error();
 
-#ifndef GENERATING_DOCUMENTATION
+#ifndef BOOST_JSON_DOCS
     BOOST_JSON_DECL
     static BOOST_NORETURN void raise();
 #endif
@@ -273,7 +273,7 @@ struct BOOST_SYMBOL_VISIBLE
     BOOST_JSON_DECL
     string_too_large();
 
-#ifndef GENERATING_DOCUMENTATION
+#ifndef BOOST_JSON_DOCS
     BOOST_JSON_DECL
     static BOOST_NORETURN void raise();
 #endif
@@ -290,7 +290,7 @@ struct BOOST_SYMBOL_VISIBLE
     BOOST_JSON_DECL
     uint64_required_error();
 
-#ifndef GENERATING_DOCUMENTATION
+#ifndef BOOST_JSON_DOCS
     BOOST_JSON_DECL
     static BOOST_NORETURN void raise();
 #endif
