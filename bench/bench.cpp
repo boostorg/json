@@ -624,7 +624,7 @@ struct nlohmann_impl : public any_impl
 using namespace boost::json;
 
 std::string s_tests = "ps";
-std::string s_impls = "bdrcn";
+std::string s_impls = "bdurcn";
 std::size_t s_trials = 6;
 
 static bool parse_option( char const * s )
@@ -686,6 +686,11 @@ static bool add_impl( impl_list & vi, char impl )
     case 'd':
 
         vi.emplace_back(new boost_default_impl);
+        break;
+
+    case 'u':
+
+        vi.emplace_back(new boost_null_impl);
         break;
 
     case 'r':
@@ -750,6 +755,7 @@ main(
             "          -i:[b][d][r][c][n]   Test the specified implementations\n"
             "                                 (b: Boost.JSON, pool storage)\n"
             "                                 (d: Boost.JSON, default storage)\n"
+            "                                 (u: Boost.JSON, null parser)\n"
             "                                 (r: RapidJSON, memory storage)\n"
             "                                 (c: RapidJSON, CRT storage)\n"
             "                                 (n: nlohmann/json)\n"

@@ -1489,7 +1489,7 @@ do_arr1:
         return result::partial;
     }
     c = *cs;
-    if(BOOST_JSON_UNLIKELY(c == ']'))
+    if(c == ']')
     {
         if(BOOST_JSON_UNLIKELY(
             ! h.on_array_end(n, ec_)))
@@ -1519,9 +1519,9 @@ do_arr3:
                 suspend(state::arr3, n);
             return result::partial;
         }
-        if(BOOST_JSON_UNLIKELY(*cs != ','))
+        if(*cs != ',')
         {
-            if(BOOST_JSON_LIKELY(*cs == ']'))
+            if(*cs == ']')
             {
                 if(BOOST_JSON_UNLIKELY(
                     ! h.on_array_end(n, ec_)))
