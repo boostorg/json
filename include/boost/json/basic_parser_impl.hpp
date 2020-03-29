@@ -344,8 +344,38 @@ parse_value(
             ++cs0;
             return parse_null(h, cs0);
         case 't':
+            if(BOOST_JSON_LIKELY(cs0.remain() >= 4))
+            {
+                if(BOOST_JSON_LIKELY(std::memcmp(
+                    cs0.data(), "true", 4) == 0))
+                {
+                    if(BOOST_JSON_UNLIKELY(
+                        ! h.on_bool(true, ec_)))
+                        return result::fail;
+                    cs0.skip(4);
+                    return result::ok;
+                }
+                ec_ = error::syntax;
+                return result::fail;
+            }
+            ++cs0;
             return parse_true(h, cs0);
         case 'f':
+            if(BOOST_JSON_LIKELY(cs0.remain() >= 5))
+            {
+                if(BOOST_JSON_LIKELY(std::memcmp(
+                    cs0.data() + 1, "alse", 4) == 0))
+                {
+                    if(BOOST_JSON_UNLIKELY(
+                        ! h.on_bool(false, ec_)))
+                        return result::fail;
+                    cs0.skip(5);
+                    return result::ok;
+                }
+                ec_ = error::expected_false;
+                return result::fail;
+            }
+            ++cs0;
             return parse_false(h, cs0);
         case '\x22': // '"'
             return parse_string(h, cs0);
@@ -493,26 +523,7 @@ parse_true(
         result
 {
     detail::local_const_stream cs(cs0);
-    if(BOOST_JSON_LIKELY(st_.empty()))
-    {
-        BOOST_ASSERT(*cs == 't');
-        if(BOOST_JSON_LIKELY(cs.remain() >= 4))
-        {
-            if(BOOST_JSON_LIKELY(std::memcmp(
-                cs.data(), "true", 4) == 0))
-            {
-                if(BOOST_JSON_UNLIKELY(
-                    ! h.on_bool(true, ec_)))
-                    return result::fail;
-                cs.skip(4);
-                return result::ok;
-            }
-            ec_ = error::syntax;
-            return result::fail;
-        }
-        ++cs;
-    }
-    else
+    if(! st_.empty())
     {
         state st;
         st_.pop(st);
@@ -590,26 +601,7 @@ parse_false(
         result
 {
     detail::local_const_stream cs(cs0);
-    if(BOOST_JSON_LIKELY(st_.empty()))
-    {
-        BOOST_ASSERT(*cs == 'f');
-        if(BOOST_JSON_LIKELY(cs.remain() >= 5))
-        {
-            if(BOOST_JSON_LIKELY(std::memcmp(
-                cs.data() + 1, "alse", 4) == 0))
-            {
-                if(BOOST_JSON_UNLIKELY(
-                    ! h.on_bool(false, ec_)))
-                    return result::fail;
-                cs.skip(5);
-                return result::ok;
-            }
-            ec_ = error::expected_false;
-            return result::fail;
-        }
-        ++cs;
-    }
-    else
+    if(! st_.empty())
     {
         state st;
         st_.pop(st);

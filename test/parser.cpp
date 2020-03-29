@@ -124,7 +124,7 @@ public:
     grind(string_view s)
     {
         grind(s,
-            [&s](value const& jv)
+            [](value const& jv)
             {
                 check_round_trip(jv);
             });
