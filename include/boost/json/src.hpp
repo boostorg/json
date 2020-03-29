@@ -28,7 +28,6 @@ in a translation unit of the program.
 #endif
 
 #include <boost/json/impl/array.ipp>
-#include <boost/json/impl/basic_parser.ipp>
 #include <boost/json/impl/error.ipp>
 #include <boost/json/impl/object.ipp>
 #include <boost/json/impl/parser.ipp>

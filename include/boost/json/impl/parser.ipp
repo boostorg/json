@@ -47,26 +47,6 @@ key
     std::size_t
 */
 
-struct parser::handler
-{
-    parser& p;
-    bool on_document_begin( error_code& ec ) { return p.on_document_begin(ec); }
-    bool on_document_end( error_code& ec ) { return p.on_document_end(ec); }
-    bool on_object_begin( error_code& ec ) { return p.on_object_begin(ec); }
-    bool on_object_end( std::size_t n, error_code& ec ) { return p.on_object_end(n, ec); }
-    bool on_array_begin( error_code& ec ) { return p.on_array_begin(ec); }
-    bool on_array_end( std::size_t n, error_code& ec ) { return p.on_array_end(n, ec); }
-    bool on_key_part( string_view s, error_code& ec ) { return p.on_key_part(s, ec); }
-    bool on_key( string_view s, error_code& ec ) { return p.on_key(s, ec); }
-    bool on_string_part( string_view s, error_code& ec ) { return p.on_string_part(s, ec); }
-    bool on_string( string_view s, error_code& ec ) { return p.on_string(s, ec); }
-    bool on_int64( std::int64_t i, error_code& ec ) { return p.on_int64(i, ec); }
-    bool on_uint64( std::uint64_t u, error_code& ec ) { return p.on_uint64(u, ec); }
-    bool on_double( double d, error_code& ec ) { return p.on_double(d, ec); }
-    bool on_bool( bool b, error_code& ec ) { return p.on_bool(b, ec); }
-    bool on_null( error_code& ec ) { return p.on_null(ec); }
-};
-
 enum class parser::state : char
 {
     need_start, // start() not called yet
@@ -216,8 +196,7 @@ write_some(
     error_code& ec)
 {
     return p_.write_some(
-        handler{*this}, true,
-            data, size, ec);
+        *this, true, data, size, ec);
 }
 
 std::size_t
@@ -243,7 +222,7 @@ write(
     error_code& ec)
 {
     auto const n = p_.write_some(
-        handler{*this}, true,
+        *this, true,
             data, size, ec);
     if(! ec)
     {
@@ -273,8 +252,7 @@ finish(
     error_code& ec)
 {
     auto const n = p_.write_some(
-        handler{*this}, false,
-            data, size, ec);
+        *this, false, data, size, ec);
     if(! ec)
     {
         if(n < size)

@@ -358,32 +358,47 @@ public:
 
 class boost_vec_impl : public any_impl
 {
-    struct vec_parser : basic_parser
+    struct vec_parser
     {
+        friend class basic_parser;
+        basic_parser p_;
         std::vector<double> vec_;
         double d_ = 0;
 
         vec_parser() {}
         ~vec_parser() {}
-        bool on_document_begin(error_code&) override { return true; }
-        bool on_document_end(error_code&) override { return true; }
-        bool on_object_begin(error_code&) override { return true; }
-        bool on_object_end(std::size_t, error_code&) override { return true; }
-        bool on_array_begin(error_code&) override { return true; }
-        bool on_array_end(std::size_t, error_code&) override { return true; }
-        bool on_key_part(string_view, error_code&) override { return true; }
-        bool on_key( string_view, error_code&) override { return true; }
-        bool on_string_part(string_view, error_code&) override { return true; }
-        bool on_string(string_view, error_code&) override { return true; }
-        bool on_int64(std::int64_t, error_code&) override { return true; }
-        bool on_uint64(std::uint64_t, error_code&) override { return true; }
-        bool on_double(double d, error_code&) override
+        bool on_document_begin(error_code&) { return true; }
+        bool on_document_end(error_code&) { return true; }
+        bool on_object_begin(error_code&) { return true; }
+        bool on_object_end(std::size_t, error_code&) { return true; }
+        bool on_array_begin(error_code&) { return true; }
+        bool on_array_end(std::size_t, error_code&) { return true; }
+        bool on_key_part(string_view, error_code&) { return true; }
+        bool on_key( string_view, error_code&) { return true; }
+        bool on_string_part(string_view, error_code&) { return true; }
+        bool on_string(string_view, error_code&) { return true; }
+        bool on_int64(std::int64_t, error_code&) { return true; }
+        bool on_uint64(std::uint64_t, error_code&) { return true; }
+        bool on_double(double d, error_code&)
         {
             vec_.push_back(d);
             return true;
         }
-        bool on_bool(bool, error_code&) override { return true; }
-        bool on_null(error_code&) override { return true; }
+        bool on_bool(bool, error_code&) { return true; }
+        bool on_null(error_code&) { return true; }
+
+        std::size_t
+        write(
+            char const* data,
+            std::size_t size,
+            error_code& ec)
+        {
+            auto const n = p_.write_some(
+                *this, false, data, size, ec);
+            if(! ec && n < size)
+                ec = error::extra_data;
+            return n;
+        }
     };
 
 public:
@@ -403,8 +418,7 @@ public:
             error_code ec;
             vec_parser p;
             p.write(s.data(), s.size(), ec);
-            if(! ec)
-                p.finish(ec);
+            BOOST_ASSERT(! ec);
         }
     }
 
@@ -423,28 +437,43 @@ public:
 
 class boost_null_impl : public any_impl
 {
-    struct null_parser : basic_parser
+    struct null_parser
     {
+        friend class basic_parser;
+        basic_parser p_;
+
         null_parser() {}
         ~null_parser() {}
-        bool on_document_begin(error_code&) override { return true; }
-        bool on_document_end(error_code&) override { return true; }
-        bool on_object_begin(error_code&) override { return true; }
-        bool on_object_end(std::size_t, error_code&) override { return true; }
-        bool on_array_begin(error_code&) override { return true; }
-        bool on_array_end(std::size_t, error_code&) override { return true; }
-        bool on_key_part(string_view, error_code&) override { return true; }
-        bool on_key( string_view, error_code&) override { return true; }
-        bool on_string_part(string_view, error_code&) override { return true; }
-        bool on_string(string_view, error_code&) override { return true; }
-        bool on_int64(std::int64_t, error_code&) override { return true; }
-        bool on_uint64(std::uint64_t, error_code&) override { return true; }
-        bool on_double(double, error_code&) override { return true; }
-        bool on_bool(bool, error_code&) override { return true; }
-        bool on_null(error_code&) override { return true; }
+        bool on_document_begin(error_code&) { return true; }
+        bool on_document_end(error_code&) { return true; }
+        bool on_object_begin(error_code&) { return true; }
+        bool on_object_end(std::size_t, error_code&) { return true; }
+        bool on_array_begin(error_code&) { return true; }
+        bool on_array_end(std::size_t, error_code&) { return true; }
+        bool on_key_part(string_view, error_code&) { return true; }
+        bool on_key( string_view, error_code&) { return true; }
+        bool on_string_part(string_view, error_code&) { return true; }
+        bool on_string(string_view, error_code&) { return true; }
+        bool on_int64(std::int64_t, error_code&) { return true; }
+        bool on_uint64(std::uint64_t, error_code&) { return true; }
+        bool on_double(double, error_code&) { return true; }
+        bool on_bool(bool, error_code&) { return true; }
+        bool on_null(error_code&) { return true; }
         void reset()
         {
-            basic_parser::reset();
+            p_.reset();
+        }
+        std::size_t
+        write(
+            char const* data,
+            std::size_t size,
+            error_code& ec)
+        {
+            auto const n = p_.write_some(
+                *this, false, data, size, ec);
+            if(! ec && n < size)
+                ec = error::extra_data;
+            return n;
         }
     };
 
@@ -465,7 +494,8 @@ public:
         {
             p.reset();
             error_code ec;
-            p.finish(s.data(), s.size(), ec);
+            p.write(s.data(), s.size(), ec);
+            BOOST_ASSERT(! ec);
         }
     }
 

@@ -67,7 +67,7 @@ namespace json {
 */
 class parser
 {
-    struct handler;
+    friend class basic_parser;
     enum class state : char;
     struct level
     {

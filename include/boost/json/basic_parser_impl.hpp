@@ -267,7 +267,7 @@ template<class Handler>
 auto
 basic_parser::
 parse_element(
-    Handler h,
+    Handler& h,
     const_stream& cs) ->
         result
 {
@@ -318,7 +318,7 @@ template<class Handler>
 auto
 basic_parser::
 parse_value(
-    Handler h,
+    Handler& h,
     const_stream& cs0) ->
         result
 {
@@ -440,7 +440,7 @@ template<class Handler>
 auto
 basic_parser::
 parse_null(
-    Handler h,
+    Handler& h,
     const_stream& cs0) ->
         result
 {
@@ -518,7 +518,7 @@ template<class Handler>
 auto
 basic_parser::
 parse_true(
-    Handler h,
+    Handler& h,
     const_stream& cs0) ->
         result
 {
@@ -596,7 +596,7 @@ template<class Handler>
 auto
 basic_parser::
 parse_false(
-    Handler h,
+    Handler& h,
     const_stream& cs0) ->
         result
 {
@@ -694,7 +694,7 @@ template<class Handler>
 auto
 basic_parser::
 parse_string(
-    Handler h,
+    Handler& h,
     const_stream& cs0) ->
         result
 {
@@ -1311,7 +1311,7 @@ template<class Handler>
 auto
 basic_parser::
 parse_object(
-    Handler h,
+    Handler& h,
     const_stream& cs0) ->
         result
 {
@@ -1449,7 +1449,7 @@ template<class Handler>
 auto
 basic_parser::
 parse_array(
-    Handler h,
+    Handler& h,
     const_stream& cs0) ->
         result
 {
@@ -1551,7 +1551,7 @@ template<class Handler>
 auto
 basic_parser::
 parse_number(
-    Handler h,
+    Handler& h,
     const_stream& cs0) ->
     result
 {
@@ -2134,13 +2134,6 @@ finish_dub:
 
 //----------------------------------------------------------
 
-basic_parser::
-basic_parser()
-    : done_(false)
-    , more_(true)
-{
-}
-
 void
 basic_parser::
 reset() noexcept
@@ -2156,7 +2149,7 @@ template<class Handler>
 std::size_t
 basic_parser::
 write_some(
-    Handler h,
+    Handler& h,
     bool more,
     char const* data,
     std::size_t size,
@@ -2198,101 +2191,6 @@ write_some(
     }
     ec = ec_;
     return cs.data() - data;
-}
-
-std::size_t
-basic_parser::
-write_some(
-    char const* const data,
-    std::size_t const size,
-    error_code& ec)
-{
-    return write_some(handler(*this),
-        more_, data, size, ec);
-}
-
-//----------------------------------------------------------
-
-void
-basic_parser::
-write(
-    char const* data,
-    std::size_t size,
-    error_code& ec)
-{
-    auto const n = write_some(
-        handler(*this), true,
-            data, size, ec);
-    if(! ec)
-    {
-        if(n < size)
-            ec = error::extra_data;
-    }
-}
-
-void
-basic_parser::
-write(
-    char const* data,
-    std::size_t size)
-{
-    error_code ec;
-    write(data, size, ec);
-    if(ec)
-        BOOST_THROW_EXCEPTION(
-            system_error(ec));
-}
-
-//----------------------------------------------------------
-
-void
-basic_parser::
-finish(
-    char const* data,
-    std::size_t size,
-    error_code& ec)
-{
-    auto const n = write_some(
-        handler(*this), false,
-            data, size, ec);
-    if(! ec)
-    {
-        if(n < size)
-            ec = error::extra_data;
-    }
-}
-
-void
-basic_parser::
-finish(
-    char const* data,
-    std::size_t size)
-{
-    error_code ec;
-    finish(data, size, ec);
-    if(ec)
-        BOOST_THROW_EXCEPTION(
-            system_error(ec));
-}
-
-//----------------------------------------------------------
-
-void
-basic_parser::
-finish(error_code& ec)
-{
-    finish(nullptr, 0, ec);
-}
-
-void
-basic_parser::
-finish()
-{
-    error_code ec;
-    finish(ec);
-    if(ec)
-        BOOST_THROW_EXCEPTION(
-            system_error(ec));
 }
 
 #endif

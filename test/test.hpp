@@ -16,6 +16,8 @@
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/detail/format.hpp>
 
+#include <boost/json/basic_parser_impl.hpp>
+
 #include <cstddef>
 #include <iterator>
 #include <memory>
@@ -143,9 +145,11 @@ struct unique_storage
 //----------------------------------------------------------
 
 class fail_parser
-    : public basic_parser
 {
+    friend class basic_parser;
+
     std::size_t n_ = std::size_t(-1);
+    basic_parser p_;
 
     bool
     maybe_fail(error_code& ec)
@@ -158,21 +162,21 @@ class fail_parser
 
     bool
     on_document_begin(
-        error_code& ec) override
+        error_code& ec)
     {
         return maybe_fail(ec);
     }
 
     bool
     on_document_end(
-        error_code& ec) override
+        error_code& ec)
     {
         return maybe_fail(ec);
     }
 
     bool
     on_object_begin(
-        error_code& ec) override
+        error_code& ec)
     {
         return maybe_fail(ec);
     }
@@ -180,14 +184,14 @@ class fail_parser
     bool
     on_object_end(
         std::size_t,
-        error_code& ec) override
+        error_code& ec)
     {
         return maybe_fail(ec);
     }
 
     bool
     on_array_begin(
-        error_code& ec) override
+        error_code& ec)
     {
         return maybe_fail(ec);
     }
@@ -195,7 +199,7 @@ class fail_parser
     bool
     on_array_end(
         std::size_t,
-        error_code& ec) override
+        error_code& ec)
     {
         return maybe_fail(ec);
     }
@@ -203,7 +207,7 @@ class fail_parser
     bool
     on_key_part(
         string_view,
-        error_code& ec) override
+        error_code& ec)
     {
         return maybe_fail(ec);
     }
@@ -211,7 +215,7 @@ class fail_parser
     bool
     on_key(
         string_view,
-        error_code& ec) override
+        error_code& ec)
     {
         return maybe_fail(ec);
     }
@@ -219,7 +223,7 @@ class fail_parser
     bool
     on_string_part(
         string_view,
-        error_code& ec) override
+        error_code& ec)
     {
         return maybe_fail(ec);
     }
@@ -227,7 +231,7 @@ class fail_parser
     bool
     on_string(
         string_view,
-        error_code& ec) override
+        error_code& ec)
     {
         return maybe_fail(ec);
     }
@@ -235,7 +239,7 @@ class fail_parser
     bool
     on_int64(
         int64_t,
-        error_code& ec) override
+        error_code& ec)
     {
         return maybe_fail(ec);
     }
@@ -243,7 +247,7 @@ class fail_parser
     bool
     on_uint64(
         uint64_t,
-        error_code& ec) override
+        error_code& ec)
     {
         return maybe_fail(ec);
     }
@@ -251,7 +255,7 @@ class fail_parser
     bool
     on_double(
         double,
-        error_code& ec) override
+        error_code& ec)
     {
         return maybe_fail(ec);
     }
@@ -259,13 +263,13 @@ class fail_parser
     bool
     on_bool(
         bool,
-        error_code& ec) override
+        error_code& ec)
     {
         return maybe_fail(ec);
     }
 
     bool
-    on_null(error_code& ec) override
+    on_null(error_code& ec)
     {
         return maybe_fail(ec);
     }
@@ -280,10 +284,30 @@ public:
     {
     }
 
+    bool
+    is_done() const noexcept
+    {
+        return p_.is_done();
+    }
+
     void
     reset()
     {
-        basic_parser::reset();
+        p_.reset();
+    }
+
+    std::size_t
+    write(
+        bool more,
+        char const* data,
+        std::size_t size,
+        error_code& ec)
+    {
+        auto const n = p_.write_some(
+            *this, more, data, size, ec);
+        if(! ec && n < size)
+            ec = error::extra_data;
+        return n;
     }
 };
 
@@ -301,8 +325,9 @@ struct test_exception
 
 // Exercises every exception path
 class throw_parser
-    : public basic_parser
 {
+    friend class basic_parser;
+    basic_parser p_;
     std::size_t n_ = std::size_t(-1);
 
     bool
@@ -315,21 +340,21 @@ class throw_parser
 
     bool
     on_document_begin(
-        error_code&) override
+        error_code&)
     {
         return maybe_throw();
     }
 
     bool
     on_document_end(
-        error_code&) override
+        error_code&)
     {
         return maybe_throw();
     }
 
     bool
     on_object_begin(
-        error_code&) override
+        error_code&)
     {
         return maybe_throw();
     }
@@ -337,14 +362,14 @@ class throw_parser
     bool
     on_object_end(
         std::size_t,
-        error_code&) override
+        error_code&)
     {
         return maybe_throw();
     }
 
     bool
     on_array_begin(
-        error_code&) override
+        error_code&)
     {
         return maybe_throw();
     }
@@ -352,7 +377,7 @@ class throw_parser
     bool
     on_array_end(
         std::size_t,
-        error_code&) override
+        error_code&)
     {
         return maybe_throw();
     }
@@ -360,7 +385,7 @@ class throw_parser
     bool
     on_key_part(
         string_view,
-        error_code&) override
+        error_code&)
     {
         return maybe_throw();
     }
@@ -368,7 +393,7 @@ class throw_parser
     bool
     on_key(
         string_view,
-        error_code&) override
+        error_code&)
     {
         return maybe_throw();
     }
@@ -376,7 +401,7 @@ class throw_parser
     bool
     on_string_part(
         string_view,
-        error_code&) override
+        error_code&)
     {
         return maybe_throw();
     }
@@ -384,7 +409,7 @@ class throw_parser
     bool
     on_string(
         string_view,
-        error_code&) override
+        error_code&)
     {
         return maybe_throw();
     }
@@ -392,7 +417,7 @@ class throw_parser
     bool
     on_int64(
         int64_t,
-        error_code&) override
+        error_code&)
     {
         return maybe_throw();
     }
@@ -400,7 +425,7 @@ class throw_parser
     bool
     on_uint64(
         uint64_t,
-        error_code&) override
+        error_code&)
     {
         return maybe_throw();
     }
@@ -408,7 +433,7 @@ class throw_parser
     bool
     on_double(
         double,
-        error_code&) override
+        error_code&)
     {
         return maybe_throw();
     }
@@ -416,13 +441,13 @@ class throw_parser
     bool
     on_bool(
         bool,
-        error_code&) override
+        error_code&)
     {
         return maybe_throw();
     }
 
     bool
-    on_null(error_code&) override
+    on_null(error_code&)
     {
         return maybe_throw();
     }
@@ -435,6 +460,32 @@ public:
         std::size_t n)
         : n_(n)
     {
+    }
+
+    bool
+    is_done() const noexcept
+    {
+        return p_.is_done();
+    }
+
+    void
+    reset()
+    {
+        p_.reset();
+    }
+
+    std::size_t
+    write(
+        bool more,
+        char const* data,
+        std::size_t size,
+        error_code& ec)
+    {
+        auto const n = p_.write_some(
+            *this, more, data, size, ec);
+        if(! ec && n < size)
+            ec = error::extra_data;
+        return n;
     }
 };
 

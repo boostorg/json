@@ -106,31 +106,60 @@ validate( string_view s )
 {
     // The null parser discards all the data
 
-    struct null_parser : basic_parser
+    class null_parser
     {
+        friend class boost::json::basic_parser;
+        boost::json::basic_parser p_;
+
+    public:
         null_parser() {}
         ~null_parser() {}
-        bool on_document_begin( error_code& ) override { return true; }
-        bool on_document_end( error_code& ) override { return true; }
-        bool on_object_begin( error_code& ) override { return true; }
-        bool on_object_end( std::size_t, error_code& ) override { return true; }
-        bool on_array_begin( error_code& ) override { return true; }
-        bool on_array_end( std::size_t, error_code& ) override { return true; }
-        bool on_key_part( string_view, error_code& ) override { return true; }
-        bool on_key( string_view, error_code& ) override { return true; }
-        bool on_string_part( string_view, error_code& ) override { return true; }
-        bool on_string( string_view, error_code& ) override { return true; }
-        bool on_int64( std::int64_t, error_code& ) override { return true; }
-        bool on_uint64( std::uint64_t, error_code& ) override { return true; }
-        bool on_double( double, error_code& ) override { return true; }
-        bool on_bool( bool, error_code& ) override { return true; }
-        bool on_null( error_code& ) override { return true; }
+        bool on_document_begin( error_code& ) { return true; }
+        bool on_document_end( error_code& ) { return true; }
+        bool on_object_begin( error_code& ) { return true; }
+        bool on_object_end( std::size_t, error_code& ) { return true; }
+        bool on_array_begin( error_code& ) { return true; }
+        bool on_array_end( std::size_t, error_code& ) { return true; }
+        bool on_key_part( string_view, error_code& ) { return true; }
+        bool on_key( string_view, error_code& ) { return true; }
+        bool on_string_part( string_view, error_code& ) { return true; }
+        bool on_string( string_view, error_code& ) { return true; }
+        bool on_int64( std::int64_t, error_code& ) { return true; }
+        bool on_uint64( std::uint64_t, error_code& ) { return true; }
+        bool on_double( double, error_code& ) { return true; }
+        bool on_bool( bool, error_code& ) { return true; }
+        bool on_null( error_code& ) { return true; }
+        
+        bool
+        is_done() const noexcept
+        {
+            return p_.is_done();
+        }
+
+        void
+        reset()
+        {
+            p_.reset();
+        }
+
+        std::size_t
+        write(
+            char const* data,
+            std::size_t size,
+            error_code& ec)
+        {
+            auto const n = p_.write_some(
+                *this, false, data, size, ec);
+            if(! ec && n < size)
+                ec = error::extra_data;
+            return n;
+        }
     };
 
     // Parse with the null parser and return false on error
     null_parser p;
     error_code ec;
-    p.finish( s.data(), s.size(), ec );
+    p.write( s.data(), s.size(), ec );
     if( ec )
         return false;
 
@@ -151,14 +180,8 @@ public:
         {
             error_code ec;
             fail_parser p;
-            p.finish(s.data(), s.size(), ec);
-            BOOST_TEST((good && !ec) || (
-                ! good && ec));
-
-            p.reset();
-            p.write(s.data(), s.size(), ec);
-            if(! ec)
-                p.finish(ec);
+            p.write(false,
+                s.data(), s.size(), ec);
             BOOST_TEST((good && !ec) || (
                 ! good && ec));
         }
@@ -173,12 +196,12 @@ public:
                 {
                     error_code ec;
                     fail_parser p(j);
-                    p.write(s.data(), i, ec);
+                    p.write(true, s.data(), i, ec);
                     if(ec == error::test_failure)
                         continue;
                     if(! ec)
                     {
-                        p.finish(s.data() + i,
+                        p.write(false, s.data() + i,
                             s.size() - i, ec);
                         if(ec == error::test_failure)
                             continue;
@@ -202,10 +225,12 @@ public:
                     throw_parser p(j);
                     try
                     {
-                        p.write(s.data(), i, ec);
+                        p.write(
+                            true, s.data(), i, ec);
                         if(! ec)
-                            p.finish(s.data() + i,
-                                s.size() - i, ec);
+                            p.write(
+                                false, s.data() + i,
+                                    s.size() - i, ec);
                         BOOST_TEST((good && !ec) || (
                             ! good && ec));
                         break;
@@ -242,7 +267,8 @@ public:
     {
         error_code ec;
         fail_parser p;
-        p.finish(s.data(), s.size(), ec);
+        p.write(false,
+            s.data(), s.size(), ec);
         BOOST_TEST(ec);
     }
 
@@ -251,7 +277,8 @@ public:
     {
         error_code ec;
         fail_parser p;
-        p.finish(s.data(), s.size(), ec);
+        p.write(false,
+            s.data(), s.size(), ec);
         BOOST_TEST(! ec);
     }
 
@@ -562,7 +589,7 @@ public:
         {
             fail_parser p;
             error_code ec;
-            p.write_some(
+            p.write(false,
                 s.data(), s.size(),
                 ec);
             if(! BOOST_TEST(! ec))
@@ -646,7 +673,7 @@ public:
         {
             error_code ec;
             fail_parser p;
-            p.finish(ec);
+            p.write(false, nullptr, 0, ec);
             BOOST_TEST(ec);
         }
     }
@@ -654,93 +681,7 @@ public:
     void
     testMembers()
     {
-        // write_some(char const*, size_t, error_code&)
-        {
-            {
-                error_code ec;
-                fail_parser p;
-                p.write_some("0", 1, ec);
-                BOOST_TEST(! ec);
-            }
-
-            // partial write
-            {
-                error_code ec;
-                fail_parser p;
-                auto const n =
-                    p.write_some("null x", 6, ec);
-                BOOST_TEST(! ec);
-                BOOST_TEST(n < 6);
-            }
-        }
-
-        // write(char const*, size_t, error_code&)
-        {
-            error_code ec;
-            fail_parser p;
-            p.write("0x", 2, ec);
-            BOOST_TEST(
-                ec == error::extra_data);
-        }
-
-        // write(char const*, size_t)
-        {
-            {
-                fail_parser p;
-                p.write("0", 1);
-            }
-
-            {
-                fail_parser p;
-                BOOST_TEST_THROWS(
-                    p.write("0x", 2),
-                    system_error);
-            }
-        }
-
-        // finish(char const*, size_t, error_code&)
-        {
-            error_code ec;
-            fail_parser p;
-            p.finish("{", 1, ec);
-            BOOST_TEST(
-                ec == error::incomplete);
-        }
-
-        // finish(char const*, size_t)
-        {
-            {
-                fail_parser p;
-                p.finish("{}", 2);
-            }
-
-            {
-                fail_parser p;
-                BOOST_TEST_THROWS(
-                    p.finish("{", 1),
-                    system_error);
-            }
-        }
-
-        // finish()
-        {
-            {
-                fail_parser p;
-                p.write("{}", 2);
-                BOOST_TEST(! p.is_done());
-                p.finish();
-                BOOST_TEST(p.is_done());
-            }
-
-            {
-                fail_parser p;
-                p.write("{", 1);
-                BOOST_TEST(! p.is_done());
-                BOOST_TEST_THROWS(
-                    p.finish(),
-                    system_error);
-            }
-        }
+        // VFALCO TODO?
     }
 
     void
@@ -760,7 +701,8 @@ public:
             {
                 error_code ec;
                 fail_parser p;
-                p.finish(
+                p.write(
+                    false,
                     v.text.data(),
                     v.text.size(),
                     ec);
