@@ -297,6 +297,17 @@ public:
     }
 
     std::size_t
+    write_some(
+        bool more,
+        char const* data,
+        std::size_t size,
+        error_code& ec)
+    {
+        return p_.write_some(
+            *this, more, data, size, ec);
+    }
+
+    std::size_t
     write(
         bool more,
         char const* data,

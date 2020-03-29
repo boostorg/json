@@ -263,7 +263,7 @@ skip_white(const_stream& cs)
     return n2 < n;
 }
 
-template<class Handler>
+template<bool StackEmpty, class Handler>
 auto
 basic_parser::
 parse_element(
@@ -271,7 +271,7 @@ parse_element(
     const_stream& cs) ->
         result
 {
-    if(BOOST_JSON_UNLIKELY(! st_.empty()))
+    if(! StackEmpty && ! st_.empty())
     {
         state st;
         st_.pop(st);
@@ -293,7 +293,7 @@ do_ele1:
     }
 do_ele2:
     {
-        result r = parse_value(h, cs);
+        result r = parse_value<StackEmpty>(h, cs);
         if(BOOST_JSON_UNLIKELY(r))
         {
             if(more_ && r == result::partial)
@@ -314,7 +314,7 @@ do_ele3:
     return result::ok;
 }
 
-template<class Handler>
+template<bool StackEmpty, class Handler>
 auto
 basic_parser::
 parse_value(
@@ -322,7 +322,7 @@ parse_value(
     const_stream& cs0) ->
         result
 {
-    if(BOOST_JSON_LIKELY(st_.empty()))
+    if(StackEmpty || st_.empty())
     {
         switch(*cs0)
         {
@@ -342,7 +342,7 @@ parse_value(
                 return result::fail;
             }
             ++cs0;
-            return parse_null(h, cs0);
+            return parse_null<true>(h, cs0);
         case 't':
             if(BOOST_JSON_LIKELY(cs0.remain() >= 4))
             {
@@ -359,7 +359,7 @@ parse_value(
                 return result::fail;
             }
             ++cs0;
-            return parse_true(h, cs0);
+            return parse_true<true>(h, cs0);
         case 'f':
             if(BOOST_JSON_LIKELY(cs0.remain() >= 5))
             {
@@ -376,15 +376,15 @@ parse_value(
                 return result::fail;
             }
             ++cs0;
-            return parse_false(h, cs0);
+            return parse_false<true>(h, cs0);
         case '\x22': // '"'
-            return parse_string(h, cs0);
+            return parse_string<true>(h, cs0);
         case '{':
-            return parse_object(h, cs0);
+            return parse_object<true>(h, cs0);
         case '[':
-            return parse_array(h, cs0);
+            return parse_array<true>(h, cs0);
         default:
-            return parse_number(h, cs0);
+            return parse_number<true>(h, cs0);
         }
     }
     else
@@ -396,15 +396,15 @@ parse_value(
         default:
         case state::nul1: case state::nul2:
         case state::nul3:
-            return parse_null(h, cs0);
+            return parse_null<StackEmpty>(h, cs0);
 
         case state::tru1: case state::tru2:
         case state::tru3:
-            return parse_true(h, cs0);
+            return parse_true<StackEmpty>(h, cs0);
 
         case state::fal1: case state::fal2:
         case state::fal3: case state::fal4:
-            return parse_false(h, cs0);
+            return parse_false<StackEmpty>(h, cs0);
 
         case state::str1: case state::str2:
         case state::str3: case state::str4:
@@ -413,17 +413,17 @@ parse_value(
         case state::sur1: case state::sur2:
         case state::sur3: case state::sur4:
         case state::sur5: case state::sur6:
-            return parse_string(h, cs0);
+            return parse_string<StackEmpty>(h, cs0);
 
         case state::arr1: case state::arr2:
         case state::arr3: case state::arr4:
-            return parse_array(h, cs0);
+            return parse_array<StackEmpty>(h, cs0);
         
         case state::obj1: case state::obj2:
         case state::obj3: case state::obj4:
         case state::obj5: case state::obj6:
         case state::obj7:
-            return parse_object(h, cs0);
+            return parse_object<StackEmpty>(h, cs0);
         
         case state::num1: case state::num2:
         case state::num3: case state::num4:
@@ -431,12 +431,12 @@ parse_value(
         case state::num7: case state::num8:
         case state::exp1: case state::exp2:
         case state::exp3:
-            return parse_number(h, cs0);
+            return parse_number<StackEmpty>(h, cs0);
         }
     }
 }
 
-template<class Handler>
+template<bool StackEmpty, class Handler>
 auto
 basic_parser::
 parse_null(
@@ -445,7 +445,7 @@ parse_null(
         result
 {
     detail::local_const_stream cs(cs0);
-    if(! st_.empty())
+    if(! StackEmpty && ! st_.empty())
     {
         state st;
         st_.pop(st);
@@ -514,7 +514,7 @@ do_nul3:
     return result::ok;
 }
 
-template<class Handler>
+template<bool StackEmpty, class Handler>
 auto
 basic_parser::
 parse_true(
@@ -523,7 +523,7 @@ parse_true(
         result
 {
     detail::local_const_stream cs(cs0);
-    if(! st_.empty())
+    if(! StackEmpty && ! st_.empty())
     {
         state st;
         st_.pop(st);
@@ -592,7 +592,7 @@ do_tru3:
     return result::ok;
 }
 
-template<class Handler>
+template<bool StackEmpty, class Handler>
 auto
 basic_parser::
 parse_false(
@@ -601,7 +601,7 @@ parse_false(
         result
 {
     detail::local_const_stream cs(cs0);
-    if(! st_.empty())
+    if(! StackEmpty && ! st_.empty())
     {
         state st;
         st_.pop(st);
@@ -690,7 +690,7 @@ do_fal4:
 
 //----------------------------------------------------------
 
-template<class Handler>
+template<bool StackEmpty, class Handler>
 auto
 basic_parser::
 parse_string(
@@ -701,7 +701,7 @@ parse_string(
     detail::local_const_stream cs(cs0);
     detail::buffer<BOOST_JSON_PARSER_BUFFER_SIZE> temp;
     char const* start;
-    if(BOOST_JSON_LIKELY(st_.empty()))
+    if(StackEmpty || st_.empty())
     {
         if(BOOST_JSON_UNLIKELY(
             *cs != '\x22')) // '"'
@@ -1307,7 +1307,7 @@ do_str3:
 
 //----------------------------------------------------------
 
-template<class Handler>
+template<bool StackEmpty, class Handler>
 auto
 basic_parser::
 parse_object(
@@ -1318,7 +1318,7 @@ parse_object(
     char c;
     std::size_t n;
     detail::local_const_stream cs(cs0);
-    if(BOOST_JSON_LIKELY(st_.empty()))
+    if(StackEmpty || st_.empty())
     {
         BOOST_ASSERT(*cs == '{');
         ++depth_;
@@ -1368,7 +1368,7 @@ do_obj1:
         is_key_ = true;
 do_obj2:
         {
-            result r = parse_string(h, cs);
+            result r = parse_string<StackEmpty>(h, cs);
             if(BOOST_JSON_UNLIKELY(r))
             {
                 if(more_ && r == result::partial)
@@ -1400,7 +1400,7 @@ do_obj4:
         }
 do_obj5:
         {
-            result r = parse_value(h, cs);
+            result r = parse_value<StackEmpty>(h, cs);
             if(BOOST_JSON_UNLIKELY(r))
             {
                 if(more_ && r == result::partial)
@@ -1445,7 +1445,7 @@ do_obj7:
 
 //----------------------------------------------------------
 
-template<class Handler>
+template<bool StackEmpty, class Handler>
 auto
 basic_parser::
 parse_array(
@@ -1456,7 +1456,7 @@ parse_array(
     char c;
     std::size_t n;
     detail::local_const_stream cs(cs0);
-    if(BOOST_JSON_LIKELY(st_.empty()))
+    if(StackEmpty || st_.empty())
     {
         BOOST_ASSERT(*cs == '[');
         ++depth_;
@@ -1502,7 +1502,7 @@ do_arr1:
     {
 do_arr2:
         {
-            result r = parse_value(h, cs);
+            result r = parse_value<StackEmpty>(h, cs);
             if(BOOST_JSON_UNLIKELY(r))
             {
                 if(more_ && r == result::partial)
@@ -1547,7 +1547,7 @@ do_arr4:
 
 //----------------------------------------------------------
 
-template<class Handler>
+template<bool StackEmpty, class Handler>
 auto
 basic_parser::
 parse_number(
@@ -1557,7 +1557,7 @@ parse_number(
 {
     number num;
     detail::local_const_stream cs(cs0);
-    if(BOOST_JSON_LIKELY(st_.empty()))
+    if(StackEmpty || st_.empty())
     {
         num.bias = 0;
         num.exp = 0;
@@ -2161,7 +2161,9 @@ write_some(
     BOOST_ASSERT(! done_);
 
     ec_ = {};
+    result r;
     more_ = more;
+    const_stream cs = { data, size };
     if(BOOST_JSON_LIKELY(
         st_.empty()))
     {
@@ -2174,9 +2176,12 @@ write_some(
             ec = ec_;
             return 0;
         }
+        r = parse_element<true>(h, cs);
     }
-    const_stream cs = { data, size };
-    auto const r = parse_element(h, cs);
+    else
+    {
+        r = parse_element<false>(h, cs);
+    }
     if(BOOST_JSON_LIKELY(! r))
     {
         BOOST_ASSERT(! ec_);

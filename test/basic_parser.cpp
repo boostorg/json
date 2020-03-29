@@ -589,7 +589,8 @@ public:
         {
             fail_parser p;
             error_code ec;
-            p.write(false,
+            p.write_some(
+                true,
                 s.data(), s.size(),
                 ec);
             if(! BOOST_TEST(! ec))
