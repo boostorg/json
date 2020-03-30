@@ -107,16 +107,33 @@ anchors:
   gcc-8:    &gcc-8    { apt: { packages: [ "g++-8"           ], sources: [ "ubuntu-toolchain-r-test"   ] } }
   gcc-9:    &gcc-9    { apt: { packages: [ "g++-9"           ], sources: [ "ubuntu-toolchain-r-test"   ] } }
 
+#git:
+#  submodules: false
+
 jobs:
   allow_failures:
     - env:
       - COPY="all the environment settings from your job"
 
   include:
+    # cmake
+    - compiler: g++-9
+      env: CXX=g++-9
+      install:
+        - pip install --user cmake
+      addons: *gcc-9
+      script:
+        - mkdir __build
+        - cd __build
+        - cmake -DBOOST_JSON_STANDALONE=1 ..
+        - cmake --build .
+        - ctest -V .
+
     # coverage
     - os: linux
       env:
         - COMMENT=codecov.io
+        - LCOV_BRANCH_COVERAGE=0
         - B2_CXXSTD=11
         #- B2_CXXFLAGS="inlining=off"
         - B2_TOOLSET=gcc-8
@@ -124,7 +141,7 @@ jobs:
       addons: *gcc-8
       script:
         - cd $BOOST_ROOT/libs/$SELF
-        - tools/codecov.sh
+        - ci/travis/codecov.sh
 
     - { os: "linux", env: [ "B2_TOOLSET=clang-8",     "B2_CXXSTD=17,2a"    ], addons: *clang-8   }
 

@@ -18,11 +18,11 @@ add_executable(pretty
     pretty.cpp
 )
 set_property(TARGET pretty PROPERTY FOLDER "example")
-target_link_libraries(pretty PRIVATE boost_json)
+target_link_libraries(pretty PRIVATE Boost::json)
 
 add_executable(validate
     file.hpp
     validate.cpp
 )
 set_property(TARGET validate PROPERTY FOLDER "example")
-target_link_libraries(validate PRIVATE boost_json)
+target_link_libraries(validate PRIVATE Boost::json)
