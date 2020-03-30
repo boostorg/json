@@ -66,22 +66,13 @@ suspend(
     return false;
 }
 
+template<bool StackEmpty>
 bool
 serializer::
 write_null(stream& ss0)
 {
     local_stream ss(ss0);
-    if(BOOST_JSON_LIKELY(
-        st_.empty()))
-    {
-        if(BOOST_JSON_LIKELY(
-            ss.remain() >= 4))
-        {
-            ss.append("null", 4);
-            return true;
-        }
-    }
-    else
+    if(! StackEmpty && ! st_.empty())
     {
         state st;
         st_.pop(st);
@@ -117,22 +108,13 @@ do_nul4:
     return true;
 }
 
+template<bool StackEmpty>
 bool
 serializer::
 write_true(stream& ss0)
 {
     local_stream ss(ss0);
-    if(BOOST_JSON_LIKELY(
-        st_.empty()))
-    {
-        if(BOOST_JSON_LIKELY(
-            ss.remain() >= 4))
-        {
-            ss.append("true", 4);
-            return true;
-        }
-    }
-    else
+    if(! StackEmpty && ! st_.empty())
     {
         state st;
         st_.pop(st);
@@ -168,22 +150,13 @@ do_tru4:
     return true;
 }
 
+template<bool StackEmpty>
 bool
 serializer::
 write_false(stream& ss0)
 {
     local_stream ss(ss0);
-    if(BOOST_JSON_LIKELY(
-        st_.empty()))
-    {
-        if(BOOST_JSON_LIKELY(
-            ss.remain() >= 5))
-        {
-            ss.append("false", 5);
-            return true;
-        }
-    }
-    else
+    if(! StackEmpty && ! st_.empty())
     {
         state st;
         st_.pop(st);
@@ -225,17 +198,14 @@ do_fal5:
     return true;
 }
 
+template<bool StackEmpty>
 bool
 serializer::
 write_string(stream& ss0)
 {
     local_stream ss(ss0);
     local_const_stream cs(cs0_);
-    if(BOOST_JSON_LIKELY(
-        st_.empty()))
-    {
-    }
-    else
+    if(! StackEmpty && ! st_.empty())
     {
         state st;
         st_.pop(st);
@@ -405,13 +375,13 @@ do_utf5:
     goto do_str3;
 }
 
+template<bool StackEmpty>
 bool
 serializer::
 write_number(stream& ss0)
 {
     local_stream ss(ss0);
-    if(BOOST_JSON_LIKELY(
-        st_.empty()))
+    if(StackEmpty || st_.empty())
     {
         switch(jv_->kind())
         {
@@ -475,15 +445,16 @@ write_number(stream& ss0)
     return true;
 }
 
+template<bool StackEmpty>
 bool
 serializer::
 write_array(stream& ss0)
 {
     value const* jv;
+    local_stream ss(ss0);
     array::const_iterator it;
     array::const_iterator end;
-    local_stream ss(ss0);
-    if(BOOST_JSON_LIKELY(st_.empty()))
+    if(StackEmpty || st_.empty())
     {
         jv = jv_;
         it = jv->get_array().begin();
@@ -507,7 +478,7 @@ write_array(stream& ss0)
         }
     }
 do_arr1:
-    if(ss)
+    if(BOOST_JSON_LIKELY(ss))
         ss.append('[');
     else
         return suspend(
@@ -518,21 +489,21 @@ do_arr1:
     {
 do_arr2:
         jv_ = &*it;
-        if(! write_value(ss))
+        if(! write_value<StackEmpty>(ss))
             return suspend(
                 state::arr2, it, jv);
-        ++it;
-        if(it == end)
+        if(BOOST_JSON_UNLIKELY(
+            ++it == end))
             break;
 do_arr3:
-        if(ss)
+        if(BOOST_JSON_LIKELY(ss))
             ss.append(',');
         else
             return suspend(
                 state::arr3, it, jv);
     }
 do_arr4:
-    if(ss)
+    if(BOOST_JSON_LIKELY(ss))
         ss.append(']');
     else
         return suspend(
@@ -540,15 +511,16 @@ do_arr4:
     return true;
 }
 
+template<bool StackEmpty>
 bool
 serializer::
 write_object(stream& ss0)
 {
     value const* jv;
+    local_stream ss(ss0);
     object::const_iterator it;
     object::const_iterator end;
-    local_stream ss(ss0);
-    if(BOOST_JSON_LIKELY(st_.empty()))
+    if(StackEmpty || st_.empty())
     {
         jv = jv_;
         it = jv->get_object().begin();
@@ -574,12 +546,13 @@ write_object(stream& ss0)
         }
     }
 do_obj1:
-    if(ss)
+    if(BOOST_JSON_LIKELY(ss))
         ss.append('{');
     else
         return suspend(
             state::obj1, it, jv);
-    if(it == end)
+    if(BOOST_JSON_UNLIKELY(
+        it == end))
         goto do_obj6;
     for(;;)
     {
@@ -587,74 +560,101 @@ do_obj1:
             it->key().data(),
             it->key().size() };
 do_obj2:
-        if(! write_string(ss))
+        if(BOOST_JSON_UNLIKELY(
+            ! write_string<StackEmpty>(ss)))
             return suspend(
                 state::obj2, it, jv);
 do_obj3:
-        if(ss)
+        if(BOOST_JSON_LIKELY(ss))
             ss.append(':');
         else
             return suspend(
                 state::obj3, it, jv);
 do_obj4:
         jv_ = &it->value();
-        if(! write_value(ss))
+        if(BOOST_JSON_UNLIKELY(
+            ! write_value<StackEmpty>(ss)))
             return suspend(
                 state::obj4, it, jv);
         ++it;
-        if(it == end)
+        if(BOOST_JSON_UNLIKELY(it == end))
             break;
 do_obj5:
-        if(ss)
+        if(BOOST_JSON_LIKELY(ss))
             ss.append(',');
         else
             return suspend(
                 state::obj5, it, jv);
     }
 do_obj6:
-    if(ss)
+    if(BOOST_JSON_LIKELY(ss))
+    {
         ss.append('}');
-    else
-        return suspend(
-            state::obj6, it, jv);
-    return true;
+        return true;
+    }
+    return suspend(
+        state::obj6, it, jv);
 }
 
+template<bool StackEmpty>
 bool
 serializer::
 write_value(stream& ss)
 {
-    if(BOOST_JSON_LIKELY(st_.empty()))
+    if(StackEmpty || st_.empty())
     {
         auto const& jv(*jv_);
         switch(jv.kind())
         {
         default:
         case kind::object:
-            return write_object(ss);
+            return write_object<true>(ss);
 
         case kind::array:
-            return write_array(ss);
+            return write_array<true>(ss);
 
         case kind::string:
         {
             auto const& js = jv.get_string();
             cs0_ = { js.data(), js.size() };
-            return write_string(ss);
+            return write_string<true>(ss);
         }
 
         case kind::int64:
         case kind::uint64:
         case kind::double_:
-            return write_number(ss);
+            return write_number<true>(ss);
 
         case kind::bool_:
             if(jv.get_bool())
-                return write_true(ss);
-            return write_false(ss);
+            {
+                if(BOOST_JSON_LIKELY(
+                    ss.remain() >= 4))
+                {
+                    ss.append("true", 4);
+                    return true;
+                }
+                return write_true<true>(ss);
+            }
+            else
+            {
+                if(BOOST_JSON_LIKELY(
+                    ss.remain() >= 5))
+                {
+                    ss.append("false", 5);
+                    return true;
+                }
+                return write_false<true>(ss);
+            }
 
         case kind::null:
-            return write_null(ss);
+            if(BOOST_JSON_LIKELY(
+                ss.remain() >= 4))
+            {
+                ss.append("null", 4);
+                return true;
+            }
+            return write_null<true>(ss);
         }
     }
     else
@@ -666,16 +666,16 @@ write_value(stream& ss)
         default:
         case state::nul1: case state::nul2:
         case state::nul3: case state::nul4:
-            return write_null(ss);
+            return write_null<StackEmpty>(ss);
 
         case state::tru1: case state::tru2:
         case state::tru3: case state::tru4:
-            return write_true(ss);
+            return write_true<StackEmpty>(ss);
 
         case state::fal1: case state::fal2:
         case state::fal3: case state::fal4:
         case state::fal5:
-            return write_false(ss);
+            return write_false<StackEmpty>(ss);
 
         case state::str1: case state::str2:
         case state::str3: case state::str4:
@@ -683,19 +683,19 @@ write_value(stream& ss)
         case state::utf1: case state::utf2:
         case state::utf3: case state::utf4:
         case state::utf5:
-            return write_string(ss);
+            return write_string<StackEmpty>(ss);
 
         case state::num:
-            return write_number(ss);
+            return write_number<StackEmpty>(ss);
 
         case state::arr1: case state::arr2:
         case state::arr3: case state::arr4:
-            return write_array(ss);
+            return write_array<StackEmpty>(ss);
 
         case state::obj1: case state::obj2:
         case state::obj3: case state::obj4:
         case state::obj5: case state::obj6:
-            return write_object(ss);
+            return write_object<StackEmpty>(ss);
         }
     }
 }
@@ -710,7 +710,10 @@ write_some(
             std::logic_error(
                 "no value in serializer"));
     stream ss(dest, size);
-    write_value(ss);
+    if(st_.empty())
+        write_value<true>(ss);
+    else
+        write_value<false>(ss);
     if(st_.empty())
     {
         done_ = true;

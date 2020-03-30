@@ -48,14 +48,14 @@ class serializer
         array::const_iterator it, value const* jv);
     inline bool suspend(state st,
         object::const_iterator it, value const* jv);
-    inline bool write_null(stream& ss);
-    inline bool write_true(stream& ss);
-    inline bool write_false(stream& ss);
-    inline bool write_string(stream& ss);
-    inline bool write_number(stream& ss);
-    inline bool write_array(stream& ss);
-    inline bool write_object(stream& ss);
-    inline bool write_value(stream& ss);
+    template<bool StackEmpty> bool write_null(stream& ss);
+    template<bool StackEmpty> bool write_true(stream& ss);
+    template<bool StackEmpty> bool write_false(stream& ss);
+    template<bool StackEmpty> bool write_string(stream& ss);
+    template<bool StackEmpty> bool write_number(stream& ss);
+    template<bool StackEmpty> bool write_array(stream& ss);
+    template<bool StackEmpty> bool write_object(stream& ss);
+    template<bool StackEmpty> bool write_value(stream& ss);
     inline std::size_t write_some(
         char* dest, std::size_t size);
 
