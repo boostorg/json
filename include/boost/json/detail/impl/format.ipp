@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+// Copyright (c) 2020 Peter Dimov (pdimov at gmail dot com),
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -12,6 +13,7 @@
 
 #include <boost/json/detail/ryu/ryu.hpp>
 #include <cstdint>
+#include <cstring>
 
 namespace boost {
 namespace json {
@@ -20,19 +22,13 @@ namespace detail {
 /*  Reference work:
 
     https://www.ampl.com/netlib/fp/dtoa.c
-
     https://www.exploringbinary.com/fast-path-decimal-to-floating-point-conversion/
-
     https://kkimdev.github.io/posts/2018/06/15/IEEE-754-Floating-Point-Type-in-C++.html
 */
 
-unsigned
-format_uint64(
-    char* dest,
-    std::uint64_t value) noexcept
+inline char const* digits_lut() noexcept
 {
-    auto const start = dest;
-    char const* const lut =
+    return
         "00010203040506070809"
         "10111213141516171819"
         "20212223242526272829"
@@ -43,169 +39,63 @@ format_uint64(
         "70717273747576777879"
         "80818283848586878889"
         "90919293949596979899";
+}
 
-    std::uint64_t const  t_8 = 100000000;
-    std::uint64_t const  t_9 = t_8 * 10;
-    std::uint64_t const t_10 = t_8 * 100;
-    std::uint64_t const t_11 = t_8 * 1000;
-    std::uint64_t const t_12 = t_8 * 10000;
-    std::uint64_t const t_13 = t_8 * 100000;
-    std::uint64_t const t_14 = t_8 * 1000000;
-    std::uint64_t const t_15 = t_8 * 10000000;
-    std::uint64_t const t_16 = t_8 * t_8;
+inline void format_four_digits( char * dest, unsigned v )
+{
+    std::memcpy( dest + 2, digits_lut() + (v % 100) * 2, 2 );
+    std::memcpy( dest    , digits_lut() + (v / 100) * 2, 2 );
+}
 
-    if(value < t_8)
+inline void format_two_digits( char * dest, unsigned v )
+{
+    std::memcpy( dest, digits_lut() + v * 2, 2 );
+}
+
+inline void format_digit( char * dest, unsigned v )
+{
+    *dest = v + '0';
+}
+
+unsigned
+format_uint64(
+    char* dest,
+    std::uint64_t v) noexcept
+{
+    if(v < 10)
     {
-        std::uint32_t v = static_cast<std::uint32_t>(value);
-        if(v < 10000)
-        {
-            std::uint32_t const d1 = (v / 100) << 1;
-            std::uint32_t const d2 = (v % 100) << 1;
-
-            if(v >= 1000)
-                *dest++ = lut[d1];
-            if(v >= 100)
-                *dest++ = lut[d1 + 1];
-            if(v >= 10)
-                *dest++ = lut[d2];
-            *dest++ = lut[d2 + 1];
-        }
-        else
-        {
-            std::uint32_t const b = v / 10000;
-            std::uint32_t const c = v % 10000;
-            std::uint32_t const d1 = (b / 100) << 1;
-            std::uint32_t const d2 = (b % 100) << 1;
-            std::uint32_t const d3 = (c / 100) << 1;
-            std::uint32_t const d4 = (c % 100) << 1;
-
-            if(value >= 10000000)
-                *dest++ = lut[d1];
-            if(value >= 1000000)
-                *dest++ = lut[d1 + 1];
-            if(value >= 100000)
-                *dest++ = lut[d2];
-            *dest++ = lut[d2 + 1];
-            *dest++ = lut[d3];
-            *dest++ = lut[d3 + 1];
-            *dest++ = lut[d4];
-            *dest++ = lut[d4 + 1];
-        }
-    }
-    else if(value < t_16)
-    {
-        std::uint32_t const v0 =
-            static_cast<std::uint32_t>(value / t_8);
-        std::uint32_t const v1 =
-            static_cast<std::uint32_t>(value % t_8);
-        std::uint32_t const b0 = v0 / 10000;
-        std::uint32_t const c0 = v0 % 10000;
-        std::uint32_t const d1 = (b0 / 100) << 1;
-        std::uint32_t const d2 = (b0 % 100) << 1;
-        std::uint32_t const d3 = (c0 / 100) << 1;
-        std::uint32_t const d4 = (c0 % 100) << 1;
-        std::uint32_t const b1 = v1 / 10000;
-        std::uint32_t const c1 = v1 % 10000;
-        std::uint32_t const d5 = (b1 / 100) << 1;
-        std::uint32_t const d6 = (b1 % 100) << 1;
-        std::uint32_t const d7 = (c1 / 100) << 1;
-        std::uint32_t const d8 = (c1 % 100) << 1;
-
-        if(value >= t_15)
-            *dest++ = lut[d1];
-        if(value >= t_14)
-            *dest++ = lut[d1 + 1];
-        if(value >= t_13)
-            *dest++ = lut[d2];
-        if(value >= t_12)
-            *dest++ = lut[d2 + 1];
-        if(value >= t_11)
-            *dest++ = lut[d3];
-        if(value >= t_10)
-            *dest++ = lut[d3 + 1];
-        if(value >= t_9)
-            *dest++ = lut[d4];
-
-        *dest++ = lut[d4 + 1];
-        *dest++ = lut[d5];
-        *dest++ = lut[d5 + 1];
-        *dest++ = lut[d6];
-        *dest++ = lut[d6 + 1];
-        *dest++ = lut[d7];
-        *dest++ = lut[d7 + 1];
-        *dest++ = lut[d8];
-        *dest++ = lut[d8 + 1];
-    }
-    else
-    {
-        std::uint32_t const a =
-            static_cast<uint32_t>(value / t_16);
-        value %= t_16;
-        if(a < 10)
-            *dest++ = static_cast<char>(
-                '0' + static_cast<char>(a));
-        else if(a < 100)
-        {
-            std::uint32_t const i = a << 1;
-            *dest++ = lut[i];
-            *dest++ = lut[i + 1];
-        }
-        else if(a < 1000)
-        {
-            *dest++ = static_cast<char>(
-                '0' + static_cast<char>(a / 100));
-
-            std::uint32_t const i = (a % 100) << 1;
-            *dest++ = lut[i];
-            *dest++ = lut[i + 1];
-        }
-        else
-        {
-            std::uint32_t const i = (a / 100) << 1;
-            std::uint32_t const j = (a % 100) << 1;
-            *dest++ = lut[i];
-            *dest++ = lut[i + 1];
-            *dest++ = lut[j];
-            *dest++ = lut[j + 1];
-        }
-
-        std::uint32_t const v0 =
-            static_cast<uint32_t>(value / t_8);
-        std::uint32_t const v1 =
-            static_cast<uint32_t>(value % t_8);
-
-        std::uint32_t const b0 =  v0 / 10000;
-        std::uint32_t const c0 =  v0 % 10000;
-        std::uint32_t const d1 = (b0 / 100) << 1;
-        std::uint32_t const d2 = (b0 % 100) << 1;
-        std::uint32_t const d3 = (c0 / 100) << 1;
-        std::uint32_t const d4 = (c0 % 100) << 1;
-        std::uint32_t const b1 =  v1 / 10000;
-        std::uint32_t const c1 =  v1 % 10000;
-        std::uint32_t const d5 = (b1 / 100) << 1;
-        std::uint32_t const d6 = (b1 % 100) << 1;
-        std::uint32_t const d7 = (c1 / 100) << 1;
-        std::uint32_t const d8 = (c1 % 100) << 1;
-
-        *dest++ = lut[d1];
-        *dest++ = lut[d1 + 1];
-        *dest++ = lut[d2];
-        *dest++ = lut[d2 + 1];
-        *dest++ = lut[d3];
-        *dest++ = lut[d3 + 1];
-        *dest++ = lut[d4];
-        *dest++ = lut[d4 + 1];
-        *dest++ = lut[d5];
-        *dest++ = lut[d5 + 1];
-        *dest++ = lut[d6];
-        *dest++ = lut[d6 + 1];
-        *dest++ = lut[d7];
-        *dest++ = lut[d7 + 1];
-        *dest++ = lut[d8];
-        *dest++ = lut[d8 + 1];
+        *dest = static_cast<char>( '0' + v );
+        return 1;
     }
 
-    return static_cast<unsigned>(dest - start);
+    char buffer[ 24 ];
+
+    char * p = buffer + 24;
+
+    while( v >= 1000 )
+    {
+        p -= 4;
+        format_four_digits( p, v % 10000 );
+        v /= 10000;
+    }
+
+    if( v >= 10 )
+    {
+        p -= 2;
+        format_two_digits( p, v % 100 );
+        v /= 100;
+    }
+
+    if( v )
+    {
+        p -= 1;
+        format_digit( p, static_cast<unsigned>(v) );
+    }
+
+    unsigned const n = static_cast<unsigned>( buffer + 24 - p );
+    std::memcpy( dest, p, n );
+
+    return n;
 }
 
 unsigned
