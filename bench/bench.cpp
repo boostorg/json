@@ -624,7 +624,7 @@ struct nlohmann_impl : public any_impl
 using namespace boost::json;
 
 std::string s_tests = "ps";
-std::string s_impls = "bdurcn";
+std::string s_impls = "bdrcn";
 std::size_t s_trials = 6;
 
 static bool parse_option( char const * s )
