@@ -55,11 +55,10 @@ enum class parser::state : char
     // These states indicate what is
     // currently at top of the stack.
 
-    top,        // empty top value
+    top,        // top value, constructed if lev_.count==1
     arr,        // empty array value
     obj,        // empty object value
     key,        // complete key
-    end         // complete top value
 };
 
 void
@@ -98,10 +97,25 @@ destroy() noexcept
             break;
 
         case state::top:
-            rs_.subtract(
-                sizeof(value));
-            BOOST_ASSERT(
-                rs_.empty());
+            if(lev_.count > 0)
+            {
+                BOOST_ASSERT(
+                    lev_.count == 1);
+                auto ua =
+                    pop_array();
+                BOOST_ASSERT(
+                    ua.size() == 1);
+                BOOST_ASSERT(
+                    rs_.empty());
+            }
+            else
+            {
+                // never parsed a value
+                rs_.subtract(
+                    sizeof(value));
+                BOOST_ASSERT(
+                    rs_.empty());
+            }
             break;
 
         case state::arr:
@@ -128,18 +142,6 @@ destroy() noexcept
             lev_.st = state::obj;
             break;
         }
-
-        case state::end:
-        {
-            auto ua =
-                pop_array();
-            BOOST_ASSERT(
-                ua.size() == 1);
-            BOOST_ASSERT(
-                rs_.empty());
-            break;
-        }
-
         }
     }
     while(! rs_.empty());
@@ -299,7 +301,8 @@ release()
         BOOST_THROW_EXCEPTION(
             std::logic_error(
                 "no value"));
-    BOOST_ASSERT(lev_.st == state::end);
+    BOOST_ASSERT(lev_.count == 1);
+    BOOST_ASSERT(p_.depth() == 0);
     auto ua = pop_array();
     BOOST_ASSERT(rs_.empty());
     union U
@@ -340,56 +343,59 @@ push_chars(string_view s)
 template<class... Args>
 void
 parser::
+emplace_object(Args&&... args)
+{
+    union U
+    {
+        object::value_type v;
+        U(){}
+        ~U(){}
+    };
+    U u;
+    // perform stack reallocation up-front
+    // VFALCO This is more than we need
+    rs_.prepare(sizeof(object::value_type));
+    std::uint32_t key_size;
+    pop(key_size);
+    auto const key =
+        pop_chars(key_size);
+    lev_.st = state::obj;
+    BOOST_ASSERT((rs_.top() %
+        alignof(object::value_type)) == 0);
+    ::new(rs_.behind(
+        sizeof(object::value_type)))
+            object::value_type(
+        key, std::forward<Args>(args)...);
+    rs_.add_unchecked(sizeof(u.v));
+    ++lev_.count;
+}
+
+template<class... Args>
+void
+parser::
+emplace_array(Args&&... args)
+{
+    // prevent splits from exceptions
+    rs_.prepare(sizeof(value));
+    BOOST_ASSERT((rs_.top() %
+        alignof(value)) == 0);
+    ::new(rs_.behind(sizeof(value))) value(
+        std::forward<Args>(args)...);
+    rs_.add_unchecked(sizeof(value));
+    ++lev_.count;
+}
+
+template<class... Args>
+void
+parser::
 emplace(Args&&... args)
 {
     if(lev_.st == state::key)
-    {
-        union U
-        {
-            object::value_type v;
-            U(){}
-            ~U(){}
-        };
-        U u;
-        // perform stack reallocation up-front
-        // VFALCO This is more than we need
-        rs_.prepare(sizeof(object::value_type));
-        std::uint32_t key_size;
-        pop(key_size);
-        auto const key =
-            pop_chars(key_size);
-        lev_.st = state::obj;
-        BOOST_ASSERT((rs_.top() %
-            alignof(object::value_type)) == 0);
-        ::new(rs_.behind(
-            sizeof(object::value_type)))
-                object::value_type(
-            key, std::forward<Args>(args)...);
-        rs_.add(sizeof(u.v));
-    }
-    else if(lev_.st == state::arr)
-    {
-        // prevent splits from exceptions
-        rs_.prepare(sizeof(value));
-        BOOST_ASSERT((rs_.top() %
-            alignof(value)) == 0);
-        ::new(rs_.behind(sizeof(value))) value(
-            std::forward<Args>(args)...);
-        rs_.add(sizeof(value));
-    }
+        emplace_object(std::forward<
+            Args>(args)...);
     else
-    {
-        //BOOST_ASSERT(lev_.st == state::top);
-        // prevent splits from exceptions
-        rs_.prepare(sizeof(value));
-        BOOST_ASSERT((rs_.top() %
-            alignof(value)) == 0);
-        ::new(rs_.behind(sizeof(value))) value(
-            std::forward<Args>(args)...);
-        rs_.add(sizeof(value));
-        lev_.st = state::end; // VFALCO Maybe pre_end
-    }
-    ++lev_.count;
+        emplace_array(std::forward<
+            Args>(args)...);
 }
 
 template<class T>
@@ -509,7 +515,12 @@ on_object_end(
     auto uo = pop_object();
     rs_.subtract(lev_.align);
     pop(lev_);
-    emplace(std::move(uo));
+    if(lev_.st == state::key)
+    {
+        emplace_object(std::move(uo));
+        return true;
+    }
+    emplace_array(std::move(uo));
     return true;
 }
 
@@ -547,7 +558,12 @@ on_array_end(
     auto ua = pop_array();
     rs_.subtract(lev_.align);
     pop(lev_);
-    emplace(std::move(ua));
+    if(lev_.st == state::key)
+    {
+        emplace_object(std::move(ua));
+        return true;
+    }
+    emplace_array(std::move(ua));
     return true;
 }
 
@@ -609,25 +625,37 @@ on_string(
     if(str_size_ == 0)
     {
         // fast path
-        emplace(s, sp_);
+        if(lev_.st == state::key)
+        {
+            emplace_object(s, sp_);
+            return true;
+        }
+        emplace_array(s, sp_);
+        return true;
     }
-    else
+
+    string str(sp_);
+    auto const sv =
+        pop_chars(str_size_);
+    str_size_ = 0;
+    str.reserve(
+        sv.size() + s.size());
+    std::memcpy(
+        str.data(),
+        sv.data(), sv.size());
+    std::memcpy(
+        str.data() + sv.size(),
+        s.data(), s.size());
+    str.grow(sv.size() + s.size());
+
+    if(lev_.st == state::key)
     {
-        string str(sp_);
-        auto const sv =
-            pop_chars(str_size_);
-        str_size_ = 0;
-        str.reserve(
-            sv.size() + s.size());
-        std::memcpy(
-            str.data(),
-            sv.data(), sv.size());
-        std::memcpy(
-            str.data() + sv.size(),
-            s.data(), s.size());
-        str.grow(sv.size() + s.size());
-        emplace(std::move(str));
+        emplace_object(
+            std::move(str), sp_);
+        return true;
     }
+    emplace_array(
+        std::move(str), sp_);
     return true;
 }
 
@@ -637,7 +665,12 @@ on_int64(
     int64_t i,
     error_code&)
 {
-    emplace(i, sp_);
+    if(lev_.st == state::key)
+    {
+        emplace_object(i, sp_);
+        return true;
+    }
+    emplace_array(i, sp_);
     return true;
 }
 
@@ -647,7 +680,12 @@ on_uint64(
     uint64_t u,
     error_code&)
 {
-    emplace(u, sp_);
+    if(lev_.st == state::key)
+    {
+        emplace_object(u, sp_);
+        return true;
+    }
+    emplace_array(u, sp_);
     return true;
 }
 
@@ -657,7 +695,12 @@ on_double(
     double d,
     error_code&)
 {
-    emplace(d, sp_);
+    if(lev_.st == state::key)
+    {
+        emplace_object(d, sp_);
+        return true;
+    }
+    emplace_array(d, sp_);
     return true;
 }
 
@@ -666,7 +709,12 @@ parser::
 on_bool(
     bool b, error_code&)
 {
-    emplace(b, sp_);
+    if(lev_.st == state::key)
+    {
+        emplace_object(b, sp_);
+        return true;
+    }
+    emplace_array(b, sp_);
     return true;
 }
 
@@ -674,7 +722,12 @@ bool
 parser::
 on_null(error_code&)
 {
-    emplace(nullptr, sp_);
+    if(lev_.st == state::key)
+    {
+        emplace_object(nullptr, sp_);
+        return true;
+    }
+    emplace_array(nullptr, sp_);
     return true;
 }
 

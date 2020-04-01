@@ -563,6 +563,14 @@ private:
 
     template<class... Args>
     void
+    emplace_object(Args&&... args);
+
+    template<class... Args>
+    void
+    emplace_array(Args&&... args);
+
+    template<class... Args>
+    void
     emplace(Args&&... args);
 
     template<class T>

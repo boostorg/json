@@ -389,50 +389,61 @@ parse_value(
     }
     else
     {
-        state st;
-        st_.peek(st);
-        switch(st)
-        {
-        default:
-        case state::nul1: case state::nul2:
-        case state::nul3:
-            return parse_null<StackEmpty>(h, cs0);
+        return resume_value<StackEmpty>(h, cs0);
+    }
+}
 
-        case state::tru1: case state::tru2:
-        case state::tru3:
-            return parse_true<StackEmpty>(h, cs0);
+template<bool StackEmpty, class Handler>
+auto
+basic_parser::
+resume_value(
+    Handler& h,
+    const_stream& cs0) ->
+        result
+{
+    state st;
+    st_.peek(st);
+    switch(st)
+    {
+    default:
+    case state::nul1: case state::nul2:
+    case state::nul3:
+        return parse_null<StackEmpty>(h, cs0);
 
-        case state::fal1: case state::fal2:
-        case state::fal3: case state::fal4:
-            return parse_false<StackEmpty>(h, cs0);
+    case state::tru1: case state::tru2:
+    case state::tru3:
+        return parse_true<StackEmpty>(h, cs0);
 
-        case state::str1: case state::str2:
-        case state::str3: case state::str4:
-        case state::str5: case state::str6:
-        case state::str7:
-        case state::sur1: case state::sur2:
-        case state::sur3: case state::sur4:
-        case state::sur5: case state::sur6:
-            return parse_string<StackEmpty>(h, cs0);
+    case state::fal1: case state::fal2:
+    case state::fal3: case state::fal4:
+        return parse_false<StackEmpty>(h, cs0);
 
-        case state::arr1: case state::arr2:
-        case state::arr3: case state::arr4:
-            return parse_array<StackEmpty>(h, cs0);
+    case state::str1: case state::str2:
+    case state::str3: case state::str4:
+    case state::str5: case state::str6:
+    case state::str7:
+    case state::sur1: case state::sur2:
+    case state::sur3: case state::sur4:
+    case state::sur5: case state::sur6:
+        return parse_string<StackEmpty>(h, cs0);
+
+    case state::arr1: case state::arr2:
+    case state::arr3: case state::arr4:
+        return parse_array<StackEmpty>(h, cs0);
         
-        case state::obj1: case state::obj2:
-        case state::obj3: case state::obj4:
-        case state::obj5: case state::obj6:
-        case state::obj7:
-            return parse_object<StackEmpty>(h, cs0);
+    case state::obj1: case state::obj2:
+    case state::obj3: case state::obj4:
+    case state::obj5: case state::obj6:
+    case state::obj7:
+        return parse_object<StackEmpty>(h, cs0);
         
-        case state::num1: case state::num2:
-        case state::num3: case state::num4:
-        case state::num5: case state::num6:
-        case state::num7: case state::num8:
-        case state::exp1: case state::exp2:
-        case state::exp3:
-            return parse_number<StackEmpty>(h, cs0);
-        }
+    case state::num1: case state::num2:
+    case state::num3: case state::num4:
+    case state::num5: case state::num6:
+    case state::num7: case state::num8:
+    case state::exp1: case state::exp2:
+    case state::exp3:
+        return parse_number<StackEmpty>(h, cs0);
     }
 }
 

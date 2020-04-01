@@ -104,6 +104,14 @@ public:
     }
 
     void
+    add_unchecked(std::size_t n)
+    {
+        BOOST_ASSERT(n <=
+            capacity_ - size_);
+        size_ += n;
+    }
+
+    void
     subtract(std::size_t n)
     {
         BOOST_ASSERT(

@@ -89,6 +89,8 @@ class basic_parser
     template<bool StackEmpty, class Handler>
     inline result parse_value(Handler& h, const_stream& cs);
     template<bool StackEmpty, class Handler>
+    inline result resume_value(Handler& h, const_stream& cs);
+    template<bool StackEmpty, class Handler>
     inline result parse_null(Handler& h, const_stream& cs);
     template<bool StackEmpty, class Handler>
     inline result parse_true(Handler& h, const_stream& cs);
