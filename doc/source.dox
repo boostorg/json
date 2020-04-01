@@ -4,22 +4,8 @@
 
 INPUT = \
         $(LIB_DIR)/include/boost/json/ \
+        $(LIB_DIR)/include/boost/json/detail/basic_parser.hpp \
         $(LIB_DIR)/include/boost/pilfer.hpp
-
-#        $(LIB_DIR)/include/boost/json/allocator.hpp \
-#        $(LIB_DIR)/include/boost/json/array.hpp \
-#        $(LIB_DIR)/include/boost/json/basic_parser.hpp \
-#        $(LIB_DIR)/include/boost/json/error.hpp \
-#        $(LIB_DIR)/include/boost/json/iterator.hpp \
-#        $(LIB_DIR)/include/boost/json/kind.hpp \
-#        $(LIB_DIR)/include/boost/json/number.hpp \
-#        $(LIB_DIR)/include/boost/json/object.hpp \
-#        $(LIB_DIR)/include/boost/json/parser.hpp \
-#        $(LIB_DIR)/include/boost/json/serializer.hpp \
-#        $(LIB_DIR)/include/boost/json/storage.hpp \
-#        $(LIB_DIR)/include/boost/json/string.hpp \
-#        $(LIB_DIR)/include/boost/json/value.hpp
-
 
 ALIASES               += esafe="@par Exception Safety"
 

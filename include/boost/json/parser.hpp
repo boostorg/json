@@ -11,10 +11,10 @@
 #define BOOST_JSON_PARSER_HPP
 
 #include <boost/json/config.hpp>
-#include <boost/json/basic_parser.hpp>
 #include <boost/json/storage.hpp>
 #include <boost/json/value.hpp>
 #include <boost/json/string.hpp>
+#include <boost/json/detail/basic_parser.hpp>
 #include <boost/json/detail/raw_stack.hpp>
 #include <new>
 #include <string>

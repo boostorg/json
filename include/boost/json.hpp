@@ -13,7 +13,6 @@
 #include <boost/json/config.hpp>
 
 #include <boost/json/array.hpp>
-#include <boost/json/basic_parser.hpp>
 #include <boost/json/error.hpp>
 #include <boost/json/kind.hpp>
 #include <boost/json/number_cast.hpp>
@@ -28,5 +27,8 @@
 #include <boost/json/traits.hpp>
 #include <boost/json/value.hpp>
 #include <boost/json/value_cast.hpp>
+
+// Intentionally excluded
+//#include <boost/json/basic_parser.hpp>
 
 #endif
