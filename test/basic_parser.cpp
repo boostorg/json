@@ -106,10 +106,9 @@ validate( string_view s )
 {
     // The null parser discards all the data
 
-    class null_parser
+    class null_parser : public basic_parser
     {
         friend class boost::json::basic_parser;
-        boost::json::basic_parser p_;
 
     public:
         null_parser() {}
@@ -130,25 +129,14 @@ validate( string_view s )
         bool on_bool( bool, error_code& ) { return true; }
         bool on_null( error_code& ) { return true; }
         
-        bool
-        is_done() const noexcept
-        {
-            return p_.is_done();
-        }
-
-        void
-        reset()
-        {
-            p_.reset();
-        }
-
         std::size_t
         write(
             char const* data,
             std::size_t size,
             error_code& ec)
         {
-            auto const n = p_.write_some(
+            auto const n =
+                basic_parser::write_some(
                 *this, false, data, size, ec);
             if(! ec && n < size)
                 ec = error::extra_data;

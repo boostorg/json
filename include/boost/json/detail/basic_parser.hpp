@@ -50,6 +50,24 @@ namespace json {
     to cheaply re-use this memory when parsing
     subsequent JSONs, improving performance.
 
+    @par Usage
+
+    Users who wish to parse JSON into the DOM container
+    @ref value will not use this class directly; instead
+    they will create an instance of @ref parser and
+    use that instead. Alternatively, they may call the
+    function @ref parse. This class is designed for
+    users who wish to perform custom actions instead of
+    building a @ref value. For example, to produce a
+    DOM from an external library.
+
+    <br>
+
+    To use this class it is necessary to create a derived
+    class which calls @ref reset at the beginning of
+    parsing a new JSON, and then calls @ref write_some one
+    or more times with the serialized JSON.
+
     @note
 
     The parser is strict: no extensions are supported.
@@ -82,6 +100,7 @@ class basic_parser
     error_code ec_;
     detail::stack st_;
     std::size_t depth_ = 0;
+    std::size_t max_depth_ = 32;
     unsigned u1_;
     unsigned u2_;
     bool more_; // false for final buffer
@@ -161,6 +180,30 @@ public:
         return depth_;
     }
 
+    /** Returns the maximum allowed depth of input JSON.
+
+        The maximum allowed depth may be configured.
+    */
+    std::size_t
+    max_depth() const noexcept
+    {
+        return max_depth_;
+    }
+
+    /** Set the maximum allowed depth of input JSON.
+
+        When the maximum depth is exceeded, parser
+        operations will return @ref error::too_deep.
+
+        @param levels The maximum depth.
+    */
+    void
+    max_depth(unsigned long levels) noexcept
+    {
+        max_depth_ = levels;
+    }
+
+protected:
     /** Reset the state, to parse a new document.
     */
     inline

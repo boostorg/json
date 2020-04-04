@@ -182,7 +182,7 @@ clear() noexcept
 {
     destroy();
     rs_.clear();
-    p_.reset();
+    basic_parser::reset();
     lev_.count = 0;
     key_size_ = 0;
     str_size_ = 0;
@@ -197,7 +197,7 @@ write_some(
     std::size_t const size,
     error_code& ec)
 {
-    return p_.write_some(
+    return basic_parser::write_some(
         *this, true, data, size, ec);
 }
 
@@ -223,9 +223,9 @@ write(
     std::size_t size,
     error_code& ec)
 {
-    auto const n = p_.write_some(
-        *this, true,
-            data, size, ec);
+    auto const n =
+        basic_parser::write_some(
+            *this, true, data, size, ec);
     if(! ec)
     {
         if(n < size)
@@ -253,8 +253,9 @@ finish(
     std::size_t size,
     error_code& ec)
 {
-    auto const n = p_.write_some(
-        *this, false, data, size, ec);
+    auto const n =
+        basic_parser::write_some(
+            *this, false, data, size, ec);
     if(! ec)
     {
         if(n < size)
@@ -302,7 +303,7 @@ release()
             std::logic_error(
                 "no value"));
     BOOST_ASSERT(lev_.count == 1);
-    BOOST_ASSERT(p_.depth() == 0);
+    BOOST_ASSERT(depth() == 0);
     auto ua = pop_array();
     BOOST_ASSERT(rs_.empty());
     union U
@@ -313,7 +314,7 @@ release()
     };
     U u;
     ua.relocate(&u.v);
-    p_.reset();
+    basic_parser::reset();
     lev_.st = state::need_start;
     sp_ = {};
     return pilfer(u.v);
@@ -484,11 +485,6 @@ bool
 parser::
 on_object_begin(error_code& ec)
 {
-    if(p_.depth() >= max_depth_)
-    {
-        ec = error::too_deep;
-        return false;
-    }
     // prevent splits from exceptions
     rs_.prepare(
         sizeof(level) +
@@ -528,11 +524,6 @@ bool
 parser::
 on_array_begin(error_code& ec)
 {
-    if(p_.depth() >= max_depth_)
-    {
-        ec = error::too_deep;
-        return false;
-    }
     // prevent splits from exceptions
     rs_.prepare(
         sizeof(level) +

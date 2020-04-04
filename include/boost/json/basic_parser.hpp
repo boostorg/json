@@ -1334,6 +1334,12 @@ parse_object(
         BOOST_ASSERT(*cs == '{');
         ++depth_;
         if(BOOST_JSON_UNLIKELY(
+            depth_ > max_depth_))
+        {
+            ec_ = error::too_deep;
+            return result::fail;
+        }
+        if(BOOST_JSON_UNLIKELY(
             ! h.on_object_begin(ec_)))
             return result::fail;
         ++cs;
@@ -1471,6 +1477,12 @@ parse_array(
     {
         BOOST_ASSERT(*cs == '[');
         ++depth_;
+        if(BOOST_JSON_UNLIKELY(
+            depth_ > max_depth_))
+        {
+            ec_ = error::too_deep;
+            return result::fail;
+        }
         if(BOOST_JSON_UNLIKELY(
             ! h.on_array_begin(ec_)))
             return result::fail;

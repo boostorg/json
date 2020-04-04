@@ -142,12 +142,11 @@ struct unique_storage
 
 //----------------------------------------------------------
 
-class fail_parser
+class fail_parser : public basic_parser
 {
     friend class basic_parser;
 
     std::size_t n_ = std::size_t(-1);
-    basic_parser p_;
 
     bool
     maybe_fail(error_code& ec)
@@ -282,18 +281,6 @@ public:
     {
     }
 
-    bool
-    is_done() const noexcept
-    {
-        return p_.is_done();
-    }
-
-    void
-    reset()
-    {
-        p_.reset();
-    }
-
     std::size_t
     write_some(
         bool more,
@@ -301,7 +288,7 @@ public:
         std::size_t size,
         error_code& ec)
     {
-        return p_.write_some(
+        return basic_parser::write_some(
             *this, more, data, size, ec);
     }
 
@@ -312,8 +299,9 @@ public:
         std::size_t size,
         error_code& ec)
     {
-        auto const n = p_.write_some(
-            *this, more, data, size, ec);
+        auto const n = 
+            basic_parser::write_some(
+                *this, more, data, size, ec);
         if(! ec && n < size)
             ec = error::extra_data;
         return n;
@@ -333,10 +321,9 @@ struct test_exception
 };
 
 // Exercises every exception path
-class throw_parser
+class throw_parser : public basic_parser
 {
     friend class basic_parser;
-    basic_parser p_;
     std::size_t n_ = std::size_t(-1);
 
     bool
@@ -471,18 +458,6 @@ public:
     {
     }
 
-    bool
-    is_done() const noexcept
-    {
-        return p_.is_done();
-    }
-
-    void
-    reset()
-    {
-        p_.reset();
-    }
-
     std::size_t
     write(
         bool more,
@@ -490,8 +465,9 @@ public:
         std::size_t size,
         error_code& ec)
     {
-        auto const n = p_.write_some(
-            *this, more, data, size, ec);
+        auto const n =
+            basic_parser::write_some(
+                *this, more, data, size, ec);
         if(! ec && n < size)
             ec = error::extra_data;
         return n;

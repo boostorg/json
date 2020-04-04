@@ -65,7 +65,7 @@ namespace json {
     to cheaply re-use this memory when parsing
     subsequent JSONs, improving performance.
 */
-class parser
+class parser : public basic_parser
 {
     friend class basic_parser;
     enum class state : char;
@@ -76,10 +76,8 @@ class parser
         state st;
     };
 
-    basic_parser p_;
     storage_ptr sp_;
     detail::raw_stack rs_;
-    std::size_t max_depth_ = 32;
     std::uint32_t key_size_ = 0;
     std::uint32_t str_size_ = 0;
     level lev_;
@@ -139,62 +137,6 @@ public:
     BOOST_JSON_DECL
     void
     start(storage_ptr sp = {}) noexcept;
-
-    /** Returns the current depth of the JSON being parsed.
-
-        The parsing depth is the total current nesting
-        level of arrays and objects.
-    */
-    std::size_t
-    depth() const noexcept
-    {
-        return p_.depth();
-    }
-
-    /** Returns the maximum allowed depth of input JSON.
-
-        The maximum allowed depth may be configured.
-    */
-    std::size_t
-    max_depth() const noexcept
-    {
-        return max_depth_;
-    }
-
-    /** Set the maximum allowed depth of input JSON.
-
-        When the maximum depth is exceeded, parser
-        operations will return @ref error::too_deep.
-
-        @param levels The maximum depth.
-    */
-    void
-    max_depth(unsigned long levels) noexcept
-    {
-        max_depth_ = levels;
-    }
-
-    /** Return true if a complete JSON has been parsed.
-
-        This function returns `true` when all of these
-        conditions are met:
-
-        @li A complete serialized JSON has been
-            presented to the parser, and
-
-        @li No error has occurred since the parser
-            was constructed, or since the last call
-            to @ref reset,
-
-        @par Complexity
-
-        Constant.
-    */
-    bool
-    is_done() const noexcept
-    {
-        return p_.is_done();
-    }
 
     /** Parse JSON incrementally.
 

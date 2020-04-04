@@ -359,10 +359,9 @@ public:
 
 class boost_vec_impl : public any_impl
 {
-    struct vec_parser
+    struct vec_parser : basic_parser
     {
         friend class basic_parser;
-        basic_parser p_;
         std::vector<double> vec_;
         double d_ = 0;
 
@@ -394,7 +393,8 @@ class boost_vec_impl : public any_impl
             std::size_t size,
             error_code& ec)
         {
-            auto const n = p_.write_some(
+            auto const n = 
+                this->basic_parser::write_some(
                 *this, false, data, size, ec);
             if(! ec && n < size)
                 ec = error::extra_data;
@@ -438,10 +438,9 @@ public:
 
 class boost_null_impl : public any_impl
 {
-    struct null_parser
+    struct null_parser : basic_parser
     {
         friend class basic_parser;
-        basic_parser p_;
 
         null_parser() {}
         ~null_parser() {}
@@ -460,18 +459,18 @@ class boost_null_impl : public any_impl
         bool on_double(double, error_code&) { return true; }
         bool on_bool(bool, error_code&) { return true; }
         bool on_null(error_code&) { return true; }
-        void reset()
-        {
-            p_.reset();
-        }
+        
+        using basic_parser::reset;
+
         std::size_t
         write(
             char const* data,
             std::size_t size,
             error_code& ec)
         {
-            auto const n = p_.write_some(
-                *this, false, data, size, ec);
+            auto const n =
+                basic_parser::write_some(
+                    *this, false, data, size, ec);
             if(! ec && n < size)
                 ec = error::extra_data;
             return n;
