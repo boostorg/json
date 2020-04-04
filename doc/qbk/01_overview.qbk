@@ -45,6 +45,7 @@ The design of the library also achieves these goals:
 * Safe, easy to use interfaces.
 * Stateful allocator support.
 * Uniform interface on all C++ versions.
+* Key lookup in objects has constant average complexity.
 * Strict parser and serializer which work incrementally.
 * Security-aware treatment of untrusted inputs.
 * Fast compilation performance.

@@ -371,8 +371,9 @@ key_value_pair::
 ~key_value_pair()
 {
     auto const& sp = value_.storage();
-    if(sp->need_free())
-        sp->deallocate(key_, len_ + 1, 1);
+    if(sp.is_not_counted_and_deallocate_is_null())
+        return;
+    sp->deallocate(key_, len_ + 1, 1);
 }
 
 key_value_pair::

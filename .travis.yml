@@ -197,20 +197,22 @@ jobs:
         - COMMENT=standalone
         - STANDALONE=1
         - B2_VARIANT=variant=debug
-        - B2_TOOLSET=gcc-7
+        - B2_TOOLSET=gcc-9
         - B2_CXXSTD=17
         - B2_DEFINES="define=BOOST_JSON_STANDALONE=1"
-      addons: *gcc-7
+      addons: *gcc-9
 
-    - os: "linux"
-      env:
-        - COMMENT=standalone
-        - STANDALONE=1
-        - B2_VARIANT=variant=debug
-        - B2_TOOLSET=clang-7
-        - B2_CXXSTD=17
-        - B2_DEFINES="define=BOOST_JSON_STANDALONE=1"
-      addons: *clang-7
+    # VFALCO This needs to use a later version of
+    #        libstdc++ which has <memory_resource>
+    #- os: "linux"
+    #  env:
+    #    - COMMENT=standalone
+    #    - STANDALONE=1
+    #    - B2_VARIANT=variant=debug
+    #    - B2_TOOLSET=clang-9
+    #    - B2_CXXSTD=17
+    #    - B2_DEFINES="define=BOOST_JSON_STANDALONE=1"
+    #  addons: *clang-9
 
     # libstdc++
     - { os: "linux", dist: "trusty",  # xenial has libstdc++ from gcc 5.4.0 with newer ABI

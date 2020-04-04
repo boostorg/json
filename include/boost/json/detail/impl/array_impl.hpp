@@ -28,10 +28,12 @@ index_of(value const* pos) const noexcept ->
 unchecked_array::
 ~unchecked_array()
 {
-    if(data_ && sp_->need_free())
-        for(unsigned long i = 0;
-            i < size_; ++i)
-            data_[i].~value();
+    if(! data_ ||
+        sp_.is_not_counted_and_deallocate_is_null())
+        return;
+    for(unsigned long i = 0;
+        i < size_; ++i)
+        data_[i].~value();
 }
 
 void

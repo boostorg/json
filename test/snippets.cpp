@@ -27,7 +27,7 @@ usingStrings()
 
         string str1; // empty string, default storage
 
-        string str2( make_storage<pool>() ); // empty string, pool storage
+        string str2( make_counted_resource<monotonic_resource>() ); // empty string, pool storage
 
         //]
     }
@@ -95,7 +95,7 @@ usingArrays()
 
         array arr1; // empty array, default storage
 
-        array arr2( make_storage<pool>() ); // empty array, pool storage
+        array arr2( make_counted_resource<monotonic_resource>() ); // empty array, pool storage
 
         //]
     }
@@ -138,7 +138,7 @@ usingObjects()
 
         object obj1; // empty object, default storage
 
-        object obj2( make_storage<pool>() ); // empty object, pool storage
+        object obj2( make_counted_resource<monotonic_resource>() ); // empty object, pool storage
 
         //]
     }
@@ -202,7 +202,7 @@ usingStorage()
 
 value parse_fast( string_view s )
 {
-    return parse( s, make_storage<pool>() );
+    return parse( s, make_counted_resource<monotonic_resource>() );
 }
 
 //]
@@ -213,9 +213,9 @@ void do_json(value const&) {}
 
 void do_rpc( string_view cmd )
 {
-    scoped_storage<pool> sp;
+    monotonic_resource mr;
 
-    value const jv = parse( cmd, sp );
+    value const jv = parse( cmd, &mr );
 
     do_json( jv );
 }
@@ -224,19 +224,9 @@ void do_rpc( string_view cmd )
 
 //[snippet_storage_4
 
-struct Storage
-{
-    static constexpr std::uint64_t id = 0;
-    static constexpr bool need_free = true;
-
-    void* allocate( std::size_t bytes, std::size_t align );
-    void deallocate( void* p, std::size_t bytes, std::size_t align );
-};
+// TODO
 
 //]
-
-BOOST_STATIC_ASSERT(
-    is_storage<Storage>::value);
 
 //----------------------------------------------------------
 
@@ -263,7 +253,7 @@ usingParsing()
     {
         //[snippet_parsing_3
 
-        value jv = parse( "[1,2,3,4,5]", make_storage<pool>() );
+        value jv = parse( "[1,2,3,4,5]", make_counted_resource<monotonic_resource>() );
 
         //]
     }
@@ -322,10 +312,10 @@ usingParsing()
             error_code ec;
 
             // Declare a new, scoped instance of the block storage
-            scoped_storage< pool > sp;
+            monotonic_resource mr;
 
             // Use the scoped instance for the parsed value
-            p.start( sp );
+            p.start( &mr );
 
             // Write the entire JSON
             p.write( "[1,2,3,4,5]", 11, ec );

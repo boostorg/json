@@ -8,7 +8,7 @@
 //
 
 // Test that header file is self-contained.
-#include <boost/json/pool.hpp>
+#include <boost/json/monotonic_resource.hpp>
 
 #include <boost/json/parser.hpp>
 
@@ -46,7 +46,7 @@ R"xx({
         }
     }
 })xx"
-        , make_storage<pool>());
+        , make_counted_resource<monotonic_resource>());
         BOOST_TEST_PASS();
     }
 
@@ -57,7 +57,7 @@ R"xx({
     }
 };
 
-TEST_SUITE(pool_test, "boost.json.pool");
+TEST_SUITE(pool_test, "boost.json.monotonic_resource");
 
 } // json
 } // boost

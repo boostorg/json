@@ -320,8 +320,8 @@ public:
         parser p;
         while(repeat--)
         {
-            scoped_storage<pool> ss;
-            p.start(ss);
+            monotonic_resource mr;
+            p.start(&mr);
             error_code ec;
             p.write(s.data(), s.size(), ec);
             if(! ec)
@@ -335,8 +335,8 @@ public:
         string_view s,
         std::size_t repeat) const override
     {
-        scoped_storage<pool> sp;
-        auto jv = json::parse(s, sp);
+        monotonic_resource mr;
+        auto jv = json::parse(s, &mr);
         serializer sr;
         string out;
         out.reserve(512);

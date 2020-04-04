@@ -38,31 +38,22 @@ struct test_failure : std::exception
     }
 };
 
-struct fail_storage
+struct fail_resource
+    : memory_resource
 {
-    static
-    constexpr
-    std::uint64_t
-    id = 0;
-
-    static
-    constexpr
-    bool
-    need_free = true;
-
     std::size_t fail_max = 0;
     std::size_t fail = 0;
     std::size_t nalloc = 0;
 
-    ~fail_storage()
+    ~fail_resource()
     {
         BOOST_TEST(nalloc == 0);
     }
 
     void*
-    allocate(
+    do_allocate(
         std::size_t n,
-        std::size_t)
+        std::size_t) override
     {
         if(++fail == fail_max)
         {
@@ -76,14 +67,21 @@ struct fail_storage
     }
 
     void
-    deallocate(
+    do_deallocate(
         void* p,
         std::size_t,
-        std::size_t) noexcept
+        std::size_t) noexcept override
     {
         if(BOOST_TEST(nalloc > 0))
             --nalloc;
         ::operator delete(p);
+    }
+
+    bool
+    do_is_equal(
+        memory_resource const& mr) const noexcept override
+    {
+        return false;
     }
 };
 
@@ -91,13 +89,13 @@ template<class F>
 void
 fail_loop(F&& f)
 {
-    scoped_storage<fail_storage> ss;
-    ss->fail_max = 1;
-    while(ss->fail < 200)
+    fail_resource ss;
+    ss.fail_max = 1;
+    while(ss.fail < 200)
     {
         try
         {
-            f(ss);
+            f(&ss);
         }
         catch(test_failure const&)
         {
@@ -105,38 +103,38 @@ fail_loop(F&& f)
         }
         break;
     }
-    BOOST_TEST(ss->fail < 200);
+    BOOST_TEST(ss.fail < 200);
 }
 
 //----------------------------------------------------------
 
-struct unique_storage
+struct unique_resource
+    : memory_resource
 {
-    static
-    constexpr
-    std::uint64_t
-    id = 0;
-
-    static
-    constexpr
-    bool
-    need_free = true;
+    unique_resource() = default;
 
     void*
-    allocate(
+    do_allocate(
         std::size_t n,
-        std::size_t)
+        std::size_t) override
     {
         return ::operator new(n);
     }
 
     void
-    deallocate(
+    do_deallocate(
         void* p,
         std::size_t,
-        std::size_t) noexcept
+        std::size_t) noexcept override
     {
         return ::operator delete(p);
+    }
+
+    bool
+    do_is_equal(
+        memory_resource const& mr) const noexcept override
+    {
+        return false;
     }
 };
 

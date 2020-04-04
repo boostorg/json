@@ -40,6 +40,9 @@ generic_category();
 using boost::system::generic_category;
 #endif
 
+/// The type of memory_resource used by the library.
+using memory_resource = boost::container::pmr::memory_resource;
+
 #else
 
 using error_code = std::error_code;
@@ -48,6 +51,7 @@ using error_condition = std::error_condition;
 using string_view = std::string_view;
 using system_error = std::system_error;
 using std::generic_category;
+using memory_resource = std::pmr::memory_resource;
 
 #endif
 

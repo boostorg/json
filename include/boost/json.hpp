@@ -15,12 +15,11 @@
 #include <boost/json/array.hpp>
 #include <boost/json/error.hpp>
 #include <boost/json/kind.hpp>
+#include <boost/json/monotonic_resource.hpp>
 #include <boost/json/number_cast.hpp>
 #include <boost/json/object.hpp>
 #include <boost/json/parser.hpp>
-#include <boost/json/pool.hpp>
 #include <boost/json/serializer.hpp>
-#include <boost/json/storage.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/string.hpp>
 #include <boost/json/to_value.hpp>

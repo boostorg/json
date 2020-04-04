@@ -30,13 +30,12 @@ local SOURCES =
     error.cpp
     json.cpp
     kind.cpp
+    monotonic_resource.cpp
     number_cast.cpp
     object.cpp
     parser.cpp
-    pool.cpp
     serializer.cpp
     snippets.cpp
-    storage.cpp
     storage_ptr.cpp
     string.cpp
     to_value.cpp

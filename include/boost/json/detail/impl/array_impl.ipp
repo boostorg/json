@@ -96,8 +96,10 @@ array_impl::
 destroy(
     storage_ptr const& sp) noexcept
 {
-    if(tab_ && sp->need_free())
-        destroy_impl(sp);
+    if(! tab_ ||
+        sp.is_not_counted_and_deallocate_is_null())
+        return;
+    destroy_impl(sp);
 }
 
 } // detail

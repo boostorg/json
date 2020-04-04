@@ -11,13 +11,28 @@
 #define BOOST_JSON_STORAGE_PTR_HPP
 
 #include <boost/json/config.hpp>
-#include <boost/json/storage.hpp>
+#include <boost/json/detail/counted_resource.hpp>
+#include <boost/json/detail/default_resource.hpp>
 #include <cstddef>
+#include <cstdint>
+#include <new>
 #include <type_traits>
 #include <utility>
 
 namespace boost {
 namespace json {
+
+template<class T>
+struct is_deallocate_null
+{
+    static
+    constexpr
+    bool
+    deallocate_is_null() noexcept
+    {
+        return false;
+    }
+};
 
 /** Manages a type-erased storage object.
 
@@ -26,75 +41,60 @@ namespace json {
 */
 class storage_ptr
 {
-    template<class T>
-    friend class scoped_storage;
+    friend struct detail::counted_resource;
+    using counted_resource =
+        detail::counted_resource;
 
-    storage* p_ = nullptr;
+    std::uintptr_t i_ = 0;
+
+    static
+    memory_resource*
+    get_default() noexcept
+    {
+        BOOST_JSON_REQUIRE_CONST_INIT
+        static detail::default_resource impl;
+        return &impl;
+    }
+
+    counted_resource*
+    get_counted() const noexcept
+    {
+        return reinterpret_cast<
+            counted_resource*>(i_ & ~3);
+    }
 
     inline
     void
     addref() const noexcept
     {
-        if(p_ && p_->counted_)
-            ++p_->refs_;
+        if(is_counted())
+            ++get_counted()->refs;
     }
 
     inline
     void
     release() const noexcept
     {
-        if( p_ && p_->counted_ &&
-            --p_->refs_ == 0)
-            delete p_;
+        if(is_counted())
+        {
+            auto const p = get_counted();
+            if(--p->refs == 0)
+                delete p;
+        }
     }
 
-    explicit
+    template<class T>
     storage_ptr(
-        storage* p) noexcept
-        : p_(p)
+        detail::counted_resource_impl<T>* p) noexcept
+        : i_(reinterpret_cast<
+            std::uintptr_t>(p) + 1 +
+            (is_deallocate_null<
+                T>::deallocate_is_null() ? 2 : 0))
     {
         BOOST_ASSERT(p);
     }
 
 public:
-    /** Default constructor.
-
-        This constructs a default storage pointer.
-        The default storage is not reference counted,
-        uses global operator new and delete to obtain
-        memory, and requires calls to `deallocate`.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    storage_ptr() = default;
-
-    /** Construct a pointer to default storage.
-
-        This constructs a default storage pointer.
-        The default storage is not reference counted,
-        uses global operator new and delete to obtain
-        memory, and requires calls to `deallocate`.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    storage_ptr(
-        std::nullptr_t) noexcept
-        : storage_ptr()
-    {
-    }
-
     /** Destructor.
 
         This releases the pointed-to storage. If the
@@ -117,6 +117,63 @@ public:
         release();
     }
 
+    /** Default constructor.
+
+        This constructs a default storage pointer.
+        The default storage is not reference counted,
+        uses global operator new and delete to obtain
+        memory, and requires calls to `deallocate`.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
+    storage_ptr() noexcept
+        : i_(0)
+    {
+    }
+
+    /** Construct a pointer to default storage.
+
+        This constructs a default storage pointer.
+        The default storage is not reference counted,
+        uses global operator new and delete to obtain
+        memory, and requires calls to `deallocate`.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
+    storage_ptr(
+        std::nullptr_t) noexcept
+        : storage_ptr()
+    {
+    }
+
+    /** Construct a pointer to a memory resource.
+    */
+    template<class T, class =
+        typename std::enable_if<
+            std::is_convertible<
+                T*, memory_resource*>::value>>
+    storage_ptr(T* p) noexcept
+        : i_(reinterpret_cast<
+            std::uintptr_t>(p) +
+            (is_deallocate_null<
+                T>::deallocate_is_null() ?
+                    2 : 0))
+    {
+        BOOST_ASSERT(p);
+    }
+
     /** Move constructor.
 
         After construction, the moved-from object
@@ -134,8 +191,8 @@ public:
     */
     storage_ptr(
         storage_ptr&& other) noexcept
-        : p_(detail::exchange(
-            other.p_, nullptr))
+        : i_(detail::exchange(
+            other.i_, 0))
     {
     }
 
@@ -156,7 +213,7 @@ public:
     */
     storage_ptr(
         storage_ptr const& other) noexcept
-        : p_(other.p_)
+        : i_(other.i_)
     {
         addref();
     }
@@ -184,9 +241,8 @@ public:
         storage_ptr&& other) noexcept
     {
         release();
-        p_ = detail::exchange(
-            other.p_,
-            nullptr);
+        i_ = detail::exchange(
+            other.i_, 0);
         return *this;
     }
 
@@ -212,8 +268,32 @@ public:
     {
         other.addref();
         release();
-        p_ = other.p_;
+        i_ = other.i_;
         return *this;
+    }
+
+    /** Return `true` if the storage pointer has shared ownership of the memory resource.
+    */
+    bool
+    is_counted() const noexcept
+    {
+        return (i_ & 1) != 0;
+    }
+
+    /** Return `true` if the memory resource does not require deallocate.
+    */
+    bool
+    deallocate_is_null() const noexcept
+    {
+        return (i_ & 2) != 0;
+    }
+
+    /** Return `true` if ownership of the memory resource is not shared and deallocate is null.
+    */
+    bool
+    is_not_counted_and_deallocate_is_null() const noexcept
+    {
+        return (i_ & 3) == 2;
     }
 
     /** Return a pointer to the storage object.
@@ -226,9 +306,14 @@ public:
 
         No-throw guarantee.
     */
-    inline
-    storage*
-    get() const noexcept;
+    memory_resource*
+    get() const noexcept
+    {
+        if(i_ != 0)
+            return reinterpret_cast<
+                memory_resource*>(i_ & ~3);
+        return get_default();
+    }
 
     /** Return a pointer to the storage object.
 
@@ -240,7 +325,7 @@ public:
 
         No-throw guarantee.
     */
-    storage*
+    memory_resource*
     operator->() const noexcept
     {
         return get();
@@ -260,7 +345,7 @@ public:
 
         No-throw guarantee.
     */
-    storage&
+    memory_resource&
     operator*() const noexcept
     {
         return *get();
@@ -269,16 +354,16 @@ public:
     template<class U, class... Args>
     friend
     storage_ptr
-    make_storage(Args&&... args);
+    make_counted_resource(Args&&... args);
 };
 
-/** Create a new, counted storage object and return a pointer to it.
+/** Create a new, counted memory resource and return a pointer to it.
 
     This functions similarly to `make_shared`.
 
     @par Mandates
     @code
-    is_storage<T>::value == true
+    std::is_base_of< memory_resource, T >::value == true
     @endcode
 
     @par Complexity
@@ -291,11 +376,22 @@ public:
 
     @param args Parameters forwarded to the constructor of `T`.
 
-    @tparam T the type of the storage object to create.
+    @tparam T the concrete type of the memory resource to create.
 */
 template<class T, class... Args>
 storage_ptr
-make_storage(Args&&... args);
+make_counted_resource(Args&&... args)
+{
+    // If this generates an error, it means that your
+    // type `Storage` does not meet the named requirements.
+    //
+    BOOST_STATIC_ASSERT(
+        std::is_base_of<
+            memory_resource, T>::value);
+    return storage_ptr(new 
+        detail::counted_resource_impl<T>(
+            std::forward<Args>(args)...));
+}
 
 /** Return true if lhs equals rhs.
 
@@ -327,101 +423,7 @@ operator!=(
     return lhs.get() != rhs.get();
 }
 
-//----------------------------------------------------------
-
-/** A wrapper to provide deterministic lifetime to a @ref storage object.
-
-    This wrapper enables the caller to construct a
-    @ref storage objects whose lifetime is controlled
-    by the lifetime of the wrapper instead of a
-    reference counted.
-
-    @par Example
-
-    This example creates a @ref pool with
-    bounded lifetime and uses it to parse a JSON,
-    then print it to `std::cout`.
-
-    @code
-
-    {
-        scoped_storage<pool> sp;
-
-        auto jv = parse( str, sp );
-    }
-
-    @endcode
-*/
-template<class Storage>
-class scoped_storage
-{
-    friend storage_ptr;
-
-    detail::storage_impl<Storage> impl_;
-
-    // If this generates an error, it means that your
-    // type `Storage` does not meet the named requirements.
-    //
-    static_assert(is_storage<Storage>::value,
-        "Storage requirements not met");
-
-public:
-    /** Constructor.
-
-        @par Exception Safety
-
-        Any exceptions thrown by `Storage::Storage`.
-
-        @param args Arguments forwarded to the
-        constructor of the storage object.
-    */
-    template<class... Args>
-    constexpr
-    explicit
-    scoped_storage(Args&&... args)
-        : impl_(false,
-            std::forward<Args>(args)...)
-    {
-    }
-
-    /** Return a pointer to the Storage object.
-    */
-    Storage*
-    get() noexcept
-    {
-        return &impl_;
-    }
-
-    /** Return a pointer to the Storage object.
-    */
-    Storage*
-    operator->() noexcept
-    {
-        return &impl_.t;
-    }
-
-    /** Return a storage pointer to the Storage object.
-    */
-    storage_ptr
-    get_storage_ptr() noexcept
-    {
-        return storage_ptr(&impl_);
-    }
-
-    /** Implicit conversion to @ref storage_ptr.
-
-        This function allows `*this` to be passed
-        wherever a @ref storage_ptr is expected.
-    */
-    operator storage_ptr() noexcept
-    {
-        return get_storage_ptr();
-    }
-};
-
 } // json
 } // boost
-
-#include <boost/json/impl/storage_ptr.hpp>
 
 #endif

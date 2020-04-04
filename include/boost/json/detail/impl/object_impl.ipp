@@ -132,10 +132,12 @@ destroy(
     key_value_pair* p,
     std::size_t n) noexcept
 {
-    // VFALCO We check need_free here even
+    // VFALCO We check again here even
     // though some callers already check it.
-    if( n == 0 ||
-        ! p->value().storage()->need_free())
+    if(n == 0 || ! p)
+        return;
+    auto const& sp = p->value().storage();
+    if(sp.is_not_counted_and_deallocate_is_null())
         return;
     p += n;
     while(n--)

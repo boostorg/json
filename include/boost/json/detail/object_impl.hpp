@@ -53,7 +53,7 @@ public:
     destroy(storage_ptr const& sp) noexcept
     {
         if( tab_ == nullptr ||
-            ! sp->need_free())
+            sp.is_not_counted_and_deallocate_is_null())
             return;
         do_destroy(sp);
     }

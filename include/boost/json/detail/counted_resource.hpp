@@ -7,36 +7,38 @@
 // Official repository: https://github.com/vinniefalco/json
 //
 
-#ifndef BOOST_JSON_IMPL_STORAGE_HPP
-#define BOOST_JSON_IMPL_STORAGE_HPP
+#ifndef BOOST_JSON_DETAIL_COUNTED_RESOURCE_HPP
+#define BOOST_JSON_DETAIL_COUNTED_RESOURCE_HPP
 
-#include <utility>
+#include <boost/json/config.hpp>
+#include <atomic>
 
 namespace boost {
 namespace json {
 namespace detail {
 
+struct counted_resource
+    : memory_resource
+{
+    std::atomic<std::size_t> refs{ 1 };
+};
+
 template<class T>
-struct storage_impl : storage
+class counted_resource_impl final
+    : public counted_resource
 {
     T t;
 
+public:
     template<class... Args>
-    constexpr
-    explicit
-    storage_impl(
-        bool counted,
+    counted_resource_impl(
         Args&&... args)
-        : storage(
-            T::id,
-            T::need_free,
-            counted)
-        , t(std::forward<Args>(args)...)
+        : t(std::forward<Args>(args)...)
     {
     }
 
     void*
-    allocate(
+    do_allocate(
         std::size_t n,
         std::size_t align) override
     {
@@ -44,12 +46,20 @@ struct storage_impl : storage
     }
 
     void
-    deallocate(
+    do_deallocate(
         void* p,
         std::size_t n,
-        std::size_t align) noexcept override
+        std::size_t align) override
     {
-        t.deallocate(p, n, align);
+        return t.deallocate(p, n, align);
+    }
+
+    bool
+    do_is_equal(
+        memory_resource const& mr) const noexcept override
+    {
+        // VFALCO Is always false ok?
+        return false;
     }
 };
 

@@ -464,9 +464,10 @@ array::
 destroy(
     value* first, value* last) noexcept
 {
-    if(sp_->need_free())
-        while(last != first)
-            (*--last).~value();
+    if(sp_.is_not_counted_and_deallocate_is_null())
+        return;
+    while(last != first)
+        (*--last).~value();
 }
 
 void

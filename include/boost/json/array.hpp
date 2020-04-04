@@ -149,9 +149,10 @@ public:
     */
     ~array()
     {
-        if( impl_.data() &&
-            sp_->need_free())
-            destroy();
+        if( ! impl_.data() ||
+            sp_.is_not_counted_and_deallocate_is_null())
+            return;
+        destroy();
     }
 
 #ifndef BOOST_JSON_DOCS

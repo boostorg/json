@@ -19,59 +19,35 @@ namespace json {
 class storage_ptr_test
 {
 public:
-    struct not_storage
-    {
-        void*
-        allocate(
-            std::size_t,
-            std::size_t)
-        {
-            return nullptr;
-        }
-
-        void
-        deallocate(
-            void*,
-            std::size_t,
-            std::size_t) noexcept
-        {
-        }
-    };
-
-    BOOST_STATIC_ASSERT(
-        ! is_storage<not_storage>::value);
-
     struct throwing
+        : memory_resource
     {
-        static
-        constexpr
-        std::uint64_t
-        id = 0;
-
-        static
-        constexpr
-        bool
-        need_free = true;
-
         throwing()
         {
             throw std::exception{};
         }
 
         void*
-        allocate(
+        do_allocate(
             std::size_t,
-            std::size_t)
+            std::size_t) override
         {
             return nullptr;
         }
 
         void
-        deallocate(
+        do_deallocate(
             void*,
             std::size_t,
-            std::size_t) noexcept
+            std::size_t) noexcept override
         {
+        }
+
+        bool
+        do_is_equal(
+            memory_resource const&) const noexcept override
+        {
+            return false;
         }
     };
 
@@ -80,7 +56,7 @@ public:
     {
         auto const dsp = storage_ptr{};
         auto const usp =
-            make_storage<unique_storage>();
+            make_counted_resource<unique_resource>();
 
         // ~storage_ptr()
         {
@@ -145,7 +121,7 @@ public:
         // exception in make_storage
         {
             BOOST_TEST_THROWS(
-                make_storage<throwing>(),
+                make_counted_resource<throwing>(),
                 std::exception);
         }
     }

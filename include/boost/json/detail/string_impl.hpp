@@ -22,7 +22,6 @@ namespace boost {
 namespace json {
 
 class value;
-class string_test;
 
 namespace detail {
 

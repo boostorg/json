@@ -10,7 +10,7 @@
 // Test that header file is self-contained.
 #include <boost/json/parser.hpp>
 
-#include <boost/json/pool.hpp>
+#include <boost/json/monotonic_resource.hpp>
 #include <boost/json/serializer.hpp>
 
 #include <sstream>
@@ -99,12 +99,11 @@ public:
                 for(std::size_t i = 1;
                     i < s.size(); ++i)
                 {
-                    scoped_storage<
-                        fail_storage> ss;
-                    ss->fail_max = 0;
+                    fail_resource mr;
+                    mr.fail_max = 0;
                     parser p;
                     error_code ec;
-                    p.start(ss);
+                    p.start(&mr);
                     p.write(s.data(), i, ec);
                     if(BOOST_TEST(! ec))
                         p.write(
@@ -762,16 +761,16 @@ public:
         {
             {
                 error_code ec;
-                scoped_storage<pool> sp;
-                auto jv = parse(js, ec, sp);
+                monotonic_resource mr;
+                auto jv = parse(js, ec, &mr);
                 BOOST_TEST(! ec);
                 check_round_trip(jv);
             }
 
             {
                 error_code ec;
-                scoped_storage<pool> sp;
-                auto jv = parse("xxx", ec, sp);
+                monotonic_resource mr;
+                auto jv = parse("xxx", ec, &mr);
                 BOOST_TEST(ec);
                 BOOST_TEST(jv.is_null());
             }
@@ -795,15 +794,15 @@ public:
         // parse(string_view, storage_ptr)
         {
             {
-                scoped_storage<pool> sp;
-                check_round_trip(parse(js, sp));
+                monotonic_resource mr;
+                check_round_trip(parse(js, &mr));
             }
 
             {
-                scoped_storage<pool> sp;
+                monotonic_resource mr;
                 value jv;
                 BOOST_TEST_THROWS(
-                    jv = parse("xxx", sp),
+                    jv = parse("xxx", &mr),
                     system_error);
             }
         }

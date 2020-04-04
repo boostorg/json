@@ -10,7 +10,7 @@
 // Test that header file is self-contained.
 #include <boost/json/object.hpp>
 
-#include <boost/json/pool.hpp>
+#include <boost/json/monotonic_resource.hpp>
 
 #include <cmath>
 #include <type_traits>
@@ -256,7 +256,7 @@ public:
         // object(pilfered<object>)
         {
             auto const sp =
-                make_storage<unique_storage>();
+                make_counted_resource<unique_resource>();
             object o1({
                 {"a", 1},
                 {"b", true},
@@ -271,7 +271,7 @@ public:
             check(o2, 3);
         }
 
-        auto const sp = make_storage<unique_storage>();
+        auto const sp = make_counted_resource<unique_resource>();
         auto const sp0 = storage_ptr{};
 
         // object(object const&)
@@ -929,12 +929,12 @@ public:
 
         // destroy key_value_pair array with need_free=false
         {
-            scoped_storage<pool> sp;
+            monotonic_resource mr;
             object o({
                 {"a", 1},
                 {"b", true},
                 {"b", {1,2,3}},
-                {"c", "hello"}}, sp);
+                {"c", "hello"}}, &mr);
         }
     }
 
