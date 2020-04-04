@@ -42,7 +42,7 @@ namespace json {
     @ref write, and @ref finish may be called to
     provide successive buffers of characters of the
     JSON. The caller can check that the parse is
-    complete by calling @ref is_done, or that a
+    complete by calling @ref is_complete, or that a
     non-successful error code is returned.
 
     @par Incremental Parsing
@@ -155,8 +155,8 @@ public:
         @li All of the characters in the buffer have been
         parsed, or
 
-        @li Some of the characters in the buffer have been
-        parsed and the JSON is complete, or
+        @li A complete JSON is parsed, including any
+        optional trailing whitespace in the buffer, or
 
         @li A parsing error occurs.
 
@@ -178,104 +178,12 @@ public:
 
         @param ec Set to the error, if any occurred.
 
-        @return The number of characters successfully
-        parsed, which may be smaller than `size`.
+        @return The number of characters consumed from
+        the buffer, which may be less than the size
+        provided.
     */
     BOOST_JSON_DECL
     std::size_t
-    write_some(
-        char const* data,
-        std::size_t size,
-        error_code& ec);
-
-    /** Parse JSON incrementally.
-
-        This function parses the JSON in the specified
-        buffer. The parse proceeds from the current
-        state, which is at the beginning of a new JSON
-        or in the middle of the current JSON if any
-        characters were already parsed.
-        
-        <br>
-        
-        The characters in the buffer are processed
-        starting from the beginning, until one of the
-        following conditions is met:
-
-        @li All of the characters in the buffer have been
-        parsed, or
-
-        @li Some of the characters in the buffer have been
-        parsed and the JSON is complete, or
-
-        @li A parsing error occurs.
-
-        The supplied buffer does not need to contain the
-        entire JSON. Subsequent calls can provide more
-        serialized data, allowing JSON to be processed
-        incrementally. The end of the serialized JSON
-        can be indicated by calling @ref finish().
-
-        @par Complexity
-
-        Linear in `size`.
-
-        @param data A pointer to a buffer of `size`
-        characters to parse.
-
-        @param size The number of characters pointed to
-        by `data`.
-
-        @throw system_error Thrown on failure.
-
-        @return The number of characters successfully
-        parsed, which may be smaller than `size`.
-    */
-    BOOST_JSON_DECL
-    std::size_t
-    write_some(
-        char const* data,
-        std::size_t size);
-
-    /** Parse JSON incrementally.
-
-        This function parses the JSON in the specified
-        buffer. The parse proceeds from the current
-        state, which is at the beginning of a new JSON
-        or in the middle of the current JSON if any
-        characters were already parsed.
-
-        <br>
-
-        The characters in the buffer are processed
-        starting from the beginning, until one of the
-        following conditions is met:
-
-        @li All of the characters in the buffer have been
-        parsed, or
-
-        @li A parsing error occurs.
-
-        The supplied buffer does not need to contain the
-        entire JSON. Subsequent calls can provide more
-        serialized data, allowing JSON to be processed
-        incrementally. The end of the serialized JSON
-        can be indicated by calling @ref finish().
-
-        @par Complexity
-
-        Linear in `size`.
-
-        @param data A pointer to a buffer of `size`
-        characters to parse.
-
-        @param size The number of characters pointed to
-        by `data`.
-
-        @param ec Set to the error, if any occurred.
-    */
-    BOOST_JSON_DECL
-    void
     write(
         char const* data,
         std::size_t size,
@@ -298,6 +206,9 @@ public:
         @li All of the characters in the buffer have been
         parsed, or
 
+        @li A complete JSON is parsed, including any
+        optional trailing whitespace in the buffer, or
+
         @li A parsing error occurs.
 
         The supplied buffer does not need to contain the
@@ -316,112 +227,19 @@ public:
         @param size The number of characters pointed to
         by `data`.
 
+        @return The number of characters consumed from
+        the buffer, which may be less than the size
+        provided.
+
         @throw system_error Thrown on failure.
     */
     BOOST_JSON_DECL
-    void
+    std::size_t
     write(
         char const* data,
         std::size_t size);
 
     /** Parse JSON incrementally.
-
-        This function parses the JSON in the specified
-        buffer. The parse proceeds from the current
-        state, which is at the beginning of a new JSON
-        or in the middle of the current JSON if any
-        characters were already parsed.
-
-        <br>
-
-        The characters in the buffer are processed
-        starting from the beginning, until one of the
-        following conditions is met:
-
-        @li All of the characters in the buffer have been
-        parsed and form a complete JSON, or
-
-        @li A parsing error occurs.
-
-        The caller uses this function to inform the
-        parser that there is no more serialized JSON
-        available. If the entire buffer is not consumed
-        or if a complete JSON is not available after
-        consuming the entire buffer, the error is
-        set to indicate failure.
-
-        @par Complexity
-
-        Linear in `size`.
-
-        @param data A pointer to a buffer of `size`
-        characters to parse.
-
-        @param size The number of characters pointed to
-        by `data`.
-
-        @param ec Set to the error, if any occurred.
-    */
-    BOOST_JSON_DECL
-    void
-    finish(
-        char const* data,
-        std::size_t size,
-        error_code& ec);
-
-    /** Parse JSON incrementally.
-
-        This function parses the JSON in the specified
-        buffer. The parse proceeds from the current
-        state, which is at the beginning of a new JSON
-        or in the middle of the current JSON if any
-        characters were already parsed.
-
-        <br>
-
-        The characters in the buffer are processed
-        starting from the beginning, until one of the
-        following conditions is met:
-
-        @li All of the characters in the buffer have been
-        parsed and form a complete JSON, or
-
-        @li A parsing error occurs.
-
-        The caller uses this function to inform the
-        parser that there is no more serialized JSON
-        available. If the entire buffer is not consumed
-        or if a complete JSON is not available after
-        consuming the entire buffer, the error is
-        set to indicate failure.
-
-        @par Complexity
-
-        Linear in `size`.
-
-        @param data A pointer to a buffer of `size`
-        characters to parse.
-
-        @param size The number of characters pointed to
-        by `data`.
-
-        @throw system_error Thrown on failure.
-    */
-    BOOST_JSON_DECL
-    void
-    finish(
-        char const* data,
-        std::size_t size);
-
-    /** Parse JSON incrementally.
-
-        This function parses the JSON in the specified
-        buffer. The parse proceeds from the current
-        state, which is at the beginning of a new JSON
-        or in the middle of the current JSON if any
-        characters were already parsed.
-
-        <br>
 
         The caller uses this function to inform the
         parser that there is no more serialized JSON
@@ -439,14 +257,6 @@ public:
     finish(error_code& ec);
 
     /** Parse JSON incrementally.
-
-        This function parses the JSON in the specified
-        buffer. The parse proceeds from the current
-        state, which is at the beginning of a new JSON
-        or in the middle of the current JSON if any
-        characters were already parsed.
-
-        <br>
 
         The caller uses this function to inform the
         parser that there is no more serialized JSON
@@ -481,11 +291,11 @@ public:
 
     /** Return the parsed JSON as a @ref value.
 
-        If @ref is_done() returns `true`, then the
+        If @ref is_complete() returns `true`, then the
         parsed value is returned. Otherwise an
         exception is thrown.
 
-        @throw std::logic_error `! is_done()`
+        @throw std::logic_error `! is_complete()`
 
         @return The parsed value. Ownership of this
         value is transferred to the caller.       

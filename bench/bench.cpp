@@ -266,7 +266,9 @@ public:
         {
             p.start();
             error_code ec;
-            p.finish(s.data(), s.size(), ec);
+            p.write(s.data(), s.size(), ec);
+            if(! ec)
+                p.finish(ec);
             auto jv = p.release();
         }
     }
@@ -321,7 +323,9 @@ public:
             scoped_storage<pool> ss;
             p.start(ss);
             error_code ec;
-            p.finish(s.data(), s.size(), ec);
+            p.write(s.data(), s.size(), ec);
+            if(! ec)
+                p.finish(ec);
             auto jv = p.release();
         }
     }

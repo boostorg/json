@@ -573,7 +573,7 @@ public:
     {
         auto const check =
         [this]( string_view s,
-            bool is_done)
+            bool is_complete)
         {
             fail_parser p;
             error_code ec;
@@ -586,48 +586,48 @@ public:
                 log << "    failed to parse: " << s;
                 return;
             }
-            BOOST_TEST(is_done ==
-                p.is_done());
+            BOOST_TEST(is_complete ==
+                p.is_complete());
         };
 
-        // is_done()
+        // is_complete()
 
-        check("{}", false);
-        check("{} ", false);
+        check("{}", true);
+        check("{} ", true);
         check("{}x", true);
         check("{} x", true);
 
-        check("[]", false);
-        check("[] ", false);
+        check("[]", true);
+        check("[] ", true);
         check("[]x", true);
         check("[] x", true);
 
-        check("\"a\"", false);
-        check("\"a\" ", false);
+        check("\"a\"", true);
+        check("\"a\" ", true);
         check("\"a\"x", true);
         check("\"a\" x", true);
 
         check("0", false);
-        check("0 ", false);
+        check("0 ", true);
         check("0x", true);
         check("0 x", true);
         check("0.", false);
         check("0.0", false);
-        check("0.0 ", false);
+        check("0.0 ", true);
         check("0.0 x", true);
 
-        check("true", false);
-        check("true ", false);
+        check("true", true);
+        check("true ", true);
         check("truex", true);
         check("true x", true);
 
-        check("false", false);
-        check("false ", false);
+        check("false", true);
+        check("false ", true);
         check("falsex", true);
         check("false x", true);
 
-        check("null", false);
-        check("null ", false);
+        check("null", true);
+        check("null ", true);
         check("nullx", true);
         check("null x", true);
 
@@ -670,7 +670,20 @@ public:
     void
     testMembers()
     {
-        // VFALCO TODO?
+        {
+            fail_parser p;
+            std::size_t n;
+            error_code ec;
+            n = p.write_some(true, "null", 4, ec );
+            if(BOOST_TEST(! ec))
+            {
+                BOOST_TEST(n == 4);
+                BOOST_TEST(p.is_complete());
+                n = p.write_some(false, " \t42", 4, ec);
+                BOOST_TEST(n == 2);
+                BOOST_TEST(! ec);
+            }
+        }
     }
 
     void

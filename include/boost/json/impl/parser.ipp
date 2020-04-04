@@ -192,32 +192,6 @@ clear() noexcept
 
 std::size_t
 parser::
-write_some(
-    char const* const data,
-    std::size_t const size,
-    error_code& ec)
-{
-    return basic_parser::write_some(
-        *this, true, data, size, ec);
-}
-
-std::size_t
-parser::
-write_some(
-    char const* const data,
-    std::size_t const size)
-{
-    error_code ec;
-    auto const n = write_some(
-        data, size, ec);
-    if(ec)
-        BOOST_THROW_EXCEPTION(
-            system_error(ec));
-    return n;
-}
-
-void
-parser::
 write(
     char const* data,
     std::size_t size,
@@ -226,79 +200,46 @@ write(
     auto const n =
         basic_parser::write_some(
             *this, true, data, size, ec);
-    if(! ec)
-    {
-        if(n < size)
-            ec = error::extra_data;
-    }
+    if(! ec && n < size)
+        ec = error::extra_data;
+    return n;
 }
 
-void
+std::size_t
 parser::
 write(
     char const* data,
     std::size_t size)
 {
     error_code ec;
-    write(data, size, ec);
-    if(ec)
-        BOOST_THROW_EXCEPTION(
-            system_error(ec));
-}
-
-void
-parser::
-finish(
-    char const* data,
-    std::size_t size,
-    error_code& ec)
-{
     auto const n =
-        basic_parser::write_some(
-            *this, false, data, size, ec);
-    if(! ec)
-    {
-        if(n < size)
-            ec = error::extra_data;
-    }
-}
-
-void
-parser::
-finish(
-    char const* data,
-    std::size_t size)
-{
-    error_code ec;
-    finish(data, size, ec);
+        write(data, size, ec);
     if(ec)
         BOOST_THROW_EXCEPTION(
             system_error(ec));
+    return n;
 }
 
 void
 parser::
 finish(error_code& ec)
 {
-    finish(nullptr, 0, ec);
+    basic_parser::write_some(
+        *this, false, nullptr, 0, ec);
 }
 
 void
 parser::
 finish()
 {
-    error_code ec;
-    finish(ec);
-    if(ec)
-        BOOST_THROW_EXCEPTION(
-            system_error(ec));
+    write(nullptr, 0);
 }
 
 value
 parser::
 release()
 {
-    if(! is_done())
+    if(! is_complete())
         BOOST_THROW_EXCEPTION(
             std::logic_error(
                 "no value"));
@@ -732,10 +673,12 @@ parse(
 {
     parser p;
     p.start(std::move(sp));
-    p.finish(
+    p.write(
         s.data(),
         s.size(),
         ec);
+    if(! ec)
+        p.finish(ec);
     if(ec)
         return nullptr;
     return p.release();

@@ -277,7 +277,8 @@ usingParsing()
 
         // Write the entire character buffer, indicating
         // to the parser that there is no more data.
-        p.finish( "[1,2,3,4,5]", 11 );
+        p.write( "[1,2,3,4,5]", 11 );
+        p.finish();
 
         // Take ownership of the resulting value.
         value jv = p.release();
@@ -301,7 +302,9 @@ usingParsing()
         // Write the remaining part of the character buffer,
         // indicating to the parser that there is no more data.
         if(! ec )
-            p.finish( "3,4,5]", 6, ec );
+            p.write( "3,4,5]", 6, ec );
+        if(! ec)
+            p.finish( ec );
 
         // Take ownership of the resulting value.
         if(! ec)
@@ -325,7 +328,9 @@ usingParsing()
             p.start( sp );
 
             // Write the entire JSON
-            p.finish( "[1,2,3,4,5]", 11, ec );
+            p.write( "[1,2,3,4,5]", 11, ec );
+            if( ! ec )
+                p.finish( ec );
 
             // The value will use the instance of block storage created above
             value jv = p.release();

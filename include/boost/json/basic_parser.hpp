@@ -39,7 +39,7 @@ namespace json {
 
 enum class basic_parser::state : char
 {
-    ele1, ele2, ele3,
+    doc1, doc2, doc3,
     nul1, nul2, nul3,
     tru1, tru2, tru3,
     fal1, fal2, fal3, fal4,
@@ -266,7 +266,7 @@ skip_white(const_stream& cs)
 template<bool StackEmpty, class Handler>
 auto
 basic_parser::
-parse_element(
+parse_document(
     Handler& h,
     const_stream& cs) ->
         result
@@ -278,36 +278,37 @@ parse_element(
         switch(st)
         {
         default:
-        case state::ele1: goto do_ele1;
-        case state::ele2: goto do_ele2;
-        case state::ele3: goto do_ele3;
+        case state::doc1: goto do_doc1;
+        case state::doc2: goto do_doc2;
+        case state::doc3: goto do_doc3;
         }
     }
-do_ele1:
+do_doc1:
     if(BOOST_JSON_UNLIKELY(
         ! skip_white(cs)))
     {
         if(more_)
-            suspend(state::ele1);
+            suspend(state::doc1);
         return result::partial;
     }
-do_ele2:
+do_doc2:
     {
-        result r = parse_value<StackEmpty>(h, cs);
+        result const r =
+            parse_value<StackEmpty>(h, cs);
         if(BOOST_JSON_UNLIKELY(r))
         {
             if(more_ && r == result::partial)
-                suspend(state::ele2);
+                suspend(state::doc2);
             return r;
         }
     }
-do_ele3:
+do_doc3:
     if(BOOST_JSON_UNLIKELY(
         ! skip_white(cs)))
     {
         if(more_)
         {
-            suspend(state::ele3);
+            suspend(state::doc3);
             return result::partial;
         }
     }
@@ -2161,7 +2162,7 @@ void
 basic_parser::
 reset() noexcept
 {
-    done_ = false;
+    complete_ = false;
     more_ = true;
     st_.clear();
 }
@@ -2178,11 +2179,6 @@ write_some(
     std::size_t size,
     error_code& ec)
 {
-    // If this goes off, it means you forgot to
-    // check is_done() before presenting more data
-    // to the parser.
-    BOOST_ASSERT(! done_);
-
     ec_ = {};
     result r;
     more_ = more;
@@ -2199,23 +2195,43 @@ write_some(
             ec = ec_;
             return 0;
         }
-        r = parse_element<true>(h, cs);
+        r = parse_document<true>(h, cs);
     }
     else
     {
-        r = parse_element<false>(h, cs);
+        r = parse_document<false>(h, cs);
     }
+
     if(BOOST_JSON_LIKELY(! r))
     {
         BOOST_ASSERT(! ec_);
-        done_ = true;
-        h.on_document_end(ec_);
+        if(! complete_)
+        {
+            complete_ = true;
+            h.on_document_end(ec_);
+        }
     }
     else if(r == result::partial)
     {
         BOOST_ASSERT(! ec_);
         if(! more_)
+        {
             ec_ = error::incomplete;
+        }
+        else if(! st_.empty())
+        {
+            // consume as much trailing whitespace in
+            // the JSON document as possible, but still
+            // consider the parse complete
+            state st;
+            st_.peek(st);
+            if( st == state::doc3 &&
+                ! complete_)
+            {
+                complete_ = true;
+                h.on_document_end(ec_);
+            }
+        }
     }
     ec = ec_;
     return cs.data() - data;

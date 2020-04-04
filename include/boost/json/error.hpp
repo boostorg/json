@@ -303,6 +303,8 @@ struct BOOST_SYMBOL_VISIBLE
 */
 enum class error
 {
+    //----------------------------------
+
     /// syntax error
     syntax = 1,
 

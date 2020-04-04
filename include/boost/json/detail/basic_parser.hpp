@@ -104,7 +104,7 @@ class basic_parser
     unsigned u1_;
     unsigned u2_;
     bool more_; // false for final buffer
-    bool done_ = false; // true on complete parse
+    bool complete_ = false; // true on complete parse
     bool is_key_;
 
     inline static bool is_control(char c) noexcept;
@@ -115,7 +115,7 @@ class basic_parser
     inline void suspend(state st, number const& num);
     inline bool skip_white(const_stream& cs);
     template<bool StackEmpty, class Handler>
-    inline result parse_element(Handler& h, const_stream& cs);
+    inline result parse_document(Handler& h, const_stream& cs);
     template<bool StackEmpty, class Handler>
     inline result parse_value(Handler& h, const_stream& cs);
     template<bool StackEmpty, class Handler>
@@ -164,9 +164,9 @@ public:
         Constant.
     */
     bool
-    is_done() const noexcept
+    is_complete() const noexcept
     {
-        return done_;
+        return complete_;
     }
 
     /** Returns the current depth of the JSON being parsed.

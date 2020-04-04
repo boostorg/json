@@ -37,7 +37,9 @@ public:
         parser p;
         error_code ec;
         p.start(std::move(sp));
-        p.finish(s.data(), s.size(), ec);
+        p.write(s.data(), s.size(), ec);
+        if(BOOST_TEST(! ec))
+            p.finish(ec);
         BOOST_TEST(! ec);
         return p.release();
     }
@@ -105,9 +107,11 @@ public:
                     p.start(ss);
                     p.write(s.data(), i, ec);
                     if(BOOST_TEST(! ec))
-                        p.finish(
+                        p.write(
                             s.data() + i,
                             s.size() - i, ec);
+                    if(BOOST_TEST(! ec))
+                        p.finish(ec);
                     if(BOOST_TEST(! ec))
                         f(p.release());
                 }
@@ -260,8 +264,10 @@ public:
                 p.write(js.data(), N, ec);
                 if(BOOST_TEST(! ec))
                 {
-                    p.finish(js.data() + N,
+                    p.write(js.data() + N,
                         js.size() - N, ec);
+                    if(BOOST_TEST(! ec))
+                        p.finish(ec);
                     if(BOOST_TEST(! ec))
                         check_round_trip(
                             p.release());
@@ -288,7 +294,9 @@ public:
             error_code ec;
             parser p;
             p.start();
-            p.finish(s.data(), s.size(), ec);
+            p.write(s.data(), s.size(), ec);
+            if(BOOST_TEST(! ec))
+                p.finish(ec);
             if(! BOOST_TEST(! ec))
                 return 0;
             auto const jv = p.release();
@@ -590,7 +598,7 @@ public:
             p.max_depth(0);
             BOOST_TEST(
                 p.max_depth() == 0);
-            p.finish("[]", 2, ec);
+            p.write("[]", 2, ec);
             BOOST_TEST(
                 ec == error::too_deep);
         }
@@ -662,7 +670,7 @@ public:
             p.max_depth(0);
             BOOST_TEST(
                 p.max_depth() == 0);
-            p.finish("{}", 2, ec);
+            p.write("{}", 2, ec);
             BOOST_TEST(
                 ec == error::too_deep);
         }
@@ -707,19 +715,19 @@ public:
             p.reserve(100);
         }
 
-        // write_some(char const*, size_t)
+        // write(char const*, size_t)
         {
             {
                 parser p;
                 p.start();
-                BOOST_TEST(p.write_some(
-                    "nullx", 5) == 4);
+                BOOST_TEST(p.write(
+                    "null", 4) == 4);
             }
             {
                 parser p;
                 p.start();
                 BOOST_TEST_THROWS(
-                    p.write_some("x", 1),
+                    p.write("x", 1),
                     system_error);
             }
         }
@@ -831,7 +839,9 @@ R"xx({
         parser p;
         error_code ec;
         p.start();
-        p.finish(in.data(), in.size(), ec);
+        p.write(in.data(), in.size(), ec);
+        if(BOOST_TEST(! ec))
+            p.finish(ec);
         if(BOOST_TEST(! ec))
         {
             BOOST_TEST(to_string(p.release()) ==
