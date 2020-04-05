@@ -170,7 +170,8 @@ private:
     std::size_t
     buckets() const noexcept
     {
-        return tab_ ? tab_->buckets : 0;
+        BOOST_ASSERT(tab_);
+        return tab_->buckets;
     }
 
     inline
