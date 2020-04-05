@@ -1576,6 +1576,8 @@ public:
         BOOST_TEST(v3.key() == "key");
         BOOST_TEST(
             v3.value().get_string() == "value");
+        BOOST_TEST(std::memcmp(
+            v3.key_c_str(), "key\0", 4) == 0);
     }
 
     //------------------------------------------------------

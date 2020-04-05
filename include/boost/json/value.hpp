@@ -2787,6 +2787,14 @@ struct key_value_pair
         return { key_, len_ };
     }
 
+    /** Return the key of this element as a null-terminated string.
+    */
+    char const*
+    key_c_str() const noexcept
+    {
+        return key_;
+    }
+
     /** Return the value of this element.
     */
     json::value const&
