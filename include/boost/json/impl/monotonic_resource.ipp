@@ -127,7 +127,7 @@ monotonic_resource::
 do_is_equal(
     memory_resource const& mr) const noexcept
 {
-    return false;
+    return this == &mr;
 }
 
 } // json

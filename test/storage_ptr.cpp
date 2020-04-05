@@ -45,9 +45,9 @@ public:
 
         bool
         do_is_equal(
-            memory_resource const&) const noexcept override
+            memory_resource const& mr) const noexcept override
         {
-            return false;
+            return this == &mr;
         }
     };
 

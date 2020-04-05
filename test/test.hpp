@@ -81,7 +81,7 @@ struct fail_resource
     do_is_equal(
         memory_resource const& mr) const noexcept override
     {
-        return false;
+        return this == &mr;
     }
 };
 
@@ -134,7 +134,7 @@ struct unique_resource
     do_is_equal(
         memory_resource const& mr) const noexcept override
     {
-        return false;
+        return this == &mr;
     }
 };
 
