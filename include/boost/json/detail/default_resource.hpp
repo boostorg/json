@@ -42,10 +42,9 @@ public:
 
     bool
     do_is_equal(
-        memory_resource const& mr) const noexcept
+        memory_resource const& mr) const noexcept override
     {
-        return dynamic_cast<
-            default_resource const*>(&mr) != nullptr;
+        return this == &mr;
     }
 };
 
