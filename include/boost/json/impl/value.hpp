@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_IMPL_VALUE_HPP
 #define BOOST_JSON_IMPL_VALUE_HPP
 
-#include <boost/json/error.hpp>
+#include <boost/json/except.hpp>
 #include <cstring>
 #include <limits>
 #include <type_traits>

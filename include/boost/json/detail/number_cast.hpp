@@ -11,6 +11,7 @@
 #define BOOST_JSON_DETAIL_NUMBER_CAST_HPP
 
 #include <boost/json/value.hpp>
+#include <boost/json/error.hpp>
 #include <limits>
 #include <type_traits>
 

@@ -11,7 +11,7 @@
 #ifndef BOOST_JSON_DETAIL_IMPL_STRING_IMPL_IPP
 #define BOOST_JSON_DETAIL_IMPL_STRING_IMPL_IPP
 
-#include <boost/json/error.hpp>
+#include <boost/json/except.hpp>
 #include <boost/json/detail/string_impl.hpp>
 #include <cstring>
 #include <functional>

@@ -14,15 +14,12 @@
 # include <boost/config.hpp>
 # include <boost/assert.hpp>
 # include <boost/container/pmr/memory_resource.hpp>
-# include <boost/system/error_code.hpp>
-# include <boost/system/system_error.hpp>
 # include <boost/utility/string_view.hpp>
 # include <boost/throw_exception.hpp>
 #else
 # include <cassert>
 # include <memory_resource>
 # include <string_view>
-# include <system_error>
 #endif
 #include <cstdint>
 

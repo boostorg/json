@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_IMPL_OBJECT_IPP
 #define BOOST_JSON_IMPL_OBJECT_IPP
 
-#include <boost/json/error.hpp>
+#include <boost/json/except.hpp>
 #include <boost/json/object.hpp>
 #include <algorithm>
 #include <cmath>

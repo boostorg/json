@@ -22,6 +22,7 @@
 #include <boost/json/serializer.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/string.hpp>
+#include <boost/json/system_error.hpp>
 #include <boost/json/to_value.hpp>
 #include <boost/json/traits.hpp>
 #include <boost/json/value.hpp>

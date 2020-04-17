@@ -28,6 +28,7 @@ local SOURCES =
     array.cpp
     basic_parser.cpp
     error.cpp
+    except.cpp
     json.cpp
     kind.cpp
     monotonic_resource.cpp
@@ -39,6 +40,7 @@ local SOURCES =
     snippets.cpp
     storage_ptr.cpp
     string.cpp
+    system_error.cpp
     to_value.cpp
     traits.cpp
     value.cpp

@@ -12,7 +12,7 @@
 
 #include <boost/json/config.hpp>
 #include <boost/json/array.hpp>
-#include <boost/json/error.hpp>
+#include <boost/json/except.hpp>
 #include <boost/json/kind.hpp>
 #include <boost/json/object.hpp>
 #include <boost/json/storage_ptr.hpp>
