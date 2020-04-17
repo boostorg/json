@@ -20,13 +20,9 @@ namespace json {
 /// The type of string view used by the library.
 using string_view = boost::string_view;
 
-/// The type of memory_resource used by the library.
-using memory_resource = boost::container::pmr::memory_resource;
-
 #else
 
 using string_view = std::string_view;
-using memory_resource = std::pmr::memory_resource;
 
 #endif
 

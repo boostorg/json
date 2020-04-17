@@ -13,12 +13,10 @@
 #ifndef BOOST_JSON_STANDALONE
 # include <boost/config.hpp>
 # include <boost/assert.hpp>
-# include <boost/container/pmr/memory_resource.hpp>
 # include <boost/utility/string_view.hpp>
 # include <boost/throw_exception.hpp>
 #else
 # include <cassert>
-# include <memory_resource>
 # include <string_view>
 #endif
 #include <cstdint>

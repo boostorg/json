@@ -11,6 +11,7 @@
 #define BOOST_JSON_STORAGE_PTR_HPP
 
 #include <boost/json/config.hpp>
+#include <boost/json/memory_resource.hpp>
 #include <boost/json/detail/counted_resource.hpp>
 #include <boost/json/detail/default_resource.hpp>
 #include <cstddef>

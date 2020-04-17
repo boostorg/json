@@ -10,8 +10,9 @@
 #ifndef BOOST_JSON_DETAIL_COUNTED_RESOURCE_HPP
 #define BOOST_JSON_DETAIL_COUNTED_RESOURCE_HPP
 
-#include <boost/json/config.hpp>
+#include <boost/json/memory_resource.hpp>
 #include <atomic>
+#include <utility>
 
 namespace boost {
 namespace json {
