@@ -13,7 +13,6 @@
 #include <boost/json/config.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/string.hpp>
-#include <cstdint>
 #include <initializer_list>
 #include <type_traits>
 #include <utility>

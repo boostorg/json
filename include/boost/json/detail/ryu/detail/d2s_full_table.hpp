@@ -23,7 +23,6 @@
 #define BOOST_JSON_DETAIL_RYU_DETAIL_D2S_FULL_TABLE_HPP
 
 #include <boost/json/config.hpp>
-#include <cstdint>
 
 namespace boost {
 namespace json {

@@ -20,7 +20,6 @@
 #include <boost/json/value_ref.hpp>
 #include <boost/json/detail/scalar_impl.hpp>
 #include <boost/pilfer.hpp>
-#include <cstdint>
 #include <cstdlib>
 #include <initializer_list>
 #include <iosfwd>

@@ -12,7 +12,6 @@
 #define BOOST_JSON_DETAIL_IMPL_FORMAT_IPP
 
 #include <boost/json/detail/ryu/ryu.hpp>
-#include <cstdint>
 #include <cstring>
 
 namespace boost {

@@ -10,8 +10,6 @@
 #ifndef BOOST_JSON_DETAIL_FORMAT_HPP
 #define BOOST_JSON_DETAIL_FORMAT_HPP
 
-#include <cstdint>
-
 namespace boost {
 namespace json {
 namespace detail {

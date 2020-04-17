@@ -10,9 +10,8 @@
 #ifndef BOOST_PILFER_HPP
 #define BOOST_PILFER_HPP
 
-#include <memory>
-#include <new>
 #include <type_traits>
+#include <utility>
 
 /*
     Implements "pilfering" from P0308R0
@@ -46,7 +45,11 @@ public:
     constexpr T*
     operator->() const noexcept
     {
-        return std::addressof(t_);
+        //return std::addressof(t_);
+        return reinterpret_cast<T*>(
+            const_cast<char *>(
+                &reinterpret_cast<
+                    const volatile char &>(t_)));
     }
 };
 
@@ -88,8 +91,8 @@ pilfer(T&& t) noexcept ->
 {
     using U =
         typename std::remove_reference<T>::type;
-    BOOST_STATIC_ASSERT(
-        is_pilfer_constructible<U>::value);
+    static_assert(
+        is_pilfer_constructible<U>::value, "");
     return typename std::conditional<
         std::is_nothrow_constructible<
             U, pilfered<U> >::value &&
@@ -103,8 +106,8 @@ template<class T>
 void
 relocate(T* dest, T& src) noexcept
 {
-    BOOST_STATIC_ASSERT(
-        is_pilfer_constructible<T>::value);
+    static_assert(
+        is_pilfer_constructible<T>::value, "");
     ::new(dest) T(pilfer(src));
     src.~T();
 }

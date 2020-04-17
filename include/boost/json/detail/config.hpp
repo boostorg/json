@@ -24,7 +24,7 @@
 # include <string_view>
 # include <system_error>
 #endif
-#include <stdint.h>
+#include <cstdint>
 
 // detect 32/64 bit
 #if UINTPTR_MAX == UINT64_MAX

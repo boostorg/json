@@ -24,7 +24,6 @@
 
 #include <boost/json/config.hpp>
 #include <boost/json/detail/ryu/detail/common.hpp>
-#include <cstdint>
 
 // Only include the full table if we're not optimizing for size.
 #if !defined(BOOST_JSON_RYU_OPTIMIZE_SIZE)

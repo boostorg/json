@@ -14,7 +14,6 @@
 #include <boost/json/detail/counted_resource.hpp>
 #include <boost/json/detail/default_resource.hpp>
 #include <cstddef>
-#include <cstdint>
 #include <new>
 #include <type_traits>
 #include <utility>

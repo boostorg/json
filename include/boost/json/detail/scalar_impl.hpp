@@ -12,7 +12,6 @@
 
 #include <boost/json/kind.hpp>
 #include <boost/json/storage_ptr.hpp>
-#include <cstdint>
 
 namespace boost {
 namespace json {
