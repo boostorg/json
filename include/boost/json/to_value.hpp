@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_TO_VALUE_HPP
 #define BOOST_JSON_TO_VALUE_HPP
 
-#include <boost/json/config.hpp>
+#include <boost/json/detail/config.hpp>
 #include <boost/json/value.hpp>
 #include <boost/json/traits.hpp>
 #include <boost/json/detail/to_value.hpp>

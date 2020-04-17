@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_MEMORY_RESOURCE_HPP
 #define BOOST_JSON_MEMORY_RESOURCE_HPP
 
-#include <boost/json/config.hpp>
+#include <boost/json/detail/config.hpp>
 #ifndef BOOST_JSON_STANDALONE
 # include <boost/container/pmr/memory_resource.hpp>
 #else

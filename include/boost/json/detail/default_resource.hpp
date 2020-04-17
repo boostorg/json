@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_DEFAULT_RESOURCE_HPP
 #define BOOST_JSON_DEFAULT_RESOURCE_HPP
 
-#include <boost/json/config.hpp>
+#include <boost/json/detail/config.hpp>
 #include <new>
 
 namespace boost {

@@ -11,7 +11,7 @@
 #ifndef BOOST_JSON_DETAIL_SSE2_HPP
 #define BOOST_JSON_DETAIL_SSE2_HPP
 
-#include <boost/json/config.hpp>
+#include <boost/json/detail/config.hpp>
 #include <cstddef>
 #include <cstring>
 #ifdef BOOST_JSON_USE_SSE2

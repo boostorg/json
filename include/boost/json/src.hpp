@@ -21,7 +21,7 @@ in a translation unit of the program.
 #define BOOST_JSON_SOURCE
 #endif
 
-#include <boost/json/config.hpp>
+#include <boost/json/detail/config.hpp>
 
 #if defined(BOOST_JSON_HEADER_ONLY)
 # error Do not compile library source with the header only macro defined

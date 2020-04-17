@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_DETAIL_BASIC_PARSER_HPP
 #define BOOST_JSON_DETAIL_BASIC_PARSER_HPP
 
-#include <boost/json/config.hpp>
+#include <boost/json/detail/config.hpp>
 #include <boost/json/error.hpp>
 #include <boost/json/kind.hpp>
 #include <boost/json/detail/stack.hpp>

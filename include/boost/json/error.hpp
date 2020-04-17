@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_ERROR_HPP
 #define BOOST_JSON_ERROR_HPP
 
-#include <boost/json/config.hpp>
+#include <boost/json/detail/config.hpp>
 #ifndef BOOST_JSON_STANDALONE
 # include <boost/system/error_code.hpp>
 # include <boost/system/system_error.hpp>

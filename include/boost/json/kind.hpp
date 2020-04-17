@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_KIND_HPP
 #define BOOST_JSON_KIND_HPP
 
-#include <boost/json/config.hpp>
+#include <boost/json/detail/config.hpp>
 
 namespace boost {
 namespace json {

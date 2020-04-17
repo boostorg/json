@@ -10,7 +10,8 @@
 #ifndef GTEST_HPP
 #define GTEST_HPP
 
-#include <boost/json/config.hpp>
+#include <boost/json/detail/config.hpp>
+#include <boost/json/string_view.hpp>
 
 #include "test_suite.hpp"
 

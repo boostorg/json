@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_SERIALIZER_HPP
 #define BOOST_JSON_SERIALIZER_HPP
 
-#include <boost/json/config.hpp>
+#include <boost/json/detail/config.hpp>
 #include <boost/json/value.hpp>
 #include <boost/json/detail/format.hpp>
 #include <boost/json/detail/stack.hpp>

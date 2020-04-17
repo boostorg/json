@@ -13,11 +13,9 @@
 #ifndef BOOST_JSON_STANDALONE
 # include <boost/config.hpp>
 # include <boost/assert.hpp>
-# include <boost/utility/string_view.hpp>
 # include <boost/throw_exception.hpp>
 #else
 # include <cassert>
-# include <string_view>
 #endif
 #include <cstdint>
 
@@ -189,13 +187,6 @@
 
 namespace boost {
 namespace json {
-
-#ifndef BOOST_JSON_STANDALONE
-using string_view = boost::string_view;
-#else
-using string_view = std::string_view;
-#endif
-
 namespace detail {
 
 template<class...>
@@ -272,14 +263,6 @@ exchange(T& t, U u) noexcept
     t = move(u);
     return v;
 }
-
-template<class T>
-using is_string_viewish = typename std::enable_if<
-    std::is_convertible<
-        T const&, string_view>::value &&
-    ! std::is_convertible<
-        T const&, char const*>::value
-            >::type;
 
 /*  This is a derivative work, original copyright:
 

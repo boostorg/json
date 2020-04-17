@@ -10,9 +10,10 @@
 #ifndef BOOST_JSON_OBJECT_HPP
 #define BOOST_JSON_OBJECT_HPP
 
-#include <boost/json/config.hpp>
+#include <boost/json/detail/config.hpp>
 #include <boost/json/kind.hpp>
 #include <boost/json/storage_ptr.hpp>
+#include <boost/json/string_view.hpp>
 #include <boost/json/detail/object_impl.hpp>
 #include <boost/pilfer.hpp>
 #include <cstdlib>

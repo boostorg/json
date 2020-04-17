@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_VALUE_CAST_HPP
 #define BOOST_JSON_VALUE_CAST_HPP
 
-#include <boost/json/config.hpp>
+#include <boost/json/detail/config.hpp>
 #include <boost/json/traits.hpp>
 #include <boost/json/value.hpp>
 #include <boost/json/detail/value_cast.hpp>

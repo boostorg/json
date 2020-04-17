@@ -7,7 +7,7 @@
 // Official repository: https://github.com/vinniefalco/json
 //
 
-#include <boost/json/config.hpp>
+#include <boost/json/detail/config.hpp>
 
 #if defined(BOOST_JSON_USE_SSE2)
 #  define RAPIDJSON_SSE2

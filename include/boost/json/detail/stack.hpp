@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_DETAIL_STACK_HPP
 #define BOOST_JSON_DETAIL_STACK_HPP
 
-#include <boost/json/config.hpp>
+#include <boost/json/detail/config.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <cstring>
 

@@ -7,10 +7,16 @@
 // Official repository: https://github.com/vinniefalco/json
 //
 
-#ifndef BOOST_JSON_CONFIG_HPP
-#define BOOST_JSON_CONFIG_HPP
+#ifndef BOOST_JSON_STRING_VIEW_HPP
+#define BOOST_JSON_STRING_VIEW_HPP
 
 #include <boost/json/detail/config.hpp>
+#ifndef BOOST_JSON_STANDALONE
+# include <boost/utility/string_view.hpp>
+#else
+# include <string_view>
+#endif
+#include <type_traits>
 
 namespace boost {
 namespace json {
@@ -25,6 +31,18 @@ using string_view = boost::string_view;
 using string_view = std::string_view;
 
 #endif
+
+namespace detail {
+
+template<class T>
+using is_string_viewish = typename std::enable_if<
+    std::is_convertible<
+        T const&, string_view>::value &&
+    ! std::is_convertible<
+        T const&, char const*>::value
+            >::type;
+
+} // detail
 
 } // json
 } // boost

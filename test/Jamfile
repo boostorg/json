@@ -41,6 +41,7 @@ local SOURCES =
     snippets.cpp
     storage_ptr.cpp
     string.cpp
+    string_view.cpp
     system_error.cpp
     to_value.cpp
     traits.cpp

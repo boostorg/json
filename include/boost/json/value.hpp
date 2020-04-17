@@ -10,13 +10,14 @@
 #ifndef BOOST_JSON_VALUE_HPP
 #define BOOST_JSON_VALUE_HPP
 
-#include <boost/json/config.hpp>
+#include <boost/json/detail/config.hpp>
 #include <boost/json/array.hpp>
 #include <boost/json/except.hpp>
 #include <boost/json/kind.hpp>
 #include <boost/json/object.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/string.hpp>
+#include <boost/json/string_view.hpp>
 #include <boost/json/value_ref.hpp>
 #include <boost/json/detail/scalar_impl.hpp>
 #include <boost/pilfer.hpp>
