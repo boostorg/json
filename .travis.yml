@@ -116,6 +116,21 @@ jobs:
       - COPY="all the environment settings from your job"
 
   include:
+    # install
+    - os: linux
+      compiler: clang++
+      env: CMAKE_INSTALL_TEST=1
+      install:
+        - pip install --user cmake
+      script:
+        - mkdir __build__ && cd __build__
+        - cmake -DCMAKE_INSTALL_PREFIX=~/.local ..
+        - cmake --build . --target install
+        - cd ../test/cmake_install_test && mkdir __build__ && cd __build__
+        - cmake -DCMAKE_INSTALL_PREFIX=~/.local ..
+        - cmake --build .
+        - cmake --build . --target check
+
     # cmake
     - compiler: g++-9
       env: CXX=g++-9
