@@ -13,10 +13,10 @@ macro(make_cmake_installer)
     set(lib_install_dir "lib")
     set(pkgconfig_install_dir "lib/pkgconfig")
 
-    set(version_config "${generated_dir}/${PROJECT_NAME}ConfigVersion.cmake")
-    set(project_config "${generated_dir}/${PROJECT_NAME}Config.cmake")
+    set(version_config "${generated_dir}/${PROJECT_NAME}-config-version.cmake")
+    set(project_config "${generated_dir}/${PROJECT_NAME}-config.cmake")
     set(pkg_config "${generated_dir}/${PROJECT_NAME}.pc")
-    set(targets_export_name "${PROJECT_NAME}Targets")
+    set(targets_export_name "${PROJECT_NAME}-targets")
     set(namespace "Boost::")
 
     include(CMakePackageConfigHelpers)
@@ -32,7 +32,7 @@ macro(make_cmake_installer)
             INSTALL_DESTINATION "${config_install_dir}"
     )
 
-    install(TARGETS ${BOOST_JSON_TARGET}
+    install(TARGETS boost_json
             EXPORT "${targets_export_name}"
             INCLUDES DESTINATION "${include_install_dir}"
             ARCHIVE DESTINATION "${lib_install_dir}")

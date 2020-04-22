@@ -17,18 +17,20 @@ add_test(NAME json-tests COMMAND tests)
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX "" FILES limits.cpp main.cpp)
 add_executable(limits limits.cpp main.cpp)
-message("BOOST_JSON_STANDALONE: ${BOOST_JSON_STANDALONE}")
-message("BOOST_JSON_BOOST_BUILD_TREE: ${BOOST_JSON_BOOST_BUILD_TREE}")
-message("BOOST_JSON_IS_ROOT_PROJECT: ${BOOST_JSON_IS_ROOT_PROJECT}")
 
 if(BOOST_JSON_STANDALONE)
     target_include_directories(limits PRIVATE ../include)
     target_compile_definitions(limits PRIVATE BOOST_JSON_STANDALONE)
 elseif(BOOST_JSON_BOOST_BUILD_TREE)
+    message(FATAL_ERROR "here")
     target_include_directories(limits PRIVATE ${BOOST_ROOT})
 elseif(BOOST_JSON_IS_ROOT_PROJECT)
+    message(FATAL_ERROR "here")
+    target_include_directories(limits PRIVATE ../include)
+else()
     target_include_directories(limits PRIVATE ../include)
 endif()
+
 target_include_directories(limits PRIVATE .)
 add_test(NAME json-limits COMMAND limits)
 target_compile_definitions(limits PUBLIC
