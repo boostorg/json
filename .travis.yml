@@ -127,6 +127,7 @@ jobs:
         apt:
           packages:
             - libboost-system-dev
+            - libboost-container-dev
       script:
         - mkdir __build__ && cd __build__
         - cmake -DCMAKE_INSTALL_PREFIX=~/.local ..
