@@ -92,8 +92,8 @@ elseif(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
         target_include_directories(boost_json PUBLIC ${BOOST_ROOT})
         target_link_directories(boost_json PUBLIC ${BOOST_ROOT}/stage/lib)
     else()
-        find_package(Boost REQUIRED COMPONENTS system)
-        target_link_libraries(boost_json PUBLIC Boost::system)
+        find_package(Boost REQUIRED COMPONENTS system container)
+        target_link_libraries(boost_json PUBLIC Boost::system Boost::container)
         include(cmake/make_cmake_installer.cmake)
         make_cmake_installer()
     endif()
@@ -108,6 +108,7 @@ elseif(BOOST_SUPERPROJECT_VERSION)
         PUBLIC
             Boost::assert
             Boost::config
+            Boost::container
             Boost::core
             Boost::exception
             Boost::system
@@ -123,6 +124,7 @@ else()
     find_package(Boost COMPONENTS system)
     target_link_libraries(boost_json
         PUBLIC
+            Boost::container
             Boost::system
     )
 endif()

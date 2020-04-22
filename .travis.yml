@@ -118,6 +118,7 @@ jobs:
   include:
     # install
     - os: linux
+      dist: bionic
       compiler: g++
       env: CMAKE_INSTALL_TEST=1
       install:
