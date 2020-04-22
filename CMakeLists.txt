@@ -16,6 +16,50 @@ endif()
 
 project(boost_json VERSION "${BOOST_JSON_VERSION}" LANGUAGES CXX)
 
+option(BOOST_JSON_STANDALONE "Build boost::json as a static standalone library" FALSE)
+
+set(BOOST_JSON_IS_ROOT_PROJECT OFF)
+
+# this is the name of the cmake library target
+# the cmake installer depends on this name being "json" if we are to allow
+# cmake to automatically create the Config and name the library "Boost::json"
+# however, the boost build tree requires it to be boost_json
+set(BOOST_JSON_TARGET "boost_json")
+set(BOOST_JSON_TARGET_ALIAS)
+if(BOOST_JSON_STANDALONE)
+    # Building standalone, out of Boost superproject tree, without Boost as dependency.
+    set(BOOST_JSON_TARGET "json")
+    set(BOOST_JSON_TARGET_ALIAS "boost_json")
+elseif(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    #
+    # Building as root project, out of Boost superproject tree, with Boost as dependency.
+    # e.g. on Travis or other CI, or when producing Visual Studio Solution and Projects.
+    #
+    set(BOOST_JSON_IS_ROOT_PROJECT ON)
+    get_filename_component(parent_dirname_ "${PROJECT_SOURCE_DIR}/.." ABSOLUTE)
+    get_filename_component(parent_dirname_ "${parent_dirname_}" NAME)
+    if(parent_dirname_ MATCHES "^[Ll][Ii][Bb][Ss]$")
+        set(BOOST_JSON_BOOST_BUILD_TREE ON)
+    else()
+        set(BOOST_JSON_BOOST_BUILD_TREE OFF)
+    endif()
+
+    set(BOOST_JSON_TARGET "json")
+    set(BOOST_JSON_TARGET_ALIAS "boost_json")
+elseif(BOOST_SUPERPROJECT_VERSION)
+    #
+    # Building as part of Boost superproject tree, with Boost as dependency.
+    #
+else()
+    #
+    # Out-of-tree, non-standalone build
+    #
+    set(BOOST_JSON_TARGET "json")
+    set(BOOST_JSON_TARGET_ALIAS "boost_json")
+endif()
+
+
+
 file(GLOB_RECURSE BOOST_JSON_HEADERS CONFIGURE_DEPENDS
     include/boost/*.hpp
     include/boost/*.ipp
@@ -44,31 +88,34 @@ endif()
 # TODO: For Boost superproject, do we want to support header-only mode?
 #       Then, this needs to read `add_library(boost_json INTERFACE)`
 #       and related settings need to be INTERFACE-ed as well.
-add_library(boost_json ${BOOST_JSON_HEADERS} ${BOOST_JSON_SOURCES})
-add_library(Boost::json ALIAS boost_json)
+add_library(${BOOST_JSON_TARGET} ${BOOST_JSON_HEADERS} ${BOOST_JSON_SOURCES})
+if (BOOST_JSON_TARGET_ALIAS)
+    add_library(${BOOST_JSON_TARGET_ALIAS} ALIAS ${BOOST_JSON_TARGET})
+endif()
+add_library(Boost::json ALIAS ${BOOST_JSON_TARGET})
 
-target_compile_features(boost_json PUBLIC cxx_constexpr)
+target_compile_features(${BOOST_JSON_TARGET} PUBLIC cxx_constexpr)
 
 # TODO: For Boost superproject, this may need to be INTERFACE setting
-target_include_directories(boost_json PUBLIC include)
+target_include_directories(${BOOST_JSON_TARGET} PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<INSTALL_INTERFACE:include>")
 
-target_compile_definitions(boost_json PUBLIC BOOST_JSON_NO_LIB=1)
+target_compile_definitions(${BOOST_JSON_TARGET} PUBLIC BOOST_JSON_NO_LIB=1)
 
 if(BUILD_SHARED_LIBS)
-    target_compile_definitions(boost_json PUBLIC BOOST_JSON_DYN_LINK=1)
+    target_compile_definitions(${BOOST_JSON_TARGET} PUBLIC BOOST_JSON_DYN_LINK=1)
 else()
-    target_compile_definitions(boost_json PUBLIC BOOST_JSON_STATIC_LINK=1)
+    target_compile_definitions(${BOOST_JSON_TARGET} PUBLIC BOOST_JSON_STATIC_LINK=1)
 endif()
 
 include(CTest)
 
-option(BOOST_JSON_STANDALONE "Build boost::json as a static standalone library" FALSE)
 
 if(BOOST_JSON_STANDALONE)
     # Building standalone, out of Boost superproject tree, without Boost as dependency.
     target_compile_definitions(boost_json PUBLIC BOOST_JSON_STANDALONE)
-
-elseif(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+elseif(BOOST_JSON_IS_ROOT_PROJECT)
     #
     # Building as root project, out of Boost superproject tree, with Boost as dependency.
     # e.g. on Travis or other CI, or when producing Visual Studio Solution and Projects.
@@ -77,21 +124,24 @@ elseif(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
         message(FATAL_ERROR "Boost.JSON development requires CMake 3.16 or newer.")
     endif()
 
-    if (BOOST_JSON_FIND_BOOST)
-        find_package(Boost REQUIRED COMPONENTS system)
-        target_link_libraries(boost_json PUBLIC Boost::system)
-    else()
+    if(BOOST_JSON_BOOST_BUILD_TREE)
         get_filename_component(BOOST_ROOT ../.. ABSOLUTE)
-        target_include_directories(boost_json PUBLIC ${BOOST_ROOT})
-        target_link_directories(boost_json PUBLIC ${BOOST_ROOT}/stage/lib)
+        target_include_directories(${BOOST_JSON_TARGET} PUBLIC ${BOOST_ROOT})
+        target_link_directories(${BOOST_JSON_TARGET} PUBLIC ${BOOST_ROOT}/stage/lib)
+    else()
+        find_package(Boost REQUIRED COMPONENTS system)
+        target_link_libraries(${BOOST_JSON_TARGET} PUBLIC Boost::system)
+        include(cmake/make_cmake_installer.cmake)
+        make_cmake_installer()
     endif()
+
 elseif(BOOST_SUPERPROJECT_VERSION)
     #
     # Building as part of Boost superproject tree, with Boost as dependency.
     #
     # TODO: This CMake support for Boost.Json is currently experimental.
     #       This needs to be reviewed, tested
-    target_link_libraries(boost_json
+    target_link_libraries(${BOOST_JSON_TARGET}
         PUBLIC
             Boost::assert
             Boost::config
@@ -102,13 +152,13 @@ elseif(BOOST_SUPERPROJECT_VERSION)
     )
 
     include(BoostInstall)
-    boost_install(TARGETS boost_json HEADER_DIRECTORY include/)
+    boost_install(TARGETS ${BOOST_JSON_TARGET} HEADER_DIRECTORY include/)
 else()
     #
     # Out-of-tree, non-standalone build
     #
     find_package(Boost COMPONENTS system)
-    target_link_libraries(boost_json
+    target_link_libraries(${BOOST_JSON_TARGET}
         PUBLIC
             Boost::system
     )
