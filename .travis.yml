@@ -118,10 +118,14 @@ jobs:
   include:
     # install
     - os: linux
-      compiler: clang++
+      compiler: g++
       env: CMAKE_INSTALL_TEST=1
       install:
         - pip install --user cmake
+      addons:
+        apt:
+          packages:
+            - libboost-system-dev
       script:
         - mkdir __build__ && cd __build__
         - cmake -DCMAKE_INSTALL_PREFIX=~/.local ..
