@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+// Copyright (c) 2020 Krystian Stasiowski (sdkrystian@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -12,6 +13,7 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/storage_ptr.hpp>
+#include <boost/json/detail/monotonic_resource.hpp>
 
 namespace boost {
 namespace json {
@@ -20,23 +22,72 @@ namespace json {
 */
 class monotonic_resource final
     : public memory_resource
-{
-    struct block;
-    std::size_t const block_size_ = 64 * 1024;
-    block* head_ = nullptr;
+{   
+    struct initial_block
+    {
+        std::size_t size;
+        unsigned char* base = nullptr;
+        unsigned char* top;
 
-    inline block& alloc_block(std::size_t size);
+        initial_block() = default;
+
+        initial_block(
+            void* buf,
+            std::size_t n)
+            : size(n)
+            , base(static_cast<unsigned char*>(buf))
+            , top(base)
+        {
+        }
+    };
+
+    struct alignas(detail::max_align()) block;
+
+    std::size_t block_size_;
+    block* head_ = nullptr;
+    initial_block initial_;
+    
+    static std::size_t const min_block_size_ = 1024;
+    static std::size_t const max_block_size_ = -1;
+
+    template<typename Block>
+    void*
+    allocate_in_block(
+        Block& blk,
+        std::size_t n,
+        std::size_t align);
+
+    inline
+    block&
+    allocate_new_block(std::size_t size);
+    
+    inline
+    std::size_t
+    next_block_size(std::size_t);
+
+    inline
+    std::size_t
+    closest_block_size(std::size_t);
+
+    inline
+    std::size_t
+    grow_block_size(std::size_t size);
 
 public:
+    monotonic_resource(const monotonic_resource&) = delete;
+    monotonic_resource& operator=(const monotonic_resource&) = delete;
+
     BOOST_JSON_DECL
     ~monotonic_resource();
 
     BOOST_JSON_DECL
-    monotonic_resource() noexcept;
+    monotonic_resource(
+        std::size_t initial_size = 1024) noexcept;
 
     BOOST_JSON_DECL
     monotonic_resource(
-        std::size_t block_size) noexcept;
+        void* buffer,
+        std::size_t buffer_size) noexcept;
 
     BOOST_JSON_DECL
     void*
