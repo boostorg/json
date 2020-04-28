@@ -1,5 +1,5 @@
 <img width="880" height = "80" alt = "Boost.JSON Title"
-    src="https://raw.githubusercontent.com/vinniefalco/json/master/doc/images/repo-logo.png">
+    src="https://raw.githubusercontent.com/CPPAlliance/json/master/doc/images/repo-logo.png">
 
 Branch          | Travis | Appveyor | Azure Pipelines | codecov.io | Docs | Matrix |
 :-------------: | ------ | -------- | --------------- | ---------- | ---- | ------ |
