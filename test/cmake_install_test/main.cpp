@@ -4,10 +4,10 @@
 // See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/json.hpp>
-#include <iostream>
+#include <cstdio>
 
 int main()
 {
-    boost::json::error_code err = boost::json::error::expected_colon;
-    std::cout << err.message() << std::endl;
+    const boost::json::value value = boost::json::parse("{ \"test\": true }");
+    std::puts(boost::json::to_string(value).c_str());
 }

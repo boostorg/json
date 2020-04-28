@@ -19,25 +19,39 @@ add_test(NAME json-tests COMMAND tests)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX "" FILES limits.cpp main.cpp)
 add_executable(limits limits.cpp main.cpp)
 
-if(BOOST_JSON_STANDALONE)
-    target_include_directories(limits PRIVATE ../include)
-    target_compile_definitions(limits PRIVATE BOOST_JSON_STANDALONE)
-elseif(BOOST_JSON_BOOST_BUILD_TREE)
-    target_link_libraries(limits Boost::json)
-elseif(BOOST_JSON_IS_ROOT_PROJECT)
-    target_link_libraries(limits Boost::json)
-else()
-    target_link_libraries(limits Boost::json)
-endif()
-
-target_include_directories(limits PRIVATE .)
-add_test(NAME json-limits COMMAND limits)
-target_compile_definitions(limits PUBLIC
+target_include_directories(limits PRIVATE ../include .)
+target_compile_definitions(limits PRIVATE
     BOOST_JSON_HEADER_ONLY=1
-    BOOST_JSON_DYN_LINK=1
     BOOST_JSON_MAX_STRING_SIZE=1000
     BOOST_JSON_MAX_OBJECT_SIZE=30
     BOOST_JSON_MAX_ARRAY_SIZE=100
     BOOST_JSON_MAX_STACK_SIZE=1024
     BOOST_JSON_PARSER_BUFFER_SIZE=256
+)
+
+if(BOOST_JSON_STANDALONE)
+    target_compile_definitions(limits PRIVATE BOOST_JSON_STANDALONE)
+    target_compile_features(limits PRIVATE cxx_std_17)
+elseif(BOOST_SUPERPROJECT_VERSION)
+    target_link_libraries(limits
+        PRIVATE
+            Boost::assert
+            Boost::config
+            Boost::container
+            Boost::core
+            Boost::exception
+            Boost::system
+            Boost::utility
     )
+elseif(BOOST_JSON_IN_BOOST_TREE)
+    target_include_directories(limits PRIVATE ${BOOST_ROOT})
+    target_link_directories(limits PRIVATE ${BOOST_ROOT}/stage/lib)
+else()
+    target_link_libraries(limits
+        PRIVATE
+            Boost::container
+            Boost::system
+    )
+endif()
+
+add_test(NAME json-limits COMMAND limits)

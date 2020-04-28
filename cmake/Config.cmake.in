@@ -1,6 +1,0 @@
-set(BOOST_JSON_STANDALONE @BOOST_JSON_STANDALONE@)
-if(BOOST_JSON_STANDALONE)
-else()
-    find_package(Boost COMPONENTS container system)
-endif()
-include("${CMAKE_CURRENT_LIST_DIR}/@targets_export_name@.cmake")
