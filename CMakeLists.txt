@@ -45,10 +45,11 @@ add_library(Boost::json ALIAS boost_json)
 target_compile_features(boost_json PUBLIC cxx_constexpr)
 
 # TODO: For Boost superproject, this may need to be INTERFACE setting.
+include(GNUInstallDirs)
 target_include_directories(boost_json
     PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-        "$<INSTALL_INTERFACE:include>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
 target_compile_definitions(boost_json PUBLIC BOOST_JSON_NO_LIB=1)
