@@ -16,7 +16,7 @@ endif()
 
 project(boost_json VERSION "${BOOST_JSON_VERSION}" LANGUAGES CXX)
 
-option(BOOST_JSON_STANDALONE "Build boost::json as a standalone library" ON)
+option(BOOST_JSON_STANDALONE "Build boost::json as a standalone library" OFF)
 option(BOOST_JSON_BUILD_TESTS "Build boost::json tests" OFF)
 option(BOOST_JSON_BUILD_EXAMPLES "Build boost::json examples" OFF)
 option(BOOST_JSON_BUILD_BENCHMARKS "Build boost::json benchmarks" OFF)
