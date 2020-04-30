@@ -1,5 +1,6 @@
 # Copyright 2016 Peter Dimov
 # Copyright 2017 - 2019 James E. King III
+# Copyright 2019 - 2020 Alexander Grund
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at http://boost.org/LICENSE_1_0.txt)
 
@@ -24,32 +25,9 @@
 #
 # That's it - the scripts will do everything else for you.
 
-dist: xenial
 language: cpp
-
-env:
-  global:
-  # see: http://www.boost.org/build/doc/html/bbv2/overview/invocation.html#bbv2.overview.invocation.properties
-  # - B2_ADDRESS_MODEL=address-model=64,32
-  # - B2_LINK=link=shared,static
-  # - B2_THREADING=threading=multi,single
-    - B2_VARIANT=variant=release
-
-install:
-  - git clone https://github.com/boostorg/boost-ci.git boost-ci
-  - cp -pr boost-ci/ci boost-ci/.codecov.yml .
-  - source ci/travis/install.sh
-
-addons:
-  apt:
-    packages:
-      - binutils-gold
-      - gdb
-      - libc6-dbg
-      - qemu-user-static
-
-services:
-  - docker
+os: linux
+dist: xenial
 
 branches:
   only:
@@ -60,11 +38,23 @@ branches:
     - /fix\/.*/
     - /pr\/.*/
 
-script:
-  - cd $BOOST_ROOT/libs/$SELF
-  - ci/travis/build.sh
+env:
+  global:
+    - B2_CI_VERSION=1
+  # see: http://www.boost.org/build/doc/html/bbv2/overview/invocation.html#bbv2.overview.invocation.properties
+  # - B2_ADDRESS_MODEL=64,32
+  # - B2_LINK=shared,static
+  # - B2_THREADING=threading=multi,single
+    - B2_VARIANT=release
 
-#
+install:
+  - git clone https://github.com/boostorg/boost-ci.git boost-ci-cloned
+  - cp -prf boost-ci-cloned/ci .
+  - rm -rf boost-ci-cloned
+  - source ci/travis/install.sh
+
+script: $BOOST_ROOT/libs/$SELF/ci/travis/build.sh
+
 # Default toolsets in Ubuntu
 #
 #       trusty xenial bionic
@@ -72,43 +62,57 @@ script:
 #       ------ ------ ------
 # clang    3.4    3.8    6.0
 #   gcc  4.8.2  5.3.1  7.3.0
-#
 
 anchors:
-  clang-38: &clang-38 { apt: { packages: [ "clang-3.8",
-                                           "libstdc++-6-dev" ], sources: [ "llvm-toolchain-xenial-3.8",
-                                                                           "ubuntu-toolchain-r-test"   ] } }
+  libcpp: &libcpp { apt: { packages: [libc++-dev, libc++-helpers] } }
+  # More reliable way to add this as "ubuntu-toolchain-r-test" may fail on travis whitelisting
+  ubuntu-toolchain-r-test:
+    - &ubuntu-toolchain-r-test
+      sourceline: "ppa:ubuntu-toolchain-r/test"
+  llvm-toolchain-xenial-9: &llvm-toolchain-xenial-9
+    sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-9 main'
+    key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+  clang-33: &clang-33 { apt: { packages: [ "clang-3.3"]                                          } }
+  clang-34: &clang-34 { apt: { packages: [ "clang-3.4"]                                          } }
+  clang-35: &clang-35 { apt: { packages: [ "clang-3.5"], sources: [ *ubuntu-toolchain-r-test ]   } }
+  clang-36: &clang-36 { apt: { packages: [ "clang-3.6"], sources: [ *ubuntu-toolchain-r-test ]   } }
+  clang-37: &clang-37 { apt: { packages: [ "clang-3.7"], sources: [ *ubuntu-toolchain-r-test ]   } }
+  clang-38: &clang-38 { apt: { packages: [ "clang-3.8"], sources: [ *ubuntu-toolchain-r-test ]   } }
+  clang-39: &clang-39 { apt: { packages: [ "clang-3.9"], sources: [ *ubuntu-toolchain-r-test ]   } }
   clang-4:  &clang-4  { apt: { packages: [ "clang-4.0",
-                                           "libstdc++-6-dev" ], sources: [ "llvm-toolchain-xenial-4.0",
-                                                                           "ubuntu-toolchain-r-test"   ] } }
+                                          "libstdc++-6-dev" ], sources: [ "llvm-toolchain-xenial-4.0",
+                                                                          *ubuntu-toolchain-r-test   ] } }
   clang-5:  &clang-5  { apt: { packages: [ "clang-5.0",
-                                           "libstdc++-7-dev" ], sources: [ "llvm-toolchain-xenial-5.0",
-                                                                           "ubuntu-toolchain-r-test"   ] } }
+                                          "libstdc++-7-dev" ], sources: [ "llvm-toolchain-xenial-5.0",
+                                                                          *ubuntu-toolchain-r-test   ] } }
   clang-6:  &clang-6  { apt: { packages: [ "clang-6.0",
-                                           "libc6-dbg",
-                                           "libc++-dev",
-                                           "libstdc++-8-dev" ], sources: [ "llvm-toolchain-xenial-6.0",
-                                                                           "ubuntu-toolchain-r-test"   ] } }
+                                          "libc6-dbg",
+                                          "libc++-dev",
+                                          "libstdc++-8-dev" ], sources: [ "llvm-toolchain-xenial-6.0",
+                                                                          *ubuntu-toolchain-r-test   ] } }
   clang-7:  &clang-7  { apt: { packages: [ "clang-7",
-                                           "libc6-dbg",
-                                           "libc++-dev",
-                                           "libstdc++-8-dev" ], sources: [ "llvm-toolchain-xenial-7",
-                                                                           "ubuntu-toolchain-r-test"   ] } }
+                                          "libc6-dbg",
+                                          "libc++-dev",
+                                          "libstdc++-8-dev" ], sources: [ "llvm-toolchain-xenial-7",
+                                                                          *ubuntu-toolchain-r-test   ] } }
   clang-8:  &clang-8  { apt: { packages: [ "clang-8",
-                                           "libc6-dbg",
-                                           "libc++-dev",
-                                           "libstdc++-8-dev" ], sources: [ "llvm-toolchain-xenial-8",
-                                                                           "ubuntu-toolchain-r-test"   ] } }
-  gcc-48:   &gcc-48   { apt: { packages: [ "g++-4.8"         ]                                           } }
-  gcc-49:   &gcc-49   { apt: { packages: [ "g++-4.9"         ], sources: [ "ubuntu-toolchain-r-test"   ] } }
-  gcc-5:    &gcc-5    { apt: { packages: [ "g++-5"           ]                                           } }
-  gcc-6:    &gcc-6    { apt: { packages: [ "g++-6"           ], sources: [ "ubuntu-toolchain-r-test"   ] } }
-  gcc-7:    &gcc-7    { apt: { packages: [ "g++-7"           ], sources: [ "ubuntu-toolchain-r-test"   ] } }
-  gcc-8:    &gcc-8    { apt: { packages: [ "g++-8"           ], sources: [ "ubuntu-toolchain-r-test"   ] } }
-  gcc-9:    &gcc-9    { apt: { packages: [ "g++-9"           ], sources: [ "ubuntu-toolchain-r-test"   ] } }
+                                          "libc6-dbg",
+                                          "libc++-dev",
+                                          "libstdc++-8-dev" ], sources: [ "llvm-toolchain-xenial-8",
+                                                                          *ubuntu-toolchain-r-test   ] } }
+  clang-9:  &clang-9  { apt: { packages: [ "clang-9" ],        sources: [ *llvm-toolchain-xenial-9,
+                                                                        *ubuntu-toolchain-r-test    ] } }
 
-#git:
-#  submodules: false
+  gcc-44: &gcc-44 { apt: { packages: [ "g++-4.4" ], sources: [ *ubuntu-toolchain-r-test ] } }
+  gcc-46: &gcc-46 { apt: { packages: [ "g++-4.6" ], sources: [ *ubuntu-toolchain-r-test ] } }
+  gcc-47: &gcc-47 { apt: { packages: [ "g++-4.7" ], sources: [ *ubuntu-toolchain-r-test ] } }
+  gcc-48: &gcc-48 { apt: { packages: [ "g++-4.8" ], sources: [ *ubuntu-toolchain-r-test ] } }
+  gcc-49: &gcc-49 { apt: { packages: [ "g++-4.9" ], sources: [ *ubuntu-toolchain-r-test ] } }
+  gcc-5:  &gcc-5  { apt: { packages: [ "g++-5"   ], sources: [ *ubuntu-toolchain-r-test ] } }
+  gcc-6:  &gcc-6  { apt: { packages: [ "g++-6"   ], sources: [ *ubuntu-toolchain-r-test ] } }
+  gcc-7:  &gcc-7  { apt: { packages: [ "g++-7"   ], sources: [ *ubuntu-toolchain-r-test ] } }
+  gcc-8:  &gcc-8  { apt: { packages: [ "g++-8"   ], sources: [ *ubuntu-toolchain-r-test ] } }
+  gcc-9:  &gcc-9  { apt: { packages: [ "g++-9"   ], sources: [ *ubuntu-toolchain-r-test ] } }
 
 jobs:
   allow_failures:
@@ -139,7 +143,9 @@ jobs:
 
     # cmake
     - compiler: g++-9
-      env: CXX=g++-9
+      env:
+        - COMMENT=cmake
+        - CXX=g++-9
       install:
         - pip install --user cmake
       addons: *gcc-9
@@ -151,28 +157,25 @@ jobs:
         - ctest -V .
 
     # coverage
-    - os: linux
-      env:
+    - env:
         - COMMENT=codecov.io
         - LCOV_BRANCH_COVERAGE=0
         - B2_CXXSTD=11
-        #- B2_CXXFLAGS="inlining=off"
         - B2_TOOLSET=gcc-8
-        - B2_DEFINES="define=BOOST_DISABLE_ASSERTS define=BOOST_NO_STRESS_TEST=1"
+        - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
       addons: *gcc-8
       script:
         - cd $BOOST_ROOT/libs/$SELF
         - ci/travis/codecov.sh
 
-    - { os: "linux", env: [ "B2_TOOLSET=clang-8",     "B2_CXXSTD=17,2a"    ], addons: *clang-8   }
+    - { env: [ "B2_TOOLSET=clang-8",     "B2_CXXSTD=17,2a"    ], addons: *clang-8   }
 
-    - os: linux
-      env:
+    - env:
         - COMMENT=valgrind
         - B2_TOOLSET=clang-6.0
         - B2_CXXSTD=11,14
-        - B2_DEFINES="define=BOOST_NO_STRESS_TEST=1"
-        - B2_VARIANT=variant=debug
+        - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
+        - B2_VARIANT=debug
         - B2_TESTFLAGS=testing.launcher=valgrind
         - VALGRIND_OPTS=--error-exitcode=1
       addons: *clang-6
@@ -180,86 +183,61 @@ jobs:
         - cd $BOOST_ROOT/libs/$SELF
         - ci/travis/valgrind.sh
 
-    - os: linux
-      env:
+    - env:
         - COMMENT=asan
-        - B2_VARIANT=variant=debug
+        - B2_VARIANT=debug
         - B2_TOOLSET=gcc-8
         - B2_CXXSTD=11,14
-        - B2_CXXFLAGS="address-sanitizer=norecover"
-        - B2_DEFINES="define=BOOST_NO_STRESS_TEST=1"
+        - B2_ASAN=1
+        - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
       addons: *gcc-8
 
-    - os: linux
-      env:
+    - env:
         - COMMENT=tsan
-        - B2_VARIANT=variant=debug
+        - B2_VARIANT=debug
         - B2_TOOLSET=gcc-8
         - B2_CXXSTD=11,14
-        - B2_CXXFLAGS="thread-sanitizer=norecover"
-        - B2_DEFINES="define=BOOST_NO_STRESS_TEST=1"
+        - B2_TSAN=1
+        - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
       addons: *gcc-8
 
-    - os: linux
-      env:
+    - env:
         - COMMENT=ubsan
-        - B2_VARIANT=variant=debug
+        - B2_VARIANT=debug
         - B2_TOOLSET=gcc-8
         - B2_CXXSTD=11,14
-        - B2_CXXFLAGS="undefined-sanitizer=norecover"
-        - B2_DEFINES="define=BOOST_NO_STRESS_TEST=1 define=BOOST_JSON_HEADER_ONLY"
-        - B2_LINKFLAGS="linkflags=-fuse-ld=gold"
-        - UBSAN_OPTIONS=print_stacktrace=1
+        - B2_UBSAN=1
+        - B2_DEFINES="define=BOOST_NO_STRESS_TEST=1 define=BOOST_JSON_HEADER_ONLY=1"
+        - B2_LINKFLAGS="-fuse-ld=gold"
       addons: *gcc-8
-
-    # standalone
-    - os: "linux"
-      env:
-        - COMMENT=standalone
-        - STANDALONE=1
-        - B2_VARIANT=variant=debug
-        - B2_TOOLSET=gcc-9
-        - B2_CXXSTD=17
-        - B2_DEFINES="define=BOOST_JSON_STANDALONE=1"
-      addons: *gcc-9
-
-    # VFALCO This needs to use a later version of
-    #        libstdc++ which has <memory_resource>
-    #- os: "linux"
-    #  env:
-    #    - COMMENT=standalone
-    #    - STANDALONE=1
-    #    - B2_VARIANT=variant=debug
-    #    - B2_TOOLSET=clang-9
-    #    - B2_CXXSTD=17
-    #    - B2_DEFINES="define=BOOST_JSON_STANDALONE=1"
-    #  addons: *clang-9
 
     # libstdc++
-    - { os: "linux", dist: "trusty",  # xenial has libstdc++ from gcc 5.4.0 with newer ABI
-                     env: [ "B2_TOOLSET=gcc-4.8",     "B2_CXXSTD=11"      ], addons: *gcc-48    }
-    - { os: "linux", dist: "trusty",  # xenial has libstdc++ from gcc 5.4.0 with newer ABI
-                     env: [ "B2_TOOLSET=gcc-4.9",     "B2_CXXSTD=11"       ], addons: *gcc-49    }
-    - { os: "linux", env: [ "B2_TOOLSET=gcc-5",       "B2_CXXSTD=11"       ], addons: *gcc-5     }
-    - { os: "linux", env: [ "B2_TOOLSET=gcc-6",       "B2_CXXSTD=11,14"    ], addons: *gcc-6     }
-    - { os: "linux", env: [ "B2_TOOLSET=gcc-7",       "B2_CXXSTD=14,17"    ], addons: *gcc-7     }
-    - { os: "linux", env: [ "B2_TOOLSET=gcc-8",       "B2_CXXSTD=17,2a"    ], addons: *gcc-8     }
-    - { os: "linux", env: [ "B2_TOOLSET=gcc-9",       "B2_CXXSTD=17,2a"    ], addons: *gcc-9     }
-    - { os: "linux", dist: "trusty",  # xenial has libstdc++ from gcc 5.4.0 with newer ABI
-                     env: [ "B2_TOOLSET=clang-3.8",   "B2_CXXSTD=11"       ], addons: *clang-38  }
-    - { os: "linux", env: [ "B2_TOOLSET=clang-4.0",   "B2_CXXSTD=11,14"    ], addons: *clang-4   }
-    - { os: "linux", env: [ "B2_TOOLSET=clang-5.0",   "B2_CXXSTD=11,14"    ], addons: *clang-5   }
-    - { os: "linux", env: [ "B2_TOOLSET=clang-6.0",   "B2_CXXSTD=14,17"    ], addons: *clang-6   }
-    - { os: "linux", env: [ "B2_TOOLSET=clang-7",     "B2_CXXSTD=17,2a"    ], addons: *clang-7   }
-#   - { os: "linux", env: [ "B2_TOOLSET=clang-8",     "B2_CXXSTD=17,2a"    ], addons: *clang-8   }
+    - { dist: "trusty",  # xenial has libstdc++ from gcc 5.4.0 with newer ABI
+        env: [ "B2_TOOLSET=gcc-4.8",     "B2_CXXSTD=11"    ], addons: *gcc-48    }
+    - { dist: "trusty",  # xenial has libstdc++ from gcc 5.4.0 with newer ABI
+        env: [ "B2_TOOLSET=gcc-4.9",     "B2_CXXSTD=11"    ], addons: *gcc-49    }
+    - { env: [ "B2_TOOLSET=gcc-5",       "B2_CXXSTD=11"    ], addons: *gcc-5     }
+    - { env: [ "B2_TOOLSET=gcc-6",       "B2_CXXSTD=11,14"    ], addons: *gcc-6     }
+    - { env: [ "B2_TOOLSET=gcc-7",       "B2_CXXSTD=14,17"    ], addons: *gcc-7     }
+    - { env: [ "B2_TOOLSET=gcc-8",       "B2_CXXSTD=17,2a"    ], addons: *gcc-8     }
+    - { env: [ "B2_TOOLSET=gcc-9",       "B2_CXXSTD=17,2a"    ], addons: *gcc-9     }
+    - { dist: "trusty",  # xenial has libstdc++ from gcc 5.4.0 with newer ABI
+        env: [ "B2_TOOLSET=clang-3.8",   "B2_CXXSTD=11"    ], addons: *clang-38  }
+    - { env: [ "B2_TOOLSET=clang-4.0",   "B2_CXXSTD=11,14"    ], addons: *clang-4   }
+    - { env: [ "B2_TOOLSET=clang-5.0",   "B2_CXXSTD=11,14"    ], addons: *clang-5   }
+    - { env: [ "B2_TOOLSET=clang-6.0",   "B2_CXXSTD=14,17"    ], addons: *clang-6   }
+    - { env: [ "B2_TOOLSET=clang-7",     "B2_CXXSTD=17,2a"    ], addons: *clang-7   }
+#   - { env: [ "B2_TOOLSET=clang-8",     "B2_CXXSTD=17,2a"    ], addons: *clang-8   }
+    - { env: [ "B2_TOOLSET=clang-9",     "B2_CXXSTD=11,14,17,2a" ], addons: *clang-8   }
 
     # libc++
-    - { os: "linux", env: [ "B2_TOOLSET=clang-6.0",   "B2_CXXSTD=11,14",
-                            "B2_CXXFLAGS=-stdlib=libc++"                   ], addons: *clang-6   }
-    - { os: "osx"  , env: [ "B2_TOOLSET=clang",       "B2_CXXSTD=11,17"    ]                     }
+    - { env: [ "B2_TOOLSET=clang-6.0",   "B2_CXXSTD=11,14",
+               "B2_STDLIB=libc++"                             ], addons: *clang-6   }
+    - { os: "osx"  ,
+        env: [ "B2_TOOLSET=clang",       "B2_CXXSTD=11,17" ]                     }
 
     # to enable Intel ICC define INTEL_ICC_SERIAL_NUMBER and the following (under development):
-    # - { os: "linux", env: [ "B2_TOOLSET=intel-linux", "B2_CXXSTD=11,14,17" ], addons: *gcc-7,
+    # - { env: [ "B2_TOOLSET=intel-linux", "B2_CXXSTD=11,14,17" ], addons: *gcc-7,
     #     script: cd $BOOST_ROOT/libs/$SELF && ci/travis/intelicc.sh                               }
 
     # uncomment to enable a big-endian build job, just note that it is 5-10 times slower
@@ -267,9 +245,9 @@ jobs:
     # - os: linux
     #   env:
     #     - COMMENT=big-endian
-    #     - B2_CXXSTD=03
+    #     - B2_CXXSTD=11
     #     - B2_TOOLSET=gcc
-    #     - B2_DEFINES="define=BOOST_NO_STRESS_TEST=1"
+    #     - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
     #     - BDDE_OS=red
     #     - BDDE_ARCH=ppc64
     #   script:
@@ -286,8 +264,7 @@ jobs:
     #################### Jobs to run on pushes to master, develop ###################
 
     # Coverity Scan
-    - os: linux
-      if: (env(COVERITY_SCAN_NOTIFICATION_EMAIL) IS present) AND (branch IN (develop, master)) AND (type IN (cron, push))
+    - if: (env(COVERITY_SCAN_NOTIFICATION_EMAIL) IS present) AND (branch IN (develop, master)) AND (type IN (cron, push))
       env:
         - COMMENT="Coverity Scan"
         - B2_TOOLSET=clang
