@@ -49,7 +49,6 @@ elseif(BOOST_JSON_IN_BOOST_TREE)
 else()
     target_link_libraries(limits
         PRIVATE
-            Boost::container
             Boost::system
     )
 endif()

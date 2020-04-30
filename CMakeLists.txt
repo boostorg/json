@@ -16,9 +16,9 @@ endif()
 
 project(boost_json VERSION "${BOOST_JSON_VERSION}" LANGUAGES CXX)
 
-option(BOOST_JSON_STANDALONE "Build boost::json as a standalone library" ON)
-option(BOOST_JSON_BUILD_TESTS "Build boost::json tests" OFF)
-option(BOOST_JSON_BUILD_EXAMPLES "Build boost::json examples" OFF)
+option(BOOST_JSON_STANDALONE "Build boost::json as a standalone library" OFF)
+option(BOOST_JSON_BUILD_TESTS "Build boost::json tests" ON)
+option(BOOST_JSON_BUILD_EXAMPLES "Build boost::json examples" ON)
 option(BOOST_JSON_BUILD_BENCHMARKS "Build boost::json benchmarks" OFF)
 
 file(GLOB_RECURSE BOOST_JSON_HEADERS $<$<VERSION_GREATER_EQUAL:${CMAKE_VERSION},3.12>:CONFIGURE_DEPENDS>
@@ -45,10 +45,11 @@ add_library(Boost::json ALIAS boost_json)
 target_compile_features(boost_json PUBLIC cxx_constexpr)
 
 # TODO: For Boost superproject, this may need to be INTERFACE setting.
+include(GNUInstallDirs)
 target_include_directories(boost_json
     PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-        "$<INSTALL_INTERFACE:include>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
 target_compile_definitions(boost_json PUBLIC BOOST_JSON_NO_LIB=1)
@@ -101,10 +102,9 @@ else()
     # Building out of Boost tree, out of Boost superproject tree, with Boost as dependency.
     # e.g. for packaging or added with add_subdirectory.
     #
-    find_package(Boost REQUIRED COMPONENTS container system)
+    find_package(Boost REQUIRED COMPONENTS system)
     target_link_libraries(boost_json
         PUBLIC
-            Boost::container
             Boost::system
     )
 endif()
