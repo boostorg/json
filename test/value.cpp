@@ -1555,9 +1555,15 @@ public:
         // array
         BOOST_TEST(
             value({true,2,"3"}).at(1).as_int64() == 2);
-        BOOST_TEST_THROWS(
-            value({false,2,"3"}).at(4),
-            array_index_error);
+
+        // VFALCO This fails to compile on LLVM(clang-cl) in Visual Studio:
+        //BOOST_TEST_THROWS( value({false,2,"3"}).at(4), array_index_error );
+        // VFALCO But these compile:
+        BOOST_TEST_THROWS( value({false,false}).at(4), array_index_error );
+        BOOST_TEST_THROWS( value({false,2}).at(4), array_index_error );
+        BOOST_TEST_THROWS( value({false,2,"3",nullptr}).at(4), array_index_error );
+        BOOST_TEST_THROWS( value({2,false,"3"}).at(4), array_index_error );
+        BOOST_TEST_THROWS( value({true,2,"3"}).at(4), array_index_error );
     }
 
     //------------------------------------------------------
