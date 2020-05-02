@@ -277,7 +277,7 @@ public:
                 BOOST_TEST(s2 == t.v1);
                 BOOST_TEST(s1.empty());
                 BOOST_TEST(
-                    s1.storage() == nullptr);
+                    s1.storage() == storage_ptr());
             }
 
             {
@@ -286,7 +286,7 @@ public:
                 BOOST_TEST(s2 == t.v2);
                 BOOST_TEST(s1.empty());
                 BOOST_TEST(
-                    s1.storage() == nullptr);
+                    s1.storage() == storage_ptr());
             }
         }
 

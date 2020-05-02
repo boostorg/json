@@ -137,33 +137,12 @@ public:
     {
     }
 
-    /** Construct a pointer to default storage.
-
-        This constructs a default storage pointer.
-        The default storage is not reference counted,
-        uses global operator new and delete to obtain
-        memory, and requires calls to `deallocate`.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    storage_ptr(
-        std::nullptr_t) noexcept
-        : storage_ptr()
-    {
-    }
-
     /** Construct a pointer to a memory resource.
     */
     template<class T, class =
         typename std::enable_if<
-            std::is_convertible<
-                T*, memory_resource*>::value>>
+            std::is_convertible<T*,
+                memory_resource*>::value>::type>
     storage_ptr(T* p) noexcept
         : i_(reinterpret_cast<
             std::uintptr_t>(p) +

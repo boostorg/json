@@ -264,7 +264,7 @@ public:
                 }, sp);
             object o2(pilfer(o1));
             BOOST_TEST(
-                o1.storage() == nullptr);
+                o1.storage() == storage_ptr());
             BOOST_TEST(
                 *o2.storage() == *sp);
             BOOST_TEST(o1.empty());

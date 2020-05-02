@@ -152,7 +152,7 @@ array(
 array::
 array(pilfered<array> other) noexcept
     : sp_(detail::exchange(
-        other.get().sp_, nullptr))
+        other.get().sp_, storage_ptr()))
     , impl_(std::move(other.get().impl_))
 {
 }
