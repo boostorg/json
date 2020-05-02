@@ -450,8 +450,7 @@ find_impl(key_type key) const noexcept ->
     std::pair<
         value_type*,
         std::size_t> result;
-    result.second =
-        object_impl::digest(key);
+    result.second = impl_.digest(key);
     if(empty())
     {
         result.first = nullptr;
@@ -540,7 +539,10 @@ rehash(std::size_t new_capacity)
     if(new_capacity > max_size())
         object_too_large::raise();
     object_impl impl(
-        new_capacity, new_buckets, sp_);
+        new_capacity,
+        new_buckets,
+        impl_.salt(),
+        sp_);
     if(impl_.size() > 0)
         std::memcpy(
             static_cast<void*>(impl.begin()),

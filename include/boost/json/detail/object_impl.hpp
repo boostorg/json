@@ -44,6 +44,7 @@ public:
     object_impl(
         std::size_t capacity,
         std::size_t buckets,
+        std::uintptr_t salt,
         storage_ptr const& sp);
 
     inline
@@ -68,6 +69,13 @@ public:
     capacity() const noexcept
     {
         return tab_ ? tab_->capacity : 0;
+    }
+
+    std::uintptr_t
+    salt() const noexcept
+    {
+        return tab_ ? tab_->salt :
+            reinterpret_cast<std::uintptr_t>(this);
     }
 
     inline
@@ -147,25 +155,22 @@ public:
     void
     swap(object_impl& rhs) noexcept;
 
-    static
     inline
     std::size_t
-    digest(string_view key) noexcept;
+    digest(string_view key) const noexcept;
 
 private:
-    static
     inline
     std::uint32_t
     digest(
         string_view key,
-        std::false_type) noexcept;
+        std::false_type) const noexcept;
 
-    static
     inline
     std::uint64_t
     digest(
         string_view key,
-        std::true_type) noexcept;
+        std::true_type) const noexcept;
 
     std::size_t
     buckets() const noexcept
@@ -183,6 +188,7 @@ private:
         std::size_t size;
         std::size_t const capacity;
         std::size_t const buckets;
+        std::uintptr_t const salt;
     };
 
     table* tab_ = nullptr;

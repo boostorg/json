@@ -129,7 +129,7 @@ bucket_begin() const noexcept ->
 
 std::size_t
 object_impl::
-digest(string_view key) noexcept
+digest(string_view key) const noexcept
 {
     return digest(key,
         std::integral_constant<bool,
@@ -143,13 +143,15 @@ std::uint32_t
 object_impl::
 digest(
     string_view key,
-    std::false_type) noexcept
+    std::false_type) const noexcept
 {
     std::uint32_t prime = 0x01000193UL;
     std::uint32_t hash  = 0x811C9DC5UL;
+    hash += static_cast<std::uint32_t>(salt());
     for(auto p = key.begin(),
         end = key.end(); p != end; ++p)
         hash = (*p ^ hash) * prime;
+    hash ^= salt();
     return hash;
 }
 
@@ -157,10 +159,11 @@ std::uint64_t
 object_impl::
 digest(
     string_view key,
-    std::true_type) noexcept
+    std::true_type) const noexcept
 {
     std::uint64_t prime = 0x100000001B3ULL;
     std::uint64_t hash  = 0xcbf29ce484222325ULL;
+    hash += static_cast<std::uint64_t>(salt());
     for(auto p = key.begin(),
         end = key.end(); p != end; ++p)
         hash = (*p ^ hash) * prime;
