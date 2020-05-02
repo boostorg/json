@@ -112,26 +112,6 @@ public:
             }
         }
         
-        // string(string const&, size_type, size_type, storage_ptr)
-        {
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(string(t.v1), 1, 3, sp);
-                BOOST_TEST(s == "bcd");
-            });
-
-            {
-                string s(string(t.v1), 1, 3);
-                BOOST_TEST(s.size() == 3);
-                BOOST_TEST(s == "bcd");
-            }
-
-            {
-                string s(string(t.v1), 1);
-                BOOST_TEST(s == t.v1.substr(1));
-            }
-        }
-
         // string(char const*, storage_ptr)
         {
             fail_loop([&](storage_ptr const& sp)
@@ -364,31 +344,6 @@ public:
             });
         }
 
-        // string(initializer_list, storage_ptr)
-        {
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(INIT1, sp);
-                BOOST_TEST(s == t.v1);
-            });
-
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(INIT2, sp);
-                BOOST_TEST(s == t.v2);
-            });
-
-            {
-                string s(INIT1);
-                BOOST_TEST(s == t.v1);
-            }
-
-            {
-                string s(INIT2);
-                BOOST_TEST(s == t.v2);
-            }
-        }
-
         // string(string_view, storage_ptr)
         {
             fail_loop([&](storage_ptr const& sp)
@@ -411,31 +366,6 @@ public:
             {
                 string s(t.v2);
                 BOOST_TEST(s == t.v2);
-            }
-        }
-
-        // string(string_view, size_type, size_type, storage_ptr)
-        {
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(t.v1, 1, 3, sp);
-                BOOST_TEST(s == "bcd");
-            });
-
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(t.v2, 1, 3, sp);
-                BOOST_TEST(s == "BCD");
-            });
-
-            {
-                string s(t.v1, 1, 3);
-                BOOST_TEST(s == "bcd");
-            }
-
-            {
-                string s(t.v2, 1, 3);
-                BOOST_TEST(s == "BCD");
             }
         }
     }
@@ -626,23 +556,6 @@ public:
             });
         }
 
-        // operator=(std::initializer_list<char>)
-        {
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(sp);
-                s = INIT1;
-                BOOST_TEST(s == t.v1);
-            });
-
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(sp);
-                s = INIT2;
-                BOOST_TEST(s == t.v2);
-            });
-        }
-
         // operator=(string_view)
         {
             fail_loop([&](storage_ptr const& sp)
@@ -755,25 +668,6 @@ public:
                 s = static_cast<string const&>(s);
                 BOOST_TEST(s == t.v1);
             }
-        }
-
-        // assign(string, size_type, size_type)
-        {
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(t.v1.size(), 'x', sp);
-                s.assign(string(t.v1.size(), '*'), 1, 3);
-                BOOST_TEST(
-                    s == std::string(3, '*'));
-            });
-
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(t.v2.size(), 'x', sp);
-                s.assign(string(t.v1.size(), '*'), 1, 3);
-                BOOST_TEST(
-                    s == std::string(3, '*'));
-            });
         }
 
         // assign(string&&)
@@ -1032,37 +926,6 @@ public:
             }
         }
 
-        // assign(std::initializer_list<char>)
-        {
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(t.v1.size(), '*', sp);
-                s.assign(INIT1);
-                BOOST_TEST(s == t.v1);
-            });
-
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(t.v2.size(), '*', sp);
-                s.assign(INIT1);
-                BOOST_TEST(s == t.v1);
-            });
-
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(t.v1.size(), '*', sp);
-                s.assign(INIT2);
-                BOOST_TEST(s == t.v2);
-            });
-
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(t.v2.size(), '*', sp);
-                s.assign(INIT2);
-                BOOST_TEST(s == t.v2);
-            });
-        }
-
         // assign(string_view)
         {
             fail_loop([&](storage_ptr const& sp)
@@ -1091,23 +954,6 @@ public:
                 string s(t.v2.size(), '*', sp);
                 s.assign(t.v2);
                 BOOST_TEST(s == t.v2);
-            });
-        }
-        
-        // assign(string_view, size_type, size_type);
-        {
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(t.v1.size(), '*', sp);
-                s.assign(t.v1, 1, 3);
-                BOOST_TEST(s == "bcd");
-            });
-
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s(t.v2.size(), '*', sp);
-                s.assign(t.v2, 1, 3);
-                BOOST_TEST(s == "BCD");
             });
         }
     }

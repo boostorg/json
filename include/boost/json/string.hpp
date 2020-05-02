@@ -223,6 +223,7 @@ public:
 
         @throw std::length_error `count > max_size()`.
     */
+    explicit
     string(
         std::size_t count,
         char ch,
@@ -230,51 +231,6 @@ public:
         : sp_(std::move(sp))
     {
         assign(count, ch);
-    }
-
-    /** Constructor.
-
-        Construct the contents with a copy of the
-        substring `{pos, pos+count)` of `other`. If
-        the requested substring lasts past the
-        end of the string, or if `count == npos`,
-        the resulting substring is `{pos, other.size())`.
-
-        @par Complexity
-
-        Linear in `count`.
-
-        @par Exception Safety
-
-        Strong guarantee.
-
-        @note
-
-        Calls to @ref storage::allocate may throw.
-
-        @param other The string to use as a source
-        to copy from.
-
-        @param pos The starting character position to
-        copy from.
-
-        @param count The number of characters to copy.
-
-        @param sp An optional pointer to the @ref storage
-        to use. The container will acquire shared
-        ownership of the storage object.
-        The default argument for this parameter is `{}`.
-
-        @throw std::out_of_range `pos >= other.size()`.
-    */
-    string(
-        string const& other,
-        std::size_t pos,
-        std::size_t count = npos,
-        storage_ptr sp = {})
-        : sp_(std::move(sp))
-    {
-        assign(other, pos, count);
     }
 
     /** Constructor.
@@ -344,6 +300,7 @@ public:
 
         @throw std::length_error `count > max_size()`.
     */
+    explicit
     string(
         char const* s,
         std::size_t count,
@@ -395,6 +352,7 @@ public:
         ,class = is_inputit<InputIt>
     #endif
     >
+    explicit
     string(
         InputIt first,
         InputIt last,
@@ -449,6 +407,7 @@ public:
         ownership of the storage object.
         The default argument for this parameter is `{}`.
     */
+    explicit
     string(
         string const& other,
         storage_ptr sp)
@@ -515,46 +474,13 @@ public:
         ownership of the storage object.
         The default argument for this parameter is `{}`.
     */
+    explicit
     string(
         string&& other,
         storage_ptr sp)
         : sp_(std::move(sp))
     {
         assign(std::move(other));
-    }
-
-    /** Constructor.
-
-        Construct the contents with those of the
-        initializer list `init`.
-
-        @par Complexity
-
-        Linear in `init.size()`.
-
-        @par Exception Safety
-
-        Strong guarantee.
-
-        @note
-
-        Calls to @ref storage::allocate may throw.
-
-        @param init The initializer list to copy from.
-
-        @param sp An optional pointer to the @ref storage
-        to use. The container will acquire shared
-        ownership of the storage object.
-        The default argument for this parameter is `{}`.
-
-        @throw std::length_error `init.size() > max_size()`.
-    */
-    string(
-        std::initializer_list<char> init,
-        storage_ptr sp = {})
-        : sp_(std::move(sp))
-    {
-        assign(init);
     }
 
     /** Constructor.
@@ -590,54 +516,6 @@ public:
         : sp_(std::move(sp))
     {
         assign(s);
-    }
-
-    /** Constructor.
-
-        Constructs the contents with the characters
-        from the substring `{pos, pos+count)` of `s`.
-        If `count == npos`, if `count` is not specified,
-        or if the requested substring lasts past the end
-        of the string, the resulting substring is
-        `{pos, s.size())`.
-        The substring can contain null characters.
-
-        @par Complexity
-
-        Linear in `count`.
-
-        @par Exception Safety
-
-        Strong guarantee.
-
-        @note
-
-        Calls to @ref storage::allocate may throw.
-
-        @param s The string view to copy from.
-
-        @param pos The starting character position to
-        copy from.
-
-        @param count The number of characters to copy.
-
-        @param sp An optional pointer to the @ref storage
-        to use. The container will acquire shared
-        ownership of the storage object.
-        The default argument for this parameter is `{}`.
-
-        @throw std::out_of_range `pos >= s.size()`
-
-        @throw std::length_error `count > max_size()`.
-    */
-    string(
-        string_view s,
-        std::size_t pos,
-        std::size_t count,
-        storage_ptr sp = {})
-        : sp_(std::move(sp))
-    {
-        assign(s.substr(pos, count));
     }
 
     //------------------------------------------------------
@@ -745,35 +623,6 @@ public:
 
     /** Assign a value to the string.
 
-        Replaces the contents with those of the
-        initializer list `init`.
-
-        @par Complexity
-
-        Linear in `init.size()`.
-
-        @par Exception Safety
-
-        Strong guarantee.
-
-        @note
-
-        Calls to @ref storage::allocate may throw.
-
-        @return `*this`
-
-        @param init The initializer list to copy from.
-
-        @throw std::length_error `init.size() > max_size()`.
-    */
-    string&
-    operator=(std::initializer_list<char> init)
-    {
-        return assign(init);
-    }
-
-    /** Assign a value to the string.
-
         Replaces the contents with those of a
         string view. This view can contain
         null characters.
@@ -861,48 +710,6 @@ public:
     string&
     assign(
         string const& other);
-
-    /** Assign characters to a string.
-
-        Replace the contents with a copy of the
-        substring `{pos, pos+count)` of `other`. If
-        the requested substring lasts past the
-        end of the string, or if `count == npos`,
-        the resulting substring is `{pos, other.size())`.
-
-        @par Complexity
-
-        Linear in `count`.
-
-        @par Exception Safety
-
-        Strong guarantee.
-
-        @note
-
-        Calls to @ref storage::allocate may throw.
-
-        @return `*this`
-
-        @param other The string to use as a source
-        to copy from.
-
-        @param pos The starting character position to
-        copy from.
-
-        @param count The number of characters to copy.
-
-        @throw std::out_of_range `pos >= other.size()`.
-    */
-    string&
-    assign(
-        string const& other,
-        std::size_t pos,
-        std::size_t count)
-    {
-        return assign(
-            other.subview(pos, count));
-    }
 
     /** Assign characters to a string.
 
@@ -1054,35 +861,6 @@ public:
 
     /** Assign characters to a string.
 
-        Replaces the contents with those of the
-        initializer list `init`.
-
-        @par Complexity
-
-        Linear in `init.size()`.
-
-        @par Exception Safety
-
-        Strong guarantee.
-
-        @note
-
-        Calls to @ref storage::allocate may throw.
-
-        @return `*this`
-
-        @param init The initializer list to copy from.
-
-        @throw std::length_error `init.size() > max_size()`.
-    */
-    string&
-    assign(std::initializer_list<char> init)
-    {
-        return assign(init.begin(), init.size());
-    }
-
-    /** Assign characters to a string.
-
         Replaces the contents with those of a
         string view. This view can contain
         null characters.
@@ -1109,52 +887,6 @@ public:
     assign(string_view s)
     {
         return assign(s.data(), s.size());
-    }
-
-    /** Assign characters to a string.
-
-        Replaces the contents with the characters
-        from the substring `{pos, pos+count)` of `s`.
-        If `count == npos`, if `count` is not specified,
-        or if the requested substring lasts past the end
-        of the string, the resulting substring is
-        `{pos, s.size())`.
-        The substring can contain null characters.
-
-        @par Complexity
-
-        Linear in `count`.
-
-        @par Exception Safety
-
-        Strong guarantee.
-
-        @note
-
-        Calls to @ref storage::allocate may throw.
-
-        @return `*this`.
-
-        @param s The string view to copy from.
-
-        @param pos The starting character position to
-        copy from.
-
-        @param count The number of characters to copy. 
-        The default argument for this parameter is
-        @ref npos.
-
-        @throw std::out_of_range `pos >= s.size()`
-
-        @throw std::length_error `count > max_size()`.
-    */
-    string&
-    assign(
-        string_view s,
-        std::size_t pos,
-        std::size_t count = npos)
-    {
-        return assign(s.substr(pos, count));
     }
 
     //------------------------------------------------------
