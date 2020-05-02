@@ -14,7 +14,6 @@
 #include <boost/json/value.hpp>
 #include <boost/json/detail/format.hpp>
 #include <boost/json/detail/stack.hpp>
-#include <boost/json/detail/static_stack.hpp>
 #include <boost/json/detail/stream.hpp>
 #include <iosfwd>
 
