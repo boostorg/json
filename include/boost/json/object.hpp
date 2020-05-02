@@ -28,6 +28,10 @@ namespace json {
 class value;
 class value_ref;
 
+#ifndef BOOST_JSON_DOCS
+class object_test;
+#endif
+
 /** A dynamically sized associative container of JSON key/value pairs.
 
     This is an associative container whose elements
@@ -104,6 +108,10 @@ class object
     {
         return 1.0;
     }
+
+    friend class object_test;
+    BOOST_JSON_DECL
+    object(object_test const*);
 
 public:
     /** The type of keys.

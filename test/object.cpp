@@ -11,6 +11,7 @@
 #include <boost/json/object.hpp>
 
 #include <boost/json/monotonic_resource.hpp>
+#include <boost/json/number_cast.hpp>
 
 #include <cmath>
 #include <type_traits>
@@ -24,6 +25,7 @@ namespace json {
 class object_test
 {
 public:
+    test_suite::log_type log;
     string_view const str_;
 
     object_test()
@@ -938,6 +940,119 @@ public:
         }
     }
 
+    static
+    string_view
+    make_key(
+        std::size_t i,
+        char* buf)
+    {
+        int constexpr base = 62;
+        char const* const alphabet =
+            "0123456789"
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            "abcdefghijklmnopqrstuvwxyz";
+        char* dest = buf;
+        do
+        {
+            *dest++ = alphabet[i%base];
+            i /= base;
+        }
+        while(i);
+        return { buf, static_cast<
+            std::size_t>(dest-buf) };
+    }
+
+    void
+    testCollisions()
+    {
+        int constexpr buckets = 3;
+#if 0
+        {
+            // VFALCO This code finds the collisions
+            object o(this); // must create 3 buckets
+            char buf[26];
+            auto const match =
+                o.impl_.digest("0") % buckets;
+            std::size_t i = 8;
+            for(;;)
+            {
+                if((o.impl_.digest(
+                    make_key(i, buf)) % buckets) == match)
+                {
+                    log <<
+                        "match: \"" <<
+                        make_key(i, buf) <<
+                        "\"\n";
+                    break;
+                }
+                ++i;
+            }
+            }
+#endif
+        // Create an object with 3 keys that
+        // hash to the same bucket.
+
+    #if BOOST_JSON_ARCH == 32
+        string_view k1 = "0";
+        string_view k2 = "7";
+        string_view k3 = "A";
+    #else
+        string_view k1 = "0";
+        string_view k2 = "7";
+        string_view k3 = "C";
+    #endif
+
+        // ensure collisions are distinguishable
+        {
+            object o(this);
+            BOOST_TEST(
+                (o.impl_.digest(k1) % buckets) ==
+                (o.impl_.digest(k2) % buckets));
+            BOOST_TEST(
+                (o.impl_.digest(k2) % buckets) ==
+                (o.impl_.digest(k3) % buckets));
+            o.emplace(k1, 1);
+            o.emplace(k2, 2);
+            o.emplace(k3, 3);
+            BOOST_TEST(number_cast<int>(o.at(k1)) == 1);
+            BOOST_TEST(number_cast<int>(o.at(k2)) == 2);
+            BOOST_TEST(number_cast<int>(o.at(k3)) == 3);
+        }
+
+        // erase k1
+        {
+            object o(this);
+            o.emplace(k1, 1);
+            o.emplace(k2, 2);
+            o.emplace(k3, 3);
+            o.erase(k1);
+            BOOST_TEST(number_cast<int>(o.at(k2)) == 2);
+            BOOST_TEST(number_cast<int>(o.at(k3)) == 3);
+        }
+
+        // erase k2
+        {
+            object o(this);
+            o.emplace(k1, 1);
+            o.emplace(k2, 2);
+            o.emplace(k3, 3);
+            o.erase(k2);
+            BOOST_TEST(number_cast<int>(o.at(k1)) == 1);
+            BOOST_TEST(number_cast<int>(o.at(k3)) == 3);
+        }
+
+        // erase k3
+        {
+            object o(this);
+            o.emplace(k1, 1);
+            o.emplace(k2, 2);
+            o.emplace(k3, 3);
+            o.erase(k3);
+            BOOST_TEST(number_cast<int>(o.at(k1)) == 1);
+            BOOST_TEST(number_cast<int>(o.at(k2)) == 2);
+        }
+    }
+
     void
     run()
     {
@@ -948,6 +1063,7 @@ public:
         testLookup();
         testHashPolicy();
         testImplementation();
+        testCollisions();
     }
 };
 

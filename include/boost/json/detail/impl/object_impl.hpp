@@ -49,14 +49,9 @@ remove(
         head = next(p);
         return;
     }
-    auto prev = head;
-    auto* pn = &next(get(prev));
-    for(;;)
-    {
-        if(*pn == i)
-            break;
-        prev = *pn;
-    }
+    auto* pn = &next(get(head));
+    while(*pn != i)
+        pn = &next(get(*pn));
     *pn = next(p);
 }
 
@@ -151,7 +146,6 @@ digest(
     for(auto p = key.begin(),
         end = key.end(); p != end; ++p)
         hash = (*p ^ hash) * prime;
-    hash ^= salt();
     return hash;
 }
 

@@ -74,6 +74,13 @@ public:
 //----------------------------------------------------------
 
 object::
+object(object_test const*)
+{
+    object_impl impl(3, 3, 0, sp_);
+    impl_.swap(impl);
+}
+
+object::
 object(detail::unchecked_object&& uo)
     : sp_(uo.storage())
 {
