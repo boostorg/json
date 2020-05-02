@@ -859,6 +859,58 @@ equal(
 
 //----------------------------------------------------------
 
+namespace detail {
+
+inline
+void
+check_array_impl(int, value const&)
+{
+}
+
+template<class Arg>
+void
+check_array_impl(
+    int i, value const& jv,
+    Arg const& arg)
+{
+    BOOST_TEST(equal(jv.at(i), arg));
+}
+
+template<
+    class Arg0,
+    class Arg1,
+    class... Argn>
+void
+check_array_impl(
+    int i, value const& jv,
+    Arg0 const& arg0,
+    Arg1 const& arg1,
+    Argn const&... argn)
+{
+    BOOST_TEST(equal(jv.at(i), arg0));
+    BOOST_TEST(equal(jv.at(i + 1), arg1));
+    check_array_impl(i + 2, jv, argn...);
+}
+
+} // detail
+
+template<class... Argn>
+static
+void
+check_array(
+    value const& jv,
+    Argn const&... argn)
+{
+    if(! BOOST_TEST(jv.is_array()))
+        return;
+    if(! BOOST_TEST(sizeof...(argn) ==
+        jv.get_array().size()))
+        return;
+    detail::check_array_impl(0, jv, argn...);
+}
+
+//----------------------------------------------------------
+
 } // json
 } // boost
 

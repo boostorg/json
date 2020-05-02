@@ -1596,6 +1596,19 @@ public:
         }
     }
 
+    void
+    testInitList()
+    {
+        check_array(value{0,0,0},               0, 0, 0);
+        check_array(value{false,false,false},   false, false, false);
+        check_array(value{false,2,false},       false, 2, false);
+        check_array(value{false,2,"3"},         false, 2, "3");
+        check_array(value{false,false},         false, false);
+        check_array(value{false,2},             false, 2);
+        check_array(value{false,2,"3",nullptr}, false, 2, "3", nullptr);
+        check_array(value{2,false,"3"},         2, false, "3");
+        check_array(value{true,2,"3"},          true, 2, "3");    }
+
     //------------------------------------------------------
 
     void
@@ -1613,6 +1626,7 @@ public:
         testAt();
         testKeyValuePair();
         testStdConstruction();
+        testInitList();
     }
 };
 
