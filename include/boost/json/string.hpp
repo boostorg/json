@@ -2288,34 +2288,6 @@ public:
         return string_view(*this).substr(pos, count);
     }
 
-    /** Return a substring.
-
-        Returns a substring.
-
-        @par Exception Safety
-
-        Strong guarantee.
-
-        @return A string containing
-        `{data() + pos, std::min(count, size() - pos))`.
-
-        @param pos The index to being the substring at.
-        The default argument for this parameter is `0`.
-
-        @param count The length of the substring.
-        The default argument for this parameter
-        is @ref npos.
-
-        @throw std::out_of_range `pos > size()`
-    */
-    string
-    substr(
-        std::size_t pos = 0,
-        std::size_t count = npos) const
-    {
-        return string(subview(pos, count));
-    }
-
     //------------------------------------------------------
 
     /** Copy a substring to another string.
