@@ -195,10 +195,9 @@ public:
                 string::max_size() + 1, '*');
             auto const js =
                 "\"" + big + "\":null";
-            value jv;
-            BOOST_TEST_THROWS(
-                jv = parse(js),
-                string_too_large);
+            error_code ec;
+            auto jv = parse(js, ec);
+            BOOST_TEST(ec == error::string_too_large);
         }
 
         // key in parser
@@ -208,10 +207,9 @@ public:
                 string::max_size() + 1, '*');
             auto const js =
                 "{\"" + big + "\":null}";
-            value jv;
-            BOOST_TEST_THROWS(
-                jv = parse(js),
-                key_too_large);
+            error_code ec;
+            auto jv = parse(js, ec);
+            BOOST_TEST(ec == error::key_too_large);
         }
     }
 
@@ -219,6 +217,11 @@ public:
     testStack()
     {
         // max raw_stack
+        // VFALCO The problem here is that we need the maximum stack
+        //        larger than the maximum string to test string parts,
+        //        but we need the opposite to test stack overflows.
+        //        Thus stack overflow cannot be covered by tests.
+    #if 0
         {
             std::string big;
             value jv;
@@ -242,11 +245,38 @@ public:
                     "1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0]"),
                 stack_overflow);
         }
+    #endif
     }
 
     void
     testParser()
     {
+        // overflow in on_key_part
+        {
+            std::string big;
+            big = "\\b";
+            big += std::string(
+                string::max_size()*2, '*');
+            auto const js =
+                "{\"" + big + "\":null}";
+            error_code ec;
+            auto jv = parse(js, ec);
+            BOOST_TEST(ec == error::key_too_large);
+        }
+
+        // overflow in on_key
+        {
+            std::string big;
+            big = "\\b";
+            big += std::string(
+                (string::max_size()*3)/2, '*');
+            auto const js =
+                "{\"" + big + "\":null}";
+            error_code ec;
+            auto jv = parse(js, ec);
+            BOOST_TEST(ec == error::key_too_large);
+        }
+
         // overflow in on_string_part
         {
             std::string big;
@@ -255,10 +285,9 @@ public:
                 string::max_size()*2, '*');
             auto const js =
                 "\"" + big + "\"";
-            value jv;
-            BOOST_TEST_THROWS(
-                jv = parse(js),
-                string_too_large);
+            error_code ec;
+            auto jv = parse(js, ec);
+            BOOST_TEST(ec == error::string_too_large);
         }
 
         // overflow in on_string
@@ -269,10 +298,34 @@ public:
                 (string::max_size()*3)/2, '*');
             auto const js =
                 "\"" + big + "\"";
-            value jv;
-            BOOST_TEST_THROWS(
-                jv = parse(js),
-                string_too_large);
+            error_code ec;
+            auto jv = parse(js, ec);
+            BOOST_TEST(ec == error::string_too_large);
+        }
+
+        // object overflow
+        {
+            string_view s = R"({
+                "00":0,"01":0,"02":0,"03":0,"04":0,"05":0,"06":0,"07":0,"08":0,"09":0,
+                "10":0,"11":0,"12":0,"13":0,"14":0,"15":0,"16":0,"17":0,"18":0,"19":0,
+                "20":0
+                })";
+                
+            error_code ec;
+            auto jv = parse(s, ec);
+            BOOST_TEST(ec == error::object_too_large);
+        }
+
+        // array overflow
+        {
+            string_view s = "["
+                "0,0,0,0,0,0,0,0,0,0,"
+                "0,0,0,0,0,0,0,0,0,0,"
+                "0"
+                "]";
+            error_code ec;
+            auto jv = parse(s, ec);
+            BOOST_TEST(ec == error::array_too_large);
         }
     }
 

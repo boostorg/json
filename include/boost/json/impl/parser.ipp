@@ -285,7 +285,8 @@ push_chars(string_view s)
 template<class... Args>
 void
 parser::
-emplace_object(Args&&... args)
+emplace_object(
+    Args&&... args)
 {
     union U
     {
@@ -328,16 +329,33 @@ emplace_array(Args&&... args)
 }
 
 template<class... Args>
-void
+bool
 parser::
-emplace(Args&&... args)
+emplace(
+    error_code& ec,
+    Args&&... args)
 {
     if(lev_.st == state::key)
-        emplace_object(std::forward<
-            Args>(args)...);
-    else
+    {
+        if(lev_.count <
+            object::max_size())
+        {
+            emplace_object(std::forward<
+                Args>(args)...);
+            return true;
+        }
+        ec = error::object_too_large;
+        return false;
+    }
+    if(lev_.count <
+        array::max_size())
+    {
         emplace_array(std::forward<
             Args>(args)...);
+        return true;
+    }
+    ec = error::array_too_large;
+    return false;
 }
 
 template<class T>
@@ -445,20 +463,15 @@ bool
 parser::
 on_object_end(
     std::size_t,
-    error_code&)
+    error_code& ec)
 {
     BOOST_ASSERT(
         lev_.st == state::obj);
     auto uo = pop_object();
     rs_.subtract(lev_.align);
     pop(lev_);
-    if(lev_.st == state::key)
-    {
-        emplace_object(std::move(uo));
-        return true;
-    }
-    emplace_array(std::move(uo));
-    return true;
+    return emplace(
+        ec, std::move(uo));
 }
 
 bool
@@ -483,31 +496,29 @@ bool
 parser::
 on_array_end(
     std::size_t,
-    error_code&)
+    error_code& ec)
 {
     BOOST_ASSERT(
         lev_.st == state::arr);
     auto ua = pop_array();
     rs_.subtract(lev_.align);
     pop(lev_);
-    if(lev_.st == state::key)
-    {
-        emplace_object(std::move(ua));
-        return true;
-    }
-    emplace_array(std::move(ua));
-    return true;
+    return emplace(
+        ec, std::move(ua));
 }
 
 bool
 parser::
 on_key_part(
     string_view s,
-    error_code&)
+    error_code& ec)
 {
     if( s.size() >
         string::max_size() - key_size_)
-        key_too_large::raise();
+    {
+        ec = error::key_too_large;
+        return false;
+    }
     push_chars(s);
     key_size_ += static_cast<
         std::uint32_t>(s.size());
@@ -534,11 +545,14 @@ bool
 parser::
 on_string_part(
     string_view s,
-    error_code&)
+    error_code& ec)
 {
     if( s.size() >
         string::max_size() - str_size_)
-        string_too_large::raise();
+    {
+        ec = error::string_too_large;
+        return false;
+    }
     push_chars(s);
     str_size_ += static_cast<
         std::uint32_t>(s.size());
@@ -549,21 +563,18 @@ bool
 parser::
 on_string(
     string_view s,
-    error_code&)
+    error_code& ec)
 {
     if( s.size() >
         string::max_size() - str_size_)
-        string_too_large::raise();
+    {
+        ec = error::string_too_large;
+        return false;
+    }
     if(str_size_ == 0)
     {
         // fast path
-        if(lev_.st == state::key)
-        {
-            emplace_object(s, sp_);
-            return true;
-        }
-        emplace_array(s, sp_);
-        return true;
+        return emplace(ec, s, sp_);
     }
 
     string str(sp_);
@@ -579,88 +590,51 @@ on_string(
         str.data() + sv.size(),
         s.data(), s.size());
     str.grow(sv.size() + s.size());
-
-    if(lev_.st == state::key)
-    {
-        emplace_object(
-            std::move(str), sp_);
-        return true;
-    }
-    emplace_array(
-        std::move(str), sp_);
-    return true;
+    return emplace(
+        ec, std::move(str), sp_);
 }
 
 bool
 parser::
 on_int64(
     int64_t i,
-    error_code&)
+    error_code& ec)
 {
-    if(lev_.st == state::key)
-    {
-        emplace_object(i, sp_);
-        return true;
-    }
-    emplace_array(i, sp_);
-    return true;
+    return emplace(ec, i, sp_);
 }
 
 bool
 parser::
 on_uint64(
     uint64_t u,
-    error_code&)
+    error_code& ec)
 {
-    if(lev_.st == state::key)
-    {
-        emplace_object(u, sp_);
-        return true;
-    }
-    emplace_array(u, sp_);
-    return true;
+    return emplace(ec, u, sp_);
 }
 
 bool
 parser::
 on_double(
     double d,
-    error_code&)
+    error_code& ec)
 {
-    if(lev_.st == state::key)
-    {
-        emplace_object(d, sp_);
-        return true;
-    }
-    emplace_array(d, sp_);
-    return true;
+    return emplace(ec, d, sp_);
 }
 
 bool
 parser::
 on_bool(
-    bool b, error_code&)
+    bool b,
+    error_code& ec)
 {
-    if(lev_.st == state::key)
-    {
-        emplace_object(b, sp_);
-        return true;
-    }
-    emplace_array(b, sp_);
-    return true;
+    return emplace(ec, b, sp_);
 }
 
 bool
 parser::
-on_null(error_code&)
+on_null(error_code& ec)
 {
-    if(lev_.st == state::key)
-    {
-        emplace_object(nullptr, sp_);
-        return true;
-    }
-    emplace_array(nullptr, sp_);
-    return true;
+    return emplace(ec, nullptr, sp_);
 }
 
 //----------------------------------------------------------

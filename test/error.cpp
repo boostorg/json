@@ -73,6 +73,10 @@ public:
         check(condition::parse_error, error::expected_true);
         check(condition::parse_error, error::expected_false);
         check(condition::parse_error, error::expected_null);
+        check(condition::parse_error, error::object_too_large);
+        check(condition::parse_error, error::array_too_large);
+        check(condition::parse_error, error::key_too_large);
+        check(condition::parse_error, error::string_too_large);
 
         check(condition::assign_error, error::not_object);
         check(condition::assign_error, error::not_array);

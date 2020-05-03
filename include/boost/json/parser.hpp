@@ -315,15 +315,19 @@ private:
 
     template<class... Args>
     void
-    emplace_object(Args&&... args);
+    emplace_object(
+        Args&&... args);
 
     template<class... Args>
     void
-    emplace_array(Args&&... args);
+    emplace_array(
+        Args&&... args);
 
     template<class... Args>
-    void
-    emplace(Args&&... args);
+    bool
+    emplace(
+        error_code& ec,
+        Args&&... args);
 
     template<class T>
     void

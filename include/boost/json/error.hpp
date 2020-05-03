@@ -59,6 +59,10 @@ using std::generic_category;
 enum class error
 {
     //----------------------------------
+    //
+    // parse errors
+    //
+    //----------------------------------
 
     /// syntax error
     syntax = 1,
@@ -132,6 +136,20 @@ enum class error
 
     /// expected 'null'
     expected_null,
+
+    /// An object contains too many elements
+    object_too_large,
+
+    /// An array contains too many elements
+    array_too_large,
+
+    /// A key is too large
+    key_too_large,
+
+    /// A string is too large
+    string_too_large,
+
+    //----------------------------------
 
     /// not an object
     not_object,

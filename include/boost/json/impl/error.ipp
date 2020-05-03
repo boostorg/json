@@ -68,6 +68,11 @@ case error::not_null: return "not a null";
 case error::integer_overflow: return "integer overflowed";
 case error::not_exact: return "not exact";
 
+case error::object_too_large: return "object too large";
+case error::array_too_large: return "array too large";
+case error::key_too_large: return "key too large";
+case error::string_too_large: return "string too large";
+
 case error::test_failure: return "test failure";
             }
         }
@@ -87,14 +92,12 @@ case error::incomplete:
 case error::mantissa_overflow:
 case error::exponent_overflow:
 case error::too_deep:
-
 case error::illegal_char:
 case error::illegal_control_char:
 case error::illegal_escape_char:
 case error::illegal_extra_digits:
 case error::illegal_leading_surrogate:
 case error::illegal_trailing_surrogate:
-
 case error::expected_comma:
 case error::expected_colon:
 case error::expected_quotes:
@@ -106,6 +109,10 @@ case error::expected_exponent:
 case error::expected_true:
 case error::expected_false:
 case error::expected_null:
+case error::object_too_large:
+case error::array_too_large:
+case error::key_too_large:
+case error::string_too_large:
     return condition::parse_error;
 
 case error::not_object:
@@ -144,7 +151,7 @@ make_error_condition(condition c)
             {
             default:
             case condition::parse_error:
-                return "A JSON parsing error occurred";
+                return "A JSON parse error occurred";
             case condition::assign_error:
                 return "An error occurred during assignment";
             }

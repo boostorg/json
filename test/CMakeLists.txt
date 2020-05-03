@@ -17,14 +17,14 @@ target_link_libraries(tests PRIVATE Boost::json)
 add_test(NAME json-tests COMMAND tests)
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX "" FILES limits.cpp main.cpp)
-add_executable(limits limits.cpp main.cpp)
+add_executable(limits limits.cpp main.cpp Jamfile)
 
 target_include_directories(limits PRIVATE ../include .)
 target_compile_definitions(limits PRIVATE
     BOOST_JSON_HEADER_ONLY=1
     BOOST_JSON_MAX_STRING_SIZE=1000
-    BOOST_JSON_MAX_OBJECT_SIZE=30
-    BOOST_JSON_MAX_ARRAY_SIZE=100
+    BOOST_JSON_MAX_OBJECT_SIZE=20
+    BOOST_JSON_MAX_ARRAY_SIZE=20
     BOOST_JSON_MAX_STACK_SIZE=1024
     BOOST_JSON_PARSER_BUFFER_SIZE=256
 )
