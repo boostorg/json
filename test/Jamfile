@@ -43,10 +43,9 @@ local SOURCES =
     string.cpp
     string_view.cpp
     system_error.cpp
-    to_value.cpp
-    traits.cpp
+    value_from.cpp
     value.cpp
-    value_cast.cpp
+    value_to.cpp
     value_ref.cpp
     ryu/d2s_intrinsics_test.cpp
     ryu/d2s_table_test.cpp

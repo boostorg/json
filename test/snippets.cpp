@@ -9,8 +9,15 @@
 
 #include <boost/json.hpp>
 
+#include <algorithm>
+#include <cmath>
 #include <complex>
 #include <iostream>
+#include <map>
+#include <numeric>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 #include "test_suite.hpp"
 
@@ -27,6 +34,28 @@
 
 namespace boost {
 namespace json {
+
+//[snippet_conv_2
+
+template< class T >
+void
+tag_invoke( const value_from_tag&, value& jv, std::complex< T > const& t)
+{
+    // Store a complex number as a 2-element array
+    // with the real part followed by the imaginary part
+    jv = { t.real(), t.imag() };
+}
+
+template< class T >
+std::complex< T >
+tag_invoke( const value_to_tag< std::complex< T > >&, value const& jv )
+{
+    return std::complex< T >(
+        number_cast< T >( jv.as_array().at(0) ),
+        number_cast< T >( jv.as_array().at(1) ) );
+}
+
+//]
 
 namespace {
 
@@ -368,13 +397,15 @@ usingStorage()
 
         // allocates 256 bytes with an alignment of
         // alignof(std::max_align_t) within a dynamically allocated block
-        void* dynamic_allocd = mr.allocate(size);
+        void* dynamic_alloc = mr.allocate(size);
 
         // allocated memory was dynamically allocated
-        assert( buffer_alloc < std::begin(buffer) &&
-            buffer_alloc > std::end(buffer) );
+        assert( !(dynamic_alloc >= std::begin(buffer) &&
+            dynamic_alloc <= std::end(buffer)) );
 
         //]
+
+        (void)dynamic_alloc;
     }
     {
         //[snippet_allocators_4
@@ -693,49 +724,72 @@ usingSerializing()
 
 //----------------------------------------------------------
 
-//[snippet_exchange_1
+//[snippet_conv_3
 
-struct customer
+template< class T >
+struct vec3
 {
-    std::uint64_t id;
-    std::string name;
-    bool delinquent;
-
-    customer() = default;
-    
-    explicit customer( value const& );
-
-    void to_json( value& jv ) const;
+    T x, y, z;
 };
 
-//]
-
-BOOST_STATIC_ASSERT(
-    has_to_value<customer>::value);
-
-//BOOST_STATIC_ASSERT(
-//    has_from_json<customer>::value);
-
-//[snippet_exchange_2
-
-void customer::to_json( value& jv ) const
+template< class T >
+void tag_invoke( const value_from_tag&, value& jv, const vec3<T>& vec )
 {
-    // Assign a JSON value
-    jv = {
-        { "id", id },
-        { "name", name },
-        { "delinquent", delinquent }
+    jv = { 
+        { "x", vec.x }, 
+        { "y", vec.y }, 
+        { "z", vec.z } 
     };
 }
 
 //]
 
-//[snippet_exchange_3
+#ifdef BOOST_JSON_DOCS
+//[snippet_conv_5
+
+template< class T, typename std::enable_if<
+    std::is_floating_point< T >::value>::type* = nullptr >
+void tag_invoke( const value_from_tag&, value& jv, T t )
+{
+    jv = std::llround( t );
+}
+
+//]
+#endif
+
+//[snippet_conv_8
+
+struct customer
+{
+    std::uint64_t id;
+    std::string name;
+    bool late;
+
+    customer() = default;
+
+    customer( std::uint64_t i, const std::string& n, bool l )
+        : id( i ), name( n ), late( l ) { }
+
+    explicit customer( value const& );
+};
+
+void tag_invoke( const value_from_tag&, value& jv, customer const& c )
+{
+    // Assign a JSON value
+    jv = {
+        { "id", c.id },
+        { "name", c.name },
+        { "late", c.late }
+    };
+}
+
+//]
+
+//[snippet_conv_12
 
 customer::customer( value const& jv )
 
     // at() throws if `jv` is not an object, or if the key is not found.
-    //
     // as_uint64() will throw if the value is not an unsigned 64-bit integer.
 
     : id( jv.at( "id" ).as_uint64() )
@@ -743,74 +797,220 @@ customer::customer( value const& jv )
     // We already know that jv is an object from
     // the previous call to jv.as_object() suceeding,
     // now we use jv.get_object() which skips the
-    // check.
-    //
-    // value_cast will throw if jv.kind() != kind::string
+    // check. value_to will throw if jv.kind() != kind::string
 
-    , name( value_cast< std::string >( jv.get_object().at( "name" ) ) )
+    , name( value_to< std::string >( jv.get_object().at( "name" ) ) )
 {
     // id and name are constructed from JSON in the member
     // initializer list above, but we can also use regular
     // assignments in the body of the function as shown below.
-    //
     // as_bool() will throw if kv.kind() != kind::bool
     
-    this->delinquent = jv.get_object().at( "delinquent" ).as_bool();
+    late = jv.get_object().at( "late" ).as_bool();
 }
 
 //]
 
 void
-usingExchange1()
+usingExchange()
 {
-    //[snippet_exchange_4
+    {
+        //[snippet_conv_1
 
-    customer cust;
-    cust.id = 1;
-    cust.name = "John Doe";
-    cust.delinquent = false;
+        std::vector< int > v1{ 1, 2, 3, 4 };
 
-    // Convert customer to value
-    value jv = to_value( cust );
+        // Convert the vector to a JSON array
+        value jv = value_from( v1 );
 
-    // Store value in customer
-    customer cust2;
-    cust2 = value_cast< customer >( jv );
+        assert( jv.is_array() );
 
-    //]
+        array& ja = jv.as_array();
+
+        assert( ja.size() == 4 );
+
+        for ( std::size_t i = 0; i < v1.size(); ++i )
+            assert( v1[i] == ja[i].as_int64() );
+
+        // Convert back to vector< int >
+        std::vector< int > v2 = value_to< std::vector< int > >( jv );
+
+        assert( v1 == v2 );
+
+        //]
+    }
+    {
+        //[snippet_conv_4
+
+        vec3< int > pos = { 4, 1, 4 };
+
+        value jv = value_from( pos );
+
+        assert( to_string( jv ) == "{\"x\":4,\"y\":1,\"z\":4}" );
+
+        //]
+    }
+    {
+        //[snippet_conv_6
+
+       value jv = value_from( 1.5 ); // error
+
+        //]
+    }
+    {
+        //[snippet_conv_7
+
+        std::map< std::string, vec3< int > > positions = {
+            { "Alex", { 42, -60, 18 } },
+            { "Blake", { 300, -60, -240} },
+            { "Carol", { -60, 30, 30 } }
+        };
+
+        // conversions are applied recursively;
+        // the key type and value type will be converted
+        // using value_from as well
+        value jv = value_from( positions );
+
+        assert( jv.is_object() );
+        
+        object& jo = jv.as_object();
+
+        assert( jo.size() == 3 );
+
+        // The sum of the coordinates is 0
+        assert( std::accumulate( jo.begin(), jo.end(), std::int64_t(0),
+            []( std::int64_t total, const key_value_pair& jp )
+            {
+                assert ( jp.value().is_object() );
+                
+                const object& pos = jp.value().as_object();
+
+                return total + pos.at( "x" ).as_int64() +
+                    pos.at( "y" ).as_int64() +
+                    pos.at( "z" ).as_int64();
+
+            } ) == 0 );
+   
+        //]
+    }
+    {
+        //[snippet_conv_9
+
+        std::vector< customer > customers = {
+            customer( 0, "Alison", false ),
+            customer( 1, "Bill", false ),
+            customer( 3, "Catherine", true ),
+            customer( 4, "Doug", false )
+         };
+
+        storage_ptr sp = make_counted_resource< monotonic_resource >();
+
+        value jv = value_from( customers, sp );
+
+        assert( jv.storage() == sp );
+
+        assert( jv.is_array() );
+
+        //]
+    }
+
+    {
+        //[snippet_conv_10
+
+        // Satisfies both FromMapLike and FromContainerLike
+        std::unordered_map< std::string, bool > available_tools = {
+            { "Crowbar", true },
+            { "Hammer", true },
+            { "Drill", true },
+            { "Saw", false },
+        };
+
+        value jv = value_from( available_tools );
+
+        assert( jv.is_object() );
+        
+        //]
+    }
+    {
+        //[snippet_conv_11
+
+        std::complex< double > c1 = { 3.14159, 2.71828 };
+
+        // Convert a complex number to JSON
+        value jv = value_from( c1 );
+
+        assert ( jv.is_array() );
+
+        // Convert back to a complex number
+
+        std::complex< double > c2 = value_to< std::complex< double > >( jv );
+
+        //]
+    }
+    {
+        //[snippet_conv_13
+
+        customer c1( 5, "Ed", false );
+
+        // Convert customer to value
+        value jv = value_from( c1 );
+
+        // Convert the result back to customer
+        customer c2 = value_to< customer >( jv );
+
+        // The resulting customer is unchanged
+        assert( c1.name == c2.name );
+
+        //]
+    }
+    {
+        //[snippet_conv_14
+
+        value available_tools = {
+            { "Crowbar", true },
+            { "Hammer", true },
+            { "Drill", true },
+            { "Saw", false }
+        };
+
+        assert( available_tools.is_object() );
+
+        auto as_map = value_to< std::map< std::string, bool > >( available_tools );
+
+        assert( available_tools.as_object().size() == as_map.size() );
+
+        //]
+    }
 }
+
+BOOST_STATIC_ASSERT(
+    has_value_from<customer>::value);
+
+BOOST_STATIC_ASSERT(
+    has_value_from<std::complex<float>>::value);
+BOOST_STATIC_ASSERT(
+    has_value_from<std::complex<double>>::value);
+BOOST_STATIC_ASSERT(
+    has_value_from<std::complex<long double>>::value);
+
+BOOST_STATIC_ASSERT(
+    has_value_to<std::complex<float>>::value);
+BOOST_STATIC_ASSERT(
+    has_value_to<std::complex<double>>::value);
+BOOST_STATIC_ASSERT(
+    has_value_to<std::complex<long double>>::value);
 
 } // (anon)
 
 } // json
 } // boost
-//[snippet_exchange_5
 
-// Specializations of to_value_traits and value_cast_traits
-// must be declared in the boost::json namespace.
+//----------------------------------------------------------
 
-namespace boost {
-namespace json {
-
-template<class T>
-struct to_value_traits< std::complex< T > >
-{
-    static void assign( value& jv, std::complex< T > const& t );
-};
-
-template<class T>
-struct value_cast_traits< std::complex< T > >
-{
-    static std::complex< T > construct( value const& jv );
-};
-
-} // namespace json
-} // namespace boost
-
-//]
 
 namespace {
+
 class my_null_deallocation_resource { };
+
 } // (anon)
 
 //[snippet_allocators_14
@@ -831,113 +1031,8 @@ struct is_deallocate_null<my_null_deallocation_resource>
 
 //]
 
-
-
 namespace boost {
 namespace json {
-
-BOOST_STATIC_ASSERT(
-    has_to_value<std::complex<float>>::value);
-BOOST_STATIC_ASSERT(
-    has_to_value<std::complex<double>>::value);
-BOOST_STATIC_ASSERT(
-    has_to_value<std::complex<long double>>::value);
-
-BOOST_STATIC_ASSERT(
-    has_value_cast<std::complex<float>>::value);
-BOOST_STATIC_ASSERT(
-    has_value_cast<std::complex<double>>::value);
-BOOST_STATIC_ASSERT(
-    has_value_cast<std::complex<long double>>::value);
-
-//[snippet_exchange_6
-
-template< class T >
-void
-to_value_traits< std::complex< T > >::
-assign( boost::json::value& jv, std::complex< T > const& t )
-{
-    // Store a complex number as a 2-element array
-    array& a = jv.emplace_array();
-
-    // Real part first
-    a.emplace_back( t.real() );
-
-    // Imaginary part last
-    a.emplace_back( t.imag() );
-}
-
-//]
-
-//[snippet_exchange_7]
-
-template< class T >
-std::complex< T >
-value_cast_traits< std::complex< T > >::
-construct( value const& jv )
-{
-    // as_array() throws if jv.kind() != kind::array.
-
-    array const& a = jv.as_array();
-
-    // We store the complex number as a two element
-    // array with the real part first, and the imaginary
-    // part last.
-    //
-    // value_cast() throws if the JSON value does
-    // not contain an applicable kind for the type T.
-
-    if(a.size() != 2)
-        throw std::invalid_argument(
-            "invalid json for std::complex");
-    return {
-        value_cast< T >( a[0] ),
-        value_cast< T >( a[1] ) };
-}
-
-//]
-
-namespace {
-
-void
-usingExchange2()
-{
-    {
-    //[snippet_exchange_8
-
-    std::complex< double > c = { 3.14159, 2.71828 };
-
-    // Convert std::complex< double > to value
-    value jv = to_value(c);
-
-    // Store value in std::complex< double >
-    std::complex< double > c2;
-
-    c2 = value_cast< std::complex< double > >( jv );
-
-    //]
-    }
-
-    {
-    //[snippet_exchange_9
-
-    // Use float instead of double.
-
-    std::complex< float > c = { -42.f, 1.41421f };
-
-    value jv = to_value(c);
-
-    std::complex< float > c2;
-
-    c2 = value_cast< std::complex< float > >( jv );
-
-    //]
-    }
-}
-
-} // (anon)
-
-//----------------------------------------------------------
 
 class snippets_test
 {
@@ -946,18 +1041,17 @@ public:
     run()
     {
         usingInitLists();
+        usingStorage();
+        usingExchange();
 
         &usingStrings;
         &usingArrays;
         &usingObjects;
-        &usingStorage;
         &parse_fast;
         &do_json;
         &do_rpc;
         &usingParsing;
         &usingSerializing;
-        &usingExchange1;
-        &usingExchange2;
 
         BOOST_TEST_PASS();
     }
