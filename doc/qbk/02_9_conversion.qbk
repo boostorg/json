@@ -13,101 +13,303 @@
 
 While the __value__ container makes it easy to create ad-hoc structures,
 often it is necessary to convert between JSON and specific user-defined
-types. The library provides a set of customization points to enable
-conversions between objects of type `T` and a JSON value by:
+types. Converting from a type `T` to __value__ is done by __value_from__.
+The conversion in the opposite direction is done with __value_to__.
 
-* A specialization of __to_value_traits__ for `T` containing
-  the public static member function
-  `void to_json_traits<T>::assign( value&, T const& )`,
+[snippet_conv_1]
 
-* A specialization of __value_cast_traits__ for `T` containing
-  the public static member function
-  `T value_cast_traits<T>::construct( value const& )`,
+In all cases, the conversions are done by calling an appropriate
+overload of `tag_invoke`. For __value_from__, these overloads have the form: 
 
-* A public non-static member function `void T::to_json( value& ) const`,
+```
+void tag_invoke( const value_from_tag&, value&, T );
+```
 
-* A public constructor `T::T( value const& )`,
+Likewise, the overloads of `tag_invoke` called by __value_to__
+take the form:
 
-The library provides built-in support for converting between a __value__
-and the type `T` when:
+```
+T tag_invoke( const value_to_tag< T >&, const value& );
+```
 
-* `std::is_constructible< value, T, storage_ptr >::value == true`, or
+In both cases, overloads for user-provided types can be implemented:
 
-* `T` is a container meeting a built-in list of supported generic requirements.
+[snippet_conv_2]
 
-When more than one conversion is available for a given type, one
-will be chosen according to a defined set of priorities.
+Since the type being converted is embedded into the
+parameter-type-list of the function, user-provided overloads
+are visible to argument-dependent lookup and will be candidates
+when a conversion is performed. Consider the following:
 
+[snippet_conv_3]
 
+When __value_from__ is called, the `tag_invoke` function template
+will be found by argument-dependent lookup and used to perform the conversion:
 
-[heading Member Functions]
+[snippet_conv_4]
 
-The example code that follows uses the user-defined type `customer`,
-declared thusly:
+In addition to user-provided overloads of `tag_invoke`, the library
+will add its own function to the overload set when certain constraints
+are satisfied. The library provided overloads have no special
+prioritization over those provided by the user, so care should be taken to
+avoid writing ambiguous declarations:
 
-[snippet_exchange_1]
+[snippet_conv_5]
 
-Since the author has control of the type, it uses member functions
-to enable conversions with JSON. An implementation of `to_json` may
-look like this:
+Upon calling this function, overload resolution will fail because
+the library already provides an overload for floating-point types:
 
-[snippet_exchange_2]
+[snippet_conv_6]
 
-Turning a JSON value back into a customer is a bit more complicated,
-as it must handle the case where the value does not have the necessary
-keys, or if the values have the wrong kind. The implementation of
-`from_json` throws an exception when the JSON value does not precisely
-match the expected schema for customer:
+Library-provided overloads of `tag_invoke` come in two flavors: those that
+convert between JSON types (known as ['built-in conversions]),
+and those that convert to/from container and string types
+(known as ['generic conversions]). Generic conversions offer convenience
+by eliminating the need to write repetitive overloads for types
+that model common C++ concepts (e.g. sequence containers, associative containers,
+tuples, and strings).
 
-[snippet_exchange_3]
+[snippet_conv_7]
 
-When conversion between `T` and __value__ is defined in both directions,
-round trips are possible:
+[heading Converting to json::value]
 
-[snippet_exchange_4]
+The function template __value_from__ provides an interface to 
+construct a __value__ from a user- or library-provided
+type `T`. The optionally supplied __storage_ptr__ argument is
+used as the memory resource for the resulting __value__ object. 
+The parameter of type `value&` is the result
+of the conversion; this ensures that the __storage_ptr__
+is correctly propagated to the result. For example, 
+consider the following struct:
 
+[snippet_conv_8]
 
+If our store has a lot of customers,
+it may be desirable to use a __monotonic_resource__ when serializing
+`customer` objects to JSON. __value_from__ ensures that the
+correct memory resource is used: 
 
-[heading Trait Specialization]
+[snippet_conv_9]
 
-Sometimes it is desired to perform JSON conversion, but the type in
-question cannot be modified. This can happen for `std` types, or
-for types from other libraries. Or, because the user wants to make
-keep the convertibility to and from JSON private and thus forgo
-adding a public member function.
-For these cases, it is possible to specialize the library class
-templates __to_value_traits__ and __value_cast_traits__ for the
-type and provide the necessary conversion functions. Here we
-enable conversion in both directions for the type __std_complex__:
+In addition to the user-provided overloads found by
+argument-dependent lookup, the library provides its own
+overload of `tag_invoke` when certain conditions are met.
 
-[snippet_exchange_5]
+If, for the type `T` being converted
 
-The implementation for `to_json` is straightforward:
+* `std::is_assignable<value&, T&&>::value` is `true`, or
 
-[snippet_exchange_6]
+* `T` satisfies ['TupleLike], or
 
-As before, the implementation for `from_json` must use exceptions
-to indicate that the value does not have the right schema:
+* `T` satisfies ['FromMapLike], or
 
-[snippet_exchange_7]
+* `T` satisfies ['FromContainerLike].
 
-Conversion to and from __std_complex__ is now possible:
+Then a function template of the form
 
-[snippet_exchange_8]
+```
+template< class T >
+void tag_invoke( value_from_tag, value& jv, T&& t );
+```
 
-Since the specializations of __to_value_traits__ and __value_cast_traits__
-are class templates themselves, conversion to complex numbers using
-different floating point representations are also possible:
+is added to the set of user-provided overloads found by
+argument-dependent lookup; it performs the conversion
+corresponding to first condition met by `T` in the above
+list. For example, if `T` satisfies both ['FromMapLike]
+and ['FromContainerLike], the conversion will be performed
+the one corresponding to ['FromMapLike]; it will not be ambiguous.
 
-[snippet_exchange_9]
+[snippet_conv_10]
 
-[warning
-    Users should not directly invoke any `to_json` member
-    functions or the library class templates __to_value_traits__
-    and __value_cast_traits__, otherwise the behavior may be undefined.
-    Instead, callers should always use the functions __to_value__
-    and __value_cast__, even in their implementation of the
-    customization points for desired types.
+The conversion performed when the first condition is met 
+(the library-provided built-in conversion) is assignment to the
+__value__ parameter. For the generic conversions, types that satisfy
+['TupleLike] or ['FromContainerLike] are converted to __array__ and
+those that satisfy ['FromMapLike] are converted to __object__.
+
+[heading Converting to Foreign Types]
+
+The function template __value_to__ provides an interface to
+construct a type `T` from a __value__. In contrast to
+__value_from__, no output parameter is used as there is no
+__storage_ptr__ to propagate.
+
+[snippet_conv_11]
+
+As with __value_from__, the library provides its own
+overload of `tag_invoke` when certain conditions are met.
+
+If, for the type `T` 
+
+* `T` is __value__, __object__, __array__, __string__
+or `bool`, or `std::is_arithmetic<T>::value` is `true`, or
+
+* `std::is_constructible<T, const value&>::value` is `true`, or
+
+* `T` satisfies ['StringLike], or
+
+* `T` satisfies ['ToMapLike], or
+
+* `T` satisfies ['ToContainerLike].
+
+Then a function template of the form
+
+```
+template< class T >
+T tag_invoke( value_to_tag< T >, const value& jv );
+```
+
+is added to the set of user-provided overloads found by
+argument-dependent lookup. As with __value_from__, it performs
+the conversion corresponding to first condition met
+by `T` in the above list. Given the following definition of
+`customer::customer( const value& )`:
+
+[snippet_conv_12]
+
+Objects of type `customer` can be converted to and from
+__value__:
+
+[snippet_conv_13]
+
+When first condition is met, the conversion will simply
+return the object of type `T` stored within the __value__
+(e.g. using `jv.as_object()`, `jv.as_array()`, etc).
+When the second condition is met, the result of the conversion
+will be `T(jv)`. As with __value_from__, when generic conversions
+are selected, an attempt will be made to convert
+the __value__ to `T`.
+
+[snippet_conv_14]
+
+[heading Named Requirements for Generic Conversions]
+
+Each of the following tables specify valid operations on a
+type or expression thereof meeting the requirement ['R].
+A requirement ['Req] prefixed with ['From/To] does not
+define a single requirement; it defines the two requirements
+['FromReq] and ['ToReq] which correspond with
+__value_to__ and __value_from__, respectively.
+
+In each of the following:
+
+* `T` is a type that satisfies ['R],
+
+* `e` is an lvalue of type `T`,
+
+* `has_value_trait` names the template __has_value_to__
+(when ['R] is prefixed with ['To]) or __has_value_from__
+(when ['R] is prefixed with ['From]).
+
+* The namespace-scope declarations `using std::begin;` and 
+`using std::end;` precede the point at which the validity 
+and semantics of an expression is determined.  
+
+[h2 ['TupleLike] Requirements]
+
+[table Valid expressions
+[[Expression] [Type] [Semantics and Constraints]]
+[
+    [`std::tuple_size<T>`]
+    [`U`]
+    [
+        ['Constraints:] `U::value` is greater than `0`
+    ]
+]
+]
+
+[h2 ['StringLike] Requirements]
+
+[table Valid expressions
+[[Expression] [Type] [Semantics and Constraints]]
+[
+    [`std::is_constructible<T, char*, std::size_t>`]
+    [`U`]
+    [
+        ['Constraints:] `U::value` is `true`
+    ]
+][
+    [`e.data()`]
+    [`pointer`]
+    [
+        ['Constraints:] `std::is_convertible<char*, pointer>::value` is `true`
+    ]
+][
+    [`e.size()`]
+    [`size_type`]
+    [
+        ['Constraints:] `std::is_convertible<size_type, std::size_t>::value` is `true`
+    ]
+]
+]
+
+[h2 ['From/To ContainerLike] Requirements]
+
+[table Valid expressions
+[[Expression] [Type] [Semantics and Constraints]]
+[
+    [`T::value_type`]
+    [`value_type`]
+    [
+        ['Constraints:] `has_value_trait<value_type>::value` is `true`
+    ]
+][
+    [`begin(e)`]
+    [`iterator`]
+    []
+][
+    [`end(e)`]
+    [`iterator`]
+    []
+]
+]
+
+[h2 ['From/To MapLike] Requirements]
+
+In the following table `vt` is a prvalue
+of type `T::value_type`.
+
+[table Valid expressions
+[[Expression] [Type] [Semantics and Constraints]]
+[
+    [`begin(e)`]
+    [`iterator`]
+    []
+][
+    [`end(e)`]
+    [`iterator`]
+    []
+][
+    [`T::value_type`]
+    [`pair_type`]
+    [
+        ['Constraints:] `pair_type` satisfies ['TupleLike] and
+        `std::tuple_size<pair_type>::value` is `2`
+    ]
+][
+    [`std::tuple_element<0, pair_type>::type`]
+    [`key_type`]
+    [
+        ['Constraints for FromMapLike:]
+        `std::is_convertible<key_type, string_view>::value` is `true`
+
+        ['Constraints for ToMapLike:]
+        `std::is_constructible<key_type, string_view>::value` is `true`
+    ]
+][
+    [`std::tuple_element<1, pair_type>::type`]
+    [`value_type`]
+    [
+        ['Constraints:] `has_value_trait<value_type>::value` is `true`
+    ]
+]
+[
+    [`e.emplace(vt)`]
+    [`U`]
+    [
+        ['Constraints:] `U` satisfies ['TupleLike]
+    ]
+]
 ]
 
 [endsect]
