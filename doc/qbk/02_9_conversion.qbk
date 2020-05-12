@@ -16,15 +16,13 @@ often it is necessary to convert between JSON and specific user-defined
 types. The library provides a set of customization points to enable
 conversions between objects of type `T` and a JSON value by:
 
-* A specialization of __to_value_traits__ for `T` containing
-  the public static member function
-  `void to_json_traits<T>::assign( value&, T const& )`,
+* An unqualified call to a function named `tag_invoke` found by argument
+  dependent lookup with a signature equivalent to
+  `void tag_invoke( to_value_tag, value&, T )`
 
 * A specialization of __value_cast_traits__ for `T` containing
   the public static member function
   `T value_cast_traits<T>::construct( value const& )`,
-
-* A public non-static member function `void T::to_json( value& ) const`,
 
 * A public constructor `T::T( value const& )`,
 
@@ -33,12 +31,13 @@ and the type `T` when:
 
 * `std::is_constructible< value, T, storage_ptr >::value == true`, or
 
-* `T` is a container meeting a built-in list of supported generic requirements.
+* `T` is a __ForwardRange__ whose value type is convertible to __value__, or
 
-When more than one conversion is available for a given type, one
-will be chosen according to a defined set of priorities.
+* `T` is a __ForwardRange__ whose value type is convertible to
+  __key_value_pair__.
 
-
+User-defined conversions always take priority over conversions defined
+by the library.
 
 [heading Member Functions]
 
@@ -48,7 +47,7 @@ declared thusly:
 [snippet_exchange_1]
 
 Since the author has control of the type, it uses member functions
-to enable conversions with JSON. An implementation of `to_json` may
+to enable conversions with JSON. A definition of `tag_invoke` may
 look like this:
 
 [snippet_exchange_2]
@@ -68,10 +67,10 @@ round trips are possible:
 
 
 
-[heading Trait Specialization]
+[heading Foreign Types]
 
 Sometimes it is desired to perform JSON conversion, but the type in
-question cannot be modified. This can happen for `std` types, or
+question is in a foreign namespace. This can happen for `std` types, or
 for types from other libraries. Or, because the user wants to make
 keep the convertibility to and from JSON private and thus forgo
 adding a public member function.

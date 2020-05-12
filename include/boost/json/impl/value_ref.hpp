@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_IMPL_VALUE_REF_HPP
 #define BOOST_JSON_IMPL_VALUE_REF_HPP
 
-#include <boost/json/to_value.hpp>
+#include <boost/json/value_from.hpp>
 
 namespace boost {
 namespace json {
@@ -35,7 +35,7 @@ from_const(
     void const* p,
     storage_ptr sp)
 {
-    return to_value(
+    return value_from(
         *reinterpret_cast<
             T const*>(p),
         detail::move(sp));
@@ -48,7 +48,7 @@ from_rvalue(
     void* p,
     storage_ptr sp)
 {
-    return to_value(
+    return value_from(
         detail::move(
             *reinterpret_cast<T*>(p)),
         detail::move(sp));

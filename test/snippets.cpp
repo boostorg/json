@@ -704,27 +704,27 @@ struct customer
     customer() = default;
     
     explicit customer( value const& );
-
-    void to_json( value& jv ) const;
 };
+
+void tag_invoke( value_from_tag, value& jv, customer const& c );
 
 //]
 
 BOOST_STATIC_ASSERT(
-    has_to_value<customer>::value);
+    has_value_from<customer>::value);
 
 //BOOST_STATIC_ASSERT(
 //    has_from_json<customer>::value);
 
 //[snippet_exchange_2
 
-void customer::to_json( value& jv ) const
+void tag_invoke( value_from_tag, value& jv, customer const& c )
 {
     // Assign a JSON value
     jv = {
-        { "id", id },
-        { "name", name },
-        { "delinquent", delinquent }
+        { "id", c.id },
+        { "name", c.name },
+        { "delinquent", c.delinquent }
     };
 }
 
@@ -745,9 +745,9 @@ customer::customer( value const& jv )
     // now we use jv.get_object() which skips the
     // check.
     //
-    // value_cast will throw if jv.kind() != kind::string
+    // value_to will throw if jv.kind() != kind::string
 
-    , name( value_cast< std::string >( jv.get_object().at( "name" ) ) )
+    , name( value_to< std::string >( jv.get_object().at( "name" ) ) )
 {
     // id and name are constructed from JSON in the member
     // initializer list above, but we can also use regular
@@ -771,11 +771,11 @@ usingExchange1()
     cust.delinquent = false;
 
     // Convert customer to value
-    value jv = to_value( cust );
+    value jv = value_from( cust );
 
     // Store value in customer
     customer cust2;
-    cust2 = value_cast< customer >( jv );
+    cust2 = value_to< customer >( jv );
 
     //]
 }
@@ -786,28 +786,39 @@ usingExchange1()
 } // boost
 //[snippet_exchange_5
 
-// Specializations of to_value_traits and value_cast_traits
-// must be declared in the boost::json namespace.
+// VFALCO TODO
+//]
+
+//----------------------------------------------------------
+
+//[snippet_exchange_6
 
 namespace boost {
 namespace json {
 
-template<class T>
-struct to_value_traits< std::complex< T > >
+template< class T >
+void
+tag_invoke( value_from_tag, value& jv, std::complex< T > const& t)
 {
-    static void assign( value& jv, std::complex< T > const& t );
-};
+    // Store a complex number as a 2-element array
+    // with the real part followed by the imaginary part
+    jv = { t.real(), t.imag() };
+}
 
-template<class T>
-struct value_cast_traits< std::complex< T > >
+template< class T >
+std::complex< T >
+tag_invoke( value_to_tag< std::complex< T > >, value const& jv )
 {
-    static std::complex< T > construct( value const& jv );
-};
+    return std::complex< T >(
+        number_cast< T >( jv.as_array().at(0) ),
+        number_cast< T >( jv.as_array().at(1) ) );
+}
 
-} // namespace json
-} // namespace boost
+} // json
+} // boost
 
 //]
+
 
 namespace {
 class my_null_deallocation_resource { };
@@ -831,69 +842,28 @@ struct is_deallocate_null<my_null_deallocation_resource>
 
 //]
 
-
-
 namespace boost {
 namespace json {
 
 BOOST_STATIC_ASSERT(
-    has_to_value<std::complex<float>>::value);
+    has_value_from<std::complex<float>>::value);
 BOOST_STATIC_ASSERT(
-    has_to_value<std::complex<double>>::value);
+    has_value_from<std::complex<double>>::value);
 BOOST_STATIC_ASSERT(
-    has_to_value<std::complex<long double>>::value);
+    has_value_from<std::complex<long double>>::value);
 
 BOOST_STATIC_ASSERT(
-    has_value_cast<std::complex<float>>::value);
+    has_value_to<std::complex<float>>::value);
 BOOST_STATIC_ASSERT(
-    has_value_cast<std::complex<double>>::value);
+    has_value_to<std::complex<double>>::value);
 BOOST_STATIC_ASSERT(
-    has_value_cast<std::complex<long double>>::value);
+    has_value_to<std::complex<long double>>::value);
 
-//[snippet_exchange_6
-
-template< class T >
-void
-to_value_traits< std::complex< T > >::
-assign( boost::json::value& jv, std::complex< T > const& t )
-{
-    // Store a complex number as a 2-element array
-    array& a = jv.emplace_array();
-
-    // Real part first
-    a.emplace_back( t.real() );
-
-    // Imaginary part last
-    a.emplace_back( t.imag() );
-}
-
-//]
+//----------------------------------------------------------
 
 //[snippet_exchange_7]
 
-template< class T >
-std::complex< T >
-value_cast_traits< std::complex< T > >::
-construct( value const& jv )
-{
-    // as_array() throws if jv.kind() != kind::array.
-
-    array const& a = jv.as_array();
-
-    // We store the complex number as a two element
-    // array with the real part first, and the imaginary
-    // part last.
-    //
-    // value_cast() throws if the JSON value does
-    // not contain an applicable kind for the type T.
-
-    if(a.size() != 2)
-        throw std::invalid_argument(
-            "invalid json for std::complex");
-    return {
-        value_cast< T >( a[0] ),
-        value_cast< T >( a[1] ) };
-}
+// VFALCO TODO
 
 //]
 
@@ -908,12 +878,12 @@ usingExchange2()
     std::complex< double > c = { 3.14159, 2.71828 };
 
     // Convert std::complex< double > to value
-    value jv = to_value(c);
+    value jv = value_from(c);
 
     // Store value in std::complex< double >
     std::complex< double > c2;
 
-    c2 = value_cast< std::complex< double > >( jv );
+    c2 = value_to< std::complex< double > >( jv );
 
     //]
     }
@@ -925,11 +895,11 @@ usingExchange2()
 
     std::complex< float > c = { -42.f, 1.41421f };
 
-    value jv = to_value(c);
+    value jv = value_from(c);
 
     std::complex< float > c2;
 
-    c2 = value_cast< std::complex< float > >( jv );
+    c2 = value_to< std::complex< float > >( jv );
 
     //]
     }

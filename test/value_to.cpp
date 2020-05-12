@@ -8,26 +8,26 @@
 //
 
 // Test that header file is self-contained.
-#include <boost/json/value_cast.hpp>
+#include <boost/json/value_to.hpp>
 
 #include "test_suite.hpp"
+
+#include <map>
+#include <unordered_map>
+#include <vector>
 
 namespace boost {
 namespace json {
 
-class value_cast_test
+class value_to_test
 {
 public:
-    BOOST_STATIC_ASSERT(
-        ! detail::has_value_cast_traits<short>::value);
-    BOOST_STATIC_ASSERT(
-        detail::has_direct_impl<short>::value);
     
     template<class T>
     void
     check(T t)
     {
-        BOOST_TEST(value_cast<T>(value(t)) == t);
+        BOOST_TEST(value_to<T>(value_from(t)) == t);
     }
 
     void
@@ -50,15 +50,24 @@ public:
     void
     testJsonTypes()
     {
-        value_cast<object>(value(object_kind));
-        value_cast<array>(value(array_kind));
-        value_cast<string>(value(string_kind));
+        value_to<object>(value(object_kind));
+        value_to<array>(value(array_kind));
+        value_to<string>(value(string_kind));
     }
 
     void
     testGenerics()
     {
         check(std::string("test"));
+        check(std::map<std::string, int>
+        {
+            {"a", 1}, {"b", 2}, {"c", 3}
+        });
+        check(std::unordered_map<std::string, int>
+        {
+            { "a", 1 }, {"b", 2}, {"c", 3}
+        });
+        check(std::vector<int>{1, 2, 3, 4});
     }
 
     void
@@ -70,7 +79,7 @@ public:
     }
 };
 
-TEST_SUITE(value_cast_test, "boost.json.value_cast");
+TEST_SUITE(value_to_test, "boost.json.value_to");
 
 } // json
 } // boost

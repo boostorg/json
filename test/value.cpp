@@ -23,7 +23,7 @@ namespace json {
 class value_test
 {
 public:
-    //BOOST_STATIC_ASSERT(has_to_value<short>::value);
+    //BOOST_STATIC_ASSERT(has_value_from<short>::value);
 
     string_view const str_;
 
