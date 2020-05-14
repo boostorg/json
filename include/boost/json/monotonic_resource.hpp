@@ -18,7 +18,34 @@
 namespace boost {
 namespace json {
 
-/** A fast memory resource using many large fixed size blocks.
+/** A fast memory resource that never deallocates.
+    
+    A memory resource that allocates large fixed-size
+    blocks of memory, with each allocated block being
+    twice as large as the previous block.
+    Allocated blocks are not freed until the memory
+    resource is destroyed; calls to @ref do_deallocate
+    have no effect. Memory will not be allocated unless
+    @ref do_allocate is called and the current block
+    does not have sufficent room to meet the request.
+    @n
+
+    An *initial buffer* can be optionally specified
+    when constructing a `monotonic_resource`.
+    If an initial buffer is provided, calls to
+    @ref do_allocate will return storage within
+    that buffer until it is filled to capacity,
+    at which point subsequent blocks will be allocated
+    using the default resource.
+
+    In addition to this, an *initial size* can be
+    passed to the constructor of `monotonic_resource`.
+    The initial size determines the size of the first
+    dynamically allocated block.
+    @n
+
+    This memory resource is useful for parsing without
+    subsequent modification to the resulting @ref value.
 */
 class monotonic_resource final
     : public memory_resource
@@ -77,24 +104,115 @@ public:
     monotonic_resource(const monotonic_resource&) = delete;
     monotonic_resource& operator=(const monotonic_resource&) = delete;
 
-    BOOST_JSON_DECL
-    ~monotonic_resource();
+    /** Destructor.
+        
+        Releases all blocks allocated by the resource.
 
+        @par Complexity
+
+        Linear in the number of allocated blocks.
+    */
+    BOOST_JSON_DECL
+    ~monotonic_resource() noexcept;
+
+    /** Constructor.
+
+        Constructs a `monotonic_resource` whose initial size
+        is `initial_size` rounded up to the nearest power of two;
+        if `initial_size` is less than 1024, the initial size will
+        be 1024.
+
+        @note This constructor does not cause memory to be allocated.
+
+        @param initial_size The initial size of the resource.
+        The default argument for this parameter is 1024.
+    */
     BOOST_JSON_DECL
     monotonic_resource(
         std::size_t initial_size = 1024) noexcept;
 
+    /** Constructor.
+
+        Constructs a `monotonic_resource` whose initial buffer is
+        the `buffer_size` bytes of memory pointed to by `buffer`.
+        The initial size is `buffer_size` rounded up to the nearest
+        power of two; if `buffer_size` is less than 1024, the initial
+        size will be 1024.
+
+        @par Precondition
+
+        `{buffer, buffer + buffer_size)` is a valid range.
+
+        @note This constructor does not cause memory to be allocated,
+        and does not take ownership of the initial buffer.
+
+        @param buffer A pointer to the initial buffer for the
+        resource to use.
+        
+        @param buffer_size The size of the initial buffer.
+    */
     BOOST_JSON_DECL
     monotonic_resource(
         void* buffer,
         std::size_t buffer_size) noexcept;
 
+protected:
+
+    /** Allocate memory.
+
+        Allocates a region of memory of size `n`
+        that is suitably aligned for `align`.
+        @n
+        
+        If the `monotonic_resource` has an initial buffer
+        and its initial buffer has sufficent space to meet
+        the request, the memory will be allocated within
+        that buffer.
+
+        Otherwise, if the current dynamically allocated block
+        has sufficent room to meet the request, the memory will
+        be allocated within that block. If there is no such block,
+        or if the current block cannot meet the request, a new block
+        will be allocated. The size of the new block will be twice
+        as large as that of the current block, or `n` rounded up to
+        the nearest power of two if `n` exceeds the size of the current
+        block. The memory is then allocated within the new block.
+
+        @par Exception Safety
+
+        Strong guarantee.
+
+        @note Once a new block is dynamically allocated,
+        memory will never be allocated in any previous blocks
+        even if they have sufficent room to fulfil the request.
+        
+        @note This function is never called directly;
+        calls to `memory_resource::allocate`
+        will invoke this function to fufill requests for allocation.
+
+        @return A pointer to memory that is of size `n` and
+        suitably aligned for `align`.
+
+        @param n The number of bytes to allocate.
+
+        @param align The desired alignment of the memory.
+
+        @throw std::bad_alloc Failure to allocate a new block.
+    */
     BOOST_JSON_DECL
     void*
     do_allocate(
         std::size_t n,
         std::size_t align) override;
 
+    /** Does nothing.
+
+        This function has no effect.
+
+        @note This function is never called directly;
+        calls to `memory_resource::deallocate`
+        will invoke this function to fufill requests for deallocation.
+    */
     BOOST_JSON_DECL
     void
     do_deallocate(
@@ -102,6 +220,20 @@ public:
         std::size_t n,
         std::size_t align) override;
 
+    /** Compare for equality.
+        
+        Returns whether `mr` is the base class subobject
+        of this resource.
+
+        @note This function is never called directly;
+        calls to `memory_resource::is_equal`
+        will invoke this function when comparing
+        memory resources.
+
+        @return `&mr == this`
+
+        @param mr The `memory_resource` to compare with.
+    */
     BOOST_JSON_DECL
     bool
     do_is_equal(
