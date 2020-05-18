@@ -529,13 +529,13 @@ rehash(std::size_t new_capacity)
                 &list[0],
                 &list[std::extent<
                     decltype(list)>::value],
-                (unsigned long long)n));
+                static_cast<unsigned long long>(n)));
     };
     BOOST_ASSERT(new_capacity > capacity());
+    BOOST_ASSERT(static_cast<double>(new_capacity) / 
+        static_cast<double>(max_size()) <= max_load_factor());
     auto const f = std::ceil(
         new_capacity / max_load_factor());
-    BOOST_ASSERT(
-        f < static_cast<std::size_t>(-1));
     auto const new_buckets = next_prime(
         static_cast<std::size_t>(f));
     BOOST_ASSERT(std::ceil(
