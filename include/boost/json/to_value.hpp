@@ -30,14 +30,14 @@ namespace json {
     @li If the public non-static member
         `T::to_json` exists then the function invokes
         `t.to_json( value& jv )` with `jv` set to a
-        null @ref value using storage `sp`, and returns
+        null @ref value using `sp`, and returns
         `jv`.
 
     @li If @ref to_value_traits contains a specialization
         for `T`, then the function invokes
         `to_value_traits<T>:: assign( jv, t )` with
         `jv` set to a null @ref value constructed with
-        storage `sp`, and returns `jv`.
+        `sp`, and returns `jv`.
 
     @li Otherwise if `T` matches any from a set of
         generic requirements implemented by the library,
@@ -55,7 +55,7 @@ namespace json {
 
     @param t The instance of `T` to convert.
 
-    @param sp The storage to use for the returned value.
+    @param sp The memory resource to use for the returned value.
 
     @returns The JSON value representing `t`.
 

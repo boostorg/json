@@ -60,10 +60,10 @@ class object_test;
     be used to eliminate reallocations if the number of
     elements is known beforehand.
 
-    @par Storage
+    @par Allocators
 
     All elements stored in the container, and their
-    children if any, will use the same storage that
+    children if any, will use the same memory resource that
     was used to construct the container.
 
     @par Thread Safety
@@ -165,7 +165,7 @@ public:
 
         The destructor for each element is called if needed,
         any used memory is deallocated, and shared ownership
-        of the @ref storage is released.
+        of the @ref memory_resource is released.
 
         @par Complexity
 
@@ -189,7 +189,7 @@ public:
     /** Default constructor.
 
         The constructed object is empty with zero
-        capacity, using the default storage.
+        capacity, using the default memory resource.
 
         @par Complexity
 
@@ -204,7 +204,7 @@ public:
     /** Constructor.
 
         The constructed object is empty with zero
-        capacity, using the specified storage.
+        capacity, using the specified memory resource.
 
         @par Complexity
 
@@ -214,9 +214,9 @@ public:
 
         No-throw guarantee.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     BOOST_JSON_DECL
     explicit
@@ -226,7 +226,7 @@ public:
 
         The constructed object is empty with capacity
         equal to the specified minimum capacity,
-        using the specified storage.
+        using the specified memory resource.
 
         @par Complexity
 
@@ -235,15 +235,15 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param min_capacity The minimum number
         of elements for which capacity is guaranteed
         without a subsequent reallocation.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     BOOST_JSON_DECL
     object(
@@ -254,7 +254,7 @@ public:
 
         The object is constructed with the elements
         in the range `{first, last)`, preserving order,
-        using the specified storage.
+        using the specified memory resource.
         If multiple elements in the range have keys that
         compare equivalent, only the first occurring key
         will be inserted.
@@ -274,7 +274,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param first An input iterator pointing to the
         first element to insert, or pointing to the end
@@ -289,9 +289,9 @@ public:
         Upon construction, @ref capacity() will be greater
         than or equal to this number.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
 
         @tparam InputIt a type meeting the requirements of
         __InputIterator__.
@@ -311,13 +311,13 @@ public:
     /** Move constructor.
 
         The object is constructed by acquiring ownership of
-        the contents of `other` and shared ownership of
-        the storage of `other`.
+        the contents of `other` and shared ownership
+        of `other`'s memory resource.
 
         @note
 
         After construction, the moved-from object behaves
-        as if newly constructed with its current storage.
+        as if newly constructed with its current memory resource.
         
         @par Complexity
 
@@ -336,7 +336,7 @@ public:
 
         The object is constructed with the contents of
         `other` by move semantics, using the specified
-        storage:
+        memory resource:
 
         @li If `*other.storage() == *sp`, ownership of
         the underlying memory is transferred in constant
@@ -357,13 +357,13 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The object to move.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     BOOST_JSON_DECL
     object(
@@ -401,7 +401,7 @@ public:
     /** Copy constructor.
 
         The object is constructed with a copy of the
-        contents of `other`, using the storage of `other`.
+        contents of `other`, using `other`'s memory resource.
 
         @par Complexity
 
@@ -410,7 +410,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The object to copy.
     */
@@ -421,7 +421,7 @@ public:
     /** Copy constructor.
 
         The object is constructed with a copy of the
-        contents of `other`, using the specified storage.
+        contents of `other`, using the specified memory resource.
 
         @par Complexity
 
@@ -430,13 +430,13 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The object to copy.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     BOOST_JSON_DECL
     object(
@@ -447,7 +447,7 @@ public:
 
         The object is constructed with a copy of the values
         in the initializer-list in order, using the
-        specified storage.
+        specified memory resource.
         If multiple elements in the range have keys that
         compare equivalent, only the first occurring key
         will be inserted.
@@ -459,13 +459,13 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param init The initializer list to insert.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     object(
         std::initializer_list<
@@ -481,7 +481,7 @@ public:
         reserved, and then
         the object is constructed with a copy of the values
         in the initializer-list in order, using the
-        specified storage.
+        specified memory resource.
         If multiple elements in the range have keys that
         compare equivalent, only the first occurring key
         will be inserted.
@@ -493,7 +493,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param init The initializer list to insert.
 
@@ -503,9 +503,9 @@ public:
         Upon construction, @ref capacity() will be greater
         than or equal to this number.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     BOOST_JSON_DECL
     object(
@@ -540,7 +540,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The object to move.
     */
@@ -560,7 +560,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The object to copy.
     */
@@ -582,7 +582,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param init The initializer list to copy.
     */
@@ -593,9 +593,9 @@ public:
 
     //------------------------------------------------------
 
-    /** Return the storage used by the object.
+    /** Return the memory resource used by the object.
 
-        This returns the storage used by the object
+        This returns the memory resource used by the object
         for all elements and all internal allocations.
 
         @par Complexity
@@ -854,7 +854,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param new_capacity The new minimum capacity.
 
@@ -909,7 +909,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
         
         @param p The value to insert.
 
@@ -957,7 +957,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
         
         @param first An input iterator pointing to the first
         element to insert, or pointing to the end of the range.
@@ -995,7 +995,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
         
         @param init The initializer list to insert
     */
@@ -1027,7 +1027,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param key The key used for lookup and insertion
 
@@ -1067,7 +1067,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param key The key used for lookup and insertion
 
@@ -1139,7 +1139,7 @@ public:
     /** Swap the contents.
 
         Exchanges the contents of this object with another
-        object. Ownership of the respective @ref storage
+        object. Ownership of the respective @ref memory_resource
         objects is not transferred.
 
         @li If `*other.storage() == *sp`, ownership of the
@@ -1158,7 +1158,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The object to swap with.
     */
@@ -1226,7 +1226,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
         If an exception is thrown by any operation, the
         insertion has no effect.
 
@@ -1394,7 +1394,7 @@ private:
 
     Exchanges the contents of the object `lhs` with
     another object `rhs`. Ownership of the respective
-    @ref storage objects is not transferred.
+    @ref memory_resource objects is not transferred.
 
     @li If `*lhs.storage() == *rhs.storage()`,
     ownership of the underlying memory is swapped in
@@ -1417,7 +1417,7 @@ private:
     @par Exception Safety
 
     Strong guarantee.
-    Calls to @ref storage::allocate may throw.
+    Calls to `memory_resource::allocate` may throw.
 
     @param lhs The object to exchange.
 

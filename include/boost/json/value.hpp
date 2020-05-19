@@ -79,8 +79,8 @@ public:
     /** Destructor.
 
         The value and all of its contents are destroyed.
-        Any dynamically allocated internal storage
-        is freed.
+        Any dynamically allocated memory that was allocated
+        internally is freed.
 
         @par Complexity
 
@@ -98,7 +98,7 @@ public:
     /** Default constructor.
 
         The constructed value is null,
-        using the default storage.
+        using the default memory resource.
 
         @par Complexity
 
@@ -116,7 +116,7 @@ public:
     /** Constructor.
 
         The constructed value is null,
-        using the specified storage.
+        using the specified memory resource.
 
         @par Complexity
 
@@ -126,9 +126,9 @@ public:
 
         No-throw guarantee.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     explicit
     value(storage_ptr sp) noexcept
@@ -167,7 +167,8 @@ public:
     /** Copy constructor.
 
         The value is constructed with a copy of the
-        contents of `other`, using the storage of `other`.
+        contents of `other`, using the same
+        memory resource as `other`.
 
         @par Complexity
 
@@ -176,7 +177,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The value to copy.
     */
@@ -188,7 +189,8 @@ public:
     /** Copy constructor
 
         The value is constructed with a copy of the
-        contents of `other`, using the specified storage.
+        contents of `other`, using the
+        specified memory resource.
 
         @par Complexity
 
@@ -196,9 +198,9 @@ public:
 
         @param other The value to copy.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     BOOST_JSON_DECL
     value(
@@ -209,7 +211,7 @@ public:
 
         The value is constructed by acquiring ownership of
         the contents of `other` and shared ownership of
-        the storage of `other`.
+        `other`'s memory resource.
         
         @note
 
@@ -233,7 +235,7 @@ public:
 
         The value is constructed with the contents of
         `other` by move semantics, using the specified
-        storage:
+        memory resource:
 
         @li If `*other.storage() == *sp`, ownership of
         the underlying memory is transferred in constant
@@ -254,13 +256,13 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The value to move.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     BOOST_JSON_DECL
     value(
@@ -294,7 +296,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The value to assign from.
     */
@@ -314,7 +316,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The value to copy.
     */
@@ -330,7 +332,7 @@ public:
     /** Construct an @ref object.
 
         The value is constructed from `other`, using the
-        same storage. To transfer ownership, use `std::move`:
+        same memory resource. To transfer ownership, use `std::move`:
 
         @par Example
 
@@ -364,7 +366,7 @@ public:
     /** Construct an @ref object.
 
         The value is copy constructed from `other`,
-        using the specified storage.
+        using the specified memory resource.
 
         @par Complexity
 
@@ -373,13 +375,13 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The object to construct with.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     value(
         object const& other,
@@ -393,7 +395,7 @@ public:
     /** Construct an @ref object.
 
         The value is move constructed from `other`,
-        using the specified storage.
+        using the specified memory resource.
 
         @par Complexity
 
@@ -402,13 +404,13 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The object to construct with.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     value(
         object&& other,
@@ -423,7 +425,7 @@ public:
 
         This is the fastest way to construct
         an empty object, using the specified
-        storage. The variable @ref object_kind
+        memory resource. The variable @ref object_kind
         may be passed as the first parameter
         to select this overload:
 
@@ -445,9 +447,9 @@ public:
 
         No-throw guarantee.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
 
         @see @ref object_kind
     */
@@ -461,7 +463,7 @@ public:
     /** Construct an @ref array.
 
         The value is constructed from `other`, using the
-        same storage. To transfer ownership, use `std::move`:
+        same memory resource. To transfer ownership, use `std::move`:
 
         @par Example
 
@@ -495,7 +497,7 @@ public:
     /** Construct an @ref array.
 
         The value is copy constructed from `other`,
-        using the specified storage.
+        using the specified memory resource.
 
         @par Complexity
 
@@ -504,13 +506,13 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The array to construct with.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     value(
         array const& other,
@@ -524,7 +526,7 @@ public:
     /** Construct an @ref array.
 
         The value is move-constructed from `other`,
-        using the specified storage.
+        using the specified memory resource.
 
         @par Complexity
 
@@ -533,13 +535,13 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The array to construct with.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     value(
         array&& other,
@@ -554,7 +556,7 @@ public:
 
         This is the fastest way to construct
         an empty array, using the specified
-        storage. The variable @ref array_kind
+        memory resource. The variable @ref array_kind
         may be passed as the first parameter
         to select this overload:
 
@@ -576,9 +578,9 @@ public:
 
         No-throw guarantee.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
 
         @see @ref array_kind
     */
@@ -592,7 +594,7 @@ public:
     /** Construct a @ref string.
 
         The value is constructed from `other`, using the
-        same storage. To transfer ownership, use `std::move`:
+        same memory resource. To transfer ownership, use `std::move`:
 
         @par Example
 
@@ -627,7 +629,7 @@ public:
     /** Construct a @ref string.
 
         The value is copy constructed from `other`,
-        using the specified storage.
+        using the specified memory resource.
 
         @par Complexity
 
@@ -636,13 +638,13 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The string to construct with.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     value(
         string const& other,
@@ -656,7 +658,7 @@ public:
     /** Construct a @ref string.
 
         The value is move constructed from `other`,
-        using the specified storage.
+        using the specified memory resource.
 
         @par Complexity
 
@@ -665,13 +667,13 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The string to construct with.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     value(
         string&& other,
@@ -685,7 +687,7 @@ public:
     /** Construct a @ref string.
 
         The string is constructed with a copy of the
-        string view `s`, using the specified storage.
+        string view `s`, using the specified memory resource.
 
         @par Complexity
 
@@ -694,13 +696,13 @@ public:
         @par Exception Safety
         
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param s The string view to construct with.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     value(
         string_view s,
@@ -713,7 +715,7 @@ public:
 
         The string is constructed with a copy of the
         null-terminated string `s`, using the specified
-        storage.
+        memory resource.
 
         @par Complexity
 
@@ -722,14 +724,14 @@ public:
         @par Exception Safety
         
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param s The null-terminated string to construct
         with.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     value(
         char const* s,
@@ -742,7 +744,7 @@ public:
 
         This is the fastest way to construct
         an empty string, using the specified
-        storage. The variable @ref string_kind
+        memory resource. The variable @ref string_kind
         may be passed as the first parameter
         to select this overload:
 
@@ -764,9 +766,9 @@ public:
 
         No-throw guarantee.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
 
         @see @ref string_kind
     */
@@ -789,9 +791,9 @@ public:
 
         @param i The initial value.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     value(
         short i,
@@ -812,9 +814,9 @@ public:
 
         @param i The initial value.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     value(
         int i,
@@ -835,9 +837,9 @@ public:
 
         @param i The initial value.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     value(
         long i,
@@ -858,9 +860,9 @@ public:
 
         @param i The initial value.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     value(
         long long i,
@@ -881,9 +883,9 @@ public:
 
         @param u The initial value.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     value(
         unsigned short u,
@@ -904,9 +906,9 @@ public:
 
         @param u The initial value.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     value(
         unsigned int u,
@@ -927,9 +929,9 @@ public:
 
         @param u The initial value.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     value(
         unsigned long u,
@@ -950,9 +952,9 @@ public:
 
         @param u The initial value.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     value(
         unsigned long long u,
@@ -973,9 +975,9 @@ public:
 
         @param d The initial value.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     value(
         double d,
@@ -996,9 +998,9 @@ public:
 
         @param d The initial value.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     value(
         long double d,
@@ -1011,7 +1013,7 @@ public:
     /** Construct a bool.
 
         This constructs a `bool` value using
-        the specified storage.
+        the specified memory resource.
 
         @par Complexity
 
@@ -1023,9 +1025,9 @@ public:
 
         @param b The initial value.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
 #ifdef BOOST_JSON_DOCS
     value(
@@ -1056,9 +1058,9 @@ public:
 
         No-throw guarantee.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     value(
         std::nullptr_t,
@@ -1071,9 +1073,9 @@ public:
 
         If the initializer list consists of key/value
         pairs, an @ref object is created. Otherwise
-        an @ref array is created. The contents of
-        the initializer list are copied to the newly
-        constructed value using the specified storage.
+        an @ref array is created. The contents of the 
+        initializer list are copied to the newly constructed
+        value using the specified memory resource.
 
         @par Complexity
 
@@ -1082,13 +1084,13 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param init The initializer list to construct from. 
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     BOOST_JSON_DECL
     value(
@@ -1101,7 +1103,7 @@ public:
         pairs, the resulting @ref object is assigned.
         Otherwise an @ref array is assigned. The contents
         of the initializer list are moved to `*this`
-        using the existing storage.
+        using the existing memory resource.
 
         @par Complexity
 
@@ -1110,7 +1112,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param init The initializer list to assign from.
     */
@@ -1133,7 +1135,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
     */
     template<class T
 #ifndef BOOST_JSON_DOCS
@@ -1157,7 +1159,7 @@ public:
     /** Return a reference to an @ref object, changing the kind and replacing the contents.
 
         The value is replaced with an empty @ref object
-        using the current storage, destroying the
+        using the current memory resource, destroying the
         previous contents.
 
         @par Complexity
@@ -1175,7 +1177,7 @@ public:
     /** Return a reference to an @ref array, changing the kind and replacing the contents.
 
         The value is replaced with an empty @ref array
-        using the current storage, destroying the
+        using the current memory resource, destroying the
         previous contents.
 
         @par Complexity
@@ -1193,7 +1195,7 @@ public:
     /** Return a reference to a @ref string, changing the kind and replacing the contents.
 
         The value is replaced with an empty @ref string
-        using the current storage, destroying the
+        using the current memory resource, destroying the
         previous contents.
 
         @par Complexity
@@ -1300,7 +1302,7 @@ public:
     /** Swap the contents.
 
         Exchanges the contents of this value with another
-        value. Ownership of the respective @ref storage
+        value. Ownership of the respective @ref memory_resource
         objects is not transferred.
 
         @li If `*other.storage() == *sp`, ownership of the
@@ -1324,7 +1326,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The value to swap with.
     */
@@ -1542,9 +1544,9 @@ public:
     //
     //------------------------------------------------------
 
-    /** Return the storage associated with the value.
+    /** Return the memory resource associated with the value.
 
-        This returns a pointer to the storage object
+        This returns a pointer to the memory resource
         that was used to construct the value.
 
         @par Complexity
@@ -2676,8 +2678,8 @@ struct key_value_pair
 
     /** Destructor.
 
-        The value is destroyed and all internal
-        storage is freed.
+        The value is destroyed and all internally
+        allocated memory is freed.
     */
     BOOST_JSON_DECL
     ~key_value_pair();
@@ -2686,7 +2688,7 @@ struct key_value_pair
 
         This constructs a key/value pair with a
         copy of another key/value pair, using
-        the same storage as `other`.
+        the same memory resource as `other`.
 
         @param other The key/value pair to copy.
     */
@@ -2697,13 +2699,13 @@ struct key_value_pair
 
         This constructs a key/value pair with a
         copy of another key/value pair, using
-        the specified storage.
+        the specified memory resource.
 
         @param other The key/value pair to copy.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The element will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     BOOST_JSON_DECL
     key_value_pair(
@@ -2728,14 +2730,14 @@ struct key_value_pair
 
         This constructs a key/value pair. A
         copy of the specified value is made,
-        using the specified storage.
+        using the specified memory resource.
 
         @param p A `std::pair` with the key
             string and @ref value to construct with.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The element will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     explicit
     key_value_pair(
@@ -2759,9 +2761,9 @@ struct key_value_pair
         @param p A `std::pair` with the key
             string and @ref value to construct with.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The element will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     explicit
     key_value_pair(

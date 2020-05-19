@@ -26,7 +26,7 @@ with a __string_view__ based interface,
 
 * access to characters in the range `[size(), capacity())` is permitted, and
 
-* __storage__ is used instead of __Allocator__.
+* __storage_ptr__ is used instead of __Allocator__.
 
 With augmented interface, operations requiring an input string
 are implemented as a single overload with a parameter of type
@@ -70,8 +70,8 @@ With the removal of overloads that specify parameters for a substring, a member 
 
 [snippet_strings_2]
 
-A __string__ may be constructed using the default storage without incurring any
-memory allocations, or can use a specified storage:
+A __string__ may be constructed using the default memory resource without incurring any
+memory allocations. Alternatively, a __storage_ptr__ can be provided explicitly:
 
 [snippet_strings_1]
 

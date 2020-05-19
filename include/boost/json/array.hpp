@@ -68,11 +68,11 @@ class value_ref;
     @li Insertion or removal of elements - linear in
         the distance to the end of the array *O(n)*.
 
-    @par Storage
+    @par Allocators
 
     All elements stored in the container, and their
-    children if any, will use the same storage that
-    was used to construct the container.
+    children if any, will use the same memory resource
+    that was used to construct the container.
 
     @par Thread Safety
 
@@ -141,7 +141,7 @@ public:
 
         The destructor for each element is called if needed,
         any used memory is deallocated, and shared ownership
-        of the @ref storage is released.
+        of the @ref memory_resource is released.
 
         @par Complexity
 
@@ -167,7 +167,7 @@ public:
     /** Default constructor.
 
         The constructed array is empty with zero
-        capacity, using the default storage.
+        capacity, using the default memory resource.
 
         @par Complexity
 
@@ -182,7 +182,7 @@ public:
     /** Constructor.
 
         The constructed array is empty with zero
-        capacity, using the specified storage.
+        capacity, using the specified memory resource.
 
         @par Complexity
 
@@ -192,9 +192,9 @@ public:
 
         No-throw guarantee.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     BOOST_JSON_DECL
     explicit
@@ -204,7 +204,7 @@ public:
 
         The array is constructed with `count`
         copies of the value `v`, using the
-        specified storage will be used.
+        specified memory resource.
 
         @par Complexity
 
@@ -213,15 +213,15 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param count The number of copies to insert.
 
         @param v The value to be inserted.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     BOOST_JSON_DECL
     array(
@@ -232,7 +232,7 @@ public:
     /** Constructor.
 
         The array is constructed with `count` null values,
-        using the specified storage.
+        using the specified memory resource.
 
         @par Complexity
 
@@ -241,13 +241,13 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param count The number of nulls to insert.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     BOOST_JSON_DECL
     array(
@@ -258,7 +258,7 @@ public:
 
         The array is constructed with the elements
         in the range `{first, last)`, preserving order,
-        using the specified storage.
+        using the specified memory resource.
 
         @par Constraints
 
@@ -273,7 +273,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param first An input iterator pointing to the
         first element to insert, or pointing to the end
@@ -282,9 +282,9 @@ public:
         @param last An input iterator pointing to the end
         of the range.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
 
         @tparam InputIt a type meeting the requirements of
         __InputIterator__.
@@ -305,7 +305,7 @@ public:
     /** Copy constructor.
 
         The array is constructed with a copy of the
-        contents of `other`, using the storage of `other`.
+        contents of `other`, using `other`'s memory resource.
 
         @par Complexity
 
@@ -314,7 +314,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The array to copy
     */
@@ -324,7 +324,7 @@ public:
     /** Copy constructor.
 
         The array is constructed with a copy of the
-        contents of `other`, using the specified storage.
+        contents of `other`, using the specified memory resource.
 
         @par Complexity
 
@@ -333,13 +333,13 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The array to copy
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     BOOST_JSON_DECL
     array(
@@ -378,7 +378,7 @@ public:
 
         The array is constructed by acquiring ownership of
         the contents of `other` and shared ownership of
-        the storage of `other`.
+        `other`'s memory resource.
 
         @note
 
@@ -403,7 +403,7 @@ public:
 
         The array is constructed with the contents of
         `other` by move semantics, using the specified
-        storage:
+        memory resource:
 
         @li If `*other.storage() == *sp`, ownership of
         the underlying memory is transferred in constant
@@ -424,13 +424,13 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The container to move
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     BOOST_JSON_DECL
     array(
@@ -441,7 +441,7 @@ public:
 
         The array is constructed with a copy of the values
         in the initializer-list in order, using the
-        specified storage.
+        specified memory resource.
 
         @par Complexity
 
@@ -450,13 +450,13 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param init The initializer list to insert
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     BOOST_JSON_DECL
     array(
@@ -477,7 +477,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The array to copy.
     */
@@ -510,7 +510,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The array to move.
     */
@@ -530,7 +530,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param init The initializer list to copy.
     */
@@ -541,9 +541,9 @@ public:
 
     //------------------------------------------------------
 
-    /** Return the storage used by the array.
+    /** Return the memory resource used by the array.
 
-        This returns the storage used by the array
+        This returns the memory resource used by the array
         for all elements and all internal allocations.
 
         @par Complexity
@@ -1008,7 +1008,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param new_capacity The new capacity of the array.
 
@@ -1085,13 +1085,13 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param pos Iterator before which the content will
         be inserted. This may be the @ref end() iterator.
 
         @param v The value to insert. A copy will be made
-        using container's associated @ref storage.
+        using container's associated @ref memory_resource.
 
         @return An iterator to the inserted value
     */
@@ -1120,14 +1120,14 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param pos Iterator before which the content will
         be inserted. This may be the @ref end() iterator.
 
         @param v The value to insert. Ownership of the
         value will be transferred via move construction,
-        using the container's associated @ref storage.
+        using the container's associated @ref memory_resource.
 
         @return An iterator to the inserted value
     */
@@ -1156,7 +1156,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param pos Iterator before which the content will
         be inserted. This may be the @ref end() iterator.
@@ -1164,7 +1164,7 @@ public:
         @param count The number of copies to insert.
         
         @param v The value to insert. Copies will be made
-        using container's associated @ref storage.
+        using container's associated @ref memory_resource.
 
         @return An iterator to the first inserted value,
         or `pos` if `count == 0`.
@@ -1210,7 +1210,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param pos Iterator before which the content will
         be inserted. This may be the @ref end() iterator.
@@ -1259,7 +1259,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param pos Iterator before which the content will
         be inserted. This may be the @ref end() iterator.
@@ -1294,7 +1294,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param pos Iterator before which the element will
         be inserted. This may be the @ref end() iterator.
@@ -1377,10 +1377,10 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param v The value to insert. A copy will be made
-        using container's associated @ref storage.
+        using container's associated @ref memory_resource.
     */
     void
     push_back(value const& v)
@@ -1404,11 +1404,11 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param v The value to insert. Ownership of the
         value will be transferred via move construction,
-        using the container's associated @ref storage.
+        using the container's associated @ref memory_resource.
     */
     void
     push_back(value&& v)
@@ -1436,7 +1436,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
         
         @param arg The argument to forward to the @ref value
         constructor.
@@ -1485,7 +1485,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param count The new size of the container.
     */
@@ -1515,7 +1515,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param count The new size of the container.
 
@@ -1530,7 +1530,7 @@ public:
     /** Swap the contents.
 
         Exchanges the contents of this array with another
-        array. Ownership of the respective @ref storage
+        array. Ownership of the respective @ref memory_resource
         objects is not transferred.
 
         @li If `*other.storage() == *sp`, ownership of the
@@ -1553,7 +1553,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The array to swap with.
     */
@@ -1623,7 +1623,7 @@ private:
 
     Exchanges the contents of the array `lhs` with
     another array `rhs`. Ownership of the respective
-    @ref storage objects is not transferred.
+    @ref memory_resource objects is not transferred.
 
     @li If `*lhs.storage() == *rhs.storage()`,
     ownership of the underlying memory is swapped in
@@ -1646,7 +1646,7 @@ private:
     @par Exception Safety
 
     Strong guarantee.
-    Calls to @ref storage::allocate may throw.
+    Calls to `memory_resource::allocate` may throw.
 
     @param lhs The array to exchange.
 

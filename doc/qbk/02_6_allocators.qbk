@@ -1,0 +1,213 @@
+[/
+    Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+    Copyright (c) 2020 Krystian Stasiowski (sdkrystian@gmail.com)
+
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+    Official repository: https://github.com/vinniefalco/json
+]
+
+[/-----------------------------------------------------------------------------]
+
+[section Allocators]
+
+Instances of __value__, __object__, __array__, and __string__ all use
+dynamically allocated memory. To allow callers to control the strategy
+used to allocate and deallocate memory, the library provides the smart
+pointer container __storage_ptr__, similar in function to the C++ standard
+library's polymorphic allocator but with the following additional features:
+
+* __storage_ptr__ can either function as a reference counted smart pointer or
+  a reference wrapper around a __memory_resource__, allowing for the lifetime of
+  the managed object to be extended.
+
+* An implementation can indicate to the library that deallocation
+  is not necessary, allowing destructor calls to be elided in certain situations.
+
+These types and functions are available:
+
+[table Functions and Types
+[ [Name] [Description] ]
+[
+    [__memory_resource__]
+    [
+        The abstract base class representing an allocator.
+    ]
+][
+    [__storage_ptr__]
+    [
+        A smart pointer container through which a __memory_resource__
+        is managed and accessed.
+    ]
+][
+    [__monotonic_resource__]
+    [
+        A memory resource that allocates zero or more blocks of memory
+        from which allocations are made; block is twice as large as the last.
+        Allocated memory is not freed until the resource is destroyed, making
+        it fast for parsing but not ideal for mutation.
+    ]
+][
+    [__make_counted_resource__]
+    [
+        A function that returns a reference-counted storage pointer
+        with ownership of a new, dynamically allocated memory resource.
+    ]
+]]
+
+The library provides a ['default memory resource] object which wraps calls to the
+global allocation and deallocation functions (`operator new` and `operator delete`).
+This memory resource is not reference counted, and requires calls to deallocate.
+A default constructed __storage_ptr__ always refers to the default memory resource.
+When instances of library types are constructed without specifying a storage pointer,
+they will also use the default memory resource:
+
+[snippet_allocators_1]
+
+The default memory resource is suited for general purpose operations.
+It allocates only what is needed, and frees memory once reallocation is
+needed or upon destruction. It is a good choice for modifying a __value__
+containing a JSON document.
+
+[heading Monotonic Resources]
+
+The library provides another memory resource called __monotonic_resource__,
+optimized for parsing without subsequent modification. This implementation
+allocates large blocks of memory and then allocates within these blocks to satisfy
+allocation requests, only deallocating once the memory resource is destroyed.
+Every block allocated by __monotonic_resource__ will be twice as large as the last,
+and the user can optionally provide a initial buffer for the resource to use before
+it makes any dynamic allocations:
+
+[snippet_allocators_2]
+
+The following example shows how a string can be parsed into a __value__
+using a monotonic resource:
+
+[snippet_allocators_3]
+
+In the above sample, ownership of the resource is shared by the returned
+value and all of its children. The monotonic resource is destroyed only when
+the last __value__ referencing it is destroyed.
+
+Monotonic resources are faster for parsing and insertion, but consume more memory
+than the default memory resource as adding and removing elements over time
+will continuously allocate more memory to satisfy requests.
+
+[heading Resource Lifetime]
+
+The __value__, __object__, __array__, and __string__ classes
+use __storage_ptr__ to manage and access memory resources:
+
+[snippet_allocators_4]
+
+A __storage_ptr__ can function as either a reference wrapper like
+__polymorphic_allocator__, or as a smart pointer that
+shares ownership of a __memory_resource__ through reference counting:
+
+[snippet_allocators_5]
+
+A storage pointer can refer to one of three kinds of memory resources:
+
+* the default resource,
+
+* a ['counted resource], or
+
+* an ['uncounted resource].
+
+A default constructed __storage_ptr__ will refer to the default resource.
+Storage pointers that refer to the default memory resource do not have
+ownership of the resource, and are not counted.
+
+[snippet_allocators_6]
+
+A storage pointer that refers to a counted resource is obtained by calling
+`make_counted_resource`:
+
+[snippet_allocators_7]
+
+The resulting `storage_ptr` will have shared ownership of a dynamically allocated
+memory resource of the specified type. This storage pointer functions similar to
+__shared_ptr__, allowing for ownership to be shared through initialization and assignment:
+
+[snippet_allocators_8]
+
+The reference counting for __storage_ptr__ is atomic, meaning the
+sharing of ownership is thread safe:
+
+[snippet_allocators_ref_thread_safe]
+
+[caution
+    While the sharing of ownership is thread safe, the use of the
+    managed resource may not be.
+]
+
+Allowing the ownership of a resource to be shared can greatly alleviate
+lifetime concerns and promotes ease of use, as the lifetime of the
+underlying resource is managed automatically by the storage pointers.
+
+A __storage_ptr__ constructed from a pointer to a __memory_resource__
+will refer to an uncounted resource. Such storage pointers function as
+reference wrappers and do not take ownership of the resource.
+
+[snippet_allocators_10]
+
+[caution
+    Care must be taken to ensure that the resource managed by
+    a __storage_ptr__ is not accessed after that resource is destroyed.
+]
+
+Since atomic operations are relatively expensive compared to their
+non-atomic counterparts, it is sometimes desirable to avoid these
+operations when the lifetime of the JSON object can be bounded.
+For example, consider a network server which receives a JSON
+representing an RPC command. It parses the JSON, dispatches the
+command, and then destroys the value. Because the
+lifetime of the value is bounded by the function in which it
+appears, we can use an uncounted resource to avoid the overhead
+of atomic operations:
+
+[snippet_allocators_11]
+
+The `deallocate_is_null` function can be used to determine if the
+memory resource referred to by a  __storage_ptr__ will perform no action
+when `deallocate` is called. Skipping calls to `deallocate` when it
+performs no action can have significant performance benefits,
+as destructor calls for library types may also be elided
+if the memory resource is non-counted.
+
+[heading Custom Memory Resources]
+
+Users who need precise control over allocation can implement
+their own memory resource. Custom memory resources shall be derived from
+__memory_resource__ and must implement the functions `do_allocate`,
+`do_deallocate`, and `do_is_equal`. The `allocate`, `deallocate`, and
+`is_equal` functions are not virtual, and generally should not be
+redeclared in the custom memory resource.
+
+The `do_allocate`, `do_deallocate` and `do_is_equal` functions are not
+called directly by the user. These functions are called by
+`memory_resource::allocate`, `memory_resource::deallocate`, and `memory_resource::is_equal`
+with the provided arguments to fufill requests for allocation and deallocation, or
+to check equality, respectively:
+
+[snippet_allocators_12]
+
+The function `do_is_equal` indicates whether memory allocated by a
+memory resource can be deallocated by another memory resource:
+
+[snippet_allocators_13]
+
+The class template `is_deallocate_null` can be specialized
+to indicate whether calling `do_deallocate` on a memory resource
+will have no effect:
+
+[snippet_allocators_14]
+
+The following is an example implementation of a custom memory resource
+that will log allocations and deallocations:
+
+[snippet_allocators_15]
+
+[endsect]

@@ -15,11 +15,11 @@ A __value__ stores an instance of __array__ as the underlying representation
 for a JSON array. Instances of the __array__ type function identically to
 a __std_vector__ of __value__. Additionally:
 
-* All values inserted into the container will use the same __storage__ as
-  the container itself.
+* All values inserted into the container will use the same __storage_ptr__
+  as the container itself.
 
-An array may be constructed empty without incurring any memory allocations
-using the default storage, or a specified storage:
+An empty array may be constructed without incurring any memory allocations
+using the default memory resource. A __storage_ptr__ can also be explicitly specified:
 
 [snippet_arrays_1]
 
@@ -32,7 +32,7 @@ Alternatively, elements may be inserted after construction:
 
 [snippet_arrays_3]
 
-Similar to the `std` counterpart, elements may be accessed directly
+Similar to its standard library counterpart, elements may be accessed directly
 by their 0-based index with bounds checking using
 [link json.ref.boost__json__array.at.overload1 `at`],
 or without bounds checking using
