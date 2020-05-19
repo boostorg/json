@@ -51,9 +51,9 @@ failure instead of an exception:
 [snippet_parsing_2]
 
 The calls above will produce values that use the default
-storage. Each parse function allows an additional parameter
-specifying the storage to use. Here we start the parser with
-a new instance of __pool__ for the resulting value:
+memory resource. Each parse function allows an additional parameter
+specifying the memory resource to use. Here we start the parser with
+a new instance of __monotonic_resource__ for the resulting value:
 
 [snippet_parsing_3]
 
@@ -81,14 +81,15 @@ code are used instead:
 
 [snippet_parsing_5]
 
-[h4 Storage]
+[h4 Allocators]
 
 When
 [link json.ref.boost__json__parser.start `start`]
 is called with no arguments, the parser constructs the resulting
-__value__ using the default storage. Alternatively, the storage
-to use may be supplied as an argument. This example uses a scoped
-instance of block storage:
+__value__ using the default memory resource. A __storage_pointer__
+can also be passed to the function, and the resulting __value__ will
+use the specified resource. This example uses a noncounted
+`monotonic_resource` as the allocator:
 
 [snippet_parsing_6]
 

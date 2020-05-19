@@ -130,9 +130,9 @@ public:
         parsing a new JSON incrementally; that is, when
         using @ref write_some, @ref write, or @ref finish.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The parser will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     BOOST_JSON_DECL
     void
@@ -440,7 +440,7 @@ private:
     as a @ref value. If the buffer does not contain a
     complete serialized JSON, an error occurs. In this
     case the returned value will be null, using the
-    default storage.
+    default memory resource.
 
     @par Complexity
 
@@ -449,15 +449,15 @@ private:
     @par Exception Safety
 
     Strong guarantee.
-    Calls to @ref storage::allocate may throw.
+    Calls to `memory_resource::allocate` may throw.
 
     @param s The string to parse.
 
     @param ec Set to the error, if any occurred.
 
-    @param sp The storage that the new value and all of
+    @param sp The memory resource that the new value and all of
     its elements will use. If this parameter is omitted,
-    the default storage is used.
+    the default memory resource is used.
 
     @return A value representing the parsed JSON,
     or a null if any error occurred.
@@ -476,7 +476,7 @@ parse(
     as a @ref value. If the buffer does not contain a
     complete serialized JSON, an error occurs. In this
     case the returned value will be null, using the
-    default storage.
+    default memory resource.
 
     @par Complexity
 
@@ -485,13 +485,13 @@ parse(
     @par Exception Safety
 
     Strong guarantee.
-    Calls to @ref storage::allocate may throw.
+    Calls to `memory_resource::allocate` may throw.
 
     @param s The string to parse.
 
-    @param sp The storage that the new value and all of
+    @param sp The memory resource that the new value and all of
     its elements will use. If this parameter is omitted,
-    the default storage is used.
+    the default memory resource is used.
 
     @throw system_error Thrown on failure.
 

@@ -25,9 +25,9 @@ usingStrings()
     {
         //[snippet_strings_1
 
-        string str1; // empty string, default storage
+        string str1; // empty string, uses the default memory resource
 
-        string str2( make_counted_resource<monotonic_resource>() ); // empty string, pool storage
+        string str2( make_counted_resource<monotonic_resource>() ); // empty string, uses a counted monotonic resource
 
         //]
     }
@@ -250,9 +250,9 @@ usingArrays()
     {
         //[snippet_arrays_1
 
-        array arr1; // empty array, default storage
+        array arr1; // empty array, uses the default memory resource
 
-        array arr2( make_counted_resource<monotonic_resource>() ); // empty array, pool storage
+        array arr2( make_counted_resource<monotonic_resource>() ); // empty array, uses a counted monotonic resource
 
         //]
     }
@@ -293,9 +293,9 @@ usingObjects()
     {
         //[snippet_objects_1
 
-        object obj1; // empty object, default storage
+        object obj1; // empty object, uses the default memory resource
 
-        object obj2( make_counted_resource<monotonic_resource>() ); // empty object, pool storage
+        object obj2( make_counted_resource<monotonic_resource>() ); // empty object, uses a counted monotonic resource
 
         //]
     }
@@ -339,23 +339,184 @@ void
 usingStorage()
 {
     {
-        //[snippet_storage_1
+        //[snippet_allocators_1
 
-        value jv;                                   // uses the default storage
-        storage_ptr sp;                             // uses the default storage
-        object obj( sp );                           // uses the default storage
+        value jv;                                   // uses the default memory resource
+        storage_ptr sp;                             // refers to the default memory resource
+        object obj( sp );                           // uses the default memory resource
 
-        assert( jv.storage().get() == sp.get() );   // same pointer
-        assert( *jv.storage() == *sp );             // deep equality
+        assert( jv.storage().get() == sp.get() );   // same memory resource
+        assert( *jv.storage() == *sp );             // memory allocated by jv.storage() can be deallocated by sp
 
         assert( jv.storage().get() ==
-                    obj.storage().get() );          // same pointer
+                    obj.storage().get() );          // same memory resource
+
+        //]
+    }
+    {
+        //[snippet_allocators_2
+
+        constexpr std::size_t size = 256;
+        unsigned char buffer[size]{};
+
+        monotonic_resource mr(buffer, size);
+
+        // allocates 256 bytes with an alignment of 1
+        // within the initial buffer
+        void* buffer_alloc = mr.allocate(size, 1);
+
+        // allocated memory is within the initial buffer
+        assert( buffer_alloc >= std::begin(buffer) &&
+            buffer_alloc <= std::end(buffer) );
+
+        // allocates 256 bytes with an alignment of
+        // alignof(std::max_align_t) within a dynamically allocated block
+        void* dynamic_allocd = mr.allocate(size);
+
+        // allocated memory was dynamically allocated
+        assert( buffer_alloc < std::begin(buffer) &&
+            buffer_alloc > std::end(buffer) );
+
+        //]
+    }
+    {
+        //[snippet_allocators_4
+        
+        monotonic_resource mr;
+
+        storage_ptr sp = &mr;
+
+        value jv( sp ); // all allocations for jv1 and its child elements will be done through mr
+
+        assert( jv.storage().get() == &mr );
+
+        //]
+    }
+    {
+        //[snippet_allocators_5
+        
+        monotonic_resource mr;
+
+        storage_ptr sp1 = &mr; // reference semantics
+
+        assert ( ! sp1.is_counted() );
+
+        storage_ptr sp2 = make_counted_resource<monotonic_resource>(); // shared ownership
+        
+        assert( sp2.is_counted() );
+
+        //]
+    }
+    {
+        //[snippet_allocators_6
+
+        storage_ptr sp1; // default memory resource
+
+        assert ( ! sp1.is_counted() );
+
+        monotonic_resource mr;
+
+        storage_ptr sp2 = &mr;
+
+        assert( sp1 != sp2 );
+
+        sp2 = storage_ptr(); // assigns the default memory resource
+
+        assert( sp1 == sp2 );
+
+        //]
+    }
+    {
+        //[snippet_allocators_7
+
+        storage_ptr sp = make_counted_resource<monotonic_resource>(); // counted resource
+
+        assert ( sp.is_counted() );
+
+        //]
+    }
+    {
+        //[snippet_allocators_8
+
+        storage_ptr sp1; // non-counted, refers to the default memory resource
+
+        assert ( ! sp1.is_counted() );
+
+        memory_resource* res = nullptr;
+
+        {
+            storage_ptr sp2 = make_counted_resource<monotonic_resource>(); // shared ownership
+
+            assert( sp2.is_counted() );
+
+            res = sp2.get();
+
+            sp1 = sp2;
+        } 
+        
+        assert( sp1.is_counted() && sp1.get() == res ); // even though sp2 was destroyed, the memory resource was not
+
+        //]
+    }
+    {
+        //[snippet_allocators_10
+        
+        storage_ptr sp; // refers to the default memory resource
+
+        assert ( ! sp.is_counted() );
+
+        {
+            monotonic_resource mr;
+
+            sp = &mr; // non-counted reference to mr
+
+            assert( ! sp.is_counted() );
+        }
+
+        // mr has been destroyed, sp refers to a non-existant memory resource
+
+        //]
+    }
+    {
+        //[snippet_allocators_12
+        
+        monotonic_resource mr;
+        
+        storage_ptr sp = &mr;
+
+        // mr.do_allocate(32, 4); error: cannot access protected member of monotonic_resource
+
+        auto ptr = sp->allocate(32); // calls mr.do_allocate(32, alignof(std::max_align_t))
+
+        ptr = sp->allocate(32, 4); // calls mr.do_allocate(32, 4)
+
+        // mr.do_deallocate(ptr, 32, 4); error: cannot access protected member of monotonic_resource
+
+        sp->deallocate(ptr, 32, 4); // calls mr.do_deallocate(ptr, 32, 4)
+
+        // mr.do_is_equal(*sp); error: cannot access protected member of monotonic_resource
+
+        sp->is_equal(*sp); // calls mr.do_is_equal(*sp)
+
+        //]
+    }
+
+    {
+        //[snippet_allocators_13
+
+        storage_ptr sp1; // refers to the default memory resource
+
+        storage_ptr sp2; // refers to the default memory resource
+
+        assert( sp1->is_equal(*sp2) ); // the default memory resource is shared across all instances of storage_ptr in the same program
+
+        assert ( sp1 == sp2 ); // identical semantics
 
         //]
     }
 }
 
-//[snippet_storage_2
+//[snippet_allocators_3
 
 value parse_fast( string_view s )
 {
@@ -364,9 +525,9 @@ value parse_fast( string_view s )
 
 //]
 
-void do_json(value const&) {}
+void do_json(value const&) { }
 
-//[snippet_storage_3
+//[snippet_allocators_11
 
 void do_rpc( string_view cmd )
 {
@@ -379,9 +540,31 @@ void do_rpc( string_view cmd )
 
 //]
 
-//[snippet_storage_4
+//[snippet_allocators_15
 
-// TODO
+class logging_resource : public memory_resource
+{
+private:
+    void* do_allocate(std::size_t bytes, std::size_t align) override
+    {
+        std::cout << "Allocating " << bytes << " bytes with alignment " << align << '\n';
+        return ::operator new(bytes); // forward request to the global allocation function
+    }
+    
+    void do_deallocate(void* ptr, std::size_t bytes, std::size_t align) override
+    {
+        std::cout << "Deallocating " << bytes << " bytes with alignment " << align << " @ address " << ptr << '\n';
+        return ::operator delete(ptr); // forward request to the global deallocation function
+    }
+
+    bool do_is_equal(const memory_resource& other) const noexcept override
+    {
+        // since the global allocation and deallocation functions are used,
+        // any instance of a logging_resource can deallocate memory allocated
+        // by another instance of a logging_resource
+        return dynamic_cast<const logging_resource*>(&other) != nullptr; 
+    }
+};
 
 //]
 
@@ -468,10 +651,9 @@ usingParsing()
             parser p;
             error_code ec;
 
-            // Declare a new, scoped instance of the block storage
             monotonic_resource mr;
 
-            // Use the scoped instance for the parsed value
+            // Use the monotonic resource for the parsed value
             p.start( &mr );
 
             // Write the entire JSON
@@ -479,7 +661,7 @@ usingParsing()
             if( ! ec )
                 p.finish( ec );
 
-            // The value will use the instance of block storage created above
+            // The value will use the monotonic resource created above
             value jv = p.release();
         }
 
@@ -629,6 +811,31 @@ struct value_cast_traits< std::complex< T > >
 } // namespace boost
 
 //]
+
+namespace {
+class my_null_deallocation_resource { };
+} // (anon)
+
+//[snippet_allocators_14
+namespace boost {
+namespace json {
+
+template<>
+struct is_deallocate_null<my_null_deallocation_resource>
+{
+  static constexpr bool deallocate_is_null() noexcept
+  {
+    return true;
+  }
+};
+
+} // json
+} // boost
+
+//]
+
+
+
 namespace boost {
 namespace json {
 

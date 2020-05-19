@@ -24,11 +24,9 @@
           <member><link linkend="json.ref.boost__json__basic_parser">basic_parser</link></member>
           <member><link linkend="json.ref.boost__json__key_value_pair">key_value_pair</link></member>
           <member><link linkend="json.ref.boost__json__object">object</link></member>
+          <member><link linkend="json.ref.boost__json__monotonic_resource">monotonic_resource</link></member>
           <member><link linkend="json.ref.boost__json__parser">parser</link></member>
-          <member><link linkend="json.ref.boost__json__pool">pool</link></member>
-          <member><link linkend="json.ref.boost__json__scoped_storage">scoped_storage</link></member>
           <member><link linkend="json.ref.boost__json__serializer">serializer</link></member>
-          <member><link linkend="json.ref.boost__json__storage">storage</link></member>
           <member><link linkend="json.ref.boost__json__storage_ptr">storage_ptr</link></member>
           <member><link linkend="json.ref.boost__json__string">string</link></member>
           <member><link linkend="json.ref.boost__json__value">value</link></member>
@@ -37,7 +35,7 @@
       <entry valign="top">
         <bridgehead renderas="sect3">Functions</bridgehead>
         <simplelist type="vert" columns="1">
-          <member><link linkend="json.ref.boost__json__make_storage">make_storage</link></member>
+          <member><link linkend="json.ref.boost__json__make_counted_resource">make_counted_resource</link></member>
           <member><link linkend="json.ref.boost__json__number_cast">number_cast</link></member>
           <member><link linkend="json.ref.boost__json__parse">parse</link></member>
           <member><link linkend="json.ref.boost__json__swap">swap</link></member>
@@ -49,7 +47,6 @@
         <simplelist type="vert" columns="1">
           <member><link linkend="json.ref.boost__json__has_to_value">has_to_value</link></member>
           <member><link linkend="json.ref.boost__json__has_value_cast">has_value_cast</link></member>
-          <member><link linkend="json.ref.boost__json__is_storage">is_storage</link></member>
           <member><link linkend="json.ref.boost__json__to_value_traits">to_value_traits</link></member>
           <member><link linkend="json.ref.boost__json__value_cast_traits">value_cast_traits</link></member>
         </simplelist>

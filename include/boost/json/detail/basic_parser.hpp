@@ -35,11 +35,10 @@ namespace json {
 /** An incremental SAX parser for serialized JSON.
 
     This implements a SAX-style parser. The serialized
-    JSON is presented to the parser by calling to
-    @ref write_some, @ref write, and @ref finish.
-    The parsing events are realized through member
-    function calls to a handler passed as an argument
-    to the write functions.
+    JSON is presented to the parser by one or more calls
+    to @ref write_some. The parsing events are realized
+    through member function calls to a handler passed as
+    an argument to the write function.
 
     <br>
 
@@ -237,7 +236,7 @@ protected:
         entire JSON. Subsequent calls can provide more
         serialized data, allowing JSON to be processed
         incrementally. The end of the serialized JSON
-        can be indicated by calling @ref finish().
+        can be indicated by passing `more = false`.
 
         @par Handler
 

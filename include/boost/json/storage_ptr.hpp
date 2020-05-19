@@ -37,7 +37,7 @@ struct is_deallocate_null
 /** Manages a type-erased storage object.
 
     This container is used to hold a shared reference
-    to a @ref storage object.
+    to a @ref memory_resource object.
 */
 class storage_ptr
 {
@@ -97,11 +97,11 @@ class storage_ptr
 public:
     /** Destructor.
 
-        This releases the pointed-to storage. If the
-        storage is reference counted and this is the
-        last reference. the storage object is destroyed.
-        If the storage does not require deallocation,
-        all memory allocated using this storage is
+        This releases the pointed-to memory resource.
+        If the memory resource is counted and this is the
+        last reference, the memory resource is destroyed.
+        If the memory resource does not require deallocation,
+        all memory allocated using this memory resource is
         invalidated.
 
         @par Complexity
@@ -119,10 +119,12 @@ public:
 
     /** Default constructor.
 
-        This constructs a default storage pointer.
-        The default storage is not reference counted,
-        uses global operator new and delete to obtain
-        memory, and requires calls to `deallocate`.
+        This constructs a storage pointer that refers to
+        the default memory resource. The default memory
+        resource is not reference counted, uses the global
+        allocation functions `operator new` and
+        `operator delete` to allocate and deallocate memory,
+        and requires calls to `deallocate`.
 
         @par Complexity
 
@@ -156,7 +158,7 @@ public:
     /** Move constructor.
 
         After construction, the moved-from object
-        will point to the default storage.
+        will point to the default memory resource.
 
         @par Complexity
 
@@ -178,7 +180,7 @@ public:
     /** Copy constructor.
 
         This function acquires shared ownership of
-        the storage pointed to by `other`.
+        the memory resource pointed to by `other`.
 
         @par Complexity
 
@@ -199,11 +201,11 @@ public:
 
     /** Move assignment.
 
-        Shared ownership of the storage owned by `*this`
-        is released, and shared ownership of the storage
+        Shared ownership of the memory resource owned by `*this`
+        is released, and shared ownership of the memory resource
         owned by `other` is acquired by move construction.
         After construction, the moved-from object will
-        point to the default storage.
+        point to the default memory resource.
 
         @par Complexity
 
@@ -227,8 +229,8 @@ public:
 
     /** Copy assignment.
 
-        Shared ownership of the storage owned by `*this`
-        is released, and shared ownership of the storage
+        Shared ownership of the memory resource owned by `*this`
+        is released, and shared ownership of the memory resource
         owned by `other` is acquired by copy construction.
 
         @par Complexity
@@ -259,7 +261,7 @@ public:
         return (i_ & 1) != 0;
     }
 
-    /** Return `true` if the memory resource does not require deallocate.
+    /** Return `true` if the memory resource does not require deallocate to be called.
     */
     bool
     deallocate_is_null() const noexcept
@@ -275,7 +277,7 @@ public:
         return (i_ & 3) == 2;
     }
 
-    /** Return a pointer to the storage object.
+    /** Return a pointer to the memory resource.
 
         @par Complexity
 
@@ -294,7 +296,7 @@ public:
         return get_default();
     }
 
-    /** Return a pointer to the storage object.
+    /** Return a pointer to the memory resource.
 
         @par Complexity
 
@@ -310,11 +312,11 @@ public:
         return get();
     }
 
-    /** Return a reference to the storage object.
+    /** Return a reference to the memory resource.
 
         @par Precondition
 
-        `this` points to a valid storage object.
+        `this` points to a valid memory resource.
 
         @par Complexity
 
@@ -361,9 +363,8 @@ template<class T, class... Args>
 storage_ptr
 make_counted_resource(Args&&... args)
 {
-    // If this generates an error, it means that your
-    // type `Storage` does not meet the named requirements.
-    //
+    // If this generates an error, it means that
+    // `T` is not a memory resource.
     BOOST_STATIC_ASSERT(
         std::is_base_of<
             memory_resource, T>::value);
@@ -374,7 +375,7 @@ make_counted_resource(Args&&... args)
 
 /** Return true if lhs equals rhs.
 
-    This function returns `true` if the @ref storage
+    This function returns `true` if the @ref memory_resource
     objects pointed to by `lhs` and `rhs` have the
     same address.
 */
@@ -389,7 +390,7 @@ operator==(
 
 /** Return true if lhs does not equal rhs.
 
-    This function returns `true` if the @ref storage
+    This function returns `true` if the @ref memory_resource
     objects pointed to by `lhs` and `rhs` have different
     addresses.
 */

@@ -116,23 +116,24 @@ later, and the addition of the file `src/src.cpp` to the target application.
 ]]
 
 [[
-    "Why __storage__ and __storage_ptr__ instead of `std` types?"
+    "Why __storage_ptr__ in constructors instead of `memory_resource&`?
 ][
-    The standard's __memory_resource__ is only available since C++17.
     __polymorphic_allocator__ treats the memory resource as a reference
     with respect to ownership. Boost.JSON uses a reference counted
     smart pointer container to simplify the lifetime management of
-    memory  resources. The library defines its own __storage__ type
-    which declares the reference counter intrusively, allowing a 50%
-    space savings over using a __shared_ptr__.
+    memory resources. In addition to being reference counted,
+    __storage_ptr__ can function as an uncounted reference wrapper
+    around a __memory_resource__.
 ]]
 
 [[
     "Why __string__ instead of __std_string__?"
 ][
-    The string provided by the library uses the __storage__ allocator
+    The string provided by the library uses the __storage_ptr__ allocator
     model, has the same interface on all C++ versions, and has an
     optimized class layout to keep the size of JSON values small.
+    __string__ also implements an improved interface that replaces
+    extraneous overloads with ones that use __string_view__.
 ]]
 
 ]

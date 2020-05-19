@@ -137,7 +137,7 @@ public:
     /** Default constructor.
 
         The string will have a zero size and a non-zero,
-        unspecified capacity, using the default storage.
+        unspecified capacity, using the default memory resource.
 
         @par Complexity
 
@@ -149,7 +149,7 @@ public:
 
         Constructs the string with the contents of `other`
         using pilfer semantics.
-        Ownership of the @ref storage is transferred.
+        Ownership of the @ref memory_resource is transferred.
 
         @par Complexity
 
@@ -178,15 +178,15 @@ public:
 
         The string will have zero size and a non-zero,
         unspecified capacity, obtained from the specified
-        storage.
+        memory resource.
 
         @par Complexity
 
         Constant.
 
-        @param sp A pointer to the @ref storage
+        @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
     */
     explicit
     string(storage_ptr sp)
@@ -209,16 +209,16 @@ public:
 
         @note
 
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param count The size of the resulting string.
 
         @param ch The value to initialize characters
         of the string with.
 
-        @param sp An optional pointer to the @ref storage
+        @param sp An optional pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
         The default argument for this parameter is `{}`.
 
         @throw std::length_error `count > max_size()`.
@@ -250,14 +250,14 @@ public:
 
         @note
 
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param s A pointer to a character string used to
         copy from.
 
-        @param sp An optional pointer to the @ref storage
+        @param sp An optional pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
         The default argument for this parameter is `{}`.
 
         @throw std::length_error `strlen(s) > max_size()`.
@@ -286,16 +286,16 @@ public:
 
         @note
 
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param count The number of characters to copy.
 
         @param s A pointer to a character string used to
         copy from.
 
-        @param sp An optional pointer to the @ref storage
+        @param sp An optional pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
         The default argument for this parameter is `{}`.
 
         @throw std::length_error `count > max_size()`.
@@ -325,7 +325,7 @@ public:
 
         @note
 
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @tparam InputIt The type of the iterators.
 
@@ -340,9 +340,9 @@ public:
         @param last An input iterator pointing to the end
         of the range.
 
-        @param sp An optional pointer to the @ref storage
+        @param sp An optional pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
         The default argument for this parameter is `{}`.
 
         @throw std::length_error `std::distance(first, last) > max_size()`.
@@ -372,7 +372,7 @@ public:
 
         @note
 
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The string to use as a source
         to copy from.
@@ -397,14 +397,14 @@ public:
 
         @note
 
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The string to use as a source
         to copy from.
 
-        @param sp An optional pointer to the @ref storage
+        @param sp An optional pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
         The default argument for this parameter is `{}`.
     */
     explicit
@@ -422,9 +422,9 @@ public:
         using move semantics. Ownership of the underlying
         memory is transferred.
         The container acquires shared ownership of the
-        @ref storage used by `other`. After construction, 
+        @ref memory_resource used by `other`. After construction, 
         the moved-from string behaves as if newly
-        constructed  with its current storage pointer.
+        constructed with its current memory resource.
         
         @par Complexity
 
@@ -449,7 +449,7 @@ public:
         in constant time, with no possibility
         of exceptions. After construction, the moved-from
         string behaves as if newly constructed with
-        its current @ref storage. Otherwise,
+        its current @ref memory_resource. Otherwise,
 
         @li If `*other.storage() != *sp`,
         a copy of the characters in `other` is made. In
@@ -465,13 +465,13 @@ public:
 
         @note
 
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The string to assign from.
 
-        @param sp An optional pointer to the @ref storage
+        @param sp An optional pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
         The default argument for this parameter is `{}`.
     */
     explicit
@@ -484,7 +484,7 @@ public:
     }
 
     /** Constructor.
-
+    
         Construct the contents with those of a
         string view. This view can contain
         null characters.
@@ -499,13 +499,13 @@ public:
 
         @note
 
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param s The string view to copy from.
 
-        @param sp An optional pointer to the @ref storage
+        @param sp An optional pointer to the @ref memory_resource
         to use. The container will acquire shared
-        ownership of the storage object.
+        ownership of the memory resource.
         The default argument for this parameter is `{}`.
 
         @throw std::length_error `s.size() > max_size()`.
@@ -538,7 +538,7 @@ public:
 
         @note
 
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @return `*this`
 
@@ -561,7 +561,7 @@ public:
         in constant time, with no possibility
         of exceptions. After construction, the moved-from
         string behaves as if newly constructed with its
-        current @ref storage. Otherwise,
+        current @ref memory_resource. Otherwise,
 
         @li If `*other.storage() != *this->storage()`,
         a copy of the characters in `other` is made. In
@@ -577,7 +577,7 @@ public:
 
         @note
 
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @return `*this`
 
@@ -607,7 +607,7 @@ public:
 
         @note
 
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @return `*this`
 
@@ -637,7 +637,7 @@ public:
 
         @note
 
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @return `*this`
 
@@ -668,7 +668,7 @@ public:
 
         @note
 
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @return `*this`
 
@@ -699,7 +699,7 @@ public:
 
         @note
 
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @return `*this`
 
@@ -721,7 +721,7 @@ public:
         in constant time, with no possibility of
         exceptions. After construction, the moved-from
         string behaves as if newly constructed with
-        its current  @ref storage, otherwise
+        its current  @ref memory_resource, otherwise
 
         @li If `*other.storage() != *this->storage()`,
         a copy of the characters in `other` is made.
@@ -738,7 +738,7 @@ public:
 
         @note
 
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @return `*this`
 
@@ -764,7 +764,7 @@ public:
 
         @note
 
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @return `*this`
 
@@ -798,7 +798,7 @@ public:
 
         @note
 
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @return `*this`
 
@@ -830,7 +830,7 @@ public:
 
         @note
 
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @tparam InputIt The type of the iterators.
 
@@ -875,7 +875,7 @@ public:
 
         @note
 
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @return `*this`
 
@@ -891,14 +891,14 @@ public:
 
     //------------------------------------------------------
 
-    /** Return the storage associated with the container.
+    /** Return the memory resource associated with the container.
 
-        Returns a pointer to the storage associated
+        Returns a pointer to the memory resource associated
         with the container.
 
         @note 
         
-        Shared ownership of the @ref storage is
+        Shared ownership of the @ref memory_resource is
         propagated by the container to all of its
         children recursively.
 
@@ -1469,8 +1469,7 @@ public:
     /** Return the number of characters that can be held without a reallocation.
 
         This number represents the largest number of
-        characters that may be currently held without
-        reallocating the existing storage.
+        characters the currently allocated storage can contain.
         This number may be larger than the value returned
         by @ref size().
 
@@ -1510,7 +1509,7 @@ public:
 
         @note
 
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @param new_capacity The new capacity of the array.
 
@@ -2386,7 +2385,7 @@ public:
     /** Swap the contents.
 
         Exchanges the contents of this string with another
-        string. Ownership of the respective @ref storage
+        string. Ownership of the respective @ref memory_resource
         objects is not transferred.
 
         @li If `*other.storage() == *sp`, ownership of the
@@ -2412,7 +2411,7 @@ public:
         
         @note 
 
-        Calls to @ref storage::allocate may throw.
+        Calls to `memory_resource::allocate` may throw.
 
         @par Exception Safety
 
@@ -2761,7 +2760,7 @@ private:
 
     Exchanges the contents of the string `lhs` with
     another string `rhs`. Ownership of the respective
-    @ref storage objects is not transferred.
+    @ref memory_resource objects is not transferred.
 
     @li If `*lhs.storage() == *rhs.storage()`,
     ownership of the underlying memory is swapped in
@@ -2789,7 +2788,7 @@ private:
 
     @note
 
-    Calls to @ref storage::allocate may throw.
+    Calls to `memory_resource::allocate` may throw.
 
     @param lhs The string to exchange.
 
