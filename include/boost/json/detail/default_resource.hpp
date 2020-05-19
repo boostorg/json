@@ -26,7 +26,7 @@ public:
     void*
     do_allocate(
         std::size_t n,
-        std::size_t align) override
+        std::size_t) override
     {
         return ::operator new(n);
     }

@@ -442,7 +442,7 @@ on_document_end(error_code&)
 
 bool
 parser::
-on_object_begin(error_code& ec)
+on_object_begin(error_code&)
 {
     // prevent splits from exceptions
     rs_.prepare(
@@ -476,7 +476,7 @@ on_object_end(
 
 bool
 parser::
-on_array_begin(error_code& ec)
+on_array_begin(error_code&)
 {
     // prevent splits from exceptions
     rs_.prepare(

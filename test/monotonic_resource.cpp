@@ -116,13 +116,16 @@ public:
         {
             {
                 monotonic_resource mr;
-                mr.allocate(2048);
+                auto p = mr.allocate(2048);
+                (void)p;
                 BOOST_TEST(all_alloc_in_same_block(mr, 4096, 1));
             }
             {
                 monotonic_resource mr;
-                mr.allocate(2000, 1);
-                mr.allocate(48, 1);
+                void* p;
+                p = mr.allocate(2000, 1);
+                p = mr.allocate(48, 1);
+                (void)p;
                 BOOST_TEST(all_alloc_in_same_block(mr, 4096, 1));
             }
         }

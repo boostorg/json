@@ -53,7 +53,7 @@ inline void format_two_digits( char * dest, unsigned v )
 
 inline void format_digit( char * dest, unsigned v )
 {
-    *dest = v + '0';
+    *dest = static_cast<char>( v + '0' );
 }
 
 unsigned

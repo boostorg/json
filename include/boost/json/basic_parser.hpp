@@ -18,6 +18,11 @@
 #include <cmath>
 #include <cstring>
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4127) // conditional expression is constant
+#endif
+
 /*  This file must be manually included to get the
     function template definitions for basic_parser.
 */
@@ -2241,5 +2246,9 @@ write_some(
 
 } // json
 } // boost
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #endif

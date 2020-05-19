@@ -7,7 +7,7 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE STR
 # Compiler options.
 add_compile_options(
     /permissive-  # strict C++
-    /W3           # enable all warnings
+    /W4           # enable all warnings
     /MP           # multi-processor compilation
 )
 if("${CMAKE_GENERATOR_PLATFORM}" STREQUAL "Win32") # 32-bit

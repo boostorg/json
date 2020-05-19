@@ -289,14 +289,14 @@ inline std::size_t count_whitespace( char const * p, std::size_t n ) noexcept
         if( m != 0 )
         {
 #if defined(__GNUC__) || defined(__clang__)
-            std::size_t n = __builtin_ffs( m ) - 1;
+            std::size_t c = __builtin_ffs( m ) - 1;
 #else
             unsigned long index;
             _BitScanForward( &index, m );
-            std::size_t n = index;
+            std::size_t c = index;
 #endif
 
-            p += n;
+            p += c;
             return p - p0;
         }
 

@@ -14,6 +14,17 @@
 
 #include "test_suite.hpp"
 
+#ifdef _MSC_VER
+# pragma warning(push)
+# pragma warning(disable: 4101)
+#elif defined(__clang__)
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wunused"
+#elif defined(__GNUC__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wunused"
+#endif
+
 namespace boost {
 namespace json {
 
@@ -101,7 +112,6 @@ usingInitLists()
             { "account-balances", { 84, 120, 126 } } };
 
         //]
-        (void)jv;
     }
 
     {
@@ -116,7 +126,6 @@ usingInitLists()
         assert( to_string(jv) == "[true,2,\"hello\",null]" );
 
         //]
-        (void)jv;
     }
 
     {
@@ -131,7 +140,6 @@ usingInitLists()
         assert( to_string(jv) == "[true,2,\"hello\",[\"bye\",null,false]]" );
 
         //]
-        (void)jv;
     }
 
     {
@@ -141,7 +149,6 @@ usingInitLists()
         value jv = { { "hello", 42 }, { "world", 43 } }; 
 
         //]
-        (void)jv;
     }
 
     {
@@ -166,10 +173,6 @@ usingInitLists()
         assert( jv2.is_array() && jv3.is_array() && jv4.is_array() );
         
         //]
-        (void)jv1;
-        (void)jv2;
-        (void)jv3;
-        (void)jv4;
     }
 
     {
@@ -186,7 +189,6 @@ usingInitLists()
         assert ( to_string(jv) == R"([["hello",42],["world",43]])" );
 
         //]
-        (void)jv;
     }
 
     {
@@ -201,13 +203,11 @@ usingInitLists()
         array ja = { { "mercury", 36 }, { "venus", 67 }, { "earth", 93 } };
         
         for (value& jv2 : ja)
-          assert( jv2.is_array() );
+            assert( jv2.is_array() );
 
         assert( to_string(ja) == "[[\"mercury\",36],[\"venus\",67],[\"earth\",93]]" );
 
         //]
-        (void)jv1;
-        (void)ja;
     }
     
     {
@@ -220,7 +220,6 @@ usingInitLists()
         assert( jo["venus"].is_array() );
 
         //]
-        (void)jo;
     }
 
     {
@@ -237,8 +236,6 @@ usingInitLists()
         assert( to_string(jv) == R"({"clients":{"john":100,"dave":500,"joe":300}})" );
 
         //]
-        (void)jo1;
-        (void)jv;
     }
 }
 
@@ -741,18 +738,20 @@ public:
     void
     run()
     {
-        (void)&usingStrings;
         usingInitLists();
-        (void)&usingArrays;
-        (void)&usingObjects;
-        (void)&usingStorage;
-        (void)&parse_fast;
-        (void)&do_json;
-        (void)&do_rpc;
-        (void)&usingParsing;
-        (void)&usingSerializing;
-        (void)&usingExchange1;
-        (void)&usingExchange2;
+
+        &usingStrings;
+        &usingArrays;
+        &usingObjects;
+        &usingStorage;
+        &parse_fast;
+        &do_json;
+        &do_rpc;
+        &usingParsing;
+        &usingSerializing;
+        &usingExchange1;
+        &usingExchange2;
+
         BOOST_TEST_PASS();
     }
 };

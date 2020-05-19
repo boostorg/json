@@ -337,15 +337,6 @@ public:
         }
     }
 
-    struct FT
-    {
-        value
-        to_value(storage_ptr sp) const
-        {
-            return nullptr;
-        }
-    };
-
     void
     run()
     {

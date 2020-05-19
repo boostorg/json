@@ -48,7 +48,7 @@ class monotonic_resource final
     initial_block initial_;
     
     static std::size_t const min_block_size_ = 1024;
-    static std::size_t const max_block_size_ = -1;
+    static std::size_t const max_block_size_ = std::size_t(-1);
 
     template<typename Block>
     void*
