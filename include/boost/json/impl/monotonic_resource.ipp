@@ -113,7 +113,7 @@ grow_block_size(std::size_t size)
 }
 
 monotonic_resource::
-~monotonic_resource()
+~monotonic_resource() noexcept
 {
     for(auto b = head_; b;)
     {
