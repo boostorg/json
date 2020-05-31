@@ -22,7 +22,7 @@ struct class_type {};
 enum unscoped_enumeration_type { };
 enum class scoped_enumeration_type { };
 
-// [support.types] p5: The type max_­align_­t is a trivial
+// [support.types] p5: The type max_align_t is a trivial
 // standard-layout type whose alignment requirement
 // is at least as great as that of every scalar type.
 struct max_align_t
