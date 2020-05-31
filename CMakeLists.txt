@@ -111,7 +111,12 @@ endif()
 
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR AND NOT BOOST_JSON_IN_BOOST_TREE)
     set_target_properties(boost_json PROPERTIES EXPORT_NAME json)
-    install(TARGETS boost_json EXPORT boost_json_targets)
+    install(TARGETS boost_json
+        EXPORT boost_json_targets
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
 
     install(EXPORT boost_json_targets
         FILE boost_json-targets.cmake
