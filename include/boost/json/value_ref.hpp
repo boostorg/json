@@ -225,14 +225,14 @@ public:
 
     value_ref(unsigned int t) noexcept
         : arg_(t)
-        , cf_{&from_builtin<int>, &arg_.uint_}
+        , cf_{&from_builtin<unsigned int>, &arg_.uint_}
         , what_(what::cfunc)
     {
     }
 
     value_ref(unsigned long t) noexcept
         : arg_(t)
-        , cf_{&from_builtin<long>, &arg_.ulong_}
+        , cf_{&from_builtin<unsigned long>, &arg_.ulong_}
         , what_(what::cfunc)
     {
     }
