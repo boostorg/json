@@ -45,6 +45,7 @@ namespace json {
 enum class basic_parser::state : char
 {
     doc1, doc2, doc3,
+    wht1, wht2, wht3, wht4,
     nul1, nul2, nul3,
     tru1, tru2, tru3,
     fal1, fal2, fal3, fal4,
@@ -257,15 +258,137 @@ suspend(state st, number const& num)
 // return `false` if fully consumed
 bool
 basic_parser::
-skip_white(const_stream& cs)
+skip_whitespace(const_stream& cs)
 {
-    char const * p = cs.data();
-    std::size_t n = cs.remain();
+    const std::size_t left = cs.remain();
+    const std::size_t consume = detail::count_whitespace(cs.data(), left);
+    cs.skip(consume);
+    return consume != left;
+}
 
-    std::size_t n2 = detail::count_whitespace( p, n );
-    cs.skip( n2 );
+// return `false` if fully consumed
+template<char C>
+bool
+basic_parser::
+skip_to_first(const_stream& cs)
+{
+    const std::size_t left = cs.remain();
+    const std::size_t consume = detail::find_char<C>(cs.data(), left);
+    cs.skip(consume);
+    return consume != left;
+}
 
-    return n2 < n;
+template<bool StackEmpty, class Handler>
+auto
+basic_parser::
+parse_whitespace(
+    Handler&,
+    const_stream& cs) ->
+    result
+{
+    if (!StackEmpty && !st_.empty())
+    {
+        state st;
+        st_.pop(st);
+        switch (st)    
+        {
+            case state::wht1: goto do_wht1;
+            case state::wht2: goto do_wht2;
+            case state::wht3: goto do_wht3;
+            case state::wht4: goto do_wht4;
+        }
+    }
+    for (;;)
+    {
+        if (!skip_whitespace(cs))
+            return result::partial;
+        if (*cs != '/')
+            return result::ok;
+        ++cs;
+        // start from comment begin token
+do_wht1:
+        if (!cs)
+        {
+            //  likely
+            if (more_)
+            {
+                suspend(state::wht1);
+                return result::partial;
+            }
+            // no token following slash
+            ec_ = error::syntax;
+            return result::fail;
+        }
+        if (*cs == '/')
+        {
+        // stopped inside a c++ comment
+do_wht2:
+            if (!skip_to_first<'\n'>(cs))
+            {
+                // likely
+                if (more_)
+                {
+                    suspend(state::wht2);
+                    return result::partial;
+                }
+                // we have two options:
+                // - if no newline is found, error out, or
+                // - treat the end of stream as the end of the comment
+                // this will treat is as an error.
+                ec_ = error::syntax;
+                return result::fail;
+            }
+        }
+        else if (*cs == '*')
+        {
+            // consume the star
+            ++cs;
+do_wht3:
+            // stopped inside a c comment
+            if (!skip_to_first<'*'>(cs))
+            {
+                // likely
+                if (more_)
+                {
+                    suspend(state::wht3);
+                    return result::partial;
+                }
+                // didn't find closing star
+                ec_ = error::syntax;
+                return result::fail;
+            }
+            else
+            {
+                // found a star, check if the next char is a slash
+                BOOST_ASSERT(*cs == '*');
+                ++cs;
+do_wht4:
+                if (!cs)
+                {
+                    // likely
+                    if (more_)
+                    {
+                        suspend(state::wht4);
+                        return result::partial;
+                    }
+                    // didn't find closing slash
+                    ec_ = error::syntax;
+                    return result::fail;
+                }
+                // consume the closing slash if we find it,
+                // otherwise search for the star again
+                if (*cs == '/')
+                    ++cs;
+                else
+                    goto do_wht3;
+            }
+        }
+        else
+        {
+            ec_ = error::syntax;
+            return result::fail;
+        }
+    }
 }
 
 template<bool StackEmpty, class Handler>
@@ -289,12 +412,19 @@ parse_document(
         }
     }
 do_doc1:
-    if(BOOST_JSON_UNLIKELY(
-        ! skip_white(cs)))
     {
-        if(more_)
-            suspend(state::doc1);
-        return result::partial;
+        result const r =
+            parse_whitespace<StackEmpty>(h, cs);
+        if (BOOST_UNLIKELY(r))
+        {
+            if (more_ && r == result::partial)
+            {
+                suspend(state::doc1);
+                return result::partial;
+            }
+            ec_ = error::syntax;
+            return result::fail;
+        }
     }
 do_doc2:
     {
@@ -308,13 +438,22 @@ do_doc2:
         }
     }
 do_doc3:
-    if(BOOST_JSON_UNLIKELY(
-        ! skip_white(cs)))
     {
-        if(more_)
+        // special case here
+        // if there aren't any more characters
+        // in the buffer, we are done parsing
+        result const r =
+            parse_whitespace<StackEmpty>(h, cs);
+        if (BOOST_JSON_UNLIKELY(r))
         {
-            suspend(state::doc3);
-            return result::partial;
+            if (r == result::partial)
+            {
+                if (more_)
+                    suspend(state::doc3);
+                else
+                    return result::ok;
+            }
+            return r;
         }
     }
     return result::ok;
@@ -1369,12 +1508,19 @@ parse_object(
         }
     }
 do_obj1:
-    if(BOOST_JSON_UNLIKELY(
-        ! skip_white(cs)))
     {
-        if(more_)
-            suspend(state::obj1, n);
-        return result::partial;
+        result const r =
+            parse_whitespace<StackEmpty>(h, cs);
+        if(BOOST_UNLIKELY(r))
+        {
+            if (more_ && r == result::partial)
+            {
+                suspend(state::obj1, n);
+                return result::partial;
+            }
+            ec_ = error::syntax;
+            return result::fail;
+        }
     }
     c = *cs;
     if(BOOST_JSON_UNLIKELY(c == '}'))
@@ -1400,12 +1546,19 @@ do_obj2:
             }
         }
 do_obj3:
-        if(BOOST_JSON_UNLIKELY(
-            ! skip_white(cs)))
         {
-            if(more_)
-                suspend(state::obj3, n);
-            return result::partial;
+            result const r =
+                parse_whitespace<StackEmpty>(h, cs);
+            if (BOOST_UNLIKELY(r))
+            {
+                if (more_ && r == result::partial)
+                {
+                    suspend(state::obj3, n);
+                    return result::partial;
+                }
+                ec_ = error::syntax;
+                return result::fail;
+            }
         }
         if(BOOST_JSON_UNLIKELY(*cs != ':'))
         {
@@ -1414,12 +1567,19 @@ do_obj3:
         }
         ++cs;
 do_obj4:
-        if(BOOST_JSON_UNLIKELY(
-            ! skip_white(cs)))
         {
-            if(more_)
-                suspend(state::obj4, n);
-            return result::partial;
+            result const r =
+                parse_whitespace<StackEmpty>(h, cs);
+            if (BOOST_UNLIKELY(r))
+            {
+                if (more_ && r == result::partial)
+                {
+                    suspend(state::obj4, n);
+                    return result::partial;
+                }
+                ec_ = error::syntax;
+                return result::fail;
+            }
         }
 do_obj5:
         {
@@ -1433,12 +1593,19 @@ do_obj5:
             ++n;
         }
 do_obj6:
-        if(BOOST_JSON_UNLIKELY(
-            ! skip_white(cs)))
         {
-            if(more_)
-                suspend(state::obj6, n);
-            return result::partial;
+            result const r =
+                parse_whitespace<StackEmpty>(h, cs);
+            if (BOOST_UNLIKELY(r))
+            {
+                if (more_ && r == result::partial)
+                {
+                    suspend(state::obj6, n);
+                    return result::partial;
+                }
+                ec_ = error::syntax;
+                return result::fail;
+            }
         }
         if(BOOST_JSON_UNLIKELY(*cs != ','))
         {
@@ -1456,12 +1623,19 @@ do_obj6:
         }
         ++cs;
 do_obj7:
-        if(BOOST_JSON_UNLIKELY(
-            ! skip_white(cs)))
         {
-            if(more_)
-                suspend(state::obj7, n);
-            return result::partial;
+            result const r =
+                parse_whitespace<StackEmpty>(h, cs);
+            if (BOOST_UNLIKELY(r))
+            {
+                if (more_ && r == result::partial)
+                {
+                    suspend(state::obj7, n);
+                    return result::partial;
+                }
+                ec_ = error::syntax;
+                return result::fail;
+            }
         }
     }
 }
@@ -1510,12 +1684,19 @@ parse_array(
         }
     }
 do_arr1:
-    if(BOOST_JSON_UNLIKELY(
-        ! skip_white(cs)))
     {
-        if(more_)
-            suspend(state::arr1, n);
-        return result::partial;
+        result const r =
+            parse_whitespace<StackEmpty>(h, cs);
+        if (BOOST_UNLIKELY(r))
+        {
+            if (more_ && r == result::partial)
+            {
+                suspend(state::arr1, n);
+                return result::partial;
+            }
+            ec_ = error::syntax;
+            return result::fail;
+        }
     }
     c = *cs;
     if(c == ']')
@@ -1541,12 +1722,19 @@ do_arr2:
             ++n;
         }
 do_arr3:
-        if(BOOST_JSON_UNLIKELY(
-            ! skip_white(cs)))
         {
-            if(more_)
-                suspend(state::arr3, n);
-            return result::partial;
+            result const r =
+                parse_whitespace<StackEmpty>(h, cs);
+            if (BOOST_UNLIKELY(r))
+            {
+                if (more_ && r == result::partial)
+                {
+                    suspend(state::arr3, n);
+                    return result::partial;
+                }
+                ec_ = error::syntax;
+                return result::fail;
+            }
         }
         if(*cs != ',')
         {
@@ -1564,12 +1752,19 @@ do_arr3:
         }
         ++cs;
 do_arr4:
-        if(BOOST_JSON_UNLIKELY(
-            ! skip_white(cs)))
         {
-            if(more_)
-                suspend(state::arr4, n);
-            return result::partial;
+            result const r =
+                parse_whitespace<StackEmpty>(h, cs);
+            if (BOOST_UNLIKELY(r))
+            {
+                if (more_ && r == result::partial)
+                {
+                    suspend(state::arr4, n);
+                    return result::partial;
+                }
+                ec_ = error::syntax;
+                return result::fail;
+            }
         }
     }
 }

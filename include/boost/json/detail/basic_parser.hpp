@@ -112,9 +112,15 @@ class basic_parser
     inline void suspend(state st);
     inline void suspend(state st, std::size_t n);
     inline void suspend(state st, number const& num);
-    inline bool skip_white(const_stream& cs);
+
+    inline bool skip_whitespace(const_stream& cs);
+    template<char C>
+    inline bool skip_to_first(const_stream& cs);
+
     template<bool StackEmpty, class Handler>
     inline result parse_document(Handler& h, const_stream& cs);
+    template<bool StackEmpty, class Handler>
+    inline result parse_whitespace(Handler& h, const_stream& cs);
     template<bool StackEmpty, class Handler>
     inline result parse_value(Handler& h, const_stream& cs);
     template<bool StackEmpty, class Handler>
