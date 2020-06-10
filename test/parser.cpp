@@ -809,6 +809,55 @@ public:
     }
 
     void
+    testComments()
+    {
+        string_view in =
+            R"xx({
+    "glossary": // test c++ comment  
+        {
+        "title": "example glossary",
+		"GlossDiv": {
+            "title": "S", // test c++ comment
+            // test c++ comment
+			"GlossList": {
+                "GlossEntry": {
+                    "ID": /* test c comment*/"SGML",
+					"SortAs": "SGML",
+					/* test c comment */"GlossTerm": "Standard Generalized Markup Language",
+					/* test c comment */ "Acronym":/* test c comment */ "SGML",
+					"Abbrev":/* test c comment */ /* test c comment */"ISO 8879:1986", /* test c comment*/
+					"GlossDef": { /* test c comment*/
+                        "para": "A meta-markup language, used to create markup languages such as DocBook.",
+						"GlossSeeAlso": ["GML", "XML"]
+                    },
+					"GlossSee": "markup"
+                }
+            } // test c++ comment
+        }
+    }
+})xx"
+;
+        parser p;
+        error_code ec;
+        p.start();
+        p.write(in.data(), in.size(), ec);
+        if (BOOST_TEST(!ec))
+            p.finish(ec);
+        if (BOOST_TEST(!ec))
+        {
+            BOOST_TEST(to_string(p.release()) ==
+                "{\"glossary\":{\"title\":\"example glossary\",\"GlossDiv\":"
+                "{\"title\":\"S\",\"GlossList\":{\"GlossEntry\":{\"ID\":\"SGML\","
+                "\"SortAs\":\"SGML\",\"GlossTerm\":\"Standard Generalized Markup "
+                "Language\",\"Acronym\":\"SGML\",\"Abbrev\":\"ISO 8879:1986\","
+                "\"GlossDef\":{\"para\":\"A meta-markup language, used to create "
+                "markup languages such as DocBook.\",\"GlossSeeAlso\":[\"GML\",\"XML\"]},"
+                "\"GlossSee\":\"markup\"}}}}}"
+            );
+        }
+    }
+
+    void
     testSampleJson()
     {
         string_view in =
@@ -934,6 +983,7 @@ R"xx({
         testObject();
         testMembers();
         testFreeFunctions();
+        testComments();
         testSampleJson();
         testUnicodeStrings();
         testIssue15();

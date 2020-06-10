@@ -380,6 +380,53 @@ inline std::size_t count_whitespace( char const * p, std::size_t n ) noexcept
 
 #endif
 
+#ifdef BOOST_JSON_USE_SSE2
+
+template<char C>
+std::size_t find_char(const char* str, std::size_t len)
+{
+    if (!len)
+        return 0;
+    const char* const begin = str;
+    const __m128i target = _mm_set1_epi8(C);
+    for (; len >= 16; len -= 16, str += 16)
+    {
+        __m128i bytes = _mm_loadu_si128(
+            reinterpret_cast<const __m128i*>(str));
+        int mask = _mm_movemask_epi8(_mm_cmpeq_epi8(bytes, target));
+        if (mask)
+        {
+#if defined(__GNUC__) || defined(__clang__)
+            std::size_t index = __builtin_ffs(mask) - 1;
+#else
+            unsigned long index;
+            _BitScanForward(&index, mask);
+#endif      
+            return (str + index) - begin;
+        }
+    }
+    for (; len--; ++str)
+        if (*str == C)
+            break;
+    return str - begin;
+}
+
+#else
+
+template<char C>
+std::size_t find_char(const char* str, std::size_t len) noexcept
+{
+    if (!len)
+        return 0;
+    std::size_t index = 0;
+    for (; index < len; ++str, ++index)
+        if (*str == C)
+            break;
+    return index;
+}
+
+#endif
+
 } // detail
 } // json
 } // boost

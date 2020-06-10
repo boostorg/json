@@ -243,9 +243,7 @@ parse_vectors() noexcept
         { 'n', "object_several_trailing_commas", lit("{\"id\":0,,,,,}") },
         { 'n', "object_single_quote", lit("{'a':0}") },
         { 'n', "object_trailing_comma", lit("{\"id\":0,}") },
-        { 'n', "object_trailing_comment", lit("{\"a\":\"b\"}/**/") },
         { 'n', "object_trailing_comment_open", lit("{\"a\":\"b\"}/**//") },
-        { 'n', "object_trailing_comment_slash_open", lit("{\"a\":\"b\"}//") },
         { 'n', "object_trailing_comment_slash_open_incomplete", lit("{\"a\":\"b\"}/") },
         { 'n', "object_two_commas_in_a_row", lit("{\"a\":\"b\",,\"c\":\"d\"}") },
         { 'n', "object_unquoted_key", lit("{a: \"b\"}") },
@@ -808,7 +806,6 @@ parse_vectors() noexcept
         { 'n', "structure_number_with_trailing_garbage", lit("2@") },
         { 'n', "structure_object_followed_by_closing_object", lit("{}}") },
         { 'n', "structure_object_unclosed_no_value", lit("{\"\":") },
-        { 'n', "structure_object_with_comment", lit("{\"a\":/*comment*/\"b\"}") },
         { 'n', "structure_object_with_trailing_garbage", lit("{\"a\": true} \"x\"") },
         { 'n', "structure_open_array_apostrophe", lit("['") },
         { 'n', "structure_open_array_comma", lit("[,") },
@@ -1383,6 +1380,9 @@ parse_vectors() noexcept
         { 'y', "object_simple", lit("{\"a\":[]}") },
         { 'y', "object_string_unicode", lit("{\"title\":\"\\u041f\\u043e\\u043b\\u0442\\u043e\\u0440\\u0430 \\u0417\\u0435\\u"
                "043c\\u043b\\u0435\\u043a\\u043e\\u043f\\u0430\" }") },
+        { 'y', "object_trailing_comment", lit("{\"a\":\"b\"}/**/") },
+        { 'y', "object_trailing_comment_slash_open", lit("{\"a\":\"b\"}//") },
+        { 'y', "object_with_comment", lit("{\"a\":/*comment*/\"b\"}") },
         { 'y', "object_with_newlines", lit("{\x0A""\"a\": \"b\"\x0A""}") },
         { 'y', "pass01", lit("[\x0A""    \"JSON Test Pattern pass1\",\x0A""    {\"object with 1 member\":[\"ar"
                "ray with 1 element\"]},\x0A""    {},\x0A""    [],\x0A""    -42,\x0A""    true,\x0A"""
