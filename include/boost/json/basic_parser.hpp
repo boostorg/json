@@ -389,8 +389,17 @@ parse_value(
             return parse_object<true>(h, cs0);
         case '[':
             return parse_array<true>(h, cs0);
+        case '0':
+            return parse_number<true, '0'>(h, cs0);
+        case '-':
+            return parse_number<true, '-'>(h, cs0);
+        case '1': case '2': case '3':
+        case '4': case '5': case '6':
+        case '7': case '8': case '9':
+            return parse_number<true, '+'>(h, cs0);
         default:
-            return parse_number<true>(h, cs0);
+            ec_ = error::syntax;
+            return result::fail;
         }
     }
     else
@@ -449,7 +458,7 @@ resume_value(
     case state::num7: case state::num8:
     case state::exp1: case state::exp2:
     case state::exp3:
-        return parse_number<StackEmpty>(h, cs0);
+        return parse_number<StackEmpty, 0>(h, cs0);
     }
 }
 
@@ -1591,14 +1600,18 @@ do_arr4:
 
 //----------------------------------------------------------
 
-template<bool StackEmpty, class Handler>
+template<bool StackEmpty, char First, class Handler>
 auto
 basic_parser::
 parse_number(
     Handler& h,
     const_stream& cs0) ->
-    result
+        result
 {
+    // one of these will be true if we are not resuming
+    constexpr bool negative = First == '-';
+    constexpr bool zero_first = First == '0';
+    constexpr bool nonzero_first = First == '+';
     number num;
     detail::local_const_stream cs(cs0);
     if(StackEmpty || st_.empty())
@@ -1635,15 +1648,9 @@ parse_number(
     // leading minus sign
     //
     BOOST_ASSERT(cs);
-    if(*cs == '-')
-    {
+    if (negative)
         ++cs;
-        num.neg = true;
-    }
-    else
-    {
-        num.neg = false;
-    }
+    num.neg = negative;
 
     // fast path
 
@@ -1651,12 +1658,12 @@ parse_number(
     {
         int n1;
 
-        if( *cs != '0' )
+        if( ! zero_first || *cs != '0' )
         {
             n1 = detail::count_digits( cs.data() );
             BOOST_ASSERT(n1 >= 0 && n1 <= 16);
 
-            if( n1 == 0 )
+            if( ! nonzero_first && n1 == 0 )
             {
                 // digit required
                 ec_ = error::syntax;
@@ -1674,15 +1681,23 @@ parse_number(
         }
         else
         {
-            // 0. floating point
+            // 0. floating point or 0e integer
             num.mant = 0;
             n1 = 0;
             ++cs;
         }
 
-        if( *cs != '.' )
         {
-            goto do_num6;
+            const char c = *cs;
+            if (c != '.')
+            {
+                if ((c | 32) == 'e')
+                {
+                    ++cs;
+                    goto do_exp1;
+                }
+                goto finish_int;
+            }
         }
 
         ++cs;
@@ -1730,10 +1745,17 @@ parse_number(
     // first digit
     //
 do_num1:
-    if(BOOST_JSON_LIKELY(cs))
+    if(zero_first || nonzero_first ||
+        BOOST_JSON_LIKELY(cs))
     {
         char const c = *cs;
-        if(BOOST_JSON_LIKELY(
+        if (zero_first)
+        {
+            ++cs;
+            num.mant = 0;
+            goto do_num6;
+        }
+        else if (nonzero_first || BOOST_JSON_LIKELY(
             c >= '1' && c <= '9'))
         {
             ++cs;
@@ -1765,7 +1787,7 @@ do_num1:
     // significant digits left of decimal
     //
 do_num2:
-    if(num.neg)
+    if(negative || (!StackEmpty && num.neg))
     {
         for(;;)
         {
@@ -2143,7 +2165,7 @@ do_exp3:
     }
 
 finish_int:
-    if(num.neg)
+    if(negative || (!StackEmpty && num.neg))
     {
         if(BOOST_JSON_UNLIKELY(
             ! h.on_int64(static_cast<

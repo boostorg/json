@@ -113,26 +113,36 @@ class basic_parser
     inline void suspend(state st, std::size_t n);
     inline void suspend(state st, number const& num);
     inline bool skip_white(const_stream& cs);
+    
     template<bool StackEmpty, class Handler>
-    inline result parse_document(Handler& h, const_stream& cs);
+    result parse_document(Handler& h, const_stream& cs);
+    
     template<bool StackEmpty, class Handler>
-    inline result parse_value(Handler& h, const_stream& cs);
+    result parse_value(Handler& h, const_stream& cs);
+    
     template<bool StackEmpty, class Handler>
-    inline result resume_value(Handler& h, const_stream& cs);
+    result resume_value(Handler& h, const_stream& cs);
+    
     template<bool StackEmpty, class Handler>
-    inline result parse_null(Handler& h, const_stream& cs);
+    result parse_null(Handler& h, const_stream& cs);
+    
     template<bool StackEmpty, class Handler>
-    inline result parse_true(Handler& h, const_stream& cs);
+    result parse_true(Handler& h, const_stream& cs);
+    
     template<bool StackEmpty, class Handler>
-    inline result parse_false(Handler& h, const_stream& cs);
+    result parse_false(Handler& h, const_stream& cs);
+    
     template<bool StackEmpty, class Handler>
-    inline result parse_string(Handler& h, const_stream& cs);
+    result parse_string(Handler& h, const_stream& cs);
+    
     template<bool StackEmpty, class Handler>
-    inline result parse_object(Handler& h, const_stream& cs);
+    result parse_object(Handler& h, const_stream& cs);
+    
     template<bool StackEmpty, class Handler>
-    inline result parse_array(Handler& h, const_stream& cs);
-    template<bool StackEmpty, class Handler>
-    inline result parse_number(Handler& h, const_stream& cs);
+    result parse_array(Handler& h, const_stream& cs);
+    
+    template<bool StackEmpty, char First, class Handler>
+    result parse_number(Handler& h, const_stream& cs);
 
 public:
     /** Destructor.
