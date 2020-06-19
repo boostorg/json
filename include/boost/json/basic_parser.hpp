@@ -720,12 +720,7 @@ parse_string(
     char const* start;
     if(StackEmpty || st_.empty())
     {
-        if(BOOST_JSON_UNLIKELY(
-            *cs != '\x22')) // '"'
-        {
-            ec_ = error::syntax;
-            return result::fail;
-        }
+        BOOST_ASSERT(*cs == '\x22'); // '"'
         ++cs;
         start = cs.data();
     }
@@ -1402,9 +1397,10 @@ do_obj1:
     }
     for(;;)
     {
-        is_key_ = true;
-do_obj2:
+        if (BOOST_JSON_LIKELY(*cs == '\x22')) // '"'
         {
+            is_key_ = true;
+do_obj2:
             result r = parse_string<StackEmpty>(h, cs);
             if(BOOST_JSON_UNLIKELY(r))
             {
@@ -1412,6 +1408,11 @@ do_obj2:
                     suspend(state::obj2, n);
                 return r;
             }
+        }
+        else
+        {
+            ec_ = error::syntax;
+            return result::fail;
         }
 do_obj3:
         if(BOOST_JSON_UNLIKELY(
