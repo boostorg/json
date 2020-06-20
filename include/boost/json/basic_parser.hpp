@@ -734,22 +734,25 @@ parse_string(
         start = cs.data();
         state st;
         st_.pop(st);
-        switch(st)
+        if (st != state::str1)
         {
-        default:
-        case state::str1: goto do_str1;
-        case state::str2: goto do_str2;
-        case state::str3: goto do_str3;
-        case state::str4: goto do_str4;
-        case state::str5: goto do_str5;
-        case state::str6: goto do_str6;
-        case state::str7: goto do_str7;
-        case state::sur1: goto do_sur1;
-        case state::sur2: goto do_sur2;
-        case state::sur3: goto do_sur3;
-        case state::sur4: goto do_sur4;
-        case state::sur5: goto do_sur5;
-        case state::sur6: goto do_sur6;
+            cs.clip(temp.max_size());
+            switch(st)
+            {
+            default:
+            case state::str2: goto do_str2;
+            case state::str3: goto do_str3;
+            case state::str4: goto do_str4;
+            case state::str5: goto do_str5;
+            case state::str6: goto do_str6;
+            case state::str7: goto do_str7;
+            case state::sur1: goto do_sur1;
+            case state::sur2: goto do_sur2;
+            case state::sur3: goto do_sur3;
+            case state::sur4: goto do_sur4;
+            case state::sur5: goto do_sur5;
+            case state::sur6: goto do_sur6;
+            }
         }
     }
 
@@ -757,7 +760,6 @@ parse_string(
     //
     // zero-copy unescaped runs
     //
-do_str1:
     cs.skip(detail::count_unescaped(
         cs.data(), cs.remain()));
     for(;;)
@@ -789,6 +791,7 @@ do_str1:
             else if(BOOST_JSON_LIKELY(
                 c == '\\'))
             {
+                // flush unescaped run from input
                 if(BOOST_JSON_LIKELY(
                     cs.data() > start))
                 {
@@ -807,7 +810,13 @@ do_str1:
                             return result::fail;
                     }
                 }
-                goto do_str2;
+                // Unescaped JSON is never larger than its escaped version.
+                // To efficiently process only what will fit in the temporary buffer,
+                // the size of the input stream is temporarily "clipped" to the size
+                // of the temporary buffer.
+                cs.clip(temp.max_size());
+                ++cs;
+                goto do_str3;
             }
             else if(BOOST_JSON_UNLIKELY(
                 is_control(c)))
@@ -844,15 +853,20 @@ do_str1:
         return result::partial;
     }
 
-    //----------------------------------
+    //---------------------------------------------------------------
     //
-    // build a temporary buffer,
-    // handling escapes and unicode.
+    // To handle escapes, a local temporary buffer accumulates
+    // the unescaped result. The algorithm attempts to fill the
+    // buffer to capacity before invoking the handler.
+    // In some cases the temporary buffer needs to be flushed
+    // before it is full:
+    // * When the closing double quote is seen
+    // * When there in no more input (and more is expected later)
+    // A goal of the algorithm is to call the handler as few times
+    // as possible. Thus, when the first escape is encountered,
+    // the algorithm attempts to fill the temporary buffer first.
     //
 do_str2:
-    // JSON escapes can never make the
-    // transcoded utf8 string larger.
-    cs.clip(temp.capacity());
     for(;;)
     {
         if(BOOST_JSON_LIKELY(cs))
@@ -909,7 +923,7 @@ do_str2:
             }
             temp.clear();
         }
-        cs.clip(temp.capacity());
+        cs.clip(temp.max_size());
         if(cs)
             continue;
         if(BOOST_JSON_LIKELY(more_))
@@ -1082,7 +1096,7 @@ do_str3:
                             return result::fail;
                     }
                     temp.clear();
-                    cs.clip(temp.capacity());
+                    cs.clip(temp.max_size());
                 }
                 ++cs;
                 goto do_str4;
@@ -1094,30 +1108,30 @@ do_str3:
             ++cs;
             continue;
         }
-        if(BOOST_JSON_LIKELY(more_))
-        {
-            // flush
-            if(BOOST_JSON_LIKELY(
-                ! temp.empty()))
-            {
-                if(is_key_)
-                {
-                    if(BOOST_JSON_UNLIKELY(
-                        ! h.on_key_part(temp, ec_)))
-                        return result::fail;
-                }
-                else
-                {
-                    if(BOOST_JSON_UNLIKELY(
-                        ! h.on_string_part(temp, ec_)))
-                        return result::fail;
-                }
-                temp.clear();
-            }
-            suspend(state::str3);
-        }
-        return result::partial;
 
+        if(BOOST_JSON_LIKELY(
+            ! temp.empty()))
+        {
+            if(is_key_)
+            {
+                if(BOOST_JSON_UNLIKELY(
+                    ! h.on_key_part(temp, ec_)))
+                    return result::fail;
+            }
+            else
+            {
+                if(BOOST_JSON_UNLIKELY(
+                    ! h.on_string_part(temp, ec_)))
+                    return result::fail;
+            }
+            temp.clear();
+        }
+        cs.clip(temp.max_size());
+        if(cs)
+            goto do_str3;
+        if(BOOST_JSON_LIKELY(more_))
+            suspend(state::str3);
+        return result::partial;
         // utf16 escape
     do_str4:
         if(BOOST_JSON_LIKELY(cs))
