@@ -154,7 +154,14 @@ parser::
 }
 
 parser::
-parser()
+parser() noexcept
+    : parser(storage_ptr())
+{
+}
+
+parser::
+parser(storage_ptr sp) noexcept
+    : rs_(std::move(sp))
 {
     lev_.st = state::need_start;
 }

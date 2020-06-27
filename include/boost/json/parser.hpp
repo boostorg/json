@@ -56,14 +56,17 @@ namespace json {
     to bound the amount of work performed in each
     parsing cycle.
 
-    <br>
+    @par Intermediate Storage
 
     The parser may dynamically allocate intermediate
     storage as needed to accommodate the nesting level
-    of the JSON being parsed. This storage is freed
-    when the parser is destroyed, allowing the parser
-    to cheaply re-use this memory when parsing
-    subsequent JSONs, improving performance.
+    of the JSON being parsed. Intermediate storage is
+    allocated using the @ref storage_ptr passed to
+    the constructor; if no such argument is specified,
+    the default memory resource will be used instead.
+    This storage is freed when the parser is destroyed, 
+    allowing the parser to cheaply reuse this memory
+    when parsing subsequent JSONs, improving performance.
 */
 class parser : public basic_parser
 {
@@ -98,11 +101,39 @@ public:
 
     /** Default constructor.
 
+        Constructs an empty parser that uses the
+        default memory resource to allocate
+        intermediate storage.
+
+        @note
         Before any JSON can be parsed, the function
-        @ref start must be called.
+        @ref start must be called. 
     */
     BOOST_JSON_DECL
-    parser();
+    parser() noexcept;
+
+    /** Constructor.
+
+        Constructs a empty parser using the supplied
+        @ref storage_ptr to allocate
+        intermediate storage.
+
+        @note
+        Before any JSON can be parsed, the function
+        @ref start must be called.
+
+        <br>
+
+        The `sp` parameter is only used to
+        allocate intermediate storage; will not be used
+        for the @ref value returned by @ref release.
+
+        @param sp The @ref storage_ptr to use for
+        intermediate storage allocations.
+    */
+    BOOST_JSON_DECL
+    explicit 
+    parser(storage_ptr sp) noexcept;
 
     /** Reserve internal storage space.
 
