@@ -131,7 +131,7 @@ BOOST_STATIC_ASSERT(has_value_from<std::vector<int>&&>::value);
 BOOST_STATIC_ASSERT(has_value_from<std::tuple<int, int>>::value);
 BOOST_STATIC_ASSERT(has_value_from<std::tuple<int, int>&>::value);
 BOOST_STATIC_ASSERT(has_value_from<std::tuple<int, int>&&>::value);
-BOOST_STATIC_ASSERT(has_value_from<std::tuple<int, int>&&>::value);
+
 // object-like
 BOOST_STATIC_ASSERT(has_value_from<std::map<string_view, int>>::value);
 
