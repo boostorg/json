@@ -1583,6 +1583,41 @@ public:
             v3.value().get_string() == "value");
         BOOST_TEST(std::memcmp(
             v3.key_c_str(), "key\0", 4) == 0);
+
+        BOOST_STATIC_ASSERT(std::tuple_size<key_value_pair>::value == 2);
+        BOOST_TEST(get<0>(v3) == "key");
+        BOOST_TEST(
+            get<1>(v3).get_string() == "value");
+
+        BOOST_STATIC_ASSERT(std::is_same<
+            decltype(get<1>(std::declval<kvp>())), json::value&&>::value);
+
+#if __cplusplus >= 201703L || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
+        auto const [kc, vc] = v1;
+        static_assert(std::is_same_v<decltype(kc), string_view const>);
+        static_assert(std::is_same_v<decltype(vc), value const&>);
+        BOOST_TEST(kc == "key");
+        BOOST_TEST(&vc != &v1.value());
+
+        auto& [kr, vr] = v1;
+        static_assert(std::is_same_v<decltype(kr), string_view const>);
+        static_assert(std::is_same_v<decltype(vr), value&>);
+        BOOST_TEST(kr == "key");
+        BOOST_TEST(&vr == &v1.value());
+
+        auto const& [kcr, vcr] = v1;
+        static_assert(std::is_same_v<decltype(kcr), string_view const>);
+        static_assert(std::is_same_v<decltype(vcr), value const&>);
+        BOOST_TEST(kcr == "key");
+        BOOST_TEST(&vcr == &v1.value());
+
+        const kvp v4("const key", "const value");
+        auto& [ckr, cvr] = v4;
+        static_assert(std::is_same_v<decltype(ckr), string_view const>);
+        static_assert(std::is_same_v<decltype(cvr), value const&>);
+        BOOST_TEST(ckr == "const key");
+        BOOST_TEST(&cvr == &v4.value());
+#endif
     }
 
     //------------------------------------------------------
