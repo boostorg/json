@@ -80,12 +80,10 @@ usingStrings()
         json::string jstr1 = "helloworld";
         json::string jstr2 = "world";
 
-
-        assert(jstr2.insert(0, jstr1.subview(0, 6)) == "helloworld");
+        assert( jstr2.insert(0, jstr1.subview(0, 5)) == "helloworld" );
 
         // this is equivalent to
-
-        assert(sstr1.insert(0, sstr2, 0, 6) == "helloworld");
+        assert( sstr2.insert(0, sstr1, 0, 5) == "helloworld" );
 
         //]
     }
@@ -218,25 +216,26 @@ usingInitLists()
         assert ( to_string(jv) == R"([["hello",42],["world",43]])" );
 
         //]
+
+        (void)ja;
     }
 
     {
         //[snippet_init_list_7
 
-        value jv1 = { { "mercury", 36 }, { "venus", 67 }, { "earth", 93 } };
+        value jv = { { "mercury", 36 }, { "venus", 67 }, { "earth", 93 } };
 
-        assert( jv1.is_object() );
+        assert( jv.is_object() );
 
-        assert( to_string(jv1) == "{\"mercury\":36,\"venus\":67,\"earth\":93}" );
+        assert( to_string(jv) == "{\"mercury\":36,\"venus\":67,\"earth\":93}" );
 
         array ja = { { "mercury", 36 }, { "venus", 67 }, { "earth", 93 } };
-        
-        for (value& jv2 : ja)
-            assert( jv2.is_array() );
 
         assert( to_string(ja) == "[[\"mercury\",36],[\"venus\",67],[\"earth\",93]]" );
 
         //]
+
+        (void)ja;
     }
     
     {
@@ -265,6 +264,8 @@ usingInitLists()
         assert( to_string(jv) == R"({"clients":{"john":100,"dave":500,"joe":300}})" );
 
         //]
+
+        (void)jo2;
     }
 }
 
@@ -289,6 +290,7 @@ usingArrays()
 
         //]
     }
+    try
     {
         //[snippet_arrays_3
 
@@ -308,6 +310,9 @@ usingArrays()
         arr.at( 3 ) = nullptr;
 
         //]
+    }
+    catch (...) 
+    {
     }
 }
 
@@ -343,6 +348,7 @@ usingObjects()
 
         //]
     }
+    try
     {
         //[snippet_objects_4
 
@@ -356,6 +362,9 @@ usingObjects()
         obj.at( "key4" );
 
         //]
+    }
+    catch (...)
+    {
     }
 }
 
@@ -406,6 +415,7 @@ usingStorage()
         //]
 
         (void)dynamic_alloc;
+        (void)buffer_alloc;
     }
     {
         //[snippet_allocators_4
@@ -485,6 +495,8 @@ usingStorage()
         assert( sp1.is_counted() && sp1.get() == res ); // even though sp2 was destroyed, the memory resource was not
 
         //]
+
+        (void)res;
     }
     {
         //[snippet_allocators_10
@@ -702,19 +714,20 @@ usingParsing()
 void
 usingSerializing()
 {
+    (void)([]()
     {
         //[snippet_serializing_1
 
-        value jv = { 1, 2, 3 ,4 ,5 };
+        value jv = { 1, 2, 3, 4, 5 };
 
         std::cout << jv << "\n";
 
         //]
-    }
+    });
     {
         //[snippet_serializing_2
 
-        value jv = { 1, 2, 3 ,4 ,5 };
+        value jv = { 1, 2, 3, 4, 5 };
 
         string s = to_string( jv );
 
@@ -837,6 +850,8 @@ usingExchange()
         assert( v1 == v2 );
 
         //]
+
+        (void)ja;
     }
     {
         //[snippet_conv_4
@@ -891,6 +906,8 @@ usingExchange()
             } ) == 0 );
    
         //]
+
+        (void)jo;
     }
     {
         //[snippet_conv_9
@@ -945,6 +962,8 @@ usingExchange()
         std::complex< double > c2 = value_to< std::complex< double > >( jv );
 
         //]
+
+        (void)c2;
     }
     {
         //[snippet_conv_13
@@ -1043,15 +1062,13 @@ public:
         usingInitLists();
         usingStorage();
         usingExchange();
-
-        &usingStrings;
-        &usingArrays;
-        &usingObjects;
-        &parse_fast;
-        &do_json;
-        &do_rpc;
-        &usingParsing;
-        &usingSerializing;
+        usingArrays();
+        usingObjects();
+        usingStrings();
+        usingSerializing();
+        usingParsing();
+        do_rpc("null");
+        (void)parse_fast("null");
 
         BOOST_TEST_PASS();
     }
