@@ -56,4 +56,10 @@ complexity of lookups is O(1) on average.
 For the complete listing of all available member functions and nested
 types, see the reference page for __object__.
 
+The __key_value_pair__ type, similarly to `std::pair` is tuple-like
+since it implements the tuple-like binding protocol necessary
+for C++17's structured bindings.
+Note that the tuple-like interface is made available in all
+the versions of C++ this library supports
+
 [endsect]

@@ -131,6 +131,9 @@ BOOST_STATIC_ASSERT(has_value_from<std::vector<int>&&>::value);
 BOOST_STATIC_ASSERT(has_value_from<std::tuple<int, int>>::value);
 BOOST_STATIC_ASSERT(has_value_from<std::tuple<int, int>&>::value);
 BOOST_STATIC_ASSERT(has_value_from<std::tuple<int, int>&&>::value);
+BOOST_STATIC_ASSERT(has_value_from<key_value_pair>::value);
+BOOST_STATIC_ASSERT(has_value_from<key_value_pair&>::value);
+BOOST_STATIC_ASSERT(has_value_from<key_value_pair&&>::value);
 
 // object-like
 BOOST_STATIC_ASSERT(has_value_from<std::map<string_view, int>>::value);
@@ -178,6 +181,13 @@ public:
         {
             // ensures that this isn't parsed as a key value pair
             std::pair<string_view, int> a{"2", 1};
+            value b{"2", 1};
+            value c = value_from(a);
+            BOOST_TEST(c.is_array());
+            BOOST_TEST(to_string(c) == to_string(b));
+        }
+        {
+            key_value_pair a{"2", 1};
             value b{"2", 1};
             value c = value_from(a);
             BOOST_TEST(c.is_array());
