@@ -25,21 +25,31 @@ struct has_value_from;
 
 namespace detail {
 
-template<std::size_t Max, std::size_t I = 0, class T>
+// The integral_constant parameter here is an
+// rvalue reference to make the standard conversion
+// sequence to that parameter better, see
+// http://eel.is/c++draft/over.ics.rank#3.2.6
+template<std::size_t N, class T>
 void
-tuple_to_array(T&& t, array& a)
+tuple_to_array(
+    T&&,
+    array&,
+    std::integral_constant<std::size_t, N>&&)
 {
-    // KRYSTIAN TODO: use ADL and class members here,
-    // forward the element based on Tuple
+}
+
+template<std::size_t N, std::size_t I, class T>
+void
+tuple_to_array(
+    T&& t,
+    array& arr,
+    const std::integral_constant<std::size_t, I>&)
+{
     using std::get;
-    a.emplace(a.begin() + I, value_from(
-        get<I>(std::forward<T>(t)), a.storage()));
-    if (I >= Max - 1)
-        return;
-    // this prevents infinite recursive instantiation
-    return detail::tuple_to_array<Max, 
-        I + (I < Max - 1)>(
-            std::forward<T>(t), a);
+    arr.emplace_back(value_from(
+        get<I>(std::forward<T>(t)), arr.storage()));
+    return detail::tuple_to_array<N>(std::forward<T>(t),
+        arr, std::integral_constant<std::size_t, I + 1>());
 }
 
 //----------------------------------------------------------
@@ -68,11 +78,12 @@ value_from_generic(
     T&& from,
     priority_tag<2>)
 {
-    constexpr std::size_t elements =
+    constexpr std::size_t n =
         std::tuple_size<remove_cvref<T>>::value;
     array& arr = jv.emplace_array();
-    arr.reserve(elements);
-    detail::tuple_to_array<elements>(std::forward<T>(from), arr);
+    arr.reserve(n);
+    detail::tuple_to_array<n>(std::forward<T>(from),
+        arr, std::integral_constant<std::size_t, 0>());
 }
 
 // map-like types
