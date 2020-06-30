@@ -46,7 +46,7 @@ env:
   # - B2_LINK=shared,static
   # - B2_THREADING=threading=multi,single
     - B2_VARIANT=release
-    - B2_FLAGS="warnings-as-errors=on"
+    - B2_FLAGS="warnings=extra warnings-as-errors=on"
 
 install:
   - git clone https://github.com/boostorg/boost-ci.git boost-ci-cloned
