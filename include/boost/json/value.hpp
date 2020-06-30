@@ -2832,132 +2832,143 @@ private:
 
 //----------------------------------------------------------
 
-template <std::size_t I>
+template<std::size_t I>
 auto
 get(key_value_pair const&) noexcept ->
-        typename std::conditional<I == 0,
-            string_view const,
-            json::value const&
-        >::type
+    typename std::conditional<I == 0,
+        string_view const,
+        value const&>::type
 {
     BOOST_STATIC_ASSERT(I == -1u);
 }
 
-template <std::size_t I>
+template<std::size_t I>
 auto
 get(key_value_pair&) noexcept ->
-        typename std::conditional<I == 0,
-            string_view const,
-            json::value&
-        >::type
+    typename std::conditional<I == 0,
+        string_view const,
+        value&>::type
 {
     BOOST_STATIC_ASSERT(I == -1u);
 }
 
-template <std::size_t I>
+template<std::size_t I>
 auto
 get(key_value_pair&&) noexcept ->
-typename std::conditional<I == 0,
-    string_view const,
-    json::value&&
->::type
+    typename std::conditional<I == 0,
+        string_view const,
+        value&&>::type
 {
     BOOST_STATIC_ASSERT(I == -1u);
 }
 
 /** Extracts a key_value_pair's key using tuple-like interface
 */
-template <>
+template<>
 inline
 string_view const
-get<0>(key_value_pair const& kvp) noexcept {
+get<0>(key_value_pair const& kvp) noexcept 
+{
     return kvp.key();
 }
 
 /** Extracts a key_value_pair's key using tuple-like interface
 */
-template <>
+template<>
 inline
 string_view const
 get<0>(key_value_pair& kvp) noexcept
 {
-  return kvp.key();
+    return kvp.key();
 }
 
 /** Extracts a key_value_pair's key using tuple-like interface
 */
-template <>
+template<>
 inline
 string_view const
 get<0>(key_value_pair&& kvp) noexcept
 {
-  return kvp.key();
+    return kvp.key();
 }
 
 /** Extracts a key_value_pair's value using tuple-like interface
 */
-template <>
+template<>
 inline
-json::value const&
+value const&
 get<1>(key_value_pair const& kvp) noexcept
 {
-  return kvp.value();
+    return kvp.value();
 }
 
 /** Extracts a key_value_pair's value using tuple-like interface
 */
-template <>
+template<>
 inline
-json::value&
+value&
 get<1>(key_value_pair& kvp) noexcept
 {
-  return kvp.value();
+    return kvp.value();
 }
 
 /** Extracts a key_value_pair's value using tuple-like interface
 */
-template <>
+template<>
 inline
-json::value&&
+value&&
 get<1>(key_value_pair&& kvp) noexcept
 {
-  return std::move(kvp.value());
+    return std::move(kvp.value());
 }
 
 } // json
 } // boost
 
-namespace std
-{
+#ifdef __clang__
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wmismatched-tags"
+#endif
+
+namespace std {
 
 /** Tuple-like size access for key_value_pair
 */
-template <>
+template<>
 struct tuple_size<::boost::json::key_value_pair>
-    : std::integral_constant<std::size_t, 2> {};
+    : std::integral_constant<std::size_t, 2> 
+{
+};
 
 /** Tuple-like access for the key type of key_value_pair
 */
-template <>
-struct tuple_element<0, ::boost::json::key_value_pair> {
-  using type = ::boost::json::string_view const;
+template<>
+struct tuple_element<0, ::boost::json::key_value_pair> 
+{
+    using type = ::boost::json::string_view const;
 };
 
 /** Tuple-like access for the value type of key_value_pair
 */
-template <>
-struct tuple_element<1, ::boost::json::key_value_pair> {
-  using type = ::boost::json::value&;
+template<>
+struct tuple_element<1, ::boost::json::key_value_pair> 
+{
+    using type = ::boost::json::value&;
 };
 
 /** Tuple-like access for the value type of key_value_pair
 */
-template <>
-struct tuple_element<1, ::boost::json::key_value_pair const> {
-  using type = ::boost::json::value const&;
+template<>
+struct tuple_element<1, ::boost::json::key_value_pair const> 
+{
+    using type = ::boost::json::value const&;
 };
 
 } // std
+
+#ifdef __clang__
+# pragma clang diagnostic pop
+#endif
 
 // These are here because value, array,
 // and object form cyclic references.
