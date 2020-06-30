@@ -38,7 +38,7 @@ variables:
   B2_CI_VERSION: 1
   B2_VARIANT: release,debug
   B2_LINK: shared,static
-  B2_FLAGS: warnings-as-errors=on
+  B2_FLAGS: "warnings=extra warnings-as-errors=on"
 
 stages:
 
