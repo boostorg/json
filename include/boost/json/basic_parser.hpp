@@ -259,6 +259,18 @@ skip_white(const_stream& cs)
     return n2 < n;
 }
 
+template<class Handler>
+auto
+basic_parser::
+syntax_error(
+    Handler&,
+    const_stream&) ->
+        result
+{
+    ec_ = error::syntax;
+    return result::fail;
+}
+
 template<bool StackEmpty, class Handler>
 auto
 basic_parser::
@@ -316,87 +328,53 @@ auto
 basic_parser::
 parse_value(
     Handler& h,
-    const_stream& cs0) ->
+    const_stream& cs) ->
         result
 {
     if(StackEmpty || st_.empty())
     {
-        switch(*cs0)
+        static constexpr auto num = &basic_parser::parse_number<true, '+', Handler>;
+        static constexpr auto err = &basic_parser::syntax_error<Handler>;
+        static constexpr result(basic_parser::* jump_table[256])(Handler&, const_stream&) =
         {
-        case 'n':
-            if(BOOST_JSON_LIKELY(cs0.remain() >= 4))
-            {
-                if(BOOST_JSON_LIKELY(std::memcmp(
-                    cs0.data(), "null", 4) == 0))
-                {
-                    if(BOOST_JSON_UNLIKELY(
-                        ! h.on_null(ec_)))
-                        return result::fail;
-                    cs0.skip(4);
-                    return result::ok;
-                }
-                ec_ = error::syntax;
-                return result::fail;
-            }
-            ++cs0;
-            return parse_null<true>(h, cs0);
-        case 't':
-            if(BOOST_JSON_LIKELY(cs0.remain() >= 4))
-            {
-                if(BOOST_JSON_LIKELY(std::memcmp(
-                    cs0.data(), "true", 4) == 0))
-                {
-                    if(BOOST_JSON_UNLIKELY(
-                        ! h.on_bool(true, ec_)))
-                        return result::fail;
-                    cs0.skip(4);
-                    return result::ok;
-                }
-                ec_ = error::syntax;
-                return result::fail;
-            }
-            ++cs0;
-            return parse_true<true>(h, cs0);
-        case 'f':
-            if(BOOST_JSON_LIKELY(cs0.remain() >= 5))
-            {
-                if(BOOST_JSON_LIKELY(std::memcmp(
-                    cs0.data() + 1, "alse", 4) == 0))
-                {
-                    if(BOOST_JSON_UNLIKELY(
-                        ! h.on_bool(false, ec_)))
-                        return result::fail;
-                    cs0.skip(5);
-                    return result::ok;
-                }
-                ec_ = error::expected_false;
-                return result::fail;
-            }
-            ++cs0;
-            return parse_false<true>(h, cs0);
-        case '\x22': // '"'
-            return parse_string<true>(h, cs0);
-        case '{':
-            return parse_object<true>(h, cs0);
-        case '[':
-            return parse_array<true>(h, cs0);
-        case '0':
-            return parse_number<true, '0'>(h, cs0);
-        case '-':
-            return parse_number<true, '-'>(h, cs0);
-        case '1': case '2': case '3':
-        case '4': case '5': case '6':
-        case '7': case '8': case '9':
-            return parse_number<true, '+'>(h, cs0);
-        default:
-            ec_ = error::syntax;
-            return result::fail;
-        }
+            err, err, err, err, err, err, err, err,
+            err, err, err, err, err, err, err, err,
+            err, err, err, err, err, err, err, err,
+            err, err, err, err, err, err, err, err,
+            err, err, &basic_parser::parse_string<true, Handler>, err, err, err, err, err,
+            err, err, err, err, err, &basic_parser::parse_number<true, '-', Handler>, err, err,
+            &basic_parser::parse_number<true, '0', Handler>, num, num, num, num, num, num, num,
+            num, num, err, err, err, err, err, err,
+            err, err, err, err, err, err, err, err,
+            err, err, err, err, err, err, err, err,
+            err, err, err, err, err, err, err, err,
+            err, err, err, &basic_parser::parse_array<true, Handler>, err, err, err, err,
+            err, err, err, err, err, err, &basic_parser::parse_false<true, Handler>, err,
+            err, err, err, err, err, err, &basic_parser::parse_null<true, Handler>, err,
+            err, err, err, err, &basic_parser::parse_true<true, Handler>, err, err, err,
+            err, err, err, &basic_parser::parse_object<true, Handler>, err, err, err, err,
+            // negative values are converted to unsigned char, they are handled here
+            err, err, err, err, err, err, err, err,
+            err, err, err, err, err, err, err, err,
+            err, err, err, err, err, err, err, err,
+            err, err, err, err, err, err, err, err,
+            err, err, err, err, err, err, err, err,
+            err, err, err, err, err, err, err, err,
+            err, err, err, err, err, err, err, err,
+            err, err, err, err, err, err, err, err,
+            err, err, err, err, err, err, err, err,
+            err, err, err, err, err, err, err, err,
+            err, err, err, err, err, err, err, err,
+            err, err, err, err, err, err, err, err,
+            err, err, err, err, err, err, err, err,
+            err, err, err, err, err, err, err, err,
+            err, err, err, err, err, err, err, err,
+            err, err, err, err, err, err, err, err
+        };
+        return (this->*jump_table
+            [static_cast<unsigned char>(*cs)])(h, cs);
     }
-    else
-    {
-        return resume_value<StackEmpty>(h, cs0);
-    }
+    return resume_value<StackEmpty>(h, cs);
 }
 
 template<bool StackEmpty, class Handler>
@@ -473,6 +451,21 @@ parse_null(
         case state::nul3: goto do_nul3;
         }
     }
+    if(BOOST_JSON_LIKELY(cs.remain() >= 4))
+    {
+        if(BOOST_JSON_LIKELY(std::memcmp(
+            cs.data(), "null", 4) == 0))
+        {
+            if(BOOST_JSON_UNLIKELY(
+                ! h.on_null(ec_)))
+                return result::fail;
+            cs.skip(4);
+            return result::ok;
+        }
+        ec_ = error::syntax;
+        return result::fail;
+    }
+    ++cs;
 do_nul1:
     if(BOOST_JSON_LIKELY(cs))
     {
@@ -550,6 +543,21 @@ parse_true(
         case state::tru3: goto do_tru3;
         }
     }
+    if(BOOST_JSON_LIKELY(cs.remain() >= 4))
+    {
+        if(BOOST_JSON_LIKELY(std::memcmp(
+            cs.data(), "true", 4) == 0))
+        {
+            if(BOOST_JSON_UNLIKELY(
+                ! h.on_bool(true, ec_)))
+                return result::fail;
+            cs.skip(4);
+            return result::ok;
+        }
+        ec_ = error::syntax;
+        return result::fail;
+    }
+    ++cs;
 do_tru1:
     if(BOOST_JSON_LIKELY(cs))
     {
@@ -628,6 +636,21 @@ parse_false(
         case state::fal4: goto do_fal4;
         }
     }
+    if(BOOST_JSON_LIKELY(cs.remain() >= 5))
+    {
+        if(BOOST_JSON_LIKELY(std::memcmp(
+            cs.data() + 1, "alse", 4) == 0))
+        {
+            if(BOOST_JSON_UNLIKELY(
+                ! h.on_bool(false, ec_)))
+                return result::fail;
+            cs.skip(5);
+            return result::ok;
+        }
+        ec_ = error::expected_false;
+        return result::fail;
+    }
+    ++cs;
 do_fal1:
     if(BOOST_JSON_LIKELY(cs))
     {
