@@ -1338,11 +1338,9 @@ auto
 basic_parser::
 parse_object(
     Handler& h,
-    const_stream& cs0) ->
+    const_stream& cs) ->
         result
 {
-    char c;
-    detail::local_const_stream cs(cs0);
     if(StackEmpty || st_.empty())
     {
         BOOST_ASSERT(*cs == '{');
@@ -1378,103 +1376,102 @@ do_obj1:
     if(BOOST_JSON_UNLIKELY(
         ! skip_white(cs)))
     {
-        if(more_)
+        if(BOOST_JSON_LIKELY(more_))
             suspend(state::obj1);
         return result::partial;
     }
-    c = *cs;
-    if(BOOST_JSON_UNLIKELY(c == '}'))
+    if(BOOST_JSON_LIKELY(*cs != '}'))
     {
-        if(BOOST_JSON_UNLIKELY(
-            ! h.on_object_end(ec_)))
-            return result::fail;
+        for(;;)
+        {
+            if (BOOST_JSON_LIKELY(*cs == '\x22')) // '"'
+            {
+                is_key_ = true;
+do_obj2:
+                const result r = parse_string<StackEmpty>(h, cs);
+                if(BOOST_JSON_UNLIKELY(r))
+                {
+                    if(BOOST_JSON_LIKELY(more_ &&
+                        r == result::partial))
+                        suspend(state::obj2);
+                    return r;
+                }
+            }
+            else
+            {
+                ec_ = error::syntax;
+                return result::fail;
+            }
+do_obj3:
+            if(BOOST_JSON_UNLIKELY(
+                ! skip_white(cs)))
+            {
+                if(BOOST_JSON_LIKELY(more_))
+                    suspend(state::obj3);
+                return result::partial;
+            }
+            if(BOOST_JSON_UNLIKELY(*cs != ':'))
+            {
+                ec_ = error::syntax;
+                return result::fail;
+            }
+            ++cs;
+do_obj4:
+            if(BOOST_JSON_UNLIKELY(
+                ! skip_white(cs)))
+            {
+                if(BOOST_JSON_LIKELY(more_))
+                    suspend(state::obj4);
+                return result::partial;
+            }
+do_obj5:
+            {
+                const result r = parse_value<StackEmpty>(h, cs);
+                if(BOOST_JSON_UNLIKELY(r))
+                {
+                    if(BOOST_JSON_LIKELY(more_ &&
+                        r == result::partial))
+                        suspend(state::obj5);
+                    return r;
+                }
+            }
+do_obj6:
+            if(BOOST_JSON_UNLIKELY(
+                ! skip_white(cs)))
+            {
+                if(BOOST_JSON_LIKELY(more_))
+                    suspend(state::obj6);
+                return result::partial;
+            }
+            // KRYSTIAN NOTE: do not place an optimization
+            // hint here, it will give worse codegen for
+            // the nominal return path
+            if(*cs != ',')
+            {
+                if(BOOST_JSON_LIKELY(*cs == '}'))
+                    break;
+                ec_ = error::syntax;
+                return result::fail;
+            }
+            ++cs;
+do_obj7:
+            if(BOOST_JSON_UNLIKELY(
+                ! skip_white(cs)))
+            {
+                if(BOOST_JSON_LIKELY(more_))
+                    suspend(state::obj7);
+                return result::partial;
+            }
+        }
+    }
+    if(BOOST_JSON_LIKELY(
+        h.on_object_end(ec_)))
+    {
         --depth_;
         ++cs;
         return result::ok;
     }
-    for(;;)
-    {
-        if (BOOST_JSON_LIKELY(*cs == '\x22')) // '"'
-        {
-            is_key_ = true;
-do_obj2:
-            result r = parse_string<StackEmpty>(h, cs);
-            if(BOOST_JSON_UNLIKELY(r))
-            {
-                if(more_ && r == result::partial)
-                    suspend(state::obj2);
-                return r;
-            }
-        }
-        else
-        {
-            ec_ = error::syntax;
-            return result::fail;
-        }
-do_obj3:
-        if(BOOST_JSON_UNLIKELY(
-            ! skip_white(cs)))
-        {
-            if(more_)
-                suspend(state::obj3);
-            return result::partial;
-        }
-        if(BOOST_JSON_UNLIKELY(*cs != ':'))
-        {
-            ec_ = error::syntax;
-            return result::fail;
-        }
-        ++cs;
-do_obj4:
-        if(BOOST_JSON_UNLIKELY(
-            ! skip_white(cs)))
-        {
-            if(more_)
-                suspend(state::obj4);
-            return result::partial;
-        }
-do_obj5:
-        {
-            result r = parse_value<StackEmpty>(h, cs);
-            if(BOOST_JSON_UNLIKELY(r))
-            {
-                if(more_ && r == result::partial)
-                    suspend(state::obj5);
-                return r;
-            }
-        }
-do_obj6:
-        if(BOOST_JSON_UNLIKELY(
-            ! skip_white(cs)))
-        {
-            if(more_)
-                suspend(state::obj6);
-            return result::partial;
-        }
-        if(BOOST_JSON_UNLIKELY(*cs != ','))
-        {
-            if(BOOST_JSON_LIKELY(*cs == '}'))
-            {
-                if(BOOST_JSON_UNLIKELY(
-                    ! h.on_object_end(ec_)))
-                    return result::fail;
-                --depth_;
-                ++cs;
-                return result::ok;
-            }
-            ec_ = error::syntax;
-            return result::fail;
-        }
-        ++cs;
-do_obj7:
-        if(BOOST_JSON_UNLIKELY(
-            ! skip_white(cs)))
-        {
-            if(more_)
-                suspend(state::obj7);
-            return result::partial;
-        }
-    }
+    return result::fail;
 }
 
 //----------------------------------------------------------
@@ -1484,11 +1481,9 @@ auto
 basic_parser::
 parse_array(
     Handler& h,
-    const_stream& cs0) ->
+    const_stream& cs) ->
         result
 {
-    char c;
-    detail::local_const_stream cs(cs0);
     if(StackEmpty || st_.empty())
     {
         BOOST_ASSERT(*cs == '[');
@@ -1521,64 +1516,62 @@ do_arr1:
     if(BOOST_JSON_UNLIKELY(
         ! skip_white(cs)))
     {
-        if(more_)
+        if(BOOST_JSON_LIKELY(more_))
             suspend(state::arr1);
         return result::partial;
     }
-    c = *cs;
-    if(c == ']')
+    if(BOOST_JSON_LIKELY(*cs != ']'))
     {
-        if(BOOST_JSON_UNLIKELY(
-            ! h.on_array_end(ec_)))
-            return result::fail;
+        for(;;)
+        {
+do_arr2:
+            {
+                const result r = parse_value<StackEmpty>(h, cs);
+                if(BOOST_JSON_UNLIKELY(r))
+                {
+                    if(BOOST_JSON_LIKELY(more_ &&
+                        r == result::partial))
+                        suspend(state::arr2);
+                    return r;
+                }
+            }
+do_arr3:
+            if(BOOST_JSON_UNLIKELY(
+                ! skip_white(cs)))
+            {
+                if(BOOST_JSON_LIKELY(more_))
+                    suspend(state::arr3);
+                return result::partial;
+            }
+            // KRYSTIAN NOTE: do not place an optimization
+            // hint here, it will give worse codegen for
+            // the nominal return path
+            if(*cs != ',')
+            {
+                if(BOOST_JSON_LIKELY(*cs == ']'))
+                    break;
+                ec_ = error::syntax;
+                return result::fail;
+            }
+            ++cs;
+do_arr4:
+            if(BOOST_JSON_UNLIKELY(
+                ! skip_white(cs)))
+            {
+                if(BOOST_JSON_LIKELY(more_))
+                    suspend(state::arr4);
+                return result::partial;
+            }
+        }
+    }
+    if (BOOST_JSON_LIKELY(
+        h.on_array_end(ec_)))
+    {
         --depth_;
         ++cs;
         return result::ok;
     }
-    for(;;)
-    {
-do_arr2:
-        {
-            result r = parse_value<StackEmpty>(h, cs);
-            if(BOOST_JSON_UNLIKELY(r))
-            {
-                if(more_ && r == result::partial)
-                    suspend(state::arr2);
-                return r;
-            }
-        }
-do_arr3:
-        if(BOOST_JSON_UNLIKELY(
-            ! skip_white(cs)))
-        {
-            if(more_)
-                suspend(state::arr3);
-            return result::partial;
-        }
-        if(*cs != ',')
-        {
-            if(*cs == ']')
-            {
-                if(BOOST_JSON_UNLIKELY(
-                    ! h.on_array_end(ec_)))
-                    return result::fail;
-                --depth_;
-                ++cs;
-                return result::ok;
-            }
-            ec_ = error::syntax;
-            return result::fail;
-        }
-        ++cs;
-do_arr4:
-        if(BOOST_JSON_UNLIKELY(
-            ! skip_white(cs)))
-        {
-            if(more_)
-                suspend(state::arr4);
-            return result::partial;
-        }
-    }
+    return result::fail;
 }
 
 //----------------------------------------------------------
