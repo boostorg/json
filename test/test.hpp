@@ -178,7 +178,6 @@ class fail_parser : public basic_parser
 
     bool
     on_object_end(
-        std::size_t,
         error_code& ec)
     {
         return maybe_fail(ec);
@@ -193,7 +192,6 @@ class fail_parser : public basic_parser
 
     bool
     on_array_end(
-        std::size_t,
         error_code& ec)
     {
         return maybe_fail(ec);
@@ -355,7 +353,6 @@ class throw_parser : public basic_parser
 
     bool
     on_object_end(
-        std::size_t,
         error_code&)
     {
         return maybe_throw();
@@ -370,7 +367,6 @@ class throw_parser : public basic_parser
 
     bool
     on_array_end(
-        std::size_t,
         error_code&)
     {
         return maybe_throw();

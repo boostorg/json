@@ -238,15 +238,6 @@ suspend(state st)
 
 void
 basic_parser::
-suspend(state st, std::size_t n)
-{
-    reserve();
-    st_.push(n);
-    st_.push(st);
-}
-
-void
-basic_parser::
 suspend(state st, number const& num)
 {
     reserve();
@@ -1351,7 +1342,6 @@ parse_object(
         result
 {
     char c;
-    std::size_t n;
     detail::local_const_stream cs(cs0);
     if(StackEmpty || st_.empty())
     {
@@ -1367,13 +1357,11 @@ parse_object(
             ! h.on_object_begin(ec_)))
             return result::fail;
         ++cs;
-        n = 0;
     }
     else
     {
         state st;
         st_.pop(st);
-        st_.pop(n);
         switch(st)
         {
         default:
@@ -1391,14 +1379,14 @@ do_obj1:
         ! skip_white(cs)))
     {
         if(more_)
-            suspend(state::obj1, n);
+            suspend(state::obj1);
         return result::partial;
     }
     c = *cs;
     if(BOOST_JSON_UNLIKELY(c == '}'))
     {
         if(BOOST_JSON_UNLIKELY(
-            ! h.on_object_end(n, ec_)))
+            ! h.on_object_end(ec_)))
             return result::fail;
         --depth_;
         ++cs;
@@ -1414,7 +1402,7 @@ do_obj2:
             if(BOOST_JSON_UNLIKELY(r))
             {
                 if(more_ && r == result::partial)
-                    suspend(state::obj2, n);
+                    suspend(state::obj2);
                 return r;
             }
         }
@@ -1428,7 +1416,7 @@ do_obj3:
             ! skip_white(cs)))
         {
             if(more_)
-                suspend(state::obj3, n);
+                suspend(state::obj3);
             return result::partial;
         }
         if(BOOST_JSON_UNLIKELY(*cs != ':'))
@@ -1442,7 +1430,7 @@ do_obj4:
             ! skip_white(cs)))
         {
             if(more_)
-                suspend(state::obj4, n);
+                suspend(state::obj4);
             return result::partial;
         }
 do_obj5:
@@ -1451,17 +1439,16 @@ do_obj5:
             if(BOOST_JSON_UNLIKELY(r))
             {
                 if(more_ && r == result::partial)
-                    suspend(state::obj5, n);
+                    suspend(state::obj5);
                 return r;
             }
-            ++n;
         }
 do_obj6:
         if(BOOST_JSON_UNLIKELY(
             ! skip_white(cs)))
         {
             if(more_)
-                suspend(state::obj6, n);
+                suspend(state::obj6);
             return result::partial;
         }
         if(BOOST_JSON_UNLIKELY(*cs != ','))
@@ -1469,7 +1456,7 @@ do_obj6:
             if(BOOST_JSON_LIKELY(*cs == '}'))
             {
                 if(BOOST_JSON_UNLIKELY(
-                    ! h.on_object_end(n, ec_)))
+                    ! h.on_object_end(ec_)))
                     return result::fail;
                 --depth_;
                 ++cs;
@@ -1484,7 +1471,7 @@ do_obj7:
             ! skip_white(cs)))
         {
             if(more_)
-                suspend(state::obj7, n);
+                suspend(state::obj7);
             return result::partial;
         }
     }
@@ -1501,7 +1488,6 @@ parse_array(
         result
 {
     char c;
-    std::size_t n;
     detail::local_const_stream cs(cs0);
     if(StackEmpty || st_.empty())
     {
@@ -1517,13 +1503,11 @@ parse_array(
             ! h.on_array_begin(ec_)))
             return result::fail;
         ++cs;
-        n = 0;
     }
     else
     {
         state st;
         st_.pop(st);
-        st_.pop(n);
         switch(st)
         {
         default:
@@ -1538,14 +1522,14 @@ do_arr1:
         ! skip_white(cs)))
     {
         if(more_)
-            suspend(state::arr1, n);
+            suspend(state::arr1);
         return result::partial;
     }
     c = *cs;
     if(c == ']')
     {
         if(BOOST_JSON_UNLIKELY(
-            ! h.on_array_end(n, ec_)))
+            ! h.on_array_end(ec_)))
             return result::fail;
         --depth_;
         ++cs;
@@ -1559,17 +1543,16 @@ do_arr2:
             if(BOOST_JSON_UNLIKELY(r))
             {
                 if(more_ && r == result::partial)
-                    suspend(state::arr2, n);
+                    suspend(state::arr2);
                 return r;
             }
-            ++n;
         }
 do_arr3:
         if(BOOST_JSON_UNLIKELY(
             ! skip_white(cs)))
         {
             if(more_)
-                suspend(state::arr3, n);
+                suspend(state::arr3);
             return result::partial;
         }
         if(*cs != ',')
@@ -1577,7 +1560,7 @@ do_arr3:
             if(*cs == ']')
             {
                 if(BOOST_JSON_UNLIKELY(
-                    ! h.on_array_end(n, ec_)))
+                    ! h.on_array_end(ec_)))
                     return result::fail;
                 --depth_;
                 ++cs;
@@ -1592,7 +1575,7 @@ do_arr4:
             ! skip_white(cs)))
         {
             if(more_)
-                suspend(state::arr4, n);
+                suspend(state::arr4);
             return result::partial;
         }
     }

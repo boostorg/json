@@ -462,7 +462,6 @@ on_object_begin(error_code&)
 bool
 parser::
 on_object_end(
-    std::size_t,
     error_code& ec)
 {
     BOOST_ASSERT(
@@ -495,7 +494,6 @@ on_array_begin(error_code&)
 bool
 parser::
 on_array_end(
-    std::size_t,
     error_code& ec)
 {
     BOOST_ASSERT(

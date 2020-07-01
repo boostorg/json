@@ -364,7 +364,6 @@ private:
     inline
     bool
     on_object_end(
-        std::size_t n,
         error_code& ec);
 
     inline
@@ -375,7 +374,6 @@ private:
     inline
     bool
     on_array_end(
-        std::size_t n,
         error_code& ec);
 
     inline
