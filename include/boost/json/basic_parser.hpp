@@ -462,10 +462,9 @@ auto
 basic_parser::
 parse_null(
     Handler& h,
-    const_stream& cs0) ->
+    const_stream& cs) ->
         result
 {
-    detail::local_const_stream cs(cs0);
     if(! StackEmpty && ! st_.empty())
     {
         state st;
@@ -540,10 +539,9 @@ auto
 basic_parser::
 parse_true(
     Handler& h,
-    const_stream& cs0) ->
+    const_stream& cs) ->
         result
 {
-    detail::local_const_stream cs(cs0);
     if(! StackEmpty && ! st_.empty())
     {
         state st;
@@ -618,10 +616,9 @@ auto
 basic_parser::
 parse_false(
     Handler& h,
-    const_stream& cs0) ->
+    const_stream& cs) ->
         result
 {
-    detail::local_const_stream cs(cs0);
     if(! StackEmpty && ! st_.empty())
     {
         state st;
