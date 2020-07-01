@@ -12,7 +12,7 @@ Here is minimal sequence of steps required to prepare development environment:
 ```
 git clone --recurse-submodules --jobs 8 https://github.com/boostorg/boost.git
 cd boost/libs
-git clone --recurse-submodules https://github.com/vinniefalco/json.git
+git clone --recurse-submodules https://github.com/cppalliance/json.git
 cd ..
 ./bootstrap.sh
 ./b2 headers

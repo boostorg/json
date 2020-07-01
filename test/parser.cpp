@@ -891,7 +891,7 @@ R"xx({
 
     //------------------------------------------------------
 
-    // https://github.com/vinniefalco/json/issues/15
+    // https://github.com/cppalliance/json/issues/15
     void
     testIssue15()
     {
@@ -902,7 +902,7 @@ R"xx({
                 .as_int64() == 12345);
     }
 
-    // https://github.com/vinniefalco/json/issues/45
+    // https://github.com/cppalliance/json/issues/45
     void
     testIssue45()
     {
