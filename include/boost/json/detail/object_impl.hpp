@@ -29,6 +29,7 @@ class object_impl
     using index_t = std::uint32_t;
     static index_t const null_index =
         std::uint32_t(-1);
+    using bucket_size_array = const unsigned long long[67];
 
     BOOST_JSON_DECL
     void
@@ -43,6 +44,7 @@ public:
     inline
     object_impl(
         std::size_t capacity,
+        std::size_t prime_index,
         std::size_t buckets,
         std::uintptr_t salt,
         storage_ptr const& sp);
@@ -133,6 +135,18 @@ public:
         index_t& head,
         value_type& p) noexcept;
 
+    static
+    inline
+    bucket_size_array&
+    bucket_sizes() noexcept;
+
+    static
+    inline
+    std::size_t
+    bucket_index(
+        std::size_t hash,
+        std::size_t index) noexcept;
+
     inline
     index_t&
     bucket(std::size_t hash) const noexcept;
@@ -176,7 +190,7 @@ private:
     buckets() const noexcept
     {
         BOOST_ASSERT(tab_);
-        return tab_->buckets;
+        return bucket_sizes()[tab_->prime_index];
     }
 
     inline
@@ -187,7 +201,7 @@ private:
     {
         std::size_t size;
         std::size_t const capacity;
-        std::size_t const buckets;
+        std::size_t const prime_index;
         std::uintptr_t const salt;
     };
 

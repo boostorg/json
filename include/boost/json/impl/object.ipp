@@ -76,7 +76,7 @@ public:
 object::
 object(object_test const*)
 {
-    object_impl impl(3, 3, 0, sp_);
+    object_impl impl(3, 1, 3, 0, sp_);
     impl_.swap(impl);
 }
 
@@ -484,60 +484,21 @@ rehash(std::size_t new_capacity)
     auto const next_prime =
     [](std::size_t n) noexcept
     {
-        // Taken from Boost.Intrusive and Boost.MultiIndex code,
-        // thanks to Ion Gaztanaga and Joaquin M Lopez Munoz.
-        static unsigned long long constexpr list[] = {
-            0ULL,
-
-            3ULL,                     7ULL,
-            11ULL,                    17ULL,
-            29ULL,                    53ULL,
-            97ULL,                    193ULL,
-            389ULL,                   769ULL,
-            1543ULL,                  3079ULL,
-            6151ULL,                  12289ULL,
-            24593ULL,                 49157ULL,
-            98317ULL,                 196613ULL,
-            393241ULL,                786433ULL,
-            1572869ULL,               3145739ULL,
-            6291469ULL,               12582917ULL,
-            25165843ULL,              50331653ULL,
-            100663319ULL,             201326611ULL,
-            402653189ULL,             805306457ULL,
-            1610612741ULL,            3221225473ULL,
-
-            6442450939ULL,            12884901893ULL,
-            25769803751ULL,           51539607551ULL,
-            103079215111ULL,          206158430209ULL,
-            412316860441ULL,          824633720831ULL,
-            1649267441651ULL,         3298534883309ULL,
-            6597069766657ULL,         13194139533299ULL,
-            26388279066623ULL,        52776558133303ULL,
-            105553116266489ULL,       211106232532969ULL,
-            422212465066001ULL,       844424930131963ULL,
-            1688849860263953ULL,      3377699720527861ULL,
-            6755399441055731ULL,      13510798882111483ULL,
-            27021597764222939ULL,     54043195528445957ULL,
-            108086391056891903ULL,    216172782113783843ULL,
-            432345564227567621ULL,    864691128455135207ULL,
-            1729382256910270481ULL,   3458764513820540933ULL,
-            6917529027641081903ULL,   13835058055282163729ULL,
-            18446744073709551557ULL,  18446744073709551615ULL
-        };
-        return static_cast<std::size_t>(
-            *std::lower_bound(
-                &list[0],
-                &list[std::extent<
-                    decltype(list)>::value],
-                (unsigned long long)n));
-    };
+        return std::lower_bound(
+            &object_impl::bucket_sizes()[0], 
+            &object_impl::bucket_sizes()[67],
+            static_cast<unsigned long long>(n)) - 
+                object_impl::bucket_sizes();
+     };
     BOOST_ASSERT(new_capacity > capacity());
     auto const f = std::ceil(
         new_capacity / max_load_factor());
     BOOST_ASSERT(
         f < static_cast<std::size_t>(-1));
-    auto const new_buckets = next_prime(
+    auto const prime_index = next_prime(
         static_cast<std::size_t>(f));
+    auto const new_buckets = 
+        object_impl::bucket_sizes()[prime_index];
     BOOST_ASSERT(std::ceil(
         new_buckets * max_load_factor()) >=
             new_capacity);
@@ -547,6 +508,7 @@ rehash(std::size_t new_capacity)
         object_too_large::raise();
     object_impl impl(
         new_capacity,
+        prime_index,
         new_buckets,
         impl_.salt(),
         sp_);
