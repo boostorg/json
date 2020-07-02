@@ -32,6 +32,7 @@ inline
 object_impl::
 object_impl(
     std::size_t capacity,
+    std::size_t prime_index,
     std::size_t buckets,
     std::uintptr_t salt,
     storage_ptr const& sp)
@@ -40,7 +41,7 @@ object_impl(
         sizeof(table) +
         capacity * sizeof(value_type) +
         buckets * sizeof(index_t))) table{
-            0, capacity, buckets, salt };
+            0, capacity, prime_index, salt};
     std::memset(bucket_begin(), 0xff, // null_index
         buckets * sizeof(index_t));
 }
