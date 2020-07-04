@@ -249,11 +249,21 @@ bench(
 
 class boost_default_impl : public any_impl
 {
+    std::string name_;
+
 public:
+    boost_default_impl(
+        std::string const& branch)
+    {
+        name_ = "boost";
+        if(! branch.empty())
+            name_ += " " + branch;
+    }
+
     string_view
     name() const noexcept override
     {
-        return "boost";
+        return name_;
     }
 
     void
@@ -305,11 +315,21 @@ public:
 
 class boost_pool_impl : public any_impl
 {
+    std::string name_;
+
 public:
+    boost_pool_impl(
+        std::string const& branch)
+    {
+        name_ = "boost (pool)";
+        if(! branch.empty())
+            name_ += " " + branch;
+    }
+
     string_view
     name() const noexcept override
     {
-        return "boost (pool)";
+        return name_;
     }
 
     void
@@ -361,85 +381,6 @@ public:
 
 //----------------------------------------------------------
 
-class boost_vec_impl : public any_impl
-{
-    struct vec_parser : basic_parser
-    {
-        friend class basic_parser;
-        std::vector<double> vec_;
-        double d_ = 0;
-
-        vec_parser() {}
-        ~vec_parser() {}
-        bool on_document_begin(error_code&) { return true; }
-        bool on_document_end(error_code&) { return true; }
-        bool on_object_begin(error_code&) { return true; }
-        bool on_object_end(error_code&) { return true; }
-        bool on_array_begin(error_code&) { return true; }
-        bool on_array_end(error_code&) { return true; }
-        bool on_key_part(string_view, error_code&) { return true; }
-        bool on_key( string_view, error_code&) { return true; }
-        bool on_string_part(string_view, error_code&) { return true; }
-        bool on_string(string_view, error_code&) { return true; }
-        bool on_int64(std::int64_t, error_code&) { return true; }
-        bool on_uint64(std::uint64_t, error_code&) { return true; }
-        bool on_double(double d, error_code&)
-        {
-            vec_.push_back(d);
-            return true;
-        }
-        bool on_bool(bool, error_code&) { return true; }
-        bool on_null(error_code&) { return true; }
-
-        std::size_t
-        write(
-            char const* data,
-            std::size_t size,
-            error_code& ec)
-        {
-            auto const n = 
-                this->basic_parser::write_some(
-                *this, false, data, size, ec);
-            if(! ec && n < size)
-                ec = error::extra_data;
-            return n;
-        }
-    };
-
-public:
-    string_view
-    name() const noexcept override
-    {
-        return "boost.vec";
-    }
-
-    void
-    parse(
-        string_view s,
-        std::size_t repeat) const override
-    {
-        while(repeat--)
-        {
-            error_code ec;
-            vec_parser p;
-            p.write(s.data(), s.size(), ec);
-            BOOST_ASSERT(! ec);
-        }
-    }
-
-    void
-    serialize(
-        string_view s,
-        std::size_t repeat) const override
-    {
-        auto jv = json::parse(s);
-        while(repeat--)
-            to_string(jv);
-    }
-};
-
-//----------------------------------------------------------
-
 class boost_null_impl : public any_impl
 {
     struct null_parser : basic_parser
@@ -481,11 +422,21 @@ class boost_null_impl : public any_impl
         }
     };
 
+    std::string name_;
+
 public:
+    boost_null_impl(
+        std::string const& branch)
+    {
+        name_ = "boost (null)";
+        if(! branch.empty())
+            name_ += " " + branch;
+    }
+
     string_view
     name() const noexcept override
     {
-        return "boost.null";
+        return name_;
     }
 
     void
@@ -629,6 +580,7 @@ using namespace boost::json;
 std::string s_tests = "ps";
 std::string s_impls = "bdrcn";
 std::size_t s_trials = 6;
+std::string s_branch = "";
 
 static bool parse_option( char const * s )
 {
@@ -672,6 +624,10 @@ static bool parse_option( char const * s )
         }
 
         break;
+
+    case 'b':
+        s_branch = s;
+        break;
     }
 
     return true;
@@ -683,17 +639,17 @@ static bool add_impl( impl_list & vi, char impl )
     {
     case 'b':
 
-        vi.emplace_back(new boost_pool_impl);
+        vi.emplace_back(new boost_pool_impl(s_branch));
         break;
 
     case 'd':
 
-        vi.emplace_back(new boost_default_impl);
+        vi.emplace_back(new boost_default_impl(s_branch));
         break;
 
     case 'u':
 
-        vi.emplace_back(new boost_null_impl);
+        vi.emplace_back(new boost_null_impl(s_branch));
         break;
 
     case 'r':
@@ -764,6 +720,7 @@ main(
             "                                 (n: nlohmann/json)\n"
 			"                                 (default all)\n"
             "          -n:<number>          Number of trials (default 6)\n"
+            "          -b:<branch>          Branch label for boost implementations\n"
         ;
 
         return 4;
