@@ -267,15 +267,39 @@ class fail_parser : public basic_parser
         return maybe_fail(ec);
     }
 
+    bool 
+    on_comment_part(
+        string_view, 
+        error_code& ec) 
+    { 
+        return maybe_fail(ec); 
+    }
+    
+    bool
+    on_comment(
+        string_view, 
+        error_code& ec) 
+    { 
+        return maybe_fail(ec);
+    }
+
 public:
     fail_parser() = default;
 
     explicit
     fail_parser(
-        std::size_t n)
-        : n_(n)
+        std::size_t n,
+        parse_options po = {false, false})
+        :  basic_parser(po), n_(n)
     {
     }
+
+    explicit
+    fail_parser(parse_options po)
+        : basic_parser(po)
+    {
+    }
+
 
     std::size_t
     write_some(
@@ -442,13 +466,36 @@ class throw_parser : public basic_parser
         return maybe_throw();
     }
 
+    bool 
+    on_comment_part(
+        string_view, 
+        error_code&) 
+    { 
+        return maybe_throw(); 
+    }
+    
+    bool
+    on_comment(
+        string_view, 
+        error_code&) 
+    { 
+        return maybe_throw();
+    }
+
 public:
     throw_parser() = default;
 
     explicit
     throw_parser(
-        std::size_t n)
-        : n_(n)
+        std::size_t n,
+        parse_options po = {false, false})
+        : basic_parser(po), n_(n)
+    {
+    }
+
+    explicit
+    throw_parser(parse_options po)
+        : basic_parser(po)
     {
     }
 

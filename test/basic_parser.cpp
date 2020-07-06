@@ -1,10 +1,11 @@
 //
 // Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+// Copyright (c) 2020 Krystian Stasiowski (sdkrystian@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
-// Official repository: https://github.com/cppalliance/json
+// Official repository: https://github.com/vinniefalco/json
 //
 
 // Test that header file is self-contained.
@@ -99,10 +100,18 @@ decode(void* dest, char const* src, std::size_t len)
 
 } // base64
 
+static std::vector<parse_options> all_configs =
+{
+    {false, false},
+    {true, false},
+    {false, true},
+    {true, true}
+};
+
 namespace {
 
 bool
-validate( string_view s )
+validate( string_view s, parse_options po )
 {
     // The null parser discards all the data
 
@@ -112,6 +121,11 @@ validate( string_view s )
 
     public:
         null_parser() {}
+        null_parser(parse_options po) 
+            : basic_parser(po)
+        {
+        }
+
         ~null_parser() {}
         bool on_document_begin( error_code& ) { return true; }
         bool on_document_end( error_code& ) { return true; }
@@ -128,6 +142,8 @@ validate( string_view s )
         bool on_double( double, error_code& ) { return true; }
         bool on_bool( bool, error_code& ) { return true; }
         bool on_null( error_code& ) { return true; }
+        bool on_comment_part( string_view, error_code& ) { return true; }
+        bool on_comment( string_view, error_code& ) { return true; }
         
         std::size_t
         write(
@@ -145,7 +161,7 @@ validate( string_view s )
     };
 
     // Parse with the null parser and return false on error
-    null_parser p;
+    null_parser p(po);
     error_code ec;
     p.write( s.data(), s.size(), ec );
     if( ec )
@@ -155,6 +171,17 @@ validate( string_view s )
     return true;
 }
 
+bool
+validate(
+    string_view s, 
+    const std::vector<parse_options>& configs = all_configs)
+{
+    bool result = true;
+    for (const parse_options& po : configs)
+        result &= validate(s, po);
+    return result;
+}
+
 } // (anon)
 
 class basic_parser_test
@@ -162,17 +189,37 @@ class basic_parser_test
 public:
     ::test_suite::log_type log;
 
-    void
-    grind(string_view s, bool good)
+    void 
+    grind_one(
+        string_view s, 
+        bool good, 
+        parse_options po)
     {
-        {
-            error_code ec;
-            fail_parser p;
-            p.write(false,
-                s.data(), s.size(), ec);
-            BOOST_TEST((good && !ec) || (
-                ! good && ec));
-        }
+        error_code ec;
+        fail_parser p(po);
+        p.write(false,
+            s.data(), s.size(), ec);
+        BOOST_TEST((good && !ec) || 
+            (! good && ec));
+    }
+
+    void 
+    grind_one(
+        string_view s, 
+        bool good, 
+        const std::vector<parse_options>& configs)
+    {
+        for (const parse_options& po : configs)
+            grind_one(s, good, po);
+    }
+
+    void
+    grind(
+        string_view s, 
+        bool good,
+        parse_options po)
+    {
+        grind_one(s, good, po);
 
         // split/errors matrix
         if(! s.empty())
@@ -183,7 +230,7 @@ public:
                 for(std::size_t j = 1;;++j)
                 {
                     error_code ec;
-                    fail_parser p(j);
+                    fail_parser p(j, po);
                     p.write(true, s.data(), i, ec);
                     if(ec == error::test_failure)
                         continue;
@@ -210,7 +257,7 @@ public:
                 for(std::size_t j = 1;;++j)
                 {
                     error_code ec;
-                    throw_parser p(j);
+                    throw_parser p(j, po);
                     try
                     {
                         p.write(
@@ -239,35 +286,61 @@ public:
     }
 
     void
-    bad(string_view s)
+    grind(
+        string_view s, 
+        bool good,
+        const std::vector<parse_options>& configs)
     {
-        grind(s, false);
+        for (const parse_options& po : configs)
+            grind(s, good, po);
     }
 
     void
-    good(string_view s)
+    bad(
+        string_view s, 
+        const std::vector<parse_options>& configs = all_configs)
     {
-        grind(s, true);
+        grind(s, false, configs);
     }
 
     void
-    bad_one(string_view s)
+    good(
+        string_view s,
+        const std::vector<parse_options>& configs = all_configs)
     {
-        error_code ec;
-        fail_parser p;
-        p.write(false,
-            s.data(), s.size(), ec);
-        BOOST_TEST(ec);
+        grind(s, true, configs);
     }
 
     void
-    good_one(string_view s)
+    bad_one(
+        string_view s,
+        const std::vector<parse_options>& configs = all_configs)
     {
-        error_code ec;
-        fail_parser p;
-        p.write(false,
-            s.data(), s.size(), ec);
-        BOOST_TEST(! ec);
+        grind_one(s, false, configs);
+    }
+
+    void
+    good_one(
+        string_view s,
+        const std::vector<parse_options>& configs = all_configs)
+    {
+        grind_one(s, true, configs);
+    }
+    
+    void
+    bad_one(
+        string_view s,
+        parse_options po)
+    {
+        grind_one(s, false, po);
+    }
+
+    void
+    good_one(
+        string_view s,
+        parse_options po)
+    {
+        grind_one(s, true, po);
     }
 
     //------------------------------------------------------
@@ -518,8 +591,6 @@ public:
         bad (" [");
         bad (" []]");
         bad ("[{]");
-        bad ("[ \"x\", ]");
-
         bad (R"jv( [ null ; 1 ] )jv");
     }
 
@@ -575,19 +646,22 @@ public:
         [this]( string_view s,
             bool is_complete)
         {
-            fail_parser p;
-            error_code ec;
-            p.write_some(
-                true,
-                s.data(), s.size(),
-                ec);
-            if(! BOOST_TEST(! ec))
+            for (const parse_options& po : all_configs)
             {
-                log << "    failed to parse: " << s;
-                return;
+                fail_parser p(po);
+                error_code ec;
+                p.write_some(
+                    true,
+                    s.data(), s.size(),
+                    ec);
+                if(! BOOST_TEST(! ec))
+                {
+                    log << "    failed to parse: " << s << '\n';
+                    return;
+                }
+                BOOST_TEST(is_complete ==
+                    p.is_complete());
             }
-            BOOST_TEST(is_complete ==
-                p.is_complete());
         };
 
         // is_complete()
@@ -660,18 +734,22 @@ public:
 
         // no input
         {
-            error_code ec;
-            fail_parser p;
-            p.write(false, nullptr, 0, ec);
-            BOOST_TEST(ec);
+            for (const parse_options& po : all_configs)
+            {
+                error_code ec;
+                fail_parser p(po);
+                p.write(false, nullptr, 0, ec);
+                BOOST_TEST(ec);
+            }
         }
     }
 
     void
     testMembers()
     {
+        for (const parse_options& po : all_configs)
         {
-            fail_parser p;
+            fail_parser p(po);
             std::size_t n;
             error_code ec;
             n = p.write_some(true, "null", 4, ec );
@@ -701,27 +779,29 @@ public:
             }
             if(v.result == 'i')
             {
-                error_code ec;
-                fail_parser p;
-                p.write(
-                    false,
-                    v.text.data(),
-                    v.text.size(),
-                    ec);
-                if(! ec)
-                    good_one(v.text);
-                else
-                    bad_one(v.text);
-                continue;
+                for (const parse_options& po : all_configs)
+                {
+                    error_code ec;
+                    fail_parser p(po);
+                    p.write(
+                        false,
+                        v.text.data(),
+                        v.text.size(),
+                        ec);
+                    if(! ec)
+                        good_one(v.text, po);
+                    else
+                        bad_one(v.text, po);
+                }
             }
-            if(v.result == 'y')
+            else if(v.result == 'y')
                 good_one(v.text);
             else
                 bad_one(v.text);
         }
     }
 
-    // https://github.com/cppalliance/json/issues/13
+    // https://github.com/vinniefalco/json/issues/13
     void
     testIssue13()
     {
@@ -779,38 +859,186 @@ public:
     }
 
     void
-    testIssue113()
+    testComments()
     {
-        string_view s = 
-            "\"\\r\\n section id='description'>\\r\\nAll        mbers form the uncountable set "
-            "\\u211D.  Among its subsets, relatively simple are the convex sets, each expressed "
-            "as a range between two real numbers <i>a</i> and <i>b</i> where <i>a</i> \\u2264 <i>"
-            "b</i>.  There are actually four cases for the meaning of \\\"between\\\", depending "
-            "on open or closed boundary:\\r\\n\\r\\n<ul>\\r\\n  <li>[<i>a</i>, <i>b</i>]: {<i>"
-            "x</i> | <i>a</i> \\u2264 <i>x</i> and <i>x</i> \\u2264 <i>b</i> }</li>\\r\\n  <li>"
-            "(<i>a</i>, <i>b</i>): {<i>x</i> | <i>a</i> < <i>x</i> and <i>x</i> < <i>b</i> }"
-            "</li>\\r\\n  <li>[<i>a</i>, <i>b</i>): {<i>x</i> | <i>a</i> \\u2264 <i>x</i> and "
-            "<i>x</i> < <i>b</i> }</li>\\r\\n  <li>(<i>a</i>, <i>b</i>]: {<i>x</i> | <i>a</i> "
-            "< <i>x</i> and <i>x</i> \\u2264 <i>b</i> }</li>\\r\\n</ul>\\r\\n\\r\\nNote that "
-            "if <i>a</i> = <i>b</i>, of the four only [<i>a</i>, <i>a</i>] would be non-empty."
-            "\\r\\n\\r\\n<strong>Task</strong>\\r\\n\\r\\n<ul>\\r\\n  <li>Devise a way to "
-            "represent any set of real numbers, for the definition of \\\"any\\\" in the "
-            "implementation notes below.</li>\\r\\n  <li>Provide methods for these common "
-            "set operations (<i>x</i> is a real number; <i>A</i> and <i>B</i> are sets):</li>"
-            "\\r\\n  <ul>\\r\\n    <li>\\r\\n      <i>x</i> \\u2208 <i>A</i>: determine if <i>"
-            "x</i> is an element of <i>A</i><br>\\r\\n      example: 1 is in [1, 2), while 2, "
-            "3, ... are not.\\r\\n    </li>\\r\\n    <li>\\r\\n      <i>A</i> \\u222A <i>B</i>: "
-            "union of <i>A</i> and <i>B</i>, i.e. {<i>x</i> | <i>x</i> \\u2208 <i>A</i> or <i>x"
-            "</i> \\u2208 <i>B</i>}<br>\\r\\n      example: [0, 2) \\u222A (1, 3) = [0, 3); "
-            "[0, 1) \\u222A (2, 3] = well, [0, 1) \\u222A (2, 3]\\r\\n    </li>\\r\\n    <li>"
-            "\\r\\n      <i>A</i> \\u2229 <i>B</i>: intersection of <i>A</i> and <i>B</i>, i.e. "
-            "{<i>x</i> | <i>x</i> \\u2208 <i>A</i> and <i>x</i> \\u2208 <i>B</i>}<br>\\r\\n      "
-            "example: [0, 2) \\u2229 (1, 3) = (1, 2); [0, 1) \\u2229 (2, 3] = empty set\\r\\n    "
-            "</li>\\r\\n    <li>\\r\\n      <i>A</i> - <i>B</i>: difference between <i>A</i> and "
-            "<i>B</i>, also written as <i>A</i> \\\\ <i>B</i>, i.e. {<i>x</i> | <i>x</i> \\u2208 "
-            "<i>A</i> and <i>x</i> \\u2209 <i>B</i>}<br>\\r\\n      example: [0, 2) \\u2212 (1, "
-            "3) = [0, 1]\\r\\n    </li>\\r\\n  </ul>\\r\\n</ul>\\r\\n</section>\\r\\n\"\n";
-        good(s);
+        std::vector<parse_options> disabled ={ 
+            {false, false}, 
+            {false,  true} 
+        };
+        std::vector<parse_options> enabled = { 
+            {true, true},
+            {true, false}
+        };
+
+
+        const auto replace_and_test = 
+            [&](string_view s)
+        {
+            static std::vector<string_view> comments =
+            {
+                "//\n",
+                "//    \n",
+                "//aaaa\n",
+                "//    aaaa\n",
+                "//    /* \n",
+                "//    /**/ \n",
+                "/**/",
+                "/*//*/",
+                "/*/*/",
+                "/******/",
+                "/***    ***/",
+                "/**aaaa***/",
+                "/***    aaaa***/"
+            };
+
+            class comment_parser : public basic_parser
+            {
+                friend class basic_parser;
+
+            public:
+                std::string captured = "";
+
+                comment_parser() 
+                    : basic_parser({true, false}) { }
+
+                ~comment_parser() {}
+                bool on_document_begin( error_code& ) { return true; }
+                bool on_document_end( error_code& ) { return true; }
+                bool on_object_begin( error_code& ) { return true; }
+                bool on_object_end( error_code& ) { return true; }
+                bool on_array_begin( error_code& ) { return true; }
+                bool on_array_end( error_code& ) { return true; }
+                bool on_key_part( string_view, error_code& ) { return true; }
+                bool on_key( string_view, error_code& ) { return true; }
+                bool on_string_part( string_view, error_code& ) { return true; }
+                bool on_string( string_view, error_code& ) { return true; }
+                bool on_int64( std::int64_t, error_code& ) { return true; }
+                bool on_uint64( std::uint64_t, error_code& ) { return true; }
+                bool on_double( double, error_code& ) { return true; }
+                bool on_bool( bool, error_code& ) { return true; }
+                bool on_null( error_code& ) { return true; }
+                bool on_comment_part( string_view s, error_code& )
+                { 
+                    captured.append(s.data(), s.size());
+                    return true; 
+                }
+                bool on_comment( string_view s, error_code& ) 
+                { 
+                    captured.append(s.data(), s.size());
+                    return true; 
+                }
+        
+                std::size_t
+                write(
+                    char const* data,
+                    std::size_t size,
+                    error_code& ec)
+                {
+                    auto const n =
+                        basic_parser::write_some(
+                        *this, false, data, size, ec);
+                    if(! ec && n < size)
+                        ec = error::extra_data;
+                    return n;
+                }
+            };
+
+            std::string formatted = "";
+            std::string just_comments = "";
+            std::size_t guess = std::count(
+                s.begin(), s.end(), '@') * 12;
+            formatted.reserve(guess + s.size());
+            just_comments.reserve(guess);
+            std::size_t n = 0;
+            for (char c : s)
+            {
+                if (c == '@')
+                {
+                    string_view com = 
+                        comments[((formatted.size() + n) % s.size()) % comments.size()];
+                    formatted.append(com.data(), n = com.size());
+                    just_comments.append(com.data(), com.size());
+                    continue;
+                }
+                formatted += c;
+            }
+            bad(formatted, disabled);
+            good(formatted, enabled);
+
+            {
+                // test the handler
+                comment_parser p;
+                error_code ec;
+                p.write( formatted.data(), formatted.size(), ec );
+                BOOST_TEST(! ec);
+                BOOST_TEST(p.captured == just_comments);
+            }
+        };
+
+        replace_and_test("@1");
+        replace_and_test("@\"aa\"");
+        replace_and_test("[@]");
+        replace_and_test("[@ @]");
+        replace_and_test("[@1 @]");
+        replace_and_test("@[@1 @]@");
+        replace_and_test(" 1@");
+        replace_and_test(" 1@@@");
+        replace_and_test("[@1 @, 2]");
+        replace_and_test("[@@1 @@@, 2@]");
+        replace_and_test("[@1 @, @2@]");
+        replace_and_test("@[@1 @@, @2@]");
+        replace_and_test("@[@1 @, @2@]@");
+        replace_and_test("@{\"a\":1}@");
+        replace_and_test("@@{@\"a\":1}");
+        replace_and_test("@{@@\"a\"@:1}@");
+        replace_and_test("@{@\"a\"@@:@1}@@");
+        replace_and_test("@@@{@\"a\"@:@@[@]@}");
+        replace_and_test("@{@@\"a\"@:@[@1]@}@@");
+        replace_and_test("@@{@\"a\"@@@:@@[@1@@@]@}@");
+        replace_and_test("@{@@\"a\"@:@@@[@1@,@2@@]@}@@@");
+
+        bad("[1, 2]//", disabled);
+        good("[1, 2]//", enabled);
+    }
+
+    void
+    testTrailingCommas()
+    {
+        std::vector<parse_options> disabled = { 
+            {false, false}, 
+            {true, false} 
+        };
+        std::vector<parse_options> enabled = { 
+            {true, true},
+            {false, true}
+        };
+
+        bad("[1,]", disabled);
+        good("[1,]", enabled);
+
+        bad("[1,[],]", disabled);
+        good("[1,[],]", enabled);
+
+        bad("[1,{},]", disabled);
+        good("[1,{},]", enabled);
+
+        bad("[1,{\"a\":1,},]", disabled);
+        good("[1,{\"a\":1,},]", enabled);
+
+        bad("{\"a\":1,}", disabled);
+        good("{\"a\":1,}", enabled);
+
+        bad("{\"a\":[1,],}", disabled);
+        good("{\"a\":[1,],}", enabled);
+
+        bad("{\"a\":[],}", disabled);
+        good("{\"a\":[],}", enabled);
+
+        bad("{\"a\":[{}, [1,]],}", disabled);
+        good("{\"a\":[{}, [1,]],}", enabled);
+
+        bad("[[[[[[[],],],],],],]", disabled);
+        good("[[[[[[[],],],],],],]", enabled);
     }
 
     void
@@ -827,7 +1055,8 @@ public:
         testParseVectors();
         testIssue13();
         testIssue20();
-        testIssue113();
+        testTrailingCommas();
+        testComments();
     }
 };
 

@@ -404,7 +404,9 @@ class boost_null_impl : public any_impl
         bool on_double(double, error_code&) { return true; }
         bool on_bool(bool, error_code&) { return true; }
         bool on_null(error_code&) { return true; }
-        
+        bool on_comment_part(string_view, error_code&) { return true; }
+        bool on_comment(string_view, error_code&) { return true; }
+
         using basic_parser::reset;
 
         std::size_t

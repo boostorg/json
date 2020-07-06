@@ -125,7 +125,7 @@ public:
         <br>
 
         The `sp` parameter is only used to
-        allocate intermediate storage; will not be used
+        allocate intermediate storage; it will not be used
         for the @ref value returned by @ref release.
 
         @param sp The @ref storage_ptr to use for
@@ -134,6 +134,47 @@ public:
     BOOST_JSON_DECL
     explicit 
     parser(storage_ptr sp) noexcept;
+
+
+    /** Constructor.
+        
+        Constructs a parser using the specified options.
+
+        @note
+        Before any JSON can be parsed, the function
+        @ref start must be called.
+
+        @param opt The options for the parser.
+    */
+    BOOST_JSON_DECL
+    explicit
+    parser(const parse_options& opt) noexcept;
+    
+    /** Constructor.
+        
+        Constructs a parser using the specified
+        options for the parser and the supplied
+        @ref storage_ptr to allocate intermediate storage.
+
+        @note
+        Before any JSON can be parsed, the function
+        @ref start must be called.
+
+        <br>
+
+        The `sp` parameter is only used to
+        allocate intermediate storage; it will not be used
+        for the @ref value returned by @ref release.
+
+        @param sp The @ref storage_ptr to use for
+        intermediate storage allocations.
+
+        @param opt The options for the parser.
+    */
+    BOOST_JSON_DECL
+    parser(
+        storage_ptr sp, 
+        const parse_options& opt) noexcept;
 
     /** Reserve internal storage space.
 
@@ -458,6 +499,22 @@ private:
     inline
     bool
     on_null(error_code&);
+
+    bool
+    on_comment_part(
+        string_view,
+        error_code&) 
+    { 
+        return true; 
+    }
+    
+    bool
+    on_comment(
+        string_view, 
+        error_code&) 
+    { 
+        return true; 
+    }
 };
 
 //----------------------------------------------------------

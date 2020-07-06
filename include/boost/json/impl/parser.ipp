@@ -155,13 +155,34 @@ parser::
 
 parser::
 parser() noexcept
-    : parser(storage_ptr())
+    : parser(
+        storage_ptr(),
+        parse_options())
 {
 }
 
 parser::
-parser(storage_ptr sp) noexcept
-    : rs_(std::move(sp))
+parser(
+    const parse_options& opt) noexcept
+    : parser(storage_ptr(), opt)
+{
+}
+
+parser::
+parser(
+    storage_ptr sp) noexcept
+    : parser(
+        std::move(sp),
+        parse_options())
+{
+}
+
+parser::
+parser(
+    storage_ptr sp,
+    const parse_options& opt) noexcept
+    : basic_parser(opt)
+    , rs_(std::move(sp))
 {
     lev_.st = state::need_start;
 }

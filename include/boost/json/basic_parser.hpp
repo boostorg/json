@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+// Copyright (c) 2020 Krystian Stasiowski (sdkrystian@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -44,20 +45,24 @@ namespace json {
 
 enum class basic_parser::state : char
 {
-    doc1, doc2, doc3,
-    nul1, nul2, nul3,
-    tru1, tru2, tru3,
-    fal1, fal2, fal3, fal4,
-    str1, str2, str3, str4,
-    str5, str6, str7,
-    sur1, sur2, sur3, sur4,
-    sur5, sur6,
-    obj1, obj2, obj3, obj4,
-    obj5, obj6, obj7,
-    arr1, arr2, arr3, arr4,
-    num1, num2, num3, num4,
-    num5, num6, num7, num8,
-    exp1, exp2, exp3
+    doc1,  doc2,  doc3,
+    com1,  com2,  com3,
+    com4,  com5,  com6, 
+    com7,  com8,  com9, 
+    com10, com11, com12,
+    nul1,  nul2,  nul3,
+    tru1,  tru2,  tru3,
+    fal1,  fal2,  fal3,  fal4,
+    str1,  str2,  str3,  str4,
+    str5,  str6,  str7,
+    sur1,  sur2,  sur3,
+    sur4,  sur5,  sur6,
+    obj1,  obj2,  obj3,  obj4,
+    obj5,  obj6,  obj7,
+    arr1,  arr2,  arr3,  arr4,
+    num1,  num2,  num3,  num4,
+    num5,  num6,  num7,  num8,
+    exp1,  exp2,  exp3
 };
 
 //----------------------------------------------------------
@@ -223,13 +228,11 @@ reserve()
         return;
     // Reserve the largest stack we need,
     // to avoid reallocation during suspend.
-    // KRYSTIAN NOTE: when utf-8 validation
-    // and comment parsing are added, an extra byte
-    // will be required for potential substates
     st_.reserve(
         sizeof(state) + // document parsing state
         (sizeof(state) * depth_) + // array and object state
-        sizeof(state));  // value parsing state
+        sizeof(state) + // value parsing state
+        sizeof(state)); // comment/utf8 state
 }
 
 void
@@ -263,16 +266,163 @@ skip_white(const_stream& cs)
     return n2 < n;
 }
 
-template<class Handler>
+template<basic_parser::result Result, class Handler>
 auto
 basic_parser::
-syntax_error(
+constant_result(
     Handler&,
     const_stream&) ->
         result
 {
-    ec_ = error::syntax;
-    return result::fail;
+    if (Result == result::fail)
+        ec_ = error::syntax;
+    return Result;
+}
+
+template<bool StackEmpty, bool ReturnValue, bool TrailingCommas, class Handler>
+auto
+basic_parser::
+parse_comment(
+    Handler& h,
+    const_stream& cs) ->
+    result
+{
+    const char* start = cs.data();;
+    if (!StackEmpty && !st_.empty())
+    {
+        state st;
+        st_.pop(st);
+        switch (st)
+        {
+            default:
+            case state::com1: goto do_com1;
+            case state::com2: goto do_com2;
+            case state::com3: goto do_com3;
+            case state::com4: goto do_com4;
+            case state::com5: goto do_com5;
+        }
+    }
+    BOOST_ASSERT(*cs == '/');
+    ++cs;
+do_com1:
+    if (BOOST_JSON_UNLIKELY(!cs))
+    {
+        //  likely
+        if (BOOST_JSON_LIKELY(more_))
+        {
+            suspend(state::com1);
+            return result::partial;
+        }
+        // no token following slash
+        ec_ = error::syntax;
+        return result::fail;
+    }
+    if (*cs == '/')
+    {
+        // stopped inside a c++ comment
+do_com2:
+        const auto begin = cs.data();
+        const auto remain = cs.remain();
+        const auto new_line = static_cast<const char*>(
+            std::memchr(begin, '\n', remain));
+        if (BOOST_JSON_UNLIKELY(! new_line))
+        {
+            // likely
+            cs.skip(remain);
+            if (BOOST_JSON_LIKELY(more_))
+            {
+                if (BOOST_JSON_UNLIKELY(! h.on_comment_part(
+                    {start, cs.used(start)}, ec_)))
+                        return result::fail;
+                suspend(state::com2);
+                return result::partial;
+            }
+            // if the doc does not terminate
+            // with a newline, treat it as the
+            // end of the comment
+            if (BOOST_JSON_UNLIKELY(! h.on_comment(
+                {start, cs.used(start)}, ec_)))
+                    return result::fail;
+            return result::ok;
+        }
+        cs.skip(new_line - begin);
+    }
+    else if (*cs == '*')
+    {
+        // consume the asterisk
+        ++cs;
+do_com3:
+        {
+            const auto remain = cs.remain();
+            const auto asterisk = static_cast<const char*>(
+                std::memchr(cs.data(), '*', remain));
+            // stopped inside a c comment
+            if (BOOST_JSON_UNLIKELY(! asterisk))
+            {
+                if (BOOST_JSON_LIKELY(more_))
+                {
+                    cs.skip(remain);
+                    if (BOOST_JSON_UNLIKELY(! h.on_comment_part(
+                        {start, cs.used(start)}, ec_)))
+                            return result::fail;
+                    suspend(state::com3);
+                    return result::partial;
+                }
+                // didn't find closing asterisk
+                ec_ = error::syntax;
+                return result::fail;
+            }
+            cs.skip(asterisk - cs.data());
+        }
+        // found a asterisk, check if the next char is a slash
+        ++cs;
+do_com4:
+        if (BOOST_JSON_UNLIKELY(!cs))
+        {
+            // likely
+            if (BOOST_JSON_LIKELY(more_))
+            {
+                if (BOOST_JSON_UNLIKELY(! h.on_comment_part(
+                    {start, cs.used(start)}, ec_)))
+                        return result::fail;
+                suspend(state::com4);
+                return result::partial;
+            }
+            // didn't find closing slash
+            ec_ = error::syntax;
+            return result::fail;
+        }
+        if (*cs != '/')
+            goto do_com3;
+    }
+    else
+    {
+        ec_ = error::syntax;
+        return result::fail;
+    }
+    // fallthrough once comment is sucessfully parsed;
+    // consume the close token
+    ++cs;
+    if (BOOST_JSON_UNLIKELY(! h.on_comment(
+        {start, cs.used(start)}, ec_)))
+            return result::fail;
+    if (BOOST_JSON_LIKELY(more_))
+    {
+do_com5:
+        if (BOOST_JSON_UNLIKELY(
+            ! cs || ! skip_white(cs)))
+        {
+            if (more_)
+                suspend(state::com5);
+            return result::partial;
+        }
+    }
+    if (ReturnValue)
+    {
+        BOOST_ASSERT(cs);
+        return parse_value<StackEmpty, true, TrailingCommas>(h, cs);
+    }
+    return result::ok;
 }
 
 template<bool StackEmpty, class Handler>
@@ -293,6 +443,7 @@ parse_document(
         case state::doc1: goto do_doc1;
         case state::doc2: goto do_doc2;
         case state::doc3: goto do_doc3;
+        case state::com12: goto do_com12;
         }
     }
 do_doc1:
@@ -305,8 +456,32 @@ do_doc1:
     }
 do_doc2:
     {
-        result const r =
-            parse_value<StackEmpty>(h, cs);
+        if ((StackEmpty || st_.empty()) && 
+            opt_.allow_trailing_commas && (*cs == ']'))
+        {
+            ec_ = error::syntax;
+            return result::fail;
+        }
+        result r;
+        if (opt_.allow_comments)
+        {
+            if (opt_.allow_trailing_commas)
+            {
+                r = parse_value<StackEmpty, true, true>(h, cs);
+            }
+            else
+            {
+                r = parse_value<StackEmpty, true, false>(h, cs);
+            }
+        }
+        else if (opt_.allow_trailing_commas)
+        {
+            r = parse_value<StackEmpty, false, true>(h, cs);
+        }
+        else
+        {
+            r = parse_value<StackEmpty, false, false>(h, cs);
+        }
         if(BOOST_JSON_UNLIKELY(r))
         {
             if(more_ && r == result::partial)
@@ -324,10 +499,24 @@ do_doc3:
             return result::partial;
         }
     }
+    else if (opt_.allow_comments && *cs == '/')
+    {
+do_com12:
+        result r;
+        if (opt_.allow_trailing_commas)
+            r = parse_comment<StackEmpty, false, true>(h, cs);
+        else
+            r = parse_comment<StackEmpty, false, false>(h, cs);
+        if (BOOST_JSON_LIKELY(!r))
+            goto do_doc3;
+        else if (more_ && r == result::partial)
+            suspend(state::com12);
+        return r;
+    }
     return result::ok;
 }
 
-template<bool StackEmpty, class Handler>
+template<bool StackEmpty, bool AllowComments, bool TrailingCommas, class Handler>
 auto
 basic_parser::
 parse_value(
@@ -338,7 +527,7 @@ parse_value(
     if(StackEmpty || st_.empty())
     {
         static constexpr auto num = &basic_parser::parse_number<true, '+', Handler>;
-        static constexpr auto err = &basic_parser::syntax_error<Handler>;
+        static constexpr auto err = &basic_parser::constant_result<result::fail, Handler>;
         static constexpr result(basic_parser::* jump_table[256])(Handler&, const_stream&) =
         {
             err, err, err, err, err, err, err, err,
@@ -346,17 +535,17 @@ parse_value(
             err, err, err, err, err, err, err, err,
             err, err, err, err, err, err, err, err,
             err, err, &basic_parser::parse_string<true, Handler>, err, err, err, err, err,
-            err, err, err, err, err, &basic_parser::parse_number<true, '-', Handler>, err, err,
+            err, err, err, err, err, &basic_parser::parse_number<true, '-', Handler>, err, AllowComments ? &basic_parser::parse_comment<true, true, TrailingCommas, Handler> : err,
             &basic_parser::parse_number<true, '0', Handler>, num, num, num, num, num, num, num,
             num, num, err, err, err, err, err, err,
             err, err, err, err, err, err, err, err,
             err, err, err, err, err, err, err, err,
             err, err, err, err, err, err, err, err,
-            err, err, err, &basic_parser::parse_array<true, Handler>, err, err, err, err,
+            err, err, err, &basic_parser::parse_array<true, AllowComments, TrailingCommas, Handler>, err, TrailingCommas ? &basic_parser::constant_result<result::ok, Handler> : err, err, err,
             err, err, err, err, err, err, &basic_parser::parse_false<true, Handler>, err,
             err, err, err, err, err, err, &basic_parser::parse_null<true, Handler>, err,
             err, err, err, err, &basic_parser::parse_true<true, Handler>, err, err, err,
-            err, err, err, &basic_parser::parse_object<true, Handler>, err, err, err, err,
+            err, err, err, &basic_parser::parse_object<true, AllowComments, TrailingCommas, Handler>, err, err, err, err,
             // negative values are converted to unsigned char, they are handled here
             err, err, err, err, err, err, err, err,
             err, err, err, err, err, err, err, err,
@@ -378,10 +567,10 @@ parse_value(
         return (this->*jump_table
             [static_cast<unsigned char>(*cs)])(h, cs);
     }
-    return resume_value<StackEmpty>(h, cs);
+    return resume_value<StackEmpty, AllowComments, TrailingCommas>(h, cs);
 }
 
-template<bool StackEmpty, class Handler>
+template<bool StackEmpty, bool AllowComments, bool TrailingCommas, class Handler>
 auto
 basic_parser::
 resume_value(
@@ -417,13 +606,16 @@ resume_value(
 
     case state::arr1: case state::arr2:
     case state::arr3: case state::arr4:
-        return parse_array<StackEmpty>(h, cs0);
+    case state::com10: case state::com11:
+        return parse_array<StackEmpty, AllowComments, TrailingCommas>(h, cs0);
         
     case state::obj1: case state::obj2:
     case state::obj3: case state::obj4:
     case state::obj5: case state::obj6:
     case state::obj7:
-        return parse_object<StackEmpty>(h, cs0);
+    case state::com6: case state::com7:
+    case state::com8: case state::com9:
+        return parse_object<StackEmpty, AllowComments, TrailingCommas>(h, cs0);
         
     case state::num1: case state::num2:
     case state::num3: case state::num4:
@@ -432,6 +624,11 @@ resume_value(
     case state::exp1: case state::exp2:
     case state::exp3:
         return parse_number<StackEmpty, 0>(h, cs0);
+
+    case state::com1: case state::com2:
+    case state::com3: case state::com4:
+    case state::com5:
+        return parse_comment<StackEmpty, true, TrailingCommas>(h, cs0);
     }
 }
 
@@ -1357,7 +1554,7 @@ do_str3:
 
 //----------------------------------------------------------
 
-template<bool StackEmpty, class Handler>
+template<bool StackEmpty, bool AllowComments, bool TrailingCommas, class Handler>
 auto
 basic_parser::
 parse_object(
@@ -1394,6 +1591,10 @@ parse_object(
         case state::obj5: goto do_obj5;
         case state::obj6: goto do_obj6;
         case state::obj7: goto do_obj7;
+        case state::com6: goto do_com6;
+        case state::com7: goto do_com7;
+        case state::com8: goto do_com8;
+        case state::com9: goto do_com9;
         }
     }
 do_obj1:
@@ -1406,6 +1607,17 @@ do_obj1:
     }
     if(BOOST_JSON_LIKELY(*cs != '}'))
     {
+        if (AllowComments && *cs == '/')
+        {
+do_com6:
+            const result r =
+                parse_comment<StackEmpty, false, TrailingCommas>(h, cs);
+            if (BOOST_JSON_LIKELY(!r))
+                goto do_obj1;
+            else if (more_ && r == result::partial)
+                suspend(state::com6);
+            return r;
+        }
         for(;;)
         {
             if (BOOST_JSON_LIKELY(*cs == '\x22')) // '"'
@@ -1420,6 +1632,19 @@ do_obj2:
                         suspend(state::obj2);
                     return r;
                 }
+            }
+            else if (TrailingCommas && *cs == '}')
+                break;
+            else if (AllowComments && *cs == '/')
+            {
+do_com7:
+                const result r =
+                        parse_comment<StackEmpty, false, TrailingCommas>(h, cs);
+                if (BOOST_JSON_LIKELY(!r))
+                    goto do_obj7;
+                else if (more_ && r == result::partial)
+                    suspend(state::com7);
+                return r;
             }
             else
             {
@@ -1436,6 +1661,17 @@ do_obj3:
             }
             if(BOOST_JSON_UNLIKELY(*cs != ':'))
             {
+                if (AllowComments && *cs == '/')
+                {
+do_com8:
+                    const result r =
+                        parse_comment<StackEmpty, false, TrailingCommas>(h, cs);
+                    if (BOOST_JSON_LIKELY(!r))
+                        goto do_obj3;
+                    else if (more_ && r == result::partial)
+                        suspend(state::com8);
+                    return r;
+                }
                 ec_ = error::syntax;
                 return result::fail;
             }
@@ -1450,7 +1686,7 @@ do_obj4:
             }
 do_obj5:
             {
-                const result r = parse_value<StackEmpty>(h, cs);
+                const result r = parse_value<StackEmpty, AllowComments, TrailingCommas>(h, cs);
                 if(BOOST_JSON_UNLIKELY(r))
                 {
                     if(BOOST_JSON_LIKELY(more_ &&
@@ -1474,6 +1710,17 @@ do_obj6:
             {
                 if(BOOST_JSON_LIKELY(*cs == '}'))
                     break;
+                else if (AllowComments && *cs == '/')
+                {
+do_com9:
+                    const result r =
+                        parse_comment<StackEmpty, false, TrailingCommas>(h, cs);
+                    if (BOOST_JSON_LIKELY(!r))
+                        goto do_obj6;
+                    else if (more_ && r == result::partial)
+                        suspend(state::com9);
+                    return r;
+                }
                 ec_ = error::syntax;
                 return result::fail;
             }
@@ -1500,7 +1747,7 @@ do_obj7:
 
 //----------------------------------------------------------
 
-template<bool StackEmpty, class Handler>
+template<bool StackEmpty, bool AllowComments, bool TrailingCommas, class Handler>
 auto
 basic_parser::
 parse_array(
@@ -1534,6 +1781,8 @@ parse_array(
         case state::arr2: goto do_arr2;
         case state::arr3: goto do_arr3;
         case state::arr4: goto do_arr4;
+        case state::com10: goto do_com10;
+        case state::com11: goto do_com11;
         }
     }
 do_arr1:
@@ -1546,11 +1795,22 @@ do_arr1:
     }
     if(BOOST_JSON_LIKELY(*cs != ']'))
     {
+        if (AllowComments && *cs == '/')
+        {
+do_com10:
+            const result r =
+                parse_comment<StackEmpty, false, TrailingCommas>(h, cs);
+            if (BOOST_JSON_LIKELY(!r))
+                goto do_arr1;
+            else if (more_ && r == result::partial)
+                suspend(state::com10);
+            return r;
+        }
         for(;;)
         {
 do_arr2:
             {
-                const result r = parse_value<StackEmpty>(h, cs);
+                const result r = parse_value<StackEmpty, AllowComments, TrailingCommas>(h, cs);
                 if(BOOST_JSON_UNLIKELY(r))
                 {
                     if(BOOST_JSON_LIKELY(more_ &&
@@ -1574,6 +1834,17 @@ do_arr3:
             {
                 if(BOOST_JSON_LIKELY(*cs == ']'))
                     break;
+                else if (AllowComments && *cs == '/')
+                {
+do_com11:
+                    const result r =
+                        parse_comment<StackEmpty, false, TrailingCommas>(h, cs);
+                    if (BOOST_JSON_LIKELY(!r))
+                        goto do_arr3;
+                    else if (more_ && r == result::partial)
+                        suspend(state::com11);
+                    return r;
+                }
                 ec_ = error::syntax;
                 return result::fail;
             }
@@ -2196,6 +2467,14 @@ finish_dub:
         ! h.on_double(d, ec_)))
         return result::fail;
     return result::ok;
+}
+
+//----------------------------------------------------------
+
+basic_parser::
+basic_parser(const parse_options& opt) noexcept
+    : opt_(opt) 
+{
 }
 
 //----------------------------------------------------------
