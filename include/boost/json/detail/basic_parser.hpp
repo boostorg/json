@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+// Copyright (c) 2020 Krystian Stasiowski (sdkrystian@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -13,6 +14,7 @@
 #include <boost/json/detail/config.hpp>
 #include <boost/json/error.hpp>
 #include <boost/json/kind.hpp>
+#include <boost/json/parse_options.hpp>
 #include <boost/json/detail/stack.hpp>
 #include <boost/json/detail/stream.hpp>
 #include <string>
@@ -69,8 +71,9 @@ namespace json {
 
     @note
 
-    The parser is strict: no extensions are supported.
-    Only compliant JSON is recognized.
+    By default, only conforming JSON is accepted.
+    However, extensions can be configured through the 
+    use of @ref parse_options.
 
     @see @ref parse, @ref parser
 */
@@ -105,6 +108,7 @@ class basic_parser
     bool more_; // false for final buffer
     bool complete_ = false; // true on complete parse
     bool is_key_;
+    parse_options opt_;
 
     inline static bool is_control(char c) noexcept;
     inline static char hex_digit(char c) noexcept;
@@ -113,17 +117,31 @@ class basic_parser
     inline void suspend(state st, number const& num);
     inline bool skip_white(const_stream& cs);
 
-    template<class Handler>
-    result syntax_error(Handler&, const_stream&);
+    template<result Result, class Handler>
+    result constant_result(Handler&, const_stream&);
+
+    template<bool StackEmpty,
+        bool ReturnValue, bool AllowTrailing, class Handler>
+    result parse_comment(Handler& h, const_stream& cs);
     
     template<bool StackEmpty, class Handler>
     result parse_document(Handler& h, const_stream& cs);
     
-    template<bool StackEmpty, class Handler>
+    template<bool StackEmpty, bool AllowComments,
+        bool AllowTrailing, class Handler>
     result parse_value(Handler& h, const_stream& cs);
     
-    template<bool StackEmpty, class Handler>
+    template<bool StackEmpty, bool AllowComments,
+        bool AllowTrailing, class Handler>
     result resume_value(Handler& h, const_stream& cs);
+    
+    template<bool StackEmpty, bool AllowComments,
+        bool AllowTrailing, class Handler>
+    result parse_object(Handler& h, const_stream& cs);
+    
+    template<bool StackEmpty, bool AllowComments,
+        bool AllowTrailing, class Handler>
+    result parse_array(Handler& h, const_stream& cs);
     
     template<bool StackEmpty, class Handler>
     result parse_null(Handler& h, const_stream& cs);
@@ -137,16 +155,25 @@ class basic_parser
     template<bool StackEmpty, class Handler>
     result parse_string(Handler& h, const_stream& cs);
     
-    template<bool StackEmpty, class Handler>
-    result parse_object(Handler& h, const_stream& cs);
-    
-    template<bool StackEmpty, class Handler>
-    result parse_array(Handler& h, const_stream& cs);
-    
     template<bool StackEmpty, char First, class Handler>
     result parse_number(Handler& h, const_stream& cs);
 
 public:
+     /** Default constructor.
+        
+        The parser will only recognize strict JSON.
+    */
+    basic_parser() noexcept = default;
+
+    /** Constructor.
+        
+        Construct a parser with the provided options.
+
+        @param opt The options for the parser.
+    */
+    inline
+    basic_parser(const parse_options& opt) noexcept;
+
     /** Destructor.
 
         All dynamically allocated internal memory is freed.
@@ -314,6 +341,12 @@ protected:
 
             // Called when a null is parsed.
             bool on_null( error_code& ec );
+
+            // Called with characters corresponding to part of the current comment.
+            bool on_comment_part( string_view s, error_code& ec );
+
+            // Called with the last characters corresponding to the current comment.
+            bool on_comment( string_view s, error_code& ec );
         };
         @endcode
 

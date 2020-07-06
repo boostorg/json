@@ -1,6 +1,6 @@
-
 //
 // Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+// Copyright (c) 2020 Krystian Stasiowski (sdkrystian@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -120,7 +120,6 @@ parse_vectors() noexcept
         { 'n', "array_double_comma", lit("[1,,2]") },
         { 'n', "array_double_extra_comma", lit("[\"x\",,]") },
         { 'n', "array_extra_close", lit("[\"x\"]]") },
-        { 'n', "array_extra_comma", lit("[\"\",]") },
         { 'n', "array_incomplete", lit("[\"x\"") },
         { 'n', "array_incomplete_invalid_value", lit("[x") },
         { 'n', "array_inner_array_no_comma", lit("[3[4]]") },
@@ -128,9 +127,9 @@ parse_vectors() noexcept
         { 'n', "array_items_separated_by_semicolon", lit("[1:2]") },
         { 'n', "array_just_comma", lit("[,]") },
         { 'n', "array_just_minus", lit("[-]") },
+        { 'n', "array_misclosed", lit("[}") },
         { 'n', "array_missing_value", lit("[   , \"\"]") },
         { 'n', "array_newlines_unclosed", lit("[\"a\",\x0A""4\x0A"",1,") },
-        { 'n', "array_number_and_comma", lit("[1,]") },
         { 'n', "array_number_and_several_commas", lit("[1,,]") },
         { 'n', "array_spaces_vertical_tab_formfeed", lit("[\"\x0B""a\"\\f]") },
         { 'n', "array_star_inside", lit("[*]") },
@@ -141,12 +140,10 @@ parse_vectors() noexcept
         { 'n', "fail01", lit("[\"mismatch\"}") },
         { 'n', "fail02", lit("[\"Unclosed array\"") },
         { 'n', "fail03", lit("{unquoted_key: \"keys must be quoted\"}") },
-        { 'n', "fail04", lit("[\"extra comma\",]") },
         { 'n', "fail05", lit("[\"double extra comma\",,]") },
         { 'n', "fail06", lit("[   , \"<-- missing value\"]") },
         { 'n', "fail07", lit("[\"Comma after the close\"],") },
         { 'n', "fail08", lit("[\"Extra close\"]]") },
-        { 'n', "fail09", lit("{\"Extra comma\": true,}") },
         { 'n', "fail10", lit("{\"Extra value after close\": true} \"misplaced quoted value\"") },
         { 'n', "fail11", lit("{\"Illegal expression\": 1 + 2}") },
         { 'n', "fail12", lit("{\"Illegal invocation\": alert()}") },
@@ -227,11 +224,11 @@ parse_vectors() noexcept
         { 'n', "object_bad_value", lit("[\"x\", truth]") },
         { 'n', "object_bracket_key", lit("{[: \"x\"}\x0A""") },
         { 'n', "object_comma_instead_of_colon", lit("{\"x\", null}") },
+        { 'n', "object_comma_after_colon", lit("{\"x\":, \"y\":1}") },
         { 'n', "object_double_colon", lit("{\"x\"::\"b\"}") },
         { 'n', "object_emoji", lit("{\xF0""\x9F""\x87""\xA8""\xF0""\x9F""\x87""\xAD""}") },
         { 'n', "object_garbage_at_end", lit("{\"a\":\"a\" 123}") },
         { 'n', "object_key_with_single_quotes", lit("{key: 'value'}") },
-        { 'n', "object_lone_continuation_byte_in_key_and_trailing_comma", lit("{\"\xB9""\":\"0\",}") },
         { 'n', "object_missing_colon", lit("{\"a\" b}") },
         { 'n', "object_missing_key", lit("{:\"b\"}") },
         { 'n', "object_missing_semicolon", lit("{\"a\" \"b\"}") },
@@ -242,10 +239,7 @@ parse_vectors() noexcept
         { 'n', "object_repeated_null_null", lit("{null:null,null:null}") },
         { 'n', "object_several_trailing_commas", lit("{\"id\":0,,,,,}") },
         { 'n', "object_single_quote", lit("{'a':0}") },
-        { 'n', "object_trailing_comma", lit("{\"id\":0,}") },
-        { 'n', "object_trailing_comment", lit("{\"a\":\"b\"}/**/") },
         { 'n', "object_trailing_comment_open", lit("{\"a\":\"b\"}/**//") },
-        { 'n', "object_trailing_comment_slash_open", lit("{\"a\":\"b\"}//") },
         { 'n', "object_trailing_comment_slash_open_incomplete", lit("{\"a\":\"b\"}/") },
         { 'n', "object_two_commas_in_a_row", lit("{\"a\":\"b\",,\"c\":\"d\"}") },
         { 'n', "object_unquoted_key", lit("{a: \"b\"}") },
@@ -808,7 +802,6 @@ parse_vectors() noexcept
         { 'n', "structure_number_with_trailing_garbage", lit("2@") },
         { 'n', "structure_object_followed_by_closing_object", lit("{}}") },
         { 'n', "structure_object_unclosed_no_value", lit("{\"\":") },
-        { 'n', "structure_object_with_comment", lit("{\"a\":/*comment*/\"b\"}") },
         { 'n', "structure_object_with_trailing_garbage", lit("{\"a\": true} \"x\"") },
         { 'n', "structure_open_array_apostrophe", lit("['") },
         { 'n', "structure_open_array_comma", lit("[,") },

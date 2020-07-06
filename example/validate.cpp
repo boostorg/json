@@ -54,6 +54,8 @@ validate( string_view s )
         bool on_double( double, error_code& ) { return true; }
         bool on_bool( bool, error_code& ) { return true; }
         bool on_null( error_code& ) { return true; }
+        bool on_comment_part(string_view, error_code&) { return true; }
+        bool on_comment(string_view, error_code&) { return true; }
         
         std::size_t
         write(
