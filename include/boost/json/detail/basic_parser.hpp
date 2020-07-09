@@ -331,14 +331,17 @@ protected:
             // Called with the last characters corresponding to the current string.
             bool on_string( string_view s, error_code& ec );
 
+            // Called with the characters corresponding to the part of the current number.
+            bool on_number_part( string_view s, error_code& ec );
+
             // Called when a signed integer is parsed.
-            bool on_int64( int64_t i, error_code& ec );
+            bool on_int64( int64_t i, string_view s, error_code& ec );
 
             // Called when an unsigend integer is parsed.
-            bool on_uint64( uint64_t u, error_code& ec );
+            bool on_uint64( uint64_t u, string_view s, error_code& ec );
 
             // Called when a double is parsed.
-            bool on_double( double d, error_code& ec );
+            bool on_double( double d, string_view s, error_code& ec );
 
             // Called when a boolean is parsed.
             bool on_bool( bool b, error_code& ec );

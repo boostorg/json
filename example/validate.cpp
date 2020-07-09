@@ -49,9 +49,10 @@ validate( string_view s )
         bool on_key( string_view, error_code& ) { return true; }
         bool on_string_part( string_view, error_code& ) { return true; }
         bool on_string( string_view, error_code& ) { return true; }
-        bool on_int64( std::int64_t, error_code& ) { return true; }
-        bool on_uint64( std::uint64_t, error_code& ) { return true; }
-        bool on_double( double, error_code& ) { return true; }
+        bool on_number_part( string_view, error_code& ) { return true; }
+        bool on_int64( std::int64_t, string_view, error_code& ) { return true; }
+        bool on_uint64( std::uint64_t, string_view, error_code& ) { return true; }
+        bool on_double( double, string_view, error_code& ) { return true; }
         bool on_bool( bool, error_code& ) { return true; }
         bool on_null( error_code& ) { return true; }
         bool on_comment_part(string_view, error_code&) { return true; }
