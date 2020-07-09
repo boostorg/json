@@ -474,20 +474,32 @@ private:
 
     inline
     bool
+    on_number_part(
+        string_view,
+        error_code&)
+    {
+        return true;
+    }
+
+    inline
+    bool
     on_int64(
         int64_t i,
+        string_view,
         error_code& ec);
 
     inline
     bool
     on_uint64(
         uint64_t u,
+        string_view,
         error_code& ec);
 
     inline
     bool
     on_double(
         double d,
+        string_view,
         error_code& ec);
 
     inline

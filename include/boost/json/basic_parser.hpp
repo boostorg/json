@@ -2321,6 +2321,7 @@ parse_number(
     constexpr bool nonzero_first = First == '+';
     number num;
     detail::local_const_stream cs(cs0);
+    const char* begin = cs.data();
     if(StackEmpty || st_.empty())
     {
         num.bias = 0;
@@ -2490,6 +2491,10 @@ do_num1:
     }
     else
     {
+        if(BOOST_JSON_UNLIKELY(
+            ! h.on_number_part(
+                {begin, cs.used(begin)}, ec_)))
+            return result::fail;
         if(more_)
             suspend(state::num1, num);
         return result::partial;
@@ -2523,6 +2528,10 @@ do_num2:
             }
             else if(BOOST_JSON_UNLIKELY(more_))
             {
+                if(BOOST_JSON_UNLIKELY(
+                    ! h.on_number_part(
+                        {begin, cs.used(begin)}, ec_)))
+                    return result::fail;
                 suspend(state::num2, num);
                 return result::partial;
             }
@@ -2555,6 +2564,10 @@ do_num2:
             {
                 if(BOOST_JSON_UNLIKELY(more_))
                 {
+                    if(BOOST_JSON_UNLIKELY(
+                        ! h.on_number_part(
+                            {begin, cs.used(begin)}, ec_)))
+                        return result::fail;
                     suspend(state::num2, num);
                     return result::partial;
                 }
@@ -2602,6 +2615,10 @@ do_num3:
         {
             if(BOOST_JSON_UNLIKELY(more_))
             {
+                if(BOOST_JSON_UNLIKELY(
+                    ! h.on_number_part(
+                        {begin, cs.used(begin)}, ec_)))
+                    return result::fail;
                 suspend(state::num3, num);
                 return result::partial;
             }
@@ -2634,6 +2651,10 @@ do_num4:
     }
     else
     {
+        if(BOOST_JSON_UNLIKELY(
+            ! h.on_number_part(
+                {begin, cs.used(begin)}, ec_)))
+            return result::fail;
         if(BOOST_JSON_UNLIKELY(more_))
             suspend(state::num4, num);
         return result::partial;
@@ -2670,6 +2691,10 @@ do_num5:
         {
             if(BOOST_JSON_UNLIKELY(more_))
             {
+                if(BOOST_JSON_UNLIKELY(
+                    ! h.on_number_part(
+                        {begin, cs.used(begin)}, ec_)))
+                    return result::fail;
                 suspend(state::num5, num);
                 return result::partial;
             }
@@ -2704,6 +2729,10 @@ do_num6:
     {
         if(BOOST_JSON_LIKELY(more_))
         {
+            if(BOOST_JSON_UNLIKELY(
+                ! h.on_number_part(
+                    {begin, cs.used(begin)}, ec_)))
+                return result::fail;
             suspend(state::num6, num);
             return result::partial;
         }
@@ -2732,6 +2761,10 @@ do_num7:
     {
         if(BOOST_JSON_UNLIKELY(more_))
         {
+            if(BOOST_JSON_UNLIKELY(
+                ! h.on_number_part(
+                    {begin, cs.used(begin)}, ec_)))
+                return result::fail;
             suspend(state::num7, num);
             return result::partial;
         }
@@ -2781,6 +2814,10 @@ do_num8:
         {
             if(BOOST_JSON_UNLIKELY(more_))
             {
+                if(BOOST_JSON_UNLIKELY(
+                    ! h.on_number_part(
+                        {begin, cs.used(begin)}, ec_)))
+                    return result::fail;
                 suspend(state::num8, num);
                 return result::partial;
             }
@@ -2807,6 +2844,10 @@ do_exp1:
     }
     else
     {
+        if(BOOST_JSON_UNLIKELY(
+            ! h.on_number_part(
+                {begin, cs.used(begin)}, ec_)))
+            return result::fail;
         if(BOOST_JSON_LIKELY(more_))
             suspend(state::exp1, num);
         return result::partial;
@@ -2835,6 +2876,10 @@ do_exp2:
     {
         if(BOOST_JSON_UNLIKELY(more_))
         {
+            if(BOOST_JSON_UNLIKELY(
+                ! h.on_number_part(
+                    {begin, cs.used(begin)}, ec_)))
+                return result::fail;
             suspend(state::exp2, num);
             return result::partial;
         }
@@ -2872,6 +2917,10 @@ do_exp3:
         }
         else if(BOOST_JSON_UNLIKELY(more_))
         {
+            if(BOOST_JSON_UNLIKELY(
+                ! h.on_number_part(
+                    {begin, cs.used(begin)}, ec_)))
+                return result::fail;
             suspend(state::exp3, num);
             return result::partial;
         }
@@ -2883,7 +2932,7 @@ finish_int:
     {
         if(BOOST_JSON_UNLIKELY(
             ! h.on_int64(static_cast<
-                int64_t>(~num.mant + 1), ec_)))
+                int64_t>(~num.mant + 1), {begin, cs.used(begin)}, ec_)))
             return result::fail;
         return result::ok;
     }
@@ -2892,12 +2941,12 @@ finish_int:
 finish_signed:
         if(BOOST_JSON_UNLIKELY(
             ! h.on_int64(static_cast<
-                int64_t>(num.mant), ec_)))
+                int64_t>(num.mant), {begin, cs.used(begin)}, ec_)))
             return result::fail;
         return result::ok;
     }
     if(BOOST_JSON_UNLIKELY(
-        ! h.on_uint64(num.mant, ec_)))
+        ! h.on_uint64(num.mant, {begin, cs.used(begin)}, ec_)))
         return result::fail;
     return result::ok;
 
@@ -2908,7 +2957,7 @@ finish_dub:
             -num.exp : num.exp),
         num.neg);
     if(BOOST_JSON_UNLIKELY(
-        ! h.on_double(d, ec_)))
+        ! h.on_double(d, {begin, cs.used(begin)}, ec_)))
         return result::fail;
     return result::ok;
 }

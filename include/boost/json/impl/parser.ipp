@@ -624,6 +624,7 @@ bool
 parser::
 on_int64(
     int64_t i,
+    string_view,
     error_code& ec)
 {
     return emplace(ec, i, sp_);
@@ -633,6 +634,7 @@ bool
 parser::
 on_uint64(
     uint64_t u,
+    string_view,
     error_code& ec)
 {
     return emplace(ec, u, sp_);
@@ -642,6 +644,7 @@ bool
 parser::
 on_double(
     double d,
+    string_view,
     error_code& ec)
 {
     return emplace(ec, d, sp_);
