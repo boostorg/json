@@ -151,6 +151,14 @@ inline uint64_t parse_unsigned( uint64_t r, char const * p, std::size_t n ) noex
 {
     while( n >= 4 )
     {
+        // faster on on clang for x86,
+        // slower on gcc
+#ifdef __clang__
+        r = r * 10 + p[0] - '0';
+        r = r * 10 + p[1] - '0';
+        r = r * 10 + p[2] - '0';
+        r = r * 10 + p[3] - '0';
+#else
         uint32_t v;
         std::memcpy( &v, p, 4 );
 
@@ -161,41 +169,33 @@ inline uint64_t parse_unsigned( uint64_t r, char const * p, std::size_t n ) noex
         unsigned w2 = (v >> 16) & 0xFF;
         unsigned w3 = (v >> 24);
 
-        // NOTE: assumes little-endian; on BE, w0..w3 need to be reversed
-
+#if ! BOOST_JSON_BIG_ENDIAN
         r = (((r * 10 + w0) * 10 + w1) * 10 + w2) * 10 + w3;
-
+#else
+        r = (((r * 10 + w3) * 10 + w2) * 10 + w1) * 10 + w0;
+#endif
+#endif
         p += 4;
         n -= 4;
     }
 
-    // assert( n < 4 );
-
     switch( n )
     {
     case 0:
-
         break;
-
     case 1:
-
         r = r * 10 + p[0] - '0';
         break;
-
     case 2:
-
         r = r * 10 + p[0] - '0';
         r = r * 10 + p[1] - '0';
         break;
-
     case 3:
-
         r = r * 10 + p[0] - '0';
         r = r * 10 + p[1] - '0';
         r = r * 10 + p[2] - '0';
         break;
     }
-
     return r;
 }
 
