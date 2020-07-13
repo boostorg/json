@@ -57,6 +57,12 @@ enum class basic_parser::state : char
     str5,  str6,  str7,
     sur1,  sur2,  sur3,
     sur4,  sur5,  sur6,
+    utf1,  utf2,  utf3, 
+    utf4,  utf5,  utf6,
+    utf7,  utf8,  utf9, 
+    utf10, utf11, utf12, 
+    utf13, utf14, utf15, 
+    utf16, utf17, utf18,
     obj1,  obj2,  obj3,  obj4,
     obj5,  obj6,  obj7,
     arr1,  arr2,  arr3,  arr4,
@@ -243,7 +249,9 @@ skip_white(const_stream& cs)
     return n2 < n;
 }
 
-template<basic_parser::result Result, class Handler>
+template<
+    basic_parser::result Result, 
+    class Handler>
 auto
 basic_parser::
 constant_result(
@@ -260,6 +268,7 @@ template<
     bool StackEmpty,
     bool ReturnValue,
     bool AllowTrailing,
+    bool AllowInvalid,
     class Handler>
 auto
 basic_parser::
@@ -401,9 +410,362 @@ do_com5:
     if (ReturnValue)
     {
         BOOST_ASSERT(cs);
-        return parse_value<StackEmpty, true, AllowTrailing>(h, cs);
+        return parse_value<StackEmpty, true, 
+            AllowTrailing, AllowInvalid>(h, cs);
     }
     return result::ok;
+}
+
+template<bool StackEmpty>
+auto
+basic_parser::
+validate_utf8(const_stream& cs) ->
+    result
+{
+    // 0 = invalid
+    // 1 = 2 bytes, second byte [80, BF]
+    // 2 = 3 bytes, second byte [A0, BF]
+    // 3 = 3 bytes, second byte [80, BF]
+    // 4 = 3 bytes, second byte [80, 9F]
+    // 5 = 4 bytes, second byte [90, BF]
+    // 6 = 4 bytes, second byte [80, BF]
+    // 7 = 4 bytes, second byte [80, 8F]
+    static constexpr char first[128]
+    {
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+        0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+        2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 
+        5, 6, 6, 6, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    };
+
+    unsigned char c;
+    if(! StackEmpty && ! st_.empty())
+    {
+        state st;
+        st_.pop(st);
+        switch(st)
+        {
+        default:;
+        case state::utf1: goto do_utf1;
+        case state::utf2: goto do_utf2;
+        case state::utf3: goto do_utf3;
+        case state::utf4: goto do_utf4;
+        case state::utf5: goto do_utf5;
+        case state::utf6: goto do_utf6;
+        case state::utf7: goto do_utf7;
+        case state::utf8: goto do_utf8;
+        case state::utf9: goto do_utf9;
+        case state::utf10: goto do_utf10;
+        case state::utf11: goto do_utf11;
+        case state::utf12: goto do_utf12;
+        case state::utf13: goto do_utf13;
+        case state::utf14: goto do_utf14;
+        case state::utf15: goto do_utf15;
+        case state::utf16: goto do_utf16;
+        }
+    }
+    // fast path
+    if (BOOST_JSON_LIKELY(
+        cs.remain() >= 4))
+    {
+        BOOST_ASSERT(static_cast<
+            unsigned char>(*cs) > 0x7F);
+        uint32_t v;
+        std::memcpy(&v, cs.data(), 4);
+#ifdef BOOST_JSON_BIG_ENDIAN
+        v = (((v & 0xFF000000) >> 24) |
+        ((v & 0x00FF0000) >> 8) |
+        ((v & 0x0000FF00) << 8) |
+        ((v & 0x000000FF) << 24));
+#endif
+        switch(first[v & 0x0000007F])
+        {
+        // 2 bytes, second byte [80, BF]
+        case 1:
+            if(BOOST_JSON_LIKELY(
+                (v & 0x0000C000) == 0x00008000))
+            {
+                cs.skip(2);
+                return result::ok;
+            }
+            break;
+        // 3 bytes, second byte [A0, BF]
+        case 2:
+            if(BOOST_JSON_LIKELY(
+                (v & 0x00C0E000) == 0x0080A000))
+            {
+                cs.skip(3);
+                return result::ok;
+            }
+            break;
+        // 3 bytes, second byte [80, BF]
+        case 3:
+            if(BOOST_JSON_LIKELY(
+                (v & 0x00C0C000) == 0x00808000))
+            {
+                cs.skip(3);
+                return result::ok;
+            }
+            break;
+        // 3 bytes, second byte [80, 9F]
+        case 4:
+            if(BOOST_JSON_LIKELY(
+                (v & 0x00C0E000) == 0x00808000))
+            {
+                cs.skip(3);
+                return result::ok;
+            }
+            break;
+        // 4 bytes, second byte [90, BF]
+        case 5:
+            if(BOOST_JSON_LIKELY(
+                (v & 0xC0C0FF00) + 
+                0x7F7F7000 <= 0x00002F00))
+            {
+                cs.skip(4);
+                return result::ok;
+            }
+            break;
+        // 4 bytes, second byte [80, BF]
+        case 6:
+            if(BOOST_JSON_LIKELY(
+                (v & 0xC0C0C000) == 0x80808000))
+            {
+                 cs.skip(4);
+                 return result::ok;
+            }
+            break;
+        // 4 bytes, second byte [80, 8F]
+        case 7:
+            if(BOOST_JSON_LIKELY(
+                (v & 0xC0C0F000) == 0x80808000))
+            {
+                cs.skip(4);
+                return result::ok;
+            }
+            break;
+        }
+        ec_ = error::syntax;
+        return result::fail;
+    }
+    else
+    {
+        c = static_cast<unsigned char>(*cs);
+        BOOST_ASSERT(c > 0x7F);
+        ++cs;
+        switch(first[c & 0x7F])
+        {
+        // 2 bytes
+        case 1:
+do_utf1:
+            if(BOOST_JSON_UNLIKELY(! cs))
+            {
+                if(BOOST_JSON_LIKELY(more_))
+                    suspend(state::utf1);
+                return result::partial;
+            }
+            if(BOOST_JSON_UNLIKELY(
+                (*cs & 0xC0) != 0x80))
+                break;
+            ++cs;
+            return result::ok;
+                
+        // 3 bytes, second byte [A0, BF]
+        case 2:
+do_utf2:
+            if(BOOST_JSON_UNLIKELY(! cs))
+            {
+                if(BOOST_JSON_LIKELY(more_))
+                    suspend(state::utf2);
+                return result::partial;
+            }
+            if(BOOST_JSON_UNLIKELY(
+                (*cs & 0xE0) != 0xA0))
+                break;
+            ++cs;
+do_utf3:
+            if(BOOST_JSON_UNLIKELY(! cs))
+            {
+                if(BOOST_JSON_LIKELY(more_))
+                    suspend(state::utf3);
+                return result::partial;
+            }
+            if(BOOST_JSON_UNLIKELY(
+                (*cs & 0xC0) != 0x80))
+                break;
+            ++cs;
+            return result::ok;
+                
+        // 3 bytes, second byte [80, BF]
+        case 3:
+do_utf4:
+            if(BOOST_JSON_UNLIKELY(! cs))
+            {
+                if(BOOST_JSON_LIKELY(more_))
+                    suspend(state::utf4);
+                return result::partial;
+            }
+            if(BOOST_JSON_UNLIKELY(
+                (*cs & 0xC0) != 0x80))
+                break;
+            ++cs;
+do_utf5:
+            if(BOOST_JSON_UNLIKELY(! cs))
+            {
+                if(BOOST_JSON_LIKELY(more_))
+                    suspend(state::utf5);
+                return result::partial;
+            }
+            if(BOOST_JSON_UNLIKELY(
+                (*cs & 0xC0) != 0x80))
+                break;
+            ++cs;
+            return result::ok;
+                
+        // 3 bytes, second byte [80, 9F]
+        case 4:
+do_utf6:
+            if(BOOST_JSON_UNLIKELY(! cs))
+            {
+                if(BOOST_JSON_LIKELY(more_))
+                    suspend(state::utf6);
+                return result::partial;
+            }
+            if(BOOST_JSON_UNLIKELY(
+                (*cs & 0xE0) != 0x80))
+                break;
+            ++cs;
+do_utf7:
+            if(BOOST_JSON_UNLIKELY(! cs))
+            {
+                if(BOOST_JSON_LIKELY(more_))
+                    suspend(state::utf7);
+                return result::partial;
+            }
+            if(BOOST_JSON_UNLIKELY(
+                (*cs & 0xC0) != 0x80))
+                break;
+            ++cs;
+            return result::ok;
+
+        // 4 bytes, second byte [90, BF]
+        case 5:
+do_utf8:
+            if(BOOST_JSON_UNLIKELY(! cs))
+            {
+                if(BOOST_JSON_LIKELY(more_))
+                    suspend(state::utf8);
+                return result::partial;
+            }
+            if(BOOST_JSON_UNLIKELY(
+                (*cs + 0x70) > 0x2F))
+                break;
+            ++cs;
+do_utf9:
+            if(BOOST_JSON_UNLIKELY(! cs))
+            {
+                if(BOOST_JSON_LIKELY(more_))
+                    suspend(state::utf9);
+                return result::partial;
+            }
+            if(BOOST_JSON_UNLIKELY(
+                (*cs & 0xC0) != 0x80))
+                break;
+            ++cs;
+do_utf10:
+            if(BOOST_JSON_UNLIKELY(! cs))
+            {
+                if(BOOST_JSON_LIKELY(more_))
+                    suspend(state::utf10);
+                return result::partial;
+            }
+            if(BOOST_JSON_UNLIKELY(
+                (*cs & 0xC0) != 0x80))
+                break;
+            ++cs;
+            return result::ok;
+                
+        // 4 bytes, second byte [80, BF]
+        case 6:
+do_utf11:
+            if(BOOST_JSON_UNLIKELY(! cs))
+            {
+                if(BOOST_JSON_LIKELY(more_))
+                    suspend(state::utf11);
+                return result::partial;
+            }
+            if(BOOST_JSON_UNLIKELY(
+                (*cs & 0xC0) != 0x80))
+                break;
+            ++cs;
+do_utf12:
+            if(BOOST_JSON_UNLIKELY(! cs))
+            {
+                if(BOOST_JSON_LIKELY(more_))
+                    suspend(state::utf12);
+                return result::partial;
+            }
+            if(BOOST_JSON_UNLIKELY(
+                (*cs & 0xC0) != 0x80))
+                break;
+            ++cs;
+do_utf13:
+            if(BOOST_JSON_UNLIKELY(! cs))
+            {
+                if(BOOST_JSON_LIKELY(more_))
+                    suspend(state::utf13);
+                return result::partial;
+            }
+            if(BOOST_JSON_UNLIKELY(
+                (*cs & 0xC0) != 0x80))
+                break;
+            ++cs;
+            return result::ok;
+                
+        // 4 bytes, second byte [80, 8F]
+        case 7:
+do_utf14:
+            if(BOOST_JSON_UNLIKELY(! cs))
+            {
+                if(BOOST_JSON_LIKELY(more_))
+                    suspend(state::utf14);
+                return result::partial;
+            }
+            if(BOOST_JSON_UNLIKELY(
+                (*cs & 0xF0) != 0x80))
+                break;
+            ++cs;
+do_utf15:
+            if(BOOST_JSON_UNLIKELY(! cs))
+            {
+                if(BOOST_JSON_LIKELY(more_))
+                    suspend(state::utf15);
+                return result::partial;
+            }
+            if(BOOST_JSON_UNLIKELY(
+                (*cs & 0xC0) != 0x80))
+                break;
+            ++cs;
+do_utf16:
+            if(BOOST_JSON_UNLIKELY(! cs))
+            {
+                if(BOOST_JSON_LIKELY(more_))
+                    suspend(state::utf16);
+                return result::partial;
+            }
+            if(BOOST_JSON_UNLIKELY(
+                (*cs & 0xC0) != 0x80))
+                break;
+            ++cs;
+            return result::ok;
+        }
+    }
+    ec_ = error::syntax;
+    return result::fail;
 }
 
 template<bool StackEmpty, class Handler>
@@ -444,24 +806,42 @@ do_doc2:
             return result::fail;
         }
         result r;
-        if (opt_.allow_comments)
+        switch (+opt_.allow_comments |
+            (opt_.allow_trailing_commas << 1) |
+            (opt_.allow_invalid_utf8 << 2))
         {
-            if (opt_.allow_trailing_commas)
-            {
-                r = parse_value<StackEmpty, true, true>(h, cs);
-            }
-            else
-            {
-                r = parse_value<StackEmpty, true, false>(h, cs);
-            }
-        }
-        else if (opt_.allow_trailing_commas)
-        {
-            r = parse_value<StackEmpty, false, true>(h, cs);
-        }
-        else
-        {
-            r = parse_value<StackEmpty, false, false>(h, cs);
+        // no extensions
+        default:
+            r = parse_value<StackEmpty, false, false, false>(h, cs);
+            break;
+        // comments
+        case 1:
+            r = parse_value<StackEmpty, true, false, false>(h, cs);
+            break;
+        // trailing
+        case 2:
+            r = parse_value<StackEmpty, false, true, false>(h, cs);
+            break;
+        // comments & trailing
+        case 3:
+            r = parse_value<StackEmpty, true, true, false>(h, cs);
+            break;
+        // skip validation
+        case 4:
+            r = parse_value<StackEmpty, false, false, true>(h, cs);
+            break;
+        // comments & skip validation
+        case 5:
+            r = parse_value<StackEmpty, true, false, true>(h, cs);
+            break;
+        // trailing & skip validation
+        case 6:
+            r = parse_value<StackEmpty, false, true, true>(h, cs);
+            break;
+        // comments & trailing & skip validation
+        case 7:
+            r = parse_value<StackEmpty, true, true, true>(h, cs);
+            break;
         }
         if(BOOST_JSON_UNLIKELY(r))
         {
@@ -484,10 +864,26 @@ do_doc3:
     {
 do_com12:
         result r;
-        if (opt_.allow_trailing_commas)
-            r = parse_comment<StackEmpty, false, true>(h, cs);
-        else
-            r = parse_comment<StackEmpty, false, false>(h, cs);
+        switch (+opt_.allow_trailing_commas |
+            (opt_.allow_invalid_utf8 << 1))
+        {
+        // only comments
+        default:
+            r = parse_comment<StackEmpty, false, false, false>(h, cs);
+            break;
+        // trailing
+        case 1:
+            r = parse_comment<StackEmpty, false, true, false>(h, cs);
+            break;
+        // skip validation
+        case 2:
+            r = parse_comment<StackEmpty, false, false, true>(h, cs);
+            break;
+        // trailing & skip validation
+        case 3:
+            r = parse_comment<StackEmpty, false, true, true>(h, cs);
+            break;
+        }
         if (BOOST_JSON_LIKELY(!r))
             goto do_doc3;
         else if (more_ && r == result::partial)
@@ -497,7 +893,12 @@ do_com12:
     return result::ok;
 }
 
-template<bool StackEmpty, bool AllowComments, bool AllowTrailing, class Handler>
+template<
+    bool StackEmpty, 
+    bool AllowComments, 
+    bool AllowTrailing, 
+    bool AllowInvalid,
+    class Handler>
 auto
 basic_parser::
 parse_value(
@@ -514,16 +915,16 @@ parse_value(
             err, err, err, err, err, err, err, err, err, err, err, err, err, err, err, err,
             err, err, err, err, err, err, err, err, err, err, err, err, err, err, err, err,
             err, err,
-                &basic_parser::parse_string<true, Handler>,
+                &basic_parser::parse_string<true, AllowInvalid, Handler>,
                 err, err, err, err, err, err, err, err, err, err,
                 &basic_parser::parse_number<true, '-', Handler>,
                 err,
-                AllowComments ? &basic_parser::parse_comment<true, true, AllowTrailing, Handler> : err,
+                AllowComments ? &basic_parser::parse_comment<true, true, AllowTrailing, AllowInvalid, Handler> : err,
             &basic_parser::parse_number<true, '0', Handler>,
                 num, num, num, num, num, num, num, num, num, err, err, err, err, err, err,
             err, err, err, err, err, err, err, err, err, err, err, err, err, err, err, err,
             err, err, err, err, err, err, err, err, err, err, err,
-                &basic_parser::parse_array<true, AllowComments, AllowTrailing, Handler>,
+                &basic_parser::parse_array<true, AllowComments, AllowTrailing, AllowInvalid, Handler>,
                 err,
                 AllowTrailing ? &basic_parser::constant_result<result::ok, Handler> : err,
                 err, err,
@@ -535,7 +936,7 @@ parse_value(
             err, err, err, err,
                 &basic_parser::parse_true<true, Handler>,
                 err, err, err, err, err, err,
-                &basic_parser::parse_object<true, AllowComments, AllowTrailing, Handler>,
+                &basic_parser::parse_object<true, AllowComments, AllowTrailing, AllowInvalid, Handler>,
                 err, err, err, err,
 
             // negative values are converted to unsigned char, they are handled here
@@ -551,13 +952,15 @@ parse_value(
         return (this->*jump_table
             [static_cast<unsigned char>(*cs)])(h, cs);
     }
-    return resume_value<StackEmpty, AllowComments, AllowTrailing>(h, cs);
+    return resume_value<StackEmpty, AllowComments, 
+        AllowTrailing, AllowInvalid>(h, cs);
 }
 
 template<
     bool StackEmpty,
     bool AllowComments,
     bool AllowTrailing,
+    bool AllowInvalid,
     class Handler>
 auto
 basic_parser::
@@ -590,13 +993,15 @@ resume_value(
     case state::sur1: case state::sur2:
     case state::sur3: case state::sur4:
     case state::sur5: case state::sur6:
-        return parse_string<StackEmpty>(h, cs0);
+    case state::utf17: case state::utf18:
+        return parse_string<
+            StackEmpty, AllowInvalid>(h, cs0);
 
     case state::arr1: case state::arr2:
     case state::arr3: case state::arr4:
     case state::com10: case state::com11:
-        return parse_array<
-            StackEmpty, AllowComments, AllowTrailing>(h, cs0);
+        return parse_array<StackEmpty, AllowComments, 
+            AllowTrailing, AllowInvalid>(h, cs0);
         
     case state::obj1: case state::obj2:
     case state::obj3: case state::obj4:
@@ -604,8 +1009,8 @@ resume_value(
     case state::obj7:
     case state::com6: case state::com7:
     case state::com8: case state::com9:
-        return parse_object<
-            StackEmpty, AllowComments, AllowTrailing>(h, cs0);
+        return parse_object<StackEmpty, AllowComments, 
+            AllowTrailing, AllowInvalid>(h, cs0);
         
     case state::num1: case state::num2:
     case state::num3: case state::num4:
@@ -618,8 +1023,8 @@ resume_value(
     case state::com1: case state::com2:
     case state::com3: case state::com4:
     case state::com5:
-        return parse_comment<
-            StackEmpty, true, AllowTrailing>(h, cs0);
+        return parse_comment<StackEmpty, true, 
+            AllowTrailing, AllowInvalid>(h, cs0);
     }
 }
 
@@ -919,7 +1324,10 @@ do_fal4:
 
 //----------------------------------------------------------
 
-template<bool StackEmpty, class Handler>
+template<
+    bool StackEmpty, 
+    bool AllowInvalid,
+    class Handler>
 auto
 basic_parser::
 parse_string(
@@ -930,6 +1338,7 @@ parse_string(
     detail::local_const_stream cs(cs0);
     detail::buffer<BOOST_JSON_PARSER_BUFFER_SIZE> temp;
     char const* start;
+    char c;
     if(StackEmpty || st_.empty())
     {
         BOOST_ASSERT(*cs == '\x22'); // '"'
@@ -959,6 +1368,8 @@ parse_string(
             case state::sur4: goto do_sur4;
             case state::sur5: goto do_sur5;
             case state::sur6: goto do_sur6;
+            case state::utf17: goto do_utf17;
+            case state::utf18: goto do_utf18;
             }
         }
     }
@@ -967,13 +1378,17 @@ parse_string(
     //
     // zero-copy unescaped runs
     //
-    cs.skip(detail::count_unescaped(
-        cs.data(), cs.remain()));
+    if (AllowInvalid)
+        cs.skip(detail::count_unescaped(
+            cs.data(), cs.remain()));
+    else
+        cs.skip(detail::count_valid_unescaped(
+            cs.data(), cs.remain()));
     for(;;)
     {
         if(BOOST_JSON_LIKELY(cs))
         {
-            char const c = *cs;
+            c = *cs;
             if(BOOST_JSON_LIKELY(
                 c == '\x22')) // '"'
             {
@@ -994,6 +1409,20 @@ parse_string(
                 }
                 ++cs;
                 return result::ok;
+            }
+            else if(! AllowInvalid && 
+                (c & 0x80))
+            {
+do_utf17:
+                const result r = 
+                    validate_utf8<StackEmpty>(cs);
+                if(BOOST_JSON_UNLIKELY(r))
+                {
+                    if(more_ && r == result::partial)
+                        suspend(state::utf17);
+                    return r;
+                }
+                continue;
             }
             else if(BOOST_JSON_LIKELY(
                 c == '\\'))
@@ -1077,9 +1506,10 @@ do_str2:
     for(;;)
     {
         if(BOOST_JSON_LIKELY(cs))
-        {
+        { 
+            c = *cs;
             if(BOOST_JSON_LIKELY(
-                *cs == '\x22')) // '"'
+                c == '\x22')) // '"'
             {
                 if(is_key_)
                 {
@@ -1097,18 +1527,34 @@ do_str2:
                 ++cs;
                 return result::ok;
             }
-            else if(*cs == '\\')
+            else if(! AllowInvalid &&
+                (c & 0x80))
+            {
+do_utf18:
+                start = cs.data();
+                const result r = 
+                    validate_utf8<StackEmpty>(cs);
+                if(BOOST_JSON_UNLIKELY(r))
+                {
+                    if(more_ && r == result::partial)
+                        suspend(state::utf18);
+                    return r;
+                }
+                temp.append(start, cs.used(start));
+                continue;
+            }
+            else if(c == '\\')
             {
                 ++cs;
                 goto do_str3;
             }
-            else if(is_control(*cs))
+            else if(is_control(c))
             {
                 // invalid character
                 ec_ = error::syntax;
                 return result::fail;
             }
-            temp.push_back(*cs);
+            temp.push_back(c);
             ++cs;
             continue;
         }
@@ -1131,7 +1577,7 @@ do_str2:
             temp.clear();
         }
         cs.clip(temp.max_size());
-        if(cs)
+        if(BOOST_JSON_LIKELY(cs))
             continue;
         if(BOOST_JSON_LIKELY(more_))
             suspend(state::str2);
@@ -1178,7 +1624,7 @@ do_str3:
                     int32_t d;
                     std::memcpy(
                         &d, cs.data() + 1, 4);
-                #if BOOST_JSON_BIG_ENDIAN
+#ifdef BOOST_JSON_BIG_ENDIAN
                     int d1 = hex_digit(static_cast<
                         unsigned char>(d >> 24));
                     int d2 = hex_digit(static_cast<
@@ -1187,7 +1633,7 @@ do_str3:
                         unsigned char>(d >> 8));
                     int d4 = hex_digit(static_cast<
                         unsigned char>(d));
-                #else
+#else
                     int d4 = hex_digit(static_cast<
                         unsigned char>(d >> 24));
                     int d3 = hex_digit(static_cast<
@@ -1196,7 +1642,7 @@ do_str3:
                         unsigned char>(d >> 8));
                     int d1 = hex_digit(static_cast<
                         unsigned char>(d));
-                #endif
+#endif
                     if(BOOST_JSON_UNLIKELY(
                         (d1 | d2 | d3 | d4) == -1))
                     {
@@ -1209,9 +1655,14 @@ do_str3:
                         ec_ = error::expected_hex_digit;
                         return result::fail;
                     }
+                    // 32 bit unicode scalar value
                     unsigned const u1 =
                         (d1 << 12) + (d2 << 8) +
                         (d3 << 4) + d4;
+                    // valid unicode scalar values are
+                    // [0, D7FF] and [E000, 10FFFF]
+                    // values within this range are valid utf-8
+                    // code points and invalid leading surrogates.
                     if(BOOST_JSON_LIKELY(
                         u1 < 0xd800 || u1 > 0xdfff))
                     {
@@ -1238,7 +1689,7 @@ do_str3:
                     }
                     ++cs;
                     std::memcpy(&d, cs.data(), 4);
-                #if BOOST_JSON_BIG_ENDIAN
+#ifdef BOOST_JSON_BIG_ENDIAN
                     d1 = hex_digit(static_cast<
                         unsigned char>(d >> 24));
                     d2 = hex_digit(static_cast<
@@ -1247,7 +1698,7 @@ do_str3:
                         unsigned char>(d >> 8));
                     d4 = hex_digit(static_cast<
                         unsigned char>(d));
-                #else
+#else
                     d4 = hex_digit(static_cast<
                         unsigned char>(d >> 24));
                     d3 = hex_digit(static_cast<
@@ -1256,7 +1707,7 @@ do_str3:
                         unsigned char>(d >> 8));
                     d1 = hex_digit(static_cast<
                         unsigned char>(d));
-                #endif
+#endif
                     if(BOOST_JSON_UNLIKELY(
                         (d1 | d2 | d3 | d4) == -1))
                     {
@@ -1272,6 +1723,7 @@ do_str3:
                     unsigned const u2 =
                         (d1 << 12) + (d2 << 8) +
                         (d3 << 4) + d4;
+                    // valid trailing surrogates are [DC00, DFFF]
                     if(BOOST_JSON_UNLIKELY(
                         u2 < 0xdc00 || u2 > 0xdfff))
                     {
@@ -1283,6 +1735,7 @@ do_str3:
                         ((u1 - 0xd800) << 10) +
                          (u2  - 0xdc00) +
                          0x10000;
+                    // utf-16 surrogate pair
                     temp.append_utf8(cp);
                     continue;
                 }
@@ -1334,12 +1787,12 @@ do_str3:
             temp.clear();
         }
         cs.clip(temp.max_size());
-        if(cs)
+        if(BOOST_JSON_LIKELY(cs))
             goto do_str3;
         if(BOOST_JSON_LIKELY(more_))
             suspend(state::str3);
         return result::partial;
-        // utf16 escape
+        // utf-16 escape
     do_str4:
         if(BOOST_JSON_LIKELY(cs))
         {
@@ -1416,6 +1869,7 @@ do_str3:
             u1_ > 0xdfff)
         {
             BOOST_ASSERT(temp.empty());
+            // utf-8 codepoint
             temp.append_utf8(u1_);
             continue;
         }
@@ -1539,6 +1993,7 @@ do_str3:
              (u2_ - 0xdc00) +
               0x10000;
         BOOST_ASSERT(temp.empty());
+        // utf-16 surrogate pair
         temp.append_utf8(cp);
     }
 }
@@ -1549,6 +2004,7 @@ template<
     bool StackEmpty,
     bool AllowComments,
     bool AllowTrailing,
+    bool AllowInvalid,
     class Handler>
 auto
 basic_parser::
@@ -1606,7 +2062,8 @@ do_obj1:
         {
 do_com6:
             const result r =
-                parse_comment<StackEmpty, false, AllowTrailing>(h, cs);
+                parse_comment<StackEmpty, false, 
+                    AllowTrailing, AllowInvalid>(h, cs);
             if (BOOST_JSON_LIKELY(!r))
                 goto do_obj1;
             else if (more_ && r == result::partial)
@@ -1619,7 +2076,8 @@ do_com6:
             {
                 is_key_ = true;
 do_obj2:
-                const result r = parse_string<StackEmpty>(h, cs);
+                const result r = 
+                    parse_string<StackEmpty, AllowInvalid>(h, cs);
                 if(BOOST_JSON_UNLIKELY(r))
                 {
                     if(BOOST_JSON_LIKELY(more_ &&
@@ -1634,7 +2092,8 @@ do_obj2:
             {
 do_com7:
                 const result r =
-                        parse_comment<StackEmpty, false, AllowTrailing>(h, cs);
+                    parse_comment<StackEmpty, false, 
+                        AllowTrailing, AllowInvalid>(h, cs);
                 if (BOOST_JSON_LIKELY(!r))
                     goto do_obj7;
                 else if (more_ && r == result::partial)
@@ -1660,7 +2119,8 @@ do_obj3:
                 {
 do_com8:
                     const result r =
-                        parse_comment<StackEmpty, false, AllowTrailing>(h, cs);
+                        parse_comment<StackEmpty, false, 
+                            AllowTrailing, AllowInvalid>(h, cs);
                     if (BOOST_JSON_LIKELY(!r))
                         goto do_obj3;
                     else if (more_ && r == result::partial)
@@ -1681,7 +2141,9 @@ do_obj4:
             }
 do_obj5:
             {
-                const result r = parse_value<StackEmpty, AllowComments, AllowTrailing>(h, cs);
+                const result r = 
+                    parse_value<StackEmpty, AllowComments, 
+                        AllowTrailing, AllowInvalid>(h, cs);
                 if(BOOST_JSON_UNLIKELY(r))
                 {
                     if(BOOST_JSON_LIKELY(more_ &&
@@ -1709,7 +2171,8 @@ do_obj6:
                 {
 do_com9:
                     const result r =
-                        parse_comment<StackEmpty, false, AllowTrailing>(h, cs);
+                        parse_comment<StackEmpty, false, 
+                            AllowTrailing, AllowInvalid>(h, cs);
                     if (BOOST_JSON_LIKELY(!r))
                         goto do_obj6;
                     else if (more_ && r == result::partial)
@@ -1746,6 +2209,7 @@ template<
     bool StackEmpty,
     bool AllowComments,
     bool AllowTrailing,
+    bool AllowInvalid,
     class Handler>
 auto
 basic_parser::
@@ -1797,8 +2261,9 @@ do_arr1:
         if (AllowComments && *cs == '/')
         {
 do_com10:
-            const result r =
-                parse_comment<StackEmpty, false, AllowTrailing>(h, cs);
+           const result r =
+                parse_comment<StackEmpty, false, 
+                    AllowTrailing, AllowInvalid>(h, cs);
             if (BOOST_JSON_LIKELY(!r))
                 goto do_arr1;
             else if (more_ && r == result::partial)
@@ -1809,7 +2274,9 @@ do_com10:
         {
 do_arr2:
             {
-                const result r = parse_value<StackEmpty, AllowComments, AllowTrailing>(h, cs);
+                const result r = 
+                    parse_value<StackEmpty, AllowComments, 
+                        AllowTrailing, AllowInvalid>(h, cs);
                 if(BOOST_JSON_UNLIKELY(r))
                 {
                     if(BOOST_JSON_LIKELY(more_ &&
@@ -1837,7 +2304,8 @@ do_arr3:
                 {
 do_com11:
                     const result r =
-                        parse_comment<StackEmpty, false, AllowTrailing>(h, cs);
+                        parse_comment<StackEmpty, false, 
+                            AllowTrailing, AllowInvalid>(h, cs);
                     if (BOOST_JSON_LIKELY(!r))
                         goto do_arr3;
                     else if (more_ && r == result::partial)

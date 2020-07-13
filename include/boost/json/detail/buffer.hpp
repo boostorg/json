@@ -19,14 +19,11 @@ namespace json {
 namespace detail {
 
 // A simple string-like temporary static buffer
-template<unsigned long N>
+template<std::size_t N>
 class buffer
 {
-    char buf_[N];
-    unsigned int size_ = 0;
-
 public:
-    using size_type = unsigned int;
+    using size_type = std::size_t;
 
     buffer() = default;
 
@@ -88,7 +85,7 @@ public:
     void
     append(
         char const* s,
-        std::size_t n)
+        size_type n)
     {
         BOOST_ASSERT(n <= N - size_);
         std::memcpy(buf_ + size_, s, n);
@@ -137,6 +134,9 @@ public:
             size_ += 4;
         }
     }
+private:
+    char buf_[N];
+    size_type size_ = 0;
 };
 
 } // detail

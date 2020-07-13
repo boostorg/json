@@ -27,6 +27,7 @@ namespace boost {
 namespace json {
 namespace detail {
 
+// KRYSTIAN NOTE: does not stop to validate
 // count_unescaped
 
 #ifdef BOOST_JSON_USE_SSE2
@@ -86,6 +87,71 @@ count_unescaped(
 inline
 std::size_t
 count_unescaped(
+    char const*,
+    std::size_t) noexcept
+{
+    return 0;
+}
+
+#endif
+
+#ifdef BOOST_JSON_USE_SSE2
+
+// KRYSTIAN NOTE: this stops at any non-ascii characters
+// count_valid_unescaped
+
+inline
+size_t
+count_valid_unescaped(
+    char const* s,
+    size_t n) noexcept
+{
+    __m128i const q1 = _mm_set1_epi8( '\x22' ); // '"'
+    __m128i const q2 = _mm_set1_epi8( '\\' );
+    __m128i const q3 = _mm_set1_epi8( 0x20 );
+
+    char const * s0 = s;
+
+    while( n >= 16 )
+    {
+        __m128i v1 = _mm_loadu_si128( (__m128i const*)s );
+
+        __m128i v2 = _mm_cmpeq_epi8( v1, q1 );
+        __m128i v3 = _mm_cmpeq_epi8( v1, q2 );
+        __m128i v4 = _mm_cmplt_epi8( v1, q3 );
+
+        __m128i v5 = _mm_or_si128( v2, v3 );
+        __m128i v6 = _mm_or_si128( v5, v4 );
+
+        int w = _mm_movemask_epi8( v6 );
+
+        if( w != 0 )
+        {
+            int m;
+#if defined(__GNUC__) || defined(__clang__)
+            m = __builtin_ffs( w ) - 1;
+#else
+            unsigned long index;
+            _BitScanForward( &index, w );
+            m = index;
+#endif
+
+            s += m;
+            break;
+        }
+
+        s += 16;
+        n -= 16;
+    }
+
+    return s - s0;
+}
+
+#else
+
+inline
+std::size_t
+count_valid_unescaped(
     char const*,
     std::size_t) noexcept
 {
@@ -169,10 +235,10 @@ inline uint64_t parse_unsigned( uint64_t r, char const * p, std::size_t n ) noex
         unsigned w2 = (v >> 16) & 0xFF;
         unsigned w3 = (v >> 24);
 
-#if ! BOOST_JSON_BIG_ENDIAN
-        r = (((r * 10 + w0) * 10 + w1) * 10 + w2) * 10 + w3;
-#else
+#ifdef BOOST_JSON_BIG_ENDIAN
         r = (((r * 10 + w3) * 10 + w2) * 10 + w1) * 10 + w0;
+#else
+        r = (((r * 10 + w0) * 10 + w1) * 10 + w2) * 10 + w3;
 #endif
 #endif
         p += 4;
@@ -199,8 +265,10 @@ inline uint64_t parse_unsigned( uint64_t r, char const * p, std::size_t n ) noex
     return r;
 }
 
+// KRYSTIAN: this function is unused
 // count_leading
 
+/*
 #ifdef BOOST_JSON_USE_SSE2
 
 // assumes p..p+15
@@ -247,6 +315,7 @@ inline std::size_t count_leading( char const * p, char ch ) noexcept
 }
 
 #endif
+*/
 
 // count_whitespace
 

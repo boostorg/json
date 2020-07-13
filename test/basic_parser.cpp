@@ -859,6 +859,41 @@ public:
     }
 
     void
+    testIssue113()
+    {
+        string_view s = 
+            "\"\\r\\n section id='description'>\\r\\nAll        mbers form the uncountable set "
+            "\\u211D.  Among its subsets, relatively simple are the convex sets, each expressed "
+            "as a range between two real numbers <i>a</i> and <i>b</i> where <i>a</i> \\u2264 <i>"
+            "b</i>.  There are actually four cases for the meaning of \\\"between\\\", depending "
+            "on open or closed boundary:\\r\\n\\r\\n<ul>\\r\\n  <li>[<i>a</i>, <i>b</i>]: {<i>"
+            "x</i> | <i>a</i> \\u2264 <i>x</i> and <i>x</i> \\u2264 <i>b</i> }</li>\\r\\n  <li>"
+            "(<i>a</i>, <i>b</i>): {<i>x</i> | <i>a</i> < <i>x</i> and <i>x</i> < <i>b</i> }"
+            "</li>\\r\\n  <li>[<i>a</i>, <i>b</i>): {<i>x</i> | <i>a</i> \\u2264 <i>x</i> and "
+            "<i>x</i> < <i>b</i> }</li>\\r\\n  <li>(<i>a</i>, <i>b</i>]: {<i>x</i> | <i>a</i> "
+            "< <i>x</i> and <i>x</i> \\u2264 <i>b</i> }</li>\\r\\n</ul>\\r\\n\\r\\nNote that "
+            "if <i>a</i> = <i>b</i>, of the four only [<i>a</i>, <i>a</i>] would be non-empty."
+            "\\r\\n\\r\\n<strong>Task</strong>\\r\\n\\r\\n<ul>\\r\\n  <li>Devise a way to "
+            "represent any set of real numbers, for the definition of \\\"any\\\" in the "
+            "implementation notes below.</li>\\r\\n  <li>Provide methods for these common "
+            "set operations (<i>x</i> is a real number; <i>A</i> and <i>B</i> are sets):</li>"
+            "\\r\\n  <ul>\\r\\n    <li>\\r\\n      <i>x</i> \\u2208 <i>A</i>: determine if <i>"
+            "x</i> is an element of <i>A</i><br>\\r\\n      example: 1 is in [1, 2), while 2, "
+            "3, ... are not.\\r\\n    </li>\\r\\n    <li>\\r\\n      <i>A</i> \\u222A <i>B</i>: "
+            "union of <i>A</i> and <i>B</i>, i.e. {<i>x</i> | <i>x</i> \\u2208 <i>A</i> or <i>x"
+            "</i> \\u2208 <i>B</i>}<br>\\r\\n      example: [0, 2) \\u222A (1, 3) = [0, 3); "
+            "[0, 1) \\u222A (2, 3] = well, [0, 1) \\u222A (2, 3]\\r\\n    </li>\\r\\n    <li>"
+            "\\r\\n      <i>A</i> \\u2229 <i>B</i>: intersection of <i>A</i> and <i>B</i>, i.e. "
+            "{<i>x</i> | <i>x</i> \\u2208 <i>A</i> and <i>x</i> \\u2208 <i>B</i>}<br>\\r\\n      "
+            "example: [0, 2) \\u2229 (1, 3) = (1, 2); [0, 1) \\u2229 (2, 3] = empty set\\r\\n    "
+            "</li>\\r\\n    <li>\\r\\n      <i>A</i> - <i>B</i>: difference between <i>A</i> and "
+            "<i>B</i>, also written as <i>A</i> \\\\ <i>B</i>, i.e. {<i>x</i> | <i>x</i> \\u2208 "
+            "<i>A</i> and <i>x</i> \\u2209 <i>B</i>}<br>\\r\\n      example: [0, 2) \\u2212 (1, "
+            "3) = [0, 1]\\r\\n    </li>\\r\\n  </ul>\\r\\n</ul>\\r\\n</section>\\r\\n\"\n";
+        good(s);
+    }
+
+    void
     testComments()
     {
         std::vector<parse_options> disabled ={ 
@@ -1041,6 +1076,170 @@ public:
         good("[[[[[[[],],],],],],]", enabled);
     }
 
+    void testUTF8Validation()
+    {
+        good("\"\xc2\x80----------\"");
+        good("\"\xc2\xbf----------\"");
+        good("\"\xdf\x80----------\"");
+        good("\"\xdf\xbf----------\"");
+
+        good("\"\xcf\x90----------\"");
+
+        good("\"\xe0\xa0\x80----------\"");
+        good("\"\xe0\xa0\xbf----------\"");
+        good("\"\xe0\xbf\x80----------\"");
+        good("\"\xe0\xbf\xbf----------\"");
+
+        good("\"\xe0\xb0\x90----------\"");
+
+        good("\"\xe1\x80\x80----------\"");
+        good("\"\xe1\xbf\x80----------\"");
+        good("\"\xec\x80\x80----------\"");
+        good("\"\xec\xbf\x80----------\"");
+        good("\"\xe1\x80\xbf----------\"");
+        good("\"\xe1\xbf\xbf----------\"");
+        good("\"\xec\x80\xbf----------\"");
+        good("\"\xec\xbf\xbf----------\"");
+
+        good("\"\xe6\x90\x90----------\"");
+
+        good("\"\xed\x80\x80----------\"");
+        good("\"\xed\x80\xbf----------\"");
+        good("\"\xed\x9f\x80----------\"");
+        good("\"\xed\x9f\xbf----------\"");
+
+        good("\"\xed\x90\x90----------\"");
+
+        good("\"\xee\x80\x80----------\"");
+        good("\"\xee\xbf\x80----------\"");
+        good("\"\xef\x80\x80----------\"");
+        good("\"\xef\xbf\x80----------\"");
+        good("\"\xee\x80\xbf----------\"");
+        good("\"\xee\xbf\xbf----------\"");
+        good("\"\xef\x80\xbf----------\"");
+        good("\"\xef\xbf\xbf----------\"");
+
+        good("\"\xee\x90\x90----------\"");
+        good("\"\xef\x90\x90----------\"");
+
+        good("\"\xf0\x90\x80\x80----------\"");
+        good("\"\xf0\x90\xbf\x80----------\"");
+        good("\"\xf0\x90\xbf\xbf----------\"");
+        good("\"\xf0\x90\x80\xbf----------\"");
+        good("\"\xf0\xbf\x80\x80----------\"");
+        good("\"\xf0\xbf\xbf\x80----------\"");
+        good("\"\xf0\xbf\xbf\xbf----------\"");
+        good("\"\xf0\xbf\x80\xbf----------\"");
+
+        good("\"\xf0\xA0\x90\x90----------\"");
+
+        good("\"\xf4\x80\x80\x80----------\"");
+        good("\"\xf4\x80\xbf\x80----------\"");
+        good("\"\xf4\x80\xbf\xbf----------\"");
+        good("\"\xf4\x80\x80\xbf----------\"");
+        good("\"\xf4\x8f\x80\x80----------\"");
+        good("\"\xf4\x8f\xbf\x80----------\"");
+        good("\"\xf4\x8f\xbf\xbf----------\"");
+        good("\"\xf4\x8f\x80\xbf----------\"");
+
+        good("\"\xf4\x88\x90\x90----------\"");
+
+        good("\"\xf1\x80\x80\x80----------\"");
+        good("\"\xf1\x80\xbf\x80----------\"");
+        good("\"\xf1\x80\xbf\xbf----------\"");
+        good("\"\xf1\x80\x80\xbf----------\"");
+        good("\"\xf1\xbf\x80\x80----------\"");
+        good("\"\xf1\xbf\xbf\x80----------\"");
+        good("\"\xf1\xbf\xbf\xbf----------\"");
+        good("\"\xf1\xbf\x80\xbf----------\"");
+        good("\"\xf3\x80\x80\x80----------\"");
+        good("\"\xf3\x80\xbf\x80----------\"");
+        good("\"\xf3\x80\xbf\xbf----------\"");
+        good("\"\xf3\x80\x80\xbf----------\"");
+        good("\"\xf3\xbf\x80\x80----------\"");
+        good("\"\xf3\xbf\xbf\x80----------\"");
+        good("\"\xf3\xbf\xbf\xbf----------\"");
+        good("\"\xf3\xbf\x80\xbf----------\"");
+
+        good("\"\xf2\x90\x90\x90----------\"");
+
+        bad("\"\xc0\x80----------\"");
+        bad("\"\xc2\xc0----------\"");
+        bad("\"\xef\x80----------\"");
+        bad("\"\xdf\x70----------\"");
+
+        bad("\"\xff\x90----------\"");
+
+        bad("\"\xe0\x9f\x80----------\"");
+        bad("\"\xe0\xa0\xfe----------\"");
+        bad("\"\xc0\xff\xff----------\"");
+        bad("\"\xc0\xbf\x76----------\"");
+
+        bad("\"\xe0\xde\x90----------\"");
+
+        bad("\"\xe1\x80\x7f----------\"");
+        bad("\"\xe1\x7f\x80----------\"");
+        bad("\"\xec\xff\x80----------\"");
+        bad("\"\xef\x7f\x80----------\"");
+        bad("\"\xe1\x80\xff----------\"");
+        bad("\"\xe1\xbf\x0f----------\"");
+        bad("\"\xec\x01\xff----------\"");
+        bad("\"\xec\xff\xff----------\"");
+
+        bad("\"\xe6\x60\x90----------\"");
+
+        bad("\"\xed\x7f\x80----------\"");
+        bad("\"\xed\xa0\xbf----------\"");
+        bad("\"\xed\xbf\x80----------\"");
+        bad("\"\xed\x9f\x7f----------\"");
+
+        bad("\"\xed\xce\xbf----------\"");
+
+        bad("\"\xee\x7f\x80----------\"");
+        bad("\"\xee\xcc\x80----------\"");
+        bad("\"\xef\x80\xcc----------\"");
+        bad("\"\xef\xbf\x0a----------\"");
+        bad("\"\xee\x50\xbf----------\"");
+        bad("\"\xee\xef\xbf----------\"");
+        bad("\"\xef\xf0\xff----------\"");
+        bad("\"\xef\xaa\xee----------\"");
+
+        bad("\"\xc0\x90\x90----------\"");
+        bad("\"\xc1\x90\x90----------\"");
+
+        bad("\"\xff\x90\x80\x80----------\"");
+        bad("\"\xfe\x90\xbf\x80----------\"");
+        bad("\"\xfd\x90\xbf\xbf----------\"");
+        bad("\"\xf0\xff\x80\xbf----------\"");
+        bad("\"\xf0\xfe\x80\x80----------\"");
+        bad("\"\xf0\xfd\xbf\x80----------\"");
+        bad("\"\xf0\x90\x80\xff----------\"");
+        bad("\"\xf0\x90\x5f\x80----------\"");
+
+        bad("\"\xf4\x70\x80\x80----------\"");
+        bad("\"\xf4\x80\x70\x80----------\"");
+        bad("\"\xf4\x80\xbf\x70----------\"");
+        bad("\"\xf4\xce\x80\xbf----------\"");
+        bad("\"\xf4\x8f\xce\x80----------\"");
+        bad("\"\xf4\x8f\xbf\xce----------\"");
+
+        bad("\"\xf1\x7f\xbf\xbf----------\"");
+        bad("\"\xf2\x80\x7f\xbf----------\"");
+        bad("\"\xf3\x80\xbf\xce----------\"");
+
+        // utf8 after escape
+        good("\"\\u0000 \xf3\xbf\x80\xbf\xf3\xbf\x80\xbf\"");
+        good("\"\\ud7ff\xf4\x80\xbf\xbf       \"");
+        good("\"\\ue000            \xef\xbf\x80\"");
+        good("\"\xef\xbf\x80 \\uffff \xef\xbf\x80\"");
+        good("\"\xc2\x80\xc2\x80\xc2\x80\xc2\x80\xc2\x80\\ud800\\udc00 \"");
+        good("\"\\udbff\\udfff \xe1\x80\xbf  \\udbff\\udfff \xe1\x80\xbf\"");
+        good("\"\\u0000\xe1\x80\xbf     \"");
+        bad("\"\\t\\t\xf4\x70\x80\x80----------\"");
+        bad("\"\\n\xf4\x80\x70\x80----------\"");
+        bad("\"\\n\xf4\x80\xbf\x70-\\n\xf4\x80\xbf\x70\"");
+    }
+
     void
     run()
     {
@@ -1055,8 +1254,10 @@ public:
         testParseVectors();
         testIssue13();
         testIssue20();
+        testIssue113();
         testAllowTrailing();
         testComments();
+        testUTF8Validation();
     }
 };
 
