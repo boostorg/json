@@ -1,6 +1,7 @@
 //
 // Copyright (c) 2019 Peter Dimov (pdimov at gmail dot com),
 //                    Vinnie Falco (vinnie.falco@gmail.com)
+// Copyright (c) 2020 Krystian Stasiowski (sdkrystian@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -100,16 +101,11 @@ count_unescaped(
 // assumes p..p+15 are valid
 inline int count_digits( char const* p ) noexcept
 {
-    __m128i const q1 = _mm_set1_epi8( '0' );
-    __m128i const q2 = _mm_set1_epi8( '9' );
-
     __m128i v1 = _mm_loadu_si128( (__m128i const*)p );
+    v1 = _mm_add_epi8(v1, _mm_set1_epi8(70));
+    v1 = _mm_cmplt_epi8(v1, _mm_set1_epi8(118));
 
-    v1 = _mm_or_si128(
-            _mm_cmplt_epi8( v1, q1 ),
-            _mm_cmpgt_epi8( v1, q2 ) );
-
-    int m = _mm_movemask_epi8( v1 );
+    int m = _mm_movemask_epi8(v1);
 
     int n;
 
