@@ -63,6 +63,17 @@ public:
 
     template<class T>
     void
+    push_unchecked(T const& t)
+    {
+        auto const n = sizeof(T);
+        BOOST_ASSERT(size_ + n <= cap_);
+        std::memcpy(
+            buf_ + size_, &t, n);
+        size_ += n;
+    }
+
+    template<class T>
+    void
     peek(T& t)
     {
         auto const n = sizeof(T);

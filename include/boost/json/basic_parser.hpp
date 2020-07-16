@@ -218,14 +218,18 @@ void
 basic_parser::
 reserve()
 {
+    if (BOOST_JSON_LIKELY(
+        ! st_.empty()))
+        return;
     // Reserve the largest stack we need,
     // to avoid reallocation during suspend.
-    auto const n =
-        1 +
-        (1 + sizeof(std::size_t)) * depth_ +
-        1
-        ;
-    st_.reserve(n);
+    // KRYSTIAN NOTE: when utf-8 validation
+    // and comment parsing are added, an extra byte
+    // will be required for potential substates
+    st_.reserve(
+        sizeof(state) + // document parsing state
+        (sizeof(state) * depth_) + // array and object state
+        sizeof(state));  // value parsing state
 }
 
 void
@@ -233,7 +237,7 @@ basic_parser::
 suspend(state st)
 {
     reserve();
-    st_.push(st);
+    st_.push_unchecked(st);
 }
 
 void
@@ -242,7 +246,7 @@ suspend(state st, number const& num)
 {
     reserve();
     num_ = num;
-    st_.push(st);
+    st_.push_unchecked(st);
 }
 
 // return `false` if fully consumed
