@@ -249,19 +249,16 @@ skip_white(const_stream& cs)
     return n2 < n;
 }
 
-template<
-    basic_parser::result Result, 
-    class Handler>
+template<class Handler>
 auto
 basic_parser::
-constant_result(
+syntax_error(
     Handler&,
     const_stream&) ->
         result
 {
-    if (Result == result::fail)
-        ec_ = error::syntax;
-    return Result;
+    ec_ = error::syntax;
+    return result::fail;
 }
 
 template<
@@ -799,12 +796,6 @@ do_doc1:
     }
 do_doc2:
     {
-        if ((StackEmpty || st_.empty()) && 
-            opt_.allow_trailing_commas && (*cs == ']'))
-        {
-            ec_ = error::syntax;
-            return result::fail;
-        }
         result r;
         switch (+opt_.allow_comments |
             (opt_.allow_trailing_commas << 1) |
@@ -909,7 +900,7 @@ parse_value(
     if(StackEmpty || st_.empty())
     {
         static constexpr auto num = &basic_parser::parse_number<true, '+', Handler>;
-        static constexpr auto err = &basic_parser::constant_result<result::fail, Handler>;
+        static constexpr auto err = &basic_parser::syntax_error<Handler>;
 
         static constexpr result(basic_parser::* jump_table[256])(Handler&, const_stream&) = {
             err, err, err, err, err, err, err, err, err, err, err, err, err, err, err, err,
@@ -925,9 +916,7 @@ parse_value(
             err, err, err, err, err, err, err, err, err, err, err, err, err, err, err, err,
             err, err, err, err, err, err, err, err, err, err, err,
                 &basic_parser::parse_array<true, AllowComments, AllowTrailing, AllowInvalid, Handler>,
-                err,
-                AllowTrailing ? &basic_parser::constant_result<result::ok, Handler> : err,
-                err, err,
+                err, err, err, err,
             err, err, err, err, err, err,
                 &basic_parser::parse_false<true, Handler>,
                 err, err, err, err, err, err, err,
@@ -2086,8 +2075,6 @@ do_obj2:
                     return r;
                 }
             }
-            else if (AllowTrailing && *cs == '}')
-                break;
             else if (AllowComments && *cs == '/')
             {
 do_com7:
@@ -2191,6 +2178,8 @@ do_obj7:
                     suspend(state::obj7);
                 return result::partial;
             }
+            if (AllowTrailing && *cs == '}')
+                break;
         }
     }
     if(BOOST_JSON_LIKELY(
@@ -2324,6 +2313,8 @@ do_arr4:
                     suspend(state::arr4);
                 return result::partial;
             }
+            if (AllowTrailing && *cs == ']')
+                break;
         }
     }
     if (BOOST_JSON_LIKELY(

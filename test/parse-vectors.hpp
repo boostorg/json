@@ -228,6 +228,7 @@ parse_vectors() noexcept
         { 'n', "object_double_colon", lit("{\"x\"::\"b\"}") },
         { 'n', "object_emoji", lit("{\xF0""\x9F""\x87""\xA8""\xF0""\x9F""\x87""\xAD""}") },
         { 'n', "object_garbage_at_end", lit("{\"a\":\"a\" 123}") },
+        { 'n', "object_just_comma", lit("{,}") },
         { 'n', "object_key_with_single_quotes", lit("{key: 'value'}") },
         { 'n', "object_missing_colon", lit("{\"a\" b}") },
         { 'n', "object_missing_key", lit("{:\"b\"}") },

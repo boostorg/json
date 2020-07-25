@@ -117,8 +117,8 @@ class basic_parser
     inline void suspend(state st, number const& num);
     inline bool skip_white(const_stream& cs);
 
-    template<result Result, class Handler>
-    result constant_result(Handler&, const_stream&);
+    template<class Handler>
+    result syntax_error(Handler&, const_stream&);
 
     template<bool StackEmpty,
         bool ReturnValue, bool AllowTrailing, 
