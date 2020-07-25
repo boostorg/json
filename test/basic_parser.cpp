@@ -100,18 +100,10 @@ decode(void* dest, char const* src, std::size_t len)
 
 } // base64
 
-static std::vector<parse_options> all_configs =
-{
-    {false, false},
-    {true, false},
-    {false, true},
-    {true, true}
-};
-
 namespace {
 
 bool
-validate( string_view s, parse_options po )
+validate( string_view s )
 {
     // The null parser discards all the data
 
@@ -161,7 +153,7 @@ validate( string_view s, parse_options po )
     };
 
     // Parse with the null parser and return false on error
-    null_parser p(po);
+    null_parser p;
     error_code ec;
     p.write( s.data(), s.size(), ec );
     if( ec )
@@ -169,17 +161,6 @@ validate( string_view s, parse_options po )
 
     // The string is valid JSON.
     return true;
-}
-
-bool
-validate(
-    string_view s, 
-    const std::vector<parse_options>& configs = all_configs)
-{
-    bool result = true;
-    for (const parse_options& po : configs)
-        result &= validate(s, po);
-    return result;
 }
 
 } // (anon)
@@ -296,9 +277,21 @@ public:
     }
 
     void
+    bad(string_view s)
+    {
+        grind(s, false, parse_options{false, false, false});
+    }
+
+    void
+    good(string_view s)
+    {
+        grind(s, true, parse_options{false, false, false});
+    }
+
+    void
     bad(
         string_view s, 
-        const std::vector<parse_options>& configs = all_configs)
+        const std::vector<parse_options>& configs)
     {
         grind(s, false, configs);
     }
@@ -306,7 +299,7 @@ public:
     void
     good(
         string_view s,
-        const std::vector<parse_options>& configs = all_configs)
+        const std::vector<parse_options>& configs)
     {
         grind(s, true, configs);
     }
@@ -314,7 +307,7 @@ public:
     void
     bad_one(
         string_view s,
-        const std::vector<parse_options>& configs = all_configs)
+        const std::vector<parse_options>& configs)
     {
         grind_one(s, false, configs);
     }
@@ -322,7 +315,7 @@ public:
     void
     good_one(
         string_view s,
-        const std::vector<parse_options>& configs = all_configs)
+        const std::vector<parse_options>& configs)
     {
         grind_one(s, true, configs);
     }
@@ -341,6 +334,18 @@ public:
         parse_options po)
     {
         grind_one(s, true, po);
+    }
+
+    void
+    bad_one(string_view s)
+    {
+        grind_one(s, false, parse_options{false, false, false});
+    }
+
+    void
+    good_one(string_view s)
+    {
+        grind_one(s, true, parse_options{false, false, false});
     }
 
     //------------------------------------------------------
@@ -646,22 +651,19 @@ public:
         [this]( string_view s,
             bool is_complete)
         {
-            for (const parse_options& po : all_configs)
+            fail_parser p;
+            error_code ec;
+            p.write_some(
+                true,
+                s.data(), s.size(),
+                ec);
+            if(! BOOST_TEST(! ec))
             {
-                fail_parser p(po);
-                error_code ec;
-                p.write_some(
-                    true,
-                    s.data(), s.size(),
-                    ec);
-                if(! BOOST_TEST(! ec))
-                {
-                    log << "    failed to parse: " << s << '\n';
-                    return;
-                }
-                BOOST_TEST(is_complete ==
-                    p.is_complete());
+                log << "    failed to parse: " << s << '\n';
+                return;
             }
+            BOOST_TEST(is_complete ==
+                p.is_complete());
         };
 
         // is_complete()
@@ -734,39 +736,44 @@ public:
 
         // no input
         {
-            for (const parse_options& po : all_configs)
-            {
-                error_code ec;
-                fail_parser p(po);
-                p.write(false, nullptr, 0, ec);
-                BOOST_TEST(ec);
-            }
+            error_code ec;
+            fail_parser p;
+            p.write(false, nullptr, 0, ec);
+            BOOST_TEST(ec);
         }
     }
 
     void
     testMembers()
     {
-        for (const parse_options& po : all_configs)
+        fail_parser p;
+        std::size_t n;
+        error_code ec;
+        n = p.write_some(true, "null", 4, ec );
+        if(BOOST_TEST(! ec))
         {
-            fail_parser p(po);
-            std::size_t n;
-            error_code ec;
-            n = p.write_some(true, "null", 4, ec );
-            if(BOOST_TEST(! ec))
-            {
-                BOOST_TEST(n == 4);
-                BOOST_TEST(p.is_complete());
-                n = p.write_some(false, " \t42", 4, ec);
-                BOOST_TEST(n == 2);
-                BOOST_TEST(! ec);
-            }
+            BOOST_TEST(n == 4);
+            BOOST_TEST(p.is_complete());
+            n = p.write_some(false, " \t42", 4, ec);
+            BOOST_TEST(n == 2);
+            BOOST_TEST(! ec);
         }
     }
 
     void
     testParseVectors()
     {
+        std::vector<parse_options> all_configs =
+        {
+            {false, false, false},
+            {true, false, false},
+            {false, true, false},
+            {true, true, false},
+            {false, false, true},
+            {true, false, true},
+            {false, true, true},
+            {true, true, true},
+        };
         parse_vectors pv;
         for(auto const& v : pv)
         {
@@ -795,9 +802,9 @@ public:
                 }
             }
             else if(v.result == 'y')
-                good_one(v.text);
+                good_one(v.text, all_configs);
             else
-                bad_one(v.text);
+                bad_one(v.text, all_configs);
         }
     }
 
@@ -897,14 +904,17 @@ public:
     testComments()
     {
         std::vector<parse_options> disabled ={ 
-            {false, false}, 
-            {false,  true} 
+            {false, false, false}, 
+            {false, true, false},
+            {false, false, true}, 
+            {false, true, true} 
         };
         std::vector<parse_options> enabled = { 
-            {true, true},
-            {true, false}
+            {true, true, false},
+            {true, false, false},
+            {true, true, true},
+            {true, false, true}
         };
-
 
         const auto replace_and_test = 
             [&](string_view s)
@@ -1040,12 +1050,16 @@ public:
     testAllowTrailing()
     {
         std::vector<parse_options> disabled = { 
-            {false, false}, 
-            {true, false} 
+            {false, false, false}, 
+            {true, false, false},
+            {false, false, true}, 
+            {true, false, true} 
         };
         std::vector<parse_options> enabled = { 
-            {true, true},
-            {false, true}
+            {true, true, false},
+            {false, true, false},
+            {true, true, true},
+            {false, true, true}
         };
 
         bad("[1,]", disabled);
