@@ -707,7 +707,7 @@ do_com4:
     if(! ReturnValue)
         return +cs;
 do_com5:
-    cs += detail::count_whitespace(+cs, cs.remain());
+    cs = detail::count_whitespace(+cs, ~cs);
     if(BOOST_JSON_UNLIKELY(! cs))
         return partial_if_more(+cs, state::com5);
     return parse_value<StackEmpty, true, 
@@ -736,7 +736,7 @@ parse_document(
         }
     }
 do_doc1:
-    cs += detail::count_whitespace(+cs, cs.remain());
+    cs = detail::count_whitespace(+cs, ~cs);
     if(BOOST_JSON_UNLIKELY(! cs))
         return partial_if_more(+cs, state::doc1);
 do_doc2:
@@ -780,7 +780,7 @@ do_doc2:
     if(BOOST_JSON_UNLIKELY(cs.null()))
         return propagate(state::doc2);
 do_doc3:
-    cs += detail::count_whitespace(+cs, cs.remain());
+    cs = detail::count_whitespace(+cs, ~cs);
     if(BOOST_JSON_UNLIKELY(! cs))
     {
         if(more_)
@@ -1740,7 +1740,7 @@ parse_object(
         }
     }
 do_obj1:
-    cs += detail::count_whitespace(+cs, cs.remain());
+    cs = detail::count_whitespace(+cs, ~cs);
     if(BOOST_JSON_UNLIKELY(! cs))
         return partial_if_more(+cs, state::obj1);
     if(BOOST_JSON_LIKELY(*cs != '}'))
@@ -1776,7 +1776,7 @@ do_obj2:
             if(BOOST_JSON_UNLIKELY(cs.null()))
                 return propagate(state::obj2);
 do_obj3:
-            cs += detail::count_whitespace(+cs, cs.remain());
+            cs = detail::count_whitespace(+cs, ~cs);
             if(BOOST_JSON_UNLIKELY(! cs))
                 return partial_if_more(+cs, state::obj3);
             if(BOOST_JSON_UNLIKELY(*cs != ':'))
@@ -1794,7 +1794,7 @@ do_com8:
             }
             ++cs;
 do_obj4:
-            cs += detail::count_whitespace(+cs, cs.remain());
+            cs = detail::count_whitespace(+cs, ~cs);
             if(BOOST_JSON_UNLIKELY(! cs))
                 return partial_if_more(+cs, state::obj4);
 do_obj5:
@@ -1803,7 +1803,7 @@ do_obj5:
             if(BOOST_JSON_UNLIKELY(cs.null()))
                 return propagate(state::obj5);
 do_obj6:
-            cs += detail::count_whitespace(+cs, cs.remain());
+            cs = detail::count_whitespace(+cs, ~cs);
             if(BOOST_JSON_UNLIKELY(! cs))
                 return partial_if_more(+cs, state::obj6);
             // KRYSTIAN NOTE: do not place an optimization
@@ -1826,7 +1826,7 @@ do_com9:
             }
             ++cs;
 do_obj7:
-            cs += detail::count_whitespace(+cs, cs.remain());
+            cs = detail::count_whitespace(+cs, ~cs);
             if(BOOST_JSON_UNLIKELY(! cs))
                 return partial_if_more(+cs, state::obj7);
             if(AllowTrailing && *cs == '}')
@@ -1884,7 +1884,7 @@ parse_array(
         }
     }
 do_arr1:
-    cs += detail::count_whitespace(+cs, cs.remain());
+    cs = detail::count_whitespace(+cs, ~cs);
     if(BOOST_JSON_UNLIKELY(! cs))
         return partial_if_more(+cs, state::arr1);
     if(BOOST_JSON_LIKELY(*cs != ']'))
@@ -1906,7 +1906,7 @@ do_arr2:
             if(BOOST_JSON_UNLIKELY(cs.null()))
                 return propagate(state::arr2);
 do_arr3:
-            cs += detail::count_whitespace(+cs, cs.remain());
+            cs = detail::count_whitespace(+cs, ~cs);
             if(BOOST_JSON_UNLIKELY(! cs))
                 return partial_if_more(+cs, state::arr3);
             // KRYSTIAN NOTE: do not place an optimization
@@ -1929,7 +1929,7 @@ do_com11:
             }
             ++cs;
 do_arr4:
-            cs += detail::count_whitespace(+cs, cs.remain());
+            cs = detail::count_whitespace(+cs, ~cs);
             if(BOOST_JSON_UNLIKELY(! cs))
                 return partial_if_more(+cs, state::arr4);
             if(AllowTrailing && *cs == ']')

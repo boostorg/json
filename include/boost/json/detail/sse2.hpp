@@ -321,35 +321,35 @@ inline std::size_t count_leading( char const * p, char ch ) noexcept
 
 #ifdef BOOST_JSON_USE_SSE2
 
-inline std::size_t count_whitespace( char const * p, std::size_t n ) noexcept
+inline const char* count_whitespace( char const * start, const char* end ) noexcept
 {
-    if( n == 0 )
+    if (start == end)
     {
-        return 0;
+        return start;
     }
 
-    if( static_cast<unsigned char>( *p ) > 0x20 )
+    if( static_cast<unsigned char>(*start) > 0x20 )
     {
-        return 0;
+        return start;
     }
-
-    char const * p0 = p;
-
+   
     __m128i const q1 = _mm_set1_epi8( ' ' );
     __m128i const q2 = _mm_set1_epi8( '\n' );
-    __m128i const q3 = _mm_set1_epi8( '\r' );
-    __m128i const q4 = _mm_set1_epi8( '\t' );
+    __m128i const q3 = _mm_set1_epi8( 4 ); // '\t' | 4 == '\r'
+    __m128i const q4 = _mm_set1_epi8( '\r' );
 
-    while( n >= 16 )
+    while( end - start >= 16 )
     {
-        __m128i v = _mm_loadu_si128( (__m128i const*)p );
+        __m128i v0 = _mm_loadu_si128( (__m128i const*)start );
 
-        __m128i w = _mm_cmpeq_epi8( v, q1 );
-        w = _mm_or_si128( w, _mm_cmpeq_epi8( v, q2 ) );
-        w = _mm_or_si128( w, _mm_cmpeq_epi8( v, q3 ) );
-        w = _mm_or_si128( w, _mm_cmpeq_epi8( v, q4 ) );
+        __m128i w0 = _mm_or_si128(
+            _mm_cmpeq_epi8( v0, q1 ),
+            _mm_cmpeq_epi8( v0, q2 ));
+        __m128i v1 = _mm_or_si128( v0, q3 );
+        __m128i w1 = _mm_cmpeq_epi8( v1, q4 );
+        __m128i w2 = _mm_or_si128( w0, w1 );
 
-        int m = _mm_movemask_epi8( w ) ^ 0xFFFF;
+        int m = _mm_movemask_epi8( w2 ) ^ 0xFFFF;
 
         if( m != 0 )
         {
@@ -361,26 +361,21 @@ inline std::size_t count_whitespace( char const * p, std::size_t n ) noexcept
             std::size_t c = index;
 #endif
 
-            p += c;
-            return p - p0;
+            return start + c;
         }
 
-        p += 16;
-        n -= 16;
+        start += 16;
     }
 
-    while( n > 0 )
+    while( start != end )
     {
-        if( *p != ' ' && *p != '\t' && *p != '\r' && *p != '\n' )
-        {
-            return p - p0;
-        }
+        if( *start != ' ' && *start != '\t' && *start != '\r' && *start != '\n' )
+            return start;
 
-        ++p;
-        --n;
+        ++start;
     }
 
-    return p - p0;
+    return start;
 }
 
 /*
@@ -430,17 +425,15 @@ inline std::size_t count_whitespace( char const * p, std::size_t n ) noexcept
 
 #else
 
-inline std::size_t count_whitespace( char const * p, std::size_t n ) noexcept
+inline const char* count_whitespace( char const * start, char const * end ) noexcept
 {
-    std::size_t i = 0;
-
-    for( ; i < n; ++p, ++i )
+    while(start != end)
     {
-        char const c = *p;
+        char const c = *start++;
         if( c != ' ' && c != '\n' && c != '\r' && c != '\t' ) break;
     }
 
-    return i;
+    return start;
 }
 
 #endif
