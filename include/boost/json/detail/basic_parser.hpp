@@ -107,13 +107,6 @@ class basic_parser
         exp1,  exp2,  exp3
     };
 
-    enum result
-    {
-        ok = 0,
-        fail,
-        partial
-    };
-
     struct number
     {
         uint64_t mant;
@@ -122,8 +115,6 @@ class basic_parser
         bool frac;
         bool neg;
     };
-
-    using const_stream = detail::const_stream;
 
     // optimization: must come first
     Handler h_;
@@ -138,63 +129,108 @@ class basic_parser
     bool more_; // false for final buffer
     bool complete_ = false; // true on complete parse
     bool is_key_;
+    const char* end_;
     parse_options opt_;
 
     inline static bool is_control(char c) noexcept;
     inline static char hex_digit(char c) noexcept;
+    
     inline void reserve();
-    inline void suspend(state st);
-    inline void suspend(state st, number const& num);
-    inline bool skip_white(const_stream& cs);
 
-    result syntax_error(const_stream&);
+    BOOST_NOINLINE
+    inline
+    std::nullptr_t
+    propagate(state st);
+
+    BOOST_NOINLINE
+    inline
+    std::nullptr_t
+    fail(const char* p) noexcept;
+
+    BOOST_NOINLINE
+    inline
+    std::nullptr_t
+    fail(
+        const char* p, 
+        error err) noexcept;
+
+    BOOST_NOINLINE
+    inline
+    std::nullptr_t
+    partial_if_more(
+        const char* p, 
+        state st);
+
+    BOOST_NOINLINE
+    inline
+    std::nullptr_t
+    partial_if_more(
+        const char* p,
+        state st,
+        const number& num);
+
+    BOOST_NOINLINE
+    inline
+    std::nullptr_t
+    partial(
+        const char* p,
+        state st);
+
+    BOOST_NOINLINE
+    inline
+    std::nullptr_t
+    partial(
+        const char* p,
+        state st,
+        const number& num);
+
+    BOOST_NOINLINE
+    inline
+    const char*
+    syntax_error(const char* p);
 
     template<
         bool StackEmpty, bool ReturnValue,
         bool Terminal, bool AllowTrailing, 
         bool AllowBadUTF8>
-    result parse_comment(const_stream& cs);
+    const char* parse_comment(const char* p);
     
     template<bool StackEmpty>
-    result validate_utf8(const_stream& cs);
+    const char* validate_utf8(const char* p, const char* end);
 
     template<bool StackEmpty>
-    result parse_document(const_stream& cs);
+    const char* parse_document(const char* p);
     
-    template<
-        bool StackEmpty, bool AllowComments,
+    template<bool StackEmpty, bool AllowComments,
         bool AllowTrailing, bool AllowBadUTF8>
-    result parse_value(const_stream& cs);
+    const char* parse_value(const char* p);
     
-    template<
-        bool StackEmpty, bool AllowComments,
+    template<bool StackEmpty, bool AllowComments,
         bool AllowTrailing, bool AllowBadUTF8>
-    result resume_value(const_stream& cs);
+    const char* resume_value(const char* p);
     
-    template<
-        bool StackEmpty, bool AllowComments,
+    template<bool StackEmpty, bool AllowComments,
         bool AllowTrailing, bool AllowBadUTF8>
-    result parse_object(const_stream& cs);
+    const char* parse_object(const char* p);
     
-    template<
-        bool StackEmpty, bool AllowComments,
+    template<bool StackEmpty, bool AllowComments,
         bool AllowTrailing, bool AllowBadUTF8>
-    result parse_array(const_stream& cs);
+    const char* parse_array(const char* p);
     
     template<bool StackEmpty>
-    result parse_null(const_stream& cs);
+    const char* parse_null(const char* p);
     
     template<bool StackEmpty>
-    result parse_true(const_stream& cs);
+    const char* parse_true(const char* p);
     
     template<bool StackEmpty>
-    result parse_false(const_stream& cs);
+    const char* parse_false(const char* p);
     
     template<bool StackEmpty, bool AllowBadUTF8>
-    result parse_string(const_stream& cs);
+    const char* parse_string(const char* p);
     
     template<bool StackEmpty, char First>
-    result parse_number(const_stream& cs);
+    const char* parse_number(const char* p);
 
 public:
     /** Destructor.
