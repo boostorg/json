@@ -37,6 +37,12 @@ functions and types to assist with parsing:
         to implement custom strategies for representing the parsed
         JSON.
     ]
+][
+    [__parse_options__]
+    [
+        A structure used to select which extensions are
+        enabled during parsing.
+    ]
 ]]
 
 The `parse` function provides a succinct interface for
@@ -86,12 +92,24 @@ code are used instead:
 When
 [link json.ref.boost__json__parser.start `start`]
 is called with no arguments, the parser constructs the resulting
-__value__ using the default memory resource. A __storage_pointer__
+__value__ using the default memory resource. A __storage_ptr__
 can also be passed to the function, and the resulting __value__ will
 use the specified resource. This example uses a noncounted
 `monotonic_resource` as the allocator:
 
 [snippet_parsing_6]
+
+The allocation of the intermediate storage used by __parser__
+can also be controlled. When constructing a __parser__,
+a __storage_ptr__ can be passed to the constructor and
+the managed resource will be used to allocate any intermediate
+storage needed during parsing. If this argument is not provided, 
+the default memory resource will be used instead. 
+The parser will retain its intermediate storage for
+the duration of its lifetime, reusing it
+to parse subsequent documents:
+
+[snippet_parsing_7]
 
 [h4 SAX]
 
@@ -103,5 +121,80 @@ with the parsed results, to use in writing a function that
 validates a string to determine if it is valid JSON:
 
 [example_validate]
+
+[h4 Extensions]
+
+The library provides support for the following JSON syntax
+extensions:
+
+[table Supported Extensions
+[ [Extension] [Description] [Example] ]
+[
+    [Comments]
+    [
+        Permits C and C++ style comments to appear
+        within whitespace.
+    ]
+    [
+        The following is considered valid:
+        ```
+        { 
+          "primes": [2, 3, 5, 7, 11],
+          "fibonacci": [0 /* maybe remove 0 */, 1, 1, 2, 3]
+          // TODO: add more
+        }
+        ```
+    ]
+][
+    [Trailing Commas]
+    [
+        Allows a comma to appear after the last element
+        of an object or array.
+    ]
+    [
+        The following is considered valid:
+        ```
+        [
+          {"key": "value",},
+          2,
+          3,
+        ]
+        ```
+    ]
+][
+    [Skip UTF-8 Validation]
+    [
+        UTF-8 byte sequences appearing within strings
+        are not checked for validity 
+        [br]
+        (as defined by 
+        [@https://www.unicode.org/versions/Unicode13.0.0/UnicodeStandard-13.0.pdf The Unicode Standard Version 13.0 Section 3.9]).
+    ]
+    [
+        A string containing the invalid UTF-8 byte sequence `0xC0 0x9F` is considered valid.
+    ]
+]]
+
+[note
+    Disabling UTF-8 validation can yield a sizeable
+    increase in performance when parsing JSON containing
+    UTF-8 byte sequences that are guaranteed to be valid.
+    Documents that only contain ASCII characters also benefit,
+    but the performance increase is less significant.
+]
+
+Without configuration, __basic_parser__ and __parser__
+will only parse JSON deemed well-formed by the 
+[@https://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf JSON Data Interchange Syntax]
+specification: 
+
+[snippet_parsing_8]
+
+Extensions can be enabled by passing __parse_options__
+to __parser__ upon construction. Users implementing custom
+parsers derived from __basic_parser__ can pass __parse_options__
+to the base class's constructor:
+
+[snippet_parsing_9]
 
 [endsect]

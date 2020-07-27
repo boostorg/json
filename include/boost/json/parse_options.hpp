@@ -21,19 +21,37 @@ namespace json {
     
     The currently supported extensions are:
     
-    <li> Comments, which permit comments
+    @li Comments, which permits comments
     to appear within whitespace, and
 
-    <li> Trailing commas, which allow a comma
-    to appear after the last element of an object or array.
+    @li Trailing commas, which allows a comma
+    to appear after the last element
+    of an object or array, and
 
-    <li> Skip UTF-8 validation, which skip checking
-    the validity of UTF-8 byte sequences.
+    @li Invalid UTF-8, which disables the
+    validation of UTF-8 byte sequences.
 */
 struct parse_options
 {
+    /** Comments
+
+        Permits C and C++ style comments
+        to appear within whitespace.
+    */
     bool allow_comments = false;
+    
+    /** Trailing Commas
+        
+        Permits a comma to appear after the
+        last element of an array or object.
+    */
     bool allow_trailing_commas = false;
+    
+    /** Invalid UTF-8
+
+        UTF-8 byte sequences will not
+        be checked for validity.
+    */
     bool allow_invalid_utf8 = false;
 };
 

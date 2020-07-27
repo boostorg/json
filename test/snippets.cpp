@@ -707,6 +707,104 @@ usingParsing()
 
         //]
     }
+    {
+        //[snippet_parsing_7
+
+        storage_ptr sp = 
+            make_counted_resource<monotonic_resource>();
+
+        parser p( sp );
+        error_code ec;
+
+        p.reserve( 1024 );
+
+        // Fully parses a valid JSON string and
+        // extracts the resulting value
+        p.start( sp );
+        p.write( "[true, false, 1, 0]", 19, ec );
+        p.finish( ec );
+
+        assert( ! ec );
+
+        value jv = p.release();
+
+        // The intermediate storage that was used
+        // for the last value will be reused here.
+        
+        p.start( sp );
+
+        p.write( "[null]", 6, ec );
+        p.finish( ec );
+
+        assert( ! ec );
+
+        jv = p.release();
+
+        //]
+    }
+    {
+        //[snippet_parsing_8
+
+        string_view good = "{\"valid\":\"json\"}";
+        string_view bad = "{\"invalid\":\"json\",}";
+            
+        // A default constructed parser will not
+        // accept non-standard JSON
+        parser p;
+        error_code ec;
+
+        p.start();
+        p.write( good.data(), good.size(), ec );
+            
+        // Valid JSON
+        assert( ! ec );
+
+        ec.clear();
+
+        p.start();
+        p.write( bad.data(), bad.size(), ec );
+
+        // Error, trailing commas are not permitted
+        // by the JSON specification
+        assert( ec );
+
+        //]
+    }
+    {
+        //[snippet_parsing_9
+
+        string_view comment = "/* example comment */[1, 2, 3]";
+        
+        // Comments are not permitted by default
+        parser standard;
+
+        parse_options po;
+        po.allow_comments = true;
+        
+        // Constructs a parser that will treat
+        // comments as whitespace.
+        parser extended(po);
+
+        error_code ec;
+
+        standard.start();
+        standard.write( comment.data(), 
+            comment.size(), ec );
+            
+        // Error, invalid JSON
+        assert( ec );
+        
+        ec.clear();
+
+        extended.start();
+        extended.write( comment.data(), 
+            comment.size(), ec );
+
+        // Ok, comments are permitted
+        assert( ! ec );
+
+        //]
+    }
 }
 
 //----------------------------------------------------------
