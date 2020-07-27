@@ -38,27 +38,24 @@ count_unescaped(
     char const* s,
     size_t n) noexcept
 {
+
     __m128i const q1 = _mm_set1_epi8( '\x22' ); // '"'
-    __m128i const q2 = _mm_set1_epi8( '\\' );
-    __m128i const q3 = _mm_set1_epi8( 0x20 );
-    __m128i const q4 = _mm_set1_epi8( -1 );
+    __m128i const q2 = _mm_set1_epi8( '\\' ); // '\\'
+    __m128i const q3 = _mm_set1_epi8( 0x1F );
 
     char const * s0 = s;
 
     while( n >= 16 )
     {
-        __m128i v1 = _mm_loadu_si128( (__m128i const*)s );
+        __m128i v1 = _mm_loadu_si128( (__m128i const*)s ); 
+        __m128i v2 = _mm_cmpeq_epi8( v1, q1 ); // quote
+        __m128i v3 = _mm_cmpeq_epi8( v1, q2 ); // backslash
+        __m128i v4 = _mm_or_si128( v2, v3 ); // combine quotes and backslash
+        __m128i v5 = _mm_min_epu8( v1, q3 );
+        __m128i v6 = _mm_cmpeq_epi8( v5, v1 ); // controls
+        __m128i v7 = _mm_or_si128( v4, v6 ); // combine with control
 
-        __m128i v2 = _mm_cmpeq_epi8( v1, q1 );
-        __m128i v3 = _mm_cmpeq_epi8( v1, q2 );
-        __m128i v4 = _mm_and_si128(
-            _mm_cmplt_epi8( v1, q3 ),
-            _mm_cmpgt_epi8( v1, q4 ) ); // ch > -1 && ch < 0x20
-
-        __m128i v5 = _mm_or_si128( v2, v3 );
-        __m128i v6 = _mm_or_si128( v5, v4 );
-
-        int w = _mm_movemask_epi8( v6 );
+        int w = _mm_movemask_epi8( v7 );
 
         if( w != 0 )
         {
