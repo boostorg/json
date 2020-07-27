@@ -120,6 +120,127 @@ public:
     }
 };
 
+class const_stream_wrapper
+{
+    const char*& p_;
+    const char* const end_;
+
+    friend class const_clipped_stream;
+public:
+    const_stream_wrapper(
+        const char*& p,
+        const char* end)
+        : p_(p)
+        , end_(end)
+    {
+    }
+
+    void operator++() noexcept
+    {
+        ++p_;
+    }
+
+    void operator+=(std::size_t n) noexcept
+    {
+        p_ += n;
+    }
+
+    void operator=(const char* p) noexcept
+    {
+        p_ = p;
+    }
+
+    const char* operator~() const noexcept
+    {
+        return end_;
+    }
+
+    char operator*() const noexcept
+    {
+        return *p_;
+    }
+
+    operator bool() const noexcept
+    {
+        return p_ < end_;
+    }
+    
+    const char* operator+() noexcept
+    {
+        return p_;
+    }
+
+    bool null() const noexcept
+    {
+        return p_ == nullptr;
+    }
+
+    std::size_t remain() const noexcept
+    {
+        return end_ - p_;
+    }
+
+    std::size_t remain(const char* p) const noexcept
+    {
+        return end_ - p;
+    }
+
+    std::size_t used(const char* p) const noexcept
+    {
+        return p_ - p;
+    }
+};
+
+class const_clipped_stream
+    : public const_stream_wrapper
+{
+    const char* clip_;
+
+public:
+    const_clipped_stream(
+        const char*& p,
+        const char* end)
+        : const_stream_wrapper(p, end)
+        , clip_(end)
+    {
+    }
+
+    void operator=(const char* p)
+    {
+        p_ = p;
+    }
+
+    const char* operator~() const noexcept
+    {
+        return clip_;
+    }
+
+    operator bool() const noexcept
+    {
+        return p_ < clip_;
+    }
+
+    std::size_t remain() const noexcept
+    {
+        return clip_ - p_;
+    }
+
+    std::size_t remain(const char* p) const noexcept
+    {
+        return clip_ - p;
+    }
+
+    void
+    clip(std::size_t n) noexcept
+    {
+        if(static_cast<std::size_t>(
+            end_ - p_) > n)
+            clip_ = p_ + n;
+        else
+            clip_ = end_;
+    }
+};
+
 //--------------------------------------
 
 class stream

@@ -80,14 +80,6 @@ namespace json {
 class basic_parser
 {
     enum class state : char;
-    using const_stream = detail::const_stream;
-
-    enum result
-    {
-        ok = 0,
-        fail,
-        partial
-    };
 
     struct number
     {
@@ -108,59 +100,110 @@ class basic_parser
     bool more_; // false for final buffer
     bool complete_ = false; // true on complete parse
     bool is_key_;
+    const char* end_;
     parse_options opt_;
 
     inline static bool is_control(char c) noexcept;
     inline static char hex_digit(char c) noexcept;
+    
     inline void reserve();
-    inline void suspend(state st);
-    inline void suspend(state st, number const& num);
-    inline bool skip_white(const_stream& cs);
+
+    BOOST_NOINLINE
+    inline
+    std::nullptr_t
+    propagate(state st);
+
+    BOOST_NOINLINE
+    inline
+    std::nullptr_t
+    fail(const char* p) noexcept;
+
+    BOOST_NOINLINE
+    inline
+    std::nullptr_t
+    fail(
+        const char* p, 
+        error err) noexcept;
+
+    BOOST_NOINLINE
+    inline
+    std::nullptr_t
+    partial_if_more(
+        const char* p, 
+        state st);
+
+    BOOST_NOINLINE
+    inline
+    std::nullptr_t
+    partial_if_more(
+        const char* p,
+        state st,
+        const number& num);
+
+    BOOST_NOINLINE
+    inline
+    std::nullptr_t
+    partial(
+        const char* p,
+        state st);
+
+    BOOST_NOINLINE
+    inline
+    std::nullptr_t
+    partial(
+        const char* p,
+        state st,
+        const number& num);
 
     template<class Handler>
-    result syntax_error(Handler&, const_stream&);
+    BOOST_NOINLINE
+    inline
+    const char*
+    syntax_error(
+        Handler&,
+        const char* p);
 
+    template<bool StackEmpty>
+    const char* validate_utf8(const char* p, const char* end);
+    
     template<bool StackEmpty, bool ReturnValue,
         bool Terminal, bool AllowTrailing, 
         bool AllowInvalid, class Handler>
-    result parse_comment(Handler& h, const_stream& cs);
-    
-    template<bool StackEmpty>
-    result validate_utf8(const_stream& cs);
+    const char* parse_comment(Handler& h, const char* p);
 
     template<bool StackEmpty, class Handler>
-    result parse_document(Handler& h, const_stream& cs);
+    const char* parse_document(Handler& h, const char* p);
     
     template<bool StackEmpty, bool AllowComments,
         bool AllowTrailing, bool AllowInvalid, class Handler>
-    result parse_value(Handler& h, const_stream& cs);
+    const char* parse_value(Handler& h, const char* p);
     
     template<bool StackEmpty, bool AllowComments,
         bool AllowTrailing, bool AllowInvalid, class Handler>
-    result resume_value(Handler& h, const_stream& cs);
+    const char* resume_value(Handler& h, const char* p);
     
     template<bool StackEmpty, bool AllowComments,
         bool AllowTrailing, bool AllowInvalid, class Handler>
-    result parse_object(Handler& h, const_stream& cs);
+    const char* parse_object(Handler& h, const char* p);
     
     template<bool StackEmpty, bool AllowComments,
         bool AllowTrailing, bool AllowInvalid, class Handler>
-    result parse_array(Handler& h, const_stream& cs);
+    const char* parse_array(Handler& h, const char* p);
     
     template<bool StackEmpty, class Handler>
-    result parse_null(Handler& h, const_stream& cs);
+    const char* parse_null(Handler& h, const char* p);
     
     template<bool StackEmpty, class Handler>
-    result parse_true(Handler& h, const_stream& cs);
+    const char* parse_true(Handler& h, const char* p);
     
     template<bool StackEmpty, class Handler>
-    result parse_false(Handler& h, const_stream& cs);
+    const char* parse_false(Handler& h, const char* p);
     
     template<bool StackEmpty, bool AllowInvalid, class Handler>
-    result parse_string(Handler& h, const_stream& cs);
+    const char* parse_string(Handler& h, const char* p);
     
     template<bool StackEmpty, char First, class Handler>
-    result parse_number(Handler& h, const_stream& cs);
+    const char* parse_number(Handler& h, const char* p);
 
 public:
      /** Default constructor.

@@ -93,6 +93,16 @@
 # endif
 #endif
 
+#ifndef BOOST_NOINLINE
+# ifdef _MSC_VER
+#  define BOOST_NOINLINE __declspec(noinline)
+# elif defined(__GNUC__) || defined(__clang__)
+#  define BOOST_NOINLINE __attribute__((noinline))
+# else
+#  define BOOST_NOINLINE
+# endif
+#endif
+
 #ifndef BOOST_THROW_EXCEPTION
 # ifndef BOOST_NO_EXCEPTIONS
 #  define BOOST_THROW_EXCEPTION(x) throw(x)
