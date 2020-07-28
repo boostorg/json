@@ -837,7 +837,7 @@ parse_value(
             err, err, err, err, err, err, err, err, err, err, err, err, err, err, err, err,
             err, err, err, err, err, err, err, err, err, err, err, err, err, err, err, err,
             err, err,
-                &basic_parser::parse_string<true, AllowInvalid, Handler>,
+                &basic_parser::parse_string<true, false, AllowInvalid, Handler>,
                 err, err, err, err, err, err, err, err, err, err,
                 &basic_parser::parse_number<true, '-', Handler>,
                 err,
@@ -913,8 +913,8 @@ resume_value(
     case state::sur3: case state::sur4:
     case state::sur5: case state::sur6:
     case state::utf17: case state::utf18:
-        return parse_string<
-            StackEmpty, AllowInvalid>(h, p);
+        return parse_string<StackEmpty, 
+            false, AllowInvalid>(h, p);
 
     case state::arr1: case state::arr2:
     case state::arr3: case state::arr4:
@@ -1135,6 +1135,7 @@ do_fal4:
 
 template<
     bool StackEmpty, 
+    bool IsKey,
     bool AllowInvalid,
     class Handler>
 const char*
@@ -1144,6 +1145,10 @@ parse_string(
     const char* p)
 {
     detail::const_clipped_stream cs(p, end_);
+    constexpr auto on_full = IsKey ? 
+        &Handler::on_key : &Handler::on_string;
+    constexpr auto on_part = IsKey ? 
+        &Handler::on_key_part : &Handler::on_string_part;
     detail::buffer<BOOST_JSON_PARSER_BUFFER_SIZE> temp;
     char const* start;
     char c;
@@ -1200,21 +1205,10 @@ parse_string(
             if(BOOST_JSON_LIKELY(
                 c == '\x22')) // '"'
             {
-                if(is_key_)
-                {
-                    if(BOOST_JSON_UNLIKELY(
-                        ! h.on_key({ start,
+                if(BOOST_JSON_UNLIKELY(
+                    ! (h.*on_full)({start,
                         cs.used(start)}, ec_)))
-                        return fail(+cs);
-                    is_key_ = false;
-                }
-                else
-                {
-                    if(BOOST_JSON_UNLIKELY(
-                        ! h.on_string({ start,
-                        cs.used(start)}, ec_)))
-                        return fail(+cs);
-                }
+                    return fail(+cs);
                 ++cs;
                 return +cs;
             }
@@ -1234,20 +1228,10 @@ do_utf17:
                 if(BOOST_JSON_LIKELY(
                     +cs > start))
                 {
-                    if(is_key_)
-                    {
-                        if(BOOST_JSON_UNLIKELY(
-                            ! h.on_key_part({start,
-                                cs.used(start)}, ec_)))
-                            return fail(+cs);
-                    }
-                    else
-                    {
-                        if(BOOST_JSON_UNLIKELY(
-                            ! h.on_string_part({start,
-                                cs.used(start)}, ec_)))
-                            return fail(+cs);
-                    }
+                    if(BOOST_JSON_UNLIKELY(
+                        ! (h.*on_part)({start,
+                            cs.used(start)}, ec_)))
+                        return fail(+cs);
                 }
                 // Unescaped JSON is never larger than its escaped version.
                 // To efficiently process only what will fit in the temporary buffer,
@@ -1268,20 +1252,10 @@ do_utf17:
         if(BOOST_JSON_LIKELY(
             +cs > start))
         {
-            if(is_key_)
-            {
-                if(BOOST_JSON_UNLIKELY(
-                    ! h.on_key_part({start,
-                        cs.used(start)}, ec_)))
-                    return fail(+cs);
-            }
-            else
-            {
-                if(BOOST_JSON_UNLIKELY(
-                    ! h.on_string_part({start,
-                        cs.used(start)}, ec_)))
-                    return fail(+cs);
-            }
+            if(BOOST_JSON_UNLIKELY(
+                ! (h.*on_part)({start,
+                    cs.used(start)}, ec_)))
+                return fail(+cs);
         }
         return partial(+cs, state::str1);
     }
@@ -1308,19 +1282,9 @@ do_str2:
             if(BOOST_JSON_LIKELY(
                 c == '\x22')) // '"'
             {
-                if(is_key_)
-                {
-                    if(BOOST_JSON_UNLIKELY(
-                        ! h.on_key(temp, ec_)))
-                        return fail(+cs);
-                    is_key_ = false;
-                }
-                else
-                {
-                    if(BOOST_JSON_UNLIKELY(
-                        ! h.on_string(temp, ec_)))
-                        return fail(+cs);
-                }
+                if(BOOST_JSON_UNLIKELY(
+                    ! (h.*on_full)(temp, ec_)))
+                    return fail(+cs);
                 ++cs;
                 return +cs;
             }
@@ -1351,18 +1315,9 @@ do_utf18:
         if(BOOST_JSON_LIKELY(
             ! temp.empty()))
         {
-            if(is_key_)
-            {
-                if(BOOST_JSON_UNLIKELY(
-                    ! h.on_key_part(temp, ec_)))
-                    return fail(+cs);
-            }
-            else
-            {
-                if(BOOST_JSON_UNLIKELY(
-                    ! h.on_string_part(temp, ec_)))
-                    return fail(+cs);
-            }
+            if(BOOST_JSON_UNLIKELY(
+                ! (h.*on_part)(temp, ec_)))
+                return fail(+cs);
             temp.clear();
         }
         cs.clip(temp.max_size());
@@ -1520,18 +1475,9 @@ do_str3:
                 if(BOOST_JSON_LIKELY(
                     ! temp.empty()))
                 {
-                    if(is_key_)
-                    {
-                        if(BOOST_JSON_UNLIKELY(
-                            ! h.on_key_part(temp, ec_)))
-                            return fail(+cs);
-                    }
-                    else
-                    {
-                        if(BOOST_JSON_UNLIKELY(
-                            ! h.on_string_part(temp, ec_)))
-                            return fail(+cs);
-                    }
+                    if(BOOST_JSON_UNLIKELY(
+                        ! (h.*on_part)(temp, ec_)))
+                        return fail(+cs);
                     temp.clear();
                     cs.clip(temp.max_size());
                 }
@@ -1548,18 +1494,9 @@ do_str3:
         if(BOOST_JSON_LIKELY(
             ! temp.empty()))
         {
-            if(is_key_)
-            {
-                if(BOOST_JSON_UNLIKELY(
-                    ! h.on_key_part(temp, ec_)))
-                    return fail(+cs);
-            }
-            else
-            {
-                if(BOOST_JSON_UNLIKELY(
-                    ! h.on_string_part(temp, ec_)))
-                    return fail(+cs);
-            }
+            if(BOOST_JSON_UNLIKELY(
+                ! (h.*on_part)(temp, ec_)))
+                return fail(+cs);
             temp.clear();
         }
         cs.clip(temp.max_size());
@@ -1769,9 +1706,8 @@ do_com7:
                 }
                 return fail(+cs, error::syntax);
             }
-            is_key_ = true;
 do_obj2:
-            cs = parse_string<StackEmpty,
+            cs = parse_string<StackEmpty, true,
                 AllowInvalid>(h, +cs);
             if(BOOST_JSON_UNLIKELY(cs.null()))
                 return propagate(state::obj2);
@@ -2534,7 +2470,6 @@ write_some(
     {
         // first time
         depth_ = 0;
-        is_key_ = false;
         if(BOOST_JSON_UNLIKELY(
             ! h.on_document_begin(ec_)))
         {

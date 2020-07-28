@@ -99,7 +99,6 @@ class basic_parser
     unsigned u2_;
     bool more_; // false for final buffer
     bool complete_ = false; // true on complete parse
-    bool is_key_;
     const char* end_;
     parse_options opt_;
 
@@ -199,7 +198,8 @@ class basic_parser
     template<bool StackEmpty, class Handler>
     const char* parse_false(Handler& h, const char* p);
     
-    template<bool StackEmpty, bool AllowInvalid, class Handler>
+    template<bool StackEmpty, bool IsKey,
+        bool AllowInvalid, class Handler>
     const char* parse_string(Handler& h, const char* p);
     
     template<bool StackEmpty, char First, class Handler>
