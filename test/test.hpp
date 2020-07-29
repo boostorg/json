@@ -140,6 +140,55 @@ struct unique_resource
 
 //----------------------------------------------------------
 
+// The null parser discards all the data
+
+class null_parser : public basic_parser
+{
+    friend class boost::json::basic_parser;
+
+    bool on_document_begin( error_code& ) { return true; }
+    bool on_document_end( error_code& ) { return true; }
+    bool on_object_begin( error_code& ) { return true; }
+    bool on_object_end( error_code& ) { return true; }
+    bool on_array_begin( error_code& ) { return true; }
+    bool on_array_end( error_code& ) { return true; }
+    bool on_key_part( string_view, error_code& ) { return true; }
+    bool on_key( string_view, error_code& ) { return true; }
+    bool on_string_part( string_view, error_code& ) { return true; }
+    bool on_string( string_view, error_code& ) { return true; }
+    bool on_int64( std::int64_t, error_code& ) { return true; }
+    bool on_uint64( std::uint64_t, error_code& ) { return true; }
+    bool on_double( double, error_code& ) { return true; }
+    bool on_bool( bool, error_code& ) { return true; }
+    bool on_null( error_code& ) { return true; }
+    bool on_comment_part( string_view, error_code& ) { return true; }
+    bool on_comment( string_view, error_code& ) { return true; }
+
+public:
+    null_parser() = default;
+
+    null_parser(parse_options po) 
+        : basic_parser(po)
+    {
+    }
+        
+    std::size_t
+    write(
+        char const* data,
+        std::size_t size,
+        error_code& ec)
+    {
+        auto const n =
+            basic_parser::write_some(
+            *this, false, data, size, ec);
+        if(! ec && n < size)
+            ec = error::extra_data;
+        return n;
+    }
+};
+
+//----------------------------------------------------------
+
 class fail_parser : public basic_parser
 {
     friend class basic_parser;
@@ -289,7 +338,7 @@ public:
     explicit
     fail_parser(
         std::size_t n,
-        parse_options po = {false, false})
+        parse_options po = parse_options{false, false})
         :  basic_parser(po), n_(n)
     {
     }
@@ -300,6 +349,7 @@ public:
     {
     }
 
+    using basic_parser::reset;
 
     std::size_t
     write_some(
@@ -488,7 +538,7 @@ public:
     explicit
     throw_parser(
         std::size_t n,
-        parse_options po = {false, false})
+        parse_options po = parse_options{false, false})
         : basic_parser(po), n_(n)
     {
     }
@@ -498,6 +548,8 @@ public:
         : basic_parser(po)
     {
     }
+
+    using basic_parser::reset;
 
     std::size_t
     write(
