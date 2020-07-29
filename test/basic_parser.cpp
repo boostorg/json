@@ -105,53 +105,6 @@ namespace {
 bool
 validate( string_view s )
 {
-    // The null parser discards all the data
-
-    class null_parser : public basic_parser
-    {
-        friend class boost::json::basic_parser;
-
-    public:
-        null_parser() {}
-        null_parser(parse_options po) 
-            : basic_parser(po)
-        {
-        }
-
-        ~null_parser() {}
-        bool on_document_begin( error_code& ) { return true; }
-        bool on_document_end( error_code& ) { return true; }
-        bool on_object_begin( error_code& ) { return true; }
-        bool on_object_end( error_code& ) { return true; }
-        bool on_array_begin( error_code& ) { return true; }
-        bool on_array_end( error_code& ) { return true; }
-        bool on_key_part( string_view, error_code& ) { return true; }
-        bool on_key( string_view, error_code& ) { return true; }
-        bool on_string_part( string_view, error_code& ) { return true; }
-        bool on_string( string_view, error_code& ) { return true; }
-        bool on_int64( std::int64_t, error_code& ) { return true; }
-        bool on_uint64( std::uint64_t, error_code& ) { return true; }
-        bool on_double( double, error_code& ) { return true; }
-        bool on_bool( bool, error_code& ) { return true; }
-        bool on_null( error_code& ) { return true; }
-        bool on_comment_part( string_view, error_code& ) { return true; }
-        bool on_comment( string_view, error_code& ) { return true; }
-        
-        std::size_t
-        write(
-            char const* data,
-            std::size_t size,
-            error_code& ec)
-        {
-            auto const n =
-                basic_parser::write_some(
-                *this, false, data, size, ec);
-            if(! ec && n < size)
-                ec = error::extra_data;
-            return n;
-        }
-    };
-
     // Parse with the null parser and return false on error
     null_parser p;
     error_code ec;
@@ -291,39 +244,23 @@ public:
     void
     bad(
         string_view s, 
-        const std::vector<parse_options>& configs)
+        const parse_options& po)
     {
-        grind(s, false, configs);
+        grind(s, false, po);
     }
 
     void
     good(
         string_view s,
-        const std::vector<parse_options>& configs)
+        const parse_options& po)
     {
-        grind(s, true, configs);
+        grind(s, true, po);
     }
 
     void
     bad_one(
         string_view s,
-        const std::vector<parse_options>& configs)
-    {
-        grind_one(s, false, configs);
-    }
-
-    void
-    good_one(
-        string_view s,
-        const std::vector<parse_options>& configs)
-    {
-        grind_one(s, true, configs);
-    }
-    
-    void
-    bad_one(
-        string_view s,
-        parse_options po)
+        const parse_options& po)
     {
         grind_one(s, false, po);
     }
@@ -331,11 +268,11 @@ public:
     void
     good_one(
         string_view s,
-        parse_options po)
+        const parse_options& po)
     {
         grind_one(s, true, po);
     }
-
+    
     void
     bad_one(string_view s)
     {
@@ -452,6 +389,9 @@ public:
         // incomplete escape
         bad (R"jv( "\" )jv");
 
+        // invalid escape
+        bad (R"jv( "\z" )jv");
+
         // utf-16 escape, fast path,
         // invalid surrogate
         bad (R"jv( " \u----       " )jv");
@@ -477,96 +417,109 @@ public:
     testNumber()
     {
         good("0");
-        good("0e0");
-        good("0E0");
-        good("0e00");
-        good("0E01");
-        good("0e+0");
-        good("0e-0");
-        good("0.0");
-        good("0.01");
-        good("0.0e0");
-        good("0.01e+0");
-        good("0.02E-0");
-        good("1");
-        good("12");
-        good("1");
-        good("1e0");
-        good("1E0");
-        good("1e00");
-        good("1E01");
-        good("1e+0");
-        good("1e-0");
+        good("0                                ");
+        good("0e0                              ");
+        good("0E0                              ");
+        good("0e00                             ");
+        good("0E01                             ");
+        good("0e+0                             ");
+        good("0e-0                             ");
+        good("0.0                              ");
+        good("0.01                             ");
+        good("0.0e0                            ");
+        good("0.01e+0                          ");
+        good("0.02E-0                          ");
+        good("1                                ");
+        good("12                               ");
+        good("1e0                              ");
+        good("1E0                              ");
+        good("1e00                             ");
+        good("1E01                             ");
+        good("1e+0                             ");
+        good("1e-0                             ");
+        good("1.0                              ");
+        good("1.01                             ");
+        good("1.0e0                            ");
+        good("1.01e+0                          ");
+        good("1.02E-0                          ");
         good("1.0");
-        good("1.01");
-        good("1.0e0");
-        good("1.01e+0");
-        good("1.02E-0");
 
-        good("-0");
-        good("-0e0");
-        good("-0E0");
-        good("-0e00");
-        good("-0E01");
-        good("-0e+0");
-        good("-0e-0");
-        good("-0.0");
-        good("-0.01");
-        good("-0.0e0");
-        good("-0.01e+0");
-        good("-0.02E-0");
-        good("-1");
-        good("-12");
-        good("-1");
-        good("-1e0");
-        good("-1E0");
-        good("-1e00");
-        good("-1E01");
-        good("-1e+0");
-        good("-1e-0");
+        good("-0                               ");
+        good("-0e0                             ");
+        good("-0E0                             ");
+        good("-0e00                            ");
+        good("-0E01                            ");
+        good("-0e+0                            ");
+        good("-0e-0                            ");
+        good("-0.0                             ");
+        good("-0.01                            ");
+        good("-0.0e0                           ");
+        good("-0.01e+0                         ");
+        good("-0.02E-0                         ");
+        good("-1                               ");
+        good("-12                              ");
+        good("-1                               ");
+        good("-1e0                             ");
+        good("-1E0                             ");
+        good("-1e00                            ");
+        good("-1E01                            ");
+        good("-1e+0                            ");
+        good("-1e-0                            ");
+        good("-1.0                             ");
+        good("-1.01                            ");
+        good("-1.0e0                           ");
+        good("-1.01e+0                         ");
+        good("-1.02E-0                         ");
         good("-1.0");
-        good("-1.01");
-        good("-1.0e0");
-        good("-1.01e+0");
-        good("-1.02E-0");
 
-        good("1.1e309");
-        good(   "9223372036854775807");
-        good(  "-9223372036854775807");
-        good(  "18446744073709551615");
-        good( "-18446744073709551615");
+        good("1.1e309                          ");
+        good("9223372036854775807              ");
+        good("-9223372036854775807             ");
+        good("18446744073709551615             ");
+        good("-18446744073709551615            ");
 
-        good("0.900719925474099178");
+        good("1234567890123456");
+        good("-1234567890123456");
+        good("10000000000000000000000000");
+
+        good("0.900719925474099178             ");
 
         // non-significant digits
-        good("1000000000000000000000000");
-        good("1000000000000000000000000e1");
-        good("1000000000000000000000000.0");
-        good("1000000000000000000000000.00");
+        good("1000000000000000000000000        ");
+        good("1000000000000000000000000e1      ");
+        good("1000000000000000000000000.0      ");
+        good("1000000000000000000000000.00     ");
         good("1000000000000000000000000.000000000001");
-        good("1000000000000000000000000.0e1");
-        good("1000000000000000000000000.0 ");
+        good("1000000000000000000000000.0e1    ");
+        good("1000000000000000000000000.0      ");
 
-        bad ( "");
-        bad ("-");
-        bad ( "00");
-        bad ( "01");
-        bad ( "00.");
-        bad ( "00.0");
-        bad ("-00");
-        bad ("-01");
-        bad ("-00.");
-        bad ("-00.0");
-        bad ( "1a");
-        bad ( ".");
-        bad ( "1.");
-        bad ( "1+");
-        bad ( "0.0+");
-        bad ( "0.0e+");
-        bad ( "0.0e-");
-        bad ( "0.0e0-");
-        bad ( "0.0e");
-        bad ( "1000000000000000000000000.e");
+        good("1000000000.1000000000            ");
+
+        bad("");
+        bad("-                                 ");
+        bad("00                                ");
+        bad("01                                ");
+        bad("00.                               ");
+        bad("00.0                              ");
+        bad("-00                               ");
+        bad("-01                               ");
+        bad("-00.                              ");
+        bad("-00.0                             ");
+        bad("1a                                ");
+        bad("-a                                ");
+        bad(".                                 ");
+        bad("1.                                ");
+        bad("1+                                ");
+        bad("0.0+                              ");
+        bad("0.0e+                             ");
+        bad("0.0e-                             ");
+        bad("0.0e0-                            ");
+        bad("0.0e                              ");
+        bad("1eX                               ");
+        bad("1000000000000000000000000.e       ");
+        bad("0.");
+        bad("0.0e+");
+        bad("0.0e2147483648");
     }
 
     void
@@ -615,6 +568,7 @@ public:
         good("{ \"x\" : [] }");
         good("{ \"x\" : { \"y\" : null } }");
         good("{ \"x\" : [{}] }");
+        good("{\"x\\ny\\u0022\":null}");
         good("{ \"x\":1, \"y\":null}");
         good("{\"x\":1,\"y\":2,\"z\":3}");
         good(" {\"x\":1,\"y\":2,\"z\":3}");
@@ -758,6 +712,13 @@ public:
             BOOST_TEST(n == 2);
             BOOST_TEST(! ec);
         }
+        p.reset();
+        n = p.write_some(false, "[1,2,3]", 7, ec);
+        if(BOOST_TEST(! ec))
+        {
+            BOOST_TEST(n == 7);
+            BOOST_TEST(p.is_complete());
+        }
     }
 
     void
@@ -765,14 +726,14 @@ public:
     {
         std::vector<parse_options> all_configs =
         {
-            {false, false, false},
-            {true, false, false},
-            {false, true, false},
-            {true, true, false},
-            {false, false, true},
-            {true, false, true},
-            {false, true, true},
-            {true, true, true},
+            parse_options{false, false, true},
+            parse_options{true, false, true},
+            parse_options{false, true, true},
+            parse_options{true, true, true},
+            parse_options{false, false, false},
+            parse_options{true, false, false},
+            parse_options{false, true, false},
+            parse_options{true, true, false}
         };
         parse_vectors pv;
         for(auto const& v : pv)
@@ -784,9 +745,9 @@ public:
             {
                 continue;
             }
-            if(v.result == 'i')
+            for (const parse_options& po : all_configs)
             {
-                for (const parse_options& po : all_configs)
+                if(v.result == 'i')
                 {
                     error_code ec;
                     fail_parser p(po);
@@ -800,11 +761,11 @@ public:
                     else
                         bad_one(v.text, po);
                 }
+                else if(v.result == 'y')
+                    good_one(v.text, po);
+                else
+                    bad_one(v.text, po);
             }
-            else if(v.result == 'y')
-                good_one(v.text, all_configs);
-            else
-                bad_one(v.text, all_configs);
         }
     }
 
@@ -897,24 +858,14 @@ public:
             "<i>B</i>, also written as <i>A</i> \\\\ <i>B</i>, i.e. {<i>x</i> | <i>x</i> \\u2208 "
             "<i>A</i> and <i>x</i> \\u2209 <i>B</i>}<br>\\r\\n      example: [0, 2) \\u2212 (1, "
             "3) = [0, 1]\\r\\n    </li>\\r\\n  </ul>\\r\\n</ul>\\r\\n</section>\\r\\n\"\n";
-        good(s);
+        good_one(s);
     }
 
     void
     testComments()
     {
-        std::vector<parse_options> disabled ={ 
-            {false, false, false}, 
-            {false, true, false},
-            {false, false, true}, 
-            {false, true, true} 
-        };
-        std::vector<parse_options> enabled = { 
-            {true, true, false},
-            {true, false, false},
-            {true, true, true},
-            {true, false, true}
-        };
+        parse_options disabled{false, false, true};
+        parse_options enabled{true, false, true};
 
         const auto replace_and_test = 
             [&](string_view s)
@@ -944,7 +895,7 @@ public:
                 std::string captured = "";
 
                 comment_parser() 
-                    : basic_parser({true, false}) { }
+                    : basic_parser(parse_options{true, false, false}) { }
 
                 ~comment_parser() {}
                 bool on_document_begin( error_code& ) { return true; }
@@ -1021,46 +972,44 @@ public:
         };
 
         replace_and_test("@1");
-        replace_and_test("@\"aa\"");
-        replace_and_test("[@]");
-        replace_and_test("[@ @]");
-        replace_and_test("[@1 @]");
-        replace_and_test("@[@1 @]@");
-        replace_and_test(" 1@");
-        replace_and_test(" 1@@@");
-        replace_and_test("[@1 @, 2]");
-        replace_and_test("[@@1 @@@, 2@]");
-        replace_and_test("[@1 @, @2@]");
-        replace_and_test("@[@1 @@, @2@]");
-        replace_and_test("@[@1 @, @2@]@");
-        replace_and_test("@{\"a\":1}@");
-        replace_and_test("@@{@\"a\":1}");
-        replace_and_test("@{@@\"a\"@:1}@");
-        replace_and_test("@{@\"a\"@@:@1}@@");
-        replace_and_test("@@@{@\"a\"@:@@[@]@}");
-        replace_and_test("@{@@\"a\"@:@[@1]@}@@");
-        replace_and_test("@@{@\"a\"@@@:@@[@1@@@]@}@");
-        replace_and_test("@{@@\"a\"@:@@@[@1@,@2@@]@}@@@");
+        replace_and_test("1@");
+        replace_and_test("@1@");
+        replace_and_test("[@1]");
+        replace_and_test("[1@]");
+        replace_and_test("[1,2@]");
+        replace_and_test("[1,@2]");
+        replace_and_test("[1@,2]");
+        replace_and_test("@[@1@,@2@]@");
+        replace_and_test("{@\"a\":1}");
+        replace_and_test("{\"a\"@:1}");
+        replace_and_test("{\"a\":1@}");
+        replace_and_test("{\"a\":1@,\"b\":2}");
+        replace_and_test("{\"a\":1,@\"b\":2}");
+        replace_and_test("@{@\"a\"@:@1@,@\"b\"@:@2@}");
 
-        bad("[1, 2]//", disabled);
-        good("[1, 2]//", enabled);
+        // no following token
+        bad("1/", enabled);
+        // bad second token
+        bad("1/x", enabled);
+        // no comment close
+        bad("1/*", enabled);
+        bad("1/**", enabled);
+        bad("[1 //, 2]", enabled);
+
+        // just comment
+        bad("//\n", enabled);
+        bad("//", enabled);
+        bad("/**/", enabled);
+
+        // no newline at EOF
+        good("1//", enabled);
     }
 
     void
     testAllowTrailing()
     {
-        std::vector<parse_options> disabled = { 
-            {false, false, false}, 
-            {true, false, false},
-            {false, false, true}, 
-            {true, false, true} 
-        };
-        std::vector<parse_options> enabled = { 
-            {true, true, false},
-            {false, true, false},
-            {true, true, true},
-            {false, true, true}
-        };
+        parse_options disabled{false, false, true};
+        parse_options enabled{false, true, true};
 
         bad("[1,]", disabled);
         good("[1,]", enabled);
@@ -1088,9 +1037,13 @@ public:
 
         bad("[[[[[[[],],],],],],]", disabled);
         good("[[[[[[[],],],],],],]", enabled);
+
+        bad("{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{},},},},},},}", disabled);
+        good("{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{},},},},},},}", enabled);
     }
 
-    void testUTF8Validation()
+    void
+    testUTF8Validation()
     {
         good("\"\xc2\x80----------\"");
         good("\"\xc2\xbf----------\"");
@@ -1255,6 +1208,28 @@ public:
     }
 
     void
+    testMaxDepth()
+    {
+        {
+            string_view s = "[[[[[]]]]]";
+            null_parser p;
+            error_code ec;
+            p.max_depth(4);
+            p.write(s.data(), s.size(), ec);
+            BOOST_TEST(ec == error::too_deep);
+        }
+        {
+            string_view s = 
+                "{\"a\":{\"b\":{\"c\":{\"d\":{}}}}}";
+            null_parser p;
+            error_code ec;
+            p.max_depth(4);
+            p.write(s.data(), s.size(), ec);
+            BOOST_TEST(ec == error::too_deep);
+        }
+    }
+
+    void
     run()
     {
         testNull();
@@ -1272,6 +1247,7 @@ public:
         testAllowTrailing();
         testComments();
         testUTF8Validation();
+        testMaxDepth();
     }
 };
 
