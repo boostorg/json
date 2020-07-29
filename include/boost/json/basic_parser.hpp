@@ -2337,7 +2337,10 @@ parse_number(
     const_stream& cs0) ->
         result
 {
-    // one of these will be true if we are not resuming
+    // only one of these will be true if we are not resuming
+    // if negative then !zero_first && !nonzero_first
+    // if zero_first then !nonzero_first && !negative
+    // if nonzero_first then !zero_first && !negative
     constexpr bool negative = First == '-';
     constexpr bool zero_first = First == '0';
     constexpr bool nonzero_first = First == '+';
@@ -2382,12 +2385,12 @@ parse_number(
     num.neg = negative;
 
     // fast path
-
     if( cs.remain() >= 16 + 1 + 16 ) // digits . digits
     {
         int n1;
 
-        if( ! zero_first || *cs != '0' )
+        if( nonzero_first || 
+            (negative && *cs != '0') )
         {
             n1 = detail::count_digits( cs.data() );
             BOOST_ASSERT(n1 >= 0 && n1 <= 16);
@@ -2403,6 +2406,8 @@ parse_number(
 
             cs.skip( n1 );
 
+            // integer or floating-point with 
+            // >= 16 leading digits
             if( n1 == 16 )
             {
                 goto do_num2;
@@ -2410,7 +2415,7 @@ parse_number(
         }
         else
         {
-            // 0. floating point or 0e integer
+            // 0. floating-point or 0e integer
             num.mant = 0;
             n1 = 0;
             ++cs;
@@ -2425,9 +2430,13 @@ parse_number(
                     ++cs;
                     goto do_exp1;
                 }
-                goto finish_int;
+                if (negative)
+                    num.mant = ~num.mant + 1;
+                goto finish_signed;
             }
         }
+
+        // floating-point number
 
         ++cs;
 
@@ -2441,9 +2450,10 @@ parse_number(
             return result::fail;
         }
 
-        if( n1 + n2 >= 19 ) // int64 overflow
+        // floating-point mantissa overflow
+        if( n1 + n2 >= 19 )
         {
-            goto do_num6;
+            goto do_num4;
         }
 
         num.mant = detail::parse_unsigned( num.mant, cs.data(), n2 );
@@ -2904,6 +2914,7 @@ finish_int:
     }
     if(num.mant <= INT64_MAX)
     {
+finish_signed:
         if(BOOST_JSON_UNLIKELY(
             ! h.on_int64(static_cast<
                 int64_t>(num.mant), ec_)))
