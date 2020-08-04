@@ -33,6 +33,7 @@ namespace json {
 struct parse_options
 {
 #if __cplusplus < 201402L
+    explicit
     parse_options(
         bool allow_comments_ = false, 
         bool allow_trailing_commas_ = false,
