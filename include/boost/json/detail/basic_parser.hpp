@@ -120,8 +120,8 @@ class basic_parser
     template<class Handler>
     result syntax_error(Handler&, const_stream&);
 
-    template<bool StackEmpty,
-        bool ReturnValue, bool AllowTrailing, 
+    template<bool StackEmpty, bool ReturnValue,
+        bool Terminal, bool AllowTrailing, 
         bool AllowInvalid, class Handler>
     result parse_comment(Handler& h, const_stream& cs);
     

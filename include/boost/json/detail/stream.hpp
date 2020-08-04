@@ -81,6 +81,13 @@ public:
         BOOST_ASSERT(n <= remain());
         p_ += n;
     }
+
+    void
+    skip_to(const char* p) noexcept
+    {
+        BOOST_ASSERT(p <= end_ && p >= p_);
+        p_ = p;
+    }
 };
 
 class local_const_stream
