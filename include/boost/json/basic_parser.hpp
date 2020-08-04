@@ -264,6 +264,7 @@ syntax_error(
 template<
     bool StackEmpty,
     bool ReturnValue,
+    bool Terminal,
     bool AllowTrailing,
     bool AllowInvalid,
     class Handler>
@@ -274,12 +275,14 @@ parse_comment(
     const_stream& cs) ->
     result
 {
-    const char* start = cs.data();;
-    if (!StackEmpty && !st_.empty())
+    const char* start = cs.data();
+    const char* end_tok;
+    std::size_t remain;
+    if(! StackEmpty && ! st_.empty())
     {
         state st;
         st_.pop(st);
-        switch (st)
+        switch(st)
         {
             default:
             case state::com1: goto do_com1;
@@ -292,125 +295,97 @@ parse_comment(
     BOOST_ASSERT(*cs == '/');
     ++cs;
 do_com1:
-    if (BOOST_JSON_UNLIKELY(!cs))
+    if(BOOST_JSON_UNLIKELY(! cs))
     {
-        //  likely
-        if (BOOST_JSON_LIKELY(more_))
-        {
+        if(BOOST_JSON_LIKELY(more_))
             suspend(state::com1);
-            return result::partial;
-        }
-        // no token following slash
-        ec_ = error::syntax;
-        return result::fail;
+        return result::partial;
     }
-    if (*cs == '/')
+    switch(*cs)
     {
-        // stopped inside a c++ comment
+    case '/':
+        ++cs;
 do_com2:
-        const auto begin = cs.data();
-        const auto remain = cs.remain();
-        const auto new_line = static_cast<const char*>(
-            std::memchr(begin, '\n', remain));
-        if (BOOST_JSON_UNLIKELY(! new_line))
+        remain = cs.remain();
+        end_tok = remain ? static_cast<const char*>(
+            std::memchr(cs.data(), '\n', remain)) : nullptr;
+        if(BOOST_JSON_UNLIKELY(! end_tok))
         {
-            // likely
             cs.skip(remain);
-            if (BOOST_JSON_LIKELY(more_))
-            {
-                if (BOOST_JSON_UNLIKELY(! h.on_comment_part(
-                    {start, cs.used(start)}, ec_)))
-                        return result::fail;
-                suspend(state::com2);
-                return result::partial;
-            }
             // if the doc does not terminate
             // with a newline, treat it as the
             // end of the comment
-            if (BOOST_JSON_UNLIKELY(! h.on_comment(
-                {start, cs.used(start)}, ec_)))
-                    return result::fail;
-            return result::ok;
-        }
-        cs.skip(new_line - begin);
-    }
-    else if (*cs == '*')
-    {
-        // consume the asterisk
-        ++cs;
-do_com3:
-        {
-            const auto remain = cs.remain();
-            const auto asterisk = static_cast<const char*>(
-                std::memchr(cs.data(), '*', remain));
-            // stopped inside a c comment
-            if (BOOST_JSON_UNLIKELY(! asterisk))
+            if(Terminal && ! more_)
             {
-                if (BOOST_JSON_LIKELY(more_))
-                {
-                    cs.skip(remain);
-                    if (BOOST_JSON_UNLIKELY(! h.on_comment_part(
-                        {start, cs.used(start)}, ec_)))
-                            return result::fail;
-                    suspend(state::com3);
-                    return result::partial;
-                }
-                // didn't find closing asterisk
-                ec_ = error::syntax;
-                return result::fail;
+                if(BOOST_JSON_UNLIKELY(! h.on_comment(
+                    {start, cs.used(start)}, ec_)))
+                    return result::fail;
+                return result::ok;
             }
-            cs.skip(asterisk - cs.data());
+            if(BOOST_JSON_UNLIKELY(! h.on_comment_part(
+                {start, cs.used(start)}, ec_)))
+                return result::fail;
+            if(Terminal || more_)
+                suspend(state::com2);
+            return result::partial;
         }
-        // found a asterisk, check if the next char is a slash
-        ++cs;
-do_com4:
-        if (BOOST_JSON_UNLIKELY(!cs))
+        cs.skip_to(end_tok);
+        break;
+    case '*':
+        do
         {
-            // likely
-            if (BOOST_JSON_LIKELY(more_))
+            ++cs;
+do_com3:
+            remain = cs.remain();
+            end_tok = remain ? static_cast<const char*>(
+                std::memchr(cs.data(), '*', remain)) : nullptr;
+            // stopped inside a c comment
+            if(BOOST_JSON_UNLIKELY(! end_tok))
+            {
+                cs.skip(remain);
+                if(BOOST_JSON_UNLIKELY(! h.on_comment_part(
+                    {start, cs.used(start)}, ec_)))
+                    return result::fail;
+                if(BOOST_JSON_LIKELY(more_))
+                    suspend(state::com3);
+                return result::partial;
+            }
+            cs.skip_to(end_tok);
+            // found a asterisk, check if the next char is a slash
+            ++cs;
+do_com4:
+            if(BOOST_JSON_UNLIKELY(! cs))
             {
                 if (BOOST_JSON_UNLIKELY(! h.on_comment_part(
                     {start, cs.used(start)}, ec_)))
-                        return result::fail;
-                suspend(state::com4);
+                    return result::fail;
+                if(BOOST_JSON_LIKELY(more_))
+                    suspend(state::com4);
                 return result::partial;
             }
-            // didn't find closing slash
-            ec_ = error::syntax;
-            return result::fail;
         }
-        if (*cs != '/')
-            goto do_com3;
-    }
-    else
-    {
+        while(*cs != '/');
+        break;
+    default:
         ec_ = error::syntax;
         return result::fail;
     }
-    // fallthrough once comment is sucessfully parsed;
-    // consume the close token
     ++cs;
-    if (BOOST_JSON_UNLIKELY(! h.on_comment(
+    if(BOOST_JSON_UNLIKELY(! h.on_comment(
         {start, cs.used(start)}, ec_)))
-            return result::fail;
-    if (BOOST_JSON_LIKELY(more_))
-    {
+        return result::fail;
+    if(! ReturnValue)
+        return result::ok;
 do_com5:
-        if (BOOST_JSON_UNLIKELY(
-            ! cs || ! skip_white(cs)))
-        {
-            if (more_)
-                suspend(state::com5);
-            return result::partial;
-        }
-    }
-    if (ReturnValue)
+    if(BOOST_JSON_UNLIKELY(
+        ! skip_white(cs)))
     {
-        BOOST_ASSERT(cs);
-        return parse_value<StackEmpty, true, 
-            AllowTrailing, AllowInvalid>(h, cs);
+        if(BOOST_JSON_LIKELY(more_))
+            suspend(state::com5);
+        return result::partial;
     }
-    return result::ok;
+    return parse_value<StackEmpty, true, 
+        AllowTrailing, AllowInvalid>(h, cs);
 }
 
 template<bool StackEmpty>
@@ -860,24 +835,24 @@ do_com12:
         {
         // only comments
         default:
-            r = parse_comment<StackEmpty, false, false, false>(h, cs);
+            r = parse_comment<StackEmpty, false, true, false, false>(h, cs);
             break;
         // trailing
         case 1:
-            r = parse_comment<StackEmpty, false, true, false>(h, cs);
+            r = parse_comment<StackEmpty, false, true, true, false>(h, cs);
             break;
         // skip validation
         case 2:
-            r = parse_comment<StackEmpty, false, false, true>(h, cs);
+            r = parse_comment<StackEmpty, false, true, false, true>(h, cs);
             break;
         // trailing & skip validation
         case 3:
-            r = parse_comment<StackEmpty, false, true, true>(h, cs);
+            r = parse_comment<StackEmpty, false, true, true, true>(h, cs);
             break;
         }
-        if (BOOST_JSON_LIKELY(!r))
+        if(BOOST_JSON_LIKELY(!r))
             goto do_doc3;
-        else if (more_ && r == result::partial)
+        else if(more_ && r == result::partial)
             suspend(state::com12);
         return r;
     }
@@ -910,7 +885,7 @@ parse_value(
                 err, err, err, err, err, err, err, err, err, err,
                 &basic_parser::parse_number<true, '-', Handler>,
                 err,
-                AllowComments ? &basic_parser::parse_comment<true, true, AllowTrailing, AllowInvalid, Handler> : err,
+                AllowComments ? &basic_parser::parse_comment<true, true, false, AllowTrailing, AllowInvalid, Handler> : err,
             &basic_parser::parse_number<true, '0', Handler>,
                 num, num, num, num, num, num, num, num, num, err, err, err, err, err, err,
             err, err, err, err, err, err, err, err, err, err, err, err, err, err, err, err,
@@ -1012,7 +987,7 @@ resume_value(
     case state::com1: case state::com2:
     case state::com3: case state::com4:
     case state::com5:
-        return parse_comment<StackEmpty, true, 
+        return parse_comment<StackEmpty, true, false,
             AllowTrailing, AllowInvalid>(h, cs0);
     }
 }
@@ -2051,7 +2026,7 @@ do_obj1:
         {
 do_com6:
             const result r =
-                parse_comment<StackEmpty, false, 
+                parse_comment<StackEmpty, false, false,
                     AllowTrailing, AllowInvalid>(h, cs);
             if (BOOST_JSON_LIKELY(!r))
                 goto do_obj1;
@@ -2079,7 +2054,7 @@ do_obj2:
             {
 do_com7:
                 const result r =
-                    parse_comment<StackEmpty, false, 
+                    parse_comment<StackEmpty, false, false,
                         AllowTrailing, AllowInvalid>(h, cs);
                 if (BOOST_JSON_LIKELY(!r))
                     goto do_obj7;
@@ -2106,7 +2081,7 @@ do_obj3:
                 {
 do_com8:
                     const result r =
-                        parse_comment<StackEmpty, false, 
+                        parse_comment<StackEmpty, false, false,
                             AllowTrailing, AllowInvalid>(h, cs);
                     if (BOOST_JSON_LIKELY(!r))
                         goto do_obj3;
@@ -2158,7 +2133,7 @@ do_obj6:
                 {
 do_com9:
                     const result r =
-                        parse_comment<StackEmpty, false, 
+                        parse_comment<StackEmpty, false, false,
                             AllowTrailing, AllowInvalid>(h, cs);
                     if (BOOST_JSON_LIKELY(!r))
                         goto do_obj6;
@@ -2251,7 +2226,7 @@ do_arr1:
         {
 do_com10:
            const result r =
-                parse_comment<StackEmpty, false, 
+                parse_comment<StackEmpty, false, false,
                     AllowTrailing, AllowInvalid>(h, cs);
             if (BOOST_JSON_LIKELY(!r))
                 goto do_arr1;
@@ -2293,7 +2268,7 @@ do_arr3:
                 {
 do_com11:
                     const result r =
-                        parse_comment<StackEmpty, false, 
+                        parse_comment<StackEmpty, false, false,
                             AllowTrailing, AllowInvalid>(h, cs);
                     if (BOOST_JSON_LIKELY(!r))
                         goto do_arr3;
