@@ -2652,6 +2652,9 @@ public:
     void
     testHash()
     {
+        // libstdc++ 4.8 bug
+#if !defined(__GNUC__) || (__GNUC__ > 4 || \
+    (__GNUC__ == 4 && __GNUC_MINOR__ > 8))
         {
             std::unordered_set<string> us;
             us.emplace("first");
@@ -2662,6 +2665,7 @@ public:
                 0,
                 std::hash<string>(32));
         }
+#endif
         {
             std::hash<string> h1(32);
             std::hash<string> h2(h1);
