@@ -14,6 +14,7 @@
 #include <boost/json/detail/config.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/string_view.hpp>
+#include <boost/json/detail/digest.hpp>
 #include <boost/json/detail/string_impl.hpp>
 #include <boost/pilfer.hpp>
 #include <algorithm>
@@ -2947,6 +2948,35 @@ operator>(T const& lhs, U const& rhs) noexcept
 
 } // json
 } // boost
+
+// std::hash specialization
+#ifndef BOOST_JSON_DOCS
+namespace std {
+template<>
+struct hash<::boost::json::string>
+{
+    hash() = default;
+    hash(hash const&) = default;
+    hash& operator=(hash const&) = default;
+
+    explicit
+    hash(std::size_t salt) noexcept
+        : salt_(salt)
+    {
+    }
+
+    std::size_t
+    operator()(::boost::json::string const& js) const noexcept
+    {
+        return ::boost::json::detail::digest(
+            js.data(), js.size(), salt_);
+    }
+
+private:
+    std::size_t salt_ = 0;
+};
+} // std
+#endif
 
 #include <boost/json/impl/string.hpp>
 #ifdef BOOST_JSON_HEADER_ONLY

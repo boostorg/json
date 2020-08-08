@@ -174,18 +174,6 @@ public:
     digest(string_view key) const noexcept;
 
 private:
-    inline
-    std::uint32_t
-    digest(
-        string_view key,
-        std::false_type) const noexcept;
-
-    inline
-    std::uint64_t
-    digest(
-        string_view key,
-        std::true_type) const noexcept;
-
     std::size_t
     buckets() const noexcept
     {

@@ -10,6 +10,7 @@
 #ifndef BOOST_JSON_DETAIL_IMPL_OBJECT_IMPL_HPP
 #define BOOST_JSON_DETAIL_IMPL_OBJECT_IMPL_HPP
 
+#include <boost/json/detail/digest.hpp>
 #include <boost/json/detail/object_impl.hpp>
 
 namespace boost {
@@ -257,43 +258,11 @@ std::size_t
 object_impl::
 digest(string_view key) const noexcept
 {
-    return digest(key,
-        std::integral_constant<bool,
-            sizeof(std::size_t) ==
-            sizeof(std::uint64_t)>{});
+    return detail::digest(
+        key.data(), key.size(), salt());
 }
 
 //----------------------------------------------------------
-
-std::uint32_t
-object_impl::
-digest(
-    string_view key,
-    std::false_type) const noexcept
-{
-    std::uint32_t prime = 0x01000193UL;
-    std::uint32_t hash  = 0x811C9DC5UL;
-    hash += static_cast<std::uint32_t>(salt());
-    for(auto p = key.begin(),
-        end = key.end(); p != end; ++p)
-        hash = (*p ^ hash) * prime;
-    return hash;
-}
-
-std::uint64_t
-object_impl::
-digest(
-    string_view key,
-    std::true_type) const noexcept
-{
-    std::uint64_t prime = 0x100000001B3ULL;
-    std::uint64_t hash  = 0xcbf29ce484222325ULL;
-    hash += static_cast<std::uint64_t>(salt());
-    for(auto p = key.begin(),
-        end = key.end(); p != end; ++p)
-        hash = (*p ^ hash) * prime;
-    return hash;
-}
 
 auto
 object_impl::

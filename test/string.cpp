@@ -14,6 +14,7 @@
 #include <sstream>
 #include <string>
 #include <stdint.h>
+#include <unordered_set>
 
 #include "test.hpp"
 #include "test_suite.hpp"
@@ -2649,6 +2650,29 @@ public:
     }
 
     void
+    testHash()
+    {
+        {
+            std::unordered_set<string> us;
+            us.emplace("first");
+            us.emplace("second");
+        }
+        {
+            std::unordered_set<string>(
+                0,
+                std::hash<string>(32));
+        }
+        {
+            std::hash<string> h1(32);
+            std::hash<string> h2(h1);
+            std::hash<string> h3(59);
+            h1 = h3;
+            h2 = h3;
+            (void)h2;
+        }
+    }
+
+    void
     run()
     {
         testConstruction();
@@ -2680,6 +2704,8 @@ public:
         testFindNotLastOf(); //
 
         testNonMembers();
+
+        testHash();
     }
 };
 

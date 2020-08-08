@@ -39,6 +39,7 @@ in a translation unit of the program.
 #include <boost/json/impl/value_ref.ipp>
 
 #include <boost/json/detail/impl/array_impl.ipp>
+#include <boost/json/detail/impl/digest.ipp>
 #include <boost/json/detail/impl/format.ipp>
 #include <boost/json/detail/impl/object_impl.ipp>
 #include <boost/json/detail/impl/raw_stack.ipp>
