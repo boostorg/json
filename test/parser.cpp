@@ -24,14 +24,6 @@
 namespace boost {
 namespace json {
 
-static std::vector<parse_options> all_configs =
-{
-    {false, false},
-    {true, false},
-    {false, true},
-    {true, true}
-};
-
 class parser_test
 {
 public:
@@ -41,8 +33,8 @@ public:
     value
     from_string_test(
         string_view s,
-        parse_options po,
-        storage_ptr sp = {})
+        storage_ptr sp = {},
+        const parse_options& po = parse_options{})
     {
         parser p(po);
         error_code ec;
@@ -56,22 +48,15 @@ public:
 
     void
     static
-    check_round_trip(value const& jv1, parse_options po)
+    check_round_trip(value const& jv1, 
+        const parse_options& po = parse_options{})
     {
         auto const s2 =
             //to_string_test(jv1); // use this if serializer is broken
             to_string(jv1);
         auto jv2 =
-            from_string_test(s2, po);
+            from_string_test(s2, {}, po);
         BOOST_TEST(equal(jv1, jv2));
-    }
-
-    void
-    static
-    check_round_trip(value const& jv1, const std::vector<parse_options>& configs = all_configs)
-    {
-        for (const parse_options& po : configs)
-            check_round_trip(jv1, po);
     }
 
     template<class F>
@@ -81,26 +66,27 @@ public:
         string_view s,
         storage_ptr sp,
         F const& f,
-        parse_options po)
+        const parse_options& po = parse_options{})
     {
         auto const jv =
-            from_string_test(s, po, sp);
+            from_string_test(s, sp, po);
         f(jv, po);
     }
 
     static
     void
-    grind_one(string_view s, parse_options po)
+    grind_one(string_view s)
     {
         auto const jv =
-            from_string_test(s, po);
-        check_round_trip(jv, po);
+            from_string_test(s);
+        check_round_trip(jv);
     }
 
     template<class F>
     static
     void
-    grind(string_view s, F const& f, parse_options po)
+    grind(string_view s, F const& f, 
+        const parse_options& po = parse_options{})
     {
         try
         {
@@ -141,32 +127,13 @@ public:
         }
     }
 
-    template<class F>
     static
     void
-    grind(string_view s, F const& f, const std::vector<parse_options>& configs = all_configs)
-    {
-        for (const parse_options& po : configs)
-            grind(s, f, po);
-    }
-
-    static
-    void
-    grind(string_view s)
+    grind(string_view s, 
+        const parse_options& po = parse_options{})
     {
         grind(s,
-            [](value const& jv, parse_options po)
-            {
-                check_round_trip(jv, po);
-            });
-    }
-
-    static
-    void
-    grind(string_view s, parse_options po)
-    {
-        grind(s,
-            [](value const& jv, parse_options po)
+            [](value const& jv, const parse_options& po)
             {
                 check_round_trip(jv, po);
             }, po);
@@ -177,7 +144,7 @@ public:
     grind_int64(string_view s, int64_t v)
     {
         grind(s,
-            [v](value const& jv, parse_options)
+            [v](value const& jv, const parse_options&)
             {
                 if(! BOOST_TEST(jv.is_int64()))
                     return;
@@ -190,7 +157,7 @@ public:
     grind_uint64(string_view s, uint64_t v)
     {
         grind(s,
-            [v](value const& jv, parse_options)
+            [v](value const& jv, const parse_options&)
             {
                 if(! BOOST_TEST(jv.is_uint64()))
                     return;
@@ -203,7 +170,7 @@ public:
     grind_double(string_view s, double v)
     {
         grind(s,
-            [v](value const& jv, parse_options)
+            [v](value const& jv, const parse_options&)
             {
                 if(! BOOST_TEST(jv.is_double()))
                     return;
@@ -290,7 +257,6 @@ public:
         grind("\"\\udbff\\udffF\"");
 
         // big string
-        for (const parse_options& po : all_configs)
         {
             std::string const big(4000, '*');
             {
@@ -298,7 +264,7 @@ public:
                 js = "\"" + big + "\"";
                 auto const N = js.size() / 2;
                 error_code ec;
-                parser p(po);
+                parser p;
                 p.start();
                 p.write(js.data(), N, ec);
                 if(BOOST_TEST(! ec))
@@ -309,7 +275,7 @@ public:
                         p.finish(ec);
                     if(BOOST_TEST(! ec))
                         check_round_trip(
-                            p.release(), po);
+                            p.release());
                 }   
             }
         }
@@ -626,10 +592,9 @@ public:
         grind("[{},[],\"x\",1,-1,1.0,true,null]");
 
         // depth
-        for (const parse_options& po : all_configs)
         {
             error_code ec;
-            parser p(po);
+            parser p;
             p.start();
             BOOST_TEST(
                 p.depth() == 0);
@@ -699,10 +664,9 @@ public:
         }
 
         // depth
-        for (const parse_options& po : all_configs)
         {
             error_code ec;
-            parser p(po);
+            parser p;
             p.start();
             BOOST_TEST(
                 p.depth() == 0);
@@ -851,55 +815,6 @@ public:
     }
 
     void
-    testComments()
-    {
-        string_view in =
-            R"xx({
-    "glossary": // test c++ comment  
-        {
-        "title": "example glossary",
-		"GlossDiv": {
-            "title": "S", // test c++ comment
-            // test c++ comment
-			"GlossList": {
-                "GlossEntry": {
-                    "ID": /* test c comment*/"SGML",
-					"SortAs": "SGML",
-					/* test c comment */"GlossTerm": "Standard Generalized Markup Language",
-					/* test c comment */ "Acronym":/* test c comment */ "SGML",
-					"Abbrev":/* test c comment */ /* test c comment */"ISO 8879:1986", /* test c comment*/
-					"GlossDef": { /* test c comment*/
-                        "para": "A meta-markup language, used to create markup languages such as DocBook.",
-						"GlossSeeAlso": ["GML", "XML"]
-                    },
-					"GlossSee": "markup"
-                }
-            } // test c++ comment
-        }
-    }
-})xx"
-;
-        parser p;
-        error_code ec;
-        p.start();
-        p.write(in.data(), in.size(), ec);
-        if (BOOST_TEST(!ec))
-            p.finish(ec);
-        if (BOOST_TEST(!ec))
-        {
-            BOOST_TEST(to_string(p.release()) ==
-                "{\"glossary\":{\"title\":\"example glossary\",\"GlossDiv\":"
-                "{\"title\":\"S\",\"GlossList\":{\"GlossEntry\":{\"ID\":\"SGML\","
-                "\"SortAs\":\"SGML\",\"GlossTerm\":\"Standard Generalized Markup "
-                "Language\",\"Acronym\":\"SGML\",\"Abbrev\":\"ISO 8879:1986\","
-                "\"GlossDef\":{\"para\":\"A meta-markup language, used to create "
-                "markup languages such as DocBook.\",\"GlossSeeAlso\":[\"GML\",\"XML\"]},"
-                "\"GlossSee\":\"markup\"}}}}}"
-            );
-        }
-    }
-
-    void
     testSampleJson()
     {
         string_view in =
@@ -924,29 +839,87 @@ R"xx({
             }
         }
     }
-})xx"
-        ;
-        for (const parse_options& po : all_configs)
+})xx";
+        string_view out = 
+            "{\"glossary\":{\"title\":\"example glossary\",\"GlossDiv\":"
+            "{\"title\":\"S\",\"GlossList\":{\"GlossEntry\":{\"ID\":\"SGML\","
+            "\"SortAs\":\"SGML\",\"GlossTerm\":\"Standard Generalized Markup "
+            "Language\",\"Acronym\":\"SGML\",\"Abbrev\":\"ISO 8879:1986\","
+            "\"GlossDef\":{\"para\":\"A meta-markup language, used to create "
+            "markup languages such as DocBook.\",\"GlossSeeAlso\":[\"GML\",\"XML\"]},"
+            "\"GlossSee\":\"markup\"}}}}}";
+        storage_ptr sp = 
+            make_counted_resource<monotonic_resource>();
+        parser p(sp);
+        error_code ec;
+        p.start();
+        p.write(in.data(), in.size(), ec);
+        if(BOOST_TEST(! ec))
+            p.finish(ec);
+        if(BOOST_TEST(! ec))
         {
-            parser p(po);
-            error_code ec;
+            BOOST_TEST(to_string(p.release()) == out);
+        }
+        try
+        {
             p.start();
-            p.write(in.data(), in.size(), ec);
-            if(BOOST_TEST(! ec))
-                p.finish(ec);
-            if(BOOST_TEST(! ec))
-            {
-                BOOST_TEST(to_string(p.release()) ==
-                    "{\"glossary\":{\"title\":\"example glossary\",\"GlossDiv\":"
-                    "{\"title\":\"S\",\"GlossList\":{\"GlossEntry\":{\"ID\":\"SGML\","
-                    "\"SortAs\":\"SGML\",\"GlossTerm\":\"Standard Generalized Markup "
-                    "Language\",\"Acronym\":\"SGML\",\"Abbrev\":\"ISO 8879:1986\","
-                    "\"GlossDef\":{\"para\":\"A meta-markup language, used to create "
-                    "markup languages such as DocBook.\",\"GlossSeeAlso\":[\"GML\",\"XML\"]},"
-                    "\"GlossSee\":\"markup\"}}}}}"
-                );
+            p.write(in.data(), in.size());
+            p.finish();
+            BOOST_TEST(to_string(p.release()) == out);
         }
+        catch(std::exception const&)
+        {
+            BOOST_TEST_FAIL();
         }
+    }
+
+    void 
+    testTrailingCommas()
+    {
+        parse_options po{false, true, false};
+        grind("[1,]", po);
+        grind("[1, 2,]", po);
+        grind("{\"a\": 1,}", po);
+        grind("{\"a\": 1, \"b\": 2,}", po);
+    }
+
+    void
+    testComments()
+    {
+        parse_options po{true, false, false};
+        grind("[/* c */1]", po);
+        grind("[1/* c */]", po);
+        grind("[1] /* c */", po);
+        grind("/* c */ [1]", po);
+        grind("[1/* c */, 2]", po);
+        grind("[1, /* c */ 2]", po);
+
+        grind("// c++ \n[1]", po);
+        grind("[1] // c++ \n", po);
+        grind("[1] // c++", po);
+        grind("[// c++ \n1]", po);
+        grind("[1// c++ \n]", po);
+        grind("[1// c++ \n, 2]", po);
+        grind("[1, // c++ \n 2]", po);
+
+        grind("{/* c */\"a\":1}", po);
+        grind("{\"a\":1/* c */}", po);
+        grind("{\"a\":1} /* c */", po);
+        grind("/* c */ {\"a\":1}", po);
+        grind("{\"a\":1/* c */, \"b\":1}", po);
+        grind("{\"a\":1, /* c */ \"b\":1}", po);
+        grind("{\"a\"/* c */:1}", po);
+        grind("{\"a\":/* c */1}", po);
+
+        grind("// c++ \n{\"a\":1}", po);
+        grind("{\"a\":1} // c++ \n", po);
+        grind("{\"a\":1} // c++", po);
+        grind("{// c++ \n\"a\":1}", po);
+        grind("{\"a\":1// c++ \n}", po);
+        grind("{\"a\":1// c++ \n, \"b\":2}", po);
+        grind("{\"a\":1, // c++ \n \"b\":2}", po);
+        grind("{\"a\"// c++ \n:1}", po);
+        grind("{\"a\":// c++ \n1}", po);   
     }
 
     void
@@ -983,9 +956,33 @@ R"xx({
         }
     }
 
+    void
+    testError()
+    {
+
+        {
+            parser p;
+            error_code ec;
+            p.start();
+            p.write("nullx", 5, ec);
+            BOOST_TEST(ec == 
+                error::extra_data);
+        }
+
+        {
+            parser p;
+            error_code ec;
+            p.start();
+            p.write("[123,", 5, ec);
+            if(BOOST_TEST(! ec))
+                p.finish(ec);
+            BOOST_TEST(ec == error::incomplete);
+        }
+    }
+
     //------------------------------------------------------
 
-    // https://github.com/vinniefalco/json/issues/15
+    // https://github.com/cppalliance/json/issues/15
     void
     testIssue15()
     {
@@ -996,7 +993,7 @@ R"xx({
                 .as_int64() == 12345);
     }
 
-    // https://github.com/vinniefalco/json/issues/45
+    // https://github.com/cppalliance/json/issues/45
     void
     testIssue45()
     {
@@ -1028,9 +1025,11 @@ R"xx({
         testObject();
         testMembers();
         testFreeFunctions();
-        //testComments();
         testSampleJson();
         testUnicodeStrings();
+        testTrailingCommas();
+        testComments();
+        testError();
         testIssue15();
         testIssue45();
     }
