@@ -167,26 +167,26 @@ class basic_parser
     
     template<bool StackEmpty, bool ReturnValue,
         bool Terminal, bool AllowTrailing, 
-        bool AllowInvalid, class Handler>
+        bool AllowBadUTF8, class Handler>
     const char* parse_comment(Handler& h, const char* p);
 
     template<bool StackEmpty, class Handler>
     const char* parse_document(Handler& h, const char* p);
     
     template<bool StackEmpty, bool AllowComments,
-        bool AllowTrailing, bool AllowInvalid, class Handler>
+        bool AllowTrailing, bool AllowBadUTF8, class Handler>
     const char* parse_value(Handler& h, const char* p);
     
     template<bool StackEmpty, bool AllowComments,
-        bool AllowTrailing, bool AllowInvalid, class Handler>
+        bool AllowTrailing, bool AllowBadUTF8, class Handler>
     const char* resume_value(Handler& h, const char* p);
     
     template<bool StackEmpty, bool AllowComments,
-        bool AllowTrailing, bool AllowInvalid, class Handler>
+        bool AllowTrailing, bool AllowBadUTF8, class Handler>
     const char* parse_object(Handler& h, const char* p);
     
     template<bool StackEmpty, bool AllowComments,
-        bool AllowTrailing, bool AllowInvalid, class Handler>
+        bool AllowTrailing, bool AllowBadUTF8, class Handler>
     const char* parse_array(Handler& h, const char* p);
     
     template<bool StackEmpty, class Handler>
@@ -199,7 +199,7 @@ class basic_parser
     const char* parse_false(Handler& h, const char* p);
     
     template<bool StackEmpty, bool IsKey,
-        bool AllowInvalid, class Handler>
+        bool AllowBadUTF8, class Handler>
     const char* parse_string(Handler& h, const char* p);
     
     template<bool StackEmpty, char First, class Handler>
