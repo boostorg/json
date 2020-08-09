@@ -122,7 +122,7 @@ class basic_parser
 
     template<bool StackEmpty, bool ReturnValue,
         bool Terminal, bool AllowTrailing, 
-        bool AllowInvalid, class Handler>
+        bool AllowBadUTF8, class Handler>
     result parse_comment(Handler& h, const_stream& cs);
     
     template<bool StackEmpty>
@@ -132,19 +132,19 @@ class basic_parser
     result parse_document(Handler& h, const_stream& cs);
     
     template<bool StackEmpty, bool AllowComments,
-        bool AllowTrailing, bool AllowInvalid, class Handler>
+        bool AllowTrailing, bool AllowBadUTF8, class Handler>
     result parse_value(Handler& h, const_stream& cs);
     
     template<bool StackEmpty, bool AllowComments,
-        bool AllowTrailing, bool AllowInvalid, class Handler>
+        bool AllowTrailing, bool AllowBadUTF8, class Handler>
     result resume_value(Handler& h, const_stream& cs);
     
     template<bool StackEmpty, bool AllowComments,
-        bool AllowTrailing, bool AllowInvalid, class Handler>
+        bool AllowTrailing, bool AllowBadUTF8, class Handler>
     result parse_object(Handler& h, const_stream& cs);
     
     template<bool StackEmpty, bool AllowComments,
-        bool AllowTrailing, bool AllowInvalid, class Handler>
+        bool AllowTrailing, bool AllowBadUTF8, class Handler>
     result parse_array(Handler& h, const_stream& cs);
     
     template<bool StackEmpty, class Handler>
@@ -156,7 +156,7 @@ class basic_parser
     template<bool StackEmpty, class Handler>
     result parse_false(Handler& h, const_stream& cs);
     
-    template<bool StackEmpty, bool AllowInvalid, class Handler>
+    template<bool StackEmpty, bool AllowBadUTF8, class Handler>
     result parse_string(Handler& h, const_stream& cs);
     
     template<bool StackEmpty, char First, class Handler>

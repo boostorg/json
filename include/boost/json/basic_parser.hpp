@@ -266,7 +266,7 @@ template<
     bool ReturnValue,
     bool Terminal,
     bool AllowTrailing,
-    bool AllowInvalid,
+    bool AllowBadUTF8,
     class Handler>
 auto
 basic_parser::
@@ -385,7 +385,7 @@ do_com5:
         return result::partial;
     }
     return parse_value<StackEmpty, true, 
-        AllowTrailing, AllowInvalid>(h, cs);
+        AllowTrailing, AllowBadUTF8>(h, cs);
 }
 
 template<bool StackEmpty>
@@ -863,7 +863,7 @@ template<
     bool StackEmpty, 
     bool AllowComments, 
     bool AllowTrailing, 
-    bool AllowInvalid,
+    bool AllowBadUTF8,
     class Handler>
 auto
 basic_parser::
@@ -881,16 +881,16 @@ parse_value(
             err, err, err, err, err, err, err, err, err, err, err, err, err, err, err, err,
             err, err, err, err, err, err, err, err, err, err, err, err, err, err, err, err,
             err, err,
-                &basic_parser::parse_string<true, AllowInvalid, Handler>,
+                &basic_parser::parse_string<true, AllowBadUTF8, Handler>,
                 err, err, err, err, err, err, err, err, err, err,
                 &basic_parser::parse_number<true, '-', Handler>,
                 err,
-                AllowComments ? &basic_parser::parse_comment<true, true, false, AllowTrailing, AllowInvalid, Handler> : err,
+                AllowComments ? &basic_parser::parse_comment<true, true, false, AllowTrailing, AllowBadUTF8, Handler> : err,
             &basic_parser::parse_number<true, '0', Handler>,
                 num, num, num, num, num, num, num, num, num, err, err, err, err, err, err,
             err, err, err, err, err, err, err, err, err, err, err, err, err, err, err, err,
             err, err, err, err, err, err, err, err, err, err, err,
-                &basic_parser::parse_array<true, AllowComments, AllowTrailing, AllowInvalid, Handler>,
+                &basic_parser::parse_array<true, AllowComments, AllowTrailing, AllowBadUTF8, Handler>,
                 err, err, err, err,
             err, err, err, err, err, err,
                 &basic_parser::parse_false<true, Handler>,
@@ -900,7 +900,7 @@ parse_value(
             err, err, err, err,
                 &basic_parser::parse_true<true, Handler>,
                 err, err, err, err, err, err,
-                &basic_parser::parse_object<true, AllowComments, AllowTrailing, AllowInvalid, Handler>,
+                &basic_parser::parse_object<true, AllowComments, AllowTrailing, AllowBadUTF8, Handler>,
                 err, err, err, err,
 
             // negative values are converted to unsigned char, they are handled here
@@ -917,14 +917,14 @@ parse_value(
             [static_cast<unsigned char>(*cs)])(h, cs);
     }
     return resume_value<StackEmpty, AllowComments, 
-        AllowTrailing, AllowInvalid>(h, cs);
+        AllowTrailing, AllowBadUTF8>(h, cs);
 }
 
 template<
     bool StackEmpty,
     bool AllowComments,
     bool AllowTrailing,
-    bool AllowInvalid,
+    bool AllowBadUTF8,
     class Handler>
 auto
 basic_parser::
@@ -959,13 +959,13 @@ resume_value(
     case state::sur5: case state::sur6:
     case state::utf17: case state::utf18:
         return parse_string<
-            StackEmpty, AllowInvalid>(h, cs0);
+            StackEmpty, AllowBadUTF8>(h, cs0);
 
     case state::arr1: case state::arr2:
     case state::arr3: case state::arr4:
     case state::com10: case state::com11:
         return parse_array<StackEmpty, AllowComments, 
-            AllowTrailing, AllowInvalid>(h, cs0);
+            AllowTrailing, AllowBadUTF8>(h, cs0);
         
     case state::obj1: case state::obj2:
     case state::obj3: case state::obj4:
@@ -974,7 +974,7 @@ resume_value(
     case state::com6: case state::com7:
     case state::com8: case state::com9:
         return parse_object<StackEmpty, AllowComments, 
-            AllowTrailing, AllowInvalid>(h, cs0);
+            AllowTrailing, AllowBadUTF8>(h, cs0);
         
     case state::num1: case state::num2:
     case state::num3: case state::num4:
@@ -988,7 +988,7 @@ resume_value(
     case state::com3: case state::com4:
     case state::com5:
         return parse_comment<StackEmpty, true, false,
-            AllowTrailing, AllowInvalid>(h, cs0);
+            AllowTrailing, AllowBadUTF8>(h, cs0);
     }
 }
 
@@ -1290,7 +1290,7 @@ do_fal4:
 
 template<
     bool StackEmpty, 
-    bool AllowInvalid,
+    bool AllowBadUTF8,
     class Handler>
 auto
 basic_parser::
@@ -1342,7 +1342,7 @@ parse_string(
     //
     // zero-copy unescaped runs
     //
-    if (AllowInvalid)
+    if (AllowBadUTF8)
         cs.skip(detail::count_unescaped(
             cs.data(), cs.remain()));
     else
@@ -1374,7 +1374,7 @@ parse_string(
                 ++cs;
                 return result::ok;
             }
-            else if(! AllowInvalid && 
+            else if(! AllowBadUTF8 && 
                 (c & 0x80))
             {
 do_utf17:
@@ -1491,7 +1491,7 @@ do_str2:
                 ++cs;
                 return result::ok;
             }
-            else if(! AllowInvalid &&
+            else if(! AllowBadUTF8 &&
                 (c & 0x80))
             {
 do_utf18:
@@ -1968,7 +1968,7 @@ template<
     bool StackEmpty,
     bool AllowComments,
     bool AllowTrailing,
-    bool AllowInvalid,
+    bool AllowBadUTF8,
     class Handler>
 auto
 basic_parser::
@@ -2027,7 +2027,7 @@ do_obj1:
 do_com6:
             const result r =
                 parse_comment<StackEmpty, false, false,
-                    AllowTrailing, AllowInvalid>(h, cs);
+                    AllowTrailing, AllowBadUTF8>(h, cs);
             if (BOOST_JSON_LIKELY(!r))
                 goto do_obj1;
             else if (more_ && r == result::partial)
@@ -2041,7 +2041,7 @@ do_com6:
                 is_key_ = true;
 do_obj2:
                 const result r = 
-                    parse_string<StackEmpty, AllowInvalid>(h, cs);
+                    parse_string<StackEmpty, AllowBadUTF8>(h, cs);
                 if(BOOST_JSON_UNLIKELY(r))
                 {
                     if(BOOST_JSON_LIKELY(more_ &&
@@ -2055,7 +2055,7 @@ do_obj2:
 do_com7:
                 const result r =
                     parse_comment<StackEmpty, false, false,
-                        AllowTrailing, AllowInvalid>(h, cs);
+                        AllowTrailing, AllowBadUTF8>(h, cs);
                 if (BOOST_JSON_LIKELY(!r))
                     goto do_obj7;
                 else if (more_ && r == result::partial)
@@ -2082,7 +2082,7 @@ do_obj3:
 do_com8:
                     const result r =
                         parse_comment<StackEmpty, false, false,
-                            AllowTrailing, AllowInvalid>(h, cs);
+                            AllowTrailing, AllowBadUTF8>(h, cs);
                     if (BOOST_JSON_LIKELY(!r))
                         goto do_obj3;
                     else if (more_ && r == result::partial)
@@ -2105,7 +2105,7 @@ do_obj5:
             {
                 const result r = 
                     parse_value<StackEmpty, AllowComments, 
-                        AllowTrailing, AllowInvalid>(h, cs);
+                        AllowTrailing, AllowBadUTF8>(h, cs);
                 if(BOOST_JSON_UNLIKELY(r))
                 {
                     if(BOOST_JSON_LIKELY(more_ &&
@@ -2134,7 +2134,7 @@ do_obj6:
 do_com9:
                     const result r =
                         parse_comment<StackEmpty, false, false,
-                            AllowTrailing, AllowInvalid>(h, cs);
+                            AllowTrailing, AllowBadUTF8>(h, cs);
                     if (BOOST_JSON_LIKELY(!r))
                         goto do_obj6;
                     else if (more_ && r == result::partial)
@@ -2173,7 +2173,7 @@ template<
     bool StackEmpty,
     bool AllowComments,
     bool AllowTrailing,
-    bool AllowInvalid,
+    bool AllowBadUTF8,
     class Handler>
 auto
 basic_parser::
@@ -2227,7 +2227,7 @@ do_arr1:
 do_com10:
            const result r =
                 parse_comment<StackEmpty, false, false,
-                    AllowTrailing, AllowInvalid>(h, cs);
+                    AllowTrailing, AllowBadUTF8>(h, cs);
             if (BOOST_JSON_LIKELY(!r))
                 goto do_arr1;
             else if (more_ && r == result::partial)
@@ -2240,7 +2240,7 @@ do_arr2:
             {
                 const result r = 
                     parse_value<StackEmpty, AllowComments, 
-                        AllowTrailing, AllowInvalid>(h, cs);
+                        AllowTrailing, AllowBadUTF8>(h, cs);
                 if(BOOST_JSON_UNLIKELY(r))
                 {
                     if(BOOST_JSON_LIKELY(more_ &&
@@ -2269,7 +2269,7 @@ do_arr3:
 do_com11:
                     const result r =
                         parse_comment<StackEmpty, false, false,
-                            AllowTrailing, AllowInvalid>(h, cs);
+                            AllowTrailing, AllowBadUTF8>(h, cs);
                     if (BOOST_JSON_LIKELY(!r))
                         goto do_arr3;
                     else if (more_ && r == result::partial)
