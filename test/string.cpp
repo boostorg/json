@@ -2509,18 +2509,11 @@ public:
     {
         test_vectors const t;
         string const s1 = t.v1;
-        string const s2 = t.v2;
 
         // find(string_view, size_type)
-        BOOST_TEST(s1.find(string("bcd")) == 1);
-        BOOST_TEST(s1.find(string("cde"), 1) == 2);
-        BOOST_TEST(s1.find(string("efg"), 5) == string::npos);
-        BOOST_TEST(s1.find("bcd", 0) == 1);
-        BOOST_TEST(s1.find("cde", 1) == 2);
-        BOOST_TEST(s1.find("efg", 5) == string::npos);
-        BOOST_TEST(s1.find(string_view("bcd")) == 1);
-        BOOST_TEST(s1.find(string_view("cde"), 1) == 2);
-        BOOST_TEST(s1.find(string_view("efg"), 5) == string::npos);
+        BOOST_TEST(s1.find("bcd") == 1);
+        BOOST_TEST(s1.find("cde") == 2);
+
         BOOST_TEST(s1.find("bcd", 0) == 1);
         BOOST_TEST(s1.find("cde", 1) == 2);
         BOOST_TEST(s1.find("efg", 5) == string::npos);
@@ -2534,26 +2527,89 @@ public:
     void
     testRfind()
     {
+        test_vectors const t;
+        string const s1 = t.v1;
+        
+        // rfind(string_view, size_type)
+        BOOST_TEST(s1.rfind("bcd") == 1);
+        BOOST_TEST(s1.rfind("cde") == 2);
+
+        BOOST_TEST(s1.rfind("bcd", 1) == 1);
+        BOOST_TEST(s1.rfind("cde", 2) == 2);
+        BOOST_TEST(s1.rfind("efg", 3) == string::npos);
+
+        // rfind(char, size_type)
+        BOOST_TEST(s1.rfind('b') == 1);
+        BOOST_TEST(s1.rfind('c', 2) == 2);
+        BOOST_TEST(s1.rfind('e', 3) == string::npos);
     }
 
     void
     testFindFirstOf()
     {
+        test_vectors const t;
+        string const s1 = t.v1;
+
+        // find_first_of(string_view, size_type)
+        BOOST_TEST(s1.find_first_of("bcd") == 1);
+        BOOST_TEST(s1.find_first_of("cde") == 2);
+
+        BOOST_TEST(s1.find_first_of("bcd", 0) == 1);
+        BOOST_TEST(s1.find_first_of("cde", 1) == 2);
+        BOOST_TEST(s1.find_first_of("efg", 7) == string::npos);
     }
 
     void
-    testFindNotFirstOf()
+    testFindFirstNotOf()
     {
+        test_vectors const t;
+        string const s1 = t.v1;
+
+        // find_first_not_of(string_view, size_type)
+        BOOST_TEST(s1.find_first_not_of("abc") == 3);
+        BOOST_TEST(s1.find_first_not_of("cde") == 0);
+
+        BOOST_TEST(s1.find_first_not_of("bcd", 0) == 0);
+        BOOST_TEST(s1.find_first_not_of("cde", 2) == 5);
+
+        // find_first_not_of(char, size_type)
+        BOOST_TEST(s1.find_first_not_of('b') == 0);
+        BOOST_TEST(s1.find_first_not_of('a', 0) == 1);
+        BOOST_TEST(s1.find_first_not_of('e', 4) == 5);
     }
 
     void
     testFindLastOf()
     {
+        test_vectors const t;
+        string const s1 = t.v1;
+
+        // find_last_of(string_view, size_type)
+        BOOST_TEST(s1.find_last_of("bcd") == 3);
+        BOOST_TEST(s1.find_last_of("cde") == 4);
+
+        BOOST_TEST(s1.find_last_of("bcd", 3) == 3);
+        BOOST_TEST(s1.find_last_of("cde", 5) == 4);
+        BOOST_TEST(s1.find_last_of("efg", 3) == string::npos);
     }
 
     void
-    testFindNotLastOf()
+    testFindLastNotOf()
     {
+        test_vectors const t;
+        string const s1 = t.v1;
+
+        // find_last_not_of(string_view, size_type)
+        BOOST_TEST(s1.find_last_not_of("abc", 3) == 3);
+        BOOST_TEST(s1.find_last_not_of("bcd", 3) == 0);
+
+        BOOST_TEST(s1.find_last_not_of("efg", 4) == 3);
+        BOOST_TEST(s1.find_last_not_of("abc", 2) == string::npos);
+
+        // find_first_not_of(char, size_type)
+        BOOST_TEST(s1.find_last_not_of('a', 3) == 3);
+        BOOST_TEST(s1.find_last_not_of('e', 4) == 3);
+        BOOST_TEST(s1.find_last_not_of('a', 0) == string::npos);
     }
 
     void
@@ -2694,18 +2750,18 @@ public:
         testPlusEquals();
         testCompare();
         testStartEndsWith();
-        testReplace(); //
+        testReplace();
         testSubStr();
         testCopy();
         testResize();
         testSwap();
 
         testFind();
-        testRfind(); //
-        testFindFirstOf(); //
-        testFindNotFirstOf(); //
-        testFindLastOf(); //
-        testFindNotLastOf(); //
+        testRfind();
+        testFindFirstOf();
+        testFindFirstNotOf();
+        testFindLastOf();
+        testFindLastNotOf();
 
         testNonMembers();
 
