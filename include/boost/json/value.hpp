@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+// Copyright (c) 2020 Krystian Stasiowski (sdkrystian@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -2832,6 +2833,65 @@ private:
 
 //----------------------------------------------------------
 
+#ifdef BOOST_JSON_DOCS
+
+/** Tuple-like element access.
+    
+    This overload permits the key and value
+    of a `key_value_pair` to be accessed
+    by index. For example:
+
+    @code 
+
+    key_value_pair kvp("num", 42);
+    
+    string_view key = get<0>(kvp);
+    value& jv = get<1>(kvp);
+
+    @endcode
+
+    @par Structured Bindings
+
+    When using C++17 or greater, objects of type
+    @ref key_value_pair may be used to initialize
+    structured bindings:
+
+    @code
+
+    key_value_pair kvp("num", 42);
+
+    auto& [key, value] = kvp;
+
+    @endcode
+
+    Depending on the value of `I`, the return type will be:
+
+    @li `string_view const` if `I == 0`, or
+
+    @li `value&`, `value const&`, or `value&&` if `I == 1`.
+    
+    Any other value for `I` is ill-formed.
+
+    @tparam I The element index to access.
+
+    @par Constraints
+
+    `std::is_same_v< std::remove_cvref_t<T>, key_value_pair >`
+
+    @return `kvp.key()` if `I == 0`, or `kvp.value()` 
+    if `I == 1`.
+
+    @param kvp The @ref key_value_pair object
+    to access.
+*/
+template<
+    std::size_t I,
+    class T>
+__see_below__
+get(T&& kvp) noexcept;
+
+#else
+
 template<std::size_t I>
 auto
 get(key_value_pair const&) noexcept ->
@@ -2925,6 +2985,8 @@ get<1>(key_value_pair&& kvp) noexcept
     return std::move(kvp.value());
 }
 
+#endif
+
 } // json
 } // boost
 
@@ -2932,6 +2994,8 @@ get<1>(key_value_pair&& kvp) noexcept
 # pragma clang diagnostic push
 # pragma clang diagnostic ignored "-Wmismatched-tags"
 #endif
+
+#ifndef BOOST_JSON_DOCS
 
 namespace std {
 
@@ -2968,6 +3032,8 @@ struct tuple_element<1, ::boost::json::key_value_pair const>
 };
 
 } // std
+
+#endif
 
 #ifdef __clang__
 # pragma clang diagnostic pop
