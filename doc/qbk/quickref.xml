@@ -36,6 +36,7 @@
       <entry valign="top">
         <bridgehead renderas="sect3">Functions</bridgehead>
         <simplelist type="vert" columns="1">
+          <member><link linkend="json.ref.boost__json__get">get</link></member>
           <member><link linkend="json.ref.boost__json__make_counted_resource">make_counted_resource</link></member>
           <member><link linkend="json.ref.boost__json__number_cast">number_cast</link></member>
           <member><link linkend="json.ref.boost__json__parse">parse</link></member>
