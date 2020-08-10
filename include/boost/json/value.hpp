@@ -2839,7 +2839,8 @@ get(key_value_pair const&) noexcept ->
         string_view const,
         value const&>::type
 {
-    BOOST_STATIC_ASSERT(I == -1u);
+    static_assert(I == 0, 
+        "key_value_pair index out of range");
 }
 
 template<std::size_t I>
@@ -2849,7 +2850,8 @@ get(key_value_pair&) noexcept ->
         string_view const,
         value&>::type
 {
-    BOOST_STATIC_ASSERT(I == -1u);
+    static_assert(I == 0, 
+        "key_value_pair index out of range");
 }
 
 template<std::size_t I>
@@ -2859,7 +2861,8 @@ get(key_value_pair&&) noexcept ->
         string_view const,
         value&&>::type
 {
-    BOOST_STATIC_ASSERT(I == -1u);
+    static_assert(I == 0, 
+        "key_value_pair index out of range");
 }
 
 /** Extracts a key_value_pair's key using tuple-like interface
