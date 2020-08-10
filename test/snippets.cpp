@@ -126,6 +126,98 @@ usingStrings()
 //----------------------------------------------------------
 
 void
+usingValues()
+{
+    {
+        //[snippet_value_1
+
+        value jv1;
+        value jv2( nullptr );
+
+        assert( jv1.is_null() );
+        assert( jv2.is_null() );
+
+        //]
+    }
+    {
+        //[snippet_value_2
+
+        value jv( object_kind );
+
+        assert( jv.kind() == kind::object );
+        assert( jv.is_object() );
+        assert( ! jv.is_number() );
+
+        //]
+    }
+    {
+        //[snippet_value_3
+
+        value jv;
+        jv = value( array_kind );
+
+        assert( jv.is_array() );
+        
+        jv.emplace_string();
+        
+        assert( jv.is_string() );
+
+        //]
+    }
+    {
+        //[snippet_value_4
+
+        value jv;
+        jv.emplace_string() = "Hello, world!";
+
+        int64_t& num = jv.emplace_int64();
+        num = 1;
+
+        assert( jv.is_int64() );
+
+        //]
+    }
+    {
+        try
+        {
+            //[snippet_value_5
+
+            value jv( true );
+            jv.as_bool() = true;
+
+            jv.as_string() = "Hello, world!"; // throws system_error
+
+            //]
+        }
+        catch(...) 
+        {
+        }
+    }
+    {
+        //[snippet_value_6
+
+        value jv( string_kind );
+        if( string* str = jv.if_string() )
+            *str = "Hello, world!";
+
+        //]
+    }
+    {
+        //[snippet_value_7
+
+        value jv( string_kind );
+
+        // The compiler's static analysis can see that
+        // a null pointer is never dereferenced.
+        *jv.if_string() = "Hello, world!";
+
+        //]
+    }
+}
+
+//----------------------------------------------------------
+
+void
 usingInitLists()
 {
     {
@@ -1157,6 +1249,7 @@ public:
     void
     run()
     {
+        usingValues();
         usingInitLists();
         usingStorage();
         usingExchange();
