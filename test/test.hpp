@@ -338,7 +338,7 @@ public:
     explicit
     fail_parser(
         std::size_t n,
-        parse_options po = parse_options{false, false})
+        parse_options po = parse_options())
         :  basic_parser(po), n_(n)
     {
     }
@@ -538,7 +538,7 @@ public:
     explicit
     throw_parser(
         std::size_t n,
-        parse_options po = parse_options{false, false})
+        parse_options po = parse_options())
         : basic_parser(po), n_(n)
     {
     }
