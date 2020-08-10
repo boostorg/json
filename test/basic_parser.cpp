@@ -116,6 +116,19 @@ validate( string_view s )
     return true;
 }
 
+parse_options
+make_options(
+    bool comments,
+    bool commas,
+    bool utf8)
+{
+    parse_options opt;
+    opt.allow_comments = comments;
+    opt.allow_trailing_commas = commas;
+    opt.allow_invalid_utf8 = utf8;
+    return opt;
+}
+
 } // (anon)
 
 class basic_parser_test
@@ -232,13 +245,13 @@ public:
     void
     bad(string_view s)
     {
-        grind(s, false, parse_options{false, false, false});
+        grind(s, false, parse_options());
     }
 
     void
     good(string_view s)
     {
-        grind(s, true, parse_options{false, false, false});
+        grind(s, true, parse_options());
     }
 
     void
@@ -276,13 +289,13 @@ public:
     void
     bad_one(string_view s)
     {
-        grind_one(s, false, parse_options{false, false, false});
+        grind_one(s, false, parse_options());
     }
 
     void
     good_one(string_view s)
     {
-        grind_one(s, true, parse_options{false, false, false});
+        grind_one(s, true, parse_options());
     }
 
     //------------------------------------------------------
@@ -726,14 +739,14 @@ public:
     {
         std::vector<parse_options> all_configs =
         {
-            parse_options{false, false, true},
-            parse_options{true, false, true},
-            parse_options{false, true, true},
-            parse_options{true, true, true},
-            parse_options{false, false, false},
-            parse_options{true, false, false},
-            parse_options{false, true, false},
-            parse_options{true, true, false}
+            make_options(false, false, true),
+            make_options(true, false, true),
+            make_options(false, true, true),
+            make_options(true, true, true),
+            make_options(false, false, false),
+            make_options(true, false, false),
+            make_options(false, true, false),
+            make_options(true, true, false)
         };
         parse_vectors pv;
         for(auto const& v : pv)
@@ -864,8 +877,9 @@ public:
     void
     testComments()
     {
-        parse_options disabled{false, false, true};
-        parse_options enabled{true, false, true};
+        parse_options disabled;
+        parse_options enabled;
+        enabled.allow_comments = true;
 
         const auto replace_and_test = 
             [&](string_view s)
@@ -895,7 +909,7 @@ public:
                 std::string captured = "";
 
                 comment_parser() 
-                    : basic_parser(parse_options{true, false, false}) { }
+                    : basic_parser(make_options(true, false, false)) { }
 
                 ~comment_parser() {}
                 bool on_document_begin( error_code& ) { return true; }
@@ -1008,8 +1022,9 @@ public:
     void
     testAllowTrailing()
     {
-        parse_options disabled{false, false, true};
-        parse_options enabled{false, true, true};
+        parse_options disabled;
+        parse_options enabled;
+        enabled.allow_trailing_commas = true;
 
         bad("[1,]", disabled);
         good("[1,]", enabled);

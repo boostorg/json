@@ -32,25 +32,9 @@ namespace json {
 */
 struct parse_options
 {
-#if __cplusplus < 201402L
-    parse_options(
-        bool allow_comments_ = false, 
-        bool allow_trailing_commas_ = false,
-        bool allow_invalid_utf8_ = false) noexcept
-        : allow_comments(allow_comments_)
-        , allow_trailing_commas(allow_trailing_commas_)
-        , allow_invalid_utf8(allow_invalid_utf8_)
-    {
-    }
-
-    bool allow_comments;
-    bool allow_trailing_commas;
-    bool allow_invalid_utf8;
-#else
     bool allow_comments = false;
     bool allow_trailing_commas = false;
     bool allow_invalid_utf8 = false;
-#endif
 };
 
 } // json

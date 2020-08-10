@@ -34,7 +34,7 @@ public:
     from_string_test(
         string_view s,
         storage_ptr sp = {},
-        const parse_options& po = parse_options{})
+        const parse_options& po = parse_options())
     {
         parser p(po);
         error_code ec;
@@ -49,7 +49,7 @@ public:
     void
     static
     check_round_trip(value const& jv1, 
-        const parse_options& po = parse_options{})
+        const parse_options& po = parse_options())
     {
         auto const s2 =
             //to_string_test(jv1); // use this if serializer is broken
@@ -66,7 +66,7 @@ public:
         string_view s,
         storage_ptr sp,
         F const& f,
-        const parse_options& po = parse_options{})
+        const parse_options& po = parse_options())
     {
         auto const jv =
             from_string_test(s, sp, po);
@@ -86,7 +86,7 @@ public:
     static
     void
     grind(string_view s, F const& f, 
-        const parse_options& po = parse_options{})
+        const parse_options& po = parse_options())
     {
         try
         {
@@ -130,7 +130,7 @@ public:
     static
     void
     grind(string_view s, 
-        const parse_options& po = parse_options{})
+        const parse_options& po = parse_options())
     {
         grind(s,
             [](value const& jv, const parse_options& po)
@@ -876,50 +876,54 @@ R"xx({
     void 
     testTrailingCommas()
     {
-        parse_options po{false, true, false};
-        grind("[1,]", po);
-        grind("[1, 2,]", po);
-        grind("{\"a\": 1,}", po);
-        grind("{\"a\": 1, \"b\": 2,}", po);
+        parse_options enabled;
+        enabled.allow_trailing_commas = true;
+
+        grind("[1,]", enabled);
+        grind("[1, 2,]", enabled);
+        grind("{\"a\": 1,}", enabled);
+        grind("{\"a\": 1, \"b\": 2,}", enabled);
     }
 
     void
     testComments()
     {
-        parse_options po{true, false, false};
-        grind("[/* c */1]", po);
-        grind("[1/* c */]", po);
-        grind("[1] /* c */", po);
-        grind("/* c */ [1]", po);
-        grind("[1/* c */, 2]", po);
-        grind("[1, /* c */ 2]", po);
+        parse_options enabled;
+        enabled.allow_comments = true;
 
-        grind("// c++ \n[1]", po);
-        grind("[1] // c++ \n", po);
-        grind("[1] // c++", po);
-        grind("[// c++ \n1]", po);
-        grind("[1// c++ \n]", po);
-        grind("[1// c++ \n, 2]", po);
-        grind("[1, // c++ \n 2]", po);
+        grind("[/* c */1]", enabled);
+        grind("[1/* c */]", enabled);
+        grind("[1] /* c */", enabled);
+        grind("/* c */ [1]", enabled);
+        grind("[1/* c */, 2]", enabled);
+        grind("[1, /* c */ 2]", enabled);
 
-        grind("{/* c */\"a\":1}", po);
-        grind("{\"a\":1/* c */}", po);
-        grind("{\"a\":1} /* c */", po);
-        grind("/* c */ {\"a\":1}", po);
-        grind("{\"a\":1/* c */, \"b\":1}", po);
-        grind("{\"a\":1, /* c */ \"b\":1}", po);
-        grind("{\"a\"/* c */:1}", po);
-        grind("{\"a\":/* c */1}", po);
+        grind("// c++ \n[1]", enabled);
+        grind("[1] // c++ \n", enabled);
+        grind("[1] // c++", enabled);
+        grind("[// c++ \n1]", enabled);
+        grind("[1// c++ \n]", enabled);
+        grind("[1// c++ \n, 2]", enabled);
+        grind("[1, // c++ \n 2]", enabled);
 
-        grind("// c++ \n{\"a\":1}", po);
-        grind("{\"a\":1} // c++ \n", po);
-        grind("{\"a\":1} // c++", po);
-        grind("{// c++ \n\"a\":1}", po);
-        grind("{\"a\":1// c++ \n}", po);
-        grind("{\"a\":1// c++ \n, \"b\":2}", po);
-        grind("{\"a\":1, // c++ \n \"b\":2}", po);
-        grind("{\"a\"// c++ \n:1}", po);
-        grind("{\"a\":// c++ \n1}", po);   
+        grind("{/* c */\"a\":1}", enabled);
+        grind("{\"a\":1/* c */}", enabled);
+        grind("{\"a\":1} /* c */", enabled);
+        grind("/* c */ {\"a\":1}", enabled);
+        grind("{\"a\":1/* c */, \"b\":1}", enabled);
+        grind("{\"a\":1, /* c */ \"b\":1}", enabled);
+        grind("{\"a\"/* c */:1}", enabled);
+        grind("{\"a\":/* c */1}", enabled);
+
+        grind("// c++ \n{\"a\":1}", enabled);
+        grind("{\"a\":1} // c++ \n", enabled);
+        grind("{\"a\":1} // c++", enabled);
+        grind("{// c++ \n\"a\":1}", enabled);
+        grind("{\"a\":1// c++ \n}", enabled);
+        grind("{\"a\":1// c++ \n, \"b\":2}", enabled);
+        grind("{\"a\":1, // c++ \n \"b\":2}", enabled);
+        grind("{\"a\"// c++ \n:1}", enabled);
+        grind("{\"a\":// c++ \n1}", enabled);   
     }
 
     void
