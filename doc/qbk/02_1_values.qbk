@@ -11,17 +11,17 @@
 
 JSON documents are stored in memory using instances of __value__: a
 __SemiRegular__ type which satisfies __DefaultConstructible__
-and __Copyable__. These instances  are implemented as a
+and __Copyable__. These instances are implemented as a
 [@https://en.wikipedia.org/wiki/Tagged_union ['tagged union]],
 and can dynamically store any of the six defined JSON value types:
 
 * [*object]: A collection of name/value pairs, also known as an
   [@https://en.wikipedia.org/wiki/Associative_array ['associative array]].
 
-* [*array]: An ordered list of values, like a __std_vector__.
+* [*array]: An ordered list of values, like __std_vector__.
 
 * [*string]: A sequence of zero or more Unicode characters,
-  similar to a __std_string__
+  similar to __std_string__.
 
 * [*number]: An integral or floating point value.
 
@@ -33,10 +33,8 @@ and can dynamically store any of the six defined JSON value types:
 
 A default constructed __value__ and a value constructed from `nullptr`
 produces a null JSON element:
-```
-value jv1;
-value jv2( nullptr );
-```
+
+[snippet_value_1]
 
 The member function
 [link json.ref.boost__json__value.kind `value::kind`]
@@ -46,12 +44,7 @@ functions like
 [link json.ref.boost__json__value.is_number `value::is_number`]
 may be used to check whether or not the value is a particular kind:
 
-```
-value jv( kind::object );
-assert( jv.kind() == kind::object );
-assert( jv.is_object() );
-assert( ! jv.is_number() );
-```
+[snippet_value_2]
 
 After a __value__ is constructed, its kind can change depending on what
 is assigned to it, or by calling functions like
@@ -59,13 +52,7 @@ is assigned to it, or by calling functions like
 [link json.ref.boost__json__value.emplace_bool `value::emplace_bool`]. In
 all cases, the previous contents of the value are destroyed:
 
-```
-value jv;
-jv = value( kind::array )
-assert( jv.is_array() );
-jv.emplace_string();
-assert( jv.is_string() );
-```
+[snippet_value_3]
 
 [table [link json.ref.boost__json__value `value`] Accessors
     [
@@ -180,8 +167,8 @@ The library provides a suitable type for each possible value of __kind__
     ]
 ]
 [
-    [[link json.ref.boost__json__string `kind::string`]]
-    [[link json.ref.boost__json__kind `string`]]
+    [[link json.ref.boost__json__kind `kind::string`]]
+    [[link json.ref.boost__json__string `string`]]
     [
         A
         [@https://en.wikipedia.org/wiki/UTF-8 ['UTF-8]]
@@ -193,14 +180,28 @@ The library provides a suitable type for each possible value of __kind__
     ]
 ]
 [
-    [[link json.ref.boost__json__kind `kind::number`]]
-    [`long long`, `unsigned long long`, `double`]
+    [[link json.ref.boost__json__kind `kind::int64`]]
+    [`std::int64_t`]
     [
-        A type representing an integral or floating point number.
+        A 64 bit signed integer.
     ]
 ]
 [
-    [[link json.ref.boost__json__kind `kind::boolean`]]
+    [[link json.ref.boost__json__kind `kind::uint64`]]
+    [`std::uint64_t`]
+    [
+        A 64 bit unsigned integer.
+    ]
+]
+[
+    [[link json.ref.boost__json__kind `kind::double_`]]
+    [`double`]
+    [
+        A `double` holding a floating-point value.
+    ]
+]
+[
+    [[link json.ref.boost__json__kind `kind::bool_`]]
     [[@https://en.cppreference.com/w/cpp/keyword/bool `bool`]]
     [
         A `bool` holding `true` or `false`.
@@ -219,13 +220,7 @@ We can use the emplace return value to perform an assignment or
 to capture a reference to the underlying representation for later
 inspection or modification:
 
-```
-value jv;
-jv.emplace_string() = "Hello, world!";
-
-number& num = jv.emplace_number(); // changes to kind::number
-num = 1;
-```
+[snippet_value_4]
 
 If the __kind__ of a value is already known, functions such as
 [link json.ref.boost__json__value.as_bool `value::as_bool`] or
@@ -233,12 +228,7 @@ If the __kind__ of a value is already known, functions such as
 may be used to obtain a reference to the underlying representation
 without changing the existing value:
 
-```
-value jv( kind::bool );
-jv.as_bool() = true;
-
-jv.as_string() = "Hello, world!"; // throws system_error !!
-```
+[snippet_value_5]
 
 However, as shown above these functions throw an exception if the kind
 in the value does not match the kind implied by the function signature.
@@ -252,11 +242,7 @@ which may be null, instead of a reference. Here we use
 [link json.ref.boost__json__value.if_string.overload1 `value::if_string`]
 to conditionally perform an assignment without using exceptions:
 
-```
-value jv( kind::string );
-if(auto ptr = jv.if_string())
-    *ptr = "Hello, world!";
-```
+[snippet_value_6]
 
 [tip
     If the value's kind is known statically, a reference to the underlying
@@ -264,14 +250,8 @@ if(auto ptr = jv.if_string())
     checking. This avoids the code overhead of the possible exception
     when using, for example
     [link json.ref.boost__json__value.as_string `value::as_string`]:
-    ```
-    value jv( kind::string );
 
-    *jv.if_string() = "Hello, world!";
-
-    // The compiler's static analysis can see that
-    // a null pointer is never dereferenced above.
-    ```
+    [snippet_value_7]
 ]
 
 [endsect]
