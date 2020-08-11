@@ -73,6 +73,7 @@ anchors:
   llvm-toolchain-xenial-9: &llvm-toolchain-xenial-9
     sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-9 main'
     key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+
   clang-33: &clang-33 { apt: { packages: [ "clang-3.3"]                                          } }
   clang-34: &clang-34 { apt: { packages: [ "clang-3.4"]                                          } }
   clang-35: &clang-35 { apt: { packages: [ "clang-3.5"], sources: [ *ubuntu-toolchain-r-test ]   } }
@@ -101,8 +102,11 @@ anchors:
                                           "libc++-dev",
                                           "libstdc++-8-dev" ], sources: [ "llvm-toolchain-xenial-8",
                                                                           *ubuntu-toolchain-r-test   ] } }
-  clang-9:  &clang-9  { apt: { packages: [ "clang-9" ],        sources: [ *llvm-toolchain-xenial-9,
-                                                                        *ubuntu-toolchain-r-test    ] } }
+  clang-9:  &clang-9  { apt: { packages: [ "clang-9",
+                                          "libc6-dbg",
+                                          "libc++-dev",
+                                          "libstdc++-9-dev" ], sources: [ *llvm-toolchain-xenial-9,
+                                                                          *ubuntu-toolchain-r-test   ] } }
 
   gcc-44: &gcc-44 { apt: { packages: [ "g++-4.4" ], sources: [ *ubuntu-toolchain-r-test ] } }
   gcc-46: &gcc-46 { apt: { packages: [ "g++-4.6" ], sources: [ *ubuntu-toolchain-r-test ] } }
@@ -186,14 +190,27 @@ jobs:
         - cmake --build .
         - cmake --build . --target check
 
-    # cmake
-    - compiler: g++-9
-      env:
-        - COMMENT=cmake
+    # standalone
+    - env:
+        - COMMENT=standalone
         - CXX=g++-9
       install:
         - pip install --user cmake
       addons: *gcc-9
+      script:
+        - mkdir __build
+        - cd __build
+        - cmake -DBOOST_JSON_STANDALONE=1 ..
+        - cmake --build .
+        - ctest -V .
+
+    # standalone
+    - env:
+        - COMMENT=standalone
+        - CXX=clang++-9
+      install:
+        - pip install --user cmake
+      addons: *clang-9
       script:
         - mkdir __build
         - cd __build
