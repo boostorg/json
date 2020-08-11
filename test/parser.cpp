@@ -980,6 +980,39 @@ R"xx({
         }
     }
 
+    void
+    testDupeKeys()
+    {
+        {
+            value jv = parse(R"({"a":1,"b":2,"a":3})");
+            object& jo = jv.as_object();
+            BOOST_TEST(jo.size() == 2);
+            BOOST_TEST(jo.at("a").as_int64() == 3);
+            BOOST_TEST(jo.at("b").as_int64() == 2);
+        }
+        {
+            value jv = parse(R"({"a":1,"a":3,"b":2})");
+            object& jo = jv.as_object();
+            BOOST_TEST(jo.size() == 2);
+            BOOST_TEST(jo.at("a").as_int64() == 3);
+            BOOST_TEST(jo.at("b").as_int64() == 2);
+        }
+        {
+            value jv = parse(R"({"a":1,"a":3,"b":2,"a":4})");
+            object& jo = jv.as_object();
+            BOOST_TEST(jo.size() == 2);
+            BOOST_TEST(jo.at("a").as_int64() == 4);
+            BOOST_TEST(jo.at("b").as_int64() == 2);
+        }
+        {
+            value jv = parse(R"({"a":1,"a":3,"b":2,"a":4,"b":5})");
+            object& jo = jv.as_object();
+            BOOST_TEST(jo.size() == 2);
+            BOOST_TEST(jo.at("a").as_int64() == 4);
+            BOOST_TEST(jo.at("b").as_int64() == 5);
+        }
+    }
+
     //------------------------------------------------------
 
     // https://github.com/cppalliance/json/issues/15
@@ -1030,6 +1063,7 @@ R"xx({
         testTrailingCommas();
         testComments();
         testError();
+        testDupeKeys();
         testIssue15();
         testIssue45();
     }

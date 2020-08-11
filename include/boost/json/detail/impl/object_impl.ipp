@@ -70,36 +70,30 @@ void
 object_impl::
 build() noexcept
 {
-    auto end = this->end();
-    for(auto p = begin(); p != end;)
+    // must work when table pointer is null
+    auto const first = begin();
+    for(auto last = end(); last > first;)
     {
+        --last;
+        auto head = &bucket(last->key());
+        auto i = *head;
+        while(i != null_index &&
+            get(i).key() != last->key())
+            i = next(get(i));
+        if(i != null_index)
         {
-            auto& head = bucket(p->key());
-            auto i = head;
-            while(i != null_index &&
-                get(i).key() != p->key())
-                i = next(get(i));
-            if(i == null_index)
-            {
-                next(*p) = head;
-                head = index_of(*p);
-                ++p;
-                continue;
-            }
-        }
-        p->~value_type();
-        --tab_->size;
-        --end;
-        if(p != end)
-        {
+            // handle duplicate
+            last->~value_type();
             std::memcpy(
-                static_cast<void*>(p),
-                static_cast<void const*>(end),
-                sizeof(*p));
-            auto& head = bucket(p->key());
-            next(*p) = head;
-            head = index_of(*p);
+                static_cast<void*>(last),
+                static_cast<void const*>(
+                    first + tab_->size - 1),
+                sizeof(*last));
+            --tab_->size;
+            head = &bucket(last->key());
         }
+        next(*last) = *head;
+        *head = index_of(*last);
     }
 }
 
