@@ -1246,6 +1246,123 @@ public:
     }
 
     void
+    testNumberLiteral()
+    {
+        class literal_parser : public basic_parser
+        {
+            friend class basic_parser;
+
+            bool on_document_begin( error_code& ) { return true; }
+            bool on_document_end( error_code& ) { return true; }
+            bool on_object_begin( error_code& ) { return true; }
+            bool on_object_end( error_code& ) { return true; }
+            bool on_array_begin( error_code& ) { return true; }
+            bool on_array_end( error_code& ) { return true; }
+            bool on_key_part( string_view, error_code& ) { return true; }
+            bool on_key( string_view, error_code& ) { return true; }
+            bool on_string_part( string_view, error_code& ) { return true; }
+            bool on_string( string_view, error_code& ) { return true; }
+            bool on_number_part( string_view sv, error_code&) 
+            { 
+                captured.append(sv.data(), sv.size());
+                return true; 
+            }
+            bool on_int64( std::int64_t, string_view sv, error_code& )
+            { 
+                captured.append(sv.data(), sv.size());
+                captured += 's';
+                return true; 
+            }
+            bool on_uint64( std::uint64_t, string_view sv, error_code& ) 
+            { 
+                captured.append(sv.data(), sv.size());
+                captured += 'u';
+                return true; 
+            }
+            bool on_double( double, string_view sv, error_code& )
+            { 
+                captured.append(sv.data(), sv.size());
+                captured += 'd';
+                return true; 
+            }
+            bool on_bool( bool, error_code& ) { return true; }
+            bool on_null( error_code& ) { return true; }
+            bool on_comment_part( string_view, error_code& ) { return true; }
+            bool on_comment( string_view, error_code& ) { return true; }
+
+        public:
+            std::string captured = "";
+
+            literal_parser() 
+                : basic_parser(make_options(true, false, false)) { }
+
+            ~literal_parser() {}
+        
+            std::size_t
+            write(
+                bool more,
+                char const* data,
+                std::size_t size,
+                error_code& ec)
+            {
+                auto const n =
+                    basic_parser::write_some(
+                    *this, more, data, size, ec);
+                if(! ec && n < size)
+                    ec = error::extra_data;
+                return n;
+            }
+        };
+
+        const auto check =
+            [](string_view expected)
+        {
+            string_view sv = expected;
+            sv.remove_suffix(1);
+            for(std::size_t i = 0; 
+                i < sv.size(); ++i)
+            {
+                literal_parser p;
+                error_code ec;
+                if(i != 0)
+                {
+                    p.write(true, 
+                        sv.data(), i, ec);
+                }
+                if(BOOST_TEST(! ec))
+                {
+                    p.write(false, 
+                        sv.data() + i,
+                        sv.size() - i, ec);
+                }
+                BOOST_TEST(! ec);
+                BOOST_TEST(p.captured == expected);
+            }
+        };
+
+        check("1s");
+        check("-1s");
+        check("0s");
+        check("0s");
+        check("123456s");
+        check("-123456s");
+        check("9223372036854775808u");
+
+        check("1.0d");
+        check("-1.0d");
+        check("0.0d");
+        check("1.0e3d");
+        check("1e1d");
+        check("1e+1d");
+        check("1e-1d");
+        check("-100000000000000000000000d");
+        check("100000000000000000000000d");
+        check("10000000000.10000000000000d");
+        check("-10000000000.10000000000000d");
+        check("1000000000000000.0e1000000d");
+    }
+
+    void
     run()
     {
         testNull();
@@ -1264,6 +1381,7 @@ public:
         testComments();
         testUTF8Validation();
         testMaxDepth();
+        testNumberLiteral();
     }
 };
 
