@@ -33,17 +33,19 @@ object_impl::
 object_impl(
     std::size_t capacity,
     std::size_t prime_index,
-    std::size_t buckets,
     std::uintptr_t salt,
     storage_ptr const& sp)
 {
-    tab_ = ::new(sp->allocate(
-        sizeof(table) +
-        capacity * sizeof(value_type) +
-        buckets * sizeof(index_t))) table{
-            0, capacity, prime_index, salt};
+    const auto n = 
+        sizeof(table) + 
+        capacity *
+            (sizeof(value_type) + 
+            sizeof(index_t));
+    tab_ = ::new(sp->allocate(n)) 
+        table{0, capacity, prime_index, salt};
+    // capacity == buckets()
     std::memset(bucket_begin(), 0xff, // null_index
-        buckets * sizeof(index_t));
+        capacity * sizeof(index_t));
 }
 
 object_impl::

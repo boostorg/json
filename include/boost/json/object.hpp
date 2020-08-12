@@ -95,14 +95,6 @@ class object
         typename std::iterator_traits<T>::value_type
             >::value>::type;
 
-    static
-    constexpr
-    double
-    max_load_factor() noexcept
-    {
-        return 1.0;
-    }
-
     friend class value;
 
     BOOST_JSON_DECL

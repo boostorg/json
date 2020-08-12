@@ -86,7 +86,7 @@ object(detail::unchecked_object&& uo)
 object::
 object(object_test const*)
 {
-    object_impl impl(3, 1, 3, 0, sp_);
+    object_impl impl(3, 1, 0, sp_);
     impl_.swap(impl);
 }
 
@@ -481,35 +481,17 @@ void
 object::
 rehash(std::size_t new_capacity)
 {
-    auto const next_prime =
-    [](std::size_t n) noexcept
-    {
-        return std::lower_bound(
-            &object_impl::bucket_sizes()[0], 
-            &object_impl::bucket_sizes()[67],
-            static_cast<unsigned long long>(n)) - 
-                object_impl::bucket_sizes();
-     };
     BOOST_ASSERT(new_capacity > capacity());
-    auto const f = std::ceil(
-        new_capacity / max_load_factor());
-    BOOST_ASSERT(
-        f < static_cast<std::size_t>(-1));
-    auto const prime_index = next_prime(
-        static_cast<std::size_t>(f));
-    auto const new_buckets = 
-        object_impl::bucket_sizes()[prime_index];
-    BOOST_ASSERT(std::ceil(
-        new_buckets * max_load_factor()) >=
-            new_capacity);
-    new_capacity = static_cast<std::size_t>(
-        std::ceil(new_buckets * max_load_factor()));
+    const unsigned long long* prime = 
+        object_impl::bucket_sizes();
+    while(new_capacity > *prime)
+        ++prime;
+    new_capacity = *prime;
     if(new_capacity > max_size())
         object_too_large::raise();
     object_impl impl(
         new_capacity,
-        prime_index,
-        new_buckets,
+        prime - object_impl::bucket_sizes(),
         impl_.salt(),
         sp_);
     if(impl_.size() > 0)
