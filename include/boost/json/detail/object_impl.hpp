@@ -45,7 +45,6 @@ public:
     object_impl(
         std::size_t capacity,
         std::size_t prime_index,
-        std::size_t buckets,
         std::uintptr_t salt,
         storage_ptr const& sp);
 
@@ -177,8 +176,7 @@ private:
     std::size_t
     buckets() const noexcept
     {
-        BOOST_ASSERT(tab_);
-        return bucket_sizes()[tab_->prime_index];
+        return capacity();
     }
 
     inline
