@@ -27,7 +27,7 @@ parse_file( char const* filename )
 {
     file f( filename, "r" );
     json::parser p;
-    p.start();
+    p.reset();
     do
     {
         char buf[4096];

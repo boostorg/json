@@ -87,7 +87,6 @@ public:
         check(condition::assign_error, error::integer_overflow);
         check(condition::assign_error, error::not_exact);
     
-        check(error::need_start);
         check(error::test_failure);
     }
 };

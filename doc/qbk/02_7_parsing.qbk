@@ -58,7 +58,7 @@ failure instead of an exception:
 
 The calls above will produce values that use the default
 memory resource. Each parse function allows an additional parameter
-specifying the memory resource to use. Here we start the parser with
+specifying the memory resource to use. Here we reset the parser with
 a new instance of __monotonic_resource__ for the resulting value:
 
 [snippet_parsing_3]
@@ -90,7 +90,7 @@ code are used instead:
 [h4 Allocators]
 
 When
-[link json.ref.boost__json__parser.start `start`]
+[link json.ref.boost__json__parser.reset `reset`]
 is called with no arguments, the parser constructs the resulting
 __value__ using the default memory resource. A __storage_ptr__
 can also be passed to the function, and the resulting __value__ will

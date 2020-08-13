@@ -274,7 +274,7 @@ public:
         parser p;
         while(repeat--)
         {
-            p.start();
+            p.reset();
             error_code ec;
             p.write(s.data(), s.size(), ec);
             if(! ec)
@@ -341,7 +341,7 @@ public:
         while(repeat--)
         {
             monotonic_resource mr;
-            p.start(&mr);
+            p.reset(&mr);
             error_code ec;
             p.write(s.data(), s.size(), ec);
             if(! ec)

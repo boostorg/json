@@ -58,11 +58,9 @@ using std::generic_category;
 */
 enum class error
 {
-    //----------------------------------
     //
     // parse errors
     //
-    //----------------------------------
 
     /// syntax error
     syntax = 1,
@@ -99,10 +97,6 @@ enum class error
 
     /// illegal trailing surrogate
     illegal_trailing_surrogate,
-
-    /** The parser needs to be started.
-    */
-    need_start,
 
     /// expected comma
     expected_comma,

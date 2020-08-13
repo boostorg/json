@@ -735,7 +735,7 @@ usingParsing()
         parser p;
 
         // This must be called once before parsing every new JSON.
-        p.start();
+        p.reset();
 
         // Write the entire character buffer, indicating
         // to the parser that there is no more data.
@@ -745,7 +745,7 @@ usingParsing()
         // Take ownership of the resulting value.
         value jv = p.release();
 
-        // At this point the parser may be re-used by calling p.start() again.
+        // At this point the parser may be re-used by calling p.reset() again.
 
         //]
     }
@@ -756,7 +756,7 @@ usingParsing()
         error_code ec;
 
         // This must be called once before parsing every new JSON
-        p.start();
+        p.reset();
 
         // Write the first part of the buffer
         p.write( "[1,2,", 5, ec);
@@ -772,7 +772,7 @@ usingParsing()
         if(! ec)
             value jv = p.release();
 
-        // At this point the parser may be re-used by calling p.start() again.
+        // At this point the parser may be re-used by calling p.reset() again.
 
         //]
     }
@@ -786,7 +786,7 @@ usingParsing()
             monotonic_resource mr;
 
             // Use the monotonic resource for the parsed value
-            p.start( &mr );
+            p.reset( &mr );
 
             // Write the entire JSON
             p.write( "[1,2,3,4,5]", 11, ec );
@@ -812,7 +812,7 @@ usingParsing()
 
         // Fully parses a valid JSON string and
         // extracts the resulting value
-        p.start( sp );
+        p.reset( sp );
         p.write( "[true, false, 1, 0]", 19, ec );
         p.finish( ec );
 
@@ -823,7 +823,7 @@ usingParsing()
         // The intermediate storage that was used
         // for the last value will be reused here.
         
-        p.start( sp );
+        p.reset( sp );
 
         p.write( "[null]", 6, ec );
         p.finish( ec );
@@ -845,7 +845,7 @@ usingParsing()
         parser p;
         error_code ec;
 
-        p.start();
+        p.reset();
         p.write( good.data(), good.size(), ec );
             
         // Valid JSON
@@ -853,7 +853,7 @@ usingParsing()
 
         ec.clear();
 
-        p.start();
+        p.reset();
         p.write( bad.data(), bad.size(), ec );
 
         // Error, trailing commas are not permitted
@@ -868,29 +868,27 @@ usingParsing()
         string_view comment = "/* example comment */[1, 2, 3]";
         
         // Comments are not permitted by default
-        parser standard;
+        parser p1;
 
         parse_options po;
         po.allow_comments = true;
-        
+
         // Constructs a parser that will treat
         // comments as whitespace.
-        parser extended(po);
+        parser p2(po);
 
         error_code ec;
 
-        standard.start();
-        standard.write( comment.data(), 
-            comment.size(), ec );
+        p1.reset();
+        p1.write( comment.data(), comment.size(), ec );
             
         // Error, invalid JSON
         assert( ec );
         
         ec.clear();
 
-        extended.start();
-        extended.write( comment.data(), 
-            comment.size(), ec );
+        p2.reset();
+        p2.write( comment.data(), comment.size(), ec );
 
         // Ok, comments are permitted
         assert( ! ec );

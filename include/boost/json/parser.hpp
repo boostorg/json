@@ -13,6 +13,7 @@
 #include <boost/json/detail/config.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/value.hpp>
+#include <boost/json/value_builder.hpp>
 #include <boost/json/string.hpp>
 #include <boost/json/detail/basic_parser.hpp>
 #include <boost/json/detail/raw_stack.hpp>
@@ -34,7 +35,7 @@ namespace json {
 
     @par Usage
 
-    Before parsing a new JSON, the function @ref start
+    Before parsing a new JSON, the function @ref reset
     must be called, optionally passing the storage
     pointer to be used by the @ref value container into
     which the parsed results are stored. After the
@@ -70,24 +71,7 @@ namespace json {
 */
 class parser : public basic_parser
 {
-    friend class basic_parser;
-    enum class state : char;
-    struct level
-    {
-        std::uint32_t count;
-        char align;
-        state st;
-    };
-
-    storage_ptr sp_;
-    detail::raw_stack rs_;
-    std::uint32_t key_size_ = 0;
-    std::uint32_t str_size_ = 0;
-    level lev_;
-
-    inline
-    void
-    destroy() noexcept;
+    value_builder vb_;
 
 public:
     /** Destructor.
@@ -95,9 +79,7 @@ public:
         All dynamically allocated memory, including
         any partial parsing results, is freed.
     */
-    BOOST_JSON_DECL
-    virtual
-    ~parser();
+    ~parser() = default;
 
     /** Default constructor.
 
@@ -107,7 +89,7 @@ public:
 
         @note
         Before any JSON can be parsed, the function
-        @ref start must be called. 
+        @ref reset must be called. 
     */
     BOOST_JSON_DECL
     parser() noexcept;
@@ -120,7 +102,7 @@ public:
 
         @note
         Before any JSON can be parsed, the function
-        @ref start must be called.
+        @ref reset must be called.
 
         <br>
 
@@ -135,14 +117,13 @@ public:
     explicit 
     parser(storage_ptr sp) noexcept;
 
-
     /** Constructor.
         
         Constructs a parser using the specified options.
 
         @note
         Before any JSON can be parsed, the function
-        @ref start must be called.
+        @ref reset must be called.
 
         @param opt The options for the parser.
     */
@@ -158,7 +139,7 @@ public:
 
         @note
         Before any JSON can be parsed, the function
-        @ref start must be called.
+        @ref reset must be called.
 
         <br>
 
@@ -185,7 +166,7 @@ public:
 
         @par Exception Safety
 
-        No-throw guarantee.
+        Strong guarantee.
 
         @param n The number of bytes to reserve. A
         good choices is `C * sizeof(value)` where
@@ -194,7 +175,7 @@ public:
     */
     BOOST_JSON_DECL
     void
-    reserve(std::size_t n) noexcept;
+    reserve(std::size_t n);
 
     /** Start parsing JSON incrementally.
 
@@ -208,7 +189,7 @@ public:
     */
     BOOST_JSON_DECL
     void
-    start(storage_ptr sp = {}) noexcept;
+    reset(storage_ptr sp = {}) noexcept;
 
     /** Parse JSON incrementally.
 
@@ -355,7 +336,7 @@ public:
         @note
 
         After this call, it is necessary to call
-        @ref start to parse a new JSON incrementally.
+        @ref reset to parse a new JSON incrementally.
     */
     BOOST_JSON_DECL
     void
@@ -375,158 +356,6 @@ public:
     BOOST_JSON_DECL
     value
     release();
-
-private:
-    template<class T>
-    void
-    push(T const& t);
-
-    inline
-    void
-    push_chars(string_view s);
-
-    template<class... Args>
-    void
-    emplace_object(
-        Args&&... args);
-
-    template<class... Args>
-    void
-    emplace_array(
-        Args&&... args);
-
-    template<class... Args>
-    bool
-    emplace(
-        error_code& ec,
-        Args&&... args);
-
-    template<class T>
-    void
-    pop(T& t);
-
-    inline
-    detail::unchecked_object
-    pop_object() noexcept;
-
-    inline
-    detail::unchecked_array
-    pop_array() noexcept;
-
-    inline
-    string_view
-    pop_chars(
-        std::size_t size) noexcept;
-
-    inline
-    bool
-    on_document_begin(
-        error_code& ec);
-
-    inline
-    bool
-    on_document_end(
-        error_code& ec);
-
-    inline
-    bool
-    on_object_begin(
-        error_code& ec);
-
-    inline
-    bool
-    on_object_end(
-        error_code& ec);
-
-    inline
-    bool
-    on_array_begin(
-        error_code& ec);
-
-    inline
-    bool
-    on_array_end(
-        error_code& ec);
-
-    inline
-    bool
-    on_key_part(
-        string_view s,
-        error_code& ec);
-
-    inline
-    bool
-    on_key(
-        string_view s,
-        error_code& ec);
-
-    inline
-    bool
-    on_string_part(
-        string_view s,
-        error_code& ec);
-
-    inline
-    bool
-    on_string(
-        string_view s,
-        error_code& ec);
-
-    inline
-    bool
-    on_number_part(
-        string_view,
-        error_code&)
-    {
-        return true;
-    }
-
-    inline
-    bool
-    on_int64(
-        int64_t i,
-        string_view,
-        error_code& ec);
-
-    inline
-    bool
-    on_uint64(
-        uint64_t u,
-        string_view,
-        error_code& ec);
-
-    inline
-    bool
-    on_double(
-        double d,
-        string_view,
-        error_code& ec);
-
-    inline
-    bool
-    on_bool(
-        bool b,
-        error_code& ec);
-
-    inline
-    bool
-    on_null(error_code&);
-
-    bool
-    on_comment_part(
-        string_view,
-        error_code&) 
-    { 
-        return true; 
-    }
-    
-    bool
-    on_comment(
-        string_view, 
-        error_code&) 
-    { 
-        return true; 
-    }
 };
 
 //----------------------------------------------------------

@@ -44,7 +44,6 @@ case error::illegal_escape_char: return "illegal character in escape sequence";
 case error::illegal_extra_digits: return "illegal extra digits in number";
 case error::illegal_leading_surrogate: return "illegal leading surrogate";
 case error::illegal_trailing_surrogate: return "illegal trailing surrogate";
-case error::need_start: return "parser needs start";
 
 case error::expected_comma: return "expected comma";
 case error::expected_colon: return "expected colon";
