@@ -38,7 +38,7 @@ public:
     {
         parser p(po);
         error_code ec;
-        p.start(std::move(sp));
+        p.reset(std::move(sp));
         p.write(s.data(), s.size(), ec);
         if(BOOST_TEST(! ec))
             p.finish(ec);
@@ -108,7 +108,7 @@ public:
                     mr.fail_max = 0;
                     parser p(po);
                     error_code ec;
-                    p.start(&mr);
+                    p.reset(&mr);
                     p.write(s.data(), i, ec);
                     if(BOOST_TEST(! ec))
                         p.write(
@@ -265,7 +265,7 @@ public:
                 auto const N = js.size() / 2;
                 error_code ec;
                 parser p;
-                p.start();
+                p.reset();
                 p.write(js.data(), N, ec);
                 if(BOOST_TEST(! ec))
                 {
@@ -298,7 +298,7 @@ public:
             BOOST_TEST_CHECKPOINT();
             error_code ec;
             parser p;
-            p.start();
+            p.reset();
             p.write(s.data(), s.size(), ec);
             if(BOOST_TEST(! ec))
                 p.finish(ec);
@@ -595,7 +595,7 @@ public:
         {
             error_code ec;
             parser p;
-            p.start();
+            p.reset();
             BOOST_TEST(
                 p.depth() == 0);
             BOOST_TEST(
@@ -667,7 +667,7 @@ public:
         {
             error_code ec;
             parser p;
-            p.start();
+            p.reset();
             BOOST_TEST(
                 p.depth() == 0);
             BOOST_TEST(
@@ -690,19 +690,10 @@ public:
             p.reserve(1024);
         }
 
-        // need start error
-        {
-            parser p;
-            error_code ec;
-            p.write("", 0, ec);
-            BOOST_TEST(
-                ec == error::need_start);
-        }
-
         // destroy after start
         {
             parser p;
-            p.start();
+            p.reset();
         }
 
         // release before done
@@ -724,13 +715,13 @@ public:
         {
             {
                 parser p;
-                p.start();
+                p.reset();
                 BOOST_TEST(p.write(
                     "null", 4) == 4);
             }
             {
                 parser p;
-                p.start();
+                p.reset();
                 BOOST_TEST_THROWS(
                     p.write("x", 1),
                     system_error);
@@ -852,7 +843,7 @@ R"xx({
             make_counted_resource<monotonic_resource>();
         parser p(sp);
         error_code ec;
-        p.start();
+        p.reset();
         p.write(in.data(), in.size(), ec);
         if(BOOST_TEST(! ec))
             p.finish(ec);
@@ -862,7 +853,7 @@ R"xx({
         }
         try
         {
-            p.start();
+            p.reset();
             p.write(in.data(), in.size());
             p.finish();
             BOOST_TEST(to_string(p.release()) == out);
@@ -967,7 +958,7 @@ R"xx({
         {
             parser p;
             error_code ec;
-            p.start();
+            p.reset();
             p.write("nullx", 5, ec);
             BOOST_TEST(ec == 
                 error::extra_data);
@@ -976,7 +967,7 @@ R"xx({
         {
             parser p;
             error_code ec;
-            p.start();
+            p.reset();
             p.write("[123,", 5, ec);
             if(BOOST_TEST(! ec))
                 p.finish(ec);
