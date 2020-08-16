@@ -342,10 +342,34 @@ public:
             BOOST_TEST(a.data() == nullptr);
         }
         {
+            array a{value()};
+            BOOST_TEST(a.data() != nullptr);
+            array b{a, array()};
+            BOOST_TEST(a.data() != nullptr);
+        }
+        {
+            const array a{value()};
+            BOOST_TEST(a.data() != nullptr);
+            array b{a, array()};
+            BOOST_TEST(a.data() != nullptr);
+        }
+        {
             object a{{"a", 1}, {"b", 2}};
             BOOST_TEST(a.capacity() > 0);
             array b{std::move(a), object()};
             BOOST_TEST(a.capacity() == 0);
+        }
+        {
+            object a{{"a", 1}, {"b", 2}};
+            BOOST_TEST(a.capacity() > 0);
+            array b{a, object()};
+            BOOST_TEST(a.capacity() > 0);
+        }
+        {
+            const object a{{"a", 1}, {"b", 2}};
+            BOOST_TEST(a.capacity() > 0);
+            array b{a, object()};
+            BOOST_TEST(a.capacity() > 0);
         }
     }
 
