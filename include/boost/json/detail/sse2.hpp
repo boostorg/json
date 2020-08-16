@@ -318,26 +318,24 @@ inline std::size_t count_leading( char const * p, char ch ) noexcept
 
 #ifdef BOOST_JSON_USE_SSE2
 
-inline std::size_t count_whitespace( char const * p, std::size_t n ) noexcept
+inline const char* count_whitespace( char const* p, const char* end ) noexcept
 {
-    if( n == 0 )
+    if( p == end )
     {
-        return 0;
+        return p;
     }
 
     if( static_cast<unsigned char>( *p ) > 0x20 )
     {
-        return 0;
+        return p;
     }
-
-    char const * p0 = p;
 
     __m128i const q1 = _mm_set1_epi8( ' ' );
     __m128i const q2 = _mm_set1_epi8( '\n' );
     __m128i const q3 = _mm_set1_epi8( 4 ); // '\t' | 4 == '\r'
     __m128i const q4 = _mm_set1_epi8( '\r' );
 
-    while( n >= 16 )
+    while( end - p >= 16 )
     {
         __m128i v0 = _mm_loadu_si128( (__m128i const*)p );
 
@@ -361,25 +359,23 @@ inline std::size_t count_whitespace( char const * p, std::size_t n ) noexcept
 #endif
 
             p += c;
-            return p - p0;
+            return p;
         }
 
         p += 16;
-        n -= 16;
     }
 
-    while( n > 0 )
+    while( p != end )
     {
         if( *p != ' ' && *p != '\t' && *p != '\r' && *p != '\n' )
         {
-            return p - p0;
+            return p;
         }
 
         ++p;
-        --n;
     }
 
-    return p - p0;
+    return p;
 }
 
 /*
@@ -429,17 +425,16 @@ inline std::size_t count_whitespace( char const * p, std::size_t n ) noexcept
 
 #else
 
-inline std::size_t count_whitespace( char const * p, std::size_t n ) noexcept
+inline const char* count_whitespace( char const* p, const char* end ) noexcept
 {
-    std::size_t i = 0;
 
-    for( ; i < n; ++p, ++i )
+    for(; p != end; ++p)
     {
         char const c = *p;
         if( c != ' ' && c != '\n' && c != '\r' && c != '\t' ) break;
     }
 
-    return i;
+    return p;
 }
 
 #endif
