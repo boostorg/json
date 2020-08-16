@@ -901,15 +901,15 @@ public:
                 "/***    aaaa***/"
             };
 
-            class comment_parser : public basic_parser
+            class comment_parser
             {
-                friend class basic_parser;
+                basic_parser p_;
 
             public:
                 std::string captured = "";
 
                 comment_parser() 
-                    : basic_parser(make_options(true, false, false)) { }
+                    : p_(make_options(true, false, false)) { }
 
                 ~comment_parser() {}
                 bool on_document_begin( error_code& ) { return true; }
@@ -945,8 +945,7 @@ public:
                     std::size_t size,
                     error_code& ec)
                 {
-                    auto const n =
-                        basic_parser::write_some(
+                    auto const n = p_.write_some(
                         *this, false, data, size, ec);
                     if(! ec && n < size)
                         ec = error::extra_data;
@@ -1248,10 +1247,11 @@ public:
     void
     testNumberLiteral()
     {
-        class literal_parser : public basic_parser
+        class literal_parser
         {
-            friend class basic_parser;
+            basic_parser p_;
 
+        public:
             bool on_document_begin( error_code& ) { return true; }
             bool on_document_end( error_code& ) { return true; }
             bool on_object_begin( error_code& ) { return true; }
@@ -1290,13 +1290,10 @@ public:
             bool on_comment_part( string_view, error_code& ) { return true; }
             bool on_comment( string_view, error_code& ) { return true; }
 
-        public:
             std::string captured = "";
 
             literal_parser() 
-                : basic_parser(make_options(true, false, false)) { }
-
-            ~literal_parser() {}
+                : p_(make_options(true, false, false)) { }
         
             std::size_t
             write(
@@ -1305,8 +1302,7 @@ public:
                 std::size_t size,
                 error_code& ec)
             {
-                auto const n =
-                    basic_parser::write_some(
+                auto const n = p_.write_some(
                     *this, more, data, size, ec);
                 if(! ec && n < size)
                     ec = error::extra_data;

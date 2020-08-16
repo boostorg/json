@@ -2930,23 +2930,23 @@ do_exp3:
 finish_int:
     if(negative || (!StackEmpty && num.neg))
     {
-        if(BOOST_JSON_UNLIKELY(
-            ! h.on_int64(static_cast<
-                int64_t>(~num.mant + 1), {begin, cs.used(begin)}, ec_)))
+        if(BOOST_JSON_UNLIKELY(! h.on_int64(
+            static_cast<int64_t>(~num.mant + 1),
+                {begin, cs.used(begin)}, ec_)))
             return result::fail;
         return result::ok;
     }
     if(num.mant <= INT64_MAX)
     {
 finish_signed:
-        if(BOOST_JSON_UNLIKELY(
-            ! h.on_int64(static_cast<
-                int64_t>(num.mant), {begin, cs.used(begin)}, ec_)))
+        if(BOOST_JSON_UNLIKELY(! h.on_int64(
+            static_cast<int64_t>(num.mant),
+                {begin, cs.used(begin)}, ec_)))
             return result::fail;
         return result::ok;
     }
-    if(BOOST_JSON_UNLIKELY(
-        ! h.on_uint64(num.mant, {begin, cs.used(begin)}, ec_)))
+    if(BOOST_JSON_UNLIKELY(! h.on_uint64(
+        num.mant, {begin, cs.used(begin)}, ec_)))
         return result::fail;
     return result::ok;
 
@@ -2956,8 +2956,8 @@ finish_dub:
         num.bias + (num.frac ?
             -num.exp : num.exp),
         num.neg);
-    if(BOOST_JSON_UNLIKELY(
-        ! h.on_double(d, {begin, cs.used(begin)}, ec_)))
+    if(BOOST_JSON_UNLIKELY(! h.on_double(
+        d, {begin, cs.used(begin)}, ec_)))
         return result::fail;
     return result::ok;
 }

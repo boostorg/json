@@ -48,7 +48,7 @@ parser::
 parser(
     storage_ptr sp,
     const parse_options& opt) noexcept
-    : basic_parser(opt)
+    : p_(opt)
     , vb_(std::move(sp))
 {
 }
@@ -71,8 +71,8 @@ void
 parser::
 clear() noexcept
 {
+    p_.reset();
     vb_.clear();
-    basic_parser::reset();
 }
 
 std::size_t
@@ -82,8 +82,7 @@ write(
     std::size_t size,
     error_code& ec)
 {
-    auto const n =
-        basic_parser::write_some(
+    auto const n = p_.write_some(
             vb_, true, data, size, ec);
     if(! ec && n < size)
         ec = error::extra_data;
@@ -109,8 +108,8 @@ void
 parser::
 finish(error_code& ec)
 {
-    basic_parser::write_some(
-        vb_, false, nullptr, 0, ec);
+    p_.write_some(vb_,
+        false, nullptr, 0, ec);
 }
 
 void

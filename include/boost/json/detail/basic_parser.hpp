@@ -163,7 +163,13 @@ class basic_parser
     result parse_number(Handler& h, const_stream& cs);
 
 public:
-     /** Default constructor.
+    /** Destructor.
+
+        All dynamically allocated internal memory is freed.
+    */
+    virtual ~basic_parser() = default;
+
+    /** Constructor.
         
         The parser will only recognize strict JSON.
     */
@@ -177,17 +183,6 @@ public:
     */
     inline
     basic_parser(const parse_options& opt) noexcept;
-
-    /** Destructor.
-
-        All dynamically allocated internal memory is freed.
-    */
-    virtual
-    ~basic_parser()
-    {
-        // VFALCO defaulting this causes link
-        // errors on some older toolchains.
-    }
 
     /** Return true if a complete JSON has been parsed.
 
@@ -245,10 +240,9 @@ public:
         max_depth_ = levels;
     }
 
-protected:
     /** Reset the state, to parse a new document.
     */
-    inline
+    inline//BOOST_JSON_DECL
     void
     reset() noexcept;
 

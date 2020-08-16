@@ -142,10 +142,11 @@ struct unique_resource
 
 // The null parser discards all the data
 
-class null_parser : public basic_parser
+class null_parser
 {
-    friend class boost::json::basic_parser;
+    basic_parser p_;
 
+public:
     bool on_document_begin( error_code& ) { return true; }
     bool on_document_end( error_code& ) { return true; }
     bool on_object_begin( error_code& ) { return true; }
@@ -165,22 +166,39 @@ class null_parser : public basic_parser
     bool on_comment_part( string_view, error_code& ) { return true; }
     bool on_comment( string_view, error_code& ) { return true; }
 
-public:
     null_parser() = default;
 
+    explicit
     null_parser(parse_options po) 
-        : basic_parser(po)
+        : p_(po)
     {
     }
-        
+
+    std::size_t
+    depth() const noexcept
+    {
+        return p_.depth();
+    }
+
+    std::size_t
+    max_depth() const noexcept
+    {
+        return p_.max_depth();
+    }
+
+    void
+    max_depth(unsigned long levels) noexcept
+    {
+        p_.max_depth(levels);
+    }
+
     std::size_t
     write(
         char const* data,
         std::size_t size,
         error_code& ec)
     {
-        auto const n =
-            basic_parser::write_some(
+        auto const n = p_.write_some(
             *this, false, data, size, ec);
         if(! ec && n < size)
             ec = error::extra_data;
@@ -190,10 +208,8 @@ public:
 
 //----------------------------------------------------------
 
-class fail_parser : public basic_parser
+class fail_parser
 {
-    friend class basic_parser;
-
     std::size_t n_ = std::size_t(-1);
 
     bool
@@ -205,6 +221,9 @@ class fail_parser : public basic_parser
         return false;
     }
 
+    basic_parser p_;
+
+public:
     bool
     on_document_begin(
         error_code& ec)
@@ -351,17 +370,28 @@ public:
     fail_parser(
         std::size_t n,
         parse_options po = parse_options())
-        :  basic_parser(po), n_(n)
+        : p_(po)
+        , n_(n)
     {
     }
 
     explicit
     fail_parser(parse_options po)
-        : basic_parser(po)
+        : p_(po)
     {
     }
 
-    using basic_parser::reset;
+    void
+    reset()
+    {
+        p_.reset();
+    }
+
+    bool
+    is_complete() const noexcept
+    {
+        return p_.is_complete();
+    }
 
     std::size_t
     write_some(
@@ -370,7 +400,7 @@ public:
         std::size_t size,
         error_code& ec)
     {
-        return basic_parser::write_some(
+        return p_.write_some(
             *this, more, data, size, ec);
     }
 
@@ -381,9 +411,8 @@ public:
         std::size_t size,
         error_code& ec)
     {
-        auto const n = 
-            basic_parser::write_some(
-                *this, more, data, size, ec);
+        auto const n = p_.write_some(
+            *this, more, data, size, ec);
         if(! ec && n < size)
             ec = error::extra_data;
         return n;
@@ -403,9 +432,8 @@ struct test_exception
 };
 
 // Exercises every exception path
-class throw_parser : public basic_parser
+class throw_parser
 {
-    friend class basic_parser;
     std::size_t n_ = std::size_t(-1);
 
     bool
@@ -416,6 +444,9 @@ class throw_parser : public basic_parser
         throw test_exception{};
     }
 
+    basic_parser p_;
+
+public:
     bool
     on_document_begin(
         error_code&)
@@ -562,17 +593,22 @@ public:
     throw_parser(
         std::size_t n,
         parse_options po = parse_options())
-        : basic_parser(po), n_(n)
+        : p_(po)
+        , n_(n)
     {
     }
 
     explicit
     throw_parser(parse_options po)
-        : basic_parser(po)
+        : p_(po)
     {
     }
 
-    using basic_parser::reset;
+    void
+    reset() noexcept
+    {
+        p_.reset();
+    }
 
     std::size_t
     write(
@@ -581,8 +617,7 @@ public:
         std::size_t size,
         error_code& ec)
     {
-        auto const n =
-            basic_parser::write_some(
+        auto const n = p_.write_some(
                 *this, more, data, size, ec);
         if(! ec && n < size)
             ec = error::extra_data;

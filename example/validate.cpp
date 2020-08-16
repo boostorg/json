@@ -32,9 +32,9 @@ validate( string_view s )
 {
     // The null parser discards all the data
 
-    class null_parser : public basic_parser
+    class null_parser
     {
-        friend class boost::json::basic_parser;
+        basic_parser p_;
 
     public:
         null_parser() {}
@@ -64,8 +64,7 @@ validate( string_view s )
             std::size_t size,
             error_code& ec)
         {
-            auto const n =
-                basic_parser::write_some(
+            auto const n = p_.write_some(
                 *this, false, data, size, ec);
             if(! ec && n < size)
                 ec = error::extra_data;

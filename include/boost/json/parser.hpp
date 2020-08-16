@@ -69,8 +69,9 @@ namespace json {
     allowing the parser to cheaply reuse this memory
     when parsing subsequent JSONs, improving performance.
 */
-class parser : public basic_parser
+class parser
 {
+    basic_parser p_;
     value_builder vb_;
 
 public:
@@ -156,6 +157,40 @@ public:
     parser(
         storage_ptr sp, 
         const parse_options& opt) noexcept;
+
+    /** Returns the current depth of the JSON being parsed.
+
+        The parsing depth is the total current nesting
+        level of arrays and objects.
+    */
+    std::size_t
+    depth() const noexcept
+    {
+        return p_.depth();
+    }
+
+    /** Returns the maximum allowed depth of input JSON.
+
+        The maximum allowed depth may be configured.
+    */
+    std::size_t
+    max_depth() const noexcept
+    {
+        return p_.max_depth();
+    }
+
+    /** Set the maximum allowed depth of input JSON.
+
+        When the maximum depth is exceeded, parser
+        operations will return @ref error::too_deep.
+
+        @param levels The maximum depth.
+    */
+    void
+    max_depth(unsigned long levels) noexcept
+    {
+        p_.max_depth(levels);
+    }
 
     /** Reserve internal storage space.
 
