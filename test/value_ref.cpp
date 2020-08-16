@@ -324,6 +324,12 @@ public:
             BOOST_TEST(a.empty());
         }
         {
+            string a = "abcdefghijklmnopqrstuvwxyz";
+            BOOST_TEST(!a.empty());
+            array b{a, string()};
+            BOOST_TEST(!a.empty());
+        }
+        {
             array a{value()};
             BOOST_TEST(a.data() != nullptr);
             array b{std::move(a), array()};

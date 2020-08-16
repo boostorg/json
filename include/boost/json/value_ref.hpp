@@ -155,16 +155,14 @@ public:
         ,typename std::enable_if<
             (! std::is_constructible<
                 string_view, T>::value ||
-            std::is_same<string, 
-                detail::remove_cvref<T>>::value) &&
+            std::is_same<string, T>::value) &&
             ! std::is_same<bool,
                 detail::remove_cvref<T>>::value &&
             ! std::is_const<T>::value
                 >::type* = 0)
         : f_{&from_rvalue<
             detail::remove_cvref<T>>, &t}
-        , what_(std::is_same<string,
-            detail::remove_cvref<T>>::value ?
+        , what_(std::is_same<string, T>::value ?
                 what::strfunc : what::func)
     {
     }
