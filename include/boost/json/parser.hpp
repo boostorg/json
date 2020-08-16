@@ -71,8 +71,109 @@ namespace json {
 */
 class parser
 {
-    basic_parser p_;
-    value_builder vb_;
+    struct handler
+    {
+        value_builder vb;
+
+        template<class... Args>
+        explicit
+        handler(Args&&... args)
+            : vb(std::forward<Args>(args)...)
+        {
+        }
+
+        bool on_document_begin(error_code& ec)
+        {
+            return vb.on_document_begin(ec);
+        }
+
+        bool on_document_end(error_code& ec)
+        {
+            return vb.on_document_end(ec);
+        }
+
+        bool on_object_begin(error_code& ec)
+        {
+            return vb.on_object_begin(ec);
+        }
+
+        bool on_object_end(error_code& ec)
+        {
+            return vb.on_object_end(ec);
+        }
+
+        bool on_array_begin(error_code& ec)
+        {
+            return vb.on_array_begin(ec);
+        }
+
+        bool on_array_end(error_code& ec)
+        {
+            return vb.on_array_end(ec);
+        }
+
+        bool on_key_part(string_view s, error_code& ec)
+        {
+            return vb.on_key_part(s, ec);
+        }
+        
+        bool on_key(string_view s, error_code& ec)
+        {
+            return vb.on_key(s, ec);
+        }
+        
+        bool on_string_part(string_view s, error_code& ec)
+        {
+            return vb.on_string_part(s, ec);
+        }
+
+        bool on_string(string_view s, error_code& ec)
+        {
+            return vb.on_string(s, ec);
+        }
+
+        bool on_number_part(string_view s, error_code& ec)
+        {
+            return vb.on_number_part(s, ec);
+        }
+
+        bool on_int64(std::int64_t i, string_view, error_code& ec)
+        {
+            return vb.on_int64(i, {}, ec);
+        }
+        
+        bool on_uint64(std::uint64_t u, string_view, error_code& ec)
+        {
+            return vb.on_uint64(u, {}, ec);
+        }
+
+        bool on_double(double d, string_view, error_code& ec)
+        {
+            return vb.on_double(d, {}, ec);
+        }
+        
+        bool on_bool(bool b, error_code& ec)
+        {
+            return vb.on_bool(b, ec);
+        }
+
+        bool on_null(error_code& ec)
+        {
+            return vb.on_null(ec);
+        }
+
+        bool on_comment_part(string_view, error_code&)
+        {
+            return true;
+        }
+        
+        bool on_comment(string_view, error_code&)
+        {
+            return true;
+        }
+    };
+
+    basic_parser<handler> p_;
 
 public:
     /** Destructor.

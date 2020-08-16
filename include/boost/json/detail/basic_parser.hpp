@@ -25,8 +25,7 @@
     This file is in the detail namespace because it
     is not allowed to be included directly by users,
     who should be including <boost/json/basic_parser.hpp>
-    instead, which provides the member function template
-    definitions.
+    instead, which provides the member function definitions.
 
     The source code is arranged this way to keep compile
     times down.
@@ -77,10 +76,36 @@ namespace json {
 
     @see @ref parse, @ref parser
 */
+template<class Handler>
 class basic_parser
 {
-    enum class state : char;
-    using const_stream = detail::const_stream;
+    enum class state : char
+    {
+        doc1,  doc2,  doc3,
+        com1,  com2,  com3,
+        com4,  com5,  com6, 
+        com7,  com8,  com9, 
+        com10, com11, com12,
+        nul1,  nul2,  nul3,
+        tru1,  tru2,  tru3,
+        fal1,  fal2,  fal3,  fal4,
+        str1,  str2,  str3,  str4,
+        str5,  str6,  str7,
+        sur1,  sur2,  sur3,
+        sur4,  sur5,  sur6,
+        utf1,  utf2,  utf3, 
+        utf4,  utf5,  utf6,
+        utf7,  utf8,  utf9, 
+        utf10, utf11, utf12, 
+        utf13, utf14, utf15, 
+        utf16, utf17, utf18,
+        obj1,  obj2,  obj3,  obj4,
+        obj5,  obj6,  obj7,
+        arr1,  arr2,  arr3,  arr4,
+        num1,  num2,  num3,  num4,
+        num5,  num6,  num7,  num8,
+        exp1,  exp2,  exp3
+    };
 
     enum result
     {
@@ -97,6 +122,11 @@ class basic_parser
         bool frac;
         bool neg;
     };
+
+    using const_stream = detail::const_stream;
+
+    // optimization: must come first
+    Handler h_;
 
     number num_;
     error_code ec_;
@@ -117,72 +147,97 @@ class basic_parser
     inline void suspend(state st, number const& num);
     inline bool skip_white(const_stream& cs);
 
-    template<class Handler>
-    result syntax_error(Handler&, const_stream&);
+    result syntax_error(const_stream&);
 
-    template<bool StackEmpty, bool ReturnValue,
+    template<
+        bool StackEmpty, bool ReturnValue,
         bool Terminal, bool AllowTrailing, 
-        bool AllowBadUTF8, class Handler>
-    result parse_comment(Handler& h, const_stream& cs);
+        bool AllowBadUTF8>
+    result parse_comment(const_stream& cs);
     
     template<bool StackEmpty>
     result validate_utf8(const_stream& cs);
 
-    template<bool StackEmpty, class Handler>
-    result parse_document(Handler& h, const_stream& cs);
+    template<bool StackEmpty>
+    result parse_document(const_stream& cs);
     
-    template<bool StackEmpty, bool AllowComments,
-        bool AllowTrailing, bool AllowBadUTF8, class Handler>
-    result parse_value(Handler& h, const_stream& cs);
+    template<
+        bool StackEmpty, bool AllowComments,
+        bool AllowTrailing, bool AllowBadUTF8>
+    result parse_value(const_stream& cs);
     
-    template<bool StackEmpty, bool AllowComments,
-        bool AllowTrailing, bool AllowBadUTF8, class Handler>
-    result resume_value(Handler& h, const_stream& cs);
+    template<
+        bool StackEmpty, bool AllowComments,
+        bool AllowTrailing, bool AllowBadUTF8>
+    result resume_value(const_stream& cs);
     
-    template<bool StackEmpty, bool AllowComments,
-        bool AllowTrailing, bool AllowBadUTF8, class Handler>
-    result parse_object(Handler& h, const_stream& cs);
+    template<
+        bool StackEmpty, bool AllowComments,
+        bool AllowTrailing, bool AllowBadUTF8>
+    result parse_object(const_stream& cs);
     
-    template<bool StackEmpty, bool AllowComments,
-        bool AllowTrailing, bool AllowBadUTF8, class Handler>
-    result parse_array(Handler& h, const_stream& cs);
+    template<
+        bool StackEmpty, bool AllowComments,
+        bool AllowTrailing, bool AllowBadUTF8>
+    result parse_array(const_stream& cs);
     
-    template<bool StackEmpty, class Handler>
-    result parse_null(Handler& h, const_stream& cs);
+    template<bool StackEmpty>
+    result parse_null(const_stream& cs);
     
-    template<bool StackEmpty, class Handler>
-    result parse_true(Handler& h, const_stream& cs);
+    template<bool StackEmpty>
+    result parse_true(const_stream& cs);
     
-    template<bool StackEmpty, class Handler>
-    result parse_false(Handler& h, const_stream& cs);
+    template<bool StackEmpty>
+    result parse_false(const_stream& cs);
     
-    template<bool StackEmpty, bool AllowBadUTF8, class Handler>
-    result parse_string(Handler& h, const_stream& cs);
+    template<bool StackEmpty, bool AllowBadUTF8>
+    result parse_string(const_stream& cs);
     
-    template<bool StackEmpty, char First, class Handler>
-    result parse_number(Handler& h, const_stream& cs);
+    template<bool StackEmpty, char First>
+    result parse_number(const_stream& cs);
 
 public:
     /** Destructor.
 
         All dynamically allocated internal memory is freed.
     */
-    virtual ~basic_parser() = default;
+    ~basic_parser() = default;
 
     /** Constructor.
         
         The parser will only recognize strict JSON.
     */
-    basic_parser() noexcept = default;
+    basic_parser() = default;
 
     /** Constructor.
         
         Construct a parser with the provided options.
 
         @param opt The options for the parser.
+
+        @param args Optional additional arguments
+        forwarded to the handler's constructor.
     */
-    inline
-    basic_parser(const parse_options& opt) noexcept;
+    template<class... Args>
+    basic_parser(
+        parse_options const& opt,
+        Args&&... args);
+
+    /** Return a reference to the handler.
+    */
+    Handler&
+    handler() noexcept
+    {
+        return h_;
+    }
+
+    /** Return a reference to the handler.
+    */
+    Handler const&
+    handler() const noexcept
+    {
+        return h_;
+    }
 
     /** Return true if a complete JSON has been parsed.
 
@@ -372,10 +427,8 @@ public:
         @return The number of characters successfully
         parsed, which may be smaller than `size`.
     */
-    template<class Handler>
     std::size_t
     write_some(
-        Handler& h,
         bool more,
         char const* data,
         std::size_t size,

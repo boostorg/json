@@ -48,8 +48,7 @@ parser::
 parser(
     storage_ptr sp,
     const parse_options& opt) noexcept
-    : p_(opt)
-    , vb_(std::move(sp))
+    : p_(opt, std::move(sp))
 {
 }
 
@@ -57,14 +56,14 @@ void
 parser::
 reserve(std::size_t n)
 {
-    vb_.reserve(n);
+    p_.handler().vb.reserve(n);
 }
 
 void
 parser::
 reset(storage_ptr sp) noexcept
 {
-    vb_.reset(sp);
+    p_.handler().vb.reset(sp);
 }
 
 void
@@ -72,7 +71,7 @@ parser::
 clear() noexcept
 {
     p_.reset();
-    vb_.clear();
+    p_.handler().vb.clear();
 }
 
 std::size_t
@@ -83,7 +82,7 @@ write(
     error_code& ec)
 {
     auto const n = p_.write_some(
-            vb_, true, data, size, ec);
+        true, data, size, ec);
     if(! ec && n < size)
         ec = error::extra_data;
     return n;
@@ -108,7 +107,7 @@ void
 parser::
 finish(error_code& ec)
 {
-    p_.write_some(vb_,
+    p_.write_some(
         false, nullptr, 0, ec);
 }
 
@@ -124,12 +123,12 @@ parser::
 release()
 {
     /*
-    if(! is_complete())
+    if(! p_.is_complete())
         BOOST_THROW_EXCEPTION(
             std::logic_error(
                 "no value"));
     */
-    return vb_.release();
+    return p_.handler().vb.release();
 }
 
 //----------------------------------------------------------
