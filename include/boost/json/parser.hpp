@@ -82,95 +82,24 @@ class parser
         {
         }
 
-        bool on_document_begin(error_code& ec)
-        {
-            return vb.on_document_begin(ec);
-        }
-
-        bool on_document_end(error_code& ec)
-        {
-            return vb.on_document_end(ec);
-        }
-
-        bool on_object_begin(error_code& ec)
-        {
-            return vb.on_object_begin(ec);
-        }
-
-        bool on_object_end(error_code& ec)
-        {
-            return vb.on_object_end(ec);
-        }
-
-        bool on_array_begin(error_code& ec)
-        {
-            return vb.on_array_begin(ec);
-        }
-
-        bool on_array_end(error_code& ec)
-        {
-            return vb.on_array_end(ec);
-        }
-
-        bool on_key_part(string_view s, error_code& ec)
-        {
-            return vb.on_key_part(s, ec);
-        }
-        
-        bool on_key(string_view s, error_code& ec)
-        {
-            return vb.on_key(s, ec);
-        }
-        
-        bool on_string_part(string_view s, error_code& ec)
-        {
-            return vb.on_string_part(s, ec);
-        }
-
-        bool on_string(string_view s, error_code& ec)
-        {
-            return vb.on_string(s, ec);
-        }
-
-        bool on_number_part(string_view s, error_code& ec)
-        {
-            return vb.on_number_part(s, ec);
-        }
-
-        bool on_int64(std::int64_t i, string_view, error_code& ec)
-        {
-            return vb.on_int64(i, {}, ec);
-        }
-        
-        bool on_uint64(std::uint64_t u, string_view, error_code& ec)
-        {
-            return vb.on_uint64(u, {}, ec);
-        }
-
-        bool on_double(double d, string_view, error_code& ec)
-        {
-            return vb.on_double(d, {}, ec);
-        }
-        
-        bool on_bool(bool b, error_code& ec)
-        {
-            return vb.on_bool(b, ec);
-        }
-
-        bool on_null(error_code& ec)
-        {
-            return vb.on_null(ec);
-        }
-
-        bool on_comment_part(string_view, error_code&)
-        {
-            return true;
-        }
-        
-        bool on_comment(string_view, error_code&)
-        {
-            return true;
-        }
+        inline bool on_document_begin(error_code& ec);
+        inline bool on_document_end(error_code& ec);
+        inline bool on_object_begin(error_code& ec);
+        inline bool on_object_end(error_code& ec);
+        inline bool on_array_begin(error_code& ec);
+        inline bool on_array_end(error_code& ec);
+        inline bool on_key_part(string_view s, error_code& ec);
+        inline bool on_key(string_view s, error_code& ec);
+        inline bool on_string_part(string_view s, error_code& ec);
+        inline bool on_string(string_view s, error_code& ec);
+        inline bool on_number_part(string_view, error_code&);
+        inline bool on_int64(std::int64_t i, string_view, error_code& ec);
+        inline bool on_uint64(std::uint64_t u, string_view, error_code& ec);
+        inline bool on_double(double d, string_view, error_code& ec);
+        inline bool on_bool(bool b, error_code& ec);
+        inline bool on_null(error_code& ec);
+        inline bool on_comment_part(string_view, error_code&);
+        inline bool on_comment(string_view, error_code&);
     };
 
     basic_parser<handler> p_;
@@ -204,9 +133,7 @@ public:
 
         @note
         Before any JSON can be parsed, the function
-        @ref reset must be called.
-
-        <br>
+        @ref reset must be called.\n
 
         The `sp` parameter is only used to
         allocate intermediate storage; it will not be used
@@ -241,9 +168,7 @@ public:
 
         @note
         Before any JSON can be parsed, the function
-        @ref reset must be called.
-
-        <br>
+        @ref reset must be called.\n
 
         The `sp` parameter is only used to
         allocate intermediate storage; it will not be used
@@ -333,9 +258,7 @@ public:
         buffer. The parse proceeds from the current
         state, which is at the beginning of a new JSON
         or in the middle of the current JSON if any
-        characters were already parsed.
-
-        <br>
+        characters were already parsed.\n
 
         The characters in the buffer are processed
         starting from the beginning, until one of the
@@ -384,9 +307,7 @@ public:
         buffer. The parse proceeds from the current
         state, which is at the beginning of a new JSON
         or in the middle of the current JSON if any
-        characters were already parsed.
-
-        <br>
+        characters were already parsed.\n
 
         The characters in the buffer are processed
         starting from the beginning, until one of the

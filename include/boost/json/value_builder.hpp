@@ -22,34 +22,53 @@ namespace json {
 
 //----------------------------------------------------------
 
-/** A factory for building a value DOM.
+/** A factory for building a value.
 
     A value builder implements an algorithm for
     efficiently constructing a @ref value from an
     external source (provided by the caller).
-
-    The builder uses a dynamically allocated internal
-    storage to hold portions of the document, allowing
-    complete objects and arrays to be constructed using
-    a single allocation when their contents are
-    eventually known. This internal storage is reused
-    when creating multiple values with the same builder.
+    It uses a dynamically allocated internal storage
+    to hold portions of the document, allowing complete
+    objects and arrays to be constructed using a single
+    allocation when their contents are eventually known.
+    This internal storage is reused when creating multiple
+    values with the same builder. \n
 
     To use the builder construct it with an optionally
     specified memory resource to use for the internal
     storage. Then call @ref reset once before building
     each complete DOM, optionally specifying the
     memory resource to use for the resulting @ref value.
+    Once the reset function is called, the value may
+    be built iteratively by calling the appropriate
+    insertion functions as desired. After construction
+    is finished, the caller can take ownership of the
+    resulting value by calling @ref release.
 
-    The functions @ref on_document_begin and
-    @ref on_document_end must be called exactly once
-    at the beginning and at the end of construction.
-    The remaining event handling functions are called
-    according to their descriptions to build the document.
+    @par Example
+
+    The following code constructs a @ref value which
+    when serialized produces a JSON object with three
+    elements.
+
+    @code
+    value_builder vb;
+    vb.reset();
+    vb.begin_object();
+    vb.insert_key("a");
+    vb.insert_int64(1);
+    vb.insert_key("b");
+    vb.insert_null();
+    vb.insert_key("c");
+    vb.insert_string("hello");
+    vb.end_object();
+    assert( to_string(vb.release()) == "{\"a\":1,\"b\":null,\"c\":\"hello\"}" );
+    @endcode
 */
 class value_builder
 {
     enum class state : char;
+
     struct level
     {
         std::uint32_t count;
@@ -66,30 +85,26 @@ class value_builder
 public:
     /** Destructor.
 
-        All dynamically allocated memory, including
-        any partially built results, is freed.
+        All dynamically allocated memory and
+        partial or complete elements is freed.
     */
     BOOST_JSON_DECL
     ~value_builder();
 
     /** Constructor.
 
-        Constructs a empty builder using the default
-        memory resource, or the optionally specified
-        @ref storage_ptr, to allocate intermediate storage.
+        Constructs a empty builder. Before any
+        @ref value can be built, the function
+        @ref reset must be called. 
 
-        @note
-        Before any @ref value can be built,
-        the function @ref start must be called. 
-
-        <br>
-
-        The `sp` parameter is only used to
-        allocate intermediate storage; it will not be used
+        The `sp` parameter is only used to allocate
+        intermediate storage; it will not be used
         for the @ref value returned by @ref release.
 
-        @param sp The @ref storage_ptr to use for
-        intermediate storage allocations.
+        @param sp A pointer to the @ref memory_resource
+        to use for intermediate storage allocations. If
+        this argument is omitted, the default memory
+        resource is used.
     */
     BOOST_JSON_DECL
     explicit 
@@ -98,30 +113,31 @@ public:
     /** Reserve internal storage space.
 
         This function reserves space for `n` bytes
-        in the parser's internal temporary storage.
+        in the builders's internal temporary storage.
         The request is only a hint to the
-        implementation. 
+        implementation.
 
         @par Exception Safety
 
         Strong guarantee.
 
-        @param n The number of bytes to reserve. A
-        good choices is `C * sizeof(value)` where
-        `C` is the total number of @ref value elements
-        in a typical parsed JSON.
+        @param n The number of bytes to reserve.
     */
     BOOST_JSON_DECL
     void
     reserve(std::size_t n);
 
-    /** Prepare the builder for a new value.
+    /** Prepare to build a new value.
 
         This function must be called before building
-        a new @ref value. Any previously existing full
-        or partial values are destroyed, but internal
+        a new @ref value. Any previously existing partial
+        or complete elements are destroyed, but internal
         dynamically allocated memory is preserved which
         may be reused to build new values.
+
+        @par Exception Safety
+
+        No-throw guarantee.
 
         @param sp A pointer to the @ref memory_resource
         to use for the resulting value. The builder will
@@ -131,13 +147,16 @@ public:
     void
     reset(storage_ptr sp = {}) noexcept;
 
-    /** Return the parsed JSON as a @ref value.
+    /** Return the completed value.
 
         If @ref is_complete() returns `true`, then the
         parsed value is returned. Otherwise an
         exception is thrown.
 
-        @throw std::logic_error `! is_complete()`
+        @par Exception Safety
+
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
 
         @return The parsed value. Ownership of this
         value is transferred to the caller.       
@@ -153,10 +172,12 @@ public:
         internal memory which may be reused on a
         subsequent parse.
 
-        @note
+        After calling this function, it is necessary
+        to call @ref start before building a new value.
 
-        After this call, it is necessary to call
-        @ref start to parse a new JSON incrementally.
+        @par Exception Safety
+
+        No-throw guarantee.
     */
     BOOST_JSON_DECL
     void
@@ -164,339 +185,245 @@ public:
 
     //--------------------------------------------
 
-    /** Begin building a new value.
+    /** Insert an array.
 
-        This function must be called exactly once
-        after calling @ref reset, before any other
-        event functions are invoked.
+        This function opens a new, empty array
+        which will be inserted into the result as
+        the next element of the currently open array
+        or object, or as the top-level element if
+        no other elements exist.\n
 
-        @return `true` on success.
+        After calling this function, elements
+        are inserted into the array by calling
+        the other insertion functions (including
+        @ref begin_array and @ref begin_object).\n
 
-        @param ec Set to the error, if any occurred.
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
     */
     BOOST_JSON_DECL
-    bool
-    on_document_begin(
-        error_code& ec);
+    void
+    begin_array();
 
-    /** Finish building a new value.
+    /** Insert an array.
 
-        This function must be called exactly once
-        before calling @ref release, and after all
-        event functions have been called.
+        This function closes the current array,
+        which must have been opened by a previously
+        balanced call to @ref begin_array.
+        The array is then inserted into the currently
+        open array or object, or the top level if no
+        enclosing array or object is open.
 
-        @return `true` on success.
-
-        @param ec Set to the error, if any occurred.
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
     */
     BOOST_JSON_DECL
-    bool
-    on_document_end(
-        error_code& ec);
+    void
+    end_array();
 
-    /** Begin building an object.
+    /** Insert an object.
 
-        This instructs the builder to begin building
-        a new JSON object, either as the top-level
-        element of the resulting value, or as the
-        next element of the current object or array
-        being built.
+        This function opens a new, empty object
+        which will be inserted into the result as
+        the next element of the currently open array
+        or object, or as the top-level element if
+        no other elements exist.\n
 
-        @return `true` on success.
+        After calling this function, elements are
+        inserted into the object by first inserting
+        the key using @ref insert_key and
+        @ref insert_key_part, and then calling
+        the other insertion functions (including
+        @ref begin_object and @ref begin_array) to
+        add the value corresponding to the key.\n
 
-        @param ec Set to the error, if any occurred.
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
     */
     BOOST_JSON_DECL
-    bool
-    on_object_begin(
-        error_code& ec);
+    void
+    begin_object();
 
-    /** Finish building an object.
+    /** Insert an object.
 
-        This event function instructs the builder that
-        the object currently being built, which was created
-        by the last call to @ref on_object_begin, is finished.
+        This function closes the current object,
+        which must have been opened by a previously
+        balanced call to @ref begin_object.
+        The object is then inserted into the currently
+        open array or object, or the top level if no
+        enclosing array or object is open.
 
-        @return `true` on success.
-
-        @param ec Set to the error, if any occurred.
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
     */
     BOOST_JSON_DECL
-    bool
-    on_object_end(
-        error_code& ec);
+    void
+    end_object();
 
-    /** Begin building an array.
-
-        This instructs the builder to begin building
-        a new JSON array, either as the top-level
-        element of the resulting value, or as the
-        next element of the current object or array
-        being built.
-
-        @return `true` on success.
-
-        @param ec Set to the error, if any occurred.
-    */
-    BOOST_JSON_DECL
-    bool
-    on_array_begin(
-        error_code& ec);
-
-    /** Finish building an array.
-
-        This function instructs the builder that the
-        array currently being built, which was created
-        by the last call to @ref on_array_begin, is finished.
-
-        @return `true` on success.
-
-        @param ec Set to the error, if any occurred.
-    */
-    BOOST_JSON_DECL
-    bool
-    on_array_end(
-        error_code& ec);
-
-    /** Continue creating a key.
+    /** Set the key for the next value.
 
         This function appends the specified characters
-        to the key being built as the next element of
-        a currently open object. If a key is not currently
-        being built, the behavior is undefined.
+        to the current key, which must be part of an
+        open object. If a key is not currently being
+        built or an object is not open, the behavior
+        is undefined.
 
-        @return `true` on success.
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
 
         @param s The characters to append. This may be empty.
-
-        @param ec Set to the error, if any occurred.
     */
     BOOST_JSON_DECL
-    bool
-    on_key_part(
-        string_view s,
-        error_code& ec);
+    void
+    insert_key_part(
+        string_view s);
 
-    /** Finish creating a key.
+    /** Set the key for the next value.
 
         This function appends the specified characters
-        to the key being built as the next element of
-        a currently open object, and finishes construction
-        of the key. If a key is not currently being built,
-        the behavior is undefined.
+        to the current key, which must be part of an
+        open object. If a key is not currently being
+        built or an object is not open, the behavior
+        is undefined. After the characters are inserted,
+        the key is finished and a value must be inserted
+        next.
 
-        @return `true` on success.
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
 
         @param s The characters to append. This may be empty.
-
-        @param ec Set to the error, if any occurred.
     */
     BOOST_JSON_DECL
-    bool
-    on_key(
-        string_view s,
-        error_code& ec);
+    void
+    insert_key(
+        string_view s);
 
-    /** Begin or continue creating a string.
+    /** Insert a string.
 
         This function appends the specified characters
-        to the string being built. If a string is not
-        currently being built, then a new empty string
-        is started.
+        to the current string, which will be created if
+        it did not already exist from an immediately
+        prior call to @ref insert_string_part.
 
-        @return `true` on success.
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
 
         @param s The characters to append. This may be empty.
-
-        @param ec Set to the error, if any occurred.
     */
     BOOST_JSON_DECL
-    bool
-    on_string_part(
-        string_view s,
-        error_code& ec);
+    void
+    insert_string_part(
+        string_view s);
 
-    /** Create a string or finish creating a string.
+    /** Insert a string.
 
         This function appends the specified characters
-        to the string being built. If a string is not
-        currently being built, then a new string is created
-        with the specified characters.
+        to the current string, which will be created if
+        it did not already exist from an immediately prior
+        call to @ref insert_string_part.
+        The string is then inserted into the currently
+        open array or object, or the top level if no
+        array or object is open.
 
-        @return `true` on success.
-
-        @param s The characters to append. This may be empty.
-
-        @param ec Set to the error, if any occurred.
-    */
-    BOOST_JSON_DECL
-    bool
-    on_string(
-        string_view s,
-        error_code& ec);
-
-    /** Begin building a number from a string.
-
-        This instructs the builder to begin building
-        a new JSON number, either as the top-level
-        element of the resulting value, or as the
-        next element of the current object or array
-        being built.
-
-        @note This function has no effect and always
-        returns `true`.
-
-        @return `true` on success.
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
 
         @param s The characters to append. This may be empty.
-
-        @param ec Set to the error, if any occurred.
-    */
-    bool
-    on_number_part(
-        string_view s,
-        error_code& ec)
-    {
-        (void)s;
-        (void)ec;
-        return true;
-    }
-
-    /** Build a number.
-
-        This function builds a number from the specified
-        value and adds it as the top-level element of the
-        resulting value, or as the next element of the
-        current object or array being built.
-
-        @return `true` on success.
-
-        @param i The integer to build.
-
-        @param s The characters to append. This value is ignored.
-
-        @param ec Set to the error, if any occurred.
     */
     BOOST_JSON_DECL
-    bool
-    on_int64(
-        int64_t i,
-        string_view s,
-        error_code& ec);
+    void
+    insert_string(
+        string_view s);
 
-    /** Build a number.
+    /** Insert a number.
 
-        This function builds a number from the specified
-        value and adds it as the top-level element of the
-        resulting value, or as the next element of the
-        current object or array being built.
+        This function inserts a number into the currently
+        open array or object, or the top level if no
+        array or object is open.
 
-        @return `true` on success.
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
 
-        @param i The unsigned integer to build.
-
-        @param s The characters to append. This value is ignored.
-
-        @param ec Set to the error, if any occurred.
+        @param i The number to insert.
     */
     BOOST_JSON_DECL
-    bool
-    on_uint64(
-        uint64_t u,
-        string_view s,
-        error_code& ec);
+    void
+    insert_int64(
+        int64_t i);
 
-    /** Build a number.
+    /** Insert a number.
 
-        This function builds a number from the specified
-        value and adds it as the top-level element of the
-        resulting value, or as the next element of the
-        current object or array being built.
+        This function inserts a number into the currently
+        open array or object, or the top level if no
+        array or object is open.
 
-        @return `true` on success.
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
 
-        @param i The floating point number to build.
-
-        @param s The characters to append. This value is ignored.
-
-        @param ec Set to the error, if any occurred.
+        @param u The number to insert.
     */
     BOOST_JSON_DECL
-    bool
-    on_double(
-        double d,
-        string_view s,
-        error_code& ec);
+    void
+    insert_uint64(
+        uint64_t u);
 
-    /** Build a boolean.
+    /** Insert a number.
 
-        This function builds a boolean from the specified
-        value and adds it as the top-level element of the
-        resulting value, or as the next element of the
-        current object or array being built.
+        This function inserts a number into the currently
+        open array or object, or the top level if no
+        array or object is open.
 
-        @return `true` on success.
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
 
-        @param b The boolean to build.
-
-        @param ec Set to the error, if any occurred.
+        @param d The number to insert.
     */
     BOOST_JSON_DECL
-    bool
-    on_bool(
-        bool b,
-        error_code& ec);
+    void
+    insert_double(
+        double d);
+
+    /** Insert a boolean.
+
+        This function inserts a boolean into the currently
+        open array or object, or the top level if no
+        array or object is open.
+
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
+        @param b The boolean to insert.
+    */
+    BOOST_JSON_DECL
+    void
+    insert_bool(
+        bool b);
 
     /** Build a null.
 
-        This function builds a null from the specified
-        value and adds it as the top-level element of the
-        resulting value, or as the next element of the
-        current object or array being built.
+        This function inserts a null into the currently
+        open array or object, or the top level if no
+        array or object is open.
 
-        @return `true` on success.
-
-        @param ec Set to the error, if any occurred.
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
     */
     BOOST_JSON_DECL
-    bool
-    on_null(error_code& ec);
-
-    /** Specify part of comment.
-
-        This function has no effect and always returns `true`.
-
-        @param s The characters to append. This value is ignored.
-
-        @param ec Set to the error, if any occurred.
-    */
-    bool
-    on_comment_part(
-        string_view s,
-        error_code& ec) 
-    { 
-        (void)s;
-        (void)ec;
-        return true; 
-    }
-    
-    /** Specify a comment.
-
-        This function has no effect and always returns `true`.
-
-        @param s The characters to append. This value is ignored.
-
-        @param ec Set to the error, if any occurred.
-    */
-    bool
-    on_comment(
-        string_view s, 
-        error_code& ec)
-    { 
-        (void)s;
-        (void)ec;
-        return true; 
-    }
+    void
+    insert_null();
 
 private:
     inline
@@ -522,9 +449,8 @@ private:
         Args&&... args);
 
     template<class... Args>
-    bool
+    void
     emplace(
-        error_code& ec,
         Args&&... args);
 
     template<class T>

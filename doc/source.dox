@@ -7,6 +7,11 @@ INPUT = \
         $(LIB_DIR)/include/boost/json/detail/basic_parser.hpp \
         $(LIB_DIR)/include/boost/pilfer.hpp
 
+#        $(LIB_DIR)/include/boost/json/error.hpp \
+#        $(LIB_DIR)/include/boost/json/string_view.hpp \
+#        $(LIB_DIR)/include/boost/json/value_builder.hpp
+
+
 ALIASES               += esafe="@par Exception Safety"
 
 INPUT_ENCODING         = UTF-8

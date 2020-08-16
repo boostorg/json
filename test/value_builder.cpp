@@ -10,6 +10,8 @@
 // Test that header file is self-contained.
 #include <boost/json/value_builder.hpp>
 
+#include <boost/json/serializer.hpp>
+
 #include "test_suite.hpp"
 
 namespace boost {
@@ -21,13 +23,20 @@ public:
     void
     testBuilder()
     {
-        error_code ec;
-        value_builder vb;
-        vb.reset();
-        vb.on_document_begin(ec);
-        vb.on_null(ec);
-        vb.on_document_end(ec);
-        vb.release();
+    // This is from the javadoc
+
+    value_builder vb;
+    vb.reset();
+    vb.begin_object();
+    vb.insert_key("a");
+    vb.insert_int64(1);
+    vb.insert_key("b");
+    vb.insert_null();
+    vb.insert_key("c");
+    vb.insert_string("hello");
+    vb.end_object();
+    assert( to_string(vb.release()) == "{\"a\":1,\"b\":null,\"c\":\"hello\"}" );
+
     }
 
     void

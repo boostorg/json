@@ -20,6 +20,194 @@
 namespace boost {
 namespace json {
 
+bool
+parser::
+handler::
+on_document_begin(
+    error_code&)
+{
+    return true;
+}
+
+bool
+parser::
+handler::
+on_document_end(
+    error_code&)
+{
+    return true;
+}
+
+bool
+parser::
+handler::
+on_object_begin(
+    error_code&)
+{
+    vb.begin_object();
+    return true;
+}
+
+bool
+parser::
+handler::
+on_object_end(
+    error_code&)
+{
+    vb.end_object();
+    return true;
+}
+
+bool
+parser::
+handler::
+on_array_begin(
+    error_code&)
+{
+    vb.begin_array();
+    return true;
+}
+
+bool
+parser::
+handler::
+on_array_end(
+    error_code&)
+{
+    vb.end_array();
+    return true;
+}
+
+bool
+parser::
+handler::
+on_key_part(
+    string_view s,
+    error_code&)
+{
+    vb.insert_key_part(s);
+    return true;
+}
+        
+bool
+parser::
+handler::
+on_key(
+    string_view s,
+    error_code&)
+{
+    vb.insert_key(s);
+    return true;
+}
+        
+bool
+parser::
+handler::
+on_string_part(
+    string_view s,
+    error_code&)
+{
+    vb.insert_string_part(s);
+    return true;
+}
+
+bool
+parser::
+handler::
+on_string(
+    string_view s,
+    error_code&)
+{
+    vb.insert_string(s);
+    return true;
+}
+
+bool
+parser::
+handler::
+on_number_part(
+    string_view,
+    error_code&)
+{
+    return true;
+}
+
+bool
+parser::
+handler::
+on_int64(
+    std::int64_t i,
+    string_view,
+    error_code&)
+{
+    vb.insert_int64(i);
+    return true;
+}
+        
+bool
+parser::
+handler::
+on_uint64(
+    std::uint64_t u,
+    string_view,
+    error_code&)
+{
+    vb.insert_uint64(u);
+    return true;
+}
+
+bool
+parser::
+handler::
+on_double(
+    double d,
+    string_view,
+    error_code&)
+{
+    vb.insert_double(d);
+    return true;
+}
+        
+bool
+parser::
+handler::
+on_bool(
+    bool b,
+    error_code&)
+{
+    vb.insert_bool(b);
+    return true;
+}
+
+bool
+parser::
+handler::
+on_null(error_code&)
+{
+    vb.insert_null();
+    return true;
+}
+
+bool
+parser::
+handler::
+on_comment_part(
+    string_view, error_code&)
+{
+    return true;
+}
+        
+bool
+parser::
+handler::
+on_comment(
+    string_view, error_code&)
+{
+    return true;
+}
+
+//----------------------------------------------------------
+
 parser::
 parser() noexcept
     : parser(
@@ -122,12 +310,12 @@ value
 parser::
 release()
 {
-    /*
+    // VFALCO Do we need to put the throw
+    // in a separate raise() function?
     if(! p_.is_complete())
         BOOST_THROW_EXCEPTION(
             std::logic_error(
                 "no value"));
-    */
     return p_.handler().vb.release();
 }
 

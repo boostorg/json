@@ -76,6 +76,11 @@ class value
     struct undo;
     struct init_iter;
 
+    friend class value_builder;
+    friend class key_value_pair;
+    inline value(detail::unchecked_object&& uo);
+    inline value(detail::unchecked_array&& ua);
+
 public:
     /** Destructor.
 
@@ -89,12 +94,6 @@ public:
     */
     BOOST_JSON_DECL
     ~value();
-
-#ifndef BOOST_JSON_DOCS
-    // private
-    inline value(detail::unchecked_object&& uo);
-    inline value(detail::unchecked_array&& ua);
-#endif
 
     /** Default constructor.
 
@@ -2670,8 +2669,9 @@ swap(value& lhs, value& rhs)
     This is the type of element used by the @ref object
     container.
 */
-struct key_value_pair
+class key_value_pair
 {
+public:
     /** Copy assignment (deleted).
     */
     key_value_pair&

@@ -39,9 +39,7 @@ namespace json {
     JSON is presented to the parser by one or more calls
     to @ref write_some. The parsing events are realized
     through member function calls to a handler passed as
-    an argument to the write function.
-
-    <br>
+    an argument to the write function.\n
 
     The parser may dynamically allocate intermediate
     storage as needed to accommodate the nesting level
@@ -59,9 +57,7 @@ namespace json {
     function @ref parse. This class is designed for
     users who wish to perform custom actions instead of
     building a @ref value. For example, to produce a
-    DOM from an external library.
-
-    <br>
+    DOM from an external library.\n
 
     To use this class it is necessary to create a derived
     class which calls @ref reset at the beginning of
@@ -378,9 +374,7 @@ public:
         parsing event. The parse proceeds from the
         current state, which is at the beginning of a
         new JSON or in the middle of the current JSON
-        if any characters were already parsed.
-
-        <br>
+        if any characters were already parsed.\n
 
         The characters in the buffer are processed
         starting from the beginning, until one of the
@@ -410,10 +404,8 @@ public:
         member function returns `false`, it must set
         the error code to a suitable value. This error
         code will be returned by the write function to
-        the caller.
-        
-        <br>
-        
+        the caller.\n
+                
         The following declaration meets the parser's
         handler requirements:
 

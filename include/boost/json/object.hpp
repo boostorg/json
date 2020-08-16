@@ -35,24 +35,18 @@ class object_test;
 /** A dynamically sized associative container of JSON key/value pairs.
 
     This is an associative container whose elements
-    are key/value pairs with unique keys.
-
-    <br>
+    are key/value pairs with unique keys.\n
 
     The elements are stored contiguously, which means that
     elements can be accessed not only through iterators, but
     also using offsets to regular pointers to elements. A
     pointer to an element of an @ref object may be passed to
     any function that expects a pointer to
-    @ref key_value_pair.
-
-    <br>
+    @ref key_value_pair.\n
 
     The container also maintains an internal index to speed
     up find operations, reducing the average complexity
-    for most lookups and insertions
-
-    <br>
+    for most lookups and insertions.\n
 
     Reallocations are usually costly operations in terms of
     performance, as elements are copied and the internal
@@ -109,7 +103,14 @@ class object
         return 1.0;
     }
 
+    friend class value;
+
+    BOOST_JSON_DECL
+    explicit
+    object(detail::unchecked_object&& uo);
+
     friend class object_test;
+
     BOOST_JSON_DECL
     object(object_test const*);
 
@@ -176,13 +177,6 @@ public:
     {
         impl_.destroy(sp_);
     }
-
-#ifndef BOOST_JSON_DOCS
-    // private
-    BOOST_JSON_DECL
-    explicit
-    object(detail::unchecked_object&& uo);
-#endif
 
     //------------------------------------------------------
 
@@ -1210,14 +1204,13 @@ public:
 
         Returns a reference to the value that is mapped
         to a key equivalent to key, performing an insertion
-        of a null value if such key does not already exist.
-        <br>
+        of a null value if such key does not already exist.\n
+
         If an insertion occurs and results in a rehashing of
         the container, all iterators are invalidated. Otherwise
         iterators are not affected. References are not
         invalidated. Rehashing occurs only if the new
-        number of elements is greater than
-        @ref capacity().
+        number of elements is greater than @ref capacity().
 
         @par Complexity
 

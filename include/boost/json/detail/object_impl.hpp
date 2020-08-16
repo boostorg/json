@@ -20,7 +20,7 @@
 namespace boost {
 namespace json {
 
-struct key_value_pair;
+class key_value_pair;
 
 namespace detail {
 

@@ -21,27 +21,119 @@
 namespace boost {
 namespace json {
 
-#ifndef BOOST_JSON_STANDALONE
-
-/// The type of error code used by the library.
-using error_code = boost::system::error_code;
-
-/// The type of error category used by the library.
-using error_category = boost::system::error_category;
-
-/// The type of error condition used by the library.
-using error_condition = boost::system::error_condition;
-
-/// The type of system error thrown by the library.
-using system_error = boost::system::system_error;
-
 #ifdef BOOST_JSON_DOCS
+
+/** The type of error code used by the library.
+
+    This type alias is set depending
+    on how the library is configured:
+
+    @par Use with Boost
+
+    If the macro `BOOST_JSON_STANDALONE` is
+    not defined, this type will be an alias
+    for `boost::system::error_code`.
+    Compiling a program using the library will
+    require Boost, and a compiler conforming
+    to C++11 or later.
+
+    @par Use without Boost
+
+    If the macro `BOOST_JSON_STANDALONE` is
+    defined, this type will be an alias
+    for `std::error_code`.
+    Compiling a program using the library will
+    require only a compiler conforming to C++17
+    or later.
+*/
+using error_code = __see_below__;
+
+/** The type of error category used by the library.
+
+    This type alias is set depending
+    on how the library is configured:
+
+    @par Use with Boost
+
+    If the macro `BOOST_JSON_STANDALONE` is
+    not defined, this type will be an alias
+    for `boost::system::error_category`.
+    Compiling a program using the library will
+    require Boost, and a compiler conforming
+    to C++11 or later.
+
+    @par Use without Boost
+
+    If the macro `BOOST_JSON_STANDALONE` is
+    defined, this type will be an alias
+    for `std::error_category`.
+    Compiling a program using the library will
+    require only a compiler conforming to C++17
+    or later.
+*/
+using error_category = __see_below__;
+
+/** The type of error condition used by the library.
+
+    This type alias is set depending
+    on how the library is configured:
+
+    @par Use with Boost
+
+    If the macro `BOOST_JSON_STANDALONE` is
+    not defined, this type will be an alias
+    for `boost::system::error_condition`.
+    Compiling a program using the library will
+    require Boost, and a compiler conforming
+    to C++11 or later.
+
+    @par Use without Boost
+
+    If the macro `BOOST_JSON_STANDALONE` is
+    defined, this type will be an alias
+    for `std::error_condition`.
+    Compiling a program using the library will
+    require only a compiler conforming to C++17
+    or later.
+*/
+using error_condition = __see_below__;
+
+/** The type of system error thrown by the library.
+
+    This type alias is set depending
+    on how the library is configured:
+
+    @par Use with Boost
+
+    If the macro `BOOST_JSON_STANDALONE` is
+    not defined, this type will be an alias
+    for `boost::system::system_error`.
+    Compiling a program using the library will
+    require Boost, and a compiler conforming
+    to C++11 or later.
+
+    @par Use without Boost
+
+    If the macro `BOOST_JSON_STANDALONE` is
+    defined, this type will be an alias
+    for `std::system_error`.
+    Compiling a program using the library will
+    require only a compiler conforming to C++17
+    or later.
+*/
+using system_error = __see_below__;
+
 /// Returns the generic error category used by the library.
 error_category const&
 generic_category();
-#else
+
+#elif ! defined(BOOST_JSON_STANDALONE)
+
+using error_code = boost::system::error_code;
+using error_category = boost::system::error_category;
+using error_condition = boost::system::error_condition;
+using system_error = boost::system::system_error;
 using boost::system::generic_category;
-#endif
 
 #else
 

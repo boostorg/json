@@ -165,9 +165,7 @@ extensions:
     [Skip UTF-8 Validation]
     [
         UTF-8 byte sequences appearing within strings
-        are not checked for validity 
-        [br]
-        (as defined by 
+        are not checked for validity (as defined by 
         [@https://www.unicode.org/versions/Unicode13.0.0/UnicodeStandard-13.0.pdf The Unicode Standard Version 13.0 Section 3.9]).
     ]
     [

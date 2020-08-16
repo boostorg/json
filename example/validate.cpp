@@ -9,7 +9,6 @@
 
 /*
     This example verifies that a file contains valid JSON.
-    It is implementing by subclassing basic_parser 
 */
 
 #include <boost/json.hpp>

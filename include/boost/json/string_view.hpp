@@ -21,9 +21,35 @@
 namespace boost {
 namespace json {
 
-#ifndef BOOST_JSON_STANDALONE
+#ifdef BOOST_JSON_DOCS
 
-/// The type of string view used by the library.
+/** The type of string view used by the library.
+
+    This type alias is set depending
+    on how the library is configured:
+
+    @par Use with Boost
+
+    If the macro `BOOST_JSON_STANDALONE` is
+    not defined, this type will be an alias
+    for `boost::string_view`.
+    Compiling a program using the library will
+    require Boost, and a compiler conforming
+    to C++11 or later.
+
+    @par Use without Boost
+
+    If the macro `BOOST_JSON_STANDALONE` is
+    defined, this type will be an alias
+    for `std::string_view`.
+    Compiling a program using the library will
+    require only a compiler conforming to C++17
+    or later.
+*/
+using string_view = __see_below__;
+
+#elif ! defined(BOOST_JSON_STANDALONE)
+
 using string_view = boost::string_view;
 
 #else

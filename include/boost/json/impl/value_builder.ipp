@@ -98,56 +98,7 @@ reset(storage_ptr sp) noexcept
     clear();
     sp_ = std::move(sp);
     lev_.st = state::begin;
-}
 
-value
-value_builder::
-release()
-{
-    // An exception here means that the value
-    // was not properly constructed. For example,
-    // an array or object was not closed, or
-    // there was no top level value.
-    if( lev_.st != state::top ||
-        lev_.count != 1)
-        BOOST_THROW_EXCEPTION(
-            std::logic_error(
-                "no value"));
-    auto ua = pop_array();
-    BOOST_ASSERT(rs_.empty());
-    union U
-    {
-        value v;
-        U(){}
-        ~U(){}
-    };
-    U u;
-    ua.relocate(&u.v);
-    lev_.st = state::need_reset;
-    sp_ = {};
-    return pilfer(u.v);
-}
-
-void
-value_builder::
-clear() noexcept
-{
-    destroy();
-    rs_.clear();
-    lev_.count = 0;
-    key_size_ = 0;
-    str_size_ = 0;
-    lev_.st = state::need_reset;
-    sp_ = {};
-}
-
-//----------------------------------------------------------
-
-bool
-value_builder::
-on_document_begin(
-    error_code&)
-{
     // reset() must be called before
     // building every new top level value.
     BOOST_ASSERT(lev_.st == state::begin);
@@ -161,24 +112,86 @@ on_document_begin(
     // inside a notional 1-element array.
     rs_.add(sizeof(value));
     lev_.st = state::top;
-
-    return true;
 }
 
-bool
+value
 value_builder::
-on_document_end(error_code&)
+release()
 {
     // If this goes off, then an
-    // array or object was never finished.
+    // array or object was never closed.
     BOOST_ASSERT(lev_.st == state::top);
     BOOST_ASSERT(lev_.count == 1);
-    return true;
+
+    auto ua = pop_array();
+    BOOST_ASSERT(rs_.empty());
+    union U
+    {
+        value v;
+        U(){}
+        ~U(){}
+    };
+    U u;
+    ua.relocate(&u.v);
+    lev_.st = state::need_reset;
+
+    // give up the resource in case
+    // it uses shared ownership.
+    sp_ = {};
+
+    return pilfer(u.v);
 }
 
-bool
+void
 value_builder::
-on_object_begin(error_code&)
+clear() noexcept
+{
+    destroy();
+    rs_.clear();
+    lev_.count = 0;
+    key_size_ = 0;
+    str_size_ = 0;
+    lev_.st = state::need_reset;
+
+    // give up the resource in case
+    // it uses shared ownership.
+    sp_ = {};
+}
+
+//----------------------------------------------------------
+
+void
+value_builder::
+begin_array()
+{
+    // prevent splits from exceptions
+    rs_.prepare(
+        sizeof(level) +
+        sizeof(value) +
+        alignof(value) - 1);
+    push(lev_);
+    lev_.align =
+        detail::align_to<value>(rs_);
+    rs_.add(sizeof(value));
+    lev_.count = 0;
+    lev_.st = state::arr;
+}
+
+void
+value_builder::
+end_array()
+{
+    BOOST_ASSERT(
+        lev_.st == state::arr);
+    auto ua = pop_array();
+    rs_.subtract(lev_.align);
+    pop(lev_);
+    emplace(std::move(ua));
+}
+
+void
+value_builder::
+begin_object()
 {
     // prevent splits from exceptions
     rs_.prepare(
@@ -192,123 +205,65 @@ on_object_begin(error_code&)
         object::value_type));
     lev_.count = 0;
     lev_.st = state::obj;
-    return true;
 }
 
-bool
+void
 value_builder::
-on_object_end(
-    error_code& ec)
+end_object()
 {
     BOOST_ASSERT(
         lev_.st == state::obj);
     auto uo = pop_object();
     rs_.subtract(lev_.align);
     pop(lev_);
-    return emplace(
-        ec, std::move(uo));
+    emplace(std::move(uo));
 }
 
-bool
+void
 value_builder::
-on_array_begin(error_code&)
+insert_key_part(
+    string_view s)
 {
-    // prevent splits from exceptions
-    rs_.prepare(
-        sizeof(level) +
-        sizeof(value) +
-        alignof(value) - 1);
-    push(lev_);
-    lev_.align =
-        detail::align_to<value>(rs_);
-    rs_.add(sizeof(value));
-    lev_.count = 0;
-    lev_.st = state::arr;
-    return true;
-}
-
-bool
-value_builder::
-on_array_end(
-    error_code& ec)
-{
-    BOOST_ASSERT(
-        lev_.st == state::arr);
-    auto ua = pop_array();
-    rs_.subtract(lev_.align);
-    pop(lev_);
-    return emplace(
-        ec, std::move(ua));
-}
-
-bool
-value_builder::
-on_key_part(
-    string_view s,
-    error_code& ec)
-{
-    if( s.size() >
-        string::max_size() - key_size_)
-    {
-        ec = error::key_too_large;
-        return false;
-    }
     push_chars(s);
     key_size_ += static_cast<
         std::uint32_t>(s.size());
-    return true;
 }
 
-bool
+void
 value_builder::
-on_key(
-    string_view s,
-    error_code& ec)
+insert_key(
+    string_view s)
 {
     BOOST_ASSERT(
         lev_.st == state::obj);
-    if(! on_key_part(s, ec))
-        return false;
+    push_chars(s);
+    key_size_ += static_cast<
+        std::uint32_t>(s.size());
     push(key_size_);
     key_size_ = 0;
     lev_.st = state::key;
-    return true;
 }
 
-bool
+void
 value_builder::
-on_string_part(
-    string_view s,
-    error_code& ec)
+insert_string_part(
+    string_view s)
 {
-    if( s.size() >
-        string::max_size() - str_size_)
-    {
-        ec = error::string_too_large;
-        return false;
-    }
     push_chars(s);
     str_size_ += static_cast<
         std::uint32_t>(s.size());
-    return true;
 }
 
-bool
+void
 value_builder::
-on_string(
-    string_view s,
-    error_code& ec)
+insert_string(
+    string_view s)
 {
-    if( s.size() >
-        string::max_size() - str_size_)
-    {
-        ec = error::string_too_large;
-        return false;
-    }
     if(str_size_ == 0)
     {
         // fast path
-        return emplace(ec, s, sp_);
+        emplace(s, sp_);
+        return;
     }
 
     string str(sp_);
@@ -324,54 +279,46 @@ on_string(
         str.data() + sv.size(),
         s.data(), s.size());
     str.grow(sv.size() + s.size());
-    return emplace(
-        ec, std::move(str), sp_);
+    emplace(std::move(str), sp_);
 }
 
-bool
+void
 value_builder::
-on_int64(
-    int64_t i,
-    string_view,
-    error_code& ec)
+insert_int64(
+    int64_t i)
 {
-    return emplace(ec, i, sp_);
+    emplace(i, sp_);
 }
 
-bool
+void
 value_builder::
-on_uint64(
-    uint64_t u,
-    string_view,
-    error_code& ec)
+insert_uint64(
+    uint64_t u)
 {
-    return emplace(ec, u, sp_);
+    emplace(u, sp_);
 }
 
-bool
+void
 value_builder::
-on_double(
-    double d,
-    string_view,
-    error_code& ec)
+insert_double(
+    double d)
 {
-    return emplace(ec, d, sp_);
+    emplace(d, sp_);
 }
 
-bool
+void
 value_builder::
-on_bool(
-    bool b,
-    error_code& ec)
+insert_bool(
+    bool b)
 {
-    return emplace(ec, b, sp_);
+    emplace(b, sp_);
 }
 
-bool
+void
 value_builder::
-on_null(error_code& ec)
+insert_null()
 {
-    return emplace(ec, nullptr, sp_);
+    emplace(nullptr, sp_);
 }
 
 //----------------------------------------------------------
@@ -527,33 +474,19 @@ emplace_array(Args&&... args)
 }
 
 template<class... Args>
-bool
+void
 value_builder::
 emplace(
-    error_code& ec,
     Args&&... args)
 {
     if(lev_.st == state::key)
     {
-        if(lev_.count <
-            object::max_size())
-        {
-            emplace_object(std::forward<
-                Args>(args)...);
-            return true;
-        }
-        ec = error::object_too_large;
-        return false;
+        emplace_object(
+            std::forward<Args>(args)...);
+        return;
     }
-    if(lev_.count <
-        array::max_size())
-    {
-        emplace_array(std::forward<
-            Args>(args)...);
-        return true;
-    }
-    ec = error::array_too_large;
-    return false;
+    emplace_array(
+        std::forward<Args>(args)...);
 }
 
 template<class T>

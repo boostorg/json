@@ -28,17 +28,13 @@ class value_ref;
 /** A dynamically sized array of JSON values
 
     This is the type used to represent JSON array values. It
-    is modeled for equivalence to `std::vector<value>`.
-
-    <br>
+    is modeled for equivalence to `std::vector<value>`.\n
 
     The elements are stored contiguously, which means that
     elements can be accessed not only through iterators, but
     also using offsets to regular pointers to elements. A
     pointer to an element of an @ref array may be passed to
-    any function that expects a pointer to @ref value.
-
-    <br>
+    any function that expects a pointer to @ref value.\n
 
     The storage of the array is handled automatically, being
     expanded and contracted as needed. Arrays usually occupy
@@ -48,16 +44,12 @@ class value_ref;
     is inserted, but only when the additional memory is used
     up. The total amount of allocated memory can be queried
     using the @ref capacity function. Extra memory can be
-    relinquished by calling @ref shrink_to_fit.
-
-    <br>
+    relinquished by calling @ref shrink_to_fit.\n
 
     Reallocations are usually costly operations in terms of
     performance. The @ref reserve function can be used to
     eliminate reallocations if the number of elements is
-    known beforehand.
-
-    <br>
+    known beforehand.\n
 
     The complexity (efficiency) of common operations on
     arrays is as follows:
@@ -98,6 +90,12 @@ class array
 
     class undo_construct;
     class undo_insert;
+
+    friend class value;
+
+    BOOST_JSON_DECL
+    explicit
+    array(detail::unchecked_array&& ua);
 
 public:
     /// The type used to represent unsigned integers
@@ -154,13 +152,6 @@ public:
             return;
         destroy();
     }
-
-#ifndef BOOST_JSON_DOCS
-    // private
-    explicit
-    BOOST_JSON_DECL
-    array(detail::unchecked_array&& ua);
-#endif
 
     //------------------------------------------------------
 
