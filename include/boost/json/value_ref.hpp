@@ -158,8 +158,8 @@ public:
             std::is_same<string, T>::value) &&
             ! std::is_same<bool,
                 detail::remove_cvref<T>>::value &&
-            ! std::is_const<T>::value
-                >::type* = 0)
+            std::is_same<T, detail::remove_cvref<T>>
+                ::value>::type* = 0)
         : f_{&from_rvalue<
             detail::remove_cvref<T>>, &t}
         , what_(std::is_same<string, T>::value ?
