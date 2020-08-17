@@ -190,6 +190,13 @@ reserve()
         sizeof(state)); // comment/utf8 state
 }
 
+//----------------------------------------------------------
+//
+// The canary value is returned by parse functions
+// to indicate that the parser failed, or suspended.
+// this is used as it is distinct from all valid values
+// for data in write_some
+
 template<class Handler>
 const char*
 basic_parser<Handler>::
@@ -199,6 +206,13 @@ canary()
         const char*>(this);
 }
 
+//----------------------------------------------------------
+//
+// These functions are declared with the BOOST_NOINLINE
+// attribute to avoid polluting the parsers hot-path.
+// They return the canary value to indicate suspension
+// or failure.
+
 template<class Handler>
 const char*
 basic_parser<Handler>::
@@ -207,6 +221,7 @@ propagate(state st)
     if(BOOST_JSON_LIKELY(
         ! ec_ && more_))
     {
+        // suspend
         reserve();
         st_.push_unchecked(st);
     }
@@ -244,6 +259,7 @@ maybe_suspend(
     end_ = p;
     if(BOOST_JSON_LIKELY(more_))
     {
+        // suspend
         reserve();
         st_.push_unchecked(st);
     }
@@ -261,8 +277,9 @@ maybe_suspend(
     end_ = p;
     if(BOOST_JSON_LIKELY(more_))
     {
-        reserve();
+        // suspend
         num_ = num;
+        reserve();
         st_.push_unchecked(st);;
     }
     return canary();
@@ -276,6 +293,7 @@ suspend(
     state st)
 {
     end_ = p;
+    // suspend
     reserve();
     st_.push_unchecked(st);
     return canary();
@@ -290,8 +308,9 @@ suspend(
     const number& num)
 {
     end_ = p;
-    reserve();
+    // suspend
     num_ = num;
+    reserve();
     st_.push_unchecked(st);
     return canary();
 }
