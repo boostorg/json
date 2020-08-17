@@ -136,34 +136,35 @@ class basic_parser
     inline static char hex_digit(char c) noexcept;
     
     inline void reserve();
+    inline const char* canary();
 
     BOOST_NOINLINE
     inline
-    std::nullptr_t
+    const char*
     propagate(state st);
 
     BOOST_NOINLINE
     inline
-    std::nullptr_t
+    const char*
     fail(const char* p) noexcept;
 
     BOOST_NOINLINE
     inline
-    std::nullptr_t
+    const char*
     fail(
         const char* p, 
         error ev) noexcept;
 
     BOOST_NOINLINE
     inline
-    std::nullptr_t
+    const char*
     maybe_suspend(
         const char* p, 
         state st);
 
     BOOST_NOINLINE
     inline
-    std::nullptr_t
+    const char*
     maybe_suspend(
         const char* p,
         state st,
@@ -171,14 +172,14 @@ class basic_parser
 
     BOOST_NOINLINE
     inline
-    std::nullptr_t
+    const char*
     suspend(
         const char* p,
         state st);
 
     BOOST_NOINLINE
     inline
-    std::nullptr_t
+    const char*
     suspend(
         const char* p,
         state st,
