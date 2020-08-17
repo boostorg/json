@@ -152,19 +152,19 @@ class basic_parser
     std::nullptr_t
     fail(
         const char* p, 
-        error err) noexcept;
+        error ev) noexcept;
 
     BOOST_NOINLINE
     inline
     std::nullptr_t
-    partial_if_more(
+    maybe_suspend(
         const char* p, 
         state st);
 
     BOOST_NOINLINE
     inline
     std::nullptr_t
-    partial_if_more(
+    maybe_suspend(
         const char* p,
         state st,
         const number& num);
@@ -172,14 +172,14 @@ class basic_parser
     BOOST_NOINLINE
     inline
     std::nullptr_t
-    partial(
+    suspend(
         const char* p,
         state st);
 
     BOOST_NOINLINE
     inline
     std::nullptr_t
-    partial(
+    suspend(
         const char* p,
         state st,
         const number& num);
