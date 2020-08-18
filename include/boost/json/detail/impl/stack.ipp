@@ -35,7 +35,8 @@ reserve(std::size_t n)
     if(buf_ && size_ > 0)
         std::memcpy(
             buf, buf_, size_);
-    sp_->deallocate(buf_, size_);
+    if(buf_)
+        sp_->deallocate(buf_, cap_);
     buf_ = buf;
     cap_ = n;
 }
