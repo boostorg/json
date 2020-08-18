@@ -124,17 +124,14 @@ class const_stream_wrapper
 {
     const char*& p_;
     const char* const end_;
-    const char* const canary_;
 
     friend class clipped_const_stream;
 public:
     const_stream_wrapper(
         const char*& p,
-        const char* end,
-        const char* canary)
+        const char* end)
         : p_(p)
         , end_(end)
-        , canary_(canary)
     {
     }
 
@@ -173,11 +170,6 @@ public:
         return end_;
     }
 
-    bool empty() const noexcept
-    {
-        return p_ == canary_;
-    }
-
     std::size_t remain() const noexcept
     {
         return end_ - p_;
@@ -202,9 +194,8 @@ class clipped_const_stream
 public:
     clipped_const_stream(
         const char*& p,
-        const char* end,
-        const char* canary)
-        : const_stream_wrapper(p, end, canary)
+        const char* end)
+        : const_stream_wrapper(p, end)
         , clip_(end)
     {
     }

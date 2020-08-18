@@ -206,6 +206,15 @@ canary()
         const char*>(this);
 }
 
+template<class Handler>
+bool
+basic_parser<Handler>::
+incomplete(
+    const detail::const_stream_wrapper& cs)
+{
+    return cs.begin() == canary();
+}
+
 //----------------------------------------------------------
 //
 // These functions are declared with the BOOST_NOINLINE
@@ -216,7 +225,7 @@ canary()
 template<class Handler>
 const char*
 basic_parser<Handler>::
-propagate(state st)
+suspend_or_fail(state st)
 {
     if(BOOST_JSON_LIKELY(
         ! ec_ && more_))
@@ -337,8 +346,7 @@ const char*
 basic_parser<Handler>::
 parse_comment(const char* p)
 {
-    detail::const_stream_wrapper cs(
-        p, end_, canary());
+    detail::const_stream_wrapper cs(p, end_);
     const char* start = cs.begin();
     std::size_t remain;
     if(! StackEmpty && ! st_.empty())
@@ -371,7 +379,7 @@ do_com2:
             std::memchr(cs.begin(), '\n', remain)) : canary();
         if(! cs.begin())
             cs = canary();
-        if(BOOST_JSON_UNLIKELY(cs.empty()))
+        if(BOOST_JSON_UNLIKELY(incomplete(cs)))
         {
             // if the doc does not terminate
             // with a newline, treat it as the
@@ -403,7 +411,7 @@ do_com3:
             if(! cs.begin())
                 cs = canary();
             // stopped inside a c comment
-            if(BOOST_JSON_UNLIKELY(cs.empty()))
+            if(BOOST_JSON_UNLIKELY(incomplete(cs)))
             {
                 if(BOOST_JSON_UNLIKELY(! h_.on_comment_part(
                     {start, cs.remain(start)}, ec_)))
@@ -465,8 +473,7 @@ validate_utf8(const char* p, const char* end)
         2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 
         5, 6, 6, 6, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
     };
-    detail::const_stream_wrapper cs(
-        p, end, canary());
+    detail::const_stream_wrapper cs(p, end);
     unsigned char c;
     if(StackEmpty || st_.empty())
     {
@@ -733,8 +740,7 @@ const char*
 basic_parser<Handler>::
 parse_document(const char* p)
 {
-    detail::const_stream_wrapper cs(
-        p, end_, canary());
+    detail::const_stream_wrapper cs(p, end_);
     if(! StackEmpty && ! st_.empty())
     {
         state st;
@@ -790,8 +796,8 @@ do_doc2:
         cs = parse_value<StackEmpty, true, true, true>(cs.begin());
         break;
     }
-    if(BOOST_JSON_UNLIKELY(cs.empty()))
-        return propagate(state::doc2);
+    if(BOOST_JSON_UNLIKELY(incomplete(cs)))
+        return suspend_or_fail(state::doc2);
 do_doc3:
     cs = detail::count_whitespace(cs.begin(), cs.end());
     if(BOOST_JSON_UNLIKELY(! cs))
@@ -822,8 +828,8 @@ do_com12:
             cs = parse_comment<StackEmpty, false, true, true, true>(cs.begin());
             break;
         }
-        if(BOOST_JSON_UNLIKELY(cs.empty()))
-            return propagate(state::com12);
+        if(BOOST_JSON_UNLIKELY(incomplete(cs)))
+            return suspend_or_fail(state::com12);
         goto do_doc3;
     }
     return cs.begin();
@@ -962,8 +968,7 @@ const char*
 basic_parser<Handler>::
 parse_null(const char* p)
 {
-    detail::const_stream_wrapper cs(
-        p, end_, canary());
+    detail::const_stream_wrapper cs(p, end_);
     if(StackEmpty || st_.empty())
     {
         if(BOOST_JSON_LIKELY(cs.remain() >= 4))
@@ -1021,8 +1026,7 @@ const char*
 basic_parser<Handler>::
 parse_true(const char* p)
 {
-    detail::const_stream_wrapper cs(
-        p, end_, canary());
+    detail::const_stream_wrapper cs(p, end_);
     if(StackEmpty || st_.empty())
     {
         if(BOOST_JSON_LIKELY(cs.remain() >= 4))
@@ -1080,8 +1084,7 @@ const char*
 basic_parser<Handler>::
 parse_false(const char* p)
 {
-    detail::const_stream_wrapper cs(
-        p, end_, canary());
+    detail::const_stream_wrapper cs(p, end_);
     if(StackEmpty || st_.empty())
     {
         if(BOOST_JSON_LIKELY(cs.remain() >= 5))
@@ -1150,8 +1153,7 @@ const char*
 basic_parser<Handler>::
 parse_string(const char* p)
 {
-    detail::clipped_const_stream cs(
-        p, end_, canary());
+    detail::clipped_const_stream cs(p, end_);
     detail::buffer<BOOST_JSON_PARSER_BUFFER_SIZE> temp;
     char const* start;
     char c;
@@ -1231,8 +1233,8 @@ parse_string(const char* p)
             {
 do_utf17:
                 cs = validate_utf8<StackEmpty>(cs.begin(), cs.end());
-                if(BOOST_JSON_UNLIKELY(cs.empty()))
-                    return propagate(state::utf17);
+                if(BOOST_JSON_UNLIKELY(incomplete(cs)))
+                    return suspend_or_fail(state::utf17);
                 continue;
             }
             else if(BOOST_JSON_LIKELY(
@@ -1338,8 +1340,8 @@ do_str2:
 do_utf18:
                 start = cs.begin();
                 cs = validate_utf8<StackEmpty>(cs.begin(), cs.end());
-                if(BOOST_JSON_UNLIKELY(cs.empty()))
-                    return propagate(state::utf18);
+                if(BOOST_JSON_UNLIKELY(incomplete(cs)))
+                    return suspend_or_fail(state::utf18);
                 temp.append(start, cs.used(start));
                 continue;
             }
@@ -1712,8 +1714,7 @@ const char*
 basic_parser<Handler>::
 parse_object(const char* p)
 {
-    detail::const_stream_wrapper cs(
-        p, end_, canary());
+    detail::const_stream_wrapper cs(p, end_);
     if(! StackEmpty && ! st_.empty())
     {
         state st;
@@ -1756,8 +1757,8 @@ do_obj1:
 do_com6:
                 cs = parse_comment<StackEmpty, false, false,
                     AllowTrailing, AllowBadUTF8>(cs.begin());
-                if(BOOST_JSON_UNLIKELY(cs.empty()))
-                    return propagate(state::com6);
+                if(BOOST_JSON_UNLIKELY(incomplete(cs)))
+                    return suspend_or_fail(state::com6);
                 goto do_obj1;
             }
             return fail(cs.begin(), error::syntax);
@@ -1766,8 +1767,8 @@ do_obj2:
         is_key_ = true;
         cs = parse_string<StackEmpty,
             AllowBadUTF8>(cs.begin());
-        if(BOOST_JSON_UNLIKELY(cs.empty()))
-            return propagate(state::obj2);
+        if(BOOST_JSON_UNLIKELY(incomplete(cs)))
+            return suspend_or_fail(state::obj2);
 do_obj3:
         cs = detail::count_whitespace(cs.begin(), cs.end());
         if(BOOST_JSON_UNLIKELY(! cs))
@@ -1779,8 +1780,8 @@ do_obj3:
 do_com7:
                 cs = parse_comment<StackEmpty, false, false,
                     AllowTrailing, AllowBadUTF8>(cs.begin());
-                if(BOOST_JSON_UNLIKELY(cs.empty()))
-                    return propagate(state::com7);
+                if(BOOST_JSON_UNLIKELY(incomplete(cs)))
+                    return suspend_or_fail(state::com7);
                 goto do_obj3;
             }
             return fail(cs.begin(), error::syntax);
@@ -1793,8 +1794,8 @@ do_obj4:
 do_obj5:
         cs = parse_value<StackEmpty, AllowComments, 
             AllowTrailing, AllowBadUTF8>(cs.begin());
-        if(BOOST_JSON_UNLIKELY(cs.empty()))
-            return propagate(state::obj5);
+        if(BOOST_JSON_UNLIKELY(incomplete(cs)))
+            return suspend_or_fail(state::obj5);
 do_obj6:
         cs = detail::count_whitespace(cs.begin(), cs.end());
         if(BOOST_JSON_UNLIKELY(! cs))
@@ -1815,8 +1816,8 @@ do_obj7:
 do_com8:
                     cs = parse_comment<StackEmpty, false, false,
                         AllowTrailing, AllowBadUTF8>(cs.begin());
-                    if(BOOST_JSON_UNLIKELY(cs.empty()))
-                        return propagate(state::com8);
+                    if(BOOST_JSON_UNLIKELY(incomplete(cs)))
+                        return suspend_or_fail(state::com8);
                     goto do_obj7;
                 }
                 return fail(cs.begin(), error::syntax);
@@ -1829,8 +1830,8 @@ do_com8:
 do_com9:
                 cs = parse_comment<StackEmpty, false, false,
                     AllowTrailing, AllowBadUTF8>(cs.begin());
-                if(BOOST_JSON_UNLIKELY(cs.empty()))
-                    return propagate(state::com9);
+                if(BOOST_JSON_UNLIKELY(incomplete(cs)))
+                    return suspend_or_fail(state::com9);
                 goto do_obj6;
             }
             return fail(cs.begin(), error::syntax);
@@ -1856,8 +1857,7 @@ const char*
 basic_parser<Handler>::
 parse_array(const char* p)
 {
-    detail::const_stream_wrapper cs(
-        p, end_, canary());
+    detail::const_stream_wrapper cs(p, end_);
     if(! StackEmpty && ! st_.empty())
     {
         state st;
@@ -1893,15 +1893,15 @@ do_arr1:
 do_com10:
             cs = parse_comment<StackEmpty, false, false,
                 AllowTrailing, AllowBadUTF8>(cs.begin());
-            if(BOOST_JSON_UNLIKELY(cs.empty()))
-                return propagate(state::com10);
+            if(BOOST_JSON_UNLIKELY(incomplete(cs)))
+                return suspend_or_fail(state::com10);
             goto do_arr1;
         }
 do_arr2:
         cs = parse_value<StackEmpty, AllowComments, 
             AllowTrailing, AllowBadUTF8>(cs.begin());
-        if(BOOST_JSON_UNLIKELY(cs.empty()))
-            return propagate(state::arr2);
+        if(BOOST_JSON_UNLIKELY(incomplete(cs)))
+            return suspend_or_fail(state::arr2);
 do_arr3:
         cs = detail::count_whitespace(cs.begin(), cs.end());
         if(BOOST_JSON_UNLIKELY(! cs))
@@ -1923,8 +1923,8 @@ do_arr4:
 do_com11:
                 cs = parse_comment<StackEmpty, false, false,
                     AllowTrailing, AllowBadUTF8>(cs.begin());
-                if(BOOST_JSON_UNLIKELY(cs.empty()))
-                    return propagate(state::com11);
+                if(BOOST_JSON_UNLIKELY(incomplete(cs)))
+                    return suspend_or_fail(state::com11);
                 goto do_arr3;
             }
             return fail(cs.begin(), error::syntax);
@@ -1953,8 +1953,7 @@ parse_number(const char* p)
     constexpr bool negative = First == '-';
     constexpr bool zero_first = First == '0';
     constexpr bool nonzero_first = First == '+';
-    detail::const_stream_wrapper cs(
-        p, end_, canary());
+    detail::const_stream_wrapper cs(p, end_);
     number num;
     const char* begin = cs.begin();
     if(StackEmpty || st_.empty())

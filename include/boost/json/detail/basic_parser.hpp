@@ -137,11 +137,13 @@ class basic_parser
     
     inline void reserve();
     inline const char* canary();
+    inline bool incomplete(
+        const detail::const_stream_wrapper& cs);
 
     BOOST_NOINLINE
     inline
     const char*
-    propagate(state st);
+    suspend_or_fail(state st);
 
     BOOST_NOINLINE
     inline
