@@ -164,13 +164,9 @@
 
 // These macros are private, for tests, do not change
 // them or else previously built libraries won't match.
-#ifndef  BOOST_JSON_MAX_OBJECT_SIZE
-# define BOOST_JSON_NO_MAX_OBJECT_SIZE
-# define BOOST_JSON_MAX_OBJECT_SIZE  0x7ffffffe
-#endif
-#ifndef  BOOST_JSON_MAX_ARRAY_SIZE
-# define BOOST_JSON_NO_MAX_ARRAY_SIZE
-# define BOOST_JSON_MAX_ARRAY_SIZE   0x7ffffffe
+#ifndef  BOOST_JSON_MAX_STRUCTURED_SIZE
+# define BOOST_JSON_NO_MAX_STRUCTURED_SIZE
+# define BOOST_JSON_MAX_STRUCTURED_SIZE  0x7ffffffe
 #endif
 #ifndef  BOOST_JSON_MAX_STRING_SIZE
 # define BOOST_JSON_NO_MAX_STRING_SIZE

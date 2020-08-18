@@ -826,7 +826,7 @@ public:
     std::size_t
     max_size() noexcept
     {
-        return BOOST_JSON_MAX_OBJECT_SIZE;
+        return BOOST_JSON_MAX_STRUCTURED_SIZE;
     }
 
     /** Return the number of elements that can be held in currently allocated memory

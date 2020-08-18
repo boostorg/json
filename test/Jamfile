@@ -74,8 +74,7 @@ for local f in $(LIMIT_SOURCES)
             <source>../src/src.cpp
             <include>.
             <define>BOOST_JSON_MAX_STRING_SIZE=1000
-            <define>BOOST_JSON_MAX_OBJECT_SIZE=20
-            <define>BOOST_JSON_MAX_ARRAY_SIZE=20
+            <define>BOOST_JSON_MAX_STRUCTURED_SIZE=20
             <define>BOOST_JSON_MAX_STACK_SIZE=1024
             <define>BOOST_JSON_PARSER_BUFFER_SIZE=256
         ] ;

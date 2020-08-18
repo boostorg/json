@@ -360,8 +360,7 @@ public:
     void
     run()
     {
-    #if ! defined(BOOST_JSON_NO_MAX_OBJECT_SIZE) && \
-        ! defined(BOOST_JSON_NO_MAX_ARRAY_SIZE) && \
+    #if ! defined(BOOST_JSON_NO_MAX_STRUCTURED_SIZE) && \
         ! defined(BOOST_JSON_NO_MAX_STRING_SIZE) && \
         ! defined(BOOST_JSON_NO_MAX_STACK_SIZE) && \
         ! defined(BOOST_JSON_NO_PARSER_BUFFER_SIZE)

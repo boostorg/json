@@ -57,7 +57,7 @@ public:
     std::size_t
     max_size() noexcept
     {
-        return BOOST_JSON_MAX_ARRAY_SIZE;
+        return BOOST_JSON_MAX_STRUCTURED_SIZE;
     }
 
     value*
