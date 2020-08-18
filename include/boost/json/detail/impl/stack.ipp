@@ -32,11 +32,12 @@ reserve(std::size_t n)
         return;
     auto const buf = static_cast<
         char*>(sp_->allocate(n));
-    if(buf_ && size_ > 0)
-        std::memcpy(
-            buf, buf_, size_);
     if(buf_)
+    {
+        if(size_ > 0)
+            std::memcpy(buf, buf_, size_);
         sp_->deallocate(buf_, cap_);
+    }
     buf_ = buf;
     cap_ = n;
 }
