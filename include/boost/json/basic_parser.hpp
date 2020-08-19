@@ -185,7 +185,7 @@ reserve()
     // to avoid reallocation during suspend.
     st_.reserve(
         sizeof(state) + // document parsing state
-        (sizeof(state) * depth_) + // array and object state
+        (sizeof(state) * depth()) + // array and object state
         sizeof(state) + // value parsing state
         sizeof(state)); // comment/utf8 state
 }
@@ -1737,10 +1737,9 @@ parse_object(const char* p)
         }
     }
     BOOST_ASSERT(*cs == '{');
-    ++depth_;
-    if(BOOST_JSON_UNLIKELY(
-        depth_ > max_depth_))
+    if(BOOST_JSON_UNLIKELY(! depth_))
         return fail(cs.begin(), error::too_deep);
+    --depth_;
     if(BOOST_JSON_UNLIKELY(
         ! h_.on_object_begin(ec_)))
         return fail(cs.begin());
@@ -1883,10 +1882,9 @@ parse_array(const char* p)
         }
     }
     BOOST_ASSERT(*cs == '[');
-    ++depth_;
-    if(BOOST_JSON_UNLIKELY(
-        depth_ > max_depth_))
+    if(BOOST_JSON_UNLIKELY(! depth_))
         return fail(cs.begin(), error::too_deep);
+    --depth_;
     if(BOOST_JSON_UNLIKELY(
         ! h_.on_array_begin(ec_)))
         return fail(cs.begin());
@@ -2619,7 +2617,7 @@ write_some(
         st_.empty()))
     {
         // first time
-        depth_ = 0;
+        depth_ = max_depth_;
         is_key_ = false;
         if(BOOST_JSON_UNLIKELY(
             ! h_.on_document_begin(ec_)))
