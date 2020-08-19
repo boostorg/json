@@ -1717,6 +1717,7 @@ parse_object(const char* p)
     detail::const_stream_wrapper cs(p, end_);
     if(! StackEmpty && ! st_.empty())
     {
+        // resume
         state st;
         st_.pop(st);
         switch(st)
@@ -1744,6 +1745,9 @@ parse_object(const char* p)
         ! h_.on_object_begin(ec_)))
         return fail(cs.begin());
     ++cs;
+    // object:
+    //     '{' *ws '}'
+    //     '{' *ws string *ws ':' *ws value *ws *[ ',' *ws string *ws ':' *ws value *ws ] '}'
 do_obj1:
     cs = detail::count_whitespace(cs.begin(), cs.end());
     if(BOOST_JSON_UNLIKELY(! cs))
@@ -1764,6 +1768,7 @@ do_com6:
             return fail(cs.begin(), error::syntax);
         }
 do_obj2:
+        // object is not empty, key required
         is_key_ = true;
         cs = parse_string<StackEmpty,
             AllowBadUTF8>(cs.begin());
@@ -1807,6 +1812,8 @@ do_obj7:
             cs = detail::count_whitespace(cs.begin(), cs.end());
             if(BOOST_JSON_UNLIKELY(! cs))
                 return maybe_suspend(cs.begin(), state::obj7);
+
+            // loop for next element
             if(BOOST_JSON_LIKELY(*cs == '\x22'))
                 goto do_obj2;
             if(! AllowTrailing || *cs != '}')
@@ -1836,6 +1843,7 @@ do_com9:
             }
             return fail(cs.begin(), error::syntax);
         }
+        // got closing brace, fall through
     }
     if(BOOST_JSON_UNLIKELY(
         ! h_.on_object_end(ec_)))
@@ -1860,6 +1868,7 @@ parse_array(const char* p)
     detail::const_stream_wrapper cs(p, end_);
     if(! StackEmpty && ! st_.empty())
     {
+        // resume
         state st;
         st_.pop(st);
         switch(st)
@@ -1882,6 +1891,9 @@ parse_array(const char* p)
         ! h_.on_array_begin(ec_)))
         return fail(cs.begin());
     ++cs;
+    // array:
+    //     '[' *ws ']'
+    //     '[' *ws value *ws *[ ',' *ws value *ws ] ']'
 do_arr1:
     cs = detail::count_whitespace(cs.begin(), cs.end());
     if(BOOST_JSON_UNLIKELY(! cs))
@@ -1898,6 +1910,7 @@ do_com10:
             goto do_arr1;
         }
 do_arr2:
+        // array is not empty, value required
         cs = parse_value<StackEmpty, AllowComments, 
             AllowTrailing, AllowBadUTF8>(cs.begin());
         if(BOOST_JSON_UNLIKELY(incomplete(cs)))
@@ -1913,6 +1926,8 @@ do_arr4:
             cs = detail::count_whitespace(cs.begin(), cs.end());
             if(BOOST_JSON_UNLIKELY(! cs))
                 return maybe_suspend(cs.begin(), state::arr4);
+
+            // loop for next element
             if(! AllowTrailing || *cs != ']')
                 goto do_arr2;
         }
@@ -1929,6 +1944,7 @@ do_com11:
             }
             return fail(cs.begin(), error::syntax);
         }
+        // got closing bracket; fall through
     }
     if(BOOST_JSON_UNLIKELY(
         ! h_.on_array_end(ec_)))
