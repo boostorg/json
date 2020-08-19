@@ -81,11 +81,9 @@ class basic_parser
 {
     enum class state : char
     {
-        doc1,  doc2,  doc3,
+        doc1,  doc2,  doc3, doc4,
         com1,  com2,  com3,
-        com4,  com5,  com6, 
-        com7,  com8,  com9, 
-        com10, com11, com12,
+        com4,  com5,
         nul1,  nul2,  nul3,
         tru1,  tru2,  tru3,
         fal1,  fal2,  fal3,  fal4,
@@ -100,8 +98,10 @@ class basic_parser
         utf13, utf14, utf15, 
         utf16, utf17, utf18,
         obj1,  obj2,  obj3,  obj4,
-        obj5,  obj6,  obj7,
-        arr1,  arr2,  arr3,  arr4,
+        obj5,  obj6,  obj7,  obj8,
+        obj9,  obj10, obj11,
+        arr1,  arr2,  arr3,  
+        arr4,  arr5,  arr6,
         num1,  num2,  num3,  num4,
         num5,  num6,  num7,  num8,
         exp1,  exp2,  exp3

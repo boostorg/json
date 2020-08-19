@@ -751,7 +751,7 @@ parse_document(const char* p)
         case state::doc1: goto do_doc1;
         case state::doc2: goto do_doc2;
         case state::doc3: goto do_doc3;
-        case state::com12: goto do_com12;
+        case state::doc4: goto do_doc4;
         }
     }
 do_doc1:
@@ -807,7 +807,7 @@ do_doc3:
     }
     else if(opt_.allow_comments && *cs == '/')
     {
-do_com12:
+do_doc4:
         switch(+opt_.allow_trailing_commas |
             (opt_.allow_invalid_utf8 << 1))
         {
@@ -829,7 +829,7 @@ do_com12:
             break;
         }
         if(BOOST_JSON_UNLIKELY(incomplete(cs)))
-            return suspend_or_fail(state::com12);
+            return suspend_or_fail(state::doc4);
         goto do_doc3;
     }
     return cs.begin();
@@ -933,16 +933,16 @@ resume_value(const char* p)
 
     case state::arr1: case state::arr2:
     case state::arr3: case state::arr4:
-    case state::com10: case state::com11:
+    case state::arr5: case state::arr6:
         return parse_array<StackEmpty, AllowComments, 
             AllowTrailing, AllowBadUTF8>(p);
         
     case state::obj1: case state::obj2:
     case state::obj3: case state::obj4:
     case state::obj5: case state::obj6:
-    case state::obj7:
-    case state::com6: case state::com7:
-    case state::com8: case state::com9:
+    case state::obj7: case state::obj8: 
+    case state::obj9: case state::obj10: 
+    case state::obj11:
         return parse_object<StackEmpty, AllowComments, 
             AllowTrailing, AllowBadUTF8>(p);
         
@@ -1730,10 +1730,10 @@ parse_object(const char* p)
         case state::obj5: goto do_obj5;
         case state::obj6: goto do_obj6;
         case state::obj7: goto do_obj7;
-        case state::com6: goto do_com6;
-        case state::com7: goto do_com7;
-        case state::com8: goto do_com8;
-        case state::com9: goto do_com9;
+        case state::obj8: goto do_obj8;
+        case state::obj9: goto do_obj9;
+        case state::obj10: goto do_obj10;
+        case state::obj11: goto do_obj11;
         }
     }
     BOOST_ASSERT(*cs == '{');
@@ -1758,74 +1758,74 @@ do_obj1:
         {
             if(AllowComments && *cs == '/')
             {
-do_com6:
+do_obj2:
                 cs = parse_comment<StackEmpty, false, false,
                     AllowTrailing, AllowBadUTF8>(cs.begin());
                 if(BOOST_JSON_UNLIKELY(incomplete(cs)))
-                    return suspend_or_fail(state::com6);
+                    return suspend_or_fail(state::obj2);
                 goto do_obj1;
             }
             return fail(cs.begin(), error::syntax);
         }
-do_obj2:
+do_obj3:
         // object is not empty, key required
         is_key_ = true;
         cs = parse_string<StackEmpty,
             AllowBadUTF8>(cs.begin());
         if(BOOST_JSON_UNLIKELY(incomplete(cs)))
-            return suspend_or_fail(state::obj2);
-do_obj3:
-        cs = detail::count_whitespace(cs.begin(), cs.end());
-        if(BOOST_JSON_UNLIKELY(! cs))
-            return maybe_suspend(cs.begin(), state::obj3);
-        if(BOOST_JSON_UNLIKELY(*cs != ':'))
-        {
-            if(AllowComments && *cs == '/')
-            {
-do_com7:
-                cs = parse_comment<StackEmpty, false, false,
-                    AllowTrailing, AllowBadUTF8>(cs.begin());
-                if(BOOST_JSON_UNLIKELY(incomplete(cs)))
-                    return suspend_or_fail(state::com7);
-                goto do_obj3;
-            }
-            return fail(cs.begin(), error::syntax);
-        }
-        ++cs;
+            return suspend_or_fail(state::obj3);
 do_obj4:
         cs = detail::count_whitespace(cs.begin(), cs.end());
         if(BOOST_JSON_UNLIKELY(! cs))
             return maybe_suspend(cs.begin(), state::obj4);
+        if(BOOST_JSON_UNLIKELY(*cs != ':'))
+        {
+            if(AllowComments && *cs == '/')
+            {
 do_obj5:
-        cs = parse_value<StackEmpty, AllowComments, 
-            AllowTrailing, AllowBadUTF8>(cs.begin());
-        if(BOOST_JSON_UNLIKELY(incomplete(cs)))
-            return suspend_or_fail(state::obj5);
+                cs = parse_comment<StackEmpty, false, false,
+                    AllowTrailing, AllowBadUTF8>(cs.begin());
+                if(BOOST_JSON_UNLIKELY(incomplete(cs)))
+                    return suspend_or_fail(state::obj5);
+                goto do_obj4;
+            }
+            return fail(cs.begin(), error::syntax);
+        }
+        ++cs;
 do_obj6:
         cs = detail::count_whitespace(cs.begin(), cs.end());
         if(BOOST_JSON_UNLIKELY(! cs))
             return maybe_suspend(cs.begin(), state::obj6);
+do_obj7:
+        cs = parse_value<StackEmpty, AllowComments, 
+            AllowTrailing, AllowBadUTF8>(cs.begin());
+        if(BOOST_JSON_UNLIKELY(incomplete(cs)))
+            return suspend_or_fail(state::obj7);
+do_obj8:
+        cs = detail::count_whitespace(cs.begin(), cs.end());
+        if(BOOST_JSON_UNLIKELY(! cs))
+            return maybe_suspend(cs.begin(), state::obj8);
         if(BOOST_JSON_LIKELY(*cs == ','))
         {
             ++cs;
-do_obj7:
+do_obj9:
             cs = detail::count_whitespace(cs.begin(), cs.end());
             if(BOOST_JSON_UNLIKELY(! cs))
-                return maybe_suspend(cs.begin(), state::obj7);
+                return maybe_suspend(cs.begin(), state::obj9);
 
             // loop for next element
             if(BOOST_JSON_LIKELY(*cs == '\x22'))
-                goto do_obj2;
+                goto do_obj3;
             if(! AllowTrailing || *cs != '}')
             {
                 if(AllowComments && *cs == '/')
                 {
-do_com8:
+do_obj10:
                     cs = parse_comment<StackEmpty, false, false,
                         AllowTrailing, AllowBadUTF8>(cs.begin());
                     if(BOOST_JSON_UNLIKELY(incomplete(cs)))
-                        return suspend_or_fail(state::com8);
-                    goto do_obj7;
+                        return suspend_or_fail(state::obj10);
+                    goto do_obj9;
                 }
                 return fail(cs.begin(), error::syntax);
             }
@@ -1834,12 +1834,12 @@ do_com8:
         {
             if(AllowComments && *cs == '/')
             {
-do_com9:
+do_obj11:
                 cs = parse_comment<StackEmpty, false, false,
                     AllowTrailing, AllowBadUTF8>(cs.begin());
                 if(BOOST_JSON_UNLIKELY(incomplete(cs)))
-                    return suspend_or_fail(state::com9);
-                goto do_obj6;
+                    return suspend_or_fail(state::obj11);
+                goto do_obj8;
             }
             return fail(cs.begin(), error::syntax);
         }
@@ -1878,8 +1878,8 @@ parse_array(const char* p)
         case state::arr2: goto do_arr2;
         case state::arr3: goto do_arr3;
         case state::arr4: goto do_arr4;
-        case state::com10: goto do_com10;
-        case state::com11: goto do_com11;
+        case state::arr5: goto do_arr5;
+        case state::arr6: goto do_arr6;
         }
     }
     BOOST_ASSERT(*cs == '[');
@@ -1902,45 +1902,45 @@ do_arr1:
     {
         if(AllowComments && *cs == '/')
         {
-do_com10:
+do_arr2:
             cs = parse_comment<StackEmpty, false, false,
                 AllowTrailing, AllowBadUTF8>(cs.begin());
             if(BOOST_JSON_UNLIKELY(incomplete(cs)))
-                return suspend_or_fail(state::com10);
+                return suspend_or_fail(state::arr2);
             goto do_arr1;
         }
-do_arr2:
+do_arr3:
         // array is not empty, value required
         cs = parse_value<StackEmpty, AllowComments, 
             AllowTrailing, AllowBadUTF8>(cs.begin());
         if(BOOST_JSON_UNLIKELY(incomplete(cs)))
-            return suspend_or_fail(state::arr2);
-do_arr3:
+            return suspend_or_fail(state::arr3);
+do_arr4:
         cs = detail::count_whitespace(cs.begin(), cs.end());
         if(BOOST_JSON_UNLIKELY(! cs))
-            return maybe_suspend(cs.begin(), state::arr3);
+            return maybe_suspend(cs.begin(), state::arr4);
         if(BOOST_JSON_LIKELY(*cs == ','))
         {
             ++cs;
-do_arr4:
+do_arr5:
             cs = detail::count_whitespace(cs.begin(), cs.end());
             if(BOOST_JSON_UNLIKELY(! cs))
-                return maybe_suspend(cs.begin(), state::arr4);
+                return maybe_suspend(cs.begin(), state::arr5);
 
             // loop for next element
             if(! AllowTrailing || *cs != ']')
-                goto do_arr2;
+                goto do_arr3;
         }
         else if(BOOST_JSON_UNLIKELY(*cs != ']'))
         {
             if(AllowComments && *cs == '/')
             {
-do_com11:
+do_arr6:
                 cs = parse_comment<StackEmpty, false, false,
                     AllowTrailing, AllowBadUTF8>(cs.begin());
                 if(BOOST_JSON_UNLIKELY(incomplete(cs)))
-                    return suspend_or_fail(state::com11);
-                goto do_arr3;
+                    return suspend_or_fail(state::arr6);
+                goto do_arr4;
             }
             return fail(cs.begin(), error::syntax);
         }
