@@ -125,6 +125,7 @@ class basic_parser
     std::size_t max_depth_ = 32;
     // how many levels deeper the parser can go
     std::size_t depth_ = max_depth_;
+    std::size_t str_size_;
     unsigned u1_;
     unsigned u2_;
     bool more_; // false for final buffer
@@ -148,6 +149,13 @@ class basic_parser
     BOOST_NOINLINE
     inline
     const char*
+    suspend_or_fail(
+        state st,
+        std::size_t n);
+
+    BOOST_NOINLINE
+    inline
+    const char*
     fail(const char* p) noexcept;
 
     BOOST_NOINLINE
@@ -163,6 +171,14 @@ class basic_parser
     maybe_suspend(
         const char* p, 
         state st);
+
+    BOOST_NOINLINE
+    inline
+    const char*
+    maybe_suspend(
+        const char* p, 
+        state st,
+        std::size_t n);
 
     BOOST_NOINLINE
     inline
