@@ -228,10 +228,18 @@ class basic_parser
     
     template<bool StackEmpty>
     const char* parse_false(const char* p);
-    
+
     template<bool StackEmpty, bool IsKey,
         bool AllowBadUTF8>
     const char* parse_string(const char* p);
+    
+    template<bool StackEmpty, bool IsKey,
+        bool AllowBadUTF8>
+    const char* parse_unescaped(const char* p);
+
+    template<bool StackEmpty, bool IsKey,
+        bool AllowBadUTF8>
+    const char* parse_escaped(const char* p);
     
     template<bool StackEmpty, char First>
     const char* parse_number(const char* p);
