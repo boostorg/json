@@ -27,6 +27,148 @@ namespace boost {
 namespace json {
 namespace detail {
 
+#ifdef BOOST_JSON_USE_SSE2
+
+template<bool AllowBadUTF8>
+inline
+const char*
+count_valid(
+    char const* p,
+    const char* end) noexcept
+{
+    __m128i const q1 = _mm_set1_epi8( '\x22' ); // '"'
+    __m128i const q2 = _mm_set1_epi8( '\\' ); // '\\'
+    __m128i const q3 = _mm_set1_epi8( 0x1F );
+
+    while(end - p >= 16)
+    {
+        __m128i v1 = _mm_loadu_si128( (__m128i const*)p ); 
+        __m128i v2 = _mm_cmpeq_epi8( v1, q1 ); // quote
+        __m128i v3 = _mm_cmpeq_epi8( v1, q2 ); // backslash
+        __m128i v4 = _mm_or_si128( v2, v3 ); // combine quotes and backslash
+        __m128i v5 = _mm_min_epu8( v1, q3 );
+        __m128i v6 = _mm_cmpeq_epi8( v5, v1 ); // controls
+        __m128i v7 = _mm_or_si128( v4, v6 ); // combine with control
+
+        int w = _mm_movemask_epi8( v7 );
+
+        if( w != 0 )
+        {
+            int m;
+#if defined(__GNUC__) || defined(__clang__)
+            m = __builtin_ffs( w ) - 1;
+#else
+            unsigned long index;
+            _BitScanForward( &index, w );
+            m = index;
+#endif
+            return p + m;
+        }
+
+        p += 16;
+    }
+
+    while(p != end)
+    {
+        const unsigned char c = *p;
+        if(c == '\x22' || c == '\\' || c < 0x20)
+            break;
+        ++p;
+    }
+
+    return p;
+}
+
+template<>
+inline
+const char*
+count_valid<false>(
+    char const* p,
+    const char* end) noexcept
+{
+    __m128i const q1 = _mm_set1_epi8( '\x22' ); // '"'
+    __m128i const q2 = _mm_set1_epi8( '\\' );
+    __m128i const q3 = _mm_set1_epi8( 0x20 );
+
+    while(end - p >= 16)
+    {
+        __m128i v1 = _mm_loadu_si128( (__m128i const*)p );
+
+        __m128i v2 = _mm_cmpeq_epi8( v1, q1 );
+        __m128i v3 = _mm_cmpeq_epi8( v1, q2 );
+        __m128i v4 = _mm_cmplt_epi8( v1, q3 );
+
+        __m128i v5 = _mm_or_si128( v2, v3 );
+        __m128i v6 = _mm_or_si128( v5, v4 );
+
+        int w = _mm_movemask_epi8( v6 );
+
+        if( w != 0 )
+        {
+            int m;
+#if defined(__GNUC__) || defined(__clang__)
+            m = __builtin_ffs( w ) - 1;
+#else
+            unsigned long index;
+            _BitScanForward( &index, w );
+            m = index;
+#endif
+            return p + m;
+        }
+
+        p += 16;
+    }
+
+    while(p != end)
+    {
+        const char c = *p;
+        if(c == '\x22' || c == '\\' || c < 0x20)
+            break;
+        ++p;
+    }
+
+    return p;
+}
+
+#else
+
+template<bool AllowBadUTF8>
+char const*
+count_valid(
+    char const* p,
+    char const* end) noexcept
+{
+    while(p != end)
+    {
+        const unsigned char c = *p;
+        if(c == '\x22' || c == '\\' || c < 0x20)
+            break;
+        ++p;
+    }
+
+    return p;
+}
+
+template<>
+inline
+char const*
+count_valid<false>(
+    char const* p,
+    char const* end) noexcept
+{
+    while(p != end)
+    {
+        const char c = *p;
+        if(c == '\x22' || c == '\\' || c < 0x20)
+            break;
+        ++p;
+    }
+
+    return p;
+}
+
+#endif
+
 // KRYSTIAN NOTE: does not stop to validate
 // count_unescaped
 
@@ -84,71 +226,6 @@ count_unescaped(
 inline
 std::size_t
 count_unescaped(
-    char const*,
-    std::size_t) noexcept
-{
-    return 0;
-}
-
-#endif
-
-#ifdef BOOST_JSON_USE_SSE2
-
-// KRYSTIAN NOTE: this stops at any non-ascii characters
-// count_valid_unescaped
-
-inline
-size_t
-count_valid_unescaped(
-    char const* s,
-    size_t n) noexcept
-{
-    __m128i const q1 = _mm_set1_epi8( '\x22' ); // '"'
-    __m128i const q2 = _mm_set1_epi8( '\\' );
-    __m128i const q3 = _mm_set1_epi8( 0x20 );
-
-    char const * s0 = s;
-
-    while( n >= 16 )
-    {
-        __m128i v1 = _mm_loadu_si128( (__m128i const*)s );
-
-        __m128i v2 = _mm_cmpeq_epi8( v1, q1 );
-        __m128i v3 = _mm_cmpeq_epi8( v1, q2 );
-        __m128i v4 = _mm_cmplt_epi8( v1, q3 );
-
-        __m128i v5 = _mm_or_si128( v2, v3 );
-        __m128i v6 = _mm_or_si128( v5, v4 );
-
-        int w = _mm_movemask_epi8( v6 );
-
-        if( w != 0 )
-        {
-            int m;
-#if defined(__GNUC__) || defined(__clang__)
-            m = __builtin_ffs( w ) - 1;
-#else
-            unsigned long index;
-            _BitScanForward( &index, w );
-            m = index;
-#endif
-
-            s += m;
-            break;
-        }
-
-        s += 16;
-        n -= 16;
-    }
-
-    return s - s0;
-}
-
-#else
-
-inline
-std::size_t
-count_valid_unescaped(
     char const*,
     std::size_t) noexcept
 {
