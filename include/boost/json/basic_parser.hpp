@@ -119,7 +119,7 @@ pow10(int exp) noexcept
 
         1e+300, 1e+301, 1e+302, 1e+303, 1e+304, 1e+305, 1e+306, 1e+307, 1e+308 };
 
-    if (exp < -308 || exp > 308)
+    if(exp < -308 || exp > 308)
     {
         return std::pow(10.0, exp);
     }
@@ -423,7 +423,7 @@ do_com3:
 do_com4:
             if(BOOST_JSON_UNLIKELY(! cs))
             {
-                if (BOOST_JSON_UNLIKELY(! h_.on_comment_part(
+                if(BOOST_JSON_UNLIKELY(! h_.on_comment_part(
                     {start, cs.used(start)}, ec_)))
                     return fail(cs.begin());
                 return maybe_suspend(cs.begin(), state::com4);
@@ -478,7 +478,7 @@ validate_utf8(const char* p, const char* end)
     if(StackEmpty || st_.empty())
     {
         // fast path
-        if (BOOST_JSON_LIKELY(
+        if(BOOST_JSON_LIKELY(
             cs.remain() >= 4))
         {
             BOOST_ASSERT(static_cast<
@@ -1168,7 +1168,7 @@ parse_string(const char* p)
         start = cs.begin();
         state st;
         st_.pop(st);
-        if (st != state::str1)
+        if(st != state::str1)
         {
             cs.clip(temp.max_size());
             switch(st)
@@ -1196,7 +1196,7 @@ parse_string(const char* p)
     //
     // zero-copy unescaped runs
     //
-    if (AllowBadUTF8)
+    if(AllowBadUTF8)
         cs += detail::count_unescaped(
             cs.begin(), cs.remain());
     else
@@ -2030,14 +2030,14 @@ parse_number(const char* p)
 
             {
                 const char c = *cs;
-                if (c != '.')
+                if(c != '.')
                 {
-                    if ((c | 32) == 'e')
+                    if((c | 32) == 'e')
                     {
                         ++cs;
                         goto do_exp1;
                     }
-                    if (negative)
+                    if(negative)
                         num.mant = ~num.mant + 1;
                     goto finish_signed;
                 }
@@ -2117,13 +2117,13 @@ do_num1:
         BOOST_JSON_LIKELY(cs))
     {
         char const c = *cs;
-        if (zero_first)
+        if(zero_first)
         {
             ++cs;
             num.mant = 0;
             goto do_num6;
         }
-        else if (nonzero_first || BOOST_JSON_LIKELY(
+        else if(nonzero_first || BOOST_JSON_LIKELY(
             c >= '1' && c <= '9'))
         {
             ++cs;
