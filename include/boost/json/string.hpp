@@ -2791,9 +2791,16 @@ private:
 
     Calls to `memory_resource::allocate` may throw.
 
+    @par Effects
+    @code
+    lhs.swap( rhs );
+    @endcode
+
     @param lhs The string to exchange.
 
     @param rhs The string to exchange.
+
+    @see @ref string::swap
 */
 inline
 void

@@ -31,6 +31,8 @@
 
 [/ Named Requirements ]
 
+[def __Handler__                ['Handler]]
+
 [def __Allocator__              [@https://en.cppreference.com/w/cpp/named_req/Allocator ['Allocator]]]
 [def __CopyAssignable__         [@https://en.cppreference.com/w/cpp/named_req/CopyAssignable ['CopyAssignable]]]
 [def __CopyConstructible__      [@https://en.cppreference.com/w/cpp/named_req/CopyConstructible ['CopyConstructible]]]
@@ -62,6 +64,7 @@
 [def __string__                 [link json.ref.boost__json__string `string`]]
 [def __to_string__              [link json.ref.boost__json__to_string `to_string`]]
 [def __value__                  [link json.ref.boost__json__value `value`]]
+[def __value_builder_           [link json.ref.boost__json__value_builder `value_builder`]]
 [def __value_from__             [link json.ref.boost__json__value_from `value_from`]]
 [def __value_to__               [link json.ref.boost__json__value_to `value_to`]]
 

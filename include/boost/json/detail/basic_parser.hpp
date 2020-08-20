@@ -35,18 +35,25 @@ namespace json {
 
 /** An incremental SAX parser for serialized JSON.
 
-    This implements a SAX-style parser. The serialized
-    JSON is presented to the parser by one or more calls
-    to @ref write_some. The parsing events are realized
-    through member function calls to a handler passed as
-    an argument to the write function.\n
+    This implements a SAX-style parser, invoking a
+    caller-supplied handler with each parsing event.
+    To use, first declare a variable of type
+    `basic_parser<T>` where `T` meets the handler
+    requirements specified below. Then call
+    @ref write zero or more times with the input.
 
+    The serialized JSON is provided to the parser by
+    zero or more calls to the @ref write function.
+    The parsing events are realized through member
+    function calls on the handler, which exists
+    as a data member of the parser.
+\n
     The parser may dynamically allocate intermediate
     storage as needed to accommodate the nesting level
-    of the JSON being parsed. This storage is freed
-    when the parser is destroyed, allowing the parser
-    to cheaply re-use this memory when parsing
-    subsequent JSONs, improving performance.
+    of the input JSON. This storage is freed when the
+    parser is destroyed, allowing the parser to cheaply
+    re-use this memory on subsequent parses, improving
+    performance.
 
     @par Usage
 
@@ -57,18 +64,88 @@ namespace json {
     function @ref parse. This class is designed for
     users who wish to perform custom actions instead of
     building a @ref value. For example, to produce a
-    DOM from an external library.\n
-
-    To use this class it is necessary to create a derived
-    class which calls @ref reset at the beginning of
-    parsing a new JSON, and then calls @ref write_some one
-    or more times with the serialized JSON.
-
+    DOM from an external library.
+\n
     @note
 
     By default, only conforming JSON is accepted.
-    However, extensions can be configured through the 
-    use of @ref parse_options.
+    However, select non-compliant syntax can be
+    allowed by constructing using a @ref parse_options
+    set to desired values.
+
+    @par Handler
+
+    The handler provided must be implemented as an
+    object of class type which defines each of the
+    required event member functions below. The event
+    functions return a `bool` where `true` indicates
+    success, and `false` indicates failure. If the
+    member function returns `false`, it must set
+    the error code to a suitable value. This error
+    code will be returned by the write function to
+    the caller.
+\n            
+    The following declaration meets the parser's
+    handler requirements:
+
+    @code
+    struct handler
+    {
+        // Called once when the JSON parsing begins.
+        bool on_document_begin( error_code& ec );
+
+        // Called when the JSON parsing is done.
+        bool on_document_end( error_code& ec );
+
+        // Called when the beginning of an object is encountered.
+        bool on_object_begin( error_code& ec );
+
+        // Called when the end of the current object is encountered.
+        bool on_object_end( error_code& ec );
+
+        // Called when the beginning of an array is encountered.
+        bool on_array_begin( error_code& ec );
+
+        // Called when the end of the current array is encountered.
+        bool on_array_end( error_code& ec );
+
+        // Called with characters corresponding to part of the current key.
+        bool on_key_part( string_view s, error_code& ec );
+
+        // Called with the last characters corresponding to the current key.
+        bool on_key( string_view s, error_code& ec );
+
+        // Called with characters corresponding to part of the current string.
+        bool on_string_part( string_view s, error_code& ec );
+
+        // Called with the last characters corresponding to the current string.
+        bool on_string( string_view s, error_code& ec );
+
+        // Called with the characters corresponding to the part of the current number.
+        bool on_number_part( string_view s, error_code& ec );
+
+        // Called when a signed integer is parsed.
+        bool on_int64( int64_t i, string_view s, error_code& ec );
+
+        // Called when an unsigend integer is parsed.
+        bool on_uint64( uint64_t u, string_view s, error_code& ec );
+
+        // Called when a double is parsed.
+        bool on_double( double d, string_view s, error_code& ec );
+
+        // Called when a boolean is parsed.
+        bool on_bool( bool b, error_code& ec );
+
+        // Called when a null is parsed.
+        bool on_null( error_code& ec );
+
+        // Called with characters corresponding to part of the current comment.
+        bool on_comment_part( string_view s, error_code& ec );
+
+        // Called with the last characters corresponding to the current comment.
+        bool on_comment( string_view s, error_code& ec );
+    };
+    @endcode
 
     @see @ref parse, @ref parser
 */
@@ -264,23 +341,24 @@ public:
     ~basic_parser() = default;
 
     /** Constructor.
-        
-        The parser will only recognize strict JSON.
-    */
-    basic_parser() = default;
 
-    /** Constructor.
-        
-        Construct a parser with the provided options.
+        This function constructs the parser with the
+        specified options, with optional additional
+        arguments forwarded to the handler's constructor.
 
-        @param opt The options for the parser.
+        @param opt Optional configuration settings
+        for the parser. If ommitted, only conforming
+        JSON is allowed.
 
         @param args Optional additional arguments
         forwarded to the handler's constructor.
+
+        @see parse_options
     */
     template<class... Args>
+    explicit
     basic_parser(
-        parse_options const& opt,
+        parse_options const& opt = {},
         Args&&... args);
 
     /** Return a reference to the handler.
@@ -349,7 +427,7 @@ public:
 
         @par Preconditions
 
-        @ref write_some has not been called since
+        @ref write has not been called since
         the last call to @ref reset.
 
         @param levels The maximum depth.
@@ -363,7 +441,7 @@ public:
 
     /** Reset the state, to parse a new document.
     */
-    inline//BOOST_JSON_DECL
+    inline
     void
     reset() noexcept;
 
@@ -374,8 +452,8 @@ public:
         parsing event. The parse proceeds from the
         current state, which is at the beginning of a
         new JSON or in the middle of the current JSON
-        if any characters were already parsed.\n
-
+        if any characters were already parsed.
+    \n
         The characters in the buffer are processed
         starting from the beginning, until one of the
         following conditions is met:
@@ -393,80 +471,6 @@ public:
         serialized data, allowing JSON to be processed
         incrementally. The end of the serialized JSON
         can be indicated by passing `more = false`.
-
-        @par Handler
-
-        The handler provided must be implemented as an
-        object of class type which defines each of the
-        required event member functions below. The event
-        functions return a `bool` where `true` indicates
-        success, and `false` indicates failure. If the
-        member function returns `false`, it must set
-        the error code to a suitable value. This error
-        code will be returned by the write function to
-        the caller.\n
-                
-        The following declaration meets the parser's
-        handler requirements:
-
-        @code
-        struct handler
-        {
-            // Called once when the JSON parsing begins.
-            bool on_document_begin( error_code& ec );
-
-            // Called when the JSON parsing is done.
-            bool on_document_end( error_code& ec );
-
-            // Called when the beginning of an object is encountered.
-            bool on_object_begin( error_code& ec );
-
-            // Called when the end of the current object is encountered.
-            bool on_object_end( error_code& ec );
-
-            // Called when the beginning of an array is encountered.
-            bool on_array_begin( error_code& ec );
-
-            // Called when the end of the current array is encountered.
-            bool on_array_end( error_code& ec );
-
-            // Called with characters corresponding to part of the current key.
-            bool on_key_part( string_view s, error_code& ec );
-
-            // Called with the last characters corresponding to the current key.
-            bool on_key( string_view s, error_code& ec );
-
-            // Called with characters corresponding to part of the current string.
-            bool on_string_part( string_view s, error_code& ec );
-
-            // Called with the last characters corresponding to the current string.
-            bool on_string( string_view s, error_code& ec );
-
-            // Called with the characters corresponding to the part of the current number.
-            bool on_number_part( string_view s, error_code& ec );
-
-            // Called when a signed integer is parsed.
-            bool on_int64( int64_t i, string_view s, error_code& ec );
-
-            // Called when an unsigend integer is parsed.
-            bool on_uint64( uint64_t u, string_view s, error_code& ec );
-
-            // Called when a double is parsed.
-            bool on_double( double d, string_view s, error_code& ec );
-
-            // Called when a boolean is parsed.
-            bool on_bool( bool b, error_code& ec );
-
-            // Called when a null is parsed.
-            bool on_null( error_code& ec );
-
-            // Called with characters corresponding to part of the current comment.
-            bool on_comment_part( string_view s, error_code& ec );
-
-            // Called with the last characters corresponding to the current comment.
-            bool on_comment( string_view s, error_code& ec );
-        };
-        @endcode
 
         @par Complexity
 
@@ -490,7 +494,7 @@ public:
         parsed, which may be smaller than `size`.
     */
     std::size_t
-    write_some(
+    write(
         bool more,
         char const* data,
         std::size_t size,

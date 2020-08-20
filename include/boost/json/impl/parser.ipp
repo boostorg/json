@@ -269,7 +269,7 @@ write(
     std::size_t size,
     error_code& ec)
 {
-    auto const n = p_.write_some(
+    auto const n = p_.write(
         true, data, size, ec);
     if(! ec && n < size)
         ec = error::extra_data;
@@ -295,7 +295,7 @@ void
 parser::
 finish(error_code& ec)
 {
-    p_.write_some(
+    p_.write(
         false, nullptr, 0, ec);
 }
 

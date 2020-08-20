@@ -35,19 +35,19 @@ class object_test;
 /** A dynamically sized associative container of JSON key/value pairs.
 
     This is an associative container whose elements
-    are key/value pairs with unique keys.\n
-
+    are key/value pairs with unique keys.
+\n
     The elements are stored contiguously, which means that
     elements can be accessed not only through iterators, but
     also using offsets to regular pointers to elements. A
     pointer to an element of an @ref object may be passed to
     any function that expects a pointer to
-    @ref key_value_pair.\n
-
+    @ref key_value_pair.
+\n
     The container also maintains an internal index to speed
     up find operations, reducing the average complexity
-    for most lookups and insertions.\n
-
+    for most lookups and insertions.
+\n
     Reallocations are usually costly operations in terms of
     performance, as elements are copied and the internal
     index must be rebuilt. The @ref reserve function can
@@ -1204,8 +1204,8 @@ public:
 
         Returns a reference to the value that is mapped
         to a key equivalent to key, performing an insertion
-        of a null value if such key does not already exist.\n
-
+        of a null value if such key does not already exist.
+    \n
         If an insertion occurs and results in a rehashing of
         the container, all iterators are invalidated. Otherwise
         iterators are not affected. References are not
@@ -1412,9 +1412,16 @@ private:
     Strong guarantee.
     Calls to `memory_resource::allocate` may throw.
 
+    @par Effects
+    @code
+    lhs.swap( rhs );
+    @endcode
+
     @param lhs The object to exchange.
 
     @param rhs The object to exchange.
+
+    @see @ref object::swap
 */
 inline
 void

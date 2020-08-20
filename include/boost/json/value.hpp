@@ -116,7 +116,7 @@ public:
     /** Constructor.
 
         The constructed value is null,
-        using the specified memory resource.
+        using the specified @ref memory_resource.
 
         @par Complexity
 
@@ -2651,9 +2651,44 @@ BOOST_STATIC_ASSERT(sizeof(value) == 16);
 
 /** Exchange the given values.
 
+    Exchanges the contents of value `lhs` with
+    another value `rhs`. Ownership of the respective
+    @ref memory_resource objects is not transferred.
+
+    @li If `*lhs.storage() == *rhs.storage()`,
+    ownership of the underlying memory is swapped in
+    constant time, with no possibility of exceptions.
+    All iterators and references remain valid.
+
+    @li If `*lhs.storage() != *rhs.storage`,
+    the contents are logically swapped by a copy,
+    which can throw. In this case all iterators and
+    references are invalidated.
+
     @par Preconditions
 
     `&lhs != &rhs`
+        
+    @par Complexity
+
+    Constant or linear in the sum of the sizes of
+    the values.
+
+    @par Exception Safety
+
+    Strong guarantee.
+    Calls to `memory_resource::allocate` may throw.
+
+    @par Effects
+    @code
+    lhs.swap( rhs );
+    @endcode
+
+    @param lhs The value to exchange.
+
+    @param rhs The value to exchange.
+
+    @see @ref value::swap
 */
 inline
 void

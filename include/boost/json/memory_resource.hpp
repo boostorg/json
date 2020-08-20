@@ -45,7 +45,12 @@ namespace json {
     require only a compiler conforming to C++17
     or later.
 */
-using memory_resource = __see_below__;
+class memory_resource
+{
+};
+
+// VFALCO Bug: doc toolchain won't make this a ref
+//using memory_resource = __see_below__;
 
 #elif ! defined(BOOST_JSON_STANDALONE)
 

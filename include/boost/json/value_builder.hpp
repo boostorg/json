@@ -149,10 +149,14 @@ public:
 
     /** Return the completed value.
 
-        If @ref is_complete() returns `true`, then the
-        parsed value is returned. Otherwise an
-        exception is thrown.
-
+        This function transfers ownership of the
+        constructed value to the caller. The behavior
+        is undefined if there is no top level element,
+        or if any call to @ref begin_object or
+        @ref begin_array is not balanced by a
+        corresponding call to @ref end_object or
+        @ref end_array.
+        
         @par Exception Safety
 
         Basic guarantee.
@@ -173,7 +177,7 @@ public:
         subsequent parse.
 
         After calling this function, it is necessary
-        to call @ref start before building a new value.
+        to call @ref reset before building a new value.
 
         @par Exception Safety
 
@@ -191,13 +195,13 @@ public:
         which will be inserted into the result as
         the next element of the currently open array
         or object, or as the top-level element if
-        no other elements exist.\n
-
+        no other elements exist.
+    \n
         After calling this function, elements
         are inserted into the array by calling
         the other insertion functions (including
-        @ref begin_array and @ref begin_object).\n
-
+        @ref begin_array and @ref begin_object).
+    \n
         @par Exception Safety
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
@@ -229,7 +233,8 @@ public:
         which will be inserted into the result as
         the next element of the currently open array
         or object, or as the top-level element if
-        no other elements exist.\n
+        no other elements exist.
+    \n
 
         After calling this function, elements are
         inserted into the object by first inserting
@@ -237,8 +242,8 @@ public:
         @ref insert_key_part, and then calling
         the other insertion functions (including
         @ref begin_object and @ref begin_array) to
-        add the value corresponding to the key.\n
-
+        add the value corresponding to the key.
+    \n
         @par Exception Safety
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.

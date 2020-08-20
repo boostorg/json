@@ -421,7 +421,7 @@ class boost_null_impl : public any_impl
             std::size_t size,
             error_code& ec)
         {
-            auto const n = p_.write_some(
+            auto const n = p_.write(
                 false, data, size, ec);
             if(! ec && n < size)
                 ec = error::extra_data;

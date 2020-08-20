@@ -210,7 +210,7 @@ reserve()
 // The canary value is returned by parse functions
 // to indicate that the parser failed, or suspended.
 // this is used as it is distinct from all valid values
-// for data in write_some
+// for data in write
 
 template<class Handler>
 const char*
@@ -2628,7 +2628,7 @@ reset() noexcept
 template<class Handler>
 std::size_t
 basic_parser<Handler>::
-write_some(
+write(
     bool more,
     char const* data,
     std::size_t size,

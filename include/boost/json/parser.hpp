@@ -133,8 +133,8 @@ public:
 
         @note
         Before any JSON can be parsed, the function
-        @ref reset must be called.\n
-
+        @ref reset must be called.
+        \n
         The `sp` parameter is only used to
         allocate intermediate storage; it will not be used
         for the @ref value returned by @ref release.
@@ -168,8 +168,8 @@ public:
 
         @note
         Before any JSON can be parsed, the function
-        @ref reset must be called.\n
-
+        @ref reset must be called.
+        \n
         The `sp` parameter is only used to
         allocate intermediate storage; it will not be used
         for the @ref value returned by @ref release.
@@ -258,8 +258,8 @@ public:
         buffer. The parse proceeds from the current
         state, which is at the beginning of a new JSON
         or in the middle of the current JSON if any
-        characters were already parsed.\n
-
+        characters were already parsed.
+    \n
         The characters in the buffer are processed
         starting from the beginning, until one of the
         following conditions is met:
@@ -307,8 +307,8 @@ public:
         buffer. The parse proceeds from the current
         state, which is at the beginning of a new JSON
         or in the middle of the current JSON if any
-        characters were already parsed.\n
-
+        characters were already parsed.
+    \n
         The characters in the buffer are processed
         starting from the beginning, until one of the
         following conditions is met:
