@@ -1847,7 +1847,7 @@ do_obj11:
     if(BOOST_JSON_UNLIKELY(
         ! h_.on_object_end(ec_)))
         return fail(cs.begin());
-    --depth_;
+    ++depth_;
     ++cs;
     return cs.begin();
 }
@@ -1947,7 +1947,7 @@ do_arr6:
     if(BOOST_JSON_UNLIKELY(
         ! h_.on_array_end(ec_)))
         return fail(cs.begin());
-    --depth_;
+    ++depth_;
     ++cs;
     return cs.begin();
 }

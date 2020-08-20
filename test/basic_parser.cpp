@@ -1243,6 +1243,23 @@ public:
             BOOST_TEST(ec == error::too_deep);
         }
         {
+            string_view s = "[[[[]]], [[[[]]]]]";
+            null_parser p;
+            error_code ec;
+            p.max_depth(4);
+            p.write(s.data(), s.size(), ec);
+            BOOST_TEST(ec == error::too_deep);
+        }
+        {
+            string_view s = 
+                "{\"a\":{\"b\":{\"c\":{}}},\"b\":{\"c\":{\"d\":{\"e\":{}}}}}";
+            null_parser p;
+            error_code ec;
+            p.max_depth(4);
+            p.write(s.data(), s.size(), ec);
+            BOOST_TEST(ec == error::too_deep);
+        }
+        {
             string_view s = 
                 "{\"a\":{\"b\":{\"c\":{\"d\":{}}}}}";
             null_parser p;
