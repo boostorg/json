@@ -18,6 +18,7 @@ project(boost_json VERSION "${BOOST_JSON_VERSION}" LANGUAGES CXX)
 
 option(BOOST_JSON_STANDALONE "Build boost::json as a standalone library" OFF)
 option(BOOST_JSON_BUILD_TESTS "Build boost::json tests" ON)
+option(BOOST_JSON_BUILD_FUZZERS "Build boost::json fuzzers" ON)
 option(BOOST_JSON_BUILD_EXAMPLES "Build boost::json examples" ON)
 option(BOOST_JSON_BUILD_BENCHMARKS "Build boost::json benchmarks" OFF)
 
@@ -147,6 +148,10 @@ endif()
 if(BOOST_JSON_BUILD_TESTS)
     include(CTest)
     add_subdirectory(test)
+endif()
+
+if(BOOST_JSON_BUILD_FUZZERS)
+    add_subdirectory(fuzzing)
 endif()
 
 if(BOOST_JSON_BUILD_EXAMPLES AND NOT BOOST_SUPERPROJECT_VERSION)
