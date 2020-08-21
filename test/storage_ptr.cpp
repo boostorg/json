@@ -102,8 +102,10 @@ public:
 
         // get()
         {
-            storage_ptr sp(dsp);
-            BOOST_TEST(sp.get() == dsp.get());
+            {
+                storage_ptr sp(dsp);
+                BOOST_TEST(sp.get() == dsp.get());
+            }
         }
 
         // operator->()
@@ -126,10 +128,53 @@ public:
         }
     }
 
+    // https://github.com/CPPAlliance/json/pull/182
+    void
+    testPull182()
+    {
+        struct other
+        {
+            virtual void f() {}
+        };
+
+        struct my_resource
+            : other
+            , memory_resource
+        {
+            void*
+            do_allocate(
+                std::size_t,
+                std::size_t) override
+            {
+                return nullptr;
+            }
+
+            void
+            do_deallocate(
+                void*,
+                std::size_t,
+                std::size_t) noexcept override
+            {
+            }
+
+            bool
+            do_is_equal(
+                memory_resource const&) const noexcept override
+            {
+                return true;
+            }
+        };
+
+        my_resource mr;
+        BOOST_TEST(storage_ptr(&mr).get() == &mr);
+    }
+
     void
     run()
     {
         testMembers();
+
+        testPull182();
     }
 };
 

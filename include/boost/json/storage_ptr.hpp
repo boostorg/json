@@ -146,8 +146,8 @@ public:
             std::is_convertible<T*,
                 memory_resource*>::value>::type>
     storage_ptr(T* p) noexcept
-        : i_(reinterpret_cast<
-            std::uintptr_t>(p) +
+        : i_(reinterpret_cast<std::uintptr_t>(
+                static_cast<memory_resource *>(p)) +
             (is_deallocate_null<
                 T>::deallocate_is_null() ?
                     2 : 0))
