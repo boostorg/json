@@ -122,10 +122,10 @@ public:
         if `initial_size` is less than 1024, the initial size will
         be 1024.
 
-        @note This constructor does not cause memory to be allocated.
+        @note This function does not allocate memory.
 
-        @param initial_size The initial size of the resource.
-        The default argument for this parameter is 1024.
+        @param initial_size An optional, initial size of the
+        resource. If omitted, a reasonable default will be used.
     */
     BOOST_JSON_DECL
     monotonic_resource(
@@ -143,12 +143,11 @@ public:
 
         `{buffer, buffer + buffer_size)` is a valid range.
 
-        @note This constructor does not cause memory to be allocated,
-        and does not take ownership of the initial buffer.
+        @note This constructor does allocate memory.
 
         @param buffer A pointer to the initial buffer for the
-        resource to use.
-        
+        resource to use. Ownership is not transferred.
+
         @param buffer_size The size of the initial buffer.
     */
     BOOST_JSON_DECL
@@ -177,6 +176,19 @@ protected:
         as large as that of the current block, or `n` rounded up to
         the nearest power of two if `n` exceeds the size of the current
         block. The memory is then allocated within the new block.
+
+        @par Example
+        @code
+        monotonic_resource mr;
+
+        error_code ec;
+        parser p;
+        p.reset( &mr );
+        p.write( "[1,2,3]", 7, ec );
+        value jv = p.release();
+
+        assert( jv.storage().get() == &mr );
+        @endcode
 
         @par Exception Safety
 

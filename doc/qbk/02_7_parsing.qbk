@@ -69,8 +69,8 @@ program needs to parse multiple JSONs sequentially, performance
 can be improved by declaring the parser instance explicitly and
 using the parser's buffer-oriented interface. This stateful
 interface uses the functions
-[link json.ref.boost__json__parser.write_some `write_some`] and
-[link json.ref.boost__json__parser.write `write`]
+[link json.ref.boost__json__parser.write `write`] and
+[link json.ref.boost__json__parser.finish `finish`]
 to supply zero or more sequential character buffers
 representing the JSON, while the function
 [link json.ref.boost__json__parser.finish `finish`]

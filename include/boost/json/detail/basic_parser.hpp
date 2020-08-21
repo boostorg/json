@@ -31,6 +31,7 @@
     The source code is arranged this way to keep compile
     times down.
 */
+
 namespace boost {
 namespace json {
 
@@ -41,10 +42,8 @@ namespace json {
     To use, first declare a variable of type
     `basic_parser<T>` where `T` meets the handler
     requirements specified below. Then call
-    @ref write zero or more times with the input.
-
-    The serialized JSON is provided to the parser by
-    zero or more calls to the @ref write function.
+    @ref write one or more times with the input,
+    setting `more = false` on the final buffer.
     The parsing events are realized through member
     function calls on the handler, which exists
     as a data member of the parser.
@@ -71,7 +70,7 @@ namespace json {
 
     By default, only conforming JSON is accepted.
     However, select non-compliant syntax can be
-    allowed by constructing using a @ref parse_options
+    allowed by construction using a @ref parse_options
     set to desired values.
 
     @par Handler
@@ -92,7 +91,7 @@ namespace json {
     @code
     struct handler
     {
-        // Called once when the JSON parsing begins.
+        /// Called once when the JSON parsing begins.
         bool on_document_begin( error_code& ec );
 
         // Called when the JSON parsing is done.
@@ -122,7 +121,7 @@ namespace json {
         // Called with the last characters corresponding to the current string.
         bool on_string( string_view s, error_code& ec );
 
-        // Called with the characters corresponding to the part of the current number.
+        // Called with the characters corresponding to part of the current number.
         bool on_number_part( string_view s, error_code& ec );
 
         // Called when a signed integer is parsed.
@@ -337,7 +336,7 @@ public:
     /** Constructor.
 
         This function constructs the parser with
-        setting that only accept conforming JSON.
+        the setting that only accept standard JSON.
         The handler will be default constructed.
     */
     basic_parser() = default;
@@ -350,7 +349,7 @@ public:
 
         @param opt Configuration settings for the parser.
         If this structure is default constructed, the
-        parser will accept only conforming JSON.
+        parser will accept only standard JSON.
 
         @param args Optional additional arguments
         forwarded to the handler's constructor.
@@ -437,11 +436,18 @@ public:
     void
     max_depth(unsigned long levels) noexcept
     {
+        // Cannot change depth mid-parse
         BOOST_ASSERT(st_.empty());
+
         max_depth_ = levels;
     }
 
     /** Reset the state, to parse a new document.
+
+        This function discards the current parsing
+        state, to prepare for parsing a new document.
+        Dynamically allocated temporary memory used
+        by the implementation is not deallocated.
     */
     inline
     void
@@ -460,11 +466,11 @@ public:
         starting from the beginning, until one of the
         following conditions is met:
 
-        @li All of the characters in the buffer have been
-        parsed, or
+        @li All of the characters in the buffer
+        have been parsed, or
 
-        @li Some of the characters in the buffer have been
-        parsed and the JSON is complete, or
+        @li Some of the characters in the buffer
+        have been parsed and the JSON is complete, or
 
         @li A parsing error occurs.
 
@@ -478,8 +484,8 @@ public:
 
         Linear in `size`.
 
-        @param h The handler to invoke for each element
-        of the parsed JSON.
+        @return The number of characters successfully
+        parsed, which may be smaller than `size`.
 
         @param more `true` if there are possibly more
         buffers in the current JSON, otherwise `false`.
@@ -491,9 +497,6 @@ public:
         by `data`.
 
         @param ec Set to the error, if any occurred.
-
-        @return The number of characters successfully
-        parsed, which may be smaller than `size`.
     */
     std::size_t
     write(

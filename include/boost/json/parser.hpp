@@ -29,9 +29,8 @@ namespace json {
 
 /** A DOM parser for serialized JSON.
 
-    This parser is used to incrementally parse
-    JSON from character buffers into a @ref value
-    container.
+    This class is used to incrementally parse JSON
+    from character buffers into a @ref value container.
 
     @par Usage
 
@@ -39,22 +38,22 @@ namespace json {
     must be called, optionally passing the storage
     pointer to be used by the @ref value container into
     which the parsed results are stored. After the
-    parse is started, the functions @ref write_some,
-    @ref write, and @ref finish may be called to
-    provide successive buffers of characters of the
-    JSON. The caller can check that the parse is
-    complete by calling @ref is_complete, or that a
-    non-successful error code is returned.
+    parse is started, call the @ref write function
+    to provide buffers of characters of the JSON.
+    When there are no more buffers, call @ref finish 
+    Check that the parse is complete by calling
+    @ref is_complete, or that a non-successful
+    error code is returned.
 
     @par Incremental Parsing
 
-    The @ref write_some function allows partial data
-    to be written. This is useful when not all of the
-    serialized JSON is present at once and it is
-    desired to process the data as it becomes available,
-    such as when reading from a network socket or other
-    device. The incremental interface may also be used
-    to bound the amount of work performed in each
+    The parser allows the input to be presented in
+    multiple character buffers. This is useful when
+    not all of the serialized JSON is present at once
+    and it is desired to process the data as it becomes
+    available, such as when reading from a network socket
+    or other device. The incremental interface may also
+    be used to bound the amount of work performed in each
     parsing cycle.
 
     @par Intermediate Storage
@@ -68,6 +67,15 @@ namespace json {
     This storage is freed when the parser is destroyed, 
     allowing the parser to cheaply reuse this memory
     when parsing subsequent JSONs, improving performance.
+
+    @par Non-Standard JSON
+
+    The parser interface supports construction with a
+    @ref parse_options structure, which provides settings
+    to allow various non-standard JSON extensions to be
+    recognized as valid.
+
+    @see @ref parse, @ref parse_options
 */
 class parser
 {
@@ -242,7 +250,7 @@ public:
 
         This function must be called once manually before
         parsing a new JSON incrementally; that is, when
-        using @ref write_some, @ref write, or @ref finish.
+        calling @ref write or @ref finish.
 
         @param sp A pointer to the @ref memory_resource
         to use. The parser will acquire shared
@@ -251,6 +259,28 @@ public:
     BOOST_JSON_DECL
     void
     reset(storage_ptr sp = {}) noexcept;
+
+    /** Return true if a complete JSON has been parsed.
+
+        This function returns `true` when all of these
+        conditions are met:
+
+        @li A complete serialized JSON has been
+            presented to the parser, and
+
+        @li No error has occurred since the parser
+            was constructed, or since the last call
+            to @ref reset,
+
+        @par Complexity
+
+        Constant.
+    */
+    bool
+    is_complete() const noexcept
+    {
+        return p_.is_complete();
+    }
 
     /** Parse JSON incrementally.
 
@@ -282,6 +312,10 @@ public:
 
         Linear in `size`.
 
+        @return The number of characters consumed from
+        the buffer, which may be less than the size
+        provided.
+
         @param data A pointer to a buffer of `size`
         characters to parse.
 
@@ -289,10 +323,6 @@ public:
         by `data`.
 
         @param ec Set to the error, if any occurred.
-
-        @return The number of characters consumed from
-        the buffer, which may be less than the size
-        provided.
     */
     BOOST_JSON_DECL
     std::size_t

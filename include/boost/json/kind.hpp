@@ -15,14 +15,15 @@
 namespace boost {
 namespace json {
 
-/// Constants for identifying the type of a value
+/** Constants for identifying the type of a value
+*/
 enum class kind : unsigned char
 {
-    /// An @ref object.
-    object,
-
     /// An @ref array.
     array,
+
+    /// An @ref object.
+    object,
 
     /// A @ref string.
     string,
@@ -45,21 +46,25 @@ enum class kind : unsigned char
 
 /** A tag type used to select a @ref value constructor overload.
 
-    The library provides the constant @ref object_kind
+    The library provides the constant @ref array_kind
     which may be used to select the @ref value constructor
-    that creates an empty @ref object.
+    that creates an empty @ref array.
+
+    @see @ref array_kind
 */
-struct object_kind_t
+struct array_kind_t
 {
 };
 
 /** A tag type used to select a @ref value constructor overload.
 
-    The library provides the constant @ref array_kind
+    The library provides the constant @ref object_kind
     which may be used to select the @ref value constructor
-    that creates an empty @ref array.
+    that creates an empty @ref object.
+
+    @see @ref object_kind
 */
-struct array_kind_t
+struct object_kind_t
 {
 };
 
@@ -68,6 +73,8 @@ struct array_kind_t
     The library provides the constant @ref string_kind
     which may be used to select the @ref value constructor
     that creates an empty @ref string.
+
+    @see @ref string_kind
 */
 struct string_kind_t
 {
@@ -75,28 +82,46 @@ struct string_kind_t
 
 /** A constant used to select a @ref value constructor overload.
 
-    The library provides this constant to select the
-    @ref value constructor that creates an empty @ref object.
+    The library provides this constant to allow efficient
+    construction of a @ref value containing an empty @ref array.
 
-    @see @ref value::value
-*/
-BOOST_JSON_INLINE_VARIABLE(object_kind, object_kind_t);
+    @par Example
+    @code
+    storage_ptr sp;
+    value jv( array_kind, sp ); // sp is an optional parameter
+    @endcode
 
-/** A constant used to select a @ref value constructor overload.
-
-    The library provides this constant to select the
-    @ref value constructor that creates an empty @ref array.
-
-    @see @ref value::value
+    @see @ref array_kind_t
 */
 BOOST_JSON_INLINE_VARIABLE(array_kind, array_kind_t);
 
 /** A constant used to select a @ref value constructor overload.
 
-    The library provides this constant to select the
-    @ref value constructor that creates an empty @ref string.
+    The library provides this constant to allow efficient
+    construction of a @ref value containing an empty @ref object.
 
-    @see @ref value::value
+    @par Example
+    @code
+    storage_ptr sp;
+    value jv( object_kind, sp ); // sp is an optional parameter
+    @endcode
+
+    @see @ref object_kind_t
+*/
+BOOST_JSON_INLINE_VARIABLE(object_kind, object_kind_t);
+
+/** A constant used to select a @ref value constructor overload.
+
+    The library provides this constant to allow efficient
+    construction of a @ref value containing an empty @ref string.
+
+    @par Example
+    @code
+    storage_ptr sp;
+    value jv( string_kind, sp ); // sp is an optional parameter
+    @endcode
+
+    @see @ref string_kind_t
 */
 BOOST_JSON_INLINE_VARIABLE(string_kind, string_kind_t);
 

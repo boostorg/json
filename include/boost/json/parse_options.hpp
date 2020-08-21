@@ -13,44 +13,35 @@
 namespace boost {
 namespace json {
 
-/** Parser Extensions.
-    
-    The parser can be configured to enable
-    certain extensions. By default, only conformant
-    JSON is accepted.
-    
-    The currently supported extensions are:
-    
-    @li Comments, which permits comments
-    to appear within whitespace, and
+/** Parser options
 
-    @li Trailing commas, which allows a comma
-    to appear after the last element
-    of an object or array, and
-
-    @li Invalid UTF-8, which disables the
-    validation of UTF-8 byte sequences.
+    This structure is used for specifying whether
+    to allow various non-standard extensions.
+    Default-constructed options specify that only
+    standard JSON is allowed.
 */
 struct parse_options
 {
-    /** Comments
+    /** Non-standard extension option
 
-        Permits C and C++ style comments
-        to appear within whitespace.
+        Allow C and C++ style comments to appear
+        anywhere that whitespace is permissible.
     */
     bool allow_comments = false;
-    
-    /** Trailing Commas
-        
-        Permits a comma to appear after the
-        last element of an array or object.
+
+    /** Non-standard extension option
+
+        Allow a trailing comma to appear after
+        the last element of any array or object.
     */
     bool allow_trailing_commas = false;
-    
-    /** Invalid UTF-8
 
-        UTF-8 byte sequences will not
-        be checked for validity.
+    /** Non-standard extension option
+
+        Allow invalid UTF-8 sequnces to appear
+        in keys and strings.
+
+        @note This increases parsing performance.
     */
     bool allow_invalid_utf8 = false;
 };

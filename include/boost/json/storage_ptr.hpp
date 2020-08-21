@@ -140,11 +140,29 @@ public:
     }
 
     /** Construct a pointer to a memory resource.
+
+        The caller is responsible for maintaining the
+        lifetime of the pointed-to @ref memory_resource.
+        Ownership is not transferred.
+
+        @par Constraints
+        @code
+        std::is_convertible< T*, memory_resource* >::value == true
+        @endcode
+
+        @par Exception Safety
+
+        No-throw guarantee.
+
+        @param p A pointer to the memory resource to use.
     */
-    template<class T, class =
-        typename std::enable_if<
+    template<class T
+#ifndef BOOST_JSON_DOCS
+        , class = typename std::enable_if<
             std::is_convertible<T*,
-                memory_resource*>::value>::type>
+                memory_resource*>::value>::type
+#endif
+    >
     storage_ptr(T* p) noexcept
         : i_(reinterpret_cast<std::uintptr_t>(
                 static_cast<memory_resource *>(p)) +
@@ -278,6 +296,9 @@ public:
     }
 
     /** Return a pointer to the memory resource.
+
+        This function returns a pointer to the
+        @ref memory_resource being pointed to.
 
         @par Complexity
 
