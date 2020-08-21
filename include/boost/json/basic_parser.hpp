@@ -202,7 +202,7 @@ reserve()
             sizeof(std::size_t)) * depth() + // array and object state + size
         sizeof(state) + // value parsing state
         sizeof(std::size_t) + // string size
-        sizeof(state)); // comment/utf8 state
+        sizeof(state)); // comment state
 }
 
 //----------------------------------------------------------
@@ -505,287 +505,6 @@ template<class Handler>
 template<bool StackEmpty>
 const char*
 basic_parser<Handler>::
-validate_utf8(const char* p, const char* end)
-{
-    // 0 = invalid
-    // 1 = 2 bytes, second byte [80, BF]
-    // 2 = 3 bytes, second byte [A0, BF]
-    // 3 = 3 bytes, second byte [80, BF]
-    // 4 = 3 bytes, second byte [80, 9F]
-    // 5 = 4 bytes, second byte [90, BF]
-    // 6 = 4 bytes, second byte [80, BF]
-    // 7 = 4 bytes, second byte [80, 8F]
-    static constexpr char first[128]
-    {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-        0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-        2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 
-        5, 6, 6, 6, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    };
-    detail::const_stream_wrapper cs(p, end);
-    unsigned char c;
-    if(StackEmpty || st_.empty())
-    {
-        // fast path
-        if(BOOST_JSON_LIKELY(
-            cs.remain() >= 4))
-        {
-            BOOST_ASSERT(static_cast<
-                unsigned char>(*cs) > 0x7F);
-            uint32_t v;
-            std::memcpy(&v, cs.begin(), 4);
-            v = detail::little_endian(v);
-            switch(first[v & 0x0000007F])
-            {
-            // 2 bytes, second byte [80, BF]
-            case 1:
-                if(BOOST_JSON_LIKELY(
-                    (v & 0x0000C000) == 0x00008000))
-                {
-                    cs += 2;
-                    return cs.begin();
-                }
-                break;
-            // 3 bytes, second byte [A0, BF]
-            case 2:
-                if(BOOST_JSON_LIKELY(
-                    (v & 0x00C0E000) == 0x0080A000))
-                {
-                    cs += 3;
-                    return cs.begin();
-                }
-                break;
-            // 3 bytes, second byte [80, BF]
-            case 3:
-                if(BOOST_JSON_LIKELY(
-                    (v & 0x00C0C000) == 0x00808000))
-                {
-                    cs += 3;
-                    return cs.begin();
-                }
-                break;
-            // 3 bytes, second byte [80, 9F]
-            case 4:
-                if(BOOST_JSON_LIKELY(
-                    (v & 0x00C0E000) == 0x00808000))
-                {
-                    cs += 3;
-                    return cs.begin();
-                }
-                break;
-            // 4 bytes, second byte [90, BF]
-            case 5:
-                if(BOOST_JSON_LIKELY(
-                    (v & 0xC0C0FF00) + 
-                    0x7F7F7000 <= 0x00002F00))
-                {
-                    cs += 4;
-                    return cs.begin();
-                }
-                break;
-            // 4 bytes, second byte [80, BF]
-            case 6:
-                if(BOOST_JSON_LIKELY(
-                    (v & 0xC0C0C000) == 0x80808000))
-                {
-                    cs += 4;
-                    return cs.begin();
-                }
-                break;
-            // 4 bytes, second byte [80, 8F]
-            case 7:
-                if(BOOST_JSON_LIKELY(
-                    (v & 0xC0C0F000) == 0x80808000))
-                {
-                    cs += 4;
-                    return cs.begin();
-                }
-                break;
-            }
-            return fail(cs.begin(), error::syntax);
-        }
-    }
-    else
-    {
-        state st;
-        st_.pop(st);
-        switch(st)
-        {
-        default:;
-        case state::utf1: goto do_utf1;
-        case state::utf2: goto do_utf2;
-        case state::utf3: goto do_utf3;
-        case state::utf4: goto do_utf4;
-        case state::utf5: goto do_utf5;
-        case state::utf6: goto do_utf6;
-        case state::utf7: goto do_utf7;
-        case state::utf8: goto do_utf8;
-        case state::utf9: goto do_utf9;
-        case state::utf10: goto do_utf10;
-        case state::utf11: goto do_utf11;
-        case state::utf12: goto do_utf12;
-        case state::utf13: goto do_utf13;
-        case state::utf14: goto do_utf14;
-        case state::utf15: goto do_utf15;
-        case state::utf16: goto do_utf16;
-        }
-    }
-    c = static_cast<unsigned char>(*cs);
-    BOOST_ASSERT(c > 0x7F);
-    ++cs;
-    switch(first[c & 0x7F])
-    {
-    // 2 bytes
-    case 1:
-do_utf1:
-        if(BOOST_JSON_UNLIKELY(! cs))
-            return maybe_suspend(cs.begin(), state::utf1);
-        if(BOOST_JSON_UNLIKELY(
-            (*cs & 0xC0) != 0x80))
-            break;
-        ++cs;
-        return cs.begin();
-                
-    // 3 bytes, second byte [A0, BF]
-    case 2:
-do_utf2:
-        if(BOOST_JSON_UNLIKELY(! cs))
-            return maybe_suspend(cs.begin(), state::utf2);
-        if(BOOST_JSON_UNLIKELY(
-            (*cs & 0xE0) != 0xA0))
-            break;
-        ++cs;
-do_utf3:
-        if(BOOST_JSON_UNLIKELY(! cs))
-            return maybe_suspend(cs.begin(), state::utf3);
-        if(BOOST_JSON_UNLIKELY(
-            (*cs & 0xC0) != 0x80))
-            break;
-        ++cs;
-        return cs.begin();
-                
-    // 3 bytes, second byte [80, BF]
-    case 3:
-do_utf4:
-        if(BOOST_JSON_UNLIKELY(! cs))
-            return maybe_suspend(cs.begin(), state::utf4);
-        if(BOOST_JSON_UNLIKELY(
-            (*cs & 0xC0) != 0x80))
-            break;
-        ++cs;
-do_utf5:
-        if(BOOST_JSON_UNLIKELY(! cs))
-            return maybe_suspend(cs.begin(), state::utf5);
-        if(BOOST_JSON_UNLIKELY(
-            (*cs & 0xC0) != 0x80))
-            break;
-        ++cs;
-        return cs.begin();
-                
-    // 3 bytes, second byte [80, 9F]
-    case 4:
-do_utf6:
-        if(BOOST_JSON_UNLIKELY(! cs))
-            return maybe_suspend(cs.begin(), state::utf6);
-        if(BOOST_JSON_UNLIKELY(
-            (*cs & 0xE0) != 0x80))
-            break;
-        ++cs;
-do_utf7:
-        if(BOOST_JSON_UNLIKELY(! cs))
-            return maybe_suspend(cs.begin(), state::utf7);
-        if(BOOST_JSON_UNLIKELY(
-            (*cs & 0xC0) != 0x80))
-            break;
-        ++cs;
-        return cs.begin();
-
-    // 4 bytes, second byte [90, BF]
-    case 5:
-do_utf8:
-        if(BOOST_JSON_UNLIKELY(! cs))
-            return maybe_suspend(cs.begin(), state::utf8);
-        if(BOOST_JSON_UNLIKELY(
-            (*cs + 0x70) > 0x2F))
-            break;
-        ++cs;
-do_utf9:
-        if(BOOST_JSON_UNLIKELY(! cs))
-            return maybe_suspend(cs.begin(), state::utf9);
-        if(BOOST_JSON_UNLIKELY(
-            (*cs & 0xC0) != 0x80))
-            break;
-        ++cs;
-do_utf10:
-        if(BOOST_JSON_UNLIKELY(! cs))
-            return maybe_suspend(cs.begin(), state::utf10);
-        if(BOOST_JSON_UNLIKELY(
-            (*cs & 0xC0) != 0x80))
-            break;
-        ++cs;
-        return cs.begin();
-                
-    // 4 bytes, second byte [80, BF]
-    case 6:
-do_utf11:
-        if(BOOST_JSON_UNLIKELY(! cs))
-            return maybe_suspend(cs.begin(), state::utf11);
-        if(BOOST_JSON_UNLIKELY(
-            (*cs & 0xC0) != 0x80))
-            break;
-        ++cs;
-do_utf12:
-        if(BOOST_JSON_UNLIKELY(! cs))
-            return maybe_suspend(cs.begin(), state::utf12);
-        if(BOOST_JSON_UNLIKELY(
-            (*cs & 0xC0) != 0x80))
-            break;
-        ++cs;
-do_utf13:
-        if(BOOST_JSON_UNLIKELY(! cs))
-            return maybe_suspend(cs.begin(), state::utf13);
-        if(BOOST_JSON_UNLIKELY(
-            (*cs & 0xC0) != 0x80))
-            break;
-        ++cs;
-        return cs.begin();
-                
-    // 4 bytes, second byte [80, 8F]
-    case 7:
-do_utf14:
-        if(BOOST_JSON_UNLIKELY(! cs))
-            return maybe_suspend(cs.begin(), state::utf14);
-        if(BOOST_JSON_UNLIKELY(
-            (*cs & 0xF0) != 0x80))
-            break;
-        ++cs;
-do_utf15:
-        if(BOOST_JSON_UNLIKELY(! cs))
-            return maybe_suspend(cs.begin(), state::utf15);
-        if(BOOST_JSON_UNLIKELY(
-            (*cs & 0xC0) != 0x80))
-            break;
-        ++cs;
-do_utf16:
-        if(BOOST_JSON_UNLIKELY(! cs))
-            return maybe_suspend(cs.begin(), state::utf16);
-        if(BOOST_JSON_UNLIKELY(
-            (*cs & 0xC0) != 0x80))
-            break;
-        ++cs;
-        return cs.begin();
-    }
-    return fail(cs.begin(), error::syntax);
-}
-
-template<class Handler>
-template<bool StackEmpty>
-const char*
-basic_parser<Handler>::
 parse_document(const char* p)
 {
     detail::const_stream_wrapper cs(p, end_);
@@ -968,17 +687,17 @@ resume_value(const char* p)
     case state::fal3: case state::fal4:
         return parse_false<StackEmpty>(p);
 
-    case state::str1: case state::utf17:
+    case state::str1:
         return parse_unescaped<StackEmpty, 
             false, AllowBadUTF8>(p);
     
     case state::str2: case state::str3: 
     case state::str4: case state::str5: 
     case state::str6: case state::str7:
+    case state::str8:
     case state::sur1: case state::sur2:
     case state::sur3: case state::sur4:
     case state::sur5: case state::sur6:
-    case state::utf18:
         return parse_escaped<StackEmpty, 
             false, AllowBadUTF8>(p);
 
@@ -1212,17 +931,17 @@ parse_string(const char* p)
         switch(st)
         {
         default:
-        case state::str1: case state::utf17:
-        return parse_unescaped<StackEmpty, 
-            IsKey, AllowBadUTF8>(p);
-    
+        case state::str1:
+            return parse_unescaped<StackEmpty, 
+                IsKey, AllowBadUTF8>(p);
+
         case state::str2: case state::str3: 
         case state::str4: case state::str5: 
         case state::str6: case state::str7:
+        case state::str8:
         case state::sur1: case state::sur2:
         case state::sur3: case state::sur4:
         case state::sur5: case state::sur6:
-        case state::utf18:
             return parse_escaped<StackEmpty, 
                 IsKey, AllowBadUTF8>(p);
         }
@@ -1245,30 +964,23 @@ parse_unescaped(const char* p)
     constexpr auto on_part = IsKey ? 
         &Handler::on_key_part : &Handler::on_string_part;
     detail::const_stream_wrapper cs(p, end_);
-    char const* start;
     std::size_t total;
-    std::size_t size;
-    if(! StackEmpty && ! st_.empty())
+    if(StackEmpty || st_.empty())
     {
-        start = cs.begin();
+        BOOST_ASSERT(*cs == '\x22'); // '"'
+        ++cs;
+        total = 0;
+    }
+    else
+    {
         state st;
         st_.pop(st);
         st_.pop(total);
-        switch(st)
-        {
-        default:
-        case state::str1: goto do_str1;
-        case state::utf17: goto do_utf17;
-        }
     }
-    BOOST_ASSERT(*cs == '\x22'); // '"'
-    ++cs;
-    start = cs.begin();
-    total = 0;
-do_str1:
+    char const* start = cs.begin();
     cs = detail::count_valid<AllowBadUTF8>(
         cs.begin(), cs.end());
-    size = cs.used(start);
+    std::size_t size = cs.used(start);
     if(BOOST_JSON_UNLIKELY(size > 
         BOOST_JSON_MAX_STRING_SIZE - total))
         return fail(cs.begin(), IsKey ? 
@@ -1277,7 +989,7 @@ do_str1:
     if(BOOST_JSON_UNLIKELY(! cs))
     {
         // call handler if the string isn't empty
-        if(BOOST_JSON_LIKELY(cs.begin() > start))
+        if(BOOST_JSON_LIKELY(size))
         {
             if(BOOST_JSON_UNLIKELY(! (h_.*on_part)(
                 {start, size}, ec_)))
@@ -1287,27 +999,25 @@ do_str1:
     }
     if(BOOST_JSON_UNLIKELY(*cs != '\x22')) // '"'
     {
+        // sequence is invalid or incomplete
         if(! AllowBadUTF8 && (*cs & 0x80))
         {
-do_utf17:
-            // KRYSTIAN TODO: fix utf-8 validation
-            cs = validate_utf8<StackEmpty>(cs.begin(), cs.end());
-            if(BOOST_JSON_UNLIKELY(incomplete(cs)))
-                return suspend_or_fail(state::utf17, total);
-            goto do_str1;
+            seq_.save(cs.begin(), cs.remain());
+            if(BOOST_JSON_UNLIKELY(seq_.complete()))
+                return fail(cs.begin(), error::syntax); 
+            return maybe_suspend(cs.end(), state::str8, total);
         }
         else if(BOOST_JSON_LIKELY(*cs == '\\'))
         {
             // flush unescaped run from input
-            if(BOOST_JSON_LIKELY(cs.begin() > start))
+            if(BOOST_JSON_LIKELY(size))
             {
                 if(BOOST_JSON_UNLIKELY(! (h_.*on_part)(
                     {start, size}, ec_)))
                     return fail(cs.begin());
             }
-            str_size_ = total;
             return parse_escaped<StackEmpty, IsKey,
-                AllowBadUTF8>(cs.begin());
+                AllowBadUTF8>(cs.begin(), total);
         }
         // illegal control
         return fail(cs.begin(), error::syntax);
@@ -1326,7 +1036,9 @@ template<
     bool AllowBadUTF8>
 const char*
 basic_parser<Handler>::
-parse_escaped(const char* p)
+parse_escaped(
+    const char* p,
+    std::size_t total)
 {
     //---------------------------------------------------------------
     //
@@ -1350,7 +1062,6 @@ parse_escaped(const char* p)
     detail::clipped_const_stream cs(p, end_);
     detail::buffer<BOOST_JSON_PARSER_BUFFER_SIZE> temp;
     int32_t digit;
-    std::size_t total;
     char c;
     cs.clip(temp.max_size());
     if(! StackEmpty && ! st_.empty())
@@ -1367,13 +1078,13 @@ parse_escaped(const char* p)
         case state::str5: goto do_str5;
         case state::str6: goto do_str6;
         case state::str7: goto do_str7;
+        case state::str8: goto do_str8;
         case state::sur1: goto do_sur1;
         case state::sur2: goto do_sur2;
         case state::sur3: goto do_sur3;
         case state::sur4: goto do_sur4;
         case state::sur5: goto do_sur5;
         case state::sur6: goto do_sur6;
-        case state::utf18: goto do_utf18;
         }
     }
     // Unescaped JSON is never larger than its escaped version.
@@ -1382,7 +1093,6 @@ parse_escaped(const char* p)
     // of the temporary buffer.
     // handle escaped character
     BOOST_ASSERT(*cs == '\\');
-    total = str_size_;
     ++cs;
 do_str3:
     if(BOOST_JSON_UNLIKELY(! cs))
@@ -1696,12 +1406,13 @@ do_str2:
         }
         else if(! AllowBadUTF8 && (c & 0x80))
         {
-do_utf18:
-            char const* start = cs.begin();
-            cs = validate_utf8<StackEmpty>(cs.begin(), cs.end());
-            if(BOOST_JSON_UNLIKELY(incomplete(cs)))
-                return suspend_or_fail(state::utf18, total);
-            temp.append(start, cs.used(start));
+            seq_.save(cs.begin(), cs.remain());
+            if(BOOST_JSON_UNLIKELY(! seq_.complete()))
+                return maybe_suspend(cs.end(), state::str8, total);
+            if(BOOST_JSON_UNLIKELY(! seq_.valid()))
+                return fail(cs.begin(), error::syntax);
+            temp.append(seq_.sequence(), seq_.length());
+            cs += seq_.length();
             continue;
         }
         else if(BOOST_JSON_LIKELY(c == '\\'))
@@ -1715,6 +1426,16 @@ do_utf18:
         temp.push_back(c);
         ++cs;
     }
+do_str8:
+    uint8_t needed = seq_.needed();
+    if(BOOST_JSON_UNLIKELY(
+        ! seq_.append(cs.begin(), cs.remain())))
+        return maybe_suspend(cs.end(), state::str8, total);
+    if(BOOST_JSON_UNLIKELY(! seq_.valid()))
+        return fail(cs.begin(), error::syntax);
+    temp.append(seq_.sequence(), seq_.length());
+    cs += needed;
+    goto do_str2;
 }
 
 //----------------------------------------------------------
