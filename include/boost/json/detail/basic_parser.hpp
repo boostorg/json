@@ -342,13 +342,21 @@ public:
 
     /** Constructor.
 
-        This function constructs the parser with the
-        specified options, with optional additional
+        This function constructs the parser with
+        setting that only accept conforming JSON.
+        The handler will be default constructed.
+    */
+    basic_parser() = default;
+
+    /** Constructor.
+
+        This function constructs the parser with
+        the specified options, with any additional
         arguments forwarded to the handler's constructor.
 
-        @param opt Optional configuration settings
-        for the parser. If ommitted, only conforming
-        JSON is allowed.
+        @param opt Configuration settings for the parser.
+        If this structure is default constructed, the
+        parser will accept only conforming JSON.
 
         @param args Optional additional arguments
         forwarded to the handler's constructor.
@@ -358,7 +366,7 @@ public:
     template<class... Args>
     explicit
     basic_parser(
-        parse_options const& opt = {},
+        parse_options const& opt,
         Args&&... args);
 
     /** Return a reference to the handler.
