@@ -51,6 +51,38 @@ public:
         }
     };
 
+    struct widget
+    {
+        virtual void f() {}
+    };
+
+    struct noninitial
+        : widget, memory_resource
+    {
+        void*
+        do_allocate(
+            std::size_t,
+            std::size_t) override
+        {
+            return nullptr;
+        }
+
+        void
+        do_deallocate(
+            void*,
+            std::size_t,
+            std::size_t) noexcept override
+        {
+        }
+
+        bool
+        do_is_equal(
+            memory_resource const&) const noexcept override
+        {
+            return true;
+        }
+    };
+
     void
     testMembers()
     {
@@ -104,6 +136,9 @@ public:
         {
             storage_ptr sp(dsp);
             BOOST_TEST(sp.get() == dsp.get());
+
+            noninitial resource;
+            BOOST_TEST(storage_ptr(&resource).get() == &resource);
         }
 
         // operator->()
