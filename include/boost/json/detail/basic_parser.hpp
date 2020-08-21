@@ -17,6 +17,7 @@
 #include <boost/json/parse_options.hpp>
 #include <boost/json/detail/stack.hpp>
 #include <boost/json/detail/stream.hpp>
+#include <boost/json/detail/utf8.hpp>
 #include <string>
 #include <vector>
 
@@ -161,15 +162,9 @@ class basic_parser
         tru1,  tru2,  tru3,
         fal1,  fal2,  fal3,  fal4,
         str1,  str2,  str3,  str4,
-        str5,  str6,  str7,
+        str5,  str6,  str7,  str8,
         sur1,  sur2,  sur3,
         sur4,  sur5,  sur6,
-        utf1,  utf2,  utf3, 
-        utf4,  utf5,  utf6,
-        utf7,  utf8,  utf9, 
-        utf10, utf11, utf12, 
-        utf13, utf14, utf15, 
-        utf16, utf17, utf18,
         obj1,  obj2,  obj3,  obj4,
         obj5,  obj6,  obj7,  obj8,
         obj9,  obj10, obj11,
@@ -198,7 +193,7 @@ class basic_parser
     std::size_t max_depth_ = 32;
     // how many levels deeper the parser can go
     std::size_t depth_ = max_depth_;
-    std::size_t str_size_;
+    detail::utf8_sequence seq_;
     unsigned u1_;
     unsigned u2_;
     bool more_; // false for final buffer
@@ -286,9 +281,6 @@ class basic_parser
         bool Terminal, bool AllowTrailing, 
         bool AllowBadUTF8>
     const char* parse_comment(const char* p);
-    
-    template<bool StackEmpty>
-    const char* validate_utf8(const char* p, const char* end);
 
     template<bool StackEmpty>
     const char* parse_document(const char* p);
@@ -322,16 +314,18 @@ class basic_parser
         bool AllowBadUTF8>
     const char* parse_string(const char* p);
     
+    template<bool StackEmpty, char First>
+    const char* parse_number(const char* p);
+    
     template<bool StackEmpty, bool IsKey,
         bool AllowBadUTF8>
     const char* parse_unescaped(const char* p);
 
     template<bool StackEmpty, bool IsKey,
         bool AllowBadUTF8>
-    const char* parse_escaped(const char* p);
-    
-    template<bool StackEmpty, char First>
-    const char* parse_number(const char* p);
+    const char* parse_escaped(
+        const char* p, 
+        std::size_t total = 0);
 
 public:
     /** Destructor.

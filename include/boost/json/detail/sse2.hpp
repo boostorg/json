@@ -13,6 +13,7 @@
 #define BOOST_JSON_DETAIL_SSE2_HPP
 
 #include <boost/json/detail/config.hpp>
+#include <boost/json/detail/utf8.hpp>
 #include <cstddef>
 #include <cstring>
 #ifdef BOOST_JSON_USE_SSE2
@@ -113,7 +114,8 @@ count_valid<false>(
             _BitScanForward( &index, w );
             m = index;
 #endif
-            return p + m;
+            p += m;
+            break;
         }
 
         p += 16;
@@ -121,10 +123,22 @@ count_valid<false>(
 
     while(p != end)
     {
-        const char c = *p;
+        const unsigned char c = *p;
         if(c == '\x22' || c == '\\' || c < 0x20)
             break;
-        ++p;
+        if(c < 0x80)
+        {
+            ++p;
+            continue;
+        }
+        // validate utf-8
+        uint16_t first = classify_utf8(c & 0x7F);
+        uint8_t len = first & 0xFF;
+        if(BOOST_JSON_UNLIKELY(end - p < len))
+            break;
+        if(BOOST_JSON_UNLIKELY(! is_valid_utf8(p, first)))
+            break;
+        p += len;
     }
 
     return p;
@@ -158,10 +172,22 @@ count_valid<false>(
 {
     while(p != end)
     {
-        const char c = *p;
+        const unsigned char c = *p;
         if(c == '\x22' || c == '\\' || c < 0x20)
             break;
-        ++p;
+        if(c < 0x80)
+        {
+            ++p;
+            continue;
+        }
+        // validate utf-8
+        uint16_t first = classify_utf8(c & 0x7F);
+        uint8_t len = first & 0xFF;
+        if(BOOST_JSON_UNLIKELY(end - p < len))
+            break;
+        if(BOOST_JSON_UNLIKELY(! is_valid_utf8(p, first)))
+            break;
+        p += len;
     }
 
     return p;
