@@ -147,19 +147,6 @@ dec_to_float(
         pow10(e);
 }
 
-inline
-uint32_t
-little_endian(uint32_t v)
-{
-#ifdef BOOST_JSON_BIG_ENDIAN
-    v = (((v & 0xFF000000) >> 24) |
-        ((v & 0x00FF0000) >> 8) |
-        ((v & 0x0000FF00) << 8) |
-        ((v & 0x000000FF) << 24))
-#endif
-    return v;
-}
-
 } // detail
 
 //----------------------------------------------------------
@@ -1157,8 +1144,8 @@ do_str3:
         {
             // KRYSTIAN TODO: this could be done
             // with fewer instructions
-            std::memcpy(&digit, cs.begin() + 1, 4);
-            digit = detail::little_endian(digit);
+            digit = detail::load_little_endian<4>(
+                cs.begin() + 1);
             int d4 = hex_digit(static_cast<
                 unsigned char>(digit >> 24));
             int d3 = hex_digit(static_cast<
@@ -1207,8 +1194,7 @@ do_str3:
             if(BOOST_JSON_UNLIKELY(*cs != 'u'))
                 return fail(cs.begin(), error::syntax);
             ++cs;
-            std::memcpy(&digit, cs.begin(), 4);
-            digit = detail::little_endian(digit);
+            digit = detail::load_little_endian<4>(cs.begin());
             d4 = hex_digit(static_cast<
                 unsigned char>(digit >> 24));
             d3 = hex_digit(static_cast<
@@ -1411,7 +1397,7 @@ do_str2:
                 return maybe_suspend(cs.end(), state::str8, total);
             if(BOOST_JSON_UNLIKELY(! seq_.valid()))
                 return fail(cs.begin(), error::syntax);
-            temp.append(seq_.sequence(), seq_.length());
+            temp.append(seq_.data(), seq_.length());
             cs += seq_.length();
             continue;
         }
@@ -1433,7 +1419,7 @@ do_str8:
         return maybe_suspend(cs.end(), state::str8, total);
     if(BOOST_JSON_UNLIKELY(! seq_.valid()))
         return fail(cs.begin(), error::syntax);
-    temp.append(seq_.sequence(), seq_.length());
+    temp.append(seq_.data(), seq_.length());
     cs += needed;
     goto do_str2;
 }

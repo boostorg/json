@@ -18,6 +18,22 @@ namespace boost {
 namespace json {
 namespace detail {
 
+template<int N>
+std::uint32_t
+load_little_endian(void const* p)
+{
+    // VFALCO do we need to initialize this to 0?
+    std::uint32_t v;
+    std::memcpy(&v, p, N);
+#ifdef BOOST_JSON_BIG_ENDIAN
+    v = ((v & 0xFF000000) >> 24) |
+        ((v & 0x00FF0000) >>  8) |
+        ((v & 0x0000FF00) <<  8) |
+        ((v & 0x000000FF) << 24);
+#endif
+    return v;
+}
+
 inline
 uint16_t
 classify_utf8(char c)
@@ -57,51 +73,56 @@ inline
 bool
 is_valid_utf8(const char* p, uint16_t first)
 {
-    // KRYSTIAN TODO: account for big endian
-    // also, make a convenience function for 
-    // N-byte loads
     uint32_t v;
     switch(first >> 8)
     {
     default:
         return false;
+
     // 2 bytes, second byte [80, BF]
     case 1:
-        std::memcpy(&v, p, 2);
+        v = load_little_endian<2>(p);
         return (v & 0xC000) == 0x8000;
+
     // 3 bytes, second byte [A0, BF]
     case 2:
+        v = load_little_endian<3>(p);
         std::memcpy(&v, p, 3);
         return (v & 0xC0E000) == 0x80A000;
+
     // 3 bytes, second byte [80, BF]
     case 3:
-        std::memcpy(&v, p, 3);
+        v = load_little_endian<3>(p);
         return (v & 0xC0C000) == 0x808000;
+
     // 3 bytes, second byte [80, 9F]
     case 4:
-        std::memcpy(&v, p, 3);
+        v = load_little_endian<3>(p);
         return (v & 0xC0E000) == 0x808000;
+
     // 4 bytes, second byte [90, BF]
     case 5:
-        std::memcpy(&v, p, 4);
+        v = load_little_endian<4>(p);
         return (v & 0xC0C0FF00) + 0x7F7F7000 <= 0x2F00;
+
     // 4 bytes, second byte [80, BF]
     case 6:
-        std::memcpy(&v, p, 4);
+        v = load_little_endian<4>(p);
         return (v & 0xC0C0C000) == 0x80808000;
+
     // 4 bytes, second byte [80, 8F]
     case 7:
-        std::memcpy(&v, p, 4);
+        v = load_little_endian<4>(p);
         return (v & 0xC0C0F000) == 0x80808000;
     }
 }
 
-struct utf8_sequence
+class utf8_sequence
 {
-private:
     char seq_[4];
     uint16_t first_;
     uint8_t size_;
+
 public:
     void
     save(
@@ -109,8 +130,10 @@ public:
         std::size_t remain) noexcept
     {
         first_ = classify_utf8(*p & 0x7F);
-        size_ = remain >= length() ? 
-            length() : static_cast<uint8_t>(remain);
+        if(remain >= length())
+            size_ = length();
+        else
+            size_ = static_cast<uint8_t>(remain);
         std::memcpy(seq_, p, size_);
     }
 
@@ -120,12 +143,13 @@ public:
         return first_ & 0xFF;
     }
 
-    bool complete() const noexcept
+    bool
+    complete() const noexcept
     {
         return size_ >= length();
     }
 
-    // return true if complete
+    // returns true if complete
     bool
     append(
         const char* p, 
@@ -135,7 +159,8 @@ public:
             return true;
         if(remain >= needed())
         {
-            std::memcpy(seq_ + size_, p, needed());
+            std::memcpy(
+                seq_ + size_, p, needed());
             size_ = length();
             return true;
         }
@@ -145,7 +170,7 @@ public:
     }
 
     const char*
-    sequence() const noexcept
+    data() const noexcept
     {
         return seq_;
     }
@@ -164,8 +189,8 @@ public:
     }
 };
 
-} // boost
-} // json
 } // detail
+} // json
+} // boost
 
 #endif
