@@ -155,17 +155,20 @@ public:
         const char* p, 
         std::size_t remain) noexcept
     {
-        if(! needed())
+        if(BOOST_JSON_UNLIKELY(needed() == 0))
             return true;
-        if(remain >= needed())
+        if(BOOST_JSON_LIKELY(remain >= needed()))
         {
             std::memcpy(
                 seq_ + size_, p, needed());
             size_ = length();
             return true;
         }
-        std::memcpy(seq_ + size_, p, remain);
-        size_ += static_cast<uint8_t>(remain);
+        if(BOOST_JSON_LIKELY(remain > 0))
+        {
+            std::memcpy(seq_ + size_, p, remain);
+            size_ += static_cast<uint8_t>(remain);
+        }
         return false;
     }
 
