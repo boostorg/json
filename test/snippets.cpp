@@ -185,7 +185,7 @@ usingValues()
             value jv( true );
             jv.as_bool() = true;
 
-            jv.as_string() = "Hello, world!"; // throws system_error
+            jv.as_string() = "Hello, world!"; // throws an exception
 
             //]
         }

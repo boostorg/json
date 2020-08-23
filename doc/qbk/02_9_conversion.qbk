@@ -37,9 +37,9 @@ In both cases, overloads for user-provided types can be implemented:
 [snippet_conv_2]
 
 Since the type being converted is embedded into the
-parameter-type-list of the function, user-provided overloads
+function's signature, user-provided overloads
 are visible to argument-dependent lookup and will be candidates
-when a conversion is performed. Consider the following:
+when a conversion is performed:
 
 [snippet_conv_3]
 
@@ -61,7 +61,7 @@ the library already provides an overload for floating-point types:
 
 [snippet_conv_6]
 
-Library-provided overloads of `tag_invoke` come in two flavors: those that
+Library-provided overloads of `tag_invoke` come in two variants: those that
 convert between JSON types (known as ['built-in conversions]),
 and those that convert to/from container and string types
 (known as ['generic conversions]). Generic conversions offer convenience
@@ -76,7 +76,7 @@ tuples, and strings).
 The function template __value_from__ provides an interface to 
 construct a __value__ from a user- or library-provided
 type `T`. The optionally supplied __storage_ptr__ argument is
-used as the memory resource for the resulting __value__ object. 
+used as the __memory_resource__ for the resulting __value__ object. 
 The parameter of type `value&` is the result
 of the conversion; this ensures that the __storage_ptr__
 is correctly propagated to the result. For example, 
@@ -87,7 +87,7 @@ consider the following struct:
 If our store has a lot of customers,
 it may be desirable to use a __monotonic_resource__ when serializing
 `customer` objects to JSON. __value_from__ ensures that the
-correct memory resource is used: 
+correct __memory_resource__ is used: 
 
 [snippet_conv_9]
 
@@ -172,7 +172,7 @@ __value__:
 
 [snippet_conv_13]
 
-When first condition is met, the conversion will simply
+When the first condition is met, the conversion will simply
 return the object of type `T` stored within the __value__
 (e.g. using `jv.as_object()`, `jv.as_array()`, etc).
 When the second condition is met, the result of the conversion
@@ -188,7 +188,7 @@ Each of the following tables specify valid operations on a
 type or expression thereof meeting the requirement ['R].
 A requirement ['Req] prefixed with ['From/To] does not
 define a single requirement; it defines the two requirements
-['FromReq] and ['ToReq] which correspond with
+['FromReq] and ['ToReq] which correspond to
 __value_to__ and __value_from__, respectively.
 
 In each of the following:

@@ -24,10 +24,11 @@ modelled after __std_unordered_map__ with these unique properties:
 
 * The order of insertions is preserved, as long as there are no removals.
 
-* All inserted values will use the same memory resource as the container itself.
+* All inserted values will use the same __memory_resource__ as the container itself.
 
 An empty object may be constructed without incurring any memory allocations
-using the default memory resource. A __storage_ptr__ can also be explicitly specified:
+using the default memory resource. A __storage_ptr__ can also be explicitly
+specified:
 
 [snippet_objects_1]
 
@@ -50,16 +51,15 @@ which creates a null element if the key does not already exist:
 
 [snippet_objects_4]
 
-Internally, the container computes a hash table over the keys so that the
-complexity of lookups is O(1) on average.
+Internally, the container computes a hash table over the keys
+so that the complexity of lookups is in constant time, on average.
 
 For the complete listing of all available member functions and nested
 types, see the reference page for __object__.
 
-The __key_value_pair__ type, similarly to `std::pair` is tuple-like
-since it implements the tuple-like binding protocol necessary
-for C++17's structured bindings.
-Note that the tuple-like interface is made available in all
-the versions of C++ this library supports
+As with `std::pair`, the __key_value_pair__ type
+can be used with structured bindings in C++17.
+Specializations of `std::tuple_size`, `std::tuple_element`,
+and overloads of __get__ are all provided for this purpose.
 
 [endsect]

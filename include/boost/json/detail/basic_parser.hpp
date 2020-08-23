@@ -68,10 +68,10 @@ namespace json {
 \n
     @note
 
-    By default, only conforming JSON is accepted.
-    However, select non-compliant syntax can be
-    allowed by construction using a @ref parse_options
-    set to desired values.
+    By default, only conforming JSON using UTF-8
+    encoding is accepted. However, select non-compliant
+    syntax can be allowed by construction using a
+    @ref parse_options set to desired values.
 
     @par Handler
 

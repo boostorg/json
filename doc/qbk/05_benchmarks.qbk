@@ -10,7 +10,7 @@
 [section Benchmarks]
 
 In this section we compare the performance of Boost.JSON against the other
-two important libraries of interest, RapidJson which is known for its
+two important libraries of interest, RapidJSON which is known for its
 considerable performance and nlohmann which underperforms but is
 feature-rich. The bench program measures the throughput of serialization
 and parsing for the various JSON files located in the data directory. It

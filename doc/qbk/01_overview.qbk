@@ -1,5 +1,6 @@
 [/
     Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+    Copyright (c) 2020 Krystian Stasiowski (sdkrystian@gmail.com)
 
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -31,24 +32,27 @@ properties make JSON an ideal data-interchange language.
 
 [section Motivation]
 
-There are an overwhelming number of JSON libraries. A common theme 
-throughout is an emphasis on parsing performance or feature richness.
-This library uses a different approach: it provides a carefully
-designed JSON container, __value__, engineered from the ground up to be
-ideally suited as a vocabulary type. In particular it provides an interface
-which is stable, lightweight, and appropriate for use as parameter or
-return types in public interfaces.
+Boost.JSON offers these features:
 
-The design of the library also achieves these goals:
+* Fast compilation
+* Require only C++11
+* Safe, easy to use interface
+* Support stateful allocators
+* Fast parsing and serialization
+* Uniform interface on all C++ versions
+* Constant-time key lookup for objects
+* Strict incremental parser and serializer
+* Secure treatment of untrusted inputs
+* Options to allow non-standard JSON
 
-* Require only C++11.
-* Safe, easy to use interfaces.
-* Stateful allocator support.
-* Uniform interface on all C++ versions.
-* Key lookup in objects has constant average complexity.
-* Strict parser and serializer which work incrementally.
-* Security-aware treatment of untrusted inputs.
-* Fast compilation performance.
+Today, many C++ JSON libraries are available each with varying levels
+of quality, performance, and features. This library focuses on the most
+common and popular use-case for JSON: parsing and serializing to and
+from an in-memory container called __value__ which holds JSON types.
+This container is engineered from the ground up to be well suited as
+a vocabulary type appropriate for use in public interfaces. The parser
+and serializer are both highly performant, meeting or exceeding the
+benchmark performance of the best comparable libraries.
 
 [endsect]
 
@@ -56,26 +60,37 @@ The design of the library also achieves these goals:
 
 [section Requirements]
 
-Boost.JSON requires:
+With Boost:
 
-* [*C++11]: Robust support for most language features
+* [*C++11]: Robust support for most language features.
 
-Tested with these compilers: msvc-14.1+, gcc 4.8.4+, clang 3.6+.
+Without Boost:
+
+* [*C++17]: Support for __string_view__ and __memory_resource__,
+
+* definition of the macro `BOOST_JSON_STANDALONE`, and
+
+* if `BOOST_JSON_HEADER_ONLY` is not defined, addition of the file
+`src/src.cpp` to the target application.
+
+[endsect]
+
+[/-----------------------------------------------------------------------------]
+
+[section Configuration]
+
+Boost.JSON has been tested with the following compilers:
+msvc-14.1+, gcc 4.8.4+, and clang 3.6+.
 
 Typically a program will need to link statically or dynamically with the
-Boost.JSON library, which is either delivered with boost or built
-separately.
+Boost.JSON library, which is either delivered with Boost or built separately.
 Please visit the [@boost:/more/getting_started.html Boost documentation]
 for instructions on how to build and link with Boost libraries for your
-particular environment system.
+particular environment.
 
 Alternatively, Boost.JSON may be used in a header-only configuration by
 defining the macro `BOOST_JSON_HEADER_ONLY` and simply including the
-desired header files.
-
-Boost.JSON may also be used without the rest of Boost, simply by defining
-the macro `BOOST_JSON_STANDALONE`. This configuration requires C++17 or
-later, and the addition of the file `src/src.cpp` to the target application.
+desired header files. 
 
 [endsect]
 
@@ -86,13 +101,14 @@ later, and the addition of the file `src/src.cpp` to the target application.
 [variablelist
 
 [[
-    "Why doesn't the parser support comments"
+    "Isn't simdjson faster?"
 ][
-    The parser provided in this library adheres strictly to
-    [@https://www.ecma-international.org/ecma-262/10.0/index.html Standard ECMA-262].
-    Users who want to parse non-compliant JSON can copy the parser
-    implementation and make the necessary adjustments in their
-    derivative work.
+    These libraries are not comparable.
+    The output of the simdjson parser is a read-only structure. 
+    In other words, it can't be changed, and the only way to create one is
+    by parsing a JSON string. On the other hand, Boost.JSON allows you to
+    modify the container holding the parsed JSON, or even build a JSON
+    document from scratch through the container interface.
 ]]
 
 [[
@@ -102,7 +118,9 @@ later, and the addition of the file `src/src.cpp` to the target application.
     JSON functionality in their public interfaces to be interoperable,
     by providing a __value__ type that meets the bar for vocabulary
     type suitability. Parsing directly into a user defined type offers
-    some advantages but is not the goal of the library.
+    some advantages but is not the goal of the library. However, users
+    who wish to parse directly into their own types may implement a
+    custom handler for this purpose.
 ]]
 
 [[
@@ -116,7 +134,7 @@ later, and the addition of the file `src/src.cpp` to the target application.
 ]]
 
 [[
-    "Why __storage_ptr__ in constructors instead of `memory_resource&`?
+    "Why use __storage_ptr__ over __polymorphic_allocator__?
 ][
     __polymorphic_allocator__ treats the memory resource as a reference
     with respect to ownership. Boost.JSON uses a reference counted
@@ -129,11 +147,12 @@ later, and the addition of the file `src/src.cpp` to the target application.
 [[
     "Why __string__ instead of __std_string__?"
 ][
-    The string provided by the library uses the __storage_ptr__ allocator
-    model, has the same interface on all C++ versions, and has an
-    optimized class layout to keep the size of JSON values small.
-    __string__ also implements an improved interface that replaces
-    extraneous overloads with ones that use __string_view__.
+    The string provided by the library uses the __storage_ptr__
+    allocator model, has the same interface on all C++ versions,
+    and has an optimized class layout to keep the size of JSON
+    values small. __string__ also implements an improved interface
+    that replaces extraneous overloads with ones that
+    use __string_view__.
 ]]
 
 ]

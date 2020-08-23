@@ -509,8 +509,7 @@ parse(
 
     @throw system_error Thrown on failure.
 
-    @return A value representing the parsed JSON,
-    or a null if any error occurred.
+    @return A value representing the parsed JSON upon success.
 */
 BOOST_JSON_DECL
 value

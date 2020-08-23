@@ -1158,9 +1158,10 @@ public:
 
     /** Return a reference to an @ref object, changing the kind and replacing the contents.
 
-        The value is replaced with an empty @ref object
-        using the current memory resource, destroying the
-        previous contents.
+        The contents are replaced with an empty @ref object
+        using the current @ref memory_resource. All
+        previously obtained iterators and references
+        obtained beforehand are invalidated.
 
         @par Complexity
 
@@ -1921,7 +1922,7 @@ public:
         return obj_;
     }
 
-    /** Return a reference to the underlying `array`, or throw an exception.
+    /** Return a reference to the underlying @ref array, or throw an exception.
 
         If @ref is_array() is `true`, returns
         a reference to the underlying @ref array,

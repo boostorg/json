@@ -10,14 +10,15 @@
 [library Boost.JSON
     [id json]
     [quickbook 1.6]
-    [copyright 2019 Vinnie Falco]
+    [copyright 2019 - 2020 Vinnie Falco]
+    [copyright 2020 Krystian Stasiowski]
     [purpose JSON Library]
     [license
         Distributed under the Boost Software License, Version 1.0.
         (See accompanying file LICENSE_1_0.txt or copy at
         [@http://www.boost.org/LICENSE_1_0.txt])
     ]
-    [authors [Falco, Vinnie]]
+    [authors [Falco, Vinnie], [Stasiowski, Krystian]]
     [category template]
     [category generic]
 ]
@@ -48,6 +49,7 @@
 
 [def __array__                  [link json.ref.boost__json__array `array`]]
 [def __basic_parser__           [link json.ref.boost__json__basic_parser `basic_parser`]]
+[def __get__                    [link json.ref.boost__json__get `get`]]
 [def __has_value_from__         [link json.ref.boost__json__has_value_from `has_value_from`]]
 [def __has_value_to__           [link json.ref.boost__json__has_value_to `has_value_to`]]
 [def __key_value_pair__         [link json.ref.boost__json__key_value_pair `key_value_pair`]]
@@ -62,6 +64,7 @@
 [def __serializer__             [link json.ref.boost__json__serializer `serializer`]]
 [def __storage_ptr__            [link json.ref.boost__json__storage_ptr `storage_ptr`]]
 [def __string__                 [link json.ref.boost__json__string `string`]]
+[def __string_view__            [link json.ref.boost__json__string_view `string_view`]]
 [def __to_string__              [link json.ref.boost__json__to_string `to_string`]]
 [def __value__                  [link json.ref.boost__json__value `value`]]
 [def __value_builder_           [link json.ref.boost__json__value_builder `value_builder`]]
@@ -76,7 +79,6 @@
 [def __std_string__             [@https://en.cppreference.com/w/cpp/string/basic_string `std::string`]]
 [def __std_unordered_map__      [@https://en.cppreference.com/w/cpp/container/unordered_map `std::unordered_map`]]
 [def __std_vector__             [@https://en.cppreference.com/w/cpp/container/vector `std::vector`]]
-[def __string_view__            [@https://en.cppreference.com/w/cpp/string/basic_string_view `std::string_view`]]
 
 [/ Dingbats ]
 

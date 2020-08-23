@@ -47,10 +47,10 @@ may be used to check whether or not the value is a particular kind:
 [snippet_value_2]
 
 After a __value__ is constructed, its kind can change depending on what
-is assigned to it, or by calling functions like
+is assigned to it, or by calling functions such as
 [link json.ref.boost__json__value.emplace_array `value::emplace_array`] or
 [link json.ref.boost__json__value.emplace_bool `value::emplace_bool`]. In
-all cases, the previous contents of the value are destroyed:
+all cases, the previous contents of the __value__ are destroyed:
 
 [snippet_value_3]
 
@@ -138,10 +138,10 @@ all cases, the previous contents of the value are destroyed:
     ]
 ]
 
-The emplace members of `value` return a suitably typed reference to the
-underlying container representing the kind. For example, the call to
+The emplace members of __value__ return a suitably typed reference to the
+underlying container representing its kind. For example, the call to
 [link json.ref.boost__json__value.emplace_string `value::emplace_string`]
-above returns a
+in the previous example returns a
 [link json.ref.boost__json__string `string&`].
 The library provides a suitable type for each possible value of __kind__
 (except for nulls). This table shows the types corresponding to each kind:
@@ -209,7 +209,7 @@ The library provides a suitable type for each possible value of __kind__
 ]
 [
     [[link json.ref.boost__json__kind `kind::null`]]
-    []
+    [['---]]
     [
         A monostate value representing null.
     ]
@@ -217,12 +217,12 @@ The library provides a suitable type for each possible value of __kind__
 ]
 
 We can use the emplace return value to perform an assignment or
-to capture a reference to the underlying representation for later
+to capture a reference to the underlying element for later
 inspection or modification:
 
 [snippet_value_4]
 
-If the __kind__ of a value is already known, functions such as
+If the __kind__ of a __value__ is known, functions such as
 [link json.ref.boost__json__value.as_bool `value::as_bool`] or
 [link json.ref.boost__json__value.as_string `value::as_string`]
 may be used to obtain a reference to the underlying representation
@@ -231,7 +231,7 @@ without changing the existing value:
 [snippet_value_5]
 
 However, as shown above these functions throw an exception if the kind
-in the value does not match the kind implied by the function signature.
+in the __value__ does not match the kind denoted by the function signature.
 This can be used as a concise form of validation: access values as if
 they were the right type, but handle the resulting exception indicating
 if the schema of the JSON is not valid.

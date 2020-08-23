@@ -12,7 +12,7 @@
 [section:initializer_lists Initializer Lists]
 
 Initializer lists can be used to construct or
-assign objects of type __value__:
+assign a __value__:
 
 [snippet_init_list_1]
 
