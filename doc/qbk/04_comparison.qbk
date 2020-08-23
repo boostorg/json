@@ -10,7 +10,7 @@
 [section:comparison Comparison to Other Libraries]
 [block'''<?dbhtml stop-chunking?>''']
 
-There are a great many C++ JSON libraries, but two are noteworthy
+There exist many C++ JSON libraries, but two are particularly noteworthy
 for the purpose of comparison:
 [@https://rapidjson.org/ RapidJSON]
 and
@@ -104,7 +104,7 @@ class GenericObject;
 
 * __bad__ No incremental parsing, no incremental serialization.
 
-* __good__ Parsing and serialization performance is best-in-class.
+* __good__ Parsing and serialization performance is better than most other libraries.
 
 [/-----------------------------------------------------------------------------]
 

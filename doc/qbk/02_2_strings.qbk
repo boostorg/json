@@ -12,14 +12,13 @@
 
 [section:strings Using Strings]
 
-Modifiable sequences of characters are represented using instances of type
-__string__.
-These strings have a modified __string_view__ based version of the `std::string` interface, and
-operate the same way, except that:
+Modifiable sequences of characters are represented using objects of type __string__.
+The interface and functionality of __string__ is 
+the same as `std::basic_string` except that:
 
 * __string__ is not a class template,
 
-* __string__ only uses `char` as its character type,
+* __string__ uses `char` as its character type,
 
 * redundant overloads for string operations have been replaced
 with a __string_view__ based interface,

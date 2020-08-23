@@ -58,16 +58,18 @@ These types and functions are available:
 
 The library provides a ['default memory resource] object which wraps calls to the
 global allocation and deallocation functions (`operator new` and `operator delete`).
-This memory resource is not reference counted, and requires calls to deallocate.
-A default constructed __storage_ptr__ always refers to the default memory resource.
-When instances of library types are constructed without specifying a storage pointer,
-they will also use the default memory resource:
+This memory resource is not reference counted, and requires calls to deallocate to
+free storeage. Default constructed instances of __storage_ptr__, as well as 
+__storage_ptr__ which have been moved from will refer to the default memory resource
+until they are either destroyed or reassigned.
+Likewise, library types such as __value__, __object__, and __array__ will use the
+default memory resource if one is not specified when they are constructed: 
 
 [snippet_allocators_1]
 
 The default memory resource is suited for general purpose operations.
-It allocates only what is needed, and frees memory once reallocation is
-needed or upon destruction. It is a good choice for modifying a __value__
+It allocates only what is needed, and frees memory upon reallocation 
+or destruction. It is a good choice for modifying a __value__
 containing a JSON document.
 
 [heading Monotonic Resources]
@@ -75,7 +77,7 @@ containing a JSON document.
 The library provides another memory resource called __monotonic_resource__,
 optimized for parsing without subsequent modification. This implementation
 allocates large blocks of memory and then allocates within these blocks to satisfy
-allocation requests, only deallocating once the memory resource is destroyed.
+allocation requests, only ever deallocating when the memory resource is destroyed.
 Every block allocated by __monotonic_resource__ will be twice as large as the last,
 and the user can optionally provide a initial buffer for the resource to use before
 it makes any dynamic allocations:
@@ -88,7 +90,7 @@ using a monotonic resource:
 [snippet_allocators_3]
 
 In the above sample, ownership of the resource is shared by the returned
-value and all of its children. The monotonic resource is destroyed only when
+value and its nested elements. The monotonic resource is destroyed only when
 the last __value__ referencing it is destroyed.
 
 Monotonic resources are faster for parsing and insertion, but consume more memory
@@ -206,7 +208,8 @@ will have no effect:
 [snippet_allocators_14]
 
 The following is an example implementation of a custom memory resource
-that will log allocations and deallocations:
+that will log allocations and deallocations, and then forward them to 
+`::operator new` and `::operator delete`:
 
 [snippet_allocators_15]
 
