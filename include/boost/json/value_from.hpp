@@ -20,16 +20,24 @@ namespace json {
 
 /** Customization point tag.
     
-    The tag-type used to identify `tag_invoke` overloads
-    called by @ref value_from.
+    This tag type is used by the function
+    @ref value_from to select overloads
+    of `tag_invoke`.
 
     @note This type is empty; it has no members.
+
+    @see
+        @ref value_from
+        @ref value_to
+        @ref value_to_tag
 */
-struct value_from_tag
-#ifdef BOOST_JSON_DOCS
-    { }
+#ifndef BOOST_JSON_DOCS
+struct value_from_tag;
+#else
+// VFALCO Doc toolchain doesn't like
+// forward declared ordinary classes.
+struct value_from_tag {};
 #endif
-;
 
 /** Convert an object of type `T` to @ref value.
 
@@ -132,6 +140,8 @@ value_from(
     would find a single best `tag_invoke` function to call, 
     then this class template inherits from `std::true_type`;
     otherwise, it inherits from `std::false_type`.
+
+    @see @ref value_from
 */
 #ifdef BOOST_JSON_DOCS
 template<class T>

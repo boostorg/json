@@ -21,12 +21,44 @@ namespace boost {
 namespace json {
 
 #ifndef BOOST_JSON_DOCS
-
 class value;
 class object;
 class array;
 class string;
+#endif
 
+/** The type used in initializer lists.
+
+    This type is used in initializer lists for
+    lazy construction of and assignment to the
+    container types @ref value, @ref array,
+    and @ref object. The two types of initializer
+    lists used are:
+
+    @li `std::initializer_list<value_ref>` for
+    constructing or assigning a @ref value or
+    @ref array, and
+
+    @li `std::initializer_list<std::pair<string_view, value_ref>>`
+    for constructing or assigning an @ref object.
+
+    A `value_ref` uses reference semantics. Creation
+    of the actual container from the initializer
+    list is lazily deferred until the list is used.
+    This means that the @ref storage_ptr used to
+    construct a container can be specified after the
+    point where the initializer list is specified.
+
+    @note Never declare a variable of type
+    `std::initializer_list` except in function
+    parameter lists, otherwise the behavior may
+    be undefined.
+
+    @see
+        @ref value,
+        @ref array,
+        @ref object
+*/
 class value_ref
 {
     friend class value;
@@ -113,45 +145,64 @@ class value_ref
             std::is_same<T, std::nullptr_t>::value>;
 
     arg_type arg_;
+#ifndef BOOST_JSON_DOCS
+    // VFALCO doc toolchain erroneously
+    // displays private, anonymous unions as public
     union
     {
         func_type f_;
         cfunc_type cf_;
     };
+#endif
     what what_;
 
 public:
+    /// Constructor
     value_ref(
         value_ref const&) = default;
 
-    template<class T
-        , class = typename
+    /// Constructor
+#ifdef BOOST_JSON_DOCS
+    value_ref(string_view s) noexcept;
+#else
+    template<
+        class T
+        ,class = typename
             std::enable_if<
                 std::is_constructible<
                     string_view, T>::value>::type
     >
-    value_ref(T const& t)
+    value_ref(
+        T const& t) noexcept
         : arg_(string_view(t))
         , what_(what::str)
     {
 
     }
+#endif
 
+    /// Constructor
     template<class T>
-    value_ref(T const& t
+    value_ref(
+        T const& t
+#ifndef BOOST_JSON_DOCS
         ,typename std::enable_if<
             ! std::is_constructible<
                 string_view, T>::value &&
             ! std::is_same<bool, T>::value
-                >::type* = 0)
+                >::type* = 0
+#endif
+        ) noexcept
         : cf_{&from_const<T>, &t}
         , what_(what::cfunc)
     {
-
     }
 
+    /// Constructor
     template<class T>
-    value_ref(T&& t
+    value_ref(
+        T&& t
+#ifndef BOOST_JSON_DOCS
         ,typename std::enable_if<
             (! std::is_constructible<
                 string_view, T>::value ||
@@ -159,7 +210,9 @@ public:
             ! std::is_same<bool,
                 detail::remove_cvref<T>>::value &&
             std::is_same<T, detail::remove_cvref<T>>
-                ::value>::type* = 0)
+                ::value>::type* = 0
+#endif
+        ) noexcept
         : f_{&from_rvalue<
             detail::remove_cvref<T>>, &t}
         , what_(std::is_same<string, T>::value ?
@@ -167,17 +220,25 @@ public:
     {
     }
 
-    template<class Bool
+    /// Constructor
+#ifdef BOOST_JSON_DOCS
+    value_ref(bool b) noexcept;
+#else
+    template<
+        class Bool
         ,class = typename std::enable_if<
             std::is_same<Bool, bool>::value>::type
     >
-    value_ref(Bool b) noexcept
+    value_ref(
+        Bool b) noexcept
         : arg_(b)
         , cf_{&from_builtin<bool>, &arg_.bool_}
         , what_(what::cfunc)
     {
     }
+#endif
 
+    /// Constructor
     value_ref(
         std::initializer_list<
             value_ref> t) noexcept
@@ -186,6 +247,7 @@ public:
     {
     }
 
+    /// Constructor
     value_ref(short t) noexcept
         : arg_(t)
         , cf_{&from_builtin<short>, &arg_.short_}
@@ -193,6 +255,7 @@ public:
     {
     }
 
+    /// Constructor
     value_ref(int t) noexcept
         : arg_(t)
         , cf_{&from_builtin<int>, &arg_.int_}
@@ -200,78 +263,108 @@ public:
     {
     }
 
+    /// Constructor
     value_ref(long t) noexcept
         : arg_(t)
-        , cf_{&from_builtin<long>, &arg_.long_}
+        , cf_{&from_builtin<
+            long>, &arg_.long_}
         , what_(what::cfunc)
     {
     }
 
+    /// Constructor
     value_ref(long long t) noexcept
         : arg_(t)
-        , cf_{&from_builtin<long long>, &arg_.long_long_}
+        , cf_{&from_builtin<
+            long long>, &arg_.long_long_}
         , what_(what::cfunc)
     {
     }
 
+    /// Constructor
     value_ref(unsigned short t) noexcept
         : arg_(t)
-        , cf_{&from_builtin<unsigned short>, &arg_.ushort_}
+        , cf_{&from_builtin<
+            unsigned short>, &arg_.ushort_}
         , what_(what::cfunc)
     {
     }
 
+    /// Constructor
     value_ref(unsigned int t) noexcept
         : arg_(t)
-        , cf_{&from_builtin<unsigned int>, &arg_.uint_}
+        , cf_{&from_builtin<
+            unsigned int>, &arg_.uint_}
         , what_(what::cfunc)
     {
     }
 
+    /// Constructor
     value_ref(unsigned long t) noexcept
         : arg_(t)
-        , cf_{&from_builtin<unsigned long>, &arg_.ulong_}
+        , cf_{&from_builtin<
+            unsigned long>, &arg_.ulong_}
         , what_(what::cfunc)
     {
     }
 
+    /// Constructor
     value_ref(unsigned long long t) noexcept
         : arg_(t)
-        , cf_{&from_builtin<unsigned long long>, &arg_.ulong_long_}
+        , cf_{&from_builtin<
+            unsigned long long>, &arg_.ulong_long_}
         , what_(what::cfunc)
     {
     }
 
+    /// Constructor
     value_ref(float t) noexcept
         : arg_(t)
-        , cf_{&from_builtin<float>, &arg_.float_}
+        , cf_{&from_builtin<
+            float>, &arg_.float_}
         , what_(what::cfunc)
     {
     }
 
+    /// Constructor
     value_ref(double t) noexcept
         : arg_(t)
-        , cf_{&from_builtin<double>, &arg_.double_}
+        , cf_{&from_builtin<
+            double>, &arg_.double_}
         , what_(what::cfunc)
     {
     }
 
+    /// Constructor
     value_ref(long double t) noexcept
         : arg_(t)
-        , cf_{&from_builtin<long double>, &arg_.long_double_}
+        , cf_{&from_builtin<
+            long double>, &arg_.long_double_}
         , what_(what::cfunc)
     {
     }
 
+    /// Constructor
     value_ref(std::nullptr_t) noexcept
         : arg_(nullptr)
-        , cf_{&from_builtin<std::nullptr_t>, &arg_.nullptr_}
+        , cf_{&from_builtin<
+            std::nullptr_t>, &arg_.nullptr_}
         , what_(what::cfunc)
     {
     }
 
+#ifndef BOOST_JSON_DOCS
+// Not public
+//private:
+    // VFALCO Why is this needed?
+    /** Operator conversion to @ref value
+
+        This allows creation of a @ref value from
+        an initializer list element.
+    */
     BOOST_JSON_DECL
     operator value() const;
+#endif
 
 private:
     template<class T>
@@ -354,8 +447,6 @@ private:
             value_ref> init,
         storage_ptr const& sp);
 };
-
-#endif
 
 } // json
 } // boost

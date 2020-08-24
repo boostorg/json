@@ -162,8 +162,9 @@ public:
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
 
-        @return The parsed value. Ownership of this
-        value is transferred to the caller.       
+        @return A __value__ holding the result.
+        Ownership of this value is transferred
+        to the caller.       
     */
     BOOST_JSON_DECL
     value

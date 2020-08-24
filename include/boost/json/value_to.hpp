@@ -18,12 +18,18 @@
 namespace boost {
 namespace json {
 
-/** Customization point tag.
-    
-    The tag-type used to identify `tag_invoke` overloads
-    called by @ref value_to.
+/** Customization point tag type.
+
+    This tag type is used by the function
+    @ref value_to to select overloads
+    of `tag_invoke`.
 
     @note This type is empty; it has no members.
+
+    @see
+        @ref value_from
+        @ref value_from_tag
+        @ref value_to
 */
 template<class T>
 struct value_to_tag;
@@ -134,6 +140,8 @@ value_to(value const& jv)
     would find a single best `tag_invoke` function to call, 
     then this class template inherits from `std::true_type`;
     otherwise, it inherits from `std::false_type`.
+
+    @see @ref value_to
 */
 #ifdef BOOST_JSON_DOCS
 template<class T>
