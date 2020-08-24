@@ -14,7 +14,14 @@
 #ifndef BOOST_JSON_STANDALONE
 # include <boost/utility/string_view.hpp>
 #else
-# include <string_view>
+# if __has_include(<string_view>)
+#  include <string_view>
+#  if __cpp_lib_string_view < 201603L
+#   error Support for std::string_view is required to use Boost.JSON standalone
+#  endif
+# else
+#  error Header <string_view> is required to use Boost.JSON standalone
+# endif
 #endif
 #include <type_traits>
 
