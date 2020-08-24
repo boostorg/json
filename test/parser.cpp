@@ -12,6 +12,7 @@
 #include <boost/json/parser.hpp>
 
 #include <boost/json/monotonic_resource.hpp>
+#include <boost/json/parse.hpp>
 #include <boost/json/serializer.hpp>
 
 #include <sstream>

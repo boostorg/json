@@ -18,6 +18,7 @@
 #include <boost/json/monotonic_resource.hpp>
 #include <boost/json/number_cast.hpp>
 #include <boost/json/object.hpp>
+#include <boost/json/parse.hpp>
 #include <boost/json/parser.hpp>
 #include <boost/json/serializer.hpp>
 #include <boost/json/storage_ptr.hpp>

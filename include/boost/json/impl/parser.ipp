@@ -319,41 +319,6 @@ release()
     return p_.handler().vb.release();
 }
 
-//----------------------------------------------------------
-
-value
-parse(
-    string_view s,
-    error_code& ec,
-    storage_ptr sp)
-{
-    parser p;
-    p.reset(std::move(sp));
-    p.write(
-        s.data(),
-        s.size(),
-        ec);
-    if(! ec)
-        p.finish(ec);
-    if(ec)
-        return nullptr;
-    return p.release();
-}
-
-value
-parse(
-    string_view s,
-    storage_ptr sp)
-{
-    error_code ec;
-    auto jv = parse(
-        s, ec, std::move(sp));
-    if(ec)
-        BOOST_THROW_EXCEPTION(
-            system_error(ec));
-    return jv;
-}
-
 } // json
 } // boost
 

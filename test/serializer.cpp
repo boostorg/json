@@ -10,7 +10,7 @@
 // Test that header file is self-contained.
 #include <boost/json/serializer.hpp>
 
-#include <boost/json/parser.hpp>
+#include <boost/json/parse.hpp>
 #include <iostream>
 
 #include "parse-vectors.hpp"
