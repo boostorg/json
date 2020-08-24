@@ -1,4 +1,5 @@
 //
+// Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
 // Copyright (c) 2020 Krystian Stasiowski (sdkrystian@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -13,6 +14,7 @@
 #include <boost/json/detail/config.hpp>
 #include <boost/json/error.hpp>
 #include <boost/json/storage_ptr.hpp>
+#include <boost/json/string_view.hpp>
 #include <boost/json/value.hpp>
 
 namespace boost {
@@ -20,7 +22,7 @@ namespace json {
 
 /** Parse a string of JSON.
 
-    This function parses an entire single string in
+    This function parses an entire string in
     one step to produce a complete JSON object, returned
     as a @ref value. If the buffer does not contain a
     complete serialized JSON, an error occurs. In this
@@ -36,6 +38,9 @@ namespace json {
     Strong guarantee.
     Calls to `memory_resource::allocate` may throw.
 
+    @return A value representing the parsed JSON,
+    or a null if any error occurred.
+
     @param s The string to parse.
 
     @param ec Set to the error, if any occurred.
@@ -43,9 +48,6 @@ namespace json {
     @param sp The memory resource that the new value and all of
     its elements will use. If this parameter is omitted,
     the default memory resource is used.
-
-    @return A value representing the parsed JSON,
-    or a null if any error occurred.
 */
 BOOST_JSON_DECL
 value
@@ -56,7 +58,7 @@ parse(
 
 /** Parse a string of JSON.
 
-    This function parses an entire single string in
+    This function parses an entire string in
     one step to produce a complete JSON object, returned
     as a @ref value. If the buffer does not contain a
     complete serialized JSON, an error occurs. In this
@@ -72,6 +74,8 @@ parse(
     Strong guarantee.
     Calls to `memory_resource::allocate` may throw.
 
+    @return A value representing the parsed JSON upon success.
+    
     @param s The string to parse.
 
     @param sp The memory resource that the new value and all of
@@ -80,7 +84,6 @@ parse(
 
     @throw system_error Thrown on failure.
 
-    @return A value representing the parsed JSON upon success.
 */
 BOOST_JSON_DECL
 value

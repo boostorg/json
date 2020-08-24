@@ -29,7 +29,7 @@ fuzz_parser(string_view sv)
     // Take ownership of the resulting value.
     if(! ec)
     {
-        value jv = p.release();
+        value jv = p.release( ec );
         return jv.is_number();
     }
     return false;

@@ -44,7 +44,7 @@ public:
         if(BOOST_TEST(! ec))
             p.finish(ec);
         BOOST_TEST(! ec);
-        return p.release();
+        return p.release(ec);
     }
 
     void
@@ -118,7 +118,7 @@ public:
                     if(BOOST_TEST(! ec))
                         p.finish(ec);
                     if(BOOST_TEST(! ec))
-                        f(p.release(), po);
+                        f(p.release(ec), po);
                 }
             }
         }
@@ -276,7 +276,7 @@ public:
                         p.finish(ec);
                     if(BOOST_TEST(! ec))
                         check_round_trip(
-                            p.release());
+                            p.release(ec));
                 }   
             }
         }
@@ -305,7 +305,8 @@ public:
                 p.finish(ec);
             if(! BOOST_TEST(! ec))
                 return 0;
-            auto const jv = p.release();
+            auto const jv = p.release(ec);
+            BOOST_TEST(! ec);
             double const d = jv.as_double();
             grind_double(s, d);
             return d;
@@ -700,9 +701,9 @@ public:
         // release before done
         {
             parser p;
-            BOOST_TEST_THROWS(
-                p.release(),
-                std::logic_error);
+            error_code ec;
+            p.release(ec);
+            BOOST_TEST(ec == error::incomplete);
         }
 
         // reserve
@@ -716,16 +717,18 @@ public:
         {
             {
                 parser p;
+                error_code ec;
                 p.reset();
                 BOOST_TEST(p.write(
-                    "null", 4) == 4);
+                    "null", 4, ec) == 4);
+                BOOST_TEST(! ec);
             }
             {
                 parser p;
+                error_code ec;
                 p.reset();
-                BOOST_TEST_THROWS(
-                    p.write("x", 1),
-                    system_error);
+                p.write("x", 1, ec),
+                BOOST_TEST(ec);
             }
         }
     }
@@ -850,18 +853,8 @@ R"xx({
             p.finish(ec);
         if(BOOST_TEST(! ec))
         {
-            BOOST_TEST(to_string(p.release()) == out);
-        }
-        try
-        {
-            p.reset();
-            p.write(in.data(), in.size());
-            p.finish();
-            BOOST_TEST(to_string(p.release()) == out);
-        }
-        catch(std::exception const&)
-        {
-            BOOST_TEST_FAIL();
+            BOOST_TEST(to_string(p.release(ec)) == out);
+            BOOST_TEST(! ec);
         }
     }
 

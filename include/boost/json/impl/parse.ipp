@@ -1,4 +1,5 @@
 //
+// Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
 // Copyright (c) 2020 Krystian Stasiowski (sdkrystian@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -10,7 +11,6 @@
 #ifndef BOOST_JSON_IMPL_PARSE_IPP
 #define BOOST_JSON_IMPL_PARSE_IPP
 
-#include <boost/json/parse.hpp>
 #include <boost/json/parser.hpp>
 
 namespace boost {
@@ -32,7 +32,7 @@ parse(
         p.finish(ec);
     if(ec)
         return nullptr;
-    return p.release();
+    return p.release(ec);
 }
 
 value
