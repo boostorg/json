@@ -14,7 +14,14 @@
 #ifndef BOOST_JSON_STANDALONE
 # include <boost/container/pmr/memory_resource.hpp>
 #else
-# include <memory_resource>
+# if __has_include(<memory_resource>)
+#  include <memory_resource>
+#  if __cpp_lib_memory_resource < 201603L
+#   error Support for std::memory_resource is required to use Boost.JSON standalone
+#  endif
+# else
+#  error Header <memory_resource> is required to use Boost.JSON standalone
+# endif
 #endif
 
 namespace boost {
