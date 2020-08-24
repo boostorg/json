@@ -1,6 +1,0 @@
-[submodule "bench/lib/nlohmann"]
-	path = bench/lib/nlohmann
-	url = https://github.com/nlohmann/json.git
-[submodule "bench/lib/rapidjson"]
-	path = bench/lib/rapidjson
-	url = https://github.com/Tencent/rapidjson.git
