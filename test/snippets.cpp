@@ -733,17 +733,20 @@ usingParsing()
         //[snippet_parsing_4
 
         parser p;
+        error_code ec;
 
         // This must be called once before parsing every new JSON.
         p.reset();
 
         // Write the entire character buffer, indicating
         // to the parser that there is no more data.
-        p.write( "[1,2,3,4,5]", 11 );
-        p.finish();
+        p.write( "[1,2,3,4,5]", 11, ec );
+        
+        if( ! ec )
+            p.finish( ec );
 
         // Take ownership of the resulting value.
-        value jv = p.release();
+        value jv = p.release( ec );
 
         // At this point the parser may be re-used by calling p.reset() again.
 
@@ -770,7 +773,9 @@ usingParsing()
 
         // Take ownership of the resulting value.
         if(! ec)
-            value jv = p.release();
+            value jv = p.release( ec );
+
+        assert(! ec );
 
         // At this point the parser may be re-used by calling p.reset() again.
 
@@ -794,7 +799,7 @@ usingParsing()
                 p.finish( ec );
 
             // The value will use the monotonic resource created above
-            value jv = p.release();
+            value jv = p.release( ec );
         }
 
         //]
@@ -818,7 +823,9 @@ usingParsing()
 
         assert( ! ec );
 
-        value jv = p.release();
+        value jv = p.release( ec );
+
+        assert( ! ec );
 
         // The intermediate storage that was used
         // for the last value will be reused here.
@@ -830,7 +837,9 @@ usingParsing()
 
         assert( ! ec );
 
-        jv = p.release();
+        jv = p.release( ec );
+
+        assert( ! ec );
 
         //]
     }

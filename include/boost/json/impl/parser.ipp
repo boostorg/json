@@ -276,82 +276,21 @@ write(
     return n;
 }
 
-std::size_t
-parser::
-write(
-    char const* data,
-    std::size_t size)
-{
-    error_code ec;
-    auto const n =
-        write(data, size, ec);
-    if(ec)
-        BOOST_THROW_EXCEPTION(
-            system_error(ec));
-    return n;
-}
-
 void
 parser::
 finish(error_code& ec)
 {
-    p_.write(
-        false, nullptr, 0, ec);
-}
-
-void
-parser::
-finish()
-{
-    write(nullptr, 0);
+    p_.write(false, nullptr, 0, ec);
 }
 
 value
 parser::
-release()
+release(error_code& ec)
 {
-    // VFALCO Do we need to put the throw
-    // in a separate raise() function?
-    if(! p_.is_complete())
-        BOOST_THROW_EXCEPTION(
-            std::logic_error(
-                "no value"));
-    return p_.handler().vb.release();
-}
-
-//----------------------------------------------------------
-
-value
-parse(
-    string_view s,
-    error_code& ec,
-    storage_ptr sp)
-{
-    parser p;
-    p.reset(std::move(sp));
-    p.write(
-        s.data(),
-        s.size(),
-        ec);
-    if(! ec)
-        p.finish(ec);
-    if(ec)
-        return nullptr;
-    return p.release();
-}
-
-value
-parse(
-    string_view s,
-    storage_ptr sp)
-{
-    error_code ec;
-    auto jv = parse(
-        s, ec, std::move(sp));
-    if(ec)
-        BOOST_THROW_EXCEPTION(
-            system_error(ec));
-    return jv;
+    if(p_.is_complete())
+        return p_.handler().vb.release();
+    ec = error::incomplete;
+    return nullptr;
 }
 
 } // json

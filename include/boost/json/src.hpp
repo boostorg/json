@@ -32,6 +32,7 @@ in a translation unit of the program.
 #include <boost/json/impl/except.ipp>
 #include <boost/json/impl/monotonic_resource.ipp>
 #include <boost/json/impl/object.ipp>
+#include <boost/json/impl/parse.ipp>
 #include <boost/json/impl/parser.ipp>
 #include <boost/json/impl/serializer.ipp>
 #include <boost/json/impl/string.ipp>

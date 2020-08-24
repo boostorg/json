@@ -35,6 +35,7 @@ local SOURCES =
     monotonic_resource.cpp
     number_cast.cpp
     object.cpp
+    parse.cpp
     parser.cpp
     pilfer.cpp
     serializer.cpp

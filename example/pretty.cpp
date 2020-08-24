@@ -27,16 +27,21 @@ parse_file( char const* filename )
 {
     file f( filename, "r" );
     json::parser p;
+    json::error_code ec;
     p.reset();
     do
     {
         char buf[4096];
         auto const nread = f.read( buf, sizeof(buf) );
-        p.write( buf, nread );
+        p.write( buf, nread, ec );
     }
     while( ! f.eof() );
-    p.finish();
-    return p.release();
+    if( ec )
+        return nullptr;
+    p.finish( ec );
+    if( ec )
+        return nullptr;
+    return p.release( ec );
 }
 
 void

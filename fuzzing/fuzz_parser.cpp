@@ -29,8 +29,9 @@ fuzz_parser(string_view sv)
     // Take ownership of the resulting value.
     if(! ec)
     {
-        value jv = p.release();
-        return jv.is_number();
+        value jv = p.release( ec );
+        if(! ec )
+            return jv.is_number();
     }
     return false;
 }

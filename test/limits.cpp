@@ -11,6 +11,7 @@
 #include <boost/json/object.hpp>
 #include <boost/json/string.hpp>
 #include <boost/json/value.hpp>
+#include <boost/json/parse.hpp>
 #include <boost/json/parser.hpp>
 
 #include <vector>
