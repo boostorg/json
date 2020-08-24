@@ -76,11 +76,12 @@ containing a JSON document.
 
 The library provides another memory resource called __monotonic_resource__,
 optimized for parsing without subsequent modification. This implementation
-allocates large blocks of memory and then allocates within these blocks to satisfy
+acquires large blocks of memory and then allocates from within these blocks to satisfy
 allocation requests, only ever deallocating when the memory resource is destroyed.
 Every block allocated by __monotonic_resource__ will be twice as large as the last,
-and the user can optionally provide a initial buffer for the resource to use before
-it makes any dynamic allocations:
+and an initial buffer may be optionally provide for the resource to use before
+it makes any dynamic allocations. Once the initial buffer is exhausted, the 
+default memory resource will be used to allocate new blocks:
 
 [snippet_allocators_2]
 
