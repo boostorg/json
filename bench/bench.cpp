@@ -488,7 +488,8 @@ struct rapidjson_crt_impl : public any_impl
             CrtAllocator alloc;
             GenericDocument<
                 UTF8<>, CrtAllocator> d(&alloc);
-            d.Parse(s.data(), s.size());
+            d.Parse<kParseValidateEncodingFlag>(
+                s.data(), s.size());
         }
     }
 
@@ -526,7 +527,8 @@ struct rapidjson_memory_impl : public any_impl
         while(repeat--)
         {
             rapidjson::Document d;
-            d.Parse(s.data(), s.size());
+            d.Parse<rapidjson::kParseValidateEncodingFlag>(
+                s.data(), s.size());
         }
     }
 
