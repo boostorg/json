@@ -13,6 +13,7 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/error.hpp>
+#include <boost/json/parse_options.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/string_view.hpp>
 #include <boost/json/value.hpp>
@@ -48,13 +49,18 @@ namespace json {
     @param sp The memory resource that the new value and all of
     its elements will use. If this parameter is omitted,
     the default memory resource is used.
+
+    @param opt The options for the parser.
+
+    @see @ref parse_options
 */
 BOOST_JSON_DECL
 value
 parse(
     string_view s,
     error_code& ec,
-    storage_ptr sp = {});
+    storage_ptr sp = {},
+    const parse_options& opt = {});
 
 /** Parse a string of JSON.
 
@@ -82,14 +88,18 @@ parse(
     its elements will use. If this parameter is omitted,
     the default memory resource is used.
 
+    @param opt The options for the parser.
+
     @throw system_error Thrown on failure.
 
+    @see @ref parse_options
 */
 BOOST_JSON_DECL
 value
 parse(
     string_view s,
-    storage_ptr sp = {});
+    storage_ptr sp = {},
+    const parse_options& opt = {});
 
 } // json
 } // boost
