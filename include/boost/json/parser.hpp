@@ -16,7 +16,6 @@
 #include <boost/json/value_builder.hpp>
 #include <boost/json/string.hpp>
 #include <boost/json/detail/basic_parser.hpp>
-#include <boost/json/detail/raw_stack.hpp>
 #include <new>
 #include <string>
 #include <type_traits>

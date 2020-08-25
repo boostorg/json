@@ -562,8 +562,10 @@ struct nlohmann_impl : public any_impl
     parse(string_view s, std::size_t repeat) const override
     {
         while(repeat--)
-            nlohmann::json::parse(
+        {
+            auto jv = nlohmann::json::parse(
                 s.begin(), s.end());
+        }
     }
 
     void
