@@ -21,9 +21,10 @@ value
 parse(
     string_view s,
     error_code& ec,
-    storage_ptr sp)
+    storage_ptr sp,
+    const parse_options& opt)
 {
-    parser p;
+    parser p(opt);
     p.reset(std::move(sp));
     p.write(
         s.data(),
@@ -39,11 +40,12 @@ parse(
 value
 parse(
     string_view s,
-    storage_ptr sp)
+    storage_ptr sp,
+    const parse_options& opt)
 {
     error_code ec;
     auto jv = parse(
-        s, ec, std::move(sp));
+        s, ec, std::move(sp), opt);
     if(ec)
         BOOST_THROW_EXCEPTION(
             system_error(ec));
