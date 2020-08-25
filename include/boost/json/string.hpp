@@ -16,6 +16,7 @@
 #include <boost/json/string_view.hpp>
 #include <boost/json/detail/digest.hpp>
 #include <boost/json/detail/string_impl.hpp>
+#include <boost/json/detail/value.hpp>
 #include <boost/pilfer.hpp>
 #include <algorithm>
 #include <initializer_list>
@@ -58,6 +59,13 @@ class value;
 class string
 {
     friend class value;
+    friend struct detail::value_access;
+
+    inline
+    string(
+        char** key,
+        std::size_t len,
+        storage_ptr sp);
 
 public:
     /// The traits used to perform character operations

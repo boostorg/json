@@ -17,6 +17,8 @@
 #include <boost/json/detail/raw_stack.hpp>
 #include <stddef.h>
 
+#include <string> // VFALCO REMOVE
+
 namespace boost {
 namespace json {
 
@@ -67,20 +69,40 @@ namespace json {
 */
 class value_builder
 {
-    enum class state : char;
-
-    struct level
+    class stack
     {
-        std::uint32_t count;
-        char align;
-        state st;
+        storage_ptr sp_;
+        value* begin_ = nullptr;
+        value* top_ = nullptr;
+        value* end_ = nullptr;
+        // string starts at top_+1
+        std::size_t chars_ = 0;
+        bool run_dtors_ = false;
+
+    public:
+        inline ~stack();
+        inline stack(storage_ptr sp) noexcept;
+        inline void run_dtors(bool b) noexcept;
+        inline std::size_t size() const noexcept;
+        inline bool has_part();
+
+        inline void prepare();
+        inline void clear() noexcept;
+        inline void grow_one();
+        inline void grow(std::size_t nchars);
+        inline void save(std::size_t);
+        inline void append(string_view s);
+        template<class... Args>
+        value& push(Args&&... args);
+
+        inline void restore(std::size_t*) noexcept;
+        inline string_view release_string() noexcept;
+        inline value* release(std::size_t n) noexcept;
     };
 
+    stack st_;
+    std::size_t top_;
     storage_ptr sp_;
-    detail::raw_stack rs_;
-    std::uint32_t key_size_ = 0;
-    std::uint32_t str_size_ = 0;
-    level lev_;
 
 public:
     /** Destructor.
@@ -430,51 +452,6 @@ public:
     BOOST_JSON_DECL
     void
     insert_null();
-
-private:
-    inline
-    void
-    destroy() noexcept;
-
-    template<class T>
-    void
-    push(T const& t);
-
-    inline
-    void
-    push_chars(string_view s);
-
-    template<class... Args>
-    void
-    emplace_object(
-        Args&&... args);
-
-    template<class... Args>
-    void
-    emplace_array(
-        Args&&... args);
-
-    template<class... Args>
-    void
-    emplace(
-        Args&&... args);
-
-    template<class T>
-    void
-    pop(T& t);
-
-    inline
-    detail::unchecked_object
-    pop_object() noexcept;
-
-    inline
-    detail::unchecked_array
-    pop_array() noexcept;
-
-    inline
-    string_view
-    pop_chars(
-        std::size_t size) noexcept;
 };
 
 } // json

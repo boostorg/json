@@ -63,6 +63,15 @@ value(detail::unchecked_array&& ua)
 {
 }
 
+value::
+value(
+    char** key,
+    std::size_t len,
+    storage_ptr sp)
+    : str_(key, len, std::move(sp))
+{
+}
+
 template<class T, class>
 value&
 value::

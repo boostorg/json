@@ -68,35 +68,54 @@ clear() noexcept
 }
 
 // checks for dupes
+template<bool NeedDestroy>
 void
 object_impl::
-build() noexcept
+build(unchecked_object&& uo) noexcept
 {
-    // must work when table pointer is null
-    auto const first = begin();
-    for(auto last = end(); last > first;)
+    // insert all elements, keeping
+    // the last of any duplicate keys.
+    auto src = uo.release();
+    auto const end = src + 2 * uo.size();
+    auto dest = begin();
+    if(src == end)
+        return;
+    while(src != end)
     {
-        --last;
-        auto head = &bucket(last->key());
+        value_access::construct_key_value_pair(
+            dest, pilfer(src[0]), pilfer(src[1]));
+        if(NeedDestroy)
+        {
+            src[0].~value();
+            src[1].~value();
+        }
+        src += 2;
+        auto head = &bucket(dest->key());
         auto i = *head;
         while(i != null_index &&
-            get(i).key() != last->key())
+            get(i).key() != dest->key())
             i = next(get(i));
         if(i != null_index)
         {
             // handle duplicate
-            last->~value_type();
+            auto& dup = get(i);
+            next(*dest) = next(dup);
+            // don't bother checking if
+            // storage deallocate is null
+            dup.~key_value_pair();
+            // trivial relocate
             std::memcpy(
-                static_cast<void*>(last),
-                static_cast<void const*>(
-                    first + tab_->size - 1),
-                sizeof(*last));
-            --tab_->size;
-            head = &bucket(last->key());
+                reinterpret_cast<void*>(&dup),
+                    dest, sizeof(dup));
         }
-        next(*last) = *head;
-        *head = index_of(*last);
+        else
+        {
+            next(*dest) = *head;
+            *head = index_of(*dest);
+            ++dest;
+        }
     }
+    tab_->size = dest - begin();
 }
 
 // does not check for dupes

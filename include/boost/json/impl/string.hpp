@@ -16,6 +16,16 @@
 namespace boost {
 namespace json {
 
+string::
+string(
+    char** key,
+    std::size_t len,
+    storage_ptr sp)
+    : sp_(std::move(sp))
+    , impl_(key, len, sp_)
+{
+}
+
 template<class InputIt, class>
 string::
 string(

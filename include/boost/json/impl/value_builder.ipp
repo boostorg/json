@@ -18,59 +18,283 @@
 namespace boost {
 namespace json {
 
-//----------------------------------------------------------
-
-/*
-
-Stack Layout:
-    ... denotes 0 or more
-    <> denotes empty storage
-
-array
-    saved_state
-    std::size_t
-    state
-    value...
-    <value>
-
-object
-    saved_state
-    std::size_t
-    state   
-    value_type...
-    <value_type>
-
-key
-    (chars)...
-    std::size_t
-*/
-
-enum class value_builder::state : char
+value_builder::
+stack::
+~stack()
 {
-    need_reset, // reset() not called yet
-    begin,      // we have a storage_ptr
+    clear();
+    if(begin_)
+        sp_->deallocate(
+            begin_,
+            (end_ - begin_) *
+                sizeof(value));
+}
 
-    // These states indicate what is
-    // currently at top of the stack.
+value_builder::
+stack::
+stack(storage_ptr sp) noexcept
+    : sp_(std::move(sp))
+{
+}
 
-    top,        // top value, constructed if lev_.count==1
-    arr,        // empty array value
-    obj,        // empty object value
-    key,        // complete key
-};
+void
+value_builder::
+stack::
+run_dtors(bool b) noexcept
+{
+    run_dtors_ = b;
+}
+
+std::size_t
+value_builder::
+stack::
+size() const noexcept
+{
+    return top_ - begin_;
+}
+
+bool
+value_builder::
+stack::
+has_part()
+{
+    return chars_ != 0;
+}
+
+//---
+
+void
+value_builder::
+stack::
+prepare()
+{
+    if(begin_)
+        return;
+    // VFALCO is this the right number?
+    auto const initial_size = 16;
+    begin_ = reinterpret_cast<
+        value*>(sp_->allocate(
+            initial_size * sizeof(value)));
+    top_ = begin_;
+    end_ = begin_ + initial_size;
+}
+
+// destroy the values but
+// not the stack allocation.
+void
+value_builder::
+stack::
+clear() noexcept
+{
+    if(top_ != begin_)
+    {
+        if(run_dtors_)
+            for(auto it = top_;
+                it-- != begin_;)
+                it->~value();
+        top_ = begin_;
+    }
+    chars_ = 0;
+}
+
+// make room for at least one more value
+void
+value_builder::
+stack::
+grow_one()
+{
+    BOOST_ASSERT(begin_);
+    BOOST_ASSERT(chars_ == 0);
+    std::size_t const capacity =
+        end_ - begin_;
+    // must be power of 2
+    BOOST_ASSERT((capacity &
+        (capacity - 1)) == 0);
+    // VFALCO check overflow here
+    std::size_t new_cap = 2 * capacity;
+    BOOST_ASSERT(
+        new_cap - capacity >= 1);
+    auto const begin =
+        reinterpret_cast<value*>(
+            sp_->allocate(
+                new_cap * sizeof(value)));
+    std::memcpy(
+        reinterpret_cast<char*>(begin),
+        reinterpret_cast<char*>(begin_),
+        size() * sizeof(value));
+    sp_->deallocate(begin_,
+        capacity * sizeof(value));
+    // book-keeping
+    top_ = begin + (top_ - begin_);
+    end_ = begin + new_cap;
+    begin_ = begin;
+}
+
+// make room for nchars additional characters.
+void
+value_builder::
+stack::
+grow(std::size_t nchars)
+{
+    BOOST_ASSERT(begin_);
+    // needed capacity in values
+    std::size_t const needed_cap =
+        size() +
+        1 +
+        ((chars_ + nchars +
+            sizeof(value) - 1) /
+                sizeof(value));
+    std::size_t const capacity =
+        end_ - begin_;
+    // must be power of 2
+    BOOST_ASSERT((capacity &
+        (capacity - 1)) == 0);
+    BOOST_ASSERT(
+        needed_cap > capacity);
+    // VFALCO check overflow here
+    std::size_t new_cap = capacity;
+    while(new_cap < needed_cap)
+        new_cap <<= 1;
+    auto const begin = reinterpret_cast<
+        value*>(sp_->allocate(
+            new_cap * sizeof(value)));
+    std::size_t amount =
+        size() * sizeof(value);
+    if(chars_ > 0)
+        amount += sizeof(value) + chars_;
+    std::memcpy(
+        reinterpret_cast<char*>(begin),
+        reinterpret_cast<char*>(begin_),
+        amount);
+    sp_->deallocate(begin_,
+        capacity * sizeof(value));
+    // book-keeping
+    top_ = begin + (top_ - begin_);
+    end_ = begin + new_cap;
+    begin_ = begin;
+}
+
+void
+value_builder::
+stack::
+save(std::size_t n)
+{
+    BOOST_ASSERT(chars_ == 0);
+    if(top_ >= end_)
+        grow(0);
+    // use default storage here to
+    // avoid needless refcounting
+    ::new(top_) value(n);
+    ++top_;
+}
+
+void
+value_builder::
+stack::
+append(string_view s)
+{
+    std::size_t const bytes_avail =
+        reinterpret_cast<
+            char const*>(end_) -
+        reinterpret_cast<
+            char const*>(top_);
+    // make sure there is room for
+    // pushing one more value without
+    // clobbering the string.
+    if(sizeof(value) + chars_ +
+            s.size() > bytes_avail)
+        grow(s.size());
+
+    // copy the new piece
+    std::memcpy(
+        reinterpret_cast<char*>(
+            top_ + 1) + chars_,
+        s.data(), s.size());
+    chars_ += s.size();
+
+    // ensure a pushed value cannot
+    // clobber the released string.
+    BOOST_ASSERT(
+        reinterpret_cast<char*>(
+            top_ + 1) + chars_ <=
+        reinterpret_cast<char*>(
+            end_));
+}
+
+template<class... Args>
+value&
+value_builder::
+stack::
+push(Args&&... args)
+{
+    BOOST_ASSERT(chars_ == 0);
+    if(top_ >= end_)
+        grow_one();
+    value& jv = detail::value_access::
+        construct_value(top_,
+            std::forward<Args>(args)...);
+    ++top_;
+    return jv;
+}
+
+//---
+
+void
+value_builder::
+stack::
+restore(std::size_t* n) noexcept
+{
+    BOOST_ASSERT(chars_ == 0);
+    BOOST_ASSERT(top_ > begin_);
+    auto p = --top_;
+    BOOST_ASSERT(p->is_uint64());
+    *n = p->get_uint64();
+    //p->~value(); // not needed
+}
+
+string_view
+value_builder::
+stack::
+release_string() noexcept
+{
+    // ensure a pushed value cannot
+    // clobber the released string.
+    BOOST_ASSERT(
+        reinterpret_cast<char*>(
+            top_ + 1) + chars_ <=
+        reinterpret_cast<char*>(
+            end_));
+    auto const n = chars_;
+    chars_ = 0;
+    return { reinterpret_cast<
+        char const*>(top_ + 1), n };
+}
+
+// transfer ownership of the top n
+// elements of the stack to the caller
+value*
+value_builder::
+stack::
+release(std::size_t n) noexcept
+{
+    BOOST_ASSERT(n <= size());
+    BOOST_ASSERT(chars_ == 0);
+    top_ -= n;
+    return top_;
+}
+
+//----------------------------------------------------------
 
 value_builder::
 ~value_builder()
 {
-    destroy();
 }
 
 value_builder::
 value_builder(
     storage_ptr sp) noexcept
-    : rs_(std::move(sp))
+    : st_(std::move(sp))
 {
-    lev_.st = state::need_reset;
 }
 
 void
@@ -81,12 +305,14 @@ reserve(std::size_t n)
     try
     {
 #endif
-        rs_.reserve(n);
+        // VFALCO TODO
+        // st_.reserve(n);
+        (void)n;
 #ifndef BOOST_NO_EXCEPTIONS
     }
     catch(std::bad_alloc const&)
     {
-        // squelch the exception, per contract
+        // silence the exception, per contract
     }
 #endif
 }
@@ -97,65 +323,39 @@ reset(storage_ptr sp) noexcept
 {
     clear();
     sp_ = std::move(sp);
-    lev_.st = state::begin;
+    st_.prepare();
 
-    // reset() must be called before
-    // building every new top level value.
-    BOOST_ASSERT(lev_.st == state::begin);
-
-    lev_.count = 0;
-    lev_.align = 0;
-    key_size_ = 0;
-    str_size_ = 0;
-
-    // The top level `value` is kept
-    // inside a notional 1-element array.
-    rs_.add(sizeof(value));
-    lev_.st = state::top;
+    // `stack` needs this
+    // to clean up correctly
+    st_.run_dtors(
+        ! sp_.is_not_counted_and_deallocate_is_null());
 }
 
 value
 value_builder::
 release()
 {
-    // If this goes off, then an
-    // array or object was never closed.
-    BOOST_ASSERT(lev_.st == state::top);
-    BOOST_ASSERT(lev_.count == 1);
-
-    auto ua = pop_array();
-    BOOST_ASSERT(rs_.empty());
-    union U
-    {
-        value v;
-        U(){}
-        ~U(){}
-    };
-    U u;
-    ua.relocate(&u.v);
-    lev_.st = state::need_reset;
-
-    // give up the resource in case
-    // it uses shared ownership.
+    // give up shared ownership
     sp_ = {};
 
-    return pilfer(u.v);
+    if(st_.size() == 1)
+        return pilfer(*st_.release(1));
+
+    // This means the caller did not
+    // cause a single top level element
+    // to be produced.
+    throw std::logic_error("no value");
 }
 
 void
 value_builder::
 clear() noexcept
 {
-    destroy();
-    rs_.clear();
-    lev_.count = 0;
-    key_size_ = 0;
-    str_size_ = 0;
-    lev_.st = state::need_reset;
-
-    // give up the resource in case
-    // it uses shared ownership.
+    // give up shared ownership
     sp_ = {};
+
+    st_.clear();
+    top_ = 0;
 }
 
 //----------------------------------------------------------
@@ -164,59 +364,44 @@ void
 value_builder::
 begin_array()
 {
-    // prevent splits from exceptions
-    rs_.prepare(
-        sizeof(level) +
-        sizeof(value) +
-        alignof(value) - 1);
-    push(lev_);
-    lev_.align =
-        detail::align_to<value>(rs_);
-    rs_.add(sizeof(value));
-    lev_.count = 0;
-    lev_.st = state::arr;
+    st_.save(top_);
+    top_ = st_.size();
 }
 
 void
 value_builder::
 end_array()
 {
-    BOOST_ASSERT(
-        lev_.st == state::arr);
-    auto ua = pop_array();
-    rs_.subtract(lev_.align);
-    pop(lev_);
-    emplace(std::move(ua));
+    auto const n =
+        st_.size() - top_;
+    detail::unchecked_array ua(
+        st_.release(n), n, sp_);
+    st_.restore(&top_);
+    st_.push(std::move(ua));
 }
 
 void
 value_builder::
 begin_object()
 {
-    // prevent splits from exceptions
-    rs_.prepare(
-        sizeof(level) +
-        sizeof(object::value_type) +
-        alignof(object::value_type) - 1);
-    push(lev_);
-    lev_.align = detail::align_to<
-        object::value_type>(rs_);
-    rs_.add(sizeof(
-        object::value_type));
-    lev_.count = 0;
-    lev_.st = state::obj;
+    st_.push(top_);
+    top_ = st_.size();
 }
 
 void
 value_builder::
 end_object()
 {
+    // must be even
     BOOST_ASSERT(
-        lev_.st == state::obj);
-    auto uo = pop_object();
-    rs_.subtract(lev_.align);
-    pop(lev_);
-    emplace(std::move(uo));
+        ((st_.size() - top_) & 1) == 0);
+
+    auto const n =
+        st_.size() - top_;
+    detail::unchecked_object uo(
+        st_.release(n), n/2, sp_);
+    st_.restore(&top_);
+    st_.push(std::move(uo));
 }
 
 void
@@ -224,9 +409,7 @@ value_builder::
 insert_key_part(
     string_view s)
 {
-    push_chars(s);
-    key_size_ += static_cast<
-        std::uint32_t>(s.size());
+    st_.append(s);
 }
 
 void
@@ -234,14 +417,24 @@ value_builder::
 insert_key(
     string_view s)
 {
-    BOOST_ASSERT(
-        lev_.st == state::obj);
-    push_chars(s);
-    key_size_ += static_cast<
-        std::uint32_t>(s.size());
-    push(key_size_);
-    key_size_ = 0;
-    lev_.st = state::key;
+    if(! st_.has_part())
+    {
+        // fast path
+        char* dest = nullptr;
+        st_.push(&dest, s.size(), sp_);
+        std::memcpy(
+            dest, s.data(), s.size());
+        return;
+    }
+    auto part = st_.release_string();
+
+    char* dest = nullptr;
+    st_.push(&dest,
+        part.size() + s.size(), sp_);
+    std::memcpy(dest,
+        part.data(), part.size());
+    std::memcpy(dest + part.size(),
+        s.data(), s.size());
 }
 
 void
@@ -249,9 +442,7 @@ value_builder::
 insert_string_part(
     string_view s)
 {
-    push_chars(s);
-    str_size_ += static_cast<
-        std::uint32_t>(s.size());
+    st_.append(s);
 }
 
 void
@@ -259,27 +450,29 @@ value_builder::
 insert_string(
     string_view s)
 {
-    if(str_size_ == 0)
+    if(! st_.has_part())
     {
         // fast path
-        emplace(s, sp_);
+        st_.push(s, sp_);
         return;
     }
+    auto part = st_.release_string();
 
-    string str(sp_);
-    auto const sv =
-        pop_chars(str_size_);
-    str_size_ = 0;
+    // VFALCO We could add a special
+    // private ctor to string that just
+    // creates uninitialized space,
+    // to reduce member function calls.
+    auto& str = st_.push(
+        string_kind, sp_).get_string();
     str.reserve(
-        sv.size() + s.size());
+        part.size() + s.size());
     std::memcpy(
         str.data(),
-        sv.data(), sv.size());
+        part.data(), part.size());
     std::memcpy(
-        str.data() + sv.size(),
+        str.data() + part.size(),
         s.data(), s.size());
-    str.grow(sv.size() + s.size());
-    emplace(std::move(str), sp_);
+    str.grow(part.size() + s.size());
 }
 
 void
@@ -287,7 +480,7 @@ value_builder::
 insert_int64(
     int64_t i)
 {
-    emplace(i, sp_);
+    st_.push(i, sp_);
 }
 
 void
@@ -295,7 +488,7 @@ value_builder::
 insert_uint64(
     uint64_t u)
 {
-    emplace(u, sp_);
+    st_.push(u, sp_);
 }
 
 void
@@ -303,7 +496,7 @@ value_builder::
 insert_double(
     double d)
 {
-    emplace(d, sp_);
+    st_.push(d, sp_);
 }
 
 void
@@ -311,230 +504,14 @@ value_builder::
 insert_bool(
     bool b)
 {
-    emplace(b, sp_);
+    st_.push(b, sp_);
 }
 
 void
 value_builder::
 insert_null()
 {
-    emplace(nullptr, sp_);
-}
-
-//----------------------------------------------------------
-
-void
-value_builder::
-destroy() noexcept
-{
-    if(key_size_ > 0)
-    {
-        // remove partial key
-        BOOST_ASSERT(
-            lev_.st == state::obj);
-        BOOST_ASSERT(
-            str_size_ == 0);
-        rs_.subtract(key_size_);
-        key_size_ = 0;
-    }
-    else if(str_size_ > 0)
-    {
-        // remove partial string
-        rs_.subtract(str_size_);
-        str_size_ = 0;
-    }
-    // unwind the rest
-    do
-    {
-        switch(lev_.st)
-        {
-        case state::need_reset:
-            BOOST_ASSERT(
-                rs_.empty());
-            break;
-
-        case state::begin:
-            BOOST_ASSERT(
-                rs_.empty());
-            break;
-
-        case state::top:
-            if(lev_.count > 0)
-            {
-                BOOST_ASSERT(
-                    lev_.count == 1);
-                auto ua =
-                    pop_array();
-                BOOST_ASSERT(
-                    ua.size() == 1);
-                BOOST_ASSERT(
-                    rs_.empty());
-            }
-            else
-            {
-                // never parsed a value
-                rs_.subtract(
-                    sizeof(value));
-                BOOST_ASSERT(
-                    rs_.empty());
-            }
-            break;
-
-        case state::arr:
-        {
-            pop_array();
-            rs_.subtract(lev_.align);
-            pop(lev_);
-            break;
-        }
-
-        case state::obj:
-        {
-            pop_object();
-            rs_.subtract(lev_.align);
-            pop(lev_);
-            break;
-        }
-
-        case state::key:
-        {
-            std::uint32_t key_size;
-            pop(key_size);
-            pop_chars(key_size);
-            lev_.st = state::obj;
-            break;
-        }
-        }
-    }
-    while(! rs_.empty());
-}
-
-template<class T>
-void
-value_builder::
-push(T const& t)
-{
-    std::memcpy(
-        rs_.push(sizeof(T)),
-        &t, sizeof(T));
-}
-
-void
-value_builder::
-push_chars(string_view s)
-{
-    std::memcpy(
-        rs_.push(s.size()),
-        s.data(), s.size());
-}
-
-template<class... Args>
-void
-value_builder::
-emplace_object(
-    Args&&... args)
-{
-    union U
-    {
-        object::value_type v;
-        U(){}
-        ~U(){}
-    };
-    U u;
-    // perform stack reallocation up-front
-    // VFALCO This is more than we need
-    rs_.prepare(sizeof(object::value_type));
-    std::uint32_t key_size;
-    pop(key_size);
-    auto const key = pop_chars(key_size);
-    lev_.st = state::obj;
-    BOOST_ASSERT((rs_.top() %
-        alignof(object::value_type)) == 0);
-    ::new(rs_.behind(
-        sizeof(object::value_type)))
-            object::value_type(
-        key, std::forward<Args>(args)...);
-    rs_.add_unchecked(sizeof(u.v));
-    ++lev_.count;
-}
-
-template<class... Args>
-void
-value_builder::
-emplace_array(Args&&... args)
-{
-    // prevent splits from exceptions
-    rs_.prepare(sizeof(value));
-    BOOST_ASSERT((rs_.top() %
-        alignof(value)) == 0);
-    ::new(rs_.behind(sizeof(value))) value(
-        std::forward<Args>(args)...);
-    rs_.add_unchecked(sizeof(value));
-    ++lev_.count;
-}
-
-template<class... Args>
-void
-value_builder::
-emplace(
-    Args&&... args)
-{
-    if(lev_.st == state::key)
-    {
-        emplace_object(
-            std::forward<Args>(args)...);
-        return;
-    }
-    emplace_array(
-        std::forward<Args>(args)...);
-}
-
-template<class T>
-void
-value_builder::
-pop(T& t)
-{
-    std::memcpy(&t,
-        rs_.pop(sizeof(T)),
-        sizeof(T));
-}
-
-detail::unchecked_object
-value_builder::
-pop_object() noexcept
-{
-    rs_.subtract(sizeof(
-        object::value_type));
-    if(lev_.count == 0)
-        return { nullptr, 0, sp_ };
-    auto const n = lev_.count * sizeof(
-        object::value_type);
-    return { reinterpret_cast<
-        object::value_type*>(rs_.pop(n)),
-        lev_.count, sp_ };
-}
-
-detail::unchecked_array
-value_builder::
-pop_array() noexcept
-{
-    rs_.subtract(sizeof(value));
-    if(lev_.count == 0)
-        return { nullptr, 0, sp_ };
-    auto const n =
-        lev_.count * sizeof(value);
-    return { reinterpret_cast<value*>(
-        rs_.pop(n)), lev_.count, sp_ };
-}
-
-string_view
-value_builder::
-pop_chars(
-    std::size_t size) noexcept
-{
-    return {
-        reinterpret_cast<char const*>(
-            rs_.pop(size)), size };
+    st_.push(nullptr, sp_);
 }
 
 } // json
