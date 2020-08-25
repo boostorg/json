@@ -17,27 +17,6 @@ namespace boost {
 namespace json {
 namespace detail {
 
-struct next_access
-{
-    using index_t = std::uint32_t;
-
-    static
-    inline
-    index_t&
-    get(key_value_pair& e) noexcept
-    {
-        return e.next_;
-    }
-
-    static
-    inline
-    index_t
-    get(key_value_pair const& e) noexcept
-    {
-        return e.next_;
-    }
-};
-
 void
 object_impl::
 remove(
@@ -269,7 +248,7 @@ object_impl::
 next(value_type& e) noexcept ->
     index_t&
 {
-    return next_access::get(e);
+    return value_access::next(e);
 }
 
 auto
@@ -277,7 +256,7 @@ object_impl::
 next(value_type const& e) noexcept ->
     index_t
 {
-    return next_access::get(e);
+    return value_access::next(e);
 }
 
 //----------------------------------------------------------
@@ -285,19 +264,17 @@ next(value_type const& e) noexcept ->
 unchecked_object::
 ~unchecked_object()
 {
-    if(data_)
-        destroy(data_, size_);
-}
-
-void
-unchecked_object::
-relocate(object::value_type* dest) noexcept
-{
-    if(size_ > 0)
-        std::memcpy(
-            static_cast<void*>(dest), data_,
-            size_ * sizeof(object::value_type));
-    data_ = nullptr;
+    if( data_ &&
+        ! sp_.is_not_counted_and_deallocate_is_null())
+    {
+        value* p = data_;
+        while(size_--)
+        {
+            p[0].~value();
+            p[1].~value();
+            p += 2;
+        }
+    }
 }
 
 } // detail

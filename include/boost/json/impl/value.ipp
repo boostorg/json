@@ -368,12 +368,24 @@ destroy() noexcept
 //----------------------------------------------------------
 
 key_value_pair::
+key_value_pair(
+    pilfered<json::value> key,
+    pilfered<json::value> value) noexcept
+    : value_(value)
+{
+    std::size_t len;
+    key_ = detail::value_access::release_key(key.get(), len);
+    len_ = static_cast<std::uint32_t>(len);
+}
+
+key_value_pair::
 ~key_value_pair()
 {
     auto const& sp = value_.storage();
     if(sp.is_not_counted_and_deallocate_is_null())
         return;
-    sp->deallocate(key_, len_ + 1, 1);
+    sp->deallocate(const_cast<char*>(key_),
+        len_ + 1, 1);
 }
 
 key_value_pair::

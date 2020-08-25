@@ -196,7 +196,7 @@ public:
         std::size_t new_size,
         std::size_t capacity);
 
-    char*
+    char const*
     release_key(
         std::size_t& n) noexcept
     {
@@ -230,6 +230,8 @@ public:
                 s_.k == key_string_);
             // VFALCO unfortunately the key string
             // kind increases the cost of the destructor.
+            // This function should be skipped when using
+            // monotonic_resource.
             sp->deallocate(k_.s, k_.n + 1);
         }
     }
