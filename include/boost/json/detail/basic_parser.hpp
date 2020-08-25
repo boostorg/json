@@ -189,9 +189,6 @@ class basic_parser
     number num_;
     error_code ec_;
     detail::stack st_;
-    std::size_t max_depth_ = 32;
-    // how many levels deeper the parser can go
-    std::size_t depth_ = max_depth_;
     detail::utf8_sequence seq_;
     unsigned u1_;
     unsigned u2_;
@@ -199,6 +196,8 @@ class basic_parser
     bool complete_ = false; // true on complete parse
     const char* end_;
     parse_options opt_;
+    // how many levels deeper the parser can go
+    std::size_t depth_ = opt_.max_depth;
 
     inline static bool is_control(char c) noexcept;
     inline static char hex_digit(char c) noexcept;
@@ -408,38 +407,7 @@ public:
     std::size_t
     depth() const noexcept
     {
-        return max_depth_ - depth_;
-    }
-
-    /** Returns the maximum allowed depth of input JSON.
-
-        The maximum allowed depth may be configured.
-    */
-    std::size_t
-    max_depth() const noexcept
-    {
-        return max_depth_;
-    }
-
-    /** Set the maximum allowed depth of input JSON.
-
-        When the maximum depth is exceeded, parser
-        operations will return @ref error::too_deep.
-
-        @par Preconditions
-
-        @ref write has not been called since
-        the last call to @ref reset.
-
-        @param levels The maximum depth.
-    */
-    void
-    max_depth(unsigned long levels) noexcept
-    {
-        // Cannot change depth mid-parse
-        BOOST_ASSERT(st_.empty());
-
-        max_depth_ = levels;
+        return opt_.max_depth - depth_;
     }
 
     /** Reset the state, to parse a new document.

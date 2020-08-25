@@ -596,15 +596,12 @@ public:
         // depth
         {
             error_code ec;
-            parser p;
+            parse_options opt;
+            opt.max_depth = 0;
+            parser p(opt);
             p.reset();
             BOOST_TEST(
                 p.depth() == 0);
-            BOOST_TEST(
-                p.max_depth() > 0);
-            p.max_depth(0);
-            BOOST_TEST(
-                p.max_depth() == 0);
             p.write("[]", 2, ec);
             BOOST_TEST(
                 ec == error::too_deep);
@@ -668,15 +665,12 @@ public:
         // depth
         {
             error_code ec;
-            parser p;
+            parse_options opt;
+            opt.max_depth = 0;
+            parser p(opt);
             p.reset();
             BOOST_TEST(
                 p.depth() == 0);
-            BOOST_TEST(
-                p.max_depth() > 0);
-            p.max_depth(0);
-            BOOST_TEST(
-                p.max_depth() == 0);
             p.write("{}", 2, ec);
             BOOST_TEST(
                 ec == error::too_deep);
