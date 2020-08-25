@@ -1357,7 +1357,7 @@ public:
     {
         return static_cast<json::kind>(
             static_cast<unsigned char>(
-                nul_.k) & 0x7f);
+                nul_.k) & 0x3f);
     }
 
     /** Returns true if this is an `object`.

@@ -71,6 +71,22 @@ string_impl(
     }
 }
 
+// construct a key, unchecked
+string_impl::
+string_impl(
+    char** dest,
+    std::size_t len,
+    storage_ptr const& sp)
+{
+    BOOST_ASSERT(len <= max_size());
+    k_.k = key_string_;
+    k_.n = static_cast<
+        std::uint32_t>(len);
+    *dest = reinterpret_cast<
+        char*>(sp->allocate(len + 1));
+    *dest[len] = 0; // null term
+}
+
 std::uint32_t
 string_impl::
 growth(

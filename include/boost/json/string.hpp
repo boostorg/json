@@ -109,8 +109,6 @@ private:
             std::iterator_traits<T>::value_type,
             char>::value>::type;
 
-    static constexpr std::size_t mask_ = 0x0f;
-
     storage_ptr sp_; // must come first
     detail::string_impl impl_;
 

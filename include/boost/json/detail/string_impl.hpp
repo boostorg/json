@@ -55,6 +55,14 @@ class string_impl
             ((unsigned char)
             kind::string) | 0x80);
 
+    static
+    constexpr
+    kind
+    key_string_ =
+        static_cast<kind>(
+            ((unsigned char)
+            kind::string) | 0x40);
+
     struct sbo
     {
         kind k; // must come first
@@ -70,10 +78,18 @@ class string_impl
         table* t;
     };
 
+    struct key
+    {
+        kind k;
+        std::uint32_t n;
+        char* s;
+    };
+
     union
     {
         sbo s_;
         pointer p_;
+        key k_;
     };
 
 public:
@@ -91,6 +107,12 @@ public:
     BOOST_JSON_DECL
     string_impl(
         std::size_t new_size,
+        storage_ptr const& sp);
+
+    BOOST_JSON_DECL
+    string_impl(
+        char** dest,
+        std::size_t len,
         storage_ptr const& sp);
 
     template<class InputIt>
@@ -174,15 +196,42 @@ public:
         std::size_t new_size,
         std::size_t capacity);
 
+    char*
+    release_key(
+        std::size_t& n) noexcept
+    {
+        BOOST_ASSERT(
+            k_.k == key_string_);
+        n = k_.n;
+        auto const s = k_.s;
+        // prevent deallocate
+        k_.k = short_string_;
+        return s;
+    }
+
     void
     destroy(
         storage_ptr const& sp) noexcept
     {
-        if(s_.k != short_string_)
+        if(s_.k == kind::string)
+        {
             sp->deallocate(p_.t,
                 sizeof(table) +
                     p_.t->capacity + 1,
                 alignof(table));
+        }
+        else if(s_.k != key_string_)
+        {
+            // do nothing
+        }
+        else
+        {
+            BOOST_ASSERT(
+                s_.k == key_string_);
+            // VFALCO unfortunately the key string
+            // kind increases the cost of the destructor.
+            sp->deallocate(k_.s, k_.n + 1);
+        }
     }
 
     BOOST_JSON_DECL
