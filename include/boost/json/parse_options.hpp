@@ -15,13 +15,22 @@ namespace json {
 
 /** Parser options
 
-    This structure is used for specifying whether
+    This structure is used for specifying
+    maximum parsing depth, and whether
     to allow various non-standard extensions.
-    Default-constructed options specify that only
-    standard JSON is allowed.
+    Default-constructed options set maximum
+    parsing depth to 32 and specify that only
+    standard JSON is allowed,
 */
 struct parse_options
 {
+    /** Maximum parse depth
+        
+        The maximum number of nested structures
+        permitted within a JSON document.
+    */
+    std::size_t max_depth = 32;
+
     /** Non-standard extension option
 
         Allow C and C++ style comments to appear

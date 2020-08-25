@@ -2349,7 +2349,7 @@ write(
         st_.empty()))
     {
         // first time
-        depth_ = max_depth_;
+        depth_ = opt_.max_depth;
         if(BOOST_JSON_UNLIKELY(
             ! h_.on_document_begin(ec_)))
         {

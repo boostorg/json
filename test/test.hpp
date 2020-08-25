@@ -184,18 +184,6 @@ public:
     }
 
     std::size_t
-    max_depth() const noexcept
-    {
-        return p_.max_depth();
-    }
-
-    void
-    max_depth(unsigned long levels) noexcept
-    {
-        p_.max_depth(levels);
-    }
-
-    std::size_t
     write(
         char const* data,
         std::size_t size,
