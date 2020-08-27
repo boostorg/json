@@ -156,7 +156,6 @@ public:
         std::size_t buffer_size) noexcept;
 
 protected:
-
     /** Allocate memory.
 
         Allocates a region of memory of size `n`
@@ -217,7 +216,7 @@ protected:
         std::size_t n,
         std::size_t align) override;
 
-    /** Does nothing.
+    /** Deallocate memory.
 
         This function has no effect.
 

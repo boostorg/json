@@ -2817,7 +2817,7 @@ swap(string& lhs, string& rhs)
 
 //----------------------------------------------------------
 
-/** Perform stream output.
+/** Serialize a @ref string to an output stream
 
     Behaves as a formatted output function.
 */

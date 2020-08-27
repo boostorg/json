@@ -40,6 +40,7 @@ local SOURCES =
     pilfer.cpp
     serializer.cpp
     snippets.cpp
+    static_resource.cpp
     storage_ptr.cpp
     string.cpp
     string_view.cpp

@@ -21,6 +21,7 @@
 #include <boost/json/parse.hpp>
 #include <boost/json/parser.hpp>
 #include <boost/json/serializer.hpp>
+#include <boost/json/static_resource.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/string.hpp>
 #include <boost/json/system_error.hpp>
