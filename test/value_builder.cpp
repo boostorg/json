@@ -39,14 +39,13 @@ public:
     vb.reset(&mr);
 
     // Iteratively create the elements
-    vb.begin_object();
     vb.insert_key("a");
     vb.insert_int64(1);
     vb.insert_key("b");
     vb.insert_null();
     vb.insert_key("c");
     vb.insert_string("hello");
-    vb.end_object();
+    vb.push_object(3);
 
     // Take ownership of the value
     value jv = vb.release();

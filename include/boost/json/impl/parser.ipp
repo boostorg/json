@@ -44,7 +44,6 @@ handler::
 on_object_begin(
     error_code&)
 {
-    vb.begin_object();
     return true;
 }
 
@@ -52,9 +51,10 @@ bool
 parser::
 handler::
 on_object_end(
+    std::size_t n,
     error_code&)
 {
-    vb.end_object();
+    vb.push_object(n);
     return true;
 }
 
@@ -64,7 +64,6 @@ handler::
 on_array_begin(
     error_code&)
 {
-    vb.begin_array();
     return true;
 }
 
@@ -72,9 +71,10 @@ bool
 parser::
 handler::
 on_array_end(
+    std::size_t n,
     error_code&)
 {
-    vb.end_array();
+    vb.push_array(n);
     return true;
 }
 

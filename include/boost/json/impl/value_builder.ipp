@@ -114,6 +114,15 @@ clear() noexcept
     chars_ = 0;
 }
 
+void
+value_builder::
+stack::
+maybe_grow()
+{
+    if(top_ >= end_)
+        grow_one();
+}
+
 // make room for at least one more value
 void
 value_builder::
@@ -124,9 +133,6 @@ grow_one()
     BOOST_ASSERT(chars_ == 0);
     std::size_t const capacity =
         end_ - begin_;
-    // must be power of 2
-    BOOST_ASSERT((capacity &
-        (capacity - 1)) == 0);
     // VFALCO check overflow here
     std::size_t new_cap = 2 * capacity;
     BOOST_ASSERT(
@@ -164,9 +170,6 @@ grow(std::size_t nchars)
                 sizeof(value));
     std::size_t const capacity =
         end_ - begin_;
-    // must be power of 2
-    BOOST_ASSERT((capacity &
-        (capacity - 1)) == 0);
     BOOST_ASSERT(
         needed_cap > capacity);
     // VFALCO check overflow here
@@ -191,20 +194,6 @@ grow(std::size_t nchars)
     top_ = begin + (top_ - begin_);
     end_ = begin + new_cap;
     begin_ = begin;
-}
-
-void
-value_builder::
-stack::
-save(std::size_t n)
-{
-    BOOST_ASSERT(chars_ == 0);
-    if(top_ >= end_)
-        grow(0);
-    // use default storage here to
-    // avoid needless refcounting
-    ::new(top_) value(n);
-    ++top_;
 }
 
 void
@@ -256,20 +245,30 @@ push(Args&&... args)
     return jv;
 }
 
-//---
-
+template<class Unchecked>
 void
 value_builder::
 stack::
-restore(std::size_t* n) noexcept
+push_structure(Unchecked&& u)
 {
     BOOST_ASSERT(chars_ == 0);
-    BOOST_ASSERT(top_ > begin_);
-    auto p = --top_;
-    BOOST_ASSERT(p->is_uint64());
-    *n = p->get_uint64();
-    //p->~value(); // not needed
+    // construct value on the stack
+    // to avoid clobbering top_[0]
+    union U
+    {
+        value v;
+
+        U() { }
+        ~U() { }
+    } jv;
+    detail::value_access::
+        construct_value(&jv.v, std::move(u));
+    std::memcpy(top_, &jv.v, sizeof(value));
+    ++top_;
 }
+
+
+//---
 
 string_view
 value_builder::
@@ -380,53 +379,32 @@ clear() noexcept
     sp_ = {};
 
     st_.clear();
-    top_ = 0;
 }
 
 //----------------------------------------------------------
 
 void
 value_builder::
-begin_array()
+push_array(std::size_t n)
 {
-    st_.save(top_);
-    top_ = st_.size();
-}
-
-void
-value_builder::
-end_array()
-{
-    auto const n =
-        st_.size() - top_;
+    // we already have room if n > 0
+    if(BOOST_JSON_UNLIKELY(n == 0))
+        st_.maybe_grow();
     detail::unchecked_array ua(
         st_.release(n), n, sp_);
-    st_.restore(&top_);
-    st_.push(std::move(ua));
+    st_.push_structure(std::move(ua));
 }
 
 void
 value_builder::
-begin_object()
+push_object(std::size_t n)
 {
-    st_.push(top_);
-    top_ = st_.size();
-}
-
-void
-value_builder::
-end_object()
-{
-    // must be even
-    BOOST_ASSERT(
-        ((st_.size() - top_) & 1) == 0);
-
-    auto const n =
-        st_.size() - top_;
+    // we already have room if n > 0
+    if(BOOST_JSON_UNLIKELY(n == 0))
+        st_.maybe_grow();
     detail::unchecked_object uo(
-        st_.release(n), n/2, sp_);
-    st_.restore(&top_);
-    st_.push(std::move(uo));
+        st_.release(n * 2), n, sp_);
+    st_.push_structure(std::move(uo));
 }
 
 void

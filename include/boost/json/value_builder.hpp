@@ -134,20 +134,20 @@ class value_builder
 
         inline void prepare();
         inline void clear() noexcept;
+        inline void maybe_grow();
         inline void grow_one();
         inline void grow(std::size_t nchars);
-        inline void save(std::size_t);
         inline void append(string_view s);
         template<class... Args>
         value& push(Args&&... args);
+        template<class Unchecked>
+        void push_structure(Unchecked&& u);
 
-        inline void restore(std::size_t*) noexcept;
         inline string_view release_string() noexcept;
         inline value* release(std::size_t n) noexcept;
     };
 
     stack st_;
-    std::size_t top_;
     storage_ptr sp_;
 
 public:
@@ -269,85 +269,13 @@ public:
 
     //--------------------------------------------
 
-    /** Insert an array.
-
-        This function opens a new, empty array
-        which will be inserted into the result as
-        the next element of the currently open array
-        or object, or as the top-level element if
-        no other elements exist.
-    \n
-        After calling this function, elements
-        are inserted into the array by calling
-        the other insertion functions (including
-        @ref begin_array and @ref begin_object).
-    \n
-        @par Exception Safety
-        Basic guarantee.
-        Calls to `memory_resource::allocate` may throw.
-    */
     BOOST_JSON_DECL
     void
-    begin_array();
+    push_array(std::size_t n);
 
-    /** Insert an array.
-
-        This function closes the current array,
-        which must have been opened by a previously
-        balanced call to @ref begin_array.
-        The array is then inserted into the currently
-        open array or object, or the top level if no
-        enclosing array or object is open.
-
-        @par Exception Safety
-        Basic guarantee.
-        Calls to `memory_resource::allocate` may throw.
-    */
     BOOST_JSON_DECL
     void
-    end_array();
-
-    /** Insert an object.
-
-        This function opens a new, empty object
-        which will be inserted into the result as
-        the next element of the currently open array
-        or object, or as the top-level element if
-        no other elements exist.
-    \n
-
-        After calling this function, elements are
-        inserted into the object by first inserting
-        the key using @ref insert_key and
-        @ref insert_key_part, and then calling
-        the other insertion functions (including
-        @ref begin_object and @ref begin_array) to
-        add the value corresponding to the key.
-    \n
-        @par Exception Safety
-        Basic guarantee.
-        Calls to `memory_resource::allocate` may throw.
-    */
-    BOOST_JSON_DECL
-    void
-    begin_object();
-
-    /** Insert an object.
-
-        This function closes the current object,
-        which must have been opened by a previously
-        balanced call to @ref begin_object.
-        The object is then inserted into the currently
-        open array or object, or the top level if no
-        enclosing array or object is open.
-
-        @par Exception Safety
-        Basic guarantee.
-        Calls to `memory_resource::allocate` may throw.
-    */
-    BOOST_JSON_DECL
-    void
-    end_object();
+    push_object(std::size_t n);
 
     /** Set the key for the next value.
 

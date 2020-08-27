@@ -111,9 +111,9 @@ class parser
         inline bool on_document_begin(error_code& ec);
         inline bool on_document_end(error_code& ec);
         inline bool on_object_begin(error_code& ec);
-        inline bool on_object_end(error_code& ec);
+        inline bool on_object_end(std::size_t n, error_code& ec);
         inline bool on_array_begin(error_code& ec);
-        inline bool on_array_end(error_code& ec);
+        inline bool on_array_end(std::size_t n, error_code& ec);
         inline bool on_key_part(string_view s, error_code& ec);
         inline bool on_key(string_view s, error_code& ec);
         inline bool on_string_part(string_view s, error_code& ec);

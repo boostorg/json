@@ -1461,7 +1461,7 @@ parse_object(const char* p)
         }
     }
     BOOST_ASSERT(*cs == '{');
-    size = BOOST_JSON_MAX_STRUCTURED_SIZE;
+    size = 0;
     if(BOOST_JSON_UNLIKELY(! depth_))
         return fail(cs.begin(), error::too_deep);
     --depth_;
@@ -1492,7 +1492,8 @@ do_obj2:
             return fail(cs.begin(), error::syntax);
         }
 loop:
-        if(BOOST_JSON_UNLIKELY(! size--))
+        if(BOOST_JSON_UNLIKELY(++size > 
+            BOOST_JSON_MAX_STRUCTURED_SIZE))
             return fail(cs.begin(), error::object_too_large);
 do_obj3:
         cs = parse_string<StackEmpty, true,
@@ -1571,7 +1572,7 @@ do_obj11:
         // got closing brace, fall through
     }
     if(BOOST_JSON_UNLIKELY(
-        ! h_.on_object_end(ec_)))
+        ! h_.on_object_end(size, ec_)))
         return fail(cs.begin());
     ++depth_;
     ++cs;
@@ -1610,7 +1611,7 @@ parse_array(const char* p)
         }
     }
     BOOST_ASSERT(*cs == '[');
-    size = BOOST_JSON_MAX_STRUCTURED_SIZE;
+    size = 0;
     if(BOOST_JSON_UNLIKELY(! depth_))
         return fail(cs.begin(), error::too_deep);
     --depth_;
@@ -1637,7 +1638,8 @@ do_arr2:
             goto do_arr1;
         }
 loop:
-        if(BOOST_JSON_UNLIKELY(! size--))
+        if(BOOST_JSON_UNLIKELY(++size > 
+            BOOST_JSON_MAX_STRUCTURED_SIZE))
             return fail(cs.begin(), error::array_too_large);
 do_arr3:
         // array is not empty, value required
@@ -1677,7 +1679,7 @@ do_arr6:
         // got closing bracket; fall through
     }
     if(BOOST_JSON_UNLIKELY(
-        ! h_.on_array_end(ec_)))
+        ! h_.on_array_end(size, ec_)))
         return fail(cs.begin());
     ++depth_;
     ++cs;
