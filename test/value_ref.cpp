@@ -18,6 +18,23 @@
 namespace boost {
 namespace json {
 
+//----------------------------------------------------------
+
+// From the javadoc
+
+    class my_type
+    {
+        json::value jv_;
+    
+    public:
+        my_type( std::initializer_list< json::value_ref > init )
+            : jv_(init)
+        {
+        }
+    };
+
+//----------------------------------------------------------
+
 class value_ref_test
 {
 public:

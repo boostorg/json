@@ -39,42 +39,61 @@ namespace json {
     which the parsed results are stored. After the
     parse is started, call the @ref write function
     to provide buffers of characters of the JSON.
-    When there are no more buffers, call @ref finish 
-    Check that the parse is complete by calling
-    @ref is_complete, or that a non-successful
-    error code is returned.
+    When there are no more buffers, call @ref finish.
+    The parse is complete when the function @ref is_complete
+    returns `true`, or when a non-successful error
+    code is returned.
 
     @par Incremental Parsing
 
     The parser allows the input to be presented in
     multiple character buffers. This is useful when
     not all of the serialized JSON is present at once
-    and it is desired to process the data as it becomes
+    and it is desirable to process the data as it becomes
     available, such as when reading from a network socket
     or other device. The incremental interface may also
     be used to bound the amount of work performed in each
     parsing cycle.
 
-    @par Intermediate Storage
+    @par Temporary Storage
 
-    The parser may dynamically allocate intermediate
+    The parser may dynamically allocate temporary
     storage as needed to accommodate the nesting level
-    of the JSON being parsed. Intermediate storage is
-    allocated using the @ref storage_ptr passed to
-    the constructor; if no such argument is specified,
-    the default memory resource will be used instead.
-    This storage is freed when the parser is destroyed, 
-    allowing the parser to cheaply reuse this memory
-    when parsing subsequent JSONs, improving performance.
+    of the JSON being parsed. Temporary storage is
+    first obtained from an optional, caller-owned
+    buffer specified upon construction. When that
+    is exhausted, the next allocation uses the
+    @ref memory_resource passed to the constructor; if
+    no such argument is specified, the default memory
+    resource is used instead. Temporary storage is
+    freed only when the parser is destroyed, improving
+    performance when the parser is reused to parse
+    multiple JSONs.
+\n
+    It is important to note that the @ref memory_resource
+    supplied upon construction is used for temporary
+    storage only, and not for allocating the elements
+    which make up the parsed value. That other memory
+    resource is optionally supplied in each call
+    to @ref reset.
 
     @par Non-Standard JSON
 
-    The parser interface supports construction with a
-    @ref parse_options structure, which provides settings
-    to allow various non-standard JSON extensions to be
-    recognized as valid.
+    The @ref parse_options structure optionally
+    provided upon construction is used to customize
+    some  parameters of the parser, including which
+    non-standard JSON extensions should be allowed.
+    A default-constructed parse options allows only
+    standard JSON.
 
-    @see @ref parse, @ref parse_options
+    @par Thread Safety
+
+    Member functions must not be invoked
+    concurrently on a shared object.
+
+    @see
+        @ref parse,
+        @ref parse_options.
 */
 class parser
 {
@@ -121,22 +140,77 @@ public:
    
     /** Constructor.
         
-        Constructs a parser using the specified
-        options for the parser and the supplied
-        @ref storage_ptr to allocate intermediate storage.
+        Construct a parser with these optionally
+        specified parameters:
 
-        @note
-        Before any JSON can be parsed, the function
-        @ref reset must be called.
-        \n
-        The `sp` parameter is only used to
-        allocate intermediate storage; it will not be used
-        for the @ref value returned by @ref release.
+        @li The @ref memory_resource for the
+        implementation to use when it needs to
+        acquire temporary memory,
 
-        @param sp The @ref storage_ptr to use for
-        intermediate storage allocations.
+        @li The @ref parse_options to use, which
+        can allow non-standard JSON extensions such
+        as comments or trailing commas, and
 
-        @param opt The options for the parser.
+        @li A caller-owned temporary buffer to use
+        first, before allocating using the memory
+        resource specified on construction.
+
+        @par Example
+
+        The following code constructs a parser which
+        uses the default memory resource and a local
+        buffer for temporary storage, and allows
+        trailing commas to appear in the JSON:
+
+        @code
+
+        // this buffer will be used for temporary storage
+        char temp[ 4096 ];
+
+        // default constructed parse options allow strict JSON
+        parse_options opt;
+
+        // enable the trailing commas extension
+        opt.allow_trailing_commas = true;
+
+        // construct the parser
+        parser p(
+            storage_ptr(),  // use the default memory resource
+            opt,
+            temp, sizeof(temp) );
+
+        // to begin parsing, reset must becalled
+        p.reset();
+
+        @endcode
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+
+        @param sp A pointer to the @ref memory_resource
+        for the implementation to use to acquire
+        temporary storage.
+
+        @param opt The options for the parser. If this
+        parameter is omitted, a default constructed
+        parse options is used, which allows only strict
+        JSON and an implementation defined maximum depth.
+
+        @param temp_buffer A pointer to valid memory
+        which the implementation will use first to
+        acquire temporary storage, or `nullptr` for
+        the implementation to go directoy to the
+        memory resource. If this parameter is left out
+        the behavior is the same as if it were null.
+
+        @param temp_size The size of the memory pointed
+        to by `temp_buffer`. This parameter is ignored
+        if `temp_buffer` is null.
     */
     BOOST_JSON_DECL
     parser(
@@ -149,6 +223,14 @@ public:
 
         The parsing depth is the total current nesting
         level of arrays and objects.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
     */
     std::size_t
     depth() const noexcept
@@ -178,13 +260,22 @@ public:
 
     /** Start parsing JSON incrementally.
 
-        This function must be called once manually before
-        parsing a new JSON incrementally; that is, when
-        calling @ref write or @ref finish.
+        This function must be called once before parsing
+        each new JSON; that is, before any calls to
+        @ref write or @ref finish. Any previous partial
+        results are destroyed.
+
+        @par Complexity
+
+        Constant or linear in the size of any previous
+        partial parsing results.
+
+        @par Exception Safety
+
+        No-throw guarantee.
 
         @param sp A pointer to the @ref memory_resource
-        to use. The parser will acquire shared
-        ownership of the memory resource.
+        to use. The parser will acquire shared ownership.
     */
     BOOST_JSON_DECL
     void
@@ -205,6 +296,10 @@ public:
         @par Complexity
 
         Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
     */
     bool
     is_complete() const noexcept
@@ -224,8 +319,8 @@ public:
         starting from the beginning, until one of the
         following conditions is met:
 
-        @li All of the characters in the buffer have been
-        parsed, or
+        @li All of the characters in the buffer have
+        been parsed, or
 
         @li A complete JSON is parsed, including any
         optional trailing whitespace in the buffer, or
@@ -236,7 +331,7 @@ public:
         entire JSON. Subsequent calls can provide more
         serialized data, allowing JSON to be processed
         incrementally. The end of the serialized JSON
-        can be indicated by calling @ref finish().
+        is be indicated by calling @ref finish().
 
         @par Complexity
 
@@ -280,15 +375,20 @@ public:
 
     /** Discard all parsed JSON results.
 
-        This function destroys all intermediate parsing
-        results, while preserving dynamically allocated
-        internal memory which may be reused on a
-        subsequent parse.
+        This function destroys all partial or complete
+        parsing results. Temporary memory is not
+        released and will be used in any subsequent
+        parsing.
 
         @note
 
-        After this call, it is necessary to call
-        @ref reset to parse a new JSON incrementally.
+        After this function is called, it is necessary
+        to call @ref reset to parse a new JSON.
+
+        @par Complexity
+
+        Constant or linear in the size of any previous
+        partial parsing results.
     */
     BOOST_JSON_DECL
     void
@@ -298,7 +398,19 @@ public:
 
         If @ref is_complete() returns `true`, then the
         parsed value is returned. Otherwise,
-        the error is set to indicate failure.
+        the error is set to indicate failure. It
+        is necessary to call @ref reset after calling
+        this function in order to parse another JSON.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        Strong guarantee. If an exception occurs,
+        the valid operations are @ref reset,
+        @ref clear, or destruction.
 
         @return The parsed value. Ownership of this
         value is transferred to the caller.       

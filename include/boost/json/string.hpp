@@ -49,8 +49,7 @@ class value;
     Non-const member functions may not be called
     concurrently with any other member functions.
 
-    @par Satisfies
-    Meets the requirements of
+    @par Satisfies the requirements of
         <em>Container</em>,
         <em>ContiguousContainer</em>,
         <em>ReversibleContainer</em>, and

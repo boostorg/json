@@ -22,7 +22,7 @@
 namespace boost {
 namespace json {
 
-/** Metafunction to determine if calls to a memory resource's deallocate function are no-ops.
+/** Determine if a call to a memory resource's deallocate function is a no-op.
 
     A user-defined @ref memory_resource can specialize
     this metafunction to indicate to the library that
@@ -75,8 +75,9 @@ struct is_deallocate_null
 
 /** Manages a type-erased storage object.
 
-    This container is used to hold a shared reference
-    to a @ref memory_resource object.
+    This container is used to hold an owning or
+    non-owning reference to a @ref memory_resource
+    object.
 */
 class storage_ptr
 {

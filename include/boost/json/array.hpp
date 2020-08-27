@@ -75,9 +75,7 @@ class value_ref;
     Non-const member functions may not be called
     concurrently with any other member functions.
 
-    @par Satisfies
-
-    Meets the requirements of
+    @par Satisfies the requirements of
         <em>Container</em>,
         <em>ContiguousContainer</em>,
         <em>ReversibleContainer</em>, and
@@ -281,8 +279,8 @@ public:
         to use. The container will acquire shared
         ownership of the memory resource.
 
-        @tparam InputIt a type meeting the requirements of
-        __InputIterator__.
+        @tparam InputIt a type satisfying the requirements
+        of __InputIterator__.
     */
     template<
         class InputIt
@@ -1207,6 +1205,9 @@ public:
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
+        @return An iterator to the first inserted value, or
+        `pos` if `first == last`.
+
         @param pos Iterator before which the content will
         be inserted. This may be the @ref end() iterator.
         
@@ -1216,11 +1217,8 @@ public:
         @param last An input iterator pointing to the end
         of the range.
 
-        @tparam InputIt a type meeting the requirements of
-        __InputIterator__.
-
-        @return An iterator to the first inserted value, or
-        `pos` if `first == last`.
+        @tparam InputIt a type satisfying the requirements
+        of __InputIterator__.
     */
     template<
         class InputIt

@@ -30,6 +30,33 @@ class parser_test
 public:
     ::test_suite::log_type log;
 
+    void
+    testJavadoc()
+    {
+        // parser::parser
+        {
+
+        // this buffer will be used for temporary storage
+        char temp[ 4096 ];
+
+        // default constructed parse options allow strict JSON
+        parse_options opt;
+
+        // enable the trailing commas extension
+        opt.allow_trailing_commas = true;
+
+        // construct the parser
+        parser p(
+            storage_ptr(),  // use the default memory resource
+            opt,
+            temp, sizeof(temp) );
+
+        // to begin parsing, reset must becalled
+        p.reset();
+
+        }
+    }
+
     static
     value
     from_string_test(

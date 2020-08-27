@@ -65,9 +65,7 @@ class object_test;
     Non-const member functions may not be called
     concurrently with any other member functions.
 
-    @par Satisfies
-
-    Meets the requirements of
+    @par Satisfies the requirements of
         <em>Container</em>,
         <em>ReversibleContainer</em>,
         <em>SequenceContainer</em>, and
@@ -279,8 +277,8 @@ public:
         to use. The container will acquire shared
         ownership of the memory resource.
 
-        @tparam InputIt a type meeting the requirements of
-        __InputIterator__.
+        @tparam InputIt a type satisfying the requirements
+        of __InputIterator__.
     */
     template<
         class InputIt
@@ -951,8 +949,8 @@ public:
         @param last An input iterator pointing to the end
         of the range.
 
-        @tparam InputIt a type meeting the requirements of
-        __InputIterator__.
+        @tparam InputIt a type satisfyin the requirements
+        of __InputIterator__.
     */
     template<
         class InputIt

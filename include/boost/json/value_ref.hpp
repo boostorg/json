@@ -27,6 +27,8 @@ class array;
 class string;
 #endif
 
+//----------------------------------------------------------
+
 /** The type used in initializer lists.
 
     This type is used in initializer lists for
@@ -35,19 +37,40 @@ class string;
     and @ref object. The two types of initializer
     lists used are:
 
-    @li `std::initializer_list<value_ref>` for
+    @li `std::initializer_list< value_ref >` for
     constructing or assigning a @ref value or
     @ref array, and
 
-    @li `std::initializer_list<std::pair<string_view, value_ref>>`
+    @li `std::initializer_list< std::pair< string_view, value_ref > >`
     for constructing or assigning an @ref object.
 
     A `value_ref` uses reference semantics. Creation
     of the actual container from the initializer
     list is lazily deferred until the list is used.
-    This means that the @ref storage_ptr used to
+    This means that the @ref memory_resource used to
     construct a container can be specified after the
     point where the initializer list is specified.
+
+    @par Example
+
+    This example demonstrates how a user-defined type
+    containing a JSON value can be constructed from
+    an initializer list:
+
+    @code
+
+    class my_type
+    {
+        value jv_;
+    
+    public:
+        my_type( std::initializer_list< value_ref > init )
+            : jv_(init)
+        {
+        }
+    };
+
+    @endcode
 
     @note Never declare a variable of type
     `std::initializer_list` except in function

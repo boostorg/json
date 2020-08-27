@@ -21,13 +21,23 @@ namespace json {
     Default-constructed options set maximum
     parsing depth to 32 and specify that only
     standard JSON is allowed,
+
+    @see
+        @ref basic_parser,
+        @ref parser.
 */
 struct parse_options
 {
-    /** Maximum parse depth
+    /** Maximum nesting level of arrays and objects.
         
-        The maximum number of nested structures
-        permitted within a JSON document.
+        This specifies the maximum number of nested
+        structures allowed while parsing a JSON. If
+        this limit is exceeded, the parser returns
+        an error immediately.
+
+        @see
+            @ref basic_parser,
+            @ref parser.
     */
     std::size_t max_depth = 32;
 
@@ -35,6 +45,10 @@ struct parse_options
 
         Allow C and C++ style comments to appear
         anywhere that whitespace is permissible.
+
+        @see
+            @ref basic_parser,
+            @ref parser.
     */
     bool allow_comments = false;
 
@@ -42,6 +56,10 @@ struct parse_options
 
         Allow a trailing comma to appear after
         the last element of any array or object.
+
+        @see
+            @ref basic_parser,
+            @ref parser.
     */
     bool allow_trailing_commas = false;
 
@@ -51,6 +69,10 @@ struct parse_options
         in keys and strings.
 
         @note This increases parsing performance.
+
+        @see
+            @ref basic_parser,
+            @ref parser.
     */
     bool allow_invalid_utf8 = false;
 };
