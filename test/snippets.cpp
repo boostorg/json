@@ -1234,12 +1234,9 @@ namespace boost {
 namespace json {
 
 template<>
-struct is_deallocate_null<my_null_deallocation_resource>
+struct is_deallocate_null< my_null_deallocation_resource >
 {
-  static constexpr bool deallocate_is_null() noexcept
-  {
-    return true;
-  }
+    static constexpr bool value = true;
 };
 
 } // json

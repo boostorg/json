@@ -22,16 +22,55 @@
 namespace boost {
 namespace json {
 
+/** Metafunction to determine if calls to a memory resource's deallocate function are no-ops.
+
+    A user-defined @ref memory_resource can specialize
+    this metafunction to indicate to the library that
+    calls to the `deallocate` function are not necessary
+    or have no effect. The implementation will elide such
+    calls when it is safe to do so. By default, the
+    implementation assumes that all memory resources
+    require calls to deallocate.
+
+    @par Example
+
+    This example specializes the metafuction for `my_resource`,
+    to indicate that calls to deallocate are no-ops:
+
+    @code
+
+    // Forward-declaration for a user-defined memory resource
+    struct my_resource;
+
+    // It is necessary to specialize the template from
+    // inside the namespace in which it is declared:
+
+    namespace boost {
+    namespace json {
+
+    template<>
+    struct is_deallocate_null< my_resource >
+    {
+        static constexpr bool value = true;
+    };
+
+    } // namespace json
+    } // namespace boost
+
+    @endcode
+
+    @see
+        @ref memory_resource,
+        @ref storage_ptr.
+*/
 template<class T>
 struct is_deallocate_null
 {
-    static
-    constexpr
-    bool
-    deallocate_is_null() noexcept
-    {
-        return false;
-    }
+    /** A bool equal to true if calls to `T::do_deallocate` have no effect.
+
+        The value defaults to `false` for all unspecialized types.
+    */
+    static constexpr bool value = false;
 };
 
 /** Manages a type-erased storage object.
@@ -88,8 +127,7 @@ class storage_ptr
         detail::counted_resource_impl<T>* p) noexcept
         : i_(reinterpret_cast<
             std::uintptr_t>(p) + 1 +
-            (is_deallocate_null<
-                T>::deallocate_is_null() ? 2 : 0))
+            (is_deallocate_null<T>::value ? 2 : 0))
     {
         BOOST_ASSERT(p);
     }
@@ -166,9 +204,7 @@ public:
     storage_ptr(T* p) noexcept
         : i_(reinterpret_cast<std::uintptr_t>(
                 static_cast<memory_resource *>(p)) +
-            (is_deallocate_null<
-                T>::deallocate_is_null() ?
-                    2 : 0))
+            (is_deallocate_null<T>::value ? 2 : 0))
     {
         BOOST_ASSERT(p);
     }

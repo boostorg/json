@@ -13,6 +13,30 @@
 #include "test.hpp"
 #include "test_suite.hpp"
 
+//----------------------------------------------------------
+
+// Example code from is_deallocate_null
+
+    // Forward-declaration for a user-defined memory resource
+    struct my_resource;
+
+    // It is necessary to specialize the template from
+    // inside the namespace in which it is declared:
+
+    namespace boost {
+    namespace json {
+
+    template<>
+    struct is_deallocate_null< my_resource >
+    {
+        static constexpr bool value = true;
+    };
+
+    } // namespace json
+    } // namespace boost
+
+//----------------------------------------------------------
+
 namespace boost {
 namespace json {
 
