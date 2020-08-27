@@ -29,6 +29,10 @@ language: cpp
 os: linux
 dist: xenial
 
+cache:
+  directories:
+    - $HOME/cache 
+
 branches:
   only:
     - master
@@ -139,16 +143,17 @@ jobs:
             - libsaxonhe-java
             - default-jre-headless
       install:
+        - pwd
         - cd ..
-        - mkdir tmp && cd tmp
-        - git clone -b 'Release_1_8_15' --depth 1 https://github.com/doxygen/doxygen.git
+        - mkdir -p $HOME/cache && cd $HOME/cache
+        - if [ ! -d doxygen ]; then git clone -b 'Release_1_8_15' --depth 1 https://github.com/doxygen/doxygen.git && echo "not-cached" ; else echo "cached" ; fi
         - cd doxygen
         - cmake -H. -Bbuild -DCMAKE_BUILD_TYPE=Release
         - cd build
         - sudo make install
         - cd ../..
-        - wget -O saxonhe.zip https://sourceforge.net/projects/saxon/files/Saxon-HE/9.9/SaxonHE9-9-1-4J.zip/download
-        - unzip saxonhe.zip
+        - if [ ! -f saxonhe.zip ]; then wget -O saxonhe.zip https://sourceforge.net/projects/saxon/files/Saxon-HE/9.9/SaxonHE9-9-1-4J.zip/download && echo "not-cached" ; else echo "cached" ; fi
+        - unzip -o saxonhe.zip
         - sudo rm /usr/share/java/Saxon-HE.jar
         - sudo cp saxon9he.jar /usr/share/java/Saxon-HE.jar
         - cd ..
