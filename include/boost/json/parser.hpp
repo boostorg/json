@@ -115,58 +115,10 @@ public:
     /** Destructor.
 
         All dynamically allocated memory, including
-        any partial parsing results, is freed.
+        any incomplete parsing results, is freed.
     */
     ~parser() = default;
-
-    /** Default constructor.
-
-        Constructs an empty parser that uses the
-        default memory resource to allocate
-        intermediate storage.
-
-        @note
-        Before any JSON can be parsed, the function
-        @ref reset must be called. 
-    */
-    BOOST_JSON_DECL
-    parser() noexcept;
-
-    /** Constructor.
-
-        Constructs a empty parser using the supplied
-        @ref storage_ptr to allocate
-        intermediate storage.
-
-        @note
-        Before any JSON can be parsed, the function
-        @ref reset must be called.
-        \n
-        The `sp` parameter is only used to
-        allocate intermediate storage; it will not be used
-        for the @ref value returned by @ref release.
-
-        @param sp The @ref storage_ptr to use for
-        intermediate storage allocations.
-    */
-    BOOST_JSON_DECL
-    explicit 
-    parser(storage_ptr sp) noexcept;
-
-    /** Constructor.
-        
-        Constructs a parser using the specified options.
-
-        @note
-        Before any JSON can be parsed, the function
-        @ref reset must be called.
-
-        @param opt The options for the parser.
-    */
-    BOOST_JSON_DECL
-    explicit
-    parser(const parse_options& opt) noexcept;
-    
+   
     /** Constructor.
         
         Constructs a parser using the specified
@@ -188,15 +140,10 @@ public:
     */
     BOOST_JSON_DECL
     parser(
-        storage_ptr sp, 
-        parse_options const& opt) noexcept;
-
-    BOOST_JSON_DECL
-    parser(
-        void* temp_buffer,
-        std::size_t temp_size,
         storage_ptr sp = {},
-        parse_options const& opt = {}) noexcept;
+        parse_options const& opt = {},
+        void* temp_buffer = nullptr,
+        std::size_t temp_size = 0) noexcept;
 
     /** Returns the current depth of the JSON being parsed.
 

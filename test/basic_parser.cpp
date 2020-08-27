@@ -1266,6 +1266,11 @@ public:
             basic_parser<handler> p_;
 
         public:
+            utf8_parser()
+                : p_(parse_options())
+            {
+            }
+
             std::size_t
             write(
                 bool more,

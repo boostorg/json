@@ -10,6 +10,7 @@
 // Test that header file is self-contained.
 #include <boost/json/value_builder.hpp>
 
+#include <boost/json/monotonic_resource.hpp>
 #include <boost/json/serializer.hpp>
 
 #include "test_suite.hpp"
@@ -20,13 +21,24 @@ namespace json {
 class value_builder_test
 {
 public:
+    // This is from the javadoc
     void
     testBuilder()
     {
-    // This is from the javadoc
+    // This example builds a json::value without any dynamic memory allocations:
 
-    value_builder vb;
-    vb.reset();
+    // Construct the builder using a local buffer
+    char temp[4096];
+    value_builder vb( storage_ptr(), temp, sizeof(temp) );
+
+    // Create a monotonic resource with a local initial buffer
+    char buf[4096];
+    monotonic_resource mr( buf, sizeof(buf) );
+
+    // The builder will create a value using `mr`
+    vb.reset(&mr);
+
+    // Iteratively create the elements
     vb.begin_object();
     vb.insert_key("a");
     vb.insert_int64(1);
@@ -35,7 +47,13 @@ public:
     vb.insert_key("c");
     vb.insert_string("hello");
     vb.end_object();
-    assert( to_string(vb.release()) == "{\"a\":1,\"b\":null,\"c\":\"hello\"}" );
+
+    // Take ownership of the value
+    value jv = vb.release();
+
+    assert( to_string(jv) == "{\"a\":1,\"b\":null,\"c\":\"hello\"}" );
+
+    // At this point we could re-use the builder by calling reset
 
     }
 

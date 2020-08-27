@@ -26,36 +26,68 @@ namespace json {
 
 /** A factory for building a value.
 
-    A value builder implements an algorithm for
-    efficiently constructing a @ref value from an
-    external source (provided by the caller).
-    It uses a dynamically allocated internal storage
-    to hold portions of the document, allowing complete
-    objects and arrays to be constructed using a single
-    allocation when their contents are eventually known.
-    This internal storage is reused when creating multiple
-    values with the same builder. \n
+    A value builder provides an algorithm allowing
+    iterative construction of a @ref value. The
+    implementation uses temporary internal storage
+    to buffer elements so that arrays, objects, and
+    strings in the document are constructed using a
+    single memory allocation. This improves performance
+    and makes efficient use of the @ref memory_resource
+    used to create the resulting @ref value.
 
-    To use the builder construct it with an optionally
-    specified memory resource to use for the internal
-    storage. Then call @ref reset once before building
-    each complete DOM, optionally specifying the
-    memory resource to use for the resulting @ref value.
-    Once the reset function is called, the value may
-    be built iteratively by calling the appropriate
-    insertion functions as desired. After construction
-    is finished, the caller can take ownership of the
-    resulting value by calling @ref release.
+    Temporary storage used by the implementation
+    initially comes from an optional memory buffer
+    owned by the caller. If that storage is exhausted,
+    then memory is obtained dynamically from the
+    @ref memory_resource provided on construction.
+
+    @par Usage
+
+    Construct the builder with an optional initial
+    temporary buffer, and a @ref storage_ptr to use for
+    more storage when the initial buffer is exhausted.
+    Then to build a @ref value, first call @ref reset
+    and optionally specify the @ref memory_resource
+    which will be used for the value. Then add elements
+    to the value and its children by calling the
+    corresponding insertion functions. When all the
+    elements are added, call @ref release to return
+    ownership of the @ref value to the caller.
+
+    @par Performance
+
+    The initial buffer and any dynamically allocated
+    temporary buffers are retained until the builder
+    is destroyed. This improves performance when using
+    a single builder instance to produce multiple
+    values.
 
     @par Example
 
     The following code constructs a @ref value which
     when serialized produces a JSON object with three
-    elements.
+    elements. It uses a local buffer for the temporary
+    storage, and a separate local buffer for the storage
+    of the resulting value. No memory is dynamically
+    allocated; this shows how to construct a value
+    without using the heap.
 
     @code
-    value_builder vb;
-    vb.reset();
+
+    // This example builds a json::value without any dynamic memory allocations:
+
+    // Construct the builder using a local buffer
+    char temp[4096];
+    value_builder vb( storage_ptr(), temp, sizeof(temp) );
+
+    // Create a monotonic resource with a local initial buffer
+    char buf[4096];
+    monotonic_resource mr( buf, sizeof(buf) );
+
+    // The builder will create a value using `mr`
+    vb.reset(&mr);
+
+    // Iteratively create the elements
     vb.begin_object();
     vb.insert_key("a");
     vb.insert_int64(1);
@@ -64,7 +96,14 @@ namespace json {
     vb.insert_key("c");
     vb.insert_string("hello");
     vb.end_object();
-    assert( to_string(vb.release()) == "{\"a\":1,\"b\":null,\"c\":\"hello\"}" );
+
+    // Take ownership of the value
+    value jv = vb.release();
+
+    assert( to_string(jv) == "{\"a\":1,\"b\":null,\"c\":\"hello\"}" );
+
+    // At this point we could re-use the builder by calling reset
+
     @endcode
 */
 class value_builder
@@ -87,9 +126,8 @@ class value_builder
 
     public:
         inline ~stack();
-        inline stack(
-            void* temp, std::size_t size,
-                storage_ptr sp) noexcept;
+        inline stack(storage_ptr sp,
+            void* temp, std::size_t size) noexcept;
         inline void run_dtors(bool b) noexcept;
         inline std::size_t size() const noexcept;
         inline bool has_part();
@@ -135,16 +173,21 @@ public:
         to use for intermediate storage allocations. If
         this argument is omitted, the default memory
         resource is used.
+
+        @param temp_buffer A pointer to a caller-owned
+        buffer which will be used to store temporary
+        data used while building the value. If this
+        pointer is null, the builder will use the
+        storage pointer to allocate temporary data.
+
+        @param temp_size The number of valid bytes of
+        storage pointed to by `temp_buffer`.
     */
     BOOST_JSON_DECL
-    explicit 
-    value_builder(storage_ptr sp = {}) noexcept;
-
-    BOOST_JSON_DECL
     value_builder(
-        void* temp_buffer,
-        std::size_t temp_size,
-        storage_ptr sp = {}) noexcept;
+        storage_ptr sp = {},
+        void* temp_buffer = nullptr,
+        std::size_t temp_size = 0) noexcept;
 
     /** Reserve internal storage space.
 

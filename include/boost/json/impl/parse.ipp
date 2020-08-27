@@ -26,9 +26,9 @@ parse(
 {
     char temp[4096];
     parser p(
-        temp, sizeof(temp),
         storage_ptr(),
-        opt);
+        opt,
+        temp, sizeof(temp));
     p.reset(std::move(sp));
     p.write(
         s.data(),

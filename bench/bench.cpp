@@ -409,6 +409,11 @@ class boost_null_impl : public any_impl
 
         basic_parser<handler> p_;
 
+        null_parser()
+            : p_(json::parse_options())
+        {
+        }
+
         void
         reset()
         {

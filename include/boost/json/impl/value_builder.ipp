@@ -33,9 +33,9 @@ stack::
 value_builder::
 stack::
 stack(
+    storage_ptr sp,
     void* temp,
-    std::size_t size,
-    storage_ptr sp) noexcept
+    std::size_t size) noexcept
     : sp_(std::move(sp))
     , temp_(temp)
 {
@@ -311,21 +311,13 @@ value_builder::
 
 value_builder::
 value_builder(
-    storage_ptr sp) noexcept
-    : value_builder(
-        nullptr, 0, std::move(sp))
-{
-}
-
-value_builder::
-value_builder(
+    storage_ptr sp,
     void* temp_buffer,
-    std::size_t temp_size,
-    storage_ptr sp) noexcept
+    std::size_t temp_size) noexcept
     : st_(
+        std::move(sp),
         temp_buffer,
-        temp_size,
-        std::move(sp))
+        temp_size)
 {
 
 }

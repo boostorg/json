@@ -335,14 +335,6 @@ public:
     /** Constructor.
 
         This function constructs the parser with
-        the setting that only accept standard JSON.
-        The handler will be default constructed.
-    */
-    basic_parser() = default;
-
-    /** Constructor.
-
-        This function constructs the parser with
         the specified options, with any additional
         arguments forwarded to the handler's constructor.
 
@@ -359,7 +351,7 @@ public:
     explicit
     basic_parser(
         parse_options const& opt,
-        Args&&... args);
+        Args&&... args) noexcept;
 
     /** Return a reference to the handler.
     */

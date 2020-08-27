@@ -37,7 +37,7 @@ public:
         storage_ptr sp = {},
         const parse_options& po = parse_options())
     {
-        parser p(po);
+        parser p(storage_ptr(), po);
         error_code ec;
         p.reset(std::move(sp));
         p.write(s.data(), s.size(), ec);
@@ -107,7 +107,7 @@ public:
                 {
                     fail_resource mr;
                     mr.fail_max = 0;
-                    parser p(po);
+                    parser p(storage_ptr(), po);
                     error_code ec;
                     p.reset(&mr);
                     p.write(s.data(), i, ec);
@@ -598,7 +598,7 @@ public:
             error_code ec;
             parse_options opt;
             opt.max_depth = 0;
-            parser p(opt);
+            parser p(storage_ptr(), opt);
             p.reset();
             BOOST_TEST(
                 p.depth() == 0);
@@ -667,7 +667,7 @@ public:
             error_code ec;
             parse_options opt;
             opt.max_depth = 0;
-            parser p(opt);
+            parser p(storage_ptr(), opt);
             p.reset();
             BOOST_TEST(
                 p.depth() == 0);

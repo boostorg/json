@@ -47,8 +47,14 @@ validate( string_view s )
         basic_parser<handler> p_;
 
     public:
-        null_parser() {}
-        ~null_parser() {}
+        null_parser()
+            : p_(parse_options())
+        {
+        }
+
+        ~null_parser()
+        {
+        }
         
         std::size_t
         write(

@@ -169,7 +169,10 @@ class null_parser
     basic_parser<handler> p_;
 
 public:
-    null_parser() = default;
+    null_parser()
+        : p_(parse_options())
+    {
+    }
 
     explicit
     null_parser(parse_options po) 
@@ -362,7 +365,10 @@ class fail_parser
     basic_parser<handler> p_;
 
 public:
-    fail_parser() = default;
+    fail_parser()
+        : p_(parse_options())
+    {
+    }
 
     explicit
     fail_parser(
@@ -592,7 +598,10 @@ class throw_parser
     basic_parser<handler> p_;
 
 public:
-    throw_parser() = default;
+    throw_parser()
+        : p_(parse_options())
+    {
+    }
 
     explicit
     throw_parser(

@@ -884,7 +884,7 @@ usingParsing()
 
         // Constructs a parser that will treat
         // comments as whitespace.
-        parser p2(po);
+        parser p2(storage_ptr(), po);
 
         error_code ec;
 

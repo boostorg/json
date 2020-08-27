@@ -209,48 +209,16 @@ on_comment(
 //----------------------------------------------------------
 
 parser::
-parser() noexcept
-    : parser(
-        storage_ptr(),
-        parse_options())
-{
-}
-
-parser::
-parser(
-    const parse_options& opt) noexcept
-    : parser(storage_ptr(), opt)
-{
-}
-
-parser::
-parser(
-    storage_ptr sp) noexcept
-    : parser(
-        std::move(sp),
-        parse_options())
-{
-}
-
-parser::
 parser(
     storage_ptr sp,
-    const parse_options& opt) noexcept
-    : p_(opt, std::move(sp))
-{
-}
-
-parser::
-parser(
+    parse_options const& opt,
     void* temp_buffer,
-    std::size_t temp_size,
-    storage_ptr sp,
-    parse_options const& opt) noexcept
+    std::size_t temp_size) noexcept
     : p_(
         opt,
+        std::move(sp),
         temp_buffer,
-        temp_size,
-        std::move(sp))
+        temp_size)
 {
 }
 
