@@ -753,52 +753,6 @@ read(char* dest, std::size_t size)
     return write_some(dest, size);
 }
 
-//----------------------------------------------------------
-
-string
-to_string(
-    json::value const& jv)
-{
-    string s;
-    serializer sr(jv);
-    while(! sr.is_done())
-    {
-        if(s.size() >= s.capacity())
-            s.reserve(s.capacity() + 1);
-        s.grow(static_cast<
-            string::size_type>(
-            sr.read(s.data() + s.size(),
-                s.capacity() - s.size())));
-    }
-    return s;
-}
-
-//[example_operator_lt__lt_
-// Serialize a value into an output stream
-
-std::ostream&
-operator<<( std::ostream& os, value const& jv )
-{
-    // Create a serializer that is set to output our value.
-    serializer sr( jv );
-
-    // Loop until all output is produced.
-    while( ! sr.is_done() )
-    {
-        // Use a local 4KB buffer.
-        char buf[4096];
-
-        // Try to fill up the local buffer.
-        auto const n = sr.read(buf, sizeof(buf));
-
-        // Write the valid portion of the buffer to the output stream.
-        os.write(buf, n);
-    }
-
-    return os;
-}
-//]
-
 } // json
 } // boost
 

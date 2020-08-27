@@ -24,6 +24,7 @@
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/string.hpp>
 #include <boost/json/system_error.hpp>
+#include <boost/json/to_string.hpp>
 #include <boost/json/value.hpp>
 #include <boost/json/value_from.hpp>
 #include <boost/json/value_to.hpp>

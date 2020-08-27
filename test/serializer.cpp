@@ -11,6 +11,7 @@
 #include <boost/json/serializer.hpp>
 
 #include <boost/json/parse.hpp>
+#include <boost/json/to_string.hpp>
 #include <iostream>
 
 #include "parse-vectors.hpp"

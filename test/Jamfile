@@ -44,6 +44,7 @@ local SOURCES =
     string.cpp
     string_view.cpp
     system_error.cpp
+    to_string.cpp
     value.cpp
     value_builder.cpp
     value_from.cpp

@@ -15,7 +15,6 @@
 #include <boost/json/detail/format.hpp>
 #include <boost/json/detail/stack.hpp>
 #include <boost/json/detail/stream.hpp>
-#include <iosfwd>
 
 namespace boost {
 namespace json {
@@ -159,47 +158,6 @@ public:
     std::size_t
     read(char* dest, std::size_t size);
 };
-
-//----------------------------------------------------------
-
-/** Return a string representing a serialized @ref value.
-
-    This function serializes the specified value
-    and returns it as a @ref string.
-
-    @par Exception Safety
-
-    Strong guarantee.
-    Calls to `memory_resource::allocate` may throw.
-
-    @param jv The value to serialize.
-*/
-BOOST_JSON_DECL
-string
-to_string(
-    value const& jv);
-
-/** Serialize a @ref value to an output stream.
-
-    This function serializes the specified value
-    into the output stream.
-
-    @par Exception Safety
-
-    Strong guarantee.
-    Calls to `memory_resource::allocate` may throw.
-
-    @param os The output stream to serialize to.
-
-    @param jv The value to serialize.
-
-    @return `os`.
-*/
-BOOST_JSON_DECL
-std::ostream&
-operator<<(
-    std::ostream& os,
-    value const& jv);
 
 } // json
 } // boost

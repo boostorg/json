@@ -11,7 +11,7 @@
 #include <boost/json/value_ref.hpp>
 
 #include <boost/json/value.hpp>
-#include <boost/json/serializer.hpp>
+#include <boost/json/to_string.hpp>
 
 #include "test_suite.hpp"
 

@@ -11,7 +11,7 @@
 #include <boost/json/value_builder.hpp>
 
 #include <boost/json/monotonic_resource.hpp>
-#include <boost/json/serializer.hpp>
+#include <boost/json/to_string.hpp>
 
 #include "test_suite.hpp"
 

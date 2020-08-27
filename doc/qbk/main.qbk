@@ -89,7 +89,7 @@
 
 [import ../../example/pretty.cpp]
 [import ../../example/validate.cpp]
-[import ../../include/boost/json/impl/serializer.ipp]
+[import ../../include/boost/json/impl/to_string.ipp]
 [import ../../test/snippets.cpp]
 
 [/-----------------------------------------------------------------------------]

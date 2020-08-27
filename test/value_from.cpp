@@ -11,8 +11,8 @@
 // Test that header file is self-contained.
 #include <boost/json/value_from.hpp>
 
-#include <boost/json/serializer.hpp>
 #include <boost/json/value.hpp> // prevent intellisense bugs
+#include <boost/json/to_string.hpp>
 
 #include "test_suite.hpp"
 

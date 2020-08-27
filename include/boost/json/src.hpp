@@ -36,6 +36,7 @@ in a translation unit of the program.
 #include <boost/json/impl/parser.ipp>
 #include <boost/json/impl/serializer.ipp>
 #include <boost/json/impl/string.ipp>
+#include <boost/json/impl/to_string.ipp>
 #include <boost/json/impl/value.ipp>
 #include <boost/json/impl/value_builder.ipp>
 #include <boost/json/impl/value_ref.ipp>
