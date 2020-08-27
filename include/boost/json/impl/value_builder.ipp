@@ -23,7 +23,7 @@ stack::
 ~stack()
 {
     clear();
-    if(begin_)
+    if(begin_ != temp_)
         sp_->deallocate(
             begin_,
             (end_ - begin_) *
@@ -32,9 +32,28 @@ stack::
 
 value_builder::
 stack::
-stack(storage_ptr sp) noexcept
+stack(
+    void* temp,
+    std::size_t size,
+    storage_ptr sp) noexcept
     : sp_(std::move(sp))
+    , temp_(temp)
 {
+    if(size >= min_size_ *
+        sizeof(value))
+    {
+        begin_ = reinterpret_cast<
+            value*>(temp);
+        top_ = begin_;
+        end_ = begin_ +
+            size / sizeof(value);
+    }
+    else
+    {
+        begin_ = nullptr;
+        top_ = nullptr;
+        end_ = nullptr;
+    }
 }
 
 void
@@ -70,13 +89,11 @@ prepare()
 {
     if(begin_)
         return;
-    // VFALCO is this the right number?
-    auto const initial_size = 16;
     begin_ = reinterpret_cast<
         value*>(sp_->allocate(
-            initial_size * sizeof(value)));
+            min_size_ * sizeof(value)));
     top_ = begin_;
-    end_ = begin_ + initial_size;
+    end_ = begin_ + min_size_;
 }
 
 // destroy the values but
@@ -122,8 +139,9 @@ grow_one()
         reinterpret_cast<char*>(begin),
         reinterpret_cast<char*>(begin_),
         size() * sizeof(value));
-    sp_->deallocate(begin_,
-        capacity * sizeof(value));
+    if(begin_ != temp_)
+        sp_->deallocate(begin_,
+            capacity * sizeof(value));
     // book-keeping
     top_ = begin + (top_ - begin_);
     end_ = begin + new_cap;
@@ -166,8 +184,9 @@ grow(std::size_t nchars)
         reinterpret_cast<char*>(begin),
         reinterpret_cast<char*>(begin_),
         amount);
-    sp_->deallocate(begin_,
-        capacity * sizeof(value));
+    if(begin_ != temp_)
+        sp_->deallocate(begin_,
+            capacity * sizeof(value));
     // book-keeping
     top_ = begin + (top_ - begin_);
     end_ = begin + new_cap;
@@ -293,8 +312,22 @@ value_builder::
 value_builder::
 value_builder(
     storage_ptr sp) noexcept
-    : st_(std::move(sp))
+    : value_builder(
+        nullptr, 0, std::move(sp))
 {
+}
+
+value_builder::
+value_builder(
+    void* temp_buffer,
+    std::size_t temp_size,
+    storage_ptr sp) noexcept
+    : st_(
+        temp_buffer,
+        temp_size,
+        std::move(sp))
+{
+
 }
 
 void

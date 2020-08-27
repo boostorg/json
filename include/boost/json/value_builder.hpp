@@ -71,17 +71,25 @@ class value_builder
 {
     class stack
     {
+        enum
+        {
+            min_size_ = 16
+        };
+
         storage_ptr sp_;
-        value* begin_ = nullptr;
-        value* top_ = nullptr;
-        value* end_ = nullptr;
+        void* temp_;
+        value* begin_;
+        value* top_;
+        value* end_;
         // string starts at top_+1
         std::size_t chars_ = 0;
         bool run_dtors_ = false;
 
     public:
         inline ~stack();
-        inline stack(storage_ptr sp) noexcept;
+        inline stack(
+            void* temp, std::size_t size,
+                storage_ptr sp) noexcept;
         inline void run_dtors(bool b) noexcept;
         inline std::size_t size() const noexcept;
         inline bool has_part();
@@ -131,6 +139,12 @@ public:
     BOOST_JSON_DECL
     explicit 
     value_builder(storage_ptr sp = {}) noexcept;
+
+    BOOST_JSON_DECL
+    value_builder(
+        void* temp_buffer,
+        std::size_t temp_size,
+        storage_ptr sp = {}) noexcept;
 
     /** Reserve internal storage space.
 

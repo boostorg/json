@@ -189,7 +189,14 @@ public:
     BOOST_JSON_DECL
     parser(
         storage_ptr sp, 
-        const parse_options& opt) noexcept;
+        parse_options const& opt) noexcept;
+
+    BOOST_JSON_DECL
+    parser(
+        void* temp_buffer,
+        std::size_t temp_size,
+        storage_ptr sp = {},
+        parse_options const& opt = {}) noexcept;
 
     /** Returns the current depth of the JSON being parsed.
 

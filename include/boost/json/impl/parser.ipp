@@ -240,6 +240,20 @@ parser(
 {
 }
 
+parser::
+parser(
+    void* temp_buffer,
+    std::size_t temp_size,
+    storage_ptr sp,
+    parse_options const& opt) noexcept
+    : p_(
+        opt,
+        temp_buffer,
+        temp_size,
+        std::move(sp))
+{
+}
+
 void
 parser::
 reserve(std::size_t n)

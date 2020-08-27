@@ -24,7 +24,11 @@ parse(
     storage_ptr sp,
     const parse_options& opt)
 {
-    parser p(opt);
+    char temp[4096];
+    parser p(
+        temp, sizeof(temp),
+        storage_ptr(),
+        opt);
     p.reset(std::move(sp));
     p.write(
         s.data(),
