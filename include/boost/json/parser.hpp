@@ -353,27 +353,6 @@ public:
     void
     finish(error_code& ec);
 
-    /** Discard all parsed JSON results.
-
-        This function destroys all partial or complete
-        parsing results. Temporary memory is not
-        released and will be used in any subsequent
-        parsing.
-
-        @note
-
-        After this function is called, it is necessary
-        to call @ref reset to parse a new JSON.
-
-        @par Complexity
-
-        Constant or linear in the size of any previous
-        partial parsing results.
-    */
-    BOOST_JSON_DECL
-    void
-    clear() noexcept;
-
     /** Return the parsed JSON as a @ref value.
 
         If @ref is_complete() returns `true`, then the

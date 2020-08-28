@@ -84,20 +84,6 @@ has_chars()
 
 //--------------------------------------
 
-void
-value_builder::
-stack::
-prepare()
-{
-    if(begin_)
-        return;
-    begin_ = reinterpret_cast<
-        value*>(sp_->allocate(
-            min_size_ * sizeof(value)));
-    top_ = begin_;
-    end_ = begin_ + min_size_;
-}
-
 // destroy the values but
 // not the stack allocation.
 void
@@ -131,25 +117,27 @@ value_builder::
 stack::
 grow_one()
 {
-    BOOST_ASSERT(begin_);
     BOOST_ASSERT(chars_ == 0);
     std::size_t const capacity =
         end_ - begin_;
+    std::size_t new_cap = min_size_;
     // VFALCO check overflow here
-    std::size_t new_cap = 2 * capacity;
-    BOOST_ASSERT(
-        new_cap - capacity >= 1);
+    while(new_cap < capacity + 1)
+        new_cap <<= 1;
     auto const begin =
         reinterpret_cast<value*>(
             sp_->allocate(
                 new_cap * sizeof(value)));
-    std::memcpy(
-        reinterpret_cast<char*>(begin),
-        reinterpret_cast<char*>(begin_),
-        size() * sizeof(value));
-    if(begin_ != temp_)
-        sp_->deallocate(begin_,
-            capacity * sizeof(value));
+    if(begin_)
+    {
+        std::memcpy(
+            reinterpret_cast<char*>(begin),
+            reinterpret_cast<char*>(begin_),
+            size() * sizeof(value));
+        if(begin_ != temp_)
+            sp_->deallocate(begin_,
+                capacity * sizeof(value));
+    }
     // book-keeping
     top_ = begin + (top_ - begin_);
     end_ = begin + new_cap;
@@ -162,9 +150,8 @@ value_builder::
 stack::
 grow(std::size_t nchars)
 {
-    BOOST_ASSERT(begin_);
     // needed capacity in values
-    std::size_t const needed_cap =
+    std::size_t const needed =
         size() +
         1 +
         ((chars_ + nchars +
@@ -173,25 +160,29 @@ grow(std::size_t nchars)
     std::size_t const capacity =
         end_ - begin_;
     BOOST_ASSERT(
-        needed_cap > capacity);
+        needed > capacity);
+    std::size_t new_cap = min_size_;
     // VFALCO check overflow here
-    std::size_t new_cap = capacity;
-    while(new_cap < needed_cap)
+    while(new_cap < needed)
         new_cap <<= 1;
-    auto const begin = reinterpret_cast<
-        value*>(sp_->allocate(
-            new_cap * sizeof(value)));
-    std::size_t amount =
-        size() * sizeof(value);
-    if(chars_ > 0)
-        amount += sizeof(value) + chars_;
-    std::memcpy(
-        reinterpret_cast<char*>(begin),
-        reinterpret_cast<char*>(begin_),
-        amount);
-    if(begin_ != temp_)
-        sp_->deallocate(begin_,
-            capacity * sizeof(value));
+    auto const begin =
+        reinterpret_cast<value*>(
+            sp_->allocate(
+                new_cap * sizeof(value)));
+    if(begin_)
+    {
+        std::size_t amount =
+            size() * sizeof(value);
+        if(chars_ > 0)
+            amount += sizeof(value) + chars_;
+        std::memcpy(
+            reinterpret_cast<char*>(begin),
+            reinterpret_cast<char*>(begin_),
+            amount);
+        if(begin_ != temp_)
+            sp_->deallocate(begin_,
+                capacity * sizeof(value));
+    }
     // book-keeping
     top_ = begin + (top_ - begin_);
     end_ = begin + new_cap;
@@ -331,9 +322,8 @@ void
 value_builder::
 reset(storage_ptr sp) noexcept
 {
-    clear();
+    st_.clear();
     sp_ = std::move(sp);
-    st_.prepare();
 
     // `stack` needs this
     // to clean up correctly
@@ -355,16 +345,6 @@ release()
     // cause a single top level element
     // to be produced.
     throw std::logic_error("no value");
-}
-
-void
-value_builder::
-clear() noexcept
-{
-    // give up shared ownership
-    sp_ = {};
-
-    st_.clear();
 }
 
 //----------------------------------------------------------

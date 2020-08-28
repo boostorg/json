@@ -133,7 +133,6 @@ class value_builder
         inline std::size_t size() const noexcept;
         inline bool has_chars();
 
-        inline void prepare();
         inline void clear() noexcept;
         inline void maybe_grow();
         inline void grow_one();
@@ -232,24 +231,6 @@ public:
     BOOST_JSON_DECL
     value
     release();
-
-    /** Discard all parsed JSON results.
-
-        This function destroys all intermediate parsing
-        results, while preserving dynamically allocated
-        internal memory which may be reused on a
-        subsequent parse.
-
-        After calling this function, it is necessary
-        to call @ref reset before building a new value.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    BOOST_JSON_DECL
-    void
-    clear() noexcept;
 
     //--------------------------------------------
 

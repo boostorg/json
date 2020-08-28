@@ -409,7 +409,6 @@ public:
         Dynamically allocated temporary memory used
         by the implementation is not deallocated.
     */
-    inline
     void
     reset() noexcept;
 

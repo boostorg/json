@@ -226,15 +226,8 @@ void
 parser::
 reset(storage_ptr sp) noexcept
 {
-    p_.handler().vb.reset(sp);
-}
-
-void
-parser::
-clear() noexcept
-{
     p_.reset();
-    p_.handler().vb.clear();
+    p_.handler().vb.reset(sp);
 }
 
 std::size_t
