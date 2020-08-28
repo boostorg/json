@@ -707,12 +707,6 @@ public:
     void
     testMembers()
     {
-        // reserve
-        {
-            parser p;
-            p.reserve(1024);
-        }
-
         // destroy after start
         {
             parser p;
@@ -725,13 +719,6 @@ public:
             error_code ec;
             p.release(ec);
             BOOST_TEST(ec == error::incomplete);
-        }
-
-        // reserve
-        {
-            parser p;
-            p.reserve(16384);
-            p.reserve(100);
         }
 
         // write(char const*, size_t)

@@ -126,23 +126,24 @@ class value_builder
 
     public:
         inline ~stack();
-        inline stack(storage_ptr sp,
+        inline stack(
+            storage_ptr sp,
             void* temp, std::size_t size) noexcept;
         inline void run_dtors(bool b) noexcept;
         inline std::size_t size() const noexcept;
-        inline bool has_part();
+        inline bool has_chars();
 
         inline void prepare();
         inline void clear() noexcept;
         inline void maybe_grow();
         inline void grow_one();
         inline void grow(std::size_t nchars);
+
         inline void append(string_view s);
         template<class... Args>
         value& push(Args&&... args);
         template<class Unchecked>
-        void push_structure(Unchecked&& u);
-
+        void exchange(Unchecked&& u);
         inline string_view release_string() noexcept;
         inline value* release(std::size_t n) noexcept;
     };
@@ -188,23 +189,6 @@ public:
         storage_ptr sp = {},
         void* temp_buffer = nullptr,
         std::size_t temp_size = 0) noexcept;
-
-    /** Reserve internal storage space.
-
-        This function reserves space for `n` bytes
-        in the builders's internal temporary storage.
-        The request is only a hint to the
-        implementation.
-
-        @par Exception Safety
-
-        Strong guarantee.
-
-        @param n The number of bytes to reserve.
-    */
-    BOOST_JSON_DECL
-    void
-    reserve(std::size_t n);
 
     /** Prepare to build a new value.
 

@@ -224,13 +224,6 @@ parser(
 
 void
 parser::
-reserve(std::size_t n)
-{
-    p_.handler().vb.reserve(n);
-}
-
-void
-parser::
 reset(storage_ptr sp) noexcept
 {
     p_.handler().vb.reset(sp);

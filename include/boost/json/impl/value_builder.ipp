@@ -18,6 +18,8 @@
 namespace boost {
 namespace json {
 
+//--------------------------------------
+
 value_builder::
 stack::
 ~stack()
@@ -75,12 +77,12 @@ size() const noexcept
 bool
 value_builder::
 stack::
-has_part()
+has_chars()
 {
     return chars_ != 0;
 }
 
-//---
+//--------------------------------------
 
 void
 value_builder::
@@ -196,6 +198,8 @@ grow(std::size_t nchars)
     begin_ = begin;
 }
 
+//--------------------------------------
+
 void
 value_builder::
 stack::
@@ -249,7 +253,7 @@ template<class Unchecked>
 void
 value_builder::
 stack::
-push_structure(Unchecked&& u)
+exchange(Unchecked&& u)
 {
     BOOST_ASSERT(chars_ == 0);
     // construct value on the stack
@@ -257,18 +261,18 @@ push_structure(Unchecked&& u)
     union U
     {
         value v;
-
-        U() { }
-        ~U() { }
+        U() {}
+        ~U() {}
     } jv;
     detail::value_access::
-        construct_value(&jv.v, std::move(u));
-    std::memcpy(top_, &jv.v, sizeof(value));
+        construct_value(
+            &jv.v, std::move(u));
+    std::memcpy(
+        reinterpret_cast<
+            char*>(top_),
+        &jv.v, sizeof(value));
     ++top_;
 }
-
-
-//---
 
 string_view
 value_builder::
@@ -306,6 +310,9 @@ release(std::size_t n) noexcept
 value_builder::
 ~value_builder()
 {
+    // default dtor is here so the
+    // definition goes in the library
+    // instead of the caller's TU.
 }
 
 value_builder::
@@ -318,27 +325,6 @@ value_builder(
         temp_buffer,
         temp_size)
 {
-
-}
-
-void
-value_builder::
-reserve(std::size_t n)
-{
-#ifndef BOOST_NO_EXCEPTIONS
-    try
-    {
-#endif
-        // VFALCO TODO
-        // st_.reserve(n);
-        (void)n;
-#ifndef BOOST_NO_EXCEPTIONS
-    }
-    catch(std::bad_alloc const&)
-    {
-        // silence the exception, per contract
-    }
-#endif
 }
 
 void
@@ -392,7 +378,7 @@ push_array(std::size_t n)
         st_.maybe_grow();
     detail::unchecked_array ua(
         st_.release(n), n, sp_);
-    st_.push_structure(std::move(ua));
+    st_.exchange(std::move(ua));
 }
 
 void
@@ -404,7 +390,7 @@ push_object(std::size_t n)
         st_.maybe_grow();
     detail::unchecked_object uo(
         st_.release(n * 2), n, sp_);
-    st_.push_structure(std::move(uo));
+    st_.exchange(std::move(uo));
 }
 
 void
@@ -420,7 +406,7 @@ value_builder::
 insert_key(
     string_view s)
 {
-    if(! st_.has_part())
+    if(! st_.has_chars())
     {
         // fast path
         char* dest = nullptr;
@@ -453,7 +439,7 @@ value_builder::
 insert_string(
     string_view s)
 {
-    if(! st_.has_part())
+    if(! st_.has_chars())
     {
         // fast path
         st_.push(s, sp_);

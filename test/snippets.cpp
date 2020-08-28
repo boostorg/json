@@ -813,8 +813,6 @@ usingParsing()
         parser p( sp );
         error_code ec;
 
-        p.reserve( 1024 );
-
         // Fully parses a valid JSON string and
         // extracts the resulting value
         p.reset( sp );
