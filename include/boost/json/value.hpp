@@ -34,7 +34,7 @@ namespace json {
 
 /** The type used to represent any JSON value
 
-    @par Thread Safety:
+    @par Thread Safety
 
     Distinct instances may be accessed concurrently.
     Non-const member functions of a shared instance

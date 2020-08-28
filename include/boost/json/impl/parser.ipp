@@ -54,7 +54,7 @@ on_object_end(
     std::size_t n,
     error_code&)
 {
-    vb.push_object(n);
+    st.push_object(n);
     return true;
 }
 
@@ -74,7 +74,7 @@ on_array_end(
     std::size_t n,
     error_code&)
 {
-    vb.push_array(n);
+    st.push_array(n);
     return true;
 }
 
@@ -85,7 +85,7 @@ on_key_part(
     string_view s,
     error_code&)
 {
-    vb.insert_key_part(s);
+    st.push_chars(s);
     return true;
 }
         
@@ -96,7 +96,7 @@ on_key(
     string_view s,
     error_code&)
 {
-    vb.insert_key(s);
+    st.push_key(s);
     return true;
 }
         
@@ -107,7 +107,7 @@ on_string_part(
     string_view s,
     error_code&)
 {
-    vb.insert_string_part(s);
+    st.push_chars(s);
     return true;
 }
 
@@ -118,7 +118,7 @@ on_string(
     string_view s,
     error_code&)
 {
-    vb.insert_string(s);
+    st.push_string(s);
     return true;
 }
 
@@ -140,7 +140,7 @@ on_int64(
     string_view,
     error_code&)
 {
-    vb.insert_int64(i);
+    st.push_int64(i);
     return true;
 }
         
@@ -152,7 +152,7 @@ on_uint64(
     string_view,
     error_code&)
 {
-    vb.insert_uint64(u);
+    st.push_uint64(u);
     return true;
 }
 
@@ -164,7 +164,7 @@ on_double(
     string_view,
     error_code&)
 {
-    vb.insert_double(d);
+    st.push_double(d);
     return true;
 }
         
@@ -175,7 +175,7 @@ on_bool(
     bool b,
     error_code&)
 {
-    vb.insert_bool(b);
+    st.push_bool(b);
     return true;
 }
 
@@ -184,7 +184,7 @@ parser::
 handler::
 on_null(error_code&)
 {
-    vb.insert_null();
+    st.push_null();
     return true;
 }
 
@@ -227,7 +227,7 @@ parser::
 reset(storage_ptr sp) noexcept
 {
     p_.reset();
-    p_.handler().vb.reset(sp);
+    p_.handler().st.reset(sp);
 }
 
 std::size_t
@@ -256,7 +256,7 @@ parser::
 release(error_code& ec)
 {
     if(p_.is_complete())
-        return p_.handler().vb.release();
+        return p_.handler().st.release();
     ec = error::incomplete;
     return nullptr;
 }

@@ -32,8 +32,8 @@ struct parse_options
         
         This specifies the maximum number of nested
         structures allowed while parsing a JSON. If
-        this limit is exceeded, the parser returns
-        an error immediately.
+        this limit is exceeded during a parse, an
+        error is returned.
 
         @see
             @ref basic_parser,

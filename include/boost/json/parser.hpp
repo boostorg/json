@@ -13,7 +13,7 @@
 #include <boost/json/detail/config.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/value.hpp>
-#include <boost/json/value_builder.hpp>
+#include <boost/json/value_stack.hpp>
 #include <boost/json/string.hpp>
 #include <boost/json/detail/basic_parser.hpp>
 #include <new>
@@ -88,8 +88,10 @@ namespace json {
 
     @par Thread Safety
 
-    Member functions must not be invoked
-    concurrently on a shared object.
+    Distinct instances may be accessed concurrently.
+    Non-const member functions of a shared instance
+    may not be called concurrently with any other
+    member functions of that instance.
 
     @see
         @ref parse,
@@ -99,12 +101,12 @@ class parser
 {
     struct handler
     {
-        value_builder vb;
+        value_stack st;
 
         template<class... Args>
         explicit
         handler(Args&&... args)
-            : vb(std::forward<Args>(args)...)
+            : st(std::forward<Args>(args)...)
         {
         }
 
@@ -152,7 +154,7 @@ public:
         as comments or trailing commas, and
 
         @li A caller-owned temporary buffer to use
-        first, before allocating using the memory
+        before allocating with the memory
         resource specified on construction.
 
         @par Example
@@ -368,8 +370,8 @@ public:
         @par Exception Safety
 
         Strong guarantee. If an exception occurs,
-        the valid operations are @ref reset,
-        @ref clear, or destruction.
+        the valid operations are @ref reset or
+        destruction.
 
         @return The parsed value. Ownership of this
         value is transferred to the caller.       

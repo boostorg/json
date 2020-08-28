@@ -47,8 +47,8 @@ local SOURCES =
     system_error.cpp
     to_string.cpp
     value.cpp
-    value_builder.cpp
     value_from.cpp
+    value_stack.cpp
     value_to.cpp
     value_ref.cpp
     ryu/d2s_intrinsics_test.cpp

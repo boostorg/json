@@ -7,10 +7,10 @@
 // Official repository: https://github.com/cppalliance/json
 //
 
-#ifndef BOOST_JSON_IMPL_VALUE_BUILDER_IPP
-#define BOOST_JSON_IMPL_VALUE_BUILDER_IPP
+#ifndef BOOST_JSON_IMPL_VALUE_STACK_IPP
+#define BOOST_JSON_IMPL_VALUE_STACK_IPP
 
-#include <boost/json/value_builder.hpp>
+#include <boost/json/value_stack.hpp>
 #include <cstring>
 #include <stdexcept>
 #include <utility>
@@ -20,7 +20,7 @@ namespace json {
 
 //--------------------------------------
 
-value_builder::
+value_stack::
 stack::
 ~stack()
 {
@@ -32,7 +32,7 @@ stack::
                 sizeof(value));
 }
 
-value_builder::
+value_stack::
 stack::
 stack(
     storage_ptr sp,
@@ -59,7 +59,7 @@ stack(
 }
 
 void
-value_builder::
+value_stack::
 stack::
 run_dtors(bool b) noexcept
 {
@@ -67,7 +67,7 @@ run_dtors(bool b) noexcept
 }
 
 std::size_t
-value_builder::
+value_stack::
 stack::
 size() const noexcept
 {
@@ -75,7 +75,7 @@ size() const noexcept
 }
 
 bool
-value_builder::
+value_stack::
 stack::
 has_chars()
 {
@@ -87,7 +87,7 @@ has_chars()
 // destroy the values but
 // not the stack allocation.
 void
-value_builder::
+value_stack::
 stack::
 clear() noexcept
 {
@@ -103,7 +103,7 @@ clear() noexcept
 }
 
 void
-value_builder::
+value_stack::
 stack::
 maybe_grow()
 {
@@ -113,7 +113,7 @@ maybe_grow()
 
 // make room for at least one more value
 void
-value_builder::
+value_stack::
 stack::
 grow_one()
 {
@@ -146,7 +146,7 @@ grow_one()
 
 // make room for nchars additional characters.
 void
-value_builder::
+value_stack::
 stack::
 grow(std::size_t nchars)
 {
@@ -192,7 +192,7 @@ grow(std::size_t nchars)
 //--------------------------------------
 
 void
-value_builder::
+value_stack::
 stack::
 append(string_view s)
 {
@@ -224,49 +224,8 @@ append(string_view s)
             end_));
 }
 
-template<class... Args>
-value&
-value_builder::
-stack::
-push(Args&&... args)
-{
-    BOOST_ASSERT(chars_ == 0);
-    if(top_ >= end_)
-        grow_one();
-    value& jv = detail::value_access::
-        construct_value(top_,
-            std::forward<Args>(args)...);
-    ++top_;
-    return jv;
-}
-
-template<class Unchecked>
-void
-value_builder::
-stack::
-exchange(Unchecked&& u)
-{
-    BOOST_ASSERT(chars_ == 0);
-    // construct value on the stack
-    // to avoid clobbering top_[0]
-    union U
-    {
-        value v;
-        U() {}
-        ~U() {}
-    } jv;
-    detail::value_access::
-        construct_value(
-            &jv.v, std::move(u));
-    std::memcpy(
-        reinterpret_cast<
-            char*>(top_),
-        &jv.v, sizeof(value));
-    ++top_;
-}
-
 string_view
-value_builder::
+value_stack::
 stack::
 release_string() noexcept
 {
@@ -286,7 +245,7 @@ release_string() noexcept
 // transfer ownership of the top n
 // elements of the stack to the caller
 value*
-value_builder::
+value_stack::
 stack::
 release(std::size_t n) noexcept
 {
@@ -296,18 +255,60 @@ release(std::size_t n) noexcept
     return top_;
 }
 
+template<class... Args>
+value&
+value_stack::
+stack::
+push(Args&&... args)
+{
+    BOOST_ASSERT(chars_ == 0);
+    if(top_ >= end_)
+        grow_one();
+    value& jv = detail::value_access::
+        construct_value(top_,
+            std::forward<Args>(args)...);
+    ++top_;
+    return jv;
+}
+
+template<class Unchecked>
+void
+value_stack::
+stack::
+exchange(Unchecked&& u)
+{
+    BOOST_ASSERT(chars_ == 0);
+    union U
+    {
+        value v;
+        U() {}
+        ~U() {}
+    } jv;
+    // construct value on the stack
+    // to avoid clobbering top_[0],
+    // which belongs to `u`.
+    detail::value_access::
+        construct_value(
+            &jv.v, std::move(u));
+    std::memcpy(
+        reinterpret_cast<
+            char*>(top_),
+        &jv.v, sizeof(value));
+    ++top_;
+}
+
 //----------------------------------------------------------
 
-value_builder::
-~value_builder()
+value_stack::
+~value_stack()
 {
     // default dtor is here so the
     // definition goes in the library
     // instead of the caller's TU.
 }
 
-value_builder::
-value_builder(
+value_stack::
+value_stack(
     storage_ptr sp,
     void* temp_buffer,
     std::size_t temp_size) noexcept
@@ -319,11 +320,14 @@ value_builder(
 }
 
 void
-value_builder::
+value_stack::
 reset(storage_ptr sp) noexcept
 {
     st_.clear();
-    sp_ = std::move(sp);
+
+    sp_.~storage_ptr();
+    ::new(&sp_) storage_ptr(
+        pilfer(sp));
 
     // `stack` needs this
     // to clean up correctly
@@ -332,7 +336,7 @@ reset(storage_ptr sp) noexcept
 }
 
 value
-value_builder::
+value_stack::
 release()
 {
     // give up shared ownership
@@ -350,7 +354,7 @@ release()
 //----------------------------------------------------------
 
 void
-value_builder::
+value_stack::
 push_array(std::size_t n)
 {
     // we already have room if n > 0
@@ -362,7 +366,7 @@ push_array(std::size_t n)
 }
 
 void
-value_builder::
+value_stack::
 push_object(std::size_t n)
 {
     // we already have room if n > 0
@@ -374,16 +378,16 @@ push_object(std::size_t n)
 }
 
 void
-value_builder::
-insert_key_part(
+value_stack::
+push_chars(
     string_view s)
 {
     st_.append(s);
 }
 
 void
-value_builder::
-insert_key(
+value_stack::
+push_key(
     string_view s)
 {
     if(! st_.has_chars())
@@ -407,16 +411,8 @@ insert_key(
 }
 
 void
-value_builder::
-insert_string_part(
-    string_view s)
-{
-    st_.append(s);
-}
-
-void
-value_builder::
-insert_string(
+value_stack::
+push_string(
     string_view s)
 {
     if(! st_.has_chars())
@@ -445,40 +441,40 @@ insert_string(
 }
 
 void
-value_builder::
-insert_int64(
+value_stack::
+push_int64(
     int64_t i)
 {
     st_.push(i, sp_);
 }
 
 void
-value_builder::
-insert_uint64(
+value_stack::
+push_uint64(
     uint64_t u)
 {
     st_.push(u, sp_);
 }
 
 void
-value_builder::
-insert_double(
+value_stack::
+push_double(
     double d)
 {
     st_.push(d, sp_);
 }
 
 void
-value_builder::
-insert_bool(
+value_stack::
+push_bool(
     bool b)
 {
     st_.push(b, sp_);
 }
 
 void
-value_builder::
-insert_null()
+value_stack::
+push_null()
 {
     st_.push(nullptr, sp_);
 }
