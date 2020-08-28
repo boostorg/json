@@ -2,9 +2,10 @@
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
 
   <Type Name="boost::json::value">
-    <DisplayString Condition="nul_.k==kind::object">object [{obj_.impl_.tab_?obj_.impl_.tab_->size:0}]</DisplayString>
     <DisplayString Condition="nul_.k==kind::array">array [{arr_.impl_.tab_?arr_.impl_.tab_->size:0}]</DisplayString>
+    <DisplayString Condition="nul_.k==kind::object">object [{obj_.impl_.tab_?obj_.impl_.tab_->size:0}]</DisplayString>
     <DisplayString Condition="nul_.k==kind::string">{((char*)(str_.impl_.p_.t+1)),[str_.impl_.p_.t->size]s}</DisplayString>
+    <DisplayString Condition="nul_.k==kind::string+64">{((char*)(str_.impl_.k_.s)),[str_.impl_.k_.n]s}:</DisplayString>
     <DisplayString Condition="nul_.k==kind::string+128">{str_.impl_.s_.buf,[detail::string_impl::sbo_chars_-str_.impl_.s_.buf[detail::string_impl::sbo_chars_]]s}</DisplayString>
     <DisplayString Condition="nul_.k==kind::double_">{dub_.d}</DisplayString>
     <DisplayString Condition="nul_.k==kind::int64">{i64_.i}</DisplayString>
@@ -15,24 +16,13 @@
       <ExpandedItem Condition="nul_.k==kind::object">obj_</ExpandedItem>
       <ExpandedItem Condition="nul_.k==kind::array">arr_</ExpandedItem>
       <ExpandedItem Condition="nul_.k==kind::string">str_</ExpandedItem>
+      <ExpandedItem Condition="nul_.k==kind::string+64">str_</ExpandedItem>
+      <ExpandedItem Condition="nul_.k==kind::string+128">str_</ExpandedItem>
     </Expand>    
   </Type>
 
-  <Type Name="boost::json::object">
-    <DisplayString>{{ size={impl_.tab_?impl_.tab_->size:0} }}</DisplayString>
-    <Expand>
-      <ArrayItems>
-        <Size>impl_.tab_?impl_.tab_->size:0</Size>
-        <ValuePointer Condition="impl_.tab_!=0">(boost::json::object::value_type*)(impl_.tab_+1)</ValuePointer>
-      </ArrayItems>
-      <Item Name="[capacity]">impl_.tab_?impl_.tab_->capacity:0</Item>
-      <Item Name="[buckets]">impl_.tab_?impl_.tab_->buckets:0</Item>
-      <Item Name="[storage]">sp_</Item>
-    </Expand>
-  </Type>
-
   <Type Name="boost::json::array">
-    <DisplayString>{{ size={impl_.tab_?impl_.tab_->size:0} }}</DisplayString>
+    <DisplayString>array [{impl_.tab_?impl_.tab_->size:0}]</DisplayString>
     <Expand>
       <ArrayItems>
         <Size>impl_.tab_?impl_.tab_->size:0</Size>
@@ -43,10 +33,24 @@
     </Expand>
   </Type>
 
+  <Type Name="boost::json::object">
+    <DisplayString>object [{impl_.tab_?impl_.tab_->size:0}]</DisplayString>
+    <Expand>
+      <ArrayItems>
+        <Size>impl_.tab_?impl_.tab_->size:0</Size>
+        <ValuePointer Condition="impl_.tab_!=0">(boost::json::object::value_type*)(impl_.tab_+1)</ValuePointer>
+      </ArrayItems>
+      <Item Name="[capacity]">impl_.tab_?impl_.tab_->capacity:0</Item>
+      <Item Name="[storage]">sp_</Item>
+    </Expand>
+  </Type>
+
   <Type Name="boost::json::string">
     <DisplayString Condition="impl_.s_.k==kind::string">{((char*)(impl_.p_.t+1)),[impl_.p_.t->size]s}</DisplayString>
-    <DisplayString Condition="impl_.s_.k==130">{impl_.s_.buf,[detail::string_impl::sbo_chars_-impl_.s_.buf[detail::string_impl::sbo_chars_]]s}</DisplayString>
+    <DisplayString Condition="impl_.s_.k==kind::string+64">{((char*)(impl_.k_.s)),[impl_.k_.n]s}:</DisplayString>
+    <DisplayString Condition="impl_.s_.k==kind::string+128">{impl_.s_.buf,[detail::string_impl::sbo_chars_-impl_.s_.buf[detail::string_impl::sbo_chars_]]s}</DisplayString>
     <Expand>
+      <!-- VFALCO Need to handle key string here -->
       <Item Name="[size]">impl_.s_.k==kind::string?impl_.p_.t->size:detail::string_impl::sbo_chars_-impl_.s_.buf[detail::string_impl::sbo_chars_]</Item>
       <Item Name="[capacity]">impl_.s_.k==kind::string?impl_.p_.t->capacity:detail::string_impl::sbo_chars_</Item>
       <Item Name="[storage]">sp_</Item>
@@ -56,8 +60,8 @@
   <Type Name="boost::json::key_value_pair">
     <DisplayString Condition="value_.nul_.k==kind::object">{{ {key_,[len_]s}, object [{value_.obj_.impl_.tab_?value_.obj_.impl_.tab_->size:0}] }}</DisplayString>
     <DisplayString Condition="value_.nul_.k==kind::array">{{ {key_,[len_]s}, array [{value_.arr_.impl_.tab_?value_.arr_.impl_.tab_->size:0}] }}</DisplayString>
-    <DisplayString Condition="value_.nul_.k==kind::string">{{ {key_,[len_]s}, {((char*)value_.str_.impl_.p_.t+1),[value_.str_.impl_.p_.t->size]s }}</DisplayString>
-    <DisplayString Condition="value_.nul_.k==value::short_string_">{{ size={0} }}</DisplayString>
+    <DisplayString Condition="value_.nul_.k==kind::string">{{ {key_,[len_]s}, {((char*)(value_.str_.impl_.p_.t+1)),[value_.str_.impl_.p_.t->size]s} }}</DisplayString>
+    <DisplayString Condition="value_.nul_.k==kind::string+128">{{ {key_,[len_]s}, {value_.str_.impl_.s_.buf,[detail::string_impl::sbo_chars_-value_.str_.impl_.s_.buf[detail::string_impl::sbo_chars_]]s} }}</DisplayString>
     <DisplayString Condition="value_.nul_.k==kind::double_">{{ {key_,[len_]s}, {value_.dub_.d} }}</DisplayString>
     <DisplayString Condition="value_.nul_.k==kind::int64">{{ {key_,[len_]s}, {value_.i64_.i} }}</DisplayString>
     <DisplayString Condition="value_.nul_.k==kind::uint64">{{ {key_,[len_]s}, {value_.u64_.u} }}</DisplayString>

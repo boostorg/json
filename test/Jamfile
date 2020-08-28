@@ -33,6 +33,7 @@ local SOURCES =
     kind.cpp
     memory_resource.cpp
     monotonic_resource.cpp
+    natvis.cpp
     number_cast.cpp
     object.cpp
     parse.cpp
