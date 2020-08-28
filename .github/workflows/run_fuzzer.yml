@@ -1,7 +1,7 @@
 name: fuzz
 
 env:
-  BINTRAYUSER: pauldreik
+  BINTRAYUSER: cppalliance
 
 on:
   push:
