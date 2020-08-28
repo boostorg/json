@@ -1,7 +1,7 @@
 name: fuzz
 
 env:
-  BINTRAYUSER: pauldreik
+  BINTRAYUSER: cppalliance
 
 on:
   push:
@@ -28,8 +28,8 @@ jobs:
       run: |
         echo uploading each artifact twice, otherwise it will not be published
         tar cf - cmin > corpus.tar
-        curl -T corpus.tar -u$BINTRAYUSER:${{ secrets.bintrayApiKey }} https://api.bintray.com/content/$BINTRAYUSER/boost.json/corpus/0/corpus/corpus.tar";publish=1;override=1"
-        curl -T corpus.tar -u$BINTRAYUSER:${{ secrets.bintrayApiKey }} https://api.bintray.com/content/$BINTRAYUSER/boost.json/corpus/0/corpus/corpus.tar";publish=1;override=1"
+        curl -T corpus.tar -u$BINTRAYUSER:${{ secrets.bintrayApiKey }} https://api.bintray.com/content/$BINTRAYUSER/boost.json/corpus/0/corpus.tar";publish=1;override=1"
+        curl -T corpus.tar -u$BINTRAYUSER:${{ secrets.bintrayApiKey }} https://api.bintray.com/content/$BINTRAYUSER/boost.json/corpus/0/corpus.tar";publish=1;override=1"
     - name: Save the corpus as a github artifact
       uses: actions/upload-artifact@v2
       with:
