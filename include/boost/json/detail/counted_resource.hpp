@@ -18,9 +18,16 @@ namespace boost {
 namespace json {
 namespace detail {
 
-struct counted_resource
+struct BOOST_SYMBOL_VISIBLE
+    counted_resource
     : memory_resource
 {
+    BOOST_JSON_DECL
+    counted_resource();
+
+    BOOST_JSON_DECL
+    ~counted_resource();
+
     std::atomic<std::size_t> refs{ 1 };
 };
 
@@ -67,5 +74,9 @@ public:
 } // detail
 } // json
 } // boost
+
+#ifdef BOOST_JSON_HEADER_ONLY
+#include <boost/json/detail/impl/counted_resource.ipp>
+#endif
 
 #endif

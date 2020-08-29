@@ -210,6 +210,14 @@ public:
         BOOST_ASSERT(p);
     }
 
+    template<class T>
+    storage_ptr(
+        polymorphic_allocator<T> const& alloc) noexcept
+        : i_(reinterpret_cast<std::uintptr_t>(
+            alloc.resource()))
+    {
+    }
+
     /** Move constructor.
 
         After construction, the moved-from object

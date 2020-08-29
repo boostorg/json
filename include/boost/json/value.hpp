@@ -78,6 +78,9 @@ class value
     inline char const* release_key(std::size_t& len) noexcept;
 
 public:
+    /// The type of _Allocator_ returned by @ref get_allocator
+    using allocator_type = polymorphic_allocator<value>;
+
     /** Destructor.
 
         The value and all of its contents are destroyed.
@@ -1559,6 +1562,11 @@ public:
     {
         return sp_;
     }
+
+    /// Return the polymorphic allocator
+    BOOST_JSON_DECL
+    allocator_type
+    get_allocator() const;
 
     /** Return a pointer to the underlying `object`, or `nullptr`.
 

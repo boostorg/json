@@ -19,10 +19,14 @@ namespace detail {
 
 /** A simple memory resource that uses operator new and delete.
 */
-class default_resource final
+class BOOST_SYMBOL_VISIBLE
+    default_resource final
     : public memory_resource
 {
 public:
+    BOOST_JSON_DECL
+    ~default_resource();
+
     void*
     do_allocate(
         std::size_t n,
@@ -51,5 +55,9 @@ public:
 } // detail
 } // json
 } // boost
+
+#ifdef BOOST_JSON_HEADER_ONLY
+#include <boost/json/detail/impl/default_resource.ipp>
+#endif
 
 #endif

@@ -31,7 +31,6 @@ local SOURCES =
     except.cpp
     json.cpp
     kind.cpp
-    memory_resource.cpp
     monotonic_resource.cpp
     natvis.cpp
     number_cast.cpp
@@ -66,16 +65,28 @@ local RUN_TESTS ;
 for local f in $(SOURCES)
 {
     RUN_TESTS += [
-        run $(f) main.cpp : : :
+        run $(f) main.cpp
+            /boost//container/<warnings-as-errors>off
+            : : :
             $(LIB)
             <include>.
         ] ;
 }
 
+RUN_TESTS += [
+    run memory_resource.cpp main.cpp 
+        /boost//container/<warnings-as-errors>off
+        : : :
+        $(LIB)
+        <include>.
+        ] ;
+
 for local f in $(LIMIT_SOURCES)
 {
     RUN_TESTS += [
-        run $(f) main.cpp : : :
+        run $(f) main.cpp
+            /boost//container/<warnings-as-errors>off
+            : : :
             <source>../src/src.cpp
             <include>.
             <define>BOOST_JSON_MAX_STRING_SIZE=1000

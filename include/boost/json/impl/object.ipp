@@ -246,6 +246,18 @@ operator=(
     return *this;
 }
 
+auto
+object::
+get_allocator() const ->
+    allocator_type
+{
+    if(sp_.is_counted())
+        BOOST_THROW_EXCEPTION(
+            std::invalid_argument(
+                "is_counted"));
+    return sp_.get();
+}
+
 //----------------------------------------------------------
 //
 // Modifiers
