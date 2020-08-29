@@ -67,6 +67,9 @@ class string
         storage_ptr sp);
 
 public:
+    /// The type of _Allocator_ returned by @ref get_allocator
+    using allocator_type    = polymorphic_allocator<char>;
+
     /// The traits used to perform character operations
     using traits_type       = std::char_traits<char>;
 
@@ -897,26 +900,49 @@ public:
 
     //------------------------------------------------------
 
-    /** Return the memory resource associated with the container.
+    /** Return the associated @ref memory_resource
 
-        Returns a pointer to the memory resource associated
-        with the container.
-
-        @note 
-        
-        Shared ownership of the @ref memory_resource is
-        propagated by the container to all of its
-        children recursively.
+        This returns the @ref memory_resource used by
+        the container.
 
         @par Complexity
 
         Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
     */
     storage_ptr const&
     storage() const noexcept
     {
         return sp_;
     }
+
+    /** Return the associated @ref memory_resource
+
+        This function returns an instance of
+        @ref polymorphic_allocator constructed from the
+        associated @ref memory_resource.
+
+        @note Since a @ref polymorphic_allocator is
+        non-owning, this function disallows undefined
+        behavior by throwing an exception if the memory
+        resource is retained by shared ownership.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        Strong guarantee.
+
+        @throw std::invalid_argument `this->storage().is_counted() == true`
+    */
+    BOOST_JSON_DECL
+    allocator_type
+    get_allocator() const;
 
     //------------------------------------------------------
     //

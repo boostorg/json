@@ -103,9 +103,10 @@ else()
     # Building out of Boost tree, out of Boost superproject tree, with Boost as dependency.
     # e.g. for packaging or added with add_subdirectory.
     #
-    find_package(Boost REQUIRED COMPONENTS system)
+    find_package(Boost REQUIRED COMPONENTS container system)
     target_link_libraries(boost_json
         PUBLIC
+            Boost::container
             Boost::system
     )
 endif()

@@ -11,6 +11,7 @@ project boost/json
     : requirements
       <link>shared:<define>BOOST_JSON_DYN_LINK=1
       <link>static:<define>BOOST_JSON_STATIC_LINK=1
+      <library>/boost//container/<warnings-as-errors>off
       <define>BOOST_JSON_SOURCE
     : usage-requirements
       <link>shared:<define>BOOST_JSON_DYN_LINK=1

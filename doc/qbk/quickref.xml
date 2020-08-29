@@ -107,6 +107,7 @@
           <member><link linkend="json.ref.boost__json__error_condition">error_condition</link></member>
           <member><link linkend="json.ref.boost__json__generic_category">generic_category</link></member>
           <member><link linkend="json.ref.boost__json__memory_resource">memory_resource</link></member>
+          <member><link linkend="json.ref.boost__json__polymorphic_allocator">polymorphic_allocator</link></member>
           <member><link linkend="json.ref.boost__json__string_view">string_view</link></member>
           <member><link linkend="json.ref.boost__json__system_error">system_error</link></member>
         </simplelist>
