@@ -17,6 +17,17 @@ namespace boost {
 namespace json {
 
 /** A memory resource using a caller-provided buffer
+
+    This memory resource satisfies allocation requests
+    by returning portions of memory from a fixed-size
+    buffer specified upon construction. Ownership of
+    the buffer is not transferred; the caller is
+    responsible for ensuring that the lifetime of the
+    buffer extends until the static resource is
+    destroyed.
+\n
+
+    @par Example
 */
 class static_resource final
     : public memory_resource
@@ -26,8 +37,11 @@ class static_resource final
     std::size_t used_;
 
 public:
+    /// Copy constructor (deleted)
     static_resource(
         static_resource const&) = delete;
+
+    /// Copy assignment (deleted)
     static_resource& operator=(
         static_resource const&) = delete;
 
@@ -35,7 +49,24 @@ public:
     BOOST_JSON_DECL
     ~static_resource() noexcept;
 
-    /** Constructor.
+    /** Constructor
+
+        The resource is constructed to use the specified
+        buffer.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+
+        @param buffer A pointer to valid storage of at
+        least `size` bytes. Ownership is not transferred.
+
+        @param size The number of valid bytes pointed
+        to by `buffer`.
     */
     BOOST_JSON_DECL
     static_resource(

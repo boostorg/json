@@ -12,6 +12,102 @@
 
 [section Allocators]
 
+In this section we discuss the various allocator models used in the
+C++ standard, followed by an explanation of the model used in this
+library and its benefits. Finally we discuss how the library
+interoperates with existing code that uses polymorphic allocators.
+
+[note
+    In the sections which follow, the aliases
+    __memory_resource__ and __polymorphic_allocator__
+    refer to either Boost types, or `std` types when
+    `BOOST_JSON_STANDALONE` is defined.
+]
+
+[/-----------------------------------------------------------------------------]
+
+[section Background]
+
+The first version of allocators in C++ defined the named requirement
+__Allocator__, and made each standard container a class template
+parameterized on the allocator type. For example, here is the
+declaration for __std_vector__:
+
+[snippet_background_1]
+
+The standard allocator is __DefaultConstructible__. To
+support allocators which require arguments upon construction
+(for example, some stateful allocators), containers provide
+additional constructor overloads taking an allocator
+instance parameter:
+
+[snippet_background_2]
+
+While the system works, it suffers from some usability problems:
+
+* The container must be a class template.
+* Parameterizing the allocator on the element type is clumsy.
+* The system of allocator traits, especially POCCA and POCMA,
+  is complicated and error-prone.
+
+Allocator-based programs which use multiple allocator types
+incur a greater number of function template instantiations and
+are generally slower to compile because class template function
+definitions must be visible at all call sites.
+
+C++17 improves the allocator model by representing the low-level
+allocation operation as an abstract interface called __memory_resource__,
+which is not parameterized on the element type, and has no traits:
+
+[snippet_background_3]
+
+The class template __polymorphic_allocator__ wraps a __memory_resource__
+pointer and meets the requirements of __Allocator__, allowing it to be
+used where an allocator is expected. The standard provides type aliases
+using the polymorphic allocator for standard containers:
+
+[snippet_background_4]
+
+A polymorphic allocator constructs with a pointer to a memory resource:
+
+[snippet_background_5]
+
+The code above illustrates a design defect in the standard's polymorphic
+allocators. The memory resource is passed by pointer, and ownership is not
+transferred. Thus the caller is responsible for its lifetime, otherwise
+undefined behavior results when the vector tries to allocate or deallocate
+memory from a resource that has been destroyed. Another problem with
+non-owning pointers is that a library cannot return a container which
+uses its own custom memory resource:
+
+[snippet_background_6]
+
+The raw memory resource pointer is easy to misuse:
+
+[snippet_background_7]
+
+Workarounds for this problem are worse than the problem itself. The library
+could return a pair with the vector and `unique_ptr<memory_resource>`
+which the caller must manage. Or the library could change its function
+signatures to accept a `memory_resource*` provided by the caller, where
+the library also makes public the desired memory resources
+(`my_resource` above). These solutions are unsatisfying.
+
+The interface used in Boost.JSON builds and improves upon
+C++17's memory allocation interfaces, achieving these goals:
+
+* No templates
+* Libraries compose more easily
+* Shared ownership of memory resources
+* Seamless interoperability with code already using `std::pmr`.
+* Fast compilation: function definitions are out-of-line.
+
+[endsect]
+
+[/-----------------------------------------------------------------------------]
+
+[section:storage_ptr The __storage_ptr__]
+
 Instances of __value__, __object__, __array__, and __string__ all use
 dynamically allocated memory. To allow callers to control the strategy
 used to allocate and deallocate memory, the library provides the smart
@@ -30,15 +126,15 @@ These types and functions are available:
 [table Functions and Types
 [ [Name] [Description] ]
 [
+    [__make_counted_resource__]
+    [
+        A function that returns a reference-counted storage pointer
+        with ownership of a new, dynamically allocated memory resource.
+    ]
+][
     [__memory_resource__]
     [
         The abstract base class representing an allocator.
-    ]
-][
-    [__storage_ptr__]
-    [
-        A smart pointer container through which a __memory_resource__
-        is managed and accessed.
     ]
 ][
     [__monotonic_resource__]
@@ -49,10 +145,17 @@ These types and functions are available:
         it fast for parsing but not ideal for mutation.
     ]
 ][
-    [__make_counted_resource__]
+    [__static_resource__]
     [
-        A function that returns a reference-counted storage pointer
-        with ownership of a new, dynamically allocated memory resource.
+        A memory resource that uses a single caller provided
+        buffer, from which individual allocations are made.
+        No dynamic allocations are used.
+    ]
+][
+    [__storage_ptr__]
+    [
+        A smart pointer container through which a __memory_resource__
+        is managed and accessed.
     ]
 ]]
 
@@ -213,5 +316,51 @@ that will log allocations and deallocations, and then forward them to
 `::operator new` and `::operator delete`:
 
 [snippet_allocators_15]
+
+[endsect]
+
+[/-----------------------------------------------------------------------------]
+
+[section:uses_allocator Uses-allocator construction]
+
+To support code bases which are already using polymorphic allocators,
+the containers in this library support __std_uses_allocator__ construction.
+This is accomplished through specialization of the `uses_allocator` class
+template. For __array__, __object__, __string__, and __value__:
+
+* The nested type `allocator_type` is an alias for a __polymorphic_allocator__
+
+* All eligible constructors which accept __storage_ptr__ will also accept
+    an instance of __polymorphic_allocator__ in the same argument position.
+
+* The member function `get_allocator` returns an instance of
+    __polymorphic_allocator__ constructed from the __memory_resource__
+    used by the container. Ownership of this memory resource is not
+    transferred.
+
+[note
+    Since __polymorphic_allocator__ does not own the memory resource,
+    calls to library containers' `get_allocator` member will throw an
+    exception if the associated memory resource is retained by shared
+    ownership.
+]
+
+Practically, this means that when a library container type is used in a
+standard container that uses a polymorphic allocator, the allocator will
+propagate to the JSON type. For example:
+
+[snippet_uses_allocator_1]
+
+Library containers can be constructed from polymorphic allocators:
+
+[snippet_uses_allocator_2]
+
+The polymorphic allocator is propagated recursively.
+Child elements of child elements will use the same memory
+resource as the parent.
+
+[endsect]
+
+[/-----------------------------------------------------------------------------]
 
 [endsect]

@@ -45,6 +45,8 @@ namespace json {
     Compiling a program using the library will
     require only a compiler conforming to C++17
     or later.
+
+    @see https://en.cppreference.com/w/cpp/error/error_code
 */
 using error_code = __see_below__;
 
@@ -70,6 +72,8 @@ using error_code = __see_below__;
     Compiling a program using the library will
     require only a compiler conforming to C++17
     or later.
+
+    @see https://en.cppreference.com/w/cpp/error/error_category
 */
 using error_category = __see_below__;
 
@@ -95,6 +99,8 @@ using error_category = __see_below__;
     Compiling a program using the library will
     require only a compiler conforming to C++17
     or later.
+
+    @see https://en.cppreference.com/w/cpp/error/error_condition
 */
 using error_condition = __see_below__;
 
@@ -120,6 +126,8 @@ using error_condition = __see_below__;
     Compiling a program using the library will
     require only a compiler conforming to C++17
     or later.
+
+    @see https://en.cppreference.com/w/cpp/error/system_error
 */
 using system_error = __see_below__;
 

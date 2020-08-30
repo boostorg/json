@@ -52,6 +52,8 @@ namespace json {
     Compiling a program using the library will
     require only a compiler conforming to C++17
     or later.
+
+    @see https://en.cppreference.com/w/cpp/string/basic_string_view
 */
 using string_view = __see_below__;
 

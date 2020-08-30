@@ -10,7 +10,7 @@
 // Test that header file is self-contained.
 #include <boost/json/value_stack.hpp>
 
-#include <boost/json/monotonic_resource.hpp>
+#include <boost/json/static_resource.hpp>
 #include <boost/json/to_string.hpp>
 
 #include "test_suite.hpp"
@@ -35,9 +35,9 @@ public:
     char temp[4096];
     value_stack st( storage_ptr(), temp, sizeof(temp) );
 
-    // Create a monotonic resource with a local initial buffer
+    // Create a static resource with a local initial buffer
     char buf[4096];
-    monotonic_resource mr( buf, sizeof(buf) );
+    static_resource mr( buf, sizeof(buf) );
 
     // All values on the stack will use `mr`
     st.reset(&mr);

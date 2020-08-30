@@ -78,9 +78,9 @@ namespace json {
     char temp[4096];
     value_stack st( storage_ptr(), temp, sizeof(temp) );
 
-    // Create a monotonic resource with a local initial buffer
+    // Create a static resource with a local initial buffer
     char buf[4096];
-    monotonic_resource mr( buf, sizeof(buf) );
+    static_resource mr( buf, sizeof(buf) );
 
     // All values on the stack will use `mr`
     st.reset(&mr);

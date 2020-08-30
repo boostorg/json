@@ -52,6 +52,8 @@ namespace json {
     Compiling a program using the library will
     require only a compiler conforming to C++17
     or later.
+
+    @see https://en.cppreference.com/w/cpp/memory/memory_resource
 */
 class memory_resource
 {
@@ -79,6 +81,8 @@ class memory_resource
     Compiling a program using the library will
     require only a compiler conforming to C++17
     or later.
+
+    @see https://en.cppreference.com/w/cpp/memory/polymorphic_allocator
 */
 template<class T>
 class polymorphic_allocator;

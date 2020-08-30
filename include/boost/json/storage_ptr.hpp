@@ -193,7 +193,8 @@ public:
 
         No-throw guarantee.
 
-        @param p A pointer to the memory resource to use.
+        @param p A pointer to the memory resource to use,
+        which must not be null.
     */
     template<class T
 #ifndef BOOST_JSON_DOCS

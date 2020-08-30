@@ -196,6 +196,8 @@ public:
     void
     run()
     {
+        storage_ptr sp;
+
         testMembers();
 
         testPull182();
