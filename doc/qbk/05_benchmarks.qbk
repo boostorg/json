@@ -103,87 +103,87 @@ The input files, available in the bench/data directory, are laid out thusly:
     [Size]
     [Description]
 ][
-    [[link json.performance.parse_apache_builds_json [*apache_builds.json]]]
+    [[link json.benchmarks.parse_apache_builds_json [*apache_builds.json]]]
     [125KB]
     [
         Data from the Apache Jenkins installation.
     ]
 ][
-    [[link json.performance.parse_canada_json [*canada.json]]]
+    [[link json.benchmarks.parse_canada_json [*canada.json]]]
     [2.2MB]
     [
         The largest file, containing a large number of 2-element
         arrays holding floating-point coordinate pairs.
     ]
 ][
-    [[link json.performance.parse_citm_catalog_json [*citm_catalog.json]]]
+    [[link json.benchmarks.parse_citm_catalog_json [*citm_catalog.json]]]
     [1.69MB]
     [
         A large JSON with a variety of nesting, types, and lengths.
     ]
 ][
-    [[link json.performance.parse_github_events_json [*github_events.json]]]
+    [[link json.benchmarks.parse_github_events_json [*github_events.json]]]
     [64KB]
     [
         An export of data from the Github Events API.
     ]
 ][
-    [[link json.performance.parse_gsoc_2018_json [*gsoc-2018.json]]]
+    [[link json.benchmarks.parse_gsoc_2018_json [*gsoc-2018.json]]]
     [3.25MB]
     [
         Google Summer of Code 2018 data.
     ]
 ][
-    [[link json.performance.parse_instruments_json [*instruments.json]]]
+    [[link json.benchmarks.parse_instruments_json [*instruments.json]]]
     [216KB]
     [
         An array of large objects.
     ]
 ][
-    [[link json.performance.parse_marine_ik_json [*marine_ik.json]]]
+    [[link json.benchmarks.parse_marine_ik_json [*marine_ik.json]]]
     [2.91MB]
     [
         A three.js example model serialized to JSON.
     ]
 ][
-    [[link json.performance.parse_mesh_json [*mesh.json]]]
+    [[link json.benchmarks.parse_mesh_json [*mesh.json]]]
     [707KB]
     [
         A JSON representing a 3D mesh. Contains many floating-point numbers.
     ]
 ][
-    [[link json.performance.parse_mesh_pretty_json [*mesh.pretty.json]]]
+    [[link json.benchmarks.parse_mesh_pretty_json [*mesh.pretty.json]]]
     [1.54MB]
     [
         mesh.json with whitespace added.
     ]
 ][
-    [[link json.performance.parse_numbers_json [*numbers.json]]]
+    [[link json.benchmarks.parse_numbers_json [*numbers.json]]]
     [147KB]
     [
         A array containing only floating-point numbers.
     ]
 ][
-    [[link json.performance.parse_random_json [*random.json]]]
+    [[link json.benchmarks.parse_random_json [*random.json]]]
     [499KB]
     [
         A JSON with lots of Cyrillic characters.
     ]
 ][
-    [[link json.performance.parse_twitter_json [*twitter.json]]]
+    [[link json.benchmarks.parse_twitter_json [*twitter.json]]]
     [617KB]
     [
         An export of data from Twitter's API.
     ]
 ][
-    [[link json.performance.parse_twitterescaped_json [*twitterescaped.json]]]
+    [[link json.benchmarks.parse_twitterescaped_json [*twitterescaped.json]]]
     [550KB]
     [
         twitter.json with whitespace removed and non-ASCII
         characters replaced with Unicode escapes.
     ]
 ][
-    [[link json.performance.parse_update_center_json [*update-center.json]]]
+    [[link json.benchmarks.parse_update_center_json [*update-center.json]]]
     [521KB]
     [
         An export of data from Twitter's API.
