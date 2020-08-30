@@ -62,19 +62,6 @@ struct parse_options
             @ref parser.
     */
     bool allow_trailing_commas = false;
-
-    /** Non-standard extension option
-
-        Allow invalid UTF-8 sequnces to appear
-        in keys and strings.
-
-        @note This increases parsing performance.
-
-        @see
-            @ref basic_parser,
-            @ref parser.
-    */
-    bool allow_invalid_utf8 = false;
 };
 
 } // json

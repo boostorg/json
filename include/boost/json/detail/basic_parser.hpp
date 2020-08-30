@@ -276,27 +276,26 @@ class basic_parser
 
     template<
         bool StackEmpty, bool ReturnValue,
-        bool Terminal, bool AllowTrailing, 
-        bool AllowBadUTF8>
+        bool Terminal, bool AllowTrailing>
     const char* parse_comment(const char* p);
 
     template<bool StackEmpty>
     const char* parse_document(const char* p);
     
     template<bool StackEmpty, bool AllowComments,
-        bool AllowTrailing, bool AllowBadUTF8>
+        bool AllowTrailing>
     const char* parse_value(const char* p);
     
     template<bool StackEmpty, bool AllowComments,
-        bool AllowTrailing, bool AllowBadUTF8>
+        bool AllowTrailing>
     const char* resume_value(const char* p);
     
     template<bool StackEmpty, bool AllowComments,
-        bool AllowTrailing, bool AllowBadUTF8>
+        bool AllowTrailing>
     const char* parse_object(const char* p);
     
     template<bool StackEmpty, bool AllowComments,
-        bool AllowTrailing, bool AllowBadUTF8>
+        bool AllowTrailing>
     const char* parse_array(const char* p);
     
     template<bool StackEmpty>
@@ -308,19 +307,16 @@ class basic_parser
     template<bool StackEmpty>
     const char* parse_false(const char* p);
 
-    template<bool StackEmpty, bool IsKey,
-        bool AllowBadUTF8>
+    template<bool StackEmpty, bool IsKey>
     const char* parse_string(const char* p);
     
     template<bool StackEmpty, char First>
     const char* parse_number(const char* p);
     
-    template<bool StackEmpty, bool IsKey,
-        bool AllowBadUTF8>
+    template<bool StackEmpty, bool IsKey>
     const char* parse_unescaped(const char* p);
 
-    template<bool StackEmpty, bool IsKey,
-        bool AllowBadUTF8>
+    template<bool StackEmpty, bool IsKey>
     const char* parse_escaped(
         const char* p, 
         std::size_t total = 0);
