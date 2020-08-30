@@ -9,12 +9,15 @@
 
 [section Benchmarks]
 
-In this section we compare the performance of Boost.JSON against the other
-two important libraries of interest, RapidJSON which is known for its
-considerable performance and nlohmann which underperforms but is
-feature-rich. The bench program measures the throughput of serialization
-and parsing for the various JSON files located in the data directory. It
-tests these implementations:
+This section compares the performance of Boost.JSON with two widely
+used libraries with similar functionality:
+RapidJSON
+which is known for its performance, and
+JSON for Modern C++ 
+which is known for feature-richness.
+The bench program measures the throughput of parsing and
+serialization for the a set of JSON representing typical
+workloads. These implementations are evaluated:
 
 [table Implementations
 [
@@ -23,18 +26,18 @@ tests these implementations:
 ][
     [[*boost(pool)]]
     [
-        Parses the input using a __monotonic_resource__, which is optimized
-        for parsing but not subsequent modification.
+        Parses the input using a __monotonic_resource__,
+        which is optimized for parsing without subsequent
+        modification.
         The __parser__ object is reused between
         trials, allowing temporary memory allocated by the
         implementation to persist and improve performance.
-        
     ]
 ][
     [[*boost]]
     [
-        Parses the input using the default memory resource, which
-        uses global operator `new` and `delete`, and is designed
+        Parses the input using the default memory resource,
+        which uses the standard C++ allocator, and is designed
         for general use including mutation of the document
         after it is parsed.
         The __parser__ object is reused between
@@ -46,7 +49,8 @@ tests these implementations:
     [
         Parses the input using an instance of
         [@https://rapidjson.org/classrapidjson_1_1_memory_pool_allocator.html `MemoryPoolAllocator`],
-        which is optimized for parsing but not subsequent modification.
+        which is optimized for parsing without subsequent
+        modification.
         The
         [@https://rapidjson.org/classrapidjson_1_1_generic_document.html `Document`]
         object holding temporary memory is not reused between trials, otherwise
@@ -57,8 +61,10 @@ tests these implementations:
     [
         Parses the input using an instance of
         [@https://rapidjson.org/classrapidjson_1_1_crt_allocator.html `CrtAllocator`],
-        which uses global operators `new` and `delete`, and is designed
-        for general use including mutation of the document after it is parsed.
+        which uses the standard C++ allocator, and is designed
+        for general use including mutation of the document
+        after it is parsed.
+        The
         [@https://rapidjson.org/classrapidjson_1_1_generic_document.html `Document`]
         object holding temporary memory is not reused between trials, otherwise
         memory consumption grows without bounds and invalidates the benchmark.
@@ -68,10 +74,12 @@ tests these implementations:
     [
         Parses the input using the static member function
         [@https://nlohmann.github.io/json/classnlohmann_1_1basic__json_ab330c13ba254ea41fbc1c52c5c610f45.html `json::parse`],
-        which uses the default `std` allocator, and is designed for general
-        use including mutation of the document after it is parsed.
-        This library does not provide an interface to reuse temporary
-        storage used during parsing or serialization.
+        which uses the default `std` allocator, and is designed
+        for general use including mutation of the document
+        after it is parsed.
+        This library does not provide an interface to reuse
+        temporary storage used during parsing or serialization
+        on subsequent operations.
     ]
 ]
 ]
@@ -81,9 +89,9 @@ tests these implementations:
 The input files are all loaded first. Then each configuration is run for
 a sufficient number of trials to last at least 5 seconds. The elapsed time,
 number of invocations (of parse or serialize), and bytes transferred are
-emitted as a sample along with a calculation of through put expressed in
-megabytes per second. Several samples (currently six) are generated for
-each configuration. All but the median three samples are discarded, with
+emitted as a sample along with a calculation of throughput expressed in
+megabytes per second. Several samples (currently five) are generated for
+each configuration. All but the median two samples are discarded, with
 the remaining samples averaged to produce a single number which is reported
 as the benchmark result.
 
@@ -95,123 +103,186 @@ The input files, available in the bench/data directory, are laid out thusly:
     [Size]
     [Description]
 ][
-    [[link json.benchmarks.parse_array_json [*array.json]]]
-    [667KB]
+    [[link json.performance.parse_apache_builds_json [*apache_builds.json]]]
+    [125KB]
     [
-        A single array with random values and words.
+        Data from the Apache Jenkins installation.
     ]
 ][
-    [[link json.benchmarks.parse_canada_json [*canada.json]]]
-    [2.14MB]
+    [[link json.performance.parse_canada_json [*canada.json]]]
+    [2.2MB]
     [
-        The largest file, containing a huge number of 2-element
+        The largest file, containing a large number of 2-element
         arrays holding floating-point coordinate pairs.
     ]
 ][
-    [[link json.benchmarks.parse_citm_catalog_json [*citm_catalog.json]]]
+    [[link json.performance.parse_citm_catalog_json [*citm_catalog.json]]]
     [1.69MB]
     [
         A large JSON with a variety of nesting, types, and lengths.
     ]
 ][
-    [[link json.benchmarks.parse_integers_32_json [*integers-32.json]]]
-    [1,353KB]
+    [[link json.performance.parse_github_events_json [*github_events.json]]]
+    [64KB]
     [
-        One array with random 32-bit integers.
+        An export of data from the Github Events API.
     ]
 ][
-    [[link json.benchmarks.parse_integers_64_json [*integers-64.json]]]
-    [596KB]
+    [[link json.performance.parse_gsoc_2018_json [*gsoc-2018.json]]]
+    [3.25MB]
     [
-        One array with random 64-bit integers.
+        Google Summer of Code 2018 data.
     ]
 ][
-    [[link json.benchmarks.parse_random_json [*random.json]]]
-    [2,244 bytes]
+    [[link json.performance.parse_instruments_json [*instruments.json]]]
+    [216KB]
     [
-        Holds a randomly generated JSON with assorted types.
+        An array of large objects.
     ]
 ][
-    [[link json.benchmarks.parse_small_json [*small.json]]]
-    [603 bytes]
+    [[link json.performance.parse_marine_ik_json [*marine_ik.json]]]
+    [2.91MB]
     [
-        Containing a few nested objects with strings.
+        A three.js example model serialized to JSON.
     ]
 ][
-    [[link json.benchmarks.parse_strings_json [*strings.json]]]
-    [992KB]
+    [[link json.performance.parse_mesh_json [*mesh.json]]]
+    [707KB]
     [
-        Contains a single array with random long strings.
+        A JSON representing a 3D mesh. Contains many floating-point numbers.
     ]
 ][
-    [[link json.benchmarks.parse_twitter_json [*twitter.json]]]
-    [631KB]
+    [[link json.performance.parse_mesh_pretty_json [*mesh.pretty.json]]]
+    [1.54MB]
+    [
+        mesh.json with whitespace added.
+    ]
+][
+    [[link json.performance.parse_numbers_json [*numbers.json]]]
+    [147KB]
+    [
+        A array containing only floating-point numbers.
+    ]
+][
+    [[link json.performance.parse_random_json [*random.json]]]
+    [499KB]
+    [
+        A JSON with lots of Cyrillic characters.
+    ]
+][
+    [[link json.performance.parse_twitter_json [*twitter.json]]]
+    [617KB]
+    [
+        An export of data from Twitter's API.
+    ]
+][
+    [[link json.performance.parse_twitterescaped_json [*twitterescaped.json]]]
+    [550KB]
+    [
+        twitter.json with whitespace removed and non-ASCII
+        characters replaced with Unicode escapes.
+    ]
+][
+    [[link json.performance.parse_update_center_json [*update-center.json]]]
+    [521KB]
     [
         An export of data from Twitter's API.
     ]
 ]
 ]
 
-Hardware used for testing: [*Intel(R) Core(TM) i7-6950X CPU @ 3.00GHz],
-Windows 10, 64GB RAM.
+Hardware used for testing: [*Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz],
+Windows 10, 32GB RAM. 
 
-Thanks to SSE2 optimized string processing algorithms from Peter Dimov,
-Boost.JSON significantly outperforms all other libraries for parsing
-and serializing unescaped strings:
+Compilers and optimization flags: gcc 8.1 (-O3), clang 10.0 (-O3), and msvc 19.26 (/O2).
 
-[heading Parse strings.json]
-[$json/images/parse-strings.png [width 668px] [height 712px]]
+[/-----------------------------------------------------------------------------]
 
-[heading Serialize strings.json]
-[$json/images/serialize-strings.png [width 668px] [height 712px]]
-
-[heading Parse integers-32.json]
-[$json/images/parse-integers-32.png [width 668px] [height 712px]]
-
-[heading Serialize integers-32.json]
-[$json/images/serialize-integers-32.png [width 668px] [height 712px]]
-
-[heading Parse integers-64.json]
-[$json/images/parse-integers-64.png [width 668px] [height 712px]]
-
-[heading Serialize integers-64.json]
-[$json/images/serialize-integers-64.png [width 668px] [height 712px]]
-
-[heading Parse small.json]
-[$json/images/parse-small.png [width 668px] [height 712px]]
-
-[heading Serialize small.json]
-[$json/images/serialize-small.png [width 668px] [height 712px]]
-
-[heading Parse array.json]
-[$json/images/parse-array.png [width 668px] [height 712px]]
-
-[heading Serialize array.json]
-[$json/images/serialize-array.png [width 668px] [height 712px]]
-
-[heading Parse random.json]
-[$json/images/parse-random.png [width 668px] [height 712px]]
-
-[heading Serialize random.json]
-[$json/images/serialize-random.png [width 668px] [height 712px]]
-
-[heading Parse twitter.json]
-[$json/images/parse-twitter.png [width 668px] [height 712px]]
-
-[heading Serialize twitter.json]
-[$json/images/serialize-twitter.png [width 668px] [height 712px]]
-
-[heading Parse citm_catalog.json]
-[$json/images/parse-citm-catalog.png [width 668px] [height 712px]]
-
-[heading Serialize citm_catalog.json]
-[$json/images/serialize-citm-catalog.png [width 668px] [height 712px]]
+[heading Parse apache_builds.json]
+[$json/images/parse_apache_builds.png [width 668px] [height 712px]]
 
 [heading Parse canada.json]
-[$json/images/parse-canada.png [width 668px] [height 712px]]
+[$json/images/parse_canada.png [width 668px] [height 712px]]
+
+[heading Parse citm_catalog.json]
+[$json/images/parse_citm_catalog.png [width 668px] [height 712px]]
+
+[heading Parse github_events.json]
+[$json/images/parse_github_events.png [width 668px] [height 712px]]
+
+[heading Parse gsoc-2018.json]
+[$json/images/parse_gsoc_2018.png [width 668px] [height 712px]]
+
+[heading Parse instruments.json]
+[$json/images/parse_instruments.png [width 668px] [height 712px]]
+
+[heading Parse marine_ik.json]
+[$json/images/parse_marine_ik.png [width 668px] [height 712px]]
+
+[heading Parse mesh.json]
+[$json/images/parse_mesh.png [width 668px] [height 712px]]
+
+[heading Parse mesh.pretty.json]
+[$json/images/parse_mesh_pretty.png [width 668px] [height 712px]]
+
+[heading Parse numbers.json]
+[$json/images/parse_numbers.png [width 668px] [height 712px]]
+
+[heading Parse random.json]
+[$json/images/parse_random.png [width 668px] [height 712px]]
+
+[heading Parse twitter.json]
+[$json/images/parse_twitter.png [width 668px] [height 712px]]
+
+[heading Parse twitterescaped.json]
+[$json/images/parse_twitterescaped.png [width 668px] [height 712px]]
+
+[heading Parse update-center.json]
+[$json/images/parse_update_center.png [width 668px] [height 712px]]
+
+[heading Parse apache_builds.json]
+[$json/images/parse_apache_builds.png [width 668px] [height 712px]]
+
+[/-----------------------------------------------------------------------------]
 
 [heading Serialize canada.json]
-[$json/images/serialize-canada.png [width 668px] [height 712px]]
+[$json/images/serialize_canada.png [width 668px] [height 712px]]
+
+[heading Serialize citm_catalog.json]
+[$json/images/serialize_citm_catalog.png [width 668px] [height 712px]]
+
+[heading Serialize github_events.json]
+[$json/images/serialize_github_events.png [width 668px] [height 712px]]
+
+[heading Serialize gsoc-2018.json]
+[$json/images/serialize_gsoc_2018.png [width 668px] [height 712px]]
+
+[heading Serialize instruments.json]
+[$json/images/serialize_instruments.png [width 668px] [height 712px]]
+
+[heading Serialize marine_ik.json]
+[$json/images/serialize_marine_ik.png [width 668px] [height 712px]]
+
+[heading Serialize mesh.json]
+[$json/images/serialize_mesh.png [width 668px] [height 712px]]
+
+[heading Serialize mesh.pretty.json]
+[$json/images/serialize_mesh_pretty.png [width 668px] [height 712px]]
+
+[heading Serialize numbers.json]
+[$json/images/serialize_numbers.png [width 668px] [height 712px]]
+
+[heading Serialize random.json]
+[$json/images/serialize_random.png [width 668px] [height 712px]]
+
+[heading Serialize twitter.json]
+[$json/images/serialize_twitter.png [width 668px] [height 712px]]
+
+[heading Serialize twitterescaped.json]
+[$json/images/serialize_twitterescaped.png [width 668px] [height 712px]]
+
+[heading Serialize update-center.json]
+[$json/images/serialize_update_center.png [width 668px] [height 712px]]
 
 [/-----------------------------------------------------------------------------]
 
