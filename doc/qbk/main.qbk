@@ -127,7 +127,7 @@ in memory.
         many other existing libraries.
     ]]
     [[
-        [link json.benchmarks Benchmarks]
+        [link json.performance Performance]
     ][
         Shows the performance of this library for typical workloads
         against the performance of other popular existing libraries.
@@ -143,7 +143,7 @@ in memory.
 [include 02_usage.qbk]
 [include 03_examples.qbk]
 [include 04_comparison.qbk]
-[include 05_benchmarks.qbk]
+[include 05_performance.qbk]
 
 [section:ref Reference]
 [xinclude quickref.xml]
