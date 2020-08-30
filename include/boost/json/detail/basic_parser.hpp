@@ -138,33 +138,37 @@ BOOST_JSON_NS_BEGIN
         ///
         /// @return `true` on success.
         /// @param s The partial characters
+        /// @param n The total size of the key thus far
         /// @param ec Set to the error, if any occurred.
         ///
-        bool on_key_part( string_view s, error_code& ec );
+        bool on_key_part( string_view s, std::size_t n, error_code& ec );
 
         /// Called with the last characters corresponding to the current key.
         ///
         /// @return `true` on success.
         /// @param s The remaining characters
+        /// @param n The total size of the key
         /// @param ec Set to the error, if any occurred.
         ///
-        bool on_key( string_view s, error_code& ec );
+        bool on_key( string_view s, std::size_t n, error_code& ec );
 
         /// Called with characters corresponding to part of the current string.
         ///
         /// @return `true` on success.
         /// @param s The partial characters
+        /// @param n The total size of the string thus far
         /// @param ec Set to the error, if any occurred.
         ///
-        bool on_string_part( string_view s, error_code& ec );
+        bool on_string_part( string_view s, std::size_t n, error_code& ec );
 
         /// Called with the last characters corresponding to the current string.
         ///
         /// @return `true` on success.
         /// @param s The remaining characters
+        /// @param n The total size of the string
         /// @param ec Set to the error, if any occurred.
         ///
-        bool on_string( string_view s, error_code& ec );
+        bool on_string( string_view s, std::size_t n, error_code& ec );
 
         /// Called with the characters corresponding to part of the current number.
         ///

@@ -978,7 +978,7 @@ parse_unescaped(const char* p)
         if(BOOST_JSON_LIKELY(size))
         {
             if(BOOST_JSON_UNLIKELY(! (h_.*on_part)(
-                {start, size}, ec_)))
+                {start, size}, total, ec_)))
                 return fail(cs.begin());
         }
         return maybe_suspend(cs.begin(), state::str1, total);
@@ -994,7 +994,7 @@ parse_unescaped(const char* p)
             if(BOOST_JSON_LIKELY(size))
             {
                 if(BOOST_JSON_UNLIKELY(! (h_.*on_part)(
-                    {start, size}, ec_)))
+                    {start, size}, total, ec_)))
                     return fail(cs.begin());
             }
             return maybe_suspend(cs.end(), state::str8, total);
@@ -1005,7 +1005,7 @@ parse_unescaped(const char* p)
             if(BOOST_JSON_LIKELY(size))
             {
                 if(BOOST_JSON_UNLIKELY(! (h_.*on_part)(
-                    {start, size}, ec_)))
+                    {start, size}, total, ec_)))
                     return fail(cs.begin());
             }
             return parse_escaped<StackEmpty, IsKey,
@@ -1015,7 +1015,7 @@ parse_unescaped(const char* p)
         return fail(cs.begin(), error::syntax);
     }
     if(BOOST_JSON_UNLIKELY(! (h_.*on_full)(
-        {start, size}, ec_)))
+        {start, size}, total, ec_)))
         return fail(cs.begin());
     ++cs;
     return cs.begin();
@@ -1096,7 +1096,7 @@ do_str3:
                 return fail(cs.begin(), ev_too_large);
             total += temp.size();
             if(BOOST_JSON_UNLIKELY(
-                ! (h_.*on_part)(temp, ec_)))
+                ! (h_.*on_part)(temp, total, ec_)))
                 return fail(cs.begin());
             temp.clear();
         }
@@ -1245,7 +1245,7 @@ do_str3:
                 return fail(cs.begin(), ev_too_large);
             total += temp.size();
             if(BOOST_JSON_UNLIKELY(
-                ! (h_.*on_part)(temp, ec_)))
+                ! (h_.*on_part)(temp, total, ec_)))
                 return fail(cs.begin());
             temp.clear();
             cs.clip(temp.max_size());
@@ -1374,7 +1374,7 @@ do_str2:
                     return fail(cs.begin(), ev_too_large);
                 total += temp.size();
                 if(BOOST_JSON_UNLIKELY(
-                    ! (h_.*on_part)(temp, ec_)))
+                    ! (h_.*on_part)(temp, total, ec_)))
                     return fail(cs.begin());
                 temp.clear();
             }
@@ -1390,7 +1390,7 @@ do_str2:
                 return fail(cs.begin(), ev_too_large);
             total += temp.size();
             if(BOOST_JSON_UNLIKELY(
-                ! (h_.*on_full)(temp, ec_)))
+                ! (h_.*on_full)(temp, total, ec_)))
                 return fail(cs.begin());
             ++cs;
             return cs.begin();
@@ -1407,7 +1407,7 @@ do_str2:
                         return fail(cs.begin(), ev_too_large);
                     total += temp.size();
                     if(BOOST_JSON_UNLIKELY(
-                        ! (h_.*on_part)(temp, ec_)))
+                        ! (h_.*on_part)(temp, total, ec_)))
                         return fail(cs.begin());
                     temp.clear();
                 }

@@ -115,10 +115,10 @@ class parser
         inline bool on_object_end(std::size_t n, error_code& ec);
         inline bool on_array_begin(error_code& ec);
         inline bool on_array_end(std::size_t n, error_code& ec);
-        inline bool on_key_part(string_view s, error_code& ec);
-        inline bool on_key(string_view s, error_code& ec);
-        inline bool on_string_part(string_view s, error_code& ec);
-        inline bool on_string(string_view s, error_code& ec);
+        inline bool on_key_part(string_view s, std::size_t n, error_code& ec);
+        inline bool on_key(string_view s, std::size_t n, error_code& ec);
+        inline bool on_string_part(string_view s, std::size_t n, error_code& ec);
+        inline bool on_string(string_view s, std::size_t n, error_code& ec);
         inline bool on_number_part(string_view, error_code&);
         inline bool on_int64(std::int64_t i, string_view, error_code& ec);
         inline bool on_uint64(std::uint64_t u, string_view, error_code& ec);

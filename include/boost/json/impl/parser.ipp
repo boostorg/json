@@ -82,6 +82,7 @@ parser::
 handler::
 on_key_part(
     string_view s,
+    std::size_t,
     error_code&)
 {
     st.push_chars(s);
@@ -93,6 +94,7 @@ parser::
 handler::
 on_key(
     string_view s,
+    std::size_t,
     error_code&)
 {
     st.push_key(s);
@@ -104,6 +106,7 @@ parser::
 handler::
 on_string_part(
     string_view s,
+    std::size_t, 
     error_code&)
 {
     st.push_chars(s);
@@ -115,6 +118,7 @@ parser::
 handler::
 on_string(
     string_view s,
+    std::size_t, 
     error_code&)
 {
     st.push_string(s);
