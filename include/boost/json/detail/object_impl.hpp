@@ -58,7 +58,7 @@ public:
     destroy(storage_ptr const& sp) noexcept
     {
         if( tab_ == nullptr ||
-            sp.is_not_counted_and_deallocate_is_null())
+            sp.is_not_counted_and_deallocate_is_trivial())
             return;
         do_destroy(sp);
     }

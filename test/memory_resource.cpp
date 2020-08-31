@@ -11,6 +11,7 @@
 #include <boost/json/memory_resource.hpp>
 
 #include <boost/json/monotonic_resource.hpp>
+#include <boost/json/static_resource.hpp>
 #include <boost/json/value.hpp>
 
 #ifndef BOOST_JSON_STANDALONE
@@ -119,10 +120,10 @@ namespace snippets1 {
     {
         void* do_allocate  ( size_t, size_t ) override { return 0; }
         void  do_deallocate( void*, size_t, size_t ) override {}
-        bool  do_is_equal  ( memory_resource const& ) const noexcept { return true; }
+        bool  do_is_equal  ( memory_resource const& ) const noexcept override { return true; }
     };
 
-    //[snippet_background_6
+    //[snippet_background_7
 
     namespace my_library {
 
@@ -140,7 +141,7 @@ namespace snippets1 {
 
     //--------------------------------------
 
-    //[snippet_background_7
+    //[snippet_background_8
 
     namespace my_library {
 
@@ -172,7 +173,7 @@ using vector = std::pmr::vector<T>;
 template<class T>
 using vector = boost::container::pmr::vector<T>;
 #endif
-} // snippets
+} // snippets2
 
 class memory_resource_test
 {
@@ -195,6 +196,27 @@ public:
 
             // Or this way, since construction from memory_resource* is implicit:
             vector< T > v2( &mr );
+
+            //]
+        }
+
+        //----------------------------------
+
+        {
+            using namespace snippets2;
+
+            //[snippet_background_6
+
+            {
+                // A type of memory resource which uses a stack buffer
+                char temp[4096];
+                static_resource mr( temp, sizeof(temp) );
+
+                // Construct a vector using the static buffer resource
+                vector< value > v( &mr );
+
+                // The vector will allocate from `temp` first, and then the heap.
+            }
 
             //]
         }
@@ -228,13 +250,13 @@ public:
             std::vector< value, polymorphic_allocator < value > > v;
 
             // This value will same memory resource as the vector
-            value jv( v.get_allocator().resource() );
+            value jv( v.get_allocator() );
 
             // However, ownership is not transferred,
             assert( ! jv.storage().is_counted() );
 
             // and deallocate is never null
-            assert( ! jv.storage().deallocate_is_null() );
+            assert( ! jv.storage().is_deallocate_trivial() );
 
             //]
         }

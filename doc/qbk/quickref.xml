@@ -51,7 +51,7 @@
         <simplelist type="vert" columns="1">
           <member><link linkend="json.ref.boost__json__has_value_from">has_value_from</link></member>
           <member><link linkend="json.ref.boost__json__has_value_to">has_value_to</link></member>
-          <member><link linkend="json.ref.boost__json__is_deallocate_null">is_deallocate_null</link></member>
+          <member><link linkend="json.ref.boost__json__is_deallocate_trivial">is_deallocate_trivial</link></member>
           <member><link linkend="json.ref.boost__json__value_from_tag">value_from_tag</link></member>
           <member><link linkend="json.ref.boost__json__value_to_tag">value_to_tag</link></member>
         </simplelist>

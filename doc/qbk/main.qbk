@@ -52,6 +52,7 @@
 [def __get__                    [link json.ref.boost__json__get `get`]]
 [def __has_value_from__         [link json.ref.boost__json__has_value_from `has_value_from`]]
 [def __has_value_to__           [link json.ref.boost__json__has_value_to `has_value_to`]]
+[def __is_deallocate_trivial__  [link json.ref.boost__json__is_deallocate_trivial `is_deallocate_trivial`]]
 [def __key_value_pair__         [link json.ref.boost__json__key_value_pair `key_value_pair`]]
 [def __kind__                   [link json.ref.boost__json__kind `kind`]]
 [def __make_counted_resource__  [link json.ref.boost__json__make_counted_resource `make_counted_resource`]]

@@ -265,7 +265,7 @@ unchecked_object::
 ~unchecked_object()
 {
     if( data_ &&
-        ! sp_.is_not_counted_and_deallocate_is_null())
+        ! sp_.is_not_counted_and_deallocate_is_trivial())
     {
         value* p = data_;
         while(size_--)

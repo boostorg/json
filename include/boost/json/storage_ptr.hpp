@@ -22,20 +22,20 @@
 namespace boost {
 namespace json {
 
-/** Determine if a call to a memory resource's deallocate function is a no-op.
+/** Return true if a memory resource's deallocate function has no effect.
 
-    A user-defined @ref memory_resource can specialize
-    this metafunction to indicate to the library that
-    calls to the `deallocate` function are not necessary
-    or have no effect. The implementation will elide such
-    calls when it is safe to do so. By default, the
-    implementation assumes that all memory resources
-    require calls to deallocate.
+    This metafunction may be specialized to indicate to
+    the library that calls to the `deallocate` function of
+    a @ref memory_resource have no effect. The implementation
+    will elide such calls when it is safe to do so. By default,
+    the implementation assumes that all memory resources
+    require a call to `deallocate` for each memory region
+    obtained by calling `allocate`.
 
     @par Example
 
     This example specializes the metafuction for `my_resource`,
-    to indicate that calls to deallocate are no-ops:
+    to indicate that calls to deallocate have no effect:
 
     @code
 
@@ -49,7 +49,7 @@ namespace json {
     namespace json {
 
     template<>
-    struct is_deallocate_null< my_resource >
+    struct is_deallocate_trivial< my_resource >
     {
         static constexpr bool value = true;
     };
@@ -59,29 +59,91 @@ namespace json {
 
     @endcode
 
+    It is usually not necessary for users to check this trait.
+    Instead, they can call @ref storage_ptr::is_deallocate_trivial
+    to determine if the pointed-to memory resource has a trivial
+    deallocate function.
+
     @see
         @ref memory_resource,
-        @ref storage_ptr.
+        @ref storage_ptr
 */
 template<class T>
-struct is_deallocate_null
+struct is_deallocate_trivial
 {
     /** A bool equal to true if calls to `T::do_deallocate` have no effect.
 
-        The value defaults to `false` for all unspecialized types.
+        The primary template sets `value` to false.
     */
     static constexpr bool value = false;
 };
 
-/** Manages a type-erased storage object.
+/** A smart pointer to a @ref memory_resource
 
-    This container is used to hold an owning or
-    non-owning reference to a @ref memory_resource
-    object.
+    This container is used to hold a pointer to a
+    memory resource. The pointed-to resource is
+    always valid; default-constructed pointers
+    use the default memory resource, which calls
+    into the standard global system heap.
+    Depending on the means of construction, the
+    ownership will be either:
+
+    @li Non-owning, when constructing from a raw
+    pointer to @ref memory_resource or from a
+    @ref polymorphic_allocator. In this case the
+    caller is responsible for ensuring that the
+    lifetime of the memory resource extends until
+    there are no more calls to allocate or
+    deallocate.
+
+    @li Owning, when constructing using the function
+    @ref make_counted_resource. In this case 
+    ownership is shared; the lifetime of the memory
+    resource extends until the last copy of the
+    @ref storage_ptr is destroyed.
+
+    @par Examples
+
+    These statements create a memory resource on the
+    stack and construct a pointer from it without
+    taking ownership:
+
+    @code
+
+    // Create our memory resource on the stack
+    monotonic_resource mr;
+
+    // Construct a non-owning pointer to the resource
+    storage_ptr sp( &mr );
+
+    @endcode
+
+    This function creates a pointer to a memory
+    resource using shared ownership and returns it.
+    The lifetime of the memory resource extends until
+    the last copy of the pointer is destroyed:
+
+    @code
+
+    // Create a counted memory resource and return it
+    storage_ptr make_storage()
+    {
+        return make_counted_resource< monotonic_resource >();
+    }
+
+    @endcode
+
+    @see
+        @ref make_counted_resource,
+        @ref memory_resource,
+        @ref polymorphic_allocator
 */
 class storage_ptr
 {
+#ifndef BOOST_JSON_DOCS
+    // VFALCO doc toolchain shows this when it shouldn't
     friend struct detail::counted_resource;
+#endif
     using counted_resource =
         detail::counted_resource;
 
@@ -103,7 +165,6 @@ class storage_ptr
             counted_resource*>(i_ & ~3);
     }
 
-    inline
     void
     addref() const noexcept
     {
@@ -111,7 +172,6 @@ class storage_ptr
             ++get_counted()->refs;
     }
 
-    inline
     void
     release() const noexcept
     {
@@ -128,20 +188,18 @@ class storage_ptr
         detail::counted_resource_impl<T>* p) noexcept
         : i_(reinterpret_cast<
             std::uintptr_t>(p) + 1 +
-            (is_deallocate_null<T>::value ? 2 : 0))
+            (json::is_deallocate_trivial<T>::value ? 2 : 0))
     {
         BOOST_ASSERT(p);
     }
 
 public:
-    /** Destructor.
+    /** Destructor
 
-        This releases the pointed-to memory resource.
-        If the memory resource is counted and this is the
-        last reference, the memory resource is destroyed.
-        If the memory resource does not require deallocation,
-        all memory allocated using this memory resource is
-        invalidated.
+        If the pointer has shared ownership of the
+        resource, the shared ownership is released.
+        If this is the last owned copy, the memory
+        resource is destroyed.
 
         @par Complexity
 
@@ -156,14 +214,12 @@ public:
         release();
     }
 
-    /** Default constructor.
+    /** Constructor
 
-        This constructs a storage pointer that refers to
-        the default memory resource. The default memory
-        resource is not reference counted, uses the global
-        allocation functions `operator new` and
-        `operator delete` to allocate and deallocate memory,
-        and requires calls to `deallocate`.
+        This constructs a non-owning pointer that refers
+        to the default memory resource, which uses the
+        standard global system heap to allocate and
+        free memory.
 
         @par Complexity
 
@@ -178,11 +234,52 @@ public:
     {
     }
 
-    /** Construct a pointer to a memory resource.
+    /** Constructor
 
+        This constructs a non-owning pointer that
+        points to the memory resource `r`.
         The caller is responsible for maintaining the
         lifetime of the pointed-to @ref memory_resource.
-        Ownership is not transferred.
+
+        @par Constraints
+        @code
+        std::is_convertible< T*, memory_resource* >::value == true
+        @endcode
+
+        @par Preconditions
+        @code
+        r != nullptr
+        @endcode
+
+        @par Exception Safety
+
+        No-throw guarantee.
+
+        @param r A pointer to the memory resource to use.
+        This may not be null.
+    */
+    template<class T
+#ifndef BOOST_JSON_DOCS
+        , class = typename std::enable_if<
+            std::is_convertible<T*,
+                memory_resource*>::value>::type
+#endif
+    >
+    storage_ptr(T* r) noexcept
+        : i_(reinterpret_cast<std::uintptr_t>(
+                static_cast<memory_resource *>(r)) +
+            (json::is_deallocate_trivial<T>::value ? 2 : 0))
+    {
+        BOOST_ASSERT(r);
+    }
+
+    /** Constructor
+
+        This constructs a non-owning pointer that
+        points to the same memory resource as `alloc`,
+        obtained by calling `alloc.resource()`.
+        The caller is responsible for maintaining the
+        lifetime of the pointed-to @ref memory_resource.
 
         @par Constraints
         @code
@@ -193,24 +290,9 @@ public:
 
         No-throw guarantee.
 
-        @param p A pointer to the memory resource to use,
-        which must not be null.
+        @param alloc A @ref polymorphic_allocator to
+        construct from.
     */
-    template<class T
-#ifndef BOOST_JSON_DOCS
-        , class = typename std::enable_if<
-            std::is_convertible<T*,
-                memory_resource*>::value>::type
-#endif
-    >
-    storage_ptr(T* p) noexcept
-        : i_(reinterpret_cast<std::uintptr_t>(
-                static_cast<memory_resource *>(p)) +
-            (is_deallocate_null<T>::value ? 2 : 0))
-    {
-        BOOST_ASSERT(p);
-    }
-
     template<class T>
     storage_ptr(
         polymorphic_allocator<T> const& alloc) noexcept
@@ -219,10 +301,20 @@ public:
     {
     }
 
-    /** Move constructor.
+    /** Move constructor
 
-        After construction, the moved-from object
-        will point to the default memory resource.
+        This function constructs a pointer that
+        points to the same memory resource as `other`,
+        with the same ownership:
+
+        @li If `other` is non-owning, then `*this`
+        will be be non-owning.
+
+        @li If `other` has shared ownership, then
+        ownership will be transferred to `*this`.
+
+        After construction, `other` will point
+        to the default memory resource.
 
         @par Complexity
 
@@ -232,7 +324,7 @@ public:
 
         No-throw guarantee.
 
-        @param other The storage pointer to construct from.
+        @param other The pointer to construct from.
     */
     storage_ptr(
         storage_ptr&& other) noexcept
@@ -241,10 +333,17 @@ public:
     {
     }
 
-    /** Copy constructor.
+    /** Copy constructor
 
-        This function acquires shared ownership of
-        the memory resource pointed to by `other`.
+        This function constructs a pointer that
+        points to the same memory resource as `other`,
+        with the same ownership:
+
+        @li If `other` is non-owning, then `*this`
+        will be be non-owning.
+
+        @li If `other` has shared ownership, then
+        `*this` will acquire shared ownership.
 
         @par Complexity
 
@@ -254,7 +353,7 @@ public:
 
         No-throw guarantee.
 
-        @param other The storage pointer to construct from.
+        @param other The pointer to construct from.
     */
     storage_ptr(
         storage_ptr const& other) noexcept
@@ -263,13 +362,22 @@ public:
         addref();
     }
 
-    /** Move assignment.
+    /** Move assignment
 
-        Shared ownership of the memory resource owned by `*this`
-        is released, and shared ownership of the memory resource
-        owned by `other` is acquired by move construction.
-        After construction, the moved-from object will
-        point to the default memory resource.
+        This function assigns a pointer that
+        points to the same memory resource as `other`,
+        with the same ownership:
+
+        @li If `other` is non-owning, then `*this`
+        will be be non-owning.
+
+        @li If `other` has shared ownership, then
+        ownership will be transferred to `*this`.
+
+        After assignment, `other` will point
+        to the default memory resource.
+        If `*this` previously had shared ownership,
+        it is released before the function returns.
 
         @par Complexity
 
@@ -293,9 +401,18 @@ public:
 
     /** Copy assignment.
 
-        Shared ownership of the memory resource owned by `*this`
-        is released, and shared ownership of the memory resource
-        owned by `other` is acquired by copy construction.
+        This function assigns a pointer that
+        points to the same memory resource as `other`,
+        with the same ownership:
+
+        @li If `other` is non-owning, then `*this`
+        will be be non-owning.
+
+        @li If `other` has shared ownership, then
+        `*this` will acquire shared ownership.
+
+        If `*this` previously had shared ownership,
+        it is released before the function returns.
 
         @par Complexity
 
@@ -318,6 +435,9 @@ public:
     }
 
     /** Return `true` if the storage pointer has shared ownership of the memory resource.
+
+        This function returns true for memory resources
+        created using @ref make_counted_resource.
     */
     bool
     is_counted() const noexcept
@@ -325,18 +445,30 @@ public:
         return (i_ & 1) != 0;
     }
 
-    /** Return `true` if the memory resource does not require deallocate to be called.
+    /** Return `true` if calling `deallocate` on the memory resource has no effect.
+
+        This function is used to determine if the deallocate
+        function of the pointed to memory resource is trivial.
+        The value of @ref is_deallocate_trivial is evaluated
+        and saved when the memory resource is constructed
+        and the type is known, before the type is erased.
     */
     bool
-    deallocate_is_null() const noexcept
+    is_deallocate_trivial() const noexcept
     {
         return (i_ & 2) != 0;
     }
 
-    /** Return `true` if ownership of the memory resource is not shared and deallocate is null.
+    /** Return `true` if ownership of the memory resource is not shared and deallocate is trivial.
+
+        This function is used to determine if calls to deallocate
+        can effectively be skipped.
+
+        @par Effects
+        Returns `! this->is_counted() && this->is_deallocate_trivial()`
     */
     bool
-    is_not_counted_and_deallocate_is_null() const noexcept
+    is_not_counted_and_deallocate_is_trivial() const noexcept
     {
         return (i_ & 3) == 2;
     }
@@ -344,7 +476,7 @@ public:
     /** Return a pointer to the memory resource.
 
         This function returns a pointer to the
-        @ref memory_resource being pointed to.
+        referenced @ref memory_resource.
 
         @par Complexity
 
@@ -365,6 +497,9 @@ public:
 
     /** Return a pointer to the memory resource.
 
+        This function returns a pointer to the
+        referenced @ref memory_resource.
+
         @par Complexity
 
         Constant.
@@ -381,9 +516,8 @@ public:
 
     /** Return a reference to the memory resource.
 
-        @par Precondition
-
-        `this` points to a valid memory resource.
+        This function returns a reference to the
+        pointed-to @ref memory_resource.
 
         @par Complexity
 
@@ -405,9 +539,12 @@ public:
     make_counted_resource(Args&&... args);
 };
 
-/** Create a new, counted memory resource and return a pointer to it.
+/** Return shared ownership of a newly created memory resource.
 
-    This functions similarly to `make_shared`.
+    This function creates a memory resource that uses
+    shared ownership. The lifetime of the memory resource
+    will be extended until the last @ref storage_ptr which
+    points to it is destroyed.
 
     @par Mandates
     @code
@@ -416,7 +553,7 @@ public:
 
     @par Complexity
 
-    Same as `T(std::forward<Args>(args)...)`.
+    Same as `T( std::forward<Args>(args)... )`.
 
     @par Exception Safety
 
@@ -424,7 +561,7 @@ public:
 
     @param args Parameters forwarded to the constructor of `T`.
 
-    @tparam T the concrete type of the memory resource to create.
+    @tparam T The type of memory resource to create.
 */
 template<class T, class... Args>
 storage_ptr

@@ -59,7 +59,7 @@ class memory_resource
 {
 };
 
-/** The type of polymorphic allocators used by the library.
+/** The type of polymorphic allocator used by the library.
 
     This type alias is set depending
     on how the library is configured:

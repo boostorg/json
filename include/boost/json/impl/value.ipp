@@ -394,7 +394,7 @@ key_value_pair::
 ~key_value_pair()
 {
     auto const& sp = value_.storage();
-    if(sp.is_not_counted_and_deallocate_is_null())
+    if(sp.is_not_counted_and_deallocate_is_trivial())
         return;
     sp->deallocate(const_cast<char*>(key_),
         len_ + 1, 1);

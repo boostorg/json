@@ -97,7 +97,7 @@ destroy(
     storage_ptr const& sp) noexcept
 {
     if(! tab_ ||
-        sp.is_not_counted_and_deallocate_is_null())
+        sp.is_not_counted_and_deallocate_is_trivial())
         return;
     destroy_impl(sp);
 }

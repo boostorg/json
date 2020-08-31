@@ -15,7 +15,7 @@
 
 //----------------------------------------------------------
 
-// Example code from is_deallocate_null
+    // Example code from is_deallocate_trivial
 
     // Forward-declaration for a user-defined memory resource
     struct my_resource;
@@ -27,7 +27,7 @@
     namespace json {
 
     template<>
-    struct is_deallocate_null< my_resource >
+    struct is_deallocate_trivial< my_resource >
     {
         static constexpr bool value = true;
     };

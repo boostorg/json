@@ -332,7 +332,7 @@ reset(storage_ptr sp) noexcept
     // `stack` needs this
     // to clean up correctly
     st_.run_dtors(
-        ! sp_.is_not_counted_and_deallocate_is_null());
+        ! sp_.is_not_counted_and_deallocate_is_trivial());
 }
 
 value

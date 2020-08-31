@@ -153,7 +153,7 @@ public:
     ~array()
     {
         if( ! impl_.data() ||
-            sp_.is_not_counted_and_deallocate_is_null())
+            sp_.is_not_counted_and_deallocate_is_trivial())
             return;
         destroy();
     }

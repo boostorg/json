@@ -9,3 +9,17 @@
 
 // Test that header file is self-contained.
 #include <boost/json/except.hpp>
+
+#include <boost/json/storage_ptr.hpp>
+
+namespace boost {
+namespace json {
+
+void test()
+{
+    struct T{};
+    static_assert(! is_deallocate_trivial<T>::value, "");
+}
+
+}
+}

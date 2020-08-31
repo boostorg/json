@@ -1223,7 +1223,7 @@ BOOST_STATIC_ASSERT(
 
 namespace {
 
-class my_null_deallocation_resource { };
+class my_non_deallocating_resource { };
 
 } // (anon)
 
@@ -1232,7 +1232,7 @@ namespace boost {
 namespace json {
 
 template<>
-struct is_deallocate_null< my_null_deallocation_resource >
+struct is_deallocate_trivial< my_non_deallocating_resource >
 {
     static constexpr bool value = true;
 };

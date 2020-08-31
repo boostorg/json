@@ -476,7 +476,7 @@ array::
 destroy(
     value* first, value* last) noexcept
 {
-    if(sp_.is_not_counted_and_deallocate_is_null())
+    if(sp_.is_not_counted_and_deallocate_is_trivial())
         return;
     while(last != first)
         (*--last).~value();

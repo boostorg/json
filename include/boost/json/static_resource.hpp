@@ -101,7 +101,7 @@ protected:
 };
 
 template<>
-struct is_deallocate_null<
+struct is_deallocate_trivial<
     static_resource>
 {
     static constexpr bool value = true;
