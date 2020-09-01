@@ -992,6 +992,12 @@ parse_unescaped(const char* p)
             seq_.save(cs.begin(), cs.remain());
             if(BOOST_JSON_UNLIKELY(seq_.complete()))
                 return fail(cs.begin(), error::syntax); 
+            if(BOOST_JSON_LIKELY(size))
+            {
+                if(BOOST_JSON_UNLIKELY(! (h_.*on_part)(
+                    {start, size}, ec_)))
+                    return fail(cs.begin());
+            }
             return maybe_suspend(cs.end(), state::str8, total);
         }
         else if(BOOST_JSON_LIKELY(*cs == '\\'))
@@ -1394,7 +1400,22 @@ do_str2:
         {
             seq_.save(cs.begin(), cs.remain());
             if(BOOST_JSON_UNLIKELY(! seq_.complete()))
-                return maybe_suspend(cs.end(), state::str8, total);
+            {
+                if(BOOST_JSON_LIKELY(! temp.empty()))
+                {
+                    if(BOOST_JSON_UNLIKELY(temp.size() > 
+                        BOOST_JSON_MAX_STRING_SIZE - total))
+                        return fail(cs.begin(), ev_too_large);
+                    total += temp.size();
+                    if(BOOST_JSON_UNLIKELY(
+                        ! (h_.*on_part)(temp, ec_)))
+                        return fail(cs.begin());
+                    temp.clear();
+                }
+                cs = cs.end();
+                cs.clip(temp.max_size());
+                goto do_str8;
+            }
             if(BOOST_JSON_UNLIKELY(! seq_.valid()))
                 return fail(cs.begin(), error::syntax);
             temp.append(seq_.data(), seq_.length());
