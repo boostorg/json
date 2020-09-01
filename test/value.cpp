@@ -1287,182 +1287,182 @@ public:
         // as_object()
         {
                   object& x = obj.as_object();
-            BOOST_TEST_THROWS(arr.as_object(), object_required_error);
-            BOOST_TEST_THROWS(str.as_object(), object_required_error);
-            BOOST_TEST_THROWS(i64.as_object(), object_required_error);
-            BOOST_TEST_THROWS(u64.as_object(), object_required_error);
-            BOOST_TEST_THROWS(dub.as_object(), object_required_error);
-            BOOST_TEST_THROWS(boo.as_object(), object_required_error);
-            BOOST_TEST_THROWS(nul.as_object(), object_required_error);
+            BOOST_TEST_THROWS(arr.as_object(), std::invalid_argument);
+            BOOST_TEST_THROWS(str.as_object(), std::invalid_argument);
+            BOOST_TEST_THROWS(i64.as_object(), std::invalid_argument);
+            BOOST_TEST_THROWS(u64.as_object(), std::invalid_argument);
+            BOOST_TEST_THROWS(dub.as_object(), std::invalid_argument);
+            BOOST_TEST_THROWS(boo.as_object(), std::invalid_argument);
+            BOOST_TEST_THROWS(nul.as_object(), std::invalid_argument);
             (void)x;
         }
 
         // as_object() const
         {
             object const& x = cobj.as_object();
-            BOOST_TEST_THROWS(carr.as_object(), object_required_error);
-            BOOST_TEST_THROWS(cstr.as_object(), object_required_error);
-            BOOST_TEST_THROWS(ci64.as_object(), object_required_error);
-            BOOST_TEST_THROWS(cu64.as_object(), object_required_error);
-            BOOST_TEST_THROWS(cdub.as_object(), object_required_error);
-            BOOST_TEST_THROWS(cboo.as_object(), object_required_error);
-            BOOST_TEST_THROWS(cnul.as_object(), object_required_error);
+            BOOST_TEST_THROWS(carr.as_object(), std::invalid_argument);
+            BOOST_TEST_THROWS(cstr.as_object(), std::invalid_argument);
+            BOOST_TEST_THROWS(ci64.as_object(), std::invalid_argument);
+            BOOST_TEST_THROWS(cu64.as_object(), std::invalid_argument);
+            BOOST_TEST_THROWS(cdub.as_object(), std::invalid_argument);
+            BOOST_TEST_THROWS(cboo.as_object(), std::invalid_argument);
+            BOOST_TEST_THROWS(cnul.as_object(), std::invalid_argument);
             (void)x;
         }
 
         // as_array()
         {
-            BOOST_TEST_THROWS(obj.as_array(), array_required_error);
+            BOOST_TEST_THROWS(obj.as_array(), std::invalid_argument);
                    array& x = arr.as_array();
-            BOOST_TEST_THROWS(str.as_array(), array_required_error);
-            BOOST_TEST_THROWS(i64.as_array(), array_required_error);
-            BOOST_TEST_THROWS(u64.as_array(), array_required_error);
-            BOOST_TEST_THROWS(dub.as_array(), array_required_error);
-            BOOST_TEST_THROWS(boo.as_array(), array_required_error);
-            BOOST_TEST_THROWS(nul.as_array(), array_required_error);
+            BOOST_TEST_THROWS(str.as_array(), std::invalid_argument);
+            BOOST_TEST_THROWS(i64.as_array(), std::invalid_argument);
+            BOOST_TEST_THROWS(u64.as_array(), std::invalid_argument);
+            BOOST_TEST_THROWS(dub.as_array(), std::invalid_argument);
+            BOOST_TEST_THROWS(boo.as_array(), std::invalid_argument);
+            BOOST_TEST_THROWS(nul.as_array(), std::invalid_argument);
             (void)x;
         }
 
         // as_array() const
         {
-            BOOST_TEST_THROWS(cobj.as_array(), array_required_error);
+            BOOST_TEST_THROWS(cobj.as_array(), std::invalid_argument);
              array const& x = carr.as_array();
-            BOOST_TEST_THROWS(cstr.as_array(), array_required_error);
-            BOOST_TEST_THROWS(ci64.as_array(), array_required_error);
-            BOOST_TEST_THROWS(cu64.as_array(), array_required_error);
-            BOOST_TEST_THROWS(cdub.as_array(), array_required_error);
-            BOOST_TEST_THROWS(cboo.as_array(), array_required_error);
-            BOOST_TEST_THROWS(cnul.as_array(), array_required_error);
+            BOOST_TEST_THROWS(cstr.as_array(), std::invalid_argument);
+            BOOST_TEST_THROWS(ci64.as_array(), std::invalid_argument);
+            BOOST_TEST_THROWS(cu64.as_array(), std::invalid_argument);
+            BOOST_TEST_THROWS(cdub.as_array(), std::invalid_argument);
+            BOOST_TEST_THROWS(cboo.as_array(), std::invalid_argument);
+            BOOST_TEST_THROWS(cnul.as_array(), std::invalid_argument);
             (void)x;
         }
 
         // as_string()
         {
-            BOOST_TEST_THROWS(obj.as_string(), string_required_error);
-            BOOST_TEST_THROWS(arr.as_string(), string_required_error);
+            BOOST_TEST_THROWS(obj.as_string(), std::invalid_argument);
+            BOOST_TEST_THROWS(arr.as_string(), std::invalid_argument);
                   string& x = str.as_string();
-            BOOST_TEST_THROWS(i64.as_string(), string_required_error);
-            BOOST_TEST_THROWS(u64.as_string(), string_required_error);
-            BOOST_TEST_THROWS(dub.as_string(), string_required_error);
-            BOOST_TEST_THROWS(boo.as_string(), string_required_error);
-            BOOST_TEST_THROWS(nul.as_string(), string_required_error);
+            BOOST_TEST_THROWS(i64.as_string(), std::invalid_argument);
+            BOOST_TEST_THROWS(u64.as_string(), std::invalid_argument);
+            BOOST_TEST_THROWS(dub.as_string(), std::invalid_argument);
+            BOOST_TEST_THROWS(boo.as_string(), std::invalid_argument);
+            BOOST_TEST_THROWS(nul.as_string(), std::invalid_argument);
             (void)x;
         }
 
         // as_string() const
         {
-            BOOST_TEST_THROWS(cobj.as_string(), string_required_error);
-            BOOST_TEST_THROWS(carr.as_string(), string_required_error);
+            BOOST_TEST_THROWS(cobj.as_string(), std::invalid_argument);
+            BOOST_TEST_THROWS(carr.as_string(), std::invalid_argument);
             string const& x = cstr.as_string();
-            BOOST_TEST_THROWS(ci64.as_string(), string_required_error);
-            BOOST_TEST_THROWS(cu64.as_string(), string_required_error);
-            BOOST_TEST_THROWS(cdub.as_string(), string_required_error);
-            BOOST_TEST_THROWS(cboo.as_string(), string_required_error);
-            BOOST_TEST_THROWS(cnul.as_string(), string_required_error);
+            BOOST_TEST_THROWS(ci64.as_string(), std::invalid_argument);
+            BOOST_TEST_THROWS(cu64.as_string(), std::invalid_argument);
+            BOOST_TEST_THROWS(cdub.as_string(), std::invalid_argument);
+            BOOST_TEST_THROWS(cboo.as_string(), std::invalid_argument);
+            BOOST_TEST_THROWS(cnul.as_string(), std::invalid_argument);
             (void)x;
         }
 
         // as_int64()
         {
-            BOOST_TEST_THROWS(obj.as_int64(), int64_required_error);
-            BOOST_TEST_THROWS(arr.as_int64(), int64_required_error);
-            BOOST_TEST_THROWS(str.as_int64(), int64_required_error);
+            BOOST_TEST_THROWS(obj.as_int64(), std::invalid_argument);
+            BOOST_TEST_THROWS(arr.as_int64(), std::invalid_argument);
+            BOOST_TEST_THROWS(str.as_int64(), std::invalid_argument);
             std::int64_t& x = i64.as_int64();
-            BOOST_TEST_THROWS(u64.as_int64(), int64_required_error);
-            BOOST_TEST_THROWS(dub.as_int64(), int64_required_error);
-            BOOST_TEST_THROWS(boo.as_int64(), int64_required_error);
-            BOOST_TEST_THROWS(nul.as_int64(), int64_required_error);
+            BOOST_TEST_THROWS(u64.as_int64(), std::invalid_argument);
+            BOOST_TEST_THROWS(dub.as_int64(), std::invalid_argument);
+            BOOST_TEST_THROWS(boo.as_int64(), std::invalid_argument);
+            BOOST_TEST_THROWS(nul.as_int64(), std::invalid_argument);
             (void)x;
         }
 
         // as_int64() const
         {
-            BOOST_TEST_THROWS(cobj.as_int64(), int64_required_error);
-            BOOST_TEST_THROWS(carr.as_int64(), int64_required_error);
-            BOOST_TEST_THROWS(cstr.as_int64(), int64_required_error);
+            BOOST_TEST_THROWS(cobj.as_int64(), std::invalid_argument);
+            BOOST_TEST_THROWS(carr.as_int64(), std::invalid_argument);
+            BOOST_TEST_THROWS(cstr.as_int64(), std::invalid_argument);
       std::int64_t const& x = ci64.as_int64();
-            BOOST_TEST_THROWS(cu64.as_int64(), int64_required_error);
-            BOOST_TEST_THROWS(cdub.as_int64(), int64_required_error);
-            BOOST_TEST_THROWS(cboo.as_int64(), int64_required_error);
-            BOOST_TEST_THROWS(cnul.as_int64(), int64_required_error);
+            BOOST_TEST_THROWS(cu64.as_int64(), std::invalid_argument);
+            BOOST_TEST_THROWS(cdub.as_int64(), std::invalid_argument);
+            BOOST_TEST_THROWS(cboo.as_int64(), std::invalid_argument);
+            BOOST_TEST_THROWS(cnul.as_int64(), std::invalid_argument);
             (void)x;
         }
 
         // as_uint64()
         {
-            BOOST_TEST_THROWS(obj.as_uint64(), uint64_required_error);
-            BOOST_TEST_THROWS(arr.as_uint64(), uint64_required_error);
-            BOOST_TEST_THROWS(str.as_uint64(), uint64_required_error);
-            BOOST_TEST_THROWS(i64.as_uint64(), uint64_required_error);
+            BOOST_TEST_THROWS(obj.as_uint64(), std::invalid_argument);
+            BOOST_TEST_THROWS(arr.as_uint64(), std::invalid_argument);
+            BOOST_TEST_THROWS(str.as_uint64(), std::invalid_argument);
+            BOOST_TEST_THROWS(i64.as_uint64(), std::invalid_argument);
            std::uint64_t& x = u64.as_uint64();
-            BOOST_TEST_THROWS(dub.as_uint64(), uint64_required_error);
-            BOOST_TEST_THROWS(boo.as_uint64(), uint64_required_error);
-            BOOST_TEST_THROWS(nul.as_uint64(), uint64_required_error);
+            BOOST_TEST_THROWS(dub.as_uint64(), std::invalid_argument);
+            BOOST_TEST_THROWS(boo.as_uint64(), std::invalid_argument);
+            BOOST_TEST_THROWS(nul.as_uint64(), std::invalid_argument);
             (void)x;
         }
 
         // as_uint64() const
         {
-            BOOST_TEST_THROWS(cobj.as_uint64(), uint64_required_error);
-            BOOST_TEST_THROWS(carr.as_uint64(), uint64_required_error);
-            BOOST_TEST_THROWS(cstr.as_uint64(), uint64_required_error);
-            BOOST_TEST_THROWS(ci64.as_uint64(), uint64_required_error);
+            BOOST_TEST_THROWS(cobj.as_uint64(), std::invalid_argument);
+            BOOST_TEST_THROWS(carr.as_uint64(), std::invalid_argument);
+            BOOST_TEST_THROWS(cstr.as_uint64(), std::invalid_argument);
+            BOOST_TEST_THROWS(ci64.as_uint64(), std::invalid_argument);
      std::uint64_t const& x = cu64.as_uint64();
-            BOOST_TEST_THROWS(cdub.as_uint64(), uint64_required_error);
-            BOOST_TEST_THROWS(cboo.as_uint64(), uint64_required_error);
-            BOOST_TEST_THROWS(cnul.as_uint64(), uint64_required_error);
+            BOOST_TEST_THROWS(cdub.as_uint64(), std::invalid_argument);
+            BOOST_TEST_THROWS(cboo.as_uint64(), std::invalid_argument);
+            BOOST_TEST_THROWS(cnul.as_uint64(), std::invalid_argument);
             (void)x;
         }
 
         // as_double()
         {
-            BOOST_TEST_THROWS(obj.as_double(), double_required_error);
-            BOOST_TEST_THROWS(arr.as_double(), double_required_error);
-            BOOST_TEST_THROWS(str.as_double(), double_required_error);
-            BOOST_TEST_THROWS(i64.as_double(), double_required_error);
-            BOOST_TEST_THROWS(u64.as_double(), double_required_error);
+            BOOST_TEST_THROWS(obj.as_double(), std::invalid_argument);
+            BOOST_TEST_THROWS(arr.as_double(), std::invalid_argument);
+            BOOST_TEST_THROWS(str.as_double(), std::invalid_argument);
+            BOOST_TEST_THROWS(i64.as_double(), std::invalid_argument);
+            BOOST_TEST_THROWS(u64.as_double(), std::invalid_argument);
                   double& x = dub.as_double();
-            BOOST_TEST_THROWS(boo.as_double(), double_required_error);
-            BOOST_TEST_THROWS(nul.as_double(), double_required_error);
+            BOOST_TEST_THROWS(boo.as_double(), std::invalid_argument);
+            BOOST_TEST_THROWS(nul.as_double(), std::invalid_argument);
             (void)x;
         }
 
-        // as_uint64() const
+        // as_double() const
         {
-            BOOST_TEST_THROWS(cobj.as_double(), double_required_error);
-            BOOST_TEST_THROWS(carr.as_double(), double_required_error);
-            BOOST_TEST_THROWS(cstr.as_double(), double_required_error);
-            BOOST_TEST_THROWS(ci64.as_double(), double_required_error);
-            BOOST_TEST_THROWS(cu64.as_double(), double_required_error);
+            BOOST_TEST_THROWS(cobj.as_double(), std::invalid_argument);
+            BOOST_TEST_THROWS(carr.as_double(), std::invalid_argument);
+            BOOST_TEST_THROWS(cstr.as_double(), std::invalid_argument);
+            BOOST_TEST_THROWS(ci64.as_double(), std::invalid_argument);
+            BOOST_TEST_THROWS(cu64.as_double(), std::invalid_argument);
             double const& x = cdub.as_double();
-            BOOST_TEST_THROWS(cboo.as_double(), double_required_error);
-            BOOST_TEST_THROWS(cnul.as_double(), double_required_error);
+            BOOST_TEST_THROWS(cboo.as_double(), std::invalid_argument);
+            BOOST_TEST_THROWS(cnul.as_double(), std::invalid_argument);
             (void)x;
         }
 
         // as_bool()
         {
-            BOOST_TEST_THROWS(obj.as_bool(), bool_required_error);
-            BOOST_TEST_THROWS(arr.as_bool(), bool_required_error);
-            BOOST_TEST_THROWS(str.as_bool(), bool_required_error);
-            BOOST_TEST_THROWS(i64.as_bool(), bool_required_error);
-            BOOST_TEST_THROWS(u64.as_bool(), bool_required_error);
-            BOOST_TEST_THROWS(dub.as_bool(), bool_required_error);
+            BOOST_TEST_THROWS(obj.as_bool(), std::invalid_argument);
+            BOOST_TEST_THROWS(arr.as_bool(), std::invalid_argument);
+            BOOST_TEST_THROWS(str.as_bool(), std::invalid_argument);
+            BOOST_TEST_THROWS(i64.as_bool(), std::invalid_argument);
+            BOOST_TEST_THROWS(u64.as_bool(), std::invalid_argument);
+            BOOST_TEST_THROWS(dub.as_bool(), std::invalid_argument);
                     bool& x = boo.as_bool();
-            BOOST_TEST_THROWS(nul.as_bool(), bool_required_error);
+            BOOST_TEST_THROWS(nul.as_bool(), std::invalid_argument);
             (void)x;
         }
 
         // as_bool() const
         {
-            BOOST_TEST_THROWS(cobj.as_bool(), bool_required_error);
-            BOOST_TEST_THROWS(carr.as_bool(), bool_required_error);
-            BOOST_TEST_THROWS(cstr.as_bool(), bool_required_error);
-            BOOST_TEST_THROWS(ci64.as_bool(), bool_required_error);
-            BOOST_TEST_THROWS(cu64.as_bool(), bool_required_error);
-            BOOST_TEST_THROWS(cdub.as_bool(), bool_required_error);
+            BOOST_TEST_THROWS(cobj.as_bool(), std::invalid_argument);
+            BOOST_TEST_THROWS(carr.as_bool(), std::invalid_argument);
+            BOOST_TEST_THROWS(cstr.as_bool(), std::invalid_argument);
+            BOOST_TEST_THROWS(ci64.as_bool(), std::invalid_argument);
+            BOOST_TEST_THROWS(cu64.as_bool(), std::invalid_argument);
+            BOOST_TEST_THROWS(cdub.as_bool(), std::invalid_argument);
                bool const&x = cboo.as_bool();
-            BOOST_TEST_THROWS(cnul.as_bool(), bool_required_error);
+            BOOST_TEST_THROWS(cnul.as_bool(), std::invalid_argument);
             (void)x;
         }
     }
@@ -1549,19 +1549,19 @@ public:
         BOOST_TEST_THROWS(value(
             {{"k1", "value"}, {"k2", nullptr}}
                 ).at("null"),
-            key_not_found);
+            std::out_of_range);
 
         // array
         BOOST_TEST(
             value({true,2,"3"}).at(1).as_int64() == 2);
 
-        BOOST_TEST_THROWS( value({false,2,false}).at(4), array_index_error );
-        BOOST_TEST_THROWS( value({false,2,"3"}).at(4), array_index_error );
-        BOOST_TEST_THROWS( value({false,false}).at(4), array_index_error );
-        BOOST_TEST_THROWS( value({false,2}).at(4), array_index_error );
-        BOOST_TEST_THROWS( value({false,2,"3",nullptr}).at(4), array_index_error );
-        BOOST_TEST_THROWS( value({2,false,"3"}).at(4), array_index_error );
-        BOOST_TEST_THROWS( value({true,2,"3"}).at(4), array_index_error );
+        BOOST_TEST_THROWS( value({false,2,false}).at(4), std::out_of_range );
+        BOOST_TEST_THROWS( value({false,2,"3"}).at(4), std::out_of_range );
+        BOOST_TEST_THROWS( value({false,false}).at(4), std::out_of_range );
+        BOOST_TEST_THROWS( value({false,2}).at(4), std::out_of_range );
+        BOOST_TEST_THROWS( value({false,2,"3",nullptr}).at(4), std::out_of_range );
+        BOOST_TEST_THROWS( value({2,false,"3"}).at(4), std::out_of_range );
+        BOOST_TEST_THROWS( value({true,2,"3"}).at(4), std::out_of_range );
     }
 
     //------------------------------------------------------

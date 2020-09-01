@@ -225,11 +225,10 @@ public:
         constructed top-level value to the caller.
         The behavior is undefined if there is not
         a single, top-level element.
-        
+
         @par Exception Safety
 
-        Basic guarantee.
-        Calls to `memory_resource::allocate` may throw.
+        No-throw guarantee.
 
         @return A __value__ holding the result.
         Ownership of this value is transferred
@@ -239,7 +238,7 @@ public:
     */
     BOOST_JSON_DECL
     value
-    release();
+    release() noexcept;
 
     //--------------------------------------------
 

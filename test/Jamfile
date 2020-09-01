@@ -28,7 +28,6 @@ local SOURCES =
     array.cpp
     basic_parser.cpp
     error.cpp
-    except.cpp
     json.cpp
     kind.cpp
     monotonic_resource.cpp

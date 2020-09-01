@@ -13,7 +13,6 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/array.hpp>
-#include <boost/json/except.hpp>
 #include <boost/json/kind.hpp>
 #include <boost/json/object.hpp>
 #include <boost/json/pilfer.hpp>
@@ -21,6 +20,7 @@
 #include <boost/json/string.hpp>
 #include <boost/json/string_view.hpp>
 #include <boost/json/value_ref.hpp>
+#include <boost/json/detail/except.hpp>
 #include <boost/json/detail/value.hpp>
 #include <cstdlib>
 #include <initializer_list>
@@ -1562,10 +1562,23 @@ public:
         return sp_;
     }
 
-    /// Return the polymorphic allocator
+    /** Return the associated @ref memory_resource
+
+        This function returns an instance of
+        @ref polymorphic_allocator constructed from the
+        associated @ref memory_resource.
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+    */
     BOOST_JSON_DECL
     allocator_type
-    get_allocator() const;
+    get_allocator() const noexcept;
 
     /** Return a pointer to the underlying `object`, or `nullptr`.
 
@@ -1891,13 +1904,15 @@ public:
 
         Strong guarantee.
 
-        @throw object_required_error `! this->is_object()`
+        @throw std::invalid_argument `! this->is_object()`
     */
     object&
     as_object()
     {
         if(! is_object())
-            object_required_error::raise();
+            detail::throw_invalid_argument(
+                "not an object",
+                BOOST_CURRENT_LOCATION);
         return obj_;
     }
 
@@ -1915,13 +1930,15 @@ public:
 
         Strong guarantee.
 
-        @throw object_required_error `! this->is_object()`
+        @throw std::invalid_argument `! this->is_object()`
     */
     object const&
     as_object() const
     {
         if(! is_object())
-            object_required_error::raise();
+            detail::throw_invalid_argument(
+                "not an object",
+                BOOST_CURRENT_LOCATION);
         return obj_;
     }
 
@@ -1939,13 +1956,15 @@ public:
 
         Strong guarantee.
 
-        @throw array_required_error `! this->is_array()`
+        @throw std::invalid_argument `! this->is_array()`
     */
     array&
     as_array()
     {
         if(! is_array())
-            array_required_error::raise();
+            detail::throw_invalid_argument(
+                "array required",
+                BOOST_CURRENT_LOCATION);
         return arr_;
     }
 
@@ -1963,13 +1982,15 @@ public:
 
         Strong guarantee.
 
-        @throw array_required_error `! this->is_array()`
+        @throw std::invalid_argument `! this->is_array()`
     */
     array const&
     as_array() const
     {
         if(! is_array())
-            array_required_error::raise();
+            detail::throw_invalid_argument(
+                "array required",
+                BOOST_CURRENT_LOCATION);
         return arr_;
     }
 
@@ -1987,13 +2008,15 @@ public:
 
         Strong guarantee.
 
-        @throw string_required_error `! this->is_string()`
+        @throw std::invalid_argument `! this->is_string()`
     */
     string&
     as_string()
     {
         if(! is_string())
-            string_required_error::raise();
+            detail::throw_invalid_argument(
+                "not a string",
+                BOOST_CURRENT_LOCATION);
         return str_;
     }
 
@@ -2011,13 +2034,15 @@ public:
 
         Strong guarantee.
 
-        @throw string_required_error `! this->is_string()`
+        @throw std::invalid_argument `! this->is_string()`
     */
     string const&
     as_string() const
     {
         if(! is_string())
-            string_required_error::raise();
+            detail::throw_invalid_argument(
+                "not a string",
+                BOOST_CURRENT_LOCATION);
         return str_;
     }
 
@@ -2035,13 +2060,15 @@ public:
 
         Strong guarantee.
 
-        @throw int64_required_error `! this->is_int64()`
+        @throw std::invalid_argument `! this->is_int64()`
     */
     std::int64_t&
     as_int64()
     {
         if(! is_int64())
-            int64_required_error::raise();
+            detail::throw_invalid_argument(
+                "not an int64",
+                BOOST_CURRENT_LOCATION);
         return i64_.i;
     }
 
@@ -2059,13 +2086,15 @@ public:
 
         Strong guarantee.
 
-        @throw int64_required_error `! this->is_int64()`
+        @throw std::invalid_argument `! this->is_int64()`
     */
     std::int64_t
     as_int64() const
     {
         if(! is_int64())
-            int64_required_error::raise();
+            detail::throw_invalid_argument(
+                "not an int64",
+                BOOST_CURRENT_LOCATION);
         return i64_.i;
     }
 
@@ -2083,13 +2112,15 @@ public:
 
         Strong guarantee.
 
-        @throw uint64_required_error `! this->is_uint64()`
+        @throw std::invalid_argument `! this->is_uint64()`
     */
     std::uint64_t&
     as_uint64()
     {
         if(! is_uint64())
-            uint64_required_error::raise();
+            detail::throw_invalid_argument(
+                "not a uint64",
+                BOOST_CURRENT_LOCATION);
         return u64_.u;
     }
 
@@ -2107,13 +2138,15 @@ public:
 
         Strong guarantee.
 
-        @throw uint64_required_error `! this->is_uint64()`
+        @throw std::length_error `! this->is_uint64()`
     */
     std::uint64_t
     as_uint64() const
     {
         if(! is_uint64())
-            uint64_required_error::raise();
+            detail::throw_invalid_argument(
+                "not a uint64",
+                BOOST_CURRENT_LOCATION);
         return u64_.u;
     }
 
@@ -2131,13 +2164,15 @@ public:
 
         Strong guarantee.
 
-        @throw double_required_error `! this->is_double()`
+        @throw std::invalid_argument `! this->is_double()`
     */
     double&
     as_double()
     {
         if(! is_double())
-            double_required_error::raise();
+            detail::throw_invalid_argument(
+                "not a double",
+                BOOST_CURRENT_LOCATION);
         return dub_.d;
     }
 
@@ -2155,13 +2190,15 @@ public:
 
         Strong guarantee.
 
-        @throw double_required_error `! this->is_double()`
+        @throw std::invalid_argument `! this->is_double()`
     */
     double
     as_double() const
     {
         if(! is_double())
-            double_required_error::raise();
+            detail::throw_invalid_argument(
+                "not a double",
+                BOOST_CURRENT_LOCATION);
         return dub_.d;
     }
 
@@ -2179,13 +2216,15 @@ public:
 
         Strong guarantee.
 
-        @throw bool_required_error `! this->is_bool()`
+        @throw std::invalid_argument `! this->is_bool()`
     */
     bool&
     as_bool()
     {
         if(! is_bool())
-            bool_required_error::raise();
+            detail::throw_invalid_argument(
+                "bool required",
+                BOOST_CURRENT_LOCATION);
         return bln_.b;
     }
 
@@ -2203,13 +2242,15 @@ public:
 
         Strong guarantee.
 
-        @throw bool_required_error `! this->is_bool()`
+        @throw std::invalid_argument `! this->is_bool()`
     */
     bool
     as_bool() const
     {
         if(! is_bool())
-            bool_required_error::raise();
+            detail::throw_invalid_argument(
+                "bool required",
+                BOOST_CURRENT_LOCATION);
         return bln_.b;
     }
 

@@ -29,7 +29,6 @@ in a translation unit of the program.
 
 #include <boost/json/impl/array.ipp>
 #include <boost/json/impl/error.ipp>
-#include <boost/json/impl/except.ipp>
 #include <boost/json/impl/monotonic_resource.ipp>
 #include <boost/json/impl/object.ipp>
 #include <boost/json/impl/parse.ipp>
@@ -46,6 +45,7 @@ in a translation unit of the program.
 #include <boost/json/detail/impl/counted_resource.ipp>
 #include <boost/json/detail/impl/default_resource.ipp>
 #include <boost/json/detail/impl/digest.ipp>
+#include <boost/json/detail/impl/except.ipp>
 #include <boost/json/detail/impl/format.ipp>
 #include <boost/json/detail/impl/object_impl.ipp>
 #include <boost/json/detail/impl/raw_stack.ipp>

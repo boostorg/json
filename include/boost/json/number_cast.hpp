@@ -101,8 +101,8 @@ number_cast(value const& jv)
     typename detail::remove_const<T>::type result;
     result = number_cast<T>(jv, ec);
     if(ec)
-        BOOST_THROW_EXCEPTION(
-            system_error(ec));
+        detail::throw_system_error(ec,
+            BOOST_CURRENT_LOCATION);
     return result;
 }
 

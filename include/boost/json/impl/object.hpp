@@ -396,7 +396,9 @@ insert_range(
         std::distance(first, last));
     auto const n0 = size();
     if(n > max_size() - n0)
-        object_too_large::raise();
+        detail::throw_length_error(
+            "object too large",
+            BOOST_CURRENT_LOCATION);
     if( min_capacity < n0 + n)
         min_capacity = n0 + n;
     place_impl f(first, n, sp_);

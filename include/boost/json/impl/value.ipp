@@ -207,13 +207,9 @@ operator=(value const& other)
 
 auto
 value::
-get_allocator() const ->
+get_allocator() const noexcept ->
     allocator_type
 {
-    if(sp_.is_counted())
-        BOOST_THROW_EXCEPTION(
-            std::invalid_argument(
-                "is_counted"));
     return sp_.get();
 }
 

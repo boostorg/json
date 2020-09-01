@@ -330,14 +330,8 @@ public:
                 array a(&mr);
                 BOOST_TEST(a.get_allocator().resource() == &mr);
             }
-            {
-                object a(make_counted_resource<
-                    monotonic_resource>());
-                BOOST_TEST_THROWS(
-                    a.get_allocator(),
-                    std::invalid_argument);
-            }
         }
+
         // object
         {
             // get_allocator
@@ -346,14 +340,8 @@ public:
                 object o(&mr);
                 BOOST_TEST(o.get_allocator().resource() == &mr);
             }
-            {
-                object o(make_counted_resource<
-                    monotonic_resource>());
-                BOOST_TEST_THROWS(
-                    o.get_allocator(),
-                    std::invalid_argument);
-            }
         }
+
         // string
         {
             // get_allocator
@@ -362,12 +350,15 @@ public:
                 string s(&mr);
                 BOOST_TEST(s.get_allocator().resource() == &mr);
             }
+        }
+
+        // value
+        {
+            // get_allocator
             {
-                object s(make_counted_resource<
-                    monotonic_resource>());
-                BOOST_TEST_THROWS(
-                    s.get_allocator(),
-                    std::invalid_argument);
+                monotonic_resource mr;
+                value jv(&mr);
+                BOOST_TEST(jv.get_allocator().resource() == &mr);
             }
         }
     }

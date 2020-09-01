@@ -603,24 +603,17 @@ public:
         @ref polymorphic_allocator constructed from the
         associated @ref memory_resource.
 
-        @note Since a @ref polymorphic_allocator is
-        non-owning, this function disallows undefined
-        behavior by throwing an exception if the memory
-        resource is retained by shared ownership.
-
         @par Complexity
 
         Constant.
 
         @par Exception Safety
 
-        Strong guarantee.
-
-        @throw std::invalid_argument `this->storage().is_counted() == true`
+        No-throw guarantee.
     */
     BOOST_JSON_DECL
     allocator_type
-    get_allocator() const;
+    get_allocator() const noexcept;
 
     //------------------------------------------------------
     //
@@ -1195,6 +1188,8 @@ public:
 
         Constant on average, worst case linear in @ref size().
 
+        @return A reference to the mapped value.
+
         @param key The key of the element to find.
 
         @throw std::out_of_range if no such element exists.
@@ -1211,6 +1206,8 @@ public:
         @par Complexity
 
         Constant on average, worst case linear in @ref size().
+
+        @return A reference to the mapped value.
 
         @param key The key of the element to find.
 
@@ -1240,8 +1237,8 @@ public:
 
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
-        If an exception is thrown by any operation, the
-        insertion has no effect.
+
+        @return A reference to the mapped value.
 
         @param key The key of the element to find.
     */

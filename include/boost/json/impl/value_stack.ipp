@@ -336,18 +336,17 @@ reset(storage_ptr sp) noexcept
 
 value
 value_stack::
-release()
+release() noexcept
 {
-    // give up shared ownership
-    sp_ = {};
-
-    if(st_.size() == 1)
-        return pilfer(*st_.release(1));
-
     // This means the caller did not
     // cause a single top level element
     // to be produced.
-    throw std::logic_error("no value");
+    BOOST_ASSERT(st_.size() == 1);
+
+    // give up shared ownership
+    sp_ = {};
+
+    return pilfer(*st_.release(1));
 }
 
 //----------------------------------------------------------

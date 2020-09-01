@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_IMPL_STRING_IPP
 #define BOOST_JSON_IMPL_STRING_IPP
 
-#include <boost/json/except.hpp>
+#include <boost/json/detail/except.hpp>
 #include <algorithm>
 #include <new>
 #include <ostream>
@@ -80,13 +80,9 @@ assign(
 
 auto
 string::
-get_allocator() const ->
+get_allocator() const noexcept ->
     allocator_type
 {
-    if(sp_.is_counted())
-        BOOST_THROW_EXCEPTION(
-            std::invalid_argument(
-                "is_counted"));
     return sp_.get();
 }
 
@@ -216,7 +212,8 @@ erase(
     size_type count)
 {
     if(pos > impl_.size())
-        char_pos_error::raise();
+        detail::throw_out_of_range(
+            BOOST_CURRENT_LOCATION);
     if( count > impl_.size() - pos)
         count = impl_.size() - pos;
     traits_type::move(

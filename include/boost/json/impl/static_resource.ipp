@@ -11,6 +11,7 @@
 #define BOOST_JSON_IMPL_STATIC_RESOURCE_IPP
 
 #include <boost/json/static_resource.hpp>
+#include <boost/json/detail/except.hpp>
 #include <memory>
 
 #ifndef BOOST_JSON_STANDALONE
@@ -54,8 +55,8 @@ do_allocate(
     auto p = detail::align(
         align, n, p_, n_);
     if(! p)
-        BOOST_THROW_EXCEPTION(
-            std::bad_alloc());
+        detail::throw_bad_alloc(
+            BOOST_CURRENT_LOCATION);
     p_ = reinterpret_cast<char*>(p) + n;
     return p;
 }

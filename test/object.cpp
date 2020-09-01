@@ -832,7 +832,7 @@ public:
             BOOST_TEST(
                 o1.at("a").is_number());
             BOOST_TEST_THROWS((o1.at("d")),
-                key_not_found);
+                std::out_of_range);
         }
 
         // at(key) const
@@ -840,7 +840,7 @@ public:
             BOOST_TEST(
                 co1.at("a").is_number());
             BOOST_TEST_THROWS((co1.at("d")),
-                key_not_found);
+                std::out_of_range);
         }
 
         // operator[&](key)

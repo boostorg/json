@@ -11,6 +11,7 @@
 #define BOOST_JSON_DETAIL_IMPL_ARRAY_IMPL_IPP
 
 #include <boost/json/detail/array_impl.hpp>
+#include <boost/json/detail/except.hpp>
 
 BOOST_JSON_NS_BEGIN
 namespace detail {
@@ -21,7 +22,9 @@ array_impl(
     storage_ptr const& sp)
 {
     if(capacity > max_size())
-        array_too_large::raise();
+        detail::throw_length_error(
+            "array too large",
+            BOOST_CURRENT_LOCATION);
     if(capacity > 0)
     {
         tab_ = ::new(sp->allocate(

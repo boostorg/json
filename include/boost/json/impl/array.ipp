@@ -12,6 +12,7 @@
 
 #include <boost/json/array.hpp>
 #include <boost/json/pilfer.hpp>
+#include <boost/json/detail/except.hpp>
 #include <cstdlib>
 #include <limits>
 #include <new>
@@ -40,7 +41,9 @@ undo_insert(
     , pos(self.impl_.index_of(pos_))
 {
     if(n > max_size())
-        array_too_large::raise();
+        detail::throw_length_error(
+            "array too large",
+            BOOST_CURRENT_LOCATION);
     self_.reserve(
         self_.impl_.size() + n_);
     // (iterators invalidated now)
@@ -232,13 +235,9 @@ operator=(
 
 auto
 array::
-get_allocator() const ->
+get_allocator() const noexcept ->
     allocator_type
 {
-    if(sp_.is_counted())
-        BOOST_THROW_EXCEPTION(
-            std::invalid_argument(
-                "is_counted"));
     return sp_.get();
 }
 

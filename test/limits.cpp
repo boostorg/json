@@ -45,7 +45,7 @@ public:
             {"26",26},{"27",27},{"28",28},{"29",29},{"30",30},
             {"31",31}};
             BOOST_TEST(init.size() > object::max_size());
-            BOOST_TEST_THROWS(value{init}, object_too_large);
+            BOOST_TEST_THROWS(value{init}, std::length_error);
         }
     }
 
@@ -73,12 +73,12 @@ public:
             BOOST_TEST(init.size() > object::max_size());
             BOOST_TEST_THROWS(
                 object(init.begin(), init.end()),
-                object_too_large);
+                std::length_error);
             BOOST_TEST_THROWS(
                 object(
                     make_input_iterator(init.begin()),
                     make_input_iterator(init.end())),
-                object_too_large);
+                std::length_error);
         }
 
         // max key size
@@ -87,7 +87,7 @@ public:
                 string::max_size() + 1, '*');
             BOOST_TEST_THROWS(
                 object({ {big, nullptr} }),
-                key_too_large);
+                std::length_error);
         }
     }
 
@@ -99,7 +99,7 @@ public:
                 array(
                     array::max_size()+1,
                     value(nullptr)),
-                array_too_large);
+                std::length_error);
         }
 
         {
@@ -107,7 +107,7 @@ public:
                 array::max_size()+1, 42);
             BOOST_TEST_THROWS(
                 array(v.begin(), v.end()),
-                array_too_large);
+                std::length_error);
         }
 
         {
@@ -116,7 +116,7 @@ public:
             BOOST_TEST_THROWS(array(
                 make_input_iterator(v.begin()),
                 make_input_iterator(v.end())),
-                array_too_large);
+                std::length_error);
         }
 
         {
@@ -125,7 +125,7 @@ public:
                 a.insert(a.begin(),
                     array::max_size() + 1,
                     nullptr),
-                array_too_large);
+                std::length_error);
         }
     }
 
@@ -138,7 +138,7 @@ public:
                 string s;
                 BOOST_TEST_THROWS(
                     (s.resize(s.max_size() + 1)),
-                    string_too_large);
+                    std::length_error);
             }
 
             {
@@ -146,7 +146,7 @@ public:
                 s.resize(100);
                 BOOST_TEST_THROWS(
                     (s.append(s.max_size() - 1, '*')),
-                    string_too_large);
+                    std::length_error);
             }
 
             {
@@ -154,7 +154,7 @@ public:
                 s.resize(s.max_size() - 5);
                 BOOST_TEST_THROWS(
                     (s.replace(0, 1, s.subview(0, 10))),
-                    string_too_large);
+                    std::length_error);
             }
 
             {
@@ -162,7 +162,7 @@ public:
                 s.resize(s.max_size() - 5);
                 BOOST_TEST_THROWS(
                     (s.replace(0, 1, 10, 'a')),
-                    string_too_large);
+                    std::length_error);
             }
 
             {
@@ -170,7 +170,7 @@ public:
                 s.resize(s.max_size() - 5);
                 BOOST_TEST_THROWS(
                     (s.insert(0, s.subview(0, 10))),
-                    string_too_large);
+                    std::length_error);
             }
 
     #if 0
@@ -243,7 +243,7 @@ public:
                     "1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,"
                     "1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,"
                     "1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0]"),
-                stack_overflow);
+                std::length_error);
         }
     #endif
     }

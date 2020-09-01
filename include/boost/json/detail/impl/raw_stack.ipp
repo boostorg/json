@@ -11,6 +11,7 @@
 #define BOOST_JSON_DETAIL_IMPL_RAW_STACK_IPP
 
 #include <boost/json/detail/raw_stack.hpp>
+#include <boost/json/detail/except.hpp>
 #include <cstring>
 
 BOOST_JSON_NS_BEGIN
@@ -23,7 +24,9 @@ reserve(std::size_t bytes)
     if(bytes <= capacity_)
         return;
     if(bytes > max_size())
-        stack_overflow::raise();
+        detail::throw_length_error(
+            "stack overflow",
+            BOOST_CURRENT_LOCATION);
     if( bytes < min_capacity_)
         bytes = min_capacity_;
 
@@ -59,7 +62,9 @@ raw_stack::
 grow(std::size_t n)
 {
     if(n > max_size() - capacity_)
-        stack_overflow::raise();
+        detail::throw_length_error(
+            "stack overflow",
+            BOOST_CURRENT_LOCATION);
     reserve(capacity_ + n);
 }
 

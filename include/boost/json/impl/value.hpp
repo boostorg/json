@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_IMPL_VALUE_HPP
 #define BOOST_JSON_IMPL_VALUE_HPP
 
-#include <boost/json/except.hpp>
+#include <boost/json/detail/except.hpp>
 #include <cstring>
 #include <limits>
 #include <type_traits>
@@ -104,8 +104,10 @@ std::uint32_t
 key_value_pair::
 key_size(std::size_t n)
 {
-    if(n > BOOST_JSON_MAX_STRING_SIZE)
-        string_too_large::raise();
+    if(n > string::max_size())
+        detail::throw_length_error(
+            "key too large",
+            BOOST_CURRENT_LOCATION);
     return static_cast<
         std::uint32_t>(n);
 }
@@ -120,7 +122,9 @@ key_value_pair(
         [&]
         {
             if(key.size() > string::max_size())
-                key_too_large::raise();
+                detail::throw_length_error(
+                    "key too large",
+                    BOOST_CURRENT_LOCATION);
             auto s = reinterpret_cast<
                 char*>(value_.storage()->
                     allocate(key.size() + 1));

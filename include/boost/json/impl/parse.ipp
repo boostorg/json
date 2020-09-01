@@ -13,6 +13,7 @@
 
 #include <boost/json/parse.hpp>
 #include <boost/json/parser.hpp>
+#include <boost/json/detail/except.hpp>
 
 BOOST_JSON_NS_BEGIN
 
@@ -50,8 +51,8 @@ parse(
     auto jv = parse(
         s, ec, std::move(sp), opt);
     if(ec)
-        BOOST_THROW_EXCEPTION(
-            system_error(ec));
+        detail::throw_system_error(ec,
+            BOOST_CURRENT_LOCATION);
     return jv;
 }
 

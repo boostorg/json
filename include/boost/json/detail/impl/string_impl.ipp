@@ -11,8 +11,8 @@
 #ifndef BOOST_JSON_DETAIL_IMPL_STRING_IMPL_IPP
 #define BOOST_JSON_DETAIL_IMPL_STRING_IMPL_IPP
 
-#include <boost/json/except.hpp>
 #include <boost/json/detail/string_impl.hpp>
+#include <boost/json/detail/except.hpp>
 #include <cstring>
 #include <functional>
 
@@ -94,7 +94,9 @@ growth(
     std::size_t capacity)
 {
     if(new_size > max_size())
-        string_too_large::raise();
+        detail::throw_length_error(
+            "string too large",
+            BOOST_CURRENT_LOCATION);
     // growth factor 2
     if( capacity >
         max_size() - capacity)
@@ -129,7 +131,9 @@ append(
     storage_ptr const& sp)
 {
     if(n > max_size() - size())
-        string_too_large::raise();
+        detail::throw_length_error(
+            "string too large",
+            BOOST_CURRENT_LOCATION);
     if(n <= capacity() - size())
     {
         term(size() + n);
@@ -155,7 +159,8 @@ insert(
 {
     const auto curr_size = size();
     if(pos > curr_size)
-        char_pos_error::raise();
+        detail::throw_out_of_range(
+            BOOST_CURRENT_LOCATION);
     const auto curr_data = data();
     if(n <= capacity() - curr_size)
     {
@@ -185,7 +190,9 @@ insert(
     else
     { 
         if(n > max_size() - curr_size)
-            string_too_large::raise();
+            detail::throw_length_error(
+                "string too large",
+                BOOST_CURRENT_LOCATION);
         string_impl tmp(growth(
             curr_size + n, capacity()), sp);
         tmp.size(curr_size + n);
@@ -215,7 +222,8 @@ insert_unchecked(
 {
     const auto curr_size = size();
     if(pos > curr_size)
-        char_pos_error::raise();
+        detail::throw_out_of_range(
+            BOOST_CURRENT_LOCATION);
     const auto curr_data = data();
     if(n <= capacity() - size())
     {
@@ -229,7 +237,9 @@ insert_unchecked(
         return dest;
     }
     if(n > max_size() - curr_size)
-        string_too_large::raise();
+        detail::throw_length_error(
+            "string too large",
+            BOOST_CURRENT_LOCATION);
     string_impl tmp(growth(
         curr_size + n, capacity()), sp);
     tmp.size(curr_size + n);
@@ -257,7 +267,8 @@ replace(
 {
     const auto curr_size = size();
     if (pos > curr_size)
-        char_pos_error::raise();
+        detail::throw_out_of_range(
+            BOOST_CURRENT_LOCATION);
     const auto curr_data = data();
     n1 = (std::min)(n1, curr_size - pos);
     const auto delta = (std::max)(n1, n2) -
@@ -305,7 +316,9 @@ replace(
     else
     {
         if (delta > max_size() - curr_size)
-          string_too_large::raise();
+            detail::throw_length_error(
+                "string too large",
+                BOOST_CURRENT_LOCATION);
         // would exceed capacity, reallocate
         string_impl tmp(growth(
             curr_size + delta, capacity()), sp);
@@ -339,7 +352,8 @@ replace_unchecked(
 {
     const auto curr_size = size();
     if(pos > curr_size)
-        char_pos_error::raise();
+        detail::throw_out_of_range(
+            BOOST_CURRENT_LOCATION);
     const auto curr_data = data();
     const auto delta = (std::max)(n1, n2) -
         (std::min)(n1, n2);
@@ -360,7 +374,9 @@ replace_unchecked(
         return replace_pos;
     }
     if(delta > max_size() - curr_size)
-        string_too_large::raise();
+        detail::throw_length_error(
+            "string too large",
+            BOOST_CURRENT_LOCATION);
     // would exceed capacity, reallocate
     string_impl tmp(growth(
         curr_size + delta, capacity()), sp);

@@ -11,6 +11,7 @@
 #define BOOST_JSON_IMPL_ARRAY_HPP
 
 #include <boost/json/value.hpp>
+#include <boost/json/detail/except.hpp>
 #include <algorithm>
 #include <stdexcept>
 #include <type_traits>
@@ -79,7 +80,8 @@ at(std::size_t pos) ->
     reference
 {
     if(pos >= impl_.size())
-        array_index_error::raise();
+        detail::throw_out_of_range(
+            BOOST_CURRENT_LOCATION);
     return impl_.data()[pos];
 }
 
@@ -89,7 +91,8 @@ at(std::size_t pos) const ->
     const_reference
 {
     if(pos >= impl_.size())
-        array_index_error::raise();
+        detail::throw_out_of_range(
+            BOOST_CURRENT_LOCATION);
     return impl_.data()[pos];
 }
 
@@ -370,7 +373,9 @@ array(
         static_cast<std::size_t>(
             std::distance(first, last));
     if(n > max_size())
-        array_too_large::raise();
+        detail::throw_length_error(
+            "array too large",
+            BOOST_CURRENT_LOCATION);
     reserve(static_cast<std::size_t>(n));
     while(impl_.size() < n)
     {
@@ -419,7 +424,9 @@ insert(
         static_cast<std::size_t>(
             std::distance(first, last));
     if(n > max_size())
-        array_too_large::raise();
+        detail::throw_length_error(
+            "array too large",
+            BOOST_CURRENT_LOCATION);
     undo_insert u(pos, static_cast<
         std::size_t>(n), *this);
     while(first != last)

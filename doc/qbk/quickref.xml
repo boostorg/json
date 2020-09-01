@@ -11,10 +11,10 @@
 -->
 
 <informaltable frame="all">
-  <tgroup cols="5">
-    <colspec colname="a"/><colspec colname="b"/><colspec colname="c"/><colspec colname="d"/><colspec colname="e"/>
+  <tgroup cols="4">
+    <colspec colname="a"/><colspec colname="b"/><colspec colname="c"/><colspec colname="d"/>
     <thead><row>
-      <entry valign="center" namest="a" nameend="e"><bridgehead renderas="sect2">JSON</bridgehead></entry>
+      <entry valign="center" namest="a" nameend="d"><bridgehead renderas="sect2">JSON</bridgehead></entry>
     </row></thead>
     <tbody><row>
       <entry valign="top">
@@ -78,28 +78,6 @@
         </simplelist>
       </entry>
       <entry valign="top">
-        <bridgehead renderas="sect3">Exceptions</bridgehead>
-        <simplelist type="vert" columns="1">
-          <member><link linkend="json.ref.boost__json__array_index_error">array_index_error</link></member>
-          <member><link linkend="json.ref.boost__json__array_required_error">array_required_error</link></member>
-          <member><link linkend="json.ref.boost__json__array_too_large">array_too_large</link></member>
-          <member><link linkend="json.ref.boost__json__bool_required_error">bool_required_error</link></member>
-          <member><link linkend="json.ref.boost__json__char_pos_error">char_pos_error</link></member>
-          <member><link linkend="json.ref.boost__json__double_required_error">double_required_error</link></member>
-          <member><link linkend="json.ref.boost__json__int64_required_error">int64_required_error</link></member>
-          <member><link linkend="json.ref.boost__json__key_not_found">key_not_found</link></member>
-          <member><link linkend="json.ref.boost__json__key_too_large">key_too_large</link></member>
-          <member><link linkend="json.ref.boost__json__number_required_error">number_required_error</link></member>
-          <member><link linkend="json.ref.boost__json__object_required_error">object_required_error</link></member>
-          <member><link linkend="json.ref.boost__json__object_too_large">object_too_large</link></member>
-          <member><link linkend="json.ref.boost__json__stack_overflow">stack_overflow</link></member>
-          <member><link linkend="json.ref.boost__json__string_required_error">string_required_error</link></member>
-          <member><link linkend="json.ref.boost__json__string_too_large">string_too_large</link></member>
-          <member><link linkend="json.ref.boost__json__type_error">type_error</link></member>
-          <member><link linkend="json.ref.boost__json__uint64_required_error">uint64_required_error</link></member>
-        </simplelist>
-      </entry>
-      <entry valign="top">
         <bridgehead renderas="sect3">Aliases</bridgehead>
         <simplelist type="vert" columns="1">
           <member><link linkend="json.ref.boost__json__error_category">error_category</link></member>
@@ -113,9 +91,9 @@
         </simplelist>
         <bridgehead renderas="sect3">P0308R0</bridgehead>
         <simplelist type="vert" columns="1">
-          <member><link linkend="json.ref.boost__json__is_pilfer_constructible">is_pilfer_constructible</link></member>
           <member><link linkend="json.ref.boost__json__pilfer">pilfer</link></member>
           <member><link linkend="json.ref.boost__json__pilfered">pilfered</link></member>
+          <member><link linkend="json.ref.boost__json__is_pilfer_constructible">is_pilfer_constructible</link></member>
         </simplelist>
       </entry>
     </row></tbody>

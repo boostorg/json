@@ -10,8 +10,8 @@
 #ifndef BOOST_JSON_IMPL_OBJECT_IPP
 #define BOOST_JSON_IMPL_OBJECT_IPP
 
-#include <boost/json/except.hpp>
 #include <boost/json/object.hpp>
+#include <boost/json/detail/except.hpp>
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -247,13 +247,9 @@ operator=(
 
 auto
 object::
-get_allocator() const ->
+get_allocator() const noexcept ->
     allocator_type
 {
-    if(sp_.is_counted())
-        BOOST_THROW_EXCEPTION(
-            std::invalid_argument(
-                "is_counted"));
     return sp_.get();
 }
 
@@ -308,7 +304,9 @@ insert(
     };
     auto const n0 = size();
     if(init.size() > max_size() - n0)
-        object_too_large::raise();
+        detail::throw_length_error(
+            "object too large",
+            BOOST_CURRENT_LOCATION);
     place_impl f(
         init.begin(), init.size(), sp_);
     insert_range_impl(n0 + init.size(), f);
@@ -389,7 +387,8 @@ at(key_type key) ->
 {
     auto it = find(key);
     if(it == end())
-        key_not_found::raise();
+        detail::throw_out_of_range(
+            BOOST_CURRENT_LOCATION);
     return it->value();
 }
     
@@ -400,7 +399,8 @@ at(key_type key) const ->
 {
     auto it = find(key);
     if(it == end())
-        key_not_found::raise();
+        detail::throw_out_of_range(
+            BOOST_CURRENT_LOCATION);
     return it->value();
 }
 
@@ -500,7 +500,9 @@ rehash(std::size_t new_capacity)
         ++prime;
     new_capacity = *prime;
     if(new_capacity > max_size())
-        object_too_large::raise();
+        detail::throw_length_error(
+            "object too large",
+            BOOST_CURRENT_LOCATION);
     object_impl impl(
         new_capacity,
         prime - object_impl::bucket_sizes(),

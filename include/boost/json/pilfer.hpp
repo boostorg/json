@@ -87,12 +87,17 @@ struct not_pilfered
 
 /** Metafunction returning `true` if `T` is PilferConstructible
 
+    If `T` can be pilfer constructed, this metafunction is
+    equal to `std::true_type`. Otherwise it is equal to
+    `std::false_type`.
+
     @see
         http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0308r0.html
 */
 template<class T>
-struct is_pilfer_constructible :
-    std::integral_constant<bool,
+struct is_pilfer_constructible
+#ifndef BOOST_JSON_DOCS
+    : std::integral_constant<bool,
         std::is_nothrow_move_constructible<T>::value ||
         (
             std::is_nothrow_constructible<
@@ -100,6 +105,7 @@ struct is_pilfer_constructible :
             ! std::is_nothrow_constructible<
                 T, detail::not_pilfered<T> >::value
         )>
+#endif
 {
 };
 

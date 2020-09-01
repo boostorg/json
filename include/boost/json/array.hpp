@@ -561,24 +561,17 @@ public:
         @ref polymorphic_allocator constructed from the
         associated @ref memory_resource.
 
-        @note Since a @ref polymorphic_allocator is
-        non-owning, this function disallows undefined
-        behavior by throwing an exception if the memory
-        resource is retained by shared ownership.
-
         @par Complexity
 
         Constant.
 
         @par Exception Safety
 
-        Strong guarantee.
-
-        @throw std::invalid_argument `this->storage().is_counted() == true`
+        No-throw guarantee.
     */
     BOOST_JSON_DECL
     allocator_type
-    get_allocator() const;
+    get_allocator() const noexcept;
 
     //------------------------------------------------------
     //
