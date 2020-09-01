@@ -204,8 +204,7 @@
 # define BOOST_JSON_PARSER_BUFFER_SIZE 2048
 #endif
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 template<class...>
@@ -308,7 +307,6 @@ constexpr T static_const<T>::value;
     } struct _unused_ ## name ## _semicolon_bait_
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif
