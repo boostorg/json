@@ -12,8 +12,7 @@
 
 #include <boost/json/detail/default_resource.hpp>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 // these are here so that ~memory_resource
@@ -26,7 +25,6 @@ default_resource::
 }
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

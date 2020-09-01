@@ -10,8 +10,7 @@
 #ifndef BOOST_JSON_DETAIL_IMPL_OBJECT_IMPL_IPP
 #define BOOST_JSON_DETAIL_IMPL_OBJECT_IMPL_IPP
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 void
@@ -162,7 +161,6 @@ destroy(
 }
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

@@ -10,8 +10,7 @@
 #ifndef BOOST_JSON_DETAIL_IMPL_ARRAY_IMPL_HPP
 #define BOOST_JSON_DETAIL_IMPL_ARRAY_IMPL_HPP
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 auto
@@ -48,7 +47,6 @@ relocate(value* dest) noexcept
 }
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

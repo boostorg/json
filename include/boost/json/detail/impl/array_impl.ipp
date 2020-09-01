@@ -12,8 +12,7 @@
 
 #include <boost/json/detail/array_impl.hpp>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 array_impl::
@@ -103,7 +102,6 @@ destroy(
 }
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

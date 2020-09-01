@@ -24,8 +24,7 @@
 
 #include <boost/json/detail/config.hpp>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 namespace ryu {
@@ -42,8 +41,7 @@ char* d2s(double f) noexcept;
 } // ryu
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/detail/ryu/impl/d2s.ipp>

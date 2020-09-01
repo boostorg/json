@@ -48,7 +48,9 @@ PREDEFINED             = \
                         BOOST_JSON_FORCEINLINE \
                         BOOST_SYMBOL_VISIBLE \
                         "BOOST_JSON_NODISCARD=[[nodiscard]]" \
-                        "BOOST_JSON_INLINE_VARIABLE(v, t)=constexpr t v;"
+                        "BOOST_JSON_INLINE_VARIABLE(v, t)=constexpr t v;" \
+                        "BOOST_JSON_NS_BEGIN=namespace boost { namespace json {" \
+                        "BOOST_JSON_NS_END=}}"
 
 EXPAND_AS_DEFINED      =
 SKIP_FUNCTION_MACROS   = YES

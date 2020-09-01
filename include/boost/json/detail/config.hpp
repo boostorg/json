@@ -123,6 +123,19 @@
 #define BOOST_SYMBOL_VISIBLE
 #endif
 
+#ifdef BOOST_JSON_STANDALONE
+# define BOOST_JSON_NS_BEGIN \
+    namespace boost { \
+    namespace json { \
+    inline namespace standalone {
+# define BOOST_JSON_NS_END } } }
+#elif ! defined(BOOST_JSON_DOCS)
+# define BOOST_JSON_NS_BEGIN \
+    namespace boost { \
+    namespace json {
+# define BOOST_JSON_NS_END } }
+#endif
+
 #ifndef BOOST_JSON_STANDALONE
 # if defined(BOOST_JSON_DOCS)
 #  define BOOST_JSON_DECL

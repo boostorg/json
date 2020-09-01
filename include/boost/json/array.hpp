@@ -19,8 +19,7 @@
 #include <initializer_list>
 #include <iterator>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 #ifndef BOOST_JSON_DOCS
 class value;
@@ -1691,8 +1690,7 @@ swap(array& lhs, array& rhs)
     lhs.swap(rhs);
 }
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 // Must be included here for this file to stand alone
 #include <boost/json/value.hpp>
