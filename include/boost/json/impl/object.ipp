@@ -20,8 +20,7 @@
 #include <stdexcept>
 #include <type_traits>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 class object::undo_insert
 {
@@ -619,7 +618,6 @@ insert_range_impl(
     u.commit = true;
 }
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

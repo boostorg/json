@@ -12,8 +12,7 @@
 
 #include <boost/json/value_from.hpp>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 template<class T>
 value
@@ -54,7 +53,6 @@ from_rvalue(
         detail::move(sp));
 }
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

@@ -17,8 +17,7 @@
 #include <new>
 #include <utility>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 array::
 undo_construct::
@@ -546,7 +545,6 @@ relocate(
         n * sizeof(value));
 }
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

@@ -15,8 +15,7 @@
 #include <stdexcept>
 #include <utility>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 //--------------------------------------
 
@@ -479,7 +478,6 @@ push_null()
     st_.push(nullptr, sp_);
 }
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

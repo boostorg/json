@@ -12,8 +12,7 @@
 
 #include <boost/json/error.hpp>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 error_code
 make_error_code(error e)
@@ -161,7 +160,6 @@ make_error_condition(condition c)
         std::underlying_type<condition>::type>(c), cat};
 }
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

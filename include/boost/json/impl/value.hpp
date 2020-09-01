@@ -15,8 +15,7 @@
 #include <limits>
 #include <type_traits>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 //----------------------------------------------------------
 
@@ -135,7 +134,6 @@ key_value_pair(
 
 //----------------------------------------------------------
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

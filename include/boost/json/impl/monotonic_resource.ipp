@@ -15,8 +15,7 @@
 
 #include <memory>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 // ensures that the alignment of base is
 // the strictest fundamental alignment requirement
@@ -179,7 +178,6 @@ do_is_equal(
     return this == &mr;
 }
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

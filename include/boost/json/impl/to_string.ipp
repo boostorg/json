@@ -14,8 +14,7 @@
 #include <boost/json/serializer.hpp>
 #include <ostream>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 string
 to_string(
@@ -61,7 +60,6 @@ operator<<( std::ostream& os, value const& jv )
 }
 //]
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif
