@@ -25,8 +25,7 @@
 #endif
 #include <type_traits>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 #ifdef BOOST_JSON_DOCS
 
@@ -79,7 +78,6 @@ using is_string_viewish = typename std::enable_if<
 
 } // detail
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

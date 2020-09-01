@@ -25,8 +25,7 @@
 # endif
 #endif
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 #ifdef BOOST_JSON_DOCS
 
@@ -107,7 +106,6 @@ using polymorphic_allocator =
 
 #endif
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

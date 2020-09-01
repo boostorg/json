@@ -40,8 +40,7 @@
 
 #ifndef BOOST_JSON_DOCS
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 inline
@@ -2405,8 +2404,7 @@ write(
 
 #endif
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #ifdef _MSC_VER
 #pragma warning(pop)

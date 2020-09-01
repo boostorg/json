@@ -18,8 +18,7 @@
 #include <boost/json/string_view.hpp>
 #include <boost/json/value.hpp>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 /** Parse a string of JSON.
 
@@ -101,8 +100,7 @@ parse(
     storage_ptr sp = {},
     const parse_options& opt = {});
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/impl/parse.ipp>

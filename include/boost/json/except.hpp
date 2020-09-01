@@ -13,8 +13,7 @@
 #include <boost/json/detail/config.hpp>
 #include <stdexcept>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 /** Exception thrown when a value's kind is mismatched.
 */
@@ -296,8 +295,7 @@ struct BOOST_SYMBOL_VISIBLE
 #endif
 };
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/impl/except.ipp>

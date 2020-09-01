@@ -22,8 +22,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 class value;
 class value_ref;
@@ -1451,8 +1450,7 @@ swap(object& lhs, object& rhs)
     lhs.swap(rhs);
 }
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 // Must be included here for this file to stand alone
 #include <boost/json/value.hpp>

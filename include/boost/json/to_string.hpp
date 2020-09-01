@@ -14,8 +14,7 @@
 #include <boost/json/value.hpp>
 #include <iosfwd>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 /** Return a string representing a serialized @ref value.
 
@@ -59,8 +58,7 @@ operator<<(
     std::ostream& os,
     value const& jv);
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/impl/to_string.ipp>

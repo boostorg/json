@@ -16,8 +16,7 @@
 #include <boost/json/detail/stack.hpp>
 #include <boost/json/detail/stream.hpp>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 /** A serializer for JSON.
 
@@ -159,8 +158,7 @@ public:
     read(char* dest, std::size_t size);
 };
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/impl/serializer.ipp>

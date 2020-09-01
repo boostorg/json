@@ -12,8 +12,7 @@
 
 #include <boost/json/detail/config.hpp>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 /** Constants for identifying the type of a value
 */
@@ -125,7 +124,6 @@ BOOST_JSON_INLINE_VARIABLE(object_kind, object_kind_t);
 */
 BOOST_JSON_INLINE_VARIABLE(string_kind, string_kind_t);
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

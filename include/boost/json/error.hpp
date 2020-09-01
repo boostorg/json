@@ -18,8 +18,7 @@
 # include <system_error>
 #endif
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 #ifdef BOOST_JSON_DOCS
 
@@ -284,8 +283,7 @@ enum class condition
     assign_error
 };
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #include <boost/json/impl/error.hpp>
 #ifdef BOOST_JSON_HEADER_ONLY
