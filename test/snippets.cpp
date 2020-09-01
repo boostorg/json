@@ -9,6 +9,8 @@
 
 #include <boost/json.hpp>
 
+#ifndef BOOST_JSON_STANDALONE
+
 #include <algorithm>
 #include <cmath>
 #include <complex>
@@ -32,8 +34,7 @@
 # pragma GCC diagnostic ignored "-Wunused"
 #endif
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 //[snippet_conv_2
 
@@ -1269,5 +1270,6 @@ public:
 
 TEST_SUITE(snippets_test, "boost.json.snippets");
 
-} // json
-} // boost
+BOOST_JSON_NS_END
+
+#endif

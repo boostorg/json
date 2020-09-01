@@ -14,8 +14,7 @@
 
 #include "test_suite.hpp"
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 class error_test
 {
@@ -93,5 +92,4 @@ public:
 
 TEST_SUITE(error_test, "boost.json.error");
 
-} // json
-} // boost
+BOOST_JSON_NS_END

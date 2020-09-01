@@ -15,8 +15,7 @@
 
 #include "test_suite.hpp"
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 class value_stack_test
 {
@@ -123,5 +122,4 @@ public:
 
 TEST_SUITE(value_stack_test, "boost.json.value_stack");
 
-} // json
-} // boost
+BOOST_JSON_NS_END

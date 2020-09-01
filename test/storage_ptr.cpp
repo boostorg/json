@@ -37,8 +37,7 @@
 
 //----------------------------------------------------------
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 class storage_ptr_test
 {
@@ -206,5 +205,4 @@ public:
 
 TEST_SUITE(storage_ptr_test, "boost.json.storage_ptr");
 
-} // json
-} // boost
+BOOST_JSON_NS_END

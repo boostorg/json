@@ -26,8 +26,7 @@
 #endif
 #define assert BOOST_TEST
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 namespace snippets1 {
 
@@ -385,5 +384,4 @@ public:
 
 TEST_SUITE(memory_resource_test, "boost.json.memory_resource");
 
-} // json
-} // boost
+BOOST_JSON_NS_END

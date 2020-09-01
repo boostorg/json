@@ -12,7 +12,7 @@
 
 #include "test_suite.hpp"
 
-namespace boost {
+BOOST_JSON_NS_BEGIN
 
 struct json_test
 {
@@ -21,7 +21,6 @@ struct json_test
     void
     run()
     {
-        using namespace json;
         log <<
             "sizeof(alignof)\n"
             "  object        == " << sizeof(object) << " (" << alignof(object) << ")\n"
@@ -38,4 +37,4 @@ struct json_test
 
 TEST_SUITE(json_test, "boost.json.zsizes");
 
-} // boost
+BOOST_JSON_NS_END

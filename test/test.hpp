@@ -23,8 +23,7 @@
 
 #include "test_suite.hpp"
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 //----------------------------------------------------------
 
@@ -1082,7 +1081,6 @@ check_array(
 
 //----------------------------------------------------------
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

@@ -23,8 +23,7 @@
 #include "gtest.hpp"
 #include <math.h>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 namespace ryu {
@@ -54,5 +53,4 @@ TEST(D2sIntrinsicsTest, mod1e9) {
 } // ryu
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
