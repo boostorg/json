@@ -32,9 +32,8 @@ namespace json {
 class static_resource final
     : public memory_resource
 {   
-    char* buffer_;
-    std::size_t size_;
-    std::size_t used_;
+    void* p_;
+    std::size_t n_;
 
 public:
     /// Copy constructor (deleted)
