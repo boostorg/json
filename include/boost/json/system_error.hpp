@@ -18,8 +18,7 @@
 # include <system_error>
 #endif
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 #ifndef BOOST_JSON_STANDALONE
 
@@ -53,7 +52,6 @@ using std::generic_category;
 
 #endif
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

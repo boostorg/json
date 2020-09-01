@@ -13,8 +13,7 @@
 #include <boost/json/detail/digest.hpp>
 #include <boost/json/detail/object_impl.hpp>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 void
@@ -278,7 +277,6 @@ unchecked_object::
 }
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

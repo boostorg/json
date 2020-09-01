@@ -112,8 +112,7 @@ testValueCtor()
             ::boost::json::value(T{})));
 }
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 // integral
 BOOST_STATIC_ASSERT(has_value_from<int>::value);
@@ -251,5 +250,4 @@ public:
 
 TEST_SUITE(value_from_test, "boost.json.value_from");
 
-} // json
-} // boost
+BOOST_JSON_NS_END

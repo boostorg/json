@@ -20,8 +20,7 @@
 #pragma warning(disable: 4127) // conditional expression is constant
 #endif
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 enum class serializer::state : char
 {
@@ -753,8 +752,7 @@ read(char* dest, std::size_t size)
     return write_some(dest, size);
 }
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #ifdef _MSC_VER
 #pragma warning(pop)

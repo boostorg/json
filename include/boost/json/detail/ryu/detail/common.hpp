@@ -25,8 +25,7 @@
 #include <boost/json/detail/config.hpp>
 #include <string.h>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 namespace ryu {
@@ -114,7 +113,6 @@ inline uint64_t double_to_bits(const double d) {
 } // ryu
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

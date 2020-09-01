@@ -19,8 +19,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 /** Return true if a memory resource's deallocate function has no effect.
 
@@ -607,7 +606,6 @@ operator!=(
     return lhs.get() != rhs.get();
 }
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

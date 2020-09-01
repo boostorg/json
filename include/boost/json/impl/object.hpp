@@ -16,8 +16,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 struct object::undo_construct
 {
@@ -404,7 +403,6 @@ insert_range(
     insert_range_impl(min_capacity, f);
 }
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

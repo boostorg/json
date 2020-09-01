@@ -12,8 +12,7 @@
 
 #include <boost/json/detail/stack.hpp>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 stack::
@@ -43,7 +42,6 @@ reserve(std::size_t n)
 }
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

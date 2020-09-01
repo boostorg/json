@@ -12,8 +12,7 @@
 
 #include <boost/json/detail/counted_resource.hpp>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 // these are here so that ~memory_resource
@@ -31,7 +30,6 @@ counted_resource::
 }
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

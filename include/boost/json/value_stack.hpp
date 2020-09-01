@@ -17,8 +17,7 @@
 #include <boost/json/detail/raw_stack.hpp>
 #include <stddef.h>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 //----------------------------------------------------------
 
@@ -485,8 +484,7 @@ public:
     push_null();
 };
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/impl/value_stack.ipp>

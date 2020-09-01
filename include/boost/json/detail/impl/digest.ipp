@@ -10,8 +10,7 @@
 #ifndef BOOST_JSON_DETAIL_IMPL_DIGEST_IPP
 #define BOOST_JSON_DETAIL_IMPL_DIGEST_IPP
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 std::size_t
@@ -34,7 +33,6 @@ digest(
 }
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

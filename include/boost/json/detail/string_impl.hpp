@@ -17,8 +17,7 @@
 #include <algorithm>
 #include <iterator>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 class value;
 
@@ -335,8 +334,7 @@ public:
 };
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/detail/impl/string_impl.ipp>

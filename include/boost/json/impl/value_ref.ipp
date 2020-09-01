@@ -14,8 +14,7 @@
 #include <boost/json/array.hpp>
 #include <boost/json/value.hpp>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 value_ref::
 operator
@@ -183,7 +182,6 @@ write_array(
     u.pos = nullptr;
 }
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

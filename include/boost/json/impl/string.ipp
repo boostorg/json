@@ -17,8 +17,7 @@
 #include <stdexcept>
 #include <utility>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 //----------------------------------------------------------
 //
@@ -322,7 +321,6 @@ operator<<(std::ostream& os, string const& s)
     return os << static_cast<string_view>(s);
 }
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

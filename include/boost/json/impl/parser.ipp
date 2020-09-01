@@ -17,8 +17,7 @@
 #include <stdexcept>
 #include <utility>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 bool
 parser::
@@ -261,7 +260,6 @@ release(error_code& ec)
     return nullptr;
 }
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

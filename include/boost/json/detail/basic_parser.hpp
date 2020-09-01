@@ -32,8 +32,7 @@
     times down.
 */
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 /** An incremental SAX parser for serialized JSON.
 
@@ -465,7 +464,6 @@ public:
         error_code& ec);
 };
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

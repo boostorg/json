@@ -12,8 +12,7 @@
 
 #include <boost/json/except.hpp>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 type_error::
 type_error(char const* what)
@@ -283,7 +282,6 @@ raise()
         uint64_required_error());
 }
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

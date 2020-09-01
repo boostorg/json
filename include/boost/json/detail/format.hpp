@@ -10,8 +10,7 @@
 #ifndef BOOST_JSON_DETAIL_FORMAT_HPP
 #define BOOST_JSON_DETAIL_FORMAT_HPP
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 int constexpr max_number_chars =
@@ -38,8 +37,7 @@ format_double(
     char* dest, double d) noexcept;
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/detail/impl/format.ipp>

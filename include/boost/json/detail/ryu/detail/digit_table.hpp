@@ -24,8 +24,7 @@
 
 #include <boost/json/detail/config.hpp>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 namespace ryu {
@@ -55,7 +54,6 @@ char const
 } // ryu
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

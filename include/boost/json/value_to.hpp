@@ -15,8 +15,7 @@
 #include <boost/json/value.hpp>
 #include <boost/json/detail/value_to.hpp>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 /** Customization point tag type.
 
@@ -158,7 +157,6 @@ struct has_value_to<T, detail::void_t<decltype(detail::value_to_impl(
     : std::true_type { };
 #endif
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

@@ -13,8 +13,7 @@
 #include <boost/json/detail/config.hpp>
 #include <new>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 /** A simple memory resource that uses operator new and delete.
@@ -53,8 +52,7 @@ public:
 };
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/detail/impl/default_resource.ipp>

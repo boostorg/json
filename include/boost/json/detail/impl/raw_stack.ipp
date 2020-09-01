@@ -13,8 +13,7 @@
 #include <boost/json/detail/raw_stack.hpp>
 #include <cstring>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 void
@@ -65,7 +64,6 @@ grow(std::size_t n)
 }
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

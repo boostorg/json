@@ -16,8 +16,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 class value_to_test
 {
@@ -81,5 +80,4 @@ public:
 
 TEST_SUITE(value_to_test, "boost.json.value_to");
 
-} // json
-} // boost
+BOOST_JSON_NS_END

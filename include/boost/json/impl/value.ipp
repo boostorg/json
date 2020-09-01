@@ -16,8 +16,7 @@
 #include <new>
 #include <utility>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 value::
 ~value()
@@ -440,7 +439,6 @@ key_value_pair(
 
 //----------------------------------------------------------
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

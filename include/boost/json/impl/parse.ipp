@@ -14,8 +14,7 @@
 #include <boost/json/parse.hpp>
 #include <boost/json/parser.hpp>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 value
 parse(
@@ -56,7 +55,6 @@ parse(
     return jv;
 }
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

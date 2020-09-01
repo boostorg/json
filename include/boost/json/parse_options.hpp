@@ -10,8 +10,7 @@
 #ifndef BOOST_JSON_PARSE_OPTIONS_HPP
 #define BOOST_JSON_PARSE_OPTIONS_HPP
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 /** Parser options
 
@@ -77,7 +76,6 @@ struct parse_options
     bool allow_invalid_utf8 = false;
 };
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

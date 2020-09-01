@@ -15,8 +15,7 @@
 #include <cstdint>
 #include <cstring>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 class value;
 
@@ -163,8 +162,7 @@ public:
 };
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 // includes are at the bottom of <boost/json/value.hpp>
  

@@ -15,8 +15,7 @@
 #include <boost/json/value.hpp>
 #include <boost/json/detail/value_from.hpp>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 /** Customization point tag.
     
@@ -157,7 +156,6 @@ struct has_value_from<T, detail::void_t<
     : std::true_type { };
 #endif
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

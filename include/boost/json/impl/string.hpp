@@ -13,8 +13,7 @@
 #include <utility>
 #include <string>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 string::
 string(
@@ -220,7 +219,6 @@ append(
         tmp.data(), tmp.size());
 }
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

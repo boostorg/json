@@ -19,8 +19,7 @@
 #include "test.hpp"
 #include "test_suite.hpp"
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 namespace base64 {
 
@@ -1508,5 +1507,4 @@ public:
 
 TEST_SUITE(basic_parser_test, "boost.json.basic_parser");
 
-} // json
-} // boost
+BOOST_JSON_NS_END

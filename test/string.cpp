@@ -19,8 +19,7 @@
 #include "test.hpp"
 #include "test_suite.hpp"
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 class string_test
 {
@@ -2771,5 +2770,4 @@ public:
 
 TEST_SUITE(string_test, "boost.json.string");
 
-} // json
-} // boost
+BOOST_JSON_NS_END

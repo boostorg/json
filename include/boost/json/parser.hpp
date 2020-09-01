@@ -21,8 +21,7 @@
 #include <type_traits>
 #include <stddef.h>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 //----------------------------------------------------------
 
@@ -383,8 +382,7 @@ public:
     release(error_code& ec);
 };
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/impl/parser.ipp>

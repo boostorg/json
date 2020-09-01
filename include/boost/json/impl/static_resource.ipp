@@ -19,8 +19,7 @@
 #include <memory>
 #endif
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 namespace detail {
 
@@ -79,7 +78,6 @@ do_is_equal(
     return this == &mr;
 }
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

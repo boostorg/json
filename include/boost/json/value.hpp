@@ -29,8 +29,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 /** The type used to represent any JSON value
 
@@ -3029,8 +3028,7 @@ get<1>(key_value_pair&& kvp) noexcept
 
 #endif
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #ifdef __clang__
 # pragma clang diagnostic push

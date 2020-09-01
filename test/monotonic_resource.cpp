@@ -15,8 +15,7 @@
 
 #include "test_suite.hpp"
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 class monotonic_resource_test
 {
@@ -171,5 +170,4 @@ R"xx({
 
 TEST_SUITE(monotonic_resource_test, "boost.json.monotonic_resource");
 
-} // json
-} // boost
+BOOST_JSON_NS_END

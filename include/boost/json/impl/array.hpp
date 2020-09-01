@@ -15,8 +15,7 @@
 #include <stdexcept>
 #include <type_traits>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 class array::undo_construct
 {
@@ -429,7 +428,6 @@ insert(
     return data() + u.pos;
 }
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

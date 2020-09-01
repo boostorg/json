@@ -10,8 +10,7 @@
 #ifndef BOOST_JSON_DETAIL_STREAM_HPP
 #define BOOST_JSON_DETAIL_STREAM_HPP
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 class const_stream
@@ -346,7 +345,6 @@ public:
 };
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

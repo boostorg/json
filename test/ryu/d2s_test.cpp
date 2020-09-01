@@ -23,8 +23,7 @@
 #include <cmath>
 #include "gtest.hpp"
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 namespace ryu {
@@ -259,5 +258,4 @@ TEST(D2sTest, SmallIntegers) {
 } // ryu
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END

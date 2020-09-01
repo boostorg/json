@@ -15,8 +15,7 @@
 #include <boost/json/detail/number_cast.hpp>
 #include <type_traits>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 /** Returns a value converted to a numeric type.
 
@@ -107,7 +106,6 @@ number_cast(value const& jv)
     return result;
 }
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

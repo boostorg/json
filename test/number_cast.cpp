@@ -15,8 +15,7 @@
 
 #include "test_suite.hpp"
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 namespace {
 
@@ -307,5 +306,4 @@ public:
 
 TEST_SUITE(number_cast_test, "boost.json.number_cast");
 
-} // json
-} // boost
+BOOST_JSON_NS_END

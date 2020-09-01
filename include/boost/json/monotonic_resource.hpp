@@ -15,8 +15,7 @@
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/detail/monotonic_resource.hpp>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 /** A fast memory resource that never deallocates.
     
@@ -258,8 +257,7 @@ struct is_deallocate_trivial<
     static constexpr bool value = true;
 };
 
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/impl/monotonic_resource.ipp>
