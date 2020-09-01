@@ -24,8 +24,7 @@
 # endif
 #endif
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 #ifdef BOOST_JSON_USE_SSE2
@@ -543,7 +542,6 @@ inline const char* count_whitespace( char const* p, const char* end ) noexcept
 #endif
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

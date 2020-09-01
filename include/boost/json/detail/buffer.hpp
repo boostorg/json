@@ -14,8 +14,7 @@
 #include <boost/json/string_view.hpp>
 #include <cstring>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 // A simple string-like temporary static buffer
@@ -140,7 +139,6 @@ private:
 };
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

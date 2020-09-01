@@ -15,8 +15,7 @@
 #include <tuple>
 #include <utility>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 template<std::size_t N>
@@ -167,7 +166,6 @@ public:
 };
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

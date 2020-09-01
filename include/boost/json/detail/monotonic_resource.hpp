@@ -14,8 +14,7 @@
 
 #include <cstddef>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 struct class_type {};
@@ -83,7 +82,6 @@ align_up(
 }
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

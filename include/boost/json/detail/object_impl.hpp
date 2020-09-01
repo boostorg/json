@@ -17,8 +17,7 @@
 #include <cstring>
 #include <type_traits>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 class value;
 class key_value_pair;
@@ -261,8 +260,7 @@ destroy(
     std::size_t n) noexcept;
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 // includes are at the bottom of <boost/json/value.hpp>
 

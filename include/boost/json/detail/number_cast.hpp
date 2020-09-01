@@ -15,8 +15,7 @@
 #include <limits>
 #include <type_traits>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 template<class T>
@@ -160,7 +159,6 @@ number_cast(
 }
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

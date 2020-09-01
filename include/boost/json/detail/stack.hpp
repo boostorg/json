@@ -14,8 +14,7 @@
 #include <boost/json/storage_ptr.hpp>
 #include <cstring>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 class stack
@@ -95,8 +94,7 @@ public:
 };
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/detail/impl/stack.ipp>

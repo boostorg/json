@@ -14,8 +14,7 @@
 #include <atomic>
 #include <utility>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 struct BOOST_SYMBOL_VISIBLE
@@ -72,8 +71,7 @@ public:
 };
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/detail/impl/counted_resource.ipp>

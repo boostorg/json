@@ -15,8 +15,7 @@
 #include <cstdlib>
 #include <utility>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 class raw_stack
@@ -157,8 +156,7 @@ align_to(raw_stack& rs) noexcept
 }
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/detail/impl/raw_stack.ipp>

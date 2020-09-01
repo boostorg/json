@@ -17,8 +17,7 @@
 
 #include <type_traits>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 template<class>
 struct value_to_tag { };
@@ -201,7 +200,6 @@ value_to_impl(
 }
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

@@ -10,8 +10,7 @@
 #ifndef BOOST_JSON_DETAIL_DIGEST_HPP
 #define BOOST_JSON_DETAIL_DIGEST_HPP
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 // Calculate salted digest of string
@@ -23,8 +22,7 @@ digest(
     std::size_t salt) noexcept;
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #ifdef BOOST_JSON_HEADER_ONLY
 #include <boost/json/detail/impl/digest.ipp>

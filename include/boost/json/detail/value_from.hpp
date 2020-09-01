@@ -15,8 +15,7 @@
 #include <boost/json/value.hpp>
 #include <boost/json/detail/value_traits.hpp>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 
 struct value_from_tag { };
 
@@ -156,7 +155,6 @@ value_from_impl(
 }
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif

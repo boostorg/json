@@ -15,8 +15,7 @@
 #include <new>
 #include <utility>
 
-namespace boost {
-namespace json {
+BOOST_JSON_NS_BEGIN
 namespace detail {
 
 struct int64_k
@@ -217,7 +216,6 @@ struct value_access
 };
 
 } // detail
-} // json
-} // boost
+BOOST_JSON_NS_END
 
 #endif
