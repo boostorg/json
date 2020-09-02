@@ -7,8 +7,8 @@
 // Official repository: https://github.com/cppalliance/json
 //
 
-#ifndef BOOST_PILFER_HPP
-#define BOOST_PILFER_HPP
+#ifndef BOOST_JSON_PILFER_HPP
+#define BOOST_JSON_PILFER_HPP
 
 #include <type_traits>
 #include <utility>
@@ -16,13 +16,36 @@
 /*
     Implements "pilfering" from P0308R0
 
-    "Valueless Variants Considered Harmful"
-    http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0308r0.html
-    Author: Peter Dimov
+    @see
+        http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0308r0.html
 */
 
 namespace boost {
+namespace json {
 
+/** Tag wrapper to specify pilfer-construction.
+
+    This wrapper is used to specify a pilfer constructor
+    overload.
+
+    @par Example
+
+    This show how a type T may be given a pilfer constructor:
+
+    @code
+    struct T
+    {
+        T( pilfered<T> );
+    };
+    @endcode
+
+    @note
+
+    The constructor should not be marked explicit.
+
+    @see
+        http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0308r0.html
+*/
 template<class T>
 class pilfered
 {
@@ -62,6 +85,11 @@ struct not_pilfered
 
 } // detail
 
+/** Metafunction returning `true` if `T` is PilferConstructible
+
+    @see
+        http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0308r0.html
+*/
 template<class T>
 struct is_pilfer_constructible :
     std::integral_constant<bool,
@@ -75,6 +103,34 @@ struct is_pilfer_constructible :
 {
 };
 
+/** Indicate that an object `t` may be pilfered.
+
+    This is used similarly to `std::move`.
+
+    @par Example
+
+    This shows how an instance of `T` may be
+    pilfer-constructed from another `T`:
+
+    @code
+    struct T
+    {
+        T( pilfered<T> );
+    };
+
+    void f()
+    {
+        T t1;
+        T t2( pilfer(t1) ); // pilfer-construct
+
+        // At this point, t1 may only be destroyed
+    }
+
+    @endcode
+
+    @see
+        http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0308r0.html
+*/
 template<class T>
 auto
 pilfer(T&& t) noexcept ->
@@ -102,6 +158,7 @@ pilfer(T&& t) noexcept ->
             >::type(std::move(t));
 }
 
+/*
 template<class T>
 void
 relocate(T* dest, T& src) noexcept
@@ -111,7 +168,9 @@ relocate(T* dest, T& src) noexcept
     ::new(dest) T(pilfer(src));
     src.~T();
 }
+*/
 
+} // json
 } // boost
 
 #endif

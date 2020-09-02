@@ -8,4 +8,4 @@
 //
 
 // Test that header file is self-contained.
-#include <boost/pilfer.hpp>
+#include <boost/json/pilfer.hpp>

@@ -12,12 +12,12 @@
 #define BOOST_JSON_STRING_HPP
 
 #include <boost/json/detail/config.hpp>
+#include <boost/json/pilfer.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/string_view.hpp>
 #include <boost/json/detail/digest.hpp>
 #include <boost/json/detail/string_impl.hpp>
 #include <boost/json/detail/value.hpp>
-#include <boost/pilfer.hpp>
 #include <algorithm>
 #include <initializer_list>
 #include <iosfwd>

@@ -11,7 +11,7 @@
 #define BOOST_JSON_IMPL_ARRAY_IPP
 
 #include <boost/json/array.hpp>
-#include <boost/pilfer.hpp>
+#include <boost/json/pilfer.hpp>
 #include <cstdlib>
 #include <limits>
 #include <new>

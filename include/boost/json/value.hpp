@@ -16,12 +16,12 @@
 #include <boost/json/except.hpp>
 #include <boost/json/kind.hpp>
 #include <boost/json/object.hpp>
+#include <boost/json/pilfer.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/string.hpp>
 #include <boost/json/string_view.hpp>
 #include <boost/json/value_ref.hpp>
 #include <boost/json/detail/value.hpp>
-#include <boost/pilfer.hpp>
 #include <cstdlib>
 #include <initializer_list>
 #include <iosfwd>

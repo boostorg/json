@@ -111,6 +111,12 @@
           <member><link linkend="json.ref.boost__json__string_view">string_view</link></member>
           <member><link linkend="json.ref.boost__json__system_error">system_error</link></member>
         </simplelist>
+        <bridgehead renderas="sect3">P0308R0</bridgehead>
+        <simplelist type="vert" columns="1">
+          <member><link linkend="json.ref.boost__json__is_pilfer_constructible">is_pilfer_constructible</link></member>
+          <member><link linkend="json.ref.boost__json__pilfer">pilfer</link></member>
+          <member><link linkend="json.ref.boost__json__pilfered">pilfered</link></member>
+        </simplelist>
       </entry>
     </row></tbody>
   </tgroup>

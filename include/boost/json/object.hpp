@@ -12,10 +12,10 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/kind.hpp>
+#include <boost/json/pilfer.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/string_view.hpp>
 #include <boost/json/detail/object_impl.hpp>
-#include <boost/pilfer.hpp>
 #include <cstdlib>
 #include <initializer_list>
 #include <iterator>
