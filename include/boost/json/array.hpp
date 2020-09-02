@@ -595,7 +595,7 @@ public:
         @throw std::out_of_range `pos >= size()`
     */
     inline
-    reference
+    value&
     at(std::size_t pos);
 
     /** Access an element, with bounds checking.
@@ -614,7 +614,7 @@ public:
         @throw std::out_of_range `pos >= size()`
     */
     inline
-    const_reference
+    value const&
     at(std::size_t pos) const;
 
     /** Access an element.
@@ -633,7 +633,7 @@ public:
         @param pos A zero-based index
     */
     inline
-    reference
+    value&
     operator[](std::size_t pos) noexcept;
 
     /** Access an element.
@@ -652,7 +652,7 @@ public:
         @param pos A zero-based index
     */
     inline
-    const_reference
+    value const&
     operator[](std::size_t pos) const noexcept;
 
     /** Access the first element.
@@ -668,7 +668,7 @@ public:
         Constant.
     */
     inline
-    reference
+    value&
     front() noexcept;
 
     /** Access the first element.
@@ -684,7 +684,7 @@ public:
         Constant.
     */
     inline
-    const_reference
+    value const&
     front() const noexcept;
 
     /** Access the last element.
@@ -700,7 +700,7 @@ public:
         Constant.
     */
     inline
-    reference
+    value&
     back() noexcept;
 
     /** Access the last element.
@@ -716,8 +716,60 @@ public:
         Constant.
     */
     inline
-    const_reference
+    value const&
     back() const noexcept;
+
+    /** Return a pointer an element, or nullptr if the index is invalid
+
+        This function returns a pointer to the element
+        at index `pos` when the index is less then the size
+        of the container. Otherwise it returns null.
+
+        @par Example
+        @code
+        if( auto p = arr.contains( 1 ) )
+            std::cout << *p;
+        @endcode
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+
+        @param pos The index of the element to return.
+    */
+    inline
+    value const*
+    contains(std::size_t pos) const noexcept;
+
+    /** Return a pointer an element, or nullptr if the index is invalid
+
+        This function returns a pointer to the element
+        at index `pos` when the index is less then the size
+        of the container. Otherwise it returns null.
+
+        @par Example
+        @code
+        if( auto p = arr.contains( 1 ) )
+            std::cout << *p;
+        @endcode
+
+        @par Complexity
+
+        Constant.
+
+        @par Exception Safety
+
+        No-throw guarantee.
+
+        @param pos The index of the element to return.
+    */
+    inline
+    value*
+    contains(std::size_t pos) noexcept;
 
     /** Access the underlying array directly.
 

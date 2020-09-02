@@ -74,10 +74,9 @@ public:
 //
 //----------------------------------------------------------
 
-auto
+value&
 array::
-at(std::size_t pos) ->
-    reference
+at(std::size_t pos)
 {
     if(pos >= impl_.size())
         detail::throw_out_of_range(
@@ -85,10 +84,9 @@ at(std::size_t pos) ->
     return impl_.data()[pos];
 }
 
-auto
+value const&
 array::
-at(std::size_t pos) const ->
-    const_reference
+at(std::size_t pos) const
 {
     if(pos >= impl_.size())
         detail::throw_out_of_range(
@@ -96,66 +94,77 @@ at(std::size_t pos) const ->
     return impl_.data()[pos];
 }
 
-auto
+value&
 array::
-operator[](std::size_t pos) noexcept ->
-    reference
+operator[](std::size_t pos) noexcept
 {
     return impl_.data()[pos];
 }
 
-auto
+value const&
 array::
-operator[](std::size_t pos) const noexcept ->
-const_reference
+operator[](std::size_t pos) const noexcept
 {
     return impl_.data()[pos];
 }
 
-auto
+value&
 array::
-front() noexcept ->
-    reference
+front() noexcept
 {
     return *impl_.data();
 }
 
-auto
+value const&
 array::
-front() const noexcept ->
-    const_reference
+front() const noexcept
 {
     return *impl_.data();
 }
 
-auto
+value&
 array::
-back() noexcept ->
-    reference
+back() noexcept
 {
     return impl_.data()[impl_.size() - 1];
 }
 
-auto
+value const&
 array::
-back() const noexcept ->
-    const_reference
+back() const noexcept
 {
     return impl_.data()[impl_.size() - 1];
 }
 
-auto
+
+value*
 array::
-data() noexcept ->
-    value*
+data() noexcept
 {
     return impl_.data();
 }
 
-auto
+value const*
 array::
-data() const noexcept ->
-    value const*
+contains(std::size_t pos) const noexcept
+{
+    if( pos < size() )
+        return impl_.data() + pos;
+    return nullptr;
+}
+
+value*
+array::
+contains(std::size_t pos) noexcept
+{
+    if( pos < size() )
+        return impl_.data() + pos;
+    return nullptr;
+}
+
+value const*
+array::
+data() const noexcept
 {
     return impl_.data();
 }

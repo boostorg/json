@@ -438,6 +438,18 @@ public:
             BOOST_TEST(a.back().is_string());
         }
 
+        // contains()
+        {
+            array a({1, true, str_});
+            BOOST_TEST(a.contains(2)->is_string());
+        }
+
+        // contains()
+        {
+            array const a({1, true, str_});
+            BOOST_TEST(a.contains(3) == nullptr);
+        }
+
         // data()
         {
             {
