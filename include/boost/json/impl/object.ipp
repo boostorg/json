@@ -448,11 +448,24 @@ find(string_view key) const noexcept ->
     return end();
 }
 
-bool
+value const*
 object::
 contains(string_view key) const noexcept
 {
-    return find(key) != end();
+    auto const it = find(key);
+    if(it != end())
+        return &it->value();
+    return nullptr;
+}
+
+value*
+object::
+contains(string_view key) noexcept
+{
+    auto const it = find(key);
+    if(it != end())
+        return &it->value();
+    return nullptr;
 }
 
 //----------------------------------------------------------

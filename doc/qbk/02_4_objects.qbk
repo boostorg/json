@@ -13,9 +13,9 @@
 
 A __value__ stores an instance of __object__ as the underlying representation
 for a JSON object . Instances of the __object__ type are associative
-containers holding key and value pairs, where the key is a non-modifiable
-character string and the mapped type is a __value__. These containers are
-modelled after __std_unordered_map__ with these unique properties:
+containers holding key and value pairs, where the key is a __string_view__
+and the mapped type is a __value__. These containers are modelled after
+standard maps with these properties:
 
 * The elements are stored contiguously as instances of __key_value_pair__.
 

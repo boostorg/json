@@ -1306,10 +1306,18 @@ public:
     const_iterator
     find(string_view key) const noexcept;
 
-    /** Check if the container contains an element with a specific key
+    /** Return a pointer to the value if the key is found, or null
 
-        This function returns `true` if an element with the
-        specified key exists, otherwise returns `false`.
+        This function searches for a value with the given
+        key, and returns a pointer to it if found. Otherwise
+        it returns null.
+
+        @par Example
+        @code
+        if( auto p = obj.contains( "key" ) )
+            std::cout << *p;
+        @endcode
+
         @par Complexity
 
         Constant on average, worst case linear in @ref size().
@@ -1320,11 +1328,39 @@ public:
 
         @param key The key of the element to find.
 
-        @see find.
+        @see @ref find
     */
     BOOST_JSON_DECL
-    bool
+    value const*
     contains(string_view key) const noexcept;
+
+    /** Return a pointer to the value if the key is found, or null
+
+        This function searches for a value with the given
+        key, and returns a pointer to it if found. Otherwise
+        it returns null.
+
+        @par Example
+        @code
+        if( auto p = obj.contains( "key" ) )
+            std::cout << *p;
+        @endcode
+
+        @par Complexity
+
+        Constant on average, worst case linear in @ref size().
+
+        @par Exception Safety
+
+        No-throw guarantee.
+
+        @param key The key of the element to find.
+
+        @see @ref find
+    */
+    BOOST_JSON_DECL
+    value*
+    contains(string_view key) noexcept;
 
 private:
     struct place_one;
