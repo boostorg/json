@@ -167,14 +167,14 @@ object(
 object::
 object(
     std::initializer_list<std::pair<
-        key_type, value_ref>> init,
+        string_view, value_ref>> init,
     std::size_t min_capacity,
     storage_ptr sp)
     : sp_(std::move(sp))
 {
     undo_construct u(this);
     using FwdIt = std::pair<
-        key_type, value_ref> const*;
+        string_view, value_ref> const*;
     struct place_impl : place_range
     {
         FwdIt it;
@@ -237,7 +237,7 @@ object&
 object::
 operator=(
     std::initializer_list<std::pair<
-        key_type, value_ref>> init)
+        string_view, value_ref>> init)
 {
     object tmp(init, sp_);
     this->~object();
@@ -270,10 +270,10 @@ void
 object::
 insert(
     std::initializer_list<std::pair<
-        key_type, value_ref>> init)
+        string_view, value_ref>> init)
 {
     using FwdIt = std::pair<
-        key_type, value_ref> const*;
+        string_view, value_ref> const*;
     struct place_impl : place_range
     {
         FwdIt it;
@@ -342,7 +342,7 @@ erase(const_iterator pos) noexcept ->
 
 auto
 object::
-erase(key_type key) noexcept ->
+erase(string_view key) noexcept ->
     std::size_t
 {
     auto it = find(key);
@@ -382,7 +382,7 @@ swap(object& other)
 
 auto
 object::
-at(key_type key) ->
+at(string_view key) ->
     value&
 {
     auto it = find(key);
@@ -394,7 +394,7 @@ at(key_type key) ->
     
 auto
 object::
-at(key_type key) const ->
+at(string_view key) const ->
     value const&
 {
     auto it = find(key);
@@ -406,7 +406,7 @@ at(key_type key) const ->
 
 auto
 object::
-operator[](key_type key) ->
+operator[](string_view key) ->
     value&
 {
     auto const result =
@@ -416,7 +416,7 @@ operator[](key_type key) ->
 
 auto
 object::
-count(key_type key) const noexcept ->
+count(string_view key) const noexcept ->
     std::size_t
 {
     if(find(key) == end())
@@ -426,7 +426,7 @@ count(key_type key) const noexcept ->
 
 auto
 object::
-find(key_type key) noexcept ->
+find(string_view key) noexcept ->
     iterator
 {
     auto const p =
@@ -438,7 +438,7 @@ find(key_type key) noexcept ->
 
 auto
 object::
-find(key_type key) const noexcept ->
+find(string_view key) const noexcept ->
     const_iterator
 {
     auto const p =
@@ -450,7 +450,7 @@ find(key_type key) const noexcept ->
 
 bool
 object::
-contains(key_type key) const noexcept
+contains(string_view key) const noexcept
 {
     return find(key) != end();
 }
@@ -463,7 +463,7 @@ contains(key_type key) const noexcept
 
 auto
 object::
-find_impl(key_type key) const noexcept ->
+find_impl(string_view key) const noexcept ->
     std::pair<value_type*, std::size_t>
 {
     std::pair<
@@ -523,7 +523,7 @@ rehash(std::size_t new_capacity)
 auto
 object::
 emplace_impl(
-    key_type key,
+    string_view key,
     place_one& f) ->
     std::pair<iterator, bool>
 {

@@ -454,7 +454,7 @@ public:
     */
     object(
         std::initializer_list<
-            std::pair<key_type, value_ref>> init,
+            std::pair<string_view, value_ref>> init,
         storage_ptr sp = {})
         : object(init, 0, std::move(sp))
     {
@@ -495,7 +495,7 @@ public:
     BOOST_JSON_DECL
     object(
         std::initializer_list<
-            std::pair<key_type, value_ref>> init,
+            std::pair<string_view, value_ref>> init,
         std::size_t min_capacity,
         storage_ptr sp = {});
 
@@ -574,7 +574,7 @@ public:
     BOOST_JSON_DECL
     object&
     operator=(std::initializer_list<
-        std::pair<key_type, value_ref>> init);
+        std::pair<string_view, value_ref>> init);
 
     //------------------------------------------------------
 
@@ -1009,7 +1009,7 @@ public:
     BOOST_JSON_DECL
     void
     insert(std::initializer_list<
-        std::pair<key_type, value_ref>> init);
+        std::pair<string_view, value_ref>> init);
 
     /** Insert an element or assign to the current element if the key already exists.
 
@@ -1050,7 +1050,7 @@ public:
     template<class M>
     std::pair<iterator, bool>
     insert_or_assign(
-        key_type key, M&& m);
+        string_view key, M&& m);
 
     /** Construct an element in-place.
 
@@ -1091,7 +1091,7 @@ public:
     */
     template<class Arg>
     std::pair<iterator, bool>
-    emplace(key_type key, Arg&& arg);
+    emplace(string_view key, Arg&& arg);
 
     /** Erase an element
 
@@ -1141,7 +1141,7 @@ public:
     */
     BOOST_JSON_DECL
     std::size_t
-    erase(key_type key) noexcept;
+    erase(string_view key) noexcept;
 
     /** Swap the contents.
 
@@ -1196,7 +1196,7 @@ public:
     */
     BOOST_JSON_DECL
     value&
-    at(key_type key);
+    at(string_view key);
 
     /** Access the specified element, with bounds checking.
 
@@ -1215,7 +1215,7 @@ public:
     */
     BOOST_JSON_DECL
     value const&
-    at(key_type key) const;
+    at(string_view key) const;
 
     /** Access or insert the specified element
 
@@ -1244,7 +1244,7 @@ public:
     */
     BOOST_JSON_DECL
     value&
-    operator[](key_type key);
+    operator[](string_view key);
 
     /** Count the number of elements with a specific key
 
@@ -1264,7 +1264,7 @@ public:
     */
     BOOST_JSON_DECL
     std::size_t
-    count(key_type key) const noexcept;
+    count(string_view key) const noexcept;
 
     /** Find an element with a specific key
 
@@ -1284,7 +1284,7 @@ public:
     */
     BOOST_JSON_DECL
     iterator
-    find(key_type key) noexcept;
+    find(string_view key) noexcept;
 
     /** Find an element with a specific key
 
@@ -1304,7 +1304,7 @@ public:
     */
     BOOST_JSON_DECL
     const_iterator
-    find(key_type key) const noexcept;
+    find(string_view key) const noexcept;
 
     /** Check if the container contains an element with a specific key
 
@@ -1324,7 +1324,7 @@ public:
     */
     BOOST_JSON_DECL
     bool
-    contains(key_type key) const noexcept;
+    contains(string_view key) const noexcept;
 
 private:
     struct place_one;
@@ -1336,7 +1336,7 @@ private:
 
     BOOST_JSON_DECL
     std::pair<value_type*, std::size_t>
-    find_impl(key_type key) const noexcept;
+    find_impl(string_view key) const noexcept;
 
     BOOST_JSON_DECL
     void
@@ -1345,7 +1345,7 @@ private:
     BOOST_JSON_DECL
     std::pair<iterator, bool>
     emplace_impl(
-        key_type key, place_one& f);
+        string_view key, place_one& f);
 
     BOOST_JSON_DECL
     std::pair<iterator, bool>
@@ -1360,7 +1360,7 @@ private:
     BOOST_JSON_DECL
     std::pair<iterator, bool>
     insert_or_assign_impl(
-        key_type key, place_one& f);
+        string_view key, place_one& f);
 
     BOOST_JSON_DECL
     void

@@ -253,17 +253,17 @@ template<class M>
 auto
 object::
 insert_or_assign(
-    key_type key, M&& m) ->
+    string_view key, M&& m) ->
         std::pair<iterator, bool>
 {
     struct place_impl : place_one
     {
-        key_type key;
+        string_view key;
         M&& m;
         storage_ptr const& sp;
 
         place_impl(
-            key_type key_,
+            string_view key_,
             M&& m_,
             storage_ptr const& sp_)
             : key(key_)
@@ -298,18 +298,18 @@ template<class Arg>
 auto
 object::
 emplace(
-    key_type key,
+    string_view key,
     Arg&& arg) ->
         std::pair<iterator, bool>
 {
     struct place_impl : place_one
     {
-        key_type key;
+        string_view key;
         Arg&& arg;
         storage_ptr const& sp;
     
         place_impl(
-            key_type key_,
+            string_view key_,
             Arg&& arg_,
             storage_ptr const& sp_)
             : key(key_)
