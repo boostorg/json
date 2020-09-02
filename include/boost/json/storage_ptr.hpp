@@ -551,11 +551,9 @@ public:
     @endcode
 
     @par Complexity
-
     Same as `T( std::forward<Args>(args)... )`.
 
     @par Exception Safety
-
     Strong guarantee.
 
     @param args Parameters forwarded to the constructor of `T`.

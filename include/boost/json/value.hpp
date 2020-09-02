@@ -77,8 +77,16 @@ class value
     inline char const* release_key(std::size_t& len) noexcept;
 
 public:
-    /// The type of _Allocator_ returned by @ref get_allocator
+    /** The type of _Allocator_ returned by @ref get_allocator
+
+        This type is a @ref polymorphic_allocator.
+    */
+#ifdef BOOST_JSON_DOCS
+    // VFALCO doc toolchain renders this incorrectly
+    using allocator_type = __see_below__;
+#else
     using allocator_type = polymorphic_allocator<value>;
+#endif
 
     /** Destructor.
 
@@ -1304,14 +1312,15 @@ public:
         value. Ownership of the respective @ref memory_resource
         objects is not transferred.
 
-        @li If `*other.storage() == *sp`, ownership of the
-        underlying memory is swapped in constant time, with
-        no possibility of exceptions. All iterators and
-        references remain valid.
+        @li If `*other.storage() == *this->storage()`,
+        ownership of the underlying memory is swapped in
+        constant time, with no possibility of exceptions.
+        All iterators and references remain valid.
 
-        @li If `*other.storage() != *sp`, the contents are
-        logically swapped by making copies, which can throw.
-        In this case all iterators and references are invalidated.
+        @li If `*other.storage() != *this->storage()`,
+        the contents are logically swapped by making copies,
+        which can throw. In this case all iterators and
+        references are invalidated.
 
         @par Preconditions
 
@@ -2715,12 +2724,10 @@ BOOST_STATIC_ASSERT(sizeof(value) == 16);
     `&lhs != &rhs`
         
     @par Complexity
-
     Constant or linear in the sum of the sizes of
     the values.
 
     @par Exception Safety
-
     Strong guarantee.
     Calls to `memory_resource::allocate` may throw.
 

@@ -20,21 +20,19 @@
 
 BOOST_JSON_NS_BEGIN
 
-/** Parse a string of JSON.
+/** Return parsed JSON as a @ref value.
 
-    This function parses an entire string in
-    one step to produce a complete JSON object, returned
+    This function parses an entire string in one
+    step to produce a complete JSON object, returned
     as a @ref value. If the buffer does not contain a
     complete serialized JSON, an error occurs. In this
     case the returned value will be null, using the
     default memory resource.
 
     @par Complexity
-
     Linear in `s.size()`.
 
     @par Exception Safety
-
     Strong guarantee.
     Calls to `memory_resource::allocate` may throw.
 
@@ -45,13 +43,16 @@ BOOST_JSON_NS_BEGIN
 
     @param ec Set to the error, if any occurred.
 
-    @param sp The memory resource that the new value and all of
-    its elements will use. If this parameter is omitted,
+    @param sp The memory resource that the new value and all
+    of its elements will use. If this parameter is omitted,
     the default memory resource is used.
 
-    @param opt The options for the parser.
+    @param opt The options for the parser. If this parameter
+    is omitted, the parser will accept only standard JSON.
 
-    @see @ref parse_options
+    @see
+        @ref parse_options,
+        @ref parser
 */
 BOOST_JSON_DECL
 value
@@ -59,46 +60,46 @@ parse(
     string_view s,
     error_code& ec,
     storage_ptr sp = {},
-    const parse_options& opt = {});
+    parse_options const& opt = {});
 
-/** Parse a string of JSON.
+/** Parse a string of JSON into a @ref value.
 
-    This function parses an entire string in
-    one step to produce a complete JSON object, returned
+    This function parses an entire string in one
+    step to produce a complete JSON object, returned
     as a @ref value. If the buffer does not contain a
-    complete serialized JSON, an error occurs. In this
-    case the returned value will be null, using the
-    default memory resource.
+    complete serialized JSON, an exception is thrown.
 
     @par Complexity
-
     Linear in `s.size()`.
 
     @par Exception Safety
-
     Strong guarantee.
     Calls to `memory_resource::allocate` may throw.
 
-    @return A value representing the parsed JSON upon success.
+    @return A value representing the parsed
+    JSON upon success.
     
     @param s The string to parse.
 
-    @param sp The memory resource that the new value and all of
-    its elements will use. If this parameter is omitted,
+    @param sp The memory resource that the new value and all
+    of its elements will use. If this parameter is omitted,
     the default memory resource is used.
 
-    @param opt The options for the parser.
+    @param opt The options for the parser. If this parameter
+    is omitted, the parser will accept only standard JSON.
 
     @throw system_error Thrown on failure.
 
-    @see @ref parse_options
+    @see
+        @ref parse_options,
+        @ref parser
 */
 BOOST_JSON_DECL
 value
 parse(
     string_view s,
     storage_ptr sp = {},
-    const parse_options& opt = {});
+    parse_options const& opt = {});
 
 BOOST_JSON_NS_END
 
