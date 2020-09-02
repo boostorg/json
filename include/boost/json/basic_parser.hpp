@@ -193,7 +193,7 @@ reserve()
 
 //----------------------------------------------------------
 //
-// The canary value is returned by parse functions
+// The sentinel value is returned by parse functions
 // to indicate that the parser failed, or suspended.
 // this is used as it is distinct from all valid values
 // for data in write
@@ -201,7 +201,7 @@ reserve()
 template<class Handler>
 const char*
 basic_parser<Handler>::
-canary()
+sentinel()
 {
     return reinterpret_cast<
         const char*>(this);
@@ -213,7 +213,7 @@ basic_parser<Handler>::
 incomplete(
     const detail::const_stream_wrapper& cs)
 {
-    return cs.begin() == canary();
+    return cs.begin() == sentinel();
 }
 
 //----------------------------------------------------------
@@ -235,7 +235,7 @@ suspend_or_fail(state st)
         reserve();
         st_.push_unchecked(st);
     }
-    return canary();
+    return sentinel();
 }
 
 template<class Handler>
@@ -253,7 +253,7 @@ suspend_or_fail(
         st_.push_unchecked(n);
         st_.push_unchecked(st);
     }
-    return canary();
+    return sentinel();
 }
 
 
@@ -263,7 +263,7 @@ basic_parser<Handler>::
 fail(const char* p) noexcept
 {
     end_ = p;
-    return canary();
+    return sentinel();
 }
 
 template<class Handler>
@@ -275,7 +275,7 @@ fail(
 {
     end_ = p;
     ec_ = ev;
-    return canary();
+    return sentinel();
 }
 
 template<class Handler>
@@ -292,7 +292,7 @@ maybe_suspend(
         reserve();
         st_.push_unchecked(st);
     }
-    return canary();
+    return sentinel();
 }
 
 template<class Handler>
@@ -311,7 +311,7 @@ maybe_suspend(
         st_.push_unchecked(n);
         st_.push_unchecked(st);
     }
-    return canary();
+    return sentinel();
 }
 
 template<class Handler>
@@ -330,7 +330,7 @@ maybe_suspend(
         reserve();
         st_.push_unchecked(st);;
     }
-    return canary();
+    return sentinel();
 }
 
 template<class Handler>
@@ -344,7 +344,7 @@ suspend(
     // suspend
     reserve();
     st_.push_unchecked(st);
-    return canary();
+    return sentinel();
 }
 
 template<class Handler>
@@ -360,7 +360,7 @@ suspend(
     num_ = num;
     reserve();
     st_.push_unchecked(st);
-    return canary();
+    return sentinel();
 }
 
 template<class Handler>
@@ -371,7 +371,7 @@ syntax_error(
 {
     end_ = p;
     ec_ = error::syntax;
-    return canary();
+    return sentinel();
 }
 
 template<class Handler>
@@ -415,9 +415,9 @@ do_com2:
         // KRYSTIAN TODO: this is a mess, we have to fix this
         remain = cs.remain();
         cs = remain ? static_cast<const char*>(
-            std::memchr(cs.begin(), '\n', remain)) : canary();
+            std::memchr(cs.begin(), '\n', remain)) : sentinel();
         if(! cs.begin())
-            cs = canary();
+            cs = sentinel();
         if(BOOST_JSON_UNLIKELY(incomplete(cs)))
         {
             // if the doc does not terminate
@@ -446,9 +446,9 @@ do_com3:
             // KRYSTIAN TODO: this is a mess, we have to fix this
             remain = cs.remain();
             cs = remain ? static_cast<const char*>(
-                std::memchr(cs.begin(), '*', remain)) : canary();
+                std::memchr(cs.begin(), '*', remain)) : sentinel();
             if(! cs.begin())
-                cs = canary();
+                cs = sentinel();
             // stopped inside a c comment
             if(BOOST_JSON_UNLIKELY(incomplete(cs)))
             {
@@ -2385,7 +2385,7 @@ write(
         p = parse_document<false>(data);
     }
 
-    if(BOOST_JSON_LIKELY(p != canary()))
+    if(BOOST_JSON_LIKELY(p != sentinel()))
     {
         BOOST_ASSERT(! ec_);
         if(! complete_)

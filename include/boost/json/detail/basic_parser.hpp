@@ -202,7 +202,7 @@ class basic_parser
     inline static char hex_digit(char c) noexcept;
     
     inline void reserve();
-    inline const char* canary();
+    inline const char* sentinel();
     inline bool incomplete(
         const detail::const_stream_wrapper& cs);
 
