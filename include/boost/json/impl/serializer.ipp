@@ -704,15 +704,11 @@ write_value(stream& ss)
     }
 }
 
-std::size_t
+string_view
 serializer::
-write_some(
+read_some(
     char* dest, std::size_t size)
 {
-    if(! jv_)
-        BOOST_THROW_EXCEPTION(
-            std::logic_error(
-                "no value in serializer"));
     stream ss(dest, size);
     if(st_.empty())
         write_value<true>(ss);
@@ -723,7 +719,8 @@ write_some(
         done_ = true;
         jv_ = nullptr;
     }
-    return ss.used(dest);
+    return string_view(
+        dest, ss.used(dest));
 }
 
 //----------------------------------------------------------
@@ -745,11 +742,16 @@ reset(value const& jv) noexcept
     done_ = false;
 }
 
-std::size_t
+string_view
 serializer::
 read(char* dest, std::size_t size)
 {
-    return write_some(dest, size);
+    if(! jv_)
+    {
+        static value const null;
+        jv_ = &null;
+    }
+    return read_some(dest, size);
 }
 
 BOOST_JSON_NS_END

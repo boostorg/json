@@ -57,7 +57,7 @@ public:
             string js;
             js.reserve(4096);
             js.grow(sr.read(
-                js.data(), js.capacity()));
+                js.data(), js.capacity()).size());
 
             auto const s1 = to_string(jv);
             auto const jv2 = parse(s1, ec);
@@ -82,7 +82,7 @@ public:
             string s2;
             s2.reserve(s1.size());
             s2.grow(sr.read(
-                s2.data(), i));
+                s2.data(), i).size());
             auto const dump =
             [&]
             {
@@ -105,7 +105,7 @@ public:
             }
             s2.grow(sr.read(
                 s2.data() + i,
-                s1.size() - i));
+                s1.size() - i).size());
             if(! BOOST_TEST(
                 s2.size() == s1.size()))
             {
@@ -339,43 +339,47 @@ public:
     void
     testMembers()
     {
-        value jv;
+        value jv = 1;
 
         // serializer()
         {
             serializer sr;
+
+            char buf[32];
+            BOOST_TEST(sr.read(buf) == "null");
         }
 
         // serializer(value)
         {
             serializer sr(jv);
+
+            char buf[32];
+            BOOST_TEST(sr.read(buf) == "1");
         }
 
-        // is_done()
+        // done()
         {
             serializer sr(jv);
-            BOOST_TEST(! sr.is_done());
+            BOOST_TEST(! sr.done());
+            char buf[32];
+            BOOST_TEST(sr.read(buf) == "1");
+            BOOST_TEST(sr.done());
         }
 
         // read()
         {
-            {
-                serializer sr(jv);
-                char buf[1024];
-                auto n = sr.read(
-                    buf, sizeof(buf));
-                BOOST_TEST(sr.is_done());
-                BOOST_TEST(string_view(
-                    buf, n) == "null");
-            }
+            serializer sr(jv);
+            char buf[1024];
+            auto const s = sr.read(buf);
+            BOOST_TEST(sr.done());
+            BOOST_TEST(s == "1");
+        }
 
-            {
-                char buf[32];
-                serializer sr;
-                BOOST_TEST_THROWS(
-                    sr.read(buf, sizeof(buf)),
-                    std::logic_error);
-            }
+        // checked read()
+        {
+            serializer sr;
+            char buf[100];
+            BOOST_TEST(sr.read(buf, 50) == "null");
         }
     }
 
@@ -455,10 +459,8 @@ public:
     testOstream()
     {
         for(string_view js : {
-        #if 0
             "{\"1\":{},\"2\":[],\"3\":\"x\",\"4\":1,"
             "\"5\":-1,\"6\":144.0,\"7\":false,\"8\":null}",
-        #endif
             "[1,2,3,4,5]"
             })
         {

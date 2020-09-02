@@ -21,13 +21,13 @@ BOOST_JSON_NS_BEGIN
 /** A serializer for JSON.
 
     This class traverses a @ref value and emits
-    a serialized JSON object. It can work
-    incrementally, by filling successive
+    a JSON text by filling a series of one or more
     caller-provided buffers.
 */
 class serializer
 {
     enum class state : char;
+    // VFALCO Too many streams
     using stream = detail::stream;
     using const_stream = detail::const_stream;
     using local_stream = detail::local_stream;
@@ -53,16 +53,15 @@ class serializer
     template<bool StackEmpty> bool write_array(stream& ss);
     template<bool StackEmpty> bool write_object(stream& ss);
     template<bool StackEmpty> bool write_value(stream& ss);
-    inline std::size_t write_some(
-        char* dest, std::size_t size);
+    inline string_view read_some(char* dest, std::size_t size);
 
 public:
-    /** Default constructor.
+    /** Default constructor
 
-        This constructs a serializer without
-        a current @ref value to serialize. Before
-        any serialization can take place, @ref reset
-        must be called.
+        This constructs a serializer with no value.
+        The value may be set later by calling @ref reset.
+        If serialization is attempted with no value,
+        the output is as if a null value is serialized.
 
         @par Exception Safety
 
@@ -71,16 +70,22 @@ public:
     BOOST_JSON_DECL
     serializer() noexcept;
 
-    /** Constructor.
+    /** Constructor
 
-        This constructs the serializer and
-        calls @ref reset with `jv`.
+        This constructs the serializer and prepares
+        it to serialize the @ref value `jv` as if
+        @ref reset was called.
 
         @par Exception Safety
 
         No-throw guarantee.
 
-        @param jv The value to serialize.
+        @param jv The value to serialize. Ownership
+        is not transferred. The caller is responsible
+        for ensuring that the lifetime of the value
+        extends until @ref done returns `true`,
+        @ref reset is called with a new value, or
+        the serializer is destroyed.
     */
     explicit
     serializer(value const& jv) noexcept
@@ -88,32 +93,37 @@ public:
         reset(jv);
     }
 
-    /** Returns `true` if the serialization is complete.
+    /** Returns `true` if the serialization is complete
 
         This function returns `true` when all of the
         characters in the serialized representation of
         the value have been read.
     */
     bool
-    is_done() const noexcept
+    done() const noexcept
     {
         return done_;
     }
 
-    /** Reset the serializer for a new JSON value.
+    /** Reset the serializer for a new JSON value
 
         This function prepares the serializer to emit
         a new serialized JSON based on the specified
         value. Any internally allocated memory is
         preserved and re-used for the new output.
 
-        @param jv The value to serialize.
+        @param jv The value to serialize. Ownership
+        is not transferred. The caller is responsible
+        for ensuring that the lifetime of the value
+        extends until @ref done returns `true`,
+        @ref reset is called with a new value, or
+        the serializer is destroyed.
     */
     BOOST_JSON_DECL
     void
     reset(value const& jv) noexcept;
 
-    /** Read the next buffer of serialized JSON.
+    /** Read the next buffer of serialized JSON
 
         This function attempts to fill the caller
         provided buffer starting at `dest` with
@@ -121,6 +131,12 @@ public:
         JSON that represents the value. If the
         buffer is not large enough, multiple calls
         may be required.
+\n
+        If serialization completes during this call;
+        that is, that all of the characters belonging
+        to the serialized value have been written to
+        caller-provided buffers, the function
+        @ref done will return `true`.
 
         @par Example
 
@@ -135,9 +151,8 @@ public:
             serializer sr( jv );
             while( ! sr.done() )
             {
-                char buf[1024];
-                auto const n = sr.read( buf, sizeof(buf) );
-                os << string_view( buf, n );
+                char buf[4000];
+                os << sr.read( buf );
             }
         }
 
@@ -145,17 +160,61 @@ public:
 
         @par Exception Safety
 
-        Strong guarantee.
+        Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
 
-        @throw std::logic_error if no value is set.
+        @return A @ref string_view containing the
+        characters written, which may be less than
+        `size`.
 
-        @return The number of characters written
-        to `dest`.
+        @param dest A pointer to valid memory of at
+        least `size` bytes.
+
+        @param size The maximum number of characters
+        to write to the memory pointed to by `dest`.
     */
     BOOST_JSON_DECL
-    std::size_t
+    string_view
     read(char* dest, std::size_t size);
+
+    /** Read the next buffer of serialized JSON
+
+        This function allows reading into a
+        character array, with a deduced maximum size.
+
+        @par Effects
+        @code
+        return this->read( dest, N );
+        @endcode
+
+        @par Exception Safety
+
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
+        @return A @ref string_view containing the
+        characters written, which may be less than
+        `size`.
+
+        @param dest The character array to write to.
+    */
+    template<std::size_t N>
+    string_view
+    read(char(&dest)[N])
+    {
+        return read(dest, N);
+    }
+
+#ifndef BOOST_JSON_DOCS
+    // Safety net for accidental buffer overflows
+    template<std::size_t N>
+    string_view
+    read(char(&dest)[N], std::size_t n)
+    {
+        BOOST_ASSERT(n <= N);
+        return read(dest, n);
+    }
+#endif
 };
 
 BOOST_JSON_NS_END

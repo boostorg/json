@@ -301,8 +301,8 @@ public:
                 out.grow(sr.read(
                     out.end(),
                     out.capacity() -
-                        out.size()));
-                if(sr.is_done())
+                        out.size()).size());
+                if(sr.done())
                     break;
                 out.reserve(
                     out.capacity() + 1);
@@ -369,8 +369,8 @@ public:
                 out.grow(sr.read(
                     out.end(),
                     out.capacity() -
-                        out.size()));
-                if(sr.is_done())
+                        out.size()).size());
+                if(sr.done())
                     break;
                 out.reserve(
                     out.capacity() + 1);

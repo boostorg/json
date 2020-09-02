@@ -22,14 +22,14 @@ to_string(
 {
     string s;
     serializer sr(jv);
-    while(! sr.is_done())
+    while(! sr.done())
     {
         if(s.size() >= s.capacity())
             s.reserve(s.capacity() + 1);
         s.grow(static_cast<
             string::size_type>(
             sr.read(s.data() + s.size(),
-                s.capacity() - s.size())));
+                s.capacity() - s.size()).size()));
     }
     return s;
 }
@@ -44,16 +44,16 @@ operator<<( std::ostream& os, value const& jv )
     serializer sr( jv );
 
     // Loop until all output is produced.
-    while( ! sr.is_done() )
+    while( ! sr.done() )
     {
-        // Use a local 4KB buffer.
-        char buf[4096];
+        // Use a local buffer.
+        char buf[4000];
 
         // Try to fill up the local buffer.
-        auto const n = sr.read( buf, sizeof(buf) );
+        auto const bytes_written = sr.read( buf ).size();
 
         // Write the valid portion of the buffer to the output stream.
-        os.write(buf, n);
+        os.write( buf, bytes_written );
     }
 
     return os;
