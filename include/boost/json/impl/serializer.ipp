@@ -709,6 +709,12 @@ serializer::
 read_some(
     char* dest, std::size_t size)
 {
+    // If this goes off it means you forgot
+    // to call reset() before seriailzing a
+    // new value, or you never checked done()
+    // to see if you should stop.
+    BOOST_ASSERT(! done_);
+
     stream ss(dest, size);
     if(st_.empty())
         write_value<true>(ss);

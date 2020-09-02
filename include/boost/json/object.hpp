@@ -104,8 +104,16 @@ class object
     object(object_test const*);
 
 public:
-    /// The type of _Allocator_ returned by @ref get_allocator
+    /** The type of _Allocator_ returned by @ref get_allocator
+
+        This type is a @ref polymorphic_allocator.
+    */
+#ifdef BOOST_JSON_DOCS
+    // VFALCO doc toolchain renders this incorrectly
+    using allocator_type = __see_below__;
+#else
     using allocator_type = polymorphic_allocator<value>;
+#endif
 
     /** The type of keys.
 
@@ -623,12 +631,13 @@ public:
 
     /** Return an iterator to the first element.
 
-        If the container is empty, the returned iterator
-        will be equal to @ref end().
+        If the container is empty, @ref end() is returned.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     inline
     iterator
@@ -636,12 +645,13 @@ public:
 
     /** Return a const iterator to the first element.
 
-        If the container is empty, the returned iterator
-        will be equal to @ref end().
+        If the container is empty, @ref end() is returned.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     inline
     const_iterator
@@ -649,12 +659,13 @@ public:
 
     /** Return a const iterator to the first element.
 
-        If the container is empty, the returned iterator
-        will be equal to @ref end().
+        If the container is empty, @ref cend() is returned.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     inline
     const_iterator
@@ -662,12 +673,14 @@ public:
 
     /** Return an iterator to the element following the last element.
 
-        The element acts as a placeholder; attempting to
-        access it results in undefined behavior.
+        The element acts as a placeholder; attempting
+        to access it results in undefined behavior.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     inline
     iterator
@@ -675,12 +688,14 @@ public:
 
     /** Return a const iterator to the element following the last element.
 
-        The element acts as a placeholder; attempting to
-        access it results in undefined behavior.
+        The element acts as a placeholder; attempting
+        to access it results in undefined behavior.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     inline
     const_iterator
@@ -688,12 +703,14 @@ public:
 
     /** Return a const iterator to the element following the last element.
 
-        The element acts as a placeholder; attempting to
-        access it results in undefined behavior.
+        The element acts as a placeholder; attempting
+        to access it results in undefined behavior.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     inline
     const_iterator
@@ -701,13 +718,15 @@ public:
 
     /** Return a reverse iterator to the first element of the reversed container.
 
-        The pointed-to element corresponds to the last element
-        of the non-reversed container. If the container is empty,
-        the returned iterator is equal to @ref rend()
+        The pointed-to element corresponds to the
+        last element of the non-reversed container.
+        If the container is empty, @ref rend() is returned.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     inline
     reverse_iterator
@@ -715,13 +734,15 @@ public:
 
     /** Return a const reverse iterator to the first element of the reversed container.
 
-        The pointed-to element corresponds to the last element
-        of the non-reversed container. If the container is empty,
-        the returned iterator is equal to @ref rend()
+        The pointed-to element corresponds to the
+        last element of the non-reversed container.
+        If the container is empty, @ref rend() is returned.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     inline
     const_reverse_iterator
@@ -729,13 +750,15 @@ public:
 
     /** Return a const reverse iterator to the first element of the reversed container.
 
-        The pointed-to element corresponds to the last element
-        of the non-reversed container. If the container is empty,
-        the returned iterator is equal to @ref rend()
+        The pointed-to element corresponds to the
+        last element of the non-reversed container.
+        If the container is empty, @ref crend() is returned.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     inline
     const_reverse_iterator
@@ -745,12 +768,14 @@ public:
 
         The pointed-to element corresponds to the element
         preceding the first element of the non-reversed container.
-        This element acts as a placeholder, attempting to access
-        it results in undefined behavior.
+        This element acts as a placeholder, attempting
+        to access it results in undefined behavior.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     inline
     reverse_iterator
@@ -760,12 +785,14 @@ public:
 
         The pointed-to element corresponds to the element
         preceding the first element of the non-reversed container.
-        This element acts as a placeholder, attempting to access
-        it results in undefined behavior.
+        This element acts as a placeholder, attempting
+        to access it results in undefined behavior.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     inline
     const_reverse_iterator
@@ -775,12 +802,14 @@ public:
 
         The pointed-to element corresponds to the element
         preceding the first element of the non-reversed container.
-        This element acts as a placeholder, attempting to access
-        it results in undefined behavior.
+        This element acts as a placeholder, attempting
+        to access it results in undefined behavior.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     inline
     const_reverse_iterator
@@ -1149,14 +1178,15 @@ public:
         object. Ownership of the respective @ref memory_resource
         objects is not transferred.
 
-        @li If `*other.storage() == *sp`, ownership of the
-        underlying memory is swapped in constant time, with
-        no possibility of exceptions. All iterators and
-        references remain valid.
+        @li If `*other.storage() == *this->storage()`,
+        ownership of the underlying memory is swapped in
+        constant time, with no possibility of exceptions.
+        All iterators and references remain valid.
 
-        @li If `*other.storage() != *sp`, the contents are
-        logically swapped by making copies, which can throw.
-        In this case all iterators and references are invalidated.
+        @li If `*other.storage() != *this->storage()`,
+        the contents are logically swapped by making copies,
+        which can throw. In this case all iterators and
+        references are invalidated.
 
         @par Complexity
 
@@ -1457,11 +1487,9 @@ private:
     `&lhs != &rhs`
         
     @par Complexity
-
     Constant or linear in `lhs.size() + rhs.size()`.
 
     @par Exception Safety
-
     Strong guarantee.
     Calls to `memory_resource::allocate` may throw.
 

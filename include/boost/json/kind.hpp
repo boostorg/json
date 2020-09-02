@@ -15,6 +15,8 @@
 BOOST_JSON_NS_BEGIN
 
 /** Constants for identifying the type of a value
+
+    These values are returned from @ref value::kind
 */
 enum class kind : unsigned char
 {

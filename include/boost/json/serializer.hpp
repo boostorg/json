@@ -22,7 +22,36 @@ BOOST_JSON_NS_BEGIN
 
     This class traverses a @ref value and emits
     a JSON text by filling a series of one or more
-    caller-provided buffers.
+    caller-provided buffers. To use it, declare
+    a serializer and construct it with a reference
+    to the value to serialize. Alternatively, call
+    @ref reset to set the value to serialize.
+    Then call @ref read over and over while
+    @ref done returns `false`.
+
+    @par Example
+
+    This demonstrates how the serializer may
+    be used to print a JSON value to an output
+    stream.
+
+    @code
+
+    void print( std::ostream& os, value const& jv)
+    {
+        serializer sr( jv );
+        while( ! sr.done() )
+        {
+            char buf[4000];
+            os << sr.read( buf );
+        }
+    }
+
+    @endcode
+
+    @par Thread Safety
+
+    The same instance may not be accessed concurrently.
 */
 class serializer
 {
@@ -77,7 +106,6 @@ public:
         @ref reset was called.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param jv The value to serialize. Ownership
@@ -138,28 +166,10 @@ public:
         caller-provided buffers, the function
         @ref done will return `true`.
 
-        @par Example
-
-        This demonstrates how the serializer may
-        be used to print a JSON value to an output
-        stream.
-
-        @code
-
-        void print( std::ostream& os, value const& jv)
-        {
-            serializer sr( jv );
-            while( ! sr.done() )
-            {
-                char buf[4000];
-                os << sr.read( buf );
-            }
-        }
-
-        @endcode
+        @par Preconditions
+        `this->done() == true`
 
         @par Exception Safety
-
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -182,13 +192,15 @@ public:
         This function allows reading into a
         character array, with a deduced maximum size.
 
+        @par Preconditions
+        `this->done() == true`
+
         @par Effects
         @code
         return this->read( dest, N );
         @endcode
 
         @par Exception Safety
-
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -211,6 +223,9 @@ public:
     string_view
     read(char(&dest)[N], std::size_t n)
     {
+        // If this goes off, check your parameters
+        // closely, chances are you passed an array
+        // thinking it was a pointer.
         BOOST_ASSERT(n <= N);
         return read(dest, n);
     }

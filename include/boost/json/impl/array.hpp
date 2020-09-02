@@ -330,10 +330,9 @@ emplace(
 }
 
 template<class Arg>
-auto
+value&
 array::
-emplace_back(Arg&& arg) ->
-    reference
+emplace_back(Arg&& arg)
 {
     reserve(impl_.size() + 1);
     auto& v = *::new(

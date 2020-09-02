@@ -74,8 +74,7 @@ class value_ref;
     Non-const member functions may not be called
     concurrently with any other member functions.
 
-    @par Satisfies the requirements of
-        <em>Container</em>,
+    @par Satisfies
         <em>ContiguousContainer</em>,
         <em>ReversibleContainer</em>, and
         <em>SequenceContainer</em>.
@@ -99,8 +98,16 @@ class array
     array(detail::unchecked_array&& ua);
 
 public:
-    /// The type of _Allocator_ returned by @ref get_allocator
+    /** The type of _Allocator_ returned by @ref get_allocator
+
+        This type is a @ref polymorphic_allocator.
+    */
+#ifdef BOOST_JSON_DOCS
+    // VFALCO doc toolchain renders this incorrectly
+    using allocator_type = __see_below__;
+#else
     using allocator_type = polymorphic_allocator<value>;
+#endif
 
     /// The type used to represent unsigned integers
     using size_type = std::size_t;
@@ -146,7 +153,6 @@ public:
         of the @ref memory_resource is released.
 
         @par Complexity
-
         Constant, or linear in @ref size().
     */
     ~array()
@@ -165,11 +171,9 @@ public:
         capacity, using the default memory resource.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     array() = default;
@@ -180,11 +184,9 @@ public:
         capacity, using the specified memory resource.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param sp A pointer to the @ref memory_resource
@@ -202,11 +204,9 @@ public:
         specified memory resource.
 
         @par Complexity
-
-        Linear in `count`.
+        Linear in `count`
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -230,11 +230,9 @@ public:
         using the specified memory resource.
 
         @par Complexity
-
         Linear in `count`
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -262,11 +260,9 @@ public:
         @endcode
 
         @par Complexity
-
         Linear in `std::distance(first, last)`
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -303,11 +299,9 @@ public:
         contents of `other`, using `other`'s memory resource.
 
         @par Complexity
-
         Linear in `other.size()`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -322,11 +316,9 @@ public:
         contents of `other`, using the specified memory resource.
 
         @par Complexity
-
         Linear in `other.size()`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -352,11 +344,9 @@ public:
         be destroyed.
         
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param other The array to pilfer
@@ -382,11 +372,9 @@ public:
         pointer.
         
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param other The container to move
@@ -413,11 +401,9 @@ public:
         changed.
         
         @par Complexity
-
         At most, linear in `other.size()`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -439,11 +425,9 @@ public:
         specified memory resource.
 
         @par Complexity
-
         Linear in `init.size()`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -466,11 +450,9 @@ public:
         element-wise copy of `other`.
 
         @par Complexity
-
         Linear in @ref size() plus `other.size()`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -498,12 +480,10 @@ public:
         changed.
 
         @par Complexity
-
         Constant, or linear in
         `this->size()` plus `other.size()`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -519,11 +499,9 @@ public:
         copy of the values in the initializer-list.
 
         @par Complexity
-
         Linear in `this->size()` plus `init.size()`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -542,11 +520,9 @@ public:
         the container.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     storage_ptr const&
@@ -562,11 +538,9 @@ public:
         associated @ref memory_resource.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     BOOST_JSON_DECL
@@ -587,7 +561,6 @@ public:
         of type `std::out_of_range` is thrown.
 
         @par Complexity
-
         Constant.
 
         @param pos A zero-based index.
@@ -606,7 +579,6 @@ public:
         of type `std::out_of_range` is thrown.
 
         @par Complexity
-
         Constant.
 
         @param pos A zero-based index.
@@ -623,11 +595,9 @@ public:
         location `pos`. No bounds checking is performed.
 
         @par Precondition
-        
         `pos < size()`
 
         @par Complexity
-
         Constant.
 
         @param pos A zero-based index
@@ -642,11 +612,9 @@ public:
         location `pos`. No bounds checking is performed.
 
         @par Precondition
-
         `pos < size()`
 
         @par Complexity
-
         Constant.
 
         @param pos A zero-based index
@@ -660,11 +628,9 @@ public:
         Returns a reference to the first element.
 
         @par Precondition
-
         `not empty()`
 
         @par Complexity
-
         Constant.
     */
     inline
@@ -676,11 +642,9 @@ public:
         Returns a reference to the first element.
 
         @par Precondition
-
         `not empty()`
 
         @par Complexity
-
         Constant.
     */
     inline
@@ -692,11 +656,9 @@ public:
         Returns a reference to the last element.
 
         @par Precondition
-
         `not empty()`
 
         @par Complexity
-
         Constant.
     */
     inline
@@ -708,18 +670,16 @@ public:
         Returns a reference to the last element.
 
         @par Precondition
-
         `not empty()`
 
         @par Complexity
-
         Constant.
     */
     inline
     value const&
     back() const noexcept;
 
-    /** Return a pointer an element, or nullptr if the index is invalid
+    /** Return a pointer to an element, or nullptr if the index is invalid
 
         This function returns a pointer to the element
         at index `pos` when the index is less then the size
@@ -732,11 +692,9 @@ public:
         @endcode
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param pos The index of the element to return.
@@ -745,7 +703,7 @@ public:
     value const*
     contains(std::size_t pos) const noexcept;
 
-    /** Return a pointer an element, or nullptr if the index is invalid
+    /** Return a pointer to an element, or nullptr if the index is invalid
 
         This function returns a pointer to the element
         at index `pos` when the index is less then the size
@@ -758,11 +716,9 @@ public:
         @endcode
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param pos The index of the element to return.
@@ -779,8 +735,10 @@ public:
         valid range, even if the container is empty.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
 
         @note
 
@@ -799,8 +757,10 @@ public:
         valid range, even if the container is empty.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
 
         @note
 
@@ -819,12 +779,13 @@ public:
 
     /** Return an iterator to the first element.
 
-        If the container is empty, the returned iterator
-        will be equal to @ref end().
+        If the container is empty, @ref end() is returned.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     inline
     iterator
@@ -832,12 +793,13 @@ public:
 
     /** Return a const iterator to the first element.
 
-        If the container is empty, the returned iterator
-        will be equal to @ref end().
+        If the container is empty, @ref end() is returned.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     inline
     const_iterator
@@ -845,12 +807,13 @@ public:
 
     /** Return a const iterator to the first element.
 
-        If the container is empty, the returned iterator
-        will be equal to @ref end().
+        If the container is empty, @ref cend() is returned.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     inline
     const_iterator
@@ -858,12 +821,14 @@ public:
 
     /** Return an iterator to the element following the last element.
 
-        The element acts as a placeholder; attempting to
-        access it results in undefined behavior.
+        The element acts as a placeholder; attempting
+        to access it results in undefined behavior.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     inline
     iterator
@@ -871,12 +836,14 @@ public:
 
     /** Return a const iterator to the element following the last element.
 
-        The element acts as a placeholder; attempting to
-        access it results in undefined behavior.
+        The element acts as a placeholder; attempting
+        to access it results in undefined behavior.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     inline
     const_iterator
@@ -884,12 +851,14 @@ public:
 
     /** Return a const iterator to the element following the last element.
 
-        The element acts as a placeholder; attempting to
-        access it results in undefined behavior.
+        The element acts as a placeholder; attempting
+        to access it results in undefined behavior.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     inline
     const_iterator
@@ -897,13 +866,15 @@ public:
 
     /** Return a reverse iterator to the first element of the reversed container.
 
-        The pointed-to element corresponds to the last element
-        of the non-reversed container. If the container is empty,
-        the returned iterator is equal to @ref rend()
+        The pointed-to element corresponds to the
+        last element of the non-reversed container.
+        If the container is empty, @ref rend() is returned.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     inline
     reverse_iterator
@@ -911,13 +882,15 @@ public:
 
     /** Return a const reverse iterator to the first element of the reversed container.
 
-        The pointed-to element corresponds to the last element
-        of the non-reversed container. If the container is empty,
-        the returned iterator is equal to @ref rend()
+        The pointed-to element corresponds to the
+        last element of the non-reversed container.
+        If the container is empty, @ref rend() is returned.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     inline
     const_reverse_iterator
@@ -925,13 +898,15 @@ public:
 
     /** Return a const reverse iterator to the first element of the reversed container.
 
-        The pointed-to element corresponds to the last element
-        of the non-reversed container. If the container is empty,
-        the returned iterator is equal to @ref rend()
+        The pointed-to element corresponds to the
+        last element of the non-reversed container.
+        If the container is empty, @ref crend() is returned.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     inline
     const_reverse_iterator
@@ -941,12 +916,14 @@ public:
 
         The pointed-to element corresponds to the element
         preceding the first element of the non-reversed container.
-        This element acts as a placeholder, attempting to access
-        it results in undefined behavior.
+        The element acts as a placeholder; attempting
+        to access it results in undefined behavior.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     inline
     reverse_iterator
@@ -956,12 +933,14 @@ public:
 
         The pointed-to element corresponds to the element
         preceding the first element of the non-reversed container.
-        This element acts as a placeholder, attempting to access
-        it results in undefined behavior.
+        The element acts as a placeholder; attempting
+        to access it results in undefined behavior.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     inline
     const_reverse_iterator
@@ -971,12 +950,14 @@ public:
 
         The pointed-to element corresponds to the element
         preceding the first element of the non-reversed container.
-        This element acts as a placeholder, attempting to access
-        it results in undefined behavior.
+        The element acts as a placeholder; attempting
+        to access it results in undefined behavior.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     inline
     const_reverse_iterator
@@ -994,8 +975,10 @@ public:
         array, i.e. @ref size() returns 0.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     bool
     empty() const noexcept
@@ -1010,8 +993,10 @@ public:
         returned from @ref capacity.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     std::size_t
     size() const noexcept
@@ -1027,8 +1012,10 @@ public:
         resource limits.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     static
     constexpr
@@ -1044,8 +1031,10 @@ public:
         by @ref size().
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     std::size_t
     capacity() const noexcept
@@ -1071,11 +1060,9 @@ public:
         invalidated.
 
         @par Complexity
-
         At most, linear in @ref size().
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -1104,11 +1091,9 @@ public:
         invalidated.
 
         @par Complexity
-
         At most, linear in @ref size().
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     BOOST_JSON_DECL
@@ -1130,8 +1115,10 @@ public:
         past-the-end iterators are also invalidated.
 
         @par Complexity
-
         Linear in @ref size().
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     BOOST_JSON_DECL
     void
@@ -1148,11 +1135,9 @@ public:
         past-the-end iterators are also invalidated.
 
         @par Complexity
-        
         Constant plus linear in `std::distance(pos, end())`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -1183,11 +1168,9 @@ public:
         past-the-end iterators are also invalidated.
 
         @par Complexity
-        
         Constant plus linear in `std::distance(pos, end())`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -1219,11 +1202,9 @@ public:
         past-the-end iterators are also invalidated.
 
         @par Complexity
-        
         Linear in `count + std::distance(pos, end())`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -1273,11 +1254,9 @@ public:
         @endcode
 
         @par Complexity
-        
         Linear in `std::distance(first, last) + std::distance(pos, end())`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -1322,11 +1301,9 @@ public:
         past-the-end iterators are also invalidated.
 
         @par Complexity
-        
         Linear in `init.size() + std::distance(pos, end())`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -1357,11 +1334,9 @@ public:
         past-the-end iterators are also invalidated.
 
         @par Complexity
-        
         Constant plus linear in `std::distance(pos, end())`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -1384,11 +1359,9 @@ public:
         The element at `pos` is removed.
 
         @par Complexity
-
         Constant plus linear in `std::distance(pos, end())`
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param pos Iterator to the element to remove
@@ -1406,11 +1379,9 @@ public:
         The elements in the range `{first, last)` are removed.
 
         @par Complexity
-
         Linear in `std::distance(first, last) + std::distance(pos, end())`
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param first An iterator pointing to the first
@@ -1440,11 +1411,9 @@ public:
         always invalidated.
 
         @par Complexity
-        
         Amortized constant.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -1467,11 +1436,9 @@ public:
         always invalidated.
 
         @par Complexity
-        
         Amortized constant.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -1499,11 +1466,9 @@ public:
         past-the-end iterators are also invalidated.
 
         @par Complexity
-        
         Amortized constant.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
         
@@ -1513,7 +1478,7 @@ public:
         @return A reference to the inserted element
     */
     template<class Arg>
-    reference
+    value&
     emplace_back(Arg&& arg);
 
     /** Remove the last element
@@ -1521,11 +1486,9 @@ public:
         The last element of the container is erased.
 
         @par Precondition
-
         `not empty()`
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     BOOST_JSON_DECL
@@ -1547,12 +1510,10 @@ public:
         are appended.
         
         @par Complexity
-
         Linear in `abs(size() - count)`, plus the cost of
         reallocation if @ref capacity() is less than `count`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -1577,12 +1538,10 @@ public:
         are appended.
         
         @par Complexity
-
         Linear in `abs(size() - count)`, plus the cost of
         reallocation if @ref capacity() is less than `count`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -1602,25 +1561,23 @@ public:
         array. Ownership of the respective @ref memory_resource
         objects is not transferred.
 
-        @li If `*other.storage() == *sp`, ownership of the
-        underlying memory is swapped in constant time, with
-        no possibility of exceptions. All iterators and
-        references remain valid.
+        @li If `*other.storage() == *this->storage()`,
+        ownership of the underlying memory is swapped in
+        constant time, with no possibility of exceptions.
+        All iterators and references remain valid.
 
-        @li If `*other.storage() != *sp`, the contents are
-        logically swapped by making copies, which can throw.
-        In this case all iterators and references are invalidated.
+        @li If `*other.storage() != *this->storage()`,
+        the contents are logically swapped by making copies,
+        which can throw. In this case all iterators and
+        references are invalidated.
 
         @par Preconditions
-
         `&other != this`
         
         @par Complexity
-
         Constant or linear in @ref size() plus `other.size()`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -1705,15 +1662,12 @@ private:
     references are invalidated.
 
     @par Preconditions
-
     `&lhs != &rhs`
         
     @par Complexity
-
     Constant or linear in `lhs.size() + rhs.size()`.
 
     @par Exception Safety
-
     Strong guarantee.
     Calls to `memory_resource::allocate` may throw.
 

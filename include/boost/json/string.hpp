@@ -67,8 +67,16 @@ class string
         storage_ptr sp);
 
 public:
-    /// The type of _Allocator_ returned by @ref get_allocator
-    using allocator_type    = polymorphic_allocator<char>;
+    /** The type of _Allocator_ returned by @ref get_allocator
+
+        This type is a @ref polymorphic_allocator.
+    */
+#ifdef BOOST_JSON_DOCS
+    // VFALCO doc toolchain renders this incorrectly
+    using allocator_type = __see_below__;
+#else
+    using allocator_type = polymorphic_allocator<value>;
+#endif
 
     /// The traits used to perform character operations
     using traits_type       = std::char_traits<char>;
@@ -215,9 +223,6 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-
-        @note
-
         Calls to `memory_resource::allocate` may throw.
 
         @param count The size of the resulting string.
@@ -256,9 +261,6 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-
-        @note
-
         Calls to `memory_resource::allocate` may throw.
 
         @param s A pointer to a character string used to
@@ -292,9 +294,6 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-
-        @note
-
         Calls to `memory_resource::allocate` may throw.
 
         @param count The number of characters to copy.
@@ -331,9 +330,6 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-
-        @note
-
         Calls to `memory_resource::allocate` may throw.
 
         @tparam InputIt The type of the iterators.
@@ -378,9 +374,6 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-
-        @note
-
         Calls to `memory_resource::allocate` may throw.
 
         @param other The string to use as a source
@@ -403,9 +396,6 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-
-        @note
-
         Calls to `memory_resource::allocate` may throw.
 
         @param other The string to use as a source
@@ -462,7 +452,7 @@ public:
 
         @li If `*other.storage() != *sp`,
         a copy of the characters in `other` is made. In
-        this case, the moved-from container is not changed.
+        this case, the moved-from string is not changed.
 
         @par Complexity
 
@@ -471,9 +461,6 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-
-        @note
-
         Calls to `memory_resource::allocate` may throw.
 
         @param other The string to assign from.
@@ -505,9 +492,6 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-
-        @note
-
         Calls to `memory_resource::allocate` may throw.
 
         @param s The string view to copy from.
@@ -544,9 +528,6 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-
-        @note
-
         Calls to `memory_resource::allocate` may throw.
 
         @return `*this`
@@ -583,9 +564,6 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-
-        @note
-
         Calls to `memory_resource::allocate` may throw.
 
         @return `*this`
@@ -613,9 +591,6 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-
-        @note
-
         Calls to `memory_resource::allocate` may throw.
 
         @return `*this`
@@ -643,9 +618,6 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-
-        @note
-
         Calls to `memory_resource::allocate` may throw.
 
         @return `*this`
@@ -674,9 +646,6 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-
-        @note
-
         Calls to `memory_resource::allocate` may throw.
 
         @return `*this`
@@ -705,9 +674,6 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-
-        @note
-
         Calls to `memory_resource::allocate` may throw.
 
         @return `*this`
@@ -744,9 +710,6 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-
-        @note
-
         Calls to `memory_resource::allocate` may throw.
 
         @return `*this`
@@ -770,9 +733,6 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-
-        @note
-
         Calls to `memory_resource::allocate` may throw.
 
         @return `*this`
@@ -836,9 +796,6 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-
-        @note
-
         Calls to `memory_resource::allocate` may throw.
 
         @tparam InputIt The type of the iterators.
@@ -881,9 +838,6 @@ public:
         @par Exception Safety
 
         Strong guarantee.
-
-        @note
-
         Calls to `memory_resource::allocate` may throw.
 
         @return `*this`
@@ -1205,12 +1159,13 @@ public:
 
     /** Return an iterator to the beginning.
 
-        If the container is empty, the returned iterator
-        will be equal to @ref end().
+        If the container is empty, @ref end() is returned.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     iterator
     begin() noexcept
@@ -1220,12 +1175,13 @@ public:
 
     /** Return an iterator to the beginning.
 
-        If the container is empty, the returned iterator
-        will be equal to @ref end().
+        If the container is empty, @ref end() is returned.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     const_iterator
     begin() const noexcept
@@ -1235,12 +1191,13 @@ public:
 
     /** Return an iterator to the beginning.
 
-        If the container is empty, the returned iterator
-        will be equal to @ref end().
+        If the container is empty, @ref cend() is returned.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     const_iterator
     cbegin() const noexcept
@@ -1250,20 +1207,16 @@ public:
 
     /** Return an iterator to the end.
 
-        Returns an iterator to the character following
-        the last character of the string.
-        If the container is empty, the returned iterator
-        will be equal to @ref begin().
-
-        @note
-
-        The pointed-to character acts as a placeholder;
-        attempting to access it results in undefined
-        behavior.
+        Returns an iterator to the character
+        following the last character of the string.
+        This character acts as a placeholder, attempting
+        to access it results in undefined behavior.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     iterator
     end() noexcept
@@ -1275,18 +1228,14 @@ public:
 
         Returns an iterator to the character following
         the last character of the string.
-        If the container is empty, the returned iterator
-        will be equal to @ref begin().
-
-        @note
-
-        The pointed-to character acts as a placeholder;
-        attempting to access it results in undefined
-        behavior.
+        This character acts as a placeholder, attempting
+        to access it results in undefined behavior.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     const_iterator
     end() const noexcept
@@ -1298,18 +1247,14 @@ public:
 
         Returns an iterator to the character following
         the last character of the string.
-        If the container is empty, the returned iterator
-        will be equal to @ref begin().
-
-        @note
-
-        The pointed-to character acts as a placeholder;
-        attempting to access it results in undefined
-        behavior.
+        This character acts as a placeholder, attempting
+        to access it results in undefined behavior.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     const_iterator
     cend() const noexcept
@@ -1322,13 +1267,13 @@ public:
         Returns the pointed-to character that
         corresponds to the last character of the
         non-reversed container.
+        If the container is empty, @ref rend() is returned.
         
         @par Complexity
-
         Constant.
 
-        @note If the container is empty,
-        the returned iterator is equal to @ref rend()
+        @par Exception Safety
+        No-throw guarantee.
     */
     reverse_iterator
     rbegin() noexcept
@@ -1341,13 +1286,13 @@ public:
         Returns the pointed-to character that
         corresponds to the last character of the
         non-reversed container.
+        If the container is empty, @ref rend() is returned.
         
         @par Complexity
-
         Constant.
 
-        @note If the container is empty,
-        the returned iterator is equal to @ref rend()
+        @par Exception Safety
+        No-throw guarantee.
     */
     const_reverse_iterator
     rbegin() const noexcept
@@ -1360,13 +1305,13 @@ public:
         Returns the pointed-to character that
         corresponds to the last character of the
         non-reversed container.
-        
+        If the container is empty, @ref crend() is returned.
+      
         @par Complexity
-
         Constant.
 
-        @note If the container is empty,
-        the returned iterator is equal to @ref rend()
+        @par Exception Safety
+        No-throw guarantee.
     */
     const_reverse_iterator
     crbegin() const noexcept
@@ -1379,14 +1324,14 @@ public:
         Returns the pointed-to character that corresponds
         to the character preceding the first character of
         the non-reversed container. 
+        This character acts as a placeholder, attempting
+        to access it results in undefined behavior.
         
         @par Complexity
-
         Constant.
 
-        @note This character acts as a placeholder,
-        attempting to access it results in undefined
-        behavior.
+        @par Exception Safety
+        No-throw guarantee.
     */
     reverse_iterator
     rend() noexcept
@@ -1399,14 +1344,14 @@ public:
         Returns the pointed-to character that corresponds
         to the character preceding the first character of
         the non-reversed container. 
+        This character acts as a placeholder, attempting
+        to access it results in undefined behavior.
 
         @par Complexity
-
         Constant.
 
-        @note This character acts as a placeholder,
-        attempting to access it results in undefined
-        behavior.
+        @par Exception Safety
+        No-throw guarantee.
     */
     const_reverse_iterator
     rend() const noexcept
@@ -1419,14 +1364,14 @@ public:
         Returns the pointed-to character that corresponds
         to the character preceding the first character of
         the non-reversed container. 
+        This character acts as a placeholder, attempting
+        to access it results in undefined behavior.
         
         @par Complexity
-
         Constant.
 
-        @note This character acts as a placeholder,
-        attempting to access it results
-        in undefined behavior.
+        @par Exception Safety
+        No-throw guarantee.
     */
     const_reverse_iterator
     crend() const noexcept
@@ -1522,6 +1467,7 @@ public:
         @par Exception Safety
 
         Strong guarantee.
+        Calls to `memory_resource::allocate` may throw.
 
         @note
 
@@ -1529,10 +1475,6 @@ public:
         any past-the-end iterators, and all references to
         the elements are invalidated. Otherwise, no
         iterators or references are invalidated.
-
-        @note
-
-        Calls to `memory_resource::allocate` may throw.
 
         @param new_capacity The new capacity of the array.
 
@@ -2411,14 +2353,14 @@ public:
         string. Ownership of the respective @ref memory_resource
         objects is not transferred.
 
-        @li If `*other.storage() == *sp`, ownership of the
-        underlying memory is swapped in constant time, with
-        no possibility of exceptions. All iterators and
-        references remain valid.
+        @li If `*other.storage() == *this->storage()`,
+        ownership of the underlying memory is swapped in
+        constant time, with no possibility of exceptions.
+        All iterators and references remain valid.
 
-        @li If `*other.storage() != *sp`, the contents are
-        logically swapped by making a copy, which can
-        throw. In this case all iterators and
+        @li If `*other.storage() != *this->storage()`,
+        the contents are logically swapped by making copies,
+        which can throw. In this case all iterators and
         references are invalidated.
 
         @par Complexity
@@ -2431,14 +2373,11 @@ public:
         @code
         &other != this
         @endcode
-        
-        @note 
-
-        Calls to `memory_resource::allocate` may throw.
 
         @par Exception Safety
 
         Strong guarantee.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The string to swap with
     */
@@ -2802,15 +2741,10 @@ private:
     @endcode
         
     @par Complexity
-
     Constant or linear in `lhs.size() + rhs.size()`.
 
     @par Exception Safety
-
     Strong guarantee.
-
-    @note
-
     Calls to `memory_resource::allocate` may throw.
 
     @par Effects
