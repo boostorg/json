@@ -15,28 +15,6 @@
 
 //----------------------------------------------------------
 
-    // Example code from is_deallocate_trivial
-
-    // Forward-declaration for a user-defined memory resource
-    struct my_resource;
-
-    // It is necessary to specialize the template from
-    // inside the namespace in which it is declared:
-
-    namespace boost {
-    namespace json {
-
-    template<>
-    struct is_deallocate_trivial< my_resource >
-    {
-        static constexpr bool value = true;
-    };
-
-    } // namespace json
-    } // namespace boost
-
-//----------------------------------------------------------
-
 BOOST_JSON_NS_BEGIN
 
 class storage_ptr_test
