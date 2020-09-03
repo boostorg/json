@@ -58,6 +58,7 @@ do_allocate(
         detail::throw_bad_alloc(
             BOOST_CURRENT_LOCATION);
     p_ = reinterpret_cast<char*>(p) + n;
+    n_ -= n;
     return p;
 }
 

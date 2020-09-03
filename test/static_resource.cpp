@@ -23,11 +23,21 @@ public:
     void
     test()
     {
-        char buf[1000];
-        static_resource mr(
-            buf, sizeof(buf));
-        BOOST_TEST(to_string(parse(
-            "[1,2,3]", &mr)) == "[1,2,3]");
+        {
+            char buf[1000];
+            static_resource mr(
+                buf, sizeof(buf));
+            BOOST_TEST(to_string(parse(
+                "[1,2,3]", &mr)) == "[1,2,3]");
+        }
+        {
+            char buf[10];
+            static_resource mr(
+                buf, sizeof(buf));
+            BOOST_TEST_THROWS(
+                to_string(parse("[1,2,3]", &mr)),
+                std::bad_alloc);
+        }
     }
 
     void
