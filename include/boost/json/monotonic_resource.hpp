@@ -27,8 +27,7 @@ BOOST_JSON_NS_BEGIN
     have no effect. Memory will not be allocated unless
     @ref do_allocate is called and the current block
     does not have sufficent room to meet the request.
-    @n
-
+\n
     An *initial buffer* can be optionally specified
     when constructing a `monotonic_resource`.
     If an initial buffer is provided, calls to
@@ -36,13 +35,12 @@ BOOST_JSON_NS_BEGIN
     that buffer until it is filled to capacity,
     at which point subsequent blocks will be allocated
     using the default resource.
-
+\n
     In addition to this, an *initial size* can be
     passed to the constructor of `monotonic_resource`.
     The initial size determines the size of the first
     dynamically allocated block.
-    @n
-
+\n
     This memory resource is useful for parsing without
     subsequent modification to the resulting @ref value.
 */
@@ -100,8 +98,13 @@ class monotonic_resource final
     grow_block_size(std::size_t size);
 
 public:
-    monotonic_resource(const monotonic_resource&) = delete;
-    monotonic_resource& operator=(const monotonic_resource&) = delete;
+    /// Copy constructor (deleted)
+    monotonic_resource(
+        const monotonic_resource&) = delete;
+
+    /// Copy assignment (deleted)
+    monotonic_resource& operator=(
+        const monotonic_resource&) = delete;
 
     /** Destructor.
         

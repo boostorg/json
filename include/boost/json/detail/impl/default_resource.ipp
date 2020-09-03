@@ -19,9 +19,7 @@ namespace detail {
 // is emitted in the library instead of
 // the user's TU.
 default_resource::
-~default_resource()
-{
-}
+~default_resource() = default;
 
 void*
 default_resource::
