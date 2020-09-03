@@ -12,130 +12,103 @@
 #define BOOST_JSON_IMPL_MONOTONIC_RESOURCE_IPP
 
 #include <boost/json/monotonic_resource.hpp>
+#include <boost/json/detail/align.hpp>
+#include <boost/json/detail/except.hpp>
 
 #include <memory>
 
 BOOST_JSON_NS_BEGIN
 
-// ensures that the alignment of base is
-// the strictest fundamental alignment requirement
-struct alignas(detail::max_align())
-    monotonic_resource::block
-{
-    std::size_t size;
-    block* next = nullptr;
-    unsigned char* base;
-    unsigned char* top;
-
-    block(
-        unsigned char* data,
-        std::size_t n,
-        block* head)
-        : size(n)
-        , next(head)
-        , base(data)
-        , top(data)
-    {
-    }
-};
-
-template<typename Block>
-void*
-monotonic_resource::
-allocate_in_block(
-    Block& b,
-    std::size_t size,
-    std::size_t align)
-{
-    const auto aligned = 
-        detail::align_up(b.top, align);
-    const auto next_top = aligned + size;
-    if(next_top <= b.base + b.size)
-    {
-        b.top = next_top;
-        return aligned;
-    }
-    return nullptr;
-}
-
-auto
-monotonic_resource::
-allocate_new_block(std::size_t size) ->
-    block&
-{  
-    const auto bytes = size + sizeof(block);
-    const auto data = static_cast<unsigned char*>(
-        ::operator new(bytes));
-    head_ = ::new(static_cast<void*>(data))
-        block(sizeof(block) + data, size, head_);
-    return *head_;
-}
-
-// returns the closest power of two
-// that is greater than requested
+constexpr
 std::size_t
 monotonic_resource::
-next_block_size(std::size_t requested)
+max_size()
 {
-    if(requested >= max_block_size_ >> 1)
-        return max_block_size_;
-    if(requested <= min_block_size_)
-        return min_block_size_;
-    std::size_t next = 1;
-    while(requested)
+    return std::size_t(-1) - sizeof(block);
+}
+
+// lowest power of 2 greater than or equal to n
+std::size_t
+monotonic_resource::
+round_pow2(
+    std::size_t n) noexcept
+{
+    std::size_t result = min_size_;
+    while(result < n)
     {
-        requested >>= 1;
-        next <<= 1;
+        if(result >= max_size() - result)
+        {
+            // overflow
+            result = max_size();
+            break;
+        }
+        result *= 2;
     }
-    return next;
+    return result;
 }
 
-// skips rounding if requested
-// is already a power of two
+// lowest power of 2 greater than n
 std::size_t
 monotonic_resource::
-closest_block_size(std::size_t requested)
+next_pow2(
+    std::size_t n) noexcept
 {
-    if(requested & (requested - 1))
-        return next_block_size(requested);
-    return requested;
+    std::size_t result = min_size_;
+    while(result <= n)
+    {
+        if(result >= max_size() - result)
+        {
+            // overflow
+            result = max_size();
+            break;
+        }
+        result *= 2;
+    }
+    return result;
 }
 
-std::size_t
-monotonic_resource::
-grow_block_size(std::size_t size)
-{
-    // prevents overflow
-    if(size >= max_block_size_ >> 1)
-        return max_block_size_;
-    return size << 1;
-}
+//----------------------------------------------------------
 
 monotonic_resource::
 ~monotonic_resource() noexcept
 {
-    for(auto b = head_; b;)
-    {
-        auto next = b->next;
-        ::operator delete(b);
-        b = next;
-    }
+    release();
 }
 
 monotonic_resource::
 monotonic_resource(
     std::size_t initial_size) noexcept
-    : block_size_(closest_block_size(initial_size))
+    : buffer_{
+        nullptr, 0, 0, nullptr}
+    , next_size_(round_pow2(initial_size))
 {
 }
 
 monotonic_resource::
 monotonic_resource(
     void* buffer,
-    std::size_t buffer_size) noexcept
-    : block_size_(next_block_size(buffer_size))
-    , initial_(buffer, buffer_size)
+    std::size_t size) noexcept
+    : buffer_{
+        buffer, size, size, nullptr}
+    , next_size_(next_pow2(size))
 {
+}
+
+void
+monotonic_resource::
+release() noexcept
+{
+    auto p = head_;
+    while(p != &buffer_)
+    {
+        auto next = p->next;
+        ::operator delete(p);
+        p = next;
+    }
+    buffer_.p = reinterpret_cast<
+        char*>(buffer_.p) - (
+            buffer_.size - buffer_.n);
+    buffer_.n = buffer_.size;
 }
 
 void*
@@ -144,19 +117,33 @@ do_allocate(
     std::size_t n,
     std::size_t align)
 {
-    if(initial_.base)
-        if(auto p = allocate_in_block(initial_, n, align))
-            return p;
-    if(head_)
-        if(auto p = allocate_in_block(*head_, n, align))
-            return p;
-    auto new_block_size = block_size_;
-    if(n > block_size_)
-        new_block_size = closest_block_size(n);
-    auto p = allocate_in_block(
-        allocate_new_block(new_block_size), n, align);
-    block_size_ = grow_block_size(new_block_size);
+    auto p = detail::align(
+        align, n, head_->p, head_->n);
+    if(p)
+    {
+        head_->p = reinterpret_cast<
+            char*>(p) + n;
+        head_->n -= n;
+        return p;
+    }
+
+    if(next_size_ < n)
+        next_size_ = round_pow2(n);
+    auto b = ::new(::operator new(
+        sizeof(block) + next_size_)) block;
+    b->p = b + 1;
+    b->n = next_size_;
+    b->size = next_size_;
+    b->next = head_;
+    head_ = b;
+    next_size_ = next_pow2(next_size_);
+
+    p = detail::align(
+        align, n, head_->p, head_->n);
     BOOST_ASSERT(p);
+    head_->p = reinterpret_cast<
+        char*>(p) + n;
+    head_->n -= n;
     return p;
 }
 

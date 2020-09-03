@@ -11,26 +11,11 @@
 #define BOOST_JSON_IMPL_STATIC_RESOURCE_IPP
 
 #include <boost/json/static_resource.hpp>
+#include <boost/json/detail/align.hpp>
 #include <boost/json/detail/except.hpp>
 #include <memory>
 
-#ifndef BOOST_JSON_STANDALONE
-#include <boost/align/align.hpp>
-#else
-#include <memory>
-#endif
-
 BOOST_JSON_NS_BEGIN
-
-namespace detail {
-
-#ifndef BOOST_JSON_STANDALONE
-using boost::alignment::align;
-#else
-using std::align;
-#endif
-
-} // detail
 
 static_resource::
 ~static_resource() noexcept

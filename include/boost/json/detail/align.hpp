@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2020 Krystian Stasiowski (sdkrystian@gmail.com)
+// Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -7,15 +7,23 @@
 // Official repository: https://github.com/cppalliance/json
 //
 
-#ifndef BOOST_JSON_DETAIL_MONOTONIC_RESOURCE_HPP
-#define BOOST_JSON_DETAIL_MONOTONIC_RESOURCE_HPP
+#ifndef BOOST_JSON_DETAIL_ALIGN_HPP
+#define BOOST_JSON_DETAIL_ALIGN_HPP
 
-#include <boost/json/detail/config.hpp>
-
+#ifndef BOOST_JSON_STANDALONE
+#include <boost/align/align.hpp>
+#else
 #include <cstddef>
+#include <memory>
+#endif
 
 BOOST_JSON_NS_BEGIN
 namespace detail {
+
+#ifndef BOOST_JSON_STANDALONE
+using boost::alignment::align;
+
+// VFALCO workaround until Boost.Align has the type
 
 struct class_type {};
 enum unscoped_enumeration_type { };
@@ -56,30 +64,10 @@ struct max_align_t
     std::nullptr_t w;
 };
 
-inline
-constexpr
-std::size_t
-max_align()
-{
-#ifdef BOOST_JSON_STANDALONE
-    return alignof(std::max_align_t);
 #else
-    return alignof(max_align_t);
+using std::align;
+using max_align_t = std::max_align_t;
 #endif
-}
-
-inline
-unsigned char*
-align_up(
-    unsigned char* ptr,
-    std::size_t align)
-{
-    // alignment shall be a power of two
-    BOOST_ASSERT(!(align & (align - 1)));
-    return reinterpret_cast<unsigned char*>(
-        (reinterpret_cast<std::uintptr_t>(
-            ptr) + align - 1) & ~(align - 1));
-}
 
 } // detail
 BOOST_JSON_NS_END
