@@ -1412,7 +1412,8 @@ do_str2:
                     temp.clear();
                 }
                 cs = cs.end();
-                cs.clip(temp.max_size());
+                // ensure there is room for the saved byte sequence 
+                cs.clip(temp.max_size() - seq_.length());
                 goto do_str8;
             }
             if(BOOST_JSON_UNLIKELY(! seq_.valid()))
