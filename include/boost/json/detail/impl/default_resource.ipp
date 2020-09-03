@@ -20,9 +20,7 @@ namespace detail {
 // the user's TU.
 
 default_resource::
-~default_resource()
-{
-}
+~default_resource() = default;
 
 } // detail
 BOOST_JSON_NS_END

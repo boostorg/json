@@ -36,16 +36,12 @@ class object_test;
     This is an associative container whose elements
     are key/value pairs with unique keys.
 \n
-    The elements are stored contiguously, which means that
-    elements can be accessed not only through iterators, but
-    also using offsets to regular pointers to elements. A
-    pointer to an element of an @ref object may be passed to
-    any function that expects a pointer to
-    @ref key_value_pair.
-\n
-    The container also maintains an internal index to speed
-    up find operations, reducing the average complexity
-    for most lookups and insertions.
+    The elements are stored contiguously; iterators are
+    ordinary pointers, allowing random access pointer
+    arithmetic for retrieving elements.
+    In addition, the container maintains an internal
+    index to speed up find operations, reducing the
+    average complexity for most lookups and insertions.
 \n
     Reallocations are usually costly operations in terms of
     performance, as elements are copied and the internal
@@ -65,10 +61,9 @@ class object_test;
     concurrently with any other member functions.
 
     @par Satisfies the requirements of
-        <em>Container</em>,
-        <em>ReversibleContainer</em>,
-        <em>SequenceContainer</em>, and
-        <em>UnorderedAssociativeContainer</em>.
+        <em>ContiguousContainer</em>,
+        <em>ReversibleContainer</em>, and
+        <em>SequenceContainer</em>.
 */
 class object
 {
@@ -846,7 +841,7 @@ public:
     std::size_t
     size() const noexcept;
 
-    /** Return the maximum number of elements the container can hold
+    /** Return the maximum number of elements any object can hold
 
         The maximum is an implementation-defined number dependent
         on system or library implementation. This value is a

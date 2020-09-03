@@ -1004,7 +1004,7 @@ public:
         return impl_.size();
     }
 
-    /** Return the maximum number of elements the array can hold.
+    /** Return the maximum number of elements any array can hold.
 
         The maximum is an implementation-defined number.
         This value is a theoretical limit; at runtime,

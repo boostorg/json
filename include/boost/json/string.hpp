@@ -50,7 +50,6 @@ class value;
     concurrently with any other member functions.
 
     @par Satisfies the requirements of
-        <em>Container</em>,
         <em>ContiguousContainer</em>,
         <em>ReversibleContainer</em>, and
         <em>SequenceContainer</em>.
@@ -58,7 +57,10 @@ class value;
 class string
 {
     friend class value;
+#ifndef BOOST_JSON_DOCS
+    // VFALCO doc toolchain shouldn't show this but does
     friend struct detail::value_access;
+#endif
 
     inline
     string(
@@ -1415,7 +1417,7 @@ public:
         return impl_.size();
     }
 
-    /** Return the maximum number of characters the string can hold.
+    /** Return the maximum number of characters any string can hold.
 
         The maximum is an implementation-defined number.
         This value is a theoretical limit; at runtime,
