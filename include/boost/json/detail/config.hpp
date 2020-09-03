@@ -144,10 +144,12 @@
 # else
 #  if (defined(BOOST_JSON_DYN_LINK) || defined(BOOST_ALL_DYN_LINK)) && !defined(BOOST_JSON_STATIC_LINK)
 #   if defined(BOOST_JSON_SOURCE)
-#    define BOOST_JSON_DECL  BOOST_SYMBOL_EXPORT
+#    define BOOST_JSON_DECL        BOOST_SYMBOL_EXPORT
+#    define BOOST_JSON_CLASS_DECL  BOOST_SYMBOL_EXPORT
 #    define BOOST_JSON_BUILD_DLL
 #   else
-#    define BOOST_JSON_DECL  BOOST_SYMBOL_IMPORT
+#    define BOOST_JSON_DECL        BOOST_SYMBOL_IMPORT
+#    define BOOST_JSON_CLASS_DECL  BOOST_SYMBOL_IMPORT
 #   endif
 #  endif // shared lib
 #  ifndef  BOOST_JSON_DECL
@@ -167,6 +169,13 @@
 # else
 #  define BOOST_JSON_DECL
 # endif
+#endif
+
+#ifndef BOOST_JSON_CLASS_DECL 
+#define BOOST_JSON_CLASS_DECL 
+#endif
+#ifndef BOOST_JSON_INLINE_DECL
+#define BOOST_JSON_INLINE_DECL
 #endif
 
 #ifndef BOOST_JSON_LIKELY

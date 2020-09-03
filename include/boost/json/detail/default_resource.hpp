@@ -18,37 +18,32 @@ namespace detail {
 
 /** A simple memory resource that uses operator new and delete.
 */
-class BOOST_SYMBOL_VISIBLE
+class
+    BOOST_SYMBOL_VISIBLE
+    BOOST_JSON_CLASS_DECL
     default_resource final
     : public memory_resource
 {
 public:
-    BOOST_JSON_DECL
+#ifdef BOOST_JSON_HEADER_ONLY
+    inline
+#endif
     ~default_resource();
 
     void*
     do_allocate(
         std::size_t n,
-        std::size_t) override
-    {
-        return ::operator new(n);
-    }
+        std::size_t) override;
 
     void
     do_deallocate(
         void* p,
         std::size_t,
-        std::size_t) override
-    {
-        ::operator delete(p);
-    }
+        std::size_t) override;
 
     bool
     do_is_equal(
-        memory_resource const& mr) const noexcept override
-    {
-        return this == &mr;
-    }
+        memory_resource const& mr) const noexcept override;
 };
 
 } // detail
