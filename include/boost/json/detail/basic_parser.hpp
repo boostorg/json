@@ -91,62 +91,153 @@ BOOST_JSON_NS_BEGIN
     struct handler
     {
         /// Called once when the JSON parsing begins.
+        ///
+        /// @return `true` on success.
+        /// @param ec Set to the error, if any occurred.
+        ///
         bool on_document_begin( error_code& ec );
 
-        // Called when the JSON parsing is done.
+        /// Called when the JSON parsing is done.
+        ///
+        /// @return `true` on success.
+        /// @param ec Set to the error, if any occurred.
+        ///
         bool on_document_end( error_code& ec );
 
-        // Called when the beginning of an object is encountered.
+        /// Called when the beginning of an object is encountered.
+        ///
+        /// @return `true` on success.
+        /// @param ec Set to the error, if any occurred.
+        ///
         bool on_object_begin( error_code& ec );
 
-        // Called when the end of the current object is encountered.
-        bool on_object_end( error_code& ec );
+        /// Called when the end of the current object is encountered.
+        ///
+        /// @return `true` on success.
+        /// @param size The number of elements in the object.
+        /// @param ec Set to the error, if any occurred.
+        ///
+        bool on_object_end( std::size_t size, error_code& ec );
 
-        // Called when the beginning of an array is encountered.
+        /// Called when the beginning of an array is encountered.
+        ///
+        /// @return `true` on success.
+        /// @param ec Set to the error, if any occurred.
+        ///
         bool on_array_begin( error_code& ec );
 
-        // Called when the end of the current array is encountered.
+        /// Called when the end of the current array is encountered.
+        ///
+        /// @return `true` on success.
+        /// @param size The number of elements in the array.
+        /// @param ec Set to the error, if any occurred.
+        ///
         bool on_array_end( error_code& ec );
 
-        // Called with characters corresponding to part of the current key.
+        /// Called with characters corresponding to part of the current key.
+        ///
+        /// @return `true` on success.
+        /// @param s The partial characters
+        /// @param ec Set to the error, if any occurred.
+        ///
         bool on_key_part( string_view s, error_code& ec );
 
-        // Called with the last characters corresponding to the current key.
+        /// Called with the last characters corresponding to the current key.
+        ///
+        /// @return `true` on success.
+        /// @param s The remaining characters
+        /// @param ec Set to the error, if any occurred.
+        ///
         bool on_key( string_view s, error_code& ec );
 
-        // Called with characters corresponding to part of the current string.
+        /// Called with characters corresponding to part of the current string.
+        ///
+        /// @return `true` on success.
+        /// @param s The partial characters
+        /// @param ec Set to the error, if any occurred.
+        ///
         bool on_string_part( string_view s, error_code& ec );
 
-        // Called with the last characters corresponding to the current string.
+        /// Called with the last characters corresponding to the current string.
+        ///
+        /// @return `true` on success.
+        /// @param s The remaining characters
+        /// @param ec Set to the error, if any occurred.
+        ///
         bool on_string( string_view s, error_code& ec );
 
-        // Called with the characters corresponding to part of the current number.
+        /// Called with the characters corresponding to part of the current number.
+        ///
+        /// @return `true` on success.
+        /// @param s The partial characters
+        /// @param ec Set to the error, if any occurred.
+        ///
         bool on_number_part( string_view s, error_code& ec );
 
-        // Called when a signed integer is parsed.
+        /// Called when a signed integer is parsed.
+        ///
+        /// @return `true` on success.
+        /// @param i The value
+        /// @param s The remaining characters
+        /// @param ec Set to the error, if any occurred.
+        ///
         bool on_int64( int64_t i, string_view s, error_code& ec );
 
-        // Called when an unsigend integer is parsed.
+        /// Called when an unsigend integer is parsed.
+        ///
+        /// @return `true` on success.
+        /// @param u The value
+        /// @param s The remaining characters
+        /// @param ec Set to the error, if any occurred.
+        ///
         bool on_uint64( uint64_t u, string_view s, error_code& ec );
 
-        // Called when a double is parsed.
+        /// Called when a double is parsed.
+        ///
+        /// @return `true` on success.
+        /// @param d The value
+        /// @param s The remaining characters
+        /// @param ec Set to the error, if any occurred.
+        ///
         bool on_double( double d, string_view s, error_code& ec );
 
-        // Called when a boolean is parsed.
+        /// Called when a boolean is parsed.
+        ///
+        /// @return `true` on success.
+        /// @param b The value
+        /// @param s The remaining characters
+        /// @param ec Set to the error, if any occurred.
+        ///
         bool on_bool( bool b, error_code& ec );
 
-        // Called when a null is parsed.
+        /// Called when a null is parsed.
+        ///
+        /// @return `true` on success.
+        /// @param ec Set to the error, if any occurred.
+        ///
         bool on_null( error_code& ec );
 
-        // Called with characters corresponding to part of the current comment.
+        /// Called with characters corresponding to part of the current comment.
+        ///
+        /// @return `true` on success.
+        /// @param s The partial characters.
+        /// @param ec Set to the error, if any occurred.
+        ///
         bool on_comment_part( string_view s, error_code& ec );
 
-        // Called with the last characters corresponding to the current comment.
+        /// Called with the last characters corresponding to the current comment.
+        ///
+        /// @return `true` on success.
+        /// @param s The remaining characters
+        /// @param ec Set to the error, if any occurred.
+        ///
         bool on_comment( string_view s, error_code& ec );
     };
     @endcode
 
-    @see @ref parse, @ref parser
+    @see
+        @ref parse,
+        @ref parser
 */
 template<class Handler>
 class basic_parser
