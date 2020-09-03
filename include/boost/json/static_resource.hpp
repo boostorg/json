@@ -11,7 +11,7 @@
 #define BOOST_JSON_STATIC_RESOURCE_HPP
 
 #include <boost/json/detail/config.hpp>
-#include <boost/json/storage_ptr.hpp>
+#include <boost/json/memory_resource.hpp>
 
 BOOST_JSON_NS_BEGIN
 
