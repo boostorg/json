@@ -92,8 +92,10 @@ public:
         If serialization is attempted with no value,
         the output is as if a null value is serialized.
 
-        @par Exception Safety
+        @par Complexity
+        Constant.
 
+        @par Exception Safety
         No-throw guarantee.
     */
     BOOST_JSON_DECL
@@ -104,6 +106,9 @@ public:
         This constructs the serializer and prepares
         it to serialize the @ref value `jv` as if
         @ref reset was called.
+
+        @par Complexity
+        Constant.
 
         @par Exception Safety
         No-throw guarantee.
@@ -116,16 +121,20 @@ public:
         the serializer is destroyed.
     */
     explicit
-    serializer(value const& jv) noexcept
-    {
-        reset(jv);
-    }
+    BOOST_JSON_DECL
+    serializer(value const& jv) noexcept;
 
     /** Returns `true` if the serialization is complete
 
         This function returns `true` when all of the
         characters in the serialized representation of
         the value have been read.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     bool
     done() const noexcept
@@ -169,6 +178,9 @@ public:
         @par Preconditions
         `this->done() == true`
 
+        @par Complexity
+        Linear in `size`.
+
         @par Exception Safety
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
@@ -199,6 +211,9 @@ public:
         @code
         return this->read( dest, N );
         @endcode
+
+        @par Complexity
+        Linear in `N`.
 
         @par Exception Safety
         Basic guarantee.

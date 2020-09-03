@@ -739,6 +739,12 @@ serializer() noexcept
         sizeof(serializer::buf_) >= 7);
 }
 
+serializer::
+serializer(value const& jv) noexcept
+{
+    reset(jv);
+}
+
 void
 serializer::
 reset(value const& jv) noexcept
