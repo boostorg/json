@@ -15,13 +15,39 @@
 BOOST_JSON_NS_BEGIN
 namespace detail {
 
-// these are here so that ~memory_resource
+// this is here so that ~memory_resource
 // is emitted in the library instead of
 // the user's TU.
-
 default_resource::
 ~default_resource()
 {
+}
+
+void*
+default_resource::
+do_allocate(
+    std::size_t n,
+    std::size_t)
+{
+    return ::operator new(n);
+}
+
+void
+default_resource::
+do_deallocate(
+    void* p,
+    std::size_t,
+    std::size_t)
+{
+    ::operator delete(p);
+}
+
+bool
+default_resource::
+do_is_equal(
+    memory_resource const& mr) const noexcept
+{
+    return this == &mr;
 }
 
 } // detail
