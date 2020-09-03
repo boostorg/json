@@ -45,56 +45,16 @@ struct value_to_tag;
     @li a user-provided overload of `tag_invoke`.
     
     In all cases, the conversion is done by calling
-    an overload of `tag_invoke`.
-
-    The function used to convert an expression `e`
-    of type @ref value is determined as follows.
-    Let _S_ be the set of all declarations found
-    by argument-dependent lookup for the function call
-
-    @code
-    tag_invoke( value_to_tag<T>(), jv )
-    @endcode
+    an overload of `tag_invoke` found by argument-dependent
+    lookup. Its signature should be similar to:
     
-    Then, an attempt to find an applicable library-provided
-    conversion (if any) is made. Add to _S_
-
-    @li an additional function designated the
-    _built-in candidate_ if `T` is @ref value, @ref object,
-    @ref array, @ref string or `bool`, or if
-    `std::is_arithmetic<T>::value` is `true`, otherwise,
-
-    @li an additional function designated the
-    _constructor candidate_ if
-    `std::is_constructible<T, const value&>::value`, otherwise,
-
-    @li an additional function designated the
-    _string conversion candidate_ if `T`
-    satisfies _StringLike_, otherwise,
-
-    @li an additional function designated the
-    _map conversion candidate_ if `T`
-    satisfies _ToMapLike_, otherwise,
-
-    @li an additional function designated the
-    _container conversion candidate_ if `T`
-    satisfies _ToContainerLike_, otherwise,
-
-    If a library-provided conversion is added to
-    _S_, it has the form
-
     @code
-    template<typename U>
-    U tag_invoke( value_to_tag<T>, const value& );
+    T tag_invoke( value_to_tag<T>, value );
     @endcode
 
-    Using _S_, overload resolution is performed to
-    find the single best candidate to convert `jv`
-    to `T`. If more than one function is found
-    or if no viable function is found, the conversion
-    fails. Otherwise, the selected function `F` is called
-    with `F( value_to_tag<T>(), jv )` and its result is
-    returned as the result of the conversion.
+    The object returned by the function call is
+    returned by @ref value_to as the result of the
+    conversion.
 
     @par Constraints
     @code
@@ -126,19 +86,12 @@ value_to(value const& jv)
         value_to_tag<detail::remove_cv<T>>(), jv);
 }
 
-/** Determine if `T` can be converted to a JSON value.
+/** Determine a @ref value can be converted to `T`.
 
-    Given an expression `jv` of type @ref value,
-    if overload resolution for the set of `tag_invoke`
-    overloads performed by the function call
-
-    @code
-    value_to< T >( jv )
-    @endcode
-
-    would find a single best `tag_invoke` function to call, 
-    then this class template inherits from `std::true_type`;
-    otherwise, it inherits from `std::false_type`.
+    If @ref value can be converted to `T` via a 
+    call to @ref value_to, the static data member `value`
+    is defined as `true`. Otherwise, `value` is
+    defined as `false`.
 
     @see @ref value_to
 */

@@ -50,55 +50,17 @@ struct value_from_tag {};
     @li a user-provided overload of `tag_invoke`.
     
     In all cases, the conversion is done by calling
-    an overload of `tag_invoke`, passing an lvalue `jv`
-    of type @ref value as an argument to ensure that
-    the result of the conversion uses the correct
-    `storage_ptr`.@n
-
-    The function used to convert an expression `e`
-    of type `T` is determined as follows.
-    Let _S_ be the set of all declarations found
-    by argument-dependent lookup for the function call
-
+    an overload of `tag_invoke` found by argument-dependent
+    lookup. Its signature should be similar to:
+    
     @code
-    tag_invoke( value_from_tag(), jv, e )
+    void tag_invoke( value_from_tag, value&, T );
     @endcode
 
-    Then, an attempt to find an applicable library-provided
-    conversion (if any) is made. Add to _S_
-
-    @li an additional function designated the
-    _value assignment candidate_ if
-    `std::is_assignable<value&, T&&>::value`, otherwise,
-
-    @li an additional function designated the
-    _tuple conversion candidate_ if `T`
-    satisfies _TupleLike_, otherwise,
-
-    @li an additional function designated the
-    _map conversion candidate_ if `T`
-    satisfies _FromMapLike_, otherwise,
-
-    @li an additional function designated the
-    _container conversion candidate_ if `T`
-    satisfies _FromContainerLike_, otherwise,
-
-    If a library-provided conversion is added to
-    _S_, it has the form
-
-    @code
-    template<typename U>
-    void tag_invoke( value_from_tag, value&, U&& );
-    @endcode
-
-    Using _S_, overload resolution is performed to
-    find the single best candidate to convert `e`
-    to @ref value. If more than one function is found
-    or if no viable function is found, the conversion
-    fails. Otherwise, the selected function `F` is called
-    with `F( value_from_tag(), jv, std::forward< T >( from ) )`
-    and the value of `jv` after modification by `F` is
-    returned as the result of the conversion.
+    A @ref value constructed
+    with the @ref storage_ptr passed to @ref value_from is
+    passed as the second argument to ensure that the memory
+    resource is correctly propagated.
 
     @par Exception Safety
 
@@ -128,17 +90,10 @@ value_from(
 
 /** Determine if `T` can be converted to @ref value.
 
-    Given an expression `e` of type `T`, 
-    if overload resolution for the set of `tag_invoke`
-    overloads performed by the function call
-    
-    @code 
-    value_from( e )
-    @endcode
-    
-    would find a single best `tag_invoke` function to call, 
-    then this class template inherits from `std::true_type`;
-    otherwise, it inherits from `std::false_type`.
+    If `T` can be converted to @ref value via a 
+    call to @ref value_from, the static data member `value`
+    is defined as `true`. Otherwise, `value` is
+    defined as `false`.
 
     @see @ref value_from
 */
