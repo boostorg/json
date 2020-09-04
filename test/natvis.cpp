@@ -9,6 +9,9 @@
 
 #include <boost/json/value.hpp>
 
+#include <boost/json/monotonic_resource.hpp>
+#include <boost/json/static_resource.hpp>
+
 #include "test_suite.hpp"
 
 BOOST_JSON_NS_BEGIN
@@ -83,6 +86,29 @@ public:
         key_value_pair& z6 = y1.begin()[6]; (void)z6;
         key_value_pair& z7 = y1.begin()[7]; (void)z7;
         key_value_pair& z8 = y1.begin()[8]; (void)z8;
+
+        {
+            auto sp = y1.storage();
+        }
+        {
+            unsigned char buf[1024];
+            storage_ptr sp;
+            sp = make_counted_resource<
+                monotonic_resource>();
+            sp = make_counted_resource<
+                static_resource>(buf);
+            sp = {};
+        }
+        {
+            unsigned char buf[1024];
+            monotonic_resource mr1;
+            static_resource mr2(buf);
+            storage_ptr sp;
+            
+            sp = &mr1;
+            sp = &mr2;
+            sp = {};
+        }
     }
 };
 

@@ -23,12 +23,10 @@ BOOST_JSON_NS_BEGIN
     This memory resource is a special-purpose resource
     that releases allocated memory only when the resource
     is destroyed (or when @ref release is called).
-    It has a trivial deallocate function. That is, the
-    metafunction @ref is_deallocate_trivial returns `true`.
-    It has a trivial deallocate function. That is, the
+    It has a trivial deallocate function; that is, the
     metafunction @ref is_deallocate_trivial returns `true`.
 \n
-    The resource is be constructed from caller-owned buffer
+    The resource is constructed from a caller-owned buffer
     from which subsequent calls to allocate are apportioned.
     When a memory request cannot be satisfied from the
     free bytes remaining in the buffer, the allocation
@@ -55,6 +53,9 @@ BOOST_JSON_NS_BEGIN
     @par Thread Safety
     Members of the same instance may not be
     called concurrently.
+
+    @see
+        https://en.wikipedia.org/wiki/Region-based_memory_management
 */
 class static_resource final
     : public memory_resource
@@ -184,6 +185,7 @@ public:
 #endif
 
 protected:
+#ifndef BOOST_JSON_DOCS
     BOOST_JSON_DECL
     void*
     do_allocate(
@@ -202,6 +204,7 @@ protected:
     do_is_equal(
         memory_resource const& mr
             ) const noexcept override;
+#endif
 };
 
 template<>

@@ -1,6 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
 
+  <Type Name="boost::json::storage_ptr">
+    <DisplayString Condition="i_==0">default</DisplayString>
+    <DisplayString Condition="(i_&amp;3)==1"> counted</DisplayString>
+    <DisplayString Condition="(i_&amp;3)==2"> trivial</DisplayString>
+    <DisplayString Condition="(i_&amp;3)==3"> counted, trivial</DisplayString>
+    <DisplayString>non-owning</DisplayString>
+    <Expand>
+      <Item Name="[ refs ]" Condition="(i_&amp;1)==1">((counted_resource*)(i_&amp;~3))->refs</Item>
+      <Item Name="[ resource ]" Condition="(i_&amp;2)==1">(counted_resource*)(i_&amp;~3)</Item>
+      <Item Name="[ resource ]" Condition="(i_&amp;2)!=1">(memory_resource*)(i_&amp;~3)</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="boost::json::detail::counted_resource_impl&lt;*&gt;">
+    <DisplayString>$T1*</DisplayString>
+    <Expand>
+      <Item Name="[ refs ]">refs</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="boost::json::monotonic_resource">
+    <DisplayString>monotonic_resource</DisplayString>
+    <Expand>
+      <Item Name="[ free ]">head_->n</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="boost::json::static_resource">
+    <DisplayString>static_resource</DisplayString>
+    <Expand>
+      <Item Name="[ free ]">n_</Item>
+    </Expand>
+  </Type>
+
   <Type Name="boost::json::value">
     <DisplayString Condition="nul_.k==kind::array">array [{arr_.impl_.tab_?arr_.impl_.tab_->size:0}]</DisplayString>
     <DisplayString Condition="nul_.k==kind::object">object [{obj_.impl_.tab_?obj_.impl_.tab_->size:0}]</DisplayString>
