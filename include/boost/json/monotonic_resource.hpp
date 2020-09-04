@@ -14,12 +14,59 @@
 #include <boost/json/detail/config.hpp>
 #include <boost/json/memory_resource.hpp>
 #include <boost/json/detail/align.hpp>
+#include <cstddef>
 
 BOOST_JSON_NS_BEGIN
 
-/** A resource with a trivial deallocate.
+//----------------------------------------------------------
 
-    This memory resource is designed to...
+/** A dynamically allocating resource with a trivial deallocate
+
+    This memory resource is a special-purpose resource
+    that releases allocated memory only when the resource
+    is destroyed (or when @ref release is called).
+    It has a trivial deallocate function. That is, the
+    metafunction @ref is_deallocate_trivial returns `true`.
+\n
+    The resource can be constructed with an initial buffer.
+    If there is no initial buffer, or if the buffer is
+    exhausted, subsequent dynamic allocations are made from
+    the system heap. The size of buffers obtained in this
+    fashion follow a geometric progression.
+\n
+    The purpose of this resource is to optimize the use
+    case for performing many allocations, followed by
+    deallocating everything at once. This is precisely the
+    pattern of memory allocation which occurs when parsing:
+    allocation is performed for each parsed element, and
+    when the the resulting @ref value is no longer needed,
+    the entire structure is destroyed. However, it is not
+    suited for modifying the value after parsing is
+    complete; reallocations waste memory, since the
+    older buffer is not reclaimed until the resource
+    is destroyed.
+
+    @par Example
+
+    This parses a JSON into a value which uses a local
+    stack buffer, then prints the result.
+
+    @code
+
+    unsigned char buf[ 4000 ];
+    monotonic_resource mr( buf );
+
+    // Parse the string, using our memory resource
+    auto const jv = parse( "[1,2,3]", &mr );
+
+    // Print the JSON
+    std::cout << jv;
+
+    @endcode
+
+    @note The total amount of memory dynamically
+    allocated is monotonically increasing; That is,
+    it never decreases.
 
     @par Thread Safety
     Members of the same instance may not be
@@ -71,7 +118,6 @@ public:
         @endcode
 
         @par Complexity
-
         Linear in the number of deallocations performed.
 
         @par Exception Safety
@@ -101,6 +147,7 @@ public:
         the lower limit is used instead.
     */
     BOOST_JSON_DECL
+    explicit
     monotonic_resource(
         std::size_t initial_size = 1024) noexcept;
 
@@ -134,14 +181,90 @@ public:
         void* buffer,
         std::size_t size) noexcept;
 
+    /** Constructor
+
+        This constructs the resource and indicates that
+        subsequent allocations should use the specified
+        caller-owned array. When this buffer is exhausted,
+        dynamic allocations from the heap are made.
+    \n
+        This constructor is guaranteed not to perform
+        any dynamic allocations.
+
+        @par Effects
+        @code
+        monotonic_resource( buffer, N );
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param buffer An array to use as the initial
+        buffer. Ownership is not transferred; the caller
+        is responsible for ensuring that the lifetime of
+        the array extends until the resource is destroyed.
+    */
+    /**@{*/
+    template<std::size_t N>
+    explicit
+    monotonic_resource(
+        unsigned char(&buffer)[N]) noexcept
+        : monotonic_resource(
+            buffer, N)
+    {
+    }
+
+#if defined(__cpp_lib_byte) || defined(BOOST_JSON_DOCS)
+    template<std::size_t N>
+    explicit
+    monotonic_resource(
+        std::byte(&buffer)[N]) noexcept
+        : monotonic_resource(
+            buffer, N)
+    {
+    }
+#endif
+    /**@}*/
+
+#ifndef BOOST_JSON_DOCS
+    // Safety net for accidental buffer overflows
+    template<std::size_t N>
+    monotonic_resource(
+        unsigned char(&buffer)[N], std::size_t n) noexcept
+        : monotonic_resource(&buffer[0], n)
+    {
+        // If this goes off, check your parameters
+        // closely, chances are you passed an array
+        // thinking it was a pointer.
+        BOOST_ASSERT(n <= N);
+    }
+
+#ifdef __cpp_lib_byte
+    // Safety net for accidental buffer overflows
+    template<std::size_t N>
+    monotonic_resource(
+        std::byte(&buffer)[N], std::size_t n) noexcept
+        : monotonic_resource(&buffer[0], n)
+    {
+        // If this goes off, check your parameters
+        // closely, chances are you passed an array
+        // thinking it was a pointer.
+        BOOST_ASSERT(n <= N);
+    }
+#endif
+#endif
+
     /** Release all allocated memory.
 
         This function deallocates all allocated memory.
         If an initial buffer was provided upon construction,
         then all of the bytes will be available again for
         allocation. Allocated memory is deallocated even
-        if @ref deallocate has not been called for some
-        of the allocated blocks.
+        if deallocate has not been called for some of
+        the allocated blocks.
 
         @par Complexity
         Linear in the number of deallocations performed.

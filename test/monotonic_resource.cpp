@@ -12,6 +12,8 @@
 #include <boost/json/monotonic_resource.hpp>
 
 #include <boost/json/parse.hpp>
+#include <boost/json/to_string.hpp>
+#include <iostream>
 
 #include "test_suite.hpp"
 
@@ -46,6 +48,74 @@ private:
     }
 
 public:
+    void
+    testJavadocs()
+    {
+    //--------------------------------------
+
+    unsigned char buf[4000];
+    monotonic_resource mr( buf );
+
+    // Parse the string, using our memory resource
+    auto const jv = parse( "[1,2,3]", &mr );
+
+    // Print the JSON
+    std::cout << jv;
+
+    //--------------------------------------
+    }
+
+    void
+    testMembers()
+    {
+        // monotonic_resource(size_t)
+        {
+            {
+                monotonic_resource mr(1);
+            }
+            {
+                monotonic_resource mr(5000);
+            }
+        }
+
+        // monotonic_resource mr(void*, size_t)
+        {
+            char buf[2000];
+            monotonic_resource mr(&buf[0], sizeof(buf));
+        }
+
+        // monotonic_resource mr(unsigned char[N])
+        {
+            unsigned char buf[2000];
+            monotonic_resource mr(buf);
+        }
+
+        // monotonic_resource mr(unsigned char[N], std::size_t)
+        {
+            unsigned char buf[2000];
+            monotonic_resource mr(buf, 1000);
+        }
+
+    #ifdef __cpp_lib_byte
+        // monotonic_resource mr(unsigned char[N])
+        {
+            std::byte buf[2000];
+            monotonic_resource mr(buf);
+        }
+
+        // monotonic_resource mr(unsigned char[N], std::size_t)
+        {
+            std::byte buf[2000];
+            monotonic_resource mr(buf, 1000);
+        }
+    #endif
+
+        // coverage
+        {
+            monotonic_resource mr(std::size_t(-1)-2);
+        }
+    }
+
     void
     testGeneral()
     {
@@ -163,6 +233,7 @@ R"xx({
     void
     run()
     {
+        testMembers();
         testStorage();
         testGeneral();
     }

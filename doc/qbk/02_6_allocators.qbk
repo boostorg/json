@@ -35,11 +35,9 @@ declaration for __std_vector__:
 
 [snippet_background_1]
 
-The standard allocator is __DefaultConstructible__. To
-support allocators which require arguments upon construction
-(for example, some stateful allocators), containers provide
-additional constructor overloads taking an allocator
-instance parameter:
+The standard allocator is __DefaultConstructible__. To support stateful
+allocators, containers provide additional constructor overloads taking
+an allocator instance parameter.
 
 [snippet_background_2]
 

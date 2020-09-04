@@ -33,18 +33,9 @@ monotonic_resource::
 round_pow2(
     std::size_t n) noexcept
 {
-    std::size_t result = min_size_;
-    while(result < n)
-    {
-        if(result >= max_size() - result)
-        {
-            // overflow
-            result = max_size();
-            break;
-        }
-        result *= 2;
-    }
-    return result;
+    if(n & (n - 1))
+        return next_pow2(n);
+    return n;
 }
 
 // lowest power of 2 greater than n
