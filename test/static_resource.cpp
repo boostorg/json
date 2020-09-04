@@ -12,6 +12,7 @@
 
 #include <boost/json/parse.hpp>
 #include <boost/json/to_string.hpp>
+#include <iostream>
 
 #include "test_suite.hpp"
 
@@ -20,6 +21,23 @@ BOOST_JSON_NS_BEGIN
 class static_resource_test
 {
 public:
+    void
+    testJavadocs()
+    {
+    //--------------------------------------
+
+    unsigned char buf[ 4000 ];
+    static_resource mr( buf );
+
+    // Parse the string, using our memory resource
+    auto const jv = parse( "[1,2,3]", &mr );
+
+    // Print the JSON
+    std::cout << jv;
+
+    //--------------------------------------
+    }
+
     void
     test()
     {
