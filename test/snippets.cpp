@@ -161,7 +161,7 @@ usingValues()
             return p->size();
 
         //]
-        }
+        };
     }
     {
         //[snippet_value_4
