@@ -9,6 +9,7 @@
 
 #include <boost/json/parser.hpp>
 #include <boost/json/parse_options.hpp>
+#include <boost/json/to_string.hpp>
 using namespace boost::json;
 
 bool
@@ -32,7 +33,7 @@ fuzz_parser(parse_options popt,string_view sv)
     {
         value jv = p.release( ec );
         if(! ec )
-            return jv.is_number();
+            return to_string(jv).size()==42;
     }
     return false;
 }
