@@ -152,7 +152,19 @@ usingValues()
         //]
     }
     {
+        auto f = []{
         //[snippet_value_3
+
+        value jv( object_kind );
+
+        if( auto p = jv.is_object() )
+            return p->size();
+
+        //]
+        }
+    }
+    {
+        //[snippet_value_4
 
         value jv;
         jv = value( array_kind );
@@ -166,7 +178,7 @@ usingValues()
         //]
     }
     {
-        //[snippet_value_4
+        //[snippet_value_5
 
         value jv;
         jv.emplace_string() = "Hello, world!";
@@ -181,7 +193,7 @@ usingValues()
     {
         try
         {
-            //[snippet_value_5
+            //[snippet_value_6
 
             value jv( true );
             jv.as_bool() = true;
@@ -195,22 +207,22 @@ usingValues()
         }
     }
     {
-        //[snippet_value_6
+        //[snippet_value_7
 
         value jv( string_kind );
-        if( string* str = jv.if_string() )
+        if( string* str = jv.is_string() )
             *str = "Hello, world!";
 
         //]
     }
     {
-        //[snippet_value_7
+        //[snippet_value_8
 
         value jv( string_kind );
 
         // The compiler's static analysis can see that
         // a null pointer is never dereferenced.
-        *jv.if_string() = "Hello, world!";
+        *jv.is_string() = "Hello, world!";
 
         //]
     }

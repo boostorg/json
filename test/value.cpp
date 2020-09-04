@@ -1074,7 +1074,7 @@ public:
     }
 
     void
-    testIf()
+    testIs()
     {
         value obj(object{});
         value arr(array{});
@@ -1094,172 +1094,172 @@ public:
         auto const& cboo(boo);
         auto const& cnul(nul);
 
-        // if_object()
+        // is_object()
         {
-            BOOST_TEST(obj.if_object() != nullptr);
-            BOOST_TEST(arr.if_object() == nullptr);
-            BOOST_TEST(str.if_object() == nullptr);
-            BOOST_TEST(i64.if_object() == nullptr);
-            BOOST_TEST(u64.if_object() == nullptr);
-            BOOST_TEST(dub.if_object() == nullptr);
-            BOOST_TEST(boo.if_object() == nullptr);
-            BOOST_TEST(nul.if_object() == nullptr);
+            BOOST_TEST(obj.is_object() != nullptr);
+            BOOST_TEST(arr.is_object() == nullptr);
+            BOOST_TEST(str.is_object() == nullptr);
+            BOOST_TEST(i64.is_object() == nullptr);
+            BOOST_TEST(u64.is_object() == nullptr);
+            BOOST_TEST(dub.is_object() == nullptr);
+            BOOST_TEST(boo.is_object() == nullptr);
+            BOOST_TEST(nul.is_object() == nullptr);
         }
 
-        // if_object() const
+        // is_object() const
         {
-            BOOST_TEST(cobj.if_object() != nullptr);
-            BOOST_TEST(carr.if_object() == nullptr);
-            BOOST_TEST(cstr.if_object() == nullptr);
-            BOOST_TEST(ci64.if_object() == nullptr);
-            BOOST_TEST(cu64.if_object() == nullptr);
-            BOOST_TEST(cdub.if_object() == nullptr);
-            BOOST_TEST(cboo.if_object() == nullptr);
-            BOOST_TEST(cnul.if_object() == nullptr);
+            BOOST_TEST(cobj.is_object() != nullptr);
+            BOOST_TEST(carr.is_object() == nullptr);
+            BOOST_TEST(cstr.is_object() == nullptr);
+            BOOST_TEST(ci64.is_object() == nullptr);
+            BOOST_TEST(cu64.is_object() == nullptr);
+            BOOST_TEST(cdub.is_object() == nullptr);
+            BOOST_TEST(cboo.is_object() == nullptr);
+            BOOST_TEST(cnul.is_object() == nullptr);
         }
 
-        // if_array()
+        // is_array()
         {
-            BOOST_TEST(obj.if_array() == nullptr);
-            BOOST_TEST(arr.if_array() != nullptr);
-            BOOST_TEST(str.if_array() == nullptr);
-            BOOST_TEST(i64.if_array() == nullptr);
-            BOOST_TEST(u64.if_array() == nullptr);
-            BOOST_TEST(dub.if_array() == nullptr);
-            BOOST_TEST(boo.if_array() == nullptr);
-            BOOST_TEST(nul.if_array() == nullptr);
+            BOOST_TEST(obj.is_array() == nullptr);
+            BOOST_TEST(arr.is_array() != nullptr);
+            BOOST_TEST(str.is_array() == nullptr);
+            BOOST_TEST(i64.is_array() == nullptr);
+            BOOST_TEST(u64.is_array() == nullptr);
+            BOOST_TEST(dub.is_array() == nullptr);
+            BOOST_TEST(boo.is_array() == nullptr);
+            BOOST_TEST(nul.is_array() == nullptr);
         }
 
-        // if_array() const
+        // is_array() const
         {
-            BOOST_TEST(cobj.if_array() == nullptr);
-            BOOST_TEST(carr.if_array() != nullptr);
-            BOOST_TEST(cstr.if_array() == nullptr);
-            BOOST_TEST(ci64.if_array() == nullptr);
-            BOOST_TEST(cu64.if_array() == nullptr);
-            BOOST_TEST(cdub.if_array() == nullptr);
-            BOOST_TEST(cboo.if_array() == nullptr);
-            BOOST_TEST(cnul.if_array() == nullptr);
+            BOOST_TEST(cobj.is_array() == nullptr);
+            BOOST_TEST(carr.is_array() != nullptr);
+            BOOST_TEST(cstr.is_array() == nullptr);
+            BOOST_TEST(ci64.is_array() == nullptr);
+            BOOST_TEST(cu64.is_array() == nullptr);
+            BOOST_TEST(cdub.is_array() == nullptr);
+            BOOST_TEST(cboo.is_array() == nullptr);
+            BOOST_TEST(cnul.is_array() == nullptr);
         }
 
-        // if_string()
+        // is_string()
         {
-            BOOST_TEST(obj.if_string() == nullptr);
-            BOOST_TEST(arr.if_string() == nullptr);
-            BOOST_TEST(str.if_string() != nullptr);
-            BOOST_TEST(i64.if_string() == nullptr);
-            BOOST_TEST(u64.if_string() == nullptr);
-            BOOST_TEST(dub.if_string() == nullptr);
-            BOOST_TEST(boo.if_string() == nullptr);
-            BOOST_TEST(nul.if_string() == nullptr);
+            BOOST_TEST(obj.is_string() == nullptr);
+            BOOST_TEST(arr.is_string() == nullptr);
+            BOOST_TEST(str.is_string() != nullptr);
+            BOOST_TEST(i64.is_string() == nullptr);
+            BOOST_TEST(u64.is_string() == nullptr);
+            BOOST_TEST(dub.is_string() == nullptr);
+            BOOST_TEST(boo.is_string() == nullptr);
+            BOOST_TEST(nul.is_string() == nullptr);
         }
 
-        // if_string() const
+        // is_string() const
         {
-            BOOST_TEST(cobj.if_string() == nullptr);
-            BOOST_TEST(carr.if_string() == nullptr);
-            BOOST_TEST(cstr.if_string() != nullptr);
-            BOOST_TEST(ci64.if_string() == nullptr);
-            BOOST_TEST(cu64.if_string() == nullptr);
-            BOOST_TEST(cdub.if_string() == nullptr);
-            BOOST_TEST(cboo.if_string() == nullptr);
-            BOOST_TEST(cnul.if_string() == nullptr);
+            BOOST_TEST(cobj.is_string() == nullptr);
+            BOOST_TEST(carr.is_string() == nullptr);
+            BOOST_TEST(cstr.is_string() != nullptr);
+            BOOST_TEST(ci64.is_string() == nullptr);
+            BOOST_TEST(cu64.is_string() == nullptr);
+            BOOST_TEST(cdub.is_string() == nullptr);
+            BOOST_TEST(cboo.is_string() == nullptr);
+            BOOST_TEST(cnul.is_string() == nullptr);
         }
 
-        // if_int64()
+        // is_int64()
         {
-            BOOST_TEST(obj.if_int64() == nullptr);
-            BOOST_TEST(arr.if_int64() == nullptr);
-            BOOST_TEST(str.if_int64() == nullptr);
-            BOOST_TEST(i64.if_int64() != nullptr);
-            BOOST_TEST(u64.if_int64() == nullptr);
-            BOOST_TEST(dub.if_int64() == nullptr);
-            BOOST_TEST(boo.if_int64() == nullptr);
-            BOOST_TEST(nul.if_int64() == nullptr);
+            BOOST_TEST(obj.is_int64() == nullptr);
+            BOOST_TEST(arr.is_int64() == nullptr);
+            BOOST_TEST(str.is_int64() == nullptr);
+            BOOST_TEST(i64.is_int64() != nullptr);
+            BOOST_TEST(u64.is_int64() == nullptr);
+            BOOST_TEST(dub.is_int64() == nullptr);
+            BOOST_TEST(boo.is_int64() == nullptr);
+            BOOST_TEST(nul.is_int64() == nullptr);
         }
 
-        // if_int64() const
+        // is_int64() const
         {
-            BOOST_TEST(cobj.if_int64() == nullptr);
-            BOOST_TEST(carr.if_int64() == nullptr);
-            BOOST_TEST(cstr.if_int64() == nullptr);
-            BOOST_TEST(ci64.if_int64() != nullptr);
-            BOOST_TEST(cu64.if_int64() == nullptr);
-            BOOST_TEST(cdub.if_int64() == nullptr);
-            BOOST_TEST(cboo.if_int64() == nullptr);
-            BOOST_TEST(cnul.if_int64() == nullptr);
+            BOOST_TEST(cobj.is_int64() == nullptr);
+            BOOST_TEST(carr.is_int64() == nullptr);
+            BOOST_TEST(cstr.is_int64() == nullptr);
+            BOOST_TEST(ci64.is_int64() != nullptr);
+            BOOST_TEST(cu64.is_int64() == nullptr);
+            BOOST_TEST(cdub.is_int64() == nullptr);
+            BOOST_TEST(cboo.is_int64() == nullptr);
+            BOOST_TEST(cnul.is_int64() == nullptr);
         }
 
-        // if_uint64()
+        // is_uint64()
         {
-            BOOST_TEST(obj.if_uint64() == nullptr);
-            BOOST_TEST(arr.if_uint64() == nullptr);
-            BOOST_TEST(str.if_uint64() == nullptr);
-            BOOST_TEST(i64.if_uint64() == nullptr);
-            BOOST_TEST(u64.if_uint64() != nullptr);
-            BOOST_TEST(dub.if_uint64() == nullptr);
-            BOOST_TEST(boo.if_uint64() == nullptr);
-            BOOST_TEST(nul.if_uint64() == nullptr);
+            BOOST_TEST(obj.is_uint64() == nullptr);
+            BOOST_TEST(arr.is_uint64() == nullptr);
+            BOOST_TEST(str.is_uint64() == nullptr);
+            BOOST_TEST(i64.is_uint64() == nullptr);
+            BOOST_TEST(u64.is_uint64() != nullptr);
+            BOOST_TEST(dub.is_uint64() == nullptr);
+            BOOST_TEST(boo.is_uint64() == nullptr);
+            BOOST_TEST(nul.is_uint64() == nullptr);
         }
 
-        // if_uint64() const
+        // is_uint64() const
         {
-            BOOST_TEST(cobj.if_uint64() == nullptr);
-            BOOST_TEST(carr.if_uint64() == nullptr);
-            BOOST_TEST(cstr.if_uint64() == nullptr);
-            BOOST_TEST(ci64.if_uint64() == nullptr);
-            BOOST_TEST(cu64.if_uint64() != nullptr);
-            BOOST_TEST(cdub.if_uint64() == nullptr);
-            BOOST_TEST(cboo.if_uint64() == nullptr);
-            BOOST_TEST(cnul.if_uint64() == nullptr);
+            BOOST_TEST(cobj.is_uint64() == nullptr);
+            BOOST_TEST(carr.is_uint64() == nullptr);
+            BOOST_TEST(cstr.is_uint64() == nullptr);
+            BOOST_TEST(ci64.is_uint64() == nullptr);
+            BOOST_TEST(cu64.is_uint64() != nullptr);
+            BOOST_TEST(cdub.is_uint64() == nullptr);
+            BOOST_TEST(cboo.is_uint64() == nullptr);
+            BOOST_TEST(cnul.is_uint64() == nullptr);
         }
 
-        // if_double()
+        // is_double()
         {
-            BOOST_TEST(obj.if_double() == nullptr);
-            BOOST_TEST(arr.if_double() == nullptr);
-            BOOST_TEST(str.if_double() == nullptr);
-            BOOST_TEST(i64.if_double() == nullptr);
-            BOOST_TEST(u64.if_double() == nullptr);
-            BOOST_TEST(dub.if_double() != nullptr);
-            BOOST_TEST(boo.if_double() == nullptr);
-            BOOST_TEST(nul.if_double() == nullptr);
+            BOOST_TEST(obj.is_double() == nullptr);
+            BOOST_TEST(arr.is_double() == nullptr);
+            BOOST_TEST(str.is_double() == nullptr);
+            BOOST_TEST(i64.is_double() == nullptr);
+            BOOST_TEST(u64.is_double() == nullptr);
+            BOOST_TEST(dub.is_double() != nullptr);
+            BOOST_TEST(boo.is_double() == nullptr);
+            BOOST_TEST(nul.is_double() == nullptr);
         }
 
-        // if_double() const
+        // is_double() const
         {
-            BOOST_TEST(cobj.if_double() == nullptr);
-            BOOST_TEST(carr.if_double() == nullptr);
-            BOOST_TEST(cstr.if_double() == nullptr);
-            BOOST_TEST(ci64.if_double() == nullptr);
-            BOOST_TEST(cu64.if_double() == nullptr);
-            BOOST_TEST(cdub.if_double() != nullptr);
-            BOOST_TEST(cboo.if_double() == nullptr);
-            BOOST_TEST(cnul.if_double() == nullptr);
+            BOOST_TEST(cobj.is_double() == nullptr);
+            BOOST_TEST(carr.is_double() == nullptr);
+            BOOST_TEST(cstr.is_double() == nullptr);
+            BOOST_TEST(ci64.is_double() == nullptr);
+            BOOST_TEST(cu64.is_double() == nullptr);
+            BOOST_TEST(cdub.is_double() != nullptr);
+            BOOST_TEST(cboo.is_double() == nullptr);
+            BOOST_TEST(cnul.is_double() == nullptr);
         }
 
-        // if_bool()
+        // is_bool()
         {
-            BOOST_TEST(obj.if_bool() == nullptr);
-            BOOST_TEST(arr.if_bool() == nullptr);
-            BOOST_TEST(str.if_bool() == nullptr);
-            BOOST_TEST(i64.if_bool() == nullptr);
-            BOOST_TEST(u64.if_bool() == nullptr);
-            BOOST_TEST(dub.if_bool() == nullptr);
-            BOOST_TEST(boo.if_bool() != nullptr);
-            BOOST_TEST(nul.if_bool() == nullptr);
+            BOOST_TEST(obj.is_bool() == nullptr);
+            BOOST_TEST(arr.is_bool() == nullptr);
+            BOOST_TEST(str.is_bool() == nullptr);
+            BOOST_TEST(i64.is_bool() == nullptr);
+            BOOST_TEST(u64.is_bool() == nullptr);
+            BOOST_TEST(dub.is_bool() == nullptr);
+            BOOST_TEST(boo.is_bool() != nullptr);
+            BOOST_TEST(nul.is_bool() == nullptr);
         }
 
-        // if_bool() const
+        // is_bool() const
         {
-            BOOST_TEST(cobj.if_bool() == nullptr);
-            BOOST_TEST(carr.if_bool() == nullptr);
-            BOOST_TEST(cstr.if_bool() == nullptr);
-            BOOST_TEST(ci64.if_bool() == nullptr);
-            BOOST_TEST(cu64.if_bool() == nullptr);
-            BOOST_TEST(cdub.if_bool() == nullptr);
-            BOOST_TEST(cboo.if_bool() != nullptr);
-            BOOST_TEST(cnul.if_bool() == nullptr);
+            BOOST_TEST(cobj.is_bool() == nullptr);
+            BOOST_TEST(carr.is_bool() == nullptr);
+            BOOST_TEST(cstr.is_bool() == nullptr);
+            BOOST_TEST(ci64.is_bool() == nullptr);
+            BOOST_TEST(cu64.is_bool() == nullptr);
+            BOOST_TEST(cdub.is_bool() == nullptr);
+            BOOST_TEST(cboo.is_bool() != nullptr);
+            BOOST_TEST(cnul.is_bool() == nullptr);
         }
     }
 
@@ -1660,7 +1660,7 @@ public:
         testExchange();
         testObservers();
         testGetStorage();
-        testIf();
+        testIs();
         testAs();
         testGet();
         testAt();

@@ -1007,18 +1007,18 @@ equal(
 
     case kind::int64:
         return
-            *lhs.if_int64() ==
-            *rhs.if_int64();
+            *lhs.is_int64() ==
+            *rhs.is_int64();
 
     case kind::uint64:
         return
-            *lhs.if_uint64() ==
-            *rhs.if_uint64();
+            *lhs.is_uint64() ==
+            *rhs.is_uint64();
 
     case kind::bool_:
         return
-            *lhs.if_bool() ==
-            *rhs.if_bool();
+            *lhs.is_bool() ==
+            *rhs.is_bool();
 
     case kind::null:
         return true;

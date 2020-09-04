@@ -31,6 +31,8 @@
 
 BOOST_JSON_NS_BEGIN
 
+//----------------------------------------------------------
+
 /** The type used to represent any JSON value
 
     @par Thread Safety
@@ -1370,109 +1372,486 @@ public:
                 nul_.k) & 0x3f);
     }
 
-    /** Returns true if this is an `object`.
+    /** Return an @ref array pointer if this is an array, else return `nullptr`
 
-        This function returns `true` when
-        @ref kind() equals `kind::object`.
+        If `this->kind() == kind::array`, returns a pointer
+        to the underlying array. Otherwise, returns `nullptr`.
+
+        @par Example
+
+        The return value can be used in a logical context:
+        @code
+        if( jv.is_array() )
+            return true;
+        @endcode
+
+        Or the return value can be used to access the array
+        later:
+        @code
+        if( auto p = jv.is_array() )
+            return *p;
+        @endcode
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
-    bool
-    is_object() const noexcept
-    {
-        return kind() == json::kind::object;
-    }
-
-    /** Returns true if this is an `array`.
-
-        This function returns `true` when
-        @ref kind() equals `kind::array`.
-
-        @par Complexity
-
-        Constant.
-    */
-    bool
+    array const*
     is_array() const noexcept
     {
-        return kind() == json::kind::array;
+        if(kind() == json::kind::array)
+            return &arr_;
+        return nullptr;
     }
 
-    /** Returns true if this is a `string`.
+    /** Return an @ref array pointer if this is an array, else return `nullptr`
 
-        This function returns `true` when
-        @ref kind() equals `kind::string`.
+        If `this->kind() == kind::array`, returns a pointer
+        to the underlying array. Otherwise, returns `nullptr`.
+
+        @par Example
+
+        The return value can be used in a logical context:
+        @code
+        if( jv.is_array() )
+            return true;
+        @endcode
+
+        Or the return value can be used to access the array
+        later:
+        @code
+        if( auto p = jv.is_array() )
+            return *p;
+        @endcode
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
-    bool
+    array*
+    is_array() noexcept
+    {
+        if(kind() == json::kind::array)
+            return &arr_;
+        return nullptr;
+    }
+
+    /** Return an @ref object pointer if this is an object, else return `nullptr`
+
+        If `this->kind() == kind::object`, returns a pointer
+        to the underlying object. Otherwise, returns `nullptr`.
+
+        @par Example
+
+        The return value can be used in a logical context:
+        @code
+        if( jv.is_object() )
+            return true;
+        @endcode
+
+        Or the return value can be used to access the array
+        later:
+        @code
+        if( auto p = jv.is_object() )
+            return *p;
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    object const*
+    is_object() const noexcept
+    {
+        if(kind() == json::kind::object)
+            return &obj_;
+        return nullptr;
+    }
+
+    /** Return an @ref object pointer if this is an object, else return `nullptr`
+
+        If `this->kind() == kind::object`, returns a pointer
+        to the underlying object. Otherwise, returns `nullptr`.
+
+        @par Example
+
+        The return value can be used in a logical context:
+        @code
+        if( jv.is_object() )
+            return true;
+        @endcode
+
+        Or the return value can be used to access the array
+        later:
+        @code
+        if( auto p = jv.is_object() )
+            return *p;
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    object*
+    is_object() noexcept
+    {
+        if(kind() == json::kind::object)
+            return &obj_;
+        return nullptr;
+    }
+
+    /** Return a @ref string pointer if this is a string, else return `nullptr`
+
+        If `this->kind() == kind::string`, returns a pointer
+        to the underlying object. Otherwise, returns `nullptr`.
+
+        @par Example
+
+        The return value can be used in a logical context:
+        @code
+        if( jv.is_string() )
+            return true;
+        @endcode
+
+        Or the return value can be used to access the array
+        later:
+        @code
+        if( auto p = jv.is_string() )
+            return *p;
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    string const*
     is_string() const noexcept
     {
-        return kind() == json::kind::string;
+        if(kind() == json::kind::string)
+            return &str_;
+        return nullptr;
     }
 
-    /** Returns true if this is a `std::int64_t`.
+    /** Return a @ref string pointer if this is a string, else return `nullptr`
 
-        This function returns `true` when
-        @ref kind() equals `kind::int64`.
+        If `this->kind() == kind::string`, returns a pointer
+        to the underlying object. Otherwise, returns `nullptr`.
+
+        @par Example
+
+        The return value can be used in a logical context:
+        @code
+        if( jv.is_string() )
+            return true;
+        @endcode
+
+        Or the return value can be used to access the array
+        later:
+        @code
+        if( auto p = jv.is_string() )
+            return *p;
+        @endcode
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
-    bool
+    string*
+    is_string() noexcept
+    {
+        if(kind() == json::kind::string)
+            return &str_;
+        return nullptr;
+    }
+
+    /** Return an `int64_t` pointer if this is a signed integer, else return `nullptr`
+
+        If `this->kind() == kind::int64`, returns a pointer
+        to the underlying integer. Otherwise, returns `nullptr`.
+
+        @par Example
+
+        The return value can be used in a logical context:
+        @code
+        if( jv.is_int64() )
+            return true;
+        @endcode
+
+        Or the return value can be used to access the integer
+        later:
+        @code
+        if( auto p = jv.is_int64() )
+            return *p;
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    std::int64_t const*
     is_int64() const noexcept
     {
-        return kind() == json::kind::int64;
+        if(kind() == json::kind::int64)
+            return &i64_.i;
+        return nullptr;
     }
 
-    /** Returns true if this is a `std::uint64_t`.
+    /** Return an `int64_t` pointer if this is a signed integer, else return `nullptr`
 
-        This function returns `true` when
-        @ref kind() equals `kind::uint64`.
+        If `this->kind() == kind::int64`, returns a pointer
+        to the underlying integer. Otherwise, returns `nullptr`.
+
+        @par Example
+
+        The return value can be used in a logical context:
+        @code
+        if( jv.is_int64() )
+            return true;
+        @endcode
+
+        Or the return value can be used to access the integer
+        later:
+        @code
+        if( auto p = jv.is_int64() )
+            return *p;
+        @endcode
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
-    bool
+    std::int64_t*
+    is_int64() noexcept
+    {
+        if(kind() == json::kind::int64)
+            return &i64_.i;
+        return nullptr;
+    }
+
+    /** Return a `uint64_t` pointer if this is a signed integer, else return `nullptr`
+
+        If `this->kind() == kind::uint64`, returns a pointer
+        to the underlying unsigned integer. Otherwise, returns
+        `nullptr`.
+
+        @par Example
+
+        The return value can be used in a logical context:
+        @code
+        if( jv.is_uint64() )
+            return true;
+        @endcode
+
+        Or the return value can be used to access the unsigned integer
+        later:
+        @code
+        if( auto p = jv.is_uint64() )
+            return *p;
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    std::uint64_t const*
     is_uint64() const noexcept
     {
-        return kind() == json::kind::uint64;
+        if(kind() == json::kind::uint64)
+            return &u64_.u;
+        return nullptr;
     }
 
-    /** Returns true if this is a `double`.
+    /** Return a `uint64_t` pointer if this is a signed integer, else return `nullptr`
 
-        This function returns `true` when
-        @ref kind() equals `kind::double_`.
+        If `this->kind() == kind::uint64`, returns a pointer
+        to the underlying unsigned integer. Otherwise, returns
+        `nullptr`.
+
+        @par Example
+
+        The return value can be used in a logical context:
+        @code
+        if( jv.is_uint64() )
+            return true;
+        @endcode
+
+        Or the return value can be used to access the unsigned integer
+        later:
+        @code
+        if( auto p = jv.is_uint64() )
+            return *p;
+        @endcode
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
-    bool
+    std::uint64_t*
+    is_uint64() noexcept
+    {
+        if(kind() == json::kind::uint64)
+            return &u64_.u;
+        return nullptr;
+    }
+
+    /** Return a `double` pointer if this is a double, else return `nullptr`
+
+        If `this->kind() == kind::double_`, returns a pointer
+        to the underlying double. Otherwise, returns
+        `nullptr`.
+
+        @par Example
+
+        The return value can be used in a logical context:
+        @code
+        if( jv.is_double() )
+            return true;
+        @endcode
+
+        Or the return value can be used to access the double
+        later:
+        @code
+        if( auto p = jv.is_double() )
+            return *p;
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    double const*
     is_double() const noexcept
     {
-        return kind() == json::kind::double_;
+        if(kind() == json::kind::double_)
+            return &dub_.d;
+        return nullptr;
     }
 
-    /** Returns true if this is a `bool`.
+    /** Return a `double` pointer if this is a double, else return `nullptr`
 
-        This function returns `true` when
-        @ref kind() equals `kind::bool_`.
+        If `this->kind() == kind::double_`, returns a pointer
+        to the underlying double. Otherwise, returns
+        `nullptr`.
+
+        @par Example
+
+        The return value can be used in a logical context:
+        @code
+        if( jv.is_double() )
+            return true;
+        @endcode
+
+        Or the return value can be used to access the double
+        later:
+        @code
+        if( auto p = jv.is_double() )
+            return *p;
+        @endcode
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
-    bool
+    double*
+    is_double() noexcept
+    {
+        if(kind() == json::kind::double_)
+            return &dub_.d;
+        return nullptr;
+    }
+
+    /** Return a `bool` pointer if this is a boolean, else return `nullptr`
+
+        If `this->kind() == kind::bool_`, returns a pointer
+        to the underlying boolean. Otherwise, returns
+        `nullptr`.
+
+        @par Example
+
+        The return value can be used in a logical context:
+        @code
+        if( jv.is_bool() )
+            return true;
+        @endcode
+
+        Or the return value can be used to access the boolean
+        later:
+        @code
+        if( auto p = jv.is_bool() )
+            return *p;
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    bool const*
     is_bool() const noexcept
     {
-        return kind() == json::kind::bool_;
+        if(kind() == json::kind::bool_)
+            return &bln_.b;
+        return nullptr;
+    }
+
+    /** Return a `bool` pointer if this is a boolean, else return `nullptr`
+
+        If `this->kind() == kind::bool_`, returns a pointer
+        to the underlying boolean. Otherwise, returns
+        `nullptr`.
+
+        @par Example
+
+        The return value can be used in a logical context:
+        @code
+        if( jv.is_bool() )
+            return true;
+        @endcode
+
+        Or the return value can be used to access the boolean
+        later:
+        @code
+        if( auto p = jv.is_bool() )
+            return *p;
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    bool*
+    is_bool() noexcept
+    {
+        if(kind() == json::kind::bool_)
+            return &bln_.b;
+        return nullptr;
     }
 
     /** Returns true if this is a null.
@@ -1481,8 +1860,10 @@ public:
         @ref kind() equals `kind::null`.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     bool
     is_null() const noexcept
@@ -1591,314 +1972,6 @@ public:
     BOOST_JSON_DECL
     allocator_type
     get_allocator() const noexcept;
-
-    /** Return a pointer to the underlying `object`, or `nullptr`.
-
-        If @ref is_object() is `true`, returns
-        a pointer to the underlying @ref object,
-        otherwise returns `nullptr`.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    object*
-    if_object() noexcept
-    {
-        if(is_object())
-            return &obj_;
-        return nullptr;
-    }
-
-    /** Return a pointer to the underlying `object`, or `nullptr`.
-
-        If @ref is_object() is `true`, returns
-        a pointer to the underlying @ref object,
-        otherwise returns `nullptr`.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    object const*
-    if_object() const noexcept
-    {
-        if(is_object())
-            return &obj_;
-        return nullptr;
-    }
-
-    /** Return a pointer to the underlying `array`, or `nullptr`.
-
-        If @ref is_array() is `true`, returns
-        a pointer to the underlying @ref array,
-        otherwise returns `nullptr`.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    array*
-    if_array() noexcept
-    {
-        if(is_array())
-            return &arr_;
-        return nullptr;
-    }
-
-    /** Return a pointer to the underlying `array`, or `nullptr`.
-
-        If @ref is_array() is `true`, returns
-        a pointer to the underlying @ref array,
-        otherwise returns `nullptr`.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    array const*
-    if_array() const noexcept
-    {
-        if(is_array())
-            return &arr_;
-        return nullptr;
-    }
-
-    /** Return a pointer to the underlying `string`, or `nullptr`.
-
-        If @ref is_string() is `true`, returns
-        a pointer to the underlying @ref string,
-        otherwise returns `nullptr`.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    string*
-    if_string() noexcept
-    {
-        if(is_string())
-            return &str_;
-        return nullptr;
-    }
-
-    /** Return a pointer to the underlying `string`, or `nullptr`.
-
-        If @ref is_string() is `true`, returns
-        a pointer to the underlying @ref string,
-        otherwise returns `nullptr`.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    string const*
-    if_string() const noexcept
-    {
-        if(is_string())
-            return &str_;
-        return nullptr;
-    }
-
-    /** Return a pointer to the underlying `std::int64`, or `nullptr`.
-
-        If @ref is_int64() is `true`, returns
-        a pointer to the underlying `std::int64`,
-        otherwise returns `nullptr`.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    std::int64_t*
-    if_int64() noexcept
-    {
-        if(is_int64())
-            return &i64_.i;
-        return nullptr;
-    }
-
-    /** Return a pointer to the underlying `std::int64`, or `nullptr`.
-
-        If @ref is_int64() is `true`, returns
-        a pointer to the underlying `std::int64`,
-        otherwise returns `nullptr`.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    std::int64_t const*
-    if_int64() const noexcept
-    {
-        if(is_int64())
-            return &i64_.i;
-        return nullptr;
-    }
-
-    /** Return a pointer to the underlying `std::uint64`, or `nullptr`.
-
-        If @ref is_uint64() is `true`, returns
-        a pointer to the underlying `std::uint64`,
-        otherwise returns `nullptr`.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    std::uint64_t*
-    if_uint64() noexcept
-    {
-        if(is_uint64())
-            return &u64_.u;
-        return nullptr;
-    }
-
-    /** Return a pointer to the underlying `std::uint64`, or `nullptr`.
-
-        If @ref is_uint64() is `true`, returns
-        a pointer to the underlying `std::uint64`,
-        otherwise returns `nullptr`.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    std::uint64_t const*
-    if_uint64() const noexcept
-    {
-        if(is_uint64())
-            return &u64_.u;
-        return nullptr;
-    }
-
-    /** Return a pointer to the underlying `double`, or `nullptr`.
-
-        If @ref is_double() is `true`, returns
-        a pointer to the underlying `double`,
-        otherwise returns `nullptr`.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    double*
-    if_double() noexcept
-    {
-        if(is_double())
-            return &dub_.d;
-        return nullptr;
-    }
-
-    /** Return a pointer to the underlying `double`, or `nullptr`.
-
-        If @ref is_double() is `true`, returns
-        a pointer to the underlying `double`,
-        otherwise returns `nullptr`.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    double const*
-    if_double() const noexcept
-    {
-        if(is_double())
-            return &dub_.d;
-        return nullptr;
-    }
-
-    /** Return a pointer to the underlying `bool`, or `nullptr`.
-
-        If @ref is_bool() is `true`, returns
-        a pointer to the underlying `bool`,
-        otherwise returns `nullptr`.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    bool*
-    if_bool() noexcept
-    {
-        if(is_bool())
-            return &bln_.b;
-        return nullptr;
-    }
-
-    /** Return a pointer to the underlying `bool`, or `nullptr`.
-
-        If @ref is_bool() is `true`, returns
-        a pointer to the underlying `bool`,
-        otherwise returns `nullptr`.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    bool const*
-    if_bool() const noexcept
-    {
-        if(is_bool())
-            return &bln_.b;
-        return nullptr;
-    }
 
     //------------------------------------------------------
 

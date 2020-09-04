@@ -9,11 +9,16 @@
 
 [section:values Using Values]
 
-JSON documents are stored in memory using instances of __value__: a
-__SemiRegular__ type which satisfies __DefaultConstructible__
-and __Copyable__. These instances are implemented as a
-[@https://en.wikipedia.org/wiki/Tagged_union ['tagged union]],
-and can dynamically store any of the six defined JSON value types:
+A container holding JSON is represented in memory as instances of
+__value__: a __SemiRegular__ type which satisfies
+__DefaultConstructible__,
+__CopyConstructible__, __CopyAssignable__,
+__MoveConstructible__, __MoveAssignable__,
+and many of the requirements of allocator-aware containers.
+It is implemented as a
+[@https://en.wikipedia.org/wiki/Tagged_union ['variant]]
+internally, and can dynamically store any of the six
+defined JSON value types:
 
 * [*object]: A collection of name/value pairs, also known as an
   [@https://en.wikipedia.org/wiki/Associative_array ['associative array]].
@@ -31,8 +36,8 @@ and can dynamically store any of the six defined JSON value types:
 
 [h4 Working With Values]
 
-A default constructed __value__ and a value constructed from `nullptr`
-produces a null JSON element:
+A __value__ constructed from `nullptr` or default constructed
+represents a null JSON element:
 
 [snippet_value_1]
 
@@ -46,23 +51,37 @@ may be used to check whether or not the value is a particular kind:
 
 [snippet_value_2]
 
+Functions like
+[link json.ref.boost__json__value.is_object `value::is_object`]
+actually return a pointer to the object if the value is an object,
+otherwise they return null. This allows them to be used both in
+boolean contexts as above, and in assignments or conditional
+expressions to capture the value of the pointer:
+
+[snippet_value_3]
+
 After a __value__ is constructed, its kind can change depending on what
 is assigned to it, or by calling functions such as
 [link json.ref.boost__json__value.emplace_array `value::emplace_array`] or
-[link json.ref.boost__json__value.emplace_bool `value::emplace_bool`]. In
-all cases, the previous contents of the __value__ are destroyed:
+[link json.ref.boost__json__value.emplace_bool `value::emplace_bool`]. If
+the assignment is successful, in other words it completes without any
+exceptions then the value is replaced. Otherwise, the value is
+unchanged. All operations which can fail to modify a value offer
+the strong exception safety guarantee.
 
-[snippet_value_3]
+[snippet_value_4]
+
+The following table shows all of the ways to determine and access
+the contents of a __value__:
 
 [table [link json.ref.boost__json__value `value`] Accessors
     [
         [Kind]
         [Representation]
         [Emplacement]
-        [Membership]
+        [Pointer Access]
         [Checked Access]
         [Unchecked Access]
-        [Pointer Access]
     ]
     [
         [[link json.ref.boost__json__kind `kind::object`]]
@@ -71,7 +90,6 @@ all cases, the previous contents of the __value__ are destroyed:
         [[link json.ref.boost__json__value.is_object `is_object`]]
         [[link json.ref.boost__json__value.as_object `as_object`]]
         [[link json.ref.boost__json__value.get_object `get_object`]]
-        [[link json.ref.boost__json__value.if_object `if_object`]]
     ]
     [
         [[link json.ref.boost__json__kind `kind::array`]]
@@ -80,7 +98,6 @@ all cases, the previous contents of the __value__ are destroyed:
         [[link json.ref.boost__json__value.is_array `is_array`]]
         [[link json.ref.boost__json__value.as_array `as_array`]]
         [[link json.ref.boost__json__value.get_array `get_array`]]
-        [[link json.ref.boost__json__value.if_array `if_array`]]
     ]
     [
         [[link json.ref.boost__json__kind `kind::string`]]
@@ -89,7 +106,6 @@ all cases, the previous contents of the __value__ are destroyed:
         [[link json.ref.boost__json__value.is_string `is_string`]]
         [[link json.ref.boost__json__value.as_string `as_string`]]
         [[link json.ref.boost__json__value.get_string `get_string`]]
-        [[link json.ref.boost__json__value.if_string `if_string`]]
     ]
     [
         [[link json.ref.boost__json__kind `kind::int64`]]
@@ -98,7 +114,6 @@ all cases, the previous contents of the __value__ are destroyed:
         [[link json.ref.boost__json__value.is_int64 `is_int64`]]
         [[link json.ref.boost__json__value.as_int64 `as_int64`]]
         [[link json.ref.boost__json__value.get_int64 `get_int64`]]
-        [[link json.ref.boost__json__value.if_int64 `if_int64`]]
     ]
     [
         [[link json.ref.boost__json__kind `kind::uint64`]]
@@ -107,7 +122,6 @@ all cases, the previous contents of the __value__ are destroyed:
         [[link json.ref.boost__json__value.is_uint64 `is_uint64`]]
         [[link json.ref.boost__json__value.as_uint64 `as_uint64`]]
         [[link json.ref.boost__json__value.get_uint64 `get_uint64`]]
-        [[link json.ref.boost__json__value.if_uint64 `if_uint64`]]
     ]
     [
         [[link json.ref.boost__json__kind `kind::double_`]]
@@ -116,7 +130,6 @@ all cases, the previous contents of the __value__ are destroyed:
         [[link json.ref.boost__json__value.is_double `is_double`]]
         [[link json.ref.boost__json__value.as_double `as_double`]]
         [[link json.ref.boost__json__value.get_double `get_double`]]
-        [[link json.ref.boost__json__value.if_double `if_double`]]
     ]
     [
         [[link json.ref.boost__json__kind `kind::bool_`]]
@@ -125,7 +138,6 @@ all cases, the previous contents of the __value__ are destroyed:
         [[link json.ref.boost__json__value.is_bool `is_bool`]]
         [[link json.ref.boost__json__value.as_bool `as_bool`]]
         [[link json.ref.boost__json__value.get_bool `get_bool`]]
-        [[link json.ref.boost__json__value.if_bool `if_bool`]]
     ]
     [
         [[link json.ref.boost__json__kind `kind::null`]]
@@ -134,17 +146,15 @@ all cases, the previous contents of the __value__ are destroyed:
         [[link json.ref.boost__json__value.is_null `is_null`]]
         [['---]]
         [['---]]
-        [['---]]
     ]
 ]
 
-The emplace members of __value__ return a suitably typed reference to the
-underlying container representing its kind. For example, the call to
+The emplace members of __value__ return a typed reference to the
+underlying representation. For example, the call to
 [link json.ref.boost__json__value.emplace_string `value::emplace_string`]
 in the previous example returns a
 [link json.ref.boost__json__string `string&`].
-The library provides a suitable type for each possible value of __kind__
-(except for nulls). This table shows the types corresponding to each kind:
+This table shows the underlying type for each kind:
 
 [table
 [ [Kind] [Type] [Description] ]
@@ -216,11 +226,11 @@ The library provides a suitable type for each possible value of __kind__
 ]
 ]
 
-We can use the emplace return value to perform an assignment or
-to capture a reference to the underlying element for later
+The return value from emplace can be used to perform assignment
+or to capture a reference to the underlying element for later
 inspection or modification:
 
-[snippet_value_4]
+[snippet_value_5]
 
 If the __kind__ of a __value__ is known, functions such as
 [link json.ref.boost__json__value.as_bool `value::as_bool`] or
@@ -228,7 +238,7 @@ If the __kind__ of a __value__ is known, functions such as
 may be used to obtain a reference to the underlying representation
 without changing the existing value:
 
-[snippet_value_5]
+[snippet_value_6]
 
 However, as shown above these functions throw an exception if the kind
 in the __value__ does not match the kind denoted by the function signature.
@@ -239,10 +249,10 @@ if the schema of the JSON is not valid.
 We can query a value for its underlying representation of a particular
 kind in a way that does not throw exceptions by requesting a pointer
 which may be null, instead of a reference. Here we use
-[link json.ref.boost__json__value.if_string.overload1 `value::if_string`]
+[link json.ref.boost__json__value.is_string.overload1 `value::is_string`]
 to conditionally perform an assignment without using exceptions:
 
-[snippet_value_6]
+[snippet_value_7]
 
 [tip
     If the value's kind is known statically, a reference to the underlying
@@ -251,7 +261,7 @@ to conditionally perform an assignment without using exceptions:
     when using, for example
     [link json.ref.boost__json__value.as_string `value::as_string`]:
 
-    [snippet_value_7]
+    [snippet_value_8]
 ]
 
 [endsect]
