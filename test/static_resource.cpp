@@ -41,20 +41,44 @@ public:
     void
     test()
     {
+        // static_resource(void*, size_t)
         {
-            char buf[1000];
+            unsigned char buf[1000];
             static_resource mr(
-                buf, sizeof(buf));
+                &buf[0], sizeof(buf));
             BOOST_TEST(to_string(parse(
                 "[1,2,3]", &mr)) == "[1,2,3]");
         }
+
+        // static_resource(unsigned char[N])
         {
-            char buf[10];
-            static_resource mr(
-                buf, sizeof(buf));
+            unsigned char buf[10];
+            static_resource mr(buf);
             BOOST_TEST_THROWS(
                 to_string(parse("[1,2,3]", &mr)),
                 std::bad_alloc);
+        }
+
+        // static_resource(unsigned char[N], size_t)
+        {
+            unsigned char buf[1000];
+            static_resource mr(
+                buf, 500);
+            BOOST_TEST(to_string(parse(
+                "[1,2,3]", &mr)) == "[1,2,3]");
+        }
+
+        // release()
+        {
+            unsigned char buf[10];
+            static_resource mr(
+                buf, sizeof(buf));
+            mr.allocate(10,1);
+            BOOST_TEST_THROWS(
+                mr.allocate(10,1),
+                std::bad_alloc);
+            mr.release();
+            mr.allocate(10,1);
         }
     }
 

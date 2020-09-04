@@ -28,7 +28,17 @@ static_resource(
     std::size_t size) noexcept
     : p_(buffer)
     , n_(size)
+    , size_(size)
 {
+}
+
+void
+static_resource::
+release() noexcept
+{
+    p_ = reinterpret_cast<
+        char*>(p_) - (size_ - n_);
+    n_ = size_;
 }
 
 void*

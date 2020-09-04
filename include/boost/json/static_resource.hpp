@@ -62,6 +62,7 @@ class static_resource final
 {   
     void* p_;
     std::size_t n_;
+    std::size_t size_;
 
 public:
     /// Copy constructor (deleted)
@@ -183,6 +184,22 @@ public:
     }
 #endif
 #endif
+
+    /** Release all allocated memory.
+
+        This function resets the buffer provided upon
+        construction so that all of the valid bytes are
+        available for subsequent allocation.
+
+        @par Complexity
+        Constant
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    BOOST_JSON_DECL
+    void
+    release() noexcept;
 
 protected:
 #ifndef BOOST_JSON_DOCS
