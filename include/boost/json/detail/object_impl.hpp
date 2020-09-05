@@ -31,7 +31,7 @@ class object_impl
     using index_t = std::uint32_t;
     static index_t const null_index =
         std::uint32_t(-1);
-    using bucket_size_array = const unsigned long long[67];
+    using bucket_size_array = const std::size_t [33];
 
     BOOST_JSON_DECL
     void
@@ -185,7 +185,10 @@ private:
     index_t*
     bucket_begin() const noexcept;
 
-    struct table
+    // VFALCO Don't we need to align this?
+    struct
+        //alignas(alignof(key_value_pair))
+        table
     {
         std::size_t size;
         std::size_t const capacity;

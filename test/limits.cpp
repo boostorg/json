@@ -89,6 +89,14 @@ public:
                 object({ {big, nullptr} }),
                 std::length_error);
         }
+
+        // reserve
+        {
+            object obj;
+            BOOST_TEST_THROWS(
+                obj.reserve(object::max_size() + 1),
+                std::length_error);
+        }
     }
 
     void

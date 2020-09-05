@@ -252,7 +252,7 @@ public:
 
         @code
         std::is_constructible_v<
-            value_type,
+            key_value_pair,
             std::iterator_traits<InputIt>::value_type>
         @endcode
 
