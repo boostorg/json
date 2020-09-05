@@ -212,6 +212,10 @@ reserve(std::size_t new_capacity)
 {
     if(new_capacity <= capacity())
         return;
+    if(new_capacity > max_size())
+        detail::throw_length_error(
+            "new_capacity > max_size()",
+            BOOST_CURRENT_LOCATION);
     rehash(new_capacity);
 }
 

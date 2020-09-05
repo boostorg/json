@@ -10,6 +10,8 @@
 #ifndef BOOST_JSON_DETAIL_IMPL_OBJECT_IMPL_IPP
 #define BOOST_JSON_DETAIL_IMPL_OBJECT_IMPL_IPP
 
+#include <boost/json/detail/except.hpp>
+
 BOOST_JSON_NS_BEGIN
 namespace detail {
 
@@ -35,10 +37,18 @@ object_impl(
     std::uintptr_t salt,
     storage_ptr const& sp)
 {
+    // max capacity based on address model
+    auto constexpr soft_limit =
+        (std::size_t(-1) - sizeof(table)) / (
+            sizeof(value_type) + sizeof(index_t));
+    if(capacity > soft_limit)
+        throw_length_error(
+            "capacity > soft_limit",
+            BOOST_CURRENT_LOCATION);
     const auto n = 
         sizeof(table) + 
         capacity *
-            (sizeof(value_type) + 
+            (sizeof(value_type) +
             sizeof(index_t));
     tab_ = ::new(sp->allocate(n)) 
         table{0, capacity, prime_index, salt};

@@ -21,7 +21,11 @@ array_impl(
     std::size_t capacity,
     storage_ptr const& sp)
 {
-    if(capacity > max_size())
+    auto constexpr soft_limit =
+        (std::size_t(-1) - sizeof(table)) /
+            sizeof(value);
+    if( capacity > soft_limit ||
+        capacity > max_size())
         detail::throw_length_error(
             "array too large",
             BOOST_CURRENT_LOCATION);
