@@ -161,6 +161,7 @@ usingValues()
             return p->size();
 
         //]
+        return std::size_t(0);
         };
         (void)f;
     }
