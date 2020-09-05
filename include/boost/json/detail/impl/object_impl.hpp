@@ -41,7 +41,7 @@ bucket_sizes() noexcept ->
 {
     // Taken from Boost.Intrusive and Boost.MultiIndex code,
     // thanks to Ion Gaztanaga and Joaquin M Lopez Munoz.
-    static constexpr unsigned long long list[67] = 
+    constexpr static std::size_t list[] = 
     {
         0ULL,
 
@@ -61,7 +61,9 @@ bucket_sizes() noexcept ->
         100663319ULL,             201326611ULL,
         402653189ULL,             805306457ULL,
         1610612741ULL,            3221225473ULL,
-
+#if BOOST_JSON_ARCH == 32
+        4294967295ULL
+#else
         6442450939ULL,            12884901893ULL,
         25769803751ULL,           51539607551ULL,
         103079215111ULL,          206158430209ULL,
@@ -79,6 +81,7 @@ bucket_sizes() noexcept ->
         1729382256910270481ULL,   3458764513820540933ULL,
         6917529027641081903ULL,   13835058055282163729ULL,
         18446744073709551557ULL,  18446744073709551615ULL
+#endif
     };
     return list;
 }
@@ -128,6 +131,7 @@ bucket_index(
         case 31: return hash % bucket_sizes()[31];
         case 32: return hash % bucket_sizes()[32];
         case 33: return hash % bucket_sizes()[33];
+#if BOOST_JSON_ARCH == 64
         case 34: return hash % bucket_sizes()[34];
         case 35: return hash % bucket_sizes()[35];
         case 36: return hash % bucket_sizes()[36];
@@ -161,6 +165,7 @@ bucket_index(
         case 64: return hash % bucket_sizes()[64];
         case 65: return hash % bucket_sizes()[65];
         case 66: return hash % bucket_sizes()[66];
+#endif
     }
 }
 

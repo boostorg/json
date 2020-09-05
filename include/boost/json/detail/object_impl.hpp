@@ -31,7 +31,12 @@ class object_impl
     using index_t = std::uint32_t;
     static index_t const null_index =
         std::uint32_t(-1);
-    using bucket_size_array = const unsigned long long[67];
+    using bucket_size_array =
+#if BOOST_JSON_ARCH == 32
+        const std::size_t[34];
+#else
+        const std::size_t[67];
+#endif
 
     BOOST_JSON_DECL
     void

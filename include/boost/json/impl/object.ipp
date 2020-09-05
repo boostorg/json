@@ -507,7 +507,7 @@ object::
 rehash(std::size_t new_capacity)
 {
     BOOST_ASSERT(new_capacity > capacity());
-    const unsigned long long* prime = 
+    const std::size_t* prime = 
         object_impl::bucket_sizes();
     while(new_capacity > *prime)
         ++prime;
