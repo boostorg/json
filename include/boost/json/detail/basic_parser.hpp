@@ -114,10 +114,10 @@ BOOST_JSON_NS_BEGIN
         /// Called when the end of the current object is encountered.
         ///
         /// @return `true` on success.
-        /// @param size The number of elements in the object.
+        /// @param n The number of elements in the object.
         /// @param ec Set to the error, if any occurred.
         ///
-        bool on_object_end( std::size_t size, error_code& ec );
+        bool on_object_end( std::size_t n, error_code& ec );
 
         /// Called when the beginning of an array is encountered.
         ///
@@ -129,10 +129,10 @@ BOOST_JSON_NS_BEGIN
         /// Called when the end of the current array is encountered.
         ///
         /// @return `true` on success.
-        /// @param size The number of elements in the array.
+        /// @param n The number of elements in the array.
         /// @param ec Set to the error, if any occurred.
         ///
-        bool on_array_end( error_code& ec );
+        bool on_array_end( std::size_t n, error_code& ec );
 
         /// Called with characters corresponding to part of the current key.
         ///
