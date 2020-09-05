@@ -243,9 +243,10 @@ public:
         The object is constructed with the elements
         in the range `{first, last)`, preserving order,
         using the specified memory resource.
-        If multiple elements in the range have keys that
-        compare equivalent, only the first occurring key
-        will be inserted.
+        If there are elements with duplicate keys; that
+        is, if multiple elements in the range have keys
+        that compare equal, only the last equivalent
+        element will be inserted.
 
         @par Constraints
 
@@ -436,9 +437,10 @@ public:
         The object is constructed with a copy of the values
         in the initializer-list in order, using the
         specified memory resource.
-        If multiple elements in the range have keys that
-        compare equivalent, only the first occurring key
-        will be inserted.
+        If there are elements with duplicate keys; that
+        is, if multiple elements in the range have keys
+        that compare equal, only the last equivalent
+        element will be inserted.
 
         @par Complexity
 
@@ -470,9 +472,10 @@ public:
         the object is constructed with a copy of the values
         in the initializer-list in order, using the
         specified memory resource.
-        If multiple elements in the range have keys that
-        compare equivalent, only the first occurring key
-        will be inserted.
+        If there are elements with duplicate keys; that
+        is, if multiple elements in the range have keys
+        that compare equal, only the last equivalent
+        element will be inserted.
 
         @par Complexity
 
@@ -967,9 +970,10 @@ public:
 
         The elements in the range `{first, last)` are
         appended to the end, in order.
-        If multiple elements in the range have keys that
-        compare equivalent, only the first occurring key
-        will be inserted.
+        If there are elements with duplicate keys; that
+        is, if multiple elements in the range have keys
+        that compare equal, only the last equivalent
+        element will be inserted.
 
         @par Precondition
 
@@ -1015,9 +1019,10 @@ public:
 
         The elements in the initializer list are
         inserted at the end, in order.
-        If multiple elements in the range have keys that
-        compare equivalent, only the first occurring key
-        will be inserted.
+        If there are elements with duplicate keys; that
+        is, if multiple elements in the range have keys
+        that compare equal, only the last equivalent
+        element will be inserted.
 
         @par Complexity
         

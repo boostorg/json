@@ -331,6 +331,13 @@ public:
 
         @endcode
 
+        @par Duplicate Keys
+
+        If there are object elements with duplicate keys;
+        that is, if multiple elements in an object have
+        keys that compare equal, only the last equivalent
+        element will be inserted.
+
         @param n The number of key/value pairs to pop from the
         top of the stack to form the array.
     */

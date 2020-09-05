@@ -76,6 +76,13 @@ BOOST_JSON_NS_BEGIN
     resource is optionally supplied in each call
     to @ref reset.
 
+    @par Duplicate Keys
+
+    If there are object elements with duplicate keys;
+    that is, if multiple elements in an object have
+    keys that compare equal, only the last equivalent
+    element will be inserted.
+
     @par Non-Standard JSON
 
     The @ref parse_options structure optionally
