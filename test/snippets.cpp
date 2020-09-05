@@ -162,6 +162,7 @@ usingValues()
 
         //]
         };
+        (void)f;
     }
     {
         //[snippet_value_4
