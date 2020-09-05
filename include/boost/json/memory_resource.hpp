@@ -17,7 +17,8 @@
 #else
 # if __has_include(<memory_resource>)
 #  include <memory_resource>
-#  if __cpp_lib_memory_resource < 201603L
+//#  if __cpp_lib_memory_resource < 201603L
+#  ifndef __cpp_lib_memory_resource
 #   error Support for std::memory_resource is required to use Boost.JSON standalone
 #  endif
 # else
