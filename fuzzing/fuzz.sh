@@ -73,7 +73,7 @@ fi
 # get it with curl -O --location -J https://bintray.com/pauldreik/boost.json/download_file?file_path=corpus%2Fcorpus.tar
 if [ -e corpus.tar ] ; then
   mkdir -p oldcorpus
-  tar xf corpus.tar -C oldcorpus
+  tar xf corpus.tar -C oldcorpus || echo "corpus.tar was broken! ignoring it"
   OLDCORPUS=oldcorpus/cmin/$variant
   # in case the old corpus did not have this variant (when adding/renaming a new fuzzer)
   mkdir -p $OLDCORPUS
