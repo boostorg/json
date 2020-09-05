@@ -36,23 +36,22 @@ Boost.JSON offers these features:
 
 * Fast compilation
 * Require only C++11
-* Safe, easy to use interface
-* Support stateful allocators
-* Fast parsing and serialization
-* Uniform interface on all C++ versions
+* Easy and safe API with allocator support
+* Fast incremental parser and serializer
 * Constant-time key lookup for objects
-* Strict incremental parser and serializer
-* Secure treatment of untrusted inputs
 * Options to allow non-standard JSON
+* Compile without Boost, define `BOOST_JSON_STANDALONE`
+* Optional header-only, without linking to a library
 
-Today, many C++ JSON libraries are available each with varying levels
-of quality, performance, and features. This library focuses on the most
-common and popular use-case for JSON: parsing and serializing to and
-from an in-memory container called __value__ which holds JSON types.
-This container is engineered from the ground up to be well suited as
-a vocabulary type appropriate for use in public interfaces. The parser
-and serializer are both highly performant, meeting or exceeding the
-benchmark performance of the best comparable libraries.
+This library focuses on a common and popular use-case for JSON:
+parsing and serializing to and from a container called __value__
+which holds JSON types. This container is designed to be well
+suited as a vocabulary type appropriate for use in public interfaces
+and libraries, allowing them to be composed. The parser and serializer
+are both highly performant, meeting or exceeding the benchmark performance
+of the best comparable libraries. Allocators are very well supported.
+Code which uses Boost.JSON types will be easy to read, flexible, and
+performant.
 
 [endsect]
 
@@ -60,37 +59,83 @@ benchmark performance of the best comparable libraries.
 
 [section Requirements]
 
-With Boost:
+The library relies heavily on these well known C++ types in its interfaces
+(henceforth termed ['standard types]):
 
-* [*C++11]: Robust support for most language features.
+* __string_view__
+* __memory_resource__, __polymorphic_allocator__
+* __error_category__, __error_code__, __error_condition__, __system_error__
 
-Without Boost:
+The requirements for Boost.JSON depend on whether the library is used
+as part of Boost, or in the standalone flavor (without Boost):
 
-* [*C++17]: Support for __string_view__ and __memory_resource__,
+[heading Using Boost]
 
-* definition of the macro `BOOST_JSON_STANDALONE`, and
+* Requires only C++11
+* The default configuration
+* Aliases for standard types use their Boost equivalents
+* Link to a built static or dynamic Boost library, or use header-only (below)
+* Supports -fno-exceptions, detected automatically
 
-* if `BOOST_JSON_HEADER_ONLY` is not defined, addition of the file
-`src/src.cpp` to the target application.
+[heading Without Boost]
+
+* Requires C++17
+* Aliases for standard types use their `std` equivalents
+* Obtained when defining the macro `BOOST_JSON_STANDALONE`
+* Link to a built static or dynamic standalone library, or use header-only (below)
+* Supports -fno-exceptions, define `BOOST_NO_EXCEPTIONS` manually
+
+[heading Header-Only]
+
+To use Boost.JSON header-only; that is, to eliminate the requirement
+to modify build scripts to link to a static or dynamic library, simply
+place the following line in any new or existing translation unit in your
+project.
+```
+#include <boost/json/src.hpp>
+```
+
+[note
+    The library uses separate inline namespacing for the standalone
+    flavor to allow libraries which use different flavors to compose
+    without causing link errors. Linking to both flavors of Boost.JSON
+    is possible, but not recommended.
+]
 
 [endsect]
 
 [/-----------------------------------------------------------------------------]
 
-[section Configuration]
+[section Supported Compilers]
 
 Boost.JSON has been tested with the following compilers:
-msvc-14.1+, gcc 4.8.4+, and clang 3.6+.
 
-Typically a program will need to link statically or dynamically with the
-Boost.JSON library, which is either delivered with Boost or built separately.
-Please visit the [@boost:/more/getting_started.html Boost documentation]
-for instructions on how to build and link with Boost libraries for your
-particular environment.
+* clang-3.8
+* clang-4.0
+* clang-5.0
+* clang-6.0
+* clang-6
+* clang-7
+* clang-8
+* clang-9
+* gcc-4.8
+* gcc-4.9
+* gcc-5
+* gcc-6
+* gcc-7
+* gcc-8
+* gcc-9
+* msvc-14.1+
 
-Alternatively, Boost.JSON may be used in a header-only configuration by
-defining the macro `BOOST_JSON_HEADER_ONLY` and simply including the
-desired header files. 
+[heading Quality Assurance]
+
+The development infrastructure for the library includes
+these per-commit analyses:
+
+* coverage reports
+* benchmark performance comparisons
+* compilation and tests on Travis, Azure Pipelines, Appveyor
+* fuzzing using clang-llvm and machine learning
 
 [endsect]
 

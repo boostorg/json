@@ -49,6 +49,9 @@
 
 [def __array__                  [link json.ref.boost__json__array `array`]]
 [def __basic_parser__           [link json.ref.boost__json__basic_parser `basic_parser`]]
+[def __error_category__         [link json.ref.boost__json__error_category `error_category`]]
+[def __error_code__             [link json.ref.boost__json__error_code `error_code`]]
+[def __error_condition__        [link json.ref.boost__json__error_condition `error_condition`]]
 [def __get__                    [link json.ref.boost__json__get `get`]]
 [def __has_value_from__         [link json.ref.boost__json__has_value_from `has_value_from`]]
 [def __has_value_to__           [link json.ref.boost__json__has_value_to `has_value_to`]]
@@ -69,6 +72,7 @@
 [def __storage_ptr__            [link json.ref.boost__json__storage_ptr `storage_ptr`]]
 [def __string__                 [link json.ref.boost__json__string `string`]]
 [def __string_view__            [link json.ref.boost__json__string_view `string_view`]]
+[def __system_error__           [link json.ref.boost__json__system_error `system_error`]]
 [def __to_string__              [link json.ref.boost__json__to_string `to_string`]]
 [def __value__                  [link json.ref.boost__json__value `value`]]
 [def __value_from__             [link json.ref.boost__json__value_from `value_from`]]
@@ -117,8 +121,7 @@ in memory.
     [[
         [link json.usage Usage]
     ][
-        How to use the library to perform common tasks with JSON,
-        including some examples.
+        How to use the library to perform common tasks with JSON.
     ]]
     [[
         [link json.examples Examples]
@@ -136,7 +139,7 @@ in memory.
         [link json.benchmarks Benchmarks]
     ][
         Shows the performance of this library for typical workloads
-        against the performance of other popular existing libraries.
+        against the performance of other comparable libraries.
     ]]
     [[
         [link json.ref Reference]

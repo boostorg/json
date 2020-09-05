@@ -28,31 +28,70 @@ others. These properties make JSON an ideal data-interchange language.
 
 ## Motivation
 
-A survey of existing JSON libraries shows impressive diversity and features.
-However, no library is known to meet all of the design goals mentioned here.
-In particular, we know of no library that supports incremental parsing and
-serialization, and also supports custom allocators robustly.
+Boost.JSON offers these features:
 
-## Design Goals
+* Fast compilation
+* Require only C++11
+* Easy and safe API with allocator support
+* Fast incremental parser and serializer
+* Constant-time key lookup for objects
+* Options to allow non-standard JSON
+* Compile without Boost, define `BOOST_JSON_STANDALONE`
+* Optional header-only, without linking to a library
 
-There are an overwhelming number of JSON libraries. A common theme 
-throughout is an emphasis on parsing performance or feature richness.
-This library uses a different approach: it provides a carefully
-designed JSON container, `value`, engineered from the ground up to be
-ideally suited as a vocabulary type. In particular it provides an interface
-which is stable, lightweight, and appropriate for use as parameter or
-return types in public interfaces.
+This library focuses on a common and popular use-case for JSON:
+parsing and serializing to and from a container called `value`
+which holds JSON types. This container is designed to be well
+suited as a vocabulary type appropriate for use in public interfaces
+and libraries, allowing them to be composed. The parser and serializer
+are both highly performant, meeting or exceeding the benchmark performance
+of the best comparable libraries. Allocators are very well supported.
+Code which uses Boost.JSON types will be easy to read, flexible, and
+performant.
 
-The design of the library also achieves these goals:
+## Requirements
 
-* Requires only C++11.
-* Support stateful allocators.
-* Top performance of general libraries.
-* Uniform interface on all C++ versions.
-* Key lookup in objects has constant average complexity.
-* Strict parser and serializer which work incrementally.
-* Security-aware treatment of untrusted inputs.
-* Fast compilation performance.
+The library relies heavily on these well known C++ types in its interfaces
+(henceforth termed _standard types_):
+
+* `string_view`
+* `memory_resource`, `polymorphic_allocator`
+* `error_category`, `error_code`, `error_condition`, `system_error`
+
+The requirements for Boost.JSON depend on whether the library is used
+as part of Boost, or in the standalone flavor (without Boost):
+
+### Using Boost
+
+* Requires only C++11
+* The default configuration
+* Aliases for standard types use their Boost equivalents
+* Link to a built static or dynamic Boost library, or use header-only (below)
+* Supports -fno-exceptions, detected automatically
+
+### Without Boost
+
+* Requires C++17
+* Aliases for standard types use their `std` equivalents
+* Obtained when defining the macro `BOOST_JSON_STANDALONE`
+* Link to a built static or dynamic standalone library, or use header-only (below)
+* Supports -fno-exceptions, define `BOOST_NO_EXCEPTIONS` manually
+
+### Header-Only
+
+To use Boost.JSON header-only; that is, to eliminate the requirement
+to modify build scripts to link to a static or dynamic library, simply
+place the following line in any new or existing translation unit in your
+project.
+```
+#include <boost/json/src.hpp>
+```
+
+### Note
+The library uses separate inline namespacing for the standalone
+flavor to allow libraries which use different flavors to compose
+without causing link errors. Linking to both flavors of Boost.JSON
+is possible, but not recommended.
 
 ## CMake
 
