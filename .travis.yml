@@ -196,6 +196,19 @@ jobs:
 #        - cmake --build .
 #        - cmake --build . --target check
 
+    # standalone (ARM)
+    - env:
+        - COMMENT=standalone
+        - STANDALONE=1
+        - B2_TOOLSET=gcc-9
+        - B2_CXXSTD=17,2a
+        # VFALCO The tests unfortunately do not support -fno-exceptions yet
+        #- B2_FLAGS="exception-handling=off"
+        #- B2_DEFINES="define=BOOST_NO_EXCEPTIONS=1 define=BOOST_JSON_BIG_ENDIAN=1 define=BOOST_JSON_STANDALONE=1"
+        - B2_DEFINES="define=BOOST_JSON_BIG_ENDIAN=1"
+      arch: arm64
+      addons: *gcc-9
+
     # standalone
     - env:
         - COMMENT=standalone
@@ -210,7 +223,7 @@ jobs:
         - cmake --build .
         - ctest -V .
 
-    # standalone
+    # standalone (cmake)
     - env:
         - COMMENT=standalone
         - CXX=clang++-9
