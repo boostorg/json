@@ -391,8 +391,4 @@ public:
 
 BOOST_JSON_NS_END
 
-#ifdef BOOST_JSON_HEADER_ONLY
-#include <boost/json/impl/parser.ipp>
-#endif
-
 #endif

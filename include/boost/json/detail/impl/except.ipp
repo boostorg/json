@@ -120,8 +120,4 @@ throw_system_error(
 } // detail
 BOOST_JSON_NS_END
 
-#ifdef BOOST_JSON_HEADER_ONLY
-#include <boost/json/detail/impl/except.ipp>
-#endif
-
 #endif

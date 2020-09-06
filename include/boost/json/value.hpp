@@ -3211,19 +3211,8 @@ struct tuple_element<1, ::boost::json::key_value_pair const>
 #include <boost/json/impl/array.hpp>
 #include <boost/json/impl/object.hpp>
 
-#ifdef BOOST_JSON_HEADER_ONLY
-#include <boost/json/detail/impl/array_impl.ipp>
-#include <boost/json/detail/impl/object_impl.ipp>
-#include <boost/json/impl/array.ipp>
-#include <boost/json/impl/object.ipp>
-#endif
-
 // These must come after array and object
 #include <boost/json/impl/value.hpp>
 #include <boost/json/impl/value_ref.hpp>
-#ifdef BOOST_JSON_HEADER_ONLY
-#include <boost/json/impl/value.ipp>
-#include <boost/json/impl/value_ref.ipp>
-#endif
 
 #endif

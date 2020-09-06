@@ -2943,8 +2943,5 @@ private:
 #endif
 
 #include <boost/json/impl/string.hpp>
-#ifdef BOOST_JSON_HEADER_ONLY
-#include <boost/json/impl/string.ipp>
-#endif
 
 #endif

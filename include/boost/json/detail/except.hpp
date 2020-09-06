@@ -40,8 +40,4 @@ BOOST_JSON_DECL void BOOST_NORETURN throw_system_error(error_code const& ec, sou
 } // detail
 BOOST_JSON_NS_END
 
-#ifdef BOOST_JSON_HEADER_ONLY
-#include <boost/json/detail/impl/except.ipp>
-#endif
-
 #endif

@@ -39,8 +39,4 @@ format_double(
 } // detail
 BOOST_JSON_NS_END
 
-#ifdef BOOST_JSON_HEADER_ONLY
-#include <boost/json/detail/impl/format.ipp>
-#endif
-
 #endif

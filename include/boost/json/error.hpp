@@ -286,8 +286,5 @@ enum class condition
 BOOST_JSON_NS_END
 
 #include <boost/json/impl/error.hpp>
-#ifdef BOOST_JSON_HEADER_ONLY
-#include <boost/json/impl/error.ipp>
-#endif
 
 #endif

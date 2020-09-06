@@ -336,8 +336,4 @@ public:
 } // detail
 BOOST_JSON_NS_END
 
-#ifdef BOOST_JSON_HEADER_ONLY
-#include <boost/json/detail/impl/string_impl.ipp>
-#endif
-
 #endif

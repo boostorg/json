@@ -7,6 +7,4 @@
 // Official repository: https://github.com/cppalliance/json
 //
 
-#ifndef BOOST_JSON_HEADER_ONLY
 #include <boost/json/src.hpp>
-#endif
