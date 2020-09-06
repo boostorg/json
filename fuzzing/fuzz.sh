@@ -48,9 +48,9 @@ if [ ! -e $fuzzer -o $srcfile -nt $fuzzer ] ; then
 	-fsanitize=fuzzer,address,undefined \
 	-fno-sanitize-recover=undefined \
 	-DBOOST_JSON_STANDALONE \
-	-DBOOST_JSON_HEADER_ONLY \
 	-I../include \
 	-o $fuzzer \
+    ../src/src.cpp \
 	$srcfile
 fi
 
