@@ -19,11 +19,10 @@
 #endif
 #include <stdexcept>
 
-BOOST_JSON_NS_BEGIN
+#if defined(BOOST_JSON_STANDALONE)
+namespace boost {
 
-#ifdef BOOST_JSON_STANDALONE
-
-#ifdef BOOST_NO_EXCEPTIONS
+#if defined(BOOST_NO_EXCEPTIONS)
 // When exceptions are disabled
 // in standalone, you must provide
 // this function.
@@ -41,7 +40,11 @@ throw_exception(E e)
 }
 
 #endif
+
+} // boost
 #endif
+
+BOOST_JSON_NS_BEGIN
 
 namespace detail {
 
