@@ -19,6 +19,11 @@
 
 BOOST_JSON_NS_BEGIN
 
+struct alignas(alignof(detail::max_align_t))
+    monotonic_resource::block : block_base
+{
+};
+
 constexpr
 std::size_t
 monotonic_resource::
@@ -97,7 +102,7 @@ release() noexcept
         p = next;
     }
     buffer_.p = reinterpret_cast<
-        char*>(buffer_.p) - (
+        unsigned char*>(buffer_.p) - (
             buffer_.size - buffer_.n);
     buffer_.n = buffer_.size;
 }
@@ -113,7 +118,7 @@ do_allocate(
     if(p)
     {
         head_->p = reinterpret_cast<
-            char*>(p) + n;
+            unsigned char*>(p) + n;
         head_->n -= n;
         return p;
     }
@@ -121,7 +126,8 @@ do_allocate(
     if(next_size_ < n)
         next_size_ = round_pow2(n);
     auto b = ::new(::operator new(
-        sizeof(block) + next_size_)) block;
+        sizeof(block) + next_size_)
+            ) block;
     b->p = b + 1;
     b->n = next_size_;
     b->size = next_size_;
@@ -133,7 +139,7 @@ do_allocate(
         align, n, head_->p, head_->n);
     BOOST_ASSERT(p);
     head_->p = reinterpret_cast<
-        char*>(p) + n;
+        unsigned char*>(p) + n;
     head_->n -= n;
     return p;
 }

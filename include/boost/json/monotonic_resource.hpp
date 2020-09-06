@@ -79,21 +79,17 @@ class BOOST_JSON_CLASS_DECL
     monotonic_resource final
     : public memory_resource
 {   
-#ifdef BOOST_JSON_DOCS
-    // VFALCO doc toolchain screws up on alignas
-    struct block
-#else
-    struct alignas(alignof(detail::max_align_t)) block
-#endif
+    struct block;
+    struct block_base
     {
         void* p;
         std::size_t n;
         std::size_t size;
-        block* next;
+        block_base* next;
     };
 
-    block buffer_;
-    block* head_ = &buffer_;
+    block_base buffer_;
+    block_base* head_ = &buffer_;
     std::size_t next_size_ = 1024;
 
     static constexpr std::size_t min_size_ = 1024;
