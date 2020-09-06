@@ -174,9 +174,9 @@
 #ifndef BOOST_JSON_CLASS_DECL 
 #define BOOST_JSON_CLASS_DECL 
 #endif
-#ifndef BOOST_JSON_INLINE_DECL
-#define BOOST_JSON_INLINE_DECL
-#endif
+//#ifndef BOOST_JSON_INLINE_DECL
+//#define BOOST_JSON_INLINE_DECL
+//#endif
 
 #ifndef BOOST_JSON_LIKELY
 # if defined(__GNUC__) || defined(__clang__)

@@ -75,7 +75,8 @@ BOOST_JSON_NS_BEGIN
     @see
         https://en.wikipedia.org/wiki/Region-based_memory_management
 */
-class monotonic_resource final
+class BOOST_JSON_CLASS_DECL
+    monotonic_resource final
     : public memory_resource
 {   
 #ifdef BOOST_JSON_DOCS
@@ -126,7 +127,6 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    BOOST_JSON_DECL
     ~monotonic_resource() noexcept;
 
     /** Constructor
@@ -149,7 +149,6 @@ public:
         than the implementation-defined lower limit, then
         the lower limit is used instead.
     */
-    BOOST_JSON_DECL
     explicit
     monotonic_resource(
         std::size_t initial_size = 1024) noexcept;
@@ -179,7 +178,6 @@ public:
         @param size The number of valid bytes
         pointed to by `buffer`.
     */
-    BOOST_JSON_DECL
     monotonic_resource(
         void* buffer,
         std::size_t size) noexcept;
@@ -196,7 +194,7 @@ public:
 
         @par Effects
         @code
-        monotonic_resource( buffer, N );
+        monotonic_resource( &buffer[0], N );
         @endcode
 
         @par Complexity
@@ -210,27 +208,49 @@ public:
         is responsible for ensuring that the lifetime of
         the array extends until the resource is destroyed.
     */
-    /**@{*/
     template<std::size_t N>
     explicit
     monotonic_resource(
         unsigned char(&buffer)[N]) noexcept
-        : monotonic_resource(
-            buffer, N)
+        : monotonic_resource(&buffer[0], N)
     {
     }
 
 #if defined(__cpp_lib_byte) || defined(BOOST_JSON_DOCS)
+    /** Constructor
+
+        This constructs the resource and indicates that
+        subsequent allocations should use the specified
+        caller-owned array. When this buffer is exhausted,
+        dynamic allocations from the heap are made.
+    \n
+        This constructor is guaranteed not to perform
+        any dynamic allocations.
+
+        @par Effects
+        @code
+        monotonic_resource( &buffer[0], N );
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param buffer An array to use as the initial
+        buffer. Ownership is not transferred; the caller
+        is responsible for ensuring that the lifetime of
+        the array extends until the resource is destroyed.
+    */
     template<std::size_t N>
     explicit
     monotonic_resource(
         std::byte(&buffer)[N]) noexcept
-        : monotonic_resource(
-            buffer, N)
+        : monotonic_resource(&buffer[0], N)
     {
     }
 #endif
-    /**@}*/
 
 #ifndef BOOST_JSON_DOCS
     // Safety net for accidental buffer overflows
@@ -275,26 +295,22 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    BOOST_JSON_DECL
     void
     release() noexcept;
 
 protected:
 #ifndef BOOST_JSON_DOCS
-    BOOST_JSON_DECL
     void*
     do_allocate(
         std::size_t n,
         std::size_t align) override;
 
-    BOOST_JSON_DECL
     void
     do_deallocate(
         void* p,
         std::size_t n,
         std::size_t align) override;
 
-    BOOST_JSON_DECL
     bool
     do_is_equal(
         memory_resource const& mr) const noexcept override;

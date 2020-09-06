@@ -57,7 +57,8 @@ BOOST_JSON_NS_BEGIN
     @see
         https://en.wikipedia.org/wiki/Region-based_memory_management
 */
-class static_resource final
+class BOOST_JSON_CLASS_DECL
+    static_resource final
     : public memory_resource
 {   
     void* p_;
@@ -74,7 +75,6 @@ public:
         static_resource const&) = delete;
 
     /// Destructor
-    BOOST_JSON_DECL
     ~static_resource() noexcept;
 
     /** Constructor
@@ -96,7 +96,6 @@ public:
         @param size The number of valid bytes pointed
         to by `buffer`.
     */
-    BOOST_JSON_DECL
     static_resource(
         void* buffer,
         std::size_t size) noexcept;
@@ -107,6 +106,11 @@ public:
         array for subsequent calls to allocate. When the
         array is exhausted, calls to allocate will fail
         with the exception `std::bad_alloc` thrown.
+
+        @par Effects
+        @code
+        static_resource( &buffer[0], N );
+        @endcode
 
         @par Complexity
         Constant.
@@ -123,8 +127,7 @@ public:
     explicit
     static_resource(
         unsigned char(&buffer)[N]) noexcept
-        : static_resource(
-            buffer, N)
+        : static_resource(&buffer[0], N)
     {
     }
 
@@ -135,6 +138,11 @@ public:
         array for subsequent calls to allocate. When the
         array is exhausted, calls to allocate will fail
         with the exception `std::bad_alloc` thrown.
+
+        @par Effects
+        @code
+        static_resource( &buffer[0], N );
+        @endcode
 
         @par Complexity
         Constant.
@@ -151,8 +159,7 @@ public:
     explicit
     static_resource(
         std::byte(&buffer)[N]) noexcept
-        : static_resource(
-            buffer, N)
+        : static_resource(&buffer[0], N)
     {
     }
 #endif
@@ -197,26 +204,22 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    BOOST_JSON_DECL
     void
     release() noexcept;
 
 protected:
 #ifndef BOOST_JSON_DOCS
-    BOOST_JSON_DECL
     void*
     do_allocate(
         std::size_t n,
         std::size_t align) override;
 
-    BOOST_JSON_DECL
     void
     do_deallocate(
         void* p,
         std::size_t n,
         std::size_t align) override;
 
-    BOOST_JSON_DECL
     bool
     do_is_equal(
         memory_resource const& mr
