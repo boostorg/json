@@ -22,18 +22,25 @@
 BOOST_JSON_NS_BEGIN
 
 #ifdef BOOST_JSON_STANDALONE
+
+#ifdef BOOST_NO_EXCEPTIONS
+// When exceptions are disabled
+// in standalone, you must provide
+// this function.
+BOOST_NORETURN
+void
+throw_exception(std::exception const&);
+
+#else
 template<class E>
 void
 BOOST_NORETURN
 throw_exception(E e)
 {
-#ifndef BOOST_NO_EXCEPTIONS
     throw e;
-#else
-    (void)e;
-    std::terminate();
-#endif
 }
+
+#endif
 #endif
 
 namespace detail {

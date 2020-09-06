@@ -83,7 +83,7 @@ as part of Boost, or in the standalone flavor (without Boost):
 * Aliases for standard types use their `std` equivalents
 * Obtained when defining the macro `BOOST_JSON_STANDALONE`
 * Link to a built static or dynamic standalone library, or use header-only (below)
-* Supports -fno-exceptions, define `BOOST_NO_EXCEPTIONS` manually
+* Supports -fno-exceptions: define `BOOST_NO_EXCEPTIONS` and `boost::throw_exception` manually
 
 [heading Header-Only]
 
