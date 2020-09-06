@@ -11,30 +11,43 @@
 #define BOOST_JSON_DETAIL_IMPL_EXCEPT_IPP
 
 #include <boost/json/detail/except.hpp>
+#ifndef BOOST_JSON_STANDALONE
+# include <boost/version.hpp>
+# include <boost/throw_exception.hpp>
+#elif defined(BOOST_JSON_STANDALONE) && defined(BOOST_NO_EXCEPTIONS)
+# include <exception>
+#endif
 #include <stdexcept>
 
+BOOST_JSON_NS_BEGIN
+
 #ifdef BOOST_JSON_STANDALONE
-namespace boost {
 template<class E>
 void
 BOOST_NORETURN
-throw_exception(E e,
-    json::detail::source_location const&)
+throw_exception(E e)
 {
+#ifndef BOOST_NO_EXCEPTIONS
     throw e;
+#else
+    (void)e;
+    std::terminate();
+#endif
 }
-} // boost
 #endif
 
-BOOST_JSON_NS_BEGIN
 namespace detail {
 
 void
 throw_bad_alloc(
     source_location const& loc)
 {
-    boost::throw_exception(
-        std::bad_alloc(), loc);
+    throw_exception(
+        std::bad_alloc()
+#if BOOST_VERSION >= 107300
+        , loc
+#endif
+        );
 }
 
 void
@@ -42,8 +55,12 @@ throw_length_error(
     char const* what,
     source_location const& loc)
 {
-    boost::throw_exception(
-        std::length_error(what), loc);
+    throw_exception(
+        std::length_error(what)
+#if BOOST_VERSION >= 107300
+        , loc
+#endif
+        );
 }
 
 void
@@ -51,17 +68,25 @@ throw_invalid_argument(
     char const* what,
     source_location const& loc)
 {
-    boost::throw_exception(
-        std::invalid_argument(what), loc);
+    throw_exception(
+        std::invalid_argument(what)
+#if BOOST_VERSION >= 107300
+        , loc
+#endif
+        );
 }
 
 void
 throw_out_of_range(
     source_location const& loc)
 {
-    boost::throw_exception(
+    throw_exception(
         std::out_of_range(
-            "out of range"), loc);
+            "out of range")
+#if BOOST_VERSION >= 107300
+        , loc
+#endif
+        );
 }
 
 void
@@ -69,8 +94,12 @@ throw_system_error(
     error_code const& ec,
     source_location const& loc)
 {
-    boost::throw_exception(
-        system_error(ec), loc);
+    throw_exception(
+        system_error(ec)
+#if BOOST_VERSION >= 107300
+        , loc
+#endif
+        );
 }
 
 } // detail
