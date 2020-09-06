@@ -3,13 +3,13 @@
 
 Branch          | [`master`](https://github.com/CPPAlliance/json/tree/master) | [`develop`](https://github.com/CPPAlliance/json/tree/develop) |
 --------------- | ----------------------------------------------------------- | ------------------------------------------------------------- |
-Travis          | [![Build Status](https://travis-ci.org/CPPAlliance/json.svg?branch=master)](https://travis-ci.org/CPPAlliance/json) | [![Build Status](https://travis-ci.org/CPPAlliance/json.svg?branch=develop)](https://travis-ci.org/CPPAlliance/json)
-Appveyor        | [![Build status](https://ci.appveyor.com/api/projects/status/8csswcnmfm798203?branch=master&svg=true)](https://ci.appveyor.com/project/vinniefalco/cppalliance-json/branch/master) | [![Build status](https://ci.appveyor.com/api/projects/status/8csswcnmfm798203?branch=develop&svg=true)](https://ci.appveyor.com/project/vinniefalco/cppalliance-json/branch/develop)
 Azure Pipelines | [![Build Status](https://img.shields.io/azure-devops/build/vinniefalco/2571d415-8cc8-4120-a762-c03a8eda0659/5/master)](https://vinniefalco.visualstudio.com/json/_build/latest?definitionId=5&branchName=master) | [![Build Status](https://img.shields.io/azure-devops/build/vinniefalco/2571d415-8cc8-4120-a762-c03a8eda0659/5/develop)](https://vinniefalco.visualstudio.com/json/_build/latest?definitionId=5&branchName=develop)
-codecov.io      | [![codecov](https://codecov.io/gh/CPPAlliance/json/branch/master/graph/badge.svg)](https://codecov.io/gh/CPPAlliance/json/branch/master) | [![codecov](https://codecov.io/gh/CPPAlliance/json/branch/develop/graph/badge.svg)](https://codecov.io/gh/CPPAlliance/json/branch/develop)
 Docs            | [![Documentation](https://img.shields.io/badge/docs-master-brightgreen.svg)](http://master.json.cpp.al/) | [![Documentation](https://img.shields.io/badge/docs-develop-brightgreen.svg)](http://develop.json.cpp.al/)
+Travis          | [![Build Status](https://travis-ci.org/CPPAlliance/json.svg?branch=master)](https://travis-ci.org/CPPAlliance/json) | [![Build Status](https://travis-ci.org/CPPAlliance/json.svg?branch=develop)](https://travis-ci.org/CPPAlliance/json)
 Matrix          | [![Matrix](https://img.shields.io/badge/matrix-master-brightgreen.svg)](http://www.boost.org/development/tests/master/developer/json.html) | [![Matrix](https://img.shields.io/badge/matrix-develop-brightgreen.svg)](http://www.boost.org/development/tests/develop/developer/json.html)
 Fuzzing         | --- |  [![fuzz](https://github.com/CPPAlliance/json/workflows/fuzz/badge.svg?branch=develop)](https://github.com/CPPAlliance/json/actions?query=workflow%3Afuzz+branch%3Adevelop) 
+Appveyor        | [![Build status](https://ci.appveyor.com/api/projects/status/8csswcnmfm798203?branch=master&svg=true)](https://ci.appveyor.com/project/vinniefalco/cppalliance-json/branch/master) | [![Build status](https://ci.appveyor.com/api/projects/status/8csswcnmfm798203?branch=develop&svg=true)](https://ci.appveyor.com/project/vinniefalco/cppalliance-json/branch/develop)
+codecov.io      | [![codecov](https://codecov.io/gh/CPPAlliance/json/branch/master/graph/badge.svg)](https://codecov.io/gh/CPPAlliance/json/branch/master) | [![codecov](https://codecov.io/gh/CPPAlliance/json/branch/develop/graph/badge.svg)](https://codecov.io/gh/CPPAlliance/json/branch/develop)
 
 # Boost.JSON
 
