@@ -74,11 +74,11 @@ BOOST_JSON_NS_BEGIN
     // This example builds a json::value without any dynamic memory allocations:
 
     // Construct the value stack using a local buffer
-    char temp[4096];
+    unsigned char temp[4096];
     value_stack st( storage_ptr(), temp, sizeof(temp) );
 
     // Create a static resource with a local initial buffer
-    char buf[4096];
+    unsigned char buf[4096];
     static_resource mr( buf, sizeof(buf) );
 
     // All values on the stack will use `mr`

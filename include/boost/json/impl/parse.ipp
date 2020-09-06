@@ -24,7 +24,7 @@ parse(
     storage_ptr sp,
     const parse_options& opt)
 {
-    char temp[4096];
+    unsigned char temp[4096];
     parser p(
         storage_ptr(),
         opt,

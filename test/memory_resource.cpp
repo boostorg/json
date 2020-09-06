@@ -232,7 +232,7 @@ public:
 
             {
                 // A type of memory resource which uses a stack buffer
-                char temp[4096];
+                unsigned char temp[4096];
                 static_resource mr( temp, sizeof(temp) );
 
                 // Construct a vector using the static buffer resource

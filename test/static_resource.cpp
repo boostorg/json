@@ -30,7 +30,7 @@ public:
     static_resource mr( buf );
 
     // Parse the string, using our memory resource
-    auto const jv = parse( "[1,2,3]", &mr );
+    value jv = parse( "[1,2,3]", &mr );
 
     // Print the JSON
     std::cout << jv;

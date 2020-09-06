@@ -43,7 +43,7 @@ BOOST_JSON_NS_BEGIN
     static_resource mr( buf );
 
     // Parse the string, using our memory resource
-    auto const jv = parse( "[1,2,3]", &mr );
+    value const jv = parse( "[1,2,3]", &mr );
 
     // Print the JSON
     std::cout << jv;
@@ -81,8 +81,8 @@ public:
 
         This constructs the resource to use the specified
         buffer for subsequent calls to allocate. When the
-        buffer is exhausted, calls to allocate will fail
-        with the exception `std::bad_alloc` thrown.
+        buffer is exhausted, allocate will throw
+        `std::bad_alloc`.
 
         @par Complexity
         Constant.
@@ -90,27 +90,36 @@ public:
         @par Exception Safety
         No-throw guarantee.
 
-        @param buffer A pointer to valid storage of at
-        least `size` bytes. Ownership is not transferred.
+        @param buffer The buffer to use.
+        Ownership is not transferred; the caller is
+        responsible for ensuring that the lifetime of
+        the buffer extends until the resource is destroyed.
 
         @param size The number of valid bytes pointed
         to by `buffer`.
     */
+    /** @{ */
     static_resource(
-        void* buffer,
+        unsigned char* buffer,
         std::size_t size) noexcept;
 
-   /** Constructor
+#if defined(__cpp_lib_byte) || defined(BOOST_JSON_DOCS)
+    static_resource(
+        std::byte* buffer,
+        std::size_t size) noexcept
+        : static_resource(reinterpret_cast<
+            unsigned char*>(buffer), size)
+    {
+    }
+#endif
+    /** @} */
+
+    /** Constructor
 
         This constructs the resource to use the specified
-        array for subsequent calls to allocate. When the
-        array is exhausted, calls to allocate will fail
-        with the exception `std::bad_alloc` thrown.
-
-        @par Effects
-        @code
-        static_resource( &buffer[0], N );
-        @endcode
+        buffer for subsequent calls to allocate. When the
+        buffer is exhausted, allocate will throw
+        `std::bad_alloc`.
 
         @par Complexity
         Constant.
@@ -118,11 +127,12 @@ public:
         @par Exception Safety
         No-throw guarantee.
 
-        @param buffer An array to use as the buffer.
+        @param buffer The buffer to use.
         Ownership is not transferred; the caller is
         responsible for ensuring that the lifetime of
-        the array extends until the resource is destroyed.
+        the buffer extends until the resource is destroyed.
     */
+    /** @{ */
     template<std::size_t N>
     explicit
     static_resource(
@@ -132,29 +142,6 @@ public:
     }
 
 #if defined(__cpp_lib_byte) || defined(BOOST_JSON_DOCS)
-   /** Constructor
-
-        This constructs the resource to use the specified
-        array for subsequent calls to allocate. When the
-        array is exhausted, calls to allocate will fail
-        with the exception `std::bad_alloc` thrown.
-
-        @par Effects
-        @code
-        static_resource( &buffer[0], N );
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param buffer An array to use as the buffer.
-        Ownership is not transferred; the caller is
-        responsible for ensuring that the lifetime of
-        the array extends until the resource is destroyed.
-    */
     template<std::size_t N>
     explicit
     static_resource(
@@ -163,6 +150,7 @@ public:
     {
     }
 #endif
+    /** @} */
 
 #ifndef BOOST_JSON_DOCS
     // Safety net for accidental buffer overflows

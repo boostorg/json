@@ -13,6 +13,7 @@
 
 #include <boost/json/parse.hpp>
 #include <boost/json/to_string.hpp>
+#include <boost/json/detail/align.hpp>
 #include <iostream>
 
 #include "test_suite.hpp"
@@ -80,7 +81,7 @@ public:
 
         // monotonic_resource mr(void*, size_t)
         {
-            char buf[2000];
+            unsigned char buf[2000];
             monotonic_resource mr(&buf[0], sizeof(buf));
         }
 

@@ -24,7 +24,7 @@ static_resource::
 
 static_resource::
 static_resource(
-    void* buffer,
+    unsigned char* buffer,
     std::size_t size) noexcept
     : p_(buffer)
     , n_(size)

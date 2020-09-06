@@ -13,7 +13,6 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/memory_resource.hpp>
-#include <boost/json/detail/align.hpp>
 #include <cstddef>
 
 BOOST_JSON_NS_BEGIN
@@ -165,33 +164,39 @@ public:
         @par Exception Safety
         No-throw guarantee.
 
-        @param buffer A pointer to valid memory of
-        at least `size` bytes. Ownership is not
-        transferred; the caller is responsible for
-        ensuring that the lifetime of the buffer
-        extends until the resource is destroyed.
+        @param buffer The buffer to use.
+        Ownership is not transferred; the caller is
+        responsible for ensuring that the lifetime of
+        the buffer extends until the resource is destroyed.
 
-        @param size The number of valid bytes
-        pointed to by `buffer`.
+        @param size The number of valid bytes pointed
+        to by `buffer`.
     */
+    /** @{ */
     monotonic_resource(
-        void* buffer,
+        unsigned char* buffer,
         std::size_t size) noexcept;
+
+#if defined(__cpp_lib_byte) || defined(BOOST_JSON_DOCS)
+    monotonic_resource(
+        std::byte* buffer,
+        std::size_t size) noexcept
+        : monotonic_resource(reinterpret_cast<
+            unsigned char*>(buffer), size)
+    {
+    }
+#endif
+    /** @} */
 
     /** Constructor
 
         This constructs the resource and indicates that
         subsequent allocations should use the specified
-        caller-owned array. When this buffer is exhausted,
+        caller-owned buffer. When this buffer is exhausted,
         dynamic allocations from the heap are made.
     \n
         This constructor is guaranteed not to perform
         any dynamic allocations.
-
-        @par Effects
-        @code
-        monotonic_resource( &buffer[0], N );
-        @endcode
 
         @par Complexity
         Constant.
@@ -199,11 +204,12 @@ public:
         @par Exception Safety
         No-throw guarantee.
 
-        @param buffer An array to use as the initial
-        buffer. Ownership is not transferred; the caller
-        is responsible for ensuring that the lifetime of
-        the array extends until the resource is destroyed.
+        @param buffer The buffer to use.
+        Ownership is not transferred; the caller is
+        responsible for ensuring that the lifetime of
+        the buffer extends until the resource is destroyed.
     */
+    /** @{ */
     template<std::size_t N>
     explicit
     monotonic_resource(
@@ -213,32 +219,6 @@ public:
     }
 
 #if defined(__cpp_lib_byte) || defined(BOOST_JSON_DOCS)
-    /** Constructor
-
-        This constructs the resource and indicates that
-        subsequent allocations should use the specified
-        caller-owned array. When this buffer is exhausted,
-        dynamic allocations from the heap are made.
-    \n
-        This constructor is guaranteed not to perform
-        any dynamic allocations.
-
-        @par Effects
-        @code
-        monotonic_resource( &buffer[0], N );
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param buffer An array to use as the initial
-        buffer. Ownership is not transferred; the caller
-        is responsible for ensuring that the lifetime of
-        the array extends until the resource is destroyed.
-    */
     template<std::size_t N>
     explicit
     monotonic_resource(
@@ -247,6 +227,7 @@ public:
     {
     }
 #endif
+    /** @} */
 
 #ifndef BOOST_JSON_DOCS
     // Safety net for accidental buffer overflows

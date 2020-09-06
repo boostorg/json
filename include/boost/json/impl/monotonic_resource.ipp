@@ -82,7 +82,7 @@ monotonic_resource(
 
 monotonic_resource::
 monotonic_resource(
-    void* buffer,
+    unsigned char* buffer,
     std::size_t size) noexcept
     : buffer_{
         buffer, size, size, nullptr}
