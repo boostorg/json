@@ -23,10 +23,6 @@ in a translation unit of the program.
 
 #include <boost/json/detail/config.hpp>
 
-#if defined(BOOST_JSON_HEADER_ONLY)
-# error Do not compile library source with the header only macro defined
-#endif
-
 #include <boost/json/impl/array.ipp>
 #include <boost/json/impl/error.ipp>
 #include <boost/json/impl/monotonic_resource.ipp>

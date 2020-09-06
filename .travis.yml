@@ -275,7 +275,7 @@ jobs:
         - B2_TOOLSET=gcc-8
         - B2_CXXSTD=11,14
         - B2_UBSAN=1
-        - B2_DEFINES="define=BOOST_NO_STRESS_TEST=1 define=BOOST_JSON_HEADER_ONLY=1"
+        - B2_DEFINES="define=BOOST_NO_STRESS_TEST=1"
         - B2_LINKFLAGS="-fuse-ld=gold"
       addons: *gcc-8
 

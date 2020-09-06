@@ -25,9 +25,6 @@ class
     : public memory_resource
 {
 public:
-#ifdef BOOST_JSON_HEADER_ONLY
-    inline
-#endif
     ~default_resource();
 
     void*
@@ -48,9 +45,5 @@ public:
 
 } // detail
 BOOST_JSON_NS_END
-
-#ifdef BOOST_JSON_HEADER_ONLY
-#include <boost/json/detail/impl/default_resource.ipp>
-#endif
 
 #endif

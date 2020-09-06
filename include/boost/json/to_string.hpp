@@ -60,8 +60,4 @@ operator<<(
 
 BOOST_JSON_NS_END
 
-#ifdef BOOST_JSON_HEADER_ONLY
-#include <boost/json/impl/to_string.ipp>
-#endif
-
 #endif

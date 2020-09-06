@@ -158,8 +158,4 @@ align_to(raw_stack& rs) noexcept
 } // detail
 BOOST_JSON_NS_END
 
-#ifdef BOOST_JSON_HEADER_ONLY
-#include <boost/json/detail/impl/raw_stack.ipp>
-#endif
-
 #endif

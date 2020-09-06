@@ -236,8 +236,4 @@ struct is_deallocate_trivial<
 
 BOOST_JSON_NS_END
 
-#ifdef BOOST_JSON_HEADER_ONLY
-#include <boost/json/impl/static_resource.ipp>
-#endif
-
 #endif

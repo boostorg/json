@@ -139,8 +139,6 @@
 #ifndef BOOST_JSON_STANDALONE
 # if defined(BOOST_JSON_DOCS)
 #  define BOOST_JSON_DECL
-# elif defined(BOOST_JSON_HEADER_ONLY)
-#  define BOOST_JSON_DECL inline
 # else
 #  if (defined(BOOST_JSON_DYN_LINK) || defined(BOOST_ALL_DYN_LINK)) && !defined(BOOST_JSON_STATIC_LINK)
 #   if defined(BOOST_JSON_SOURCE)
@@ -164,19 +162,14 @@
 #  endif
 # endif
 #else
-# ifdef BOOST_JSON_HEADER_ONLY
-#  define BOOST_JSON_DECL  inline
-# else
-#  define BOOST_JSON_DECL
+# ifndef BOOST_JSON_DECL
+# define BOOST_JSON_DECL
 # endif
 #endif
 
 #ifndef BOOST_JSON_CLASS_DECL 
 #define BOOST_JSON_CLASS_DECL 
 #endif
-//#ifndef BOOST_JSON_INLINE_DECL
-//#define BOOST_JSON_INLINE_DECL
-//#endif
 
 #ifndef BOOST_JSON_LIKELY
 # if defined(__GNUC__) || defined(__clang__)

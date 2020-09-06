@@ -43,8 +43,4 @@ char* d2s(double f) noexcept;
 } // detail
 BOOST_JSON_NS_END
 
-#ifdef BOOST_JSON_HEADER_ONLY
-#include <boost/json/detail/ryu/impl/d2s.ipp>
-#endif
-
 #endif
