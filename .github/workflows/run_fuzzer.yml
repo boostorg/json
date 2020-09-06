@@ -1,9 +1,5 @@
 name: fuzz
 
-env:
-  BINTRAYUSER: vinniefalco
-  BINTRAYORG: cppalliance
-
 on:
   push:
   pull_request:
@@ -18,23 +14,33 @@ jobs:
     
     steps:       
     - uses: actions/checkout@v2
-    - name: download the old corpus
-    #
-      run: "curl -O --location -J https://dl.bintray.com/cppalliance/boost.json/corpus.tar"
-      working-directory: fuzzing/
+    - uses: actions/cache@v2
+      id: cache-corpus
+      with:
+        path: fuzzing/corpus.tar
+         key: corpus-${{ github.run_id }}
+        restore-keys: corpus-
     - name: build and run
       run: ./fuzz.sh
       working-directory: fuzzing/
-    - name: Upload the corpus to bintray
+    - name: Pack the corpus
       working-directory: fuzzing/
       run: |
-        echo uploading each artifact twice, otherwise it will not be published
         tar cf - cmin > corpus.tar.tmp && mv corpus.tar.tmp corpus.tar
-        curl -T corpus.tar -u$BINTRAYUSER:${{ secrets.bintrayApiKey }} https://api.bintray.com/content/$BINTRAYORG/boost.json/corpus/0/corpus.tar";publish=1;override=1"
-        curl -T corpus.tar -u$BINTRAYUSER:${{ secrets.bintrayApiKey }} https://api.bintray.com/content/$BINTRAYORG/boost.json/corpus/0/corpus.tar";publish=1;override=1"
     - name: Save the corpus as a github artifact
       uses: actions/upload-artifact@v2
+      if: success()
       with:
         name: corpus
         path: fuzzing/corpus.tar
+    - name: Archive any crashes as an artifact
+      uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: crashes
+        path: |
+          fuzzing/crash-*
+          fuzzing/leak-*
+          fuzzing/timeout-*
+        if-no-files-found: ignore
 
