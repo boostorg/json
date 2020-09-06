@@ -652,7 +652,7 @@ using log_type = detail::log_ostream<char>;
 #ifndef BOOST_NO_EXCEPTIONS
 # define BOOST_TEST_THROWS( expr, except ) \
     try { \
-        expr; \
+        (void)(expr); \
         ::test_suite::detail::current()->fail ( \
             #except, __FILE__, __LINE__, \
             TEST_SUITE_FUNCTION); \
