@@ -10,6 +10,7 @@
 #ifndef BOOST_JSON_PILFER_HPP
 #define BOOST_JSON_PILFER_HPP
 
+#include <boost/json/detail/config.hpp>
 #include <type_traits>
 #include <utility>
 
@@ -76,14 +77,15 @@ public:
     }
 };
 
-namespace detail {
-
+#ifndef BOOST_JSON_DOCS
+// VFALCO Renamed this to work around an msvc bug 
+namespace detail_pilfer {
 template<class>
 struct not_pilfered
 {
 };
-
-} // detail
+} // detail_pilfer
+#endif
 
 /** Metafunction returning `true` if `T` is PilferConstructible
 
@@ -103,7 +105,7 @@ struct is_pilfer_constructible
             std::is_nothrow_constructible<
                 T, pilfered<T> >::value &&
             ! std::is_nothrow_constructible<
-                T, detail::not_pilfered<T> >::value
+                T, detail_pilfer::not_pilfered<T> >::value
         )>
 #endif
 {
@@ -146,7 +148,7 @@ pilfer(T&& t) noexcept ->
             pilfered<typename std::remove_reference<T>::type> >::value &&
         ! std::is_nothrow_constructible<
             typename std::remove_reference<T>::type,
-            detail::not_pilfered<typename std::remove_reference<T>::type> >::value,
+            detail_pilfer::not_pilfered<typename std::remove_reference<T>::type> >::value,
         pilfered<typename std::remove_reference<T>::type>,
         typename std::remove_reference<T>::type&&
             >::type
@@ -159,7 +161,7 @@ pilfer(T&& t) noexcept ->
         std::is_nothrow_constructible<
             U, pilfered<U> >::value &&
         ! std::is_nothrow_constructible<
-            U, detail::not_pilfered<U> >::value,
+            U, detail_pilfer::not_pilfered<U> >::value,
         pilfered<U>, U&&
             >::type(std::move(t));
 }
@@ -178,5 +180,6 @@ relocate(T* dest, T& src) noexcept
 
 } // json
 } // boost
+
 
 #endif

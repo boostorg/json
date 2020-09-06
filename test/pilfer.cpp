@@ -9,3 +9,24 @@
 
 // Test that header file is self-contained.
 #include <boost/json/pilfer.hpp>
+
+// VFALCO This fails to compile in msvc:
+// https://godbolt.org/z/8q6K8e
+#if 0
+namespace boost {
+namespace json {
+
+inline namespace standalone {
+namespace detail {
+struct V{};
+} // detail
+} // standalone
+
+namespace detail {
+struct T{};
+} // detail
+struct U : detail::T{};
+
+} // json
+} // boost
+#endif
