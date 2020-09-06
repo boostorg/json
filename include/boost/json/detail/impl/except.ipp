@@ -49,6 +49,7 @@ void
 throw_bad_alloc(
     source_location const& loc)
 {
+    (void)loc;
     throw_exception(
         std::bad_alloc()
 #if BOOST_VERSION >= 107300
@@ -62,6 +63,7 @@ throw_length_error(
     char const* what,
     source_location const& loc)
 {
+    (void)loc;
     throw_exception(
         std::length_error(what)
 #if BOOST_VERSION >= 107300
@@ -75,6 +77,7 @@ throw_invalid_argument(
     char const* what,
     source_location const& loc)
 {
+    (void)loc;
     throw_exception(
         std::invalid_argument(what)
 #if BOOST_VERSION >= 107300
@@ -87,6 +90,7 @@ void
 throw_out_of_range(
     source_location const& loc)
 {
+    (void)loc;
     throw_exception(
         std::out_of_range(
             "out of range")
@@ -101,6 +105,7 @@ throw_system_error(
     error_code const& ec,
     source_location const& loc)
 {
+    (void)loc;
     throw_exception(
         system_error(ec)
 #if BOOST_VERSION >= 107300
