@@ -18,7 +18,7 @@ jobs:
       id: cache-corpus
       with:
         path: fuzzing/corpus.tar
-         key: corpus-${{ github.run_id }}
+        key: corpus-${{ github.run_id }}
         restore-keys: corpus-
     - name: build and run
       run: ./fuzz.sh
