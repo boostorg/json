@@ -44,6 +44,9 @@ class value;
 
     String iterators are regular `char` pointers.
 
+    @note `string` member functions do not validate
+    any UTF-8 byte sequences passed to them. 
+
     @par Thread Safety
 
     Non-const member functions may not be called
