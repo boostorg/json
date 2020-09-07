@@ -1,5 +1,4 @@
-<img width="880" height = "80" alt = "Boost.JSON Title"
-    src="https://raw.githubusercontent.com/CPPAlliance/json/master/doc/images/repo-logo-2.png">
+[![Boost.JSON](https://raw.githubusercontent.com/vinniefalco/json/develop/doc/images/repo-logo-3.png)](http://master.json.cpp.al/)
 
 Branch          | [`master`](https://github.com/CPPAlliance/json/tree/master) | [`develop`](https://github.com/CPPAlliance/json/tree/develop) |
 --------------- | ----------------------------------------------------------- | ------------------------------------------------------------- |
