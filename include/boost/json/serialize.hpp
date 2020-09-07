@@ -13,60 +13,46 @@
 #include <boost/json/detail/config.hpp>
 #include <boost/json/value.hpp>
 #include <iosfwd>
+#include <string>
 
 BOOST_JSON_NS_BEGIN
 
 /** Return a string representing a serialized element.
 
     This function serializes `t` as JSON and returns
-    it as a @ref string using the specified memory
-    resource.
+    it as a `std::string`.
 
     @par Complexity
     Constant or linear in the size of `t`.
 
     @par Exception Safety
     Strong guarantee.
-    Calls to `memory_resource::allocate` may throw.
+    Calls to allocate may throw.
 
     @return The serialized string
 
     @param t The value to serialize
-
-    @param sp The memory resource to use for the
-    returned string. If omitted, the default resource
-    is used.
 */
 /** @{ */
 BOOST_JSON_DECL
-string
-serialize(
-    value const& t,
-    storage_ptr sp = {});
+std::string
+serialize(value const& t);
 
 BOOST_JSON_DECL
-string
-serialize(
-    array const& t,
-    storage_ptr sp = {});
+std::string
+serialize(array const& t);
 
 BOOST_JSON_DECL
-string
-serialize(
-    object const& t,
-    storage_ptr sp = {});
+std::string
+serialize(object const& t);
 
 BOOST_JSON_DECL
-string
-serialize(
-    string const& t,
-    storage_ptr sp = {});
+std::string
+serialize(string const& t);
 
 BOOST_JSON_DECL
-string
-serialize(
-    string_view t,
-    storage_ptr sp = {});
+std::string
+serialize(string_view t);
 /** @} */
 
 /** Serialize an element to an output stream.

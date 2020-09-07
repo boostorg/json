@@ -19,7 +19,7 @@ BOOST_JSON_NS_BEGIN
 static
 void
 serialize_impl(
-    string& s,
+    std::string& s,
     serializer& sr)
 {
     // serialize to a small buffer
@@ -30,75 +30,81 @@ serialize_impl(
     if(sr.done())
     {
         // fast path
-        s.append(sv);
+        s.append(
+            sv.data(), sv.size());
         return;
     }
-    s.reserve(sv.size() * 2);
-    s.append(sv);
-    do
+    std::size_t len = sv.size();
+    s.reserve(len * 2);
+    s.resize(s.capacity());
+    BOOST_ASSERT(
+        s.size() >= len * 2);
+    std::memcpy(&s[0],
+        sv.data(), sv.size());
+    for(;;)
     {
         sv = sr.read(
-            s.data() + s.size(),
-            s.capacity() - s.size());
-        s.grow(sv.size());
+            &s[0] + len,
+            s.size() - len);
+        len += sv.size();
+        if(sr.done())
+            break;
+        s.resize(
+            s.capacity() + 1);
     }
-    while(! sr.done());
+    s.resize(len);
 }
 
-string
+std::string
 serialize(
-    value const& jv,
-    storage_ptr sp)
+    value const& jv)
 {
-    string s(std::move(sp));
+    std::string s;
     serializer sr;
     sr.reset(&jv);
     serialize_impl(s, sr);
     return s;
 }
 
-string
+std::string
 serialize(
-    array const& arr,
-    storage_ptr sp)
+    array const& arr)
 {
-    string s(std::move(sp));
+    std::string s;
     serializer sr;
     sr.reset(&arr);
     serialize_impl(s, sr);
     return s;
 }
 
-string
+std::string
 serialize(
-    object const& obj,
-    storage_ptr sp)
+    object const& obj)
 {
-    string s(std::move(sp));
+    std::string s;
     serializer sr;
     sr.reset(&obj);
     serialize_impl(s, sr);
     return s;
 }
 
-string
+std::string
 serialize(
-    string const& str,
-    storage_ptr sp)
+    string const& str)
 {
-    string s(std::move(sp));
+    std::string s;
     serializer sr;
     sr.reset(&str);
     serialize_impl(s, sr);
     return s;
 }
 
-string
+// this is here for key_value_pair::key()
+std::string
 serialize(
-    string_view sv,
-    storage_ptr sp)
+    string_view sv)
 {
-    string s(std::move(sp));
+    std::string s;
     serializer sr;
     sr.reset(sv);
     serialize_impl(s, sr);

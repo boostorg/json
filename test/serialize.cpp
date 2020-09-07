@@ -38,50 +38,28 @@ public:
             value const jv = { 1, 2, 3 };
             BOOST_TEST(serialize(jv) == "[1,2,3]");
             BOOST_TEST(print(jv) == "[1,2,3]");
-            unsigned char buf[100];
-            static_resource mr(buf);
-            BOOST_TEST(serialize(
-                jv, &mr).storage().get() == &mr);
         }
         {
             array const arr = { 1, 2 ,3 };
             BOOST_TEST(serialize(arr) == "[1,2,3]");
             BOOST_TEST(print(arr) == "[1,2,3]");
-            unsigned char buf[100];
-            static_resource mr(buf);
-            BOOST_TEST(serialize(
-                arr, &mr).storage().get() == &mr);
         }
         {
             object const obj = { {"k1",1}, {"k2",2} };
             BOOST_TEST(serialize(obj) == "{\"k1\":1,\"k2\":2}");
             BOOST_TEST(print(obj) == "{\"k1\":1,\"k2\":2}");
-            unsigned char buf[100];
-            static_resource mr(buf);
-            BOOST_TEST(serialize(
-                obj, &mr).storage().get() == &mr);
         }
         {
             string const str = "123";
             BOOST_TEST(serialize(str) == "\"123\"");
             BOOST_TEST(print(str) == "\"123\"");
-            unsigned char buf[100];
-            static_resource mr(buf);
-            BOOST_TEST(serialize(
-                str, &mr).storage().get() == &mr);
         }
-    }
-
-    void
-    testOstream()
-    {
     }
 
     void
     run()
     {
         testSerialize();
-        testOstream();
     }
 };
 
