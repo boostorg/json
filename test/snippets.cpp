@@ -257,7 +257,7 @@ usingInitLists()
 
         assert( jv.as_array().size() == 4 );
 
-        assert( to_string(jv) == "[true,2,\"hello\",null]" );
+        assert( serialize(jv) == "[true,2,\"hello\",null]" );
 
         //]
     }
@@ -271,7 +271,7 @@ usingInitLists()
 
         assert( jv.as_array().back().is_array() );
 
-        assert( to_string(jv) == "[true,2,\"hello\",[\"bye\",null,false]]" );
+        assert( serialize(jv) == "[true,2,\"hello\",[\"bye\",null,false]]" );
 
         //]
     }
@@ -294,7 +294,7 @@ usingInitLists()
 
         assert( jv1.as_object().size() == 2 );
 
-        assert( to_string(jv1) == R"({"hello":42,"world":43})" );
+        assert( serialize(jv1) == R"({"hello":42,"world":43})" );
 
         // All of the following are arrays
 
@@ -320,7 +320,7 @@ usingInitLists()
 
         assert( ja[0].is_array() && ja[1].is_array());
 
-        assert ( to_string(jv) == R"([["hello",42],["world",43]])" );
+        assert ( serialize(jv) == R"([["hello",42],["world",43]])" );
 
         //]
 
@@ -334,11 +334,11 @@ usingInitLists()
 
         assert( jv.is_object() );
 
-        assert( to_string(jv) == "{\"mercury\":36,\"venus\":67,\"earth\":93}" );
+        assert( serialize(jv) == "{\"mercury\":36,\"venus\":67,\"earth\":93}" );
 
         array ja = { { "mercury", 36 }, { "venus", 67 }, { "earth", 93 } };
 
-        assert( to_string(ja) == "[[\"mercury\",36],[\"venus\",67],[\"earth\",93]]" );
+        assert( serialize(ja) == "[[\"mercury\",36],[\"venus\",67],[\"earth\",93]]" );
 
         //]
 
@@ -368,7 +368,7 @@ usingInitLists()
         
         assert( ! jo2.empty() && jo1.empty() );
 
-        assert( to_string(jv) == R"({"clients":{"john":100,"dave":500,"joe":300}})" );
+        assert( serialize(jv) == R"({"clients":{"john":100,"dave":500,"joe":300}})" );
 
         //]
 
@@ -939,7 +939,7 @@ usingSerializing()
 
         value jv = { 1, 2, 3, 4, 5 };
 
-        string s = to_string( jv );
+        string s = serialize( jv );
 
         //]
     }
@@ -1070,7 +1070,7 @@ usingExchange()
 
         value jv = value_from( pos );
 
-        assert( to_string( jv ) == "{\"x\":4,\"y\":1,\"z\":4}" );
+        assert( serialize( jv ) == "{\"x\":4,\"y\":1,\"z\":4}" );
 
         //]
     }

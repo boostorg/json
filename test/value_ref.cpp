@@ -11,7 +11,7 @@
 #include <boost/json/value_ref.hpp>
 
 #include <boost/json/value.hpp>
-#include <boost/json/to_string.hpp>
+#include <boost/json/serialize.hpp>
 
 #include "test_suite.hpp"
 
@@ -209,7 +209,7 @@ public:
     {
         auto const jv =
             value_ref(init).make_value({});
-        auto const js = to_string(jv);
+        auto const js = serialize(jv);
         BOOST_TEST(js == s);
     }
 
@@ -309,7 +309,7 @@ public:
         string_view s)
     {
         auto const jv = value(object(init));
-        auto const js = to_string(jv);
+        auto const js = serialize(jv);
         BOOST_TEST(js == s);
     }
 

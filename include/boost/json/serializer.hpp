@@ -20,14 +20,13 @@ BOOST_JSON_NS_BEGIN
 
 /** A serializer for JSON.
 
-    This class traverses a @ref value and emits
-    a JSON text by filling a series of one or more
-    caller-provided buffers. To use it, declare
-    a serializer and construct it with a reference
-    to the value to serialize. Alternatively, call
-    @ref reset to set the value to serialize.
-    Then call @ref read over and over while
-    @ref done returns `false`.
+    This class traverses an instance of a library
+    type and emits serialized JSON text by filling
+    in one or more caller-provided buffers. To use,
+    declare a variable and call @ref reset with
+    a pointer to the variable you want to serialize.
+    Then call @ref read over and over until
+    @ref done returns `true`.
 
     @par Example
 
@@ -39,10 +38,11 @@ BOOST_JSON_NS_BEGIN
 
     void print( std::ostream& os, value const& jv)
     {
-        serializer sr( jv );
+        serializer sr;
+        sr.reset( &jv );
         while( ! sr.done() )
         {
-            char buf[4000];
+            char buf[ 4000 ];
             os << sr.read( buf );
         }
     }
@@ -63,6 +63,18 @@ class serializer
     using local_const_stream =
         detail::local_const_stream;
 
+    using fn_t = bool (serializer::*)(stream&);
+
+#ifndef BOOST_JSON_DOCS
+    union
+    {
+        value const* pv_;
+        array const* pa_;
+        object const* po_;
+    };
+#endif
+    fn_t fn0_ = &serializer::write_null<true>;
+    fn_t fn1_ = &serializer::write_null<false>;
     value const* jv_ = nullptr;
     detail::stack st_;
     const_stream cs0_;
@@ -70,18 +82,18 @@ class serializer
     bool done_ = false;
 
     inline bool suspend(state st);
-    inline bool suspend(state st,
-        array::const_iterator it, value const* jv);
-    inline bool suspend(state st,
-        object::const_iterator it, value const* jv);
-    template<bool StackEmpty> bool write_null(stream& ss);
-    template<bool StackEmpty> bool write_true(stream& ss);
-    template<bool StackEmpty> bool write_false(stream& ss);
-    template<bool StackEmpty> bool write_string(stream& ss);
-    template<bool StackEmpty> bool write_number(stream& ss);
-    template<bool StackEmpty> bool write_array(stream& ss);
-    template<bool StackEmpty> bool write_object(stream& ss);
-    template<bool StackEmpty> bool write_value(stream& ss);
+    inline bool suspend(
+        state st, array::const_iterator it, array const* pa);
+    inline bool suspend(
+        state st, object::const_iterator it, object const* po);
+    template<bool StackEmpty> bool write_null   (stream& ss);
+    template<bool StackEmpty> bool write_true   (stream& ss);
+    template<bool StackEmpty> bool write_false  (stream& ss);
+    template<bool StackEmpty> bool write_string (stream& ss);
+    template<bool StackEmpty> bool write_number (stream& ss);
+    template<bool StackEmpty> bool write_array  (stream& ss);
+    template<bool StackEmpty> bool write_object (stream& ss);
+    template<bool StackEmpty> bool write_value  (stream& ss);
     inline string_view read_some(char* dest, std::size_t size);
 
 public:
@@ -101,29 +113,6 @@ public:
     BOOST_JSON_DECL
     serializer() noexcept;
 
-    /** Constructor
-
-        This constructs the serializer and prepares
-        it to serialize the @ref value `jv` as if
-        @ref reset was called.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param jv The value to serialize. Ownership
-        is not transferred. The caller is responsible
-        for ensuring that the lifetime of the value
-        extends until @ref done returns `true`,
-        @ref reset is called with a new value, or
-        the serializer is destroyed.
-    */
-    explicit
-    BOOST_JSON_DECL
-    serializer(value const& jv) noexcept;
-
     /** Returns `true` if the serialization is complete
 
         This function returns `true` when all of the
@@ -142,23 +131,52 @@ public:
         return done_;
     }
 
-    /** Reset the serializer for a new JSON value
+    /** Reset the serializer for a new element
 
         This function prepares the serializer to emit
-        a new serialized JSON based on the specified
-        value. Any internally allocated memory is
+        a new serialized JSON representing `*p`.
+        Any internally allocated memory is
         preserved and re-used for the new output.
 
-        @param jv The value to serialize. Ownership
-        is not transferred. The caller is responsible
-        for ensuring that the lifetime of the value
-        extends until @ref done returns `true`,
-        @ref reset is called with a new value, or
-        the serializer is destroyed.
+        @param p A pointer to the element to serialize.
+        Ownership is not transferred; The caller is
+        responsible for ensuring that the lifetime of
+        `*p` extends until it is no longer needed.
+    */
+    /** @{ */
+    BOOST_JSON_DECL
+    void
+    reset(value const* p) noexcept;
+
+    BOOST_JSON_DECL
+    void
+    reset(array const* p) noexcept;
+
+    BOOST_JSON_DECL
+    void
+    reset(object const* p) noexcept;
+
+    BOOST_JSON_DECL
+    void
+    reset(string const* p) noexcept;
+    /** @} */
+
+    /** Reset the serializer for a new string
+
+        This function prepares the serializer to emit
+        a new serialized JSON representing the string.
+        Any internally allocated memory is
+        preserved and re-used for the new output.
+
+        @param sv The characters representing the string.
+        Ownership is not transferred; The caller is
+        responsible for ensuring that the lifetime of
+        the characters reference by `sv` extends
+        until it is no longer needed.
     */
     BOOST_JSON_DECL
     void
-    reset(value const& jv) noexcept;
+    reset(string_view sv) noexcept;
 
     /** Read the next buffer of serialized JSON
 

@@ -25,7 +25,7 @@ serialization:
             [@https://en.cppreference.com/w/cpp/io/basic_ostream `std::ostream`].
         ]
     ][
-        [__to_string__]
+        [__serialize__]
         [
             Returns a __string__ representing a serialized __value__.
         ]
@@ -43,7 +43,7 @@ written to standard output streams using the stream operator:
 
 [snippet_serializing_1]
 
-The __to_string__ function converts a __value__ into a __string__:
+The __serialize__ function converts a __value__ into a __string__:
 
 [snippet_serializing_2]
 

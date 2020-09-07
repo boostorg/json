@@ -62,7 +62,7 @@ pretty_print( std::ostream& os, json::value const& jv, std::string* indent = nul
             auto it = obj.begin();
             for(;;)
             {
-                os << *indent << json::to_string(it->key()) << " : ";
+                os << *indent << json::serialize(it->key()) << " : ";
                 pretty_print(os, it->value(), indent);
                 if(++it == obj.end())
                     break;
@@ -100,7 +100,7 @@ pretty_print( std::ostream& os, json::value const& jv, std::string* indent = nul
 
     case json::kind::string:
     {
-        os << json::to_string(jv.get_string());
+        os << json::serialize(jv.get_string());
         break;
     }
 

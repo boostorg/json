@@ -12,7 +12,7 @@
 #include <boost/json/value_from.hpp>
 
 #include <boost/json/value.hpp> // prevent intellisense bugs
-#include <boost/json/to_string.hpp>
+#include <boost/json/serialize.hpp>
 
 #include "test_suite.hpp"
 
@@ -88,14 +88,14 @@ check(
         auto const jv = value_from(t,
             ::boost::json::storage_ptr{});
         auto const js =
-            ::boost::json::to_string(jv);
+            ::boost::json::serialize(jv);
         BOOST_TEST(js == s);
     }
     {
         auto const jv =
             ::boost::json::value_from(t);
         auto const js =
-            ::boost::json::to_string(jv);
+            ::boost::json::serialize(jv);
         BOOST_TEST(js == s);
     }
 }
@@ -106,9 +106,9 @@ void
 testValueCtor()
 {
     BOOST_TEST(
-        ::boost::json::to_string(
+        ::boost::json::serialize(
             ::boost::json::value_from(T{})) ==
-        ::boost::json::to_string(
+        ::boost::json::serialize(
             ::boost::json::value(T{})));
 }
 
@@ -161,21 +161,21 @@ public:
             value b{1, 2, 3, 4};
             value c = value_from(a);
             BOOST_TEST(c.is_array());
-            BOOST_TEST(to_string(c) == to_string(b));
+            BOOST_TEST(serialize(c) == serialize(b));
         }
         {
             std::tuple<int, string, int, bool> a{1, "2", 42, true};
             value b{1, "2", 42, true};
             value c = value_from(a);
             BOOST_TEST(c.is_array());
-            BOOST_TEST(to_string(c) == to_string(b));
+            BOOST_TEST(serialize(c) == serialize(b));
         }
         {
             std::pair<int, string> a{1, string("2")};
             value b{1, "2"};
             value c = value_from(a);
             BOOST_TEST(c.is_array());
-            BOOST_TEST(to_string(c) == to_string(b));
+            BOOST_TEST(serialize(c) == serialize(b));
         }
         {
             // ensures that this isn't parsed as a key value pair
@@ -183,14 +183,14 @@ public:
             value b{"2", 1};
             value c = value_from(a);
             BOOST_TEST(c.is_array());
-            BOOST_TEST(to_string(c) == to_string(b));
+            BOOST_TEST(serialize(c) == serialize(b));
         }
         {
             key_value_pair a{"2", 1};
             value b{"2", 1};
             value c = value_from(a);
             BOOST_TEST(c.is_array());
-            BOOST_TEST(to_string(c) == to_string(b));
+            BOOST_TEST(serialize(c) == serialize(b));
         }
     }
 

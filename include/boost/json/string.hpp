@@ -2769,14 +2769,6 @@ swap(string& lhs, string& rhs)
 
 //----------------------------------------------------------
 
-/** Serialize a @ref string to an output stream
-
-    Behaves as a formatted output function.
-*/
-BOOST_JSON_DECL
-std::ostream&
-operator<<(std::ostream& os, string const& s);
-
 /** Return true if lhs equals rhs.
 
     A lexicographical comparison is used.

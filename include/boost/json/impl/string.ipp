@@ -310,14 +310,6 @@ reserve_impl(size_type new_cap)
     }
 }
 
-//----------------------------------------------------------
-
-std::ostream&
-operator<<(std::ostream& os, string const& s)
-{
-    return os << static_cast<string_view>(s);
-}
-
 BOOST_JSON_NS_END
 
 #endif

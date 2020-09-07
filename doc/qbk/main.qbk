@@ -67,13 +67,13 @@
 [def __polymorphic_allocator__  [link json.ref.boost__json__polymorphic_allocator `polymorphic_allocator`]]
 [def __memory_resource__        [link json.ref.boost__json__memory_resource `memory_resource`]]
 [def __monotonic_resource__     [link json.ref.boost__json__monotonic_resource `monotonic_resource`]]
+[def __serialize__              [link json.ref.boost__json__serialize `serialize`]]
 [def __serializer__             [link json.ref.boost__json__serializer `serializer`]]
 [def __static_resource__        [link json.ref.boost__json__static_resource `static_resource`]]
 [def __storage_ptr__            [link json.ref.boost__json__storage_ptr `storage_ptr`]]
 [def __string__                 [link json.ref.boost__json__string `string`]]
 [def __string_view__            [link json.ref.boost__json__string_view `string_view`]]
 [def __system_error__           [link json.ref.boost__json__system_error `system_error`]]
-[def __to_string__              [link json.ref.boost__json__to_string `to_string`]]
 [def __value__                  [link json.ref.boost__json__value `value`]]
 [def __value_from__             [link json.ref.boost__json__value_from `value_from`]]
 [def __value_stack_             [link json.ref.boost__json__value_stack `value_stack`]]
@@ -98,7 +98,7 @@
 
 [import ../../example/pretty.cpp]
 [import ../../example/validate.cpp]
-[import ../../include/boost/json/impl/to_string.ipp]
+[import ../../include/boost/json/impl/serialize.ipp]
 [import ../../test/memory_resource.cpp]
 [import ../../test/snippets.cpp]
 

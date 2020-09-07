@@ -11,7 +11,7 @@
 #include <boost/json/static_resource.hpp>
 
 #include <boost/json/parse.hpp>
-#include <boost/json/to_string.hpp>
+#include <boost/json/serialize.hpp>
 #include <iostream>
 
 #include "test_suite.hpp"
@@ -46,7 +46,7 @@ public:
             unsigned char buf[1000];
             static_resource mr(
                 &buf[0], sizeof(buf));
-            BOOST_TEST(to_string(parse(
+            BOOST_TEST(serialize(parse(
                 "[1,2,3]", &mr)) == "[1,2,3]");
         }
 
@@ -55,7 +55,7 @@ public:
             unsigned char buf[10];
             static_resource mr(buf);
             BOOST_TEST_THROWS(
-                to_string(parse("[1,2,3]", &mr)),
+                serialize(parse("[1,2,3]", &mr)),
                 std::bad_alloc);
         }
 
@@ -64,7 +64,7 @@ public:
             unsigned char buf[1000];
             static_resource mr(
                 buf, 500);
-            BOOST_TEST(to_string(parse(
+            BOOST_TEST(serialize(parse(
                 "[1,2,3]", &mr)) == "[1,2,3]");
         }
 

@@ -37,6 +37,7 @@ local SOURCES =
     parse.cpp
     parser.cpp
     pilfer.cpp
+    serialize.cpp
     serializer.cpp
     snippets.cpp
     static_resource.cpp
@@ -44,7 +45,6 @@ local SOURCES =
     string.cpp
     string_view.cpp
     system_error.cpp
-    to_string.cpp
     value.cpp
     value_from.cpp
     value_stack.cpp

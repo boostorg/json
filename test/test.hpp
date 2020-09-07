@@ -883,7 +883,7 @@ to_string_test(
         dest.append(jv.get_string());
         dest.push_back('\"');
     #else
-        dest.append(to_string(jv));
+        dest.append(serialize(jv));
     #endif
         break;
 

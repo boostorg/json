@@ -49,9 +49,9 @@ serializer::
 suspend(
     state st,
     array::const_iterator it,
-    value const* jv)
+    array const* pa)
 {
-    st_.push(jv);
+    st_.push(pa);
     st_.push(it);
     st_.push(st);
     return false;
@@ -62,9 +62,9 @@ serializer::
 suspend(
     state st,
     object::const_iterator it,
-    value const* jv)
+    object const* po)
 {
-    st_.push(jv);
+    st_.push(po);
     st_.push(it);
     st_.push(st);
     return false;
@@ -454,23 +454,23 @@ bool
 serializer::
 write_array(stream& ss0)
 {
-    value const* jv;
+    array const* pa;
     local_stream ss(ss0);
     array::const_iterator it;
     array::const_iterator end;
     if(StackEmpty || st_.empty())
     {
-        jv = jv_;
-        it = jv->get_array().begin();
-        end = jv->get_array().end();
+        pa = pa_;
+        it = pa->begin();
+        end = pa->end();
     }
     else
     {
         state st;
         st_.pop(st);
         st_.pop(it);
-        st_.pop(jv);
-        end = jv->get_array().end();
+        st_.pop(pa);
+        end = pa->end();
         switch(st)
         {
         default:
@@ -486,7 +486,7 @@ do_arr1:
         ss.append('[');
     else
         return suspend(
-            state::arr1, it, jv);
+            state::arr1, it, pa);
     if(it == end)
         goto do_arr4;
     for(;;)
@@ -495,7 +495,7 @@ do_arr2:
         jv_ = &*it;
         if(! write_value<StackEmpty>(ss))
             return suspend(
-                state::arr2, it, jv);
+                state::arr2, it, pa);
         if(BOOST_JSON_UNLIKELY(
             ++it == end))
             break;
@@ -504,14 +504,14 @@ do_arr3:
             ss.append(',');
         else
             return suspend(
-                state::arr3, it, jv);
+                state::arr3, it, pa);
     }
 do_arr4:
     if(BOOST_JSON_LIKELY(ss))
         ss.append(']');
     else
         return suspend(
-            state::arr4, it, jv);
+            state::arr4, it, pa);
     return true;
 }
 
@@ -520,23 +520,23 @@ bool
 serializer::
 write_object(stream& ss0)
 {
-    value const* jv;
+    object const* po;
     local_stream ss(ss0);
     object::const_iterator it;
     object::const_iterator end;
     if(StackEmpty || st_.empty())
     {
-        jv = jv_;
-        it = jv->get_object().begin();
-        end = jv->get_object().end();
+        po = po_;
+        it = po->begin();
+        end = po->end();
     }
     else
     {
         state st;
         st_.pop(st);
         st_.pop(it);
-        st_.pop(jv);
-        end = jv->get_object().end();
+        st_.pop(po);
+        end = po->end();
         switch(st)
         {
         default:
@@ -554,7 +554,7 @@ do_obj1:
         ss.append('{');
     else
         return suspend(
-            state::obj1, it, jv);
+            state::obj1, it, po);
     if(BOOST_JSON_UNLIKELY(
         it == end))
         goto do_obj6;
@@ -567,19 +567,19 @@ do_obj2:
         if(BOOST_JSON_UNLIKELY(
             ! write_string<StackEmpty>(ss)))
             return suspend(
-                state::obj2, it, jv);
+                state::obj2, it, po);
 do_obj3:
         if(BOOST_JSON_LIKELY(ss))
             ss.append(':');
         else
             return suspend(
-                state::obj3, it, jv);
+                state::obj3, it, po);
 do_obj4:
         jv_ = &it->value();
         if(BOOST_JSON_UNLIKELY(
             ! write_value<StackEmpty>(ss)))
             return suspend(
-                state::obj4, it, jv);
+                state::obj4, it, po);
         ++it;
         if(BOOST_JSON_UNLIKELY(it == end))
             break;
@@ -588,7 +588,7 @@ do_obj5:
             ss.append(',');
         else
             return suspend(
-                state::obj5, it, jv);
+                state::obj5, it, po);
     }
 do_obj6:
     if(BOOST_JSON_LIKELY(ss))
@@ -597,7 +597,7 @@ do_obj6:
         return true;
     }
     return suspend(
-        state::obj6, it, jv);
+        state::obj6, it, po);
 }
 
 template<bool StackEmpty>
@@ -612,9 +612,11 @@ write_value(stream& ss)
         {
         default:
         case kind::object:
+            po_ = jv.is_object();
             return write_object<true>(ss);
 
         case kind::array:
+            pa_ = jv.is_array();
             return write_array<true>(ss);
 
         case kind::string:
@@ -717,9 +719,9 @@ read_some(
 
     stream ss(dest, size);
     if(st_.empty())
-        write_value<true>(ss);
+        (this->*fn0_)(ss);
     else
-        write_value<false>(ss);
+        (this->*fn1_)(ss);
     if(st_.empty())
     {
         done_ = true;
@@ -739,17 +741,59 @@ serializer() noexcept
         sizeof(serializer::buf_) >= 7);
 }
 
+void
 serializer::
-serializer(value const& jv) noexcept
+reset(value const* p) noexcept
 {
-    reset(jv);
+    pv_ = p;
+    fn0_ = &serializer::write_value<true>;
+    fn1_ = &serializer::write_value<false>;
+
+    jv_ = p;
+    st_.clear();
+    done_ = false;
 }
 
 void
 serializer::
-reset(value const& jv) noexcept
+reset(array const* p) noexcept
 {
-    jv_ = &jv;
+    pa_ = p;
+    fn0_ = &serializer::write_array<true>;
+    fn1_ = &serializer::write_array<false>;
+    st_.clear();
+    done_ = false;
+}
+
+void
+serializer::
+reset(object const* p) noexcept
+{
+    po_ = p;
+    fn0_ = &serializer::write_object<true>;
+    fn1_ = &serializer::write_object<false>;
+    st_.clear();
+    done_ = false;
+}
+
+void
+serializer::
+reset(string const* p) noexcept
+{
+    cs0_ = { p->data(), p->size() };
+    fn0_ = &serializer::write_string<true>;
+    fn1_ = &serializer::write_string<false>;
+    st_.clear();
+    done_ = false;
+}
+
+void
+serializer::
+reset(string_view sv) noexcept
+{
+    cs0_ = { sv.data(), sv.size() };
+    fn0_ = &serializer::write_string<true>;
+    fn1_ = &serializer::write_string<false>;
     st_.clear();
     done_ = false;
 }

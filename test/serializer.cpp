@@ -11,7 +11,7 @@
 #include <boost/json/serializer.hpp>
 
 #include <boost/json/parse.hpp>
-#include <boost/json/to_string.hpp>
+#include <boost/json/serialize.hpp>
 #include <iostream>
 
 #include "parse-vectors.hpp"
@@ -23,6 +23,23 @@ BOOST_JSON_NS_BEGIN
 class serializer_test
 {
 public:
+    //------------------------------------------------------
+
+    // From the javadoc
+
+    void print( std::ostream& os, value const& jv)
+    {
+        serializer sr;
+        sr.reset( &jv );
+        while( ! sr.done() )
+        {
+            char buf[ 4000 ];
+            os << sr.read( buf );
+        }
+    }
+
+    //------------------------------------------------------
+
     ::test_suite::log_type log;
 
     void
@@ -33,7 +50,7 @@ public:
     {
         {
             error_code ec;
-            auto const s1 = to_string(jv);
+            auto const s1 = serialize(jv);
             auto const jv2 = parse(s1, ec);
             if(! BOOST_TEST(equal(jv, jv2)))
             {
@@ -53,13 +70,14 @@ public:
         // large buffer
         {
             error_code ec;
-            serializer sr(jv);
+            serializer sr;
+            sr.reset(&jv);
             string js;
             js.reserve(4096);
             js.grow(sr.read(
                 js.data(), js.capacity()).size());
 
-            auto const s1 = to_string(jv);
+            auto const s1 = serialize(jv);
             auto const jv2 = parse(s1, ec);
             BOOST_TEST(equal(jv, jv2));
         }
@@ -73,12 +91,12 @@ public:
     {
         grind_one(s0, jv, name);
 
-        auto const s1 =
-            to_string(jv);
+        auto const s1 = serialize(jv);
         for(std::size_t i = 1;
             i < s1.size(); ++i)
         {
-            serializer sr(jv);
+            serializer sr;
+            sr.reset(&jv);
             string s2;
             s2.reserve(s1.size());
             s2.grow(sr.read(
@@ -339,8 +357,6 @@ public:
     void
     testMembers()
     {
-        value jv = 1;
-
         // serializer()
         {
             serializer sr;
@@ -349,17 +365,11 @@ public:
             BOOST_TEST(sr.read(buf) == "null");
         }
 
-        // serializer(value)
-        {
-            serializer sr(jv);
-
-            char buf[32];
-            BOOST_TEST(sr.read(buf) == "1");
-        }
-
         // done()
         {
-            serializer sr(jv);
+            value jv = 1;
+            serializer sr;
+            sr.reset(&jv);
             BOOST_TEST(! sr.done());
             char buf[32];
             BOOST_TEST(sr.read(buf) == "1");
@@ -368,7 +378,9 @@ public:
 
         // read()
         {
-            serializer sr(jv);
+            value jv = 1;
+            serializer sr;
+            sr.reset(&jv);
             char buf[1024];
             auto const s = sr.read(buf);
             BOOST_TEST(sr.done());
@@ -380,6 +392,42 @@ public:
             serializer sr;
             char buf[100];
             BOOST_TEST(sr.read(buf, 50) == "null");
+        }
+
+        // reset(value)
+        {
+            char buf[100];
+            serializer sr;
+            value jv = { 1, 2, 3 };
+            sr.reset(&jv);
+            BOOST_TEST(sr.read(buf) == "[1,2,3]");
+        }
+
+        // reset(array)
+        {
+            char buf[100];
+            serializer sr;
+            array arr = { 1, 2, 3 };
+            sr.reset(&arr);
+            BOOST_TEST(sr.read(buf) == "[1,2,3]");
+        }
+
+        // reset(object)
+        {
+            char buf[100];
+            serializer sr;
+            object obj = { {"k1",1}, {"k2",2} };
+            sr.reset(&obj);
+            BOOST_TEST(sr.read(buf) == "{\"k1\":1,\"k2\":2}");
+        }
+
+        // reset(string)
+        {
+            char buf[100];
+            serializer sr;
+            string str = "123";
+            sr.reset(&str);
+            BOOST_TEST(sr.read(buf) == "\"123\"");
         }
     }
 
@@ -486,11 +534,11 @@ public:
     {
         // no decimal or exponent parsed as integer
         BOOST_TEST(parse("-0").as_int64() == 0);
-        BOOST_TEST(to_string(parse("-0")) == "0");
+        BOOST_TEST(serialize(parse("-0")) == "0");
         BOOST_TEST(parse("-0.0").as_double() == -0);
-        BOOST_TEST(to_string(parse("0.0")) == "0E0");
+        BOOST_TEST(serialize(parse("0.0")) == "0E0");
         BOOST_TEST(parse("0.0").as_double() == 0);
-        BOOST_TEST(to_string(parse("-0.0")) == "-0E0");
+        BOOST_TEST(serialize(parse("-0.0")) == "-0E0");
     }
 
     void

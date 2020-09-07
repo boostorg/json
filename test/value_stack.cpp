@@ -10,8 +10,8 @@
 // Test that header file is self-contained.
 #include <boost/json/value_stack.hpp>
 
+#include <boost/json/serialize.hpp>
 #include <boost/json/static_resource.hpp>
-#include <boost/json/to_string.hpp>
 
 #include "test_suite.hpp"
 
@@ -59,7 +59,7 @@ public:
     // Pop the object from the stack and take ownership.
     value jv = st.release();
 
-    assert( to_string(jv) == "{\"a\":1,\"b\":null,\"c\":\"hello\"}" );
+    assert( serialize(jv) == "{\"a\":1,\"b\":null,\"c\":\"hello\"}" );
 
     // At this point we could re-use the stack by calling reset
     }
@@ -83,7 +83,7 @@ public:
         // Pop the object from the stack and take ownership.
         value jv = st.release();
 
-        assert( to_string(jv) == "[1,2,3]" );
+        assert( serialize(jv) == "[1,2,3]" );
 
         // At this point, reset must be called again to use the stack
     }
@@ -106,7 +106,7 @@ public:
         // Pop the object from the stack and take ownership.
         value jv = st.release();
 
-        assert( to_string(jv) == "{\"x\":true}" );
+        assert( serialize(jv) == "{\"x\":true}" );
 
         // At this point, reset must be called again to use the stack
     }

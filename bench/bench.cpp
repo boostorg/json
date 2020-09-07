@@ -294,7 +294,7 @@ public:
         out.reserve(512);
         while(repeat--)
         {
-            sr.reset(jv);
+            sr.reset(&jv);
             out.clear();
             for(;;)
             {
@@ -362,7 +362,7 @@ public:
         out.reserve(512);
         while(repeat--)
         {
-            sr.reset(jv);
+            sr.reset(&jv);
             out.clear();
             for(;;)
             {

@@ -12,7 +12,7 @@
 #include <boost/json/monotonic_resource.hpp>
 
 #include <boost/json/parse.hpp>
-#include <boost/json/to_string.hpp>
+#include <boost/json/serialize.hpp>
 #include <boost/json/detail/align.hpp>
 #include <iostream>
 

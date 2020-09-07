@@ -2697,11 +2697,6 @@ public:
         BOOST_TEST(  operator> (s1, s2));
         BOOST_TEST(  operator> (v1, s2));
         BOOST_TEST(  operator> (c1, s2));
-
-        std::stringstream ss;
-        string s = "Hello, world";
-        ss << s;
-        BOOST_TEST(ss.str() == s);
     }
 
     void

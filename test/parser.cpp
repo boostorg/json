@@ -13,7 +13,7 @@
 
 #include <boost/json/monotonic_resource.hpp>
 #include <boost/json/parse.hpp>
-#include <boost/json/to_string.hpp>
+#include <boost/json/serialize.hpp>
 
 #include <sstream>
 #include <iostream>
@@ -80,7 +80,7 @@ public:
     {
         auto const s2 =
             //to_string_test(jv1); // use this if serializer is broken
-            to_string(jv1);
+            serialize(jv1);
         auto jv2 =
             from_string_test(s2, {}, po);
         BOOST_TEST(equal(jv1, jv2));
@@ -860,7 +860,7 @@ R"xx({
             p.finish(ec);
         if(BOOST_TEST(! ec))
         {
-            BOOST_TEST(to_string(p.release(ec)) == out);
+            BOOST_TEST(serialize(p.release(ec)) == out);
             BOOST_TEST(! ec);
         }
     }
@@ -1038,7 +1038,7 @@ R"xx({
 
         auto const jv = parse("[]");
         auto const t = T{jv};
-        BOOST_TEST(to_string(t.jv) == "[]");
+        BOOST_TEST(serialize(t.jv) == "[]");
     }
 
     //------------------------------------------------------
