@@ -88,6 +88,8 @@
 #ifndef BOOST_FORCEINLINE
 # ifdef _MSC_VER
 #  define BOOST_FORCEINLINE __forceinline
+# elif defined(__GNUC__) || defined(__clang__)
+#  define BOOST_FORCEINLINE inline __attribute__((always_inline))
 # else
 #  define BOOST_FORCEINLINE inline
 # endif
@@ -208,6 +210,28 @@
 
 BOOST_JSON_NS_BEGIN
 namespace detail {
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Winvalid-noreturn"
+#elif defined(__GNUC__)
+#pragma gcc diagnostic push
+#pragma gcc diagnostic ignored "-Winvalid-noreturn"
+#endif
+
+BOOST_NORETURN
+BOOST_FORCEINLINE
+void
+unreachable()
+{
+    BOOST_ASSERT(! "unreachable control path");
+}
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma gcc diagnostic pop
+#endif
 
 template<class...>
 struct make_void

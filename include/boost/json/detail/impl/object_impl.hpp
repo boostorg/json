@@ -76,7 +76,7 @@ bucket_index(
     // https://github.com/CPPAlliance/json/issues/115
     switch(index)
     {
-        default:
+        default: unreachable();
         case  0: return 0;
         case  1: return hash % bucket_sizes()[1];
         case  2: return hash % bucket_sizes()[2];
