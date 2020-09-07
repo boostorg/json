@@ -16,6 +16,19 @@
 BOOST_JSON_NS_BEGIN
 namespace detail {
 
+constexpr
+std::size_t
+object_impl::
+max_size() noexcept
+{
+    // max_size depends on the address model
+    using min = std::integral_constant<std::size_t,
+        (std::size_t(-1) - sizeof(table)) /
+            (sizeof(value_type) + sizeof(index_t))>;
+    return min::value < BOOST_JSON_MAX_STRUCTURED_SIZE ?
+        min::value : BOOST_JSON_MAX_STRUCTURED_SIZE;
+}
+
 void
 object_impl::
 remove(
@@ -41,7 +54,7 @@ bucket_sizes() noexcept ->
 {
     // Taken from Boost.Intrusive and Boost.MultiIndex code,
     // thanks to Ion Gaztanaga and Joaquin M Lopez Munoz.
-    static constexpr std::size_t list[33] =
+    static constexpr std::size_t list[34] =
     {
         0,
 
@@ -61,7 +74,9 @@ bucket_sizes() noexcept ->
         100663319,             201326611,
         402653189,             805306457,
         1610612741,
-        BOOST_JSON_MAX_STRUCTURED_SIZE // 3221225473
+        BOOST_JSON_MAX_STRUCTURED_SIZE,
+        // catch anything that exceeds max_size
+        std::size_t(-1)
     };
     return list;
 }

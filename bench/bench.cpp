@@ -387,6 +387,11 @@ class boost_null_impl : public any_impl
     {
         struct handler
         {
+            constexpr static std::size_t max_object_size = std::size_t(-1);
+            constexpr static std::size_t max_array_size = std::size_t(-1);
+            constexpr static std::size_t max_key_size = std::size_t(-1);
+            constexpr static std::size_t max_string_size = std::size_t(-1);
+
             bool on_document_begin(error_code&) { return true; }
             bool on_document_end(error_code&) { return true; }
             bool on_object_begin(error_code&) { return true; }

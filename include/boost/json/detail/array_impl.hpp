@@ -54,10 +54,7 @@ public:
     static
     constexpr
     std::size_t
-    max_size() noexcept
-    {
-        return BOOST_JSON_MAX_STRUCTURED_SIZE;
-    }
+    max_size() noexcept;
 
     value*
     data() const noexcept

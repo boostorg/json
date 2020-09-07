@@ -1640,13 +1640,7 @@ public:
         check_array(value{false,2},             false, 2);
         check_array(value{false,2,"3",nullptr}, false, 2, "3", nullptr);
         check_array(value{2,false,"3"},         2, false, "3");
-        check_array(value{true,2,"3"},          true, 2, "3");    }
-
-    void
-    testMaxSize()
-    {
-        // The implementation requires these equal
-        BOOST_TEST(object::max_size() == array::max_size());
+        check_array(value{true,2,"3"},          true, 2, "3");    
     }
 
     //------------------------------------------------------
@@ -1667,7 +1661,6 @@ public:
         testKeyValuePair();
         testStdConstruction();
         testInitList();
-        testMaxSize();
     }
 };
 

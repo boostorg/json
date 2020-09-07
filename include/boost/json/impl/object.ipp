@@ -509,12 +509,12 @@ rehash(std::size_t new_capacity)
     BOOST_ASSERT(new_capacity > capacity());
     std::size_t const* prime = 
         object_impl::bucket_sizes();
-    while(new_capacity > *prime)
+    while(*prime < new_capacity)
         ++prime;
     new_capacity = *prime;
     if(new_capacity > max_size())
         detail::throw_length_error(
-            "object too large",
+            "new_capacity > max_size()",
             BOOST_CURRENT_LOCATION);
     object_impl impl(
         new_capacity,
