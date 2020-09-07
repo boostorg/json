@@ -341,8 +341,7 @@ that will log allocations and deallocations, and then forward them to
 
 To support code bases which are already using polymorphic allocators,
 the containers in this library support __std_uses_allocator__ construction.
-This is accomplished through specialization of the `uses_allocator` class
-template. For __array__, __object__, __string__, and __value__:
+For __array__, __object__, __string__, and __value__:
 
 * The nested type `allocator_type` is an alias for a __polymorphic_allocator__
 

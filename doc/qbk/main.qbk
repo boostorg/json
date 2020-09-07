@@ -121,13 +121,14 @@ in memory.
     [[
         [link json.usage Usage]
     ][
-        How to use the library to perform common tasks with JSON.
+        A quick look at how to use the library, followed by
+        more in-depth explanation on how each part works.
     ]]
     [[
         [link json.examples Examples]
     ][
         Some example programs which demonstrate the use of the
-        library to perform specific tasks.
+        library to perform various tasks.
     ]]
     [[
         [link json.comparison Comparison]
@@ -149,7 +150,7 @@ in memory.
 ]
 
 [include 01_overview.qbk]
-[include 02_usage.qbk]
+[include 02_00_usage.qbk]
 [include 03_examples.qbk]
 [include 04_comparison.qbk]
 [include 05_benchmarks.qbk]

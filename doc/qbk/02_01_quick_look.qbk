@@ -1,0 +1,308 @@
+[/
+    Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+    Official repository: https://github.com/cppalliance/json
+]
+
+[/-----------------------------------------------------------------------------]
+
+[section Quick Look]
+
+Here we highlight important features through example
+code to help convey the style of the interface. We
+begin by including the library header file which brings
+all the symbols into scope. Alternatively, individual
+headers may be included to obtain the declarations for
+specific types:
+```
+#include <boost/json.hpp>
+```
+
+In order to link your program you will need to link with
+a built library. Alternatively you can use the header-only
+configuration simply by including this header file in any
+['one] of your new or existing source files:
+```
+#include <boost/json/src.hpp>
+```
+
+[h5 Values]
+
+Say you want to recreate this JSON object in a container:
+```
+{
+  "pi": 3.141,
+  "happy": true,
+  "name": "Boost",
+  "nothing": null,
+  "answer": {
+    "everything": 42
+  },
+  "list": [1, 0, 2],
+  "object": {
+    "currency": "USD",
+    "value": 42.99
+  }
+}
+```
+
+In this library the types __array__, __object__, and __string__
+hold JSON arrays, objects, and strings respectively while the
+type __value__ is a special variant which can hold any JSON
+element. Here we construct an empty object and then insert
+the elements above:
+```
+object obj;                                                     // construct an empty object
+obj[ "pi" ] = 3.141;                                            // insert a double
+obj[ "happy" ] = true;                                          // insert a bool
+obj[ "name" ] = "Boost";                                        // insert a string
+obj[ "nothing" ] = nullptr;                                     // insert a null
+obj[ "answer" ].emplace_object()["everything"] = 42;            // insert an object with 1 element
+obj[ "list" ] = { 1, 0, 2 };                                    // insert an array with 3 elements
+obj[ "object" ] = { {"currency", "USD"}, {"value", 42.99} };    // insert an object with 2 elements
+```
+
+While keys are strings, the mapped type of objects and the element
+type of arrays is a special type called __value__ which can hold
+any JSON element, as seen in the previous assignments.
+Instead of building the JSON document using a series of function calls,
+we can build it in one statement using an initializer list:
+```
+value jv = {
+    { "pi", 3.141 },
+    { "happy", true },
+    { "name", "Niels" },
+    { "nothing", nullptr },
+    { "answer", {
+        { "everything", 42 } } },
+    {"list", {1, 0, 2}},
+    {"object", {
+        { "currency", "USD" },
+        { "value", 42.99 }
+            } }
+    };
+```
+
+When a __value__, __array__, or __object__ is assigned or constructed
+from an initializer list, the creation of the new value happens only
+once. This makes initializer lists equally efficient as using the other
+ways to create a value. The types in this library are first-class,
+supporting copy and move construction and assignment:
+```
+array arr;                                          // construct an empty array
+arr = { 1, 2, 3 };                                  // replace the contents with 3 elements
+value jv1( arr );                                   // this makes a copy of the array
+value jv2( std::move(arr) );                        // this performs a move-construction
+
+assert( arr.empty() );                              // moved-from arrays become empty
+arr = { nullptr, true, "boost" };                   // fill in the array again
+```
+
+[h5 Allocators]
+
+To permit custom memory allocation strategies, these containers all
+allow construction with a __storage_ptr__ which is a smart pointer
+to a __memory_resource__. The constructor signatures have the same
+ordering as their `std` equivalents which use ['Allocator] parameters.
+Once a container is constructed its memory resource can never change.
+Here we create an array without performing any dynamic allocations:
+```
+{
+    unsigned char buf[ 4096 ];                      // storage for our array
+    static_resource mr( buf );                      // memory resource which uses buf
+    array arr( &mr );                               // construct using the memory resource
+    arr = { 1, 2, 3 };                              // all allocated memory comes from `buf`
+}
+```
+
+The containers in this library enforce the invariant that every
+element of the container will use the same memory resource:
+```
+{
+    monotonic_resource mr;                          // memory resource optimized for insertion
+    array arr( &mr );                               // construct using the memory resource
+    arr.resize( 1 );                                // make space for one element
+    arr[ 0 ] = { 1, 2, 3 };                         // assign an array to element 0
+    assert( *arr[0].storage() == *arr.storage() );  // same memory resource
+}
+```
+
+When a library type is used as the element type of a pmr container;
+that is, a container which uses a __polymorphic_allocator__, the
+memory resource will automaticaly propagate to the type and all
+of its children:
+```
+{
+    monotonic_resource mr;
+    boost::pmr::vector< value > vv( &mr );
+    vv.resize( 3 );
+    assert( vv.get_allocator().resource() == *arr[0].storage() );   // same memory resource
+}
+```
+
+Up until now we have shown how values may be constructed from a
+memory resource pointer, where ownership is not transferred. In this
+case the caller is responsible for ensuring that the lifetime of the
+resource is extended for the life of the container. Sometimes you want
+the container to acquire shared ownership of the resource. This is
+accomplished with __make_counted_resource__:
+```
+value f()
+{
+    // create a reference-counted memory resource
+    storage_ptr sp = make_counted_resource< monotonic_resource >();
+
+    // construct with shared ownership of the resource
+    value jv( sp );
+
+    // assign an array with 3 elements, the monotonic resource will be used
+    jv = { 1, 2, 3 };
+
+    // The caller receives the value, which still owns the resource
+    return jv;
+}
+```
+
+A counted memory resource will not be destroyed until every container
+with shared ownership of the resource is destroyed.
+
+[h5 Parsing]
+
+JSON can be parsed into the value container in one step using a free
+function. In the following snippet, a parse error is indicated by a
+thrown exception:
+```
+value jv = parse( "[1, 2, 3]" );
+```
+
+Error codes are also possible:
+```
+error_code ec;
+value jv = parse( R"( "Hello, world!" )", ec );
+```
+
+By default, the parser is strict and only accepts JSON compliant with
+the standard. However this behavior can be relaxed by filling out an
+options structure enabling one or more extensions. Here we use a
+static buffer and enable two non-standard extensions:
+```
+unsigned char buf[ 4096 ];
+static_resource mr( buf );
+parse_options opt;
+opt.allow_comments = true;
+opt.allow_trailing_commas = true;
+value jv = parse( "[1, 2, 3, ] // array ", &mr, opt );
+```
+
+The parser in this library implements an
+[@https://en.wikipedia.org/wiki/Online_algorithm ['online algorithm]];
+it can process JSON piece-by-piece, without the requirement that the
+entire input is available from the start.
+The parser uses a temporary memory allocation to do its work. If
+you plan on parsing multiple JSONs, for example in a network server,
+keeping the same parser instance will allow re-use of this temporary
+storage, improving performance.
+```
+parser p;
+error_code ec;
+p.reset();
+p.write( "[1, 2 ", ec );
+p.write( ", 3]", ec );
+p.finish( ec );
+value jv = p.release();
+```
+
+[h5 Serializing]
+
+Simple free functions are provided for serializing a __value__
+to a __std_string__ containing JSON:
+```
+value jv = { 1, 2, 3 };
+std::string s = serialize( jv );                // produces "[1,2,3]"
+```
+
+The serializer in this library implements an
+[@https://en.wikipedia.org/wiki/Online_algorithm ['online algorithm]];
+it can output JSON a piece at a time, without the requirement that the
+entire output area is allocated at once:
+```
+serializer sr;
+sr.reset( jv );                                 // prepare to output `jv`
+do
+{
+    char buf[ 16 ];
+    std::cout << sr.read( buf );
+}
+while( ! sr.done() );
+```
+
+[h5 Value Conversion]
+
+Given a user-defined type:
+```
+struct customer
+{
+    int id;
+    std::string name;
+    bool current;
+};
+```
+
+We can define a conversion from the user-defined type to a __value__
+by defining an overload of `tag_invoke` in the same namespace. This
+maps `customer` to a JSON object:
+```
+void tag_invoke( value_from_tag, value& jv, customer const& c )
+{
+    jv = {
+        { "id" , c.id },
+        { "name", c.name },
+        { "current", c.current }
+    };
+}
+```
+
+This allows us to use the library function __value_from__ to produce
+a __value__ from our type:
+```
+customer c{ 1001, "Boost", true };
+std::cout << serialize( value_from( c ) );
+```
+
+The library knows what to do with standard containers. Here we
+convert an array of customers to a value:
+```
+std::vector< customer > vc;
+//...
+value jv = value_from( vc );
+```
+
+To go from JSON to a user-defined type we use __value_to__,
+which uses an overload of `tag_invoke`. This converts a JSON
+value to a `customer`. It throws an exception if the contents
+of the value do not match the expected contents:
+```
+customer tag_invoke( value_to_tag< customer >, value const& jv )
+{
+    object const& obj = jv.as_object();
+    return customer {
+        obj.at( "id" ).as_int64(),
+        obj.at( "name" ).as_string().subview(),
+        obj.at( "current" ).as_bool()
+    };
+}
+```
+
+Now we can construct customers from JSON:
+```
+json::value jv;
+//...
+customer c( value_to<customer>(jv) );
+```
+
+[/-----------------------------------------------------------------------------]
+
+[endsect]

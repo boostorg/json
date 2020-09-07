@@ -1,4 +1,4 @@
-[![Boost.JSON](https://raw.githubusercontent.com/vinniefalco/json/develop/doc/images/repo-logo-3.png)](http://master.json.cpp.al/)
+[![Boost.JSON](https://raw.githubusercontent.com/CPPAlliance/json/master/doc/images/repo-logo-3.png)](http://master.json.cpp.al/)
 
 Branch          | [`master`](https://github.com/CPPAlliance/json/tree/master) | [`develop`](https://github.com/CPPAlliance/json/tree/develop) |
 --------------- | ----------------------------------------------------------- | ------------------------------------------------------------- |
@@ -83,6 +83,19 @@ to modify build scripts to link to a static or dynamic library, simply
 place the following line in any new or existing translation unit in your
 project.
 ```
+#include <boost/json/src.hpp>
+```
+
+### Embedded
+
+Boost.JSON works great on embedded devices. The library uses local
+stack buffers to increase the performance of some operations. On
+Intel platforms these buffers are large (4KB), while on non-Intel
+platforms they are small (256 bytes). To adjust the size of the
+stack buffers for embedded applications define this macro when
+building the library or including the function definitions:
+```
+#define BOOST_JSON_STACK_BUFFER_SIZE 1024
 #include <boost/json/src.hpp>
 ```
 

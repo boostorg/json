@@ -89,7 +89,7 @@ as part of Boost, or in the standalone flavor (without Boost):
 
 To use Boost.JSON header-only; that is, to eliminate the requirement
 to modify build scripts to link to a static or dynamic library, simply
-place the following line in any new or existing translation unit in your
+place the following line in any new or existing source file in your
 project.
 ```
 #include <boost/json/src.hpp>
