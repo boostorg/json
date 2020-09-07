@@ -90,16 +90,10 @@ class storage_ptr
     using counted_resource =
         detail::counted_resource;
 
-    std::uintptr_t i_ = 0;
+    using default_resource =
+        detail::default_resource;
 
-    static
-    memory_resource*
-    get_default() noexcept
-    {
-        BOOST_JSON_REQUIRE_CONST_INIT
-        static detail::default_resource impl;
-        return &impl;
-    }
+    std::uintptr_t i_;
 
     counted_resource*
     get_counted() const noexcept
@@ -152,7 +146,7 @@ public:
 
         No-throw guarantee.
     */
-    ~storage_ptr()
+    ~storage_ptr() noexcept
     {
         release();
     }
@@ -173,7 +167,7 @@ public:
         No-throw guarantee.
     */
     storage_ptr() noexcept
-        : i_(0)
+        : i_(default_resource::get())
     {
     }
 
@@ -271,8 +265,8 @@ public:
     */
     storage_ptr(
         storage_ptr&& other) noexcept
-        : i_(detail::exchange(
-            other.i_, 0))
+        : i_(detail::exchange(other.i_, 
+            default_resource::get()))
     {
     }
 
@@ -337,8 +331,8 @@ public:
         storage_ptr&& other) noexcept
     {
         release();
-        i_ = detail::exchange(
-            other.i_, 0);
+        i_ = detail::exchange(other.i_, 
+            default_resource::get());
         return *this;
     }
 
@@ -432,10 +426,8 @@ public:
     memory_resource*
     get() const noexcept
     {
-        if(i_ != 0)
-            return reinterpret_cast<
-                memory_resource*>(i_ & ~3);
-        return get_default();
+        return reinterpret_cast<
+            memory_resource*>(i_ & ~3);
     }
 
     /** Return a pointer to the memory resource.

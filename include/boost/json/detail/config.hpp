@@ -45,10 +45,21 @@
 
 #ifndef BOOST_JSON_REQUIRE_CONST_INIT
 # define BOOST_JSON_REQUIRE_CONST_INIT		
-# if defined(__clang__) && defined(__has_cpp_attribute)		
+# if __cpp_constinit >= 201907L
+#  undef BOOST_JSON_REQUIRE_CONST_INIT		
+#  define BOOST_JSON_REQUIRE_CONST_INIT constinit
+# elif defined(__clang__) && defined(__has_cpp_attribute)		
 #  if __has_cpp_attribute(clang::require_constant_initialization)		
 #   undef BOOST_JSON_REQUIRE_CONST_INIT		
 #   define BOOST_JSON_REQUIRE_CONST_INIT [[clang::require_constant_initialization]]		
+#  endif
+# endif
+#endif
+
+#ifndef BOOST_JSON_NO_DESTROY	
+# if defined(__clang__) && defined(__has_cpp_attribute)		
+#  if __has_cpp_attribute(clang::no_destroy)		
+#   define BOOST_JSON_NO_DESTROY [[clang::no_destroy]]		
 #  endif
 # endif
 #endif
@@ -184,6 +195,16 @@
 #  define BOOST_JSON_UNLIKELY(x) __builtin_expect(!!(x), 0)
 # else
 #  define BOOST_JSON_UNLIKELY(x) x
+# endif
+#endif
+
+// older versions of msvc and clang don't always 
+// constant initialize when they are supposed to
+#ifndef BOOST_JSON_WEAK_CONSTINIT
+# if defined(_MSC_VER) && ! defined(__clang__) && _MSC_VER < 1920
+#  define BOOST_JSON_WEAK_CONSTINIT
+# elif defined(__clang__) && __clang_major__ < 4
+#  define BOOST_JSON_WEAK_CONSTINIT
 # endif
 #endif
 

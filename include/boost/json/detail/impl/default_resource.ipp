@@ -15,6 +15,16 @@
 BOOST_JSON_NS_BEGIN
 namespace detail {
 
+#ifndef BOOST_JSON_WEAK_CONSTINIT
+# ifndef BOOST_JSON_NO_DESTROY
+default_resource::holder
+default_resource::instance_;
+# else
+default_resource
+default_resource::instance_;
+# endif
+#endif
+
 // this is here so that ~memory_resource
 // is emitted in the library instead of
 // the user's TU.

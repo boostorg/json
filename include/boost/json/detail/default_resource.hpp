@@ -16,15 +16,38 @@
 BOOST_JSON_NS_BEGIN
 namespace detail {
 
-/** A simple memory resource that uses operator new and delete.
-*/
+// A simple memory resource that uses operator new and delete.
 class
     BOOST_SYMBOL_VISIBLE
     BOOST_JSON_CLASS_DECL
     default_resource final
     : public memory_resource
 {
+    union holder;
+
+#ifndef BOOST_JSON_WEAK_CONSTINIT
+# ifndef BOOST_JSON_NO_DESTROY
+    BOOST_JSON_REQUIRE_CONST_INIT
+    static holder instance_;
+# else
+    BOOST_JSON_NO_DESTROY
+    BOOST_JSON_REQUIRE_CONST_INIT
+    static default_resource instance_;
+# endif
+#endif
+
 public:
+    static
+    std::uintptr_t
+    get() noexcept
+    {
+    #ifdef BOOST_JSON_WEAK_CONSTINIT
+        static default_resource instance_;
+    #endif
+        return reinterpret_cast<
+            std::uintptr_t>(&instance_);
+    }
+    
     ~default_resource();
 
     void*
@@ -41,6 +64,25 @@ public:
     bool
     do_is_equal(
         memory_resource const& mr) const noexcept override;
+};
+
+
+union default_resource::
+    holder
+{
+#ifndef BOOST_JSON_WEAK_CONSTINIT
+    constexpr
+#endif
+    holder()
+        : mr()
+    {
+    }
+
+    ~holder()
+    {
+    }
+
+    default_resource mr;
 };
 
 } // detail

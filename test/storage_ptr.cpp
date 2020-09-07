@@ -20,6 +20,9 @@ BOOST_JSON_NS_BEGIN
 class storage_ptr_test
 {
 public:
+    static value jv1;
+    static value jv2;
+
     struct throwing
         : memory_resource
     {
@@ -171,15 +174,26 @@ public:
     }
 
     void
+    testInitOrder()
+    {
+        BOOST_ASSERT(jv1.storage() == jv2.storage());
+        BOOST_TEST(! jv1.storage().is_deallocate_trivial());
+        BOOST_TEST(! jv1.storage().is_counted());
+    }
+
+    void
     run()
     {
         storage_ptr sp;
 
         testMembers();
-
         testPull182();
+        testInitOrder();
     }
 };
+
+value storage_ptr_test::jv1 = {1, 2, 3};
+value storage_ptr_test::jv2 = {1, 2, 3};
 
 TEST_SUITE(storage_ptr_test, "boost.json.storage_ptr");
 
