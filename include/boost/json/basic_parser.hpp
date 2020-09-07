@@ -146,22 +146,16 @@ dec_to_float(
         pow10(e);
 }
 
-} // detail
-
-//----------------------------------------------------------
-
-template<class Handler>
+inline
 bool
-basic_parser<Handler>::
 is_control(char c) noexcept
 {
     return static_cast<unsigned char>(c) < 32;
 }
 
-template<class Handler>
-char
-basic_parser<Handler>::
-hex_digit(char c) noexcept
+inline
+int
+hex_digit(unsigned char c) noexcept
 {
     // by Peter Dimov
     if( c >= '0' && c <= '9' )
@@ -171,6 +165,10 @@ hex_digit(char c) noexcept
         return 10 + c - 'A';
     return -1;
 }
+
+} // detail
+
+//----------------------------------------------------------
 
 template<class Handler>
 void
@@ -1053,7 +1051,7 @@ parse_escaped(
         error::key_too_large : error::string_too_large;
     detail::clipped_const_stream cs(p, end_);
     detail::buffer<BOOST_JSON_PARSER_BUFFER_SIZE> temp;
-    int32_t digit;
+    int digit;
     char c;
     cs.clip(temp.max_size());
     if(! StackEmpty && ! st_.empty())
@@ -1151,13 +1149,13 @@ do_str3:
             // with fewer instructions
             digit = detail::load_little_endian<4>(
                 cs.begin() + 1);
-            int d4 = hex_digit(static_cast<
+            int d4 = detail::hex_digit(static_cast<
                 unsigned char>(digit >> 24));
-            int d3 = hex_digit(static_cast<
+            int d3 = detail::hex_digit(static_cast<
                 unsigned char>(digit >> 16));
-            int d2 = hex_digit(static_cast<
+            int d2 = detail::hex_digit(static_cast<
                 unsigned char>(digit >> 8));
-            int d1 = hex_digit(static_cast<
+            int d1 = detail::hex_digit(static_cast<
                 unsigned char>(digit));
             if(BOOST_JSON_UNLIKELY(
                 (d1 | d2 | d3 | d4) == -1))
@@ -1200,13 +1198,13 @@ do_str3:
                 return fail(cs.begin(), error::syntax);
             ++cs;
             digit = detail::load_little_endian<4>(cs.begin());
-            d4 = hex_digit(static_cast<
+            d4 = detail::hex_digit(static_cast<
                 unsigned char>(digit >> 24));
-            d3 = hex_digit(static_cast<
+            d3 = detail::hex_digit(static_cast<
                 unsigned char>(digit >> 16));
-            d2 = hex_digit(static_cast<
+            d2 = detail::hex_digit(static_cast<
                 unsigned char>(digit >> 8));
-            d1 = hex_digit(static_cast<
+            d1 = detail::hex_digit(static_cast<
                 unsigned char>(digit));
             if(BOOST_JSON_UNLIKELY(
                 (d1 | d2 | d3 | d4) == -1))
@@ -1255,7 +1253,7 @@ do_str3:
 do_str4:
         if(BOOST_JSON_UNLIKELY(! cs))
             return maybe_suspend(cs.begin(), state::str4, total);
-        digit = hex_digit(*cs);
+        digit = detail::hex_digit(*cs);
         if(BOOST_JSON_UNLIKELY(digit == -1))
             return fail(cs.begin(), 
                 error::expected_hex_digit);
@@ -1264,7 +1262,7 @@ do_str4:
 do_str5:
         if(BOOST_JSON_UNLIKELY(! cs))
             return maybe_suspend(cs.begin(), state::str5, total);
-        digit = hex_digit(*cs);
+        digit = detail::hex_digit(*cs);
         if(BOOST_JSON_UNLIKELY(digit == -1))
             return fail(cs.begin(), 
                 error::expected_hex_digit);
@@ -1273,7 +1271,7 @@ do_str5:
 do_str6:
         if(BOOST_JSON_UNLIKELY(! cs))
             return maybe_suspend(cs.begin(), state::str6, total);
-        digit = hex_digit(*cs);
+        digit = detail::hex_digit(*cs);
         if(BOOST_JSON_UNLIKELY(digit == -1))
             return fail(cs.begin(), 
                 error::expected_hex_digit);
@@ -1282,7 +1280,7 @@ do_str6:
 do_str7:
         if(BOOST_JSON_UNLIKELY(! cs))
             return maybe_suspend(cs.begin(), state::str7, total);
-        digit = hex_digit(*cs);
+        digit = detail::hex_digit(*cs);
         if(BOOST_JSON_UNLIKELY(digit == -1))
             return fail(cs.begin(), 
                 error::expected_hex_digit);
@@ -1314,7 +1312,7 @@ do_sur2:
 do_sur3:
         if(BOOST_JSON_UNLIKELY(! cs))
             return maybe_suspend(cs.begin(), state::sur3, total);
-        digit = hex_digit(*cs);
+        digit = detail::hex_digit(*cs);
         if(BOOST_JSON_UNLIKELY(digit == -1))
             return fail(cs.begin(), 
                 error::expected_hex_digit);
@@ -1323,7 +1321,7 @@ do_sur3:
 do_sur4:
         if(BOOST_JSON_UNLIKELY(! cs))
             return maybe_suspend(cs.begin(), state::sur4, total);
-        digit = hex_digit(*cs);
+        digit = detail::hex_digit(*cs);
         if(BOOST_JSON_UNLIKELY(digit == -1))
             return fail(cs.begin(), 
                 error::expected_hex_digit);
@@ -1332,7 +1330,7 @@ do_sur4:
 do_sur5:
         if(BOOST_JSON_UNLIKELY(! cs))
             return maybe_suspend(cs.begin(), state::sur5, total);
-        digit = hex_digit(*cs);
+        digit = detail::hex_digit(*cs);
         if(BOOST_JSON_UNLIKELY(digit == -1))
             return fail(cs.begin(), 
                 error::expected_hex_digit);
@@ -1341,7 +1339,7 @@ do_sur5:
 do_sur6:
         if(BOOST_JSON_UNLIKELY(! cs))
             return maybe_suspend(cs.begin(), state::sur6, total);
-        digit = hex_digit(*cs);
+        digit = detail::hex_digit(*cs);
         if(BOOST_JSON_UNLIKELY(digit == -1))
             return fail(cs.begin(), 
                 error::expected_hex_digit);
@@ -1428,7 +1426,7 @@ do_str2:
             goto do_str3;
         }
         else if(BOOST_JSON_UNLIKELY(
-            is_control(c)))
+            detail::is_control(c)))
             return fail(cs.begin(), error::syntax);
         temp.push_back(c);
         ++cs;

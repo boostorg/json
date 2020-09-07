@@ -292,9 +292,6 @@ class basic_parser
     parse_options opt_;
     // how many levels deeper the parser can go
     std::size_t depth_ = opt_.max_depth;
-
-    inline static bool is_control(char c) noexcept;
-    inline static char hex_digit(char c) noexcept;
     
     inline void reserve();
     inline const char* sentinel();
