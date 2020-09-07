@@ -847,7 +847,7 @@ parse_false(const char* p)
         {
             if(BOOST_JSON_UNLIKELY(
                 std::memcmp(cs.begin() + 1, "alse", 4) != 0))
-                return fail(cs.begin(), error::expected_false);
+                return fail(cs.begin(), error::syntax);
             if(BOOST_JSON_UNLIKELY(
                 ! h_.on_bool(false, ec_)))
                 return fail(cs.begin());
@@ -1227,11 +1227,11 @@ do_str3:
             if(BOOST_JSON_UNLIKELY(
                 u2 < 0xdc00 || u2 > 0xdfff))
                 return fail(cs.begin(), 
-                    error::illegal_leading_surrogate);
+                    error::illegal_trailing_surrogate);
             cs += 4;
             unsigned cp =
                 ((u1 - 0xd800) << 10) +
-                    (u2  - 0xdc00) +
+                ((u2 - 0xdc00)) +
                     0x10000;
             // utf-16 surrogate pair
             temp.append_utf8(cp);
@@ -1298,7 +1298,7 @@ do_str7:
         }
         if(BOOST_JSON_UNLIKELY(u1_ > 0xdbff))
             return fail(cs.begin(), 
-                error::illegal_leading_surrogate);
+                error::illegal_trailing_surrogate);
 do_sur1:
         if(BOOST_JSON_UNLIKELY(! cs))
             return maybe_suspend(cs.begin(), state::sur1, total);
@@ -1353,7 +1353,7 @@ do_sur6:
                 error::expected_hex_digit);
         unsigned cp =
             ((u1_ - 0xd800) << 10) +
-                (u2_ - 0xdc00) +
+            ((u2_ - 0xdc00)) +
                 0x10000;
         BOOST_ASSERT(temp.empty());
         // utf-16 surrogate pair

@@ -50,40 +50,18 @@ public:
         check(condition::parse_error, error::syntax);
         check(condition::parse_error, error::extra_data);
         check(condition::parse_error, error::incomplete);
-        check(condition::parse_error, error::mantissa_overflow);
         check(condition::parse_error, error::exponent_overflow);
-        check(condition::parse_error, error::too_deep);
-        
-        check(condition::parse_error, error::illegal_char);
-        check(condition::parse_error, error::illegal_control_char);
-        check(condition::parse_error, error::illegal_escape_char);
-        check(condition::parse_error, error::illegal_extra_digits);
+        check(condition::parse_error, error::too_deep);       
         check(condition::parse_error, error::illegal_leading_surrogate);
         check(condition::parse_error, error::illegal_trailing_surrogate);
-
-        check(condition::parse_error, error::expected_comma);
-        check(condition::parse_error, error::expected_colon);
-        check(condition::parse_error, error::expected_quotes);
         check(condition::parse_error, error::expected_hex_digit);
         check(condition::parse_error, error::expected_utf16_escape);
-        check(condition::parse_error, error::expected_mantissa);
-        check(condition::parse_error, error::expected_fraction);
-        check(condition::parse_error, error::expected_exponent);
-        check(condition::parse_error, error::expected_true);
-        check(condition::parse_error, error::expected_false);
-        check(condition::parse_error, error::expected_null);
         check(condition::parse_error, error::object_too_large);
         check(condition::parse_error, error::array_too_large);
         check(condition::parse_error, error::key_too_large);
         check(condition::parse_error, error::string_too_large);
 
-        check(condition::assign_error, error::not_object);
-        check(condition::assign_error, error::not_array);
-        check(condition::assign_error, error::not_string);
         check(condition::assign_error, error::not_number);
-        check(condition::assign_error, error::not_bool);
-        check(condition::assign_error, error::not_null);
-        check(condition::assign_error, error::integer_overflow);
         check(condition::assign_error, error::not_exact);
     
         check(error::test_failure);

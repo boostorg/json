@@ -170,26 +170,11 @@ enum class error
     /// incomplete JSON
     incomplete,
 
-    /// mantissa overflow
-    mantissa_overflow,
-
     /// exponent too large
     exponent_overflow,
 
     /// too deep
     too_deep,
-
-    /// illegal character for value
-    illegal_char,
-
-    /// illegal control character
-    illegal_control_char,
-    
-    /// illegal character in escape sequence
-    illegal_escape_char,
-
-    /// illegal extra digits in number
-    illegal_extra_digits,
 
     /// illegal leading surrogate
     illegal_leading_surrogate,
@@ -197,38 +182,11 @@ enum class error
     /// illegal trailing surrogate
     illegal_trailing_surrogate,
 
-    /// expected comma
-    expected_comma,
-
-    /// expected colon
-    expected_colon,
-
-    /// expected quotes
-    expected_quotes,
-
     /// expected hex digit
     expected_hex_digit,
 
     /// expected utf16 escape
     expected_utf16_escape,
-
-    /// expected mantissa
-    expected_mantissa,
-
-    /// expected fractional part of mantissa
-    expected_fraction,
-
-    /// expected exponent here
-    expected_exponent,
-
-    /// expected 'true'
-    expected_true,
-
-    /// expected 'false'
-    expected_false,
-
-    /// expected 'null'
-    expected_null,
 
     /// An object contains too many elements
     object_too_large,
@@ -244,26 +202,8 @@ enum class error
 
     //----------------------------------
 
-    /// not an object
-    not_object,
-
-    /// not an array
-    not_array,
-
-    /// not a string
-    not_string,
-
     /// not a number
     not_number,
-
-    /// not a boolean
-    not_bool,
-
-    /// not a null
-    not_null,
-
-    /// integer overflow
-    integer_overflow,
 
     /// number cast is not exact
     not_exact,
