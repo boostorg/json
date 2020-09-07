@@ -37,6 +37,7 @@ serialize_impl(
     s.append(sv);
     do
     {
+        s.reserve(s.size() * 2);
         sv = sr.read(
             s.data() + s.size(),
             s.capacity() - s.size());
