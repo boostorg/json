@@ -84,12 +84,36 @@ BOOST_JSON_NS_BEGIN
     code will be returned by the write function to
     the caller.
 \n            
+    Handlers must also define the following
+    static data members:
+    
+    @li `max_object_size`, the maximum number
+    of elements an object can contain,
+
+    @li `max_array_size`, the maximum number
+    of elements an array can contain,
+    
+    @li `max_key_size`, the maximum length
+    for object keys, and
+    
+    @li `max_string_size`, the maximum
+    length for strings.
+    
+    If a value exceeding these limits
+    is encountered, parsing fails.
+\n            
     The following declaration meets the parser's
     handler requirements:
 
     @code
     struct handler
     {
+        /// Value size limits
+        constexpr static std::size_t max_object_size = -1;
+        constexpr static std::size_t max_array_size = -1;
+        constexpr static std::size_t max_key_size = -1;
+        constexpr static std::size_t max_string_size = -1;
+
         /// Called once when the JSON parsing begins.
         ///
         /// @return `true` on success.

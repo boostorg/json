@@ -31,7 +31,7 @@ class object_impl
     using index_t = std::uint32_t;
     static index_t const null_index =
         std::uint32_t(-1);
-    using bucket_size_array = const std::size_t [33];
+    using bucket_size_array = const std::size_t[34];
 
     BOOST_JSON_DECL
     void
@@ -61,6 +61,11 @@ public:
             return;
         do_destroy(sp);
     }
+
+    static
+    constexpr
+    std::size_t
+    max_size() noexcept;
 
     std::size_t
     size() const noexcept

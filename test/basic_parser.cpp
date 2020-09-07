@@ -872,6 +872,72 @@ public:
         good_one(s);
     }
 
+    class comment_parser
+    {
+        struct handler
+        {
+            constexpr static std::size_t max_object_size = std::size_t(-1);
+            constexpr static std::size_t max_array_size = std::size_t(-1);
+            constexpr static std::size_t max_key_size = std::size_t(-1);
+            constexpr static std::size_t max_string_size = std::size_t(-1);
+
+            std::string captured = "";
+            bool on_document_begin( error_code& ) { return true; }
+            bool on_document_end( error_code& ) { return true; }
+            bool on_object_begin( error_code& ) { return true; }
+            bool on_object_end( std::size_t, error_code& ) { return true; }
+            bool on_array_begin( error_code& ) { return true; }
+            bool on_array_end( std::size_t, error_code& ) { return true; }
+            bool on_key_part( string_view, std::size_t, error_code& ) { return true; }
+            bool on_key( string_view, std::size_t, error_code& ) { return true; }
+            bool on_string_part( string_view, std::size_t, error_code& ) { return true; }
+            bool on_string( string_view, std::size_t, error_code& ) { return true; }
+            bool on_number_part( string_view, error_code&) { return true; }
+            bool on_int64( std::int64_t, string_view, error_code& ) { return true; }
+            bool on_uint64( std::uint64_t, string_view, error_code& ) { return true; }
+            bool on_double( double, string_view, error_code& ) { return true; }
+            bool on_bool( bool, error_code& ) { return true; }
+            bool on_null( error_code& ) { return true; }
+            bool on_comment_part( string_view s, error_code& )
+            { 
+                captured.append(s.data(), s.size());
+                return true; 
+            }
+            bool on_comment( string_view s, error_code& ) 
+            { 
+                captured.append(s.data(), s.size());
+                return true; 
+            }
+        };
+
+        basic_parser<handler> p_;
+
+    public:
+        comment_parser() 
+            : p_(make_options(true, false, false))
+        {
+        }
+        
+        std::size_t
+        write(
+            char const* data,
+            std::size_t size,
+            error_code& ec)
+        {
+            auto const n = p_.write(
+                false, data, size, ec);
+            if(! ec && n < size)
+                ec = error::extra_data;
+            return n;
+        }
+
+        string_view
+        captured() const noexcept
+        {
+            return p_.handler().captured;
+        }
+    };
+
     void
     testComments()
     {
@@ -897,67 +963,6 @@ public:
                 "/***    ***/",
                 "/**aaaa***/",
                 "/***    aaaa***/"
-            };
-
-            class comment_parser
-            {
-                struct handler
-                {
-                    std::string captured = "";
-                    bool on_document_begin( error_code& ) { return true; }
-                    bool on_document_end( error_code& ) { return true; }
-                    bool on_object_begin( error_code& ) { return true; }
-                    bool on_object_end( std::size_t, error_code& ) { return true; }
-                    bool on_array_begin( error_code& ) { return true; }
-                    bool on_array_end( std::size_t, error_code& ) { return true; }
-                    bool on_key_part( string_view, std::size_t, error_code& ) { return true; }
-                    bool on_key( string_view, std::size_t, error_code& ) { return true; }
-                    bool on_string_part( string_view, std::size_t, error_code& ) { return true; }
-                    bool on_string( string_view, std::size_t, error_code& ) { return true; }
-                    bool on_number_part( string_view, error_code&) { return true; }
-                    bool on_int64( std::int64_t, string_view, error_code& ) { return true; }
-                    bool on_uint64( std::uint64_t, string_view, error_code& ) { return true; }
-                    bool on_double( double, string_view, error_code& ) { return true; }
-                    bool on_bool( bool, error_code& ) { return true; }
-                    bool on_null( error_code& ) { return true; }
-                    bool on_comment_part( string_view s, error_code& )
-                    { 
-                        captured.append(s.data(), s.size());
-                        return true; 
-                    }
-                    bool on_comment( string_view s, error_code& ) 
-                    { 
-                        captured.append(s.data(), s.size());
-                        return true; 
-                    }
-                };
-
-                basic_parser<handler> p_;
-
-            public:
-                comment_parser() 
-                    : p_(make_options(true, false, false))
-                {
-                }
-        
-                std::size_t
-                write(
-                    char const* data,
-                    std::size_t size,
-                    error_code& ec)
-                {
-                    auto const n = p_.write(
-                        false, data, size, ec);
-                    if(! ec && n < size)
-                        ec = error::extra_data;
-                    return n;
-                }
-
-                string_view
-                captured() const noexcept
-                {
-                    return p_.handler().captured;
-                }
             };
 
             std::string formatted = "";
@@ -1063,6 +1068,73 @@ public:
         bad("{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{},},},},},},}", disabled);
         good("{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{},},},},},},}", enabled);
     }
+
+    class utf8_parser
+    {
+        struct handler
+        {
+            constexpr static std::size_t max_object_size = std::size_t(-1);
+            constexpr static std::size_t max_array_size = std::size_t(-1);
+            constexpr static std::size_t max_key_size = std::size_t(-1);
+            constexpr static std::size_t max_string_size = std::size_t(-1);
+
+            std::string captured = "";
+            bool on_document_begin( error_code& ) { return true; }
+            bool on_document_end( error_code& ) { return true; }
+            bool on_object_begin( error_code& ) { return true; }
+            bool on_object_end( std::size_t, error_code& ) { return true; }
+            bool on_array_begin( error_code& ) { return true; }
+            bool on_array_end( std::size_t, error_code& ) { return true; }
+            bool on_key_part( string_view, std::size_t, error_code& ) { return true; }
+            bool on_key( string_view, std::size_t, error_code& ) { return true; }
+            bool on_string_part( string_view sv, std::size_t, error_code& )
+            {
+                captured.append(sv.data(), sv.size());
+                return true;
+            }
+            bool on_string( string_view sv, std::size_t, error_code& )
+            {
+                captured.append(sv.data(), sv.size());
+                return true;
+            }
+            bool on_number_part( string_view, error_code&) { return true; }
+            bool on_int64( std::int64_t, string_view, error_code& ) { return true; }
+            bool on_uint64( std::uint64_t, string_view, error_code& ) { return true; }
+            bool on_double( double, string_view, error_code& ) { return true; }
+            bool on_bool( bool, error_code& ) { return true; }
+            bool on_null( error_code& ) { return true; }
+            bool on_comment_part( string_view, error_code& ) { return true; }
+            bool on_comment( string_view, error_code& ) { return true; }
+        };
+
+        basic_parser<handler> p_;
+
+    public:
+        utf8_parser()
+            : p_(parse_options())
+        {
+        }
+
+        std::size_t
+        write(
+            bool more,
+            char const* data,
+            std::size_t size,
+            error_code& ec)
+        {
+            auto const n = p_.write(
+                more, data, size, ec);
+            if(! ec && n < size)
+                ec = error::extra_data;
+            return n;
+        }
+
+        string_view
+        captured() const noexcept
+        {
+            return p_.handler().captured;
+        }
+    };
 
     void
     testUTF8Validation()
@@ -1228,68 +1300,6 @@ public:
         bad("\"\\n\xf4\x80\x70\x80----------\"");
         bad("\"\\n\xf4\x80\xbf\x70-\\n\xf4\x80\xbf\x70\"");
 
-        class utf8_parser
-        {
-            struct handler
-            {
-                std::string captured = "";
-                bool on_document_begin( error_code& ) { return true; }
-                bool on_document_end( error_code& ) { return true; }
-                bool on_object_begin( error_code& ) { return true; }
-                bool on_object_end( std::size_t, error_code& ) { return true; }
-                bool on_array_begin( error_code& ) { return true; }
-                bool on_array_end( std::size_t, error_code& ) { return true; }
-                bool on_key_part( string_view, std::size_t, error_code& ) { return true; }
-                bool on_key( string_view, std::size_t, error_code& ) { return true; }
-                bool on_string_part( string_view sv, std::size_t, error_code& )
-                {
-                    captured.append(sv.data(), sv.size());
-                    return true;
-                }
-                bool on_string( string_view sv, std::size_t, error_code& )
-                {
-                    captured.append(sv.data(), sv.size());
-                    return true;
-                }
-                bool on_number_part( string_view, error_code&) { return true; }
-                bool on_int64( std::int64_t, string_view, error_code& ) { return true; }
-                bool on_uint64( std::uint64_t, string_view, error_code& ) { return true; }
-                bool on_double( double, string_view, error_code& ) { return true; }
-                bool on_bool( bool, error_code& ) { return true; }
-                bool on_null( error_code& ) { return true; }
-                bool on_comment_part( string_view, error_code& ) { return true; }
-                bool on_comment( string_view, error_code& ) { return true; }
-            };
-
-            basic_parser<handler> p_;
-
-        public:
-            utf8_parser()
-                : p_(parse_options())
-            {
-            }
-
-            std::size_t
-            write(
-                bool more,
-                char const* data,
-                std::size_t size,
-                error_code& ec)
-            {
-                auto const n = p_.write(
-                    more, data, size, ec);
-                if(! ec && n < size)
-                    ec = error::extra_data;
-                return n;
-            }
-
-            string_view
-            captured() const noexcept
-            {
-                return p_.handler().captured;
-            }
-        };
-
         const auto check =
             [this](string_view expected)
         {
@@ -1360,85 +1370,89 @@ public:
         }
     }
 
+    class literal_parser
+    {
+        struct handler
+        {
+            constexpr static std::size_t max_object_size = std::size_t(-1);
+            constexpr static std::size_t max_array_size = std::size_t(-1);
+            constexpr static std::size_t max_key_size = std::size_t(-1);
+            constexpr static std::size_t max_string_size = std::size_t(-1);
+                
+            std::string captured = "";
+            bool on_document_begin( error_code& ) { return true; }
+            bool on_document_end( error_code& ) { return true; }
+            bool on_object_begin( error_code& ) { return true; }
+            bool on_object_end( std::size_t, error_code& ) { return true; }
+            bool on_array_begin( error_code& ) { return true; }
+            bool on_array_end( std::size_t, error_code& ) { return true; }
+            bool on_key_part( string_view, std::size_t, error_code& ) { return true; }
+            bool on_key( string_view, std::size_t, error_code& ) { return true; }
+            bool on_string_part( string_view, std::size_t, error_code& ) { return true; }
+            bool on_string( string_view, std::size_t, error_code& ) { return true; }
+            bool on_number_part( string_view sv, error_code&) 
+            { 
+                captured.append(sv.data(), sv.size());
+                return true; 
+            }
+            bool on_int64( std::int64_t, string_view sv, error_code& )
+            { 
+                captured.append(sv.data(), sv.size());
+                captured += 's';
+                return true; 
+            }
+            bool on_uint64( std::uint64_t, string_view sv, error_code& ) 
+            { 
+                captured.append(sv.data(), sv.size());
+                captured += 'u';
+                return true; 
+            }
+            bool on_double( double, string_view sv, error_code& )
+            { 
+                captured.append(sv.data(), sv.size());
+                captured += 'd';
+                return true; 
+            }
+            bool on_bool( bool, error_code& ) { return true; }
+            bool on_null( error_code& ) { return true; }
+            bool on_comment_part( string_view, error_code& ) { return true; }
+            bool on_comment( string_view, error_code& ) { return true; }
+        };
+
+        basic_parser<handler> p_;
+
+    public:
+        literal_parser() 
+            : p_(make_options(true, false, false))
+        {
+        }
+        
+        std::size_t
+        write(
+            bool more,
+            char const* data,
+            std::size_t size,
+            error_code& ec)
+        {
+            auto const n = p_.write(
+                more, data, size, ec);
+            if(! ec && n < size)
+                ec = error::extra_data;
+            return n;
+        }
+
+        string_view
+        captured()
+        {
+            return p_.handler().captured;
+        }
+    };
+
     void
     testNumberLiteral()
     {
-        class literal_parser
-        {
-            struct handler
-            {
-                std::string captured = "";
-
-                bool on_document_begin( error_code& ) { return true; }
-                bool on_document_end( error_code& ) { return true; }
-                bool on_object_begin( error_code& ) { return true; }
-                bool on_object_end( std::size_t, error_code& ) { return true; }
-                bool on_array_begin( error_code& ) { return true; }
-                bool on_array_end( std::size_t, error_code& ) { return true; }
-                bool on_key_part( string_view, std::size_t, error_code& ) { return true; }
-                bool on_key( string_view, std::size_t, error_code& ) { return true; }
-                bool on_string_part( string_view, std::size_t, error_code& ) { return true; }
-                bool on_string( string_view, std::size_t, error_code& ) { return true; }
-                bool on_number_part( string_view sv, error_code&) 
-                { 
-                    captured.append(sv.data(), sv.size());
-                    return true; 
-                }
-                bool on_int64( std::int64_t, string_view sv, error_code& )
-                { 
-                    captured.append(sv.data(), sv.size());
-                    captured += 's';
-                    return true; 
-                }
-                bool on_uint64( std::uint64_t, string_view sv, error_code& ) 
-                { 
-                    captured.append(sv.data(), sv.size());
-                    captured += 'u';
-                    return true; 
-                }
-                bool on_double( double, string_view sv, error_code& )
-                { 
-                    captured.append(sv.data(), sv.size());
-                    captured += 'd';
-                    return true; 
-                }
-                bool on_bool( bool, error_code& ) { return true; }
-                bool on_null( error_code& ) { return true; }
-                bool on_comment_part( string_view, error_code& ) { return true; }
-                bool on_comment( string_view, error_code& ) { return true; }
-            };
-
-            basic_parser<handler> p_;
-
-        public:
-            literal_parser() 
-                : p_(make_options(true, false, false))
-            {
-            }
-        
-            std::size_t
-            write(
-                bool more,
-                char const* data,
-                std::size_t size,
-                error_code& ec)
-            {
-                auto const n = p_.write(
-                    more, data, size, ec);
-                if(! ec && n < size)
-                    ec = error::extra_data;
-                return n;
-            }
-
-            string_view
-            captured()
-            {
-                return p_.handler().captured;
-            }
-        };
-
         const auto check =
-            [](string_view expected)
+        [](string_view expected)
         {
             string_view sv = expected;
             sv.remove_suffix(1);

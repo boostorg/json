@@ -1022,7 +1022,7 @@ public:
     std::size_t
     max_size() noexcept
     {
-        return BOOST_JSON_MAX_STRUCTURED_SIZE;
+        return array_impl::max_size();
     }
 
     /** Return the number of elements that can be held in currently allocated memory.

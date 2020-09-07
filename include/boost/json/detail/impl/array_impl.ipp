@@ -21,16 +21,14 @@ array_impl(
     std::size_t capacity,
     storage_ptr const& sp)
 {
-    auto constexpr soft_limit =
-        (std::size_t(-1) - sizeof(table)) /
-            sizeof(value);
-    if( capacity > soft_limit ||
-        capacity > max_size())
+    if(capacity > max_size())
         detail::throw_length_error(
-            "array too large",
+            "capacity > max_size()",
             BOOST_CURRENT_LOCATION);
     if(capacity > 0)
     {
+        // make sure to update max_size
+        // if this is changed
         tab_ = ::new(sp->allocate(
             (sizeof(table) +
              capacity * sizeof(value) +

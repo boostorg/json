@@ -97,7 +97,11 @@ public:
     std::size_t
     max_size() noexcept
     {
-        return BOOST_JSON_MAX_STRING_SIZE;
+        // max_size depends on the address model
+        using min = std::integral_constant<std::size_t,
+            std::size_t(-1) - sizeof(table)>;
+        return min::value < BOOST_JSON_MAX_STRING_SIZE ?
+            min::value : BOOST_JSON_MAX_STRING_SIZE;
     }
 
     BOOST_JSON_DECL

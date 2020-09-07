@@ -286,14 +286,8 @@ public:
             auto jv = parse(s, ec);
             BOOST_TEST(! ec);
         }
-    }
-
-    void
-    testBasicParser()
-    {
         // overflow in on_key_part
         {
-            null_parser p;
             error_code ec;
             std::string big;
             big = "\\b";
@@ -301,13 +295,12 @@ public:
                 string::max_size()*2, '*');
             auto const js =
                 "{\"" + big + "\":null}";
-            p.write(js.data(), js.size(), ec);
+            auto jv = parse(js, ec);
             BOOST_TEST(ec == error::key_too_large);
         }
 
         // overflow in on_key
         {
-            null_parser p;
             error_code ec;
             std::string big;
             big = "\\b";
@@ -315,13 +308,12 @@ public:
                 (string::max_size()*3)/2, '*');
             auto const js =
                 "{\"" + big + "\":null}";
-            p.write(js.data(), js.size(), ec);
+            auto jv = parse(js, ec);
             BOOST_TEST(ec == error::key_too_large);
         }
 
         // overflow in on_string_part
         {
-            null_parser p;
             error_code ec;
             std::string big;
             big = "\\b";
@@ -329,13 +321,12 @@ public:
                 string::max_size()*2, '*');
             auto const js =
                 "\"" + big + "\"";
-            p.write(js.data(), js.size(), ec);
+            auto jv = parse(js, ec);
             BOOST_TEST(ec == error::string_too_large);
         }
 
         // overflow in on_string
         {
-            null_parser p;
             error_code ec;
             std::string big;
             big = "\\b";
@@ -343,14 +334,13 @@ public:
                 (string::max_size()*3)/2, '*');
             auto const js =
                 "\"" + big + "\"";
-            p.write(js.data(), js.size(), ec);
+            auto jv = parse(js, ec);
             BOOST_TEST(ec == error::string_too_large);
         }
         
 
         // object overflow
         {
-            null_parser p;
             error_code ec;
             string_view s = R"({
                 "00":0,"01":0,"02":0,"03":0,"04":0,"05":0,"06":0,"07":0,"08":0,"09":0,
@@ -358,20 +348,19 @@ public:
                 "20":0
                 })";
                 
-            p.write(s.data(), s.size(), ec);
+            auto jv = parse(s, ec);
             BOOST_TEST(ec == error::object_too_large);
         }
 
         // array overflow
         {
-            null_parser p;
             error_code ec;
             string_view s = "["
                 "0,0,0,0,0,0,0,0,0,0,"
                 "0,0,0,0,0,0,0,0,0,0,"
                 "0"
                 "]";
-            p.write(s.data(), s.size(), ec);
+            auto jv = parse(s, ec);
             BOOST_TEST(ec == error::array_too_large);
         }
     }
@@ -390,7 +379,6 @@ public:
         testString();
         testStack();
         testParser();
-        testBasicParser();
 
     #else
         BOOST_TEST_PASS();

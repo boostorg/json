@@ -62,6 +62,8 @@ class string
     friend struct detail::value_access;
 #endif
 
+    using string_impl = detail::string_impl;
+
     inline
     string(
         char** key,
@@ -130,7 +132,7 @@ private:
             char>::value>::type;
 
     storage_ptr sp_; // must come first
-    detail::string_impl impl_;
+    string_impl impl_;
 
 public:
     /** Destructor.
@@ -190,7 +192,7 @@ public:
         : sp_(std::move(other.get().sp_))
         , impl_(other.get().impl_)
     {
-        ::new(&other.get().impl_) detail::string_impl();
+        ::new(&other.get().impl_) string_impl();
     }
 
     /** Constructor.
@@ -437,7 +439,7 @@ public:
         : sp_(other.sp_)
         , impl_(other.impl_)
     {
-        ::new(&other.impl_) detail::string_impl();
+        ::new(&other.impl_) string_impl();
     }
 
     /** Constructor.
@@ -1433,7 +1435,7 @@ public:
     std::size_t
     max_size() noexcept
     {
-        return BOOST_JSON_MAX_STRING_SIZE;
+        return string_impl::max_size();
     }
 
     /** Return the number of characters that can be held without a reallocation.

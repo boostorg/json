@@ -37,14 +37,12 @@ object_impl(
     std::uintptr_t salt,
     storage_ptr const& sp)
 {
-    // max capacity based on address model
-    auto constexpr soft_limit =
-        (std::size_t(-1) - sizeof(table)) / (
-            sizeof(value_type) + sizeof(index_t));
-    if(capacity > soft_limit)
+    if(capacity > max_size())
         throw_length_error(
-            "capacity > soft_limit",
+            "capacity > max_size()",
             BOOST_CURRENT_LOCATION);
+    // make sure to update max_size
+    // if this is changed
     const auto n = 
         sizeof(table) + 
         capacity *

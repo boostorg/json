@@ -104,6 +104,18 @@ class parser
 {
     struct handler
     {
+        constexpr static std::size_t
+            max_object_size = object::max_size();
+
+        constexpr static std::size_t
+            max_array_size = array::max_size();
+
+        constexpr static std::size_t
+            max_key_size = string::max_size();
+
+        constexpr static std::size_t
+            max_string_size = string::max_size();
+
         value_stack st;
 
         template<class... Args>
