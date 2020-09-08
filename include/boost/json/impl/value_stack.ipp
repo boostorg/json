@@ -309,7 +309,7 @@ value_stack::
 value_stack::
 value_stack(
     storage_ptr sp,
-    void* temp_buffer,
+    unsigned char* temp_buffer,
     std::size_t temp_size) noexcept
     : st_(
         std::move(sp),

@@ -14,12 +14,9 @@
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/value.hpp>
 #include <boost/json/value_stack.hpp>
-#include <boost/json/string.hpp>
 #include <boost/json/detail/basic_parser.hpp>
-#include <new>
-#include <string>
 #include <type_traits>
-#include <stddef.h>
+#include <cstddef>
 
 BOOST_JSON_NS_BEGIN
 
@@ -173,7 +170,7 @@ public:
         @code
 
         // this buffer will be used for temporary storage
-        char temp[ 4096 ];
+        unsigned char temp[ 4096 ];
 
         // default constructed parse options allow strict JSON
         parse_options opt;
@@ -193,11 +190,9 @@ public:
         @endcode
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param sp A pointer to the @ref memory_resource
@@ -222,10 +217,137 @@ public:
     */
     BOOST_JSON_DECL
     parser(
-        storage_ptr sp = {},
-        parse_options const& opt = {},
-        void* temp_buffer = nullptr,
-        std::size_t temp_size = 0) noexcept;
+        storage_ptr sp,
+        parse_options const& opt,
+        unsigned char* temp_buffer,
+        std::size_t temp_size) noexcept;
+
+    /** Constructor (delegating)
+
+        @par Effects
+        @code
+        parser( {}, {} )
+        @endcode
+    */
+    parser() noexcept
+        : parser({}, {})
+    {
+    }
+
+    /** Constructor (delegating)
+
+        @par Effects
+        @code
+        parser( std::move(sp), opt )
+        @endcode
+    */
+    BOOST_JSON_DECL
+    parser(
+        storage_ptr sp,
+        parse_options const& opt) noexcept;
+
+    /** Constructor (delegating)
+
+        @par Effects
+        @code
+        parser( std::move(sp), {}, nullptr, 0 )
+        @endcode
+    */
+    explicit
+    parser(storage_ptr sp) noexcept
+        : parser(std::move(sp), {})
+    {
+    }
+
+    /** Constructor (delegating)
+
+        @par Effects
+        @code
+        parser( std::move(sp), opt, &buffer[0], N )
+        @endcode
+    */
+    template<std::size_t N>
+    parser(
+        storage_ptr sp,
+        parse_options const& opt,
+        unsigned char(&buffer)[N]) noexcept
+        : parser(std::move(sp), opt,
+            &buffer[0], N)
+    {
+    }
+
+#if defined(__cpp_lib_byte) || defined(BOOST_JSON_DOCS)
+    /** Constructor (delegating)
+
+        @par Effects
+        @code
+        parser( std::move(sp), opt,
+                reinterpret_cast<unsigned char*>( temp_buffer ), N )
+        @endcode
+    */
+    parser(
+        storage_ptr sp,
+        parse_options const& opt,
+        std::byte* temp_buffer,
+        std::size_t temp_size) noexcept
+        : parser(sp, opt, reinterpret_cast<
+            unsigned char*>(temp_buffer),
+                temp_size)
+    {
+    }
+
+    /** Constructor (delegating)
+
+        @par Effects
+        @code
+        parser( std::move(sp), opt, &buffer[0], N )
+        @endcode
+    */
+    template<std::size_t N>
+    parser(
+        storage_ptr sp,
+        parse_options const& opt,
+        std::byte(&buffer)[N]) noexcept
+        : parser(std::move(sp), opt,
+            &buffer[0], N)
+    {
+    }
+#endif
+
+#ifndef BOOST_JSON_DOCS
+    // Safety net for accidental buffer overflows
+    template<std::size_t N>
+    parser(
+        storage_ptr sp,
+        parse_options const& opt,
+        unsigned char(&buffer)[N],
+        std::size_t n) noexcept
+        : parser(std::move(sp), opt,
+            &buffer[0], n)
+    {
+        // If this goes off, check your parameters
+        // closely, chances are you passed an array
+        // thinking it was a pointer.
+        BOOST_ASSERT(n <= N);
+    }
+
+#ifdef __cpp_lib_byte
+    // Safety net for accidental buffer overflows
+    template<std::size_t N>
+    parser(
+        storage_ptr sp,
+        parse_options const& opt,
+        std::byte(&buffer)[N], std::size_t n) noexcept
+        : parser(std::move(sp), opt,
+            &buffer[0], n)
+    {
+        // If this goes off, check your parameters
+        // closely, chances are you passed an array
+        // thinking it was a pointer.
+        BOOST_ASSERT(n <= N);
+    }
+#endif
+#endif
 
     /** Returns the current depth of the JSON being parsed.
 

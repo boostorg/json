@@ -193,7 +193,7 @@ public:
     BOOST_JSON_DECL
     value_stack(
         storage_ptr sp = {},
-        void* temp_buffer = nullptr,
+        unsigned char* temp_buffer = nullptr,
         std::size_t temp_size = 0) noexcept;
 
     /** Prepare to build a new document.
