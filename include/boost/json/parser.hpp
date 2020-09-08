@@ -36,7 +36,7 @@ BOOST_JSON_NS_BEGIN
     parse is started, call the @ref write function
     to provide buffers of characters of the JSON.
     When there are no more buffers, call @ref finish.
-    The parse is complete when the function @ref is_complete
+    The parse is complete when the function @ref done
     returns `true`, or when a non-successful error
     code is returned.
 
@@ -404,17 +404,15 @@ public:
             to @ref reset,
 
         @par Complexity
-
         Constant.
-
         @par Exception Safety
 
         No-throw guarantee.
     */
     bool
-    is_complete() const noexcept
+    done() const noexcept
     {
-        return p_.is_complete();
+        return p_.done();
     }
 
     /** Parse JSON incrementally.
@@ -468,6 +466,52 @@ public:
 
     /** Parse JSON incrementally.
 
+        This function parses the JSON in the specified
+        buffer. The parse proceeds from the current
+        state, which is at the beginning of a new JSON
+        or in the middle of the current JSON if any
+        characters were already parsed.
+    \n
+        The characters in the buffer are processed
+        starting from the beginning, until one of the
+        following conditions is met:
+
+        @li All of the characters in the buffer have
+        been parsed, or
+
+        @li A complete JSON is parsed, including any
+        optional trailing whitespace in the buffer, or
+
+        @li A parsing error occurs.
+
+        The supplied buffer does not need to contain the
+        entire JSON. Subsequent calls can provide more
+        serialized data, allowing JSON to be processed
+        incrementally. The end of the serialized JSON
+        is be indicated by calling @ref finish().
+
+        @par Complexity
+        Linear in `s.size()`.
+
+        @return The number of characters consumed from
+        the input, which may be less than the size
+        provided.
+
+        @param s The characters to parse.
+
+        @param ec Set to the error, if any occurred.
+    */
+    std::size_t
+    write(
+        string_view s,
+        error_code& ec)
+    {
+        return write(
+            s.data(), s.size(), ec);
+    }
+
+    /** Parse JSON incrementally.
+
         The caller uses this function to inform the
         parser that there is no more serialized JSON
         available. If a complete JSON is not available
@@ -485,7 +529,7 @@ public:
 
     /** Return the parsed JSON as a @ref value.
 
-        If @ref is_complete() returns `true`, then the
+        If @ref done() returns `true`, then the
         parsed value is returned. Otherwise,
         the error is set to indicate failure. It
         is necessary to call @ref reset after calling

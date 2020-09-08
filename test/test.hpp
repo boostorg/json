@@ -397,9 +397,9 @@ public:
     }
 
     bool
-    is_complete() const noexcept
+    done() const noexcept
     {
-        return p_.is_complete();
+        return p_.done();
     }
 
     std::size_t

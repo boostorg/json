@@ -270,7 +270,7 @@ value
 parser::
 release(error_code& ec)
 {
-    if(p_.is_complete())
+    if(p_.done())
         return p_.handler().st.release();
     ec = error::incomplete;
     return nullptr;

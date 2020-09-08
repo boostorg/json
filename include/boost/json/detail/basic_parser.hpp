@@ -473,11 +473,13 @@ public:
             to @ref reset,
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     bool
-    is_complete() const noexcept
+    done() const noexcept
     {
         return complete_;
     }

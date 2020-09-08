@@ -781,7 +781,7 @@ public:
             BOOST_TEST(ec == error::incomplete);
         }
 
-        // write(char const*, size_t)
+        // write(char const*, size_t, error_code&)
         {
             {
                 parser p;
@@ -798,6 +798,16 @@ public:
                 p.write("x", 1, ec),
                 BOOST_TEST(ec);
             }
+        }
+
+        // write(string_view, error_code)
+        {
+            parser p;
+            error_code ec;
+            p.reset();
+            p.write("[1,2,3]", ec);
+            p.finish(ec);
+            BOOST_TEST(p.done());
         }
     }
 

@@ -615,7 +615,7 @@ public:
     {
         auto const check =
         [this]( string_view s,
-            bool is_complete)
+            bool done)
         {
             fail_parser p;
             error_code ec;
@@ -628,11 +628,10 @@ public:
                 log << "    failed to parse: " << s << '\n';
                 return;
             }
-            BOOST_TEST(is_complete ==
-                p.is_complete());
+            BOOST_TEST(done == p.done());
         };
 
-        // is_complete()
+        // done()
 
         check("{}", true);
         check("{} ", true);
@@ -719,7 +718,7 @@ public:
         if(BOOST_TEST(! ec))
         {
             BOOST_TEST(n == 4);
-            BOOST_TEST(p.is_complete());
+            BOOST_TEST(p.done());
             n = p.write_some(false, " \t42", 4, ec);
             BOOST_TEST(n == 2);
             BOOST_TEST(! ec);
@@ -729,7 +728,7 @@ public:
         if(BOOST_TEST(! ec))
         {
             BOOST_TEST(n == 7);
-            BOOST_TEST(p.is_complete());
+            BOOST_TEST(p.done());
         }
     }
 
