@@ -201,9 +201,19 @@
 # define BOOST_JSON_NO_MAX_STACK_SIZE
 # define BOOST_JSON_MAX_STACK_SIZE  ((::size_t)(-1))
 #endif
-#ifndef  BOOST_JSON_PARSER_BUFFER_SIZE
-# define BOOST_JSON_NO_PARSER_BUFFER_SIZE
-# define BOOST_JSON_PARSER_BUFFER_SIZE 2048
+#ifndef  BOOST_JSON_STACK_BUFFER_SIZE
+# define BOOST_JSON_NO_STACK_BUFFER_SIZE
+# if defined(__i386__) || defined(__x86_64__) || \
+     defined(_M_IX86)  || defined(_M_X64)
+#  define BOOST_JSON_STACK_BUFFER_SIZE 4096
+# else
+// If we are not on Intel, then assume we are on
+// embedded and use a smaller stack size. If this
+// is not suitable, the user can define the macro
+// themselves when building the library or including
+// src.hpp.
+#  define BOOST_JSON_STACK_BUFFER_SIZE 256
+# endif
 #endif
 
 BOOST_JSON_NS_BEGIN

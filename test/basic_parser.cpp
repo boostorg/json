@@ -683,7 +683,7 @@ public:
                 {
                     std::string const big =
                         "\\\"" + std::string(
-                        BOOST_JSON_PARSER_BUFFER_SIZE-4, '*') + esc;
+                        BOOST_JSON_STACK_BUFFER_SIZE-4, '*') + esc;
                     std::string const s =
                         "{\"" + big + "\":\"" + big + "\"}";
                     good_one(s);
@@ -693,7 +693,7 @@ public:
                 std::string big;
                 big = "\\\"" +
                     std::string(
-                        BOOST_JSON_PARSER_BUFFER_SIZE+ 1, '*');
+                        BOOST_JSON_STACK_BUFFER_SIZE+ 1, '*');
                 std::string s;
                 s = "{\"" + big + "\":\"" + big + "\"}";
                 good_one(s);

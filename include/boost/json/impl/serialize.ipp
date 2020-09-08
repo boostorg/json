@@ -22,9 +22,9 @@ serialize_impl(
     std::string& s,
     serializer& sr)
 {
-    // serialize to a small buffer
-    // to avoid most reallocations
-    char buf[16384];
+    // serialize to a small buffer to avoid
+    // the first few allocations in std::string
+    char buf[BOOST_JSON_STACK_BUFFER_SIZE];
     string_view sv;
     sv = sr.read(buf);
     if(sr.done())
@@ -129,7 +129,7 @@ operator<<( std::ostream& os, value const& jv )
     while( ! sr.done() )
     {
         // Use a local buffer to avoid allocation.
-        char buf[ 4000 ];
+        char buf[ BOOST_JSON_STACK_BUFFER_SIZE ];
 
         // Fill our buffer with serialized characters and write it to the output stream.
         os << sr.read( buf );
@@ -145,9 +145,9 @@ to_ostream(
     std::ostream& os,
     serializer& sr)
 {
-    char buf[16384];
     while(! sr.done())
     {
+        char buf[BOOST_JSON_STACK_BUFFER_SIZE];
         auto s = sr.read(buf);
         os.write(s.data(), s.size());
     }

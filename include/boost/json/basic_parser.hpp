@@ -1050,7 +1050,7 @@ parse_escaped(
     constexpr auto ev_too_large = IsKey ? 
         error::key_too_large : error::string_too_large;
     detail::clipped_const_stream cs(p, end_);
-    detail::buffer<BOOST_JSON_PARSER_BUFFER_SIZE> temp;
+    detail::buffer<BOOST_JSON_STACK_BUFFER_SIZE> temp;
     int digit;
     char c;
     cs.clip(temp.max_size());
