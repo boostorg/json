@@ -36,8 +36,8 @@ Boost.JSON offers these features:
 
 * Fast compilation
 * Require only C++11
+* Fast streaming parser and serializer
 * Easy and safe API with allocator support
-* Fast incremental parser and serializer
 * Constant-time key lookup for objects
 * Options to allow non-standard JSON
 * Compile without Boost, define `BOOST_JSON_STANDALONE`
