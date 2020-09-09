@@ -21,6 +21,11 @@ in a translation unit of the program.
 #define BOOST_JSON_SOURCE
 #endif
 
+// We include this in case someone is using
+// src.hpp as their main JSON header file
+// https://github.com/CPPAlliance/json/issues/223#issuecomment-689264149
+#include <boost/json.hpp>
+
 #include <boost/json/detail/config.hpp>
 
 #include <boost/json/impl/array.ipp>
