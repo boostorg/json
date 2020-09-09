@@ -529,30 +529,32 @@ public:
 
     /** Return the parsed JSON as a @ref value.
 
-        If @ref done() returns `true`, then the
-        parsed value is returned. Otherwise,
-        the error is set to indicate failure. It
+        This returns the parsed value.
         is necessary to call @ref reset after calling
         this function in order to parse another JSON.
+        Undefined behavior results if the parser is
+        not done, or if an error occurred during
+        parsing.
+
+        @par Preconditions
+        @code
+        this->done() == true
+        @endcode
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         Strong guarantee. If an exception occurs,
         the valid operations are @ref reset or
         destruction.
 
         @return The parsed value. Ownership of this
         value is transferred to the caller.       
-
-        @param ec Set to the error, if any occurred.
     */
     BOOST_JSON_DECL
     value
-    release(error_code& ec);
+    release();
 };
 
 BOOST_JSON_NS_END

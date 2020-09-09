@@ -759,9 +759,11 @@ usingParsing()
         
         if( ! ec )
             p.finish( ec );
+        if( ec )
+            return;
 
         // Take ownership of the resulting value.
-        value jv = p.release( ec );
+        value jv = p.release();
 
         // At this point the parser may be re-used by calling p.reset() again.
 
@@ -785,12 +787,11 @@ usingParsing()
             p.write( "3,4,5]", 6, ec );
         if(! ec)
             p.finish( ec );
+        if( ec )
+            return;
 
         // Take ownership of the resulting value.
-        if(! ec)
-            value jv = p.release( ec );
-
-        assert(! ec );
+        value jv = p.release( );
 
         // At this point the parser may be re-used by calling p.reset() again.
 
@@ -812,9 +813,11 @@ usingParsing()
             p.write( "[1,2,3,4,5]", 11, ec );
             if( ! ec )
                 p.finish( ec );
+            if( ec )
+                return;
 
             // The value will use the monotonic resource created above
-            value jv = p.release( ec );
+            value jv = p.release();
         }
 
         //]
@@ -836,9 +839,7 @@ usingParsing()
 
         assert( ! ec );
 
-        value jv = p.release( ec );
-
-        assert( ! ec );
+        value jv = p.release();
 
         // The intermediate storage that was used
         // for the last value will be reused here.
@@ -850,9 +851,7 @@ usingParsing()
 
         assert( ! ec );
 
-        jv = p.release( ec );
-
-        assert( ! ec );
+        jv = p.release();
 
         //]
     }

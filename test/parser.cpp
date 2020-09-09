@@ -70,7 +70,7 @@ public:
         if(BOOST_TEST(! ec))
             p.finish(ec);
         BOOST_TEST(! ec);
-        return p.release(ec);
+        return p.release();
     }
 
     void
@@ -144,7 +144,7 @@ public:
                     if(BOOST_TEST(! ec))
                         p.finish(ec);
                     if(BOOST_TEST(! ec))
-                        f(p.release(ec), po);
+                        f(p.release(), po);
                 }
             }
         }
@@ -302,7 +302,7 @@ public:
                         p.finish(ec);
                     if(BOOST_TEST(! ec))
                         check_round_trip(
-                            p.release(ec));
+                            p.release());
                 }   
             }
         }
@@ -331,8 +331,7 @@ public:
                 p.finish(ec);
             if(! BOOST_TEST(! ec))
                 return 0;
-            auto const jv = p.release(ec);
-            BOOST_TEST(! ec);
+            auto const jv = p.release();
             double const d = jv.as_double();
             grind_double(s, d);
             return d;
@@ -773,14 +772,6 @@ public:
             p.reset();
         }
 
-        // release before done
-        {
-            parser p;
-            error_code ec;
-            p.release(ec);
-            BOOST_TEST(ec == error::incomplete);
-        }
-
         // write(char const*, size_t, error_code&)
         {
             {
@@ -930,10 +921,7 @@ R"xx({
         if(BOOST_TEST(! ec))
             p.finish(ec);
         if(BOOST_TEST(! ec))
-        {
-            BOOST_TEST(serialize(p.release(ec)) == out);
-            BOOST_TEST(! ec);
-        }
+            BOOST_TEST(serialize(p.release()) == out);
     }
 
     void 

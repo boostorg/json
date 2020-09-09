@@ -38,7 +38,7 @@ parse(
         p.finish(ec);
     if(ec)
         return nullptr;
-    return p.release(ec);
+    return p.release();
 }
 
 value

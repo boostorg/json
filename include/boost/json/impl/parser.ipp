@@ -268,12 +268,10 @@ finish(error_code& ec)
 
 value
 parser::
-release(error_code& ec)
+release()
 {
-    if(p_.done())
-        return p_.handler().st.release();
-    ec = error::incomplete;
-    return nullptr;
+    BOOST_ASSERT(p_.done());
+    return p_.handler().st.release();
 }
 
 BOOST_JSON_NS_END

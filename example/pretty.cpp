@@ -41,7 +41,7 @@ parse_file( char const* filename )
     p.finish( ec );
     if( ec )
         return nullptr;
-    return p.release( ec );
+    return p.release();
 }
 
 void

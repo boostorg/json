@@ -279,7 +279,7 @@ public:
             p.write(s.data(), s.size(), ec);
             if(! ec)
                 p.finish(ec);
-            auto jv = p.release(ec);
+            auto jv = p.release();
         }
     }
 
@@ -346,7 +346,7 @@ public:
             p.write(s.data(), s.size(), ec);
             if(! ec)
                 p.finish(ec);
-            auto jv = p.release(ec);
+            auto jv = p.release();
         }
     }
 

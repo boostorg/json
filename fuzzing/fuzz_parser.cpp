@@ -13,10 +13,11 @@
 using namespace boost::json;
 
 bool
-fuzz_parser(parse_options popt,string_view sv)
+fuzz_parser(
+    parse_options opt,
+    string_view sv)
 {
-
-    parser p(storage_ptr{},popt);
+    parser p(storage_ptr{}, opt);
     error_code ec;
 
     // This must be called once before parsing every new JSON
@@ -31,9 +32,8 @@ fuzz_parser(parse_options popt,string_view sv)
     // Take ownership of the resulting value.
     if(! ec)
     {
-        value jv = p.release( ec );
-        if(! ec )
-            return serialize(jv).size()==42;
+        value jv = p.release();
+        return serialize(jv).size()==42;
     }
     return false;
 }
@@ -46,11 +46,11 @@ LLVMFuzzerTestOneInput(
     if(size<1)
         return 0;
 
-    parse_options popt;
-    popt.allow_comments=!!(data[0]&0x1);
-    popt.allow_trailing_commas=!!(data[0]&0x2);
-    popt.allow_invalid_utf8=!!(data[0]&0x4);
-    popt.max_depth= (data[0]>>3);
+    parse_options opt;
+    opt.allow_comments=!!(data[0]&0x1);
+    opt.allow_trailing_commas=!!(data[0]&0x2);
+    opt.allow_invalid_utf8=!!(data[0]&0x4);
+    opt.max_depth= (data[0]>>3);
 
     data+=1;
     size-=1;
@@ -61,7 +61,7 @@ LLVMFuzzerTestOneInput(
         string_view view{
             reinterpret_cast<const char*>(
                         data), size};
-        fuzz_parser(popt,view);
+        fuzz_parser(opt,view);
     }
     catch(...)
     {
