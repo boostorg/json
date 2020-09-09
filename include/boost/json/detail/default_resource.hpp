@@ -38,14 +38,15 @@ class
 
 public:
     static
-    std::uintptr_t
+    memory_resource*
     get() noexcept
     {
     #ifdef BOOST_JSON_WEAK_CONSTINIT
         static default_resource instance_;
     #endif
-        return reinterpret_cast<
-            std::uintptr_t>(&instance_);
+        return reinterpret_cast<memory_resource*>(
+            reinterpret_cast<std::uintptr_t*>(
+                &instance_));
     }
     
     ~default_resource();
