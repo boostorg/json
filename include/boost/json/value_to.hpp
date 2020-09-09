@@ -73,18 +73,23 @@ struct value_to_tag;
 
     @see @ref value_from, http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1895r0.pdf
 */
-template<class T
-#ifndef BOOST_JSON_DOCS
+#ifdef BOOST_JSON_DOCS
+template<class T>
+T
+value_to(const value& jv);
+#else
+template<class T, class U
     , typename std::enable_if<
-        !std::is_reference<T>::value>::type*
-#endif
+        ! std::is_reference<T>::value &&
+    std::is_same<U, value>::value>::type*
 >
 T
-value_to(value const& jv)
+value_to(const U& jv)
 {
     return detail::value_to_impl(
         value_to_tag<detail::remove_cv<T>>(), jv);
 }
+#endif
 
 /** Determine a @ref value can be converted to `T`.
 

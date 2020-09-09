@@ -25,9 +25,11 @@ struct value_to_tag { };
 template<class, class = void>
 struct has_value_to;
 
-template<class T, typename std::enable_if<
-    !std::is_reference<T>::value>::type* = nullptr>
-T value_to(value const&);
+template<class T, class U,
+    typename std::enable_if<
+        ! std::is_reference<T>::value &&
+    std::is_same<U, value>::value>::type* = nullptr>
+T value_to(U const&);
 
 namespace detail {
 
