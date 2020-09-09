@@ -2,10 +2,8 @@
 # Configuration options related to the input files
 #---------------------------------------------------------------------------
 
-INPUT = $(LIB_DIR)/include/boost/json/detail/basic_parser.hpp
-
-        #$(LIB_DIR)/include/boost/json/ \
-        #$(LIB_DIR)/include/boost/json/detail/basic_parser.hpp
+INPUT = $(LIB_DIR)/include/boost/json/ \
+        $(LIB_DIR)/include/boost/json/detail/basic_parser.hpp
 
 ALIASES               += esafe="@par Exception Safety"
 
