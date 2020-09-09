@@ -167,7 +167,7 @@ public:
         No-throw guarantee.
     */
     storage_ptr() noexcept
-        : i_(default_resource::get())
+        : i_(0)
     {
     }
 
@@ -265,8 +265,7 @@ public:
     */
     storage_ptr(
         storage_ptr&& other) noexcept
-        : i_(detail::exchange(other.i_, 
-            default_resource::get()))
+        : i_(detail::exchange(other.i_, 0))
     {
     }
 
@@ -331,8 +330,7 @@ public:
         storage_ptr&& other) noexcept
     {
         release();
-        i_ = detail::exchange(other.i_, 
-            default_resource::get());
+        i_ = detail::exchange(other.i_, 0);
         return *this;
     }
 
@@ -426,8 +424,10 @@ public:
     memory_resource*
     get() const noexcept
     {
-        return reinterpret_cast<
-            memory_resource*>(i_ & ~3);
+        if(i_ != 0)
+            return reinterpret_cast<
+                memory_resource*>(i_ & ~3);
+        return default_resource::get();
     }
 
     /** Return a pointer to the memory resource.
