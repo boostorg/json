@@ -158,8 +158,8 @@ to a __std_string__ containing JSON:
 
 [doc_quick_look_12]
 
-The serializer in this library implements an
-[@https://en.wikipedia.org/wiki/Online_algorithm ['online algorithm]];
+The serializer in this library implements a
+[@https://en.wikipedia.org/wiki/Online_algorithm ['streaming algorithm]];
 it can output JSON a piece at a time, without the requirement that the
 entire output area is allocated at once:
 

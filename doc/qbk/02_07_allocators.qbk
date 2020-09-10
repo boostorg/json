@@ -210,165 +210,135 @@ available when using the library:
     ]
 ]]
 
-[heading Default Resource]
+[/-----------------------------------------------------------------------------]
 
-The library provides a ['default memory resource] object which wraps calls to the
-global allocation and deallocation functions (`operator new` and `operator delete`).
-This memory resource is not reference counted, and requires calls to deallocate to
-free storeage. Default constructed instances of __storage_ptr__, as well as 
-__storage_ptr__ which have been moved from will refer to the default memory resource
-until they are either destroyed or reassigned.
-Likewise, library types such as __value__, __object__, and __array__ will use the
-default memory resource if one is not specified when they are constructed: 
+[heading Default Memory Resource]
 
-[snippet_allocators_1]
+The ['default memory resource] wraps calls to the global heap allocation
+functions. This resource is not reference counted and has a non-trivial
+deallocate function. All default-constructed __storage_ptr__ reference
+the same default memory resource:
 
-The default memory resource is suited for general purpose operations.
-It allocates only what is needed, and frees memory upon reallocation 
-or destruction. It is a good choice for modifying a __value__
-containing a JSON document.
+[doc_storage_ptr_1]
 
-[heading Monotonic Resources]
+Default-constructed library containers use the default memory resource:
 
-The library provides another memory resource called __monotonic_resource__,
-optimized for parsing without subsequent modification. This implementation
-acquires large blocks of memory and then allocates from within these blocks to satisfy
-allocation requests, only ever deallocating when the memory resource is destroyed.
-Every block allocated by __monotonic_resource__ will be twice as large as the last,
-and an initial buffer may be optionally provide for the resource to use before
-it makes any dynamic allocations. Once the initial buffer is exhausted, the 
-default memory resource will be used to allocate new blocks:
+[doc_storage_ptr_2]
 
-[snippet_allocators_2]
+The default memory resource is well suited for general usage. It offers
+reasonable performance for parsing, and conservative memory usage for
+modification of the contents of containers.
 
-The following example shows how a string can be parsed into a __value__
-using a monotonic resource:
+[/-----------------------------------------------------------------------------]
 
-[snippet_allocators_3]
+[heading Monotonic Resource]
 
-In the above sample, ownership of the resource is shared by the returned
-value and its nested elements. The monotonic resource is destroyed only when
-the last __value__ referencing it is destroyed.
+Consider the pattern of memory allocation during parsing: when an array,
+object, or string is encountered the parser accumulates elements in its
+temporary storage area. When all of the elements are known, a single
+memory allocation is requested from the resource when constructing
+the value. Thus, parsing only allocates and creates containers
+fully-formed. Memory is not reallocated; that is, a memory buffer never
+needs to grow by allocating a new larger buffer and deallocating the
+previous buffer.
 
-Monotonic resources are faster for parsing and insertion, but consume more memory
-than the default memory resource as adding and removing elements over time
-will continuously allocate more memory to satisfy requests.
+The __monotonic_resource__ optimizes this memory allocation pattern by
+allocating increasingly large blocks of global memory internally and
+parcelling those blocks out in smaller pieces to fulfill allocation
+requests. It has a trivial deallocate function. The monotonic resource
+does not actually deallocate memory until the resource is destroyed.
+Thus, it is ideally suited for the use-case where JSON is parsed,
+and the resulting value is then inspected but not modified.
+
+The resource to use when constructing values may be specified in calls
+to __parse__ as shown here:
+
+[doc_storage_ptr_3]
+
+Or, to parse into a value with shared ownership of the memory resource:
+
+[doc_storage_ptr_4]
+
+A monotonic resource may be optionally constructed with an initial buffer
+to use first, before going to the heap. This allows the caller to use
+stack space and avoid dynamic allocations for most parsed JSON, falling
+back to dynamic allocation from the heap if the input JSON is larger than
+average, as shown here:
+
+[doc_storage_ptr_5]
+
+[/-----------------------------------------------------------------------------]
+
+[heading Static Resource]
+
+A __static_resource__ constructs from a caller-provided buffer, and satisfies
+all memory allocation requests from the buffer. Once the buffer is exhausted,
+subsequent calls to allocate throw the exception `std::bad_alloc`. The
+resource offers a simple invariant: dynamic heap allocations are never
+performed.
+
+To use the resource, construct it with a local buffer:
+
+[doc_storage_ptr_6]
+
+[/-----------------------------------------------------------------------------]
+
+[heading Null Resource]
+
+The __null_resource__ can only be default constructed. It offers a simple
+invariant: all calls to allocate will throw the exception `std::bad_alloc`.
+An instance of the null resource can be used to make parsing guarantee
+that allocations from the heap are never made. This is explored in more
+detail in a later section.
+
+[/-----------------------------------------------------------------------------]
+
+[heading Allocator Propagation]
+
+The containers __array__, __object__, and __value__ all propagate the
+memory resource they were constructed with to child elements:
+
+[doc_storage_ptr_7]
+
+This propagation acts recursively, containers within containers will
+all have the resource propagated. Once a container is constructed,
+its memory resource can never be changed.
+
+[/-----------------------------------------------------------------------------]
 
 [heading Resource Lifetime]
 
-The __value__, __object__, __array__, and __string__ classes
-use __storage_ptr__ to manage and access memory resources:
+It is important to note that __storage_ptr__ supports both
+shared-ownership and reference lifetime models. Construction
+from a memory resource pointer does not transfer ownership:
 
-[snippet_allocators_4]
+[doc_storage_ptr_8]
 
-A __storage_ptr__ can function as either a reference wrapper like
-__polymorphic_allocator__, or as a smart pointer that
-shares ownership of a __memory_resource__ through reference counting:
+When using a memory resource in this fashion, including the case
+where a storage pointer or container is constructed from a
+__polymorphic_allocator__, the caller must ensure that the
+lifetime of the resource is extended until it is no longer
+referenced by any variables; otherwise, undefined behavior
+is possible.
 
-[snippet_allocators_5]
+Shared ownership is achieved using the function __make_counted_resource__,
+which creates a new, reference-counted memory resource using a dynamic memory
+allocation and returns it as a __storage_ptr__:
 
-A storage pointer can refer to one of three kinds of memory resources:
+[doc_storage_ptr_9]
 
-* the default resource,
+When a storage pointer is constructed this way, the lifetime of
+the referenced memory resource is extended until all variables which
+reference it are destroyed.
 
-* a ['counted resource], or
+[heading User-Defined Resource]
 
-* an ['uncounted resource].
+To implement custom memory allocation strategies, derive your class
+from __memory_resource__ and implement the functions `do_allocate`,
+`do_deallocate`, and `do_is_equal` as seen in this example below,
+which logs each operation it performs to the console:
 
-A default constructed __storage_ptr__ will refer to the default resource.
-Storage pointers that refer to the default memory resource do not have
-ownership of the resource, and are not counted.
-
-[snippet_allocators_6]
-
-A storage pointer that refers to a counted resource is obtained by calling
-`make_counted_resource`:
-
-[snippet_allocators_7]
-
-The resulting `storage_ptr` will have shared ownership of a dynamically allocated
-memory resource of the specified type. This storage pointer functions similar to
-__shared_ptr__, allowing for ownership to be shared through initialization and assignment:
-
-[snippet_allocators_8]
-
-The reference counting for __storage_ptr__ is atomic, meaning the
-sharing of ownership is thread safe:
-
-[snippet_allocators_ref_thread_safe]
-
-[caution
-    While the sharing of ownership is thread safe, the use of the
-    managed resource may not be.
-]
-
-Allowing the ownership of a resource to be shared can greatly alleviate
-lifetime concerns and promotes ease of use, as the lifetime of the
-underlying resource is managed automatically by the storage pointers.
-
-A __storage_ptr__ constructed from a pointer to a __memory_resource__
-will refer to an uncounted resource. Such storage pointers function as
-reference wrappers and do not take ownership of the resource.
-
-[snippet_allocators_10]
-
-[caution
-    Care must be taken to ensure that the resource managed by
-    a __storage_ptr__ is not accessed after that resource is destroyed.
-]
-
-Since atomic operations are relatively expensive compared to their
-non-atomic counterparts, it is sometimes desirable to avoid these
-operations when the lifetime of the JSON object can be bounded.
-For example, consider a network server which receives a JSON
-representing an RPC command. It parses the JSON, dispatches the
-command, and then destroys the value. Because the
-lifetime of the value is bounded by the function in which it
-appears, we can use an uncounted resource to avoid the overhead
-of atomic operations:
-
-[snippet_allocators_11]
-
-The `deallocate_is_null` function can be used to determine if the
-memory resource referred to by a  __storage_ptr__ will perform no action
-when `deallocate` is called. Skipping calls to `deallocate` when it
-performs no action can have significant performance benefits,
-as destructor calls for library types may also be elided
-if the memory resource is non-counted.
-
-[heading Custom Memory Resources]
-
-Users who need precise control over allocation can implement
-their own memory resource. Custom memory resources shall be derived from
-__memory_resource__ and must implement the functions `do_allocate`,
-`do_deallocate`, and `do_is_equal`. The `allocate`, `deallocate`, and
-`is_equal` functions are not virtual, and generally should not be
-redeclared in the custom memory resource.
-
-The `do_allocate`, `do_deallocate` and `do_is_equal` functions are not
-called directly by the user. These functions are called by
-`memory_resource::allocate`, `memory_resource::deallocate`, and `memory_resource::is_equal`
-with the provided arguments to fufill requests for allocation and deallocation, or
-to check equality, respectively:
-
-[snippet_allocators_12]
-
-The function `do_is_equal` indicates whether memory allocated by a
-memory resource can be deallocated by another memory resource:
-
-[snippet_allocators_13]
-
-The class template __is_deallocate_trivial__ can be specialized
-to indicate whether calling `do_deallocate` on a memory resource
-will have no effect:
-
-[snippet_allocators_14]
-
-The following is an example implementation of a custom memory resource
-that will log allocations and deallocations, and then forward them to 
-`::operator new` and `::operator delete`:
-
-[snippet_allocators_15]
+[doc_storage_ptr_10]
 
 [endsect]
 
@@ -389,13 +359,6 @@ For __array__, __object__, __string__, and __value__:
     __polymorphic_allocator__ constructed from the __memory_resource__
     used by the container. Ownership of this memory resource is not
     transferred.
-
-[note
-    Since __polymorphic_allocator__ does not own the memory resource,
-    calls to library containers' `get_allocator` member will throw an
-    exception if the associated memory resource is retained by shared
-    ownership.
-]
 
 Practically, this means that when a library container type is used in a
 standard container that uses a polymorphic allocator, the allocator will

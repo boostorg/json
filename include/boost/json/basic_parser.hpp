@@ -2352,7 +2352,7 @@ template<class... Args>
 basic_parser<Handler>::
 basic_parser(
     parse_options const& opt,
-    Args&&... args) noexcept
+    Args&&... args)
     : h_(std::forward<Args>(args)...)
     , opt_(opt) 
 {

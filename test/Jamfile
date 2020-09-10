@@ -27,7 +27,7 @@ else
 local SOURCES =
     array.cpp
     basic_parser.cpp
-    doc_allocators.cpp
+    doc_storage_ptr.cpp
     doc_quick_look.cpp
     error.cpp
     json.cpp

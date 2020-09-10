@@ -145,7 +145,7 @@ in memory.
 [import ../../example/pretty.cpp]
 [import ../../example/validate.cpp]
 [import ../../include/boost/json/impl/serialize.ipp]
-[import ../../test/doc_allocators.cpp]
+[import ../../test/doc_storage_ptr.cpp]
 [import ../../test/doc_quick_look.cpp]
 [import ../../test/memory_resource.cpp]
 [import ../../test/snippets.cpp]

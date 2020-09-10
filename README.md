@@ -83,8 +83,8 @@ In particular, if using libstdc++ then version 9.1 or later is needed.
 
 To use Boost.JSON header-only; that is, to eliminate the requirement
 to modify build scripts to link to a static or dynamic library, simply
-place the following line in any new or existing translation unit in your
-project.
+place the following line in exactly one new or existing source file
+in your project.
 ```
 #include <boost/json/src.hpp>
 ```

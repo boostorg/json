@@ -84,23 +84,10 @@ BOOST_JSON_NS_BEGIN
     code will be returned by the write function to
     the caller.
 \n            
-    Handlers must also define the following
-    static data members:
-    
-    @li `max_object_size`, the maximum number
-    of elements an object can contain,
-
-    @li `max_array_size`, the maximum number
-    of elements an array can contain,
-    
-    @li `max_key_size`, the maximum length
-    for object keys, and
-    
-    @li `max_string_size`, the maximum
-    length for strings.
-    
-    If a value exceeding these limits
-    is encountered, parsing fails.
+    Handlers are required to declare the maximum
+    limits on various elements. If these limits
+    are exceeded during parsing, then parsing
+    fails with an error.
 \n            
     The following declaration meets the parser's
     handler requirements:
@@ -108,11 +95,17 @@ BOOST_JSON_NS_BEGIN
     @code
     struct handler
     {
-        /// Value size limits
-        constexpr static std::size_t max_object_size = -1;
-        constexpr static std::size_t max_array_size = -1;
-        constexpr static std::size_t max_key_size = -1;
-        constexpr static std::size_t max_string_size = -1;
+        /// The maximum number of elements allowed in an array
+        static constexpr std::size_t max_array_size = -1;
+
+        /// The maximum number of elements allowed in an object
+        static constexpr std::size_t max_object_size = -1;
+
+        /// The maximum number of characters allowed in a string
+        static constexpr std::size_t max_string_size = -1;
+
+        /// The maximum number of characters allowed in a key
+        static constexpr std::size_t max_key_size = -1;
 
         /// Called once when the JSON parsing begins.
         ///
@@ -127,21 +120,6 @@ BOOST_JSON_NS_BEGIN
         /// @param ec Set to the error, if any occurred.
         ///
         bool on_document_end( error_code& ec );
-
-        /// Called when the beginning of an object is encountered.
-        ///
-        /// @return `true` on success.
-        /// @param ec Set to the error, if any occurred.
-        ///
-        bool on_object_begin( error_code& ec );
-
-        /// Called when the end of the current object is encountered.
-        ///
-        /// @return `true` on success.
-        /// @param n The number of elements in the object.
-        /// @param ec Set to the error, if any occurred.
-        ///
-        bool on_object_end( std::size_t n, error_code& ec );
 
         /// Called when the beginning of an array is encountered.
         ///
@@ -158,23 +136,20 @@ BOOST_JSON_NS_BEGIN
         ///
         bool on_array_end( std::size_t n, error_code& ec );
 
-        /// Called with characters corresponding to part of the current key.
+        /// Called when the beginning of an object is encountered.
         ///
         /// @return `true` on success.
-        /// @param s The partial characters
-        /// @param n The total size of the key thus far
         /// @param ec Set to the error, if any occurred.
         ///
-        bool on_key_part( string_view s, std::size_t n, error_code& ec );
+        bool on_object_begin( error_code& ec );
 
-        /// Called with the last characters corresponding to the current key.
+        /// Called when the end of the current object is encountered.
         ///
         /// @return `true` on success.
-        /// @param s The remaining characters
-        /// @param n The total size of the key
+        /// @param n The number of elements in the object.
         /// @param ec Set to the error, if any occurred.
         ///
-        bool on_key( string_view s, std::size_t n, error_code& ec );
+        bool on_object_end( std::size_t n, error_code& ec );
 
         /// Called with characters corresponding to part of the current string.
         ///
@@ -193,6 +168,24 @@ BOOST_JSON_NS_BEGIN
         /// @param ec Set to the error, if any occurred.
         ///
         bool on_string( string_view s, std::size_t n, error_code& ec );
+
+        /// Called with characters corresponding to part of the current key.
+        ///
+        /// @return `true` on success.
+        /// @param s The partial characters
+        /// @param n The total size of the key thus far
+        /// @param ec Set to the error, if any occurred.
+        ///
+        bool on_key_part( string_view s, std::size_t n, error_code& ec );
+
+        /// Called with the last characters corresponding to the current key.
+        ///
+        /// @return `true` on success.
+        /// @param s The remaining characters
+        /// @param n The total size of the key
+        /// @param ec Set to the error, if any occurred.
+        ///
+        bool on_key( string_view s, std::size_t n, error_code& ec );
 
         /// Called with the characters corresponding to part of the current number.
         ///
@@ -445,13 +438,19 @@ public:
 
         All dynamically allocated internal memory is freed.
     */
-    ~basic_parser() = default;
+    ~basic_parser() noexcept = default;
 
     /** Constructor.
 
         This function constructs the parser with
         the specified options, with any additional
         arguments forwarded to the handler's constructor.
+
+        @par Complexity
+        Same as `Handler( std::forward< Args >( args )... )`.
+
+        @par Exception Safety
+        Same as `Handler( std::forward< Args >( args )... )`.
 
         @param opt Configuration settings for the parser.
         If this structure is default constructed, the
@@ -466,9 +465,18 @@ public:
     explicit
     basic_parser(
         parse_options const& opt,
-        Args&&... args) noexcept;
+        Args&&... args);
 
     /** Return a reference to the handler.
+
+        This function provides access to the constructed
+        instance of the handler owned by the parser.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     Handler&
     handler() noexcept
@@ -477,6 +485,15 @@ public:
     }
 
     /** Return a reference to the handler.
+
+        This function provides access to the constructed
+        instance of the handler owned by the parser.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     Handler const&
     handler() const noexcept
@@ -492,8 +509,8 @@ public:
         @li A complete serialized JSON has been
             presented to the parser, and
 
-        @li No error has occurred since the parser
-            was constructed, or since the last call
+        @li No error or exception has occurred since the
+            parser was constructed, or since the last call
             to @ref reset,
 
         @par Complexity
@@ -525,6 +542,12 @@ public:
         state, to prepare for parsing a new document.
         Dynamically allocated temporary memory used
         by the implementation is not deallocated.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     void
     reset() noexcept;
@@ -557,8 +580,11 @@ public:
         can be indicated by passing `more = false`.
 
         @par Complexity
-
         Linear in `size`.
+
+        @par Exception Safety
+        Basic guarantee. Upon exception, the only valid
+        operations are @ref reset and destruction.
 
         @return The number of characters successfully
         parsed, which may be smaller than `size`.

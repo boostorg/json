@@ -7,6 +7,8 @@
 // Official repository: https://github.com/cppalliance/json
 //
 
+//[example_validate
+
 /*
     This example verifies that a file contains valid JSON.
 */
@@ -23,8 +25,6 @@
 #include "file.hpp"
 
 using namespace boost::json;
-
-//[example_validate
 
 // The null parser discards all the data
 class null_parser
@@ -95,8 +95,6 @@ validate( string_view s )
     return true;
 }
 
-//]
-
 int
 main(int argc, char** argv)
 {
@@ -132,3 +130,5 @@ main(int argc, char** argv)
 
     return EXIT_SUCCESS;
 }
+
+//]

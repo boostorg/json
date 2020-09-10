@@ -110,7 +110,7 @@ class GenericObject;
 
 [heading Comparison to SIMD JSON]
 
-https://github.com/lemire/simdjson
+[@https://github.com/lemire/simdjson https://github.com/lemire/simdjson]
 
 ```
 class ParsedJson;
