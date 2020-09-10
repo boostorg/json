@@ -21,6 +21,7 @@
 
 #ifdef _MSC_VER
 #pragma warning(push)
+#pragma warning(disable: 4702) // unreachable code
 #pragma warning(disable: 4127) // conditional expression is constant
 #endif
 
@@ -389,7 +390,7 @@ parse_comment(const char* p)
         st_.pop(st);
         switch(st)
         {
-            default:
+            default: BOOST_JSON_UNREACHABLE();
             case state::com1: goto do_com1;
             case state::com2: goto do_com2;
             case state::com3: goto do_com3;
@@ -486,7 +487,7 @@ parse_document(const char* p)
         st_.pop(st);
         switch(st)
         {
-        default:
+        default: BOOST_JSON_UNREACHABLE();
         case state::doc1: goto do_doc1;
         case state::doc2: goto do_doc2;
         case state::doc3: goto do_doc3;
@@ -634,7 +635,7 @@ resume_value(const char* p)
     st_.peek(st);
     switch(st)
     {
-    default:
+    default: BOOST_JSON_UNREACHABLE();
     case state::nul1:  case state::nul2:
     case state::nul3:
         return parse_null<StackEmpty>(p);
@@ -687,6 +688,7 @@ resume_value(const char* p)
 
     case state::com1:  case state::com2:
     case state::com3:  case state::com4:
+    BOOST_JSON_ASSUME(AllowComments);
         return parse_comment<StackEmpty, false>(p);
     }
 }
@@ -718,7 +720,7 @@ parse_null(const char* p)
         st_.pop(st);
         switch(st)
         {
-        default:
+        default: BOOST_JSON_UNREACHABLE();
         case state::nul1: goto do_nul1;
         case state::nul2: goto do_nul2;
         case state::nul3: goto do_nul3;
@@ -776,7 +778,7 @@ parse_true(const char* p)
         st_.pop(st);
         switch(st)
         {
-        default:
+        default: BOOST_JSON_UNREACHABLE();
         case state::tru1: goto do_tru1;
         case state::tru2: goto do_tru2;
         case state::tru3: goto do_tru3;
@@ -834,7 +836,7 @@ parse_false(const char* p)
         st_.pop(st);
         switch(st)
         {
-        default:
+        default: BOOST_JSON_UNREACHABLE();
         case state::fal1: goto do_fal1;
         case state::fal2: goto do_fal2;
         case state::fal3: goto do_fal3;
@@ -889,7 +891,7 @@ parse_string(const char* p)
         st_.peek(st);
         switch(st)
         {
-        default:
+        default: BOOST_JSON_UNREACHABLE();
         case state::str1:
             return parse_unescaped<StackEmpty, 
                 IsKey, AllowBadUTF8>(p);
@@ -1050,7 +1052,7 @@ parse_escaped(
         st_.pop(total);
         switch(st)
         {
-        default:
+        default: BOOST_JSON_UNREACHABLE();
         case state::str2: goto do_str2;
         case state::str3: goto do_str3;
         case state::str4: goto do_str4;
@@ -1426,6 +1428,7 @@ do_str2:
         ++cs;
     }
 do_str8:
+    BOOST_JSON_ASSUME(! AllowBadUTF8);
     uint8_t needed = seq_.needed();
     if(BOOST_JSON_UNLIKELY(
         ! seq_.append(cs.begin(), cs.remain())))
@@ -1459,7 +1462,7 @@ parse_object(const char* p)
         st_.pop(size);
         switch(st)
         {
-        default:
+        default: BOOST_JSON_UNREACHABLE();
         case state::obj1: goto do_obj1;
         case state::obj2: goto do_obj2;
         case state::obj3: goto do_obj3;
@@ -1497,6 +1500,7 @@ do_obj1:
             if(AllowComments && *cs == '/')
             {
 do_obj2:
+                BOOST_JSON_ASSUME(AllowComments);
                 cs = parse_comment<StackEmpty, false>(cs.begin());
                 if(BOOST_JSON_UNLIKELY(incomplete(cs)))
                     return suspend_or_fail(state::obj2, size);
@@ -1522,6 +1526,7 @@ do_obj4:
             if(AllowComments && *cs == '/')
             {
 do_obj5:
+                BOOST_JSON_ASSUME(AllowComments);
                 cs = parse_comment<StackEmpty, false>(cs.begin());
                 if(BOOST_JSON_UNLIKELY(incomplete(cs)))
                     return suspend_or_fail(state::obj5, size);
@@ -1537,6 +1542,7 @@ do_obj6:
         if(AllowComments && *cs == '/')
         {
 do_obj7:
+            BOOST_JSON_ASSUME(AllowComments);
             cs = parse_comment<StackEmpty, false>(cs.begin());
             if(BOOST_JSON_UNLIKELY(incomplete(cs)))
                 return suspend_or_fail(state::obj7, size);
@@ -1567,6 +1573,7 @@ do_obj10:
                 if(AllowComments && *cs == '/')
                 {
 do_obj11:
+                    BOOST_JSON_ASSUME(AllowComments);
                     cs = parse_comment<StackEmpty, false>(cs.begin());
                     if(BOOST_JSON_UNLIKELY(incomplete(cs)))
                         return suspend_or_fail(state::obj11, size);
@@ -1580,6 +1587,7 @@ do_obj11:
             if(AllowComments && *cs == '/')
             {
 do_obj12:
+                BOOST_JSON_ASSUME(AllowComments);
                 cs = parse_comment<StackEmpty, false>(cs.begin());
                 if(BOOST_JSON_UNLIKELY(incomplete(cs)))
                     return suspend_or_fail(state::obj12, size);
@@ -1619,7 +1627,7 @@ parse_array(const char* p)
         st_.pop(size);
         switch(st)
         {
-        default:
+        default: BOOST_JSON_UNREACHABLE();
         case state::arr1: goto do_arr1;
         case state::arr2: goto do_arr2;
         case state::arr3: goto do_arr3;
@@ -1650,6 +1658,7 @@ do_arr1:
         if(AllowComments && *cs == '/')
         {
 do_arr2:
+            BOOST_JSON_ASSUME(AllowComments);
             cs = parse_comment<StackEmpty, false>(cs.begin());
             if(BOOST_JSON_UNLIKELY(incomplete(cs)))
                 return suspend_or_fail(state::arr2, size);
@@ -1679,6 +1688,7 @@ do_arr5:
             if(AllowComments && *cs == '/')
             {
 do_arr6:
+                BOOST_JSON_ASSUME(AllowComments);
                 cs = parse_comment<StackEmpty, false>(cs.begin());
                 if(BOOST_JSON_UNLIKELY(incomplete(cs)))
                     return suspend_or_fail(state::arr6, size);
@@ -1693,6 +1703,7 @@ do_arr6:
             if(AllowComments && *cs == '/')
             {
 do_arr7:
+                BOOST_JSON_ASSUME(AllowComments);
                 cs = parse_comment<StackEmpty, false>(cs.begin());
                 if(BOOST_JSON_UNLIKELY(incomplete(cs)))
                     return suspend_or_fail(state::arr7, size);
@@ -1848,7 +1859,7 @@ parse_number(const char* p)
         st_.pop(st);
         switch(st)
         {
-        default:
+        default: BOOST_JSON_UNREACHABLE();
         case state::num1: goto do_num1;
         case state::num2: goto do_num2;
         case state::num3: goto do_num3;

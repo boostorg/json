@@ -99,6 +99,8 @@
 #ifndef BOOST_FORCEINLINE
 # ifdef _MSC_VER
 #  define BOOST_FORCEINLINE __forceinline
+# elif defined(__GNUC__) || defined(__clang__)
+#  define BOOST_FORCEINLINE inline __attribute__((always_inline))
 # else
 #  define BOOST_FORCEINLINE inline
 # endif
@@ -195,6 +197,32 @@
 #  define BOOST_JSON_UNLIKELY(x) __builtin_expect(!!(x), 0)
 # else
 #  define BOOST_JSON_UNLIKELY(x) x
+# endif
+#endif
+
+#ifndef BOOST_JSON_UNREACHABLE
+# define BOOST_JSON_UNREACHABLE() static_cast<void>(0)
+# ifdef _MSC_VER
+#  undef BOOST_JSON_UNREACHABLE
+#  define BOOST_JSON_UNREACHABLE() __assume(0)
+# elif defined(__has_builtin)
+#  if __has_builtin(__builtin_unreachable)
+#   undef BOOST_JSON_UNREACHABLE
+#   define BOOST_JSON_UNREACHABLE() __builtin_unreachable() 
+#  endif
+# endif
+#endif
+
+#ifndef BOOST_JSON_ASSUME
+# define BOOST_JSON_ASSUME(x) (!!(x) ? void() : BOOST_JSON_UNREACHABLE())
+# ifdef _MSC_VER
+#  undef BOOST_JSON_ASSUME
+#  define BOOST_JSON_ASSUME(x) __assume(!!(x))
+# elif defined(__has_builtin)
+#  if __has_builtin(__builtin_assume)
+#   undef BOOST_JSON_ASSUME
+#   define BOOST_JSON_ASSUME(x) __builtin_assume(!!(x))
+#  endif
 # endif
 #endif
 
