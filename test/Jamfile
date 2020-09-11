@@ -51,6 +51,7 @@ local SOURCES =
     value_stack.cpp
     value_to.cpp
     value_ref.cpp
+    visit.cpp
     ryu/d2s_intrinsics_test.cpp
     ryu/d2s_table_test.cpp
     ryu/d2s_test.cpp

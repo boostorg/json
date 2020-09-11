@@ -47,6 +47,7 @@
           <member><link linkend="json.ref.boost__json__swap">swap</link></member>
           <member><link linkend="json.ref.boost__json__value_from">value_from</link></member>
           <member><link linkend="json.ref.boost__json__value_to">value_to</link></member>
+          <member><link linkend="json.ref.boost__json__visit">visit</link></member>
         </simplelist>
         <bridgehead renderas="sect3">Type Traits</bridgehead>
         <simplelist type="vert" columns="1">
