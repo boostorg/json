@@ -259,11 +259,6 @@ shrink_to_fit() noexcept
         impl_ = {};
         return;
     }
-    if( impl_.size() <
-            array_impl::min_capacity &&
-        impl_.capacity() <=
-            array_impl::min_capacity)
-        return;
 
 #ifndef BOOST_NO_EXCEPTIONS
     try
@@ -515,8 +510,6 @@ reserve_impl(std::size_t capacity)
         else if(capacity < hint)
             capacity = hint;
     }
-    if( capacity < array_impl::min_capacity)
-        capacity = array_impl::min_capacity;
     array_impl impl(capacity, sp_);
     relocate(
         impl.data(),
