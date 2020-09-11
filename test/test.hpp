@@ -43,6 +43,7 @@ struct fail_resource
     std::size_t fail_max = 0;
     std::size_t fail = 0;
     std::size_t nalloc = 0;
+    std::size_t bytes = 0;
 
     ~fail_resource()
     {
@@ -62,17 +63,19 @@ struct fail_resource
         }
         auto p = ::operator new(n);
         ++nalloc;
+        bytes += n;
         return p;
     }
 
     void
     do_deallocate(
         void* p,
-        std::size_t,
+        std::size_t n,
         std::size_t) noexcept override
     {
         if(BOOST_TEST(nalloc > 0))
             --nalloc;
+        bytes -= n;
         ::operator delete(p);
     }
 

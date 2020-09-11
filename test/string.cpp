@@ -10,6 +10,8 @@
 // Test that header file is self-contained.
 #include <boost/json/string.hpp>
 
+#include <boost/json/parse.hpp>
+
 #include <numeric>
 #include <sstream>
 #include <string>
