@@ -85,6 +85,9 @@ as part of Boost, or in the standalone flavor (without Boost):
 * Link to a built static or dynamic standalone library, or use header-only (below)
 * Supports -fno-exceptions: define `BOOST_NO_EXCEPTIONS` and `boost::throw_exception` manually
 
+When using without Boost, support for `<memory_resource>` is required.
+In particular, if using libstdc++ then version 9.1 or later is needed.
+
 [heading Header-Only]
 
 To use Boost.JSON header-only; that is, to eliminate the requirement
