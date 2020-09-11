@@ -22,7 +22,6 @@ public:
         std::initializer_list<value_ref>;
 
     string_view const str_;
-    std::size_t min_capacity_;
 
     array_test()
         : str_(
@@ -33,10 +32,6 @@ public:
         BOOST_ASSERT(str_.size() >
             string().capacity());
 
-        // calculate minimum array capacity
-        array a;
-        a.resize(1);
-        min_capacity_ = a.capacity();
     }
 
     void
@@ -644,12 +639,13 @@ public:
 
             fail_loop([&](storage_ptr const& sp)
             {
-                array a(min_capacity_, 'c', sp);
+                array a(4, 'c', sp);
                 a.reserve(a.capacity() + 1);
                 auto const new_cap = a.capacity();
-                BOOST_TEST(new_cap > min_capacity_);
-                a.reserve((min_capacity_ + new_cap) / 2);
-                BOOST_TEST(a.capacity() == new_cap);
+                // 2x growth
+                BOOST_TEST(new_cap == 8);
+                a.reserve(new_cap + 1);
+                BOOST_TEST(a.capacity() == 16);
             });
         }
 
@@ -669,11 +665,11 @@ public:
             }
 
             {
-                array a(min_capacity_, 'c');
-                BOOST_TEST(a.capacity() >= min_capacity_);
-                a.erase(a.begin(), a.begin() + 2);
+                array a(2, 'c');
+                BOOST_TEST(a.capacity() == 2);
+                a.erase(a.begin());
                 a.shrink_to_fit();
-                BOOST_TEST(a.capacity() == min_capacity_);
+                BOOST_TEST(a.capacity() == 1);
             }
 
             fail_loop([&](storage_ptr const& sp)
@@ -695,12 +691,11 @@ public:
 
             fail_loop([&](storage_ptr const& sp)
             {
-                array a(min_capacity_, sp);
-                a.reserve(min_capacity_ * 2);
-                BOOST_TEST(a.capacity() >=
-                    min_capacity_ * 2);
+                array a(4, sp);
+                a.reserve(a.capacity() * 2);
+                BOOST_TEST(a.capacity() >= 4);
                 a.shrink_to_fit();
-                if(a.capacity() > min_capacity_)
+                if(a.capacity() != a.size())
                     throw test_failure{};
             });
         }
@@ -782,10 +777,11 @@ public:
                      7,  8,  9, 10, 11, 12, 13, 14, 15, 16,
                     17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
                     27, 28, 29, 30 };
-                BOOST_TEST(init.size() > min_capacity_);
                 array a(sp);
                 a.insert(a.begin(),
                     init.begin(), init.end());
+                BOOST_TEST(a.size() == init.size());
+                BOOST_TEST(a.capacity() == init.size());
             });
 
             // input iterator (empty range)

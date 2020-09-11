@@ -32,10 +32,6 @@ class array_impl
     table* tab_ = nullptr;
 
 public:
-    static
-    constexpr
-    unsigned long min_capacity = 16;
-
     array_impl() = default;
     array_impl(array_impl const&) = default;
     array_impl& operator=(
