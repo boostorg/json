@@ -1646,6 +1646,45 @@ public:
     //------------------------------------------------------
 
     void
+    testEquality()
+    {
+        BOOST_TEST(value(nullptr) == value(nullptr));
+        BOOST_TEST(value(nullptr) != value(true));
+
+        BOOST_TEST(value(false) == value(false));
+        BOOST_TEST(value(true)  != value(false));
+        BOOST_TEST(value(true)  != value(nullptr));
+
+        BOOST_TEST(value(1.5) == value(1.5));
+        BOOST_TEST(value(1.5) != value(2.5));
+        BOOST_TEST(value(1.5) != value(false));
+        BOOST_TEST(value(2.0) != value(2));
+
+        BOOST_TEST(value(1UL) == value( 1UL));
+        BOOST_TEST(value(1UL) != value( 2UL));
+        BOOST_TEST(value(1UL) == value( 1));
+        BOOST_TEST(value(1UL) != value(-1));
+        BOOST_TEST(value(1UL) != value(nullptr));
+
+        BOOST_TEST(value( 1) == value( 1));
+        BOOST_TEST(value( 1) != value( 2));
+        BOOST_TEST(value(-1) == value(-1));
+        BOOST_TEST(value(-1) != value(-2));
+        BOOST_TEST(value(-1) != value( 2));
+        BOOST_TEST(value( 1) == value( 1UL));
+        BOOST_TEST(value( 1) != value( 2UL));
+        BOOST_TEST(value(-1) != value( 1UL));
+        BOOST_TEST(value(-1) != value(nullptr));
+
+        BOOST_TEST(value("abc") == value("abc"));
+        BOOST_TEST(value("abc") != value("xyz"));
+        BOOST_TEST(value("abc") != value("x"));
+        BOOST_TEST(value("abc") != value(nullptr));
+    }
+
+    //------------------------------------------------------
+
+    void
     run()
     {
         testSpecial();
@@ -1661,6 +1700,7 @@ public:
         testKeyValuePair();
         testStdConstruction();
         testInitList();
+        testEquality();
     }
 };
 

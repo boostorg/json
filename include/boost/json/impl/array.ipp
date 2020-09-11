@@ -544,6 +544,21 @@ relocate(
         n * sizeof(value));
 }
 
+//----------------------------------------------------------
+
+bool
+array::
+equal(
+    array const& other) const noexcept
+{
+    if(size() != other.size())
+        return false;
+    for(std::size_t i = 0; i < size(); ++i)
+        if((*this)[i] != other[i])
+            return false;
+    return true;
+}
+
 BOOST_JSON_NS_END
 
 #endif

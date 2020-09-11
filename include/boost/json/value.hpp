@@ -35,6 +35,10 @@ BOOST_JSON_NS_BEGIN
 
 /** The type used to represent any JSON value
 
+    This is a <em>Regular</em> type which works like
+    a variant of the basic JSON data types: array,
+    object, string, number, boolean, and null.
+
     @par Thread Safety
 
     Distinct instances may be accessed concurrently.
@@ -2755,6 +2759,55 @@ public:
         return as_array().at(pos);
     }
 
+    /** Return `true` if two values are equal.
+
+        Two values are equal when they are the
+        same kind and their referenced values
+        are equal, or when they are both integral
+        types and their integral representations
+        are equal.
+
+        @par Complexity
+        Constant or linear in the size of
+        the array, object, or string.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    // inline friend speeds up overload resolution
+    friend
+    bool
+    operator==(
+        value const& lhs,
+        value const& rhs) noexcept
+    {
+        return lhs.equal(rhs);
+    }
+
+    /** Return `true` if two values are not equal.
+
+        Two values are equal when they are the
+        same kind and their referenced values
+        are equal, or when they are both integral
+        types and their integral representations
+        are equal.
+
+        @par Complexity
+        Constant or linear in the size of
+        the array, object, or string.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    friend
+    bool
+    operator!=(
+        value const& lhs,
+        value const& rhs) noexcept
+    {
+        return ! (lhs == rhs);
+    }
+
 private:
     static
     inline
@@ -2766,6 +2819,10 @@ private:
     BOOST_JSON_DECL
     storage_ptr
     destroy() noexcept;
+
+    BOOST_JSON_DECL
+    bool
+    equal(value const& other) const noexcept;
 };
 
 // Make sure things are as big as we think they should be

@@ -633,6 +633,24 @@ insert_range_impl(
     u.commit = true;
 }
 
+bool
+object::
+equal(object const& other) const noexcept
+{
+    if(size() != other.size())
+        return false;
+    for(auto e : *this)
+    {
+        auto p = other.contains(e.key());
+        if(! p)
+            return false;
+        if(*p != e.value())
+            return false;
+    }
+    return true;
+}
+
+
 BOOST_JSON_NS_END
 
 #endif

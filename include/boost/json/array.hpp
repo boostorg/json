@@ -1587,6 +1587,56 @@ public:
     void
     swap(array& other);
 
+    /** Return `true` if two arrays are equal.
+
+        Arrays are equal when their sizes are
+        the same, and they are element-for-element
+        equal in order.
+
+        @par Effects
+        `return std::equal( lhs.begin(), lhs.end(), rhs.begin(), rhs.end() );`
+
+        @par Complexity
+        Constant or linear in `lhs.size()`.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    // inline friend speeds up overload resolution
+    friend
+    bool
+    operator==(
+        array const& lhs,
+        array const& rhs) noexcept
+    {
+        return lhs.equal(rhs);
+    }
+
+    /** Return `true` if two arrays are not equal.
+
+        Arrays are equal when their sizes are
+        the same, and they are element-for-element
+        equal in order.
+
+        @par Effects
+        `return ! std::equal( lhs.begin(), lhs.end(), rhs.begin(), rhs.end() );`
+
+        @par Complexity
+        Constant or linear in `lhs.size()`.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    // inline friend speeds up overload resolution
+    friend
+    bool
+    operator!=(
+        array const& lhs,
+        array const& rhs) noexcept
+    {
+        return ! (lhs == rhs);
+    }
+
 private:
     template<class It>
     using iter_cat = typename
@@ -1643,6 +1693,10 @@ private:
         value* dest,
         value* src,
         std::size_t n) noexcept;
+
+    BOOST_JSON_DECL
+    bool
+    equal(array const& other) const noexcept;
 };
 
 /** Exchange the given values.

@@ -37,15 +37,14 @@
 [def __Allocator__              [@https://en.cppreference.com/w/cpp/named_req/Allocator ['Allocator]]]
 [def __CopyAssignable__         [@https://en.cppreference.com/w/cpp/named_req/CopyAssignable ['CopyAssignable]]]
 [def __CopyConstructible__      [@https://en.cppreference.com/w/cpp/named_req/CopyConstructible ['CopyConstructible]]]
+[def __Copyable__               [@https://en.cppreference.com/w/cpp/concepts/copyable ['Copyable]]]
 [def __DefaultConstructible__   [@https://en.cppreference.com/w/cpp/named_req/DefaultConstructible ['DefaultConstructible]]]
 [def __Hash__                   [@https://en.cppreference.com/w/cpp/named_req/Hash ['Hash]]]
 [def __InputIterator__          [@https://en.cppreference.com/w/cpp/named_req/InputIterator ['InputIterator]]]
 [def __MoveAssignable__         [@https://en.cppreference.com/w/cpp/named_req/MoveAssignable ['MoveAssignable]]]
 [def __MoveConstructible__      [@https://en.cppreference.com/w/cpp/named_req/MoveConstructible ['MoveConstructible]]]
+[def __Regular__                [@https://en.cppreference.com/w/cpp/concepts/regular ['Regular]]]
 [def __Swappable__              [@https://en.cppreference.com/w/cpp/named_req/Swappable ['Swappable]]]
-
-[def __Copyable__               [@https://en.cppreference.com/w/cpp/concepts/copyable ['Copyable]]]
-[def __SemiRegular__            [@https://en.cppreference.com/w/cpp/concepts/semiregular ['SemiRegular]]]
 
 [def __array__                  [link json.ref.boost__json__array `array`]]
 [def __basic_parser__           [link json.ref.boost__json__basic_parser `basic_parser`]]

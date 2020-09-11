@@ -1056,6 +1056,16 @@ public:
     }
 
     void
+    testEquality()
+    {
+        BOOST_TEST(object({}) == object({}));
+        BOOST_TEST(object({}) != object({{"1",1},{"2",2}}));
+        BOOST_TEST(object({{"1",1},{"2",2},{"3",3}}) == object({{"1",1},{"2",2},{"3",3}}));
+        BOOST_TEST(object({{"1",1},{"2",2},{"3",3}}) != object({{"1",1},{"2",2}}));
+        BOOST_TEST(object({{"1",1},{"2",2},{"3",3}}) == object({{"3",3},{"2",2},{"1",1}}));
+    }
+
+    void
     run()
     {
         testSpecial();
@@ -1066,6 +1076,7 @@ public:
         testHashPolicy();
         testImplementation();
         testCollisions();
+        testEquality();
     }
 };
 

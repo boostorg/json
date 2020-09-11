@@ -10,7 +10,7 @@
 [section:values Using Values]
 
 A container holding JSON is represented in memory as instances of
-__value__: a __SemiRegular__ type which satisfies
+__value__: a __Regular__ type which satisfies
 __DefaultConstructible__,
 __CopyConstructible__, __CopyAssignable__,
 __MoveConstructible__, __MoveAssignable__,

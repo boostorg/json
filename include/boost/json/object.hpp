@@ -1392,6 +1392,50 @@ public:
     value*
     contains(string_view key) noexcept;
 
+    /** Return `true` if two objects are equal.
+
+        Objects are equal when their sizes are the same,
+        and when for each key in `lhs` there is a matching
+        key in `rhs` with the same value.
+
+        @par Complexity
+        Constant, or linear (worst case quadratic) in `lhs.size()`.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    // inline friend speeds up overload resolution
+    friend
+    bool
+    operator==(
+        object const& lhs,
+        object const& rhs) noexcept
+    {
+        return lhs.equal(rhs);
+    }
+
+    /** Return `true` if two objects are not equal.
+
+        Objects are equal when their sizes are the same,
+        and when for each key in `lhs` there is a matching
+        key in `rhs` with the same value.
+
+        @par Complexity
+        Constant, or linear (worst case quadratic) in `lhs.size()`.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    // inline friend speeds up overload resolution
+    friend
+    bool
+    operator!=(
+        object const& lhs,
+        object const& rhs) noexcept
+    {
+        return ! (lhs == rhs);
+    }
+
 private:
     struct place_one;
     struct place_range;
@@ -1462,6 +1506,10 @@ private:
             min_capacity,
             iter_cat<InputIt>{});
     }
+
+    BOOST_JSON_DECL
+    bool
+    equal(object const& other) const noexcept;
 };
 
 //------------------------------------------------------
