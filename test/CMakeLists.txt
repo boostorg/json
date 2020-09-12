@@ -20,6 +20,8 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX "" FILES limits.cpp main.cp
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/../src PREFIX "" FILES ../src/src.cpp)
 add_executable(limits limits.cpp main.cpp ../src/src.cpp Jamfile)
 
+target_compile_features(limits PUBLIC cxx_constexpr)
+
 target_include_directories(limits PRIVATE ../include .)
 target_compile_definitions(limits PRIVATE
     BOOST_JSON_MAX_STRING_SIZE=1000
@@ -49,6 +51,7 @@ else()
     target_link_libraries(limits
         PRIVATE
             Boost::system
+            Boost::container
     )
 endif()
 
