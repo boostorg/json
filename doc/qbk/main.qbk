@@ -61,6 +61,7 @@
 [def __memory_resource__        [link json.ref.boost__json__memory_resource `memory_resource`]]
 [def __monotonic_resource__     [link json.ref.boost__json__monotonic_resource `monotonic_resource`]]
 [def __null_resource__          [link json.ref.boost__json__null_resource `null_resource`]]
+[def __number_cast__            [link json.ref.boost__json__number_cast `number_cast`]]
 [def __object__                 [link json.ref.boost__json__object `object`]]
 [def __parse__                  [link json.ref.boost__json__parse `parse`]]
 [def __parser__                 [link json.ref.boost__json__parser `parser`]]
@@ -151,6 +152,7 @@ in memory.
 [import ../../test/doc_serializing.cpp]
 [import ../../test/doc_storage_ptr.cpp]
 [import ../../test/doc_uses_allocator.cpp]
+[import ../../test/doc_using_numbers.cpp]
 [import ../../test/snippets.cpp]
 
 [include 01_overview.qbk]

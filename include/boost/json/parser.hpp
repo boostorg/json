@@ -184,6 +184,8 @@ public:
         Ownership is not transferred, the caller is responsible
         for ensuring the lifetime of the memory pointed to by
         `buffer` extends until the parser is destroyed.
+
+        @param size The number of valid bytes in `buffer`.
     */
     BOOST_JSON_DECL
     parser(

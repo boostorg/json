@@ -33,6 +33,7 @@ local SOURCES =
     doc_serializing.cpp
     doc_storage_ptr.cpp
     doc_uses_allocator.cpp
+    doc_using_numbers.cpp
     error.cpp
     json.cpp
     kind.cpp
