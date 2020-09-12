@@ -1210,6 +1210,122 @@ usingExchange()
     }
 }
 
+void
+usingNumbers()
+{
+    {
+        //[snippet_numbers_1
+
+        // construction from int
+        value jv1 = 1;
+
+        assert( jv1.is_int64() );
+        
+        // construction from unsigned int
+        value jv2 = 2u;
+
+        assert( jv2.is_uint64() );
+
+        // construction from double
+        value jv3 = 3.0;
+
+        assert( jv3.is_double() );
+
+        //]
+
+        (void)jv1;
+        (void)jv2;
+        (void)jv3;
+    }
+    struct convert_int64
+    {
+            
+        value jv;
+
+        //[snippet_numbers_2
+
+        operator int() const
+        {
+            // jv is a non-static data member
+            return number_cast< int >( this->jv );
+        }
+
+        //]
+    };
+    {
+        try
+        {
+            //[snippet_numbers_3
+
+            value jv1 = 404;
+
+            assert( jv1.is_int64() );
+
+            // ok, identity conversion
+            std::int64_t r1 = number_cast< std::int64_t >( jv1 );
+
+            // loss of data, throws system_error
+            char r2 = number_cast< char >( jv1 );
+
+            // ok, no loss of data
+            double r3 = number_cast< double >( jv1 );
+
+            value jv2 = 1.23;
+
+            assert( jv1.is_double() );
+
+            // ok, same as static_cast<float>( jv2.get_double() )
+            float r4 = number_cast< float >( jv2 );
+
+            // not exact, throws system_error
+            int r5 = number_cast< int >( jv2 );
+
+            value jv3 = {1, 2, 3};
+
+            assert( ! jv3.is_number() );
+
+            // not a number, throws system_error
+            int r6 = number_cast< int >( jv3 );
+
+            //]
+
+            (void)r1;
+            (void)r2;
+            (void)r3;
+            (void)r4;
+            (void)r5;
+            (void)r6;
+        }
+        catch(...)
+        {
+        }
+    }
+    {
+        //[snippet_numbers_4
+
+        value jv = parse("[-42, 100, 10.25, -299999999999999999998, 2e32]");
+
+        array ja = jv.as_array();
+
+        // represented by std::int64_t
+        assert( ja[0].is_int64() );
+
+        // represented by std::int64_t
+        assert( ja[1].is_int64() );
+        
+        // contains decimal point, represented as double
+        assert( ja[2].is_double() );
+
+        // less than INT64_MIN, represented as double
+        assert( ja[3].is_double() );
+
+        // contains exponent, represented as double
+        assert( ja[4].is_double() );
+
+        //]
+    }
+}
+
 BOOST_STATIC_ASSERT(
     has_value_from<customer>::value);
 
@@ -1276,6 +1392,7 @@ public:
         usingParsing();
         do_rpc("null");
         (void)parse_fast("null");
+        usingNumbers();
 
         BOOST_TEST_PASS();
     }

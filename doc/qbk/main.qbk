@@ -67,6 +67,7 @@
 [def __polymorphic_allocator__  [link json.ref.boost__json__polymorphic_allocator `polymorphic_allocator`]]
 [def __memory_resource__        [link json.ref.boost__json__memory_resource `memory_resource`]]
 [def __monotonic_resource__     [link json.ref.boost__json__monotonic_resource `monotonic_resource`]]
+[def __number_cast__            [link json.ref.boost__json__number_cast `number_cast`]]
 [def __serialize__              [link json.ref.boost__json__serialize `serialize`]]
 [def __serializer__             [link json.ref.boost__json__serializer `serializer`]]
 [def __static_resource__        [link json.ref.boost__json__static_resource `static_resource`]]
