@@ -14,7 +14,6 @@
 #include <boost/json/error.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/value.hpp>
-#include <boost/json/detail/raw_stack.hpp>
 #include <stddef.h>
 
 BOOST_JSON_NS_BEGIN
