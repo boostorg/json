@@ -455,7 +455,7 @@ key_value_pair::
     if(sp.is_not_counted_and_deallocate_is_trivial())
         return;
     sp->deallocate(const_cast<char*>(key_),
-        len_ + 1, 1);
+        len_ + 1);
 }
 
 key_value_pair::
