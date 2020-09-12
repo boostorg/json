@@ -31,6 +31,7 @@ in a translation unit of the program.
 #include <boost/json/impl/array.ipp>
 #include <boost/json/impl/error.ipp>
 #include <boost/json/impl/monotonic_resource.ipp>
+#include <boost/json/impl/null_resource.ipp>
 #include <boost/json/impl/object.ipp>
 #include <boost/json/impl/parse.ipp>
 #include <boost/json/impl/parser.ipp>

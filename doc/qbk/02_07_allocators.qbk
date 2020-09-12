@@ -112,9 +112,9 @@ It is desired to create a single type `T` with the following properties:
 * `T` supports both shared ownership, and non-ownership
 * `T` interoperates with code already using `std::pmr`
 
-The __storage_ptr__ smart pointer container used in Boost.JSON builds
-and improves upon C++17's memory allocation interfaces, accomplishing
-the goals above. As a result, libraries which use this type compose
+The __storage_ptr__ used in Boost.JSON builds and improves
+upon C++17's memory allocation interfaces, accomplishing the
+goals above. As a result, libraries which use this type compose
 more easily and enjoy faster compilation, as container function
 definitions can be out-of-line.
 
@@ -124,28 +124,50 @@ definitions can be out-of-line.
 
 [section:storage_ptr The __storage_ptr__]
 
-Instances of __value__, __object__, __array__, and __string__ all use
-dynamically allocated memory. To allow callers to control the strategy
-used to allocate and deallocate memory, the library provides the smart
-pointer container __storage_ptr__, similar in function to the C++ standard
-library's polymorphic allocator but with the following additional features:
+Variable-length containers in this library all use dynamically allocated
+memory to store their contents. Callers can gain control over the strategy
+used for allocation by specifying a __storage_ptr__ in select constructors
+and function parameter lists. A __storage_ptr__ has these properties:
 
-* __storage_ptr__ can either function as a reference counted smart pointer or
-  a reference wrapper around a __memory_resource__, allowing for the lifetime of
-  the managed object to be extended.
+* A storage pointer always points to a valid,
+  type-erased __memory_resource__.
 
-* An implementation can indicate to the library that deallocation
-  is not necessary, allowing destructor calls to be elided in certain situations.
+* Default-constructed storage pointers reference the
+  ['default resource], an implementation-defined instance
+  which always uses the equivalent of global operator new
+  and delete.
 
-These types and functions are available:
+* Storage pointers constructed from a
+  [link json.ref.boost__json__memory_resource `memory_resource*`]
+  or __polymorphic_allocator__ do not acquire ownership; the
+  caller is responsible for ensuring that the lifetime of
+  the resource extends until it is no longer referenced.
+
+* A storage pointer obtained from __make_counted_resource__
+  acquires shared ownership of the memory resource; the
+  lifetime of the resource is extended until all copies
+  of the storage pointer are destroyed.
+
+* The storage pointer remembers the value of
+  __is_deallocate_trivial__ before type-erasing the resource,
+  allowing the value to be queried at run-time.
+
+This lists all of the allocation-related types and functions
+available when using the library:
 
 [table Functions and Types
 [ [Name] [Description] ]
 [
+    [__is_deallocate_trivial__]
+    [
+        A customization point allowing a memory resource type
+        to indicate that calls to deallocate are trivial.
+    ]
+][
     [__make_counted_resource__]
     [
-        A function that returns a reference-counted storage pointer
-        with ownership of a new, dynamically allocated memory resource.
+        A function returning a smart pointer with shared
+        ownership of a newly allocated memory resource.
     ]
 ][
     [__memory_resource__]
@@ -155,25 +177,40 @@ These types and functions are available:
 ][
     [__monotonic_resource__]
     [
-        A memory resource that allocates zero or more blocks of memory
-        from which allocations are made; block is twice as large as the last.
-        Allocated memory is not freed until the resource is destroyed, making
-        it fast for parsing but not ideal for mutation.
+        A memory resource which allocates large blocks of memory and
+        has a trivial deallocate function. Allocated memory is not
+        freed until the resource is destroyed, making it fast for
+        parsing but not suited for performing modifications.
+    ]
+][
+    [__null_resource__]
+    [
+        A memory resource always throws an exception upon allocation.
+        This is used to to achieve the invariant that no parsing
+        or container operation will dynamically allocate memory.
+    ]
+][
+    [__polymorphic_allocator__]
+    [
+        An __Allocator__ which uses a reference to a
+        __memory_resource__ to perform allocations.
     ]
 ][
     [__static_resource__]
     [
         A memory resource that uses a single caller provided
-        buffer, from which individual allocations are made.
-        No dynamic allocations are used.
+        buffer. No dynamic allocations are used. This is fast for
+        parsing but not suited for performing modifications.
     ]
 ][
     [__storage_ptr__]
     [
-        A smart pointer container through which a __memory_resource__
+        A smart pointer through which a __memory_resource__
         is managed and accessed.
     ]
 ]]
+
+[heading Default Resource]
 
 The library provides a ['default memory resource] object which wraps calls to the
 global allocation and deallocation functions (`operator new` and `operator delete`).

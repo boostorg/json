@@ -15,11 +15,15 @@
 #include <boost/json/array.hpp>
 #include <boost/json/error.hpp>
 #include <boost/json/kind.hpp>
+#include <boost/json/memory_resource.hpp>
 #include <boost/json/monotonic_resource.hpp>
+#include <boost/json/null_resource.hpp>
 #include <boost/json/number_cast.hpp>
 #include <boost/json/object.hpp>
 #include <boost/json/parse.hpp>
+#include <boost/json/parse_options.hpp>
 #include <boost/json/parser.hpp>
+#include <boost/json/pilfer.hpp>
 #include <boost/json/serialize.hpp>
 #include <boost/json/serializer.hpp>
 #include <boost/json/static_resource.hpp>
@@ -28,6 +32,8 @@
 #include <boost/json/system_error.hpp>
 #include <boost/json/value.hpp>
 #include <boost/json/value_from.hpp>
+#include <boost/json/value_ref.hpp>
+#include <boost/json/value_stack.hpp>
 #include <boost/json/value_to.hpp>
 
 // Intentionally excluded

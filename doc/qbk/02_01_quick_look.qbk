@@ -144,6 +144,11 @@ storage, improving performance.
 
 [doc_quick_look_11]
 
+With strategic use of the right memory resources, parser instance,
+and calculated upper limits on buffer sizes, it is possible to parse
+and examine JSON without ['any] dynamic memory allocations. This is
+explored in more detail in a later section.
+
 [/-----------------------------------------------------------------------------]
 
 [h5 Serializing]

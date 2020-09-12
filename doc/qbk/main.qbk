@@ -58,14 +58,14 @@
 [def __key_value_pair__         [link json.ref.boost__json__key_value_pair `key_value_pair`]]
 [def __kind__                   [link json.ref.boost__json__kind `kind`]]
 [def __make_counted_resource__  [link json.ref.boost__json__make_counted_resource `make_counted_resource`]]
-[def __number__                 [link json.ref.boost__json__number `number`]]
+[def __memory_resource__        [link json.ref.boost__json__memory_resource `memory_resource`]]
+[def __monotonic_resource__     [link json.ref.boost__json__monotonic_resource `monotonic_resource`]]
+[def __null_resource__          [link json.ref.boost__json__null_resource `null_resource`]]
 [def __object__                 [link json.ref.boost__json__object `object`]]
 [def __parse__                  [link json.ref.boost__json__parse `parse`]]
 [def __parser__                 [link json.ref.boost__json__parser `parser`]]
 [def __parse_options__          [link json.ref.boost__json__parse_options `parse_options`]]
 [def __polymorphic_allocator__  [link json.ref.boost__json__polymorphic_allocator `polymorphic_allocator`]]
-[def __memory_resource__        [link json.ref.boost__json__memory_resource `memory_resource`]]
-[def __monotonic_resource__     [link json.ref.boost__json__monotonic_resource `monotonic_resource`]]
 [def __serialize__              [link json.ref.boost__json__serialize `serialize`]]
 [def __serializer__             [link json.ref.boost__json__serializer `serializer`]]
 [def __static_resource__        [link json.ref.boost__json__static_resource `static_resource`]]
@@ -92,15 +92,6 @@
 
 [def __good__ [role green \u2714]]
 [def __bad__  [role red   \u2718]]
-
-[/-----------------------------------------------------------------------------]
-
-[import ../../example/pretty.cpp]
-[import ../../example/validate.cpp]
-[import ../../include/boost/json/impl/serialize.ipp]
-[import ../../test/doc_quick_look.cpp]
-[import ../../test/memory_resource.cpp]
-[import ../../test/snippets.cpp]
 
 [/-----------------------------------------------------------------------------]
 
@@ -148,6 +139,16 @@ in memory.
         Detailed function and type reference.
     ]]
 ]
+
+[/-----------------------------------------------------------------------------]
+
+[import ../../example/pretty.cpp]
+[import ../../example/validate.cpp]
+[import ../../include/boost/json/impl/serialize.ipp]
+[import ../../test/doc_allocators.cpp]
+[import ../../test/doc_quick_look.cpp]
+[import ../../test/memory_resource.cpp]
+[import ../../test/snippets.cpp]
 
 [include 01_overview.qbk]
 [include 02_00_usage.qbk]
