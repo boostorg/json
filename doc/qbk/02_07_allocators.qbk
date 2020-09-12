@@ -33,13 +33,13 @@ __Allocator__, and made each standard container a class template
 parameterized on the allocator type. For example, here is the
 declaration for __std_vector__:
 
-[snippet_background_1]
+[doc_background_1]
 
 The standard allocator is __DefaultConstructible__. To support stateful
 allocators, containers provide additional constructor overloads taking
 an allocator instance parameter.
 
-[snippet_background_2]
+[doc_background_2]
 
 While the system works, it has some usability problems:
 
@@ -59,18 +59,18 @@ C++17 improves the allocator model by representing the low-level
 allocation operation with an abstract interface called __memory_resource__,
 which is not parameterized on the element type, and has no traits:
 
-[snippet_background_3]
+[doc_background_3]
 
 The class template __polymorphic_allocator__ wraps a __memory_resource__
 pointer and meets the requirements of __Allocator__, allowing it to be
 used where an allocator is expected. The standard provides type aliases
 using the polymorphic allocator for standard containers:
 
-[snippet_background_4]
+[doc_background_4]
 
 A polymorphic allocator constructs with a pointer to a memory resource:
 
-[snippet_background_5]
+[doc_background_5]
 
 The memory resource is passed by pointer; ownership is not transferred.
 The caller is responsible for extending the lifetime of the memory
@@ -79,14 +79,14 @@ otherwise the behavior is undefined. Sometimes this is the correct model,
 such as in this example which uses a monotonic resource constructed from
 a local stack buffer:
 
-[snippet_background_6]
+[doc_background_6]
 
 However, sometimes shared ownership is needed. Specifically, that the
 lifetime extension of the memory resource should be automatic. For
 example, if a library wants to return a container which owns an
 instance of the library's custom memory resource as shown below:
 
-[snippet_background_7]
+[doc_background_7]
 
 This can be worked around by declaring the container to use a custom
 allocator (perhaps using a `std::shared_ptr< memory_resource >` as a
@@ -94,7 +94,7 @@ data member). This hinders library composition; every library now
 exports unique, incompatbile container types. A raw memory resource
 pointer is easy to misuse:
 
-[snippet_background_8]
+[doc_background_8]
 
 Workarounds for this problem are worse than the problem itself. The library
 could return a pair with the vector and `unique_ptr<memory_resource>`
@@ -364,11 +364,11 @@ Practically, this means that when a library container type is used in a
 standard container that uses a polymorphic allocator, the allocator will
 propagate to the JSON type. For example:
 
-[snippet_uses_allocator_1]
+[doc_uses_allocator_1]
 
 Library containers can be constructed from polymorphic allocators:
 
-[snippet_uses_allocator_2]
+[doc_uses_allocator_2]
 
 The polymorphic allocator is propagated recursively.
 Child elements of child elements will use the same memory

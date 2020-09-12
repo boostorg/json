@@ -7,7 +7,11 @@
 // Official repository: https://github.com/cppalliance/json
 //
 
-#include <boost/json.hpp>
+#include <boost/json/monotonic_resource.hpp>
+#include <boost/json/parse.hpp>
+#include <boost/json/static_resource.hpp>
+#include <boost/json/storage_ptr.hpp>
+#include <boost/json/value.hpp>
 
 #include <iostream>
 
