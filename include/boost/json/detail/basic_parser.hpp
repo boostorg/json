@@ -44,8 +44,8 @@ BOOST_JSON_NS_BEGIN
     @ref write one or more times with the input,
     setting `more = false` on the final buffer.
     The parsing events are realized through member
-    function calls on the handler, which exists
-    as a data member of the parser.
+    function calls on the handler, which is a
+    data member of the parser.
 \n
     The parser may dynamically allocate intermediate
     storage as needed to accommodate the nesting level
@@ -450,8 +450,8 @@ public:
     /** Constructor.
 
         This function constructs the parser with
-        the specified options, with any additional
-        arguments forwarded to the handler's constructor.
+        the specified options, forwarding any additional
+        arguments to the handler's constructor.
 
         @param opt Configuration settings for the parser.
         If this structure is default constructed, the
@@ -522,7 +522,7 @@ public:
     /** Reset the state, to parse a new document.
 
         This function discards the current parsing
-        state, to prepare for parsing a new document.
+        state to prepare for parsing a new document.
         Dynamically allocated temporary memory used
         by the implementation is not deallocated.
     */

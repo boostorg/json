@@ -25,9 +25,9 @@ BOOST_JSON_NS_BEGIN
     This function parses an entire string in one
     step to produce a complete JSON object, returned
     as a @ref value. If the buffer does not contain a
-    complete serialized JSON, an error occurs. In this
-    case the returned value will be null, using the
-    default memory resource.
+    complete serialized JSON, an error occurs and
+    a null @ref value using the default memory resource
+    is returned.
 
     @par Complexity
     Linear in `s.size()`.
@@ -36,14 +36,14 @@ BOOST_JSON_NS_BEGIN
     Strong guarantee.
     Calls to `memory_resource::allocate` may throw.
 
-    @return A value representing the parsed JSON,
-    or a null if any error occurred.
+    @return A @ref value representing the parsed JSON,
+    or a null @ref value if any error occurred.
 
     @param s The string to parse.
 
     @param ec Set to the error, if any occurred.
 
-    @param sp The memory resource that the new value and all
+    @param sp The memory resource that the new @ref value and all
     of its elements will use. If this parameter is omitted,
     the default memory resource is used.
 

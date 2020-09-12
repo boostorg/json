@@ -1388,7 +1388,7 @@ public:
         element to erase, or pointing to the end of the range.
 
         @param last An iterator pointing to one past the
-        last element to erase, or pointing to the end of the
+        last element to erase, or pointing past-the-end of the
         range.
 
         @return Iterator following the last removed element.
@@ -1557,8 +1557,8 @@ public:
 
     /** Swap the contents.
 
-        Exchanges the contents of this array with another
-        array. Ownership of the respective @ref memory_resource
+        Exchanges the contents of this array with that of another.
+        Ownership of the respective @ref memory_resource
         objects is not transferred.
 
         @li If `*other.storage() == *this->storage()`,

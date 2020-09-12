@@ -14,7 +14,7 @@
 
 BOOST_JSON_NS_BEGIN
 
-/** Constants for identifying the type of a value
+/** Constants for identifying the underlying representation of a value
 
     These values are returned from @ref value::kind
 */

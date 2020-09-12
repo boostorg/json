@@ -42,8 +42,8 @@ BOOST_JSON_NS_BEGIN
 
     Construct the stack with an optional initial
     temporary buffer, and a @ref storage_ptr to use for
-    more storage when the initial buffer is exhausted.
-    Then to build a @ref value, first call @ref reset
+    subsequent allocations when the initial buffer is exhausted.
+    To build a @ref value, first call @ref reset
     and optionally specify the @ref memory_resource
     which will be used for the value. Then push elements
     onto the stack by calling the corresponding functions.
@@ -63,15 +63,12 @@ BOOST_JSON_NS_BEGIN
 
     The following code constructs a @ref value which
     when serialized produces a JSON object with three
-    elements. It uses a local buffer for the temporary
+    elements without any dynamic allocations. 
+    It uses a local buffer for the temporary
     storage, and a separate local buffer for the storage
-    of the resulting value. No memory is dynamically
-    allocated; this shows how to construct a value
-    without using the heap.
+    of the resulting value.
 
     @code
-
-    // This example builds a json::value without any dynamic memory allocations:
 
     // Construct the value stack using a local buffer
     unsigned char temp[4096];
@@ -209,7 +206,7 @@ public:
         No-throw guarantee.
 
         @param sp A pointer to the @ref memory_resource
-        to use for top-level @ref value and all child
+        to use for the top-level @ref value and all child
         values. The stack will acquire shared ownership
         of the memory resource until @ref release or
         @ref reset is called, or when the stack is
@@ -294,7 +291,7 @@ public:
         popping the top `n` key/value pairs from the
         stack. If the stack contains fewer than `n`
         key/value pairs, or if any of the top `n` key/value
-        pairs on the stack does not consist of exactly one
+        pairs on the stack do not consist of exactly one
         key followed by one value, the behavior is undefined.
 
         @note
@@ -339,7 +336,7 @@ public:
         element will be inserted.
 
         @param n The number of key/value pairs to pop from the
-        top of the stack to form the array.
+        top of the stack to form the object.
     */
     BOOST_JSON_DECL
     void
@@ -392,7 +389,7 @@ public:
     push_key(
         string_view s);
 
-    /** Place a string value onto the stack.
+    /** Push a string onto the stack.
 
         This function notionally removes all the
         characters currently on the stack, then
@@ -412,48 +409,48 @@ public:
     push_string(
         string_view s);
 
-    /** Push a number onto the stack
+    /** Push an `int64_t` onto the stack
 
-        This function pushes a number value onto the stack.
+        This function pushes a `int64_t` value onto the stack.
 
         @par Exception Safety
 
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
 
-        @param i The number to insert.
+        @param i The `int64_t` to insert.
     */
     BOOST_JSON_DECL
     void
     push_int64(
         int64_t i);
 
-    /** Push a number onto the stack
+    /** Push a `uint64_t` onto the stack
 
-        This function pushes a number value onto the stack.
+        This function pushes a `uint64_t` value onto the stack.
 
         @par Exception Safety
 
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
 
-        @param u The number to insert.
+        @param u The `uint64_t` to insert.
     */
     BOOST_JSON_DECL
     void
     push_uint64(
         uint64_t u);
 
-    /** Push a number onto the stack
+    /** Push a `double` onto the stack
 
-        This function pushes a number value onto the stack.
+        This function pushes a `double` value onto the stack.
 
         @par Exception Safety
 
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
 
-        @param d The number to insert.
+        @param d The `double` to insert.
     */
     BOOST_JSON_DECL
     void
@@ -478,7 +475,7 @@ public:
 
     /** Push a null onto the stack
 
-        This function pushes a boolean value onto the stack.
+        This function pushes a null value onto the stack.
 
         @par Exception Safety
 

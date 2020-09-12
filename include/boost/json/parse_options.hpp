@@ -19,7 +19,7 @@ BOOST_JSON_NS_BEGIN
     to allow various non-standard extensions.
     Default-constructed options set maximum
     parsing depth to 32 and specify that only
-    standard JSON is allowed,
+    standard JSON is allowed.
 
     @see
         @ref basic_parser,
@@ -64,8 +64,8 @@ struct parse_options
 
     /** Non-standard extension option
 
-        Allow invalid UTF-8 sequnces to appear
-        in keys and strings.
+        Allow invalid UTF-8 byte sequnces
+        to appear in keys and strings.
 
         @note This increases parsing performance.
 

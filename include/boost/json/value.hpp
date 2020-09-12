@@ -1648,7 +1648,7 @@ public:
         return nullptr;
     }
 
-    /** Return a `uint64_t` pointer if this is a signed integer, else return `nullptr`
+    /** Return a `uint64_t` pointer if this is an unsigned integer, else return `nullptr`
 
         If `this->kind() == kind::uint64`, returns a pointer
         to the underlying unsigned integer. Otherwise, returns
@@ -1683,7 +1683,7 @@ public:
         return nullptr;
     }
 
-    /** Return a `uint64_t` pointer if this is a signed integer, else return `nullptr`
+    /** Return a `uint64_t` pointer if this is an unsigned integer, else return `nullptr`
 
         If `this->kind() == kind::uint64`, returns a pointer
         to the underlying unsigned integer. Otherwise, returns
@@ -2215,7 +2215,7 @@ public:
 
     /** Return the underlying `std::uint64_t`, or throw an exception.
 
-        If @ref is_int64() is `true`, returns
+        If @ref is_uint64() is `true`, returns
         the underlying `std::uint64_t`,
         otherwise throws an exception.
 
@@ -2267,7 +2267,7 @@ public:
 
     /** Return the underlying `double`, or throw an exception.
 
-        If @ref is_int64() is `true`, returns
+        If @ref is_double() is `true`, returns
         the underlying `double`,
         otherwise throws an exception.
 

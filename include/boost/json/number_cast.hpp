@@ -17,10 +17,10 @@
 
 BOOST_JSON_NS_BEGIN
 
-/** Returns a value converted to a numeric type.
+/** Returns a value converted to an arithmetic type.
 
     This function attempts to convert a @ref value to
-    the numeric type `T` using these rules:
+    the arithmetic type `T` using these rules:
 
     @li If `! jv.is_number()`, an error is returned.
 
@@ -61,10 +61,10 @@ number_cast(value const& jv, error_code& ec)
     return detail::number_cast<T>(jv, ec);
 }
 
-/** Returns a value converted to a numeric type.
+/** Returns a value converted to a arithmetic type.
 
     This function attempts to convert a @ref value to
-    the numeric type `T` using these rules:
+    the arithmetic type `T` using these rules:
 
     @li If `! jv.is_number()`, an exception is thrown.
 

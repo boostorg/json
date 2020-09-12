@@ -561,7 +561,7 @@ public:
 
     /** Assignment.
 
-        Replaces the contents with the contents of an
+        Replaces the contents with those of an
         initializer list.
 
         @par Complexity
@@ -1250,7 +1250,7 @@ public:
     /** Access or insert the specified element
 
         Returns a reference to the value that is mapped
-        to a key equivalent to key, performing an insertion
+        to a key equivalent to `key`, performing an insertion
         of a null value if such key does not already exist.
     \n
         If an insertion occurs and results in a rehashing of
@@ -1278,8 +1278,8 @@ public:
 
     /** Count the number of elements with a specific key
 
-        This function returns the count of the number of
-        elements match `key`. The only possible return values
+        This function returns the number of elements whose
+        key equals `key`. The only possible return values
         are 0 and 1.
 
         @par Complexity

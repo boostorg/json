@@ -20,7 +20,7 @@ BOOST_JSON_NS_BEGIN
 
 /** A resource using a caller-owned buffer, with a trivial deallocate
 
-    This memory resource is a special-purpose resource
+    This is a special-purpose memory resource
     that releases allocated memory only when the resource
     is destroyed (or when @ref release is called).
     It has a trivial deallocate function; that is, the
@@ -81,8 +81,7 @@ public:
 
         This constructs the resource to use the specified
         buffer for subsequent calls to allocate. When the
-        buffer is exhausted, allocate will throw
-        `std::bad_alloc`.
+        buffer is exhausted, `std::bad_alloc` is thrown.
 
         @par Complexity
         Constant.
@@ -118,8 +117,7 @@ public:
 
         This constructs the resource to use the specified
         buffer for subsequent calls to allocate. When the
-        buffer is exhausted, allocate will throw
-        `std::bad_alloc`.
+        buffer is exhausted, `std::bad_alloc` is thrown.
 
         @par Complexity
         Constant.

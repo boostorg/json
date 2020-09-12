@@ -42,8 +42,9 @@ BOOST_JSON_NS_BEGIN
     @li Owning, when constructing using the function
     @ref make_counted_resource. In this case 
     ownership is shared; the lifetime of the memory
-    resource extends until the last copy of the
-    @ref storage_ptr is destroyed.
+    resource extends until the last copy of a
+    @ref storage_ptr with shared ownership of the
+    resource is destroyed.
 
     @par Examples
 
@@ -133,8 +134,8 @@ class storage_ptr
 public:
     /** Destructor
 
-        If the pointer has shared ownership of the
-        resource, the shared ownership is released.
+        If the pointer has shared ownership
+        of the resource, shared ownership is released.
         If this is the last owned copy, the memory
         resource is destroyed.
 
@@ -153,10 +154,9 @@ public:
 
     /** Constructor
 
-        This constructs a non-owning pointer that refers
-        to the default memory resource, which uses the
-        standard global system heap to allocate and
-        free memory.
+        This constructs a non-owning pointer to the
+        default memory resource, which uses the standard
+        global system heap to allocate and free memory.
 
         @par Complexity
 
@@ -369,7 +369,7 @@ public:
         return *this;
     }
 
-    /** Return `true` if the storage pointer has shared ownership of the memory resource.
+    /** Return `true` if the pointer has shared ownership of the memory resource.
 
         This function returns true for memory resources
         created using @ref make_counted_resource.

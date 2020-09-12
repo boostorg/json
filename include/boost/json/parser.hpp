@@ -68,10 +68,9 @@ BOOST_JSON_NS_BEGIN
 \n
     It is important to note that the @ref memory_resource
     supplied upon construction is used for temporary
-    storage only, and not for allocating the elements
-    which make up the parsed value. That other memory
-    resource is optionally supplied in each call
-    to @ref reset.
+    storage only. The memory resource used for
+    the resulting value is optionally supplied
+    in each call to @ref reset.
 
     @par Duplicate Keys
 
@@ -196,7 +195,7 @@ public:
             opt,
             temp, sizeof(temp) );
 
-        // to begin parsing, reset must becalled
+        // to begin parsing, reset must be called
         p.reset();
 
         @endcode
@@ -218,14 +217,13 @@ public:
 
         @param temp_buffer A pointer to valid memory
         which the implementation will use first to
-        acquire temporary storage, or `nullptr` for
-        the implementation to go directoy to the
-        memory resource. If this parameter is left out
-        the behavior is the same as if it were null.
+        as temporary storage. If the parameter is `nullptr`
+        or has no argument provided, all allocations will
+        go directly through the memory resource.
 
-        @param temp_size The size of the memory pointed
+        @param temp_size The size of the buffer pointed
         to by `temp_buffer`. This parameter is ignored
-        if `temp_buffer` is null.
+        if `temp_buffer` is `nullptr`.
     */
     BOOST_JSON_DECL
     parser(
@@ -413,10 +411,12 @@ public:
 
         @li No error has occurred since the parser
             was constructed, or since the last call
-            to @ref reset,
+            to @ref reset.
 
         @par Complexity
+
         Constant.
+
         @par Exception Safety
 
         No-throw guarantee.
@@ -541,12 +541,11 @@ public:
 
     /** Return the parsed JSON as a @ref value.
 
-        This returns the parsed value.
-        is necessary to call @ref reset after calling
+        This function returns the parsed value.
+        @ref reset must be called after calling
         this function in order to parse another JSON.
-        Undefined behavior results if the parser is
-        not done, or if an error occurred during
-        parsing.
+        The behavior is undefined if parsing is
+        incomplete or resulted in an error.
 
         @par Preconditions
         @code

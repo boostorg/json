@@ -25,8 +25,7 @@ BOOST_JSON_NS_BEGIN
     in one or more caller-provided buffers. To use,
     declare a variable and call @ref reset with
     a pointer to the variable you want to serialize.
-    Then call @ref read over and over until
-    @ref done returns `true`.
+    Then call @ref read until @ref done returns `true`.
 
     @par Example
 
@@ -139,7 +138,7 @@ public:
         preserved and re-used for the new output.
 
         @param p A pointer to the element to serialize.
-        Ownership is not transferred; The caller is
+        Ownership is not transferred; the caller is
         responsible for ensuring that the lifetime of
         `*p` extends until it is no longer needed.
     */

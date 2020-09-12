@@ -31,7 +31,7 @@ namespace json {
 
     @par Example
 
-    This show how a type T may be given a pilfer constructor:
+    This shows how a type T may be given a pilfer constructor:
 
     @code
     struct T
@@ -87,7 +87,7 @@ struct not_pilfered
 } // detail_pilfer
 #endif
 
-/** Metafunction returning `true` if `T` is PilferConstructible
+/** Metafunction that returns `true` if `T` is PilferConstructible
 
     If `T` can be pilfer constructed, this metafunction is
     equal to `std::true_type`. Otherwise it is equal to
