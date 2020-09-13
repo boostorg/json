@@ -1683,7 +1683,7 @@ public:
         return nullptr;
     }
 
-    /** Return a `uint64_t` pointer if this is a signed integer, else return `nullptr`
+    /** Return a `uint64_t` pointer if this is an unsigned integer, else return `nullptr`
 
         If `this->kind() == kind::uint64`, returns a pointer
         to the underlying unsigned integer. Otherwise, returns

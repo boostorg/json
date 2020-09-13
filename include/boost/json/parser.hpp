@@ -29,7 +29,7 @@ BOOST_JSON_NS_BEGIN
 
     @par Usage
 
-    Parsing for a new JSON may begin the parser is
+    Parsing for a new JSON may begin after the parser is
     constructed, or after calling @ref reset, optionally
     passing the storage pointer to be used by the
     @ref value container into which the parsed results
