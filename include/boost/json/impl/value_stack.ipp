@@ -24,7 +24,8 @@ stack::
 ~stack()
 {
     clear();
-    if(begin_ != temp_)
+    if( begin_ != temp_ &&
+        begin_ != nullptr)
         sp_->deallocate(
             begin_,
             (end_ - begin_) *
