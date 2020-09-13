@@ -215,14 +215,15 @@ parser::
 parser(
     storage_ptr sp,
     parse_options const& opt,
-    unsigned char* temp_buffer,
-    std::size_t temp_size) noexcept
+    unsigned char* buffer,
+    std::size_t size) noexcept
     : p_(
         opt,
         std::move(sp),
-        temp_buffer,
-        temp_size)
+        buffer,
+        size)
 {
+    reset();
 }
 
 parser::
@@ -235,6 +236,7 @@ parser(
         nullptr,
         0)
 {
+    reset();
 }
 
 void
@@ -320,7 +322,7 @@ finish()
 
 value
 parser::
-release() noexcept
+release()
 {
     BOOST_ASSERT(p_.done());
     return p_.handler().st.release();

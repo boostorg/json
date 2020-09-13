@@ -29,16 +29,17 @@ BOOST_JSON_NS_BEGIN
 
     @par Usage
 
-    Before parsing a new JSON, the function @ref reset
-    must be called, optionally passing the storage
-    pointer to be used by the @ref value container into
-    which the parsed results are stored. After the
-    parse is started, call the @ref write function
-    to provide buffers of characters of the JSON.
-    When there are no more buffers, call @ref finish.
-    The parse is complete when the function @ref done
-    returns `true`, or when a non-successful error
-    code is returned.
+    Parsing for a new JSON may begin the parser is
+    constructed, or after calling @ref reset, optionally
+    passing the storage pointer to be used by the
+    @ref value container into which the parsed results
+    are stored. After the parse is started, call
+    @ref write_some or @ref write to provide buffers
+    of characters of the JSON. When there are no more
+    buffers, call @ref finish. The parse is complete
+    when the function @ref done returns `true`, or
+    when a non-successful error code is returned.
+    To retrieve the result on success, call @ref release.
 
     @par Incremental Parsing
 
@@ -156,50 +157,16 @@ public:
     ~parser() = default;
    
     /** Constructor.
-        
-        Construct a parser with these optionally
-        specified parameters:
 
-        @li The @ref memory_resource for the
-        implementation to use when it needs to
-        acquire temporary memory,
-
-        @li The @ref parse_options to use, which
-        can allow non-standard JSON extensions such
-        as comments or trailing commas, and
-
-        @li A caller-owned temporary buffer to use
-        before allocating with the memory
-        resource specified on construction.
-
-        @par Example
-
-        The following code constructs a parser which
-        uses the default memory resource and a local
-        buffer for temporary storage, and allows
-        trailing commas to appear in the JSON:
-
-        @code
-
-        // this buffer will be used for temporary storage
-        unsigned char temp[ 4096 ];
-
-        // default constructed parse options allow strict JSON
-        parse_options opt;
-
-        // enable the trailing commas extension
-        opt.allow_trailing_commas = true;
-
-        // construct the parser
-        parser p(
-            storage_ptr(),  // use the default memory resource
-            opt,
-            temp, sizeof(temp) );
-
-        // to begin parsing, reset must becalled
-        p.reset();
-
-        @endcode
+        This constructs a new parser which first uses the
+        caller-owned storage pointed to by `temp_buffer`
+        for temporary storage, falling back to the memory
+        resource `sp` if needed. The parser will use the
+        specified parsing options.
+    \n
+        The parsed value will use the default memory resource
+        for storage. To use a different resource, call
+        @ref reset after construction.
 
         @par Complexity
         Constant.
@@ -207,63 +174,87 @@ public:
         @par Exception Safety
         No-throw guarantee.
 
-        @param sp A pointer to the @ref memory_resource
-        for the implementation to use to acquire
-        temporary storage.
+        @param sp The memory resource to use for temporary storage
+        when `buffer` is exhausted.
 
-        @param opt The options for the parser. If this
-        parameter is omitted, a default constructed
-        parse options is used, which allows only strict
-        JSON and an implementation defined maximum depth.
+        @param opt The parsing options to use.
 
-        @param temp_buffer A pointer to valid memory
-        which the implementation will use first to
-        acquire temporary storage, or `nullptr` for
-        the implementation to go directoy to the
-        memory resource. If this parameter is left out
-        the behavior is the same as if it were null.
-
-        @param temp_size The size of the memory pointed
-        to by `temp_buffer`. This parameter is ignored
-        if `temp_buffer` is null.
+        @param buffer A pointer to valid memory of at least
+        `size` bytes for the parser to use for temporary storage.
+        Ownership is not transferred, the caller is responsible
+        for ensuring the lifetime of the memory pointed to by
+        `buffer` extends until the parser is destroyed.
     */
     BOOST_JSON_DECL
     parser(
         storage_ptr sp,
         parse_options const& opt,
-        unsigned char* temp_buffer,
-        std::size_t temp_size) noexcept;
+        unsigned char* buffer,
+        std::size_t size) noexcept;
 
-    /** Constructor (delegating)
+    /** Constructor.
 
-        @par Effects
-        @code
-        parser( {}, {} )
-        @endcode
+        This constructs a new parser which uses the default
+        memory resource for temporary storage, and accepts
+        only strict JSON.
+    \n
+        The parsed value will use the default memory resource
+        for storage. To use a different resource, call
+        @ref reset after construction.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     parser() noexcept
         : parser({}, {})
     {
     }
 
-    /** Constructor (delegating)
+    /** Constructor.
 
-        @par Effects
-        @code
-        parser( std::move(sp), opt )
-        @endcode
+        This constructs a new parser which uses the specified
+        memory resource for temporary storage, and is
+        configured to use the specified parsing options.
+    \n
+        The parsed value will use the default memory resource
+        for storage. To use a different resource, call
+        @ref reset after construction.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param sp The memory resource to use for temporary storage.
+
+        @param opt The parsing options to use.
     */
     BOOST_JSON_DECL
     parser(
         storage_ptr sp,
         parse_options const& opt) noexcept;
 
-    /** Constructor (delegating)
+    /** Constructor.
 
-        @par Effects
-        @code
-        parser( std::move(sp), {}, nullptr, 0 )
-        @endcode
+        This constructs a new parser which uses the specified
+        memory resource for temporary storage, and accepts
+        only strict JSON.
+    \n
+        The parsed value will use the default memory resource
+        for storage. To use a different resource, call
+        @ref reset after construction.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param sp The memory resource to use for temporary storage.
     */
     explicit
     parser(storage_ptr sp) noexcept
@@ -271,12 +262,32 @@ public:
     {
     }
 
-    /** Constructor (delegating)
+    /** Constructor.
 
-        @par Effects
-        @code
-        parser( std::move(sp), opt, &buffer[0], N )
-        @endcode
+        This constructs a new parser which first uses the
+        caller-owned storage `buffer` for temporary storage,
+        falling back to the memory resource `sp` if needed.
+        The parser will use the specified parsing options.
+    \n
+        The parsed value will use the default memory resource
+        for storage. To use a different resource, call
+        @ref reset after construction.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param sp The memory resource to use for temporary storage
+        when `buffer` is exhausted.
+
+        @param opt The parsing options to use.
+
+        @param buffer A buffer for the parser to use for temporary
+        storage. Ownership is not transferred, the caller is
+        responsible for ensuring the lifetime of `buffer` extends
+        until the parser is destroyed.
     */
     template<std::size_t N>
     parser(
@@ -382,22 +393,20 @@ public:
 
     /** Start parsing JSON incrementally.
 
-        This function must be called once before parsing
-        each new JSON; that is, before any calls to
-        @ref write or @ref finish. Any previous partial
-        results are destroyed.
+        This function is used to reset the parser to
+        prepare it for parsing a new JSON. Any previous
+        partial results are destroyed.
 
         @par Complexity
-
         Constant or linear in the size of any previous
         partial parsing results.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param sp A pointer to the @ref memory_resource
-        to use. The parser will acquire shared ownership.
+        to use for the resulting @ref value. The parser
+        will acquire shared ownership.
     */
     BOOST_JSON_DECL
     void
@@ -417,8 +426,8 @@ public:
 
         @par Complexity
         Constant.
-        @par Exception Safety
 
+        @par Exception Safety
         No-throw guarantee.
     */
     bool
@@ -458,8 +467,13 @@ public:
         is be indicated by calling @ref finish.
 
         @par Complexity
-
         Linear in `size`.
+
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
+        Upon error, the only valid operations are
+        @ref reset and destruction.
 
         @return The number of characters consumed from
         the buffer.
@@ -510,8 +524,13 @@ public:
         is be indicated by calling @ref finish.
 
         @par Complexity
-
         Linear in `size`.
+
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
+        Upon error, the only valid operations are
+        @ref reset and destruction.
 
         @return The number of characters consumed from
         the buffer.
@@ -561,8 +580,13 @@ public:
         is be indicated by calling @ref finish.
 
         @par Complexity
-
         Linear in `size`.
+
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
+        Upon error, the only valid operations are
+        @ref reset and destruction.
 
         @return The number of characters consumed from
         the buffer.
@@ -611,8 +635,13 @@ public:
         is be indicated by calling @ref finish.
 
         @par Complexity
-
         Linear in `size`.
+
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
+        Upon error, the only valid operations are
+        @ref reset and destruction.
 
         @return The number of characters consumed from
         the buffer.
@@ -660,8 +689,13 @@ public:
         is be indicated by calling @ref finish.
 
         @par Complexity
-
         Linear in `size`.
+
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
+        Upon error, the only valid operations are
+        @ref reset and destruction.
 
         @return The number of characters consumed from
         the buffer.
@@ -712,8 +746,13 @@ public:
         is be indicated by calling @ref finish.
 
         @par Complexity
-
         Linear in `size`.
+
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
+        Upon error, the only valid operations are
+        @ref reset and destruction.
 
         @return The number of characters consumed from
         the buffer.
@@ -763,8 +802,13 @@ public:
         is be indicated by calling @ref finish.
 
         @par Complexity
-
         Linear in `size`.
+
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
+        Upon error, the only valid operations are
+        @ref reset and destruction.
 
         @return The number of characters consumed from
         the buffer.
@@ -813,8 +857,13 @@ public:
         is be indicated by calling @ref finish.
 
         @par Complexity
-
         Linear in `size`.
+
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
+        Upon error, the only valid operations are
+        @ref reset and destruction.
 
         @return The number of characters consumed from
         the buffer.
@@ -840,6 +889,12 @@ public:
 
         @par Complexity
         Constant.
+
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
+        Upon error, the only valid operations are
+        @ref reset and destruction.
 
         @param ec Set to the error, if any occurred.
     */
@@ -856,6 +911,12 @@ public:
 
         @par Complexity
         Constant.
+
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
+        Upon error, the only valid operations are
+        @ref reset and destruction.
 
         @throw system_error Thrown on error.
     */
@@ -881,14 +942,19 @@ public:
         Constant.
 
         @par Exception Safety
-        No-throw guarantee.
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
+        Upon error, the only valid operations are
+        @ref reset and destruction.
 
         @return The parsed value. Ownership of this
-        value is transferred to the caller.       
+        value is transferred to the caller.
+
+        @throw system_error Thrown on failure.
     */
     BOOST_JSON_DECL
     value
-    release() noexcept;
+    release();
 };
 
 BOOST_JSON_NS_END

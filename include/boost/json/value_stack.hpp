@@ -130,7 +130,7 @@ class value_stack
         value* end_;
         // string starts at top_+1
         std::size_t chars_ = 0;
-        bool run_dtors_ = false;
+        bool run_dtors_ = true;
 
     public:
         inline ~stack();
