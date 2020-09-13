@@ -933,10 +933,9 @@ public:
         not done, or if an error occurred during
         parsing.
 
-        @par Preconditions
-        @code
-        this->done() == true
-        @endcode
+        @note
+
+        If `! this->done()`, an exception is thrown.
 
         @par Complexity
         Constant.

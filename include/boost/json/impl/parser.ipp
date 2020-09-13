@@ -283,7 +283,10 @@ write(
     auto const n = write_some(
         data, size, ec);
     if(! ec && n < size)
+    {
         ec = error::extra_data;
+        p_.fail(ec);
+    }
     return n;
 }
 
@@ -324,7 +327,11 @@ value
 parser::
 release()
 {
-    BOOST_ASSERT(p_.done());
+    if(! p_.done())
+    {
+        // prevent undefined behavior
+        finish();
+    }
     return p_.handler().st.release();
 }
 

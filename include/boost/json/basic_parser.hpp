@@ -2368,7 +2368,25 @@ reset() noexcept
     ec_ = {};
     st_.clear();
     more_ = true;
-    complete_ = false;
+    done_ = false;
+}
+
+template<class Handler>
+void
+basic_parser<Handler>::
+fail(error_code ec) noexcept
+{
+    if(! ec)
+    {
+        // assign an arbitrary
+        // error code to prevent UB
+        ec_ = error::incomplete;
+    }
+    else
+    {
+        ec_ = ec;
+    }
+    done_ = false;
 }
 
 //----------------------------------------------------------
@@ -2412,9 +2430,9 @@ write(
     if(BOOST_JSON_LIKELY(p != sentinel()))
     {
         BOOST_ASSERT(! ec_);
-        if(! complete_)
+        if(! done_)
         {
-            complete_ = true;
+            done_ = true;
             h_.on_document_end(ec_);
         }
     }
@@ -2434,9 +2452,9 @@ write(
                 state st;
                 st_.peek(st);
                 if( st == state::doc3 &&
-                    ! complete_)
+                    ! done_)
                 {
-                    complete_ = true;
+                    done_ = true;
                     h_.on_document_end(ec_);
                 }
             }

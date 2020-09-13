@@ -304,7 +304,7 @@ class basic_parser
     unsigned u1_;
     unsigned u2_;
     bool more_; // false for final buffer
-    bool complete_ = false; // true on complete parse
+    bool done_ = false; // true on complete parse
     const char* end_;
     parse_options opt_;
     // how many levels deeper the parser can go
@@ -501,6 +501,23 @@ public:
         return h_;
     }
 
+    /** Return the last error.
+
+        This returns the last error code which was
+        generated in the most recent call to @ref write.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    error_code
+    last_error() const noexcept
+    {
+        return ec_;
+    }
+
     /** Return true if a complete JSON has been parsed.
 
         This function returns `true` when all of these
@@ -522,7 +539,7 @@ public:
     bool
     done() const noexcept
     {
-        return complete_;
+        return done_;
     }
 
     /** Returns the current depth of the JSON being parsed.
@@ -551,6 +568,31 @@ public:
     */
     void
     reset() noexcept;
+
+    /** Indicate a parsing failure.
+
+        This changes the state of the parser to indicate
+        that the parse has failed. A parser implementation
+        can use this to fail the parser if needed due to
+        external inputs.
+
+        @note
+
+        If `!ec`, the stored error code is unspecified.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param ec The error code to set. If the code does
+        not indicate failure, an implementation-defined
+        error code that indicates failure will be stored
+        instead.
+    */
+    void
+    fail(error_code ec) noexcept;
 
     /** Parse JSON incrementally.
 

@@ -265,7 +265,6 @@ public:
                 auto const N = js.size() / 2;
                 error_code ec;
                 parser p;
-                p.reset();
                 p.write(js.data(), N, ec);
                 if(BOOST_TEST(! ec))
                 {
@@ -298,7 +297,6 @@ public:
             BOOST_TEST_CHECKPOINT();
             error_code ec;
             parser p;
-            p.reset();
             p.write(s.data(), s.size(), ec);
             if(BOOST_TEST(! ec))
                 p.finish(ec);
@@ -597,7 +595,6 @@ public:
             parse_options opt;
             opt.max_depth = 0;
             parser p(storage_ptr(), opt);
-            p.reset();
             BOOST_TEST(
                 p.depth() == 0);
             p.write("[]", 2, ec);
@@ -666,7 +663,6 @@ public:
             parse_options opt;
             opt.max_depth = 0;
             parser p(storage_ptr(), opt);
-            p.reset();
             BOOST_TEST(
                 p.depth() == 0);
             p.write("{}", 2, ec);
@@ -739,21 +735,35 @@ public:
     void
     testMembers()
     {
-        // destroy after start
+        // ~parser
         {
-            parser p;
-            p.reset();
+            {
+                parser p;
+            }
+            {
+                parser p;
+                p.reset(make_counted_resource<
+                    monotonic_resource>());
+            }
         }
 
         // write_some(char const*, size_t, error_code&)
         // write_some(string_view, error_code&)
         {
-            parser p;
-            error_code ec;
-            p.reset();
-            BOOST_TEST(p.write_some(
-                "[]*", ec) == 2);
-            BOOST_TEST(! ec);
+            {
+                parser p;
+                error_code ec;
+                BOOST_TEST(p.write_some(
+                    "[]*", ec) == 2);
+                BOOST_TEST(! ec);
+            }
+            {
+                parser p;
+                error_code ec;
+                BOOST_TEST(p.write_some(
+                    "[*", ec) == 1);
+                BOOST_TEST(ec);
+            }
         }
 
         // write_some(char const*, size_t)
@@ -761,15 +771,13 @@ public:
         {
             {
                 parser p;
-                p.reset();
                 BOOST_TEST(
                     p.write_some("[]*") == 2);
             }
             {
                 parser p;
-                p.reset();
                 BOOST_TEST_THROWS(
-                    p.write_some("*"),
+                    p.write_some("[*"),
                     system_error);
             }
         }
@@ -780,7 +788,6 @@ public:
             {
                 parser p;
                 error_code ec;
-                p.reset();
                 BOOST_TEST(p.write(
                     "null", ec) == 4);
                 BOOST_TEST(! ec);
@@ -788,9 +795,9 @@ public:
             {
                 parser p;
                 error_code ec;
-                p.reset();
                 p.write("[]*", ec),
-                BOOST_TEST(ec);
+                BOOST_TEST(
+                    ec == error::extra_data);
             }
         }
 
@@ -799,13 +806,11 @@ public:
         {
             {
                 parser p;
-                p.reset();
                 BOOST_TEST(p.write(
                     "null") == 4);
             }
             {
                 parser p;
-                p.reset();
                 BOOST_TEST_THROWS(
                     p.write("[]*"),
                     system_error);
@@ -817,7 +822,6 @@ public:
         {
             {
                 parser p;
-                p.reset();
                 p.write("1");
                 BOOST_TEST(! p.done());
                 p.finish();
@@ -825,11 +829,66 @@ public:
             }
             {
                 parser p;
-                p.reset();
                 BOOST_TEST(! p.done());
                 p.write("1.");
                 BOOST_TEST_THROWS(
                     p.finish(),
+                    system_error);
+            }
+            {
+                parser p;
+                p.write("[1,2");
+                error_code ec;
+                p.finish(ec);
+                BOOST_TEST(
+                    ec == error::incomplete);
+            }
+            {
+                parser p;
+                p.write("[1,2");
+                error_code ec;
+                p.finish(ec);
+                BOOST_TEST_THROWS(
+                    p.finish(),
+                    system_error);
+            }
+        }
+
+        // release()
+        {
+            {
+                parser p;
+                BOOST_TEST(
+                    p.write_some("[") == 1);
+                BOOST_TEST(! p.done());
+                BOOST_TEST_THROWS(
+                    p.release(),
+                    system_error);
+            }
+            {
+                parser p;
+                BOOST_TEST(
+                    p.write_some("[]*") == 2);
+                BOOST_TEST(p.done());
+                p.release();
+            }
+            {
+                parser p;
+                p.write("[");
+                BOOST_TEST(! p.done());
+                BOOST_TEST_THROWS(
+                    p.release(),
+                    system_error);
+            }
+            {
+                parser p;
+                error_code ec;
+                p.write("[]*", ec);
+                BOOST_TEST(
+                    ec == error::extra_data);
+                BOOST_TEST(! p.done());
+                BOOST_TEST_THROWS(
+                    p.release(),
                     system_error);
             }
         }
@@ -949,7 +1008,6 @@ R"xx({
             make_counted_resource<monotonic_resource>();
         parser p(sp);
         error_code ec;
-        p.reset();
         p.write(in.data(), in.size(), ec);
         if(BOOST_TEST(! ec))
             p.finish(ec);
@@ -1045,30 +1103,6 @@ R"xx({
     }
 
     void
-    testError()
-    {
-
-        {
-            parser p;
-            error_code ec;
-            p.reset();
-            p.write("nullx", 5, ec);
-            BOOST_TEST(ec == 
-                error::extra_data);
-        }
-
-        {
-            parser p;
-            error_code ec;
-            p.reset();
-            p.write("[123,", 5, ec);
-            if(BOOST_TEST(! ec))
-                p.finish(ec);
-            BOOST_TEST(ec == error::incomplete);
-        }
-    }
-
-    void
     testDupeKeys()
     {
         {
@@ -1152,7 +1186,6 @@ R"xx({
         testUnicodeStrings();
         testTrailingCommas();
         testComments();
-        testError();
         testDupeKeys();
         testIssue15();
         testIssue45();
