@@ -247,15 +247,56 @@ reset(storage_ptr sp) noexcept
 
 std::size_t
 parser::
+write_some(
+    char const* data,
+    std::size_t size,
+    error_code& ec)
+{
+    return p_.write(
+        true, data, size, ec);
+}
+
+std::size_t
+parser::
+write_some(
+    char const* data,
+    std::size_t size)
+{
+    error_code ec;
+    auto const n = p_.write(
+        true, data, size, ec);
+    if(ec)
+        detail::throw_system_error(ec,
+            BOOST_CURRENT_LOCATION);
+    return n;
+}
+
+std::size_t
+parser::
 write(
     char const* data,
     std::size_t size,
     error_code& ec)
 {
-    auto const n = p_.write(
-        true, data, size, ec);
+    auto const n = write_some(
+        data, size, ec);
     if(! ec && n < size)
         ec = error::extra_data;
+    return n;
+}
+
+std::size_t
+parser::
+write(
+    char const* data,
+    std::size_t size)
+{
+    error_code ec;
+    auto const n = write(
+        data, size, ec);
+    if(ec)
+        detail::throw_system_error(ec,
+            BOOST_CURRENT_LOCATION);
     return n;
 }
 
@@ -266,9 +307,20 @@ finish(error_code& ec)
     p_.write(false, nullptr, 0, ec);
 }
 
+void
+parser::
+finish()
+{
+    error_code ec;
+    p_.write(false, nullptr, 0, ec);
+    if(ec)
+        detail::throw_system_error(ec,
+            BOOST_CURRENT_LOCATION);
+}
+
 value
 parser::
-release()
+release() noexcept
 {
     BOOST_ASSERT(p_.done());
     return p_.handler().st.release();

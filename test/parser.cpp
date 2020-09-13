@@ -772,33 +772,93 @@ public:
             p.reset();
         }
 
+        // write_some(char const*, size_t, error_code&)
+        // write_some(string_view, error_code&)
+        {
+            parser p;
+            error_code ec;
+            p.reset();
+            BOOST_TEST(p.write_some(
+                "[]*", ec) == 2);
+            BOOST_TEST(! ec);
+        }
+
+        // write_some(char const*, size_t)
+        // write_some(string_view)
+        {
+            {
+                parser p;
+                p.reset();
+                BOOST_TEST(
+                    p.write_some("[]*") == 2);
+            }
+            {
+                parser p;
+                p.reset();
+                BOOST_TEST_THROWS(
+                    p.write_some("*"),
+                    system_error);
+            }
+        }
+
         // write(char const*, size_t, error_code&)
+        // write(string_view, error_code&)
         {
             {
                 parser p;
                 error_code ec;
                 p.reset();
                 BOOST_TEST(p.write(
-                    "null", 4, ec) == 4);
+                    "null", ec) == 4);
                 BOOST_TEST(! ec);
             }
             {
                 parser p;
                 error_code ec;
                 p.reset();
-                p.write("x", 1, ec),
+                p.write("[]*", ec),
                 BOOST_TEST(ec);
             }
         }
 
-        // write(string_view, error_code)
+        // write(char const*, size_t)
+        // write(string_view)
         {
-            parser p;
-            error_code ec;
-            p.reset();
-            p.write("[1,2,3]", ec);
-            p.finish(ec);
-            BOOST_TEST(p.done());
+            {
+                parser p;
+                p.reset();
+                BOOST_TEST(p.write(
+                    "null") == 4);
+            }
+            {
+                parser p;
+                p.reset();
+                BOOST_TEST_THROWS(
+                    p.write("[]*"),
+                    system_error);
+            }
+        }
+
+        // finish(error_code&)
+        // finish()
+        {
+            {
+                parser p;
+                p.reset();
+                p.write("1");
+                BOOST_TEST(! p.done());
+                p.finish();
+                BOOST_TEST(p.done());
+            }
+            {
+                parser p;
+                p.reset();
+                BOOST_TEST(! p.done());
+                p.write("1.");
+                BOOST_TEST_THROWS(
+                    p.finish(),
+                    system_error);
+            }
         }
     }
 
