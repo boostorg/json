@@ -190,6 +190,12 @@ public:
         return p_.depth();
     }
 
+    void
+    reset()
+    {
+        p_.reset();
+    }
+
     std::size_t
     write(
         char const* data,

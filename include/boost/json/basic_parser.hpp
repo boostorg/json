@@ -2365,9 +2365,10 @@ void
 basic_parser<Handler>::
 reset() noexcept
 {
-    complete_ = false;
-    more_ = true;
+    ec_ = {};
     st_.clear();
+    more_ = true;
+    complete_ = false;
 }
 
 //----------------------------------------------------------
@@ -2381,7 +2382,12 @@ write(
     std::size_t size,
     error_code& ec)
 {
-    ec_ = {};
+    if(ec_)
+    {
+        // error is sticky
+        ec = ec_;
+        return 0;
+    }
     more_ = more;
     end_ = data + size;
     const char* p;

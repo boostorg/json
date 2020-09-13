@@ -1500,6 +1500,21 @@ public:
     }
 
     void
+    testStickyErrors()
+    {
+        null_parser p;
+        error_code ec;
+        p.write("*", 1, ec);
+        BOOST_TEST(ec);
+        error_code ec2;
+        p.write("[]", 2, ec2);
+        BOOST_TEST(ec2 == ec);
+        p.reset();
+        p.write("[]", 2, ec2);
+        BOOST_TEST(! ec2);
+    }
+
+    void
     run()
     {
         testNull();
@@ -1519,6 +1534,7 @@ public:
         testUTF8Validation();
         testMaxDepth();
         testNumberLiteral();
+        testStickyErrors();
     }
 };
 
