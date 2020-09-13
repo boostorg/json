@@ -477,32 +477,6 @@ usingObjects()
 
 //----------------------------------------------------------
 
-void
-usingSerializing()
-{
-    (void)([]()
-    {
-        //[snippet_serializing_1
-
-        value jv = { 1, 2, 3, 4, 5 };
-
-        std::cout << jv << "\n";
-
-        //]
-    });
-    {
-        //[snippet_serializing_2
-
-        value jv = { 1, 2, 3, 4, 5 };
-
-        std::string s = serialize( jv );
-
-        //]
-    }
-}
-
-//----------------------------------------------------------
-
 //[snippet_conv_3
 
 template< class T >
@@ -828,7 +802,6 @@ public:
         usingArrays();
         usingObjects();
         usingStrings();
-        usingSerializing();
 
         BOOST_TEST_PASS();
     }

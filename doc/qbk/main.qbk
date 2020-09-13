@@ -148,6 +148,7 @@ in memory.
 [import ../../test/doc_background.cpp]
 [import ../../test/doc_parsing.cpp]
 [import ../../test/doc_quick_look.cpp]
+[import ../../test/doc_serializing.cpp]
 [import ../../test/doc_storage_ptr.cpp]
 [import ../../test/doc_uses_allocator.cpp]
 [import ../../test/snippets.cpp]

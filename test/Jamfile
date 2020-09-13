@@ -30,6 +30,7 @@ local SOURCES =
     doc_background.cpp
     doc_parsing.cpp
     doc_quick_look.cpp
+    doc_serializing.cpp
     doc_storage_ptr.cpp
     doc_uses_allocator.cpp
     error.cpp

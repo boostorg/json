@@ -182,7 +182,7 @@ parser p(
     and invokes the handler, whose signature must
     be equivalent to:
 
-        handler( value jv );
+        void( value const& jv );
 
     The operation is guaranteed not to perform any
     dynamic memory allocations. However, some
@@ -206,12 +206,11 @@ void do_rpc( string_view s, Handler&& handler )
     p.write( s );                               // Parse the entire string we received from the network client
     p.finish();                                 // Inform the parser that the complete input has been provided
 
-    // Retrieve the value. It will use `buf` for storage.
-    // The variable is const to disallow modification, since
-    // monotonic resources are inefficient with mutation.
-    value const jv = p.release();
-
-    handler( jv );                              // Invoke the handler with the value
+    // Retrieve the value and invoke the handler with it.
+    // The value will use `buf` for storage. The handler
+    // must not take ownership, since monotonic resources
+    // are inefficient with mutation.
+    handler( p.release() );
 }
 //]
 
