@@ -31,17 +31,10 @@ class string_impl
         std::uint32_t capacity;
     };
 
-    static
-    constexpr
-    std::size_t 
-    sbo_chars_ =
-        sizeof(table*) * 2 -
-        sizeof(kind) - 1;
-
 #if BOOST_JSON_ARCH == 64
-    BOOST_STATIC_ASSERT(sbo_chars_ == 14);
+    static constexpr std::size_t sbo_chars_ = 14;
 #elif BOOST_JSON_ARCH == 32
-    BOOST_STATIC_ASSERT(sbo_chars_ == 6);
+    static constexpr std::size_t sbo_chars_ = 10;
 #else
 # error Unknown architecture
 #endif
@@ -70,16 +63,13 @@ class string_impl
 
     struct pointer
     {
-        kind k;
-        char pad[
-            sizeof(table*) -
-            sizeof(kind)];
+        kind k; // must come first
         table* t;
     };
 
     struct key
     {
-        kind k;
+        kind k; // must come first
         std::uint32_t n;
         char* s;
     };
@@ -90,6 +80,16 @@ class string_impl
         pointer p_;
         key k_;
     };
+
+#if BOOST_JSON_ARCH == 64
+    BOOST_STATIC_ASSERT(sizeof(s_) <= 16);
+    BOOST_STATIC_ASSERT(sizeof(p_) <= 16);
+    BOOST_STATIC_ASSERT(sizeof(k_) <= 16);
+#elif BOOST_JSON_ARCH == 32
+    BOOST_STATIC_ASSERT(sizeof(s_) <= 24);
+    BOOST_STATIC_ASSERT(sizeof(p_) <= 24);
+    BOOST_STATIC_ASSERT(sizeof(k_) <= 24);
+#endif
 
 public:
     static

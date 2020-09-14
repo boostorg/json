@@ -31,8 +31,8 @@ public:
 # define INIT1 { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n' }
 # define INIT2 { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O' }
 #elif BOOST_JSON_ARCH == 32
-# define INIT1 { 'a', 'b', 'c', 'd', 'e', 'f' }
-# define INIT2 { 'A', 'B', 'C', 'D', 'E', 'F', 'G' }
+# define INIT1 { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j' }
+# define INIT2 { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K' }
 #else
 # error Unknown architecture
 #endif
