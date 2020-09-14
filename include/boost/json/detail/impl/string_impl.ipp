@@ -81,8 +81,8 @@ string_impl(
     k_.k = key_string_;
     k_.n = static_cast<
         std::uint32_t>(len);
-    k_.s = reinterpret_cast<
-        char*>(sp->allocate(len + 1));
+    k_.s = reinterpret_cast<char*>(
+        sp->allocate(len + 1, alignof(char)));
     k_.s[len] = 0; // null term
     *dest = k_.s;
 }

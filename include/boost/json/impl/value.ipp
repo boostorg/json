@@ -455,7 +455,7 @@ key_value_pair::
     if(sp.is_not_counted_and_deallocate_is_trivial())
         return;
     sp->deallocate(const_cast<char*>(key_),
-        len_ + 1, 1);
+        len_ + 1, alignof(char));
 }
 
 key_value_pair::
@@ -467,7 +467,8 @@ key_value_pair(
         {
             auto s = reinterpret_cast<
                 char*>(value_.storage()->
-                    allocate(other.len_ + 1));
+                    allocate(other.len_ + 1,
+                        alignof(char)));
             std::memcpy(s, other.key_, other.len_);
             s[other.len_] = 0;
             return s;
@@ -487,7 +488,8 @@ key_value_pair(
         {
             auto s = reinterpret_cast<
                 char*>(value_.storage()->
-                    allocate(other.len_ + 1));
+                    allocate(other.len_ + 1,
+                        alignof(char)));
             std::memcpy(s, other.key_, other.len_);
             s[other.len_] = 0;
             return s;
