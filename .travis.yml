@@ -175,6 +175,66 @@ jobs:
           echo "using doxygen ; using boostbook ; using saxonhe ;" > tools/build/src/user-config.jam
         - ./b2 -j3 libs/json/doc//boostrelease
 
+    # coverage
+    - env:
+        - COMMENT=codecov.io
+        - LCOV_BRANCH_COVERAGE=0
+        - B2_CXXSTD=11
+        - B2_TOOLSET=gcc-8
+        - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
+      addons: *gcc-8
+      script:
+        - cd $BOOST_ROOT/libs/$SELF
+        - ci/travis/codecov.sh
+
+    # valgrind
+    - env:
+        - COMMENT=valgrind
+        - B2_TOOLSET=clang-6.0
+        - B2_CXXSTD=11,14
+        - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
+        - B2_VARIANT=debug
+        - B2_TESTFLAGS=testing.launcher=valgrind
+        - VALGRIND_OPTS=--error-exitcode=1
+      addons: *clang-6
+      script:
+        - cd $BOOST_ROOT/libs/$SELF
+        - ci/travis/valgrind.sh
+
+    # asan
+    - env:
+        - COMMENT=asan
+        - B2_VARIANT=debug
+        - B2_TOOLSET=gcc-8
+        - B2_CXXSTD=11,14
+        - B2_ASAN=1
+        - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
+      addons: *gcc-8
+
+    # ubsan
+    - env:
+        - COMMENT=ubsan
+        - B2_VARIANT=debug
+        - B2_TOOLSET=gcc-8
+        - B2_CXXSTD=11,14
+        - B2_UBSAN=1
+        - B2_DEFINES="define=BOOST_NO_STRESS_TEST=1"
+        - B2_LINKFLAGS="-fuse-ld=gold"
+      addons: *gcc-8
+
+    # standalone (ARM)
+    - env:
+        - COMMENT=standalone
+        - STANDALONE=1
+        - B2_TOOLSET=gcc-9
+        - B2_CXXSTD=17,2a
+        # VFALCO The tests unfortunately do not support -fno-exceptions yet
+        #- B2_FLAGS="exception-handling=off"
+        #- B2_DEFINES="define=BOOST_NO_EXCEPTIONS=1 define=BOOST_JSON_BIG_ENDIAN=1 define=BOOST_JSON_STANDALONE=1"
+        - B2_DEFINES="define=BOOST_JSON_BIG_ENDIAN=1"
+      arch: arm64
+      addons: *gcc-9
+
     # Intel oneAPI Toolkit
     - os: linux
       dist: bionic
@@ -214,99 +274,6 @@ jobs:
     # define INTEL_ICC_SERIAL_NUMBER and the following (under development):
     # - { env: [ "B2_TOOLSET=intel-linux", "B2_CXXSTD=11,14,17" ], addons: *gcc-7,
     #     script: cd $BOOST_ROOT/libs/$SELF && $BOOST_ROOT/libs/$SELF/ci/travis/intelicc.sh                               }
-
-    # install
-# VFALCO no libboost-assert-dev on this version of Linux?
-#    - os: linux
-#      dist: bionic
-#      compiler: g++
-#      env: CMAKE_INSTALL_TEST=1
-#      install:
-#        - pip install --user cmake
-#      addons:
-#        apt:
-#          packages:
-#            - libboost-system-dev
-#            - libboost-container-dev
-#      script:
-#        - mkdir __build__ && cd __build__
-#        - cmake -DCMAKE_INSTALL_PREFIX=~/.local ..
-#        - cmake --build . --target install
-#        - cd ../test/cmake_install_test && mkdir __build__ && cd __build__
-#        - cmake -DCMAKE_INSTALL_PREFIX=~/.local ..
-#        - cmake --build .
-#        - cmake --build . --target check
-
-    # coverage
-    - env:
-        - COMMENT=codecov.io
-        - LCOV_BRANCH_COVERAGE=0
-        - B2_CXXSTD=11
-        - B2_TOOLSET=gcc-8
-        - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
-      addons: *gcc-8
-      script:
-        - cd $BOOST_ROOT/libs/$SELF
-        - ci/travis/codecov.sh
-
-    # valgrind
-    - env:
-        - COMMENT=valgrind
-        - B2_TOOLSET=clang-6.0
-        - B2_CXXSTD=11,14
-        - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
-        - B2_VARIANT=debug
-        - B2_TESTFLAGS=testing.launcher=valgrind
-        - VALGRIND_OPTS=--error-exitcode=1
-      addons: *clang-6
-      script:
-        - cd $BOOST_ROOT/libs/$SELF
-        - ci/travis/valgrind.sh
-
-    # asan
-    - env:
-        - COMMENT=asan
-        - B2_VARIANT=debug
-        - B2_TOOLSET=gcc-8
-        - B2_CXXSTD=11,14
-        - B2_ASAN=1
-        - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
-      addons: *gcc-8
-
-    # tsan
-# VFALCO boost.json tests don't use threads
-#    - env:
-#        - COMMENT=tsan
-#        - B2_VARIANT=debug
-#        - B2_TOOLSET=gcc-8
-#        - B2_CXXSTD=11,14
-#        - B2_TSAN=1
-#        - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
-#      addons: *gcc-8
-
-    # ubsan
-    - env:
-        - COMMENT=ubsan
-        - B2_VARIANT=debug
-        - B2_TOOLSET=gcc-8
-        - B2_CXXSTD=11,14
-        - B2_UBSAN=1
-        - B2_DEFINES="define=BOOST_NO_STRESS_TEST=1"
-        - B2_LINKFLAGS="-fuse-ld=gold"
-      addons: *gcc-8
-
-    # standalone (ARM)
-    - env:
-        - COMMENT=standalone
-        - STANDALONE=1
-        - B2_TOOLSET=gcc-9
-        - B2_CXXSTD=17,2a
-        # VFALCO The tests unfortunately do not support -fno-exceptions yet
-        #- B2_FLAGS="exception-handling=off"
-        #- B2_DEFINES="define=BOOST_NO_EXCEPTIONS=1 define=BOOST_JSON_BIG_ENDIAN=1 define=BOOST_JSON_STANDALONE=1"
-        - B2_DEFINES="define=BOOST_JSON_BIG_ENDIAN=1"
-      arch: arm64
-      addons: *gcc-9
 
     # standalone
     - env:
