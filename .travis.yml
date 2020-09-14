@@ -174,6 +174,44 @@ jobs:
         - |-
           echo "using doxygen ; using boostbook ; using saxonhe ;" > tools/build/src/user-config.jam
         - ./b2 -j3 libs/json/doc//boostrelease
+
+    # Intel oneAPI Toolkit
+    - os: linux
+      dist: bionic
+      env:
+        - COMMENT="Intel oneAPI Toolkit"
+        - B2_TOOLSET=intel-linux
+        - B2_CXXSTD=11,14,17
+        # - B2_FLAGS="warnings=extra warnings-as-errors=on"
+        - B2_FLAGS="warnings=extra"
+      addons:
+        apt:
+          sources:
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
+            - sourceline: 'deb https://apt.repos.intel.com/oneapi all main'
+              key_url: 'https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB'
+          packages:
+            # - intel-basekit
+            - intel-oneapi-icc
+            - g++-7
+            - cmake
+            - build-essential
+            - pkg-config
+      install:
+        - source /opt/intel/oneapi/compiler/latest/env/vars.sh
+        - git clone https://github.com/boostorg/boost-ci.git boost-ci-cloned
+        - cp -prf boost-ci-cloned/ci .
+        - rm -rf boost-ci-cloned
+        - source ci/travis/install.sh
+      script:
+        - cd $BOOST_ROOT/libs/$SELF
+        - $BOOST_ROOT/libs/$SELF/ci/travis/build.sh
+
+    # Intel Parallel Studio XE
+    # define INTEL_ICC_SERIAL_NUMBER and the following (under development):
+    # - { env: [ "B2_TOOLSET=intel-linux", "B2_CXXSTD=11,14,17" ], addons: *gcc-7,
+    #     script: cd $BOOST_ROOT/libs/$SELF && $BOOST_ROOT/libs/$SELF/ci/travis/intelicc.sh                               }
+
     # install
 # VFALCO no libboost-assert-dev on this version of Linux?
 #    - os: linux
@@ -316,10 +354,6 @@ jobs:
                "B2_STDLIB=libc++"                             ], addons: *clang-6   }
     - { os: "osx"  ,
         env: [ "B2_TOOLSET=clang",       "B2_CXXSTD=11,17" ]                     }
-
-    # to enable Intel ICC define INTEL_ICC_SERIAL_NUMBER and the following (under development):
-    # - { env: [ "B2_TOOLSET=intel-linux", "B2_CXXSTD=11,14,17" ], addons: *gcc-7,
-    #     script: cd $BOOST_ROOT/libs/$SELF && ci/travis/intelicc.sh                               }
 
     # uncomment to enable a big-endian build job, just note that it is 5-10 times slower
     # than a regular build and travis has a 50 minute time limit per job
