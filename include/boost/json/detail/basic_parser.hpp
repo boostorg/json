@@ -315,6 +315,11 @@ class basic_parser
     inline bool incomplete(
         const detail::const_stream_wrapper& cs);
 
+#ifdef __INTEL_COMPILER
+#pragma warning push
+#pragma warning disable 2196
+#endif
+
     BOOST_NOINLINE
     inline
     const char*
@@ -381,6 +386,10 @@ class basic_parser
     inline
     const char*
     syntax_error(const char* p);
+
+#ifdef __INTEL_COMPILER
+#pragma warning pop
+#endif
 
     template<
         bool StackEmpty, bool ReturnValue,
