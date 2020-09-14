@@ -183,7 +183,7 @@ jobs:
         - B2_TOOLSET=intel-linux
         - B2_CXXSTD=11,14,17
         # - B2_FLAGS="warnings=extra warnings-as-errors=on"
-        - B2_FLAGS="warnings=extra"
+        - B2_FLAGS="warnings=on warnings-as-errors=off"
       addons:
         apt:
           sources:
@@ -205,7 +205,10 @@ jobs:
         - source ci/travis/install.sh
       script:
         - cd $BOOST_ROOT/libs/$SELF
-        - $BOOST_ROOT/libs/$SELF/ci/travis/build.sh
+        - while sleep 5m; do echo "=====[ $SECONDS seconds check_  ]====="; done &
+        - travis_wait 60 $BOOST_ROOT/libs/$SELF/ci/travis/build.sh > travisoutput.txt 2>&1
+        - kill %1
+        - tail -n 15000 travisoutput.txt
 
     # Intel Parallel Studio XE
     # define INTEL_ICC_SERIAL_NUMBER and the following (under development):
