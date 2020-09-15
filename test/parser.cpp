@@ -24,6 +24,8 @@
 
 BOOST_JSON_NS_BEGIN
 
+BOOST_STATIC_ASSERT( std::is_nothrow_destructible<parser>::value );
+
 class parser_test
 {
 public:

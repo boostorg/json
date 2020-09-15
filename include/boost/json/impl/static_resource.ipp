@@ -18,9 +18,7 @@
 BOOST_JSON_NS_BEGIN
 
 static_resource::
-~static_resource() noexcept
-{
-}
+~static_resource() noexcept = default;
 
 static_resource::
 static_resource(

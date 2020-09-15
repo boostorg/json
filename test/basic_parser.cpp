@@ -21,6 +21,8 @@
 
 BOOST_JSON_NS_BEGIN
 
+BOOST_STATIC_ASSERT( std::is_nothrow_destructible<basic_parser<int>>::value );
+
 namespace base64 {
 
 std::size_t constexpr

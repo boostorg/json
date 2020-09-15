@@ -164,8 +164,10 @@ public:
         of the @ref memory_resource is released.
 
         @par Complexity
-
         Constant, or linear in @ref size().
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     ~object()
     {
@@ -180,11 +182,9 @@ public:
         capacity, using the default memory resource.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     object() = default;
@@ -195,11 +195,9 @@ public:
         capacity, using the specified memory resource.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param sp A pointer to the @ref memory_resource
@@ -217,11 +215,9 @@ public:
         using the specified memory resource.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -249,7 +245,6 @@ public:
         element will be inserted.
 
         @par Constraints
-
         @code
         std::is_constructible_v<
             key_value_pair,
@@ -257,11 +252,9 @@ public:
         @endcode
 
         @par Complexity
-
         Linear in `std::distance(first, last)`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -309,11 +302,9 @@ public:
         as if newly constructed with its current memory resource.
         
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param other The object to move.
@@ -340,11 +331,9 @@ public:
         changed.
         
         @par Complexity
-
         Constant or linear in `other.size()`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -370,11 +359,9 @@ public:
         be destroyed.
         
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param other The object to pilfer.
@@ -393,11 +380,9 @@ public:
         contents of `other`, using `other`'s memory resource.
 
         @par Complexity
-
         Linear in `other.size()`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -413,11 +398,9 @@ public:
         contents of `other`, using the specified memory resource.
 
         @par Complexity
-
         Linear in `other.size()`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -443,11 +426,9 @@ public:
         element will be inserted.
 
         @par Complexity
-
         Linear in `init.size()`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -478,11 +459,9 @@ public:
         element will be inserted.
 
         @par Complexity
-
         Linear in `init.size()`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -525,11 +504,9 @@ public:
         changed.
 
         @par Complexity
-
         Constant or linear in @ref size() plus `other.size()`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -545,11 +522,9 @@ public:
         element-wise copy of `other`.
 
         @par Complexity
-
         Linear in @ref size() plus `other.size()`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -565,13 +540,11 @@ public:
         initializer list.
 
         @par Complexity
-
         Linear in @ref size() plus
         average case linear in `init.size()`,
         worst case quadratic in `init.size()`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -590,11 +563,9 @@ public:
         the container.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     storage_ptr const&
@@ -610,11 +581,9 @@ public:
         associated @ref memory_resource.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     BOOST_JSON_DECL
@@ -825,8 +794,10 @@ public:
         the container, i.e. @ref size() returns 0.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     inline
     bool
@@ -837,8 +808,10 @@ public:
         This returns the number of elements in the container.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     inline
     std::size_t
@@ -852,8 +825,10 @@ public:
         may be less due to resource limits.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     static
     constexpr
@@ -869,8 +844,10 @@ public:
         by @ref size().
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     inline
     std::size_t
@@ -881,12 +858,10 @@ public:
         This inserts an element into the container.
 
         @par Complexity
-
         Constant or average case linear in
         @ref size(), worst case quadratic.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -913,11 +888,9 @@ public:
         invalidated.
 
         @par Complexity
-
         Linear in @ref size().
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     BOOST_JSON_DECL
@@ -930,18 +903,15 @@ public:
         be constructible.
 
         @par Constraints
-
         @code
         std::is_constructible_v<value_type, P>
         @endcode
 
         @par Complexity
-
         Average case amortized constant,
         worst case linear in @ref size().
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
         
@@ -976,21 +946,17 @@ public:
         element will be inserted.
 
         @par Precondition
-
         `first` and `last` are not iterators into `*this`.
 
         @par Constraints
-
         @code
         std::is_constructible_v<value_type, std::iterator_traits<InputIt>::value_type>
         @endcode
 
-        @par Complexity
-        
+        @par Complexity      
         Linear in `std::distance(first, last)`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
         
@@ -1024,12 +990,10 @@ public:
         that compare equal, only the last equivalent
         element will be inserted.
 
-        @par Complexity
-        
+        @par Complexity      
         Linear in `init.size()`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
         
@@ -1057,24 +1021,22 @@ public:
         is greater than @ref capacity().
 
         @par Complexity
-
         Amortized constant on average, worst case linear in @ref size().
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
+
+        @return A `std::pair` where `first` is an iterator
+        to the existing or inserted element, and `second`
+        is `true` if the insertion took place or `false` if
+        the assignment took place.
 
         @param key The key used for lookup and insertion
 
         @param m The value to insert or assign
 
         @throw std::length_error if key is too long
-
-        @return A `std::pair` where `first` is an iterator
-        to the existing or inserted element, and `second`
-        is `true` if the insertion took place or `false` if
-        the assignment took place.
     */
     template<class M>
     std::pair<iterator, bool>
@@ -1097,13 +1059,16 @@ public:
         is greater than @ref capacity().
 
         @par Complexity
-
         Amortized constant on average, worst case linear in @ref size().
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
+
+        @return A `std::pair` where `first` is an iterator
+        to the existing or inserted element, and `second`
+        is `true` if the insertion took place or `false` if
+        the assignment took place.
 
         @param key The key used for lookup and insertion
 
@@ -1112,11 +1077,6 @@ public:
         the @ref value constructor.
 
         @throw std::length_error if key is too long
-
-        @return A `std::pair` where `first` is an iterator
-        to the existing or inserted element, and `second`
-        is `true` if the insertion took place or `false` if
-        the assignment took place.
     */
     template<class Arg>
     std::pair<iterator, bool>
@@ -1133,11 +1093,9 @@ public:
         invalidated.
 
         @par Complexity
-
         Constant on average, worst case linear in @ref size().
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param pos An iterator pointing to the element to be
@@ -1158,11 +1116,9 @@ public:
         invalidated.
 
         @par Complexity
-
         Constant on average, worst case linear in @ref size().
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @return The number of elements removed, which can
@@ -1189,11 +1145,9 @@ public:
         references are invalidated.
 
         @par Complexity
-
         Constant or linear in @ref size() plus `other.size()`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -1215,8 +1169,10 @@ public:
         that matches `key`, otherwise throws.
 
         @par Complexity
-
         Constant on average, worst case linear in @ref size().
+
+        @par Exception Safety
+        Strong guarantee.
 
         @return A reference to the mapped value.
 
@@ -1234,8 +1190,10 @@ public:
         the element that matches `key`, otherwise throws.
 
         @par Complexity
-
         Constant on average, worst case linear in @ref size().
+
+        @par Exception Safety
+        Strong guarantee.
 
         @return A reference to the mapped value.
 
@@ -1260,11 +1218,9 @@ public:
         number of elements is greater than @ref capacity().
 
         @par Complexity
-
         Constant on average, worst case linear in @ref size().
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -1283,11 +1239,9 @@ public:
         are 0 and 1.
 
         @par Complexity
-
         Constant on average, worst case linear in @ref size().
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param key The key of the element to find.
@@ -1303,11 +1257,9 @@ public:
         @ref end().
 
         @par Complexity
-
         Constant on average, worst case linear in @ref size().
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param key The key of the element to find.
@@ -1323,11 +1275,9 @@ public:
         otherwise returns @ref end().
 
         @par Complexity
-
         Constant on average, worst case linear in @ref size().
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param key The key of the element to find.
@@ -1349,11 +1299,9 @@ public:
         @endcode
 
         @par Complexity
-
         Constant on average, worst case linear in @ref size().
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param key The key of the element to find.
@@ -1377,11 +1325,9 @@ public:
         @endcode
 
         @par Complexity
-
         Constant on average, worst case linear in @ref size().
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param key The key of the element to find.

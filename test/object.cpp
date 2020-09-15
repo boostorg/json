@@ -21,6 +21,9 @@
 
 BOOST_JSON_NS_BEGIN
 
+BOOST_STATIC_ASSERT( std::is_nothrow_destructible<object>::value );
+BOOST_STATIC_ASSERT( std::is_nothrow_move_constructible<object>::value );
+
 class object_test
 {
 public:

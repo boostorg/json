@@ -104,8 +104,10 @@ public:
         internally is freed.
 
         @par Complexity
-
         Constant, or linear in size for array or object.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     BOOST_JSON_DECL
     ~value();
@@ -116,11 +118,9 @@ public:
         using the default memory resource.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     value() noexcept
@@ -134,11 +134,9 @@ public:
         using the specified @ref memory_resource.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param sp A pointer to the @ref memory_resource
@@ -162,11 +160,9 @@ public:
         only be destroyed.
         
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param other The value to pilfer.
@@ -186,11 +182,9 @@ public:
         memory resource as `other`.
 
         @par Complexity
-
         Linear in the size of `other`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -208,8 +202,11 @@ public:
         specified memory resource.
 
         @par Complexity
-
         Linear in the size of `other`.
+
+        @par Exception Safety
+        Strong guarantee.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The value to copy.
 
@@ -234,11 +231,9 @@ public:
         null value with its current storage pointer.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param other The value to move.
@@ -265,11 +260,9 @@ public:
         changed.
         
         @par Complexity
-
         Constant or linear in the size of `other`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -304,12 +297,10 @@ public:
         changed.
 
         @par Complexity
-
         Constant, or linear in
         `this->size()` plus `other.size()`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -325,11 +316,9 @@ public:
         element-wise copy of the contents of `other`.
 
         @par Complexity
-
         Linear in the size of `*this` plus `other`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -350,9 +339,7 @@ public:
         same memory resource. To transfer ownership, use `std::move`:
 
         @par Example
-
         @code
-
         object obj( {{"a",1}, {"b",2}, {"c"},3}} );
 
         // transfer ownership
@@ -360,15 +347,12 @@ public:
 
         assert( obj.empty() );
         assert( *obj.storage() == *jv.storage() );
-
         @endcode
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param other The object to construct with.
@@ -384,11 +368,9 @@ public:
         using the specified memory resource.
 
         @par Complexity
-
         Linear in `other.size()`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -413,11 +395,9 @@ public:
         using the specified memory resource.
 
         @par Complexity
-
         Constant or linear in `other.size()`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -445,21 +425,16 @@ public:
         to select this overload:
 
         @par Example
-
         @code
-
         // Construct an empty object
 
         value jv( object_kind );
-
         @endcode
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param sp A pointer to the @ref memory_resource
@@ -481,9 +456,7 @@ public:
         same memory resource. To transfer ownership, use `std::move`:
 
         @par Example
-
         @code
-
         array arr( {1, 2, 3, 4, 5} );
 
         // transfer ownership
@@ -491,15 +464,12 @@ public:
 
         assert( arr.empty() );
         assert( *arr.storage() == *jv.storage() );
-
         @endcode
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param other The array to construct with.
@@ -515,11 +485,9 @@ public:
         using the specified memory resource.
 
         @par Complexity
-
         Linear in `other.size()`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -544,11 +512,9 @@ public:
         using the specified memory resource.
 
         @par Complexity
-
         Constant or linear in `other.size()`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -576,21 +542,16 @@ public:
         to select this overload:
 
         @par Example
-
         @code
-
         // Construct an empty array
 
         value jv( array_kind );
-
         @endcode
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param sp A pointer to the @ref memory_resource
@@ -612,9 +573,7 @@ public:
         same memory resource. To transfer ownership, use `std::move`:
 
         @par Example
-
         @code
-
         string str = "The Boost C++ Library Collection";
 
         // transfer ownership
@@ -622,15 +581,12 @@ public:
 
         assert( str.empty() );
         assert( *str.storage() == *jv.storage() );
-
         @endcode
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param other The string to construct with.
@@ -647,11 +603,9 @@ public:
         using the specified memory resource.
 
         @par Complexity
-
         Linear in `other.size()`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -676,11 +630,9 @@ public:
         using the specified memory resource.
 
         @par Complexity
-
         Constant or linear in `other.size()`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -705,11 +657,9 @@ public:
         string view `s`, using the specified memory resource.
 
         @par Complexity
-
         Linear in `s.size()`.
 
-        @par Exception Safety
-        
+        @par Exception Safety  
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -733,11 +683,9 @@ public:
         memory resource.
 
         @par Complexity
-
         Linear in `std::strlen(s)`.
 
-        @par Exception Safety
-        
+        @par Exception Safety    
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -764,21 +712,16 @@ public:
         to select this overload:
 
         @par Example
-
         @code
-
         // Construct an empty string
 
         value jv( string_kind );
-
         @endcode
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param sp A pointer to the @ref memory_resource
@@ -797,11 +740,9 @@ public:
     /** Construct a `std::int64_t`.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param i The initial value.
@@ -820,11 +761,9 @@ public:
     /** Construct a `std::int64_t`.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param i The initial value.
@@ -843,11 +782,9 @@ public:
     /** Construct a `std::int64_t`.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param i The initial value.
@@ -866,11 +803,9 @@ public:
     /** Construct a `std::int64_t`.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param i The initial value.
@@ -889,11 +824,9 @@ public:
     /** Construct a `std::uint64_t`.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param u The initial value.
@@ -912,11 +845,9 @@ public:
     /** Construct a `std::uint64_t`.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param u The initial value.
@@ -935,11 +866,9 @@ public:
     /** Construct a `std::uint64_t`.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param u The initial value.
@@ -958,11 +887,9 @@ public:
     /** Construct a `std::uint64_t`.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param u The initial value.
@@ -981,11 +908,9 @@ public:
     /** Construct a `double`.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param d The initial value.
@@ -1004,11 +929,9 @@ public:
     /** Construct a `double`.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param d The initial value.
@@ -1031,11 +954,9 @@ public:
         the specified memory resource.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param b The initial value.
@@ -1066,11 +987,9 @@ public:
         A null value is a monostate.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param sp A pointer to the @ref memory_resource
@@ -1093,11 +1012,9 @@ public:
         value using the specified memory resource.
 
         @par Complexity
-
         Linear in `init.size()`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -1121,11 +1038,9 @@ public:
         using the existing memory resource.
 
         @par Complexity
-
         Linear in `init.size()`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -1141,14 +1056,16 @@ public:
     /** Assignment.
 
         @par Constraints
+        @code
+        std::is_constructible< value, T, storage_ptr >::value &&
+            ! std::is_same< std::remove_cvref< T >, value >::value
+        @endcode
 
         @par Complexity
-
         Constant or linear in the size of
         `*this` plus `t`.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
     */
@@ -1179,11 +1096,9 @@ public:
         obtained beforehand are invalidated.
 
         @par Complexity
-
         Linear in the size of `*this`.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     BOOST_JSON_DECL
@@ -1197,11 +1112,9 @@ public:
         previous contents.
 
         @par Complexity
-
         Linear in the size of `*this`.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     BOOST_JSON_DECL
@@ -1215,11 +1128,9 @@ public:
         previous contents.
 
         @par Complexity
-
         Linear in the size of `*this`.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     BOOST_JSON_DECL
@@ -1233,11 +1144,9 @@ public:
         previous contents.
 
         @par Complexity
-
         Linear in the size of `*this`.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     BOOST_JSON_DECL
@@ -1251,11 +1160,9 @@ public:
         previous contents.
 
         @par Complexity
-
         Linear in the size of `*this`.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     BOOST_JSON_DECL
@@ -1269,11 +1176,9 @@ public:
         previous contents.
 
         @par Complexity
-
         Linear in the size of `*this`.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     BOOST_JSON_DECL
@@ -1287,11 +1192,9 @@ public:
         previous contents.
 
         @par Complexity
-
         Linear in the size of `*this`.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     BOOST_JSON_DECL
@@ -1304,11 +1207,9 @@ public:
         destroying the previous contents.
 
         @par Complexity
-
         Linear in the size of `*this`.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     BOOST_JSON_DECL
@@ -1332,16 +1233,15 @@ public:
         references are invalidated.
 
         @par Preconditions
-
-        `&other != this`
+        @code
+        &other != this
+        @endcode
         
         @par Complexity
-
         Constant or linear in the sum of the sizes of
         the values.
 
         @par Exception Safety
-
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -1365,8 +1265,10 @@ public:
         stored in the container.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     json::kind
     kind() const noexcept
@@ -1382,7 +1284,6 @@ public:
         to the underlying array. Otherwise, returns `nullptr`.
 
         @par Example
-
         The return value can be used in a logical context:
         @code
         if( jv.is_array() )
@@ -1882,8 +1783,10 @@ public:
         `kind::array`.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     bool
     is_structured() const noexcept
@@ -1901,8 +1804,10 @@ public:
         `kind::array`.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     bool
     is_primitive() const noexcept
@@ -1921,8 +1826,10 @@ public:
         `kind::double_`.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     bool
     is_number() const noexcept
@@ -1946,11 +1853,9 @@ public:
         that was used to construct the value.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     storage_ptr const&
@@ -1966,11 +1871,9 @@ public:
         associated @ref memory_resource.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     BOOST_JSON_DECL
@@ -1986,11 +1889,9 @@ public:
         otherwise throws an exception.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         Strong guarantee.
 
         @throw std::invalid_argument `! this->is_object()`
@@ -2012,11 +1913,9 @@ public:
         otherwise throws an exception.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         Strong guarantee.
 
         @throw std::invalid_argument `! this->is_object()`
@@ -2038,11 +1937,9 @@ public:
         otherwise throws an exception.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         Strong guarantee.
 
         @throw std::invalid_argument `! this->is_array()`
@@ -2064,11 +1961,9 @@ public:
         otherwise throws an exception.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         Strong guarantee.
 
         @throw std::invalid_argument `! this->is_array()`
@@ -2090,11 +1985,9 @@ public:
         otherwise throws an exception.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         Strong guarantee.
 
         @throw std::invalid_argument `! this->is_string()`
@@ -2116,11 +2009,9 @@ public:
         otherwise throws an exception.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         Strong guarantee.
 
         @throw std::invalid_argument `! this->is_string()`
@@ -2142,11 +2033,9 @@ public:
         otherwise throws an exception.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         Strong guarantee.
 
         @throw std::invalid_argument `! this->is_int64()`
@@ -2168,11 +2057,9 @@ public:
         otherwise throws an exception.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         Strong guarantee.
 
         @throw std::invalid_argument `! this->is_int64()`
@@ -2194,11 +2081,9 @@ public:
         otherwise throws an exception.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         Strong guarantee.
 
         @throw std::invalid_argument `! this->is_uint64()`
@@ -2220,11 +2105,9 @@ public:
         otherwise throws an exception.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         Strong guarantee.
 
         @throw std::length_error `! this->is_uint64()`
@@ -2246,11 +2129,9 @@ public:
         otherwise throws an exception.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         Strong guarantee.
 
         @throw std::invalid_argument `! this->is_double()`
@@ -2272,11 +2153,9 @@ public:
         otherwise throws an exception.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         Strong guarantee.
 
         @throw std::invalid_argument `! this->is_double()`
@@ -2298,11 +2177,9 @@ public:
         otherwise throws an exception.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         Strong guarantee.
 
         @throw std::invalid_argument `! this->is_bool()`
@@ -2324,11 +2201,9 @@ public:
         otherwise throws an exception.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         Strong guarantee.
 
         @throw std::invalid_argument `! this->is_bool()`
@@ -2357,11 +2232,9 @@ public:
         @endcode
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     object&
@@ -2383,11 +2256,9 @@ public:
         @endcode
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     object const&
@@ -2409,11 +2280,9 @@ public:
         @endcode
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     array&
@@ -2435,11 +2304,9 @@ public:
         @endcode
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     array const&
@@ -2461,11 +2328,9 @@ public:
         @endcode
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     string&
@@ -2487,11 +2352,9 @@ public:
         @endcode
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     string const&
@@ -2513,11 +2376,9 @@ public:
         @endcode
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     std::int64_t&
@@ -2539,11 +2400,9 @@ public:
         @endcode
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     std::int64_t
@@ -2565,11 +2424,9 @@ public:
         @endcode
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     std::uint64_t&
@@ -2591,11 +2448,9 @@ public:
         @endcode
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     std::uint64_t
@@ -2617,11 +2472,9 @@ public:
         @endcode
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     double&
@@ -2643,11 +2496,9 @@ public:
         @endcode
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     double
@@ -2669,11 +2520,9 @@ public:
         @endcode
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     bool&
@@ -2695,11 +2544,9 @@ public:
         @endcode
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     bool
@@ -2718,11 +2565,9 @@ public:
         if the value is not an object.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         Strong guarantee.
 
         @param key The key of the element to find.
@@ -2742,11 +2587,9 @@ public:
         if the value is not an array.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         Strong guarantee.
 
         @param pos A zero-based array index.
@@ -2899,8 +2742,7 @@ class key_value_pair
         pilfered<json::value> v) noexcept;
 
 public:
-    /** Copy assignment (deleted).
-    */
+    /// Copy assignment (deleted).
     key_value_pair&
     operator=(key_value_pair const&) = delete;
 
@@ -2918,6 +2760,10 @@ public:
         copy of another key/value pair, using
         the same memory resource as `other`.
 
+        @par Exception Safety
+        Strong guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
         @param other The key/value pair to copy.
     */
     BOOST_JSON_DECL
@@ -2928,6 +2774,10 @@ public:
         This constructs a key/value pair with a
         copy of another key/value pair, using
         the specified memory resource.
+
+        @par Exception Safety
+        Strong guarantee.
+        Calls to `memory_resource::allocate` may throw.
 
         @param other The key/value pair to copy.
 
@@ -2944,6 +2794,10 @@ public:
 
         This constructs a key/value pair.
 
+        @par Exception Safety
+        Strong guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
         @param key The key string to use.
 
         @param args Optional arguments forwarded to
@@ -2959,6 +2813,10 @@ public:
         This constructs a key/value pair. A
         copy of the specified value is made,
         using the specified memory resource.
+
+        @par Exception Safety
+        Strong guarantee.
+        Calls to `memory_resource::allocate` may throw.
 
         @param p A `std::pair` with the key
             string and @ref value to construct with.
@@ -2986,6 +2844,10 @@ public:
         Ownership of the specified value is
         transferred by move construction.
 
+        @par Exception Safety
+        Strong guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
         @param p A `std::pair` with the key
             string and @ref value to construct with.
 
@@ -3010,6 +2872,12 @@ public:
 
         After construction, the key may
         not be modified.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     string_view const
     key() const noexcept
@@ -3018,6 +2886,12 @@ public:
     }
 
     /** Return the key of this element as a null-terminated string.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     char const*
     key_c_str() const noexcept
@@ -3026,6 +2900,12 @@ public:
     }
 
     /** Return the value of this element.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     json::value const&
     value() const noexcept
@@ -3034,6 +2914,12 @@ public:
     }
 
     /** Return the value of this element.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     json::value&
     value() noexcept

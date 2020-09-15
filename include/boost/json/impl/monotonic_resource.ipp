@@ -66,7 +66,7 @@ next_pow2(
 //----------------------------------------------------------
 
 monotonic_resource::
-~monotonic_resource() noexcept
+~monotonic_resource()
 {
     release();
 }

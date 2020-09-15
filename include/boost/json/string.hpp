@@ -144,8 +144,10 @@ public:
         is freed.
 
         @par Complexity
-
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     ~string()
     {

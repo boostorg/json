@@ -139,14 +139,12 @@ public:
         resource is destroyed.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
-    ~storage_ptr() noexcept
+    ~storage_ptr()
     {
         release();
     }

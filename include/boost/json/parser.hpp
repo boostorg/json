@@ -149,10 +149,24 @@ class parser
     basic_parser<handler> p_;
 
 public:
+    /// Copy constructor (deleted)
+    parser(
+        parser const&) = delete;
+
+    /// Copy assignment (deleted)
+    parser& operator=(
+        parser const&) = delete;
+
     /** Destructor.
 
         All dynamically allocated memory, including
         any incomplete parsing results, is freed.
+
+        @par Complexity
+        Linear in the size of partial results
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     ~parser() = default;
    

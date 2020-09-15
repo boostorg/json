@@ -17,6 +17,8 @@
 
 BOOST_JSON_NS_BEGIN
 
+BOOST_STATIC_ASSERT( std::is_nothrow_destructible<value_stack>::value );
+
 class value_stack_test
 {
 public:

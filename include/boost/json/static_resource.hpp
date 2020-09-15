@@ -74,7 +74,14 @@ public:
     static_resource& operator=(
         static_resource const&) = delete;
 
-    /// Destructor
+    /** Destructor
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
     ~static_resource() noexcept;
 
     /** Constructor

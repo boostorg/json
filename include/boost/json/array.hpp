@@ -154,6 +154,9 @@ public:
 
         @par Complexity
         Constant, or linear in @ref size().
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     ~array()
     {

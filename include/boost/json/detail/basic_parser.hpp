@@ -434,11 +434,30 @@ class basic_parser
         std::size_t total = 0);
 
 public:
+    /// Copy constructor (deleted)
+    basic_parser(
+        basic_parser const&) = delete;
+
+    /// Copy assignment (deleted)
+    basic_parser& operator=(
+        basic_parser const&) = delete;
+
     /** Destructor.
 
         All dynamically allocated internal memory is freed.
+
+        @par Effects
+        @code
+        this->handler().~Handler()
+        @endcode
+
+        @par Complexity
+        Same as `~Handler()`.
+
+        @par Exception Safety
+        Same as `~Handler()`.
     */
-    ~basic_parser() noexcept = default;
+    ~basic_parser() = default;
 
     /** Constructor.
 

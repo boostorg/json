@@ -10,12 +10,17 @@
 // Test that header file is self-contained.
 #include <boost/json/storage_ptr.hpp>
 
+#include <type_traits>
+
 #include "test.hpp"
 #include "test_suite.hpp"
 
 //----------------------------------------------------------
 
 BOOST_JSON_NS_BEGIN
+
+BOOST_STATIC_ASSERT(
+    std::is_nothrow_move_constructible<storage_ptr>::value);
 
 class storage_ptr_test
 {

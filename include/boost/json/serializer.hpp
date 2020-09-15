@@ -97,6 +97,22 @@ class serializer
     inline string_view read_some(char* dest, std::size_t size);
 
 public:
+    /// Move constructor (deleted)
+    serializer(serializer&&) = delete;
+
+    /** Destructor
+
+        All temporary storage is deallocated.
+
+        @par Complexity
+        Constant
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    BOOST_JSON_DECL
+    ~serializer() noexcept;
+
     /** Default constructor
 
         This constructs a serializer with no value.

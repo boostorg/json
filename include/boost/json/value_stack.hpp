@@ -157,10 +157,24 @@ class value_stack
     storage_ptr sp_;
 
 public:
+    /// Copy constructor (deleted)
+    value_stack(
+        value_stack const&) = delete;
+
+    /// Copy assignment (deleted)
+    value_stack& operator=(
+        value_stack const&) = delete;
+
     /** Destructor.
 
         All dynamically allocated memory and
         partial or complete elements is freed.
+
+        @par Complexity
+        Linear in the size of partial results.
+
+        @par Exception Safety
+        No-throw guarantee.
     */
     BOOST_JSON_DECL
     ~value_stack();

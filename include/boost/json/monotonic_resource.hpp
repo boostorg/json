@@ -105,7 +105,7 @@ public:
 
     /// Copy assignment (deleted)
     monotonic_resource& operator=(
-        const monotonic_resource&) = delete;
+        monotonic_resource const&) = delete;
 
     /** Destructor
 
@@ -122,7 +122,7 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    ~monotonic_resource() noexcept;
+    ~monotonic_resource();
 
     /** Constructor
 

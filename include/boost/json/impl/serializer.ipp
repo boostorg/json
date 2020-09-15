@@ -36,6 +36,9 @@ enum class serializer::state : char
 
 //----------------------------------------------------------
 
+serializer::
+~serializer() noexcept = default;
+
 bool
 serializer::
 suspend(state st)
