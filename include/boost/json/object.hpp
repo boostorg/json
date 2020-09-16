@@ -1286,6 +1286,30 @@ public:
     const_iterator
     find(string_view key) const noexcept;
 
+    /** Return `true` if the key is found
+
+        This function returns `true` if a key with the
+        specified string is found.
+
+        @par Effects
+        @code
+        return this->find(key) != this->end();
+        @endcode
+
+        @par Complexity
+        Constant on average, worst case linear in @ref size().
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param key The key of the element to find.
+
+        @see @ref find
+    */
+    BOOST_JSON_DECL
+    bool
+    contains(string_view key) const noexcept;
+
     /** Return a pointer to the value if the key is found, or null
 
         This function searches for a value with the given
@@ -1294,7 +1318,7 @@ public:
 
         @par Example
         @code
-        if( auto p = obj.contains( "key" ) )
+        if( auto p = obj.if_contains( "key" ) )
             std::cout << *p;
         @endcode
 
@@ -1310,7 +1334,7 @@ public:
     */
     BOOST_JSON_DECL
     value const*
-    contains(string_view key) const noexcept;
+    if_contains(string_view key) const noexcept;
 
     /** Return a pointer to the value if the key is found, or null
 
@@ -1320,7 +1344,7 @@ public:
 
         @par Example
         @code
-        if( auto p = obj.contains( "key" ) )
+        if( auto p = obj.if_contains( "key" ) )
             std::cout << *p;
         @endcode
 
@@ -1336,7 +1360,7 @@ public:
     */
     BOOST_JSON_DECL
     value*
-    contains(string_view key) noexcept;
+    if_contains(string_view key) noexcept;
 
     /** Return `true` if two objects are equal.
 

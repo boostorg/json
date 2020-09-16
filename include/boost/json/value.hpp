@@ -1278,23 +1278,14 @@ public:
                 nul_.k) & 0x3f);
     }
 
-    /** Return an @ref array pointer if this is an array, else return `nullptr`
+    /** Return `true` if this is an array
 
-        If `this->kind() == kind::array`, returns a pointer
-        to the underlying array. Otherwise, returns `nullptr`.
+        This function is used to determine if the underlying
+        representation is a certain kind.
 
-        @par Example
-        The return value can be used in a logical context:
+        @par Effects
         @code
-        if( jv.is_array() )
-            return true;
-        @endcode
-
-        Or the return value can be used to access the array
-        later:
-        @code
-        if( auto p = jv.is_array() )
-            return *p;
+        return this->kind() == kind::array;
         @endcode
 
         @par Complexity
@@ -1303,32 +1294,20 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    array const*
+    bool
     is_array() const noexcept
     {
-        if(kind() == json::kind::array)
-            return &arr_;
-        return nullptr;
+        return kind() == json::kind::array;
     }
 
-    /** Return an @ref array pointer if this is an array, else return `nullptr`
+    /** Return `true` if this is an object
 
-        If `this->kind() == kind::array`, returns a pointer
-        to the underlying array. Otherwise, returns `nullptr`.
+        This function is used to determine if the underlying
+        representation is a certain kind.
 
-        @par Example
-
-        The return value can be used in a logical context:
+        @par Effects
         @code
-        if( jv.is_array() )
-            return true;
-        @endcode
-
-        Or the return value can be used to access the array
-        later:
-        @code
-        if( auto p = jv.is_array() )
-            return *p;
+        return this->kind() == kind::object;
         @endcode
 
         @par Complexity
@@ -1337,66 +1316,20 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    array*
-    is_array() noexcept
-    {
-        if(kind() == json::kind::array)
-            return &arr_;
-        return nullptr;
-    }
-
-    /** Return an @ref object pointer if this is an object, else return `nullptr`
-
-        If `this->kind() == kind::object`, returns a pointer
-        to the underlying object. Otherwise, returns `nullptr`.
-
-        @par Example
-
-        The return value can be used in a logical context:
-        @code
-        if( jv.is_object() )
-            return true;
-        @endcode
-
-        Or the return value can be used to access the array
-        later:
-        @code
-        if( auto p = jv.is_object() )
-            return *p;
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
-    object const*
+    bool
     is_object() const noexcept
     {
-        if(kind() == json::kind::object)
-            return &obj_;
-        return nullptr;
+        return kind() == json::kind::object;
     }
 
-    /** Return an @ref object pointer if this is an object, else return `nullptr`
+    /** Return `true` if this is a string
 
-        If `this->kind() == kind::object`, returns a pointer
-        to the underlying object. Otherwise, returns `nullptr`.
+        This function is used to determine if the underlying
+        representation is a certain kind.
 
-        @par Example
-
-        The return value can be used in a logical context:
+        @par Effects
         @code
-        if( jv.is_object() )
-            return true;
-        @endcode
-
-        Or the return value can be used to access the array
-        later:
-        @code
-        if( auto p = jv.is_object() )
-            return *p;
+        return this->kind() == kind::string;
         @endcode
 
         @par Complexity
@@ -1405,66 +1338,20 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    object*
-    is_object() noexcept
-    {
-        if(kind() == json::kind::object)
-            return &obj_;
-        return nullptr;
-    }
-
-    /** Return a @ref string pointer if this is a string, else return `nullptr`
-
-        If `this->kind() == kind::string`, returns a pointer
-        to the underlying object. Otherwise, returns `nullptr`.
-
-        @par Example
-
-        The return value can be used in a logical context:
-        @code
-        if( jv.is_string() )
-            return true;
-        @endcode
-
-        Or the return value can be used to access the array
-        later:
-        @code
-        if( auto p = jv.is_string() )
-            return *p;
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
-    string const*
+    bool
     is_string() const noexcept
     {
-        if(kind() == json::kind::string)
-            return &str_;
-        return nullptr;
+        return kind() == json::kind::string;
     }
 
-    /** Return a @ref string pointer if this is a string, else return `nullptr`
+    /** Return `true` if this is a signed integer
 
-        If `this->kind() == kind::string`, returns a pointer
-        to the underlying object. Otherwise, returns `nullptr`.
+        This function is used to determine if the underlying
+        representation is a certain kind.
 
-        @par Example
-
-        The return value can be used in a logical context:
+        @par Effects
         @code
-        if( jv.is_string() )
-            return true;
-        @endcode
-
-        Or the return value can be used to access the array
-        later:
-        @code
-        if( auto p = jv.is_string() )
-            return *p;
+        return this->kind() == kind::int64;
         @endcode
 
         @par Complexity
@@ -1473,66 +1360,20 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    string*
-    is_string() noexcept
-    {
-        if(kind() == json::kind::string)
-            return &str_;
-        return nullptr;
-    }
-
-    /** Return an `int64_t` pointer if this is a signed integer, else return `nullptr`
-
-        If `this->kind() == kind::int64`, returns a pointer
-        to the underlying integer. Otherwise, returns `nullptr`.
-
-        @par Example
-
-        The return value can be used in a logical context:
-        @code
-        if( jv.is_int64() )
-            return true;
-        @endcode
-
-        Or the return value can be used to access the integer
-        later:
-        @code
-        if( auto p = jv.is_int64() )
-            return *p;
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
-    std::int64_t const*
+    bool
     is_int64() const noexcept
     {
-        if(kind() == json::kind::int64)
-            return &i64_.i;
-        return nullptr;
+        return kind() == json::kind::int64;
     }
 
-    /** Return an `int64_t` pointer if this is a signed integer, else return `nullptr`
+    /** Return `true` if this is a unsigned integer
 
-        If `this->kind() == kind::int64`, returns a pointer
-        to the underlying integer. Otherwise, returns `nullptr`.
+        This function is used to determine if the underlying
+        representation is a certain kind.
 
-        @par Example
-
-        The return value can be used in a logical context:
+        @par Effects
         @code
-        if( jv.is_int64() )
-            return true;
-        @endcode
-
-        Or the return value can be used to access the integer
-        later:
-        @code
-        if( auto p = jv.is_int64() )
-            return *p;
+        return this->kind() == kind::uint64;
         @endcode
 
         @par Complexity
@@ -1541,68 +1382,20 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    std::int64_t*
-    is_int64() noexcept
-    {
-        if(kind() == json::kind::int64)
-            return &i64_.i;
-        return nullptr;
-    }
-
-    /** Return a `uint64_t` pointer if this is a signed integer, else return `nullptr`
-
-        If `this->kind() == kind::uint64`, returns a pointer
-        to the underlying unsigned integer. Otherwise, returns
-        `nullptr`.
-
-        @par Example
-
-        The return value can be used in a logical context:
-        @code
-        if( jv.is_uint64() )
-            return true;
-        @endcode
-
-        Or the return value can be used to access the unsigned integer
-        later:
-        @code
-        if( auto p = jv.is_uint64() )
-            return *p;
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
-    std::uint64_t const*
+    bool
     is_uint64() const noexcept
     {
-        if(kind() == json::kind::uint64)
-            return &u64_.u;
-        return nullptr;
+        return kind() == json::kind::uint64;
     }
 
-    /** Return a `uint64_t` pointer if this is an unsigned integer, else return `nullptr`
+    /** Return `true` if this is a double
 
-        If `this->kind() == kind::uint64`, returns a pointer
-        to the underlying unsigned integer. Otherwise, returns
-        `nullptr`.
+        This function is used to determine if the underlying
+        representation is a certain kind.
 
-        @par Example
-
-        The return value can be used in a logical context:
+        @par Effects
         @code
-        if( jv.is_uint64() )
-            return true;
-        @endcode
-
-        Or the return value can be used to access the unsigned integer
-        later:
-        @code
-        if( auto p = jv.is_uint64() )
-            return *p;
+        return this->kind() == kind::double_;
         @endcode
 
         @par Complexity
@@ -1611,68 +1404,20 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    std::uint64_t*
-    is_uint64() noexcept
-    {
-        if(kind() == json::kind::uint64)
-            return &u64_.u;
-        return nullptr;
-    }
-
-    /** Return a `double` pointer if this is a double, else return `nullptr`
-
-        If `this->kind() == kind::double_`, returns a pointer
-        to the underlying double. Otherwise, returns
-        `nullptr`.
-
-        @par Example
-
-        The return value can be used in a logical context:
-        @code
-        if( jv.is_double() )
-            return true;
-        @endcode
-
-        Or the return value can be used to access the double
-        later:
-        @code
-        if( auto p = jv.is_double() )
-            return *p;
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
-    double const*
+    bool
     is_double() const noexcept
     {
-        if(kind() == json::kind::double_)
-            return &dub_.d;
-        return nullptr;
+        return kind() == json::kind::double_;
     }
 
-    /** Return a `double` pointer if this is a double, else return `nullptr`
+    /** Return `true` if this is a bool
 
-        If `this->kind() == kind::double_`, returns a pointer
-        to the underlying double. Otherwise, returns
-        `nullptr`.
+        This function is used to determine if the underlying
+        representation is a certain kind.
 
-        @par Example
-
-        The return value can be used in a logical context:
+        @par Effects
         @code
-        if( jv.is_double() )
-            return true;
-        @endcode
-
-        Or the return value can be used to access the double
-        later:
-        @code
-        if( auto p = jv.is_double() )
-            return *p;
+        return this->kind() == kind::bool_;
         @endcode
 
         @par Complexity
@@ -1681,88 +1426,21 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    double*
-    is_double() noexcept
-    {
-        if(kind() == json::kind::double_)
-            return &dub_.d;
-        return nullptr;
-    }
-
-    /** Return a `bool` pointer if this is a boolean, else return `nullptr`
-
-        If `this->kind() == kind::bool_`, returns a pointer
-        to the underlying boolean. Otherwise, returns
-        `nullptr`.
-
-        @par Example
-
-        The return value can be used in a logical context:
-        @code
-        if( jv.is_bool() )
-            return true;
-        @endcode
-
-        Or the return value can be used to access the boolean
-        later:
-        @code
-        if( auto p = jv.is_bool() )
-            return *p;
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
-    bool const*
+    bool
     is_bool() const noexcept
     {
-        if(kind() == json::kind::bool_)
-            return &bln_.b;
-        return nullptr;
-    }
-
-    /** Return a `bool` pointer if this is a boolean, else return `nullptr`
-
-        If `this->kind() == kind::bool_`, returns a pointer
-        to the underlying boolean. Otherwise, returns
-        `nullptr`.
-
-        @par Example
-
-        The return value can be used in a logical context:
-        @code
-        if( jv.is_bool() )
-            return true;
-        @endcode
-
-        Or the return value can be used to access the boolean
-        later:
-        @code
-        if( auto p = jv.is_bool() )
-            return *p;
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
-    bool*
-    is_bool() noexcept
-    {
-        if(kind() == json::kind::bool_)
-            return &bln_.b;
-        return nullptr;
+        return kind() == json::kind::bool_;
     }
 
     /** Returns true if this is a null.
 
-        This function returns `true` when
-        @ref kind() equals `kind::null`.
+        This function is used to determine if the underlying
+        representation is a certain kind.
+
+        @par Effects
+        @code
+        return this->kind() == kind::null;
+        @endcode
 
         @par Complexity
         Constant.
@@ -1839,6 +1517,392 @@ public:
             kind() == json::kind::int64 ||
             kind() == json::kind::uint64 ||
             kind() == json::kind::double_;
+    }
+
+    //------------------------------------------------------
+
+    /** Return an @ref array pointer if this is an array, else return `nullptr`
+
+        If `this->kind() == kind::array`, returns a pointer
+        to the underlying array. Otherwise, returns `nullptr`.
+
+        @par Example
+        The return value is used in both a boolean context and
+        to assign a variable:
+        @code
+        if( auto p = jv.if_array() )
+            return *p;
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    array const*
+    if_array() const noexcept
+    {
+        if(kind() == json::kind::array)
+            return &arr_;
+        return nullptr;
+    }
+
+    /** Return an @ref array pointer if this is an array, else return `nullptr`
+
+        If `this->kind() == kind::array`, returns a pointer
+        to the underlying array. Otherwise, returns `nullptr`.
+
+        @par Example
+        The return value is used in both a boolean context and
+        to assign a variable:
+        @code
+        if( auto p = jv.if_array() )
+            return *p;
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    array*
+    if_array() noexcept
+    {
+        if(kind() == json::kind::array)
+            return &arr_;
+        return nullptr;
+    }
+
+    /** Return an @ref object pointer if this is an object, else return `nullptr`
+
+        If `this->kind() == kind::object`, returns a pointer
+        to the underlying object. Otherwise, returns `nullptr`.
+
+        @par Example
+        The return value is used in both a boolean context and
+        to assign a variable:
+        @code
+        if( auto p = jv.if_object() )
+            return *p;
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    object const*
+    if_object() const noexcept
+    {
+        if(kind() == json::kind::object)
+            return &obj_;
+        return nullptr;
+    }
+
+    /** Return an @ref object pointer if this is an object, else return `nullptr`
+
+        If `this->kind() == kind::object`, returns a pointer
+        to the underlying object. Otherwise, returns `nullptr`.
+
+        @par Example
+        The return value is used in both a boolean context and
+        to assign a variable:
+        @code
+        if( auto p = jv.if_object() )
+            return *p;
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    object*
+    if_object() noexcept
+    {
+        if(kind() == json::kind::object)
+            return &obj_;
+        return nullptr;
+    }
+
+    /** Return a @ref string pointer if this is a string, else return `nullptr`
+
+        If `this->kind() == kind::string`, returns a pointer
+        to the underlying object. Otherwise, returns `nullptr`.
+
+        @par Example
+        The return value is used in both a boolean context and
+        to assign a variable:
+        @code
+        if( auto p = jv.if_string() )
+            return *p;
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    string const*
+    if_string() const noexcept
+    {
+        if(kind() == json::kind::string)
+            return &str_;
+        return nullptr;
+    }
+
+    /** Return a @ref string pointer if this is a string, else return `nullptr`
+
+        If `this->kind() == kind::string`, returns a pointer
+        to the underlying object. Otherwise, returns `nullptr`.
+
+        @par Example
+        The return value is used in both a boolean context and
+        to assign a variable:
+        @code
+        if( auto p = jv.if_string() )
+            return *p;
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    string*
+    if_string() noexcept
+    {
+        if(kind() == json::kind::string)
+            return &str_;
+        return nullptr;
+    }
+
+    /** Return an `int64_t` pointer if this is a signed integer, else return `nullptr`
+
+        If `this->kind() == kind::int64`, returns a pointer
+        to the underlying integer. Otherwise, returns `nullptr`.
+
+        @par Example
+        The return value is used in both a boolean context and
+        to assign a variable:
+        @code
+        if( auto p = jv.if_int64() )
+            return *p;
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    std::int64_t const*
+    if_int64() const noexcept
+    {
+        if(kind() == json::kind::int64)
+            return &i64_.i;
+        return nullptr;
+    }
+
+    /** Return an `int64_t` pointer if this is a signed integer, else return `nullptr`
+
+        If `this->kind() == kind::int64`, returns a pointer
+        to the underlying integer. Otherwise, returns `nullptr`.
+
+        @par Example
+        The return value is used in both a boolean context and
+        to assign a variable:
+        @code
+        if( auto p = jv.if_int64() )
+            return *p;
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    std::int64_t*
+    if_int64() noexcept
+    {
+        if(kind() == json::kind::int64)
+            return &i64_.i;
+        return nullptr;
+    }
+
+    /** Return a `uint64_t` pointer if this is an unsigned integer, else return `nullptr`
+
+        If `this->kind() == kind::uint64`, returns a pointer
+        to the underlying unsigned integer. Otherwise, returns
+        `nullptr`.
+
+        @par Example
+        The return value is used in both a boolean context and
+        to assign a variable:
+        @code
+        if( auto p = jv.if_uint64() )
+            return *p;
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    std::uint64_t const*
+    if_uint64() const noexcept
+    {
+        if(kind() == json::kind::uint64)
+            return &u64_.u;
+        return nullptr;
+    }
+
+    /** Return a `uint64_t` pointer if this is an unsigned integer, else return `nullptr`
+
+        If `this->kind() == kind::uint64`, returns a pointer
+        to the underlying unsigned integer. Otherwise, returns
+        `nullptr`.
+
+        @par Example
+        The return value is used in both a boolean context and
+        to assign a variable:
+        @code
+        if( auto p = jv.if_uint64() )
+            return *p;
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    std::uint64_t*
+    if_uint64() noexcept
+    {
+        if(kind() == json::kind::uint64)
+            return &u64_.u;
+        return nullptr;
+    }
+
+    /** Return a `double` pointer if this is a double, else return `nullptr`
+
+        If `this->kind() == kind::double_`, returns a pointer
+        to the underlying double. Otherwise, returns
+        `nullptr`.
+
+        @par Example
+        The return value is used in both a boolean context and
+        to assign a variable:
+        @code
+        if( auto p = jv.if_double() )
+            return *p;
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    double const*
+    if_double() const noexcept
+    {
+        if(kind() == json::kind::double_)
+            return &dub_.d;
+        return nullptr;
+    }
+
+    /** Return a `double` pointer if this is a double, else return `nullptr`
+
+        If `this->kind() == kind::double_`, returns a pointer
+        to the underlying double. Otherwise, returns
+        `nullptr`.
+
+        @par Example
+        The return value is used in both a boolean context and
+        to assign a variable:
+        @code
+        if( auto p = jv.if_double() )
+            return *p;
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    double*
+    if_double() noexcept
+    {
+        if(kind() == json::kind::double_)
+            return &dub_.d;
+        return nullptr;
+    }
+
+    /** Return a `bool` pointer if this is a boolean, else return `nullptr`
+
+        If `this->kind() == kind::bool_`, returns a pointer
+        to the underlying boolean. Otherwise, returns
+        `nullptr`.
+
+        @par Example
+        The return value is used in both a boolean context and
+        to assign a variable:
+        @code
+        if( auto p = jv.if_bool() )
+            return *p;
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    bool const*
+    if_bool() const noexcept
+    {
+        if(kind() == json::kind::bool_)
+            return &bln_.b;
+        return nullptr;
+    }
+
+    /** Return a `bool` pointer if this is a boolean, else return `nullptr`
+
+        If `this->kind() == kind::bool_`, returns a pointer
+        to the underlying boolean. Otherwise, returns
+        `nullptr`.
+
+        @par Example
+        The return value is used in both a boolean context and
+        to assign a variable:
+        @code
+        if( auto p = jv.if_bool() )
+            return *p;
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    bool*
+    if_bool() noexcept
+    {
+        if(kind() == json::kind::bool_)
+            return &bln_.b;
+        return nullptr;
     }
 
     //------------------------------------------------------

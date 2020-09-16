@@ -448,9 +448,18 @@ find(string_view key) const noexcept ->
     return end();
 }
 
+bool
+object::
+contains(
+    string_view key) const noexcept
+{
+    return find(key) != end();
+}
+
 value const*
 object::
-contains(string_view key) const noexcept
+if_contains(
+    string_view key) const noexcept
 {
     auto const it = find(key);
     if(it != end())
@@ -460,7 +469,8 @@ contains(string_view key) const noexcept
 
 value*
 object::
-contains(string_view key) noexcept
+if_contains(
+    string_view key) noexcept
 {
     auto const it = find(key);
     if(it != end())
@@ -639,12 +649,13 @@ equal(object const& other) const noexcept
 {
     if(size() != other.size())
         return false;
+    auto const end_ = other.end();
     for(auto e : *this)
     {
-        auto p = other.contains(e.key());
-        if(! p)
+        auto it = other.find(e.key());
+        if(it == end_)
             return false;
-        if(*p != e.value())
+        if(it->value() != e.value())
             return false;
     }
     return true;

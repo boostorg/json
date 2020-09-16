@@ -157,7 +157,7 @@ usingValues()
 
         value jv( object_kind );
 
-        if( auto p = jv.is_object() )
+        if( auto p = jv.if_object() )
             return p->size();
 
         //]
@@ -212,7 +212,7 @@ usingValues()
         //[snippet_value_7
 
         value jv( string_kind );
-        if( string* str = jv.is_string() )
+        if( string* str = jv.if_string() )
             *str = "Hello, world!";
 
         //]
@@ -224,7 +224,7 @@ usingValues()
 
         // The compiler's static analysis can see that
         // a null pointer is never dereferenced.
-        *jv.is_string() = "Hello, world!";
+        *jv.if_string() = "Hello, world!";
 
         //]
     }

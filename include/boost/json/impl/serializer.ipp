@@ -615,11 +615,11 @@ write_value(stream& ss)
         {
         default:
         case kind::object:
-            po_ = jv.is_object();
+            po_ = &jv.get_object();
             return write_object<true>(ss);
 
         case kind::array:
-            pa_ = jv.is_array();
+            pa_ = &jv.get_array();
             return write_array<true>(ss);
 
         case kind::string:

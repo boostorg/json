@@ -877,9 +877,18 @@ public:
         {
             BOOST_TEST(o1.contains("a"));
             BOOST_TEST(! o1.contains("e"));
+        }
 
-            *o1.contains("a") = 2;
-            BOOST_TEST(co1.contains("a")->as_int64() == 2);
+        // if_contains(key)
+        // if_contains(key) const
+        {
+            BOOST_TEST(o1.if_contains("a")->is_int64());
+            BOOST_TEST(o1.if_contains("e") == nullptr);
+            BOOST_TEST(co1.if_contains("a")->is_int64());
+            BOOST_TEST(co1.if_contains("e") == nullptr);
+
+            *o1.if_contains("a") = 2;
+            BOOST_TEST(co1.if_contains("a")->as_int64() == 2);
         }
     }
 

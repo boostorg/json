@@ -690,7 +690,7 @@ public:
 
         @par Example
         @code
-        if( auto p = arr.contains( 1 ) )
+        if( auto p = arr.if_contains( 1 ) )
             std::cout << *p;
         @endcode
 
@@ -704,7 +704,7 @@ public:
     */
     inline
     value const*
-    contains(std::size_t pos) const noexcept;
+    if_contains(std::size_t pos) const noexcept;
 
     /** Return a pointer to an element, or nullptr if the index is invalid
 
@@ -714,7 +714,7 @@ public:
 
         @par Example
         @code
-        if( auto p = arr.contains( 1 ) )
+        if( auto p = arr.if_contains( 1 ) )
             std::cout << *p;
         @endcode
 
@@ -728,7 +728,7 @@ public:
     */
     inline
     value*
-    contains(std::size_t pos) noexcept;
+    if_contains(std::size_t pos) noexcept;
 
     /** Access the underlying array directly.
 

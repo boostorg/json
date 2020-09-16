@@ -146,7 +146,8 @@ data() noexcept
 
 value const*
 array::
-contains(std::size_t pos) const noexcept
+if_contains(
+    std::size_t pos) const noexcept
 {
     if( pos < size() )
         return impl_.data() + pos;
@@ -155,7 +156,8 @@ contains(std::size_t pos) const noexcept
 
 value*
 array::
-contains(std::size_t pos) noexcept
+if_contains(
+    std::size_t pos) noexcept
 {
     if( pos < size() )
         return impl_.data() + pos;

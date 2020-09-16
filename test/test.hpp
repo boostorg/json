@@ -1034,23 +1034,23 @@ equal(
 
     case kind::double_:
         return
-            lhs.as_double() ==
-            rhs.as_double();
+            lhs.get_double() ==
+            rhs.get_double();
 
     case kind::int64:
         return
-            *lhs.is_int64() ==
-            *rhs.is_int64();
+            lhs.get_int64() ==
+            rhs.get_int64();
 
     case kind::uint64:
         return
-            *lhs.is_uint64() ==
-            *rhs.is_uint64();
+            lhs.get_uint64() ==
+            rhs.get_uint64();
 
     case kind::bool_:
         return
-            *lhs.is_bool() ==
-            *rhs.is_bool();
+            lhs.get_bool() ==
+            rhs.get_bool();
 
     case kind::null:
         return true;
