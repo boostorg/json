@@ -10,58 +10,126 @@
 #include <boost/json/parser.hpp>
 #include <boost/json/parse_options.hpp>
 #include <boost/json/serialize.hpp>
+#include <boost/json/monotonic_resource.hpp>
+#include <boost/json/null_resource.hpp>
+#include <boost/json/static_resource.hpp>
+
 using namespace boost::json;
 
-bool
-fuzz_parser(
-    parse_options opt,
-    string_view sv)
-{
-    parser p(storage_ptr{}, opt);
-    error_code ec;
+struct FuzzHelper {
+    parse_options opt;
+    string_view jsontext;
+    std::size_t memlimit1;
+    std::size_t memlimit2;
+    bool res;
+    void run(parser& p) {
+        error_code ec;
 
-    // This must be called once before parsing every new JSON
-    p.reset();
+        // Write the first part of the buffer
+        p.write( jsontext, ec);
 
-    // Write the first part of the buffer
-    p.write( sv.data(), sv.size(), ec);
+        if(! ec)
+            p.finish( ec );
 
-    if(! ec)
-        p.finish( ec );
-
-    // Take ownership of the resulting value.
-    if(! ec)
-    {
-        value jv = p.release();
-        return serialize(jv).size()==42;
+        // Take ownership of the resulting value.
+        if(! ec)
+        {
+            value jv = p.release();
+            res=serialize(jv).size()==42;
+        } else
+            res=false;
     }
-    return false;
-}
+
+    // easy case - everything default
+    void useDefault() {
+        parser p(storage_ptr{}, opt);
+        run(p);
+    }
+
+    void useMonotonic() {
+        monotonic_resource mr;
+        parser p(storage_ptr{}, opt);
+        p.reset( &mr );
+
+        run(p);
+    }
+
+    void useLocalBuffer() {
+        std::unique_ptr<unsigned char[]> temp(new unsigned char[memlimit1]);
+        parser p(
+                    storage_ptr(),
+                    opt,
+                    temp.get(),
+                    memlimit1);
+        run(p);
+    }
+
+    void useDynLess() {
+        // this is on the heap because the size is chosen dynamically
+        std::unique_ptr<unsigned char[]> temp(new unsigned char[memlimit1]);
+        null_resource nr;
+        parser p(&nr,
+                 opt,
+                 temp.get(),
+                 memlimit1);
+
+        // this is on the heap because the size is chosen dynamically
+        std::unique_ptr<unsigned char[]> buf(new unsigned char[memlimit2]);
+        static_resource mr2( buf.get(), memlimit2 );
+        p.reset( &mr2 );
+
+        run(p);
+    }
+
+};
+
 
 extern "C"
 int
 LLVMFuzzerTestOneInput(
         const uint8_t* data, size_t size)
 {
-    if(size<1)
+    if(size<=5)
         return 0;
 
-    parse_options opt;
-    opt.allow_comments=!!(data[0]&0x1);
-    opt.allow_trailing_commas=!!(data[0]&0x2);
-    opt.allow_invalid_utf8=!!(data[0]&0x4);
-    opt.max_depth= (data[0]>>3);
+    FuzzHelper fh;
 
-    data+=1;
-    size-=1;
+    // set parse options
+    fh.opt.allow_comments=!!(data[0]&0x1);
+    fh.opt.allow_trailing_commas=!!(data[0]&0x2);
+    fh.opt.allow_invalid_utf8=!!(data[0]&0x4);
+    fh.opt.max_depth= (data[0]>>3);
 
+    // select memory strategy to use
+    const int strategy=data[1] & 0x3;
+
+    // memory limits
+    fh.memlimit1=data[2]*256+data[3];
+    fh.memlimit2=data[4]*256+data[5];
+
+    data+=6;
+    size-=6;
+
+    //set the json string to parse
+    fh.jsontext=string_view{
+            reinterpret_cast<const char*>(
+                data), size};
     try
     {
-
-        string_view view{
-            reinterpret_cast<const char*>(
-                        data), size};
-        fuzz_parser(opt,view);
+        switch(strategy) {
+        case 0:
+            fh.useDefault();
+            break;
+        case 1:
+            fh.useDefault();
+            break;
+        case 2:
+            fh.useLocalBuffer();
+            break;
+        case 3:
+            fh.useDynLess();
+            break;
+        }
     }
     catch(...)
     {
