@@ -32,6 +32,18 @@ if ! which $CLANG >/dev/null; then
 fi
 echo "$me: will use this compiler: $CLANG"
 
+# set the maximum size of the input, to avoid
+# big inputs which blow up the corpus size
+MAXLEN="-max_len=4000"
+
+# If doing fuzzing locally (not in CI), adjust this to utilize more
+# of your cpu.
+#JOBS="-jobs=32"
+JOBS=
+
+# set a timelimit (you may want to adjust this if you run locally)
+MAXTIME="-max_total_time=30"
+
 variants="basic_parser parse parser"
 
 for variant in $variants; do
@@ -40,18 +52,20 @@ srcfile=fuzz_$variant.cpp
 fuzzer=./fuzzer_$variant
 
 if [ ! -e $fuzzer -o $srcfile -nt $fuzzer ] ; then
-    
+    # explicitly set BOOST_JSON_STACK_BUFFER_SIZE small so interesting
+    # code paths are taken also for small inputs (see https://github.com/CPPAlliance/json/issues/333)
     $CLANG \
-	-std=c++17 \
-	-O3 \
-	-g \
-	-fsanitize=fuzzer,address,undefined \
-	-fno-sanitize-recover=undefined \
-	-DBOOST_JSON_STANDALONE \
-	-I../include \
-	-o $fuzzer \
-    ../src/src.cpp \
-	$srcfile
+        -std=c++17 \
+        -O3 \
+        -g \
+        -fsanitize=fuzzer,address,undefined \
+        -fno-sanitize-recover=undefined \
+        -DBOOST_JSON_STANDALONE \
+        -I../include \
+        -DBOOST_JSON_STACK_BUFFER_SIZE=64  \
+        -o $fuzzer \
+        ../src/src.cpp \
+        $srcfile
 fi
 
 # make sure ubsan stops in case anything is found
@@ -84,11 +98,10 @@ fi
 
 # run the fuzzer for a short while
 mkdir -p out/$variant
-$fuzzer out/$variant $OLDCORPUS $seedcorpus/ -max_total_time=30
+$fuzzer out/$variant $OLDCORPUS $seedcorpus/ $MAXTIME $MAXLEN $JOBS
 
 # minimize the corpus
 mkdir -p cmin/$variant
-$fuzzer cmin/$variant $OLDCORPUS out/$variant $seedcorpus/ -merge=1
-
+$fuzzer cmin/$variant $OLDCORPUS out/$variant $seedcorpus/ -merge=1 $MAXLEN
 done
 
