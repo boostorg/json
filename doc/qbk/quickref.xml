@@ -24,7 +24,6 @@
           <member><link linkend="json.ref.boost__json__basic_parser">basic_parser</link></member>
           <member><link linkend="json.ref.boost__json__key_value_pair">key_value_pair</link></member>
           <member><link linkend="json.ref.boost__json__monotonic_resource">monotonic_resource</link></member>
-          <member><link linkend="json.ref.boost__json__null_resource">null_resource</link></member>
           <member><link linkend="json.ref.boost__json__object">object</link></member>
           <member><link linkend="json.ref.boost__json__parser">parser</link></member>
           <member><link linkend="json.ref.boost__json__parse_options">parse_options</link></member>
@@ -41,6 +40,7 @@
         <bridgehead renderas="sect3">Functions</bridgehead>
         <simplelist type="vert" columns="1">
           <member><link linkend="json.ref.boost__json__get">get</link></member>
+          <member><link linkend="json.ref.boost__json__get_null_resource">get_null_resource</link></member>
           <member><link linkend="json.ref.boost__json__make_counted_resource">make_counted_resource</link></member>
           <member><link linkend="json.ref.boost__json__number_cast">number_cast</link></member>
           <member><link linkend="json.ref.boost__json__parse">parse</link></member>

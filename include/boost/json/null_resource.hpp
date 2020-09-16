@@ -15,77 +15,20 @@
 
 BOOST_JSON_NS_BEGIN
 
-//----------------------------------------------------------
-
-/** A resource which always fails.
+/** Return a pointer to the null resource.
 
     This memory resource always throws the exception
     `std::bad_alloc` in calls to `allocate`.
+
+    @par Complexity
+    Constant.
+
+    @par Exception Safety
+    No-throw guarantee.
 */
-class BOOST_JSON_CLASS_DECL
-    null_resource final
-    : public memory_resource
-{   
-public:
-    /// Copy constructor (deleted)
-    null_resource(
-        null_resource const&) = delete;
-
-    /// Copy assignment (deleted)
-    null_resource& operator=(
-        null_resource const&) = delete;
-
-    /** Destructor
-
-        This destroys the resource.
-
-        @par Complexity
-        Constant.
-
-        @part Exception Safety
-        No-throw guarantee.
-    */
-    ~null_resource() noexcept = default;
-
-    /** Constructor
-
-        This constructs the resource.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
-    /** @{ */
-    null_resource() noexcept = default;
-
-protected:
-#ifndef BOOST_JSON_DOCS
-    void*
-    do_allocate(
-        std::size_t n,
-        std::size_t align) override;
-
-    void
-    do_deallocate(
-        void* p,
-        std::size_t n,
-        std::size_t align) override;
-
-    bool
-    do_is_equal(
-        memory_resource const& mr
-            ) const noexcept override;
-#endif
-};
-
-template<>
-struct is_deallocate_trivial<
-    null_resource>
-{
-    static constexpr bool value = true;
-};
+BOOST_JSON_DECL
+memory_resource*
+get_null_resource() noexcept;
 
 BOOST_JSON_NS_END
 

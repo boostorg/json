@@ -15,32 +15,85 @@
 
 BOOST_JSON_NS_BEGIN
 
-void*
-null_resource::
-do_allocate(
-    std::size_t,
-    std::size_t)
-{
-    detail::throw_bad_alloc(
-        BOOST_CURRENT_LOCATION);
-}
+namespace detail {
 
-void
-null_resource::
-do_deallocate(
-    void*,
-    std::size_t,
-    std::size_t)
-{
-    // do nothing
-}
+/** A resource which always fails.
 
-bool
-null_resource::
-do_is_equal(
-    memory_resource const& mr) const noexcept
+    This memory resource always throws the exception
+    `std::bad_alloc` in calls to `allocate`.
+*/
+class null_resource final
+    : public memory_resource
+{   
+public:
+    /// Copy constructor (deleted)
+    null_resource(
+        null_resource const&) = delete;
+
+    /// Copy assignment (deleted)
+    null_resource& operator=(
+        null_resource const&) = delete;
+
+    /** Destructor
+
+        This destroys the resource.
+
+        @par Complexity
+        Constant.
+
+        @part Exception Safety
+        No-throw guarantee.
+    */
+    ~null_resource() noexcept = default;
+
+    /** Constructor
+
+        This constructs the resource.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    /** @{ */
+    null_resource() noexcept = default;
+
+protected:
+    void*
+    do_allocate(
+        std::size_t,
+        std::size_t) override
+    {
+        detail::throw_bad_alloc(
+            BOOST_CURRENT_LOCATION);
+    }
+
+    void
+    do_deallocate(
+        void*,
+        std::size_t,
+        std::size_t) override
+    {
+        // do nothing
+    }
+
+    bool
+    do_is_equal(
+        memory_resource const& mr
+            ) const noexcept override
+    {
+        return this == &mr;
+    }
+};
+
+} // detail
+
+memory_resource*
+get_null_resource() noexcept
 {
-    return this == &mr;
+    static detail::null_resource mr;
+    return &mr;
 }
 
 BOOST_JSON_NS_END

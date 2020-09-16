@@ -1053,7 +1053,14 @@ public:
         return *this = value(init, storage());
     }
 
-    /** Assignment.
+    /** Assignment
+
+        Assigns `t` to `*this`.
+
+        @par Effects
+        @code
+        *this = value( std::forward<T>(t), this->storage() );
+        @endcode
 
         @par Constraints
         @code

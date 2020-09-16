@@ -158,6 +158,14 @@ available when using the library:
 [table Functions and Types
 [ [Name] [Description] ]
 [
+    [__get_null_resource__]
+    [
+        Returns a pointer to a memory resource instance which
+        always throws an exception upon allocation. This is
+        used to to achieve the invariant that no parsing or
+        container operation will dynamically allocate memory.
+    ]
+][
     [__is_deallocate_trivial__]
     [
         A customization point allowing a memory resource type
@@ -181,13 +189,6 @@ available when using the library:
         has a trivial deallocate function. Allocated memory is not
         freed until the resource is destroyed, making it fast for
         parsing but not suited for performing modifications.
-    ]
-][
-    [__null_resource__]
-    [
-        A memory resource always throws an exception upon allocation.
-        This is used to to achieve the invariant that no parsing
-        or container operation will dynamically allocate memory.
     ]
 ][
     [__polymorphic_allocator__]
@@ -285,11 +286,12 @@ To use the resource, construct it with a local buffer:
 
 [heading Null Resource]
 
-The __null_resource__ can only be default constructed. It offers a simple
-invariant: all calls to allocate will throw the exception `std::bad_alloc`.
-An instance of the null resource can be used to make parsing guarantee
-that allocations from the heap are never made. This is explored in more
-detail in a later section.
+The function __get_null_resource__ returns a global instance of the
+null resource. This resource offers a simple invariant: all calls to
+allocate will throw the exception `std::bad_alloc`. An instance of
+the null resource can be used to make parsing guarantee that
+allocations from the heap are never made. This is explored
+in more detail in a later section.
 
 [/-----------------------------------------------------------------------------]
 

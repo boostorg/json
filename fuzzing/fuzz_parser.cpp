@@ -67,8 +67,7 @@ struct FuzzHelper {
     void useDynLess() {
         // this is on the heap because the size is chosen dynamically
         std::unique_ptr<unsigned char[]> temp(new unsigned char[memlimit1]);
-        null_resource nr;
-        parser p(&nr,
+        parser p(get_null_resource(),
                  opt,
                  temp.get(),
                  memlimit1);

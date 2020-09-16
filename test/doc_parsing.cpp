@@ -195,9 +195,11 @@ parser p(
 template< class Handler >
 void do_rpc( string_view s, Handler&& handler )
 {
-    null_resource mr1;                          // The null resource guarantees we will never dynamically allocate
     unsigned char temp[ 4096 ];                 // The parser will use this storage for its temporary needs
-    parser p( &mr1, parse_options(), temp );    // Construct a strict parser using the temp buffer and no dynamic memory
+    parser p(                                   // Construct a strict parser using the temp buffer and no dynamic memory
+        get_null_resource(),                    // The null resource guarantees we will never dynamically allocate
+        parse_options(),                        // Default constructed parse options allow only standard JSON
+        temp );
 
     unsigned char buf[ 16384 ];                 // Now we need a buffer to hold the actual JSON values
     static_resource mr2( buf );                 // The static resource is monotonic, using only a caller-provided buffer

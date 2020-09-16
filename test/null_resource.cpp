@@ -10,6 +10,8 @@
 // Test that header file is self-contained.
 #include <boost/json/null_resource.hpp>
 
+#include <boost/json/storage_ptr.hpp>
+
 #include "test_suite.hpp"
 
 BOOST_JSON_NS_BEGIN
@@ -20,17 +22,15 @@ public:
     void
     test()
     {
-        null_resource mr;
+        auto& mr = *get_null_resource();
         BOOST_TEST_THROWS(
             mr.allocate(16),
             std::bad_alloc);
         char buf[128];
         // no-op
         mr.deallocate(&buf[0], 128);
-
-        BOOST_TEST(mr == mr);
-        null_resource mr2;
-        BOOST_TEST(mr != mr2);
+        BOOST_TEST(
+            mr == *get_null_resource());
     }
 
     void
