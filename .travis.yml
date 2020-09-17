@@ -1,6 +1,7 @@
 # Copyright 2016 Peter Dimov
 # Copyright 2017 - 2019 James E. King III
 # Copyright 2019 - 2020 Alexander Grund
+# Copyright 2020 Krystian Stasiowski
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at http://boost.org/LICENSE_1_0.txt)
 
@@ -53,7 +54,7 @@ env:
     - B2_FLAGS="warnings=extra warnings-as-errors=on"
 
 install:
-  - git clone https://github.com/boostorg/boost-ci.git boost-ci-cloned
+  - git clone https://github.com/boostorg/boost-ci.git boost-ci-cloned --depth 1
   - cp -prf boost-ci-cloned/ci .
   - rm -rf boost-ci-cloned
   - source ci/travis/install.sh
@@ -77,6 +78,16 @@ anchors:
   llvm-toolchain-xenial-9: &llvm-toolchain-xenial-9
     sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-9 main'
     key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+  llvm-toolchain-xenial-10: &llvm-toolchain-xenial-10
+    sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main'
+    key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+  llvm-toolchain-xenial-11: &llvm-toolchain-xenial-11
+    sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-11 main'
+    key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+  # Snapshot (i.e. trunk) build of clang
+  llvm-toolchain-xenial: &llvm-toolchain-xenial
+    sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial main'
+    key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
 
   clang-33: &clang-33 { apt: { packages: [ "clang-3.3"]                                          } }
   clang-34: &clang-34 { apt: { packages: [ "clang-3.4"]                                          } }
@@ -93,24 +104,29 @@ anchors:
                                                                           *ubuntu-toolchain-r-test   ] } }
   clang-6:  &clang-6  { apt: { packages: [ "clang-6.0",
                                           "libc6-dbg",
-                                          "libc++-dev",
                                           "libstdc++-8-dev" ], sources: [ "llvm-toolchain-xenial-6.0",
                                                                           *ubuntu-toolchain-r-test   ] } }
   clang-7:  &clang-7  { apt: { packages: [ "clang-7",
-                                          "libc6-dbg",
-                                          "libc++-dev",
                                           "libstdc++-8-dev" ], sources: [ "llvm-toolchain-xenial-7",
                                                                           *ubuntu-toolchain-r-test   ] } }
   clang-8:  &clang-8  { apt: { packages: [ "clang-8",
-                                          "libc6-dbg",
-                                          "libc++-dev",
                                           "libstdc++-8-dev" ], sources: [ "llvm-toolchain-xenial-8",
                                                                           *ubuntu-toolchain-r-test   ] } }
   clang-9:  &clang-9  { apt: { packages: [ "clang-9",
-                                          "libc6-dbg",
-                                          "libc++-dev",
                                           "libstdc++-9-dev" ], sources: [ *llvm-toolchain-xenial-9,
                                                                           *ubuntu-toolchain-r-test   ] } }
+
+  clang-10:  &clang-10  { apt: { packages: [ "clang-10",
+                                            "libstdc++-9-dev" ], sources: [ *llvm-toolchain-xenial-10,
+                                                                            *ubuntu-toolchain-r-test   ] } }
+
+  clang-11:  &clang-11  { apt: { packages: [ "clang-11",
+                                            "libstdc++-9-dev" ], sources: [ *llvm-toolchain-xenial-11,
+                                                                            *ubuntu-toolchain-r-test   ] } }
+
+  clang-12: &clang-12  { apt: { packages: [ "clang-12",
+                                           "libstdc++-9-dev" ], sources: [ *llvm-toolchain-xenial,
+                                                                           *ubuntu-toolchain-r-test   ] } }
 
   gcc-44: &gcc-44 { apt: { packages: [ "g++-4.4" ], sources: [ *ubuntu-toolchain-r-test ] } }
   gcc-46: &gcc-46 { apt: { packages: [ "g++-4.6" ], sources: [ *ubuntu-toolchain-r-test ] } }
@@ -122,6 +138,32 @@ anchors:
   gcc-7:  &gcc-7  { apt: { packages: [ "g++-7"   ], sources: [ *ubuntu-toolchain-r-test ] } }
   gcc-8:  &gcc-8  { apt: { packages: [ "g++-8"   ], sources: [ *ubuntu-toolchain-r-test ] } }
   gcc-9:  &gcc-9  { apt: { packages: [ "g++-9"   ], sources: [ *ubuntu-toolchain-r-test ] } }
+  gcc-10: &gcc-10 { apt: { packages: [ "g++-10"  ], sources: [ *ubuntu-toolchain-r-test ] } }
+
+  boost: &boost
+    install:
+      - git clone https://github.com/boostorg/boost-ci.git boost-ci-cloned --depth 1 
+      - cp -prf boost-ci-cloned/ci .
+      - rm -rf boost-ci-cloned
+      - source ci/travis/install.sh
+    script: $BOOST_ROOT/libs/$SELF/ci/travis/build.sh
+
+  standalone: &standalone
+    install:
+      - pip install --user cmake
+    script:
+      - export CXXFLAGS="-Wextra -Werror -std=c++17"
+      - mkdir __build_17
+      - cd __build_17
+      - cmake -DBOOST_JSON_STANDALONE=1 ..
+      - cmake --build .
+      - ctest -V .
+      - export CXXFLAGS="-Wextra -Werror -std=c++2a"
+      - mkdir ../__build_2a
+      - cd ../__build_2a
+      - cmake -DBOOST_JSON_STANDALONE=1 ..
+      - cmake --build .
+      - ctest -V .
 
 jobs:
   allow_failures:
@@ -129,10 +171,9 @@ jobs:
       - COPY="all the environment settings from your job"
 
   include:
-    # Documentation build
-    - os: linux
+    # documentation
+    - env: COMMENT=docs
       dist: xenial
-      env: COMMENT=docs
       addons:
         apt:
           packages:
@@ -158,7 +199,7 @@ jobs:
         - sudo cp saxon9he.jar /usr/share/java/Saxon-HE.jar
         - cd ..
         - BOOST_BRANCH=develop && [ "$TRAVIS_BRANCH" == "master" ] && BOOST_BRANCH=master || true
-        - git clone -b $BOOST_BRANCH https://github.com/boostorg/boost.git boost-root
+        - git clone -b $BOOST_BRANCH https://github.com/boostorg/boost.git boost-root --depth 1
         - cd boost-root
         - export BOOST_ROOT=$(pwd)
         - git submodule update --init libs/context
@@ -183,11 +224,16 @@ jobs:
         - B2_TOOLSET=gcc-8
         - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
       addons: *gcc-8
+      install:
+        - git clone https://github.com/boostorg/boost-ci.git boost-ci-cloned --depth 1
+        - cp -prf boost-ci-cloned/ci .
+        - rm -rf boost-ci-cloned
+        - source ci/travis/install.sh
       script:
         - cd $BOOST_ROOT/libs/$SELF
         - ci/travis/codecov.sh
 
-    # valgrind
+    # sanitizers
     - env:
         - COMMENT=valgrind
         - B2_TOOLSET=clang-6.0
@@ -197,162 +243,189 @@ jobs:
         - B2_TESTFLAGS=testing.launcher=valgrind
         - VALGRIND_OPTS=--error-exitcode=1
       addons: *clang-6
+      install:
+        - git clone https://github.com/boostorg/boost-ci.git boost-ci-cloned --depth 1
+        - cp -prf boost-ci-cloned/ci .
+        - rm -rf boost-ci-cloned
+        - source ci/travis/install.sh
       script:
         - cd $BOOST_ROOT/libs/$SELF
         - ci/travis/valgrind.sh
 
-    # asan
     - env:
         - COMMENT=asan
         - B2_VARIANT=debug
-        - B2_TOOLSET=gcc-8
-        - B2_CXXSTD=11,14
+        - B2_TOOLSET=clang-11
+        - B2_CXXSTD=17
         - B2_ASAN=1
         - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
-      addons: *gcc-8
+      addons: *clang-11
+      <<: *boost
 
-    # ubsan
     - env:
         - COMMENT=ubsan
         - B2_VARIANT=debug
-        - B2_TOOLSET=gcc-8
-        - B2_CXXSTD=11,14
+        - B2_TOOLSET=clang-11
+        - B2_CXXSTD=17
         - B2_UBSAN=1
-        - B2_DEFINES="define=BOOST_NO_STRESS_TEST=1"
-        - B2_LINKFLAGS="-fuse-ld=gold"
-      addons: *gcc-8
+        - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
+      addons: *clang-11
+      <<: *boost
 
-    # standalone (ARM)
-    - env:
+    # msvc
+    - os: windows
+      env:
+        - B2_TOOLSET=msvc-14.1
+        - B2_CXXSTD=11,14,17
+      <<: *boost
+
+    - os: windows
+      env:
         - COMMENT=standalone
-        - STANDALONE=1
-        - B2_TOOLSET=gcc-9
+        - CXX=msvc-14.1
+      install:
+        - choco install cmake
+      script:
+        - export CXXFLAGS="/std:c++17"
+        - mkdir __build_17
+        - cd __build_17
+        - cmake -DBOOST_JSON_STANDALONE=1 ..
+        - cmake --build .
+        - ctest -V -C Debug .
+        - export CXXFLAGS="/std:c++latest"
+        - mkdir ../__build_2a
+        - cd ../__build_2a
+        - cmake -DBOOST_JSON_STANDALONE=1 ..
+        - cmake --build .
+        - ctest -V -C Debug .
+
+    - os: windows
+      env:
+        - B2_TOOLSET=msvc-14.2
+        - B2_CXXSTD=17,latest
+      install:
+        #- choco install visualstudio2019buildtools visualstudio2019community -y
+        - choco install visualstudio2019-workload-vctools --package-parameters "--add Microsoft.VisualStudio.Component.VC.14.24.x86.x64" -y
+        - git clone https://github.com/boostorg/boost-ci.git boost-ci-cloned --depth 1
+        - cp -prf boost-ci-cloned/ci .
+        - rm -rf boost-ci-cloned
+        - source ci/travis/install.sh
+      script: $BOOST_ROOT/libs/$SELF/ci/travis/build.sh
+
+    - os: windows
+      env:
+        - COMMENT=standalone
+        - CXX=msvc-14.2
+      install:
+        - choco install cmake
+        #- choco install visualstudio2019buildtools visualstudio2019community -y
+        - choco install visualstudio2019-workload-vctools --package-parameters "--add Microsoft.VisualStudio.Component.VC.14.24.x86.x64" -y
+      script:
+        - export CXXFLAGS="/std:c++17"
+        - mkdir __build_17
+        - cd __build_17
+        - cmake -DBOOST_JSON_STANDALONE=1 ..
+        - cmake --build .
+        - ctest -V -C Debug .
+        - export CXXFLAGS="/std:c++latest"
+        - mkdir ../__build_2a
+        - cd ../__build_2a
+        - cmake -DBOOST_JSON_STANDALONE=1 ..
+        - cmake --build .
+        - ctest -V -C Debug .
+        
+    # icc
+    - env:
+        - B2_TOOLSET=intel
+        - B2_CXXSTD=11,14,17
+      dist: bionic
+      addons:
+        apt:
+          sources:
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
+            - sourceline: 'deb https://apt.repos.intel.com/oneapi all main'
+              key_url: 'https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB'
+          packages:
+            - intel-oneapi-icc
+            - g++-7
+            - cmake
+            - build-essential
+            - pkg-config
+      install:
+        - source /opt/intel/oneapi/compiler/latest/env/vars.sh
+        - git clone https://github.com/boostorg/boost-ci.git boost-ci-cloned --depth 1
+        - cp -prf boost-ci-cloned/ci .
+        - rm -rf boost-ci-cloned
+        - source ci/travis/install.sh
+      script:
+        - export B2_FLAGS="warnings=on"
+        - cd $BOOST_ROOT/libs/$SELF
+        - while sleep 5m; do echo "=====[ $SECONDS seconds check_  ]====="; done &
+        - travis_wait 60 $BOOST_ROOT/libs/$SELF/ci/travis/build.sh > travisoutput.txt 2>&1
+        - kill %1
+        - tail -n 15000 travisoutput.txt
+
+    # gcc
+    - { dist: "trusty",  # xenial has libstdc++ from gcc 5.4.0 with newer ABI
+        env: [ "B2_TOOLSET=gcc-4.8", "B2_CXXSTD=11"    ], addons: *gcc-48, <<: *boost      }
+    - { dist: "trusty",  # xenial has libstdc++ from gcc 5.4.0 with newer ABI
+        env: [ "B2_TOOLSET=gcc-4.9", "B2_CXXSTD=11"    ], addons: *gcc-49, <<: *boost      }
+    - { env: [ "B2_TOOLSET=gcc-5",   "B2_CXXSTD=11"    ], addons: *gcc-5,  <<: *boost      }
+    - { env: [ "B2_TOOLSET=gcc-6",   "B2_CXXSTD=11,14" ], addons: *gcc-6,  <<: *boost      }
+    - { env: [ "B2_TOOLSET=gcc-7",   "B2_CXXSTD=14,17" ], addons: *gcc-7,  <<: *boost      }
+    - { env: [ "B2_TOOLSET=gcc-8",   "B2_CXXSTD=17,2a" ], addons: *gcc-8,  <<: *boost      }
+    - { env: [ "B2_TOOLSET=gcc-9",   "B2_CXXSTD=17,2a" ], addons: *gcc-9,  <<: *boost      }
+    - { env: [ "COMMENT=standalone", "CXX=g++-9"       ], addons: *gcc-9,  <<: *standalone }
+    - { dist: "focal",  # xenial has libstdc++ from gcc 5.4.0 with newer ABI
+        env: [ "B2_TOOLSET=gcc-10",  "B2_CXXSTD=17,2a" ], addons: *gcc-10, <<: *boost      }
+    - { dist: "focal",
+        env: [ "COMMENT=standalone", "CXX=g++-10"      ], addons: *gcc-10, <<: *standalone }
+
+    - env:
+        - B2_TOOLSET=gcc-11
         - B2_CXXSTD=17,2a
-        # VFALCO The tests unfortunately do not support -fno-exceptions yet
-        #- B2_FLAGS="exception-handling=off"
-        #- B2_DEFINES="define=BOOST_NO_EXCEPTIONS=1 define=BOOST_JSON_BIG_ENDIAN=1 define=BOOST_JSON_STANDALONE=1"
-        - B2_DEFINES="define=BOOST_JSON_BIG_ENDIAN=1"
-      arch: arm64
-      addons: *gcc-9
+      dist: "focal"
+      before_install:
+        - wget http://kayari.org/gcc-latest/gcc-latest.deb
+        - sudo dpkg -i gcc-latest.deb
+        - export PATH=/opt/gcc-latest/bin:$PATH
+        - export LD_RUN_PATH=/opt/gcc-latest/lib64
+      <<: *boost
 
-# VFALCO Disabled this because the toolchain
-#        keeps failing to install on Travis.
-#
-    # Intel oneAPI Toolkit
-#    - os: linux
-#      dist: bionic
-#      env:
-#        - COMMENT="Intel oneAPI Toolkit"
-#        - B2_TOOLSET=intel-linux
-#        - B2_CXXSTD=11,14,17
-#        # - B2_FLAGS="warnings=extra warnings-as-errors=on"
-#        - B2_FLAGS="warnings=on warnings-as-errors=off"
-#      addons:
-#        apt:
-#          sources:
-#            - sourceline: "ppa:ubuntu-toolchain-r/test"
-#            - sourceline: 'deb https://apt.repos.intel.com/oneapi all main'
-#              key_url: 'https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB'
-#          packages:
-#            # - intel-basekit
-#            - intel-oneapi-icc
-#            - g++-7
-#            - cmake
-#            - build-essential
-#            - pkg-config
-#      install:
-#        - source /opt/intel/oneapi/compiler/latest/env/vars.sh
-#        - git clone https://github.com/boostorg/boost-ci.git boost-ci-cloned
-#        - cp -prf boost-ci-cloned/ci .
-#        - rm -rf boost-ci-cloned
-#        - source ci/travis/install.sh
-#      script:
-#        - cd $BOOST_ROOT/libs/$SELF
-#        - while sleep 5m; do echo "=====[ $SECONDS seconds check_  ]====="; done &
-#        - travis_wait 60 $BOOST_ROOT/libs/$SELF/ci/travis/build.sh > travisoutput.txt 2>&1
-#        - kill %1
-#        - tail -n 15000 travisoutput.txt
-
-    # Intel Parallel Studio XE
-    # define INTEL_ICC_SERIAL_NUMBER and the following (under development):
-    # - { env: [ "B2_TOOLSET=intel-linux", "B2_CXXSTD=11,14,17" ], addons: *gcc-7,
-    #     script: cd $BOOST_ROOT/libs/$SELF && $BOOST_ROOT/libs/$SELF/ci/travis/intelicc.sh                               }
-
-    # standalone
     - env:
         - COMMENT=standalone
-        - CXX=g++-9
-      install:
-        - pip install --user cmake
-      addons: *gcc-9
-      script:
-        - mkdir __build
-        - cd __build
-        - cmake -DBOOST_JSON_STANDALONE=1 ..
-        - cmake --build .
-        - ctest -V .
-
-    # standalone (cmake)
-    - env:
-        - COMMENT=standalone
-        - CXX=clang++-9
-      install:
-        - pip install --user cmake
-      addons: *clang-9
-      script:
-        - mkdir __build
-        - cd __build
-        - cmake -DBOOST_JSON_STANDALONE=1 ..
-        - cmake --build .
-        - ctest -V .
-
-    - { env: [ "B2_TOOLSET=clang-8",     "B2_CXXSTD=17,2a"    ], addons: *clang-8   }
-
-    # libstdc++
+        - CXX=g++-11
+      dist: "focal"
+      before_install:
+        - wget http://kayari.org/gcc-latest/gcc-latest.deb
+        - sudo dpkg -i gcc-latest.deb
+        - export CXX=/opt/gcc-latest/bin/g++
+        - export PATH=/opt/gcc-latest/bin:$PATH
+        - export LD_RUN_PATH=/opt/gcc-latest/lib64
+      <<: *standalone
+    
+    # clang
     - { dist: "trusty",  # xenial has libstdc++ from gcc 5.4.0 with newer ABI
-        env: [ "B2_TOOLSET=gcc-4.8",     "B2_CXXSTD=11"    ], addons: *gcc-48    }
-    - { dist: "trusty",  # xenial has libstdc++ from gcc 5.4.0 with newer ABI
-        env: [ "B2_TOOLSET=gcc-4.9",     "B2_CXXSTD=11"    ], addons: *gcc-49    }
-    - { env: [ "B2_TOOLSET=gcc-5",       "B2_CXXSTD=11"    ], addons: *gcc-5     }
-    - { env: [ "B2_TOOLSET=gcc-6",       "B2_CXXSTD=11,14"    ], addons: *gcc-6     }
-    - { env: [ "B2_TOOLSET=gcc-7",       "B2_CXXSTD=14,17"    ], addons: *gcc-7     }
-    - { env: [ "B2_TOOLSET=gcc-8",       "B2_CXXSTD=17,2a"    ], addons: *gcc-8     }
-    - { env: [ "B2_TOOLSET=gcc-9",       "B2_CXXSTD=17,2a"    ], addons: *gcc-9     }
-    - { dist: "trusty",  # xenial has libstdc++ from gcc 5.4.0 with newer ABI
-        env: [ "B2_TOOLSET=clang-3.8",   "B2_CXXSTD=11"    ], addons: *clang-38  }
-    - { env: [ "B2_TOOLSET=clang-4.0",   "B2_CXXSTD=11,14"    ], addons: *clang-4   }
-    - { env: [ "B2_TOOLSET=clang-5.0",   "B2_CXXSTD=11,14"    ], addons: *clang-5   }
-    - { env: [ "B2_TOOLSET=clang-6.0",   "B2_CXXSTD=14,17"    ], addons: *clang-6   }
-    - { env: [ "B2_TOOLSET=clang-7",     "B2_CXXSTD=17,2a"    ], addons: *clang-7   }
-#   - { env: [ "B2_TOOLSET=clang-8",     "B2_CXXSTD=17,2a"    ], addons: *clang-8   }
-    - { env: [ "B2_TOOLSET=clang-9",     "B2_CXXSTD=11,14,17,2a" ], addons: *clang-8   }
+        env: [ "B2_TOOLSET=clang-3.8", "B2_CXXSTD=11"    ], addons: *clang-38, <<: *boost      }
+    - { env: [ "B2_TOOLSET=clang-4.0", "B2_CXXSTD=11,14" ], addons: *clang-4,  <<: *boost      }
+    - { env: [ "B2_TOOLSET=clang-5.0", "B2_CXXSTD=11,14" ], addons: *clang-5,  <<: *boost      }
+    - { env: [ "B2_TOOLSET=clang-6.0", "B2_CXXSTD=14,17" ], addons: *clang-6,  <<: *boost      }
+    - { env: [ "B2_TOOLSET=clang-7",   "B2_CXXSTD=17,2a" ], addons: *clang-7,  <<: *boost      }
+    - { env: [ "B2_TOOLSET=clang-8",   "B2_CXXSTD=17,2a" ], addons: *clang-8,  <<: *boost      }
+    - { env: [ "B2_TOOLSET=clang-9",   "B2_CXXSTD=17,2a" ], addons: *clang-9,  <<: *boost      }
+    - { env: [ "COMMENT=standalone",   "CXX=clang++-9"   ], addons: *clang-9,  <<: *standalone }
+    - { env: [ "B2_TOOLSET=clang-10",  "B2_CXXSTD=17,2a" ], addons: *clang-10, <<: *boost      }
+    - { env: [ "COMMENT=standalone",   "CXX=clang++-10"  ], addons: *clang-10, <<: *standalone }
+    - { env: [ "B2_TOOLSET=clang-11",  "B2_CXXSTD=17,2a" ], addons: *clang-11, <<: *boost      }
+    - { env: [ "COMMENT=standalone",   "CXX=clang++-11"  ], addons: *clang-11, <<: *standalone }
+    - { env: [ "B2_TOOLSET=clang-12",  "B2_CXXSTD=17,2a" ], addons: *clang-12, <<: *boost      }
+    - { env: [ "COMMENT=standalone",   "CXX=clang++-12"  ], addons: *clang-12, <<: *standalone }
 
     # libc++
-    - { env: [ "B2_TOOLSET=clang-6.0",   "B2_CXXSTD=11,14",
-               "B2_STDLIB=libc++"                             ], addons: *clang-6   }
-    - { os: "osx"  ,
-        env: [ "B2_TOOLSET=clang",       "B2_CXXSTD=11,17" ]                     }
-
-    # uncomment to enable a big-endian build job, just note that it is 5-10 times slower
-    # than a regular build and travis has a 50 minute time limit per job
-    # - os: linux
-    #   env:
-    #     - COMMENT=big-endian
-    #     - B2_CXXSTD=11
-    #     - B2_TOOLSET=gcc
-    #     - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
-    #     - BDDE_OS=red
-    #     - BDDE_ARCH=ppc64
-    #   script:
-    #     - cd $BOOST_ROOT/libs/$SELF
-    #     - ci/travis/bdde.sh
-
-    # - os: linux
-    #   env:
-    #     - COMMENT=cppcheck
-    #   script:
-    #     - cd $BOOST_ROOT/libs/$SELF
-    #     - ci/travis/cppcheck.sh
+    # - { env: [ "B2_TOOLSET=clang-6.0",   "B2_CXXSTD=11,14",
+    #            "B2_STDLIB=libc++"                             ], addons: *clang-6   }
+    # - { os: "osx"  ,
+    #    env: [ "B2_TOOLSET=clang",       "B2_CXXSTD=11,17" ]                     }
 
     #################### Jobs to run on pushes to master, develop ###################
 

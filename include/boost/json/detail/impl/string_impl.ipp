@@ -66,7 +66,7 @@ string_impl(
                     std::uint32_t>(size),
                 static_cast<
                     std::uint32_t>(n)};
-        term(size);
+        data()[n] = 0;
     }
 }
 
