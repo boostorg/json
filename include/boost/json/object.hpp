@@ -60,10 +60,10 @@ class object_test;
     Non-const member functions may not be called
     concurrently with any other member functions.
 
-    @par Satisfies the requirements of
-        <em>ContiguousContainer</em>,
-        <em>ReversibleContainer</em>, and
-        <em>SequenceContainer</em>.
+    @par Satisfies
+        <a href="https://en.cppreference.com/w/cpp/named_req/ContiguousContainer"><em>ContiguousContainer</em></a>,
+        <a href="https://en.cppreference.com/w/cpp/named_req/ReversibleContainer"><em>ReversibleContainer</em></a>, and
+        <a href="https://en.cppreference.com/w/cpp/named_req/SequenceContainer"><em>SequenceContainer</em></a>.
 */
 class object
 {

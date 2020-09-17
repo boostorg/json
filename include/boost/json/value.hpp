@@ -35,7 +35,10 @@ BOOST_JSON_NS_BEGIN
 
 /** The type used to represent any JSON value
 
-    This is a <em>Regular</em> type which works like
+    This is a
+    <a href="https://en.cppreference.com/w/cpp/concepts/regular"><em>Regular</em></a>.
+    <em>Regular</em>
+    type which works like
     a variant of the basic JSON data types: array,
     object, string, number, boolean, and null.
 

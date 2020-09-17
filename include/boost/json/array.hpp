@@ -75,9 +75,9 @@ class value_ref;
     concurrently with any other member functions.
 
     @par Satisfies
-        <em>ContiguousContainer</em>,
-        <em>ReversibleContainer</em>, and
-        <em>SequenceContainer</em>.
+        <a href="https://en.cppreference.com/w/cpp/named_req/ContiguousContainer"><em>ContiguousContainer</em></a>,
+        <a href="https://en.cppreference.com/w/cpp/named_req/ReversibleContainer"><em>ReversibleContainer</em></a>, and
+        <a href="https://en.cppreference.com/w/cpp/named_req/SequenceContainer"><em>SequenceContainer</em></a>.
 */
 class array
 {
