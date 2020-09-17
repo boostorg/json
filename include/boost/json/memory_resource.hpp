@@ -22,7 +22,12 @@
 #   error Support for std::memory_resource is required to use Boost.JSON standalone
 #  endif
 # else
-#  error Header <memory_resource> is required to use Boost.JSON standalone
+#  if __has_include(<experimental/memory_resource>)
+#   include <experimental/memory_resource>
+#   warning Support for std::memory_resource is required to use Boost.JSON standalone, using std::experimental::memory_resource as fallback
+#  else
+#   error Header <memory_resource> is required to use Boost.JSON standalone
+#  endif
 # endif
 #endif
 
@@ -100,10 +105,17 @@ using polymorphic_allocator =
 
 #else
 
+#if __has_include(<memory_resource>)
 using memory_resource = std::pmr::memory_resource;
 template<class T>
 using polymorphic_allocator =
     std::pmr::polymorphic_allocator<T>;
+#else
+using memory_resource = std::experimental::pmr::memory_resource;
+template<class T>
+using polymorphic_allocator =
+    std::experimental::pmr::polymorphic_allocator<T>;
+#endif
 
 #endif
 
