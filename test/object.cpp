@@ -351,39 +351,6 @@ public:
             });
         }
 
-        // operator=(object&&)
-        {
-            {
-                object o1({
-                    {"a", 1},
-                    {"b", true},
-                    {"c", "hello"}});
-                object o2;
-                o2 = std::move(o1);
-                check(o2, 3);
-                BOOST_TEST(o1.empty());
-                check_storage(o1,
-                    storage_ptr{});
-                check_storage(o2,
-                    storage_ptr{});
-            }
-
-            fail_loop([&](storage_ptr const& sp)
-            {
-                object o1({
-                    {"a", 1},
-                    {"b", true},
-                    {"c", "hello"}});
-                object o2(sp);
-                o2 = std::move(o1);
-                check(o1, 3);
-                check(o2, 3);
-                check_storage(o1,
-                    storage_ptr{});
-                check_storage(o2, sp);
-            });
-        }
-
         // operator=(object const&)
         {
             {
@@ -425,6 +392,70 @@ public:
                 object const& o2(o1);
                 o1 = o2;
                 check(o1, 3);
+            }
+
+            // copy from child
+            {
+                object o({
+                    {"a", 1}, {"b",
+                    { {"a", 1}, {"b", true}, {"c", "hello"} }
+                    }, {"c", "hello"}});
+                o = o["b"].as_object();
+                check(o, 3);
+            }
+        }
+
+        // operator=(object&&)
+        {
+            {
+                object o1({
+                    {"a", 1},
+                    {"b", true},
+                    {"c", "hello"}});
+                object o2;
+                o2 = std::move(o1);
+                check(o2, 3);
+                BOOST_TEST(o1.empty());
+                check_storage(o1,
+                    storage_ptr{});
+                check_storage(o2,
+                    storage_ptr{});
+            }
+
+            fail_loop([&](storage_ptr const& sp)
+            {
+                object o1({
+                    {"a", 1},
+                    {"b", true},
+                    {"c", "hello"}});
+                object o2(sp);
+                o2 = std::move(o1);
+                check(o1, 3);
+                check(o2, 3);
+                check_storage(o1,
+                    storage_ptr{});
+                check_storage(o2, sp);
+            });
+
+            // self-move
+            {
+                object o1({
+                    {"a", 1},
+                    {"b", true},
+                    {"c", "hello"}});
+                object const& o2(o1);
+                o1 = std::move(o2);
+                check(o1, 3);
+            }
+
+            // move from child
+            {
+                object o({
+                    {"a", 1}, {"b",
+                    { {"a", 1}, {"b", true}, {"c", "hello"} }
+                    }, {"c", "hello"}});
+                o = std::move(o["b"].as_object());
+                check(o, 3);
             }
         }
 

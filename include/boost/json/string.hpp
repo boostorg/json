@@ -2389,11 +2389,53 @@ public:
         Calls to `memory_resource::allocate` may throw.
 
         @param other The string to swap with
+        If `this == &other`, this function call has no effect.
     */
     BOOST_JSON_DECL
     void
     swap(string& other);
 
+    /** Exchange the given values.
+
+        Exchanges the contents of the string `lhs` with
+        another string `rhs`. Ownership of the respective
+        @ref memory_resource objects is not transferred.
+
+        @li If `*lhs.storage() == *rhs.storage()`,
+        ownership of the underlying memory is swapped in
+        constant time, with no possibility of exceptions.
+        All iterators and references remain valid.
+
+        @li If `*lhs.storage() != *rhs.storage()`,
+        the contents are logically swapped by making a copy,
+        which can throw. In this case all iterators and
+        references are invalidated.
+        
+        @par Effects
+        @code
+        lhs.swap( rhs );
+        @endcode
+
+        @par Complexity
+        Constant or linear in `lhs.size() + rhs.size()`.
+
+        @par Exception Safety
+        Strong guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
+        @param lhs The string to exchange.
+
+        @param rhs The string to exchange.
+        If `&lhs == &rhs`, this function call has no effect.
+
+        @see @ref string::swap
+    */
+    friend
+    void
+    swap(string& lhs, string& rhs)
+    {
+        lhs.swap(rhs);
+    }
     //------------------------------------------------------
     //
     // Search
@@ -2724,55 +2766,6 @@ private:
     void
     reserve_impl(std::size_t new_capacity);
 };
-
-//----------------------------------------------------------
-
-/** Exchange the given values.
-
-    Exchanges the contents of the string `lhs` with
-    another string `rhs`. Ownership of the respective
-    @ref memory_resource objects is not transferred.
-
-    @li If `*lhs.storage() == *rhs.storage()`,
-    ownership of the underlying memory is swapped in
-    constant time, with no possibility of exceptions.
-    All iterators and references remain valid.
-
-    @li If `*lhs.storage() != *rhs.storage()`,
-    the contents are logically swapped by making a copy,
-    which can throw. In this case all iterators and
-    references are invalidated.
-
-    @par Precondition
-
-    @code
-    &lhs != &rhs
-    @endcode
-        
-    @par Complexity
-    Constant or linear in `lhs.size() + rhs.size()`.
-
-    @par Exception Safety
-    Strong guarantee.
-    Calls to `memory_resource::allocate` may throw.
-
-    @par Effects
-    @code
-    lhs.swap( rhs );
-    @endcode
-
-    @param lhs The string to exchange.
-
-    @param rhs The string to exchange.
-
-    @see @ref string::swap
-*/
-inline
-void
-swap(string& lhs, string& rhs)
-{
-    lhs.swap(rhs);
-}
 
 //----------------------------------------------------------
 

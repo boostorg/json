@@ -213,23 +213,19 @@ object(
 
 object&
 object::
-operator=(object&& other)
+operator=(object const& other)
 {
-    object tmp(std::move(other), sp_);
-    this->~object();
-    ::new(this) object(pilfer(tmp));
+    object(other,
+        storage()).swap(*this);
     return *this;
 }
 
 object&
 object::
-operator=(object const& other)
+operator=(object&& other)
 {
-    if(this == &other)
-        return *this;
-    object tmp(other, sp_);
-    this->~object();
-    ::new(this) object(pilfer(tmp));
+    object(std::move(other),
+        storage()).swap(*this);
     return *this;
 }
 
@@ -356,7 +352,6 @@ void
 object::
 swap(object& other)
 {
-    BOOST_ASSERT(this != &other);
     if(*sp_ == *other.sp_)
     {
         impl_.swap(other.impl_);

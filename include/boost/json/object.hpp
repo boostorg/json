@@ -486,6 +486,24 @@ public:
 
     //------------------------------------------------------
 
+    /** Copy assignment.
+
+        The contents of the object are replaced with an
+        element-wise copy of `other`.
+
+        @par Complexity
+        Linear in @ref size() plus `other.size()`.
+
+        @par Exception Safety
+        Strong guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
+        @param other The object to copy.
+    */
+    BOOST_JSON_DECL
+    object&
+    operator=(object const& other);
+
     /** Move assignment.
 
         The contents of the object are replaced with the
@@ -515,24 +533,6 @@ public:
     BOOST_JSON_DECL
     object&
     operator=(object&& other);
-
-    /** Copy assignment.
-
-        The contents of the object are replaced with an
-        element-wise copy of `other`.
-
-        @par Complexity
-        Linear in @ref size() plus `other.size()`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param other The object to copy.
-    */
-    BOOST_JSON_DECL
-    object&
-    operator=(object const& other);
 
     /** Assignment.
 
@@ -1152,10 +1152,53 @@ public:
         Calls to `memory_resource::allocate` may throw.
 
         @param other The object to swap with.
+        If `this == &other`, this function call has no effect.
     */
     BOOST_JSON_DECL
     void
     swap(object& other);
+
+    /** Exchange the given values.
+
+        Exchanges the contents of the object `lhs` with
+        another object `rhs`. Ownership of the respective
+        @ref memory_resource objects is not transferred.
+
+        @li If `*lhs.storage() == *rhs.storage()`,
+        ownership of the underlying memory is swapped in
+        constant time, with no possibility of exceptions.
+        All iterators and references remain valid.
+
+        @li If `*lhs.storage() != *rhs.storage()`,
+        the contents are logically swapped by making a copy,
+        which can throw. In this case all iterators and
+        references are invalidated.
+        
+        @par Effects
+        @code
+        lhs.swap( rhs );
+        @endcode
+
+        @par Complexity
+        Constant or linear in `lhs.size() + rhs.size()`.
+
+        @par Exception Safety
+        Strong guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
+        @param lhs The object to exchange.
+
+        @param rhs The object to exchange.
+        If `&lhs == &rhs`, this function call has no effect.
+
+        @see @ref object::swap
+    */
+    friend
+    void
+    swap(object& lhs, object& rhs)
+    {
+        lhs.swap(rhs);
+    }
 
     //------------------------------------------------------
     //
@@ -1481,53 +1524,6 @@ private:
     bool
     equal(object const& other) const noexcept;
 };
-
-//------------------------------------------------------
-
-/** Exchange the given values.
-
-    Exchanges the contents of the object `lhs` with
-    another object `rhs`. Ownership of the respective
-    @ref memory_resource objects is not transferred.
-
-    @li If `*lhs.storage() == *rhs.storage()`,
-    ownership of the underlying memory is swapped in
-    constant time, with no possibility of exceptions.
-    All iterators and references remain valid.
-
-    @li If `*lhs.storage() != *rhs.storage()`,
-    the contents are logically swapped by making a copy,
-    which can throw. In this case all iterators and
-    references are invalidated.
-
-    @par Preconditions
-
-    `&lhs != &rhs`
-        
-    @par Complexity
-    Constant or linear in `lhs.size() + rhs.size()`.
-
-    @par Exception Safety
-    Strong guarantee.
-    Calls to `memory_resource::allocate` may throw.
-
-    @par Effects
-    @code
-    lhs.swap( rhs );
-    @endcode
-
-    @param lhs The object to exchange.
-
-    @param rhs The object to exchange.
-
-    @see @ref object::swap
-*/
-inline
-void
-swap(object& lhs, object& rhs)
-{
-    lhs.swap(rhs);
-}
 
 BOOST_JSON_NS_END
 

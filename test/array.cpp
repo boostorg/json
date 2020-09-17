@@ -286,6 +286,14 @@ public:
                 a1 = a2;
                 check(a);
             }
+
+            // copy from child
+            {
+                array a({1, {1,2,3}, 3});
+                a = a.at(1).as_array();
+                BOOST_TEST(
+                    a == array({1, 2, 3}));
+            }
         }
 
         // operator=(array&&)
@@ -317,6 +325,23 @@ public:
                 check_storage(a1, storage_ptr{});
                 check_storage(a2, sp);
             });
+
+            // self-move
+            {
+                array a({1, true, str_});
+                auto& a1 = a;
+                auto& a2 = a;
+                a1 = std::move(a2);
+                check(a);
+            }
+
+            // move from child
+            {
+                array a({1, {1,2,3}, 3});
+                a = std::move(a.at(1).as_array());
+                BOOST_TEST(
+                    a == array({1, 2, 3}));
+            }
         }
 
         // operator=(init_list)

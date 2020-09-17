@@ -204,11 +204,8 @@ array&
 array::
 operator=(array const& other)
 {
-    if(this == &other)
-        return *this;
-    array tmp(other, sp_);
-    this->~array();
-    ::new(this) array(pilfer(tmp));
+    array(other,
+        storage()).swap(*this);
     return *this;
 }
 
@@ -216,9 +213,8 @@ array&
 array::
 operator=(array&& other)
 {
-    array tmp(std::move(other), sp_);
-    this->~array();
-    ::new(this) array(pilfer(tmp));
+    array(std::move(other),
+        storage()).swap(*this);
     return *this;
 }
 

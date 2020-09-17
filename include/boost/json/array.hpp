@@ -1573,9 +1573,6 @@ public:
         the contents are logically swapped by making copies,
         which can throw. In this case all iterators and
         references are invalidated.
-
-        @par Preconditions
-        `&other != this`
         
         @par Complexity
         Constant or linear in @ref size() plus `other.size()`.
@@ -1584,11 +1581,54 @@ public:
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
-        @param other The array to swap with.
+        @param other The value to swap with.
+        If `this == &other`, this function call has no effect.
     */
     BOOST_JSON_DECL
     void
     swap(array& other);
+
+    /** Exchange the given values.
+
+        Exchanges the contents of the array `lhs` with
+        another array `rhs`. Ownership of the respective
+        @ref memory_resource objects is not transferred.
+
+        @li If `*lhs.storage() == *rhs.storage()`,
+        ownership of the underlying memory is swapped in
+        constant time, with no possibility of exceptions.
+        All iterators and references remain valid.
+
+        @li If `*lhs.storage() != *rhs.storage()`,
+        the contents are logically swapped by making a copy,
+        which can throw. In this case all iterators and
+        references are invalidated.
+
+        @par Effects
+        @code
+        lhs.swap( rhs );
+        @endcode
+        
+        @par Complexity
+        Constant or linear in `lhs.size() + rhs.size()`.
+
+        @par Exception Safety
+        Strong guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
+        @param lhs The array to exchange.
+
+        @param rhs The array to exchange.
+        If `&lhs == &rhs`, this function call has no effect.
+
+        @see @ref array::swap
+    */
+    friend
+    void
+    swap(array& lhs, array& rhs)
+    {
+        lhs.swap(rhs);
+    }
 
     /** Return `true` if two arrays are equal.
 
@@ -1701,50 +1741,6 @@ private:
     bool
     equal(array const& other) const noexcept;
 };
-
-/** Exchange the given values.
-
-    Exchanges the contents of the array `lhs` with
-    another array `rhs`. Ownership of the respective
-    @ref memory_resource objects is not transferred.
-
-    @li If `*lhs.storage() == *rhs.storage()`,
-    ownership of the underlying memory is swapped in
-    constant time, with no possibility of exceptions.
-    All iterators and references remain valid.
-
-    @li If `*lhs.storage() != *rhs.storage()`,
-    the contents are logically swapped by making a copy,
-    which can throw. In this case all iterators and
-    references are invalidated.
-
-    @par Preconditions
-    `&lhs != &rhs`
-        
-    @par Complexity
-    Constant or linear in `lhs.size() + rhs.size()`.
-
-    @par Exception Safety
-    Strong guarantee.
-    Calls to `memory_resource::allocate` may throw.
-
-    @par Effects
-    @code
-    lhs.swap( rhs );
-    @endcode
-
-    @param lhs The array to exchange.
-
-    @param rhs The array to exchange.
-
-    @see @ref array::swap
-*/
-inline
-void
-swap(array& lhs, array& rhs)
-{
-    lhs.swap(rhs);
-}
 
 BOOST_JSON_NS_END
 

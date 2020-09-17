@@ -181,27 +181,19 @@ value(
 
 value&
 value::
-operator=(value&& other)
+operator=(value const& other)
 {
-    undo u(this);
-    ::new(this) value(
-        detail::move(other),
-        u.saved.storage());
-    u.commit();
+    value(other,
+        storage()).swap(*this);
     return *this;
 }
 
 value&
 value::
-operator=(value const& other)
+operator=(value&& other)
 {
-    if(this == &other)
-        return *this;
-
-    undo u(this);
-    ::new(this) value(other,
-        u.saved.storage());
-    u.commit();
+    value(std::move(other),
+        storage()).swap(*this);
     return *this;
 }
 

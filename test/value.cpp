@@ -299,6 +299,98 @@ public:
             }
         }
 
+        // operator=(value const&)
+        {
+            {
+                value jv1(object{});
+                value jv2;
+                jv2 = jv1;
+                BOOST_TEST(jv2.is_object());
+            }
+            {
+                value jv1(array{});
+                value jv2;
+                jv2 = jv1;
+                BOOST_TEST(jv2.is_array());
+            }
+            {
+                value jv1(string{});
+                value jv2;
+                jv2 = jv1;
+                BOOST_TEST(jv2.is_string());
+            }
+            {
+                value jv1(std::int64_t{});
+                value jv2;
+                jv2 = jv1;
+                BOOST_TEST(jv2.is_int64());
+            }
+            {
+                value jv1(std::uint64_t{});
+                value jv2;
+                jv2 = jv1;
+                BOOST_TEST(jv2.is_uint64());
+            }
+            {
+                value jv1(double{});
+                value jv2;
+                jv2 = jv1;
+                BOOST_TEST(jv2.is_double());
+            }
+            {
+                value jv1(true);
+                value jv2;
+                jv2 = jv1;
+                BOOST_TEST(jv2.is_bool());
+            }
+            {
+                value jv1(nullptr);
+                value jv2;
+                jv2 = jv1;
+                BOOST_TEST(jv2.is_null());
+            }
+
+            fail_loop([&](storage_ptr const sp)
+            {
+                value jv1({1, 2, 3, 4, 5});
+                value jv2(sp);
+                jv2 = jv1;
+                BOOST_TEST(jv2.as_array().size() == 5);
+            });
+
+            fail_loop([&](storage_ptr const sp)
+            {
+                value jv1({
+                    {"a",1},{"b",2},{"c",3}});
+                value jv2(sp);
+                jv2 = jv1;
+                BOOST_TEST(jv2.as_object().size() == 3);
+            });
+
+            fail_loop([&](storage_ptr const sp)
+            {
+                value jv1(str_);
+                value jv2(sp);
+                jv2 = jv1;
+                BOOST_TEST(jv2.as_string() == str_);
+            });
+
+            // self-assign
+            {
+                value jv = { 1, 2, 3 };
+                jv = static_cast<value const&>(jv);
+                BOOST_TEST(jv == value({1, 2, 3}));
+            }
+
+            // copy from child
+            {
+                value jv = { 1, 2, 3 };
+                jv = jv.at(1);
+                BOOST_TEST(
+                    *jv.if_int64() == 2);
+            }
+        }
+
         // operator=(value&&)
         {
             {
@@ -380,88 +472,21 @@ public:
                 jv = value(str_);
                 BOOST_TEST(jv.as_string() == str_);
             });
-        }
 
-        // operator=(value const&)
-        {
+            // self-move
             {
-                value jv1(object{});
-                value jv2;
-                jv2 = jv1;
-                BOOST_TEST(jv2.is_object());
-            }
-            {
-                value jv1(array{});
-                value jv2;
-                jv2 = jv1;
-                BOOST_TEST(jv2.is_array());
-            }
-            {
-                value jv1(string{});
-                value jv2;
-                jv2 = jv1;
-                BOOST_TEST(jv2.is_string());
-            }
-            {
-                value jv1(std::int64_t{});
-                value jv2;
-                jv2 = jv1;
-                BOOST_TEST(jv2.is_int64());
-            }
-            {
-                value jv1(std::uint64_t{});
-                value jv2;
-                jv2 = jv1;
-                BOOST_TEST(jv2.is_uint64());
-            }
-            {
-                value jv1(double{});
-                value jv2;
-                jv2 = jv1;
-                BOOST_TEST(jv2.is_double());
-            }
-            {
-                value jv1(true);
-                value jv2;
-                jv2 = jv1;
-                BOOST_TEST(jv2.is_bool());
-            }
-            {
-                value jv1(nullptr);
-                value jv2;
-                jv2 = jv1;
-                BOOST_TEST(jv2.is_null());
+                value jv = { 1, 2, 3 };
+                value* p = &jv;
+                jv = std::move(*p);
+                BOOST_TEST(jv == value({1, 2, 3}));
             }
 
-            fail_loop([&](storage_ptr const sp)
+            // move from child
             {
-                value jv1({1, 2, 3, 4, 5});
-                value jv2(sp);
-                jv2 = jv1;
-                BOOST_TEST(jv2.as_array().size() == 5);
-            });
-
-            fail_loop([&](storage_ptr const sp)
-            {
-                value jv1({
-                    {"a",1},{"b",2},{"c",3}});
-                value jv2(sp);
-                jv2 = jv1;
-                BOOST_TEST(jv2.as_object().size() == 3);
-            });
-
-            fail_loop([&](storage_ptr const sp)
-            {
-                value jv1(str_);
-                value jv2(sp);
-                jv2 = jv1;
-                BOOST_TEST(jv2.as_string() == str_);
-            });
-
-            // self-assign
-            {
-                value jv(object{});
-                jv = static_cast<value const&>(jv);
+                value jv = { 1, 2, 3 };
+                jv = std::move(jv.at(1));
+                BOOST_TEST(
+                    *jv.if_int64() == 2);
             }
         }
     }
@@ -798,6 +823,11 @@ public:
 
         // swap
         {
+            {
+                // self-swap
+                value jv;
+                swap(jv, jv);
+            }
             {
                 value jv1(1);
                 value jv2("abc");

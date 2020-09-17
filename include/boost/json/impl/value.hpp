@@ -17,39 +17,6 @@
 
 BOOST_JSON_NS_BEGIN
 
-//----------------------------------------------------------
-
-struct value::undo
-{
-    union
-    {
-        value saved;
-    };
-    value* self;
-
-    explicit
-    undo(value* self_) noexcept
-        : self(self_)
-    {
-        relocate(&saved, *self_);
-    }
-
-    void
-    commit() noexcept
-    {
-        saved.~value();
-        self = nullptr;
-    }
-
-    ~undo()
-    {
-        if(self)
-            relocate(self, saved);
-    }
-};
-
-//----------------------------------------------------------
-
 value::
 value(detail::unchecked_object&& uo)
     : obj_(std::move(uo))
@@ -76,11 +43,9 @@ value&
 value::
 operator=(T&& t)
 {
-    undo u(this);
-    ::new(this) value(
+    value(
         std::forward<T>(t),
-        u.saved.storage());
-    u.commit();
+        storage()).swap(*this);
     return *this;
 }
 
