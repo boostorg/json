@@ -18,6 +18,8 @@
 # include <cassert>
 #endif
 #include <cstdint>
+#include <type_traits>
+#include <utility>
 
 // detect 32/64 bit
 #if UINTPTR_MAX == UINT64_MAX
@@ -251,67 +253,15 @@ using void_t = typename
     make_void<Ts...>::type;
 
 template<class T>
-struct remove_const
-{
-    using type = T;
-};
-
-template<class T>
-struct remove_const<T const>
-{
-    using type = T;
-};
-
-template<class T>
-struct remove_volatile
-{
-    using type = T;
-};
-
-template<class T>
-struct remove_volatile<T volatile>
-{
-    using type = T;
-};
-
-template<class T>
-struct remove_reference
-{
-    using type = T;
-};
-
-template<class T>
-struct remove_reference<T&>
-{
-    using type = T;
-};
-
-template<class T>
-using remove_cv = typename
-    remove_const<typename
-    remove_reference<T>::type>::type;
-
-template<class T>
-using remove_cvref =
-    typename remove_reference<
-        remove_cv<T>>::type;
-
-template<class T>
-constexpr
-typename remove_reference<T>::type&&
-move(T&& t) noexcept
-{
-    return static_cast<typename
-        remove_reference<T>::type&&>(t);
-}
+using remove_cvref = typename
+    std::remove_cv<typename
+        std::remove_reference<T>::type>::type;
 
 template<class T, class U>
-inline
-T
-exchange(T& t, U u) noexcept
+T exchange(T& t, U u) noexcept
 {
-    T v = move(t);
-    t = move(u);
+    T v = std::move(t);
+    t = std::move(u);
     return v;
 }
 

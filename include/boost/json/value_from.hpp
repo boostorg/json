@@ -85,7 +85,7 @@ value_from(
     storage_ptr sp = {})
 {
     return detail::value_from_impl(std::forward<T>(t),
-        detail::move(sp));
+        std::move(sp));
 }
 
 /** Determine if `T` can be converted to @ref value.

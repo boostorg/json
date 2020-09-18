@@ -24,7 +24,7 @@ from_builtin(
     return value(
         *reinterpret_cast<
             T const*>(p),
-        detail::move(sp));
+        std::move(sp));
 }
 
 template<class T>
@@ -37,7 +37,7 @@ from_const(
     return value_from(
         *reinterpret_cast<
             T const*>(p),
-        detail::move(sp));
+        std::move(sp));
 }
 
 template<class T>
@@ -48,9 +48,9 @@ from_rvalue(
     storage_ptr sp)
 {
     return value_from(
-        detail::move(
+        std::move(
             *reinterpret_cast<T*>(p)),
-        detail::move(sp));
+        std::move(sp));
 }
 
 BOOST_JSON_NS_END

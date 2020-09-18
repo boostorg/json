@@ -33,7 +33,7 @@ struct int64_k
     explicit
     int64_k(
         storage_ptr sp_) noexcept
-        : sp(move(sp_))
+        : sp(std::move(sp_))
         , k(kind::int64)
         , i(0)
     {
@@ -42,7 +42,7 @@ struct int64_k
     int64_k(
         std::int64_t i_,
         storage_ptr sp_) noexcept
-        : sp(move(sp_))
+        : sp(std::move(sp_))
         , k(kind::int64)
         , i(i_)
     {
@@ -64,7 +64,7 @@ struct uint64_k
     explicit
     uint64_k(
         storage_ptr sp_) noexcept
-        : sp(move(sp_))
+        : sp(std::move(sp_))
         , k(kind::uint64)
         , u(0)
     {
@@ -73,7 +73,7 @@ struct uint64_k
     uint64_k(
         std::uint64_t u_,
         storage_ptr sp_) noexcept
-        : sp(move(sp_))
+        : sp(std::move(sp_))
         , k(kind::uint64)
         , u(u_)
     {
@@ -95,7 +95,7 @@ struct double_k
     explicit
     double_k(
         storage_ptr sp_) noexcept
-        : sp(move(sp_))
+        : sp(std::move(sp_))
         , k(kind::double_)
         , d(0)
     {
@@ -104,7 +104,7 @@ struct double_k
     double_k(
         double d_,
         storage_ptr sp_) noexcept
-        : sp(move(sp_))
+        : sp(std::move(sp_))
         , k(kind::double_)
         , d(d_)
     {
@@ -126,7 +126,7 @@ struct bool_k
     explicit
     bool_k(
         storage_ptr sp_) noexcept
-        : sp(move(sp_))
+        : sp(std::move(sp_))
         , k(kind::bool_)
         , b(false)
     {
@@ -135,7 +135,7 @@ struct bool_k
     bool_k(
         bool b_,
         storage_ptr sp_) noexcept
-        : sp(move(sp_))
+        : sp(std::move(sp_))
         , k(kind::bool_)
         , b(b_)
     {
@@ -155,7 +155,7 @@ struct null_k
     explicit
     null_k(
         storage_ptr sp_) noexcept
-        : sp(move(sp_))
+        : sp(std::move(sp_))
         , k(kind::null)
     {
     }

@@ -74,48 +74,48 @@ value(
     case json::kind::object:
         ::new(&obj_) object(
             other.obj_,
-            detail::move(sp));
+            std::move(sp));
         break;
 
     case json::kind::array:
         ::new(&arr_) array(
             other.arr_,
-            detail::move(sp));
+            std::move(sp));
         break;
 
     case json::kind::string:
         ::new(&str_) string(
             other.str_,
-            detail::move(sp));
+            std::move(sp));
         break;
 
     case json::kind::int64:
         ::new(&i64_) int64_k(
             other.i64_.i,
-            detail::move(sp));
+            std::move(sp));
         break;
 
     case json::kind::uint64:
         ::new(&u64_) uint64_k(
             other.u64_.u,
-            detail::move(sp));
+            std::move(sp));
         break;
 
     case json::kind::double_:
         ::new(&dub_) double_k(
             other.dub_.d,
-            detail::move(sp));
+            std::move(sp));
         break;
 
     case json::kind::bool_:
         ::new(&bln_) bool_k(
             other.bln_.b,
-            detail::move(sp));
+            std::move(sp));
         break;
 
     case json::kind::null:
         ::new(&nul_) null_k(
-            detail::move(sp));
+            std::move(sp));
         break;
     }
 }
@@ -136,45 +136,45 @@ value(
     {
     case json::kind::object:
         ::new(&obj_) object(
-            detail::move(other.obj_),
-            detail::move(sp));
+            std::move(other.obj_),
+            std::move(sp));
         break;
 
     case json::kind::array:
         ::new(&arr_) array(
-            detail::move(other.arr_),
-            detail::move(sp));
+            std::move(other.arr_),
+            std::move(sp));
         break;
 
     case json::kind::string:
         ::new(&str_) string(
-            detail::move(other.str_),
-            detail::move(sp));
+            std::move(other.str_),
+            std::move(sp));
         break;
 
     case json::kind::int64:
         ::new(&i64_) int64_k(
-            other.i64_.i, detail::move(sp));
+            other.i64_.i, std::move(sp));
         break;
 
     case json::kind::uint64:
         ::new(&u64_) uint64_k(
-            other.u64_.u, detail::move(sp));
+            other.u64_.u, std::move(sp));
         break;
 
     case json::kind::double_:
         ::new(&dub_) double_k(
-            other.dub_.d, detail::move(sp));
+            other.dub_.d, std::move(sp));
         break;
 
     case json::kind::bool_:
         ::new(&bln_) bool_k(
-            other.bln_.b, detail::move(sp));
+            other.bln_.b, std::move(sp));
         break;
 
     case json::kind::null:
         ::new(&nul_) null_k(
-            detail::move(sp));
+            std::move(sp));
         break;
     }
 }
@@ -300,10 +300,10 @@ swap(value& other)
     {
         // copy
         value temp1(
-            detail::move(*this),
+            std::move(*this),
             other.storage());
         value temp2(
-            detail::move(other),
+            std::move(other),
             this->storage());
         other.~value();
         ::new(&other) value(pilfer(temp1));
@@ -474,7 +474,7 @@ key_value_pair::
 key_value_pair(
     key_value_pair const& other,
     storage_ptr sp)
-    : value_(other.value_, detail::move(sp))
+    : value_(other.value_, std::move(sp))
     , key_(
         [&]
         {

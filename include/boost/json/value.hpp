@@ -147,7 +147,7 @@ public:
     */
     explicit
     value(storage_ptr sp) noexcept
-        : nul_(detail::move(sp))
+        : nul_(std::move(sp))
     {
     }
 
@@ -361,7 +361,7 @@ public:
         @param other The object to construct with.
     */
     value(object other) noexcept
-        : obj_(detail::move(other))
+        : obj_(std::move(other))
     {
     }
 
@@ -388,7 +388,7 @@ public:
         storage_ptr sp)
         : obj_(
             other,
-            detail::move(sp))
+            std::move(sp))
     {
     }
 
@@ -414,8 +414,8 @@ public:
         object&& other,
         storage_ptr sp)
         : obj_(
-            detail::move(other),
-            detail::move(sp))
+            std::move(other),
+            std::move(sp))
     {
     }
 
@@ -449,7 +449,7 @@ public:
     value(
         object_kind_t,
         storage_ptr sp = {}) noexcept
-        : obj_(detail::move(sp))
+        : obj_(std::move(sp))
     {
     }
 
@@ -478,7 +478,7 @@ public:
         @param other The array to construct with.
     */
     value(array other) noexcept
-        : arr_(detail::move(other))
+        : arr_(std::move(other))
     {
     }
 
@@ -505,7 +505,7 @@ public:
         storage_ptr sp)
         : arr_(
             other,
-            detail::move(sp))
+            std::move(sp))
     {
     }
 
@@ -532,7 +532,7 @@ public:
         storage_ptr sp)
         : arr_(
             std::move(other),
-            detail::move(sp))
+            std::move(sp))
     {
     }
 
@@ -566,7 +566,7 @@ public:
     value(
         array_kind_t,
         storage_ptr sp = {}) noexcept
-        : arr_(detail::move(sp))
+        : arr_(std::move(sp))
     {
     }
 
@@ -596,7 +596,7 @@ public:
     */
     value(
         string other) noexcept
-        : str_(detail::move(other))
+        : str_(std::move(other))
     {
     }
 
@@ -623,7 +623,7 @@ public:
         storage_ptr sp)
         : str_(
             other,
-            detail::move(sp))
+            std::move(sp))
     {
     }
 
@@ -649,8 +649,8 @@ public:
         string&& other,
         storage_ptr sp)
         : str_(
-            detail::move(other),
-            detail::move(sp))
+            std::move(other),
+            std::move(sp))
     {
     }
 
@@ -675,7 +675,7 @@ public:
     value(
         string_view s,
         storage_ptr sp = {})
-        : str_(s, detail::move(sp))
+        : str_(s, std::move(sp))
     {
     }
 
@@ -702,7 +702,7 @@ public:
     value(
         char const* s,
         storage_ptr sp = {})
-        : str_(s, detail::move(sp))
+        : str_(s, std::move(sp))
     {
     }
 
@@ -736,7 +736,7 @@ public:
     value(
         string_kind_t,
         storage_ptr sp = {}) noexcept
-        : str_(detail::move(sp))
+        : str_(std::move(sp))
     {
     }
 
@@ -757,7 +757,7 @@ public:
     value(
         short i,
         storage_ptr sp = {}) noexcept
-        : i64_(i, detail::move(sp))
+        : i64_(i, std::move(sp))
     {
     }
 
@@ -778,7 +778,7 @@ public:
     value(
         int i,
         storage_ptr sp = {}) noexcept
-        : i64_(i, detail::move(sp))
+        : i64_(i, std::move(sp))
     {
     }
 
@@ -799,7 +799,7 @@ public:
     value(
         long i,
         storage_ptr sp = {}) noexcept
-        : i64_(i, detail::move(sp))
+        : i64_(i, std::move(sp))
     {
     }
 
@@ -820,7 +820,7 @@ public:
     value(
         long long i,
         storage_ptr sp = {}) noexcept
-        : i64_(i, detail::move(sp))
+        : i64_(i, std::move(sp))
     {
     }
 
@@ -841,7 +841,7 @@ public:
     value(
         unsigned short u,
         storage_ptr sp = {}) noexcept
-        : u64_(u, detail::move(sp))
+        : u64_(u, std::move(sp))
     {
     }
 
@@ -862,7 +862,7 @@ public:
     value(
         unsigned int u,
         storage_ptr sp = {}) noexcept
-        : u64_(u, detail::move(sp))
+        : u64_(u, std::move(sp))
     {
     }
 
@@ -883,7 +883,7 @@ public:
     value(
         unsigned long u,
         storage_ptr sp = {}) noexcept
-        : u64_(u, detail::move(sp))
+        : u64_(u, std::move(sp))
     {
     }
 
@@ -904,7 +904,7 @@ public:
     value(
         unsigned long long u,
         storage_ptr sp = {}) noexcept
-        : u64_(u, detail::move(sp))
+        : u64_(u, std::move(sp))
     {
     }
 
@@ -925,7 +925,7 @@ public:
     value(
         double d,
         storage_ptr sp = {}) noexcept
-        : dub_(d, detail::move(sp))
+        : dub_(d, std::move(sp))
     {
     }
 
@@ -947,7 +947,7 @@ public:
         long double d,
         storage_ptr sp = {}) noexcept
         : dub_(static_cast<double>(d),
-            detail::move(sp))
+            std::move(sp))
     {
     }
 
@@ -980,7 +980,7 @@ public:
     value(
         Bool b,
         storage_ptr sp = {}) noexcept
-        : bln_(b, detail::move(sp))
+        : bln_(b, std::move(sp))
     {
     }
 #endif
@@ -1002,7 +1002,7 @@ public:
     value(
         std::nullptr_t,
         storage_ptr sp = {}) noexcept
-        : nul_(detail::move(sp))
+        : nul_(std::move(sp))
     {
     }
 
@@ -2902,7 +2902,7 @@ public:
         : key_value_pair(
             p.first,
             p.second,
-            detail::move(sp))
+            std::move(sp))
     {
     }
 
@@ -2931,8 +2931,8 @@ public:
         storage_ptr sp = {})
         : key_value_pair(
             p.first,
-            detail::move(p).second,
-            detail::move(sp))
+            std::move(p).second,
+            std::move(sp))
     {
     }
 

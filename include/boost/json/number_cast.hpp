@@ -98,7 +98,7 @@ typename std::enable_if<
 number_cast(value const& jv)
 {
     error_code ec;
-    typename detail::remove_const<T>::type result;
+    typename std::remove_const<T>::type result;
     result = number_cast<T>(jv, ec);
     if(ec)
         detail::throw_system_error(ec,

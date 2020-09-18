@@ -32,7 +32,7 @@ from_init_list(
     return make_value(
         *reinterpret_cast<
             init_list const*>(p),
-        detail::move(sp));
+        std::move(sp));
 }
 
 bool
@@ -86,24 +86,24 @@ make_value(
     case what::str:
         return string(
             arg_.str_,
-            detail::move(sp));
+            std::move(sp));
 
     case what::ini:
         return make_value(
             arg_.init_list_,
-            detail::move(sp));
+            std::move(sp));
 
     case what::func:
         return f_.f(f_.p,
-            detail::move(sp));
+            std::move(sp));
     
     case what::strfunc:
         return f_.f(f_.p,
-            detail::move(sp));
+            std::move(sp));
     
     case what::cfunc:
         return cf_.f(cf_.p,
-            detail::move(sp));
+            std::move(sp));
     }
 }
 
@@ -116,9 +116,9 @@ make_value(
 {
     if(maybe_object(init))
         return make_object(
-            init, detail::move(sp));
+            init, std::move(sp));
     return make_array(
-        init, detail::move(sp));
+        init, std::move(sp));
 }
 
 object
@@ -127,7 +127,7 @@ make_object(
     std::initializer_list<value_ref> init,
     storage_ptr sp)
 {
-    object obj(detail::move(sp));
+    object obj(std::move(sp));
     obj.reserve(init.size());
     for(auto const& e : init)
         obj.emplace(
@@ -144,7 +144,7 @@ make_array(
         value_ref> init,
     storage_ptr sp)
 {
-    array arr(detail::move(sp));
+    array arr(std::move(sp));
     arr.reserve(init.size());
     for(auto const& e : init)
         arr.emplace_back(

@@ -149,7 +149,7 @@ value_from_impl(
     T&& from,
     storage_ptr sp)
 {
-    value jv(detail::move(sp));
+    value jv(std::move(sp));
     tag_invoke(value_from_tag(), jv, std::forward<T>(from));
     return jv;
 }

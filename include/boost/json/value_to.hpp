@@ -87,7 +87,7 @@ T
 value_to(const U& jv)
 {
     return detail::value_to_impl(
-        value_to_tag<detail::remove_cv<T>>(), jv);
+        value_to_tag<typename std::remove_cv<T>::type>(), jv);
 }
 #endif
 
@@ -109,10 +109,13 @@ struct has_value_to
     : std::false_type { };
 
 template<class T>
-struct has_value_to<T, detail::void_t<decltype(detail::value_to_impl(
-    value_to_tag<detail::remove_cv<T>>(), std::declval<const value&>())),
-        typename std::enable_if<!std::is_reference<T>::value>::type>>
-    : std::true_type { };
+struct has_value_to<T, detail::void_t<decltype(
+    detail::value_to_impl(
+        value_to_tag<detail::remove_cvref<T>>(),
+        std::declval<const value&>())),
+    typename std::enable_if<
+        ! std::is_reference<T>::value>::type
+    > > : std::true_type { };
 #endif
 
 BOOST_JSON_NS_END
