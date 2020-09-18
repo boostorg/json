@@ -821,6 +821,29 @@ public:
             }
         }
 
+        // emplace_array
+        {
+            value jv;
+            jv.emplace_array(1);
+            BOOST_TEST(
+                jv.as_array().size() == 1);
+        }
+
+        // emplace_object
+        {
+            value jv;
+            jv.emplace_object(1);
+            BOOST_TEST(
+                jv.as_object().capacity() >= 1);
+        }
+
+        // emplace_string
+        {
+            value jv;
+            jv.emplace_string("abc");
+            BOOST_TEST(jv.as_string() == "abc");
+        }
+
         // swap
         {
             {

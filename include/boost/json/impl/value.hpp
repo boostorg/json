@@ -49,6 +49,51 @@ operator=(T&& t)
     return *this;
 }
 
+template<
+    class Arg0, class... Args,
+    class>
+array&
+value::
+emplace_array(
+    Arg0&& arg0, Args&&... args)
+{
+    *this = array(
+        std::forward<Arg0>(arg0),
+        std::forward<Args>(args)...,
+        storage());
+    return arr_;
+}
+
+template<
+    class Arg0, class... Args,
+    class>
+object&
+value::
+emplace_object(
+    Arg0&& arg0, Args&&... args)
+{
+    *this = object(
+        std::forward<Arg0>(arg0),
+        std::forward<Args>(args)...,
+        storage());
+    return obj_;
+}
+
+template<
+    class Arg0, class... Args,
+    class>
+string&
+value::
+emplace_string(
+    Arg0&& arg0, Args&&... args)
+{
+    *this = string(
+        std::forward<Arg0>(arg0),
+        std::forward<Args>(args)...,
+        storage());
+    return str_;
+}
+
 void
 value::
 relocate(

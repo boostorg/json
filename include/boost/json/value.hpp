@@ -1098,54 +1098,113 @@ public:
     //
     //------------------------------------------------------
 
-    /** Return a reference to an @ref object, changing the kind and replacing the contents.
-
-        The contents are replaced with an empty @ref object
-        using the current @ref memory_resource. All
-        previously obtained iterators and references
-        obtained beforehand are invalidated.
-
-        @par Complexity
-        Linear in the size of `*this`.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
-    BOOST_JSON_DECL
-    object&
-    emplace_object() noexcept;
-
     /** Return a reference to an @ref array, changing the kind and replacing the contents.
 
-        The value is replaced with an empty @ref array
-        using the current memory resource, destroying the
-        previous contents.
+        The contents are replaced with an @ref array
+        constructed from the optional arguments and
+        the same memory resource. The previous contents
+        are destroyed.
 
         @par Complexity
         Linear in the size of `*this`.
 
         @par Exception Safety
         No-throw guarantee.
+
+        @param args Optional parameters forwarded
+        to the array constructor.
     */
+#ifdef BOOST_JSON_DOCS
+    template<class... Args>
+    array&
+    emplace_array(Args&&... args);
+#else
     BOOST_JSON_DECL
     array&
     emplace_array() noexcept;
 
-    /** Return a reference to a @ref string, changing the kind and replacing the contents.
+    template<class Arg0, class... Args,
+        class = typename std::enable_if<
+            std::is_constructible<array,
+                Arg0, Args..., storage_ptr
+                    >::value>::type
+    >
+    array&
+    emplace_array(
+        Arg0&& arg0, Args&&... args);
+#endif
 
-        The value is replaced with an empty @ref string
-        using the current memory resource, destroying the
-        previous contents.
+    /** Return a reference to an @ref object, changing the kind and replacing the contents.
+
+        The contents are replaced with an @ref object
+        constructed from the optional arguments and
+        the same memory resource. The previous contents
+        are destroyed.
 
         @par Complexity
         Linear in the size of `*this`.
 
         @par Exception Safety
         No-throw guarantee.
+
+        @param args Optional parameters forwarded
+        to the object constructor.
     */
+#ifdef BOOST_JSON_DOCS
+    template<class... Args>
+    object&
+    emplace_array(Args&&... args);
+#else
+    BOOST_JSON_DECL
+    object&
+    emplace_object() noexcept;
+
+    template<class Arg0, class... Args,
+        class = typename std::enable_if<
+            std::is_constructible<object,
+                Arg0, Args..., storage_ptr
+                    >::value>::type
+    >
+    object&
+    emplace_object(
+        Arg0&& arg0, Args&&... args);
+#endif
+
+    /** Return a reference to a @ref string, changing the kind and replacing the contents.
+
+        The contents are replaced with a @ref string
+        constructed from the optional arguments and
+        the same memory resource. The previous contents
+        are destroyed.
+
+        @par Complexity
+        Linear in the size of `*this`.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param args Optional parameters forwarded
+        to the string constructor.
+    */
+#ifdef BOOST_JSON_DOCS
+    template<class... Args>
+    string&
+    emplace_string(Args&&... args);
+#else
     BOOST_JSON_DECL
     string&
     emplace_string() noexcept;
+
+    template<class Arg0, class... Args,
+        class = typename std::enable_if<
+            std::is_constructible<string,
+                Arg0, Args..., storage_ptr
+                    >::value>::type
+    >
+    string&
+    emplace_string(
+        Arg0&& arg0, Args&&... args);
+#endif
 
     /** Return a reference to a `std::int64_t`, changing the kind and replacing the contents.
 
