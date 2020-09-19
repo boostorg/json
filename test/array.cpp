@@ -10,6 +10,8 @@
 // Test that header file is self-contained.
 #include <boost/json/array.hpp>
 
+#include <boost/json/monotonic_resource.hpp>
+
 #include "test.hpp"
 #include "test_suite.hpp"
 
@@ -53,6 +55,22 @@ public:
     {
         check(a);
         check_storage(a, sp);
+    }
+
+    void
+    testDestroy()
+    {
+        {
+            monotonic_resource mr;
+            array a(&mr);
+            a.reserve(3);
+        }
+        {
+            monotonic_resource mr;
+            array a(&mr);
+            a.resize(3);
+            a.clear();
+        }
     }
 
     void
@@ -110,6 +128,12 @@ public:
                 for(auto const& v : a)
                     BOOST_TEST(v.is_null());
                 check_storage(a, storage_ptr{});
+            }
+
+            // zero size
+            {
+                array a(0);
+                BOOST_TEST(a.empty());
             }
 
             fail_loop([&](storage_ptr const& sp)
@@ -253,7 +277,7 @@ public:
     }
 
     void
-    testAssignment()
+    testAssign()
     {
         // operator=(array const&)
         {
@@ -466,10 +490,12 @@ public:
         {
             {
                 array a({1, true, str_});
-                BOOST_TEST(a.if_contains(2)->is_string());
+                BOOST_TEST(a.if_contains(1)->is_bool());
+                BOOST_TEST(a.if_contains(3) == nullptr);
             }
             {
                 array const a({1, true, str_});
+                BOOST_TEST(a.if_contains(1)->is_bool());
                 BOOST_TEST(a.if_contains(3) == nullptr);
             }
         }
@@ -481,7 +507,9 @@ public:
                 BOOST_TEST(a.data() == &a[0]);
             }
             {
-                BOOST_TEST(array{}.data() == nullptr);
+                array a;
+                BOOST_TEST(
+                    a.data() == a.begin());
             }
         }
 
@@ -493,7 +521,8 @@ public:
             }
             {
                 array const a{};
-                BOOST_TEST(a.data() == nullptr);
+                BOOST_TEST(
+                    a.data() == a.begin());
             }
         }
     }
@@ -671,10 +700,10 @@ public:
                 array a(4, 'c', sp);
                 a.reserve(a.capacity() + 1);
                 auto const new_cap = a.capacity();
-                // 2x growth
-                BOOST_TEST(new_cap == 8);
+                // 1.5x growth
+                BOOST_TEST(new_cap == 6);
                 a.reserve(new_cap + 1);
-                BOOST_TEST(a.capacity() == 16);
+                BOOST_TEST(a.capacity() == 9);
             });
         }
 
@@ -752,14 +781,37 @@ public:
         }
 
         // insert(const_iterator, value_type const&)
-        fail_loop([&](storage_ptr const& sp)
         {
-            array a({1, str_}, sp);
-            value v(true);
-            a.insert(a.begin() + 1, v);
-            check(a);
-            check_storage(a, sp);
-        });
+            // fast path
+            fail_loop([&](storage_ptr const& sp)
+            {
+                array a({1, 2, 3}, sp);
+                a.pop_back();
+                BOOST_TEST(
+                    a.capacity() > a.size());
+                a.insert(a.begin(), 1);
+                BOOST_TEST(
+                    a == array({1, 1, 2}));
+            });
+
+            // self-insert
+            {
+                array a = {1, 2, 3};
+                a.insert(a.begin(), a[1]);
+                BOOST_TEST(
+                    a == array({2, 1, 2, 3}));
+            }
+
+            // fail
+            fail_loop([&](storage_ptr const& sp)
+            {
+                array a({1, str_}, sp);
+                value v(true);
+                a.insert(a.begin() + 1, v);
+                check(a);
+                check_storage(a, sp);
+            });
+        }
 
         // insert(const_iterator, value_type&&)
         fail_loop([&](storage_ptr const& sp)
@@ -773,17 +825,37 @@ public:
         });
 
         // insert(const_iterator, size_type, value_type const&)
-        fail_loop([&](storage_ptr const& sp)
         {
-            value v({1,2,3});
-            array a({1, str_}, sp);
-            a.insert(a.begin() + 1, 3, v);
-            BOOST_TEST(a[0].is_number());
-            BOOST_TEST(a[1].as_array().size() == 3);
-            BOOST_TEST(a[2].as_array().size() == 3);
-            BOOST_TEST(a[3].as_array().size() == 3);
-            BOOST_TEST(a[4].is_string());
-        });
+            // fast path
+            fail_loop([&](storage_ptr const& sp)
+            {
+                array a({1, str_}, sp);
+                a.reserve(3);
+                BOOST_TEST(
+                    a.capacity() > a.size());
+                a.insert(&a[1], 1, true);
+                check(a);
+            });
+
+            // zero
+            {
+                array a(3);
+                a.insert(&a[1], 0, true);
+                BOOST_TEST(a.size() == 3);
+            }
+
+            fail_loop([&](storage_ptr const& sp)
+            {
+                value v({1,2,3});
+                array a({1, str_}, sp);
+                a.insert(a.begin() + 1, 3, v);
+                BOOST_TEST(a[0].is_number());
+                BOOST_TEST(a[1].as_array().size() == 3);
+                BOOST_TEST(a[2].as_array().size() == 3);
+                BOOST_TEST(a[3].as_array().size() == 3);
+                BOOST_TEST(a[4].is_string());
+            });
+        }
 
         // insert(const_iterator, InputIt, InputIt)
         {
@@ -903,16 +975,37 @@ public:
         }
 
         // push_back(value const&)
-        fail_loop([&](storage_ptr const& sp)
         {
-            array a({1, true}, sp);
-            value v(str_);
-            a.push_back(v);
-            BOOST_TEST(
-                v.as_string() == str_);
-            check(a);
-            check_storage(a, sp);
-        });
+            // fast path
+            {
+                array a = {1, 2, 3};
+                a.pop_back();
+                BOOST_TEST(
+                    a.capacity() > a.size());
+                a.push_back(1);
+                BOOST_TEST(a ==
+                    array({1, 2, 1}));
+            }
+
+            // self push_back
+            {
+                array a = {1, 2, 3};
+                a.push_back(a[1]);
+                BOOST_TEST(a ==
+                    array({1, 2, 3, 2}));
+            }
+
+            fail_loop([&](storage_ptr const& sp)
+            {
+                array a({1, true}, sp);
+                value v(str_);
+                a.push_back(v);
+                BOOST_TEST(
+                    v.as_string() == str_);
+                check(a);
+                check_storage(a, sp);
+            });
+        }
 
         // push_back(value&&)
         {
@@ -1121,8 +1214,9 @@ public:
     void
     run()
     {
+        testDestroy();
         testCtors();
-        testAssignment();
+        testAssign();
         testGetStorage();
         testAccess();
         testIterators();

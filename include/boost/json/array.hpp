@@ -14,7 +14,7 @@
 #include <boost/json/kind.hpp>
 #include <boost/json/pilfer.hpp>
 #include <boost/json/storage_ptr.hpp>
-#include <boost/json/detail/array_impl.hpp>
+#include <boost/json/detail/array.hpp>
 #include <cstdlib>
 #include <initializer_list>
 #include <iterator>
@@ -81,24 +81,25 @@ class value_ref;
 */
 class array
 {
-    using array_impl = detail::array_impl;
+    struct table;
+    class revert_construct;
+    class revert_insert;
 
-    storage_ptr sp_;    // must come first
-    kind k_ =           // must come second
-        kind::array;
-    array_impl impl_;
-
-    class undo_construct;
-    class undo_insert;
+    storage_ptr sp_;        // must come first
+    kind k_ = kind::array;  // must come second
+    table* t_;
 
     friend class value;
+
+    BOOST_JSON_DECL
+    static table empty_;
 
     BOOST_JSON_DECL
     explicit
     array(detail::unchecked_array&& ua);
 
 public:
-    /** The type of _Allocator_ returned by @ref get_allocator
+    /** The type of <em>Allocator</em> returned by @ref get_allocator
 
         This type is a @ref polymorphic_allocator.
     */
@@ -158,17 +159,12 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    ~array()
-    {
-        if( ! impl_.data() ||
-            sp_.is_not_counted_and_deallocate_is_trivial())
-            return;
-        destroy();
-    }
+    BOOST_JSON_DECL
+    ~array();
 
     //------------------------------------------------------
 
-    /** Default constructor.
+    /** Constructor.
 
         The constructed array is empty with zero
         capacity, using the default memory resource.
@@ -179,7 +175,8 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    array() = default;
+    BOOST_JSON_DECL
+    array() noexcept;
 
     /** Constructor.
 
@@ -682,6 +679,50 @@ public:
     value const&
     back() const noexcept;
 
+    /** Access the underlying array directly.
+
+        Returns a pointer to the underlying array serving
+        as element storage. The value returned is such that
+        the range `{data(), data() + size())` is always a
+        valid range, even if the container is empty.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @note
+
+        If `size() == 0`, the function may or may not return
+        a null pointer.
+    */
+    inline
+    value*
+    data() noexcept;
+
+    /** Access the underlying array directly.
+
+        Returns a pointer to the underlying array serving
+        as element storage. The value returned is such that
+        the range `{data(), data() + size())` is always a
+        valid range, even if the container is empty.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @note
+
+        If `size() == 0`, the function may or may not return
+        a null pointer.
+    */
+    inline
+    value const*
+    data() const noexcept;
+
     /** Return a pointer to an element, or nullptr if the index is invalid
 
         This function returns a pointer to the element
@@ -729,50 +770,6 @@ public:
     inline
     value*
     if_contains(std::size_t pos) noexcept;
-
-    /** Access the underlying array directly.
-
-        Returns a pointer to the underlying array serving
-        as element storage. The value returned is such that
-        the range `{data(), data() + size())` is always a
-        valid range, even if the container is empty.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @note
-
-        If `size() == 0`, the function may or may not return
-        a null pointer.
-    */
-    inline
-    value*
-    data() noexcept;
-
-    /** Access the underlying array directly.
-
-        Returns a pointer to the underlying array serving
-        as element storage. The value returned is such that
-        the range `{data(), data() + size())` is always a
-        valid range, even if the container is empty.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @note
-
-        If `size() == 0`, the function may or may not return
-        a null pointer.
-    */
-    inline
-    value const*
-    data() const noexcept;
 
     //------------------------------------------------------
     //
@@ -972,23 +969,6 @@ public:
     //
     //------------------------------------------------------
 
-    /** Check if the array has no elements.
-
-        Returns `true` if there are no elements in the
-        array, i.e. @ref size() returns 0.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
-    bool
-    empty() const noexcept
-    {
-        return impl_.size() == 0;
-    }
-
     /** Return the number of elements in the array.
 
         This returns the number of elements in the array.
@@ -1001,11 +981,9 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
+    inline
     std::size_t
-    size() const noexcept
-    {
-        return impl_.size();
-    }
+    size() const noexcept;
 
     /** Return the maximum number of elements any array can hold.
 
@@ -1021,12 +999,10 @@ public:
         No-throw guarantee.
     */
     static
+    inline
     constexpr
     std::size_t
-    max_size() noexcept
-    {
-        return array_impl::max_size();
-    }
+    max_size() noexcept;
 
     /** Return the number of elements that can be held in currently allocated memory.
 
@@ -1039,11 +1015,24 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
+    inline
     std::size_t
-    capacity() const noexcept
-    {
-        return impl_.capacity();
-    }
+    capacity() const noexcept;
+
+    /** Check if the array has no elements.
+
+        Returns `true` if there are no elements in the
+        array, i.e. @ref size() returns 0.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    inline
+    bool
+    empty() const noexcept;
 
     /** Increase the capacity to at least a certain amount.
 
@@ -1073,15 +1062,9 @@ public:
 
         @throw std::length_error `new_capacity > max_size()`
     */
-    BOOST_FORCEINLINE
+    inline
     void
-    reserve(std::size_t new_capacity)
-    {
-        // never shrink
-        if(new_capacity <= impl_.capacity())
-            return;
-        reserve_impl(new_capacity);
-    }
+    reserve(std::size_t new_capacity);
 
     /** Request the removal of unused capacity.
 
@@ -1152,13 +1135,11 @@ public:
 
         @return An iterator to the inserted value
     */
+    BOOST_JSON_DECL
     iterator
     insert(
         const_iterator pos,
-        value const& v)
-    {
-        return emplace(pos, v);
-    }
+        value const& v);
 
     /** Insert elements before the specified location.
 
@@ -1186,13 +1167,11 @@ public:
 
         @return An iterator to the inserted value
     */
+    BOOST_JSON_DECL
     iterator
     insert(
         const_iterator pos,
-        value&& v)
-    {
-        return emplace(pos, std::move(v));
-    }
+        value&& v);
 
     /** Insert elements before the specified location.
 
@@ -1241,17 +1220,14 @@ public:
         past-the-end iterators are also invalidated.
 
         @par Precondition
-
         `first` and `last` are not iterators into `*this`.
 
         @par Constraints
-
         @code
         not std::is_convertible_v<InputIt, value>
         @endcode
 
         @par Mandates
-
         @code
         std::is_constructible_v<value, std::iterator_traits<InputIt>::value_type>
         @endcode
@@ -1423,11 +1399,9 @@ public:
         @param v The value to insert. A copy will be made
         using container's associated @ref memory_resource.
     */
+    BOOST_JSON_DECL
     void
-    push_back(value const& v)
-    {
-        emplace_back(v);
-    }
+    push_back(value const& v);
 
     /** Add an element to the end.
 
@@ -1449,11 +1423,9 @@ public:
         value will be transferred via move construction,
         using the container's associated @ref memory_resource.
     */
+    BOOST_JSON_DECL
     void
-    push_back(value&& v)
-    {
-        emplace_back(std::move(v));
-    }
+    push_back(value&& v);
 
     /** Append a constructed element in-place.
 
@@ -1697,6 +1669,26 @@ private:
         storage_ptr sp,
         std::forward_iterator_tag);
 
+    inline
+    std::size_t
+    growth(std::size_t new_size) const;
+
+    BOOST_JSON_DECL
+    void
+    reserve_impl(
+        std::size_t new_capacity);
+
+    BOOST_JSON_DECL
+    value&
+    push_back(
+        pilfered<value> pv);
+
+    BOOST_JSON_DECL
+    iterator
+    insert(
+        const_iterator pos,
+        pilfered<value> pv);
+
     template<class InputIt>
     iterator
     insert(
@@ -1720,14 +1712,6 @@ private:
     BOOST_JSON_DECL
     void
     destroy() noexcept;
-
-    inline
-    void
-    copy(array const& other);
-
-    BOOST_JSON_DECL
-    void
-    reserve_impl(std::size_t capacity);
 
     BOOST_JSON_DECL
     static
