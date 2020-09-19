@@ -353,21 +353,21 @@ public:
         }
         {
             array a{value()};
-            BOOST_TEST(a.data() != nullptr);
+            BOOST_TEST(a.begin() != a.end());
             array b{std::move(a), array()};
-            BOOST_TEST(a.data() == nullptr);
+            BOOST_TEST(a.begin() == a.end());
         }
         {
             array a{value()};
-            BOOST_TEST(a.data() != nullptr);
+            BOOST_TEST(a.begin() != a.end());
             array b{a, array()};
-            BOOST_TEST(a.data() != nullptr);
+            BOOST_TEST(a.begin() != a.end());
         }
         {
             const array a{value()};
-            BOOST_TEST(a.data() != nullptr);
+            BOOST_TEST(a.begin() != a.end());
             array b{a, array()};
-            BOOST_TEST(a.data() != nullptr);
+            BOOST_TEST(a.begin() != a.end());
         }
         {
             object a{{"a", 1}, {"b", 2}};

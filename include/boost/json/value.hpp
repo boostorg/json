@@ -3217,7 +3217,7 @@ struct tuple_element<1, ::boost::json::key_value_pair const>
 // These are here because value, array,
 // and object form cyclic references.
 
-#include <boost/json/detail/impl/array_impl.hpp>
+#include <boost/json/detail/impl/array.hpp>
 #include <boost/json/detail/impl/object_impl.hpp>
 #include <boost/json/impl/array.hpp>
 #include <boost/json/impl/object.hpp>

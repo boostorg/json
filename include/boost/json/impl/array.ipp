@@ -20,55 +20,122 @@
 
 BOOST_JSON_NS_BEGIN
 
+//----------------------------------------------------------
+
+constexpr array::table::table() = default;
+
+// empty arrays point here
+BOOST_JSON_REQUIRE_CONST_INIT
+array::table array::empty_;
+
+auto
 array::
-undo_construct::
-~undo_construct()
+table::
+allocate(
+    std::size_t capacity,
+    storage_ptr const& sp) ->
+        table*
 {
-    if(! commit)
-        self_.impl_.destroy(self_.sp_);
+    BOOST_ASSERT(capacity > 0);
+    if(capacity > array::max_size())
+        detail::throw_length_error(
+            "array too large",
+            BOOST_CURRENT_LOCATION);
+    auto p = reinterpret_cast<
+        table*>(sp->allocate(
+            sizeof(table) +
+                capacity * sizeof(value),
+            alignof(value)));
+    p->capacity = static_cast<
+        std::uint32_t>(capacity);
+    return p;
+}
+
+void
+array::
+table::
+deallocate(
+    table* p,
+    storage_ptr const& sp)
+{
+    if(p == &empty_)
+        return;
+    sp->deallocate(p,
+        sizeof(table) +
+            p->capacity * sizeof(value),
+        alignof(value));
 }
 
 //----------------------------------------------------------
 
 array::
-undo_insert::
-undo_insert(
-    value const* pos_,
+revert_insert::
+revert_insert(
+    const_iterator pos,
     std::size_t n,
-    array& self)
-    : self_(self)
+    array& arr)
+    : arr_(&arr)
+    , i_(pos - arr_->data())
     , n_(n)
-    , pos(self.impl_.index_of(pos_))
 {
-    if(n > max_size())
+    BOOST_ASSERT(
+        pos >= arr_->begin() &&
+        pos <= arr_->end());
+    if( n_ <= arr_->capacity() -
+        arr_->size())
+    {
+        // fast path
+        p = arr_->data() + i_;
+        if(n_ == 0)
+            return;
+        relocate(
+            p + n_,
+            p,
+            arr_->size() - i_);
+        arr_->t_->size = static_cast<
+            std::uint32_t>(
+                arr_->t_->size + n_);
+        return;
+    }
+    if(n_ > max_size() - arr_->size())
         detail::throw_length_error(
             "array too large",
             BOOST_CURRENT_LOCATION);
-    self_.reserve(
-        self_.impl_.size() + n_);
-    // (iterators invalidated now)
-    it = self_.impl_.data() + pos;
-    relocate(it + n_, it,
-        self_.impl_.size() - pos);
-    self_.impl_.size(
-        self_.impl_.size() + n_);
+    auto t = table::allocate(
+        arr_->growth(arr_->size() + n_),
+            arr_->sp_);
+    t->size = static_cast<std::uint32_t>(
+        arr_->size() + n_);
+    p = &(*t)[0] + i_;
+    relocate(
+        &(*t)[0],
+        arr_->data(),
+        i_);
+    relocate(
+        &(*t)[i_ + n_],
+        arr_->data() + i_,
+        arr_->size() - i_);
+    t = detail::exchange(arr_->t_, t);
+    table::deallocate(t, arr_->sp_);
 }
 
 array::
-undo_insert::
-~undo_insert()
+revert_insert::
+~revert_insert()
 {
-    if(! commit)
-    {
-        auto const first =
-            self_.impl_.data() + pos;
-        self_.destroy(first, it);
-        self_.impl_.size(
-            self_.impl_.size() - n_);
-        relocate(
-            first, first + n_,
-            self_.impl_.size() - pos);
-    }
+    if(! arr_)
+        return;
+    BOOST_ASSERT(n_ != 0);
+    auto const pos =
+        arr_->data() + i_;
+    arr_->destroy(pos, p);
+    arr_->t_->size = static_cast<
+        std::uint32_t>(
+            arr_->t_->size - n_);
+    relocate(
+        pos,
+        pos + n_,
+        arr_->size() - i_);
 }
 
 //----------------------------------------------------------
@@ -80,15 +147,37 @@ undo_insert::
 array::
 array(detail::unchecked_array&& ua)
     : sp_(ua.storage())
-    , impl_(ua.size(), sp_) // exact
 {
-    impl_.size(ua.size());
-    ua.relocate(impl_.data());
+    BOOST_STATIC_ASSERT(
+        alignof(table) == alignof(value));
+    if(ua.size() == 0)
+    {
+        t_ = &empty_;
+        return;
+    }
+    t_= table::allocate(
+        ua.size(), sp_);
+    t_->size = static_cast<
+        std::uint32_t>(ua.size());
+    ua.relocate(data());
+}
+
+array::
+~array()
+{
+    destroy();
+}
+
+array::
+array() noexcept
+    : t_(&empty_)
+{
 }
 
 array::
 array(storage_ptr sp) noexcept
     : sp_(std::move(sp))
+    , t_(&empty_)
 {
     // silence -Wunused-private-field
     k_ = kind::array;
@@ -101,16 +190,21 @@ array(
     storage_ptr sp)
     : sp_(std::move(sp))
 {
-    undo_construct u(*this);
-    reserve(count);
-    while(impl_.size() < count)
+    if(count == 0)
     {
-        ::new(
-            impl_.data() +
-            impl_.size()) value(v, sp_);
-        impl_.size(impl_.size() + 1);
+        t_ = &empty_;
+        return;
     }
-    u.commit = true;
+    t_= table::allocate(
+        count, sp_);
+    t_->size = 0;
+    revert_construct r(*this);
+    while(count--)
+    {
+        ::new(end()) value(v, sp_);
+        ++t_->size;
+    }
+    r.commit();
 }
 
 array::
@@ -119,25 +213,27 @@ array(
     storage_ptr sp)
     : sp_(std::move(sp))
 {
-    undo_construct u(*this);
-    reserve(count);
-    while(impl_.size() < count)
+    if(count == 0)
     {
-        ::new(
-            impl_.data() +
-            impl_.size()) value(sp_);
-        impl_.size(impl_.size() + 1);
+        t_ = &empty_;
+        return;
     }
-    u.commit = true;
+    t_ = table::allocate(
+        count, sp_);
+    t_->size = static_cast<
+        std::uint32_t>(count);
+    auto p = data();
+    do
+    {
+        ::new(p++) value(sp_);
+    }
+    while(--count);
 }
 
 array::
 array(array const& other)
-    : sp_(other.sp_)
+    : array(other, other.sp_)
 {
-    undo_construct u(*this);
-    copy(other);
-    u.commit = true;
 }
 
 array::
@@ -146,23 +242,42 @@ array(
     storage_ptr sp)
     : sp_(std::move(sp))
 {
-    undo_construct u(*this);
-    copy(other);
-    u.commit = true;
+    if(other.empty())
+    {
+        t_ = &empty_;
+        return;
+    }
+    t_ = table::allocate(
+        other.size(), sp_);
+    t_->size = 0;
+    revert_construct r(*this);
+    auto src = other.data();
+    auto dest = data();
+    auto const n = other.size();
+    do
+    {
+        ::new(dest++) value(
+            *src++, sp_);
+        ++t_->size;
+    }
+    while(t_->size < n);
+    r.commit();
 }
 
 array::
 array(pilfered<array> other) noexcept
     : sp_(detail::exchange(
         other.get().sp_, storage_ptr()))
-    , impl_(std::move(other.get().impl_))
+    , t_(detail::exchange(
+        other.get().t_, &empty_))
 {
 }
 
 array::
 array(array&& other) noexcept
     : sp_(other.sp_)
-    , impl_(std::move(other.impl_))
+    , t_(detail::exchange(
+        other.t_, &empty_))
 {
 }
 
@@ -174,28 +289,55 @@ array(
 {
     if(*sp_ == *other.sp_)
     {
-        impl_.swap(other.impl_);
+        // same resource
+        t_ = detail::exchange(
+            other.t_, &empty_);
+        return;
     }
-    else
+    else if(other.empty())
     {
-        undo_construct u(*this);
-        copy(other);
-        u.commit = true;
+        t_ = &empty_;
+        return;
     }
+    // copy
+    t_ = table::allocate(
+        other.size(), sp_);
+    t_->size = 0;
+    revert_construct r(*this);
+    auto src = other.data();
+    auto dest = data();
+    auto const n = other.size();
+    do
+    {
+        ::new(dest++) value(
+            *src++, sp_);
+        ++t_->size;
+    }
+    while(t_->size < n);
+    r.commit();
 }
 
 array::
 array(
-    std::initializer_list<value_ref> init,
+    std::initializer_list<
+        value_ref> init,
     storage_ptr sp)
     : sp_(std::move(sp))
 {
-    undo_construct u(*this);
-    reserve(init.size());
+    if(init.size() == 0)
+    {
+        t_ = &empty_;
+        return;
+    }
+    t_ = table::allocate(
+        init.size(), sp_);
+    t_->size = 0;
+    revert_construct r(*this);
     value_ref::write_array(
         data(), init, sp_);
-    impl_.size(init.size());
-    u.commit = true;
+    t_->size = static_cast<
+        std::uint32_t>(init.size());
+    r.commit();
 }
 
 //----------------------------------------------------------
@@ -223,11 +365,12 @@ array::
 operator=(
     std::initializer_list<value_ref> init)
 {
-    array tmp(init, sp_);
-    this->~array();
-    ::new(this) array(pilfer(tmp));
+    array(init,
+        storage()).swap(*this);
     return *this;
 }
+
+//----------------------------------------------------------
 
 auto
 array::
@@ -247,12 +390,12 @@ void
 array::
 shrink_to_fit() noexcept
 {
-    if(impl_.capacity() <= impl_.size())
+    if(capacity() <= size())
         return;
-    if(impl_.size() == 0)
+    if(size() == 0)
     {
-        impl_.destroy(sp_);
-        impl_ = {};
+        table::deallocate(t_, sp_);
+        t_ = &empty_;
         return;
     }
 
@@ -260,14 +403,17 @@ shrink_to_fit() noexcept
     try
     {
 #endif
-        array_impl impl(impl_.size(), sp_);
+        auto t = table::allocate(
+            size(), sp_);
         relocate(
-            impl.data(),
-            impl_.data(), impl_.size());
-        impl.size(impl_.size());
-        impl_.size(0);
-        impl_.swap(impl);
-        impl.destroy(sp_);
+            &(*t)[0],
+            data(),
+            size());
+        t->size = static_cast<
+            std::uint32_t>(size());
+        t = detail::exchange(
+            t_, t);
+        table::deallocate(t, sp_);
 #ifndef BOOST_NO_EXCEPTIONS
     }
     catch(...)
@@ -288,11 +434,31 @@ void
 array::
 clear() noexcept
 {
-    if(! impl_.data())
+    if(size() == 0)
         return;
-    destroy(impl_.data(),
-        impl_.data() + impl_.size());
-    impl_.size(0);
+    destroy(
+        begin(), end());
+    t_->size = 0;
+}
+
+auto
+array::
+insert(
+    const_iterator pos,
+    value const& v) ->
+        iterator
+{
+    return emplace(pos, v);
+}
+
+auto
+array::
+insert(
+    const_iterator pos,
+    value&& v) ->
+        iterator
+{
+    return emplace(pos, std::move(v));
 }
 
 auto
@@ -303,11 +469,14 @@ insert(
     value const& v) ->
         iterator
 {
-    undo_insert u(pos, count, *this);
+    revert_insert r(
+        pos, count, *this);
     while(count--)
-        u.emplace(v);
-    u.commit = true;
-    return impl_.data() + u.pos;
+    {
+        ::new(r.p) value(v, sp_);
+        ++r.p;
+    }
+    return r.commit();
 }
 
 auto
@@ -318,12 +487,11 @@ insert(
         value_ref> init) ->
     iterator
 {
-    undo_insert u(
+    revert_insert r(
         pos, init.size(), *this);
     value_ref::write_array(
-        impl_.data() + u.pos, init, sp_);
-    u.commit = true;
-    return impl_.data() + u.pos;
+        r.p, init, sp_);
+    return r.commit();
 }
 
 auto
@@ -332,11 +500,14 @@ erase(
     const_iterator pos) noexcept ->
     iterator
 {
-    auto p = impl_.data() +
-        (pos - impl_.data());
+    BOOST_ASSERT(
+        pos >= begin() &&
+        pos <= end());
+    auto const p = &(*t_)[0] +
+        (pos - &(*t_)[0]);
     destroy(p, p + 1);
     relocate(p, p + 1, 1);
-    impl_.size(impl_.size() - 1);
+    --t_->size;
     return p;
 }
 
@@ -347,16 +518,31 @@ erase(
     const_iterator last) noexcept ->
         iterator
 {
-    auto const n = static_cast<
-        std::size_t>(last - first);
-    auto const p =
-        impl_.data() + impl_.index_of(first);
+    std::size_t const n =
+        last - first;
+    auto const p = &(*t_)[0] +
+        (first - &(*t_)[0]);
     destroy(p, p + n);
     relocate(p, p + n,
-        impl_.size() -
-            impl_.index_of(last));
-    impl_.size(impl_.size() - n);
+        t_->size - (last -
+            &(*t_)[0]));
+    t_->size = static_cast<
+        std::uint32_t>(t_->size - n);
     return p;
+}
+
+void
+array::
+push_back(value const& v)
+{
+    emplace_back(v);
+}
+
+void
+array::
+push_back(value&& v)
+{
+    emplace_back(std::move(v));
 }
 
 void
@@ -365,30 +551,31 @@ pop_back() noexcept
 {
     auto const p = &back();
     destroy(p, p + 1);
-    impl_.size(impl_.size() - 1);
+    --t_->size;
 }
 
 void
 array::
 resize(std::size_t count)
 {
-    if(count <= impl_.size())
+    if(count <= t_->size)
     {
+        // shrink
         destroy(
-            impl_.data() + count,
-            impl_.data() + impl_.size());
-        impl_.size(count);
+            &(*t_)[0] + count,
+            &(*t_)[0] + t_->size);
+        t_->size = static_cast<
+            std::uint32_t>(count);
         return;
     }
 
     reserve(count);
-    auto it =
-        impl_.data() + impl_.size();
-    auto const end =
-        impl_.data() + count;
-    while(it != end)
-        ::new(it++) value(sp_);
-    impl_.size(count);
+    auto p = &(*t_)[t_->size];
+    auto const end = &(*t_)[count];
+    while(p != end)
+        ::new(p++) value(sp_);
+    t_->size = static_cast<
+        std::uint32_t>(count);
 }
 
 void
@@ -399,41 +586,23 @@ resize(
 {
     if(count <= size())
     {
+        // shrink
         destroy(
-            impl_.data() + count,
-            impl_.data() + impl_.size());
-        impl_.size(count);
+            data() + count,
+            data() + size());
+        t_->size = static_cast<
+            std::uint32_t>(count);
         return;
     }
-
-    reserve(count);
-
-    struct undo
+    count -= size();
+    revert_insert r(
+        end(), count, *this);
+    while(count--)
     {
-        array& self;
-        value* it;
-        value* const end;
-
-        ~undo()
-        {
-            if(it)
-                self.destroy(end, it);
-        }
-    };
-
-    auto const end =
-        impl_.data() + count;
-    undo u{*this,
-        impl_.data() + impl_.size(),
-        impl_.data() + impl_.size()};
-    do
-    {
-        ::new(u.it) value(v, sp_);
-        ++u.it;
+        ::new(r.p) value(v, sp_);
+        ++r.p;
     }
-    while(u.it != end);
-    impl_.size(count);
-    u.it = nullptr;
+    r.commit();
 }
 
 void
@@ -443,7 +612,8 @@ swap(array& other)
     BOOST_ASSERT(this != &other);
     if(*sp_ == *other.sp_)
     {
-        impl_.swap(other.impl_);
+        t_ = detail::exchange(
+            other.t_, t_);
         return;
     }
     array temp1(
@@ -453,12 +623,136 @@ swap(array& other)
         std::move(other),
         this->storage());
     this->~array();
-    ::new(this) array(pilfer(temp2));
+    ::new(this) array(
+        pilfer(temp2));
     other.~array();
-    ::new(&other) array(pilfer(temp1));
+    ::new(&other) array(
+        pilfer(temp1));
 }
 
 //----------------------------------------------------------
+//
+// Private
+//
+//----------------------------------------------------------
+
+std::size_t
+array::
+growth(
+    std::size_t new_size) const
+{
+    if(new_size > max_size())
+        detail::throw_length_error(
+            "array too large",
+            BOOST_CURRENT_LOCATION);
+    std::size_t const old = capacity();
+    // VFALCO This is wrong, it needs to
+    // check max_size in more places
+    if(old > max_size() - old / 2)
+        return new_size;
+    std::size_t const g = old + old / 2; // 1.5x
+    if(g < new_size)
+        return new_size;
+    return g;
+}
+
+// precondition: new_capacity > capacity()
+void
+array::
+reserve_impl(
+    std::size_t new_capacity)
+{
+    BOOST_ASSERT(
+        new_capacity > t_->capacity);
+    auto t = table::allocate(
+        growth(new_capacity), sp_);
+    relocate(
+        &(*t)[0],
+        &(*t_)[0],
+        t_->size);
+    t->size = t_->size;
+    t = detail::exchange(t_, t);
+    table::deallocate(t, sp_);
+}
+
+// precondition: pv is not aliased
+value&
+array::
+push_back(
+    pilfered<value> pv)
+{
+    auto const n = t_->size;
+    if(n < t_->capacity)
+    {
+        // fast path
+        auto& v = *::new(
+            &(*t_)[n]) value(pv);
+        ++t_->size;
+        return v;
+    }
+    auto const t =
+        detail::exchange(t_,
+            table::allocate(
+                growth(n + 1),
+                    sp_));
+    auto& v = *::new(
+        &(*t_)[n]) value(pv);
+    relocate(
+        &(*t_)[0],
+        &(*t)[0],
+        n);
+    t_->size = n + 1;
+    table::deallocate(t, sp_);
+    return v;
+}
+
+// precondition: pv is not aliased
+auto
+array::
+insert(
+    const_iterator pos,
+    pilfered<value> pv) ->
+        iterator
+{
+    BOOST_ASSERT(
+        pos >= begin() &&
+        pos <= end());
+    std::size_t const n =
+        t_->size;
+    std::size_t const i =
+        pos - &(*t_)[0];
+    if(n < t_->capacity)
+    {
+        // fast path
+        auto const p =
+            &(*t_)[i];
+        relocate(
+            p + 1,
+            p,
+            n - i);
+        ::new(p) value(pv);
+        ++t_->size;
+        return p;
+    }
+    auto t =
+        table::allocate(
+            growth(n + 1), sp_);
+    auto const p = &(*t)[i];
+    ::new(p) value(pv);
+    relocate(
+        &(*t)[0],
+        &(*t_)[0],
+        i);
+    relocate(
+        p + 1,
+        &(*t_)[i],
+        n - i);
+    t->size = static_cast<
+        std::uint32_t>(size() + 1);
+    t = detail::exchange(t_, t);
+    table::deallocate(t, sp_);
+    return p;
+}
 
 void
 array::
@@ -467,53 +761,21 @@ destroy(
 {
     if(sp_.is_not_counted_and_deallocate_is_trivial())
         return;
-    while(last != first)
-        (*--last).~value();
+    while(last-- != first)
+        last->~value();
 }
 
 void
 array::
 destroy() noexcept
 {
-    impl_.destroy_impl(sp_);
-}
-
-void
-array::
-copy(array const& other)
-{
-    reserve(other.size());
-    for(auto const& v : other)
-    {
-        ::new(
-            impl_.data() +
-            impl_.size()) value(v, sp_);
-        impl_.size(impl_.size() + 1);
-    }
-}
-
-void
-array::
-reserve_impl(std::size_t capacity)
-{
-    if(impl_.data())
-    {
-        // 2x growth
-        auto const hint =
-            impl_.capacity() * 2;
-        if(hint < impl_.capacity()) // overflow
-            capacity = max_size();
-        else if(capacity < hint)
-            capacity = hint;
-    }
-    array_impl impl(capacity, sp_);
-    relocate(
-        impl.data(),
-        impl_.data(), impl_.size());
-    impl.size(impl_.size());
-    impl_.size(0);
-    impl_.destroy(sp_);
-    impl_ = impl;
+    if(sp_.is_not_counted_and_deallocate_is_trivial())
+        return;
+    auto last = end();
+    auto const first = begin();
+    while(last-- != first)
+        last->~value();
+    table::deallocate(t_, sp_);
 }
 
 void
