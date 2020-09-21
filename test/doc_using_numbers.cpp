@@ -10,6 +10,7 @@
 #include <boost/json/number_cast.hpp>
 #include <boost/json/parse.hpp>
 #include <boost/json/value.hpp>
+#include <boost/json/value_to.hpp>
 
 #include "test_suite.hpp"
 
@@ -55,60 +56,98 @@ assert( jv3.is_double() );
 //----------------------------------------------------------
 {
 //[doc_using_numbers_2
+
+value jv = 1;
+
+assert( jv.is_int64() );
+        
+// jv.kind() != kind::uint64; throws
+std::uint64_t r1 = jv.as_uint64();
+
+// jv.kind() != kind::uint64; the behavior is undefined
+std::uint64_t r2 = jv.get_uint64();
+
+// if_double will always return nullptr, branch is not taken
+if(double* d = jv.if_double())
+    assert( false );
+
+//]
+};
+//----------------------------------------------------------
+{
+//[doc_using_numbers_3
 struct convert_int64
 {
     value jv;
 
     operator int() const
     {
-        return number_cast< int >( this->jv );
+        return value_to< int >( this->jv );
     }
 };
 //]
 }
 //----------------------------------------------------------
-{
-//[doc_using_numbers_3
 try
 {
+//[doc_using_numbers_4
     value jv1 = 404;
 
     assert( jv1.is_int64() );
 
     // ok, identity conversion
-    std::int64_t r1 = number_cast< std::int64_t >( jv1 );
+    std::int64_t r1 = value_to< std::int64_t >( jv1 );
 
     // loss of data, throws system_error
-    char r2 = number_cast< char >( jv1 );
+    char r2 = value_to< char >( jv1 );
 
     // ok, no loss of data
-    double r3 = number_cast< double >( jv1 );
+    double r3 = value_to< double >( jv1 );
 
     value jv2 = 1.23;
 
     assert( jv1.is_double() );
 
     // ok, same as static_cast<float>( jv2.get_double() )
-    float r4 = number_cast< float >( jv2 );
+    float r4 = value_to< float >( jv2 );
 
     // not exact, throws system_error
-    int r5 = number_cast< int >( jv2 );
+    int r5 = value_to< int >( jv2 );
 
     value jv3 = {1, 2, 3};
 
     assert( ! jv3.is_number() );
 
     // not a number, throws system_error
-    int r6 = number_cast< int >( jv3 );
+    int r6 = value_to< int >( jv3 );
+//]
 }
 catch(...)
 {
 }
+//----------------------------------------------------------
+{
+//[doc_using_numbers_5
+
+value jv = 10.5;
+
+error_code ec;
+
+// ok, conversion is exact
+float r1 = number_cast< float >( jv, ec );
+
+assert( ! ec );
+
+// error, conversion is non-exact
+int r2 = number_cast< int >( jv, ec );
+
+assert( ec == error::not_exact );
+
 //]
 }
 //----------------------------------------------------------
 {
-//[doc_using_numbers_4
+//[doc_using_numbers_6
 value jv = parse("[-42, 100, 10.25, -299999999999999999998, 2e32]");
 
 array ja = jv.as_array();
@@ -131,7 +170,7 @@ assert( ja[4].is_double() );
 }
 //----------------------------------------------------------
 {
-//[doc_using_numbers_5
+//[doc_using_numbers_7
 //]
 }
 //----------------------------------------------------------
