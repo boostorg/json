@@ -115,8 +115,8 @@ tag_invoke(
 
 // string-like types
 template<class T, typename std::enable_if<
-    std::is_constructible<T, char*, std::size_t>::value &&
-        std::is_convertible<char*, decltype(std::declval<T&>().data())>::value && 
+    std::is_constructible<T, const char*, std::size_t>::value &&
+        std::is_convertible<decltype(std::declval<T&>().data()), const char*>::value && 
     std::is_convertible<decltype(std::declval<T&>().size()),
         std::size_t>::value>::type* = nullptr>
 T

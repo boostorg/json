@@ -223,7 +223,7 @@ and semantics of an expression is determined.
 [table Valid expressions
 [[Expression] [Type] [Semantics and Constraints]]
 [
-    [`std::is_constructible<T, char*, std::size_t>`]
+    [`std::is_constructible<T, const char*, std::size_t>`]
     [`U`]
     [
         ['Constraints:] `U::value` is `true`
@@ -232,7 +232,7 @@ and semantics of an expression is determined.
     [`e.data()`]
     [`pointer`]
     [
-        ['Constraints:] `std::is_convertible<char*, pointer>::value` is `true`
+        ['Constraints:] `std::is_convertible<pointer, const char*>::value` is `true`
     ]
 ][
     [`e.size()`]
