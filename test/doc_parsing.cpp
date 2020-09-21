@@ -77,11 +77,24 @@ value jv = parse( "[1,2,3,] // comment, extra comma ", storage_ptr(), opt );
 //]
 }
 //----------------------------------------------------------
+{
+//[doc_parsing_6
+#if __cpp_designated_initializers >= 201707L
+value jv = parse( "[1,2,3,] // comment, extra comma ", storage_ptr(), 
+    { 
+        .allow_comments = true, // permit C and C++ style comments to appear in whitespace
+        .allow_trailing_commas = true, // allow an additional trailing comma in object and array element lists
+        .allow_invalid_utf8 = true // skip utf-8 validation of keys and strings
+    });
+#endif
+//]
+}
+//----------------------------------------------------------
 
 } // set1
 
 //----------------------------------------------------------
-//[doc_parsing_6
+//[doc_parsing_7
 class connection
 {
     parser p_;                                      // persistent data member
@@ -100,7 +113,7 @@ public:
 
 //----------------------------------------------------------
 
-//[doc_parsing_7
+//[doc_parsing_8
 value read_json( std::istream& is, error_code& ec )
 {
     parser p;
@@ -124,7 +137,7 @@ static void set2() {
 
 //----------------------------------------------------------
 {
-//[doc_parsing_8
+//[doc_parsing_9
 parser p;
 error_code ec;
 string_view s = "[1,2,3] %HOME%";
@@ -137,7 +150,7 @@ assert( s == "%HOME%" );
 }
 //----------------------------------------------------------
 {
-//[doc_parsing_9
+//[doc_parsing_10
 parse_options opt;                                  // All extensions default to off
 opt.allow_comments = true;                          // Permit C and C++ style comments to appear in whitespace
 opt.allow_trailing_commas = true;                   // Allow an additional trailing comma in object and array element lists
@@ -147,7 +160,7 @@ parser p( storage_ptr(), opt );                     // The parser will use the o
 }
 //----------------------------------------------------------
 {
-//[doc_parsing_10
+//[doc_parsing_11
 {
     monotonic_resource mr;
 
@@ -161,7 +174,7 @@ parser p( storage_ptr(), opt );                     // The parser will use the o
 }
 //----------------------------------------------------------
 {
-//[doc_parsing_11
+//[doc_parsing_12
 unsigned char temp[ 4096 ];                                 // Declare our buffer
 parser p(
     storage_ptr(),                                          // Default memory resource
@@ -175,7 +188,7 @@ parser p(
 
 //----------------------------------------------------------
 
-//[doc_parsing_12
+//[doc_parsing_13
 /*  Parse JSON and invoke the handler
 
     This function parses the JSON specified in `s`

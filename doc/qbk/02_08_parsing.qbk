@@ -89,6 +89,11 @@ structure and passing it by value. By default all extensions are disabled:
 
 [doc_parsing_5]
 
+Using a compiler with support for C++20 features, [@https://en.cppreference.com/w/cpp/language/aggregate_initialization#Designated_initializers designated initializers] can be used to construct
+__parse_options__ with a less verbose but equally expressive syntax:
+
+[doc_parsing_6]
+
 [/-----------------------------------------------------------------------------]
 
 [heading Parser Instance]
@@ -119,7 +124,7 @@ returns `true` after a successful call to `write` or `finish`
 if parsing is complete. This example persists the parser instance
 in a class member to reuse across calls:
 
-[doc_parsing_6]
+[doc_parsing_7]
 
 The parser interface allows a
 [@https://en.wikipedia.org/wiki/Online_algorithm ['streaming algorithm]];
@@ -139,7 +144,7 @@ at a time. Error codes are used instead. The function
 [link json.ref.boost__json__parser.finish `finish`]
 is used to indicate the end of the input:
 
-[doc_parsing_7]
+[doc_parsing_8]
 
 Sometimes a protocol may have a JSON text followed by data that is in
 a different format or specification. The JSON portion can still be parsed
@@ -148,12 +153,12 @@ by using the function
 Upon success, the return value will indicate the number of characters
 consumed from the input, which will exclude the non-JSON characters:
 
-[doc_parsing_8]
+[doc_parsing_9]
 
 The parser instance may be constructed with parse options which
 allow some non-standard JSON extensions to be recognized:
 
-[doc_parsing_9]
+[doc_parsing_10]
 
 [/-----------------------------------------------------------------------------]
 
@@ -167,7 +172,7 @@ memory resource, call `reset` with the resource to use. Here we use
 a __monotonic_resource__, which is optimized for parsing but not
 subsequent modification:
 
-[doc_parsing_10]
+[doc_parsing_11]
 
 To achieve performance and memory efficiency, the parser uses a
 temporary storage area to hold intermediate results. This storage
@@ -181,14 +186,14 @@ storage. This can help avoid dynamic allocations for small inputs.
 The following example uses a 4kb temporary buffer for the parser,
 and falls back to the default memory resource if needed:
 
-[doc_parsing_11]
+[doc_parsing_12]
 
 Through careful specification of buffers and memory resources,
 it is possible to eliminate all dynamic allocation completely when
 parsing JSON, for the case where the entire JSON is available in
 a single character buffer, as shown here:
 
-[doc_parsing_12]
+[doc_parsing_13]
 
 [/-----------------------------------------------------------------------------]
 
