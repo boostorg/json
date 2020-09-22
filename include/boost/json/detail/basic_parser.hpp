@@ -49,10 +49,10 @@ BOOST_JSON_NS_BEGIN
 \n
     The parser may dynamically allocate intermediate
     storage as needed to accommodate the nesting level
-    of the input JSON. This storage is freed when the
-    parser is destroyed, allowing the parser to cheaply
-    re-use this memory on subsequent parses, improving
-    performance.
+    of the input JSON. On subsequent invocations, the
+    parser can cheaply re-use this memory, improving
+    performance. This storage is freed when the
+    parser is destroyed
 
     @par Usage
 
