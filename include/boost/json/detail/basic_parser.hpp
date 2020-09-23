@@ -390,11 +390,6 @@ class basic_parser
         state st,
         const number& num);
 
-    BOOST_NOINLINE
-    inline
-    const char*
-    syntax_error(const char* p);
-
 #ifdef __INTEL_COMPILER
 #pragma warning pop
 #endif

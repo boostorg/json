@@ -363,17 +363,6 @@ suspend(
 }
 
 template<class Handler>
-const char*
-basic_parser<Handler>::
-syntax_error(
-    const char* p)
-{
-    end_ = p;
-    ec_ = error::syntax;
-    return sentinel();
-}
-
-template<class Handler>
 template<
     bool StackEmpty,
     bool Terminal>
@@ -577,45 +566,31 @@ parse_value(const char* p)
 {
     if(StackEmpty || st_.empty())
     {
-        static constexpr auto num = &basic_parser::parse_number<true, '+'>;
-        static constexpr auto err = &basic_parser::syntax_error;
-
-        static constexpr const char* (basic_parser::* jump_table[256])(const char*) = {
-            err, err, err, err, err, err, err, err, err, err, err, err, err, err, err, err,
-            err, err, err, err, err, err, err, err, err, err, err, err, err, err, err, err,
-            err, err,
-                &basic_parser::parse_unescaped<true, false, AllowBadUTF8>,
-                err, err, err, err, err, err, err, err, err, err,
-                &basic_parser::parse_number<true, '-'>, err, err,
-            &basic_parser::parse_number<true, '0'>,
-                num, num, num, num, num, num, num, num, num, err, err, err, err, err, err,
-            err, err, err, err, err, err, err, err, err, err, err, err, err, err, err, err,
-            err, err, err, err, err, err, err, err, err, err, err,
-                &basic_parser::parse_array<true, AllowComments, AllowTrailing, AllowBadUTF8>,
-                err, err, err, err,
-            err, err, err, err, err, err,
-                &basic_parser::parse_false<true>,
-                err, err, err, err, err, err, err,
-                &basic_parser::parse_null<true>,
-                err,
-            err, err, err, err,
-                &basic_parser::parse_true<true>,
-                err, err, err, err, err, err,
-                &basic_parser::parse_object<true, AllowComments, AllowTrailing, AllowBadUTF8>,
-                err, err, err, err,
-
-            // negative values are converted to unsigned char, they are handled here
-            err, err, err, err, err, err, err, err, err, err, err, err, err, err, err, err,
-            err, err, err, err, err, err, err, err, err, err, err, err, err, err, err, err,
-            err, err, err, err, err, err, err, err, err, err, err, err, err, err, err, err,
-            err, err, err, err, err, err, err, err, err, err, err, err, err, err, err, err,
-            err, err, err, err, err, err, err, err, err, err, err, err, err, err, err, err,
-            err, err, err, err, err, err, err, err, err, err, err, err, err, err, err, err,
-            err, err, err, err, err, err, err, err, err, err, err, err, err, err, err, err,
-            err, err, err, err, err, err, err, err, err, err, err, err, err, err, err, err
-        };
-        return (this->*jump_table
-            [static_cast<unsigned char>(*p)])(p);
+        switch(*p)
+        {
+        case '0':
+            return parse_number<true, '0'>(p);
+        case '-':
+            return parse_number<true, '-'>(p);
+        case '1': case '2': case '3':
+        case '4': case '5': case '6':
+        case '7': case '8': case '9':
+            return parse_number<true, '+'>(p);
+        case 't':
+            return parse_true<true>(p);
+        case 'f':
+            return parse_false<true>(p);
+        case 'n':
+            return parse_null<true>(p);
+        case '"':
+            return parse_unescaped<true, false, AllowBadUTF8>(p);
+        case '[':
+            return parse_array<true, AllowComments, AllowTrailing, AllowBadUTF8>(p);
+        case '{':
+            return parse_object<true, AllowComments, AllowTrailing, AllowBadUTF8>(p);
+        default:
+            return fail(p, error::syntax);
+        }
     }
     return resume_value<StackEmpty, AllowComments, 
         AllowTrailing, AllowBadUTF8>(p);
