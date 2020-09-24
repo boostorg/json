@@ -56,6 +56,13 @@ BOOST_JSON_NS_BEGIN
 
     @par Usage
 
+    To get the declaration and function definitions
+    for this class it is necessary to include this
+    file instead:
+    @code
+    #include <boost/json/basic_parser.hpp>
+    @endcode
+
     Users who wish to parse JSON into the DOM container
     @ref value will not use this class directly; instead
     they will create an instance of @ref parser and
