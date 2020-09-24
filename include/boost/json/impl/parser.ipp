@@ -254,7 +254,7 @@ write_some(
     std::size_t size,
     error_code& ec)
 {
-    return p_.write(
+    return p_.write_some(
         true, data, size, ec);
 }
 
@@ -265,7 +265,7 @@ write_some(
     std::size_t size)
 {
     error_code ec;
-    auto const n = p_.write(
+    auto const n = p_.write_some(
         true, data, size, ec);
     if(ec)
         detail::throw_system_error(ec,
@@ -309,7 +309,7 @@ void
 parser::
 finish(error_code& ec)
 {
-    p_.write(false, nullptr, 0, ec);
+    p_.write_some(false, nullptr, 0, ec);
 }
 
 void
@@ -317,7 +317,7 @@ parser::
 finish()
 {
     error_code ec;
-    p_.write(false, nullptr, 0, ec);
+    p_.write_some(false, nullptr, 0, ec);
     if(ec)
         detail::throw_system_error(ec,
             BOOST_CURRENT_LOCATION);

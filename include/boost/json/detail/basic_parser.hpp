@@ -627,7 +627,7 @@ public:
     void
     fail(error_code ec) noexcept;
 
-    /** Parse JSON incrementally.
+    /** Parse some of an input string as JSON, incrementally.
 
         This function parses the JSON in the specified
         buffer, calling the handler to emit each SAX
@@ -676,7 +676,7 @@ public:
         @param ec Set to the error, if any occurred.
     */
     std::size_t
-    write(
+    write_some(
         bool more,
         char const* data,
         std::size_t size,

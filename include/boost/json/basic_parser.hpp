@@ -2391,7 +2391,7 @@ fail(error_code ec) noexcept
 template<class Handler>
 std::size_t
 basic_parser<Handler>::
-write(
+write_some(
     bool more,
     char const* data,
     std::size_t size,

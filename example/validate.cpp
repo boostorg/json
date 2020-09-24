@@ -74,7 +74,7 @@ public:
         std::size_t size,
         error_code& ec)
     {
-        auto const n = p_.write( false, data, size, ec );
+        auto const n = p_.write_some( false, data, size, ec );
         if(! ec && n < size)
             ec = error::extra_data;
         return n;
