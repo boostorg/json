@@ -273,4 +273,9 @@ to conditionally perform an assignment without using exceptions:
     [snippet_value_8]
 ]
 
+[heading Formatted Output]
+
+When a __value__ is formatted to a __std_ostream__, the result
+is serialized JSON as if by calling __serialize__.
+
 [endsect]

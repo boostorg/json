@@ -74,4 +74,10 @@ memory allocations. Alternatively, a __storage_ptr__ can be provided explicitly:
 
 [snippet_strings_1]
 
+[heading Formatted Output]
+
+When a __string__ is formatted to a __std_ostream__, the result is a valid
+JSON. That is, the result will be double quoted and the contents properly
+escaped per the JSON specification.
+
 [endsect]

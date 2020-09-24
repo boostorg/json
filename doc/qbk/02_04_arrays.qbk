@@ -43,4 +43,10 @@ or without bounds checking using
 For the complete listing of all available member functions and nested
 types, see the reference page for __array__.
 
+[heading Formatted Output]
+
+When an __array__ is formatted to a __std_ostream__, the result is a valid
+JSON. That is, the array will be output with square brackets and the comma
+separated list of values, as per the JSON specification.
+
 [endsect]
