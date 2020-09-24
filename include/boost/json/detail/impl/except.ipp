@@ -29,16 +29,6 @@ namespace boost {
 BOOST_NORETURN
 void
 throw_exception(std::exception const&);
-
-#else
-template<class E>
-void
-BOOST_NORETURN
-throw_exception(E e)
-{
-    throw e;
-}
-
 #endif
 
 } // boost
@@ -47,6 +37,19 @@ throw_exception(E e)
 BOOST_JSON_NS_BEGIN
 
 namespace detail {
+
+#if defined(BOOST_JSON_STANDALONE) && \
+    ! defined(BOOST_NO_EXCEPTIONS)
+// this is in the json namespace to avoid
+// colliding with boost::throw_exception
+template<class E>
+void
+BOOST_NORETURN
+throw_exception(E e)
+{
+    throw e;
+}
+#endif
 
 void
 throw_bad_alloc(
