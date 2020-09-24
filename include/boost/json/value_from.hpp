@@ -25,10 +25,9 @@ BOOST_JSON_NS_BEGIN
 
     @note This type is empty; it has no members.
 
-    @see
-        @ref value_from
-        @ref value_to
-        @ref value_to_tag
+    @see @ref value_from, @ref value_to, @ref value_to_tag,
+    <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1895r0.pdf">
+        tag_invoke: A general pattern for supporting customisable functions</a>
 */
 #ifndef BOOST_JSON_DOCS
 struct value_from_tag;
@@ -52,7 +51,7 @@ struct value_from_tag {};
     In all cases, the conversion is done by calling
     an overload of `tag_invoke` found by argument-dependent
     lookup. Its signature should be similar to:
-    
+ 
     @code
     void tag_invoke( value_from_tag, value&, T );
     @endcode
@@ -63,7 +62,6 @@ struct value_from_tag {};
     resource is correctly propagated.
 
     @par Exception Safety
-
     Strong guarantee.
 
     @tparam T The type of the object to convert.
@@ -76,7 +74,9 @@ struct value_from_tag {};
     to use for the returned @ref value. The default argument for this
     parameter is `{}`.
 
-    @see @ref value_to, http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1895r0.pdf
+    @see @ref value_from_tag, @ref value_to,
+    <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1895r0.pdf">
+        tag_invoke: A general pattern for supporting customisable functions</a>
 */
 template<class T>
 value

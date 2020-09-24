@@ -25,10 +25,9 @@ BOOST_JSON_NS_BEGIN
 
     @note This type is empty; it has no members.
 
-    @see
-        @ref value_from
-        @ref value_from_tag
-        @ref value_to
+    @see @ref value_from, @ref value_from_tag, @ref value_to,
+    <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1895r0.pdf">
+        tag_invoke: A general pattern for supporting customisable functions</a>
 */
 template<class T>
 struct value_to_tag;
@@ -62,16 +61,17 @@ struct value_to_tag;
     @endcode
 
     @par Exception Safety
-
     Strong guarantee.
 
     @tparam T The type to convert to.
-    
+
     @returns `jv` converted to `T`.
 
     @param jv The @ref value to convert.
 
-    @see @ref value_from, http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1895r0.pdf
+    @see @ref value_to_tag, @ref value_from,
+    <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1895r0.pdf">
+        tag_invoke: A general pattern for supporting customisable functions</a>
 */
 #ifdef BOOST_JSON_DOCS
 template<class T>
