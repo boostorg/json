@@ -942,16 +942,18 @@ public:
 
     /** Return the parsed JSON as a @ref value.
 
-        This returns the parsed value.
-        is necessary to call @ref reset after calling
-        this function in order to parse another JSON.
-        Undefined behavior results if the parser is
-        not done, or if an error occurred during
-        parsing.
+        This returns the parsed value, or throws
+        an exception if the parsing is incomplete or
+        failed. It is necessary to call @ref reset
+        after calling this function in order to parse
+        another JSON.
 
+        @par Effects
+        @code
+        if( ! this->done() )
+            this->finish();
+        @endcode
         @note
-
-        If `! this->done()`, an exception is thrown.
 
         @par Complexity
         Constant.
