@@ -350,13 +350,11 @@ public:
 
     /** Pilfer constructor.
 
-        The object is constructed by acquiring ownership of
-        the contents of `other` using pilfer semantics.
-
-        @note
-
-        After construction, the moved-from object may only
-        be destroyed.
+        The object is constructed by acquiring ownership
+        of the contents of `other` using pilfer semantics.
+        This is more efficient than move construction, when
+        it is known that the moved-from object will be
+        immediately destroyed afterwards.
         
         @par Complexity
         Constant.
@@ -364,12 +362,13 @@ public:
         @par Exception Safety
         No-throw guarantee.
 
-        @param other The object to pilfer.
+        @param other The value to pilfer. After pilfer
+        construction, `other` is not in a usable state
+        and may only be destroyed.
 
-        @see @ref pilfer
-        
-        Pilfering constructors are described in
-        <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0308r0.html">Valueless Variants Considered Harmful</a>, by Peter Dimov.
+        @see @ref pilfer,
+            <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0308r0.html">
+                Valueless Variants Considered Harmful</a>
     */
     BOOST_JSON_DECL
     object(pilfered<object> other) noexcept;

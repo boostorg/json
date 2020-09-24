@@ -173,25 +173,25 @@ public:
 
     /** Pilfer constructor.
 
-        Constructs the string with the contents of `other`
-        using pilfer semantics.
-        Ownership of the @ref memory_resource is transferred.
-
+        The string is constructed by acquiring ownership
+        of the contents of `other` using pilfer semantics.
+        This is more efficient than move construction, when
+        it is known that the moved-from object will be
+        immediately destroyed afterwards.
+        
         @par Complexity
-
         Constant.
-        
-        @note
 
-        After construction, the pilfered-from string may
-        only be destroyed.
-        
-        @param other The string to pilfer
+        @par Exception Safety
+        No-throw guarantee.
 
-        @see @ref pilfer
-        
-        Pilfering constructors are described in
-        <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0308r0.html">Valueless Variants Considered Harmful</a>, by Peter Dimov.
+        @param other The value to pilfer. After pilfer
+        construction, `other` is not in a usable state
+        and may only be destroyed.
+
+        @see @ref pilfer,
+            <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0308r0.html">
+                Valueless Variants Considered Harmful</a>
     */
     string(pilfered<string> other) noexcept
         : sp_(std::move(other.get().sp_))
