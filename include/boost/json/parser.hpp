@@ -452,7 +452,7 @@ public:
         return p_.done();
     }
 
-    /** Parse JSON incrementally.
+    /** Parse some of an input string as JSON, incrementally.
 
         This function parses the JSON in the specified
         buffer. The parse proceeds from the current
@@ -509,7 +509,7 @@ public:
         std::size_t size,
         error_code& ec);
 
-    /** Parse JSON incrementally.
+    /** Parse some of an input string as JSON, incrementally.
 
         This function parses the JSON in the specified
         buffer. The parse proceeds from the current
@@ -565,7 +565,7 @@ public:
         char const* data,
         std::size_t size);
 
-    /** Parse JSON incrementally.
+    /** Parse some of an input string as JSON, incrementally.
 
         This function parses the JSON in the specified
         buffer. The parse proceeds from the current
@@ -620,7 +620,7 @@ public:
             s.data(), s.size(), ec);
     }
 
-    /** Parse JSON incrementally.
+    /** Parse some of an input string as JSON, incrementally.
 
         This function parses the JSON in the specified
         buffer. The parse proceeds from the current
@@ -674,7 +674,7 @@ public:
             s.data(), s.size());
     }
 
-    /** Parse JSON incrementally.
+    /** Parse all of an input string as JSON, incrementally.
 
         This function parses the JSON in the specified
         buffer. The parse proceeds from the current
@@ -731,7 +731,7 @@ public:
         std::size_t size,
         error_code& ec);
 
-    /** Parse JSON incrementally.
+    /** Parse all of an input string as JSON, incrementally.
 
         This function parses the JSON in the specified
         buffer. The parse proceeds from the current
@@ -787,7 +787,7 @@ public:
         char const* data,
         std::size_t size);
 
-    /** Parse JSON incrementally.
+    /** Parse all of an input string as JSON, incrementally.
 
         This function parses the JSON in the specified
         buffer. The parse proceeds from the current
@@ -842,7 +842,7 @@ public:
             s.data(), s.size(), ec);
     }
 
-    /** Parse JSON incrementally.
+    /** Parse all of an input string as JSON, incrementally.
 
         This function parses the JSON in the specified
         buffer. The parse proceeds from the current
@@ -896,7 +896,7 @@ public:
             s.data(), s.size());
     }
 
-    /** Parse JSON incrementally.
+    /** Indicate the end of JSON input.
 
         The caller uses this function to inform the
         parser that there is no more serialized JSON
@@ -918,7 +918,7 @@ public:
     void
     finish(error_code& ec);
 
-    /** Parse JSON incrementally.
+    /** Indicate the end of JSON input.
 
         The caller uses this function to inform the
         parser that there is no more serialized JSON
