@@ -35,14 +35,14 @@ INCLUDE_PATH           = ../
 INCLUDE_FILE_PATTERNS  =
 
 PREDEFINED             = \
-                        BOOST_JSON_DOCS \
-                        BOOST_JSON_DECL \
-                        BOOST_JSON_PUBLIC \
-                        BOOST_JSON_FORCEINLINE \
-                        BOOST_SYMBOL_VISIBLE \
+                        BOOST_FORCEINLINE \
                         BOOST_JSON_CLASS_DECL \
-                        "BOOST_JSON_NODISCARD=[[nodiscard]]" \
+                        BOOST_JSON_DECL \
+                        BOOST_JSON_DOCS \
+                        BOOST_JSON_PUBLIC \
+                        BOOST_SYMBOL_VISIBLE \
                         "BOOST_JSON_INLINE_VARIABLE(v, t)=constexpr t v;" \
+                        "BOOST_JSON_NODISCARD=[[nodiscard]]" \
                         "BOOST_JSON_NS_BEGIN=namespace boost { namespace json {" \
                         "BOOST_JSON_NS_END=}}"
 
