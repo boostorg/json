@@ -45,6 +45,7 @@
           <member><link linkend="json.ref.boost__json__number_cast">number_cast</link></member>
           <member><link linkend="json.ref.boost__json__parse">parse</link></member>
           <member><link linkend="json.ref.boost__json__serialize">serialize</link></member>
+          <member><link linkend="json.ref.boost__json__to_string">to_string</link></member>
           <member><link linkend="json.ref.boost__json__value_from">value_from</link></member>
           <member><link linkend="json.ref.boost__json__value_to">value_to</link></member>
         </simplelist>

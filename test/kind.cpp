@@ -10,6 +10,8 @@
 // Test that header file is self-contained.
 #include <boost/json/kind.hpp>
 
+#include <boost/json/string_view.hpp>
+
 #include <type_traits>
 
 #include "test_suite.hpp"
@@ -23,14 +25,26 @@ public:
         std::is_enum<kind>::value);
 
     void
-    testEnum()
+    check(kind k, string_view s)
     {
-        BOOST_TEST_PASS();
+        BOOST_TEST(
+            to_string(k) == s);
+        std::stringstream ss;
+        ss << k;
+        BOOST_TEST(ss.str() == s);
     }
 
-    void run()
+    void
+    run()
     {
-        testEnum();
+        check(kind::array,   "array");
+        check(kind::object,  "object");
+        check(kind::string,  "string");
+        check(kind::int64,   "int64");
+        check(kind::uint64,  "uint64");
+        check(kind::double_, "double");
+        check(kind::bool_,   "bool");
+        check(kind::null,    "null");
     }
 };
 

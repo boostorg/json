@@ -11,6 +11,8 @@
 #define BOOST_JSON_KIND_HPP
 
 #include <boost/json/detail/config.hpp>
+#include <boost/json/string_view.hpp>
+#include <iosfwd>
 
 BOOST_JSON_NS_BEGIN
 
@@ -44,6 +46,35 @@ enum class kind : unsigned char
     /// The null value.
     null
 };
+
+/** Return a string representing a kind.
+
+    This provides a human-readable string
+    representing a @ref kind. This may be
+    useful for diagnostics.
+
+    @returns The string.
+
+    @param k The kind.
+*/
+BOOST_JSON_DECL
+string_view
+to_string(kind k) noexcept;
+
+/** Format a kind to an output stream.
+
+    This allows a @ref kind to be formatted as
+    a string, typically for diagnostics.
+
+    @returns The output stream.
+
+    @param os The output stream to format to.
+
+    @param k The kind to format.
+*/
+BOOST_JSON_DECL
+std::ostream&
+operator<<(std::ostream& os, kind k);
 
 /** A tag type used to select a @ref value constructor overload.
 

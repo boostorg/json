@@ -30,6 +30,7 @@ in a translation unit of the program.
 
 #include <boost/json/impl/array.ipp>
 #include <boost/json/impl/error.ipp>
+#include <boost/json/impl/kind.ipp>
 #include <boost/json/impl/monotonic_resource.ipp>
 #include <boost/json/impl/null_resource.ipp>
 #include <boost/json/impl/object.ipp>
