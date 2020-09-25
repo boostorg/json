@@ -18,8 +18,47 @@ The conversion in the opposite direction is done with __value_to__.
 
 [snippet_conv_1]
 
-In all cases, the conversions are done by calling an appropriate
-overload of `tag_invoke`. For __value_from__, these overloads have the form: 
+[heading Customization Points]
+
+A ['customization point] is a mechanism where a library delegates behavior
+of some operation to the user, or gives the use the option of controlling
+the behavior of some operation for a specific type.
+Within the standard library, the `swap` function is a customization point
+that uses [@https://en.cppreference.com/w/cpp/language/adl argument-dependent lookup]
+to find user-provided overloads within the namespace of the arguments:
+
+[snippet_conv_2]
+
+Another example would be the class template `std::hash`, which can be 
+specialized for some type `T` to implement custom behavior:
+
+[snippet_conv_3]
+
+While these mechanisms work, they are not without problems.
+Boost.JSON implements value conversion customization points using
+the `tag_invoke` mechanism outlined in
+[@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1895r0.pdf P1895],
+allowing users to define conversions to and from their own types.
+In essence, `tag_invoke` provides a uniform interface
+for defining customization points by using 
+argument-dependent lookup
+to find a viable function from the point at which it's called.
+As the name suggests, a tag type is passed as an argument in order to:
+
+* discard candidates that are unrelated to that particular customization point, and
+
+* embed the user-defined type into the arguments list (e.g. by using a tag type template
+such as `value_to_tag<T>`) so that its 
+[@http://eel.is/c++draft/basic.lookup.argdep#2 associated namespaces and entities] are examined
+when name lookup is performed.
+
+This has the effect of finding user-provided `tag_invoke` overloads, even if they
+are (lexically) declared after the definition of the calling function. 
+
+[heading `tag_invoke` overloads]
+
+In all cases, conversions are done by calling an appropriate
+overload of `tag_invoke`. For __value_from__, these have the form: 
 
 ```
 void tag_invoke( const value_from_tag&, value&, T );
@@ -34,19 +73,19 @@ T tag_invoke( const value_to_tag< T >&, const value& );
 
 In both cases, overloads for user-provided types can be implemented:
 
-[snippet_conv_2]
+[snippet_conv_4]
 
 Since the type being converted is embedded into the
 function's signature, user-provided overloads
 are visible to argument-dependent lookup and will be candidates
 when a conversion is performed:
 
-[snippet_conv_3]
+[snippet_conv_5]
 
 When __value_from__ is called, the `tag_invoke` function template
 will be found by argument-dependent lookup and used to perform the conversion:
 
-[snippet_conv_4]
+[snippet_conv_6]
 
 In addition to user-provided overloads of `tag_invoke`, the library
 will add its own function to the overload set when certain constraints
@@ -54,12 +93,12 @@ are satisfied. The library provided overloads have no special
 prioritization over those provided by the user, so care should be taken to
 avoid writing ambiguous declarations:
 
-[snippet_conv_5]
+[snippet_conv_7]
 
 Upon calling this function, overload resolution will fail because
 the library already provides an overload for floating-point types:
 
-[snippet_conv_6]
+[snippet_conv_8]
 
 Library-provided overloads of `tag_invoke` come in two variants: those that
 convert between JSON types (known as ['built-in conversions]),
@@ -69,7 +108,7 @@ by eliminating the need to write repetitive overloads for types
 that model common C++ concepts (e.g. sequence containers, associative containers,
 tuples, and strings).
 
-[snippet_conv_7]
+[snippet_conv_9]
 
 [heading Converting to json::value]
 
@@ -82,14 +121,14 @@ of the conversion; this ensures that the __storage_ptr__
 is correctly propagated to the result. For example, 
 consider the following struct:
 
-[snippet_conv_8]
+[snippet_conv_10]
 
 If our store has a lot of customers,
 it may be desirable to use a __monotonic_resource__ when serializing
 `customer` objects to JSON. __value_from__ ensures that the
 correct __memory_resource__ is used: 
 
-[snippet_conv_9]
+[snippet_conv_11]
 
 In addition to the user-provided overloads found by
 argument-dependent lookup, the library provides its own
@@ -119,7 +158,7 @@ list. For example, if `T` satisfies both ['FromMapLike]
 and ['FromContainerLike], the conversion will be performed
 the one corresponding to ['FromMapLike]; it will not be ambiguous.
 
-[snippet_conv_10]
+[snippet_conv_12]
 
 The conversion performed when the first condition is met 
 (the library-provided built-in conversion) is assignment to the
@@ -134,7 +173,7 @@ construct a type `T` from a __value__. In contrast to
 __value_from__, no output parameter is used as there is no
 __storage_ptr__ to propagate.
 
-[snippet_conv_11]
+[snippet_conv_13]
 
 As with __value_from__, the library provides its own
 overload of `tag_invoke` when certain conditions are met.
@@ -165,12 +204,12 @@ the conversion corresponding to first condition met
 by `T` in the above list. Given the following definition of
 `customer::customer( const value& )`:
 
-[snippet_conv_12]
+[snippet_conv_14]
 
 Objects of type `customer` can be converted to and from
 __value__:
 
-[snippet_conv_13]
+[snippet_conv_15]
 
 When the first condition is met, the conversion will simply
 return the object of type `T` stored within the __value__
@@ -180,7 +219,7 @@ will be `T(jv)`. As with __value_from__, when generic conversions
 are selected, an attempt will be made to convert
 the __value__ to `T`.
 
-[snippet_conv_14]
+[snippet_conv_16]
 
 [heading Named Requirements for Generic Conversions]
 

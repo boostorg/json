@@ -34,9 +34,30 @@
 # pragma GCC diagnostic ignored "-Wunused"
 #endif
 
+//[snippet_conv_3
+
+template< std::size_t N >
+struct static_string { };
+
+template< std::size_t N >
+class std::hash< static_string< N > >
+{
+    using static_string = 
+        static_string< N >;
+
+public:
+    std::size_t
+    operator()(const static_string& str ) const noexcept
+    {
+        return std::hash< std::string >()( str );
+    }
+};
+
+//]
+
 BOOST_JSON_NS_BEGIN
 
-//[snippet_conv_2
+//[snippet_conv_4
 
 template< class T >
 void
@@ -477,7 +498,26 @@ usingObjects()
 
 //----------------------------------------------------------
 
-//[snippet_conv_3
+//[snippet_conv_2
+
+template< class T >
+void identity_swap( T& a, T& b )
+{
+    // introduces the declaration of
+    // std::swap into this scope
+    using std::swap;
+    if( &a == &b )
+        return;
+    // the overload set will contain std::swap,
+    // any declarations of swap within the enclosing
+    // namespace, and any declarations of swap within
+    // the namespaces associated with T
+    swap( a, b );
+}
+
+//]
+
+//[snippet_conv_5
 
 template< class T >
 struct vec3
@@ -498,7 +538,7 @@ void tag_invoke( const value_from_tag&, value& jv, const vec3<T>& vec )
 //]
 
 #ifdef BOOST_JSON_DOCS
-//[snippet_conv_5
+//[snippet_conv_7
 
 template< class T, typename std::enable_if<
     std::is_floating_point< T >::value>::type* = nullptr >
@@ -510,7 +550,7 @@ void tag_invoke( const value_from_tag&, value& jv, T t )
 //]
 #endif
 
-//[snippet_conv_8
+//[snippet_conv_10
 
 struct customer
 {
@@ -538,7 +578,7 @@ void tag_invoke( const value_from_tag&, value& jv, customer const& c )
 
 //]
 
-//[snippet_conv_12
+//[snippet_conv_14
 
 customer::customer( value const& jv )
 
@@ -594,7 +634,7 @@ usingExchange()
         (void)ja;
     }
     {
-        //[snippet_conv_4
+        //[snippet_conv_6
 
         vec3< int > pos = { 4, 1, 4 };
 
@@ -605,14 +645,14 @@ usingExchange()
         //]
     }
     {
-        //[snippet_conv_6
+        //[snippet_conv_8
 
        value jv = value_from( 1.5 ); // error
 
         //]
     }
     {
-        //[snippet_conv_7
+        //[snippet_conv_9
 
         std::map< std::string, vec3< int > > positions = {
             { "Alex", { 42, -60, 18 } },
@@ -650,7 +690,7 @@ usingExchange()
         (void)jo;
     }
     {
-        //[snippet_conv_9
+        //[snippet_conv_11
 
         std::vector< customer > customers = {
             customer( 0, "Alison", false ),
@@ -671,7 +711,7 @@ usingExchange()
     }
 
     {
-        //[snippet_conv_10
+        //[snippet_conv_12
 
         // Satisfies both FromMapLike and FromContainerLike
         std::unordered_map< std::string, bool > available_tools = {
@@ -688,7 +728,7 @@ usingExchange()
         //]
     }
     {
-        //[snippet_conv_11
+        //[snippet_conv_13
 
         std::complex< double > c1 = { 3.14159, 2.71828 };
 
@@ -706,7 +746,7 @@ usingExchange()
         (void)c2;
     }
     {
-        //[snippet_conv_13
+        //[snippet_conv_15
 
         customer c1( 5, "Ed", false );
 
@@ -722,7 +762,7 @@ usingExchange()
         //]
     }
     {
-        //[snippet_conv_14
+        //[snippet_conv_16
 
         value available_tools = {
             { "Crowbar", true },
