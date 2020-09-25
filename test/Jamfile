@@ -35,6 +35,7 @@ local SOURCES =
     doc_uses_allocator.cpp
     doc_using_numbers.cpp
     error.cpp
+    fwd.cpp
     json.cpp
     kind.cpp
     monotonic_resource.cpp
