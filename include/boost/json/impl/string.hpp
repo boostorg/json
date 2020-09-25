@@ -11,7 +11,6 @@
 #define BOOST_JSON_IMPL_STRING_HPP
 
 #include <utility>
-#include <string>
 
 BOOST_JSON_NS_BEGIN
 
@@ -89,7 +88,7 @@ insert(
         first, last, dsp,
         iter_cat<InputIt>{});
     cleanup c{tmp, dsp};
-    traits_type::copy(
+    std::memcpy(
         impl_.insert_unchecked(pos, tmp.size(), sp_),
         tmp.data(),
         tmp.size());
@@ -127,7 +126,7 @@ replace(
         first2, last2, dsp,
         iter_cat<InputIt>{});
     cleanup c{tmp, dsp};
-    traits_type::copy(
+    std::memcpy(
         impl_.replace_unchecked(
             first - begin(), 
             last - first, 
@@ -214,7 +213,7 @@ append(
         first, last, dsp,
         std::input_iterator_tag{});
     cleanup c{tmp, dsp};
-    traits_type::copy(
+    std::memcpy(
         impl_.append(tmp.size(), sp_),
         tmp.data(), tmp.size());
 }

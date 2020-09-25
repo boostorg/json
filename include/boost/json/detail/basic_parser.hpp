@@ -18,8 +18,6 @@
 #include <boost/json/detail/stack.hpp>
 #include <boost/json/detail/stream.hpp>
 #include <boost/json/detail/utf8.hpp>
-#include <string>
-#include <vector>
 
 /*  VFALCO NOTE
 

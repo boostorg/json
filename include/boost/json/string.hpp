@@ -20,12 +20,12 @@
 #include <boost/json/detail/string_impl.hpp>
 #include <boost/json/detail/value.hpp>
 #include <algorithm>
+#include <cstring>
 #include <initializer_list>
 #include <iosfwd>
 #include <iterator>
 #include <limits>
 #include <new>
-#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -84,9 +84,6 @@ public:
 #else
     using allocator_type = polymorphic_allocator<value>;
 #endif
-
-    /// The traits used to perform character operations
-    using traits_type       = std::char_traits<char>;
 
     /// The type of a character
     using value_type        = char;
@@ -785,13 +782,10 @@ public:
 
         @throw std::length_error `strlen(s) > max_size()`.
     */
+    BOOST_JSON_DECL
     string&
     assign(
-        char const* s)
-    {
-        return assign(s,
-            traits_type::length(s));
-    }
+        char const* s);
 
     /** Assign characters to a string.
 
@@ -1935,7 +1929,7 @@ public:
     /** Compare a string with the string.
         
         Let `comp` be
-        `traits_type::compare(data(), sv.data(), std::min(size(), sv.size())`.
+        `std::char_traits<char>::compare(data(), sv.data(), std::min(size(), sv.size())`.
         If `comp != 0`, then the result is `comp`. Otherwise,
         the result is `0` if `size() == sv.size()`,
         `-1` if `size() < sv.size()`, and `1` otherwise.

@@ -15,6 +15,7 @@
 #include <new>
 #include <ostream>
 #include <stdexcept>
+#include <string>
 #include <utility>
 
 BOOST_JSON_NS_BEGIN
@@ -31,7 +32,7 @@ assign(
     size_type count,
     char ch)
 {
-    traits_type::assign(
+    std::char_traits<char>::assign(
         impl_.assign(count, sp_),
         count,
         ch);
@@ -72,10 +73,19 @@ assign(
     char const* s,
     size_type count)
 {
-    traits_type::copy(
+    std::char_traits<char>::copy(
         impl_.assign(count, sp_),
         s, count);
     return *this;
+}
+
+string&
+string::
+assign(
+    char const* s)
+{
+    return assign(s, std::char_traits<
+        char>::length(s));
 }
 
 auto
@@ -135,7 +145,7 @@ string&
 string::
 append(size_type count, char ch)
 {
-    traits_type::assign(
+    std::char_traits<char>::assign(
         impl_.append(count, sp_),
         count, ch);
     return *this;
@@ -145,7 +155,7 @@ string&
 string::
 append(string_view sv)
 {
-    traits_type::copy(
+    std::char_traits<char>::copy(
         impl_.append(sv.size(), sp_),
         sv.data(), sv.size());
     return *this;
@@ -170,7 +180,7 @@ insert(
     std::size_t count,
     char ch)
 {
-    traits_type::assign(
+    std::char_traits<char>::assign(
         impl_.insert_unchecked(pos, count, sp_),
         count, ch);
     return *this;
@@ -197,7 +207,7 @@ replace(
     std::size_t count2,
     char ch)
 {
-    traits_type::assign(
+    std::char_traits<char>::assign(
         impl_.replace_unchecked(pos, count, count2, sp_),
         count2, ch);
     return *this;
@@ -216,7 +226,7 @@ erase(
             BOOST_CURRENT_LOCATION);
     if( count > impl_.size() - pos)
         count = impl_.size() - pos;
-    traits_type::move(
+    std::char_traits<char>::move(
         impl_.data() + pos,
         impl_.data() + pos + count,
         impl_.size() - pos - count + 1);
@@ -258,7 +268,7 @@ resize(size_type count, char ch)
     }
 
     reserve(count);
-    traits_type::assign(
+    std::char_traits<char>::assign(
         impl_.end(),
         count - impl_.size(),
         ch);
@@ -301,7 +311,7 @@ reserve_impl(size_type new_cap)
         new_cap = detail::string_impl::growth(
             new_cap, impl_.capacity());
         detail::string_impl tmp(new_cap, sp_);
-        traits_type::copy(tmp.data(),
+        std::char_traits<char>::copy(tmp.data(),
             impl_.data(), impl_.size() + 1);
         tmp.size(impl_.size());
         impl_.destroy(sp_);
