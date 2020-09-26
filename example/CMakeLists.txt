@@ -9,9 +9,12 @@
 
 source_group("" FILES
     file.hpp
+    path.cpp
     pretty.cpp
     validate.cpp
 )
+
+#
 
 add_executable(pretty
     file.hpp
@@ -19,6 +22,16 @@ add_executable(pretty
 )
 set_property(TARGET pretty PROPERTY FOLDER "example")
 target_link_libraries(pretty PRIVATE Boost::json)
+
+#
+
+add_executable(path
+    path.cpp
+)
+set_property(TARGET path PROPERTY FOLDER "example")
+target_link_libraries(path PRIVATE Boost::json)
+
+#
 
 add_executable(validate
     file.hpp

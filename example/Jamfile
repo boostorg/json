@@ -22,6 +22,12 @@ else
     LIB = <library>/boost/json//boost_json ;
 }
 
+exe path :
+    path.cpp
+    : :
+    $(LIB)
+    ;
+
 exe pretty :
     pretty.cpp
     : :
