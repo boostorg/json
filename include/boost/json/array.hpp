@@ -1041,9 +1041,7 @@ public:
         allocated. Otherwise, the call has no effect.
         The number of elements and therefore the
         @ref size() of the container is not changed.
-
-        @note
-
+    \n
         If new memory is allocated, all iterators
         including any past-the-end iterators, and all
         references to the elements are invalidated.

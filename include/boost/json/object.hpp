@@ -445,7 +445,7 @@ public:
     {
     }
 
-    /** Constructor.
+    /** Construct from initializer-list.
 
         Storage for at least `min_capacity` elements is
         reserved, and then
@@ -854,7 +854,18 @@ public:
 
     /** Increase the capacity to at least a certain amount.
 
-        This inserts an element into the container.
+        This increases the @ref capacity() to a value
+        that is greater than or equal to `new_capacity`.
+        If `new_capacity > capacity()`, new memory is
+        allocated. Otherwise, the call has no effect.
+        The number of elements and therefore the
+        @ref size() of the container is not changed.
+    \n
+        If new memory is allocated, all iterators
+        including any past-the-end iterators, and all
+        references to the elements are invalidated.
+        Otherwise, no iterators or references are
+        invalidated.
 
         @par Complexity
         Constant or average case linear in
@@ -1097,11 +1108,10 @@ public:
         @par Exception Safety
         No-throw guarantee.
 
+        @return An iterator following the last removed element.
+
         @param pos An iterator pointing to the element to be
         removed.
-
-        @return The number of elements removed, which can
-        be either 0 or 1.
     */
     BOOST_JSON_DECL
     iterator
@@ -1120,14 +1130,16 @@ public:
         @par Exception Safety
         No-throw guarantee.
 
-        @return The number of elements removed, which can
+        @return The number of elements removed, which will
         be either 0 or 1.
+
+        @param key The key to match.
     */
     BOOST_JSON_DECL
     std::size_t
     erase(string_view key) noexcept;
 
-    /** Swap the contents.
+    /** Swap two objects.
 
         Exchanges the contents of this object with another
         object. Ownership of the respective @ref memory_resource
@@ -1157,7 +1169,7 @@ public:
     void
     swap(object& other);
 
-    /** Exchange the given values.
+    /** Swap two objects.
 
         Exchanges the contents of the object `lhs` with
         another object `rhs`. Ownership of the respective
@@ -1172,7 +1184,7 @@ public:
         the contents are logically swapped by making a copy,
         which can throw. In this case all iterators and
         references are invalidated.
-        
+
         @par Effects
         @code
         lhs.swap( rhs );
