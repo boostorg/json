@@ -364,13 +364,13 @@ suspend(
 
 template<class Handler>
 template<
-    bool StackEmpty_,
-    bool Terminal_>
+    bool StackEmpty_/*,
+    bool Terminal_*/>
 const char*
 basic_parser<Handler>::
 parse_comment(const char* p,
     std::integral_constant<bool, StackEmpty_> stack_empty,
-    std::integral_constant<bool, Terminal_> terminal)
+    /*std::integral_constant<bool, Terminal_>*/ bool terminal)
 {
     detail::const_stream_wrapper cs(p, end_);
     const char* start = cs.begin();
@@ -560,16 +560,16 @@ do_doc4:
 template<class Handler>
 template<
     bool StackEmpty_,
-    bool AllowComments_,
+    bool AllowComments_/*,
     bool AllowTrailing_,
-    bool AllowBadUTF8_>
+    bool AllowBadUTF8_*/>
 const char*
 basic_parser<Handler>::
 parse_value(const char* p,
     std::integral_constant<bool, StackEmpty_> stack_empty,
     std::integral_constant<bool, AllowComments_> allow_comments,
-    std::integral_constant<bool, AllowTrailing_> allow_trailing,
-    std::integral_constant<bool, AllowBadUTF8_> allow_bad_utf8)
+    /*std::integral_constant<bool, AllowTrailing_>*/ bool allow_trailing,
+    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8)
 {
     if(stack_empty || st_.empty())
     {
@@ -606,16 +606,16 @@ parse_value(const char* p,
 template<class Handler>
 template<
     bool StackEmpty_,
-    bool AllowComments_,
+    bool AllowComments_/*,
     bool AllowTrailing_,
-    bool AllowBadUTF8_>
+    bool AllowBadUTF8_*/>
 const char*
 basic_parser<Handler>::
 resume_value(const char* p,
     std::integral_constant<bool, StackEmpty_> stack_empty,
     std::integral_constant<bool, AllowComments_> allow_comments,
-    std::integral_constant<bool, AllowTrailing_> allow_trailing,
-    std::integral_constant<bool, AllowBadUTF8_> allow_bad_utf8)
+    /*std::integral_constant<bool, AllowTrailing_>*/ bool allow_trailing,
+    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8)
 {
     state st;
     st_.peek(st);
@@ -863,14 +863,14 @@ do_fal4:
 template<class Handler>
 template<
     bool StackEmpty_,
-    bool IsKey_,
-    bool AllowBadUTF8_>
+    bool IsKey_/*,
+    bool AllowBadUTF8_*/>
 const char*
 basic_parser<Handler>::
 parse_string(const char* p,
     std::integral_constant<bool, StackEmpty_> stack_empty,
     std::integral_constant<bool, IsKey_> is_key,
-    std::integral_constant<bool, AllowBadUTF8_> allow_bad_utf8)
+    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8)
 {
     if(! stack_empty && ! st_.empty())
     {
@@ -899,14 +899,14 @@ parse_string(const char* p,
 template<class Handler>
 template<
     bool StackEmpty_,
-    bool IsKey_,
-    bool AllowBadUTF8_>
+    bool IsKey_/*,
+    bool AllowBadUTF8_*/>
 const char*
 basic_parser<Handler>::
 parse_unescaped(const char* p,
     std::integral_constant<bool, StackEmpty_> stack_empty,
     std::integral_constant<bool, IsKey_> is_key,
-    std::integral_constant<bool, AllowBadUTF8_> allow_bad_utf8)
+    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8)
 {
     detail::const_stream_wrapper cs(p, end_);
     std::size_t total;
@@ -1024,17 +1024,17 @@ parse_unescaped(const char* p,
 
 template<class Handler>
 template<
-    bool StackEmpty_,
+    bool StackEmpty_/*,
     bool IsKey_,
-    bool AllowBadUTF8_>
+    bool AllowBadUTF8_*/>
 const char*
 basic_parser<Handler>::
 parse_escaped(
     const char* p,
     std::size_t total,
     std::integral_constant<bool, StackEmpty_> stack_empty,
-    std::integral_constant<bool, IsKey_> is_key,
-    std::integral_constant<bool, AllowBadUTF8_> allow_bad_utf8)
+    /*std::integral_constant<bool, IsKey_>*/ bool is_key,
+    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8)
 {
     //---------------------------------------------------------------
     //
@@ -1482,16 +1482,16 @@ do_str8:
 template<class Handler>
 template<
     bool StackEmpty_,
-    bool AllowComments_,
+    bool AllowComments_/*,
     bool AllowTrailing_,
-    bool AllowBadUTF8_>
+    bool AllowBadUTF8_*/>
 const char*
 basic_parser<Handler>::
 parse_object(const char* p,
     std::integral_constant<bool, StackEmpty_> stack_empty,
     std::integral_constant<bool, AllowComments_> allow_comments,
-    std::integral_constant<bool, AllowTrailing_> allow_trailing,
-    std::integral_constant<bool, AllowBadUTF8_> allow_bad_utf8)
+    /*std::integral_constant<bool, AllowTrailing_>*/ bool allow_trailing,
+    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8)
 {
     detail::const_stream_wrapper cs(p, end_);
     std::size_t size;
@@ -1644,16 +1644,16 @@ do_obj12:
 template<class Handler>
 template<
     bool StackEmpty_,
-    bool AllowComments_,
+    bool AllowComments_/*,
     bool AllowTrailing_,
-    bool AllowBadUTF8_>
+    bool AllowBadUTF8_*/>
 const char*
 basic_parser<Handler>::
 parse_array(const char* p,
     std::integral_constant<bool, StackEmpty_> stack_empty,
     std::integral_constant<bool, AllowComments_> allow_comments,
-    std::integral_constant<bool, AllowTrailing_> allow_trailing,
-    std::integral_constant<bool, AllowBadUTF8_> allow_bad_utf8)
+    /*std::integral_constant<bool, AllowTrailing_>*/ bool allow_trailing,
+    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8)
 {
     detail::const_stream_wrapper cs(p, end_);
     std::size_t size;
