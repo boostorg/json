@@ -392,56 +392,86 @@ class basic_parser
 #pragma warning pop
 #endif
 
-    template<bool StackEmpty, bool Terminal>
-    const char* parse_comment(const char* p);
+    template<bool StackEmpty_, bool Terminal_>
+    const char* parse_comment(const char* p,
+        std::integral_constant<bool, StackEmpty_> stack_empty,
+        std::integral_constant<bool, Terminal_> terminal);
 
-    template<bool StackEmpty>
-    const char* parse_document(const char* p);
-    
-    template<bool StackEmpty, bool AllowComments,
-        bool AllowTrailing, bool AllowBadUTF8>
-    const char* parse_value(const char* p);
-    
-    template<bool StackEmpty, bool AllowComments,
-        bool AllowTrailing, bool AllowBadUTF8>
-    const char* resume_value(const char* p);
-    
-    template<bool StackEmpty, bool AllowComments,
-        bool AllowTrailing, bool AllowBadUTF8>
-    const char* parse_object(const char* p);
-    
-    template<bool StackEmpty, bool AllowComments,
-        bool AllowTrailing, bool AllowBadUTF8>
-    const char* parse_array(const char* p);
-    
-    template<bool StackEmpty>
-    const char* parse_null(const char* p);
-    
-    template<bool StackEmpty>
-    const char* parse_true(const char* p);
-    
-    template<bool StackEmpty>
-    const char* parse_false(const char* p);
+    template<bool StackEmpty_>
+    const char* parse_document(const char* p,
+        std::integral_constant<bool, StackEmpty_> stack_empty);
 
-    template<bool StackEmpty, bool IsKey,
-        bool AllowBadUTF8>
-    const char* parse_string(const char* p);
+    template<bool StackEmpty_, bool AllowComments_,
+        bool AllowTrailing_, bool AllowBadUTF8_>
+    const char* parse_value(const char* p,
+        std::integral_constant<bool, StackEmpty_> stack_empty,
+        std::integral_constant<bool, AllowComments_> allow_comments,
+        std::integral_constant<bool, AllowTrailing_> allow_trailing,
+        std::integral_constant<bool, AllowBadUTF8_> allow_bad_utf8);
+
+    template<bool StackEmpty_, bool AllowComments_,
+        bool AllowTrailing_, bool AllowBadUTF8_>
+    const char* resume_value(const char* p,
+        std::integral_constant<bool, StackEmpty_> stack_empty,
+        std::integral_constant<bool, AllowComments_> allow_comments,
+        std::integral_constant<bool, AllowTrailing_> allow_trailing,
+        std::integral_constant<bool, AllowBadUTF8_> allow_bad_utf8);
+
+    template<bool StackEmpty_, bool AllowComments_,
+        bool AllowTrailing_, bool AllowBadUTF8_>
+    const char* parse_object(const char* p,
+        std::integral_constant<bool, StackEmpty_> stack_empty,
+        std::integral_constant<bool, AllowComments_> allow_comments,
+        std::integral_constant<bool, AllowTrailing_> allow_trailing,
+        std::integral_constant<bool, AllowBadUTF8_> allow_bad_utf8);
+
+    template<bool StackEmpty_, bool AllowComments_,
+        bool AllowTrailing_, bool AllowBadUTF8_>
+    const char* parse_array(const char* p,
+        std::integral_constant<bool, StackEmpty_> stack_empty,
+        std::integral_constant<bool, AllowComments_> allow_comments,
+        std::integral_constant<bool, AllowTrailing_> allow_trailing,
+        std::integral_constant<bool, AllowBadUTF8_> allow_bad_utf8);
+
+    template<bool StackEmpty_>
+    const char* parse_null(const char* p,
+        std::integral_constant<bool, StackEmpty_> stack_empty);
+
+    template<bool StackEmpty_>
+    const char* parse_true(const char* p,
+        std::integral_constant<bool, StackEmpty_> stack_empty);
+
+    template<bool StackEmpty_>
+    const char* parse_false(const char* p,
+        std::integral_constant<bool, StackEmpty_> stack_empty);
+
+    template<bool StackEmpty_, bool IsKey_,
+        bool AllowBadUTF8_>
+    const char* parse_string(const char* p,
+        std::integral_constant<bool, StackEmpty_> stack_empty,
+        std::integral_constant<bool, IsKey_> is_key,
+        std::integral_constant<bool, AllowBadUTF8_> allow_bad_utf8);
     
-    template<bool StackEmpty, char First>
-    const char* parse_number(const char* p);
+    template<bool StackEmpty_, char First_>
+    const char* parse_number(const char* p,
+        std::integral_constant<bool, StackEmpty_> stack_empty,
+        std::integral_constant<char, First_> first);
     
-    template<bool StackEmpty, bool IsKey,
-        bool AllowBadUTF8>
-    const char* parse_unescaped(const char* p);
+    template<bool StackEmpty_, bool IsKey_,
+        bool AllowBadUTF8_>
+    const char* parse_unescaped(const char* p,
+        std::integral_constant<bool, StackEmpty_> stack_empty,
+        std::integral_constant<bool, IsKey_> is_key,
+        std::integral_constant<bool, AllowBadUTF8_> allow_bad_utf8);
 
     template<bool StackEmpty_, bool IsKey_,
         bool AllowBadUTF8_>
     const char* parse_escaped(
-		const char* p,
-		std::size_t total,
-		std::integral_constant<bool, StackEmpty_> stack_empty,
-		std::integral_constant<bool, IsKey_> is_key,
-		std::integral_constant<bool, AllowBadUTF8_> allow_bad_utf8);
+        const char* p,
+        std::size_t total,
+        std::integral_constant<bool, StackEmpty_> stack_empty,
+        std::integral_constant<bool, IsKey_> is_key,
+        std::integral_constant<bool, AllowBadUTF8_> allow_bad_utf8);
 
 public:
     /// Copy constructor (deleted)
