@@ -414,7 +414,7 @@ public:
         object const& other,
         storage_ptr sp);
 
-    /** Constructor.
+    /** Construct from initializer-list.
 
         The object is constructed with a copy of the values
         in the initializer-list in order, using the
@@ -567,7 +567,7 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    storage_ptr const&
+    storage_ptr
     storage() const noexcept
     {
         return sp_;

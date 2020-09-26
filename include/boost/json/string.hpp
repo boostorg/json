@@ -870,7 +870,7 @@ public:
 
         No-throw guarantee.
     */
-    storage_ptr const&
+    storage_ptr
     storage() const noexcept
     {
         return sp_;

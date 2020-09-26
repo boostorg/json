@@ -1970,7 +1970,7 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    storage_ptr const&
+    storage_ptr
     storage() const noexcept
     {
         return sp_;
@@ -2801,7 +2801,9 @@ BOOST_STATIC_ASSERT(sizeof(value) == 16);
 */
 class key_value_pair
 {
+#ifndef BOOST_JSON_DOCS
     friend struct detail::value_access;
+#endif
 
     inline
     key_value_pair(
@@ -2933,6 +2935,23 @@ public:
             std::move(p).second,
             std::move(sp))
     {
+    }
+
+    /** Return the associated memory resource.
+
+        This returns a pointer to the memory
+        resource used to construct the value.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    storage_ptr
+    storage() const noexcept
+    {
+        return value_.storage();
     }
 
     /** Return the key of this element.
