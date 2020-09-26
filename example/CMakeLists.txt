@@ -11,8 +11,17 @@ source_group("" FILES
     file.hpp
     path.cpp
     pretty.cpp
+    proxy.cpp
     validate.cpp
 )
+
+#
+
+add_executable(path
+    path.cpp
+)
+set_property(TARGET path PROPERTY FOLDER "example")
+target_link_libraries(path PRIVATE Boost::json)
 
 #
 
@@ -25,11 +34,12 @@ target_link_libraries(pretty PRIVATE Boost::json)
 
 #
 
-add_executable(path
-    path.cpp
+add_executable(proxy
+    file.hpp
+    proxy.cpp
 )
-set_property(TARGET path PROPERTY FOLDER "example")
-target_link_libraries(path PRIVATE Boost::json)
+set_property(TARGET proxy PROPERTY FOLDER "example")
+target_link_libraries(proxy PRIVATE Boost::json)
 
 #
 
