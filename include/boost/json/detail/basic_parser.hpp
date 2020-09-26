@@ -434,11 +434,14 @@ class basic_parser
         bool AllowBadUTF8>
     const char* parse_unescaped(const char* p);
 
-    template<bool StackEmpty, bool IsKey,
-        bool AllowBadUTF8>
+    template<bool StackEmpty_, bool IsKey_,
+        bool AllowBadUTF8_>
     const char* parse_escaped(
-        const char* p, 
-        std::size_t total = 0);
+		const char* p,
+		std::size_t total,
+		std::integral_constant<bool, StackEmpty_> stack_empty,
+		std::integral_constant<bool, IsKey_> is_key,
+		std::integral_constant<bool, AllowBadUTF8_> allow_bad_utf8);
 
 public:
     /// Copy constructor (deleted)

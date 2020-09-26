@@ -634,8 +634,7 @@ resume_value(const char* p)
     case state::sur1:  case state::sur2:
     case state::sur3:  case state::sur4:
     case state::sur5:  case state::sur6:
-        return parse_escaped<StackEmpty, 
-            false, AllowBadUTF8>(p);
+        return parse_escaped(p, 0, std::integral_constant<bool, StackEmpty>(), std::false_type(), std::integral_constant<bool, AllowBadUTF8>());
 
     case state::arr1:  case state::arr2:
     case state::arr3:  case state::arr4:
@@ -878,8 +877,7 @@ parse_string(const char* p)
         case state::sur1: case state::sur2:
         case state::sur3: case state::sur4:
         case state::sur5: case state::sur6:
-            return parse_escaped<StackEmpty, 
-                IsKey, AllowBadUTF8>(p);
+            return parse_escaped(p, 0, std::integral_constant<bool, StackEmpty>(), std::integral_constant<bool, IsKey>(), std::integral_constant<bool, AllowBadUTF8>());
         }
     }
     return parse_unescaped<true, 
@@ -970,8 +968,7 @@ parse_unescaped(const char* p)
                     {start, size}, total, ec_)))
                     return fail(cs.begin());
             }
-            return parse_escaped<StackEmpty, IsKey,
-                AllowBadUTF8>(cs.begin(), total);
+            return parse_escaped(cs.begin(), total, std::integral_constant<bool, StackEmpty>(), std::integral_constant<bool, IsKey>(), std::integral_constant<bool, AllowBadUTF8>());
         }
         // illegal control
         return fail(cs.begin(), error::syntax);
@@ -985,14 +982,17 @@ parse_unescaped(const char* p)
 
 template<class Handler>
 template<
-    bool StackEmpty, 
-    bool IsKey,
-    bool AllowBadUTF8>
+    bool StackEmpty_,
+    bool IsKey_,
+    bool AllowBadUTF8_>
 const char*
 basic_parser<Handler>::
 parse_escaped(
     const char* p,
-    std::size_t total)
+    std::size_t total,
+    std::integral_constant<bool, StackEmpty_> stack_empty,
+    std::integral_constant<bool, IsKey_> is_key,
+    std::integral_constant<bool, AllowBadUTF8_> allow_bad_utf8)
 {
     //---------------------------------------------------------------
     //
@@ -1007,20 +1007,16 @@ parse_escaped(
     // as possible. Thus, when the first escape is encountered,
     // the algorithm attempts to fill the temporary buffer first.
     //
-    constexpr auto on_full = IsKey ? 
-        &Handler::on_key : &Handler::on_string;
-    constexpr auto on_part = IsKey ? 
-        &Handler::on_key_part : &Handler::on_string_part;
-    constexpr auto ev_too_large = IsKey ? 
+    auto const ev_too_large = is_key?
         error::key_too_large : error::string_too_large;
-    constexpr auto max_size = IsKey ? 
+    auto const max_size = is_key?
         Handler::max_key_size : Handler::max_string_size;
     detail::clipped_const_stream cs(p, end_);
     detail::buffer<BOOST_JSON_STACK_BUFFER_SIZE> temp;
     int digit;
     char c;
     cs.clip(temp.max_size());
-    if(! StackEmpty && ! st_.empty())
+    if(! stack_empty && ! st_.empty())
     {
         state st;
         st_.pop(st);
@@ -1060,9 +1056,14 @@ do_str3:
                 temp.size() > max_size - total))
                 return fail(cs.begin(), ev_too_large);
             total += temp.size();
-            if(BOOST_JSON_UNLIKELY(
-                ! (h_.*on_part)(temp, total, ec_)))
-                return fail(cs.begin());
+            {
+                bool r = is_key? h_.on_key_part(temp, total, ec_): h_.on_string_part(temp, total, ec_);
+
+                if(BOOST_JSON_UNLIKELY(!r))
+                {
+                    return fail(cs.begin());
+                }
+            }
             temp.clear();
         }
         cs.clip(temp.max_size());
@@ -1210,9 +1211,14 @@ do_str3:
                 temp.size() > max_size - total))
                 return fail(cs.begin(), ev_too_large);
             total += temp.size();
-            if(BOOST_JSON_UNLIKELY(
-                ! (h_.*on_part)(temp, total, ec_)))
-                return fail(cs.begin());
+            {
+                bool r = is_key? h_.on_key_part(temp, total, ec_): h_.on_string_part(temp, total, ec_);
+
+                if(BOOST_JSON_UNLIKELY(!r))
+                {
+                    return fail(cs.begin());
+                }
+            }
             temp.clear();
             cs.clip(temp.max_size());
         }
@@ -1340,9 +1346,14 @@ do_str2:
                     temp.size() > max_size - total))
                     return fail(cs.begin(), ev_too_large);
                 total += temp.size();
-                if(BOOST_JSON_UNLIKELY(
-                    ! (h_.*on_part)(temp, total, ec_)))
-                    return fail(cs.begin());
+                {
+                    bool r = is_key? h_.on_key_part(temp, total, ec_): h_.on_string_part(temp, total, ec_);
+
+                    if(BOOST_JSON_UNLIKELY(!r))
+                    {
+                        return fail(cs.begin());
+                    }
+                }
                 temp.clear();
             }
             cs.clip(temp.max_size());
@@ -1357,13 +1368,18 @@ do_str2:
                 temp.size() > max_size - total))
                 return fail(cs.begin(), ev_too_large);
             total += temp.size();
-            if(BOOST_JSON_UNLIKELY(
-                ! (h_.*on_full)(temp, total, ec_)))
-                return fail(cs.begin());
+            {
+                bool r = is_key? h_.on_key(temp, total, ec_): h_.on_string(temp, total, ec_);
+
+                if(BOOST_JSON_UNLIKELY(!r))
+                {
+                    return fail(cs.begin());
+                }
+            }
             ++cs;
             return cs.begin();
         }
-        else if(! AllowBadUTF8 && (c & 0x80))
+        else if((c & 0x80) && !allow_bad_utf8)
         {
             seq_.save(cs.begin(), cs.remain());
             if(BOOST_JSON_UNLIKELY(! seq_.complete()))
@@ -1375,9 +1391,14 @@ do_str2:
                         temp.size() > max_size - total))
                         return fail(cs.begin(), ev_too_large);
                     total += temp.size();
-                    if(BOOST_JSON_UNLIKELY(
-                        ! (h_.*on_part)(temp, total, ec_)))
-                        return fail(cs.begin());
+                    {
+                        bool r = is_key? h_.on_key_part(temp, total, ec_): h_.on_string_part(temp, total, ec_);
+
+                        if(BOOST_JSON_UNLIKELY(!r))
+                        {
+                            return fail(cs.begin());
+                        }
+                    }
                     temp.clear();
                 }
                 cs = cs.end();
@@ -1403,7 +1424,6 @@ do_str2:
         ++cs;
     }
 do_str8:
-    BOOST_JSON_ASSUME(! AllowBadUTF8);
     uint8_t needed = seq_.needed();
     if(BOOST_JSON_UNLIKELY(
         ! seq_.append(cs.begin(), cs.remain())))
