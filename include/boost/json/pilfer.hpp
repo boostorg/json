@@ -154,7 +154,7 @@ struct is_pilfer_constructible
     };
     @endcode
 
-    Pilfer construction is performed using @ref pilfer:
+    Pilfer construction is performed using @ref pilfer :
 
     @code
     {

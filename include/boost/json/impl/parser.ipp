@@ -64,14 +64,7 @@ write_some(
 {
     auto const n = p_.write_some(
         false, data, size, ec);
-    if(! ec)
-    {
-        if(! p_.done())
-        {
-            ec = error::incomplete;
-            p_.fail(ec);
-        }
-    }
+    BOOST_ASSERT(ec || p_.done());
     return n;
 }
 
@@ -82,8 +75,8 @@ write_some(
     std::size_t size)
 {
     error_code ec;
-    auto const n = p_.write_some(
-        true, data, size, ec);
+    auto const n = write_some(
+        data, size, ec);
     if(ec)
         detail::throw_system_error(ec,
             BOOST_CURRENT_LOCATION);
@@ -99,18 +92,10 @@ write(
 {
     auto const n = write_some(
         data, size, ec);
-    if(! ec)
+    if(! ec && n < size)
     {
-        if(! p_.done())
-        {
-            ec = error::incomplete;
-            p_.fail(ec);
-        }
-        else if(n < size)
-        {
-            ec = error::extra_data;
-            p_.fail(ec);
-        }
+        ec = error::extra_data;
+        p_.fail(ec);
     }
     return n;
 }

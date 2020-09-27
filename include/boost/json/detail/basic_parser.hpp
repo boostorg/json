@@ -39,7 +39,7 @@ BOOST_JSON_NS_BEGIN
     To use, first declare a variable of type
     `basic_parser<T>` where `T` meets the handler
     requirements specified below. Then call
-    @ref write one or more times with the input,
+    @ref write_some one or more times with the input,
     setting `more = false` on the final buffer.
     The parsing events are realized through member
     function calls on the handler, which exists
@@ -563,8 +563,9 @@ public:
 
     /** Return the last error.
 
-        This returns the last error code which was
-        generated in the most recent call to @ref write.
+        This returns the last error code which
+        was generated in the most recent call
+        to @ref write_some.
 
         @par Complexity
         Constant.

@@ -22,35 +22,42 @@ BOOST_JSON_NS_BEGIN
 
 //----------------------------------------------------------
 
-/** A DOM parser for serialized JSON.
+/** A DOM parser for JSON contained in a single buffer.
 
-    This class is used to incrementally parse JSON
-    from character buffers into a @ref value container.
+    This class is used to parse a JSON contained in a
+    single character buffer, into a @ref value container.
 
     @par Usage
 
-    Parsing for a new JSON may begin after the parser is
-    constructed, or after calling @ref reset, optionally
-    passing the storage pointer to be used by the
-    @ref value container into which the parsed results
-    are stored. After the parse is started, call
-    @ref write_some or @ref write to provide buffers
-    of characters of the JSON. When there are no more
-    buffers, call @ref finish. The parse is complete
-    when the function @ref done returns `true`, or
-    when a non-successful error code is returned.
-    To retrieve the result on success, call @ref release.
+    To use the parser first construct it, then optionally
+    call @ref reset to specify a @ref storage_ptr to use
+    for the resulting @ref value. Then call @ref write
+    to parse a character buffer containing a complete
+    JSON. If the parse is successful, call @ref release
+    to take ownership of the value:
+    @code
+    parser p;                                       // construct a parser
+    size_t n = p.write( "[1,2,3]" );                // parse a complete JSON
+    assert( n == 7 );                               // all characters consumed
+    value jv = p.release();                         // take ownership of the value
+    @endcode
 
-    @par Incremental Parsing
+    @par Extra Data
 
-    The parser allows the input to be presented in
-    multiple character buffers. This is useful when
-    not all of the serialized JSON is present at once
-    and it is desirable to process the data as it becomes
-    available, such as when reading from a network socket
-    or other device. The incremental interface may also
-    be used to bound the amount of work performed in each
-    parsing cycle.
+    When the character buffer provided as input contains
+    additional data that is not part of the complete
+    JSON, an error is returned. The @ref write_some
+    function is an alternative which allows the parse
+    to finish early, without consuming all the characters
+    in the buffer. This allows parsing of a buffer
+    containing multiple individual JSONs or containing
+    different protocol data:
+    @code
+    parser p;                                       // construct a parser
+    size_t n = p.write_some( "[1,2,3] null" );      // parse a complete JSON
+    assert( n == 8 );                               // only some characters consumed
+    value jv = p.release();                         // take ownership of the value
+    @endcode
 
     @par Temporary Storage
 
@@ -62,10 +69,10 @@ BOOST_JSON_NS_BEGIN
     is exhausted, the next allocation uses the
     @ref memory_resource passed to the constructor; if
     no such argument is specified, the default memory
-    resource is used instead. Temporary storage is
-    freed only when the parser is destroyed, improving
-    performance when the parser is reused to parse
-    multiple JSONs.
+    resource is used. Temporary storage is freed only
+    when the parser is destroyed; The performance of
+    parsing multiple JSONs may be improved by reusing
+    the same parser instance.
 \n
     It is important to note that the @ref memory_resource
     supplied upon construction is used for temporary
@@ -85,7 +92,7 @@ BOOST_JSON_NS_BEGIN
 
     The @ref parse_options structure optionally
     provided upon construction is used to customize
-    some  parameters of the parser, including which
+    some parameters of the parser, including which
     non-standard JSON extensions should be allowed.
     A default-constructed parse options allows only
     standard JSON.
@@ -99,7 +106,8 @@ BOOST_JSON_NS_BEGIN
 
     @see
         @ref parse,
-        @ref parse_options.
+        @ref parse_options,
+        @ref stream_parser.
 */
 class parser
 {
@@ -129,15 +137,15 @@ public:
    
     /** Constructor.
 
-        This constructs a new parser which first uses the
-        caller-owned storage pointed to by `temp_buffer`
+        This constructs a new parser which first uses
+        the caller-owned storage pointed to by `buffer`
         for temporary storage, falling back to the memory
         resource `sp` if needed. The parser will use the
         specified parsing options.
     \n
-        The parsed value will use the default memory resource
-        for storage. To use a different resource, call
-        @ref reset after construction.
+        The parsed value will use the default memory
+        resource for storage. To use a different resource,
+        call @ref reset after construction.
 
         @par Complexity
         Constant.
@@ -145,8 +153,8 @@ public:
         @par Exception Safety
         No-throw guarantee.
 
-        @param sp The memory resource to use for temporary storage
-        when `buffer` is exhausted.
+        @param sp The memory resource to use for
+        temporary storage after `buffer` is exhausted.
 
         @param opt The parsing options to use.
 
@@ -171,9 +179,9 @@ public:
         memory resource for temporary storage, and accepts
         only strict JSON.
     \n
-        The parsed value will use the default memory resource
-        for storage. To use a different resource, call
-        @ref reset after construction.
+        The parsed value will use the default memory
+        resource for storage. To use a different resource,
+        call @ref reset after construction.
 
         @par Complexity
         Constant.
@@ -188,13 +196,14 @@ public:
 
     /** Constructor.
 
-        This constructs a new parser which uses the specified
-        memory resource for temporary storage, and is
-        configured to use the specified parsing options.
+        This constructs a new parser which uses the
+        specified memory resource for temporary storage,
+        and is configured to use the specified parsing
+        options.
     \n
-        The parsed value will use the default memory resource
-        for storage. To use a different resource, call
-        @ref reset after construction.
+        The parsed value will use the default memory
+        resource for storage. To use a different resource,
+        call @ref reset after construction.
 
         @par Complexity
         Constant.
@@ -213,13 +222,13 @@ public:
 
     /** Constructor.
 
-        This constructs a new parser which uses the specified
-        memory resource for temporary storage, and accepts
-        only strict JSON.
+        This constructs a new parser which uses the
+        specified memory resource for temporary storage,
+        and accepts only strict JSON.
     \n
-        The parsed value will use the default memory resource
-        for storage. To use a different resource, call
-        @ref reset after construction.
+        The parsed value will use the default memory
+        resource for storage. To use a different resource,
+        call @ref reset after construction.
 
         @par Complexity
         Constant.
@@ -242,9 +251,9 @@ public:
         falling back to the memory resource `sp` if needed.
         The parser will use the specified parsing options.
     \n
-        The parsed value will use the default memory resource
-        for storage. To use a different resource, call
-        @ref reset after construction.
+        The parsed value will use the default memory
+        resource for storage. To use a different resource,
+        call @ref reset after construction.
 
         @par Complexity
         Constant.
@@ -252,15 +261,15 @@ public:
         @par Exception Safety
         No-throw guarantee.
 
-        @param sp The memory resource to use for temporary storage
-        when `buffer` is exhausted.
+        @param sp The memory resource to use for
+        temporary storage after `buffer` is exhausted.
 
         @param opt The parsing options to use.
 
-        @param buffer A buffer for the parser to use for temporary
-        storage. Ownership is not transferred, the caller is
-        responsible for ensuring the lifetime of `buffer` extends
-        until the parser is destroyed.
+        @param buffer A buffer for the parser to use for
+        temporary storage. Ownership is not transferred,
+        the caller is responsible for ensuring the lifetime
+        of `buffer` extends until the parser is destroyed.
     */
     template<std::size_t N>
     parser(
@@ -273,31 +282,73 @@ public:
     }
 
 #if defined(__cpp_lib_byte) || defined(BOOST_JSON_DOCS)
-    /** Constructor (delegating)
+    /** Constructor.
 
-        @par Effects
-        @code
-        parser( std::move(sp), opt,
-                       reinterpret_cast<unsigned char*>( temp_buffer ), N )
-        @endcode
+        This constructs a new parser which first uses
+        the caller-owned storage pointed to by `buffer`
+        for temporary storage, falling back to the memory
+        resource `sp` if needed. The parser will use the
+        specified parsing options.
+    \n
+        The parsed value will use the default memory
+        resource for storage. To use a different resource,
+        call @ref reset after construction.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param sp The memory resource to use for
+        temporary storage after `buffer` is exhausted.
+
+        @param opt The parsing options to use.
+
+        @param buffer A pointer to valid memory of at least
+        `size` bytes for the parser to use for temporary storage.
+        Ownership is not transferred, the caller is responsible
+        for ensuring the lifetime of the memory pointed to by
+        `buffer` extends until the parser is destroyed.
+
+        @param size The number of valid bytes in `buffer`.
     */
     parser(
         storage_ptr sp,
         parse_options const& opt,
-        std::byte* temp_buffer,
-        std::size_t temp_size) noexcept
-        : parser(sp, opt,
-            reinterpret_cast<unsigned char*>(
-                temp_buffer), temp_size)
+        std::byte* buffer,
+        std::size_t size) noexcept
+        : parser(sp, opt, reinterpret_cast<
+            unsigned char*>(buffer), size)
     {
     }
 
-    /** Constructor (delegating)
+    /** Constructor.
 
-        @par Effects
-        @code
-        parser( std::move(sp), opt, &buffer[0], N )
-        @endcode
+        This constructs a new parser which first uses the
+        caller-owned storage `buffer` for temporary storage,
+        falling back to the memory resource `sp` if needed.
+        The parser will use the specified parsing options.
+    \n
+        The parsed value will use the default memory
+        resource for storage. To use a different resource,
+        call @ref reset after construction.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param sp The memory resource to use for
+        temporary storage after `buffer` is exhausted.
+
+        @param opt The parsing options to use.
+
+        @param buffer A buffer for the parser to use for
+        temporary storage. Ownership is not transferred,
+        the caller is responsible for ensuring the lifetime
+        of `buffer` extends until the parser is destroyed.
     */
     template<std::size_t N>
     parser(
@@ -345,30 +396,11 @@ public:
 #endif
 #endif
 
-    /** Returns the current depth of the JSON being parsed.
-
-        The parsing depth is the total current nesting
-        level of arrays and objects.
-
-        @par Complexity
-
-        Constant.
-
-        @par Exception Safety
-
-        No-throw guarantee.
-    */
-    std::size_t
-    depth() const noexcept
-    {
-        return p_.depth();
-    }
-
-    /** Start parsing JSON incrementally.
+    /** Reset the parser for a new JSON.
 
         This function is used to reset the parser to
-        prepare it for parsing a new JSON. Any previous
-        partial results are destroyed.
+        prepare it for parsing a new complete JSON.
+        Any previous partial results are destroyed.
 
         @par Complexity
         Constant or linear in the size of any previous
@@ -385,35 +417,24 @@ public:
     void
     reset(storage_ptr sp = {}) noexcept;
 
-    /** Parse some of an input string as JSON, incrementally.
+    /** Parse a buffer containing a complete JSON.
 
-        This function parses the JSON in the specified
-        buffer. The parse proceeds from the current
-        state, which is at the beginning of a new JSON
-        or in the middle of the current JSON if any
-        characters were already parsed.
-    \n
-        The characters in the buffer are processed
-        starting from the beginning, until one of the
-        following conditions is met:
+        This function parses a complete JSON contained
+        in the specified character buffer. Additional
+        characters past the end of the complete JSON
+        are ignored. The function returns the actual
+        number of characters parsed, which may be less
+        than the size of the input. This allows parsing
+        of a buffer containing multiple individual JSONs
+        or containing different protocol data:
 
-        @li All of the characters in the buffer have
-        been parsed, or
-
-        @li A complete JSON is parsed, including any
-        optional trailing whitespace in the buffer, or
-
-        @li A parsing error occurs.
-
-        If a complete JSON is parsed, the function will
-        return the number of characters actually used
-        which may be less than the size of the input.
-    \n
-        The supplied buffer does not need to contain the
-        entire JSON. Subsequent calls can provide more
-        serialized data, allowing JSON to be processed
-        incrementally. The end of the serialized JSON
-        is be indicated by calling @ref finish.
+        @par Example
+        @code
+        parser p;                                       // construct a parser
+        size_t n = p.write_some( "[1,2,3] null" );      // parse a complete JSON
+        assert( n == 8 );                               // only some characters consumed
+        value jv = p.release();                         // take ownership of the value
+        @endcode
 
         @par Complexity
         Linear in `size`.
@@ -421,8 +442,8 @@ public:
         @par Exception Safety
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
-        Upon error, the only valid operations are
-        @ref reset and destruction.
+        Upon error or exception, subsequent calls will
+        fail until @ref reset is called to parse a new JSON.
 
         @return The number of characters consumed from
         the buffer.
@@ -442,35 +463,24 @@ public:
         std::size_t size,
         error_code& ec);
 
-    /** Parse some of an input string as JSON, incrementally.
+    /** Parse a buffer containing a complete JSON.
 
-        This function parses the JSON in the specified
-        buffer. The parse proceeds from the current
-        state, which is at the beginning of a new JSON
-        or in the middle of the current JSON if any
-        characters were already parsed.
-    \n
-        The characters in the buffer are processed
-        starting from the beginning, until one of the
-        following conditions is met:
+        This function parses a complete JSON contained
+        in the specified character buffer. Additional
+        characters past the end of the complete JSON
+        are ignored. The function returns the actual
+        number of characters parsed, which may be less
+        than the size of the input. This allows parsing
+        of a buffer containing multiple individual JSONs
+        or containing different protocol data:
 
-        @li All of the characters in the buffer have
-        been parsed, or
-
-        @li A complete JSON is parsed, including any
-        optional trailing whitespace in the buffer, or
-
-        @li A parsing error occurs.
-
-        If a complete JSON is parsed, the function will
-        return the number of characters actually used
-        which may be less than the size of the input.
-    \n
-        The supplied buffer does not need to contain the
-        entire JSON. Subsequent calls can provide more
-        serialized data, allowing JSON to be processed
-        incrementally. The end of the serialized JSON
-        is be indicated by calling @ref finish.
+        @par Example
+        @code
+        parser p;                                       // construct a parser
+        size_t n = p.write_some( "[1,2,3] null" );      // parse a complete JSON
+        assert( n == 8 );                               // only some characters consumed
+        value jv = p.release();                         // take ownership of the value
+        @endcode
 
         @par Complexity
         Linear in `size`.
@@ -478,8 +488,8 @@ public:
         @par Exception Safety
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
-        Upon error, the only valid operations are
-        @ref reset and destruction.
+        Upon error or exception, subsequent calls will
+        fail until @ref reset is called to parse a new JSON.
 
         @return The number of characters consumed from
         the buffer.
@@ -498,35 +508,24 @@ public:
         char const* data,
         std::size_t size);
 
-    /** Parse some of an input string as JSON, incrementally.
+    /** Parse a buffer containing a complete JSON.
 
-        This function parses the JSON in the specified
-        buffer. The parse proceeds from the current
-        state, which is at the beginning of a new JSON
-        or in the middle of the current JSON if any
-        characters were already parsed.
-    \n
-        The characters in the buffer are processed
-        starting from the beginning, until one of the
-        following conditions is met:
+        This function parses a complete JSON contained
+        in the specified character buffer. Additional
+        characters past the end of the complete JSON
+        are ignored. The function returns the actual
+        number of characters parsed, which may be less
+        than the size of the input. This allows parsing
+        of a buffer containing multiple individual JSONs
+        or containing different protocol data:
 
-        @li All of the characters in the buffer have
-        been parsed, or
-
-        @li A complete JSON is parsed, including any
-        optional trailing whitespace in the buffer, or
-
-        @li A parsing error occurs.
-
-        If a complete JSON is parsed, the function will
-        return the number of characters actually used
-        which may be less than the size of the input.
-    \n
-        The supplied buffer does not need to contain the
-        entire JSON. Subsequent calls can provide more
-        serialized data, allowing JSON to be processed
-        incrementally. The end of the serialized JSON
-        is be indicated by calling @ref finish.
+        @par Example
+        @code
+        parser p;                                       // construct a parser
+        size_t n = p.write_some( "[1,2,3] null" );      // parse a complete JSON
+        assert( n == 8 );                               // only some characters consumed
+        value jv = p.release();                         // take ownership of the value
+        @endcode
 
         @par Complexity
         Linear in `size`.
@@ -534,8 +533,8 @@ public:
         @par Exception Safety
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
-        Upon error, the only valid operations are
-        @ref reset and destruction.
+        Upon error or exception, subsequent calls will
+        fail until @ref reset is called to parse a new JSON.
 
         @return The number of characters consumed from
         the buffer.
@@ -553,35 +552,24 @@ public:
             s.data(), s.size(), ec);
     }
 
-    /** Parse some of an input string as JSON, incrementally.
+    /** Parse a buffer containing a complete JSON.
 
-        This function parses the JSON in the specified
-        buffer. The parse proceeds from the current
-        state, which is at the beginning of a new JSON
-        or in the middle of the current JSON if any
-        characters were already parsed.
-    \n
-        The characters in the buffer are processed
-        starting from the beginning, until one of the
-        following conditions is met:
+        This function parses a complete JSON contained
+        in the specified character buffer. Additional
+        characters past the end of the complete JSON
+        are ignored. The function returns the actual
+        number of characters parsed, which may be less
+        than the size of the input. This allows parsing
+        of a buffer containing multiple individual JSONs
+        or containing different protocol data:
 
-        @li All of the characters in the buffer have
-        been parsed, or
-
-        @li A complete JSON is parsed, including any
-        optional trailing whitespace in the buffer, or
-
-        @li A parsing error occurs.
-
-        If a complete JSON is parsed, the function will
-        return the number of characters actually used
-        which may be less than the size of the input.
-    \n
-        The supplied buffer does not need to contain the
-        entire JSON. Subsequent calls can provide more
-        serialized data, allowing JSON to be processed
-        incrementally. The end of the serialized JSON
-        is be indicated by calling @ref finish.
+        @par Example
+        @code
+        parser p;                                       // construct a parser
+        size_t n = p.write_some( "[1,2,3] null" );      // parse a complete JSON
+        assert( n == 8 );                               // only some characters consumed
+        value jv = p.release();                         // take ownership of the value
+        @endcode
 
         @par Complexity
         Linear in `size`.
@@ -589,8 +577,8 @@ public:
         @par Exception Safety
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
-        Upon error, the only valid operations are
-        @ref reset and destruction.
+        Upon error or exception, subsequent calls will
+        fail until @ref reset is called to parse a new JSON.
 
         @return The number of characters consumed from
         the buffer.
@@ -607,35 +595,21 @@ public:
             s.data(), s.size());
     }
 
-    /** Parse all of an input string as JSON, incrementally.
+    /** Parse a buffer containing a complete JSON.
 
-        This function parses the JSON in the specified
-        buffer. The parse proceeds from the current
-        state, which is at the beginning of a new JSON
-        or in the middle of the current JSON if any
-        characters were already parsed.
-    \n
-        The characters in the buffer are processed
-        starting from the beginning, until one of the
-        following conditions is met:
+        This function parses a complete JSON contained
+        in the specified character buffer. The entire
+        buffer must be consumed; if there are additional
+        characters past the end of the complete JSON,
+        the parse fails and an error is returned.
 
-        @li All of the characters in the buffer have
-        been parsed, or
-
-        @li A complete JSON is parsed, including any
-        optional trailing whitespace in the buffer, or
-
-        @li A parsing error occurs.
-
-        If a complete JSON is parsed, but not all
-        characters in the buffer were consumed, an
-        error occurs.
-    \n
-        The supplied buffer does not need to contain the
-        entire JSON. Subsequent calls can provide more
-        serialized data, allowing JSON to be processed
-        incrementally. The end of the serialized JSON
-        is be indicated by calling @ref finish.
+        @par Example
+        @code
+        parser p;                                       // construct a parser
+        size_t n = p.write( "[1,2,3]" );                // parse a complete JSON
+        assert( n == 7 );                               // all characters consumed
+        value jv = p.release();                         // take ownership of the value
+        @endcode
 
         @par Complexity
         Linear in `size`.
@@ -643,8 +617,8 @@ public:
         @par Exception Safety
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
-        Upon error, the only valid operations are
-        @ref reset and destruction.
+        Upon error or exception, subsequent calls will
+        fail until @ref reset is called to parse a new JSON.
 
         @return The number of characters consumed from
         the buffer.
@@ -664,35 +638,21 @@ public:
         std::size_t size,
         error_code& ec);
 
-    /** Parse all of an input string as JSON, incrementally.
+    /** Parse a buffer containing a complete JSON.
 
-        This function parses the JSON in the specified
-        buffer. The parse proceeds from the current
-        state, which is at the beginning of a new JSON
-        or in the middle of the current JSON if any
-        characters were already parsed.
-    \n
-        The characters in the buffer are processed
-        starting from the beginning, until one of the
-        following conditions is met:
+        This function parses a complete JSON contained
+        in the specified character buffer. The entire
+        buffer must be consumed; if there are additional
+        characters past the end of the complete JSON,
+        the parse fails and an error is returned.
 
-        @li All of the characters in the buffer have
-        been parsed, or
-
-        @li A complete JSON is parsed, including any
-        optional trailing whitespace in the buffer, or
-
-        @li A parsing error occurs.
-
-        If a complete JSON is parsed, but not all
-        characters in the buffer were consumed, an
-        error occurs.
-    \n
-        The supplied buffer does not need to contain the
-        entire JSON. Subsequent calls can provide more
-        serialized data, allowing JSON to be processed
-        incrementally. The end of the serialized JSON
-        is be indicated by calling @ref finish.
+        @par Example
+        @code
+        parser p;                                       // construct a parser
+        size_t n = p.write( "[1,2,3]" );                // parse a complete JSON
+        assert( n == 7 );                               // all characters consumed
+        value jv = p.release();                         // take ownership of the value
+        @endcode
 
         @par Complexity
         Linear in `size`.
@@ -700,8 +660,8 @@ public:
         @par Exception Safety
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
-        Upon error, the only valid operations are
-        @ref reset and destruction.
+        Upon error or exception, subsequent calls will
+        fail until @ref reset is called to parse a new JSON.
 
         @return The number of characters consumed from
         the buffer.
@@ -720,35 +680,21 @@ public:
         char const* data,
         std::size_t size);
 
-    /** Parse all of an input string as JSON, incrementally.
+    /** Parse a buffer containing a complete JSON.
 
-        This function parses the JSON in the specified
-        buffer. The parse proceeds from the current
-        state, which is at the beginning of a new JSON
-        or in the middle of the current JSON if any
-        characters were already parsed.
-    \n
-        The characters in the buffer are processed
-        starting from the beginning, until one of the
-        following conditions is met:
+        This function parses a complete JSON contained
+        in the specified character buffer. The entire
+        buffer must be consumed; if there are additional
+        characters past the end of the complete JSON,
+        the parse fails and an error is returned.
 
-        @li All of the characters in the buffer have
-        been parsed, or
-
-        @li A complete JSON is parsed, including any
-        optional trailing whitespace in the buffer, or
-
-        @li A parsing error occurs.
-
-        If a complete JSON is parsed, but not all
-        characters in the buffer were consumed, an
-        error occurs.
-    \n
-        The supplied buffer does not need to contain the
-        entire JSON. Subsequent calls can provide more
-        serialized data, allowing JSON to be processed
-        incrementally. The end of the serialized JSON
-        is be indicated by calling @ref finish.
+        @par Example
+        @code
+        parser p;                                       // construct a parser
+        size_t n = p.write( "[1,2,3]" );                // parse a complete JSON
+        assert( n == 7 );                               // all characters consumed
+        value jv = p.release();                         // take ownership of the value
+        @endcode
 
         @par Complexity
         Linear in `size`.
@@ -756,8 +702,8 @@ public:
         @par Exception Safety
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
-        Upon error, the only valid operations are
-        @ref reset and destruction.
+        Upon error or exception, subsequent calls will
+        fail until @ref reset is called to parse a new JSON.
 
         @return The number of characters consumed from
         the buffer.
@@ -775,35 +721,21 @@ public:
             s.data(), s.size(), ec);
     }
 
-    /** Parse all of an input string as JSON, incrementally.
+    /** Parse a buffer containing a complete JSON.
 
-        This function parses the JSON in the specified
-        buffer. The parse proceeds from the current
-        state, which is at the beginning of a new JSON
-        or in the middle of the current JSON if any
-        characters were already parsed.
-    \n
-        The characters in the buffer are processed
-        starting from the beginning, until one of the
-        following conditions is met:
+        This function parses a complete JSON contained
+        in the specified character buffer. The entire
+        buffer must be consumed; if there are additional
+        characters past the end of the complete JSON,
+        the parse fails and an error is returned.
 
-        @li All of the characters in the buffer have
-        been parsed, or
-
-        @li A complete JSON is parsed, including any
-        optional trailing whitespace in the buffer, or
-
-        @li A parsing error occurs.
-
-        If a complete JSON is parsed, but not all
-        characters in the buffer were consumed, an
-        error occurs.
-    \n
-        The supplied buffer does not need to contain the
-        entire JSON. Subsequent calls can provide more
-        serialized data, allowing JSON to be processed
-        incrementally. The end of the serialized JSON
-        is be indicated by calling @ref finish.
+        @par Example
+        @code
+        parser p;                                       // construct a parser
+        size_t n = p.write( "[1,2,3]" );                // parse a complete JSON
+        assert( n == 7 );                               // all characters consumed
+        value jv = p.release();                         // take ownership of the value
+        @endcode
 
         @par Complexity
         Linear in `size`.
@@ -811,8 +743,8 @@ public:
         @par Exception Safety
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
-        Upon error, the only valid operations are
-        @ref reset and destruction.
+        Upon error or exception, subsequent calls will
+        fail until @ref reset is called to parse a new JSON.
 
         @return The number of characters consumed from
         the buffer.
@@ -837,21 +769,8 @@ public:
         after calling this function in order to parse
         another JSON.
 
-        @par Effects
-        @code
-        if( ! this->done() )
-            this->finish();
-        @endcode
-        @note
-
         @par Complexity
         Constant.
-
-        @par Exception Safety
-        Basic guarantee.
-        Calls to `memory_resource::allocate` may throw.
-        Upon error, the only valid operations are
-        @ref reset and destruction.
 
         @return The parsed value. Ownership of this
         value is transferred to the caller.

@@ -73,8 +73,8 @@ write_some(
     std::size_t size)
 {
     error_code ec;
-    auto const n = p_.write_some(
-        true, data, size, ec);
+    auto const n = write_some(
+        data, size, ec);
     if(ec)
         detail::throw_system_error(ec,
             BOOST_CURRENT_LOCATION);
