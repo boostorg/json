@@ -7,8 +7,8 @@
 // Official repository: https://github.com/cppalliance/json
 //
 
-#ifndef BOOST_JSON_PARSER_HPP
-#define BOOST_JSON_PARSER_HPP
+#ifndef BOOST_JSON_STREAM_PARSER_HPP
+#define BOOST_JSON_STREAM_PARSER_HPP
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/storage_ptr.hpp>
@@ -101,18 +101,18 @@ BOOST_JSON_NS_BEGIN
         @ref parse,
         @ref parse_options.
 */
-class parser
+class stream_parser
 {
     basic_parser<detail::handler> p_;
 
 public:
     /// Copy constructor (deleted)
-    parser(
-        parser const&) = delete;
+    stream_parser(
+        stream_parser const&) = delete;
 
     /// Copy assignment (deleted)
-    parser& operator=(
-        parser const&) = delete;
+    stream_parser& operator=(
+        stream_parser const&) = delete;
 
     /** Destructor.
 
@@ -125,7 +125,7 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    ~parser() = default;
+    ~stream_parser() = default;
    
     /** Constructor.
 
@@ -159,7 +159,7 @@ public:
         @param size The number of valid bytes in `buffer`.
     */
     BOOST_JSON_DECL
-    parser(
+    stream_parser(
         storage_ptr sp,
         parse_options const& opt,
         unsigned char* buffer,
@@ -181,8 +181,8 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    parser() noexcept
-        : parser({}, {})
+    stream_parser() noexcept
+        : stream_parser({}, {})
     {
     }
 
@@ -207,7 +207,7 @@ public:
         @param opt The parsing options to use.
     */
     BOOST_JSON_DECL
-    parser(
+    stream_parser(
         storage_ptr sp,
         parse_options const& opt) noexcept;
 
@@ -230,8 +230,8 @@ public:
         @param sp The memory resource to use for temporary storage.
     */
     explicit
-    parser(storage_ptr sp) noexcept
-        : parser(std::move(sp), {})
+    stream_parser(storage_ptr sp) noexcept
+        : stream_parser(std::move(sp), {})
     {
     }
 
@@ -263,12 +263,12 @@ public:
         until the parser is destroyed.
     */
     template<std::size_t N>
-    parser(
+    stream_parser(
         storage_ptr sp,
         parse_options const& opt,
         unsigned char(&buffer)[N]) noexcept
-        : parser(std::move(sp), opt,
-            &buffer[0], N)
+        : stream_parser(std::move(sp),
+            opt, &buffer[0], N)
     {
     }
 
@@ -277,18 +277,18 @@ public:
 
         @par Effects
         @code
-        parser( std::move(sp), opt,
-                reinterpret_cast<unsigned char*>( temp_buffer ), N )
+        stream_parser( std::move(sp), opt,
+                       reinterpret_cast<unsigned char*>( temp_buffer ), N )
         @endcode
     */
-    parser(
+    stream_parser(
         storage_ptr sp,
         parse_options const& opt,
         std::byte* temp_buffer,
         std::size_t temp_size) noexcept
-        : parser(sp, opt, reinterpret_cast<
-            unsigned char*>(temp_buffer),
-                temp_size)
+        : stream_parser(sp, opt,
+            reinterpret_cast<unsigned char*>(
+                temp_buffer), temp_size)
     {
     }
 
@@ -300,12 +300,12 @@ public:
         @endcode
     */
     template<std::size_t N>
-    parser(
+    stream_parser(
         storage_ptr sp,
         parse_options const& opt,
         std::byte(&buffer)[N]) noexcept
-        : parser(std::move(sp), opt,
-            &buffer[0], N)
+        : stream_parser(std::move(sp),
+            opt, &buffer[0], N)
     {
     }
 #endif
@@ -313,13 +313,13 @@ public:
 #ifndef BOOST_JSON_DOCS
     // Safety net for accidental buffer overflows
     template<std::size_t N>
-    parser(
+    stream_parser(
         storage_ptr sp,
         parse_options const& opt,
         unsigned char(&buffer)[N],
         std::size_t n) noexcept
-        : parser(std::move(sp), opt,
-            &buffer[0], n)
+        : stream_parser(std::move(sp),
+            opt, &buffer[0], n)
     {
         // If this goes off, check your parameters
         // closely, chances are you passed an array
@@ -330,12 +330,12 @@ public:
 #ifdef __cpp_lib_byte
     // Safety net for accidental buffer overflows
     template<std::size_t N>
-    parser(
+    stream_parser(
         storage_ptr sp,
         parse_options const& opt,
         std::byte(&buffer)[N], std::size_t n) noexcept
-        : parser(std::move(sp), opt,
-            &buffer[0], n)
+        : stream_parser(std::move(sp),
+            opt, &buffer[0], n)
     {
         // If this goes off, check your parameters
         // closely, chances are you passed an array

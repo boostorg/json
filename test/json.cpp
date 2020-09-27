@@ -29,7 +29,7 @@ struct json_test
             "  string        == " << sizeof(string) << " (" << alignof(string) << ")\n"
             "  value         == " << sizeof(value) << " (" << alignof(value) << ")\n"
             "  serializer    == " << sizeof(serializer) << "\n"
-            "  parser        == " << sizeof(parser)
+            "  stream_parser == " << sizeof(stream_parser)
             ;
         BOOST_TEST_PASS();
     }

@@ -52,7 +52,7 @@ BOOST_JSON_NS_BEGIN
 
     @see
         @ref parse_options,
-        @ref parser
+        @ref stream_parser.
 */
 BOOST_JSON_DECL
 value
@@ -92,7 +92,7 @@ parse(
 
     @see
         @ref parse_options,
-        @ref parser
+        @ref stream_parser.
 */
 BOOST_JSON_DECL
 value

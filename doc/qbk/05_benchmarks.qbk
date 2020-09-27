@@ -29,7 +29,7 @@ workloads. These implementations are evaluated:
         Parses the input using a __monotonic_resource__,
         which is optimized for parsing without subsequent
         modification.
-        The __parser__ object is reused between
+        The __stream_parser__ object is reused between
         trials, allowing temporary memory allocated by the
         implementation to persist and improve performance.
     ]
@@ -40,7 +40,7 @@ workloads. These implementations are evaluated:
         which uses the standard C++ allocator, and is designed
         for general use including mutation of the document
         after it is parsed.
-        The __parser__ object is reused between
+        The __stream_parser__ object is reused between
         trials, allowing temporary memory allocated by the
         implementation to persist and improve performance.
     ]

@@ -271,7 +271,7 @@ public:
         string_view s,
         std::size_t repeat) const override
     {
-        parser p;
+        stream_parser p;
         while(repeat--)
         {
             p.reset();
@@ -338,7 +338,7 @@ public:
         string_view s,
         std::size_t repeat) const override
     {
-        parser p;
+        stream_parser p;
         while(repeat--)
         {
             monotonic_resource mr;

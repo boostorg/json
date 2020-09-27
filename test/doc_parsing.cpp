@@ -10,8 +10,8 @@
 #include <boost/json/monotonic_resource.hpp>
 #include <boost/json/null_resource.hpp>
 #include <boost/json/parse.hpp>
-#include <boost/json/parser.hpp>
 #include <boost/json/static_resource.hpp>
+#include <boost/json/stream_parser.hpp>
 
 #include <iostream>
 #include <string>
@@ -97,7 +97,7 @@ value jv = parse( "[1,2,3,] // comment, extra comma ", storage_ptr(),
 //[doc_parsing_7
 class connection
 {
-    parser p_;                                      // persistent data member
+    stream_parser p_;                               // persistent data member
 
 public:
     void do_read( string_view s )                   // called for each complete message from the network
@@ -116,7 +116,7 @@ public:
 //[doc_parsing_8
 value read_json( std::istream& is, error_code& ec )
 {
-    parser p;
+    stream_parser p;
     std::string line;
     while( std::getline( is, line ) )
     {
@@ -138,7 +138,7 @@ static void set2() {
 //----------------------------------------------------------
 {
 //[doc_parsing_9
-parser p;
+stream_parser p;
 error_code ec;
 string_view s = "[1,2,3] %HOME%";
 std::size_t n = p.write_some( s, ec );
@@ -155,7 +155,7 @@ parse_options opt;                                  // All extensions default to
 opt.allow_comments = true;                          // Permit C and C++ style comments to appear in whitespace
 opt.allow_trailing_commas = true;                   // Allow an additional trailing comma in object and array element lists
 opt.allow_invalid_utf8 = true;                      // Skip utf-8 validation of keys and strings
-parser p( storage_ptr(), opt );                     // The parser will use the options
+stream_parser p( storage_ptr(), opt );                     // The stream_parser will use the options
 //]
 }
 //----------------------------------------------------------
@@ -164,7 +164,7 @@ parser p( storage_ptr(), opt );                     // The parser will use the o
 {
     monotonic_resource mr;
 
-    parser p;
+    stream_parser p;
     p.reset( &mr );                                 // Use mr for the resulting value
     p.write( "[1,2,3,4,5]" );                       // Parse the input JSON
     value const jv = p.release();                   // Retrieve the result
@@ -176,7 +176,7 @@ parser p( storage_ptr(), opt );                     // The parser will use the o
 {
 //[doc_parsing_12
 unsigned char temp[ 4096 ];                                 // Declare our buffer
-parser p(
+stream_parser p(
     storage_ptr(),                                          // Default memory resource
     parse_options{},                                        // Default parse options (strict parsing)
     temp);                                                  // Use our buffer for temporary storage
@@ -208,8 +208,8 @@ parser p(
 template< class Handler >
 void do_rpc( string_view s, Handler&& handler )
 {
-    unsigned char temp[ 4096 ];                 // The parser will use this storage for its temporary needs
-    parser p(                                   // Construct a strict parser using the temp buffer and no dynamic memory
+    unsigned char temp[ 4096 ];                 // The stream_parser will use this storage for its temporary needs
+    stream_parser p(                                   // Construct a strict stream_parser using the temp buffer and no dynamic memory
         get_null_resource(),                    // The null resource guarantees we will never dynamically allocate
         parse_options(),                        // Default constructed parse options allow only standard JSON
         temp );
@@ -219,7 +219,7 @@ void do_rpc( string_view s, Handler&& handler )
     p.reset( &mr2 );                            // Use the static resource for producing the value
 
     p.write( s );                               // Parse the entire string we received from the network client
-    p.finish();                                 // Inform the parser that the complete input has been provided
+    p.finish();                                 // Inform the stream_parser that the complete input has been provided
 
     // Retrieve the value and invoke the handler with it.
     // The value will use `buf` for storage. The handler

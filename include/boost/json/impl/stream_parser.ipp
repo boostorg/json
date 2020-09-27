@@ -7,20 +7,20 @@
 // Official repository: https://github.com/cppalliance/json
 //
 
-#ifndef BOOST_JSON_IMPL_PARSER_IPP
-#define BOOST_JSON_IMPL_PARSER_IPP
+#ifndef BOOST_JSON_IMPL_STREAM_PARSER_IPP
+#define BOOST_JSON_IMPL_STREAM_PARSER_IPP
 
+#include <boost/json/stream_parser.hpp>
 #include <boost/json/basic_parser.hpp>
 #include <boost/json/error.hpp>
-#include <boost/json/parser.hpp>
 #include <cstring>
 #include <stdexcept>
 #include <utility>
 
 BOOST_JSON_NS_BEGIN
 
-parser::
-parser(
+stream_parser::
+stream_parser(
     storage_ptr sp,
     parse_options const& opt,
     unsigned char* buffer,
@@ -34,8 +34,8 @@ parser(
     reset();
 }
 
-parser::
-parser(
+stream_parser::
+stream_parser(
     storage_ptr sp,
     parse_options const& opt) noexcept
     : p_(
@@ -48,7 +48,7 @@ parser(
 }
 
 void
-parser::
+stream_parser::
 reset(storage_ptr sp) noexcept
 {
     p_.reset();
@@ -56,7 +56,7 @@ reset(storage_ptr sp) noexcept
 }
 
 std::size_t
-parser::
+stream_parser::
 write_some(
     char const* data,
     std::size_t size,
@@ -67,7 +67,7 @@ write_some(
 }
 
 std::size_t
-parser::
+stream_parser::
 write_some(
     char const* data,
     std::size_t size)
@@ -82,7 +82,7 @@ write_some(
 }
 
 std::size_t
-parser::
+stream_parser::
 write(
     char const* data,
     std::size_t size,
@@ -99,7 +99,7 @@ write(
 }
 
 std::size_t
-parser::
+stream_parser::
 write(
     char const* data,
     std::size_t size)
@@ -114,14 +114,14 @@ write(
 }
 
 void
-parser::
+stream_parser::
 finish(error_code& ec)
 {
     p_.write_some(false, nullptr, 0, ec);
 }
 
 void
-parser::
+stream_parser::
 finish()
 {
     error_code ec;
@@ -132,7 +132,7 @@ finish()
 }
 
 value
-parser::
+stream_parser::
 release()
 {
     if(! p_.done())

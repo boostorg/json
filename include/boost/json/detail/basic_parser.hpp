@@ -63,12 +63,12 @@ BOOST_JSON_NS_BEGIN
 
     Users who wish to parse JSON into the DOM container
     @ref value will not use this class directly; instead
-    they will create an instance of @ref parser and
-    use that instead. Alternatively, they may call the
-    function @ref parse. This class is designed for
-    users who wish to perform custom actions instead of
-    building a @ref value. For example, to produce a
-    DOM from an external library.
+    they will create an instance of @ref parser or
+    @ref stream_parser and use that instead. Alternatively,
+    they may call the function @ref parse. This class is
+    designed for users who wish to perform custom actions
+    instead of building a @ref value. For example, to
+    produce a DOM from an external library.
 \n
     @note
 
@@ -263,7 +263,7 @@ BOOST_JSON_NS_BEGIN
 
     @see
         @ref parse,
-        @ref parser
+        @ref stream_parser.
 */
 template<class Handler>
 class basic_parser

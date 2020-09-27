@@ -51,6 +51,7 @@ local SOURCES =
     snippets.cpp
     static_resource.cpp
     storage_ptr.cpp
+    stream_parser.cpp
     string.cpp
     string_view.cpp
     system_error.cpp

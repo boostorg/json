@@ -26,7 +26,7 @@ json::value
 parse_file( char const* filename )
 {
     file f( filename, "r" );
-    json::parser p;
+    json::stream_parser p;
     json::error_code ec;
     do
     {

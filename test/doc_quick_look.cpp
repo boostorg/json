@@ -155,7 +155,7 @@ value jv = parse( "[1, 2, 3, ] // array ", &mr, opt );
 //----------------------------------------------------------
 {
 //[doc_quick_look_11
-parser p;
+stream_parser p;
 error_code ec;
 p.reset();
 p.write( "[1, 2 ", ec );

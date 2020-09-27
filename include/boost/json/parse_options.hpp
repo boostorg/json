@@ -10,6 +10,8 @@
 #ifndef BOOST_JSON_PARSE_OPTIONS_HPP
 #define BOOST_JSON_PARSE_OPTIONS_HPP
 
+#include <boost/json/detail/config.hpp>
+
 BOOST_JSON_NS_BEGIN
 
 /** Parser options
@@ -36,7 +38,7 @@ struct parse_options
 
         @see
             @ref basic_parser,
-            @ref parser.
+            @ref stream_parser.
     */
     std::size_t max_depth = 32;
 
@@ -47,7 +49,7 @@ struct parse_options
 
         @see
             @ref basic_parser,
-            @ref parser.
+            @ref stream_parser.
     */
     bool allow_comments = false;
 
@@ -58,7 +60,7 @@ struct parse_options
 
         @see
             @ref basic_parser,
-            @ref parser.
+            @ref stream_parser.
     */
     bool allow_trailing_commas = false;
 
@@ -71,7 +73,7 @@ struct parse_options
 
         @see
             @ref basic_parser,
-            @ref parser.
+            @ref stream_parser.
     */
     bool allow_invalid_utf8 = false;
 };

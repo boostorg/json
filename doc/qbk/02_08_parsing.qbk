@@ -39,7 +39,7 @@ functions and types to assist with parsing:
         enabled during parsing.
     ]
 ][
-    [__parser__]
+    [__stream_parser__]
     [
         A stateful DOM parser object which may be used to
         efficiently parse a series of JSONs incrementally,
@@ -98,7 +98,7 @@ __parse_options__ with a less verbose but equally expressive syntax:
 
 [heading Parser Instance]
 
-Instances of __parser__ offer functionality beyond what is
+Instances of __stream_parser__ offer functionality beyond what is
 available when using the __parse__ free functions:
 
 * More control over memory
@@ -109,11 +109,11 @@ available when using the __parse__ free functions:
 The parser implementation uses temporary storage space to accumulate
 values during parsing. When using the __parse__ free functions, this
 storage is allocated and freed in each call. However, by declaring
-an instance of __parser__, this temporary storage can be reused when
+an instance of __stream_parser__, this temporary storage can be reused when
 parsing more than one JSON, reducing the total number of dynamic
 memory allocations.
 
-To use the __parser__, declare an instance. Then call
+To use the __stream_parser__, declare an instance. Then call
 [link json.ref.boost__json__parser.write `write`]
 zero or more times with successive buffers representing the input JSON.
 When there are no more buffers, call

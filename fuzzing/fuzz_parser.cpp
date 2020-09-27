@@ -7,9 +7,9 @@
 // Official repository: https://github.com/cppalliance/json
 //
 
-#include <boost/json/parser.hpp>
 #include <boost/json/parse_options.hpp>
 #include <boost/json/serialize.hpp>
+#include <boost/json/stream_parser.hpp>
 #include <boost/json/monotonic_resource.hpp>
 #include <boost/json/null_resource.hpp>
 #include <boost/json/static_resource.hpp>
@@ -22,7 +22,7 @@ struct FuzzHelper {
     std::size_t memlimit1;
     std::size_t memlimit2;
     bool res;
-    void run(parser& p) {
+    void run(stream_parser& p) {
         error_code ec;
 
         // Write the first part of the buffer
@@ -42,13 +42,13 @@ struct FuzzHelper {
 
     // easy case - everything default
     void useDefault() {
-        parser p(storage_ptr{}, opt);
+        stream_parser p(storage_ptr{}, opt);
         run(p);
     }
 
     void useMonotonic() {
         monotonic_resource mr;
-        parser p(storage_ptr{}, opt);
+        stream_parser p(storage_ptr{}, opt);
         p.reset( &mr );
 
         run(p);
@@ -56,7 +56,7 @@ struct FuzzHelper {
 
     void useLocalBuffer() {
         std::unique_ptr<unsigned char[]> temp(new unsigned char[memlimit1]);
-        parser p(
+        stream_parser p(
                     storage_ptr(),
                     opt,
                     temp.get(),
@@ -67,7 +67,7 @@ struct FuzzHelper {
     void useDynLess() {
         // this is on the heap because the size is chosen dynamically
         std::unique_ptr<unsigned char[]> temp(new unsigned char[memlimit1]);
-        parser p(get_null_resource(),
+        stream_parser p(get_null_resource(),
                  opt,
                  temp.get(),
                  memlimit1);

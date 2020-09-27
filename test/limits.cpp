@@ -12,7 +12,7 @@
 #include <boost/json/string.hpp>
 #include <boost/json/value.hpp>
 #include <boost/json/parse.hpp>
-#include <boost/json/parser.hpp>
+#include <boost/json/stream_parser.hpp>
 
 #include <vector>
 
@@ -198,7 +198,7 @@ public:
 
         // string in parser
         {
-            parser p;
+            stream_parser p;
             std::string const big(
                 string::max_size() + 1, '*');
             auto const js =
@@ -210,7 +210,7 @@ public:
 
         // key in parser
         {
-            parser p;
+            stream_parser p;
             std::string const big(
                 string::max_size() + 1, '*');
             auto const js =

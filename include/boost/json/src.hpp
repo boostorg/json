@@ -35,10 +35,10 @@ in a translation unit of the program.
 #include <boost/json/impl/null_resource.ipp>
 #include <boost/json/impl/object.ipp>
 #include <boost/json/impl/parse.ipp>
-#include <boost/json/impl/parser.ipp>
 #include <boost/json/impl/serialize.ipp>
 #include <boost/json/impl/serializer.ipp>
 #include <boost/json/impl/static_resource.ipp>
+#include <boost/json/impl/stream_parser.ipp>
 #include <boost/json/impl/string.ipp>
 #include <boost/json/impl/value.ipp>
 #include <boost/json/impl/value_stack.ipp>

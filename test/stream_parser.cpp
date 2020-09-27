@@ -9,7 +9,7 @@
 //
 
 // Test that header file is self-contained.
-#include <boost/json/parser.hpp>
+#include <boost/json/stream_parser.hpp>
 
 #include <boost/json/monotonic_resource.hpp>
 #include <boost/json/parse.hpp>
@@ -24,9 +24,9 @@
 
 BOOST_JSON_NS_BEGIN
 
-BOOST_STATIC_ASSERT( std::is_nothrow_destructible<parser>::value );
+BOOST_STATIC_ASSERT( std::is_nothrow_destructible<stream_parser>::value );
 
-class parser_test
+class stream_parser_test
 {
 public:
     ::test_suite::log_type log;
@@ -38,7 +38,7 @@ public:
         storage_ptr sp = {},
         const parse_options& po = parse_options())
     {
-        parser p(storage_ptr(), po);
+        stream_parser p(storage_ptr(), po);
         error_code ec;
         p.reset(std::move(sp));
         p.write(s.data(), s.size(), ec);
@@ -101,14 +101,14 @@ public:
 
             if(s.size() > 1)
             {
-                // Destroy the parser at every
+                // Destroy the stream_parser at every
                 // split point to check leaks.
                 for(std::size_t i = 1;
                     i < s.size(); ++i)
                 {
                     fail_resource mr;
                     mr.fail_max = 0;
-                    parser p(storage_ptr(), po);
+                    stream_parser p(storage_ptr(), po);
                     error_code ec;
                     p.reset(&mr);
                     p.write(s.data(), i, ec);
@@ -266,7 +266,7 @@ public:
                 js = "\"" + big + "\"";
                 auto const N = js.size() / 2;
                 error_code ec;
-                parser p;
+                stream_parser p;
                 p.write(js.data(), N, ec);
                 if(BOOST_TEST(! ec))
                 {
@@ -298,7 +298,7 @@ public:
         {
             BOOST_TEST_CHECKPOINT();
             error_code ec;
-            parser p;
+            stream_parser p;
             p.write(s.data(), s.size(), ec);
             if(BOOST_TEST(! ec))
                 p.finish(ec);
@@ -596,7 +596,7 @@ public:
             error_code ec;
             parse_options opt;
             opt.max_depth = 0;
-            parser p(storage_ptr(), opt);
+            stream_parser p(storage_ptr(), opt);
             BOOST_TEST(
                 p.depth() == 0);
             p.write("[]", 2, ec);
@@ -664,7 +664,7 @@ public:
             error_code ec;
             parse_options opt;
             opt.max_depth = 0;
-            parser p(storage_ptr(), opt);
+            stream_parser p(storage_ptr(), opt);
             BOOST_TEST(
                 p.depth() == 0);
             p.write("{}", 2, ec);
@@ -681,34 +681,34 @@ public:
         {
             unsigned char buf[256];
 
-            // parser()
+            // stream_parser()
             {
-                parser p;
+                stream_parser p;
             }
 
-            // parser(storage_ptr)
+            // stream_parser(storage_ptr)
             {
-                parser p( storage_ptr{} );
+                stream_parser p( storage_ptr{} );
             }
 
-            // parser(storage_ptr, parse_options)
+            // stream_parser(storage_ptr, parse_options)
             {
-                parser p( storage_ptr{}, parse_options{} );
+                stream_parser p( storage_ptr{}, parse_options{} );
             }
 
-            // parser(storage_ptr, parse_options, unsigned char*, std::size_t)
+            // stream_parser(storage_ptr, parse_options, unsigned char*, std::size_t)
             {
-                parser p( storage_ptr(), parse_options(), &buf[0], sizeof(buf) );
+                stream_parser p( storage_ptr(), parse_options(), &buf[0], sizeof(buf) );
             }
 
-            // parser(storage_ptr, parse_options, unsigned char[])
+            // stream_parser(storage_ptr, parse_options, unsigned char[])
             {
-                parser p( storage_ptr(), parse_options(), buf);
+                stream_parser p( storage_ptr(), parse_options(), buf);
             }
 
-            // parser(storage_ptr, parse_options, unsigned char[], std::size_t)
+            // stream_parser(storage_ptr, parse_options, unsigned char[], std::size_t)
             {
-                parser p( storage_ptr(), parse_options(), buf, sizeof(buf));
+                stream_parser p( storage_ptr(), parse_options(), buf, sizeof(buf));
             }
         }
 
@@ -716,19 +716,19 @@ public:
         {
             std::byte buf[256];
 
-            // parser(storage_ptr, parse_options, std::byte*, std::size_t)
+            // stream_parser(storage_ptr, parse_options, std::byte*, std::size_t)
             {
-                parser p( storage_ptr(), parse_options(), &buf[0], sizeof(buf) );
+                stream_parser p( storage_ptr(), parse_options(), &buf[0], sizeof(buf) );
             }
 
-            // parser(storage_ptr, parse_options, std::byte[])
+            // stream_parser(storage_ptr, parse_options, std::byte[])
             {
-                parser p( storage_ptr(), parse_options(), buf);
+                stream_parser p( storage_ptr(), parse_options(), buf);
             }
 
-            // parser(storage_ptr, parse_options, std::byte[], std::size_t)
+            // stream_parser(storage_ptr, parse_options, std::byte[], std::size_t)
             {
-                parser p( storage_ptr(), parse_options(), buf, sizeof(buf));
+                stream_parser p( storage_ptr(), parse_options(), buf, sizeof(buf));
             }
         }
 #endif
@@ -737,13 +737,13 @@ public:
     void
     testMembers()
     {
-        // ~parser
+        // ~stream_parser
         {
             {
-                parser p;
+                stream_parser p;
             }
             {
-                parser p;
+                stream_parser p;
                 p.reset(make_counted_resource<
                     monotonic_resource>());
             }
@@ -753,14 +753,14 @@ public:
         // write_some(string_view, error_code&)
         {
             {
-                parser p;
+                stream_parser p;
                 error_code ec;
                 BOOST_TEST(p.write_some(
                     "[]*", ec) == 2);
                 BOOST_TEST(! ec);
             }
             {
-                parser p;
+                stream_parser p;
                 error_code ec;
                 BOOST_TEST(p.write_some(
                     "[*", ec) == 1);
@@ -772,12 +772,12 @@ public:
         // write_some(string_view)
         {
             {
-                parser p;
+                stream_parser p;
                 BOOST_TEST(
                     p.write_some("[]*") == 2);
             }
             {
-                parser p;
+                stream_parser p;
                 BOOST_TEST_THROWS(
                     p.write_some("[*"),
                     system_error);
@@ -788,14 +788,14 @@ public:
         // write(string_view, error_code&)
         {
             {
-                parser p;
+                stream_parser p;
                 error_code ec;
                 BOOST_TEST(p.write(
                     "null", ec) == 4);
                 BOOST_TEST(! ec);
             }
             {
-                parser p;
+                stream_parser p;
                 error_code ec;
                 p.write("[]*", ec),
                 BOOST_TEST(
@@ -807,12 +807,12 @@ public:
         // write(string_view)
         {
             {
-                parser p;
+                stream_parser p;
                 BOOST_TEST(p.write(
                     "null") == 4);
             }
             {
-                parser p;
+                stream_parser p;
                 BOOST_TEST_THROWS(
                     p.write("[]*"),
                     system_error);
@@ -823,14 +823,14 @@ public:
         // finish()
         {
             {
-                parser p;
+                stream_parser p;
                 p.write("1");
                 BOOST_TEST(! p.done());
                 p.finish();
                 BOOST_TEST(p.done());
             }
             {
-                parser p;
+                stream_parser p;
                 BOOST_TEST(! p.done());
                 p.write("1.");
                 BOOST_TEST_THROWS(
@@ -838,7 +838,7 @@ public:
                     system_error);
             }
             {
-                parser p;
+                stream_parser p;
                 p.write("[1,2");
                 error_code ec;
                 p.finish(ec);
@@ -846,7 +846,7 @@ public:
                     ec == error::incomplete);
             }
             {
-                parser p;
+                stream_parser p;
                 p.write("[1,2");
                 error_code ec;
                 p.finish(ec);
@@ -859,7 +859,7 @@ public:
         // release()
         {
             {
-                parser p;
+                stream_parser p;
                 BOOST_TEST(
                     p.write_some("[") == 1);
                 BOOST_TEST(! p.done());
@@ -868,14 +868,14 @@ public:
                     system_error);
             }
             {
-                parser p;
+                stream_parser p;
                 BOOST_TEST(
                     p.write_some("[]*") == 2);
                 BOOST_TEST(p.done());
                 p.release();
             }
             {
-                parser p;
+                stream_parser p;
                 p.write("[");
                 BOOST_TEST(! p.done());
                 BOOST_TEST_THROWS(
@@ -883,7 +883,7 @@ public:
                     system_error);
             }
             {
-                parser p;
+                stream_parser p;
                 error_code ec;
                 p.write("[]*", ec);
                 BOOST_TEST(
@@ -1008,7 +1008,7 @@ R"xx({
             "\"GlossSee\":\"markup\"}}}}}";
         storage_ptr sp = 
             make_counted_resource<monotonic_resource>();
-        parser p(sp);
+        stream_parser p(sp);
         error_code ec;
         p.write(in.data(), in.size(), ec);
         if(BOOST_TEST(! ec))
@@ -1194,6 +1194,6 @@ R"xx({
     }
 };
 
-TEST_SUITE(parser_test, "boost.json.parser");
+TEST_SUITE(stream_parser_test, "boost.json.stream_parser");
 
 BOOST_JSON_NS_END
