@@ -39,6 +39,14 @@ functions and types to assist with parsing:
         enabled during parsing.
     ]
 ][
+    [__parser__]
+    [
+        A stateful DOM parser object which may be used
+        to efficiently parse a series of JSONs each
+        contained in a single contiguous character buffer,
+        returning each result as a __value__.
+    ]
+][
     [__stream_parser__]
     [
         A stateful DOM parser object which may be used to
@@ -89,8 +97,10 @@ structure and passing it by value. By default all extensions are disabled:
 
 [doc_parsing_5]
 
-Using a compiler with support for C++20 features, [@https://en.cppreference.com/w/cpp/language/aggregate_initialization#Designated_initializers designated initializers] can be used to construct
-__parse_options__ with a less verbose but equally expressive syntax:
+Using a compiler with support for C++20 features,
+[@https://en.cppreference.com/w/cpp/language/aggregate_initialization#Designated_initializers designated initializers]
+can be used to construct __parse_options__ with a less verbose but equally
+expressive syntax:
 
 [doc_parsing_6]
 
@@ -98,8 +108,8 @@ __parse_options__ with a less verbose but equally expressive syntax:
 
 [heading Parser Instance]
 
-Instances of __stream_parser__ offer functionality beyond what is
-available when using the __parse__ free functions:
+Instances of __parser__ and __stream_parser__ offer functionality beyond
+what is available when using the __parse__ free functions:
 
 * More control over memory
 * Streaming API, parse input JSON incrementally
@@ -114,12 +124,12 @@ parsing more than one JSON, reducing the total number of dynamic
 memory allocations.
 
 To use the __stream_parser__, declare an instance. Then call
-[link json.ref.boost__json__parser.write `write`]
+[link json.ref.boost__json__stream_parser.write `write`]
 zero or more times with successive buffers representing the input JSON.
 When there are no more buffers, call
-[link json.ref.boost__json__parser.finish `finish`].
+[link json.ref.boost__json__stream_parser.finish `finish`].
 The function
-[link json.ref.boost__json__parser.done `done`].
+[link json.ref.boost__json__stream_parser.done `done`].
 returns `true` after a successful call to `write` or `finish`
 if parsing is complete. This example persists the parser instance
 in a class member to reuse across calls:
@@ -141,7 +151,7 @@ JSON in fixed-size amounts, providing these benefits:
 
 In the following example a JSON is parsed from standard input a line
 at a time. Error codes are used instead. The function
-[link json.ref.boost__json__parser.finish `finish`]
+[link json.ref.boost__json__stream_parser.finish `finish`]
 is used to indicate the end of the input:
 
 [doc_parsing_8]
@@ -165,7 +175,7 @@ allow some non-standard JSON extensions to be recognized:
 [heading Controlling Memory]
 
 After default construction, or after
-[link json.ref.boost__json__parser.reset `reset`]
+[link json.ref.boost__json__stream_parser.reset `reset`]
 is called with no arguments, the __value__ produced after a successful
 parse operation uses the default memory resource. To use a different
 memory resource, call `reset` with the resource to use. Here we use

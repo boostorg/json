@@ -12,7 +12,7 @@
 #define BOOST_JSON_IMPL_PARSE_IPP
 
 #include <boost/json/parse.hpp>
-#include <boost/json/stream_parser.hpp>
+#include <boost/json/parser.hpp>
 #include <boost/json/detail/except.hpp>
 
 BOOST_JSON_NS_BEGIN
@@ -25,17 +25,12 @@ parse(
     const parse_options& opt)
 {
     unsigned char temp[BOOST_JSON_STACK_BUFFER_SIZE];
-    stream_parser p(
+    parser p(
         storage_ptr(),
         opt,
         temp, sizeof(temp));
     p.reset(std::move(sp));
-    p.write(
-        s.data(),
-        s.size(),
-        ec);
-    if(! ec)
-        p.finish(ec);
+    p.write(s, ec);
     if(ec)
         return nullptr;
     return p.release();

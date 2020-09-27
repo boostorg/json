@@ -21,6 +21,7 @@
 #include <boost/json/number_cast.hpp>
 #include <boost/json/object.hpp>
 #include <boost/json/parse.hpp>
+#include <boost/json/parser.hpp>
 #include <boost/json/parse_options.hpp>
 #include <boost/json/pilfer.hpp>
 #include <boost/json/serialize.hpp>

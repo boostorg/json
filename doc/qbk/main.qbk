@@ -64,6 +64,7 @@
 [def __number_cast__            [link json.ref.boost__json__number_cast `number_cast`]]
 [def __object__                 [link json.ref.boost__json__object `object`]]
 [def __parse__                  [link json.ref.boost__json__parse `parse`]]
+[def __parser__                 [link json.ref.boost__json__parser `parser`]]
 [def __parse_options__          [link json.ref.boost__json__parse_options `parse_options`]]
 [def __polymorphic_allocator__  [link json.ref.boost__json__polymorphic_allocator `polymorphic_allocator`]]
 [def __serialize__              [link json.ref.boost__json__serialize `serialize`]]
