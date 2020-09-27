@@ -125,7 +125,7 @@ stream_parser::
 finish()
 {
     error_code ec;
-    p_.write_some(false, nullptr, 0, ec);
+    finish(ec);
     if(ec)
         detail::throw_system_error(ec,
             BOOST_CURRENT_LOCATION);

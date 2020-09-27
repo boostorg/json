@@ -31,6 +31,262 @@ class stream_parser_test
 public:
     ::test_suite::log_type log;
 
+    //------------------------------------------------------
+
+    void
+    testCtors()
+    {
+        // stream_parser(stream_parser const&)
+        BOOST_STATIC_ASSERT(
+            ! std::is_copy_constructible<stream_parser>::value);
+
+        // operator=(stream_parser const&)
+        BOOST_STATIC_ASSERT(
+            ! std::is_copy_assignable<stream_parser>::value);
+
+        // ~stream_parser()
+        {
+            {
+                stream_parser p;
+            }
+
+            {
+                stream_parser p;
+                p.reset(make_counted_resource<
+                    monotonic_resource>());
+            }
+        }
+
+        // stream_parser(storage_ptr, parse_options, unsigned char*, size_t)
+        {
+            unsigned char buf[256];
+            stream_parser p(
+                storage_ptr(),
+                parse_options(),
+                &buf[0],
+                sizeof(buf));
+        }
+
+        // stream_parser()
+        {
+            stream_parser p;
+        }
+
+        // stream_parser(storage_ptr, parse_options)
+        {
+            stream_parser p(storage_ptr{}, parse_options());
+        }
+
+        // stream_parser(storage_ptr)
+        {
+            stream_parser p(storage_ptr{});
+        }
+
+        // stream_parser(storage_ptr, parse_options, unsigned char[])
+        {
+            unsigned char buf[256];
+            stream_parser p(
+                storage_ptr(),
+                parse_options(),
+                buf);
+        }
+
+    #if defined(__cpp_lib_byte)
+        // stream_parser(storage_ptr, parse_options, std::byte*, size_t)
+        {
+            std::byte buf[256];
+            stream_parser p(
+                storage_ptr(),
+                parse_options(),
+                &buf[0],
+                sizeof(buf));
+        }
+
+        // stream_parser(storage_ptr, parse_options, std::byte[])
+        {
+            std::byte buf[256];
+            stream_parser p(
+                storage_ptr(),
+                parse_options(),
+                buf);
+        }
+    #endif
+
+        // stream_parser(storage_ptr, parse_options, unsigned char[], size_t)
+        {
+            unsigned char buf[256];
+            stream_parser p(
+                storage_ptr(),
+                parse_options(),
+                buf,
+                sizeof(buf));
+        }
+
+    #if defined(__cpp_lib_byte)
+        // stream_parser(storage_ptr, parse_options, std::byte[], size_t)
+        {
+            std::byte buf[256];
+            stream_parser p(
+                storage_ptr(),
+                parse_options(),
+                buf,
+                sizeof(buf));
+        }
+    #endif
+    }
+
+    void
+    testMembers()
+    {
+        // write_some(char const*, size_t, error_code&)
+        // write_some(string_view, error_code&)
+        {
+            {
+                stream_parser p;
+                error_code ec;
+                BOOST_TEST(p.write_some(
+                    "[]*", ec) == 2);
+                BOOST_TEST(! ec);
+            }
+            {
+                stream_parser p;
+                error_code ec;
+                BOOST_TEST(p.write_some(
+                    "[*", ec) == 1);
+                BOOST_TEST(ec);
+            }
+        }
+
+        // write_some(char const*, size_t)
+        // write_some(string_view)
+        {
+            {
+                stream_parser p;
+                BOOST_TEST(
+                    p.write_some("[]*") == 2);
+            }
+            {
+                stream_parser p;
+                BOOST_TEST_THROWS(
+                    p.write_some("[*"),
+                    system_error);
+            }
+        }
+
+        // write(char const*, size_t, error_code&)
+        // write(string_view, error_code&)
+        {
+            {
+                stream_parser p;
+                error_code ec;
+                BOOST_TEST(p.write(
+                    "null", ec) == 4);
+                BOOST_TEST(! ec);
+            }
+            {
+                stream_parser p;
+                error_code ec;
+                p.write("[]*", ec),
+                BOOST_TEST(
+                    ec == error::extra_data);
+            }
+        }
+
+        // write(char const*, size_t)
+        // write(string_view)
+        {
+            {
+                stream_parser p;
+                BOOST_TEST(p.write(
+                    "null") == 4);
+            }
+            {
+                stream_parser p;
+                BOOST_TEST_THROWS(
+                    p.write("[]*"),
+                    system_error);
+            }
+        }
+
+        // finish(error_code&)
+        // finish()
+        {
+            {
+                stream_parser p;
+                p.write("1");
+                BOOST_TEST(! p.done());
+                p.finish();
+                BOOST_TEST(p.done());
+            }
+            {
+                stream_parser p;
+                BOOST_TEST(! p.done());
+                p.write("1.");
+                BOOST_TEST_THROWS(
+                    p.finish(),
+                    system_error);
+            }
+            {
+                stream_parser p;
+                p.write("[1,2");
+                error_code ec;
+                p.finish(ec);
+                BOOST_TEST(
+                    ec == error::incomplete);
+            }
+            {
+                stream_parser p;
+                p.write("[1,2");
+                error_code ec;
+                p.finish(ec);
+                BOOST_TEST_THROWS(
+                    p.finish(),
+                    system_error);
+            }
+        }
+
+        // release()
+        {
+            {
+                stream_parser p;
+                BOOST_TEST(
+                    p.write_some("[") == 1);
+                BOOST_TEST(! p.done());
+                BOOST_TEST_THROWS(
+                    p.release(),
+                    system_error);
+            }
+            {
+                stream_parser p;
+                BOOST_TEST(
+                    p.write_some("[]*") == 2);
+                BOOST_TEST(p.done());
+                p.release();
+            }
+            {
+                stream_parser p;
+                p.write("[");
+                BOOST_TEST(! p.done());
+                BOOST_TEST_THROWS(
+                    p.release(),
+                    system_error);
+            }
+            {
+                stream_parser p;
+                error_code ec;
+                p.write("[]*", ec);
+                BOOST_TEST(
+                    ec == error::extra_data);
+                BOOST_TEST(! p.done());
+                BOOST_TEST_THROWS(
+                    p.release(),
+                    system_error);
+            }
+        }
+    }
+
+    //------------------------------------------------------
+
     static
     value
     from_string_test(
@@ -597,8 +853,6 @@ public:
             parse_options opt;
             opt.max_depth = 0;
             stream_parser p(storage_ptr(), opt);
-            BOOST_TEST(
-                p.depth() == 0);
             p.write("[]", 2, ec);
             BOOST_TEST(
                 ec == error::too_deep);
@@ -665,234 +919,9 @@ public:
             parse_options opt;
             opt.max_depth = 0;
             stream_parser p(storage_ptr(), opt);
-            BOOST_TEST(
-                p.depth() == 0);
             p.write("{}", 2, ec);
             BOOST_TEST(
                 ec == error::too_deep);
-        }
-    }
-
-    //------------------------------------------------------
-
-    void
-    testCtors()
-    {
-        {
-            unsigned char buf[256];
-
-            // stream_parser()
-            {
-                stream_parser p;
-            }
-
-            // stream_parser(storage_ptr)
-            {
-                stream_parser p( storage_ptr{} );
-            }
-
-            // stream_parser(storage_ptr, parse_options)
-            {
-                stream_parser p( storage_ptr{}, parse_options{} );
-            }
-
-            // stream_parser(storage_ptr, parse_options, unsigned char*, std::size_t)
-            {
-                stream_parser p( storage_ptr(), parse_options(), &buf[0], sizeof(buf) );
-            }
-
-            // stream_parser(storage_ptr, parse_options, unsigned char[])
-            {
-                stream_parser p( storage_ptr(), parse_options(), buf);
-            }
-
-            // stream_parser(storage_ptr, parse_options, unsigned char[], std::size_t)
-            {
-                stream_parser p( storage_ptr(), parse_options(), buf, sizeof(buf));
-            }
-        }
-
-#ifdef __cpp_lib_byte
-        {
-            std::byte buf[256];
-
-            // stream_parser(storage_ptr, parse_options, std::byte*, std::size_t)
-            {
-                stream_parser p( storage_ptr(), parse_options(), &buf[0], sizeof(buf) );
-            }
-
-            // stream_parser(storage_ptr, parse_options, std::byte[])
-            {
-                stream_parser p( storage_ptr(), parse_options(), buf);
-            }
-
-            // stream_parser(storage_ptr, parse_options, std::byte[], std::size_t)
-            {
-                stream_parser p( storage_ptr(), parse_options(), buf, sizeof(buf));
-            }
-        }
-#endif
-    }
-
-    void
-    testMembers()
-    {
-        // ~stream_parser
-        {
-            {
-                stream_parser p;
-            }
-            {
-                stream_parser p;
-                p.reset(make_counted_resource<
-                    monotonic_resource>());
-            }
-        }
-
-        // write_some(char const*, size_t, error_code&)
-        // write_some(string_view, error_code&)
-        {
-            {
-                stream_parser p;
-                error_code ec;
-                BOOST_TEST(p.write_some(
-                    "[]*", ec) == 2);
-                BOOST_TEST(! ec);
-            }
-            {
-                stream_parser p;
-                error_code ec;
-                BOOST_TEST(p.write_some(
-                    "[*", ec) == 1);
-                BOOST_TEST(ec);
-            }
-        }
-
-        // write_some(char const*, size_t)
-        // write_some(string_view)
-        {
-            {
-                stream_parser p;
-                BOOST_TEST(
-                    p.write_some("[]*") == 2);
-            }
-            {
-                stream_parser p;
-                BOOST_TEST_THROWS(
-                    p.write_some("[*"),
-                    system_error);
-            }
-        }
-
-        // write(char const*, size_t, error_code&)
-        // write(string_view, error_code&)
-        {
-            {
-                stream_parser p;
-                error_code ec;
-                BOOST_TEST(p.write(
-                    "null", ec) == 4);
-                BOOST_TEST(! ec);
-            }
-            {
-                stream_parser p;
-                error_code ec;
-                p.write("[]*", ec),
-                BOOST_TEST(
-                    ec == error::extra_data);
-            }
-        }
-
-        // write(char const*, size_t)
-        // write(string_view)
-        {
-            {
-                stream_parser p;
-                BOOST_TEST(p.write(
-                    "null") == 4);
-            }
-            {
-                stream_parser p;
-                BOOST_TEST_THROWS(
-                    p.write("[]*"),
-                    system_error);
-            }
-        }
-
-        // finish(error_code&)
-        // finish()
-        {
-            {
-                stream_parser p;
-                p.write("1");
-                BOOST_TEST(! p.done());
-                p.finish();
-                BOOST_TEST(p.done());
-            }
-            {
-                stream_parser p;
-                BOOST_TEST(! p.done());
-                p.write("1.");
-                BOOST_TEST_THROWS(
-                    p.finish(),
-                    system_error);
-            }
-            {
-                stream_parser p;
-                p.write("[1,2");
-                error_code ec;
-                p.finish(ec);
-                BOOST_TEST(
-                    ec == error::incomplete);
-            }
-            {
-                stream_parser p;
-                p.write("[1,2");
-                error_code ec;
-                p.finish(ec);
-                BOOST_TEST_THROWS(
-                    p.finish(),
-                    system_error);
-            }
-        }
-
-        // release()
-        {
-            {
-                stream_parser p;
-                BOOST_TEST(
-                    p.write_some("[") == 1);
-                BOOST_TEST(! p.done());
-                BOOST_TEST_THROWS(
-                    p.release(),
-                    system_error);
-            }
-            {
-                stream_parser p;
-                BOOST_TEST(
-                    p.write_some("[]*") == 2);
-                BOOST_TEST(p.done());
-                p.release();
-            }
-            {
-                stream_parser p;
-                p.write("[");
-                BOOST_TEST(! p.done());
-                BOOST_TEST_THROWS(
-                    p.release(),
-                    system_error);
-            }
-            {
-                stream_parser p;
-                error_code ec;
-                p.write("[]*", ec);
-                BOOST_TEST(
-                    ec == error::extra_data);
-                BOOST_TEST(! p.done());
-                BOOST_TEST_THROWS(
-                    p.release(),
-                    system_error);
-            }
         }
     }
 
@@ -1174,6 +1203,9 @@ R"xx({
     void
     run()
     {
+        testCtors();
+        testMembers();
+
         testNull();
         testBool();
         testString();
@@ -1181,8 +1213,6 @@ R"xx({
         testArray();
         testObject();
 
-        testCtors();
-        testMembers();
         testFreeFunctions();
         testSampleJson();
         testUnicodeStrings();
