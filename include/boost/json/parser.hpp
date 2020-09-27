@@ -13,8 +13,8 @@
 #include <boost/json/detail/config.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/value.hpp>
-#include <boost/json/value_stack.hpp>
 #include <boost/json/detail/basic_parser.hpp>
+#include <boost/json/detail/handler.hpp>
 #include <type_traits>
 #include <cstddef>
 
@@ -103,50 +103,7 @@ BOOST_JSON_NS_BEGIN
 */
 class parser
 {
-    struct handler
-    {
-        constexpr static std::size_t
-            max_object_size = object::max_size();
-
-        constexpr static std::size_t
-            max_array_size = array::max_size();
-
-        constexpr static std::size_t
-            max_key_size = string::max_size();
-
-        constexpr static std::size_t
-            max_string_size = string::max_size();
-
-        value_stack st;
-
-        template<class... Args>
-        explicit
-        handler(Args&&... args)
-            : st(std::forward<Args>(args)...)
-        {
-        }
-
-        inline bool on_document_begin(error_code& ec);
-        inline bool on_document_end(error_code& ec);
-        inline bool on_object_begin(error_code& ec);
-        inline bool on_object_end(std::size_t n, error_code& ec);
-        inline bool on_array_begin(error_code& ec);
-        inline bool on_array_end(std::size_t n, error_code& ec);
-        inline bool on_key_part(string_view s, std::size_t n, error_code& ec);
-        inline bool on_key(string_view s, std::size_t n, error_code& ec);
-        inline bool on_string_part(string_view s, std::size_t n, error_code& ec);
-        inline bool on_string(string_view s, std::size_t n, error_code& ec);
-        inline bool on_number_part(string_view, error_code&);
-        inline bool on_int64(std::int64_t i, string_view, error_code& ec);
-        inline bool on_uint64(std::uint64_t u, string_view, error_code& ec);
-        inline bool on_double(double d, string_view, error_code& ec);
-        inline bool on_bool(bool b, error_code& ec);
-        inline bool on_null(error_code& ec);
-        inline bool on_comment_part(string_view, error_code&);
-        inline bool on_comment(string_view, error_code&);
-    };
-
-    basic_parser<handler> p_;
+    basic_parser<detail::handler> p_;
 
 public:
     /// Copy constructor (deleted)
