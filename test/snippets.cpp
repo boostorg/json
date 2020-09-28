@@ -29,6 +29,7 @@
 #elif defined(__clang__)
 # pragma clang diagnostic push
 # pragma clang diagnostic ignored "-Wunused"
+# pragma clang diagnostic ignored "-Wmismatched-tags"
 #elif defined(__GNUC__)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wunused"
@@ -39,19 +40,21 @@
 template< std::size_t N >
 struct static_string { };
 
-template< std::size_t N >
-class std::hash< static_string< N > >
+namespace std
 {
-    using static_string = 
-        static_string< N >;
 
+template< std::size_t N >
+class hash< static_string< N > >
+{
 public:
     std::size_t
-    operator()(const static_string& str ) const noexcept
+    operator()(const static_string< N >& str ) const noexcept
     {
         return std::hash< std::string >()( str );
     }
 };
+
+} // std
 
 //]
 
@@ -580,26 +583,25 @@ void tag_invoke( const value_from_tag&, value& jv, customer const& c )
 
 //[snippet_conv_14
 
-customer::customer( value const& jv )
-
+customer tag_invoke( const value_to_tag<customer>&, const value& jv )
+{
     // at() throws if `jv` is not an object, or if the key is not found.
     // as_uint64() will throw if the value is not an unsigned 64-bit integer.
-
-    : id( jv.at( "id" ).as_uint64() )
+    std::uint64_t id = jv.at( "id" ).as_uint64();
 
     // We already know that jv is an object from
-    // the previous call to jv.as_object() suceeding,
+    // the previous call to jv.as_object() succeeding,
     // now we use jv.get_object() which skips the
     // check. value_to will throw if jv.kind() != kind::string
+    std::string name = value_to< std::string >( jv.get_object().at( "name" ) );
 
-    , name( value_to< std::string >( jv.get_object().at( "name" ) ) )
-{
     // id and name are constructed from JSON in the member
     // initializer list above, but we can also use regular
     // assignments in the body of the function as shown below.
     // as_bool() will throw if kv.kind() != kind::bool
-    
-    late = jv.get_object().at( "late" ).as_bool();
+    bool late = jv.get_object().at( "late" ).as_bool();
+
+    return customer(id, name, late);
 }
 
 //]

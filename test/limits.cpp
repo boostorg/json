@@ -375,7 +375,7 @@ public:
         ! defined(BOOST_JSON_NO_MAX_STACK_SIZE) && \
         ! defined(BOOST_JSON_NO_STACK_BUFFER_SIZE)
 
-        testValue();
+        //testValue();
         testObject();
         testArray();
         testString();

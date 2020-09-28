@@ -165,6 +165,21 @@ public:
         std::is_convertible<pair_key_type, string_view>::value;
 };
 
+// does not include std::nullptr_t
+template<class T>
+using value_constructible = std::integral_constant<bool,
+    std::is_same<detail::remove_cvref<T>, value>::value || 
+        std::is_same<detail::remove_cvref<T>, object>::value ||
+    std::is_same<detail::remove_cvref<T>, array>::value ||
+        std::is_same<detail::remove_cvref<T>, string>::value ||
+    std::is_same<detail::remove_cvref<T>, string_view>::value ||
+        std::is_arithmetic<detail::remove_cvref<T>>::value ||    
+    std::is_same<detail::remove_cvref<T>, 
+        std::initializer_list<value_ref>>::value ||
+    std::is_same<detail::remove_cvref<T>, value_ref>::value>;
+
+BOOST_STATIC_ASSERT(value_constructible<value>::value);
+
 } // detail
 BOOST_JSON_NS_END
 

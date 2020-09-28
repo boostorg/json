@@ -73,6 +73,16 @@ struct T3
 
 BOOST_STATIC_ASSERT(! ::boost::json::has_value_from<T3>::value);
 
+struct T4
+{
+    operator ::boost::json::value()
+    {
+        return nullptr;
+    }
+};
+
+BOOST_STATIC_ASSERT(! ::boost::json::has_value_from<T4>::value);
+
 //----------------------------------------------------------
 
 } // value_from_test_ns
@@ -136,9 +146,6 @@ BOOST_STATIC_ASSERT(has_value_from<key_value_pair&&>::value);
 
 // object-like
 BOOST_STATIC_ASSERT(has_value_from<std::map<string_view, int>>::value);
-
-//static_assert(has_value_from<decltype(*(begin(std::declval<int[4]>())))>
-//    ::value, "");
 
 class value_from_test
 {

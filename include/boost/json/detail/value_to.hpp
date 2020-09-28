@@ -97,19 +97,6 @@ tag_invoke(
 }
 
 //----------------------------------------------------------
-// Use one of T's constructors
-
-template<class T>
-auto
-tag_invoke(
-    value_to_tag<T>,
-    value const& jv) ->
-        decltype(T(jv))
-{
-    return T(jv);
-}
-
-//----------------------------------------------------------
 // Use generic conversion
 
 // string-like types
