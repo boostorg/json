@@ -1,5 +1,6 @@
 [/
     Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+    Copyright (c) 2020 Krystian Stasiowski (sdkrystian@gmail.com)
 
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -40,8 +41,7 @@ the `tag_invoke` mechanism outlined in
 [@http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1895r0.pdf P1895],
 allowing users to define conversions to and from their own types.
 In essence, `tag_invoke` provides a uniform interface
-for defining customization points by using 
-argument-dependent lookup
+for defining customization points by using argument-dependent lookup
 to find a viable function from the point at which it's called.
 As the name suggests, a tag type is passed as an argument in order to:
 
@@ -53,7 +53,7 @@ such as `value_to_tag<T>`) so that its
 when name lookup is performed.
 
 This has the effect of finding user-provided `tag_invoke` overloads, even if they
-are (lexically) declared after the definition of the calling function. 
+are declared (lexically) after the definition of the calling function. 
 
 [heading `tag_invoke` overloads]
 
@@ -138,6 +138,8 @@ If, for the type `T` being converted
 
 * `std::is_assignable<value&, T&&>::value` is `true`, or
 
+* `T` satisfies ['StringLike], or
+
 * `T` satisfies ['TupleLike], or
 
 * `T` satisfies ['FromMapLike], or
@@ -163,8 +165,9 @@ the one corresponding to ['FromMapLike]; it will not be ambiguous.
 The conversion performed when the first condition is met 
 (the library-provided built-in conversion) is assignment to the
 __value__ parameter. For the generic conversions, types that satisfy
-['TupleLike] or ['FromContainerLike] are converted to __array__ and
-those that satisfy ['FromMapLike] are converted to __object__.
+['TupleLike] or ['FromContainerLike] are converted to __array__,
+those that satisfy ['FromMapLike] are converted to __object__, 
+and types that satisfy ['StringLike] are converted to __string__.
 
 [heading Converting to Foreign Types]
 
@@ -180,10 +183,9 @@ overload of `tag_invoke` when certain conditions are met.
 
 If, for the type `T` 
 
-* `T` is __value__, __object__, __array__, __string__
-or `bool`, or `std::is_arithmetic<T>::value` is `true`, or
-
-* `std::is_constructible<T, const value&>::value` is `true`, or
+* `T` is __value__, __object__, __array__, __string__, __string_view__,
+__value_ref__, `std::initializer_list<value_ref>` or `bool`, or
+if `std::is_arithmetic<T>::value` is `true`, or
 
 * `T` satisfies ['StringLike], or
 

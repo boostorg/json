@@ -52,10 +52,10 @@ tuple_to_array(
 }
 
 //----------------------------------------------------------
+// Native conversion
 
-// Matches types from which value can be constructed
 template<class T, typename std::enable_if<
-    std::is_assignable<value&, T&&>::value>::type* = nullptr>
+    detail::value_constructible<T>::value>::type* = nullptr>
 void
 tag_invoke(
     value_from_tag,
@@ -65,8 +65,38 @@ tag_invoke(
     jv = std::forward<T>(from);
 }
 
+template<class T, typename std::enable_if<
+    std::is_same<detail::remove_cvref<T>, 
+        std::nullptr_t>::value>::type* = nullptr>
+void
+tag_invoke(
+    value_from_tag,
+    value& jv,
+    T&&)
+{
+    // do nothing
+    BOOST_ASSERT(jv.is_null());
+    (void)jv;
+}
+
 //----------------------------------------------------------
 // Generic conversions
+
+// string-like types
+template<class T, typename std::enable_if<
+    std::is_constructible<remove_cvref<T>, const char*, std::size_t>::value &&
+        std::is_convertible<decltype(std::declval<T&>().data()), const char*>::value && 
+    std::is_convertible<decltype(std::declval<T&>().size()),
+        std::size_t>::value>::type* = nullptr>
+void 
+value_from_generic(
+    value& jv,
+    T&& from,
+    priority_tag<3>)
+{
+    jv.emplace_string().assign(
+        from.data(), from.size());
+}
 
 // tuple-like types
 template<class T, typename std::enable_if<
@@ -123,9 +153,10 @@ value_from_generic(
 }
 
 template<class T, void_t<typename std::enable_if<
-    !std::is_assignable<value&, T&&>::value>::type,
-        decltype(detail::value_from_generic(std::declval<value&>(), 
-            std::declval<T&&>(), priority_tag<2>()))>* = nullptr>
+    ! detail::value_constructible<T>::value && ! std::is_same<
+        detail::remove_cvref<T>, std::nullptr_t>::value>::type,
+    decltype(detail::value_from_generic(std::declval<value&>(), 
+        std::declval<T&&>(), priority_tag<3>()))>* = nullptr>
 void
 tag_invoke(
     value_from_tag,
@@ -133,7 +164,7 @@ tag_invoke(
     T&& from)
 {
     detail::value_from_generic(jv,
-        std::forward<T>(from), priority_tag<2>());
+        std::forward<T>(from), priority_tag<3>());
 }
 
 //----------------------------------------------------------

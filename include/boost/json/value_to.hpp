@@ -37,7 +37,7 @@ struct value_to_tag;
     This function attempts to convert a @ref value
     to `T` using
 
-    @li one of `T`'s constructors,
+    @li one of @ref value's accessors, or
 
     @li a library-provided generic conversion, or
 
