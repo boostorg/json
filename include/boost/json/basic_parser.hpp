@@ -370,9 +370,7 @@ const char*
 basic_parser<Handler>::
 parse_comment(const char* p,
     std::integral_constant<bool, StackEmpty_> stack_empty,
-    /*std::integral_constant<bool, Terminal_>*/ 
-    bool terminal, bool return_value, 
-    bool allow_trailing, bool allow_bad_utf8)
+    /*std::integral_constant<bool, Terminal_>*/ bool terminal)
 {
     detail::const_stream_wrapper cs(p, end_);
     const char* start = cs.begin();
@@ -388,7 +386,6 @@ parse_comment(const char* p,
             case state::com2: goto do_com2;
             case state::com3: goto do_com3;
             case state::com4: goto do_com4;
-            case state::com5: goto do_com5;
         }
     }
     BOOST_ASSERT(*cs == '/');
@@ -465,14 +462,7 @@ do_com4:
     if(BOOST_JSON_UNLIKELY(! h_.on_comment(
         {start, cs.used(start)}, ec_)))
         return fail(cs.begin());
-    if(! return_value)
-        return cs.begin();
-do_com5:
-    cs = detail::count_whitespace(cs.begin(), cs.end());
-    if(BOOST_JSON_UNLIKELY(! cs))
-        return maybe_suspend(cs.begin(), state::com5);
-    return parse_value(cs.begin(), stack_empty, 
-        std::true_type(), allow_trailing, allow_bad_utf8);
+    return cs.begin();
 }
 
 template<class Handler>
@@ -550,26 +540,7 @@ do_doc3:
     else if(opt_.allow_comments && *cs == '/')
     {
 do_doc4:
-        switch(+opt_.allow_trailing_commas |
-            (opt_.allow_invalid_utf8 << 1))
-        {
-        // only comments
-        default:
-            cs = parse_comment(cs.begin(), stack_empty, true, false, false, false);
-            break;
-        // trailing
-        case 1:
-            cs = parse_comment(cs.begin(), stack_empty, true, false, true, false);
-            break;
-        // skip validation
-        case 2:
-            cs = parse_comment(cs.begin(), stack_empty, true, false, false, true);
-            break;
-        // trailing & skip validation
-        case 3:
-            cs = parse_comment(cs.begin(), stack_empty, true, false, true, true);
-            break;
-        }
+        cs = parse_comment(cs.begin(), stack_empty, std::true_type());
         if(BOOST_JSON_UNLIKELY(incomplete(cs)))
             return suspend_or_fail(state::doc4);
         goto do_doc3;
@@ -593,6 +564,7 @@ parse_value(const char* p,
 {
     if(stack_empty || st_.empty())
     {
+loop:
         switch(*p)
         {
         case '0':
@@ -616,13 +588,27 @@ parse_value(const char* p,
         case '{':
             return parse_object(p, std::true_type(), allow_comments, allow_trailing, allow_bad_utf8);
         case '/':
-            if(allow_comments)
-                return parse_comment(p, std::true_type(), false, true, allow_trailing, allow_bad_utf8);
+            if(! allow_comments)
+                return fail(p, error::syntax);
+            p = parse_comment(p, stack_empty, std::false_type());
+            // KRYSTIAN NOTE: incomplete takes const_stream, we either
+            // can add an overload, change the existing one to take a pointer,
+            // or just leave it as is
+            if(BOOST_JSON_UNLIKELY(p == sentinel()))
+                return maybe_suspend(p, state::val2);
+            // intentional fallthrough
+        case ' ':
+        case '\t':
+        case '\n':
+        case '\r':
+            p = detail::count_whitespace(p, end_);
+            if(BOOST_JSON_UNLIKELY(p == end_))
+                return maybe_suspend(p, state::val1);
+            goto loop;
         default:
             return fail(p, error::syntax);
         }
     }
-
     return resume_value(p, stack_empty, allow_comments, allow_trailing, allow_bad_utf8);
 }
 
@@ -692,8 +678,28 @@ resume_value(const char* p,
 
     case state::com1: case state::com2:
     case state::com3: case state::com4:
-    case state::com5:
-        return parse_comment(p, stack_empty, false, true, allow_trailing, allow_bad_utf8);
+        return parse_comment(p, stack_empty, std::false_type());
+
+    // KRYSTIAN NOTE: these are special cases
+    case state::val1:
+    {
+        st_.pop(st);
+        BOOST_ASSERT(st_.empty());
+        p = detail::count_whitespace(p, end_);
+        if(BOOST_JSON_UNLIKELY(p == end_))
+            return maybe_suspend(p, state::val1);
+        return parse_value(p, std::true_type(), allow_comments, allow_trailing, allow_bad_utf8);
+    }
+
+    case state::val2:
+    {
+        st_.pop(st);
+        p = parse_comment(p, stack_empty, std::false_type());
+        if(BOOST_JSON_UNLIKELY(p == sentinel()))
+            return maybe_suspend(p, state::val2);
+        BOOST_ASSERT(st_.empty());
+        return parse_value(p, std::true_type(), std::true_type(), allow_trailing, allow_bad_utf8);
+    }
     }
 }
 
@@ -1563,8 +1569,7 @@ do_obj1:
             if(allow_comments && *cs == '/')
             {
 do_obj2:
-                cs = parse_comment(cs.begin(), stack_empty, std::false_type(), 
-                    false, allow_trailing, allow_bad_utf8);
+                cs = parse_comment(cs.begin(), stack_empty, std::false_type());
                 if(BOOST_JSON_UNLIKELY(incomplete(cs)))
                     return suspend_or_fail(state::obj2, size);
                 goto do_obj1;
@@ -1588,8 +1593,7 @@ do_obj4:
             if(allow_comments && *cs == '/')
             {
 do_obj5:
-                cs = parse_comment(cs.begin(), stack_empty, std::false_type(), 
-                    false, allow_trailing, allow_bad_utf8);
+                cs = parse_comment(cs.begin(), stack_empty, std::false_type());
                 if(BOOST_JSON_UNLIKELY(incomplete(cs)))
                     return suspend_or_fail(state::obj5, size);
                 goto do_obj4;
@@ -1625,8 +1629,7 @@ do_obj9:
                 if(allow_comments && *cs == '/')
                 {
 do_obj10:
-                    cs = parse_comment(cs.begin(), stack_empty, std::false_type(), 
-                        false, allow_trailing, allow_bad_utf8);
+                    cs = parse_comment(cs.begin(), stack_empty, std::false_type());
                     if(BOOST_JSON_UNLIKELY(incomplete(cs)))
                         return suspend_or_fail(state::obj10, size);
                     goto do_obj9;
@@ -1639,8 +1642,7 @@ do_obj10:
             if(allow_comments && *cs == '/')
             {
 do_obj11:
-                cs = parse_comment(cs.begin(), stack_empty, std::false_type(), 
-                    false, allow_trailing, allow_bad_utf8);
+                cs = parse_comment(cs.begin(), stack_empty, std::false_type());
                 if(BOOST_JSON_UNLIKELY(incomplete(cs)))
                     return suspend_or_fail(state::obj11, size);
                 goto do_obj8;
@@ -1713,8 +1715,7 @@ do_arr1:
         if(allow_comments && *cs == '/')
         {
 do_arr2:
-            cs = parse_comment(cs.begin(), stack_empty, std::false_type(), 
-                false, allow_trailing, allow_bad_utf8);
+            cs = parse_comment(cs.begin(), stack_empty, std::false_type());
             if(BOOST_JSON_UNLIKELY(incomplete(cs)))
                 return suspend_or_fail(state::arr2, size);
             goto do_arr1;
@@ -1748,8 +1749,7 @@ do_arr5:
             if(allow_comments && *cs == '/')
             {
 do_arr6:
-                cs = parse_comment(cs.begin(), stack_empty, std::false_type(), 
-                    false, allow_trailing, allow_bad_utf8);
+                cs = parse_comment(cs.begin(), stack_empty, std::false_type());
                 if(BOOST_JSON_UNLIKELY(incomplete(cs)))
                     return suspend_or_fail(state::arr6, size);
                 goto do_arr4;

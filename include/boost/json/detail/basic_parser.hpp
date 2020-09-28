@@ -271,8 +271,7 @@ class basic_parser
     enum class state : char
     {
         doc1,  doc2,  doc3, doc4,
-        com1,  com2,  com3,
-        com4,  com5,
+        com1,  com2,  com3, com4,
         nul1,  nul2,  nul3,
         tru1,  tru2,  tru3,
         fal1,  fal2,  fal3,  fal4,
@@ -287,7 +286,8 @@ class basic_parser
         arr4,  arr5,  arr6,
         num1,  num2,  num3,  num4,
         num5,  num6,  num7,  num8,
-        exp1,  exp2,  exp3
+        exp1,  exp2,  exp3,
+        val1,  val2
     };
 
     struct number
@@ -395,9 +395,7 @@ class basic_parser
     template<bool StackEmpty_/*, bool Terminal_*/>
     const char* parse_comment(const char* p,
         std::integral_constant<bool, StackEmpty_> stack_empty,
-        /*std::integral_constant<bool, Terminal_>*/ 
-        bool terminal, bool return_value, 
-        bool allow_trailing, bool allow_bad_utf8);
+        /*std::integral_constant<bool, Terminal_>*/ bool terminal);
 
     template<bool StackEmpty_>
     const char* parse_document(const char* p,
