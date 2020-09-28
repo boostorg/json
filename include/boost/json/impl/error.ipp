@@ -44,7 +44,7 @@ case error::object_too_large: return "object too large";
 case error::array_too_large: return "array too large";
 case error::key_too_large: return "key too large";
 case error::string_too_large: return "string too large";
-
+case error::exception: return "got exception";
 case error::not_number: return "not a number";
 case error::not_exact: return "not exact";
 
@@ -74,6 +74,7 @@ case error::object_too_large:
 case error::array_too_large:
 case error::key_too_large:
 case error::string_too_large:
+case error::exception:
     return condition::parse_error;
 
 case error::not_number:

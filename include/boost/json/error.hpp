@@ -200,6 +200,9 @@ enum class error
     /// A string is too large
     string_too_large,
 
+    /// The parser encountered an exception and must be reset
+    exception,
+
     //----------------------------------
 
     /// not a number

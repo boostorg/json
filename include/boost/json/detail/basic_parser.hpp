@@ -311,6 +311,7 @@ class basic_parser
     unsigned u2_;
     bool more_; // false for final buffer
     bool done_ = false; // true on complete parse
+    bool clean_ = true; // write_some exited cleanly
     const char* end_;
     parse_options opt_;
     // how many levels deeper the parser can go
@@ -684,8 +685,10 @@ public:
         Linear in `size`.
 
         @par Exception Safety
-        Basic guarantee. Upon exception, the only valid
-        operations are @ref reset and destruction.
+        Basic guarantee.
+        Calls to the handler may throw.
+        Upon error or exception, subsequent calls will
+        fail until @ref reset is called to parse a new JSON.
 
         @return The number of characters successfully
         parsed, which may be smaller than `size`.

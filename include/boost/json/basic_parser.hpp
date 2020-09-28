@@ -2402,6 +2402,7 @@ reset() noexcept
     st_.clear();
     more_ = true;
     done_ = false;
+    clean_ = true;
 }
 
 template<class Handler>
@@ -2433,17 +2434,25 @@ write_some(
     std::size_t size,
     error_code& ec)
 {
+    // see if we exited via exception
+    // on the last call to write_some
+    if(! clean_)
+    {
+        // prevent UB
+        if(! ec_)
+            ec_ = error::exception;
+    }
     if(ec_)
     {
         // error is sticky
         ec = ec_;
         return 0;
     }
+    clean_ = false;
     more_ = more;
     end_ = data + size;
     const char* p;
-    if(BOOST_JSON_LIKELY(
-        st_.empty()))
+    if(BOOST_JSON_LIKELY(st_.empty()))
     {
         // first time
         depth_ = opt_.max_depth;
@@ -2495,6 +2504,7 @@ write_some(
         p = end_;
     }
     ec = ec_;
+    clean_ = true;
     return p - data;
 }
 

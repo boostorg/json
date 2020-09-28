@@ -1504,16 +1504,35 @@ public:
     void
     testStickyErrors()
     {
-        null_parser p;
-        error_code ec;
-        p.write("*", 1, ec);
-        BOOST_TEST(ec);
-        error_code ec2;
-        p.write("[]", 2, ec2);
-        BOOST_TEST(ec2 == ec);
-        p.reset();
-        p.write("[]", 2, ec2);
-        BOOST_TEST(! ec2);
+        {
+            null_parser p;
+            error_code ec;
+            p.write("*", 1, ec);
+            BOOST_TEST(ec);
+            error_code ec2;
+            p.write("[]", 2, ec2);
+            BOOST_TEST(ec2 == ec);
+            p.reset();
+            p.write("[]", 2, ec2);
+            BOOST_TEST(! ec2);
+        }
+
+        // exceptions do not cause UB
+        {
+            throw_parser p(1);
+            try
+            {
+                error_code ec;
+                p.write(false, "null", 4, ec);
+                BOOST_TEST_FAIL();
+            }
+            catch(std::exception const&)
+            {
+                error_code ec;
+                p.write(false, "null", 4, ec);
+                BOOST_TEST(ec == error::exception);
+            }
+        }
     }
 
     void

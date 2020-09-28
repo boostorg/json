@@ -60,6 +60,7 @@ public:
         check(condition::parse_error, error::array_too_large);
         check(condition::parse_error, error::key_too_large);
         check(condition::parse_error, error::string_too_large);
+        check(condition::parse_error, error::exception);
 
         check(condition::assign_error, error::not_number);
         check(condition::assign_error, error::not_exact);
