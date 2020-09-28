@@ -36,23 +36,35 @@
   </Type>
 
   <Type Name="boost::json::value">
-    <DisplayString Condition="nul_.k==kind::array">array [{arr_.t_->size}]</DisplayString>
-    <DisplayString Condition="nul_.k==kind::object">object [{obj_.impl_.tab_?obj_.impl_.tab_->size:0}]</DisplayString>
-    <DisplayString Condition="nul_.k==kind::string">{((char*)(str_.impl_.p_.t+1)),[str_.impl_.p_.t->size]s}</DisplayString>
-    <DisplayString Condition="nul_.k==kind::string+64">{((char*)(str_.impl_.k_.s)),[str_.impl_.k_.n]s}:</DisplayString>
-    <DisplayString Condition="nul_.k==kind::string+128">{str_.impl_.s_.buf,[detail::string_impl::sbo_chars_-str_.impl_.s_.buf[detail::string_impl::sbo_chars_]]s}</DisplayString>
-    <DisplayString Condition="nul_.k==kind::double_">{dub_.d}</DisplayString>
-    <DisplayString Condition="nul_.k==kind::int64">{i64_.i}</DisplayString>
-    <DisplayString Condition="nul_.k==kind::uint64">{u64_.u}u</DisplayString>
-    <DisplayString Condition="nul_.k==kind::bool_">{bln_.b}</DisplayString>
-    <DisplayString Condition="nul_.k==kind::null">null</DisplayString>
+    <DisplayString Condition="sca_.k==kind::null">null</DisplayString>
+    <DisplayString Condition="sca_.k==kind::bool_">{sca_.b}</DisplayString>
+    <DisplayString Condition="sca_.k==kind::int64">{sca_.i}</DisplayString>
+    <DisplayString Condition="sca_.k==kind::uint64">{sca_.u}u</DisplayString>
+    <DisplayString Condition="sca_.k==kind::double_">{sca_.d}</DisplayString>
+    <DisplayString Condition="sca_.k==kind::string">{((char*)(str_.impl_.p_.t+1)),[str_.impl_.p_.t->size]s}</DisplayString>
+    <DisplayString Condition="sca_.k==kind::string+64">{((char*)(str_.impl_.k_.s)),[str_.impl_.k_.n]s}:</DisplayString>
+    <DisplayString Condition="sca_.k==kind::string+128">{str_.impl_.s_.buf,[detail::string_impl::sbo_chars_-str_.impl_.s_.buf[detail::string_impl::sbo_chars_]]s}</DisplayString>
+    <DisplayString Condition="sca_.k==kind::array">array [{arr_.t_->size}]</DisplayString>
+    <DisplayString Condition="sca_.k==kind::object">object [{obj_.impl_.tab_?obj_.impl_.tab_->size:0}]</DisplayString>
     <Expand>
-      <ExpandedItem Condition="nul_.k==kind::object">obj_</ExpandedItem>
-      <ExpandedItem Condition="nul_.k==kind::array">arr_</ExpandedItem>
-      <ExpandedItem Condition="nul_.k==kind::string">str_</ExpandedItem>
-      <ExpandedItem Condition="nul_.k==kind::string+64">str_</ExpandedItem>
-      <ExpandedItem Condition="nul_.k==kind::string+128">str_</ExpandedItem>
+      <ExpandedItem Condition="sca_.k==kind::string">str_</ExpandedItem>
+      <ExpandedItem Condition="sca_.k==kind::string+64">str_</ExpandedItem>
+      <ExpandedItem Condition="sca_.k==kind::string+128">str_</ExpandedItem>
+      <ExpandedItem Condition="sca_.k==kind::array">arr_</ExpandedItem>
+      <ExpandedItem Condition="sca_.k==kind::object">obj_</ExpandedItem>
     </Expand>    
+  </Type>
+
+  <Type Name="boost::json::string">
+    <DisplayString Condition="impl_.s_.k==kind::string">{((char*)(impl_.p_.t+1)),[impl_.p_.t->size]s}</DisplayString>
+    <DisplayString Condition="impl_.s_.k==kind::string+64">{((char*)(impl_.k_.s)),[impl_.k_.n]s}:</DisplayString>
+    <DisplayString Condition="impl_.s_.k==kind::string+128">{impl_.s_.buf,[detail::string_impl::sbo_chars_-impl_.s_.buf[detail::string_impl::sbo_chars_]]s}</DisplayString>
+    <Expand>
+      <!-- VFALCO Need to handle key string here -->
+      <Item Name="[size]">impl_.s_.k==kind::string?impl_.p_.t->size:detail::string_impl::sbo_chars_-impl_.s_.buf[detail::string_impl::sbo_chars_]</Item>
+      <Item Name="[capacity]">impl_.s_.k==kind::string?impl_.p_.t->capacity:detail::string_impl::sbo_chars_</Item>
+      <Item Name="[storage]">sp_</Item>
+    </Expand>
   </Type>
 
   <Type Name="boost::json::array">
@@ -79,28 +91,16 @@
     </Expand>
   </Type>
 
-  <Type Name="boost::json::string">
-    <DisplayString Condition="impl_.s_.k==kind::string">{((char*)(impl_.p_.t+1)),[impl_.p_.t->size]s}</DisplayString>
-    <DisplayString Condition="impl_.s_.k==kind::string+64">{((char*)(impl_.k_.s)),[impl_.k_.n]s}:</DisplayString>
-    <DisplayString Condition="impl_.s_.k==kind::string+128">{impl_.s_.buf,[detail::string_impl::sbo_chars_-impl_.s_.buf[detail::string_impl::sbo_chars_]]s}</DisplayString>
-    <Expand>
-      <!-- VFALCO Need to handle key string here -->
-      <Item Name="[size]">impl_.s_.k==kind::string?impl_.p_.t->size:detail::string_impl::sbo_chars_-impl_.s_.buf[detail::string_impl::sbo_chars_]</Item>
-      <Item Name="[capacity]">impl_.s_.k==kind::string?impl_.p_.t->capacity:detail::string_impl::sbo_chars_</Item>
-      <Item Name="[storage]">sp_</Item>
-    </Expand>
-  </Type>
-
   <Type Name="boost::json::key_value_pair">
-    <DisplayString Condition="value_.nul_.k==kind::object">{{ {key_,[len_]s}, object [{value_.obj_.impl_.tab_?value_.obj_.impl_.tab_->size:0}] }}</DisplayString>
-    <DisplayString Condition="value_.nul_.k==kind::array">{{ {key_,[len_]s}, array [{value_.arr_.t_->size}] }}</DisplayString>
-    <DisplayString Condition="value_.nul_.k==kind::string">{{ {key_,[len_]s}, {((char*)(value_.str_.impl_.p_.t+1)),[value_.str_.impl_.p_.t->size]s} }}</DisplayString>
-    <DisplayString Condition="value_.nul_.k==kind::string+128">{{ {key_,[len_]s}, {value_.str_.impl_.s_.buf,[detail::string_impl::sbo_chars_-value_.str_.impl_.s_.buf[detail::string_impl::sbo_chars_]]s} }}</DisplayString>
-    <DisplayString Condition="value_.nul_.k==kind::double_">{{ {key_,[len_]s}, {value_.dub_.d} }}</DisplayString>
-    <DisplayString Condition="value_.nul_.k==kind::int64">{{ {key_,[len_]s}, {value_.i64_.i} }}</DisplayString>
-    <DisplayString Condition="value_.nul_.k==kind::uint64">{{ {key_,[len_]s}, {value_.u64_.u} }}</DisplayString>
-    <DisplayString Condition="value_.nul_.k==kind::bool_">{{ {key_,[len_]s}, {value_.bln_.b} }}</DisplayString>
-    <DisplayString Condition="value_.nul_.k==kind::null">{{ {key_,[len_]s}, null }}</DisplayString>
+    <DisplayString Condition="value_.sca_.k==kind::object">{{ {key_,[len_]s}, object [{value_.obj_.impl_.tab_?value_.obj_.impl_.tab_->size:0}] }}</DisplayString>
+    <DisplayString Condition="value_.sca_.k==kind::array">{{ {key_,[len_]s}, array [{value_.arr_.t_->size}] }}</DisplayString>
+    <DisplayString Condition="value_.sca_.k==kind::string">{{ {key_,[len_]s}, {((char*)(value_.str_.impl_.p_.t+1)),[value_.str_.impl_.p_.t->size]s} }}</DisplayString>
+    <DisplayString Condition="value_.sca_.k==kind::string+128">{{ {key_,[len_]s}, {value_.str_.impl_.s_.buf,[detail::string_impl::sbo_chars_-value_.str_.impl_.s_.buf[detail::string_impl::sbo_chars_]]s} }}</DisplayString>
+    <DisplayString Condition="value_.sca_.k==kind::null">{{ {key_,[len_]s}, null }}</DisplayString>
+    <DisplayString Condition="value_.sca_.k==kind::bool_">{{ {key_,[len_]s}, {value_.sca_.b} }}</DisplayString>
+    <DisplayString Condition="value_.sca_.k==kind::int64">{{ {key_,[len_]s}, {value_.sca_.i} }}</DisplayString>
+    <DisplayString Condition="value_.sca_.k==kind::uint64">{{ {key_,[len_]s}, {value_.sca_.u} }}</DisplayString>
+    <DisplayString Condition="value_.sca_.k==kind::double_">{{ {key_,[len_]s}, {value_.sca_.d} }}</DisplayString>
     <Expand>
       <ExpandedItem>&amp;this->value_</ExpandedItem>
     </Expand>

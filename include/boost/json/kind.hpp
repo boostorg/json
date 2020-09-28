@@ -20,16 +20,14 @@ BOOST_JSON_NS_BEGIN
 
     These values are returned from @ref value::kind
 */
+// Order matters
 enum class kind : unsigned char
 {
-    /// An @ref array.
-    array,
+    /// The null value.
+    null,
 
-    /// An @ref object.
-    object,
-
-    /// A @ref string.
-    string,
+    /// A `bool`.
+    bool_,
 
     /// A `std::int64_t`
     int64,
@@ -40,11 +38,14 @@ enum class kind : unsigned char
     /// A `double`.
     double_,
 
-    /// A `bool`.
-    bool_,
+    /// A @ref string.
+    string,
 
-    /// The null value.
-    null
+    /// An @ref array.
+    array,
+
+    /// An @ref object.
+    object
 };
 
 /** Return a string representing a kind.

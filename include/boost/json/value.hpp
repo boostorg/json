@@ -52,24 +52,32 @@ BOOST_JSON_NS_BEGIN
 class value
 {
 #ifndef BOOST_JSON_DOCS
-    // XSL scripts have trouble with private anon unions
-    using int64_k = detail::int64_k;
-    using uint64_k = detail::uint64_k;
-    using double_k = detail::double_k;
-    using bool_k = detail::bool_k;
-    using null_k = detail::null_k;
+    struct scalar
+    {
+        storage_ptr sp; // must come first
+        kind k;         // must come second
+        union
+        {
+            bool b;
+            std::int64_t i;
+            std::uint64_t u;
+            double d;
+        };
+
+        explicit inline scalar(storage_ptr = {}) noexcept;
+        explicit inline scalar(bool, storage_ptr = {}) noexcept;
+        explicit inline scalar(std::int64_t, storage_ptr = {}) noexcept;
+        explicit inline scalar(std::uint64_t, storage_ptr = {}) noexcept;
+        explicit inline scalar(double, storage_ptr = {}) noexcept;
+    };
 
     union
     {
         storage_ptr sp_; // must come first
-        object      obj_;
         array       arr_;
+        object      obj_;
         string      str_;
-        int64_k     i64_;
-        uint64_k    u64_;
-        double_k    dub_;
-        bool_k      bln_;
-        null_k      nul_;
+        scalar      sca_;
     };
 #endif
 
@@ -126,7 +134,7 @@ public:
         No-throw guarantee.
     */
     value() noexcept
-        : nul_()
+        : sca_()
     {
     }
 
@@ -147,7 +155,7 @@ public:
     */
     explicit
     value(storage_ptr sp) noexcept
-        : nul_(std::move(sp))
+        : sca_(std::move(sp))
     {
     }
 
@@ -279,76 +287,351 @@ public:
         storage_ptr sp);
 
     //------------------------------------------------------
-
-    /** Copy assignment operator
-
-        The contents of the value are replaced with an
-        element-wise copy of the contents of `other`.
-
-        @par Complexity
-        Linear in the size of `*this` plus `other`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param other The value to copy.
-    */
-    BOOST_JSON_DECL
-    value&
-    operator=(value const& other);
-
-    /** Move assignment.
-
-        The contents of the value are replaced with the
-        contents of `other` using move semantics:
-
-        @li If `*other.storage() == *sp`, ownership of
-        the underlying memory is transferred in constant
-        time, with no possibility of exceptions.
-        After assignment, the moved-from value becomes
-        a null with its current storage pointer.
-
-        @li If `*other.storage() != *sp`, an
-        element-wise copy is performed if
-        `other.is_structured() == true`, which may throw.
-        In this case, the moved-from value is not
-        changed.
-
-        @par Complexity
-        Constant, or linear in
-        `this->size()` plus `other.size()`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param other The value to assign from.
-    */
-    BOOST_JSON_DECL
-    value&
-    operator=(value&& other);
-
-    //------------------------------------------------------
     //
     // Conversion
     //
     //------------------------------------------------------
 
-    /** Construct an @ref object.
+    /** Construct a null.
+
+        A null value is a monostate.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param sp A pointer to the @ref memory_resource
+        to use. The container will acquire shared
+        ownership of the memory resource.
+    */
+    value(
+        std::nullptr_t,
+        storage_ptr sp = {}) noexcept
+        : sca_(std::move(sp))
+    {
+    }
+
+    /** Construct a bool.
+
+        This constructs a `bool` value using
+        the specified memory resource.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param b The initial value.
+
+        @param sp A pointer to the @ref memory_resource
+        to use. The container will acquire shared
+        ownership of the memory resource.
+    */
+#ifdef BOOST_JSON_DOCS
+    value(
+        bool b,
+        storage_ptr sp = {}) noexcept;
+#else
+    template<class Bool
+        ,class = typename std::enable_if<
+            std::is_same<Bool, bool>::value>::type
+    >
+    value(
+        Bool b,
+        storage_ptr sp = {}) noexcept
+        : sca_(b, std::move(sp))
+    {
+    }
+#endif
+
+    /** Construct a `std::int64_t`.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param i The initial value.
+
+        @param sp A pointer to the @ref memory_resource
+        to use. The container will acquire shared
+        ownership of the memory resource.
+    */
+    value(
+        short i,
+        storage_ptr sp = {}) noexcept
+        : sca_(static_cast<std::int64_t>(
+            i), std::move(sp))
+    {
+    }
+
+    /** Construct a `std::int64_t`.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param i The initial value.
+
+        @param sp A pointer to the @ref memory_resource
+        to use. The container will acquire shared
+        ownership of the memory resource.
+    */
+    value(
+        int i,
+        storage_ptr sp = {}) noexcept
+        : sca_(static_cast<std::int64_t>(i),
+            std::move(sp))
+    {
+    }
+
+    /** Construct a `std::int64_t`.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param i The initial value.
+
+        @param sp A pointer to the @ref memory_resource
+        to use. The container will acquire shared
+        ownership of the memory resource.
+    */
+    value(
+        long i,
+        storage_ptr sp = {}) noexcept
+        : sca_(static_cast<std::int64_t>(i),
+            std::move(sp))
+    {
+    }
+
+    /** Construct a `std::int64_t`.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param i The initial value.
+
+        @param sp A pointer to the @ref memory_resource
+        to use. The container will acquire shared
+        ownership of the memory resource.
+    */
+    value(
+        long long i,
+        storage_ptr sp = {}) noexcept
+        : sca_(static_cast<std::int64_t>(i),
+            std::move(sp))
+    {
+    }
+
+    /** Construct a `std::uint64_t`.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param u The initial value.
+
+        @param sp A pointer to the @ref memory_resource
+        to use. The container will acquire shared
+        ownership of the memory resource.
+    */
+    value(
+        unsigned short u,
+        storage_ptr sp = {}) noexcept
+        : sca_(static_cast<std::uint64_t>(u),
+            std::move(sp))
+    {
+    }
+
+    /** Construct a `std::uint64_t`.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param u The initial value.
+
+        @param sp A pointer to the @ref memory_resource
+        to use. The container will acquire shared
+        ownership of the memory resource.
+    */
+    value(
+        unsigned int u,
+        storage_ptr sp = {}) noexcept
+        : sca_(static_cast<std::uint64_t>(u),
+            std::move(sp))
+    {
+    }
+
+    /** Construct a `std::uint64_t`.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param u The initial value.
+
+        @param sp A pointer to the @ref memory_resource
+        to use. The container will acquire shared
+        ownership of the memory resource.
+    */
+    value(
+        unsigned long u,
+        storage_ptr sp = {}) noexcept
+        : sca_(static_cast<std::uint64_t>(u),
+            std::move(sp))
+    {
+    }
+
+    /** Construct a `std::uint64_t`.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param u The initial value.
+
+        @param sp A pointer to the @ref memory_resource
+        to use. The container will acquire shared
+        ownership of the memory resource.
+    */
+    value(
+        unsigned long long u,
+        storage_ptr sp = {}) noexcept
+        : sca_(static_cast<std::uint64_t>(u),
+            std::move(sp))
+    {
+    }
+
+    /** Construct a `double`.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param d The initial value.
+
+        @param sp A pointer to the @ref memory_resource
+        to use. The container will acquire shared
+        ownership of the memory resource.
+    */
+    value(
+        double d,
+        storage_ptr sp = {}) noexcept
+        : sca_(d, std::move(sp))
+    {
+    }
+
+    /** Construct a `double`.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param d The initial value.
+
+        @param sp A pointer to the @ref memory_resource
+        to use. The container will acquire shared
+        ownership of the memory resource.
+    */
+    value(
+        long double d,
+        storage_ptr sp = {}) noexcept
+        : sca_(static_cast<double>(d),
+            std::move(sp))
+    {
+    }
+
+    /** Construct a @ref string.
+
+        The string is constructed with a copy of the
+        string view `s`, using the specified memory resource.
+
+        @par Complexity
+        Linear in `s.size()`.
+
+        @par Exception Safety  
+        Strong guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
+        @param s The string view to construct with.
+
+        @param sp A pointer to the @ref memory_resource
+        to use. The container will acquire shared
+        ownership of the memory resource.
+    */
+    value(
+        string_view s,
+        storage_ptr sp = {})
+        : str_(s, std::move(sp))
+    {
+    }
+
+    /** Construct a @ref string.
+
+        The string is constructed with a copy of the
+        null-terminated string `s`, using the specified
+        memory resource.
+
+        @par Complexity
+        Linear in `std::strlen(s)`.
+
+        @par Exception Safety    
+        Strong guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
+        @param s The null-terminated string to construct
+        with.
+
+        @param sp A pointer to the @ref memory_resource
+        to use. The container will acquire shared
+        ownership of the memory resource.
+    */
+    value(
+        char const* s,
+        storage_ptr sp = {})
+        : str_(s, std::move(sp))
+    {
+    }
+
+    /** Construct a @ref string.
 
         The value is constructed from `other`, using the
         same memory resource. To transfer ownership, use `std::move`:
 
         @par Example
         @code
-        object obj( {{"a",1}, {"b",2}, {"c"},3}} );
+        string str = "The Boost C++ Library Collection";
 
         // transfer ownership
-        value jv( std::move(obj) );
+        value jv( std::move(str) );
 
-        assert( obj.empty() );
-        assert( *obj.storage() == *jv.storage() );
+        assert( str.empty() );
+        assert( *str.storage() == *jv.storage() );
         @endcode
 
         @par Complexity
@@ -357,14 +640,15 @@ public:
         @par Exception Safety
         No-throw guarantee.
 
-        @param other The object to construct with.
+        @param other The string to construct with.
     */
-    value(object other) noexcept
-        : obj_(std::move(other))
+    value(
+        string other) noexcept
+        : str_(std::move(other))
     {
     }
 
-    /** Construct an @ref object.
+    /** Construct a @ref string.
 
         The value is copy constructed from `other`,
         using the specified memory resource.
@@ -376,22 +660,22 @@ public:
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
-        @param other The object to construct with.
+        @param other The string to construct with.
 
         @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
         ownership of the memory resource.
     */
     value(
-        object const& other,
+        string const& other,
         storage_ptr sp)
-        : obj_(
+        : str_(
             other,
             std::move(sp))
     {
     }
 
-    /** Construct an @ref object.
+    /** Construct a @ref string.
 
         The value is move constructed from `other`,
         using the specified memory resource.
@@ -403,34 +687,34 @@ public:
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
-        @param other The object to construct with.
+        @param other The string to construct with.
 
         @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
         ownership of the memory resource.
     */
     value(
-        object&& other,
+        string&& other,
         storage_ptr sp)
-        : obj_(
+        : str_(
             std::move(other),
             std::move(sp))
     {
     }
 
-    /** Construct an @ref object.
+    /** Construct a @ref string.
 
         This is the fastest way to construct
-        an empty object, using the specified
-        memory resource. The variable @ref object_kind
+        an empty string, using the specified
+        memory resource. The variable @ref string_kind
         may be passed as the first parameter
         to select this overload:
 
         @par Example
         @code
-        // Construct an empty object
+        // Construct an empty string
 
-        value jv( object_kind );
+        value jv( string_kind );
         @endcode
 
         @par Complexity
@@ -443,12 +727,12 @@ public:
         to use. The container will acquire shared
         ownership of the memory resource.
 
-        @see @ref object_kind
+        @see @ref string_kind
     */
     value(
-        object_kind_t,
+        string_kind_t,
         storage_ptr sp = {}) noexcept
-        : obj_(std::move(sp))
+        : str_(std::move(sp))
     {
     }
 
@@ -569,20 +853,20 @@ public:
     {
     }
 
-    /** Construct a @ref string.
+    /** Construct an @ref object.
 
         The value is constructed from `other`, using the
         same memory resource. To transfer ownership, use `std::move`:
 
         @par Example
         @code
-        string str = "The Boost C++ Library Collection";
+        object obj( {{"a",1}, {"b",2}, {"c"},3}} );
 
         // transfer ownership
-        value jv( std::move(str) );
+        value jv( std::move(obj) );
 
-        assert( str.empty() );
-        assert( *str.storage() == *jv.storage() );
+        assert( obj.empty() );
+        assert( *obj.storage() == *jv.storage() );
         @endcode
 
         @par Complexity
@@ -591,15 +875,14 @@ public:
         @par Exception Safety
         No-throw guarantee.
 
-        @param other The string to construct with.
+        @param other The object to construct with.
     */
-    value(
-        string other) noexcept
-        : str_(std::move(other))
+    value(object other) noexcept
+        : obj_(std::move(other))
     {
     }
 
-    /** Construct a @ref string.
+    /** Construct an @ref object.
 
         The value is copy constructed from `other`,
         using the specified memory resource.
@@ -611,22 +894,22 @@ public:
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
-        @param other The string to construct with.
+        @param other The object to construct with.
 
         @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
         ownership of the memory resource.
     */
     value(
-        string const& other,
+        object const& other,
         storage_ptr sp)
-        : str_(
+        : obj_(
             other,
             std::move(sp))
     {
     }
 
-    /** Construct a @ref string.
+    /** Construct an @ref object.
 
         The value is move constructed from `other`,
         using the specified memory resource.
@@ -638,86 +921,34 @@ public:
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
-        @param other The string to construct with.
+        @param other The object to construct with.
 
         @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
         ownership of the memory resource.
     */
     value(
-        string&& other,
+        object&& other,
         storage_ptr sp)
-        : str_(
+        : obj_(
             std::move(other),
             std::move(sp))
     {
     }
 
-    /** Construct a @ref string.
-
-        The string is constructed with a copy of the
-        string view `s`, using the specified memory resource.
-
-        @par Complexity
-        Linear in `s.size()`.
-
-        @par Exception Safety  
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param s The string view to construct with.
-
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
-    */
-    value(
-        string_view s,
-        storage_ptr sp = {})
-        : str_(s, std::move(sp))
-    {
-    }
-
-    /** Construct a @ref string.
-
-        The string is constructed with a copy of the
-        null-terminated string `s`, using the specified
-        memory resource.
-
-        @par Complexity
-        Linear in `std::strlen(s)`.
-
-        @par Exception Safety    
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param s The null-terminated string to construct
-        with.
-
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
-    */
-    value(
-        char const* s,
-        storage_ptr sp = {})
-        : str_(s, std::move(sp))
-    {
-    }
-
-    /** Construct a @ref string.
+    /** Construct an @ref object.
 
         This is the fastest way to construct
-        an empty string, using the specified
-        memory resource. The variable @ref string_kind
+        an empty object, using the specified
+        memory resource. The variable @ref object_kind
         may be passed as the first parameter
         to select this overload:
 
         @par Example
         @code
-        // Construct an empty string
+        // Construct an empty object
 
-        value jv( string_kind );
+        value jv( object_kind );
         @endcode
 
         @par Complexity
@@ -730,282 +961,16 @@ public:
         to use. The container will acquire shared
         ownership of the memory resource.
 
-        @see @ref string_kind
+        @see @ref object_kind
     */
     value(
-        string_kind_t,
+        object_kind_t,
         storage_ptr sp = {}) noexcept
-        : str_(std::move(sp))
+        : obj_(std::move(sp))
     {
     }
 
-    /** Construct a `std::int64_t`.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param i The initial value.
-
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
-    */
-    value(
-        short i,
-        storage_ptr sp = {}) noexcept
-        : i64_(i, std::move(sp))
-    {
-    }
-
-    /** Construct a `std::int64_t`.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param i The initial value.
-
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
-    */
-    value(
-        int i,
-        storage_ptr sp = {}) noexcept
-        : i64_(i, std::move(sp))
-    {
-    }
-
-    /** Construct a `std::int64_t`.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param i The initial value.
-
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
-    */
-    value(
-        long i,
-        storage_ptr sp = {}) noexcept
-        : i64_(i, std::move(sp))
-    {
-    }
-
-    /** Construct a `std::int64_t`.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param i The initial value.
-
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
-    */
-    value(
-        long long i,
-        storage_ptr sp = {}) noexcept
-        : i64_(i, std::move(sp))
-    {
-    }
-
-    /** Construct a `std::uint64_t`.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param u The initial value.
-
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
-    */
-    value(
-        unsigned short u,
-        storage_ptr sp = {}) noexcept
-        : u64_(u, std::move(sp))
-    {
-    }
-
-    /** Construct a `std::uint64_t`.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param u The initial value.
-
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
-    */
-    value(
-        unsigned int u,
-        storage_ptr sp = {}) noexcept
-        : u64_(u, std::move(sp))
-    {
-    }
-
-    /** Construct a `std::uint64_t`.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param u The initial value.
-
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
-    */
-    value(
-        unsigned long u,
-        storage_ptr sp = {}) noexcept
-        : u64_(u, std::move(sp))
-    {
-    }
-
-    /** Construct a `std::uint64_t`.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param u The initial value.
-
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
-    */
-    value(
-        unsigned long long u,
-        storage_ptr sp = {}) noexcept
-        : u64_(u, std::move(sp))
-    {
-    }
-
-    /** Construct a `double`.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param d The initial value.
-
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
-    */
-    value(
-        double d,
-        storage_ptr sp = {}) noexcept
-        : dub_(d, std::move(sp))
-    {
-    }
-
-    /** Construct a `double`.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param d The initial value.
-
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
-    */
-    value(
-        long double d,
-        storage_ptr sp = {}) noexcept
-        : dub_(static_cast<double>(d),
-            std::move(sp))
-    {
-    }
-
-    /** Construct a bool.
-
-        This constructs a `bool` value using
-        the specified memory resource.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param b The initial value.
-
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
-    */
-#ifdef BOOST_JSON_DOCS
-    value(
-        bool b,
-        storage_ptr sp = {}) noexcept;
-#else
-    template<class Bool
-        ,class = typename std::enable_if<
-            std::is_same<Bool, bool>::value>::type
-    >
-    value(
-        Bool b,
-        storage_ptr sp = {}) noexcept
-        : bln_(b, std::move(sp))
-    {
-    }
-#endif
-
-    /** Construct a null.
-
-        A null value is a monostate.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
-    */
-    value(
-        std::nullptr_t,
-        storage_ptr sp = {}) noexcept
-        : nul_(std::move(sp))
-    {
-    }
-
-    /** Construct an object or array
+    /** Construct from an initializer-list
 
         If the initializer list consists of key/value
         pairs, an @ref object is created. Otherwise
@@ -1031,8 +996,65 @@ public:
         std::initializer_list<value_ref> init,
         storage_ptr sp = {});
 
-    /** Assign an object or array
+    //------------------------------------------------------
+    //
+    // Assignment
+    //
+    //------------------------------------------------------
 
+    /** Copy assignment.
+
+        The contents of the value are replaced with an
+        element-wise copy of the contents of `other`.
+
+        @par Complexity
+        Linear in the size of `*this` plus `other`.
+
+        @par Exception Safety
+        Strong guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
+        @param other The value to copy.
+    */
+    BOOST_JSON_DECL
+    value&
+    operator=(value const& other);
+
+    /** Move assignment.
+
+        The contents of the value are replaced with the
+        contents of `other` using move semantics:
+
+        @li If `*other.storage() == *sp`, ownership of
+        the underlying memory is transferred in constant
+        time, with no possibility of exceptions.
+        After assignment, the moved-from value becomes
+        a null with its current storage pointer.
+
+        @li If `*other.storage() != *sp`, an
+        element-wise copy is performed if
+        `other.is_structured() == true`, which may throw.
+        In this case, the moved-from value is not
+        changed.
+
+        @par Complexity
+        Constant, or linear in
+        `this->size()` plus `other.size()`.
+
+        @par Exception Safety
+        Strong guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
+        @param other The value to assign from.
+    */
+    BOOST_JSON_DECL
+    value&
+    operator=(value&& other);
+
+    /** Assignment.
+
+        Replace `*this` with the value formed by
+        constructing from `init` and `this->storage()`.
         If the initializer list consists of key/value
         pairs, the resulting @ref object is assigned.
         Otherwise an @ref array is assigned. The contents
@@ -1048,48 +1070,231 @@ public:
 
         @param init The initializer list to assign from.
     */
+    BOOST_JSON_DECL
     value&
     operator=(
-        std::initializer_list<value_ref> init)
-    {
-        return *this = value(init, storage());
-    }
+        std::initializer_list<value_ref> init);
 
-    /** Assignment
+    /** Assignment.
 
-        Assigns `t` to `*this`.
+        Replace `*this` with null.
 
-        @par Effects
-        @code
-        *this = value( std::forward<T>(t), this->storage() );
-        @endcode
-
-        @par Constraints
-        @code
-        std::is_constructible< value, T, storage_ptr >::value &&
-            ! std::is_same< std::remove_cvref< T >, value >::value
-        @endcode
+        @par Exception Safety
+        No-throw guarantee.
 
         @par Complexity
-        Constant or linear in the size of
-        `*this` plus `t`.
+        Linear in the size of `*this`.
+    */
+    inline
+    value&
+    operator=(std::nullptr_t) noexcept;
+
+    /** Assignment.
+
+        Replace `*this` with `b`.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @par Complexity
+        Linear in the size of `*this`.
+
+        @param b The new value.
+    */
+#ifdef BOOST_JSON_DOCS
+    value& operator=(bool b) noexcept;
+#else
+    template<class Bool
+        ,class = typename std::enable_if<
+            std::is_same<Bool, bool>::value>::type
+    >
+    value& operator=(Bool b) noexcept;
+#endif
+
+    /** Assignment.
+
+        Replace `*this` with `i`.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @par Complexity
+        Linear in the size of `*this`.
+
+        @param i The new value.
+    */
+    /** @{ */
+    inline value& operator=(short i) noexcept;
+    inline value& operator=(int i) noexcept;
+    inline value& operator=(long i) noexcept;
+    inline value& operator=(long long i) noexcept;
+    /** @} */
+
+    /** Assignment.
+
+        Replace `*this` with `i`.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @par Complexity
+        Linear in the size of `*this`.
+
+        @param u The new value.
+    */
+    /** @{ */
+    inline value& operator=(unsigned short u) noexcept;
+    inline value& operator=(unsigned int u) noexcept;
+    inline value& operator=(unsigned long u) noexcept;
+    inline value& operator=(unsigned long long u) noexcept;
+    /** @} */
+
+    /** Assignment.
+
+        Replace `*this` with `d`.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @par Complexity
+        Linear in the size of `*this`.
+
+        @param d The new value.
+    */
+    /** @{ */
+    inline value& operator=(double d) noexcept;
+    inline value& operator=(long double d) noexcept;
+    /** @} */
+
+    /** Assignment.
+
+        Replace `*this` with a copy of the string `s`.
 
         @par Exception Safety
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
+
+        @par Complexity
+        Linear in the sum of sizes of `*this` and `s`
+
+        @param s The new string.
     */
-    template<class T
-#ifndef BOOST_JSON_DOCS
-        ,class = typename std::enable_if<
-            std::is_constructible<
-                value, T, storage_ptr>::value &&
-            ! std::is_same<detail::remove_cvref<
-                T>, value>::value
-        >::type
-#endif
-    >
-    value&
-    operator=(T&& t);
+    /** @{ */
+    BOOST_JSON_DECL value& operator=(string_view s);
+    BOOST_JSON_DECL value& operator=(char const* s);
+    BOOST_JSON_DECL value& operator=(string const& s);
+    /** @} */
+
+    /** Assignment.
+
+        The contents of the value are replaced with the
+        contents of `s` using move semantics:
+
+        @li If `*other.storage() == *this->storage()`,
+        ownership of the underlying memory is transferred
+        in constant time, with no possibility of exceptions.
+        After assignment, the moved-from string becomes
+        empty with its current storage pointer.
+
+        @li If `*other.storage() != *this->storage()`, an
+        element-wise copy is performed, which may throw.
+        In this case, the moved-from string is not
+        changed.
+
+        @par Complexity
+        Constant, or linear in the size of `*this` plus `s.size()`.
+
+        @par Exception Safety
+        Strong guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
+        @param s The string to move-assign from.
+    */
+    BOOST_JSON_DECL value& operator=(string&& s);
+
+    /** Assignment.
+
+        Replace `*this` with a copy of the array `arr`.
+
+        @par Exception Safety
+        Strong guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
+        @par Complexity
+        Linear in the sum of sizes of `*this` and `arr`
+
+        @param arr The new array.
+    */
+    BOOST_JSON_DECL value& operator=(array const& arr);
+
+    /** Assignment.
+
+        The contents of the value are replaced with the
+        contents of `arr` using move semantics:
+
+        @li If `*arr.storage() == *this->storage()`,
+        ownership of the underlying memory is transferred
+        in constant time, with no possibility of exceptions.
+        After assignment, the moved-from array becomes
+        empty with its current storage pointer.
+
+        @li If `*arr.storage() != *this->storage()`, an
+        element-wise copy is performed, which may throw.
+        In this case, the moved-from array is not
+        changed.
+
+        @par Complexity
+        Constant, or linear in the size of `*this` plus `arr.size()`.
+
+        @par Exception Safety
+        Strong guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
+        @param arr The array to move-assign from.
+    */
+    BOOST_JSON_DECL value& operator=(array&& arr);
+
+    /** Assignment.
+
+        Replace `*this` with a copy of the obect `obj`.
+
+        @par Exception Safety
+        Strong guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
+        @par Complexity
+        Linear in the sum of sizes of `*this` and `obj`
+
+        @param obj The new object.
+    */
+    BOOST_JSON_DECL value& operator=(object const& obj);
+
+    /** Assignment.
+
+        The contents of the value are replaced with the
+        contents of `obj` using move semantics:
+
+        @li If `*obj.storage() == *this->storage()`,
+        ownership of the underlying memory is transferred
+        in constant time, with no possibility of exceptions.
+        After assignment, the moved-from object becomes
+        empty with its current storage pointer.
+
+        @li If `*obj.storage() != *this->storage()`, an
+        element-wise copy is performed, which may throw.
+        In this case, the moved-from object is not
+        changed.
+
+        @par Complexity
+        Constant, or linear in the size of `*this` plus `obj.size()`.
+
+        @par Exception Safety
+        Strong guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
+        @param obj The object to move-assign from.
+    */
+    BOOST_JSON_DECL value& operator=(object&& obj);
 
     //------------------------------------------------------
     //
@@ -1097,12 +1302,10 @@ public:
     //
     //------------------------------------------------------
 
-    /** Return a reference to an @ref object, changing the kind and replacing the contents.
+    /** Change the kind to null, discarding the previous contents.
 
-        The contents are replaced with an empty @ref object
-        using the current @ref memory_resource. All
-        previously obtained iterators and references
-        obtained beforehand are invalidated.
+        The value is replaced with a null,
+        destroying the previous contents.
 
         @par Complexity
         Linear in the size of `*this`.
@@ -1110,14 +1313,14 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    BOOST_JSON_DECL
-    object&
-    emplace_object() noexcept;
+    inline
+    void
+    emplace_null() noexcept;
 
-    /** Return a reference to an @ref array, changing the kind and replacing the contents.
+    /** Return a reference to a `bool`, changing the kind and replacing the contents.
 
-        The value is replaced with an empty @ref array
-        using the current memory resource, destroying the
+        The value is replaced with a `bool`
+        initialized to `false`, destroying the
         previous contents.
 
         @par Complexity
@@ -1126,9 +1329,57 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    BOOST_JSON_DECL
-    array&
-    emplace_array() noexcept;
+    inline
+    bool&
+    emplace_bool() noexcept;
+
+    /** Return a reference to a `std::int64_t`, changing the kind and replacing the contents.
+
+        The value is replaced with a `std::int64_t`
+        initialized to zero, destroying the
+        previous contents.
+
+        @par Complexity
+        Linear in the size of `*this`.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    inline
+    std::int64_t&
+    emplace_int64() noexcept;
+
+    /** Return a reference to a `std::uint64_t`, changing the kind and replacing the contents.
+
+        The value is replaced with a `std::uint64_t`
+        initialized to zero, destroying the
+        previous contents.
+
+        @par Complexity
+        Linear in the size of `*this`.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    inline
+    std::uint64_t&
+    emplace_uint64() noexcept;
+
+    /** Return a reference to a `double`, changing the kind and replacing the contents.
+
+        The value is replaced with a `double`
+        initialized to zero, destroying the
+        previous contents.
+
+        @par Complexity
+        Linear in the size of `*this`.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    inline
+    double&
+    emplace_double() noexcept;
 
     /** Return a reference to a @ref string, changing the kind and replacing the contents.
 
@@ -1146,10 +1397,10 @@ public:
     string&
     emplace_string() noexcept;
 
-    /** Return a reference to a `std::int64_t`, changing the kind and replacing the contents.
+    /** Return a reference to an @ref array, changing the kind and replacing the contents.
 
-        The value is replaced with a `std::int64_t`
-        initialized to zero, destroying the
+        The value is replaced with an empty @ref array
+        using the current memory resource, destroying the
         previous contents.
 
         @par Complexity
@@ -1159,30 +1410,15 @@ public:
         No-throw guarantee.
     */
     BOOST_JSON_DECL
-    std::int64_t&
-    emplace_int64() noexcept;
+    array&
+    emplace_array() noexcept;
 
-    /** Return a reference to a `std::uint64_t`, changing the kind and replacing the contents.
+    /** Return a reference to an @ref object, changing the kind and replacing the contents.
 
-        The value is replaced with a `std::uint64_t`
-        initialized to zero, destroying the
-        previous contents.
-
-        @par Complexity
-        Linear in the size of `*this`.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
-    BOOST_JSON_DECL
-    std::uint64_t&
-    emplace_uint64() noexcept;
-
-    /** Return a reference to a `double`, changing the kind and replacing the contents.
-
-        The value is replaced with a `double`
-        initialized to zero, destroying the
-        previous contents.
+        The contents are replaced with an empty @ref object
+        using the current @ref memory_resource. All
+        previously obtained iterators and references
+        obtained beforehand are invalidated.
 
         @par Complexity
         Linear in the size of `*this`.
@@ -1191,39 +1427,8 @@ public:
         No-throw guarantee.
     */
     BOOST_JSON_DECL
-    double&
-    emplace_double() noexcept;
-
-    /** Return a reference to a `bool`, changing the kind and replacing the contents.
-
-        The value is replaced with a `bool`
-        initialized to `false`, destroying the
-        previous contents.
-
-        @par Complexity
-        Linear in the size of `*this`.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
-    BOOST_JSON_DECL
-    bool&
-    emplace_bool() noexcept;
-
-    /** Change the kind to null, discarding the previous contents.
-
-        The value is replaced with a null,
-        destroying the previous contents.
-
-        @par Complexity
-        Linear in the size of `*this`.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
-    BOOST_JSON_DECL
-    void
-    emplace_null() noexcept;
+    object&
+    emplace_object() noexcept;
 
     /** Swap the given values.
 
@@ -1323,7 +1528,7 @@ public:
     {
         return static_cast<json::kind>(
             static_cast<unsigned char>(
-                nul_.k) & 0x3f);
+                sca_.k) & 0x3f);
     }
 
     /** Return `true` if this is an array
@@ -1540,8 +1745,8 @@ public:
     {
         // VFALCO Could use bit 0x20 for this
         return
-           nul_.k != json::kind::object &&
-           nul_.k != json::kind::array;
+           sca_.k != json::kind::object &&
+           sca_.k != json::kind::array;
     }
 
     /** Returns true if this is a number.
@@ -1754,7 +1959,7 @@ public:
     if_int64() const noexcept
     {
         if(kind() == json::kind::int64)
-            return &i64_.i;
+            return &sca_.i;
         return nullptr;
     }
 
@@ -1781,7 +1986,7 @@ public:
     if_int64() noexcept
     {
         if(kind() == json::kind::int64)
-            return &i64_.i;
+            return &sca_.i;
         return nullptr;
     }
 
@@ -1809,7 +2014,7 @@ public:
     if_uint64() const noexcept
     {
         if(kind() == json::kind::uint64)
-            return &u64_.u;
+            return &sca_.u;
         return nullptr;
     }
 
@@ -1837,7 +2042,7 @@ public:
     if_uint64() noexcept
     {
         if(kind() == json::kind::uint64)
-            return &u64_.u;
+            return &sca_.u;
         return nullptr;
     }
 
@@ -1865,7 +2070,7 @@ public:
     if_double() const noexcept
     {
         if(kind() == json::kind::double_)
-            return &dub_.d;
+            return &sca_.d;
         return nullptr;
     }
 
@@ -1893,7 +2098,7 @@ public:
     if_double() noexcept
     {
         if(kind() == json::kind::double_)
-            return &dub_.d;
+            return &sca_.d;
         return nullptr;
     }
 
@@ -1921,7 +2126,7 @@ public:
     if_bool() const noexcept
     {
         if(kind() == json::kind::bool_)
-            return &bln_.b;
+            return &sca_.b;
         return nullptr;
     }
 
@@ -1949,7 +2154,7 @@ public:
     if_bool() noexcept
     {
         if(kind() == json::kind::bool_)
-            return &bln_.b;
+            return &sca_.b;
         return nullptr;
     }
 
@@ -2159,7 +2364,7 @@ public:
             detail::throw_invalid_argument(
                 "not an int64",
                 BOOST_CURRENT_LOCATION);
-        return i64_.i;
+        return sca_.i;
     }
 
     /** Return the underlying `std::int64_t`, or throw an exception.
@@ -2183,7 +2388,7 @@ public:
             detail::throw_invalid_argument(
                 "not an int64",
                 BOOST_CURRENT_LOCATION);
-        return i64_.i;
+        return sca_.i;
     }
 
     /** Return a reference to the underlying `std::uint64_t`, or throw an exception.
@@ -2207,7 +2412,7 @@ public:
             detail::throw_invalid_argument(
                 "not a uint64",
                 BOOST_CURRENT_LOCATION);
-        return u64_.u;
+        return sca_.u;
     }
 
     /** Return the underlying `std::uint64_t`, or throw an exception.
@@ -2231,7 +2436,7 @@ public:
             detail::throw_invalid_argument(
                 "not a uint64",
                 BOOST_CURRENT_LOCATION);
-        return u64_.u;
+        return sca_.u;
     }
 
     /** Return a reference to the underlying `double`, or throw an exception.
@@ -2255,7 +2460,7 @@ public:
             detail::throw_invalid_argument(
                 "not a double",
                 BOOST_CURRENT_LOCATION);
-        return dub_.d;
+        return sca_.d;
     }
 
     /** Return the underlying `double`, or throw an exception.
@@ -2279,7 +2484,7 @@ public:
             detail::throw_invalid_argument(
                 "not a double",
                 BOOST_CURRENT_LOCATION);
-        return dub_.d;
+        return sca_.d;
     }
 
     /** Return a reference to the underlying `bool`, or throw an exception.
@@ -2303,7 +2508,7 @@ public:
             detail::throw_invalid_argument(
                 "bool required",
                 BOOST_CURRENT_LOCATION);
-        return bln_.b;
+        return sca_.b;
     }
 
     /** Return the underlying `bool`, or throw an exception.
@@ -2327,7 +2532,7 @@ public:
             detail::throw_invalid_argument(
                 "bool required",
                 BOOST_CURRENT_LOCATION);
-        return bln_.b;
+        return sca_.b;
     }
 
     //------------------------------------------------------
@@ -2497,7 +2702,7 @@ public:
     get_int64() noexcept
     {
         BOOST_ASSERT(is_int64());
-        return i64_.i;
+        return sca_.i;
     }
 
     /** Return the underlying `std::int64_t`, without checking.
@@ -2521,7 +2726,7 @@ public:
     get_int64() const noexcept
     {
         BOOST_ASSERT(is_int64());
-        return i64_.i;
+        return sca_.i;
     }
 
     /** Return a reference to the underlying `std::uint64_t`, without checking.
@@ -2545,7 +2750,7 @@ public:
     get_uint64() noexcept
     {
         BOOST_ASSERT(is_uint64());
-        return u64_.u;
+        return sca_.u;
     }
 
     /** Return the underlying `std::uint64_t`, without checking.
@@ -2569,7 +2774,7 @@ public:
     get_uint64() const noexcept
     {
         BOOST_ASSERT(is_uint64());
-        return u64_.u;
+        return sca_.u;
     }
 
     /** Return a reference to the underlying `double`, without checking.
@@ -2593,7 +2798,7 @@ public:
     get_double() noexcept
     {
         BOOST_ASSERT(is_double());
-        return dub_.d;
+        return sca_.d;
     }
 
     /** Return the underlying `double`, without checking.
@@ -2617,7 +2822,7 @@ public:
     get_double() const noexcept
     {
         BOOST_ASSERT(is_double());
-        return dub_.d;
+        return sca_.d;
     }
 
     /** Return a reference to the underlying `bool`, without checking.
@@ -2641,7 +2846,7 @@ public:
     get_bool() noexcept
     {
         BOOST_ASSERT(is_bool());
-        return bln_.b;
+        return sca_.b;
     }
 
     /** Return the underlying `bool`, without checking.
@@ -2665,7 +2870,7 @@ public:
     get_bool() const noexcept
     {
         BOOST_ASSERT(is_bool());
-        return bln_.b;
+        return sca_.b;
     }
 
     //------------------------------------------------------
@@ -2788,9 +2993,6 @@ BOOST_STATIC_ASSERT(sizeof(value) == 16);
 #else 
 # error Unknown architecture
 #endif
-
-//----------------------------------------------------------
-
 
 //----------------------------------------------------------
 
@@ -3014,11 +3216,6 @@ public:
     }
 
 private:
-    static
-    inline
-    std::uint32_t
-    key_size(std::size_t n);
-
     json::value value_;
     char const* key_;
     std::uint32_t len_;

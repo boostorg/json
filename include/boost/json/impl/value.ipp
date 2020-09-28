@@ -23,36 +23,24 @@ value::
 {
     switch(kind())
     {
-    case json::kind::object:
-        obj_.~object();
-        break;
-
-    case json::kind::array:
-        arr_.~array();
+    case json::kind::null:
+    case json::kind::bool_:
+    case json::kind::int64:
+    case json::kind::uint64:
+    case json::kind::double_:
+        sca_.~scalar();
         break;
 
     case json::kind::string:
         str_.~string();
         break;
 
-    case json::kind::int64:
-        i64_.~int64_k();
+    case json::kind::array:
+        arr_.~array();
         break;
 
-    case json::kind::uint64:
-        u64_.~uint64_k();
-        break;
-
-    case json::kind::double_:
-        dub_.~double_k();
-        break;
-
-    case json::kind::bool_:
-        bln_.~bool_k();
-        break;
-
-    case json::kind::null:
-        nul_.~null_k();
+    case json::kind::object:
+        obj_.~object();
         break;
     }
 }
@@ -61,7 +49,7 @@ value::
 value(pilfered<value> p) noexcept
 {
     relocate(this, p.get());
-    ::new(&p.get().nul_) null_k;
+    ::new(&p.get().sca_) scalar();
 }
 
 value::
@@ -71,15 +59,32 @@ value(
 {
     switch(other.kind())
     {
-    case json::kind::object:
-        ::new(&obj_) object(
-            other.obj_,
+    case json::kind::null:
+        ::new(&sca_) scalar(
             std::move(sp));
         break;
 
-    case json::kind::array:
-        ::new(&arr_) array(
-            other.arr_,
+    case json::kind::bool_:
+        ::new(&sca_) scalar(
+            other.sca_.b,
+            std::move(sp));
+        break;
+
+    case json::kind::int64:
+        ::new(&sca_) scalar(
+            other.sca_.i,
+            std::move(sp));
+        break;
+
+    case json::kind::uint64:
+        ::new(&sca_) scalar(
+            other.sca_.u,
+            std::move(sp));
+        break;
+
+    case json::kind::double_:
+        ::new(&sca_) scalar(
+            other.sca_.d,
             std::move(sp));
         break;
 
@@ -89,32 +94,15 @@ value(
             std::move(sp));
         break;
 
-    case json::kind::int64:
-        ::new(&i64_) int64_k(
-            other.i64_.i,
+    case json::kind::array:
+        ::new(&arr_) array(
+            other.arr_,
             std::move(sp));
         break;
 
-    case json::kind::uint64:
-        ::new(&u64_) uint64_k(
-            other.u64_.u,
-            std::move(sp));
-        break;
-
-    case json::kind::double_:
-        ::new(&dub_) double_k(
-            other.dub_.d,
-            std::move(sp));
-        break;
-
-    case json::kind::bool_:
-        ::new(&bln_) bool_k(
-            other.bln_.b,
-            std::move(sp));
-        break;
-
-    case json::kind::null:
-        ::new(&nul_) null_k(
+    case json::kind::object:
+        ::new(&obj_) object(
+            other.obj_,
             std::move(sp));
         break;
     }
@@ -124,7 +112,7 @@ value::
 value(value&& other) noexcept
 {
     relocate(this, other);
-    ::new(&other.nul_) null_k(sp_);
+    ::new(&other.sca_) scalar(sp_);
 }
 
 value::
@@ -134,9 +122,34 @@ value(
 {
     switch(other.kind())
     {
-    case json::kind::object:
-        ::new(&obj_) object(
-            std::move(other.obj_),
+    case json::kind::null:
+        ::new(&sca_) scalar(
+            std::move(sp));
+        break;
+
+    case json::kind::bool_:
+        ::new(&sca_) scalar(
+            other.sca_.b, std::move(sp));
+        break;
+
+    case json::kind::int64:
+        ::new(&sca_) scalar(
+            other.sca_.i, std::move(sp));
+        break;
+
+    case json::kind::uint64:
+        ::new(&sca_) scalar(
+            other.sca_.u, std::move(sp));
+        break;
+
+    case json::kind::double_:
+        ::new(&sca_) scalar(
+            other.sca_.d, std::move(sp));
+        break;
+
+    case json::kind::string:
+        ::new(&str_) string(
+            std::move(other.str_),
             std::move(sp));
         break;
 
@@ -146,63 +159,12 @@ value(
             std::move(sp));
         break;
 
-    case json::kind::string:
-        ::new(&str_) string(
-            std::move(other.str_),
-            std::move(sp));
-        break;
-
-    case json::kind::int64:
-        ::new(&i64_) int64_k(
-            other.i64_.i, std::move(sp));
-        break;
-
-    case json::kind::uint64:
-        ::new(&u64_) uint64_k(
-            other.u64_.u, std::move(sp));
-        break;
-
-    case json::kind::double_:
-        ::new(&dub_) double_k(
-            other.dub_.d, std::move(sp));
-        break;
-
-    case json::kind::bool_:
-        ::new(&bln_) bool_k(
-            other.bln_.b, std::move(sp));
-        break;
-
-    case json::kind::null:
-        ::new(&nul_) null_k(
+    case json::kind::object:
+        ::new(&obj_) object(
+            std::move(other.obj_),
             std::move(sp));
         break;
     }
-}
-
-value&
-value::
-operator=(value const& other)
-{
-    value(other,
-        storage()).swap(*this);
-    return *this;
-}
-
-value&
-value::
-operator=(value&& other)
-{
-    value(std::move(other),
-        storage()).swap(*this);
-    return *this;
-}
-
-auto
-value::
-get_allocator() const noexcept ->
-    allocator_type
-{
-    return sp_.get();
 }
 
 //----------------------------------------------------------
@@ -228,15 +190,116 @@ value(
 
 //----------------------------------------------------------
 //
+// Assignment
+//
+//----------------------------------------------------------
+
+value&
+value::
+operator=(value const& other)
+{
+    value(other,
+        storage()).swap(*this);
+    return *this;
+}
+
+value&
+value::
+operator=(value&& other)
+{
+    value(std::move(other),
+        storage()).swap(*this);
+    return *this;
+}
+
+value&
+value::
+operator=(
+    std::initializer_list<value_ref> init)
+{
+    value(init,
+        storage()).swap(*this);
+    return *this;
+}
+
+value&
+value::
+operator=(string_view s)
+{
+    value(s, storage()).swap(*this);
+    return *this;
+}
+
+value&
+value::
+operator=(char const* s)
+{
+    value(s, storage()).swap(*this);
+    return *this;
+}
+
+value&
+value::
+operator=(string const& str)
+{
+    value(str, storage()).swap(*this);
+    return *this;
+}
+
+value&
+value::
+operator=(string&& str)
+{
+    value(std::move(str),
+        storage()).swap(*this);
+    return *this;
+}
+
+value&
+value::
+operator=(array const& arr)
+{
+    value(arr, storage()).swap(*this);
+    return *this;
+}
+
+value&
+value::
+operator=(array&& arr)
+{
+    value(std::move(arr),
+        storage()).swap(*this);
+    return *this;
+}
+
+value&
+value::
+operator=(object const& obj)
+{
+    value(obj, storage()).swap(*this);
+    return *this;
+}
+
+value&
+value::
+operator=(object&& obj)
+{
+    value(std::move(obj),
+        storage()).swap(*this);
+    return *this;
+}
+
+//----------------------------------------------------------
+//
 // Modifiers
 //
 //----------------------------------------------------------
 
-object&
+string&
 value::
-emplace_object() noexcept
+emplace_string() noexcept
 {
-    return *::new(&obj_) object(destroy());
+    return *::new(&str_) string(destroy());
 }
 
 array&
@@ -246,87 +309,63 @@ emplace_array() noexcept
     return *::new(&arr_) array(destroy());
 }
 
-string&
+object&
 value::
-emplace_string() noexcept
+emplace_object() noexcept
 {
-    return *::new(&str_) string(destroy());
-}
-
-std::int64_t&
-value::
-emplace_int64() noexcept
-{
-    ::new(&i64_) int64_k(destroy());
-    return i64_.i;
-}
-
-std::uint64_t&
-value::
-emplace_uint64() noexcept
-{
-    ::new(&u64_) uint64_k(destroy());
-    return u64_.u;
-}
-
-double&
-value::
-emplace_double() noexcept
-{
-    ::new(&dub_) double_k(destroy());
-    return dub_.d;
-}
-
-bool&
-value::
-emplace_bool() noexcept
-{
-    ::new(&bln_) bool_k(destroy());
-    return bln_.b;
-}
-
-void
-value::
-emplace_null() noexcept
-{
-    ::new(&nul_) null_k(destroy());
+    return *::new(&obj_) object(destroy());
 }
 
 void
 value::
 swap(value& other)
 {
-    if(*storage() != *other.storage())
+    if(*storage() == *other.storage())
     {
-        // copy
-        value temp1(
-            std::move(*this),
-            other.storage());
-        value temp2(
-            std::move(other),
-            this->storage());
-        other.~value();
-        ::new(&other) value(pilfer(temp1));
-        this->~value();
-        ::new(this) value(pilfer(temp2));
+        // fast path
+        union U
+        {
+            value tmp;
+            U(){}
+            ~U(){}
+        };
+        U u;
+        relocate(&u.tmp, *this);
+        relocate(this, other);
+        relocate(&other, u.tmp);
         return;
     }
 
-    union U
-    {
-        value tmp;
-        U(){}
-        ~U(){}
-    };
-    U u;
-    relocate(&u.tmp, *this);
-    relocate(this, other);
-    relocate(&other, u.tmp);
+    // copy
+    value temp1(
+        std::move(*this),
+        other.storage());
+    value temp2(
+        std::move(other),
+        this->storage());
+    other.~value();
+    ::new(&other) value(pilfer(temp1));
+    this->~value();
+    ::new(this) value(pilfer(temp2));
 }
 
 //----------------------------------------------------------
 //
 // Accessors
+//
+//----------------------------------------------------------
+
+auto
+value::
+get_allocator() const noexcept ->
+    allocator_type
+{
+    return sp_.get();
+}
+
+//----------------------------------------------------------
+//
+// private
 //
 //----------------------------------------------------------
 
@@ -336,30 +375,34 @@ destroy() noexcept
 {
     switch(kind())
     {
-    case json::kind::object:
-    {
-        auto sp = obj_.storage();
-        obj_.~object();
-        return sp;
-    }
-    case json::kind::array:
-    {
-        auto sp = arr_.storage();
-        arr_.~array();
-        return sp;
-    }
+    case json::kind::null:
+    case json::kind::bool_:
+    case json::kind::int64:
+    case json::kind::uint64:
+    case json::kind::double_:
+        break;
+
     case json::kind::string:
     {
         auto sp = str_.storage();
         str_.~string();
         return sp;
     }
-    case json::kind::int64:
-    case json::kind::uint64:
-    case json::kind::double_:
-    case json::kind::bool_:
-    case json::kind::null:
-        break;
+
+    case json::kind::array:
+    {
+        auto sp = arr_.storage();
+        arr_.~array();
+        return sp;
+    }
+
+    case json::kind::object:
+    {
+        auto sp = obj_.storage();
+        obj_.~object();
+        return sp;
+    }
+
     }
     return std::move(sp_);
 }
@@ -370,8 +413,52 @@ equal(value const& other) const noexcept
 {
     switch(kind())
     {
-    default: // unreachable() // ?
-        return false;
+    default: // unreachable()?
+    case json::kind::null:
+        return other.kind() == json::kind::null;
+
+    case json::kind::bool_:
+        return
+            other.kind() == json::kind::bool_ &&
+            get_bool() == other.get_bool();
+
+    case json::kind::int64:
+        switch(other.kind())
+        {
+        case json::kind::int64:
+            return get_int64() == other.get_int64();
+        case json::kind::uint64:
+            if(get_int64() < 0)
+                return false;
+            return static_cast<std::uint64_t>(
+                get_int64()) == other.get_uint64();
+        default:
+            return false;
+        }
+
+    case json::kind::uint64:
+        switch(other.kind())
+        {
+        case json::kind::uint64:
+            return get_uint64() == other.get_uint64();
+        case json::kind::int64:
+            if(other.get_int64() < 0)
+                return false;
+            return static_cast<std::uint64_t>(
+                other.get_int64()) == get_uint64();
+        default:
+            return false;
+        }
+
+    case json::kind::double_:
+        return
+            other.kind() == json::kind::double_ &&
+            get_double() == other.get_double();
+
+    case json::kind::string:
+        return
+            other.kind() == json::kind::string &&
+            get_string() == other.get_string();
 
     case json::kind::array:
         return
@@ -382,51 +469,13 @@ equal(value const& other) const noexcept
         return
             other.kind() == json::kind::object &&
             get_object() == other.get_object();
-
-    case json::kind::string:
-        return
-            other.kind() == json::kind::string &&
-            get_string() == other.get_string();
-
-    case json::kind::int64:
-        if(other.kind() == json::kind::int64)
-            return get_int64() == other.get_int64();
-        if(other.kind() == json::kind::uint64)
-        {
-            if(get_int64() < 0)
-                return false;
-            return static_cast<std::uint64_t>(
-                get_int64()) == other.get_uint64();
-        }
-        return false;
-
-    case json::kind::uint64:
-        if(other.kind() == json::kind::uint64)
-            return get_uint64() == other.get_uint64();
-        if(other.kind() == json::kind::int64)
-        {
-            if(other.get_int64() < 0)
-                return false;
-            return static_cast<std::uint64_t>(
-                other.get_int64()) == get_uint64();
-        }
-        return false;
-
-    case json::kind::double_:
-        return
-            other.kind() == json::kind::double_ &&
-            get_double() == other.get_double();
-
-    case json::kind::bool_:
-        return
-            other.kind() == json::kind::bool_ &&
-            get_bool() == other.get_bool();
-
-    case json::kind::null:
-        return other.kind() == json::kind::null;
     }
 }
 
+//----------------------------------------------------------
+//
+// key_value_pair
+//
 //----------------------------------------------------------
 
 key_value_pair::
