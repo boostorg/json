@@ -34,6 +34,7 @@ local SOURCES =
     doc_storage_ptr.cpp
     doc_uses_allocator.cpp
     doc_using_numbers.cpp
+    double.cpp
     error.cpp
     fwd.cpp
     json.cpp
