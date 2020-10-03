@@ -37,9 +37,10 @@ assert( *sp1.get() == *sp2.get() );                     // the default resource 
 //----------------------------------------------------------
 {
 //[doc_storage_ptr_2
-value jv;
-array arr;
+array arr;                                              // default construction
 object obj;
+string str;
+value jv;
 
 assert( jv.storage().get() == storage_ptr().get() );    // uses the default memory resource
 assert( jv.storage().get() == arr.storage().get() );    // both point to the default resource

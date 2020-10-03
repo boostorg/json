@@ -10,6 +10,7 @@
 #include <boost/json/monotonic_resource.hpp>
 #include <boost/json/null_resource.hpp>
 #include <boost/json/parse.hpp>
+#include <boost/json/parser.hpp>
 #include <boost/json/static_resource.hpp>
 #include <boost/json/stream_parser.hpp>
 
@@ -73,21 +74,21 @@ opt.allow_comments = true;                          // permit C and C++ style co
 opt.allow_trailing_commas = true;                   // allow an additional trailing comma in object and array element lists
 opt.allow_invalid_utf8 = true;                      // skip utf-8 validation of keys and strings
 
-value jv = parse( "[1,2,3,] // comment, extra comma ", storage_ptr(), opt );
+value jv = parse( "[1,2,3,] // comment ", storage_ptr(), opt );
 //]
 }
 //----------------------------------------------------------
 {
-//[doc_parsing_6
 #if __cpp_designated_initializers >= 201707L
-value jv = parse( "[1,2,3,] // comment, extra comma ", storage_ptr(), 
+//[doc_parsing_6
+value jv = parse( "[1,2,3,] // comment ", storage_ptr(),
     { 
-        .allow_comments = true, // permit C and C++ style comments to appear in whitespace
-        .allow_trailing_commas = true, // allow an additional trailing comma in object and array element lists
-        .allow_invalid_utf8 = true // skip utf-8 validation of keys and strings
+        .allow_comments = true,             // permit C and C++ style comments to appear in whitespace
+        .allow_trailing_commas = true,      // allow a trailing comma in object and array lists
+        .allow_invalid_utf8 = true          // skip utf-8 validation of keys and strings
     });
-#endif
 //]
+#endif
 }
 //----------------------------------------------------------
 
@@ -97,7 +98,7 @@ value jv = parse( "[1,2,3,] // comment, extra comma ", storage_ptr(),
 //[doc_parsing_7
 class connection
 {
-    stream_parser p_;                               // persistent data member
+    parser p_;                                      // persistent data member
 
 public:
     void do_read( string_view s )                   // called for each complete message from the network

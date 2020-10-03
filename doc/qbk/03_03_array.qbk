@@ -9,7 +9,7 @@
 
 [/-----------------------------------------------------------------------------]
 
-[section:arrays Using Arrays]
+[section:array __array__]
 
 A __value__ stores an instance of __array__ as the underlying representation
 for a JSON array. Instances of the __array__ type function identically to
