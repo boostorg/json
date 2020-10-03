@@ -13,47 +13,46 @@
 
 [/-----------------------------------------------------------------------------]
 
-[section Introduction]
-
-This library provides containers and algorithms which implement JSON
-([@https://json.org/ "JavaScript Object Notation"]), a lightweight
-data-interchange format. This format is easy for humans to read and
-write, and easy for machines to parse and generate. It is based on a
-subset of the JavaScript Programming Language,
-[@https://www.ecma-international.org/ecma-262/10.0/index.html Standard ECMA-262].
+Boost.JSON is a portable C++ library which provides containers and
+algorithms that implement
+[@https://json.org/ JavaScript Object Notation], or simply "JSON",
+a lightweight data-interchange format. This format is easy for humans to
+read and write, and easy for machines to parse and generate. It is based
+on a subset of the JavaScript Programming Language
+([@https://www.ecma-international.org/ecma-262/10.0/index.html Standard ECMA-262]).
 JSON is a text format that is language-independent but uses conventions
 that are familiar to programmers of the C-family of languages, including
 C, C++, C#, Java, JavaScript, Perl, Python, and many others. These
 properties make JSON an ideal data-interchange language.
 
-[endsect]
+This library focuses on a common and popular use-case: parsing
+and serializing to and from a container called __value__ which
+holds JSON types. Any __value__ which you build can be serialized
+and then deserialized, guaranteeing that the result will be equal
+to the original value. Whatever JSON output you produce with this
+library will be readable by most common JSON implementations
+in any language.
 
-[/-----------------------------------------------------------------------------]
-
-[section Motivation]
+The __value__ container is designed to be well suited as a
+vocabulary type appropriate for use in public interfaces and
+libraries, allowing them to be composed. The library restricts
+the representable data types to the ranges which are almost
+universally accepted by most JSON implementations, especially
+JavaScript. The parser and serializer are both highly performant,
+meeting or exceeding the benchmark performance of the best comparable
+libraries. Allocators are very well supported. Code which uses these
+types will be easy to understand, flexible, and performant.
 
 Boost.JSON offers these features:
 
 * Fast compilation
 * Require only C++11
 * Fast streaming parser and serializer
-* Easy and safe API with allocator support
 * Constant-time key lookup for objects
 * Options to allow non-standard JSON
+* Easy and safe modern API with allocator support
 * Compile without Boost, define `BOOST_JSON_STANDALONE`
 * Optional header-only, without linking to a library
-
-This library focuses on a common and popular use-case for JSON:
-parsing and serializing to and from a container called __value__
-which holds JSON types. This container is designed to be well
-suited as a vocabulary type appropriate for use in public interfaces
-and libraries, allowing them to be composed. The parser and serializer
-are both highly performant, meeting or exceeding the benchmark performance
-of the best comparable libraries. Allocators are very well supported.
-Code which uses Boost.JSON types will be easy to read, flexible, and
-performant.
-
-[endsect]
 
 [/-----------------------------------------------------------------------------]
 
@@ -90,10 +89,10 @@ In particular, if using libstdc++ then version 8.3 or later is needed.
 
 [heading Header-Only]
 
-To use Boost.JSON header-only; that is, to eliminate the requirement
-to modify build scripts to link to a static or dynamic library, simply
-place the following line in exactly one new or existing source file in
-your project.
+To use as header-only; that is, to eliminate the requirement to
+link a program to a static or dynamic Boost.JSON library, simply
+place the following line in exactly one new or existing source
+file in your project.
 ```
 #include <boost/json/src.hpp>
 ```
@@ -112,10 +111,10 @@ building the library or including the function definitions:
 ```
 
 [note
-    The library uses separate inline namespacing for the standalone
-    flavor to allow libraries which use different flavors to compose
-    without causing link errors. Linking to both flavors of Boost.JSON
-    is possible, but not recommended.
+    This library uses separate inline namespacing for the standalone
+    mode to allow libraries which use different modes to compose
+    without causing link errors. Linking to both modes of Boost.JSON
+    (Boost and standalone) is possible, but not recommended.
 ]
 
 [endsect]
@@ -143,7 +142,7 @@ Boost.JSON has been tested with the following compilers:
 * gcc-9
 * msvc-14.1+
 
-[heading Quality Assurance]
+[h3 Quality Assurance]
 
 The development infrastructure for the library includes
 these per-commit analyses:
@@ -157,76 +156,11 @@ these per-commit analyses:
 
 [/-----------------------------------------------------------------------------]
 
-[heading Frequently Asked Questions]
-
-[variablelist
-
-[[
-    "Isn't simdjson faster?"
-][
-    These libraries are not comparable.
-    The output of the simdjson parser is a read-only structure. 
-    In other words, it can't be changed, and the only way to create one is
-    by parsing a JSON string. On the other hand, Boost.JSON allows you to
-    modify the container holding the parsed JSON, or even build a JSON
-    document from scratch through the container interface.
-]]
-
-[[
-    "I want to parse directly into my own data structures"
-][
-    The purpose of this library is to enable algorithms which implement
-    JSON functionality in their public interfaces to be interoperable,
-    by providing a __value__ type that meets the bar for vocabulary
-    type suitability. Parsing directly into a user defined type offers
-    some advantages but is not the goal of the library. However, users
-    who wish to parse directly into their own types may implement a
-    custom handler for this purpose.
-]]
-
-[[
-    "Why not use a standard __Allocator__?"
-][
-    Using standard allocators would require that __value__ be declared
-    as a class template, which would impose an additional compilation
-    burden. By avoiding the template, most of the function definitions
-    in the library can be excluded from the headers and emitted in a
-    separate static or dynamic library.
-]]
-
-[[
-    "Why use __storage_ptr__ over __polymorphic_allocator__?
-][
-    __polymorphic_allocator__ treats the memory resource as a reference
-    with respect to ownership. Boost.JSON uses a reference counted
-    smart pointer container to simplify the lifetime management of
-    memory resources. In addition to being reference counted,
-    __storage_ptr__ can function as an uncounted reference wrapper
-    around a __memory_resource__.
-]]
-
-[[
-    "Why __string__ instead of __std_string__?"
-][
-    The string provided by the library uses the __storage_ptr__
-    allocator model, has the same interface on all C++ versions,
-    and has an optimized class layout to keep the size of JSON
-    values small. __string__ also implements an improved interface
-    that replaces extraneous overloads with ones that
-    use __string_view__.
-]]
-
-]
-
-[/-----------------------------------------------------------------------------]
-
-[section Credits]
+[h1 Credits]
 
 This library wouldn't be where it is today without the help of
 [@https://github.com/pdimov Peter Dimov]
 for design advice and optimization assistance.
-
-[endsect]
 
 [/-----------------------------------------------------------------------------]
 
