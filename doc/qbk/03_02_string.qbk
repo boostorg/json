@@ -10,7 +10,7 @@
 
 [/-----------------------------------------------------------------------------]
 
-[section:strings Using Strings]
+[section:string __string__]
 
 Modifiable sequences of characters are represented using objects of type __string__.
 The interface and functionality of __string__ is 

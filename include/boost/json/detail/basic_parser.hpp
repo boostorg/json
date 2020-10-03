@@ -264,6 +264,8 @@ BOOST_JSON_NS_BEGIN
     @see
         @ref parse,
         @ref stream_parser.
+
+    @headerfile <boost/json/basic_parser.hpp>
 */
 template<class Handler>
 class basic_parser

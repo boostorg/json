@@ -9,7 +9,7 @@
 
 [/-----------------------------------------------------------------------------]
 
-[section:objects Using Objects]
+[section:object __object__]
 
 A __value__ stores an instance of __object__ as the underlying representation
 for a JSON object . Instances of the __object__ type are associative

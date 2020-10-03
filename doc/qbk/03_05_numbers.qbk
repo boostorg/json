@@ -9,7 +9,7 @@
 
 [/-----------------------------------------------------------------------------]
 
-[section:numbers Using Numbers]
+[section:numbers Numbers]
 
 JSON numbers are represented using `std::int64_t`, `std::uint64_t`, and `double`.
 When a __value__ is constructed from an unsigned integer, its __kind__

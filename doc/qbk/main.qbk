@@ -97,53 +97,6 @@
 
 [/-----------------------------------------------------------------------------]
 
-Boost.JSON is a portable C++ library which implements the
-[@https://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf JSON Data Interchange Syntax],
-providing algorithms for parsing and serialization, as well as a robust
-and performant container to permit inspection and modification of JSON Text
-in memory.
-
-[variablelist
-    [[
-        [link json.overview Overview]
-    ][
-        A review of the requirements and features included in Boost.JSON,
-        rationale and design information, answers to frequently
-        asked questions, and credits.
-    ]]
-    [[
-        [link json.usage Usage]
-    ][
-        A quick look at how to use the library, followed by
-        more in-depth explanation on how each part works.
-    ]]
-    [[
-        [link json.examples Examples]
-    ][
-        Some example programs which demonstrate the use of the
-        library to perform various tasks.
-    ]]
-    [[
-        [link json.comparison Comparison]
-    ][
-        Compares the design and usage of this library against
-        many other existing libraries.
-    ]]
-    [[
-        [link json.benchmarks Benchmarks]
-    ][
-        Shows the performance of this library for typical workloads
-        against the performance of other comparable libraries.
-    ]]
-    [[
-        [link json.ref Reference]
-    ][
-        Detailed function and type reference.
-    ]]
-]
-
-[/-----------------------------------------------------------------------------]
-
 [import ../../example/pretty.cpp]
 [import ../../example/validate.cpp]
 [import ../../include/boost/json/impl/serialize.ipp]
@@ -157,14 +110,21 @@ in memory.
 [import ../../test/snippets.cpp]
 
 [include 01_overview.qbk]
-[include 02_00_usage.qbk]
-[include 03_examples.qbk]
-[include 04_comparison.qbk]
-[include 05_benchmarks.qbk]
+[include 02_quick_look.qbk]
+[include 03_00_usage.qbk]
+[include 04_00_allocators.qbk]
+[include 05_examples.qbk]
+[include 06_faq.qbk]
+[include 07_benchmarks.qbk]
+[include 08_comparison.qbk]
 
-[section:ref Reference]
+[section:quickref Reference]
 [xinclude quickref.xml]
+[endsect]
+[block'''<reference id="json_hidden"><title>This Page Intentionally Left Blank 1/2</title>''']
+[section:ref This Page Intentionally Left Blank 2/2]
 [include reference.qbk]
 [endsect]
+[block'''</reference>''']
 
 [xinclude index.xml]

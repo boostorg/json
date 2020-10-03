@@ -324,10 +324,11 @@ boostbook json
         <xsl:param>boost.graphics.root=images/
         <xsl:param>html.stylesheet=boostbook.css
         <xsl:param>nav.layout=none
-        <xsl:param>chapter.autolabel=0
+        <xsl:param>chapter.autolabel=1
         <xsl:param>chunk.first.sections=1               # Chunk the first top-level section?
         <xsl:param>chunk.section.depth=8                # Depth to which sections should be chunked
-        <xsl:param>generate.toc="chapter nop section nop"
+        <xsl:param>generate.section.toc.level=8         # Control depth of TOC generation in sections
+        <xsl:param>generate.toc="chapter toc,title section nop reference nop"
     :
         <dependency>stylesheets
         <dependency>treeimages

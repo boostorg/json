@@ -28,6 +28,14 @@ configuration simply by including this header file in any
 ```
 #include <boost/json/src.hpp>
 ```
+[note
+    Sample code and identifiers used throughout are written as if
+    the following declarations are in effect:
+    ```
+    #include <boost/json.hpp>
+    using namespace boost::json;
+    ```
+]
 
 [/-----------------------------------------------------------------------------]
 
