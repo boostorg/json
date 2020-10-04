@@ -748,15 +748,11 @@ BOOST_STATIC_ASSERT(
     has_value_from<std::complex<float>>::value);
 BOOST_STATIC_ASSERT(
     has_value_from<std::complex<double>>::value);
-BOOST_STATIC_ASSERT(
-    has_value_from<std::complex<long double>>::value);
 
 BOOST_STATIC_ASSERT(
     has_value_to<std::complex<float>>::value);
 BOOST_STATIC_ASSERT(
     has_value_to<std::complex<double>>::value);
-BOOST_STATIC_ASSERT(
-    has_value_to<std::complex<long double>>::value);
 
 } // (anon)
 

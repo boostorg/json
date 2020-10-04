@@ -65,7 +65,6 @@ public:
             EQAL(std::uint64_t);
             EQAL(float);
             EQAL(double);
-            EQAL(long double);
         }
         {
             auto V = max_of<std::int8_t>();
@@ -80,7 +79,6 @@ public:
             EQUS(std::uint64_t);
             EQAL(float);
             EQAL(double);
-            EQAL(long double);
         }
         {
             auto V = max_of<std::int16_t>();
@@ -95,7 +93,6 @@ public:
             EQUS(std::uint64_t);
             EQAL(float);
             EQAL(double);
-            EQAL(long double);
         }
         {
             auto V = max_of<std::int32_t>();
@@ -110,7 +107,6 @@ public:
             EQUS(std::uint64_t);
             EQUF(float);
             EQAL(double);
-            EQAL(long double);
         }
         {
             auto V = max_of<std::int64_t>();
@@ -125,7 +121,6 @@ public:
             EQUS(std::uint64_t);
             EQUF(float);
             EQUF(double);
-            EQUF(long double);
         }
         //---
         {
@@ -141,7 +136,6 @@ public:
             EQAL(std::uint64_t);
             EQAL(float);
             EQAL(double);
-            EQAL(long double);
         }
         {
             auto V = max_of<std::uint16_t>();
@@ -156,7 +150,6 @@ public:
             EQAL(std::uint64_t);
             EQAL(float);
             EQAL(double);
-            EQAL(long double);
         }
         {
             auto V = max_of<std::uint32_t>();
@@ -171,7 +164,6 @@ public:
             EQAL(std::uint64_t);
             EQUF(float);
             EQAL(double);
-            EQAL(long double);
         }
         {
             auto V = max_of<std::uint64_t>();
@@ -186,7 +178,6 @@ public:
             EQAL(std::uint64_t);
             EQUF(float);
             EQUF(double);
-            EQUF(long double);
         }
         //---
         {
@@ -202,7 +193,6 @@ public:
             THRO(std::uint64_t);
             EQAL(float);
             EQAL(double);
-            EQAL(long double);
         }
         {
             auto V = min_of<std::int16_t>();
@@ -217,7 +207,6 @@ public:
             THRO(std::uint64_t);
             EQAL(float);
             EQAL(double);
-            EQAL(long double);
         }
         {
             auto V = min_of<std::int32_t>();
@@ -232,7 +221,6 @@ public:
             THRO(std::uint64_t);
             EQUF(float);
             EQAL(double);
-            EQAL(long double);
         }
         {
             auto V = min_of<std::int64_t>();
@@ -247,7 +235,6 @@ public:
             THRO(std::uint64_t);
             EQUF(float);
             EQUF(double);
-            EQUF(long double);
         }
         //---
         {
@@ -263,7 +250,6 @@ public:
             THRO(std::uint64_t);
             EQAL(float);
             EQAL(double);
-            EQAL(long double);
         }
         {
             auto V = double(2.0);
@@ -278,7 +264,6 @@ public:
             EQAL(std::uint64_t);
             EQAL(float);
             EQAL(double);
-            EQAL(long double);
         }
         {
             auto V = double(-4.0);
@@ -293,7 +278,6 @@ public:
             THRO(std::uint64_t);
             EQAL(float);
             EQAL(double);
-            EQAL(long double);
         }
     }
 

@@ -233,14 +233,6 @@ operator=(double d) noexcept
     return *this;
 }
 
-value&
-value::
-operator=(long double d) noexcept
-{
-    return operator=(
-        static_cast<double>(d));
-}
-
 //----------------------------------------------------------
 //
 // Modifiers

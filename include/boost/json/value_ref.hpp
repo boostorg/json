@@ -128,7 +128,6 @@ class value_ref
         unsigned long long  ulong_long_;
         float               float_;
         double              double_;
-        long double         long_double_;
         bool                bool_;
         std::nullptr_t      nullptr_;
 
@@ -145,7 +144,6 @@ class value_ref
         explicit arg_type(unsigned long long t) noexcept : ulong_long_(t) {}
         explicit arg_type(float t) noexcept : float_(t) {}
         explicit arg_type(double t) noexcept : double_(t) {}
-        explicit arg_type(long double t) noexcept : long_double_(t) {}
         explicit arg_type(bool t) noexcept : bool_(t) {}
         explicit arg_type(std::nullptr_t) noexcept : nullptr_() {}
     };
@@ -163,7 +161,6 @@ class value_ref
             std::is_same<T, unsigned long long>::value ||
             std::is_same<T, float>::value ||
             std::is_same<T, double>::value ||
-            std::is_same<T, long double>::value ||
             std::is_same<T, std::nullptr_t>::value>;
 
     arg_type arg_;
@@ -353,15 +350,6 @@ public:
         : arg_(t)
         , cf_{&from_builtin<
             double>, &arg_.double_}
-        , what_(what::cfunc)
-    {
-    }
-
-    /// Constructor
-    value_ref(long double t) noexcept
-        : arg_(t)
-        , cf_{&from_builtin<
-            long double>, &arg_.long_double_}
         , what_(what::cfunc)
     {
     }

@@ -544,28 +544,6 @@ public:
     {
     }
 
-    /** Construct a `double`.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param d The initial value.
-
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
-    */
-    value(
-        long double d,
-        storage_ptr sp = {}) noexcept
-        : sca_(static_cast<double>(d),
-            std::move(sp))
-    {
-    }
-
     /** Construct a @ref string.
 
         The string is constructed with a copy of the
@@ -1163,7 +1141,6 @@ public:
     */
     /** @{ */
     inline value& operator=(double d) noexcept;
-    inline value& operator=(long double d) noexcept;
     /** @} */
 
     /** Assignment.

@@ -881,7 +881,6 @@ public:
             BOOST_TEST(value(tt<unsigned long long int>{}).is_uint64());
             BOOST_TEST(value(tt<float>{}).is_double());
             BOOST_TEST(value(tt<double>{}).is_double());
-            BOOST_TEST(value(tt<long double>{}).is_double());
 
             { value jv; BOOST_TEST((jv = tt<int>{}).is_int64()); }
             { value jv; BOOST_TEST((jv = tt<short int>{}).is_int64()); }
@@ -893,7 +892,6 @@ public:
             { value jv; BOOST_TEST((jv = tt<unsigned long long int>{}).is_uint64()); }
             { value jv; BOOST_TEST((jv = tt<float>{}).is_double()); }
             { value jv; BOOST_TEST((jv = tt<double>{}).is_double()); }
-            { value jv; BOOST_TEST((jv = tt<long double>{}).is_double()); }
         }
 
         // bool

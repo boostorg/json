@@ -42,7 +42,6 @@ public:
         check((unsigned long long)4);
         check((float)1.5);
         check((double)2.5);
-        check((long double)3.5);
         check(true);
     }
 

@@ -54,7 +54,6 @@ public:
         (void)value_ref((unsigned long long)1);
         (void)value_ref((float)1.);
         (void)value_ref((double)1.);
-        (void)value_ref((long double)1.);
         (void)value_ref(true);
         (void)value_ref(nullptr);
 
@@ -134,7 +133,6 @@ public:
         (void)init_list{(unsigned long long)1};
         (void)init_list{(float)1.};
         (void)init_list{(double)1.};
-        (void)init_list{(long double)1.};
         (void)init_list{true};
         (void)init_list{nullptr};
 
@@ -227,7 +225,6 @@ public:
         make_value({(unsigned long long)4}, "[4]");
         //make_value({(float)1.}, "[1]");
         //make_value({(double)1.}, "[1]");
-        //make_value({(long double)1.}, "[1]");
         make_value({true}, "[true]");
         make_value({nullptr}, "[null]");
 
