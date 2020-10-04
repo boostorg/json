@@ -9,7 +9,7 @@
 
 [/-----------------------------------------------------------------------------]
 
-[section:value __value__]
+[section value]
 
 JSON documents are represented in memory as instances of
 __value__: a __Regular__ type which satisfies
