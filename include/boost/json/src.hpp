@@ -4,7 +4,7 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
-// Official repository: https://github.com/cppalliance/json
+// Official repository: https://github.com/boostorg/json
 //
 
 #ifndef BOOST_JSON_SRC_HPP
@@ -23,7 +23,7 @@ in a translation unit of the program.
 
 // We include this in case someone is using
 // src.hpp as their main JSON header file
-// https://github.com/CPPAlliance/json/issues/223#issuecomment-689264149
+// https://github.com/boostorg/json/issues/223#issuecomment-689264149
 #include <boost/json.hpp>
 
 #include <boost/json/detail/config.hpp>

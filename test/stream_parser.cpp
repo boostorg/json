@@ -5,7 +5,7 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
-// Official repository: https://github.com/cppalliance/json
+// Official repository: https://github.com/boostorg/json
 //
 
 // Test that header file is self-contained.
@@ -1168,7 +1168,7 @@ R"xx({
 
     //------------------------------------------------------
 
-    // https://github.com/cppalliance/json/issues/15
+    // https://github.com/boostorg/json/issues/15
     void
     testIssue15()
     {
@@ -1179,7 +1179,7 @@ R"xx({
                 .as_int64() == 12345);
     }
 
-    // https://github.com/cppalliance/json/issues/45
+    // https://github.com/boostorg/json/issues/45
     void
     testIssue45()
     {

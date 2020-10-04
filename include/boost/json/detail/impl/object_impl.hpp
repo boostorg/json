@@ -4,7 +4,7 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
-// Official repository: https://github.com/cppalliance/json
+// Official repository: https://github.com/boostorg/json
 //
 
 #ifndef BOOST_JSON_DETAIL_IMPL_OBJECT_IMPL_HPP
@@ -88,7 +88,7 @@ bucket_index(
     std::size_t index) noexcept
 {
     // Suggested by Joaquin M Lopez Munoz
-    // https://github.com/CPPAlliance/json/issues/115
+    // https://github.com/boostorg/json/issues/115
     switch(index)
     {
         default:
