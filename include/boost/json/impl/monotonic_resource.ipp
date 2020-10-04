@@ -105,6 +105,7 @@ release() noexcept
         unsigned char*>(buffer_.p) - (
             buffer_.size - buffer_.n);
     buffer_.n = buffer_.size;
+    head_ = &buffer_;
 }
 
 void*

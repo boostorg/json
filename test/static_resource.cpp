@@ -43,7 +43,7 @@ public:
     void
     test()
     {
-        // static_resource(void*, size_t)
+        // static_resource(unsigned char*, size_t)
         {
             unsigned char buf[1000];
             static_resource mr(
@@ -51,6 +51,17 @@ public:
             BOOST_TEST(serialize(parse(
                 "[1,2,3]", &mr)) == "[1,2,3]");
         }
+
+    #if defined(__cpp_lib_byte)
+        // static_resource(std::byte*, size_t)
+        {
+            std::byte buf[1000];
+            static_resource mr(
+                &buf[0], sizeof(buf));
+            BOOST_TEST(serialize(parse(
+                "[1,2,3]", &mr)) == "[1,2,3]");
+        }
+    #endif
 
         // static_resource(unsigned char[N])
         {
@@ -61,6 +72,17 @@ public:
                 std::bad_alloc);
         }
 
+    #if defined(__cpp_lib_byte)
+        // static_resource(std::byte[N])
+        {
+            std::byte buf[10];
+            static_resource mr(buf);
+            BOOST_TEST_THROWS(
+                serialize(parse("[1,2,3]", &mr)),
+                std::bad_alloc);
+        }
+    #endif
+
         // static_resource(unsigned char[N], size_t)
         {
             unsigned char buf[1000];
@@ -69,6 +91,17 @@ public:
             BOOST_TEST(serialize(parse(
                 "[1,2,3]", &mr)) == "[1,2,3]");
         }
+
+    #if defined(__cpp_lib_byte)
+        // static_resource(std::byte[N])
+        {
+            std::byte buf[1000];
+            static_resource mr(
+                buf, 500);
+            BOOST_TEST(serialize(parse(
+                "[1,2,3]", &mr)) == "[1,2,3]");
+        }
+    #endif
 
         // release()
         {

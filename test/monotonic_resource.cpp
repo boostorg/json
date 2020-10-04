@@ -71,6 +71,11 @@ public:
     void
     testMembers()
     {
+        // ~monotonic_resource
+        {
+            // implied
+        }
+
         // monotonic_resource(size_t)
         {
             {
@@ -81,37 +86,49 @@ public:
             }
         }
 
-        // monotonic_resource mr(void*, size_t)
+        // monotonic_resource(unsigned char*, size_t)
         {
             unsigned char buf[2000];
             monotonic_resource mr(&buf[0], sizeof(buf));
         }
 
-        // monotonic_resource mr(unsigned char[N])
+        // monotonic_resource(unsigned char[N])
         {
             unsigned char buf[2000];
             monotonic_resource mr(buf);
         }
 
-        // monotonic_resource mr(unsigned char[N], std::size_t)
+    #ifdef __cpp_lib_byte
+        // monotonic_resource(std::byte[N])
+        {
+            std::byte buf[2000];
+            monotonic_resource mr(buf);
+        }
+    #endif
+
+        // monotonic_resource(unsigned char[N], std::size_t)
         {
             unsigned char buf[2000];
             monotonic_resource mr(buf, 1000);
         }
 
     #ifdef __cpp_lib_byte
-        // monotonic_resource mr(unsigned char[N])
-        {
-            std::byte buf[2000];
-            monotonic_resource mr(buf);
-        }
-
-        // monotonic_resource mr(unsigned char[N], std::size_t)
+        // monotonic_resource(unsigned char[N], std::size_t)
         {
             std::byte buf[2000];
             monotonic_resource mr(buf, 1000);
         }
     #endif
+
+        // release()
+        {
+            unsigned char buf[10];
+            monotonic_resource mr(
+                buf, sizeof(buf));
+            (void)mr.allocate(10,1);
+            mr.release();
+            (void)mr.allocate(10,1);
+        }
 
         // coverage
         {
