@@ -475,6 +475,13 @@ class basic_parser
         /*std::integral_constant<bool, IsKey_>*/ bool is_key,
         /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8);
 
+    // intentionally private
+    std::size_t
+    depth() const noexcept
+    {
+        return opt_.max_depth - depth_;
+    }
+
 public:
     /// Copy constructor (deleted)
     basic_parser(
@@ -602,17 +609,6 @@ public:
     done() const noexcept
     {
         return done_;
-    }
-
-    /** Returns the current depth of the JSON being parsed.
-
-        The parsing depth is the total current nesting
-        level of arrays and objects.
-    */
-    std::size_t
-    depth() const noexcept
-    {
-        return opt_.max_depth - depth_;
     }
 
     /** Reset the state, to parse a new document.

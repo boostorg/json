@@ -187,12 +187,6 @@ public:
     {
     }
 
-    std::size_t
-    depth() const noexcept
-    {
-        return p_.depth();
-    }
-
     void
     reset()
     {
