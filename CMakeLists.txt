@@ -77,17 +77,15 @@ elseif(BOOST_SUPERPROJECT_VERSION)
     #       This needs to be reviewed, tested
     target_link_libraries(boost_json
         PUBLIC
+            Boost::align
             Boost::assert
             Boost::config
             Boost::container
-            Boost::core
             Boost::exception
             Boost::system
+            Boost::throw_exception
             Boost::utility
     )
-
-    include(BoostInstall)
-    boost_install(TARGETS boost_json HEADER_DIRECTORY include/)
 
 elseif(BOOST_JSON_IN_BOOST_TREE)
     #
