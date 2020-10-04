@@ -44,10 +44,12 @@ public:
     testCtors()
     {
         // scalars
+        (void)value_ref((signed char)1);
         (void)value_ref((short)1);
         (void)value_ref((int)1);
         (void)value_ref((long)1);
         (void)value_ref((long long)1);
+        (void)value_ref((unsigned char)1);
         (void)value_ref((unsigned short)1);
         (void)value_ref((unsigned int)1);
         (void)value_ref((unsigned long)1);

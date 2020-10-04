@@ -118,10 +118,12 @@ class value_ref
         string_view         str_;
         init_list           init_list_;
 
+        signed char         schar_;
         short               short_;
         int                 int_;
         long                long_;
         long long           long_long_;
+        unsigned char       uchar_;
         unsigned short      ushort_;
         unsigned int        uint_;
         unsigned long       ulong_;
@@ -134,10 +136,12 @@ class value_ref
         arg_type() {}
         explicit arg_type(string_view t) noexcept : str_(t) {}
         explicit arg_type(init_list t) noexcept : init_list_(t) {}
+        explicit arg_type(signed char t) noexcept : schar_(t) {}
         explicit arg_type(short t) noexcept : short_(t) {}
         explicit arg_type(int t) noexcept : int_(t) {}
         explicit arg_type(long t) noexcept : long_(t) {}
         explicit arg_type(long long t) noexcept : long_long_(t) {}
+        explicit arg_type(unsigned char t) noexcept : uchar_(t) {}
         explicit arg_type(unsigned short t) noexcept : ushort_(t) {}
         explicit arg_type(unsigned int t) noexcept : uint_(t) {}
         explicit arg_type(unsigned long t) noexcept : ulong_(t) {}
@@ -151,10 +155,12 @@ class value_ref
     template<class T>
     using is_builtin =
         std::integral_constant<bool,
+            std::is_same<T, signed char>::value ||
             std::is_same<T, short>::value ||
             std::is_same<T, int>::value ||
             std::is_same<T, long>::value ||
             std::is_same<T, long long>::value ||
+            std::is_same<T, unsigned char>::value ||
             std::is_same<T, unsigned short>::value ||
             std::is_same<T, unsigned int>::value ||
             std::is_same<T, unsigned long>::value ||
@@ -267,6 +273,14 @@ public:
     }
 
     /// Constructor
+    value_ref(signed char t) noexcept
+        : arg_(t)
+        , cf_{&from_builtin<signed char>, &arg_.schar_}
+        , what_(what::cfunc)
+    {
+    }
+
+    /// Constructor
     value_ref(short t) noexcept
         : arg_(t)
         , cf_{&from_builtin<short>, &arg_.short_}
@@ -296,6 +310,15 @@ public:
         : arg_(t)
         , cf_{&from_builtin<
             long long>, &arg_.long_long_}
+        , what_(what::cfunc)
+    {
+    }
+
+    /// Constructor
+    value_ref(unsigned char t) noexcept
+        : arg_(t)
+        , cf_{&from_builtin<
+            unsigned char>, &arg_.uchar_}
         , what_(what::cfunc)
     {
     }

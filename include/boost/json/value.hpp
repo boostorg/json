@@ -95,6 +95,11 @@ class value
     inline value(char** key, std::size_t len, storage_ptr sp);
     inline char const* release_key(std::size_t& len) noexcept;
 
+    inline bool is_scalar() const noexcept
+    {
+        return sca_.k < json::kind::string;
+    }
+
 public:
     /** The type of _Allocator_ returned by @ref get_allocator
 
@@ -362,6 +367,28 @@ public:
         ownership of the memory resource.
     */
     value(
+        signed char i,
+        storage_ptr sp = {}) noexcept
+        : sca_(static_cast<std::int64_t>(
+            i), std::move(sp))
+    {
+    }
+
+    /** Construct a `std::int64_t`.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param i The initial value.
+
+        @param sp A pointer to the @ref memory_resource
+        to use. The container will acquire shared
+        ownership of the memory resource.
+    */
+    value(
         short i,
         storage_ptr sp = {}) noexcept
         : sca_(static_cast<std::int64_t>(
@@ -432,6 +459,28 @@ public:
         storage_ptr sp = {}) noexcept
         : sca_(static_cast<std::int64_t>(i),
             std::move(sp))
+    {
+    }
+
+    /** Construct a `std::uint64_t`.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param u The initial value.
+
+        @param sp A pointer to the @ref memory_resource
+        to use. The container will acquire shared
+        ownership of the memory resource.
+    */
+    value(
+        unsigned char u,
+        storage_ptr sp = {}) noexcept
+        : sca_(static_cast<std::uint64_t>(
+            u), std::move(sp))
     {
     }
 
@@ -1063,9 +1112,20 @@ public:
         @par Complexity
         Linear in the size of `*this`.
     */
-    inline
     value&
-    operator=(std::nullptr_t) noexcept;
+    operator=(std::nullptr_t) noexcept
+    {
+        if(is_scalar())
+        {
+            sca_.k = json::kind::null;
+        }
+        else
+        {
+            ::new(&sca_) scalar(
+                destroy());
+        }
+        return *this;
+    }
 
     /** Assignment.
 
@@ -1086,7 +1146,20 @@ public:
         ,class = typename std::enable_if<
             std::is_same<Bool, bool>::value>::type
     >
-    value& operator=(Bool b) noexcept;
+    value& operator=(Bool b) noexcept
+    {
+        if(is_scalar())
+        {
+            sca_.b = b;
+            sca_.k = json::kind::bool_;
+        }
+        else
+        {
+            ::new(&sca_) scalar(
+                b, destroy());
+        }
+        return *this;
+    }
 #endif
 
     /** Assignment.
@@ -1102,10 +1175,44 @@ public:
         @param i The new value.
     */
     /** @{ */
-    inline value& operator=(short i) noexcept;
-    inline value& operator=(int i) noexcept;
-    inline value& operator=(long i) noexcept;
-    inline value& operator=(long long i) noexcept;
+    value& operator=(signed char i) noexcept
+    {
+        return operator=(
+            static_cast<long long>(i));
+    }
+
+    value& operator=(short i) noexcept
+    {
+        return operator=(
+            static_cast<long long>(i));
+    }
+
+    value& operator=(int i) noexcept
+    {
+        return operator=(
+            static_cast<long long>(i));
+    }
+
+    value& operator=(long i) noexcept
+    {
+        return operator=(
+            static_cast<long long>(i));
+    }
+
+    value& operator=(long long i) noexcept
+    {
+        if(is_scalar())
+        {
+            sca_.i = i;
+            sca_.k = json::kind::int64;
+        }
+        else
+        {
+            ::new(&sca_) scalar(static_cast<
+                std::int64_t>(i), destroy());
+        }
+        return *this;
+    }
     /** @} */
 
     /** Assignment.
@@ -1121,10 +1228,44 @@ public:
         @param u The new value.
     */
     /** @{ */
-    inline value& operator=(unsigned short u) noexcept;
-    inline value& operator=(unsigned int u) noexcept;
-    inline value& operator=(unsigned long u) noexcept;
-    inline value& operator=(unsigned long long u) noexcept;
+    value& operator=(unsigned char u) noexcept
+    {
+        return operator=(static_cast<
+            unsigned long long>(u));
+    }
+
+    value& operator=(unsigned short u) noexcept
+    {
+        return operator=(static_cast<
+            unsigned long long>(u));
+    }
+
+    value& operator=(unsigned int u) noexcept
+    {
+        return operator=(static_cast<
+            unsigned long long>(u));
+    }
+
+    value& operator=(unsigned long u) noexcept
+    {
+        return operator=(static_cast<
+            unsigned long long>(u));
+    }
+
+    value& operator=(unsigned long long u) noexcept
+    {
+        if(is_scalar())
+        {
+            sca_.u = u;
+            sca_.k = json::kind::uint64;
+        }
+        else
+        {
+            ::new(&sca_) scalar(static_cast<
+                std::uint64_t>(u), destroy());
+        }
+        return *this;
+    }
     /** @} */
 
     /** Assignment.
@@ -1139,9 +1280,20 @@ public:
 
         @param d The new value.
     */
-    /** @{ */
-    inline value& operator=(double d) noexcept;
-    /** @} */
+    value& operator=(double d) noexcept
+    {
+        if(is_scalar())
+        {
+            sca_.d = d;
+            sca_.k = json::kind::double_;
+        }
+        else
+        {
+            ::new(&sca_) scalar(
+                d, destroy());
+        }
+        return *this;
+    }
 
     /** Assignment.
 
