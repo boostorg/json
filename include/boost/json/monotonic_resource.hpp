@@ -13,7 +13,9 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/memory_resource.hpp>
+#include <boost/json/storage_ptr.hpp>
 #include <cstddef>
+#include <utility>
 
 BOOST_JSON_NS_BEGIN
 
@@ -82,7 +84,7 @@ class BOOST_JSON_CLASS_DECL
     struct block_base
     {
         void* p;
-        std::size_t n;
+        std::size_t avail;
         std::size_t size;
         block_base* next;
     };
@@ -90,6 +92,7 @@ class BOOST_JSON_CLASS_DECL
     block_base buffer_;
     block_base* head_ = &buffer_;
     std::size_t next_size_ = 1024;
+    storage_ptr upstream_;
 
     static constexpr std::size_t min_size_ = 1024;
     inline static constexpr std::size_t max_size();
@@ -143,17 +146,24 @@ public:
         internal dynamic allocation. If this is lower
         than the implementation-defined lower limit, then
         the lower limit is used instead.
+
+        @param upstream An optional upstream memory resource
+        to use for performing internal dynamic allocations.
+        If this parameter is omitted, the default resource
+        is used.
     */
     explicit
     monotonic_resource(
-        std::size_t initial_size = 1024) noexcept;
+        std::size_t initial_size = 1024,
+        storage_ptr upstream = {}) noexcept;
 
     /** Constructor
 
         This constructs the resource and indicates that
         subsequent allocations should use the specified
-        caller-owned buffer. When this buffer is exhausted,
-        dynamic allocations from the heap are made.
+        caller-owned buffer.
+        When this buffer is exhausted, dynamic allocations
+        from the upstream resource are made.
     \n
         This constructor is guaranteed not to perform
         any dynamic allocations.
@@ -171,18 +181,26 @@ public:
 
         @param size The number of valid bytes pointed
         to by `buffer`.
+
+        @param upstream An optional upstream memory resource
+        to use for performing internal dynamic allocations.
+        If this parameter is omitted, the default resource
+        is used.
     */
     /** @{ */
     monotonic_resource(
         unsigned char* buffer,
-        std::size_t size) noexcept;
+        std::size_t size,
+        storage_ptr upstream = {}) noexcept;
 
 #if defined(__cpp_lib_byte) || defined(BOOST_JSON_DOCS)
     monotonic_resource(
         std::byte* buffer,
-        std::size_t size) noexcept
+        std::size_t size,
+        storage_ptr upstream) noexcept
         : monotonic_resource(reinterpret_cast<
-            unsigned char*>(buffer), size)
+            unsigned char*>(buffer), size,
+                std::move(upstream))
     {
     }
 #endif
@@ -192,8 +210,9 @@ public:
 
         This constructs the resource and indicates that
         subsequent allocations should use the specified
-        caller-owned buffer. When this buffer is exhausted,
-        dynamic allocations from the heap are made.
+        caller-owned buffer.
+        When this buffer is exhausted, dynamic allocations
+        from the upstream resource are made.
     \n
         This constructor is guaranteed not to perform
         any dynamic allocations.
@@ -208,13 +227,20 @@ public:
         Ownership is not transferred; the caller is
         responsible for ensuring that the lifetime of
         the buffer extends until the resource is destroyed.
+
+        @param upstream An optional upstream memory resource
+        to use for performing internal dynamic allocations.
+        If this parameter is omitted, the default resource
+        is used.
     */
     /** @{ */
     template<std::size_t N>
     explicit
     monotonic_resource(
-        unsigned char(&buffer)[N]) noexcept
-        : monotonic_resource(&buffer[0], N)
+        unsigned char(&buffer)[N],
+        storage_ptr upstream = {}) noexcept
+        : monotonic_resource(&buffer[0],
+            N, std::move(upstream))
     {
     }
 
@@ -222,8 +248,10 @@ public:
     template<std::size_t N>
     explicit
     monotonic_resource(
-        std::byte(&buffer)[N]) noexcept
-        : monotonic_resource(&buffer[0], N)
+        std::byte(&buffer)[N],
+        storage_ptr upstream = {}) noexcept
+        : monotonic_resource(&buffer[0],
+            N, std::move(upstream))
     {
     }
 #endif
@@ -233,8 +261,11 @@ public:
     // Safety net for accidental buffer overflows
     template<std::size_t N>
     monotonic_resource(
-        unsigned char(&buffer)[N], std::size_t n) noexcept
-        : monotonic_resource(&buffer[0], n)
+        unsigned char(&buffer)[N],
+        std::size_t n,
+        storage_ptr upstream = {}) noexcept
+        : monotonic_resource(&buffer[0],
+            n, std::move(upstream))
     {
         // If this goes off, check your parameters
         // closely, chances are you passed an array
@@ -246,8 +277,11 @@ public:
     // Safety net for accidental buffer overflows
     template<std::size_t N>
     monotonic_resource(
-        std::byte(&buffer)[N], std::size_t n) noexcept
-        : monotonic_resource(&buffer[0], n)
+        std::byte(&buffer)[N],
+        std::size_t n,
+        storage_ptr upstream = {}) noexcept
+        : monotonic_resource(&buffer[0],
+            n, std::move(upstream))
     {
         // If this goes off, check your parameters
         // closely, chances are you passed an array

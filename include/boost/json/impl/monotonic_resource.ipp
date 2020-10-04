@@ -73,20 +73,24 @@ monotonic_resource::
 
 monotonic_resource::
 monotonic_resource(
-    std::size_t initial_size) noexcept
+    std::size_t initial_size,
+    storage_ptr upstream) noexcept
     : buffer_{
         nullptr, 0, 0, nullptr}
     , next_size_(round_pow2(initial_size))
+    , upstream_(std::move(upstream))
 {
 }
 
 monotonic_resource::
 monotonic_resource(
     unsigned char* buffer,
-    std::size_t size) noexcept
+    std::size_t size,
+    storage_ptr upstream) noexcept
     : buffer_{
         buffer, size, size, nullptr}
     , next_size_(next_pow2(size))
+    , upstream_(std::move(upstream))
 {
 }
 
@@ -98,13 +102,13 @@ release() noexcept
     while(p != &buffer_)
     {
         auto next = p->next;
-        ::operator delete(p);
+        upstream_->deallocate(p, p->size);
         p = next;
     }
     buffer_.p = reinterpret_cast<
         unsigned char*>(buffer_.p) - (
-            buffer_.size - buffer_.n);
-    buffer_.n = buffer_.size;
+            buffer_.size - buffer_.avail);
+    buffer_.avail = buffer_.size;
     head_ = &buffer_;
 }
 
@@ -115,33 +119,32 @@ do_allocate(
     std::size_t align)
 {
     auto p = detail::align(
-        align, n, head_->p, head_->n);
+        align, n, head_->p, head_->avail);
     if(p)
     {
         head_->p = reinterpret_cast<
             unsigned char*>(p) + n;
-        head_->n -= n;
+        head_->avail -= n;
         return p;
     }
 
     if(next_size_ < n)
         next_size_ = round_pow2(n);
-    auto b = ::new(::operator new(
-        sizeof(block) + next_size_)
-            ) block;
+    auto b = ::new(upstream_->allocate(
+        sizeof(block) + next_size_)) block;
     b->p = b + 1;
-    b->n = next_size_;
+    b->avail = next_size_;
     b->size = next_size_;
     b->next = head_;
     head_ = b;
     next_size_ = next_pow2(next_size_);
 
     p = detail::align(
-        align, n, head_->p, head_->n);
+        align, n, head_->p, head_->avail);
     BOOST_ASSERT(p);
     head_->p = reinterpret_cast<
         unsigned char*>(p) + n;
-    head_->n -= n;
+    head_->avail -= n;
     return p;
 }
 

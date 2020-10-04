@@ -11,6 +11,7 @@
 // Test that header file is self-contained.
 #include <boost/json/monotonic_resource.hpp>
 
+#include <boost/json/null_resource.hpp>
 #include <boost/json/parse.hpp>
 #include <boost/json/serialize.hpp>
 #include <boost/json/detail/align.hpp>
@@ -76,7 +77,7 @@ public:
             // implied
         }
 
-        // monotonic_resource(size_t)
+        // monotonic_resource(size_t, storage_ptr)
         {
             {
                 monotonic_resource mr(1);
@@ -84,39 +85,85 @@ public:
             {
                 monotonic_resource mr(5000);
             }
+            {
+                monotonic_resource mr(
+                    1, get_null_resource());
+            }
+            {
+                monotonic_resource mr(
+                    5000, get_null_resource());
+            }
         }
 
-        // monotonic_resource(unsigned char*, size_t)
+        // monotonic_resource(unsigned char*, size_t, storage_ptr)
         {
-            unsigned char buf[2000];
-            monotonic_resource mr(&buf[0], sizeof(buf));
+            {
+                unsigned char buf[2000];
+                monotonic_resource mr(
+                    &buf[0], sizeof(buf));
+            }
+            {
+                unsigned char buf[2000];
+                monotonic_resource mr(
+                    &buf[0], sizeof(buf),
+                        get_null_resource());
+            }
         }
 
-        // monotonic_resource(unsigned char[N])
+        // monotonic_resource(unsigned char[N], storage_ptr)
         {
-            unsigned char buf[2000];
-            monotonic_resource mr(buf);
+            {
+                unsigned char buf[2000];
+                monotonic_resource mr(buf);
+            }
+            {
+                unsigned char buf[2000];
+                monotonic_resource mr(buf,
+                    get_null_resource());
+            }
         }
 
     #ifdef __cpp_lib_byte
-        // monotonic_resource(std::byte[N])
+        // monotonic_resource(std::byte[N], storage_ptr)
         {
-            std::byte buf[2000];
-            monotonic_resource mr(buf);
+            {
+                std::byte buf[2000];
+                monotonic_resource mr(buf);
+            }
+
+            {
+                std::byte buf[2000];
+                monotonic_resource mr(buf,
+                    get_null_resource());
+            }
         }
     #endif
 
-        // monotonic_resource(unsigned char[N], std::size_t)
+        // monotonic_resource(unsigned char[N], std::size_t, storage_ptr)
         {
-            unsigned char buf[2000];
-            monotonic_resource mr(buf, 1000);
+            {
+                unsigned char buf[2000];
+                monotonic_resource mr(buf, 1000);
+            }
+            {
+                unsigned char buf[2000];
+                monotonic_resource mr(buf, 1000,
+                    get_null_resource());
+            }
         }
 
     #ifdef __cpp_lib_byte
-        // monotonic_resource(unsigned char[N], std::size_t)
+        // monotonic_resource(unsigned char[N], std::size_t, storage_ptr)
         {
-            std::byte buf[2000];
-            monotonic_resource mr(buf, 1000);
+            {
+                std::byte buf[2000];
+                monotonic_resource mr(buf, 1000);
+            }
+            {
+                std::byte buf[2000];
+                monotonic_resource mr(buf, 1000,
+                    get_null_resource());
+            }
         }
     #endif
 
