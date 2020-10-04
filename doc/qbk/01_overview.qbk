@@ -58,8 +58,8 @@ Boost.JSON offers these features:
 
 [section Requirements]
 
-The library relies heavily on these well known C++ types in its interfaces
-(henceforth termed ['standard types]):
+The library relies heavily on these well known C++ types in
+its interfaces (henceforth termed ['standard types]):
 
 * __string_view__
 * __memory_resource__, __polymorphic_allocator__
@@ -73,7 +73,7 @@ as part of Boost, or in the standalone flavor (without Boost):
 * Requires only C++11
 * The default configuration
 * Aliases for standard types use their Boost equivalents
-* Link to a built static or dynamic Boost library, or use header-only (below)
+* Link to a built static or dynamic Boost library, or use header-only (see below)
 * Supports -fno-exceptions, detected automatically
 
 [heading Without Boost]
@@ -81,7 +81,7 @@ as part of Boost, or in the standalone flavor (without Boost):
 * Requires C++17
 * Aliases for standard types use their `std` equivalents
 * Obtained when defining the macro `BOOST_JSON_STANDALONE`
-* Link to a built static or dynamic standalone library, or use header-only (below)
+* Link to a built static or dynamic standalone library, or use header-only (see below)
 * Supports -fno-exceptions: define `BOOST_NO_EXCEPTIONS` and `boost::throw_exception` manually
 
 When using without Boost, support for `<memory_resource>` is required.
