@@ -258,24 +258,6 @@ install qbk : reference.qbk ;
 # stylesheets and callouts are for
 # out-of-tree docs on vinniefalco.github.io
 
-install stylesheets
-    :
-        $(broot)/doc/src/boostbook.css
-    :
-        <location>$(out)/html
-    ;
-
-explicit stylesheets ;
-
-install callouts
-    :
-        [ glob $(broot)/doc/src/images/callouts/*.png ]
-    :
-        <location>$(out)/html/images/callouts
-    ;
-
-explicit callout ;
-
 install treeimages
     :
         [ glob $(broot)/doc/src/images/*.png ]
@@ -285,8 +267,6 @@ install treeimages
     ;
 
 explicit treeimages ;
-
-
 
 install images
     :
@@ -301,8 +281,8 @@ xml json_doc
     :
         qbk/main.qbk
     :
+        <dependency>images
         <dependency>qbk
-#        <include>$(broot)/tools/boostbook/dtd
     ;
 
 explicit json_doc ;
@@ -330,9 +310,7 @@ boostbook json
         <xsl:param>generate.section.toc.level=8         # Control depth of TOC generation in sections
         <xsl:param>generate.toc="chapter toc,title section nop reference nop"
     :
-        <dependency>stylesheets
         <dependency>treeimages
-        <dependency>images
     ;
 
 #-------------------------------------------------------------------------------
