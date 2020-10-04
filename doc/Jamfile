@@ -18,8 +18,6 @@ import doxygen ;
 import modules ;
 import saxonhe ;
 
-local broot = [ os.environ BOOST_ROOT ] ;
-
 path-constant out : . ;
 
 #-------------------------------------------------------------------------------
