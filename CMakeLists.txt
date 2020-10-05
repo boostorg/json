@@ -47,11 +47,15 @@ target_compile_features(boost_json PUBLIC cxx_constexpr)
 
 # TODO: For Boost superproject, this may need to be INTERFACE setting.
 include(GNUInstallDirs)
-target_include_directories(boost_json
-    PUBLIC
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-)
+if(BOOST_SUPERPROJECT_VERSION)
+    target_include_directories(boost_json PUBLIC include)
+else()
+    target_include_directories(boost_json
+        PUBLIC
+            "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+            "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+    )
+endif()
 
 target_compile_definitions(boost_json PUBLIC BOOST_JSON_NO_LIB=1)
 
