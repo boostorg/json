@@ -69,8 +69,15 @@ class string
 
     inline
     string(
-        char** key,
-        std::size_t len,
+        detail::key_t,
+        string_view s,
+        storage_ptr sp);
+
+    inline
+    string(
+        detail::key_t,
+        string_view s1,
+        string_view s2,
         storage_ptr sp);
 
 public:

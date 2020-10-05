@@ -73,18 +73,44 @@ string_impl(
 // construct a key, unchecked
 string_impl::
 string_impl(
-    char** dest,
-    std::size_t len,
+    key_t,
+    string_view s,
     storage_ptr const& sp)
 {
+    BOOST_ASSERT(
+        s.size() <= max_size());
+    k_.k = key_string_;
+    k_.n = static_cast<
+        std::uint32_t>(s.size());
+    k_.s = reinterpret_cast<char*>(
+        sp->allocate(s.size() + 1,
+            alignof(char)));
+    k_.s[s.size()] = 0; // null term
+    std::memcpy(&k_.s[0],
+        s.data(), s.size());
+}
+
+// construct a key, unchecked
+string_impl::
+string_impl(
+    key_t,
+    string_view s1,
+    string_view s2,
+    storage_ptr const& sp)
+{
+    auto len = s1.size() + s2.size();
     BOOST_ASSERT(len <= max_size());
     k_.k = key_string_;
     k_.n = static_cast<
         std::uint32_t>(len);
     k_.s = reinterpret_cast<char*>(
-        sp->allocate(len + 1, alignof(char)));
+        sp->allocate(len + 1,
+            alignof(char)));
     k_.s[len] = 0; // null term
-    *dest = k_.s;
+    std::memcpy(&k_.s[0],
+        s1.data(), s1.size());
+    std::memcpy(&k_.s[s1.size()],
+        s2.data(), s2.size());
 }
 
 std::uint32_t

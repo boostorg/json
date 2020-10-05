@@ -18,6 +18,10 @@
 BOOST_JSON_NS_BEGIN
 namespace detail {
 
+struct key_t
+{
+};
+
 struct value_access
 {
     template<class Value, class... Args>

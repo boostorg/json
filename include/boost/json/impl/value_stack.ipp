@@ -391,22 +391,11 @@ push_key(
 {
     if(! st_.has_chars())
     {
-        // fast path
-        char* dest = nullptr;
-        st_.push(&dest, s.size(), sp_);
-        std::memcpy(
-            dest, s.data(), s.size());
+        st_.push(detail::key_t{}, s, sp_);
         return;
     }
-
     auto part = st_.release_string();
-    char* dest = nullptr;
-    st_.push(&dest,
-        part.size() + s.size(), sp_);
-    std::memcpy(dest,
-        part.data(), part.size());
-    std::memcpy(dest + part.size(),
-        s.data(), s.size());
+    st_.push(detail::key_t{}, part, s, sp_);
 }
 
 void

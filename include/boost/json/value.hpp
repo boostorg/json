@@ -89,11 +89,11 @@ class value
 #endif
 
     // VFALCO Why are these in
-    // detail/value.hpp instead of detail/value.ipp?
+    // impl/value.hpp instead of impl/value.ipp?
     inline value(detail::unchecked_object&& uo);
     inline value(detail::unchecked_array&& ua);
-    inline value(char** key, std::size_t len, storage_ptr sp);
-    inline char const* release_key(std::size_t& len) noexcept;
+    inline value(detail::key_t, string_view, storage_ptr);
+    inline value(detail::key_t, string_view, string_view, storage_ptr);
 
     inline bool is_scalar() const noexcept
     {

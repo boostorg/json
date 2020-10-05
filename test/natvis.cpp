@@ -24,10 +24,8 @@ public:
     make_key(string_view s)
     {
         value jv;
-        char* dest = nullptr;
         detail::value_access::construct_value(
-            &jv, &dest, s.size(), storage_ptr());
-        std::memcpy(dest, s.data(), s.size());
+            &jv, s, storage_ptr());
         return jv;
     }
 

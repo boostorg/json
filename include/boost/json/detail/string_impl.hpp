@@ -14,6 +14,7 @@
 #include <boost/json/detail/config.hpp>
 #include <boost/json/kind.hpp>
 #include <boost/json/storage_ptr.hpp>
+#include <boost/json/detail/value.hpp>
 #include <algorithm>
 #include <iterator>
 
@@ -110,6 +111,19 @@ public:
     BOOST_JSON_DECL
     string_impl(
         std::size_t new_size,
+        storage_ptr const& sp);
+
+    BOOST_JSON_DECL
+    string_impl(
+        key_t,
+        string_view s,
+        storage_ptr const& sp);
+
+    BOOST_JSON_DECL
+    string_impl(
+        key_t,
+        string_view s1,
+        string_view s2,
         storage_ptr const& sp);
 
     BOOST_JSON_DECL

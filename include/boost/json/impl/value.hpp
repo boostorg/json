@@ -86,10 +86,22 @@ value(detail::unchecked_array&& ua)
 
 value::
 value(
-    char** key,
-    std::size_t len,
+    detail::key_t,
+    string_view s,
     storage_ptr sp)
-    : str_(key, len, std::move(sp))
+    : str_(detail::key_t{},
+        s, std::move(sp))
+{
+}
+
+value::
+value(
+    detail::key_t,
+    string_view s1,
+    string_view s2,
+    storage_ptr sp)
+    : str_(detail::key_t{},
+        s1, s2, std::move(sp))
 {
 }
 
