@@ -100,8 +100,7 @@ class value
         string_view s1,
         string_view s2,
         storage_ptr sp)
-        : str_(detail::key_t{},
-            s1, s2, std::move(sp))
+        : str_(detail::key_t{}, s1, s2, std::move(sp))
     {
     }
 
@@ -2346,7 +2345,7 @@ public:
         Constant.
 
         @par Exception Safety
-        Strong guarantee.
+        No-throw guarantee.
 
         @return The converted number.
 
@@ -2354,7 +2353,7 @@ public:
     */
 #ifdef BOOST_JSON_DOCS
     template<class T>
-    T to_number(error_code& ec) const;
+    T to_number(error_code& ec) const noexcept;
 #endif
 
     /** Return the stored number cast to an arithmetic type.
@@ -2389,9 +2388,6 @@ public:
         @par Complexity
         Constant.
 
-        @par Exception Safety
-        Strong guarantee.
-
         @return The converted number.
 
         @throw system_error on error.
@@ -2418,7 +2414,7 @@ public:
 #ifndef BOOST_JSON_DOCS
     template<class T>
     auto
-    to_number(error_code& ec) const ->
+    to_number(error_code& ec) const noexcept ->
         typename std::enable_if<
             std::is_signed<T>::value &&
             ! std::is_floating_point<T>::value,
@@ -2474,7 +2470,7 @@ public:
 
     template<class T>
     auto
-    to_number(error_code& ec) const ->
+    to_number(error_code& ec) const noexcept ->
         typename std::enable_if<
             std::is_unsigned<T>::value &&
             ! std::is_same<T, bool>::value,
@@ -2529,7 +2525,7 @@ public:
 
     template<class T>
     auto
-    to_number(error_code& ec) const ->
+    to_number(error_code& ec) const noexcept ->
         typename std::enable_if<
             std::is_floating_point<
                 T>::value, T>::type
@@ -2589,9 +2585,11 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    BOOST_JSON_DECL
     allocator_type
-    get_allocator() const noexcept;
+    get_allocator() const noexcept
+    {
+        return sp_.get();
+    }
 
     //------------------------------------------------------
 

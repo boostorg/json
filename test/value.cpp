@@ -1396,6 +1396,18 @@ public:
         BOOST_TEST_THROWS(value(array_kind).to_number<int>(), system_error);
         BOOST_TEST_THROWS(value(object_kind).to_number<int>(), system_error);
 
+        BOOST_TEST_THROWS(value(nullptr).to_number<unsigned>(), system_error);
+        BOOST_TEST_THROWS(value(false).to_number<unsigned>(), system_error);
+        BOOST_TEST_THROWS(value(string_kind).to_number<unsigned>(), system_error);
+        BOOST_TEST_THROWS(value(array_kind).to_number<unsigned>(), system_error);
+        BOOST_TEST_THROWS(value(object_kind).to_number<unsigned>(), system_error);
+
+        BOOST_TEST_THROWS(value(nullptr).to_number<double>(), system_error);
+        BOOST_TEST_THROWS(value(false).to_number<double>(), system_error);
+        BOOST_TEST_THROWS(value(string_kind).to_number<double>(), system_error);
+        BOOST_TEST_THROWS(value(array_kind).to_number<double>(), system_error);
+        BOOST_TEST_THROWS(value(object_kind).to_number<double>(), system_error);
+
         {
             unsigned char V = 0;
             value const jv(V);
