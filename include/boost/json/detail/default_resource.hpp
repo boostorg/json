@@ -27,11 +27,9 @@ class
 
 #ifndef BOOST_JSON_WEAK_CONSTINIT
 # ifndef BOOST_JSON_NO_DESTROY
-    BOOST_JSON_REQUIRE_CONST_INIT
     static holder instance_;
 # else
     BOOST_JSON_NO_DESTROY
-    BOOST_JSON_REQUIRE_CONST_INIT
     static default_resource instance_;
 # endif
 #endif
