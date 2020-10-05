@@ -11,7 +11,7 @@
 #define BOOST_JSON_IMPL_KIND_IPP
 
 #include <boost/json/kind.hpp>
-#include <iostream>
+#include <ostream>
 
 BOOST_JSON_NS_BEGIN
 
