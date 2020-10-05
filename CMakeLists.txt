@@ -4,7 +4,7 @@
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
-# Official repository: https://github.com/cppalliance/json
+# Official repository: https://github.com/boostorg/json
 #
 
 cmake_minimum_required(VERSION 3.5...3.16)
@@ -73,8 +73,6 @@ elseif(BOOST_SUPERPROJECT_VERSION)
     #
     # Building as part of Boost superproject tree, with Boost as dependency.
     #
-    # TODO: This CMake support for Boost.Json is currently experimental.
-    #       This needs to be reviewed, tested
     target_link_libraries(boost_json
         PUBLIC
             Boost::align
@@ -146,10 +144,12 @@ endif()
 
 if(BOOST_JSON_BUILD_TESTS)
     include(CTest)
-    add_subdirectory(test)
+    if(BUILD_TESTING)
+        add_subdirectory(test)
+    endif()
 endif()
 
-if(BOOST_JSON_BUILD_FUZZERS)
+if(BOOST_JSON_BUILD_FUZZERS AND NOT BOOST_SUPERPROJECT_VERSION)
     add_subdirectory(fuzzing)
 endif()
 

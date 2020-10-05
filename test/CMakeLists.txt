@@ -27,6 +27,7 @@ target_compile_definitions(limits PRIVATE
     BOOST_JSON_MAX_STRING_SIZE=1000
     BOOST_JSON_MAX_STRUCTURED_SIZE=20
     BOOST_JSON_STACK_BUFFER_SIZE=256
+    BOOST_JSON_NO_LIB=1
 )
 
 if(BOOST_JSON_STANDALONE)
@@ -35,12 +36,13 @@ if(BOOST_JSON_STANDALONE)
 elseif(BOOST_SUPERPROJECT_VERSION)
     target_link_libraries(limits
         PRIVATE
+            Boost::align
             Boost::assert
             Boost::config
             Boost::container
-            Boost::core
             Boost::exception
             Boost::system
+            Boost::throw_exception
             Boost::utility
     )
 elseif(BOOST_JSON_IN_BOOST_TREE)
