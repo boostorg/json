@@ -758,7 +758,7 @@ array::
 destroy(
     value* first, value* last) noexcept
 {
-    if(sp_.is_not_counted_and_deallocate_is_trivial())
+    if(sp_.is_not_shared_and_deallocate_is_trivial())
         return;
     while(last-- != first)
         last->~value();
@@ -768,7 +768,7 @@ void
 array::
 destroy() noexcept
 {
-    if(sp_.is_not_counted_and_deallocate_is_trivial())
+    if(sp_.is_not_shared_and_deallocate_is_trivial())
         return;
     auto last = end();
     auto const first = begin();

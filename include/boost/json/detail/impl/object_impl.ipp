@@ -161,7 +161,7 @@ destroy(
     if(n == 0 || ! p)
         return;
     auto const& sp = p->value().storage();
-    if(sp.is_not_counted_and_deallocate_is_trivial())
+    if(sp.is_not_shared_and_deallocate_is_trivial())
         return;
     p += n;
     while(n--)

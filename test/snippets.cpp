@@ -68,7 +68,7 @@ usingStrings()
 
         string str1; // empty string, uses the default memory resource
 
-        string str2( make_counted_resource<monotonic_resource>() ); // empty string, uses a counted monotonic resource
+        string str2( make_shared_resource<monotonic_resource>() ); // empty string, uses a counted monotonic resource
 
         //]
     }
@@ -386,7 +386,7 @@ usingArrays()
 
         array arr1; // empty array, uses the default memory resource
 
-        array arr2( make_counted_resource<monotonic_resource>() ); // empty array, uses a counted monotonic resource
+        array arr2( make_shared_resource<monotonic_resource>() ); // empty array, uses a counted monotonic resource
 
         //]
     }
@@ -433,7 +433,7 @@ usingObjects()
 
         object obj1; // empty object, uses the default memory resource
 
-        object obj2( make_counted_resource<monotonic_resource>() ); // empty object, uses a counted monotonic resource
+        object obj2( make_shared_resource<monotonic_resource>() ); // empty object, uses a counted monotonic resource
 
         //]
     }
@@ -659,7 +659,7 @@ usingExchange()
             customer( 4, "Doug", false )
          };
 
-        storage_ptr sp = make_counted_resource< monotonic_resource >();
+        storage_ptr sp = make_shared_resource< monotonic_resource >();
 
         value jv = value_from( customers, sp );
 

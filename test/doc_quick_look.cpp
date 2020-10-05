@@ -112,7 +112,7 @@ arr = { nullptr, true, "boost" };                   // fill in the array again
 value f()
 {
     // create a reference-counted memory resource
-    storage_ptr sp = make_counted_resource< monotonic_resource >();
+    storage_ptr sp = make_shared_resource< monotonic_resource >();
 
     // construct with shared ownership of the resource
     value jv( sp );

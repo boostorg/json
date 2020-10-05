@@ -7,10 +7,10 @@
 // Official repository: https://github.com/boostorg/json
 //
 
-#ifndef BOOST_JSON_DETAIL_IMPL_COUNTED_RESOURCE_IPP
-#define BOOST_JSON_DETAIL_IMPL_COUNTED_RESOURCE_IPP
+#ifndef BOOST_JSON_DETAIL_IMPL_SHARED_RESOURCE_IPP
+#define BOOST_JSON_DETAIL_IMPL_SHARED_RESOURCE_IPP
 
-#include <boost/json/detail/counted_resource.hpp>
+#include <boost/json/detail/shared_resource.hpp>
 
 BOOST_JSON_NS_BEGIN
 namespace detail {
@@ -19,13 +19,13 @@ namespace detail {
 // is emitted in the library instead of
 // the user's TU.
 
-counted_resource::
-counted_resource()
+shared_resource::
+shared_resource()
 {
 }
 
-counted_resource::
-~counted_resource()
+shared_resource::
+~shared_resource()
 {
 }
 

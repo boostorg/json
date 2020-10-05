@@ -12,7 +12,7 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/memory_resource.hpp>
-#include <boost/json/detail/counted_resource.hpp>
+#include <boost/json/detail/shared_resource.hpp>
 #include <boost/json/detail/default_resource.hpp>
 #include <cstddef>
 #include <new>
@@ -40,7 +40,7 @@ BOOST_JSON_NS_BEGIN
     deallocate.
 
     @li Owning, when constructing using the function
-    @ref make_counted_resource. In this case 
+    @ref make_shared_resource. In this case 
     ownership is shared; the lifetime of the memory
     resource extends until the last copy of the
     @ref storage_ptr is destroyed.
@@ -63,7 +63,7 @@ BOOST_JSON_NS_BEGIN
     // Create a counted memory resource and return it
     storage_ptr make_storage()
     {
-        return make_counted_resource< monotonic_resource >();
+        return make_shared_resource< monotonic_resource >();
     }
     @endcode
 
@@ -76,7 +76,7 @@ BOOST_JSON_NS_BEGIN
         16.4.6.10 Data race avoidance</a>.
 
     @see
-        @ref make_counted_resource,
+        @ref make_shared_resource,
         @ref memory_resource,
         @ref polymorphic_allocator
 */
@@ -84,34 +84,34 @@ class storage_ptr
 {
 #ifndef BOOST_JSON_DOCS
     // VFALCO doc toolchain shows this when it shouldn't
-    friend struct detail::counted_resource;
+    friend struct detail::shared_resource;
 #endif
-    using counted_resource =
-        detail::counted_resource;
+    using shared_resource =
+        detail::shared_resource;
 
     using default_resource =
         detail::default_resource;
 
     std::uintptr_t i_;
 
-    counted_resource*
+    shared_resource*
     get_counted() const noexcept
     {
         return reinterpret_cast<
-            counted_resource*>(i_ & ~3);
+            shared_resource*>(i_ & ~3);
     }
 
     void
     addref() const noexcept
     {
-        if(is_counted())
+        if(is_shared())
             ++get_counted()->refs;
     }
 
     void
     release() const noexcept
     {
-        if(is_counted())
+        if(is_shared())
         {
             auto const p = get_counted();
             if(--p->refs == 0)
@@ -121,7 +121,7 @@ class storage_ptr
 
     template<class T>
     storage_ptr(
-        detail::counted_resource_impl<T>* p) noexcept
+        detail::shared_resource_impl<T>* p) noexcept
         : i_(reinterpret_cast<
             std::uintptr_t>(p) + 1 +
             (json::is_deallocate_trivial<T>::value ? 2 : 0))
@@ -357,10 +357,10 @@ public:
     /** Return `true` if ownership of the memory resource is shared.
 
         This function returns true for memory resources
-        created using @ref make_counted_resource.
+        created using @ref make_shared_resource.
     */
     bool
-    is_counted() const noexcept
+    is_shared() const noexcept
     {
         return (i_ & 1) != 0;
     }
@@ -385,10 +385,10 @@ public:
         can effectively be skipped.
 
         @par Effects
-        Returns `! this->is_counted() && this->is_deallocate_trivial()`
+        Returns `! this->is_shared() && this->is_deallocate_trivial()`
     */
     bool
-    is_not_counted_and_deallocate_is_trivial() const noexcept
+    is_not_shared_and_deallocate_is_trivial() const noexcept
     {
         return (i_ & 3) == 2;
     }
@@ -452,7 +452,7 @@ public:
     template<class U, class... Args>
     friend
     storage_ptr
-    make_counted_resource(Args&&... args);
+    make_shared_resource(Args&&... args);
 };
 
 /** Return shared ownership of a new, dynamically allocated memory resource.
@@ -479,7 +479,7 @@ public:
 */
 template<class T, class... Args>
 storage_ptr
-make_counted_resource(Args&&... args)
+make_shared_resource(Args&&... args)
 {
     // If this generates an error, it means that
     // `T` is not a memory resource.
@@ -487,7 +487,7 @@ make_counted_resource(Args&&... args)
         std::is_base_of<
             memory_resource, T>::value);
     return storage_ptr(new 
-        detail::counted_resource_impl<T>(
+        detail::shared_resource_impl<T>(
             std::forward<Args>(args)...));
 }
 

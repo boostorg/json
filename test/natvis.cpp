@@ -91,9 +91,9 @@ public:
         {
             unsigned char buf[1024];
             storage_ptr sp;
-            sp = make_counted_resource<
+            sp = make_shared_resource<
                 monotonic_resource>();
-            sp = make_counted_resource<
+            sp = make_shared_resource<
                 static_resource>(buf);
             sp = {};
         }

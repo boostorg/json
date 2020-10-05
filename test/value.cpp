@@ -45,7 +45,7 @@ public:
     testSpecial()
     {
         auto dsp = storage_ptr{};
-        auto sp = make_counted_resource<unique_resource>();
+        auto sp = make_shared_resource<unique_resource>();
 
         // ~value()
         {
@@ -495,7 +495,7 @@ public:
     testConversion()
     {
         auto dsp = storage_ptr{};
-        auto sp = make_counted_resource<unique_resource>();
+        auto sp = make_shared_resource<unique_resource>();
 
         // value(object)
         // value(object, storage_ptr)
@@ -1084,7 +1084,7 @@ public:
     testGetStorage()
     {
         auto const sp =
-            make_counted_resource<unique_resource>();
+            make_shared_resource<unique_resource>();
 
         value obj(object{}, sp);
         value arr(array{}, sp);

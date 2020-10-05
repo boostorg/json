@@ -7,8 +7,8 @@
 // Official repository: https://github.com/boostorg/json
 //
 
-#ifndef BOOST_JSON_DETAIL_COUNTED_RESOURCE_HPP
-#define BOOST_JSON_DETAIL_COUNTED_RESOURCE_HPP
+#ifndef BOOST_JSON_DETAIL_SHARED_RESOURCE_HPP
+#define BOOST_JSON_DETAIL_SHARED_RESOURCE_HPP
 
 #include <boost/json/memory_resource.hpp>
 #include <atomic>
@@ -18,27 +18,27 @@ BOOST_JSON_NS_BEGIN
 namespace detail {
 
 struct BOOST_SYMBOL_VISIBLE
-    counted_resource
+    shared_resource
     : memory_resource
 {
     BOOST_JSON_DECL
-    counted_resource();
+    shared_resource();
 
     BOOST_JSON_DECL
-    ~counted_resource();
+    ~shared_resource();
 
     std::atomic<std::size_t> refs{ 1 };
 };
 
 template<class T>
-class counted_resource_impl final
-    : public counted_resource
+class shared_resource_impl final
+    : public shared_resource
 {
     T t;
 
 public:
     template<class... Args>
-    counted_resource_impl(
+    shared_resource_impl(
         Args&&... args)
         : t(std::forward<Args>(args)...)
     {

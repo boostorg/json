@@ -260,7 +260,7 @@ public:
         // object(pilfered<object>)
         {
             auto const sp =
-                make_counted_resource<unique_resource>();
+                make_shared_resource<unique_resource>();
             object o1({
                 {"a", 1},
                 {"b", true},
@@ -275,7 +275,7 @@ public:
             check(o2, 3);
         }
 
-        auto const sp = make_counted_resource<unique_resource>();
+        auto const sp = make_shared_resource<unique_resource>();
         auto const sp0 = storage_ptr{};
 
         // object(object const&)

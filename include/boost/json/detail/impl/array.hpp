@@ -17,7 +17,7 @@ unchecked_array::
 ~unchecked_array()
 {
     if(! data_ ||
-        sp_.is_not_counted_and_deallocate_is_trivial())
+        sp_.is_not_shared_and_deallocate_is_trivial())
         return;
     for(unsigned long i = 0;
         i < size_; ++i)

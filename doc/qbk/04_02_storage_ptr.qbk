@@ -9,7 +9,7 @@
 
 [/-----------------------------------------------------------------------------]
 
-[section:storage_ptr __storage_ptr__]
+[section storage_ptr]
 
 Variable-length containers in this library all use dynamically allocated
 memory to store their contents. Callers can gain control over the strategy
@@ -30,7 +30,7 @@ and function parameter lists. A __storage_ptr__ has these properties:
   caller is responsible for ensuring that the lifetime of
   the resource extends until it is no longer referenced.
 
-* A storage pointer obtained from __make_counted_resource__
+* A storage pointer obtained from __make_shared_resource__
   acquires shared ownership of the memory resource; the
   lifetime of the resource is extended until all copies
   of the storage pointer are destroyed.
@@ -59,7 +59,7 @@ available when using the library:
         to indicate that calls to deallocate are trivial.
     ]
 ][
-    [__make_counted_resource__]
+    [__make_shared_resource__]
     [
         A function returning a smart pointer with shared
         ownership of a newly allocated memory resource.
@@ -210,7 +210,7 @@ lifetime of the resource is extended until it is no longer
 referenced by any variables; otherwise, undefined behavior
 is possible.
 
-Shared ownership is achieved using the function __make_counted_resource__,
+Shared ownership is achieved using the function __make_shared_resource__,
 which creates a new, reference-counted memory resource using a dynamic memory
 allocation and returns it as a __storage_ptr__:
 

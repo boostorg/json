@@ -49,7 +49,7 @@ std::vector< value, polymorphic_allocator < value > > v;
 value jv( v.get_allocator() );
 
 // However, ownership is not transferred,
-assert( ! jv.storage().is_counted() );
+assert( ! jv.storage().is_shared() );
 
 // and deallocate is never null
 assert( ! jv.storage().is_deallocate_trivial() );

@@ -293,7 +293,7 @@ R"xx({
         }
     }
 })xx"
-        , make_counted_resource<monotonic_resource>());
+        , make_shared_resource<monotonic_resource>());
         BOOST_TEST_PASS();
     }
 

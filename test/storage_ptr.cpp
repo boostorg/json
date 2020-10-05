@@ -65,7 +65,7 @@ public:
     {
         auto const dsp = storage_ptr{};
         auto const usp =
-            make_counted_resource<unique_resource>();
+            make_shared_resource<unique_resource>();
 
         // ~storage_ptr()
         {
@@ -132,7 +132,7 @@ public:
         // exception in make_storage
         {
             BOOST_TEST_THROWS(
-                make_counted_resource<throwing>(),
+                make_shared_resource<throwing>(),
                 std::exception);
         }
     }
@@ -183,7 +183,7 @@ public:
     {
         BOOST_ASSERT(jv1.storage() == jv2.storage());
         BOOST_TEST(! jv1.storage().is_deallocate_trivial());
-        BOOST_TEST(! jv1.storage().is_counted());
+        BOOST_TEST(! jv1.storage().is_shared());
     }
 
     void

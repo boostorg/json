@@ -58,7 +58,7 @@
 [def __is_deallocate_trivial__  [link json.ref.boost__json__is_deallocate_trivial `is_deallocate_trivial`]]
 [def __key_value_pair__         [link json.ref.boost__json__key_value_pair `key_value_pair`]]
 [def __kind__                   [link json.ref.boost__json__kind `kind`]]
-[def __make_counted_resource__  [link json.ref.boost__json__make_counted_resource `make_counted_resource`]]
+[def __make_shared_resource__   [link json.ref.boost__json__make_shared_resource `make_shared_resource`]]
 [def __memory_resource__        [link json.ref.boost__json__memory_resource `memory_resource`]]
 [def __monotonic_resource__     [link json.ref.boost__json__monotonic_resource `monotonic_resource`]]
 [def __number_cast__            [link json.ref.boost__json__number_cast `number_cast`]]
@@ -111,7 +111,7 @@
 
 [include 01_overview.qbk]
 [include 02_quick_look.qbk]
-[include 03_00_usage.qbk]
+[include 03_00_dom.qbk]
 [include 04_00_allocators.qbk]
 [include 05_00_io.qbk]
 [include 06_examples.qbk]

@@ -52,7 +52,7 @@ public:
 
             {
                 stream_parser p;
-                p.reset(make_counted_resource<
+                p.reset(make_shared_resource<
                     monotonic_resource>());
             }
         }
@@ -1036,7 +1036,7 @@ R"xx({
             "markup languages such as DocBook.\",\"GlossSeeAlso\":[\"GML\",\"XML\"]},"
             "\"GlossSee\":\"markup\"}}}}}";
         storage_ptr sp = 
-            make_counted_resource<monotonic_resource>();
+            make_shared_resource<monotonic_resource>();
         stream_parser p(sp);
         error_code ec;
         p.write(in.data(), in.size(), ec);

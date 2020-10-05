@@ -113,7 +113,7 @@ memory resource pointer, where ownership is not transferred. In this
 case the caller is responsible for ensuring that the lifetime of the
 resource is extended for the life of the container. Sometimes you want
 the container to acquire shared ownership of the resource. This is
-accomplished with __make_counted_resource__:
+accomplished with __make_shared_resource__:
 
 [doc_quick_look_7]
 

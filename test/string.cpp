@@ -97,7 +97,7 @@ public:
         // string(storage_ptr)
         {
             auto const sp =
-                make_counted_resource<unique_resource>();
+                make_shared_resource<unique_resource>();
             string s(sp);
             BOOST_TEST(s.empty());
             BOOST_TEST(*s.storage() == *sp.get());
