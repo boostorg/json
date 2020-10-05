@@ -30,7 +30,7 @@ relocate(value* dest) noexcept
 {
     if(size_ > 0)
         std::memcpy(
-            reinterpret_cast<void*>(dest),
+            static_cast<void*>(dest),
             data_, size_ * sizeof(value));
     data_ = nullptr;
 }

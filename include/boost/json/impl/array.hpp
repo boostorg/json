@@ -120,10 +120,8 @@ relocate(
     if(n == 0)
         return;
     std::memmove(
-        reinterpret_cast<
-            void*>(dest),
-        reinterpret_cast<
-            void const*>(src),
+        static_cast<void*>(dest),
+        static_cast<void const*>(src),
         n * sizeof(value));
 }
 

@@ -3370,8 +3370,7 @@ private:
         value const& src) noexcept
     {
         std::memcpy(
-            reinterpret_cast<
-                void*>(dest),
+            static_cast<void*>(dest),
             &src,
             sizeof(src));
     }

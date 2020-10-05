@@ -112,7 +112,7 @@ build(unchecked_object&& uo) noexcept
             dup.~key_value_pair();
             // trivial relocate
             std::memcpy(
-                reinterpret_cast<void*>(&dup),
+                static_cast<void*>(&dup),
                     dest, sizeof(dup));
         }
         else
