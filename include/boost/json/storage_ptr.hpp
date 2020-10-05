@@ -50,31 +50,30 @@ BOOST_JSON_NS_BEGIN
     These statements create a memory resource on the
     stack and construct a pointer from it without
     taking ownership:
-
     @code
-
-    // Create our memory resource on the stack
-    monotonic_resource mr;
-
-    // Construct a non-owning pointer to the resource
-    storage_ptr sp( &mr );
-
+    monotonic_resource mr;                  // Create our memory resource on the stack
+    storage_ptr sp( &mr );                  // Construct a non-owning pointer to the resource
     @endcode
 
     This function creates a pointer to a memory
     resource using shared ownership and returns it.
     The lifetime of the memory resource extends until
     the last copy of the pointer is destroyed:
-
     @code
-
     // Create a counted memory resource and return it
     storage_ptr make_storage()
     {
         return make_counted_resource< monotonic_resource >();
     }
-
     @endcode
+
+    @par Thread Safety
+    
+    Instances of this type provide the default level of
+    thread safety for all C++ objects. Specifically, it
+    conforms to
+    <a href="http://eel.is/c++draft/res.on.data.races">
+        16.4.6.10 Data race avoidance</a>.
 
     @see
         @ref make_counted_resource,
@@ -157,11 +156,9 @@ public:
         free memory.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     storage_ptr() noexcept
@@ -187,7 +184,6 @@ public:
         @endcode
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param r A pointer to the memory resource to use.
@@ -222,7 +218,6 @@ public:
         @endcode
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param alloc A @ref polymorphic_allocator to
@@ -252,11 +247,9 @@ public:
         to the default memory resource.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param other The pointer to construct from.
@@ -280,11 +273,9 @@ public:
         `*this` will acquire shared ownership.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param other The pointer to construct from.
@@ -314,11 +305,9 @@ public:
         it is released before the function returns.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param other The storage pointer to move.
@@ -348,11 +337,9 @@ public:
         it is released before the function returns.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
 
         @param other The storage pointer to copy.
@@ -367,7 +354,7 @@ public:
         return *this;
     }
 
-    /** Return `true` if the storage pointer has shared ownership of the memory resource.
+    /** Return `true` if ownership of the memory resource is shared.
 
         This function returns true for memory resources
         created using @ref make_counted_resource.
@@ -412,11 +399,9 @@ public:
         referenced @ref memory_resource.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     memory_resource*
@@ -434,11 +419,9 @@ public:
         referenced @ref memory_resource.
 
         @par Complexity
-
         Constant.
 
         @par Exception Safety
-
         No-throw guarantee.
     */
     memory_resource*
@@ -472,12 +455,12 @@ public:
     make_counted_resource(Args&&... args);
 };
 
-/** Return shared ownership of a newly created memory resource.
+/** Return shared ownership of a new, dynamically allocated memory resource.
 
-    This function creates a memory resource that uses
-    shared ownership. The lifetime of the memory resource
-    will be extended until the last @ref storage_ptr which
-    points to it is destroyed.
+    This function dynamically allocates a new memory resource
+    as if by `operator new` that uses shared ownership. The
+    lifetime of the memory resource will be extended until
+    the last @ref storage_ptr which points to it is destroyed.
 
     @par Mandates
     @code
@@ -485,14 +468,14 @@ public:
     @endcode
 
     @par Complexity
-    Same as `T( std::forward<Args>(args)... )`.
+    Same as `new T( std::forward<Args>(args)... )`.
 
     @par Exception Safety
     Strong guarantee.
 
-    @param args Parameters forwarded to the constructor of `T`.
-
     @tparam T The type of memory resource to create.
+
+    @param args Parameters forwarded to the constructor of `T`.
 */
 template<class T, class... Args>
 storage_ptr
@@ -508,7 +491,7 @@ make_counted_resource(Args&&... args)
             std::forward<Args>(args)...));
 }
 
-/** Return true if lhs equals rhs.
+/** Return true if two storage pointers point to the same memory resource.
 
     This function returns `true` if the @ref memory_resource
     objects pointed to by `lhs` and `rhs` have the
@@ -523,7 +506,7 @@ operator==(
     return lhs.get() == rhs.get();
 }
 
-/** Return true if lhs does not equal rhs.
+/** Return true if two storage pointers point to different memory resources.
 
     This function returns `true` if the @ref memory_resource
     objects pointed to by `lhs` and `rhs` have different
