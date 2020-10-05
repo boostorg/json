@@ -139,6 +139,32 @@ revert_insert::
 }
 
 //----------------------------------------------------------
+
+void
+array::
+destroy(
+    value* first, value* last) noexcept
+{
+    if(sp_.is_not_shared_and_deallocate_is_trivial())
+        return;
+    while(last-- != first)
+        last->~value();
+}
+
+void
+array::
+destroy() noexcept
+{
+    if(sp_.is_not_shared_and_deallocate_is_trivial())
+        return;
+    auto last = end();
+    auto const first = begin();
+    while(last-- != first)
+        last->~value();
+    table::deallocate(t_, sp_);
+}
+
+//----------------------------------------------------------
 //
 // Special Members
 //
@@ -166,21 +192,6 @@ array::
 ~array()
 {
     destroy();
-}
-
-array::
-array() noexcept
-    : t_(&empty_)
-{
-}
-
-array::
-array(storage_ptr sp) noexcept
-    : sp_(std::move(sp))
-    , t_(&empty_)
-{
-    // silence -Wunused-private-field
-    k_ = kind::array;
 }
 
 array::
@@ -262,23 +273,6 @@ array(
     }
     while(t_->size < n);
     r.commit();
-}
-
-array::
-array(pilfered<array> other) noexcept
-    : sp_(detail::exchange(
-        other.get().sp_, storage_ptr()))
-    , t_(detail::exchange(
-        other.get().t_, &empty_))
-{
-}
-
-array::
-array(array&& other) noexcept
-    : sp_(other.sp_)
-    , t_(detail::exchange(
-        other.t_, &empty_))
-{
 }
 
 array::
@@ -368,16 +362,6 @@ operator=(
     array(init,
         storage()).swap(*this);
     return *this;
-}
-
-//----------------------------------------------------------
-
-auto
-array::
-get_allocator() const noexcept ->
-    allocator_type
-{
-    return sp_.get();
 }
 
 //----------------------------------------------------------
@@ -751,47 +735,6 @@ insert(
     t = detail::exchange(t_, t);
     table::deallocate(t, sp_);
     return p;
-}
-
-void
-array::
-destroy(
-    value* first, value* last) noexcept
-{
-    if(sp_.is_not_shared_and_deallocate_is_trivial())
-        return;
-    while(last-- != first)
-        last->~value();
-}
-
-void
-array::
-destroy() noexcept
-{
-    if(sp_.is_not_shared_and_deallocate_is_trivial())
-        return;
-    auto last = end();
-    auto const first = begin();
-    while(last-- != first)
-        last->~value();
-    table::deallocate(t_, sp_);
-}
-
-void
-array::
-relocate(
-    value* dest,
-    value* src,
-    std::size_t n) noexcept
-{
-    if(n == 0)
-        return;
-    std::memmove(
-        reinterpret_cast<
-            void*>(dest),
-        reinterpret_cast<
-            void const*>(src),
-        n * sizeof(value));
 }
 
 //----------------------------------------------------------

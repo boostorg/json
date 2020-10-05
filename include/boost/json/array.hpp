@@ -91,6 +91,24 @@ class array
 
     friend class value;
 
+    inline
+    static
+    void
+    relocate(
+        value* dest,
+        value* src,
+        std::size_t n) noexcept;
+
+    inline
+    void
+    destroy(
+        value* first,
+        value* last) noexcept;
+
+    BOOST_JSON_DECL
+    void
+    destroy() noexcept;
+
     BOOST_JSON_DECL
     static table empty_;
 
@@ -175,8 +193,10 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    BOOST_JSON_DECL
-    array() noexcept;
+    array() noexcept
+        : t_(&empty_)
+    {
+    }
 
     /** Constructor.
 
@@ -193,9 +213,13 @@ public:
         to use. The container will acquire shared
         ownership of the memory resource.
     */
-    BOOST_JSON_DECL
     explicit
-    array(storage_ptr sp) noexcept;
+    array(storage_ptr sp) noexcept
+        : sp_(std::move(sp))
+        , k_(kind::array)
+        , t_(&empty_)
+    {
+    }
 
     /** Constructor.
 
@@ -355,8 +379,13 @@ public:
             <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0308r0.html">
                 Valueless Variants Considered Harmful</a>
     */
-    BOOST_JSON_DECL
-    array(pilfered<array> other) noexcept;
+    array(pilfered<array> other) noexcept
+        : sp_(detail::exchange(
+            other.get().sp_, storage_ptr()))
+        , t_(detail::exchange(
+            other.get().t_, &empty_))
+    {
+    }
 
     /** Move constructor.
 
@@ -378,8 +407,12 @@ public:
 
         @param other The container to move
     */
-    BOOST_JSON_DECL
-    array(array&& other) noexcept;
+    array(array&& other) noexcept
+        : sp_(other.sp_)
+        , t_(detail::exchange(
+            other.t_, &empty_))
+    {
+    }
 
     /** Move constructor.
 
@@ -542,9 +575,11 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    BOOST_JSON_DECL
     allocator_type
-    get_allocator() const noexcept;
+    get_allocator() const noexcept
+    {
+        return sp_.get();
+    }
 
     //------------------------------------------------------
     //
@@ -1699,24 +1734,6 @@ private:
         const_iterator pos,
         InputIt first, InputIt last,
         std::forward_iterator_tag);
-
-    inline
-    void
-    destroy(
-        value* first,
-        value* last) noexcept;
-
-    BOOST_JSON_DECL
-    void
-    destroy() noexcept;
-
-    BOOST_JSON_DECL
-    static
-    void
-    relocate(
-        value* dest,
-        value* src,
-        std::size_t n) noexcept;
 
     BOOST_JSON_DECL
     bool

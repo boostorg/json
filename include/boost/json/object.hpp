@@ -169,10 +169,8 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    ~object()
-    {
-        impl_.destroy(sp_);
-    }
+    BOOST_JSON_DECL
+    ~object();
 
     //------------------------------------------------------
 
@@ -204,9 +202,11 @@ public:
         to use. The container will acquire shared
         ownership of the memory resource.
     */
-    BOOST_JSON_DECL
     explicit
-    object(storage_ptr sp) noexcept;
+    object(storage_ptr sp) noexcept
+        : sp_(std::move(sp))
+    {
+    }
 
     /** Constructor.
 

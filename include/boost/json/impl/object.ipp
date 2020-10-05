@@ -91,9 +91,9 @@ object(object_test const*)
 }
 
 object::
-object(storage_ptr sp) noexcept
-    : sp_(std::move(sp))
+~object()
 {
+    impl_.destroy(sp_);
 }
 
 object::

@@ -109,6 +109,25 @@ public:
 };
 
 //----------------------------------------------------------
+
+void
+array::
+relocate(
+    value* dest,
+    value* src,
+    std::size_t n) noexcept
+{
+    if(n == 0)
+        return;
+    std::memmove(
+        reinterpret_cast<
+            void*>(dest),
+        reinterpret_cast<
+            void const*>(src),
+        n * sizeof(value));
+}
+
+//----------------------------------------------------------
 //
 // Construction
 //

@@ -22,9 +22,108 @@ BOOST_JSON_NS_BEGIN
 
 //----------------------------------------------------------
 //
+// Construction
+//
+//----------------------------------------------------------
+
+string::
+string(
+    std::size_t count,
+    char ch,
+    storage_ptr sp)
+    : sp_(std::move(sp))
+{
+    assign(count, ch);
+}
+
+string::
+string(
+    char const* s,
+    storage_ptr sp)
+    : sp_(std::move(sp))
+{
+    assign(s);
+}
+
+string::
+string(
+    char const* s,
+    std::size_t count,
+    storage_ptr sp)
+    : sp_(std::move(sp))
+{
+    assign(s, count);
+}
+
+string::
+string(string const& other)
+    : sp_(other.sp_)
+{
+    assign(other);
+}
+
+string::
+string(
+    string const& other,
+    storage_ptr sp)
+    : sp_(std::move(sp))
+{
+    assign(other);
+}
+
+string::
+string(
+    string&& other,
+    storage_ptr sp)
+    : sp_(std::move(sp))
+{
+    assign(std::move(other));
+}
+
+string::
+string(
+    string_view s,
+    storage_ptr sp)
+    : sp_(std::move(sp))
+{
+    assign(s);
+}
+
+//----------------------------------------------------------
+//
 // Assignment
 //
 //----------------------------------------------------------
+
+string&
+string::
+operator=(string const& other)
+{
+    return assign(other);
+}
+
+string&
+string::
+operator=(string&& other)
+{
+    return assign(std::move(other));
+}
+
+string&
+string::
+operator=(char const* s)
+{
+    return assign(s);
+}
+
+string&
+string::
+operator=(string_view s)
+{
+    return assign(s);
+}
+
+
 
 string&
 string::
@@ -86,14 +185,6 @@ assign(
 {
     return assign(s, std::char_traits<
         char>::length(s));
-}
-
-auto
-string::
-get_allocator() const noexcept ->
-    allocator_type
-{
-    return sp_.get();
 }
 
 //----------------------------------------------------------

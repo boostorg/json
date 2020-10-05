@@ -159,10 +159,10 @@ public:
     }
 
     //------------------------------------------------------
-
     //
     // Construction
     //
+    //------------------------------------------------------
 
     /** Default constructor.
 
@@ -250,15 +250,12 @@ public:
 
         @throw std::length_error `count > max_size()`.
     */
+    BOOST_JSON_DECL
     explicit
     string(
         std::size_t count,
         char ch,
-        storage_ptr sp = {})
-        : sp_(std::move(sp))
-    {
-        assign(count, ch);
-    }
+        storage_ptr sp = {});
 
     /** Constructor.
 
@@ -286,13 +283,10 @@ public:
 
         @throw std::length_error `strlen(s) > max_size()`.
     */
+    BOOST_JSON_DECL
     string(
         char const* s,
-        storage_ptr sp = {})
-        : sp_(std::move(sp))
-    {
-        assign(s);
-    }
+        storage_ptr sp = {});
 
     /** Constructor.
 
@@ -321,15 +315,12 @@ public:
 
         @throw std::length_error `count > max_size()`.
     */
+    BOOST_JSON_DECL
     explicit
     string(
         char const* s,
         std::size_t count,
-        storage_ptr sp = {})
-        : sp_(std::move(sp))
-    {
-        assign(s, count);
-    }
+        storage_ptr sp = {});
 
     /** Constructor.
 
@@ -392,11 +383,8 @@ public:
         @param other The string to use as a source
         to copy from.
     */
-    string(string const& other)
-        : sp_(other.sp_)
-    {
-        assign(other);
-    }
+    BOOST_JSON_DECL
+    string(string const& other);
 
     /** Constructor.
 
@@ -419,14 +407,11 @@ public:
         ownership of the memory resource.
         The default argument for this parameter is `{}`.
     */
+    BOOST_JSON_DECL
     explicit
     string(
         string const& other,
-        storage_ptr sp)
-        : sp_(std::move(sp))
-    {
-        assign(other);
-    }
+        storage_ptr sp);
 
     /** Move constructor.
 
@@ -483,14 +468,11 @@ public:
         ownership of the memory resource.
         The default argument for this parameter is `{}`.
     */
+    BOOST_JSON_DECL
     explicit
     string(
         string&& other,
-        storage_ptr sp)
-        : sp_(std::move(sp))
-    {
-        assign(std::move(other));
-    }
+        storage_ptr sp);
 
     /** Constructor.
     
@@ -516,13 +498,10 @@ public:
 
         @throw std::length_error `s.size() > max_size()`.
     */
+    BOOST_JSON_DECL
     string(
         string_view s,
-        storage_ptr sp = {})
-        : sp_(std::move(sp))
-    {
-        assign(s);
-    }
+        storage_ptr sp = {});
 
     //------------------------------------------------------
     //
@@ -548,11 +527,9 @@ public:
         @param other The string to use as a source
         to copy from.
     */
+    BOOST_JSON_DECL
     string&
-    operator=(string const& other)
-    {
-        return assign(other);
-    }
+    operator=(string const& other);
 
     /** Move assignment.
 
@@ -584,11 +561,9 @@ public:
         @param other The string to use as a source
         to move from.
     */
+    BOOST_JSON_DECL
     string&
-    operator=(string&& other)
-    {
-        return assign(std::move(other));
-    }
+    operator=(string&& other);
 
     /** Assign a value to the string.
 
@@ -612,11 +587,9 @@ public:
 
         @throw std::length_error `std::strlen(s) > max_size()`.
     */
+    BOOST_JSON_DECL
     string&
-    operator=(char const* s)
-    {
-        return assign(s);
-    }
+    operator=(char const* s);
 
     /** Assign a value to the string.
 
@@ -639,11 +612,9 @@ public:
 
         @throw std::length_error `s.size() > max_size()`.
     */
+    BOOST_JSON_DECL
     string&
-    operator=(string_view s)
-    {
-        return assign(s);
-    }
+    operator=(string_view s);
 
     //------------------------------------------------------
 
@@ -897,9 +868,11 @@ public:
 
         No-throw guarantee.
     */
-    BOOST_JSON_DECL
     allocator_type
-    get_allocator() const noexcept;
+    get_allocator() const noexcept
+    {
+        return sp_.get();
+    }
 
     //------------------------------------------------------
     //
