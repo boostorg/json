@@ -16,7 +16,7 @@ BOOST_JSON_NS_BEGIN
 
 string::
 string(
-    detail::key_t,
+    detail::key_t const&,
     string_view s,
     storage_ptr sp)
     : sp_(std::move(sp))
@@ -27,7 +27,7 @@ string(
 
 string::
 string(
-    detail::key_t,
+    detail::key_t const&,
     string_view s1,
     string_view s2,
     storage_ptr sp)

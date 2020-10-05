@@ -23,8 +23,10 @@
 #include <boost/json/detail/except.hpp>
 #include <boost/json/detail/value.hpp>
 #include <cstdlib>
+#include <cstring>
 #include <initializer_list>
 #include <iosfwd>
+#include <limits>
 #include <new>
 #include <type_traits>
 #include <utility>
@@ -52,24 +54,7 @@ BOOST_JSON_NS_BEGIN
 class value
 {
 #ifndef BOOST_JSON_DOCS
-    struct scalar
-    {
-        storage_ptr sp; // must come first
-        kind k;         // must come second
-        union
-        {
-            bool b;
-            std::int64_t i;
-            std::uint64_t u;
-            double d;
-        };
-
-        explicit inline scalar(storage_ptr = {}) noexcept;
-        explicit inline scalar(bool, storage_ptr = {}) noexcept;
-        explicit inline scalar(std::int64_t, storage_ptr = {}) noexcept;
-        explicit inline scalar(std::uint64_t, storage_ptr = {}) noexcept;
-        explicit inline scalar(double, storage_ptr = {}) noexcept;
-    };
+    using scalar = detail::scalar;
 
     union
     {
@@ -88,12 +73,37 @@ class value
     friend struct detail::value_access;
 #endif
 
-    // VFALCO Why are these in
-    // impl/value.hpp instead of impl/value.ipp?
-    inline value(detail::unchecked_object&& uo);
-    inline value(detail::unchecked_array&& ua);
-    inline value(detail::key_t, string_view, storage_ptr);
-    inline value(detail::key_t, string_view, string_view, storage_ptr);
+    explicit
+    value(
+        detail::unchecked_array&& ua)
+        : arr_(std::move(ua))
+    {
+    }
+
+    explicit
+    value(
+        detail::unchecked_object&& uo)
+        : obj_(std::move(uo))
+    {
+    }
+
+    value(
+        detail::key_t const&,
+        string_view s,
+        storage_ptr sp)
+        : str_(detail::key_t{}, s, std::move(sp))
+    {
+    }
+
+    value(
+        detail::key_t const&,
+        string_view s1,
+        string_view s2,
+        storage_ptr sp)
+        : str_(detail::key_t{},
+            s1, s2, std::move(sp))
+    {
+    }
 
     inline bool is_scalar() const noexcept
     {
@@ -1442,9 +1452,11 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    inline
     void
-    emplace_null() noexcept;
+    emplace_null() noexcept
+    {
+        *this = nullptr;
+    }
 
     /** Return a reference to a `bool`, changing the kind and replacing the contents.
 
@@ -1458,9 +1470,12 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    inline
     bool&
-    emplace_bool() noexcept;
+    emplace_bool() noexcept
+    {
+        *this = false;
+        return sca_.b;
+    }
 
     /** Return a reference to a `std::int64_t`, changing the kind and replacing the contents.
 
@@ -1474,9 +1489,12 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    inline
     std::int64_t&
-    emplace_int64() noexcept;
+    emplace_int64() noexcept
+    {
+        *this = std::int64_t{};
+        return sca_.i;
+    }
 
     /** Return a reference to a `std::uint64_t`, changing the kind and replacing the contents.
 
@@ -1490,9 +1508,12 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    inline
     std::uint64_t&
-    emplace_uint64() noexcept;
+    emplace_uint64() noexcept
+    {
+        *this = std::uint64_t{};
+        return sca_.u;
+    }
 
     /** Return a reference to a `double`, changing the kind and replacing the contents.
 
@@ -1506,9 +1527,12 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    inline
     double&
-    emplace_double() noexcept;
+    emplace_double() noexcept
+    {
+        *this = double{};
+        return sca_.d;
+    }
 
     /** Return a reference to a @ref string, changing the kind and replacing the contents.
 
@@ -3099,11 +3123,17 @@ public:
 
 private:
     static
-    inline
     void
     relocate(
         value* dest,
-        value const& src) noexcept;
+        value const& src) noexcept
+    {
+        std::memcpy(
+            reinterpret_cast<
+                void*>(dest),
+            &src,
+            sizeof(src));
+    }
 
     BOOST_JSON_DECL
     storage_ptr
@@ -3204,9 +3234,29 @@ public:
         the @ref value constructor.
     */
     template<class... Args>
+    explicit
     key_value_pair(
         string_view key,
-        Args&&... args);
+        Args&&... args)
+        : value_(std::forward<Args>(args)...)
+        , key_(
+            [&]
+            {
+                if(key.size() > string::max_size())
+                    detail::throw_length_error(
+                        "key too large",
+                        BOOST_CURRENT_LOCATION);
+                auto s = reinterpret_cast<
+                    char*>(value_.storage()->
+                        allocate(key.size() + 1));
+                std::memcpy(s, key.data(), key.size());
+                s[key.size()] = 0;
+                return s;
+            }())
+        , len_(static_cast<
+            std::uint32_t>(key.size()))
+    {
+    }
 
     /** Constructor.
 
@@ -3567,7 +3617,6 @@ struct tuple_element<1, ::boost::json::key_value_pair const>
 #include <boost/json/impl/object.hpp>
 
 // These must come after array and object
-#include <boost/json/impl/value.hpp>
 #include <boost/json/impl/value_ref.hpp>
 
 #endif

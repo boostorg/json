@@ -69,13 +69,13 @@ class string
 
     inline
     string(
-        detail::key_t,
+        detail::key_t const&,
         string_view s,
         storage_ptr sp);
 
     inline
     string(
-        detail::key_t,
+        detail::key_t const&,
         string_view s1,
         string_view s2,
         storage_ptr sp);

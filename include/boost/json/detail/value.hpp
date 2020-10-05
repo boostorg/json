@@ -12,6 +12,7 @@
 
 #include <boost/json/kind.hpp>
 #include <boost/json/storage_ptr.hpp>
+#include <cstdint>
 #include <new>
 #include <utility>
 
@@ -20,6 +21,62 @@ namespace detail {
 
 struct key_t
 {
+};
+
+struct scalar
+{
+    storage_ptr sp; // must come first
+    kind k;         // must come second
+    union
+    {
+        bool b;
+        std::int64_t i;
+        std::uint64_t u;
+        double d;
+    };
+
+    explicit
+    scalar(storage_ptr sp_ = {}) noexcept
+        : sp(std::move(sp_))
+        , k(json::kind::null)
+    {
+    }
+
+    explicit
+    scalar(bool b_,
+        storage_ptr sp_ = {}) noexcept
+        : sp(std::move(sp_))
+        , k(json::kind::bool_)
+        , b(b_)
+    {
+    }
+
+    explicit
+    scalar(std::int64_t i_,
+        storage_ptr sp_ = {}) noexcept
+        : sp(std::move(sp_))
+        , k(json::kind::int64)
+        , i(i_)
+    {
+    }
+
+    explicit
+    scalar(std::uint64_t u_,
+        storage_ptr sp_ = {}) noexcept
+        : sp(std::move(sp_))
+        , k(json::kind::uint64)
+        , u(u_)
+    {
+    }
+
+    explicit
+    scalar(double d_,
+        storage_ptr sp_ = {}) noexcept
+        : sp(std::move(sp_))
+        , k(json::kind::double_)
+        , d(d_)
+    {
+    }
 };
 
 struct value_access
