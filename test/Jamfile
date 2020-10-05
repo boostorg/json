@@ -42,7 +42,6 @@ local SOURCES =
     monotonic_resource.cpp
     natvis.cpp
     null_resource.cpp
-    number_cast.cpp
     object.cpp
     parse.cpp
     parser.cpp

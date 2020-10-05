@@ -11,7 +11,6 @@
 #ifndef BOOST_JSON_DETAIL_VALUE_TO_HPP
 #define BOOST_JSON_DETAIL_VALUE_TO_HPP
 
-#include <boost/json/number_cast.hpp>
 #include <boost/json/value.hpp>
 #include <boost/json/detail/value_traits.hpp>
 
@@ -94,7 +93,7 @@ tag_invoke(
     value_to_tag<T>,
     value const& jv)
 {
-    return number_cast<T>(jv);
+    return jv.to_number<T>();
 }
 
 //----------------------------------------------------------

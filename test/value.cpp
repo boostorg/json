@@ -22,6 +22,24 @@ BOOST_JSON_NS_BEGIN
 BOOST_STATIC_ASSERT( std::is_nothrow_destructible<value>::value );
 BOOST_STATIC_ASSERT( std::is_nothrow_move_constructible<value>::value );
 
+namespace {
+
+template<class T>
+static
+T max_of()
+{
+    return (std::numeric_limits<T>::max)();
+}
+
+template<class T>
+static
+T min_of()
+{
+    return (std::numeric_limits<T>::min)();
+}
+
+} // (anon)
+
 class value_test
 {
 public:
@@ -1365,6 +1383,249 @@ public:
     }
 
     void
+    testToNumber()
+    {
+#define EQAL(T) BOOST_TEST(jv.to_number<T>() == V)
+#define EQUS(T) BOOST_TEST((V >= 0) && jv.to_number<T>() == static_cast<std::uint64_t>(V))
+#define EQUF(T) BOOST_TEST(static_cast<float>(V) == static_cast<float>(jv.to_number<T>()))
+#define THRO(T) BOOST_TEST_THROWS(jv.to_number<T>(), system_error)
+
+        BOOST_TEST_THROWS(value(nullptr).to_number<int>(), system_error);
+        BOOST_TEST_THROWS(value(false).to_number<int>(), system_error);
+        BOOST_TEST_THROWS(value(string_kind).to_number<int>(), system_error);
+        BOOST_TEST_THROWS(value(array_kind).to_number<int>(), system_error);
+        BOOST_TEST_THROWS(value(object_kind).to_number<int>(), system_error);
+
+        {
+            unsigned char V = 0;
+            value const jv(V);
+            EQAL(std::int8_t);
+            EQAL(std::int16_t);
+            EQAL(std::int32_t);
+            EQAL(std::int64_t);
+            EQAL(std::uint8_t);
+            EQAL(std::uint16_t);
+            EQAL(std::uint32_t);
+            EQAL(std::uint64_t);
+            EQAL(float);
+            EQAL(double);
+        }
+        {
+            auto V = max_of<std::int8_t>();
+            value const jv(V);
+            EQAL(std::int8_t);
+            EQAL(std::int16_t);
+            EQAL(std::int32_t);
+            EQAL(std::int64_t);
+            EQAL(std::uint8_t);
+            EQAL(std::uint16_t);
+            EQUS(std::uint32_t);
+            EQUS(std::uint64_t);
+            EQAL(float);
+            EQAL(double);
+        }
+        {
+            auto V = max_of<std::int16_t>();
+            value const jv(V);
+            THRO(std::int8_t);
+            EQAL(std::int16_t);
+            EQAL(std::int32_t);
+            EQAL(std::int64_t);
+            THRO(std::uint8_t);
+            EQAL(std::uint16_t);
+            EQUS(std::uint32_t);
+            EQUS(std::uint64_t);
+            EQAL(float);
+            EQAL(double);
+        }
+        {
+            auto V = max_of<std::int32_t>();
+            value const jv(V);
+            THRO(std::int8_t);
+            THRO(std::int16_t);
+            EQAL(std::int32_t);
+            EQAL(std::int64_t);
+            THRO(std::uint8_t);
+            THRO(std::uint16_t);
+            EQUS(std::uint32_t);
+            EQUS(std::uint64_t);
+            EQUF(float);
+            EQAL(double);
+        }
+        {
+            auto V = max_of<std::int64_t>();
+            value const jv(V);
+            THRO(std::int8_t);
+            THRO(std::int16_t);
+            THRO(std::int32_t);
+            EQAL(std::int64_t);
+            THRO(std::uint8_t);
+            THRO(std::uint16_t);
+            THRO(std::uint32_t);
+            EQUS(std::uint64_t);
+            EQUF(float);
+            EQUF(double);
+        }
+        //---
+        {
+            auto V = max_of<std::uint8_t>();
+            value const jv(V);
+            THRO(std::int8_t);
+            EQAL(std::int16_t);
+            EQAL(std::int32_t);
+            EQAL(std::int64_t);
+            EQAL(std::uint8_t);
+            EQAL(std::uint16_t);
+            EQAL(std::uint32_t);
+            EQAL(std::uint64_t);
+            EQAL(float);
+            EQAL(double);
+        }
+        {
+            auto V = max_of<std::uint16_t>();
+            value const jv(V);
+            THRO(std::int8_t);
+            THRO(std::int16_t);
+            EQAL(std::int32_t);
+            EQAL(std::int64_t);
+            THRO(std::uint8_t);
+            EQAL(std::uint16_t);
+            EQAL(std::uint32_t);
+            EQAL(std::uint64_t);
+            EQAL(float);
+            EQAL(double);
+        }
+        {
+            auto V = max_of<std::uint32_t>();
+            value const jv(V);
+            THRO(std::int8_t);
+            THRO(std::int16_t);
+            THRO(std::int32_t);
+            EQAL(std::int64_t);
+            THRO(std::uint8_t);
+            THRO(std::uint16_t);
+            EQAL(std::uint32_t);
+            EQAL(std::uint64_t);
+            EQUF(float);
+            EQAL(double);
+        }
+        {
+            auto V = max_of<std::uint64_t>();
+            value const jv(V);
+            THRO(std::int8_t);
+            THRO(std::int16_t);
+            THRO(std::int32_t);
+            THRO(std::int64_t);
+            THRO(std::uint8_t);
+            THRO(std::uint16_t);
+            THRO(std::uint32_t);
+            EQAL(std::uint64_t);
+            EQUF(float);
+            EQUF(double);
+        }
+        //---
+        {
+            auto V = min_of<std::int8_t>();
+            value const jv(V);
+            EQAL(std::int8_t);
+            EQAL(std::int16_t);
+            EQAL(std::int32_t);
+            EQAL(std::int64_t);
+            THRO(std::uint8_t);
+            THRO(std::uint16_t);
+            THRO(std::uint32_t);
+            THRO(std::uint64_t);
+            EQAL(float);
+            EQAL(double);
+        }
+        {
+            auto V = min_of<std::int16_t>();
+            value const jv(V);
+            THRO(std::int8_t);
+            EQAL(std::int16_t);
+            EQAL(std::int32_t);
+            EQAL(std::int64_t);
+            THRO(std::uint8_t);
+            THRO(std::uint16_t);
+            THRO(std::uint32_t);
+            THRO(std::uint64_t);
+            EQAL(float);
+            EQAL(double);
+        }
+        {
+            auto V = min_of<std::int32_t>();
+            value const jv(V);
+            THRO(std::int8_t);
+            THRO(std::int16_t);
+            EQAL(std::int32_t);
+            EQAL(std::int64_t);
+            THRO(std::uint8_t);
+            THRO(std::uint16_t);
+            THRO(std::uint32_t);
+            THRO(std::uint64_t);
+            EQUF(float);
+            EQAL(double);
+        }
+        {
+            auto V = min_of<std::int64_t>();
+            value const jv(V);
+            THRO(std::int8_t);
+            THRO(std::int16_t);
+            THRO(std::int32_t);
+            EQAL(std::int64_t);
+            THRO(std::uint8_t);
+            THRO(std::uint16_t);
+            THRO(std::uint32_t);
+            THRO(std::uint64_t);
+            EQUF(float);
+            EQUF(double);
+        }
+        //---
+        {
+            auto V = double(1.5);
+            value const jv(V);
+            THRO(std::int8_t);
+            THRO(std::int16_t);
+            THRO(std::int32_t);
+            THRO(std::int64_t);
+            THRO(std::uint8_t);
+            THRO(std::uint16_t);
+            THRO(std::uint32_t);
+            THRO(std::uint64_t);
+            EQAL(float);
+            EQAL(double);
+        }
+        {
+            auto V = double(2.0);
+            value const jv(V);
+            EQAL(std::int8_t);
+            EQAL(std::int16_t);
+            EQAL(std::int32_t);
+            EQAL(std::int64_t);
+            EQAL(std::uint8_t);
+            EQAL(std::uint16_t);
+            EQAL(std::uint32_t);
+            EQAL(std::uint64_t);
+            EQAL(float);
+            EQAL(double);
+        }
+        {
+            auto V = double(-4.0);
+            value const jv(V);
+            EQAL(std::int8_t);
+            EQAL(std::int16_t);
+            EQAL(std::int32_t);
+            EQAL(std::int64_t);
+            THRO(std::uint8_t);
+            THRO(std::uint16_t);
+            THRO(std::uint32_t);
+            THRO(std::uint64_t);
+            EQAL(float);
+            EQAL(double);
+        }
+    }
+
+    void
     testAs()
     {
         value obj(object{});
@@ -1815,6 +2076,7 @@ public:
         testObservers();
         testGetStorage();
         testIf();
+        testToNumber();
         testAs();
         testGet();
         testAt();

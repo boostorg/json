@@ -2312,6 +2312,249 @@ public:
     }
 
     //------------------------------------------------------
+
+    /** Return the stored number cast to an arithmetic type.
+
+        This function attempts to return the stored value
+        converted to the arithmetic type `T` which may not
+        be `bool`:
+        
+        @li If `T` is an integral type and the stored
+        value is a number which can be losslessly converted,
+        the conversion is performed without error and the
+        converted number is returned.
+
+        @li If `T` is an integral type and the stored value
+        is a number which cannot be losslessly converted,
+        then the operation fails with an error.
+
+        @li If `T` is a floating point type and the stored
+        value is a number, the conversion is performed
+        without error. The converted number is returned,
+        with a possible loss of precision.
+
+        @li Otherwise, if the stored value is not a number;
+        that is, if `this->is_number()` returns `false`, then
+        the operation fails with an error.
+
+        @par Constraints
+        @code
+        std::is_arithmetic< T >::value && ! std::is_same< T, bool >::value
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        Strong guarantee.
+
+        @return The converted number.
+
+        @param ec Set to the error, if any occurred.
+    */
+#ifdef BOOST_JSON_DOCS
+    template<class T>
+    T to_number(error_code& ec) const;
+#endif
+
+    /** Return the stored number cast to an arithmetic type.
+
+        This function attempts to return the stored value
+        converted to the arithmetic type `T` which may not
+        be `bool`:
+        
+        @li If `T` is an integral type and the stored
+        value is a number which can be losslessly converted,
+        the conversion is performed without error and the
+        converted number is returned.
+
+        @li If `T` is an integral type and the stored value
+        is a number which cannot be losslessly converted,
+        then the operation fails with an error.
+
+        @li If `T` is a floating point type and the stored
+        value is a number, the conversion is performed
+        without error. The converted number is returned,
+        with a possible loss of precision.
+
+        @li Otherwise, if the stored value is not a number;
+        that is, if `this->is_number()` returns `false`, then
+        the operation fails with an error.
+
+        @par Constraints
+        @code
+        std::is_arithmetic< T >::value && ! std::is_same< T, bool >::value
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        Strong guarantee.
+
+        @return The converted number.
+
+        @throw system_error on error.
+    */
+    template<class T>
+#ifdef BOOST_JSON_DOCS
+    T
+#else
+    typename std::enable_if<
+        std::is_arithmetic<T>::value &&
+        ! std::is_same<T, bool>::value,
+            T>::type
+#endif
+    to_number() const
+    {
+        error_code ec;
+        auto result = to_number<T>(ec);
+        if(ec)
+            detail::throw_system_error(ec,
+                BOOST_CURRENT_LOCATION);
+        return result;
+    }
+
+#ifndef BOOST_JSON_DOCS
+    template<class T>
+    auto
+    to_number(error_code& ec) const ->
+        typename std::enable_if<
+            std::is_signed<T>::value &&
+            ! std::is_floating_point<T>::value,
+                T>::type
+    {
+        T result{};
+        if(sca_.k == json::kind::int64)
+        {
+            auto const i = sca_.i;
+            if( i > (std::numeric_limits<T>::max)() ||
+                i < (std::numeric_limits<T>::min)())
+            {
+                ec = error::not_exact;
+            }
+            else
+            {
+                result = static_cast<T>(i);
+            }
+        }
+        else if(sca_.k == json::kind::uint64)
+        {
+            auto const u = sca_.u;
+            if(u > static_cast<std::uint64_t>((
+                std::numeric_limits<T>::max)()))
+            {
+                ec = error::not_exact;
+            }
+            else
+            {
+                result = static_cast<T>(u);
+            }
+        }
+        else if(sca_.k == json::kind::double_)
+        {
+            auto const d = sca_.d;
+            if( d > (std::numeric_limits<T>::max)() ||
+                d < (std::numeric_limits<T>::min)() ||
+                static_cast<T>(d) != d)
+            {
+                ec = error::not_exact;
+            }
+            else
+            {
+                result = static_cast<T>(d);
+            }
+        }
+        else
+        {
+            ec = error::not_number;
+        }
+        return result;
+    }
+
+    template<class T>
+    auto
+    to_number(error_code& ec) const ->
+        typename std::enable_if<
+            std::is_unsigned<T>::value &&
+            ! std::is_same<T, bool>::value,
+                T>::type
+    {
+        T result{};
+        if(sca_.k == json::kind::int64)
+        {
+            auto const i = sca_.i;
+            if( i < 0 || static_cast<std::uint64_t>(i) >
+                (std::numeric_limits<T>::max)())
+            {
+                ec = error::not_exact;
+            }
+            else
+            {
+                result = static_cast<T>(i);
+            }
+        }
+        else if(sca_.k == json::kind::uint64)
+        {
+            auto const u = sca_.u;
+            if(u > (std::numeric_limits<T>::max)())
+            {
+                ec = error::not_exact;
+            }
+            else
+            {
+                result = static_cast<T>(u);
+            }
+        }
+        else if(sca_.k == json::kind::double_)
+        {
+            auto const d = sca_.d;
+            if( d < 0 ||
+                d > (std::numeric_limits<T>::max)() ||
+                static_cast<T>(d) != d)
+            {
+                ec = error::not_exact;
+            }
+            else
+            {
+                result = static_cast<T>(d);
+            }
+        }
+        else
+        {
+            ec = error::not_number;
+        }
+        return result;
+    }
+
+    template<class T>
+    auto
+    to_number(error_code& ec) const ->
+        typename std::enable_if<
+            std::is_floating_point<
+                T>::value, T>::type
+    {
+        if(sca_.k == json::kind::int64)
+        {
+            ec = {};
+            return static_cast<T>(sca_.i);
+        }
+        if(sca_.k == json::kind::uint64)
+        {
+            ec = {};
+            return static_cast<T>(sca_.u);
+        }
+        if(sca_.k == json::kind::double_)
+        {
+            ec = {};
+            return static_cast<T>(sca_.d);
+        }
+        ec = error::not_number;
+        return {};
+    }
+#endif
+
+    //------------------------------------------------------
     //
     // Accessors
     //

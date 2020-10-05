@@ -43,7 +43,6 @@
           <member><link linkend="json.ref.boost__json__get">get</link></member>
           <member><link linkend="json.ref.boost__json__get_null_resource">get_null_resource</link></member>
           <member><link linkend="json.ref.boost__json__make_shared_resource">make_shared_resource</link></member>
-          <member><link linkend="json.ref.boost__json__number_cast">number_cast</link></member>
           <member><link linkend="json.ref.boost__json__parse">parse</link></member>
           <member><link linkend="json.ref.boost__json__serialize">serialize</link></member>
           <member><link linkend="json.ref.boost__json__to_string">to_string</link></member>

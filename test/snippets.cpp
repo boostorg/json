@@ -52,8 +52,8 @@ std::complex< T >
 tag_invoke( const value_to_tag< std::complex< T > >&, value const& jv )
 {
     return std::complex< T >(
-        number_cast< T >( jv.as_array().at(0) ),
-        number_cast< T >( jv.as_array().at(1) ) );
+        jv.as_array().at(0).to_number< T >(),
+        jv.as_array().at(1).to_number< T >());
 }
 
 //]

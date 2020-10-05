@@ -41,8 +41,8 @@ converted to `T` as-if by `static_cast`:
 [doc_using_numbers_4]
 
 Arithmetic conversions done by __value_to__ delegate to
-__number_cast__. In settings where exceptions cannot be used,
-an overload of __number_cast__ accepting __error_code__
+`value::to_number`. In settings where exceptions cannot be used,
+an overload of `value::to_number` accepting __error_code__
 can be used instead with identical semantics to its
 throwing counterpart:
 

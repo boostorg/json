@@ -11,7 +11,6 @@
 #include <boost/json/object.hpp>
 
 #include <boost/json/monotonic_resource.hpp>
-#include <boost/json/number_cast.hpp>
 
 #include <cmath>
 #include <type_traits>
@@ -1059,9 +1058,9 @@ public:
             o.emplace(k1, 1);
             o.emplace(k2, 2);
             o.emplace(k3, 3);
-            BOOST_TEST(number_cast<int>(o.at(k1)) == 1);
-            BOOST_TEST(number_cast<int>(o.at(k2)) == 2);
-            BOOST_TEST(number_cast<int>(o.at(k3)) == 3);
+            BOOST_TEST(o.at(k1).to_number<int>() == 1);
+            BOOST_TEST(o.at(k2).to_number<int>() == 2);
+            BOOST_TEST(o.at(k3).to_number<int>() == 3);
         }
 
         // erase k1
@@ -1071,8 +1070,8 @@ public:
             o.emplace(k2, 2);
             o.emplace(k3, 3);
             o.erase(k1);
-            BOOST_TEST(number_cast<int>(o.at(k2)) == 2);
-            BOOST_TEST(number_cast<int>(o.at(k3)) == 3);
+            BOOST_TEST(o.at(k2).to_number<int>() == 2);
+            BOOST_TEST(o.at(k3).to_number<int>() == 3);
         }
 
         // erase k2
@@ -1082,8 +1081,8 @@ public:
             o.emplace(k2, 2);
             o.emplace(k3, 3);
             o.erase(k2);
-            BOOST_TEST(number_cast<int>(o.at(k1)) == 1);
-            BOOST_TEST(number_cast<int>(o.at(k3)) == 3);
+            BOOST_TEST(o.at(k1).to_number<int>() == 1);
+            BOOST_TEST(o.at(k3).to_number<int>() == 3);
         }
 
         // erase k3
@@ -1093,8 +1092,8 @@ public:
             o.emplace(k2, 2);
             o.emplace(k3, 3);
             o.erase(k3);
-            BOOST_TEST(number_cast<int>(o.at(k1)) == 1);
-            BOOST_TEST(number_cast<int>(o.at(k2)) == 2);
+            BOOST_TEST(o.at(k1).to_number<int>() == 1);
+            BOOST_TEST(o.at(k2).to_number<int>() == 2);
         }
     }
 

@@ -7,7 +7,6 @@
 // Official repository: https://github.com/boostorg/json
 //
 
-#include <boost/json/number_cast.hpp>
 #include <boost/json/parse.hpp>
 #include <boost/json/value.hpp>
 #include <boost/json/value_to.hpp>
@@ -134,12 +133,12 @@ value jv = 10.5;
 error_code ec;
 
 // ok, conversion is exact
-float r1 = number_cast< float >( jv, ec );
+float r1 = jv.to_number< float >( ec );
 
 assert( ! ec );
 
 // error, conversion is non-exact
-int r2 = number_cast< int >( jv, ec );
+int r2 = jv.to_number< int >( ec );
 
 assert( ec == error::not_exact );
 
