@@ -9,7 +9,7 @@
 //
 
 // Test that header file is self-contained.
-#include <boost/json/basic_parser.hpp>
+#include <boost/json/basic_parser_impl.hpp>
 
 #include <memory>
 #include <string>

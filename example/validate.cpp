@@ -17,7 +17,7 @@
 
 // This file must be manually included when
 // using basic_parser to implement a parser.
-#include <boost/json/basic_parser.hpp>
+#include <boost/json/basic_parser_impl.hpp>
 
 #include <iomanip>
 #include <iostream>

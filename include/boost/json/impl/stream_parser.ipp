@@ -11,7 +11,7 @@
 #define BOOST_JSON_IMPL_STREAM_PARSER_IPP
 
 #include <boost/json/stream_parser.hpp>
-#include <boost/json/basic_parser.hpp>
+#include <boost/json/basic_parser_impl.hpp>
 #include <boost/json/error.hpp>
 #include <cstring>
 #include <stdexcept>

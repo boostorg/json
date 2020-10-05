@@ -24,7 +24,7 @@
 #include "lib/rapidjson/include/rapidjson/stringbuffer.h"
 
 #include <boost/json.hpp>
-#include <boost/json/basic_parser.hpp>
+#include <boost/json/basic_parser_impl.hpp>
 #include <algorithm>
 #include <chrono>
 #include <iostream>

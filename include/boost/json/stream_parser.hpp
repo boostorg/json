@@ -11,10 +11,10 @@
 #define BOOST_JSON_STREAM_PARSER_HPP
 
 #include <boost/json/detail/config.hpp>
+#include <boost/json/basic_parser.hpp>
 #include <boost/json/parse_options.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/value.hpp>
-#include <boost/json/detail/basic_parser.hpp>
 #include <boost/json/detail/handler.hpp>
 #include <type_traits>
 #include <cstddef>
