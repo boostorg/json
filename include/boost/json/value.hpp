@@ -70,7 +70,7 @@ class value
 
 #ifndef BOOST_JSON_DOCS
     // VFALCO doc toolchain incorrectly treats this as public
-    friend struct detail::value_access;
+    friend struct detail::access;
 #endif
 
     explicit
@@ -3406,8 +3406,12 @@ BOOST_STATIC_ASSERT(sizeof(value) == 16);
 class key_value_pair
 {
 #ifndef BOOST_JSON_DOCS
-    friend struct detail::value_access;
+    friend struct detail::access;
+    using access = detail::access;
 #endif
+
+    BOOST_JSON_DECL
+    static char const empty_[1];
 
     inline
     key_value_pair(
@@ -3424,8 +3428,16 @@ public:
         The value is destroyed and all internally
         allocated memory is freed.
     */
-    BOOST_JSON_DECL
-    ~key_value_pair();
+    ~key_value_pair()
+    {
+        auto const& sp = value_.storage();
+        if(sp.is_not_shared_and_deallocate_is_trivial())
+            return;
+        if(key_ == empty_)
+            return;
+        sp->deallocate(const_cast<char*>(key_),
+            len_ + 1, alignof(char));
+    }
 
     /** Copy constructor.
 
@@ -3439,8 +3451,12 @@ public:
 
         @param other The key/value pair to copy.
     */
-    BOOST_JSON_DECL
-    key_value_pair(key_value_pair const& other);
+    key_value_pair(
+        key_value_pair const& other)
+        : key_value_pair(other,
+            other.storage())
+    {
+    }
 
     /** Copy constructor.
 
@@ -3463,6 +3479,68 @@ public:
         key_value_pair const& other,
         storage_ptr sp);
 
+    /** Move constructor.
+
+        The pair is constructed by acquiring
+        ownership of the contents of `other` and
+        shared ownership of `other`'s memory resource.
+        
+        @note
+
+        After construction, the moved-from pair holds an
+        empty key, and a null value with its current
+        storage pointer.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param other The pair to move.
+    */
+    key_value_pair(
+        key_value_pair&& other) noexcept
+        : value_(std::move(other.value_))
+        , key_(detail::exchange(
+            other.key_, empty_))
+        , len_(detail::exchange(
+            other.len_, 0))
+    {
+    }
+
+    /** Pilfer constructor.
+    
+        The pair is constructed by acquiring ownership
+        of the contents of `other` using pilfer semantics.
+        This is more efficient than move construction, when
+        it is known that the moved-from object will be
+        immediately destroyed afterwards.
+        
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param other The value to pilfer. After pilfer
+        construction, `other` is not in a usable state
+        and may only be destroyed.
+
+        @see @ref pilfer,
+            <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0308r0.html">
+                Valueless Variants Considered Harmful</a>
+    */
+    key_value_pair(
+        pilfered<key_value_pair> other) noexcept
+        : value_(pilfer(other.get().value_))
+        , key_(detail::exchange(
+            other.get().key_, empty_))
+        , len_(detail::exchange(
+            other.get().len_, 0))
+    {
+    }
+
     /** Constructor.
 
         This constructs a key/value pair.
@@ -3482,23 +3560,19 @@ public:
         string_view key,
         Args&&... args)
         : value_(std::forward<Args>(args)...)
-        , key_(
-            [&]
-            {
-                if(key.size() > string::max_size())
-                    detail::throw_length_error(
-                        "key too large",
-                        BOOST_CURRENT_LOCATION);
-                auto s = reinterpret_cast<
-                    char*>(value_.storage()->
-                        allocate(key.size() + 1));
-                std::memcpy(s, key.data(), key.size());
-                s[key.size()] = 0;
-                return s;
-            }())
-        , len_(static_cast<
-            std::uint32_t>(key.size()))
     {
+        if(key.size() > string::max_size())
+            detail::throw_length_error(
+                "key too large",
+                BOOST_CURRENT_LOCATION);
+        auto s = reinterpret_cast<
+            char*>(value_.storage()->
+                allocate(key.size() + 1));
+        std::memcpy(s, key.data(), key.size());
+        s[key.size()] = 0;
+        key_ = s;
+        len_ = static_cast<
+            std::uint32_t>(key.size());
     }
 
     /** Constructor.
@@ -3855,7 +3929,6 @@ struct tuple_element<1, ::boost::json::key_value_pair const>
 // and object form cyclic references.
 
 #include <boost/json/detail/impl/array.hpp>
-#include <boost/json/detail/impl/object_impl.hpp>
 #include <boost/json/impl/array.hpp>
 #include <boost/json/impl/object.hpp>
 

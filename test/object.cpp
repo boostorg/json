@@ -13,7 +13,9 @@
 #include <boost/json/monotonic_resource.hpp>
 
 #include <cmath>
+#include <string>
 #include <type_traits>
+#include <vector>
 
 #include "test.hpp"
 #include "test_suite.hpp"
@@ -185,7 +187,7 @@ public:
                         {"b", true},
                         {"c", "hello"}};
                 object o(init.begin(), init.end(), 5);
-                check(o, 7);
+                check(o, 5);
             }
 
             fail_loop([&](storage_ptr const& sp)
@@ -198,8 +200,7 @@ public:
                 object o(init.begin(), init.end(), 5, sp);
                 BOOST_TEST(! o.empty());
                 BOOST_TEST(o.size() == 3);
-                BOOST_TEST(o.capacity() == 7);
-                check(o, 7);
+                check(o, 5);
                 check_storage(o, sp);
             });
 
@@ -216,8 +217,8 @@ public:
                     5, sp);
                 BOOST_TEST(! o.empty());
                 BOOST_TEST(o.size() == 3);
-                BOOST_TEST(o.capacity() == 7);
-                check(o, 7);
+                BOOST_TEST(o.capacity() == 5);
+                check(o, 5);
                 check_storage(o, sp);
             });
         }
@@ -345,7 +346,7 @@ public:
                     {"b", true},
                     {"c", "hello"}},
                     5);
-                check(o, 7);
+                check(o, 5);
             }
 
             fail_loop([&](storage_ptr const& sp)
@@ -358,7 +359,7 @@ public:
                     5, sp);
                 BOOST_TEST(
                     *o.storage() == *sp);
-                check(o, 7);
+                check(o, 5);
             });
         }
 
@@ -495,6 +496,17 @@ public:
                 check(o, 3);
                 check_storage(o, sp);
             });
+
+            // assign from child
+            {
+                object o = {
+                    { "k1", 1 },
+                    { "k2", 2 },
+                    { "k3", 3 } };
+                o = { { "k2", o["k2"] } };
+                BOOST_TEST(
+                    o == object({ { "k2", 2 } }));
+            }
         }
     }
 
@@ -690,6 +702,22 @@ public:
                     result.first->value().as_int64() == 2);
                 BOOST_TEST(! result.second);
             });
+
+            // insert child
+            {
+                object o = {
+                    { "k1", 1 },
+                    { "k2", 2 },
+                    { "k3", 3 } };
+                o.insert(std::pair<
+                    string_view, value&>(
+                        "k4", o["k2"]));
+                BOOST_TEST(o == object({
+                    { "k1", 1 },
+                    { "k2", 2 },
+                    { "k3", 3 },
+                    { "k4", 2 }}));
+            }
         }
 
         // insert(InputIt, InputIt)
@@ -733,13 +761,28 @@ public:
                 check(o, 3);
             });
 
-            // do rollback in ~undo_insert
+            // do rollback in ~revert_insert
             fail_loop([&](storage_ptr const& sp)
             {
                 object o(sp);
                 o.insert({
                     { "a", { 1, 2, 3, 4 } } });
             });
+
+            // insert child
+            {
+                object o = {
+                    { "k1", 1 },
+                    { "k2", 2 },
+                    { "k3", 3 } };
+                o.insert({
+                    { "k4", o["k2"] } });
+                BOOST_TEST(o == object({
+                    { "k1", 1 },
+                    { "k2", 2 },
+                    { "k3", 3 },
+                    { "k4", 2 }}));
+            }
         }
 
         // insert_or_assign(key, o);
@@ -777,17 +820,49 @@ public:
                     ! o.insert_or_assign("a", 2).second);
                 BOOST_TEST(o["a"].as_int64() == 2);
             });
+
+            // insert child
+            {
+                object o = {
+                    { "k1", 1 },
+                    { "k2", 2 },
+                    { "k3", 3 } };
+                o.insert_or_assign(
+                    "k4", o["k2"]);
+                BOOST_TEST(o == object({
+                    { "k1", 1 },
+                    { "k2", 2 },
+                    { "k3", 3 },
+                    { "k4", 2 }}));
+            }
         }
 
         // emplace(key, arg)
-        fail_loop([&](storage_ptr const& sp)
         {
-            object o(sp);
-            o.emplace("a", 1);
-            o.emplace("b", true);
-            o.emplace("c", "hello");
-            check(o, 3);
-        });
+            fail_loop([&](storage_ptr const& sp)
+            {
+                object o(sp);
+                o.emplace("a", 1);
+                o.emplace("b", true);
+                o.emplace("c", "hello");
+                check(o, 3);
+            });
+
+            // emplace child
+            {
+                object o = {
+                    { "k1", 1 },
+                    { "k2", 2 },
+                    { "k3", 3 } };
+                o.emplace(
+                    "k4", o["k2"]);
+                BOOST_TEST(o == object({
+                    { "k1", 1 },
+                    { "k2", 2 },
+                    { "k3", 3 },
+                    { "k4", 2 }}));
+            }
+        }
 
         // erase(pos)
         {
@@ -802,7 +877,7 @@ public:
                 BOOST_TEST(it->key() == "c");
                 BOOST_TEST(
                     it->value().as_string() == "hello");
-                check(o, 7);
+                check(o, 4);
             });
         }
 
@@ -824,7 +899,7 @@ public:
                     {"b2", 2},
                     {"c", "hello"}});
                 BOOST_TEST(o.erase("b2") == 1);
-                check(o, 7);
+                check(o, 4);
             }
         }
 
@@ -866,10 +941,12 @@ public:
     void
     testLookup()
     {
+        object o0;
         object o1({
             {"a", 1},
             {"b", true},
             {"c", "hello"}});
+        auto const& co0 = o0;
         auto const& co1 = o1;
 
         // at(key)
@@ -908,17 +985,28 @@ public:
         }
 
         // find(key)
+        // find(key) const
         {
+            BOOST_TEST(
+                o0.find("") == o0.end());
             BOOST_TEST(
                 o1.find("a")->key() == "a");
             BOOST_TEST(
                 o1.find("e") == o1.end());
+
+            BOOST_TEST(
+                co0.find("") == co0.end());
+            BOOST_TEST(
+                co1.find("a")->key() == "a");
+            BOOST_TEST(
+                co1.find("e") == o1.end());
         }
 
         // contains(key)
         {
             BOOST_TEST(o1.contains("a"));
             BOOST_TEST(! o1.contains("e"));
+            BOOST_TEST(! object().contains(""));
         }
 
         // if_contains(key)
@@ -972,17 +1060,8 @@ public:
                 {"b", {1,2,3}},
                 {"c", "hello"}});
             BOOST_TEST(o.at("a").as_int64() == 1);
-            BOOST_TEST(o.at("b").as_bool());
+            BOOST_TEST(o.at("b").as_array() == array({1,2,3}));
             BOOST_TEST(o.at("c").as_string() == "hello");
-        }
-
-        // find in missing or empty tables
-        {
-            object o;
-            BOOST_TEST(o.find("a") == o.end());
-            o.reserve(3);
-            BOOST_TEST(o.capacity() > 0);
-            BOOST_TEST(o.find("a") == o.end());
         }
 
         // destroy key_value_pair array with need_free=false
@@ -1022,90 +1101,83 @@ public:
     testCollisions()
     {
         int constexpr buckets = 3;
-#if 0
+        int constexpr collisions = 3;
+
+        // find a set of keys that collide
+        std::vector<std::string> v;
+        object o;
+        o.reserve(buckets);
         {
-            // VFALCO This code finds the collisions
-            object o(this); // must create 3 buckets
+            BOOST_TEST(
+                o.capacity() == buckets);
             char buf[26];
             auto const match =
-                o.impl_.digest("0") % buckets;
-            std::size_t i = 8;
+                o.t_->digest("0") % buckets;
+            v.push_back("0");
+            std::size_t i = 1;
             for(;;)
             {
-                if((o.impl_.digest(
-                    make_key(i, buf)) % buckets) == match)
+                auto s = make_key(i, buf);
+                if((o.t_->digest(s) %
+                    buckets) == match)
                 {
-                    log <<
-                        "match: \"" <<
-                        make_key(i, buf) <<
-                        "\"\n";
-                    break;
+                    v.push_back(std::string(
+                        s.data(), s.size()));
+                    if(v.size() >= collisions)
+                        break;
                 }
                 ++i;
             }
-            }
-#endif
-        // Create an object with 3 keys that
-        // hash to the same bucket.
-
-    #if BOOST_JSON_ARCH == 32
-        string_view k1 = "0";
-        string_view k2 = "7";
-        string_view k3 = "A";
-    #else
-        string_view k1 = "0";
-        string_view k2 = "7";
-        string_view k3 = "C";
-    #endif
+        }
 
         // ensure collisions are distinguishable
         {
-            object o(this);
+            o.clear();
             BOOST_TEST(
-                (o.impl_.digest(k1) % buckets) ==
-                (o.impl_.digest(k2) % buckets));
+                (o.t_->digest(v[0]) % buckets) ==
+                (o.t_->digest(v[1]) % buckets));
             BOOST_TEST(
-                (o.impl_.digest(k2) % buckets) ==
-                (o.impl_.digest(k3) % buckets));
-            o.emplace(k1, 1);
-            o.emplace(k2, 2);
-            o.emplace(k3, 3);
-            BOOST_TEST(o.at(k1).to_number<int>() == 1);
-            BOOST_TEST(o.at(k2).to_number<int>() == 2);
-            BOOST_TEST(o.at(k3).to_number<int>() == 3);
+                (o.t_->digest(v[1]) % buckets) ==
+                (o.t_->digest(v[2]) % buckets));
+            o.emplace(v[0], 1);
+            o.emplace(v[1], 2);
+            o.emplace(v[2], 3);
+            BOOST_TEST(o.at(v[0]).to_number<int>() == 1);
+            BOOST_TEST(o.at(v[1]).to_number<int>() == 2);
+            BOOST_TEST(o.at(v[2]).to_number<int>() == 3);
         }
 
         // erase k1
         {
-            object o(this);
-            o.emplace(k1, 1);
-            o.emplace(k2, 2);
-            o.emplace(k3, 3);
-            o.erase(k1);
-            BOOST_TEST(o.at(k2).to_number<int>() == 2);
-            BOOST_TEST(o.at(k3).to_number<int>() == 3);
+            o.clear();
+            o.emplace(v[0], 1);
+            o.emplace(v[1], 2);
+            o.emplace(v[2], 3);
+            o.erase(v[0]);
+            BOOST_TEST(o.at(v[1]).to_number<int>() == 2);
+            BOOST_TEST(o.at(v[2]).to_number<int>() == 3);
         }
 
         // erase k2
         {
-            object o(this);
-            o.emplace(k1, 1);
-            o.emplace(k2, 2);
-            o.emplace(k3, 3);
-            o.erase(k2);
-            BOOST_TEST(o.at(k1).to_number<int>() == 1);
-            BOOST_TEST(o.at(k3).to_number<int>() == 3);
+            o.clear();
+            o.emplace(v[0], 1);
+            o.emplace(v[1], 2);
+            o.emplace(v[2], 3);
+            o.erase(v[1]);
+            BOOST_TEST(o.at(v[0]).to_number<int>() == 1);
+            BOOST_TEST(o.at(v[2]).to_number<int>() == 3);
         }
 
         // erase k3
         {
-            object o(this);
-            o.emplace(k1, 1);
-            o.emplace(k2, 2);
-            o.emplace(k3, 3);
-            o.erase(k3);
-            BOOST_TEST(o.at(k1).to_number<int>() == 1);
-            BOOST_TEST(o.at(k2).to_number<int>() == 2);
+            o.clear();
+            o.emplace(v[0], 1);
+            o.emplace(v[1], 2);
+            o.emplace(v[2], 3);
+            o.erase(v[2]);
+            BOOST_TEST(o.at(v[0]).to_number<int>() == 1);
+            BOOST_TEST(o.at(v[1]).to_number<int>() == 2);
         }
     }
 

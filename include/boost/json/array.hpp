@@ -84,12 +84,14 @@ class array
     struct table;
     class revert_construct;
     class revert_insert;
+    friend class value;
 
     storage_ptr sp_;        // must come first
     kind k_ = kind::array;  // must come second
     table* t_;
 
-    friend class value;
+    BOOST_JSON_DECL
+    static table empty_;
 
     inline
     static
@@ -108,9 +110,6 @@ class array
     BOOST_JSON_DECL
     void
     destroy() noexcept;
-
-    BOOST_JSON_DECL
-    static table empty_;
 
     BOOST_JSON_DECL
     explicit

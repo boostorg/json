@@ -79,7 +79,7 @@ struct scalar
     }
 };
 
-struct value_access
+struct access
 {
     template<class Value, class... Args>
     static

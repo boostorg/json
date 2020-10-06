@@ -18,62 +18,142 @@
 
 BOOST_JSON_NS_BEGIN
 
-struct object::undo_construct
-{
-    object* self;
-
-    explicit
-    undo_construct(
-        object* self_)
-        : self(self_)
-    {
-    }
-
-    ~undo_construct()
-    {
-        if(self)
-            self->impl_.destroy(
-                self->sp_);
-    }
-};
-
 //----------------------------------------------------------
 
-struct object::place_one
+struct alignas(alignof(key_value_pair))
+    object::table
 {
-    virtual
+    std::uint32_t size = 0;
+    std::uint32_t capacity = 0;
+    std::uintptr_t salt = 0;
+
+#if defined(_MSC_VER) && BOOST_JSON_ARCH == 32
+    // VFALCO If we make key_value_pair smaller,
+    //        then we might want to revisit this
+    //        padding.
+    BOOST_STATIC_ASSERT(
+        sizeof(key_value_pair) == 32);
+    char pad[4]; // silence warnings
+#endif
+
+    constexpr table();
+
+    key_value_pair&
+    operator[](
+        std::size_t pos) noexcept
+    {
+        return reinterpret_cast<
+            key_value_pair*>(
+                this + 1)[pos];
+    }
+
+    // VFALCO This is exported for tests
+    BOOST_JSON_DECL
+    std::size_t
+    digest(string_view key) const noexcept;
+
+    inline
+    index_t&
+    bucket(std::size_t hash) noexcept;
+
+    inline
+    index_t&
+    bucket(string_view key) noexcept;
+
+    inline
     void
-    operator()(void* dest) = 0;
-};
+    clear() noexcept;
 
-struct object::place_range
-{
-    virtual
-    bool
-    operator()(void* dest) = 0;
+    static
+    inline
+    table*
+    allocate(
+        std::size_t capacity,
+        std::uintptr_t salt,
+        storage_ptr const& sp);
+
+    static
+    void
+    deallocate(
+        table* p,
+        storage_ptr const& sp) noexcept
+    {
+        if(p == &empty_)
+            return;
+        sp->deallocate(p,
+            sizeof(table) + p->capacity * (
+                sizeof(key_value_pair) +
+                sizeof(index_t)));
+    }
 };
 
 //----------------------------------------------------------
-//
-// object
-//
+
+class object::revert_construct
+{
+    object* obj_;
+
+    BOOST_JSON_DECL
+    void
+    destroy() noexcept;
+
+public:
+    explicit
+    revert_construct(
+        object& obj) noexcept
+        : obj_(&obj)
+    {
+    }
+
+    ~revert_construct()
+    {
+        if(! obj_)
+            return;
+        destroy();
+    }
+
+    void
+    commit() noexcept
+    {
+        obj_ = nullptr;
+    }
+};
+
 //----------------------------------------------------------
 
-template<class InputIt, class>
-object::
-object(
-    InputIt first,
-    InputIt last,
-    std::size_t min_capacity,
-    storage_ptr sp)
-    : sp_(std::move(sp))
+class object::revert_insert
 {
-    undo_construct u(this);
-    insert_range(
-        first, last,
-        min_capacity);
-    u.self = nullptr;
-}
+    object* obj_;
+    std::size_t size_;
+
+    BOOST_JSON_DECL
+    void
+    destroy() noexcept;
+
+public:
+    explicit
+    revert_insert(
+        object& obj) noexcept
+        : obj_(&obj)
+        , size_(obj_->size())
+    {
+    }
+
+    ~revert_insert()
+    {
+        if(! obj_)
+            return;
+        destroy();
+        obj_->t_->size = static_cast<
+            index_t>(size_);
+    }
+
+    void
+    commit() noexcept
+    {
+        obj_ = nullptr;
+    }
+};
 
 //----------------------------------------------------------
 //
@@ -86,7 +166,7 @@ object::
 begin() noexcept ->
     iterator
 {
-    return impl_.begin();
+    return &(*t_)[0];
 }
 
 auto
@@ -94,7 +174,7 @@ object::
 begin() const noexcept ->
     const_iterator
 {
-    return impl_.begin();
+    return &(*t_)[0];
 }
 
 auto
@@ -102,7 +182,7 @@ object::
 cbegin() const noexcept ->
     const_iterator
 {
-    return impl_.begin();
+    return &(*t_)[0];
 }
 
 auto
@@ -110,7 +190,7 @@ object::
 end() noexcept ->
     iterator
 {
-    return impl_.end();
+    return &(*t_)[t_->size];
 }
 
 auto
@@ -118,7 +198,7 @@ object::
 end() const noexcept ->
     const_iterator
 {
-    return impl_.end();
+    return &(*t_)[t_->size];
 }
 
 auto
@@ -126,7 +206,7 @@ object::
 cend() const noexcept ->
     const_iterator
 {
-    return impl_.end();
+    return &(*t_)[t_->size];
 }
 
 auto
@@ -187,7 +267,7 @@ bool
 object::
 empty() const noexcept
 {
-    return impl_.size() == 0;
+    return t_->size == 0;
 }
 
 auto
@@ -195,7 +275,20 @@ object::
 size() const noexcept ->
     std::size_t
 {
-    return impl_.size();
+    return t_->size;
+}
+
+constexpr
+std::size_t
+object::
+max_size() noexcept
+{
+    // max_size depends on the address model
+    using min = std::integral_constant<std::size_t,
+        (std::size_t(-1) - sizeof(table)) /
+            (sizeof(key_value_pair) + sizeof(index_t))>;
+    return min::value < BOOST_JSON_MAX_STRUCTURED_SIZE ?
+        min::value : BOOST_JSON_MAX_STRUCTURED_SIZE;
 }
 
 auto
@@ -203,16 +296,7 @@ object::
 capacity() const noexcept ->
     std::size_t
 {
-    return impl_.capacity();
-}
-
-void
-object::
-reserve(std::size_t new_capacity)
-{
-    if(new_capacity <= capacity())
-        return;
-    rehash(new_capacity);
+    return t_->capacity;
 }
 
 //----------------------------------------------------------
@@ -223,30 +307,9 @@ object::
 insert(P&& p) ->
     std::pair<iterator, bool>
 {
-    struct place_impl : place_one
-    {
-        P&& p;
-        storage_ptr const& sp;
-
-        place_impl(
-            P&& p_,
-            storage_ptr const& sp_)
-            : p(std::forward<P>(p_))
-            , sp(sp_)
-        {
-        }
-
-        void
-        operator()(void* dest) override
-        {
-            ::new(dest) value_type(
-                std::forward<P>(p), sp);
-        }
-    };
-
-    place_impl f(
+    key_value_pair v(
         std::forward<P>(p), sp_);
-    return insert_impl(f);
+    return insert_impl(pilfer(v));
 }
 
 template<class M>
@@ -256,42 +319,18 @@ insert_or_assign(
     string_view key, M&& m) ->
         std::pair<iterator, bool>
 {
-    struct place_impl : place_one
-    {
-        string_view key;
-        M&& m;
-        storage_ptr const& sp;
-
-        place_impl(
-            string_view key_,
-            M&& m_,
-            storage_ptr const& sp_)
-            : key(key_)
-            , m(std::forward<M>(m_))
-            , sp(sp_)
-        {
-        }
-
-        void
-        operator()(void* dest) override
-        {
-            ::new(dest) value_type(key,
-                std::forward<M>(m), sp);
-        }
-    };
-
+    reserve(size() + 1);
     auto const result = find_impl(key);
     if(result.first)
     {
-        result.first->value() =
-            std::forward<M>(m);
+        value(std::forward<M>(m),
+            sp_).swap(result.first->value());
         return { result.first, false };
     }
-
-    place_impl f(key,
+    key_value_pair kv(key,
         std::forward<M>(m), sp_);
-    return { insert_impl(
-        result.second, f), true };
+    return { insert_impl(pilfer(kv),
+        result.second), true };
 }
 
 template<class Arg>
@@ -302,54 +341,76 @@ emplace(
     Arg&& arg) ->
         std::pair<iterator, bool>
 {
-    struct place_impl : place_one
-    {
-        string_view key;
-        Arg&& arg;
-        storage_ptr const& sp;
-    
-        place_impl(
-            string_view key_,
-            Arg&& arg_,
-            storage_ptr const& sp_)
-            : key(key_)
-            , arg(std::forward<Arg>(arg_))
-            , sp(sp_)
-        {
-        }
-
-        void
-        operator()(void* dest) override
-        {
-            ::new(dest) value_type(key,
-                std::forward<Arg>(arg), sp);
-        }
-    };
-
-    place_impl f(key,
+    reserve(size() + 1);
+    auto const result = find_impl(key);
+    if(result.first)
+        return { result.first, false };
+    key_value_pair kv(key,
         std::forward<Arg>(arg), sp_);
-    return emplace_impl(key, f);
+    return { insert_impl(pilfer(kv),
+        result.second), true };
 }
 
 //----------------------------------------------------------
 //
-// (implementation)
+// (private)
 //
 //----------------------------------------------------------
 
 template<class InputIt>
 void
 object::
-insert_range(
+construct(
     InputIt first,
     InputIt last,
     std::size_t min_capacity,
     std::input_iterator_tag)
 {
+    reserve(min_capacity);
+    revert_construct r(*this);
+    while(first != last)
+    {
+        insert(*first);
+        ++first;
+    }
+    r.commit();
+}
+
+template<class InputIt>
+void
+object::
+construct(
+    InputIt first,
+    InputIt last,
+    std::size_t min_capacity,
+    std::forward_iterator_tag)
+{
+    auto n = static_cast<
+        std::size_t>(std::distance(
+            first, last));
+    if( n < min_capacity)
+        n = min_capacity;
+    reserve(n);
+    revert_construct r(*this);
+    while(first != last)
+    {
+        insert(*first);
+        ++first;
+    }
+    r.commit();
+}
+
+template<class InputIt>
+void
+object::
+insert(
+    InputIt first,
+    InputIt last,
+    std::input_iterator_tag)
+{
     // Since input iterators cannot be rewound,
     // we keep inserted elements on an exception.
     //
-    reserve(min_capacity);
     while(first != last)
     {
         insert(*first);
@@ -360,50 +421,50 @@ insert_range(
 template<class InputIt>
 void
 object::
-insert_range(
+insert(
     InputIt first,
     InputIt last,
-    std::size_t min_capacity,
     std::forward_iterator_tag)
 {
-    struct place_impl : place_range
-    {
-        InputIt it;
-        std::size_t n;
-        storage_ptr const& sp;
-
-        place_impl(
-            InputIt it_,
-            std::size_t n_,
-            storage_ptr const& sp_)
-            : it(it_)
-            , n(n_)
-            , sp(sp_)
-        {
-        }
-
-        bool
-        operator()(void* dest) override
-        {
-            if(n-- == 0)
-                return false;
-            ::new(dest) value_type(*it++, sp);
-            return true;
-        }
-    };
-
-    auto const n = static_cast<std::size_t>(
-        std::distance(first, last));
+    auto const n =
+        static_cast<std::size_t>(
+            std::distance(first, last));
     auto const n0 = size();
     if(n > max_size() - n0)
         detail::throw_length_error(
             "object too large",
             BOOST_CURRENT_LOCATION);
-    if( min_capacity < n0 + n)
-        min_capacity = n0 + n;
-    place_impl f(first, n, sp_);
-    insert_range_impl(min_capacity, f);
+    reserve(n0 + n);
+    revert_insert r(*this);
+    while(first != last)
+    {
+        insert(*first);
+        ++first;
+    }
+    r.commit();
 }
+
+//----------------------------------------------------------
+
+namespace detail {
+
+unchecked_object::
+~unchecked_object()
+{
+    if(! data_)
+        return;
+    if(sp_.is_not_shared_and_deallocate_is_trivial())
+        return;
+    value* p = data_;
+    while(size_--)
+    {
+        p[0].~value();
+        p[1].~value();
+        p += 2;
+    }
+}
+
+} // detail
 
 BOOST_JSON_NS_END
 

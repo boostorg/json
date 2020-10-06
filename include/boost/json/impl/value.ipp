@@ -457,6 +457,11 @@ equal(value const& other) const noexcept
 //
 //----------------------------------------------------------
 
+// empty keys point here
+BOOST_JSON_REQUIRE_CONST_INIT
+char const
+key_value_pair::empty_[1] = { 0 };
+
 key_value_pair::
 key_value_pair(
     pilfered<json::value> key,
@@ -464,58 +469,25 @@ key_value_pair(
     : value_(value)
 {
     std::size_t len;
-    key_ = detail::value_access::release_key(key.get(), len);
+    key_ = access::release_key(key.get(), len);
     len_ = static_cast<std::uint32_t>(len);
 }
 
-key_value_pair::
-~key_value_pair()
-{
-    auto const& sp = value_.storage();
-    if(sp.is_not_shared_and_deallocate_is_trivial())
-        return;
-    sp->deallocate(const_cast<char*>(key_),
-        len_ + 1, alignof(char));
-}
-
-key_value_pair::
-key_value_pair(
-    key_value_pair const& other)
-    : value_(other.value_)
-    , key_(
-        [&]
-        {
-            auto s = reinterpret_cast<
-                char*>(value_.storage()->
-                    allocate(other.len_ + 1,
-                        alignof(char)));
-            std::memcpy(s, other.key_, other.len_);
-            s[other.len_] = 0;
-            return s;
-        }())
-    , len_(other.len_)
-{
-}
-
-key_value_pair::
 key_value_pair::
 key_value_pair(
     key_value_pair const& other,
     storage_ptr sp)
     : value_(other.value_, std::move(sp))
-    , key_(
-        [&]
-        {
-            auto s = reinterpret_cast<
-                char*>(value_.storage()->
-                    allocate(other.len_ + 1,
-                        alignof(char)));
-            std::memcpy(s, other.key_, other.len_);
-            s[other.len_] = 0;
-            return s;
-        }())
-    , len_(other.len_)
 {
+    auto p = reinterpret_cast<
+        char*>(value_.storage()->
+            allocate(other.len_ + 1,
+                alignof(char)));
+    std::memcpy(
+        p, other.key_, other.len_);
+    len_ = other.len_;
+    p[len_] = 0;
+    key_ = p;
 }
 
 //----------------------------------------------------------

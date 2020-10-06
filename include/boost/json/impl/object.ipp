@@ -11,6 +11,7 @@
 #define BOOST_JSON_IMPL_OBJECT_IPP
 
 #include <boost/json/object.hpp>
+#include <boost/json/detail/digest.hpp>
 #include <boost/json/detail/except.hpp>
 #include <algorithm>
 #include <cmath>
@@ -22,75 +23,181 @@
 
 BOOST_JSON_NS_BEGIN
 
-class object::undo_insert
+//----------------------------------------------------------
+
+constexpr object::table::table() = default;
+
+// empty objects point here
+BOOST_JSON_REQUIRE_CONST_INIT
+object::table object::empty_;
+
+std::size_t
+object::table::
+digest(string_view key) const noexcept
 {
-    object& self_;
+    BOOST_ASSERT(salt != 0);
+    return detail::digest(
+        key.data(), key.size(), salt);
+}
 
-public:
-    std::size_t const first;
-    std::size_t last;
-    bool commit = false;
+auto
+object::table::
+bucket(std::size_t hash) noexcept ->
+    index_t&
+{
+    return reinterpret_cast<
+        index_t*>(&(*this)[capacity])[
+            hash % capacity];
+}
 
-    ~undo_insert()
+auto
+object::table::
+bucket(string_view key) noexcept ->
+    index_t&
+{
+    return bucket(digest(key));
+}
+
+void
+object::table::
+clear() noexcept
+{
+    // initialize buckets
+    std::memset(
+        reinterpret_cast<index_t*>(
+            &(*this)[capacity]),
+        0xff, // null_index_
+        capacity * sizeof(index_t));
+}
+
+object::table*
+object::table::
+allocate(
+    std::size_t capacity,
+    std::uintptr_t salt,
+    storage_ptr const& sp)
+{
+    BOOST_STATIC_ASSERT(
+        alignof(key_value_pair) >=
+        alignof(index_t));
+    BOOST_ASSERT(capacity > 0);
+    BOOST_ASSERT(
+        capacity <= object::max_size());
+    auto p = reinterpret_cast<
+        table*>(sp->allocate(
+            sizeof(table) + capacity * (
+                sizeof(key_value_pair) +
+                sizeof(index_t))));
+    p->capacity = static_cast<
+        std::uint32_t>(capacity);
+    if(salt)
     {
-        if(commit)
-        {
-            self_.impl_.grow(last - first);
-        }
-        else
-        {
-            auto p0 = self_.impl_.begin() + first;
-            auto p1 = self_.impl_.begin() + last;
-            for(auto it = p0; it != p1; ++it)
-                self_.impl_.remove(
-                    self_.impl_.bucket(it->key()), *it);
-            detail::destroy(p0, last - first);
-        }
+        p->salt = salt;
     }
-
-    explicit
-    undo_insert(
-        object& self) noexcept
-        : self_(self)
-        , first(
-            self_.impl_.end() -
-            self_.impl_.begin())
-        , last(first)
+    else
     {
+        // VFALCO This would be better if it
+        //        was random, but maybe this
+        //        is good enough.
+        p->salt = reinterpret_cast<
+            std::uintptr_t>(p);
     }
+    p->clear();
+    return p;
+}
 
-    value_type*
-    pos() noexcept
-    {
-        return self_.begin() + last;
-    }
-};
+//----------------------------------------------------------
+
+void
+object::
+revert_construct::
+destroy() noexcept
+{
+    obj_->destroy();
+}
+
+//----------------------------------------------------------
+
+void
+object::
+revert_insert::
+destroy() noexcept
+{
+    obj_->destroy(
+        &(*obj_->t_)[size_],
+        obj_->end());
+}
 
 //----------------------------------------------------------
 //
-// object
+// Construction
 //
 //----------------------------------------------------------
 
 object::
 object(detail::unchecked_object&& uo)
     : sp_(uo.storage())
+    , t_(&empty_)
 {
-    reserve(uo.size());
-    impl_.build(std::move(uo));
-}
+    if(uo.size() == 0)
+        return;
+    rehash(uo.size());
 
-object::
-object(object_test const*)
-{
-    object_impl impl(3, 1, 0, sp_);
-    impl_.swap(impl);
+    // insert all elements, keeping
+    // the last of any duplicate keys.
+    auto dest = begin();
+    auto src = uo.release();
+    auto const end = src + 2 * uo.size();
+    while(src != end)
+    {
+        access::construct_key_value_pair(
+            dest, pilfer(src[0]), pilfer(src[1]));
+        src += 2;
+        auto& head = t_->bucket(dest->key());
+        auto i = head;
+        for(;;)
+        {
+            if(i == null_index_)
+            {
+                access::next(
+                    *dest) = head;
+                head = static_cast<index_t>(
+                    dest - begin());
+                ++dest;
+                break;
+            }
+            auto& v = (*t_)[i];
+            if(v.key() != dest->key())
+            {
+                i = access::next(v);
+                continue;
+            }
+
+            // handle duplicate
+            access::next(*dest) =
+                access::next(v);
+            // don't bother to check if
+            // storage deallocate is trivial
+            v.~key_value_pair();
+            // trivial relocate
+            std::memcpy(
+                static_cast<void*>(&v),
+                    dest, sizeof(v));
+            break;
+        }
+    }
+    t_->size = static_cast<
+        index_t>(dest - begin());
 }
 
 object::
 ~object()
 {
-    impl_.destroy(sp_);
+    if(sp_.is_not_shared_and_deallocate_is_trivial())
+        return;
+    if(t_ == &empty_)
+        return;
+    destroy();
 }
 
 object::
@@ -98,6 +205,7 @@ object(
     std::size_t min_capacity,
     storage_ptr sp)
     : sp_(std::move(sp))
+    , t_(&empty_)
 {
     reserve(min_capacity);
 }
@@ -105,7 +213,8 @@ object(
 object::
 object(object&& other) noexcept
     : sp_(other.sp_)
-    , impl_(std::move(other.impl_))
+    , t_(detail::exchange(
+        other.t_, &empty_))
 {
 }
 
@@ -117,28 +226,13 @@ object(
 {
     if(*sp_ == *other.sp_)
     {
-        impl_.swap(other.impl_);
+        t_ = detail::exchange(
+            other.t_, &empty_);
+        return;
     }
-    else
-    {
-        undo_construct u(this);
-        insert_range(
-            other.begin(),
-            other.end(), 0);
-        u.self = nullptr;
-    }
-}
 
-object::
-object(
-    object const& other)
-    : sp_(other.sp_)
-{
-    undo_construct u(this);
-    insert_range(
-        other.begin(),
-        other.end(), 0);
-    u.self = nullptr;
+    t_ = &empty_;
+    object(other, sp_).swap(*this);
 }
 
 object::
@@ -146,12 +240,22 @@ object(
     object const& other,
     storage_ptr sp)
     : sp_(std::move(sp))
+    , t_(&empty_)
 {
-    undo_construct u(this);
-    insert_range(
-        other.begin(),
-        other.end(), 0);
-    u.self = nullptr;
+    reserve(other.size());
+    revert_construct r(*this);
+    for(auto const& v : other)
+    {
+        // skip duplicate checking
+        auto& head =
+            t_->bucket(v.key());
+        auto pv = ::new(end())
+            key_value_pair(v, sp_);
+        access::next(*pv) = head;
+        head = t_->size;
+        ++t_->size;
+    }
+    r.commit();
 }
 
 object::
@@ -161,52 +265,29 @@ object(
     std::size_t min_capacity,
     storage_ptr sp)
     : sp_(std::move(sp))
+    , t_(&empty_)
 {
-    undo_construct u(this);
-    using FwdIt = std::pair<
-        string_view, value_ref> const*;
-    struct place_impl : place_range
-    {
-        FwdIt it;
-        std::size_t n;
-        storage_ptr const& sp;
-
-        place_impl(
-            FwdIt it_,
-            std::size_t n_,
-            storage_ptr const& sp_)
-            : it(it_)
-            , n(n_)
-            , sp(sp_)
-        {
-        }
-
-        bool
-        operator()(void* dest) override
-        {
-            if(n-- == 0)
-                return false;
-            ::new(dest) value_type(
-                it->first,
-                it->second.make_value(sp));
-            ++it;
-            return true;
-        }
-    };
     if( min_capacity < init.size())
         min_capacity = init.size();
-    place_impl f(
-        init.begin(), init.size(), sp_);
-    insert_range_impl(min_capacity, f);
-    u.self = nullptr;
+    reserve(min_capacity);
+    revert_construct r(*this);
+    insert(init);
+    r.commit();
 }
+
+//----------------------------------------------------------
+//
+// Assignment
+//
+//----------------------------------------------------------
 
 object&
 object::
 operator=(object const& other)
 {
-    object(other,
-        storage()).swap(*this);
+    object tmp(other, sp_);
+    this->~object();
+    ::new(this) object(pilfer(tmp));
     return *this;
 }
 
@@ -214,8 +295,9 @@ object&
 object::
 operator=(object&& other)
 {
-    object(std::move(other),
-        storage()).swap(*this);
+    object tmp(std::move(other), sp_);
+    this->~object();
+    ::new(this) object(pilfer(tmp));
     return *this;
 }
 
@@ -231,14 +313,6 @@ operator=(
     return *this;
 }
 
-auto
-object::
-get_allocator() const noexcept ->
-    allocator_type
-{
-    return sp_.get();
-}
-
 //----------------------------------------------------------
 //
 // Modifiers
@@ -249,7 +323,12 @@ void
 object::
 clear() noexcept
 {
-    impl_.clear();
+    if(empty())
+        return;
+    if(! sp_.is_not_shared_and_deallocate_is_trivial())
+        destroy(begin(), end());
+    t_->clear();
+    t_->size = 0;
 }
 
 void
@@ -258,44 +337,55 @@ insert(
     std::initializer_list<std::pair<
         string_view, value_ref>> init)
 {
-    using FwdIt = std::pair<
-        string_view, value_ref> const*;
-    struct place_impl : place_range
-    {
-        FwdIt it;
-        std::size_t n;
-        storage_ptr const& sp;
-
-        place_impl(
-            FwdIt it_,
-            std::size_t n_,
-            storage_ptr const& sp_)
-            : it(it_)
-            , n(n_)
-            , sp(sp_)
-        {
-        }
-
-        bool
-        operator()(void* dest) override
-        {
-            if(n-- == 0)
-                return false;
-            ::new(dest) value_type(
-                it->first,
-                it->second.make_value(sp));
-            ++it;
-            return true;
-        }
-    };
     auto const n0 = size();
     if(init.size() > max_size() - n0)
         detail::throw_length_error(
             "object too large",
             BOOST_CURRENT_LOCATION);
-    place_impl f(
-        init.begin(), init.size(), sp_);
-    insert_range_impl(n0 + init.size(), f);
+    reserve(n0 + init.size());
+    revert_insert r(*this);
+    for(auto& iv : init)
+    {
+        auto& head = t_->bucket(iv.first);
+        auto i = head;
+        for(;;)
+        {
+            if(i == null_index_)
+            {
+                // VFALCO value_ref should construct
+                // a key_value_pair using placement
+                auto& v = *::new(end())
+                    key_value_pair(
+                        iv.first,
+                        iv.second.make_value(sp_));
+                access::next(v) = head;
+                head = static_cast<index_t>(
+                    t_->size);
+                ++t_->size;
+                break;
+            }
+            auto& v = (*t_)[i];
+            if(v.key() != iv.first)
+            {
+                i = access::next(v);
+                continue;
+            }
+
+            // handle duplicate
+            key_value_pair kv(
+                iv.first,
+                iv.second.make_value(sp_));
+            auto const next = access::next(v);
+            // don't bother to check if
+            // storage deallocate is trivial
+            v.~key_value_pair();
+            auto p = ::new(&v)
+                key_value_pair(pilfer(kv));
+            access::next(*p) = next;
+            break;
+        }
+    }
+    r.commit();
 }
 
 auto
@@ -303,25 +393,23 @@ object::
 erase(const_iterator pos) noexcept ->
     iterator
 {
-    auto p = impl_.begin() +
-        (pos - impl_.begin());
-    impl_.remove(
-        impl_.bucket(p->key()), *p);
+    auto p = begin() + (pos - begin());
+    remove(t_->bucket(p->key()), *p);
     p->~value_type();
-    impl_.shrink(1);
-    if(p != impl_.end())
+    --t_->size;
+    auto const pb = end();
+    if(p != end())
     {
-        auto pb = impl_.end();
-        auto& head =
-            impl_.bucket(pb->key());
-        impl_.remove(head, *pb);
+        auto& head = t_->bucket(pb->key());
+        remove(head, *pb);
         // the casts silence warnings
         std::memcpy(
             static_cast<void*>(p),
             static_cast<void const*>(pb),
             sizeof(*p));
-        impl_.next(*p) = head;
-        head = impl_.index_of(*p);
+        access::next(*p) = head;
+        head = static_cast<
+            index_t>(p - begin());
     }
     return p;
 }
@@ -344,7 +432,8 @@ swap(object& other)
 {
     if(*sp_ == *other.sp_)
     {
-        impl_.swap(other.impl_);
+        t_ = detail::exchange(
+            other.t_, t_);
         return;
     }
     object temp1(
@@ -414,6 +503,8 @@ object::
 find(string_view key) noexcept ->
     iterator
 {
+    if(empty())
+        return end();
     auto const p =
         find_impl(key).first;
     if(p)
@@ -426,6 +517,8 @@ object::
 find(string_view key) const noexcept ->
     const_iterator
 {
+    if(empty())
+        return end();
     auto const p =
         find_impl(key).first;
     if(p)
@@ -438,7 +531,10 @@ object::
 contains(
     string_view key) const noexcept
 {
-    return find(key) != end();
+    if(empty())
+        return false;
+    return find_impl(
+        key).first != nullptr;
 }
 
 value const*
@@ -465,35 +561,72 @@ if_contains(
 
 //----------------------------------------------------------
 //
-// (implementation)
+// (private)
 //
 //----------------------------------------------------------
 
 auto
 object::
-find_impl(string_view key) const noexcept ->
-    std::pair<value_type*, std::size_t>
+find_impl(
+    string_view key) const noexcept ->
+        std::pair<
+            key_value_pair*,
+            std::size_t>
 {
+    BOOST_ASSERT(t_ != &empty_);
     std::pair<
-        value_type*,
+        key_value_pair*,
         std::size_t> result;
-    result.second = impl_.digest(key);
-    if(empty())
+    result.second = t_->digest(key);
+    auto i = t_->bucket(
+        result.second);
+    while(i != null_index_)
     {
-        result.first = nullptr;
-        return result;
+        auto& v = (*t_)[i];
+        if(v.key() == key)
+        {
+            result.first = &v;
+            return result;
+        }
+        i = access::next(v);
     }
-    auto const& head =
-        impl_.bucket(result.second);
-    auto i = head;
-    while(i != null_index &&
-        impl_.get(i).key() != key)
-        i = impl_.next(impl_.get(i));
-    if(i != null_index)
-        result.first = &impl_.get(i);
-    else
-        result.first = nullptr;
+    result.first = nullptr;
     return result;
+}
+
+auto
+object::
+insert_impl(
+    pilfered<key_value_pair> p) ->
+        std::pair<iterator, bool>
+{
+    // caller is responsible
+    // for preventing aliasing.
+    reserve(size() + 1);
+    auto const result =
+        find_impl(p.get().key());
+    if(result.first)
+        return { result.first, false };
+    return { insert_impl(
+        p, result.second), true };
+}
+
+key_value_pair*
+object::
+insert_impl(
+    pilfered<key_value_pair> p,
+    std::size_t hash)
+{
+    BOOST_ASSERT(
+        capacity() > size());
+    auto& head =
+        t_->bucket(hash);
+    auto const pv = ::new(end())
+        key_value_pair(p);
+    access::next(*pv) = head;
+    head = t_->size;
+    ++t_->size;
+    return pv;
 }
 
 // rehash to at least `n` buckets
@@ -501,131 +634,34 @@ void
 object::
 rehash(std::size_t new_capacity)
 {
-    BOOST_ASSERT(new_capacity > capacity());
-    std::size_t const* prime = 
-        object_impl::bucket_sizes();
-    while(*prime < new_capacity)
-        ++prime;
-    new_capacity = *prime;
-    if(new_capacity > max_size())
-        detail::throw_length_error(
-            "new_capacity > max_size()",
-            BOOST_CURRENT_LOCATION);
-    object_impl impl(
-        new_capacity,
-        prime - object_impl::bucket_sizes(),
-        impl_.salt(),
-        sp_);
-    if(impl_.size() > 0)
+    BOOST_ASSERT(
+        new_capacity > t_->capacity);
+    auto t = table::allocate(
+        growth(new_capacity),
+            t_->salt, sp_);
+    if(! empty())
         std::memcpy(
-            static_cast<void*>(impl.begin()),
-            static_cast<void const*>(impl_.begin()),
-            impl_.size() * sizeof(value_type));
-    impl.grow(impl_.size());
-    impl_.shrink(impl_.size());
-    impl_.destroy(sp_);
-    impl_.swap(impl);
-    impl_.rebuild();
-}
+            static_cast<
+                void*>(&(*t)[0]),
+            begin(),
+            size() * sizeof(
+                key_value_pair));
+    t->size = t_->size;
+    table::deallocate(t_, sp_);
+    t_ = t;
 
-auto
-object::
-emplace_impl(
-    string_view key,
-    place_one& f) ->
-    std::pair<iterator, bool>
-{
-    auto const result = find_impl(key);
-    if(result.first)
-        return { result.first, false };
-    reserve(size() + 1);
-    auto& e = *impl_.end();
-    f(&e);
-    auto& head =
-        impl_.bucket(result.second);
-    impl_.next(e) = head;
-    head = impl_.index_of(e);
-    impl_.grow(1);
-    return { &e, true };
-}
-
-auto
-object::
-insert_impl(
-    place_one& f) ->
-    std::pair<iterator, bool>
-{
-    reserve(size() + 1);
-    auto& e = *impl_.end();
-    f(&e);
-    auto const result =
-        find_impl(e.key());
-    if(result.first)
+    // rebuild hash table,
+    // without dup checks
+    auto p = end();
+    index_t i = t_->size;
+    while(i-- > 0)
     {
-        e.~value_type();
-        return { result.first, false };
-    }
-    auto& head =
-        impl_.bucket(result.second);
-    impl_.next(e) = head;
-    head = impl_.index_of(e);
-    impl_.grow(1);
-    return { &e, true };
-}
-
-auto
-object::
-insert_impl(
-    std::size_t hash,
-    place_one& f) ->
-        iterator
-{
-    reserve(size() + 1);
-    auto& e = *impl_.end();
-    f(&e);
-    auto& head =
-        impl_.bucket(hash);
-    impl_.next(e) = head;
-    head = impl_.index_of(e);
-    impl_.grow(1);
-    return &e;
-}
-
-void
-object::
-insert_range_impl(
-    std::size_t min_capacity,
-    place_range& f)
-{
-    reserve(min_capacity);
-    undo_insert u(*this);
-    for(;;)
-    {
-        reserve(size() + 1);
-        auto& e = *u.pos();
-        if(! f(&e))
-            break;
+        --p;
         auto& head =
-            impl_.bucket(e.key());
-        for(auto i = head;;
-            i = impl_.next(impl_.get(i)))
-        {
-            if(i != null_index)
-            {
-                if(impl_.get(i).key() != e.key())
-                    continue;
-                e.~value_type();
-            }
-            else
-            {
-                impl_.next(e) = head;
-                head = impl_.index_of(e);
-                ++u.last;
-            }
-            break;
-        }
+            t_->bucket(p->key());
+        access::next(*p) = head;
+        head = i;
     }
-    u.commit = true;
 }
 
 bool
@@ -646,6 +682,65 @@ equal(object const& other) const noexcept
     return true;
 }
 
+std::size_t
+object::
+growth(
+    std::size_t new_size) const
+{
+    if(new_size > max_size())
+        detail::throw_length_error(
+            "object too large",
+            BOOST_CURRENT_LOCATION);
+    std::size_t const old = capacity();
+    if(old > max_size() - old / 2)
+        return new_size;
+    std::size_t const g =
+        old + old / 2; // 1.5x
+    if(g < new_size)
+        return new_size;
+    return g;
+}
+
+void
+object::
+remove(
+    index_t& head,
+    key_value_pair& v) noexcept
+{
+    auto const i = static_cast<
+        index_t>(&v - begin());
+    if(head == i)
+    {
+        head = access::next(v);
+        return;
+    }
+    auto* pn =
+        &access::next((*t_)[head]);
+    while(*pn != i)
+        pn = &access::next((*t_)[*pn]);
+    *pn = access::next(v);
+}
+
+void
+object::
+destroy() noexcept
+{
+    BOOST_ASSERT(t_ != &empty_);
+    BOOST_ASSERT(! sp_.is_not_shared_and_deallocate_is_trivial());
+    destroy(begin(), end());
+    table::deallocate(t_, sp_);
+}
+
+void
+object::
+destroy(
+    key_value_pair* first,
+    key_value_pair* last) noexcept
+{
+    BOOST_ASSERT(! sp_.is_not_shared_and_deallocate_is_trivial());
+    while(last != first)
+        (--last)->~key_value_pair();
+}
 
 BOOST_JSON_NS_END
 

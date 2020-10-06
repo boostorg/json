@@ -62,7 +62,7 @@ class string
     friend class value;
 #ifndef BOOST_JSON_DOCS
     // VFALCO doc toolchain shouldn't show this but does
-    friend struct detail::value_access;
+    friend struct detail::access;
 #endif
 
     using string_impl = detail::string_impl;

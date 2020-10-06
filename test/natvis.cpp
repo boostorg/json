@@ -24,7 +24,7 @@ public:
     make_key(string_view s)
     {
         value jv;
-        detail::value_access::construct_value(
+        detail::access::construct_value(
             &jv, s, storage_ptr());
         return jv;
     }

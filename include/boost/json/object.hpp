@@ -15,7 +15,8 @@
 #include <boost/json/pilfer.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/string_view.hpp>
-#include <boost/json/detail/object_impl.hpp>
+#include <boost/json/detail/object.hpp>
+#include <boost/json/detail/value.hpp>
 #include <cstdlib>
 #include <initializer_list>
 #include <iterator>
@@ -26,10 +27,7 @@ BOOST_JSON_NS_BEGIN
 
 class value;
 class value_ref;
-
-#ifndef BOOST_JSON_DOCS
-class object_test;
-#endif
+class key_value_pair;
 
 /** A dynamically sized associative container of JSON key/value pairs.
 
@@ -67,19 +65,23 @@ class object_test;
 */
 class object
 {
-    using object_impl =
-        detail::object_impl;
+    struct table;
+    class revert_construct;
+    class revert_insert;
+    friend class value;
+    friend class object_test;
+    using access = detail::access;
     using index_t = std::uint32_t;
-    static index_t const null_index =
+    static index_t constexpr null_index_ =
         std::uint32_t(-1);
 
     storage_ptr sp_;    // must come first
     kind k_ =           // must come second
         kind::object;
-    object_impl impl_;
+    table* t_;
 
-    struct undo_construct;
-    class undo_insert;
+    BOOST_JSON_DECL
+    static table empty_;
 
     template<class T>
     using is_inputit = typename std::enable_if<
@@ -87,16 +89,9 @@ class object
         typename std::iterator_traits<T>::value_type
             >::value>::type;
 
-    friend class value;
-
     BOOST_JSON_DECL
     explicit
     object(detail::unchecked_object&& uo);
-
-    friend class object_test;
-
-    BOOST_JSON_DECL
-    object(object_test const*);
 
 public:
     /** The type of _Allocator_ returned by @ref get_allocator
@@ -185,7 +180,10 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    object() = default;
+    object() noexcept
+        : t_(&empty_)
+    {
+    }
 
     /** Constructor.
 
@@ -205,6 +203,7 @@ public:
     explicit
     object(storage_ptr sp) noexcept
         : sp_(std::move(sp))
+        , t_(&empty_)
     {
     }
 
@@ -288,7 +287,16 @@ public:
         InputIt first,
         InputIt last,
         std::size_t min_capacity = 0,
-        storage_ptr sp = {});
+        storage_ptr sp = {})
+        : sp_(std::move(sp))
+        , t_(&empty_)
+    {
+        construct(
+            first, last,
+            min_capacity,
+            typename std::iterator_traits<
+                InputIt>::iterator_category{});
+    }
 
     /** Move constructor.
 
@@ -372,7 +380,8 @@ public:
     */
     object(pilfered<object> other) noexcept
         : sp_(std::move(other.get().sp_))
-        , impl_(std::move(other.get().impl_))
+        , t_(detail::exchange(
+            other.get().t_, &empty_))
     {
     }
 
@@ -390,9 +399,11 @@ public:
 
         @param other The object to copy.
     */
-    BOOST_JSON_DECL
     object(
-        object const& other);
+        object const& other)
+        : object(other, other.sp_)
+    {
+    }
 
     /** Copy constructor.
 
@@ -486,6 +497,10 @@ public:
         std::size_t min_capacity,
         storage_ptr sp = {});
 
+    //------------------------------------------------------
+    //
+    // Assignment
+    //
     //------------------------------------------------------
 
     /** Copy assignment.
@@ -588,9 +603,11 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    BOOST_JSON_DECL
     allocator_type
-    get_allocator() const noexcept;
+    get_allocator() const noexcept
+    {
+        return sp_.get();
+    }
 
     //------------------------------------------------------
     //
@@ -835,10 +852,7 @@ public:
     static
     constexpr
     std::size_t
-    max_size() noexcept
-    {
-        return object_impl::max_size();
-    }
+    max_size() noexcept;
 
     /** Return the number of elements that can be held in currently allocated memory
 
@@ -882,9 +896,13 @@ public:
 
         @throw std::length_error `new_capacity > max_size()`
     */
-    inline
     void
-    reserve(std::size_t new_capacity);
+    reserve(std::size_t new_capacity)
+    {
+        if(new_capacity <= capacity())
+            return;
+        rehash(new_capacity);
+    }
 
     //------------------------------------------------------
     //
@@ -939,11 +957,11 @@ public:
         is `true` if the insertion took place or `false` if
         the assignment took place.
     */
-     template<class P
+    template<class P
 #ifndef BOOST_JSON_DOCS
         ,class = typename std::enable_if<
-            std::is_constructible<
-                value_type, P, storage_ptr>::value>::type
+            std::is_constructible<key_value_pair,
+                P, storage_ptr>::value>::type
 #endif
     >
     std::pair<iterator, bool>
@@ -979,7 +997,7 @@ public:
         @param last An input iterator pointing to the end
         of the range.
 
-        @tparam InputIt a type satisfyin the requirements
+        @tparam InputIt a type satisfying the requirements
         of __InputIterator__.
     */
     template<
@@ -991,7 +1009,9 @@ public:
     void
     insert(InputIt first, InputIt last)
     {
-        insert_range(first, last, 0);
+        insert(first, last, typename
+            std::iterator_traits<InputIt
+                >::iterator_category{});
     }
 
     /** Insert elements.
@@ -1464,50 +1484,9 @@ public:
     }
 
 private:
-    struct place_one;
-    struct place_range;
-
-    template<class It>
-    using iter_cat = typename
-        std::iterator_traits<It>::iterator_category;
-
-    BOOST_JSON_DECL
-    std::pair<value_type*, std::size_t>
-    find_impl(string_view key) const noexcept;
-
-    BOOST_JSON_DECL
-    void
-    rehash(std::size_t new_capacity);
-
-    BOOST_JSON_DECL
-    std::pair<iterator, bool>
-    emplace_impl(
-        string_view key, place_one& f);
-
-    BOOST_JSON_DECL
-    std::pair<iterator, bool>
-    insert_impl(place_one& f);
-
-    BOOST_JSON_DECL
-    iterator
-    insert_impl(
-        std::size_t hash,
-        place_one& f);
-
-    BOOST_JSON_DECL
-    std::pair<iterator, bool>
-    insert_or_assign_impl(
-        string_view key, place_one& f);
-
-    BOOST_JSON_DECL
-    void
-    insert_range_impl(
-        std::size_t min_capacity,
-        place_range& f);
-
     template<class InputIt>
     void
-    insert_range(
+    construct(
         InputIt first,
         InputIt last,
         std::size_t min_capacity,
@@ -1515,7 +1494,7 @@ private:
 
     template<class InputIt>
     void
-    insert_range(
+    construct(
         InputIt first,
         InputIt last,
         std::size_t min_capacity,
@@ -1523,20 +1502,61 @@ private:
 
     template<class InputIt>
     void
-    insert_range(
+    insert(
         InputIt first,
         InputIt last,
-        std::size_t min_capacity)
-    {
-        insert_range(
-            first, last,
-            min_capacity,
-            iter_cat<InputIt>{});
-    }
+        std::input_iterator_tag);
+
+    template<class InputIt>
+    void
+    insert(
+        InputIt first,
+        InputIt last,
+        std::forward_iterator_tag);
+
+    BOOST_JSON_DECL
+    std::pair<key_value_pair*, std::size_t>
+    find_impl(string_view key) const noexcept;
+
+    BOOST_JSON_DECL
+    std::pair<iterator, bool>
+    insert_impl(
+        pilfered<key_value_pair> p);
+
+    BOOST_JSON_DECL
+    key_value_pair*
+    insert_impl(
+        pilfered<key_value_pair> p,
+        std::size_t hash);
+
+    BOOST_JSON_DECL
+    void
+    rehash(std::size_t new_capacity);
 
     BOOST_JSON_DECL
     bool
     equal(object const& other) const noexcept;
+
+    inline
+    std::size_t
+    growth(
+        std::size_t new_size) const;
+
+    inline
+    void
+    remove(
+        index_t& head,
+        key_value_pair& p) noexcept;
+
+    inline
+    void
+    destroy() noexcept;
+
+    inline
+    void
+    destroy(
+        key_value_pair* first,
+        key_value_pair* last) noexcept;
 };
 
 BOOST_JSON_NS_END

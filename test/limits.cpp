@@ -52,14 +52,14 @@ public:
     void
     testObject()
     {
-        // max size
+        // max_size()
         {
             BOOST_TEST_THROWS(
                 object(object::max_size()+1),
                 std::length_error);
         }
 
-        // max size
+        // object(), max size
         {
             std::initializer_list<std::pair<
                 string_view, value_ref>> init = {
@@ -72,10 +72,47 @@ public:
             {"31",31}};
             BOOST_TEST(init.size() > object::max_size());
             BOOST_TEST_THROWS(
+                object(init),
+                std::length_error);
+            BOOST_TEST_THROWS(
                 object(init.begin(), init.end()),
                 std::length_error);
             BOOST_TEST_THROWS(
                 object(
+                    make_input_iterator(init.begin()),
+                    make_input_iterator(init.end())),
+                std::length_error);
+        }
+
+        // reserve(), max size
+        {
+            object o;
+            BOOST_TEST_THROWS(
+                o.reserve(o.max_size() + 1),
+                std::length_error);
+        }
+
+        // insert(), max size
+        {
+            std::initializer_list<std::pair<
+                string_view, value_ref>> init = {
+            { "1", 1},{ "2", 2},{ "3", 3},{ "4", 4},{ "5", 5},
+            { "6", 6},{ "7", 7},{ "8", 8},{ "9", 9},{"10",10},
+            {"11",11},{"12",12},{"13",13},{"14",14},{"15",15},
+            {"16",16},{"17",17},{"18",18},{"19",19},{"10",10},
+            {"21",21},{"22",22},{"23",23},{"24",24},{"25",25},
+            {"26",26},{"27",27},{"28",28},{"29",29},{"30",30},
+            {"31",31}};
+            BOOST_TEST(init.size() > object::max_size());
+            object o;
+            BOOST_TEST_THROWS(
+                o.insert(init),
+                std::length_error);
+            BOOST_TEST_THROWS(
+                o.insert(init.begin(), init.end()),
+                std::length_error);
+            BOOST_TEST_THROWS(
+                o.insert(
                     make_input_iterator(init.begin()),
                     make_input_iterator(init.end())),
                 std::length_error);

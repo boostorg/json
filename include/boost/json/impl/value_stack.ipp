@@ -264,7 +264,7 @@ push(Args&&... args)
     BOOST_ASSERT(chars_ == 0);
     if(top_ >= end_)
         grow_one();
-    value& jv = detail::value_access::
+    value& jv = detail::access::
         construct_value(top_,
             std::forward<Args>(args)...);
     ++top_;
@@ -287,7 +287,7 @@ exchange(Unchecked&& u)
     // construct value on the stack
     // to avoid clobbering top_[0],
     // which belongs to `u`.
-    detail::value_access::
+    detail::access::
         construct_value(
             &jv.v, std::move(u));
     std::memcpy(
