@@ -1873,7 +1873,7 @@ parse_number(const char* p,
             // floating-point mantissa overflow
             if( n1 + n2 >= 19 )
             {
-                goto do_num4;
+                goto do_num7;
             }
 
             num.mant = detail::parse_unsigned( num.mant, cs.begin(), n2 );
