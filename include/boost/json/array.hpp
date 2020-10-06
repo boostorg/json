@@ -380,8 +380,7 @@ public:
                 Valueless Variants Considered Harmful</a>
     */
     array(pilfered<array> other) noexcept
-        : sp_(detail::exchange(
-            other.get().sp_, storage_ptr()))
+        : sp_(std::move(other.get().sp_))
         , t_(detail::exchange(
             other.get().t_, &empty_))
     {

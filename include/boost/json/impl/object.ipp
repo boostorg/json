@@ -133,13 +133,6 @@ object(
 }
 
 object::
-object(pilfered<object> other) noexcept
-    : sp_(std::move(other.get().sp_))
-    , impl_(std::move(other.get().impl_))
-{
-}
-
-object::
 object(
     object const& other)
     : sp_(other.sp_)

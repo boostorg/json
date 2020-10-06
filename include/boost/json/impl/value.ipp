@@ -46,13 +46,6 @@ value::
 }
 
 value::
-value(pilfered<value> p) noexcept
-{
-    relocate(this, p.get());
-    ::new(&p.get().sca_) scalar();
-}
-
-value::
 value(
     value const& other,
     storage_ptr sp)

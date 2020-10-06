@@ -16,6 +16,13 @@
 BOOST_JSON_NS_BEGIN
 namespace detail {
 
+object_impl::
+object_impl(object_impl&& other) noexcept
+    : tab_(detail::exchange(
+        other.tab_, nullptr))
+{
+}
+
 constexpr
 std::size_t
 object_impl::

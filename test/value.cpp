@@ -10,6 +10,8 @@
 // Test that header file is self-contained.
 #include <boost/json/value.hpp>
 
+#include <boost/json/monotonic_resource.hpp>
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -130,6 +132,16 @@ public:
                 value jv1(nullptr);
                 value jv2(pilfer(jv1));
                 BOOST_TEST(jv2.is_null());
+            }
+
+            // ensure pilfered-from objects
+            // are trivially destructible
+            {
+                value v1(make_shared_resource<
+                    monotonic_resource>());
+                value v2(pilfer(v1));
+                BOOST_TEST(v1.storage().get() ==
+                    storage_ptr().get());
             }
         }
 

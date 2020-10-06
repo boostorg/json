@@ -258,20 +258,32 @@ public:
 
         // object(pilfered<object>)
         {
-            auto const sp =
-                make_shared_resource<unique_resource>();
-            object o1({
-                {"a", 1},
-                {"b", true},
-                {"c", "hello"}
-                }, sp);
-            object o2(pilfer(o1));
-            BOOST_TEST(
-                o1.storage() == storage_ptr());
-            BOOST_TEST(
-                *o2.storage() == *sp);
-            BOOST_TEST(o1.empty());
-            check(o2, 3);
+            {
+                auto const sp =
+                    make_shared_resource<unique_resource>();
+                object o1({
+                    {"a", 1},
+                    {"b", true},
+                    {"c", "hello"}
+                    }, sp);
+                object o2(pilfer(o1));
+                BOOST_TEST(
+                    o1.storage() == storage_ptr());
+                BOOST_TEST(
+                    *o2.storage() == *sp);
+                BOOST_TEST(o1.empty());
+                check(o2, 3);
+            }
+
+            // ensure pilfered-from objects
+            // are trivially destructible
+            {
+                object o1(make_shared_resource<
+                    monotonic_resource>());
+                object o2(pilfer(o1));
+                BOOST_TEST(o1.storage().get() ==
+                    storage_ptr().get());
+            }
         }
 
         auto const sp = make_shared_resource<unique_resource>();

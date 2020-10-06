@@ -55,13 +55,6 @@ object_impl(
         capacity * sizeof(index_t));
 }
 
-object_impl::
-object_impl(object_impl&& other) noexcept
-    : tab_(detail::exchange(
-        other.tab_, nullptr))
-{
-}
-
 void
 object_impl::
 clear() noexcept

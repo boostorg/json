@@ -370,8 +370,11 @@ public:
             <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0308r0.html">
                 Valueless Variants Considered Harmful</a>
     */
-    BOOST_JSON_DECL
-    object(pilfered<object> other) noexcept;
+    object(pilfered<object> other) noexcept
+        : sp_(std::move(other.get().sp_))
+        , impl_(std::move(other.get().impl_))
+    {
+    }
 
     /** Copy constructor.
 

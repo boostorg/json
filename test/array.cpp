@@ -215,12 +215,24 @@ public:
 
         // array(pilfered<array>)
         {
-            init_list init{ 1, true, str_ };
-            array a1(init.begin(), init.end());
-            array a2(pilfer(a1));
-            BOOST_TEST(a1.empty());
-            check(a2);
-            check_storage(a2, storage_ptr{});
+            {
+                init_list init{ 1, true, str_ };
+                array a1(init.begin(), init.end());
+                array a2(pilfer(a1));
+                BOOST_TEST(a1.empty());
+                check(a2);
+                check_storage(a2, storage_ptr{});
+            }
+
+            // ensure pilfered-from objects
+            // are trivially destructible
+            {
+                array a1(make_shared_resource<
+                    monotonic_resource>());
+                array a2(pilfer(a1));
+                BOOST_TEST(a1.storage().get() ==
+                    storage_ptr().get());
+            }
         }
 
         // array(array&&)
