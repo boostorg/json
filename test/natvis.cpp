@@ -36,22 +36,22 @@ public:
         // Visual Studio IDE to verify that the .natvis
         // file is working correctly
 
-        value jv0 = { 1, 2, 3 };
-        value jv1 = { {"a",1}, {"b",2}, {"c",3} };
-        value jv2 = "dynamically-allocated-string";
-        value jv3 = make_key("key");
-        value jv4 = "string";
-        value jv5 = 3.141;
-        value jv6 = -1;
-        value jv7 = 42u;
-        value jv8 = true;
-        value jv9 = nullptr;
+        value jv0 = nullptr;
+        value jv1 = true;
+        value jv2 = -1;
+        value jv3 = 42u;
+        value jv4 = 3.141;
+        value jv5 = "string";
+        value jv6 = make_key("key");
+        value jv7 = "dynamically-allocated-string";
+        value jv8 = { 1, 2, 3 };
+        value jv9 = { {"a",1}, {"b",2}, {"c",3} };
 
-        array&  x0 = jv0.get_array();  (void)x0;
-        object& x1 = jv1.get_object(); (void)x1;
-        string& x2 = jv2.get_string(); (void)x2;
-        string& x3 = jv3.get_string(); (void)x3;
-        string& x4 = jv4.get_string(); (void)x4;
+        string& x0 = jv5.get_string(); (void)x0;
+        string& x1 = jv6.get_string(); (void)x1;
+        string& x2 = jv7.get_string(); (void)x2;
+        array&  x3 = jv8.get_array();  (void)x3;
+        object& x4 = jv9.get_object(); (void)x4;
 
         array y0;
         y0.emplace_back(jv0);

@@ -3,18 +3,18 @@
 
   <Type Name="boost::json::storage_ptr">
     <DisplayString Condition="i_==0">default</DisplayString>
-    <DisplayString Condition="(i_&amp;3)==1"> counted</DisplayString>
+    <DisplayString Condition="(i_&amp;3)==1"> shared</DisplayString>
     <DisplayString Condition="(i_&amp;3)==2"> trivial</DisplayString>
-    <DisplayString Condition="(i_&amp;3)==3"> counted, trivial</DisplayString>
+    <DisplayString Condition="(i_&amp;3)==3"> shared, trivial</DisplayString>
     <DisplayString>non-owning</DisplayString>
     <Expand>
-      <Item Name="[ refs ]" Condition="(i_&amp;1)==1">((counted_resource*)(i_&amp;~3))->refs</Item>
-      <Item Name="[ resource ]" Condition="(i_&amp;2)==1">(counted_resource*)(i_&amp;~3)</Item>
+      <Item Name="[ refs ]" Condition="(i_&amp;1)==1">((shared_resource*)(i_&amp;~3))->refs</Item>
+      <Item Name="[ resource ]" Condition="(i_&amp;2)==1">(shared_resource*)(i_&amp;~3)</Item>
       <Item Name="[ resource ]" Condition="(i_&amp;2)!=1">(memory_resource*)(i_&amp;~3)</Item>
     </Expand>
   </Type>
 
-  <Type Name="boost::json::detail::counted_resource_impl&lt;*&gt;">
+  <Type Name="boost::json::detail::shared_resource_impl&lt;*&gt;">
     <DisplayString>$T1*</DisplayString>
     <Expand>
       <Item Name="[ refs ]">refs</Item>
