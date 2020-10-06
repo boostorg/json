@@ -127,7 +127,7 @@ public:
         tab_->size -= n;
     }
 
-    template<bool NeedDestroy>
+    inline
     void
     build(unchecked_object&& uo) noexcept;
 

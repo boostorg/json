@@ -68,7 +68,6 @@ clear() noexcept
 }
 
 // checks for dupes
-template<bool NeedDestroy>
 void
 object_impl::
 build(unchecked_object&& uo) noexcept
@@ -84,11 +83,6 @@ build(unchecked_object&& uo) noexcept
     {
         value_access::construct_key_value_pair(
             dest, pilfer(src[0]), pilfer(src[1]));
-        if(NeedDestroy)
-        {
-            src[0].~value();
-            src[1].~value();
-        }
         src += 2;
         auto head = &bucket(dest->key());
         auto i = *head;

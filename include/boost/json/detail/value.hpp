@@ -111,6 +111,7 @@ struct value_access
         std::size_t& len) noexcept
     {
         BOOST_ASSERT(jv.is_string());
+        jv.str_.sp_.~storage_ptr();
         return jv.str_.impl_.release_key(len);
     }
 

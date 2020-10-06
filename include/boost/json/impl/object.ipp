@@ -77,10 +77,7 @@ object(detail::unchecked_object&& uo)
     : sp_(uo.storage())
 {
     reserve(uo.size());
-    if(uo.storage().is_not_shared_and_deallocate_is_trivial())
-        impl_.template build<false>(std::move(uo));
-    else
-        impl_.template build<true>(std::move(uo));
+    impl_.build(std::move(uo));
 }
 
 object::
