@@ -7,8 +7,18 @@
 # Official repository: https://github.com/boostorg/json
 #
 
+import ../../config/checks/config : requires ;
+
 project boost/json
     : requirements
+    [ requires
+        cxx11_constexpr
+        cxx11_decltype
+        cxx11_hdr_tuple
+        #cxx11_sfinae_expr # Every MSVC fails this
+        cxx11_template_aliases
+        cxx11_variadic_templates
+    ]
       <link>shared:<define>BOOST_JSON_DYN_LINK=1
       <link>static:<define>BOOST_JSON_STATIC_LINK=1
       <library>/boost//container/<warnings-as-errors>off
