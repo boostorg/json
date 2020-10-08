@@ -105,7 +105,7 @@ class storage_ptr
     addref() const noexcept
     {
         if(is_shared())
-            ++get_counted()->refs;
+            get_counted()->refs.fetch_add(1, std::memory_order_relaxed);
     }
 
     void
@@ -114,7 +114,7 @@ class storage_ptr
         if(is_shared())
         {
             auto const p = get_counted();
-            if(--p->refs == 0)
+            if(p->refs.fetch_sub(1, std::memory_order_acq_rel) == 1)
                 delete p;
         }
     }
