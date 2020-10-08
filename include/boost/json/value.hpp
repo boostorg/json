@@ -2570,7 +2570,7 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    storage_ptr
+    storage_ptr const&
     storage() const noexcept
     {
         return sp_;
@@ -3572,7 +3572,7 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    storage_ptr
+    storage_ptr const&
     storage() const noexcept
     {
         return value_.storage();
