@@ -138,13 +138,14 @@ dec_to_float(
     std::int32_t e,
     bool neg) noexcept
 {
+    auto x =
+        static_cast<double>(m);
     if(neg)
-        return (-static_cast<
-            double>(m)) *
-            pow10(e);
-    return (static_cast<
-        double>(m)) *
-        pow10(e);
+        x = -x;
+    if(e < -307)
+        return x * 1e-307 *
+            pow10(e+307);
+    return x * pow10(e);
 }
 
 inline
