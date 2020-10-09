@@ -13,6 +13,8 @@
 #include <boost/json/serialize.hpp>
 
 #include <iostream>
+#include <random>
+#include <cinttypes>
 
 #include "parse-vectors.hpp"
 #include "test.hpp"
@@ -89,7 +91,7 @@ public:
 
     void
     static
-    check_round_trip(value const& jv1, 
+    check_round_trip(value const& jv1,
         const parse_options& po = parse_options())
     {
         auto const s2 =
@@ -126,7 +128,7 @@ public:
     template<class F>
     static
     void
-    grind(string_view s, F const& f, 
+    grind(string_view s, F const& f,
         const parse_options& po = parse_options())
     {
         try
@@ -170,7 +172,7 @@ public:
 
     static
     void
-    grind(string_view s, 
+    grind(string_view s,
         const parse_options& po = parse_options())
     {
         grind(s,
@@ -359,10 +361,49 @@ public:
         );
     }
 
+    void checkAccuracy(const char* nm)
+    {
+        constexpr int limit = 3;
+
+        double x = std::strtod( nm, 0 );
+        double y = boost::json::parse( nm ).as_double();
+        std::uint64_t bx, by;
+        std::memcpy( &bx, &x, sizeof(x) );
+        std::memcpy( &by, &y, sizeof(y) );
+        std::int64_t diff = bx - by;
+        if (!BOOST_TEST(std::abs( diff ) < limit))
+            std::fprintf(stderr,
+                         "%s: difference %" PRId64 " ulp\n"
+                         "  strtod:       %.13a %.16g\n"
+                         "  boost.json:   %.13a %.16g\n\n",
+                         nm, diff, x, x, y, y );
+    }
+
+    void
+    testWithinULP()
+    {
+        std::mt19937_64 rng;
+
+        checkAccuracy("10199214983525025199.13135016100190689227e-308");
+
+        for( int i = 0; i < 1000000; ++i )
+        {
+            unsigned long long x1 = rng();
+            unsigned long long x2 = rng();
+            int x3 = std::uniform_int_distribution<>( -308, +308 )( rng );
+
+            char buffer[ 128 ];
+            std::sprintf( buffer, "%llu.%llue%d", x1, x2, x3 );
+
+            checkAccuracy( buffer );
+        }
+    };
+
     void
     run()
     {
         testDouble();
+        testWithinULP();
     }
 };
 

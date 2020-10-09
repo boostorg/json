@@ -142,9 +142,9 @@ dec_to_float(
         static_cast<double>(m);
     if(neg)
         x = -x;
-    if(e < -307)
-        return x * 1e-307 *
-            pow10(e+307);
+    if(e < -305)
+        return x * 1e-305 *
+            pow10(e+305);
     return x * pow10(e);
 }
 
