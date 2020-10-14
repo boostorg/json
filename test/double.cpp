@@ -384,6 +384,8 @@ public:
     {
         std::mt19937_64 rng;
 
+        checkAccuracy("10199214983525025199.13135016100190689227e-308");
+
         for( int i = 0; i < 1000000; ++i )
         {
             unsigned long long x1 = rng();
