@@ -9,11 +9,29 @@
 
 source_group("" FILES
     file.hpp
+    cbor_dom.cpp
+    cbor_stack.cpp
     path.cpp
     pretty.cpp
     proxy.cpp
     validate.cpp
 )
+
+#
+
+add_executable(cbor_dom
+    cbor_dom.cpp
+)
+set_property(TARGET cbor_dom PROPERTY FOLDER "example")
+target_link_libraries(cbor_dom PRIVATE Boost::json)
+
+#
+
+add_executable(cbor_stack
+    cbor_stack.cpp
+)
+set_property(TARGET cbor_stack PROPERTY FOLDER "example")
+target_link_libraries(cbor_stack PRIVATE Boost::json)
 
 #
 
