@@ -81,8 +81,7 @@ allocate(
         alignof(key_value_pair) >=
         alignof(index_t));
     BOOST_ASSERT(capacity > 0);
-    BOOST_ASSERT(
-        capacity <= object::max_size());
+    BOOST_ASSERT(capacity <= max_size());
     auto p = reinterpret_cast<
         table*>(sp->allocate(
             sizeof(table) + capacity * (
@@ -137,11 +136,17 @@ destroy() noexcept
 object::
 object(detail::unchecked_object&& uo)
     : sp_(uo.storage())
-    , t_(&empty_)
 {
     if(uo.size() == 0)
+    {
+        t_ = &empty_;
         return;
-    rehash(uo.size());
+    }
+    // should already be checked
+    BOOST_ASSERT(
+        uo.size() <= max_size());
+    t_ = table::allocate(
+        uo.size(), 0, sp_);
 
     // insert all elements, keeping
     // the last of any duplicate keys.
@@ -159,6 +164,7 @@ object(detail::unchecked_object&& uo)
         {
             if(i == null_index_)
             {
+                // end of bucket
                 access::next(
                     *dest) = head;
                 head = static_cast<index_t>(
