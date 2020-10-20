@@ -1,422 +1,422 @@
-Parse apache_builds.json,clang x64/sse2,boost (pool),775
-Parse apache_builds.json,clang x64/sse2,boost,275
-Parse apache_builds.json,clang x64/sse2,rapidjson (pool),543
-Parse apache_builds.json,clang x64/sse2,rapidjson,340
-Parse apache_builds.json,clang x64/sse2,nlohmann,128
-Parse canada.json,clang x64/sse2,boost (pool),691
-Parse canada.json,clang x64/sse2,boost,382
-Parse canada.json,clang x64/sse2,rapidjson (pool),507
-Parse canada.json,clang x64/sse2,rapidjson,316
+Parse apache_builds.json,clang x64/sse2,boost (pool),740
+Parse apache_builds.json,clang x64/sse2,boost,290
+Parse apache_builds.json,clang x64/sse2,rapidjson (pool),564
+Parse apache_builds.json,clang x64/sse2,rapidjson,353
+Parse apache_builds.json,clang x64/sse2,nlohmann,130
+Parse canada.json,clang x64/sse2,boost (pool),642
+Parse canada.json,clang x64/sse2,boost,385
+Parse canada.json,clang x64/sse2,rapidjson (pool),506
+Parse canada.json,clang x64/sse2,rapidjson,303
 Parse canada.json,clang x64/sse2,nlohmann,55
-Parse citm_catalog.json,clang x64/sse2,boost (pool),1103
-Parse citm_catalog.json,clang x64/sse2,boost,477
-Parse citm_catalog.json,clang x64/sse2,rapidjson (pool),1206
-Parse citm_catalog.json,clang x64/sse2,rapidjson,757
-Parse citm_catalog.json,clang x64/sse2,nlohmann,157
-Parse github_events.json,clang x64/sse2,boost (pool),897
-Parse github_events.json,clang x64/sse2,boost,321
-Parse github_events.json,clang x64/sse2,rapidjson (pool),538
-Parse github_events.json,clang x64/sse2,rapidjson,365
-Parse github_events.json,clang x64/sse2,nlohmann,140
-Parse gsoc-2018.json,clang x64/sse2,boost (pool),924
-Parse gsoc-2018.json,clang x64/sse2,boost,628
-Parse gsoc-2018.json,clang x64/sse2,rapidjson (pool),615
-Parse gsoc-2018.json,clang x64/sse2,rapidjson,508
-Parse gsoc-2018.json,clang x64/sse2,nlohmann,256
-Parse instruments.json,clang x64/sse2,boost (pool),750
-Parse instruments.json,clang x64/sse2,boost,293
-Parse instruments.json,clang x64/sse2,rapidjson (pool),662
-Parse instruments.json,clang x64/sse2,rapidjson,433
-Parse instruments.json,clang x64/sse2,nlohmann,113
-Parse marine_ik.json,clang x64/sse2,boost (pool),510
-Parse marine_ik.json,clang x64/sse2,boost,306
-Parse marine_ik.json,clang x64/sse2,rapidjson (pool),493
-Parse marine_ik.json,clang x64/sse2,rapidjson,356
+Parse citm_catalog.json,clang x64/sse2,boost (pool),1120
+Parse citm_catalog.json,clang x64/sse2,boost,476
+Parse citm_catalog.json,clang x64/sse2,rapidjson (pool),1200
+Parse citm_catalog.json,clang x64/sse2,rapidjson,698
+Parse citm_catalog.json,clang x64/sse2,nlohmann,140
+Parse github_events.json,clang x64/sse2,boost (pool),833
+Parse github_events.json,clang x64/sse2,boost,314
+Parse github_events.json,clang x64/sse2,rapidjson (pool),525
+Parse github_events.json,clang x64/sse2,rapidjson,349
+Parse github_events.json,clang x64/sse2,nlohmann,136
+Parse gsoc-2018.json,clang x64/sse2,boost (pool),879
+Parse gsoc-2018.json,clang x64/sse2,boost,595
+Parse gsoc-2018.json,clang x64/sse2,rapidjson (pool),596
+Parse gsoc-2018.json,clang x64/sse2,rapidjson,488
+Parse gsoc-2018.json,clang x64/sse2,nlohmann,261
+Parse instruments.json,clang x64/sse2,boost (pool),690
+Parse instruments.json,clang x64/sse2,boost,301
+Parse instruments.json,clang x64/sse2,rapidjson (pool),685
+Parse instruments.json,clang x64/sse2,rapidjson,451
+Parse instruments.json,clang x64/sse2,nlohmann,117
+Parse marine_ik.json,clang x64/sse2,boost (pool),476
+Parse marine_ik.json,clang x64/sse2,boost,314
+Parse marine_ik.json,clang x64/sse2,rapidjson (pool),500
+Parse marine_ik.json,clang x64/sse2,rapidjson,363
 Parse marine_ik.json,clang x64/sse2,nlohmann,56
-Parse mesh.json,clang x64/sse2,boost (pool),607
-Parse mesh.json,clang x64/sse2,boost,584
-Parse mesh.json,clang x64/sse2,rapidjson (pool),402
-Parse mesh.json,clang x64/sse2,rapidjson,352
+Parse mesh.json,clang x64/sse2,boost (pool),522
+Parse mesh.json,clang x64/sse2,boost,560
+Parse mesh.json,clang x64/sse2,rapidjson (pool),398
+Parse mesh.json,clang x64/sse2,rapidjson,347
 Parse mesh.json,clang x64/sse2,nlohmann,59
-Parse mesh.pretty.json,clang x64/sse2,boost (pool),1100
-Parse mesh.pretty.json,clang x64/sse2,boost,1164
-Parse mesh.pretty.json,clang x64/sse2,rapidjson (pool),784
-Parse mesh.pretty.json,clang x64/sse2,rapidjson,695
-Parse mesh.pretty.json,clang x64/sse2,nlohmann,110
-Parse numbers.json,clang x64/sse2,boost (pool),1350
-Parse numbers.json,clang x64/sse2,boost,1052
-Parse numbers.json,clang x64/sse2,rapidjson (pool),491
+Parse mesh.pretty.json,clang x64/sse2,boost (pool),1033
+Parse mesh.pretty.json,clang x64/sse2,boost,1195
+Parse mesh.pretty.json,clang x64/sse2,rapidjson (pool),820
+Parse mesh.pretty.json,clang x64/sse2,rapidjson,723
+Parse mesh.pretty.json,clang x64/sse2,nlohmann,115
+Parse numbers.json,clang x64/sse2,boost (pool),1105
+Parse numbers.json,clang x64/sse2,boost,1042
+Parse numbers.json,clang x64/sse2,rapidjson (pool),497
 Parse numbers.json,clang x64/sse2,rapidjson,472
 Parse numbers.json,clang x64/sse2,nlohmann,63
-Parse random.json,clang x64/sse2,boost (pool),394
-Parse random.json,clang x64/sse2,boost,170
-Parse random.json,clang x64/sse2,rapidjson (pool),419
-Parse random.json,clang x64/sse2,rapidjson,276
-Parse random.json,clang x64/sse2,nlohmann,82
-Parse twitter.json,clang x64/sse2,boost (pool),707
-Parse twitter.json,clang x64/sse2,boost,328
-Parse twitter.json,clang x64/sse2,rapidjson (pool),594
-Parse twitter.json,clang x64/sse2,rapidjson,395
-Parse twitter.json,clang x64/sse2,nlohmann,134
-Parse twitterescaped.json,clang x64/sse2,boost (pool),619
-Parse twitterescaped.json,clang x64/sse2,boost,293
+Parse random.json,clang x64/sse2,boost (pool),375
+Parse random.json,clang x64/sse2,boost,180
+Parse random.json,clang x64/sse2,rapidjson (pool),438
+Parse random.json,clang x64/sse2,rapidjson,290
+Parse random.json,clang x64/sse2,nlohmann,86
+Parse twitter.json,clang x64/sse2,boost (pool),682
+Parse twitter.json,clang x64/sse2,boost,329
+Parse twitter.json,clang x64/sse2,rapidjson (pool),603
+Parse twitter.json,clang x64/sse2,rapidjson,406
+Parse twitter.json,clang x64/sse2,nlohmann,137
+Parse twitterescaped.json,clang x64/sse2,boost (pool),567
+Parse twitterescaped.json,clang x64/sse2,boost,280
 Parse twitterescaped.json,clang x64/sse2,rapidjson (pool),398
-Parse twitterescaped.json,clang x64/sse2,rapidjson,286
-Parse twitterescaped.json,clang x64/sse2,nlohmann,119
-Parse update-center.json,clang x64/sse2,boost (pool),591
-Parse update-center.json,clang x64/sse2,boost,236
-Parse update-center.json,clang x64/sse2,rapidjson (pool),427
-Parse update-center.json,clang x64/sse2,rapidjson,274
+Parse twitterescaped.json,clang x64/sse2,rapidjson,287
+Parse twitterescaped.json,clang x64/sse2,nlohmann,120
+Parse update-center.json,clang x64/sse2,boost (pool),530
+Parse update-center.json,clang x64/sse2,boost,233
+Parse update-center.json,clang x64/sse2,rapidjson (pool),426
+Parse update-center.json,clang x64/sse2,rapidjson,277
 Parse update-center.json,clang x64/sse2,nlohmann,105
-Serialize apache_builds.json,clang x64/sse2,boost (pool),1624
-Serialize apache_builds.json,clang x64/sse2,boost,1806
-Serialize apache_builds.json,clang x64/sse2,rapidjson (pool),1358
-Serialize apache_builds.json,clang x64/sse2,rapidjson,1441
-Serialize apache_builds.json,clang x64/sse2,nlohmann,451
-Serialize canada.json,clang x64/sse2,boost (pool),580
-Serialize canada.json,clang x64/sse2,boost,559
-Serialize canada.json,clang x64/sse2,rapidjson (pool),321
-Serialize canada.json,clang x64/sse2,rapidjson,315
-Serialize canada.json,clang x64/sse2,nlohmann,199
-Serialize citm_catalog.json,clang x64/sse2,boost (pool),3101
-Serialize citm_catalog.json,clang x64/sse2,boost,2964
-Serialize citm_catalog.json,clang x64/sse2,rapidjson (pool),2236
-Serialize citm_catalog.json,clang x64/sse2,rapidjson,2245
-Serialize citm_catalog.json,clang x64/sse2,nlohmann,1241
-Serialize github_events.json,clang x64/sse2,boost (pool),1994
-Serialize github_events.json,clang x64/sse2,boost,1857
-Serialize github_events.json,clang x64/sse2,rapidjson (pool),1494
-Serialize github_events.json,clang x64/sse2,rapidjson,1655
-Serialize github_events.json,clang x64/sse2,nlohmann,407
-Serialize gsoc-2018.json,clang x64/sse2,boost (pool),2340
-Serialize gsoc-2018.json,clang x64/sse2,boost,2248
-Serialize gsoc-2018.json,clang x64/sse2,rapidjson (pool),2898
+Serialize apache_builds.json,clang x64/sse2,boost (pool),1659
+Serialize apache_builds.json,clang x64/sse2,boost,1480
+Serialize apache_builds.json,clang x64/sse2,rapidjson (pool),1431
+Serialize apache_builds.json,clang x64/sse2,rapidjson,1528
+Serialize apache_builds.json,clang x64/sse2,nlohmann,407
+Serialize canada.json,clang x64/sse2,boost (pool),578
+Serialize canada.json,clang x64/sse2,boost,561
+Serialize canada.json,clang x64/sse2,rapidjson (pool),313
+Serialize canada.json,clang x64/sse2,rapidjson,309
+Serialize canada.json,clang x64/sse2,nlohmann,178
+Serialize citm_catalog.json,clang x64/sse2,boost (pool),3039
+Serialize citm_catalog.json,clang x64/sse2,boost,2882
+Serialize citm_catalog.json,clang x64/sse2,rapidjson (pool),2200
+Serialize citm_catalog.json,clang x64/sse2,rapidjson,2210
+Serialize citm_catalog.json,clang x64/sse2,nlohmann,1151
+Serialize github_events.json,clang x64/sse2,boost (pool),1529
+Serialize github_events.json,clang x64/sse2,boost,1559
+Serialize github_events.json,clang x64/sse2,rapidjson (pool),1500
+Serialize github_events.json,clang x64/sse2,rapidjson,1680
+Serialize github_events.json,clang x64/sse2,nlohmann,368
+Serialize gsoc-2018.json,clang x64/sse2,boost (pool),2347
+Serialize gsoc-2018.json,clang x64/sse2,boost,2243
+Serialize gsoc-2018.json,clang x64/sse2,rapidjson (pool),2895
 Serialize gsoc-2018.json,clang x64/sse2,rapidjson,3066
-Serialize gsoc-2018.json,clang x64/sse2,nlohmann,259
-Serialize instruments.json,clang x64/sse2,boost (pool),2082
-Serialize instruments.json,clang x64/sse2,boost,2014
-Serialize instruments.json,clang x64/sse2,rapidjson (pool),1356
-Serialize instruments.json,clang x64/sse2,rapidjson,1432
-Serialize instruments.json,clang x64/sse2,nlohmann,638
-Serialize marine_ik.json,clang x64/sse2,boost (pool),460
-Serialize marine_ik.json,clang x64/sse2,boost,445
-Serialize marine_ik.json,clang x64/sse2,rapidjson (pool),463
-Serialize marine_ik.json,clang x64/sse2,rapidjson,456
-Serialize marine_ik.json,clang x64/sse2,nlohmann,264
-Serialize mesh.json,clang x64/sse2,boost (pool),473
-Serialize mesh.json,clang x64/sse2,boost,471
-Serialize mesh.json,clang x64/sse2,rapidjson (pool),369
-Serialize mesh.json,clang x64/sse2,rapidjson,368
-Serialize mesh.json,clang x64/sse2,nlohmann,294
-Serialize mesh.pretty.json,clang x64/sse2,boost (pool),1021
-Serialize mesh.pretty.json,clang x64/sse2,boost,1020
-Serialize mesh.pretty.json,clang x64/sse2,rapidjson (pool),803
-Serialize mesh.pretty.json,clang x64/sse2,rapidjson,799
-Serialize mesh.pretty.json,clang x64/sse2,nlohmann,636
-Serialize numbers.json,clang x64/sse2,boost (pool),412
-Serialize numbers.json,clang x64/sse2,boost,412
-Serialize numbers.json,clang x64/sse2,rapidjson (pool),299
-Serialize numbers.json,clang x64/sse2,rapidjson,299
-Serialize numbers.json,clang x64/sse2,nlohmann,236
-Serialize random.json,clang x64/sse2,boost (pool),1265
-Serialize random.json,clang x64/sse2,boost,1220
-Serialize random.json,clang x64/sse2,rapidjson (pool),798
-Serialize random.json,clang x64/sse2,rapidjson,851
-Serialize random.json,clang x64/sse2,nlohmann,351
-Serialize twitter.json,clang x64/sse2,boost (pool),2179
-Serialize twitter.json,clang x64/sse2,boost,1992
-Serialize twitter.json,clang x64/sse2,rapidjson (pool),1339
-Serialize twitter.json,clang x64/sse2,rapidjson,1487
-Serialize twitter.json,clang x64/sse2,nlohmann,467
-Serialize twitterescaped.json,clang x64/sse2,boost (pool),1964
-Serialize twitterescaped.json,clang x64/sse2,boost,1703
-Serialize twitterescaped.json,clang x64/sse2,rapidjson (pool),1192
-Serialize twitterescaped.json,clang x64/sse2,rapidjson,1320
-Serialize twitterescaped.json,clang x64/sse2,nlohmann,417
-Serialize update-center.json,clang x64/sse2,boost (pool),1261
-Serialize update-center.json,clang x64/sse2,boost,1141
-Serialize update-center.json,clang x64/sse2,rapidjson (pool),909
-Serialize update-center.json,clang x64/sse2,rapidjson,983
-Serialize update-center.json,clang x64/sse2,nlohmann,303
+Serialize gsoc-2018.json,clang x64/sse2,nlohmann,241
+Serialize instruments.json,clang x64/sse2,boost (pool),2183
+Serialize instruments.json,clang x64/sse2,boost,1905
+Serialize instruments.json,clang x64/sse2,rapidjson (pool),1350
+Serialize instruments.json,clang x64/sse2,rapidjson,1430
+Serialize instruments.json,clang x64/sse2,nlohmann,587
+Serialize marine_ik.json,clang x64/sse2,boost (pool),469
+Serialize marine_ik.json,clang x64/sse2,boost,454
+Serialize marine_ik.json,clang x64/sse2,rapidjson (pool),452
+Serialize marine_ik.json,clang x64/sse2,rapidjson,445
+Serialize marine_ik.json,clang x64/sse2,nlohmann,229
+Serialize mesh.json,clang x64/sse2,boost (pool),476
+Serialize mesh.json,clang x64/sse2,boost,475
+Serialize mesh.json,clang x64/sse2,rapidjson (pool),367
+Serialize mesh.json,clang x64/sse2,rapidjson,366
+Serialize mesh.json,clang x64/sse2,nlohmann,275
+Serialize mesh.pretty.json,clang x64/sse2,boost (pool),1082
+Serialize mesh.pretty.json,clang x64/sse2,boost,1081
+Serialize mesh.pretty.json,clang x64/sse2,rapidjson (pool),840
+Serialize mesh.pretty.json,clang x64/sse2,rapidjson,835
+Serialize mesh.pretty.json,clang x64/sse2,nlohmann,623
+Serialize numbers.json,clang x64/sse2,boost (pool),415
+Serialize numbers.json,clang x64/sse2,boost,415
+Serialize numbers.json,clang x64/sse2,rapidjson (pool),300
+Serialize numbers.json,clang x64/sse2,rapidjson,297
+Serialize numbers.json,clang x64/sse2,nlohmann,216
+Serialize random.json,clang x64/sse2,boost (pool),1290
+Serialize random.json,clang x64/sse2,boost,1173
+Serialize random.json,clang x64/sse2,rapidjson (pool),838
+Serialize random.json,clang x64/sse2,rapidjson,892
+Serialize random.json,clang x64/sse2,nlohmann,338
+Serialize twitter.json,clang x64/sse2,boost (pool),2271
+Serialize twitter.json,clang x64/sse2,boost,1622
+Serialize twitter.json,clang x64/sse2,rapidjson (pool),1364
+Serialize twitter.json,clang x64/sse2,rapidjson,1527
+Serialize twitter.json,clang x64/sse2,nlohmann,424
+Serialize twitterescaped.json,clang x64/sse2,boost (pool),1961
+Serialize twitterescaped.json,clang x64/sse2,boost,1388
+Serialize twitterescaped.json,clang x64/sse2,rapidjson (pool),1184
+Serialize twitterescaped.json,clang x64/sse2,rapidjson,1325
+Serialize twitterescaped.json,clang x64/sse2,nlohmann,368
+Serialize update-center.json,clang x64/sse2,boost (pool),1015
+Serialize update-center.json,clang x64/sse2,boost,963
+Serialize update-center.json,clang x64/sse2,rapidjson (pool),924
+Serialize update-center.json,clang x64/sse2,rapidjson,1007
+Serialize update-center.json,clang x64/sse2,nlohmann,270
 
-Parse apache_builds.json,gcc x64/sse2,boost (pool),741
-Parse apache_builds.json,gcc x64/sse2,boost,284
-Parse apache_builds.json,gcc x64/sse2,rapidjson (pool),524
-Parse apache_builds.json,gcc x64/sse2,rapidjson,337
-Parse apache_builds.json,gcc x64/sse2,nlohmann,124
-Parse canada.json,gcc x64/sse2,boost (pool),708
-Parse canada.json,gcc x64/sse2,boost,396
-Parse canada.json,gcc x64/sse2,rapidjson (pool),633
-Parse canada.json,gcc x64/sse2,rapidjson,355
+Parse apache_builds.json,gcc x64/sse2,boost (pool),706
+Parse apache_builds.json,gcc x64/sse2,boost,290
+Parse apache_builds.json,gcc x64/sse2,rapidjson (pool),547
+Parse apache_builds.json,gcc x64/sse2,rapidjson,356
+Parse apache_builds.json,gcc x64/sse2,nlohmann,118
+Parse canada.json,gcc x64/sse2,boost (pool),675
+Parse canada.json,gcc x64/sse2,boost,395
+Parse canada.json,gcc x64/sse2,rapidjson (pool),641
+Parse canada.json,gcc x64/sse2,rapidjson,372
 Parse canada.json,gcc x64/sse2,nlohmann,26
-Parse citm_catalog.json,gcc x64/sse2,boost (pool),1050
-Parse citm_catalog.json,gcc x64/sse2,boost,494
-Parse citm_catalog.json,gcc x64/sse2,rapidjson (pool),1258
-Parse citm_catalog.json,gcc x64/sse2,rapidjson,793
-Parse citm_catalog.json,gcc x64/sse2,nlohmann,168
-Parse github_events.json,gcc x64/sse2,boost (pool),863
-Parse github_events.json,gcc x64/sse2,boost,324
-Parse github_events.json,gcc x64/sse2,rapidjson (pool),523
-Parse github_events.json,gcc x64/sse2,rapidjson,364
-Parse github_events.json,gcc x64/sse2,nlohmann,124
-Parse gsoc-2018.json,gcc x64/sse2,boost (pool),896
+Parse citm_catalog.json,gcc x64/sse2,boost (pool),1096
+Parse citm_catalog.json,gcc x64/sse2,boost,503
+Parse citm_catalog.json,gcc x64/sse2,rapidjson (pool),1279
+Parse citm_catalog.json,gcc x64/sse2,rapidjson,812
+Parse citm_catalog.json,gcc x64/sse2,nlohmann,143
+Parse github_events.json,gcc x64/sse2,boost (pool),767
+Parse github_events.json,gcc x64/sse2,boost,327
+Parse github_events.json,gcc x64/sse2,rapidjson (pool),551
+Parse github_events.json,gcc x64/sse2,rapidjson,379
+Parse github_events.json,gcc x64/sse2,nlohmann,121
+Parse gsoc-2018.json,gcc x64/sse2,boost (pool),892
 Parse gsoc-2018.json,gcc x64/sse2,boost,645
-Parse gsoc-2018.json,gcc x64/sse2,rapidjson (pool),605
-Parse gsoc-2018.json,gcc x64/sse2,rapidjson,511
-Parse gsoc-2018.json,gcc x64/sse2,nlohmann,202
-Parse instruments.json,gcc x64/sse2,boost (pool),698
-Parse instruments.json,gcc x64/sse2,boost,294
-Parse instruments.json,gcc x64/sse2,rapidjson (pool),681
-Parse instruments.json,gcc x64/sse2,rapidjson,451
-Parse instruments.json,gcc x64/sse2,nlohmann,121
-Parse marine_ik.json,gcc x64/sse2,boost (pool),504
-Parse marine_ik.json,gcc x64/sse2,boost,312
-Parse marine_ik.json,gcc x64/sse2,rapidjson (pool),561
-Parse marine_ik.json,gcc x64/sse2,rapidjson,399
+Parse gsoc-2018.json,gcc x64/sse2,rapidjson (pool),620
+Parse gsoc-2018.json,gcc x64/sse2,rapidjson,523
+Parse gsoc-2018.json,gcc x64/sse2,nlohmann,197
+Parse instruments.json,gcc x64/sse2,boost (pool),608
+Parse instruments.json,gcc x64/sse2,boost,296
+Parse instruments.json,gcc x64/sse2,rapidjson (pool),723
+Parse instruments.json,gcc x64/sse2,rapidjson,473
+Parse instruments.json,gcc x64/sse2,nlohmann,112
+Parse marine_ik.json,gcc x64/sse2,boost (pool),505
+Parse marine_ik.json,gcc x64/sse2,boost,321
+Parse marine_ik.json,gcc x64/sse2,rapidjson (pool),583
+Parse marine_ik.json,gcc x64/sse2,rapidjson,411
 Parse marine_ik.json,gcc x64/sse2,nlohmann,35
-Parse mesh.json,gcc x64/sse2,boost (pool),571
-Parse mesh.json,gcc x64/sse2,boost,534
-Parse mesh.json,gcc x64/sse2,rapidjson (pool),496
-Parse mesh.json,gcc x64/sse2,rapidjson,424
+Parse mesh.json,gcc x64/sse2,boost (pool),551
+Parse mesh.json,gcc x64/sse2,boost,518
+Parse mesh.json,gcc x64/sse2,rapidjson (pool),491
+Parse mesh.json,gcc x64/sse2,rapidjson,422
 Parse mesh.json,gcc x64/sse2,nlohmann,32
-Parse mesh.pretty.json,gcc x64/sse2,boost (pool),1063
-Parse mesh.pretty.json,gcc x64/sse2,boost,1076
-Parse mesh.pretty.json,gcc x64/sse2,rapidjson (pool),965
-Parse mesh.pretty.json,gcc x64/sse2,rapidjson,839
-Parse mesh.pretty.json,gcc x64/sse2,nlohmann,62
-Parse numbers.json,gcc x64/sse2,boost (pool),1154
-Parse numbers.json,gcc x64/sse2,boost,1017
-Parse numbers.json,gcc x64/sse2,rapidjson (pool),612
-Parse numbers.json,gcc x64/sse2,rapidjson,585
+Parse mesh.pretty.json,gcc x64/sse2,boost (pool),1091
+Parse mesh.pretty.json,gcc x64/sse2,boost,1096
+Parse mesh.pretty.json,gcc x64/sse2,rapidjson (pool),1023
+Parse mesh.pretty.json,gcc x64/sse2,rapidjson,887
+Parse mesh.pretty.json,gcc x64/sse2,nlohmann,61
+Parse numbers.json,gcc x64/sse2,boost (pool),1088
+Parse numbers.json,gcc x64/sse2,boost,968
+Parse numbers.json,gcc x64/sse2,rapidjson (pool),633
+Parse numbers.json,gcc x64/sse2,rapidjson,596
 Parse numbers.json,gcc x64/sse2,nlohmann,25
-Parse random.json,gcc x64/sse2,boost (pool),376
+Parse random.json,gcc x64/sse2,boost (pool),346
 Parse random.json,gcc x64/sse2,boost,175
-Parse random.json,gcc x64/sse2,rapidjson (pool),417
-Parse random.json,gcc x64/sse2,rapidjson,287
+Parse random.json,gcc x64/sse2,rapidjson (pool),449
+Parse random.json,gcc x64/sse2,rapidjson,308
 Parse random.json,gcc x64/sse2,nlohmann,85
-Parse twitter.json,gcc x64/sse2,boost (pool),628
-Parse twitter.json,gcc x64/sse2,boost,315
-Parse twitter.json,gcc x64/sse2,rapidjson (pool),608
-Parse twitter.json,gcc x64/sse2,rapidjson,407
-Parse twitter.json,gcc x64/sse2,nlohmann,128
-Parse twitterescaped.json,gcc x64/sse2,boost (pool),620
-Parse twitterescaped.json,gcc x64/sse2,boost,290
-Parse twitterescaped.json,gcc x64/sse2,rapidjson (pool),474
-Parse twitterescaped.json,gcc x64/sse2,rapidjson,328
-Parse twitterescaped.json,gcc x64/sse2,nlohmann,110
-Parse update-center.json,gcc x64/sse2,boost (pool),598
-Parse update-center.json,gcc x64/sse2,boost,246
-Parse update-center.json,gcc x64/sse2,rapidjson (pool),413
-Parse update-center.json,gcc x64/sse2,rapidjson,276
-Parse update-center.json,gcc x64/sse2,nlohmann,97
-Serialize apache_builds.json,gcc x64/sse2,boost (pool),2017
-Serialize apache_builds.json,gcc x64/sse2,boost,1944
-Serialize apache_builds.json,gcc x64/sse2,rapidjson (pool),1380
-Serialize apache_builds.json,gcc x64/sse2,rapidjson,1471
-Serialize apache_builds.json,gcc x64/sse2,nlohmann,420
-Serialize canada.json,gcc x64/sse2,boost (pool),579
-Serialize canada.json,gcc x64/sse2,boost,563
-Serialize canada.json,gcc x64/sse2,rapidjson (pool),332
-Serialize canada.json,gcc x64/sse2,rapidjson,329
-Serialize canada.json,gcc x64/sse2,nlohmann,190
-Serialize citm_catalog.json,gcc x64/sse2,boost (pool),3085
-Serialize citm_catalog.json,gcc x64/sse2,boost,3023
-Serialize citm_catalog.json,gcc x64/sse2,rapidjson (pool),2452
-Serialize citm_catalog.json,gcc x64/sse2,rapidjson,2476
-Serialize citm_catalog.json,gcc x64/sse2,nlohmann,1211
-Serialize github_events.json,gcc x64/sse2,boost (pool),2070
-Serialize github_events.json,gcc x64/sse2,boost,1967
-Serialize github_events.json,gcc x64/sse2,rapidjson (pool),1467
-Serialize github_events.json,gcc x64/sse2,rapidjson,1607
-Serialize github_events.json,gcc x64/sse2,nlohmann,380
-Serialize gsoc-2018.json,gcc x64/sse2,boost (pool),2269
-Serialize gsoc-2018.json,gcc x64/sse2,boost,2203
-Serialize gsoc-2018.json,gcc x64/sse2,rapidjson (pool),2892
-Serialize gsoc-2018.json,gcc x64/sse2,rapidjson,3058
-Serialize gsoc-2018.json,gcc x64/sse2,nlohmann,337
-Serialize instruments.json,gcc x64/sse2,boost (pool),2284
-Serialize instruments.json,gcc x64/sse2,boost,2221
-Serialize instruments.json,gcc x64/sse2,rapidjson (pool),1399
-Serialize instruments.json,gcc x64/sse2,rapidjson,1461
-Serialize instruments.json,gcc x64/sse2,nlohmann,576
-Serialize marine_ik.json,gcc x64/sse2,boost (pool),475
-Serialize marine_ik.json,gcc x64/sse2,boost,463
-Serialize marine_ik.json,gcc x64/sse2,rapidjson (pool),494
-Serialize marine_ik.json,gcc x64/sse2,rapidjson,483
-Serialize marine_ik.json,gcc x64/sse2,nlohmann,281
-Serialize mesh.json,gcc x64/sse2,boost (pool),496
-Serialize mesh.json,gcc x64/sse2,boost,497
-Serialize mesh.json,gcc x64/sse2,rapidjson (pool),414
-Serialize mesh.json,gcc x64/sse2,rapidjson,411
-Serialize mesh.json,gcc x64/sse2,nlohmann,286
-Serialize mesh.pretty.json,gcc x64/sse2,boost (pool),1070
-Serialize mesh.pretty.json,gcc x64/sse2,boost,1067
-Serialize mesh.pretty.json,gcc x64/sse2,rapidjson (pool),899
-Serialize mesh.pretty.json,gcc x64/sse2,rapidjson,896
-Serialize mesh.pretty.json,gcc x64/sse2,nlohmann,619
-Serialize numbers.json,gcc x64/sse2,boost (pool),433
-Serialize numbers.json,gcc x64/sse2,boost,432
-Serialize numbers.json,gcc x64/sse2,rapidjson (pool),320
-Serialize numbers.json,gcc x64/sse2,rapidjson,319
-Serialize numbers.json,gcc x64/sse2,nlohmann,239
-Serialize random.json,gcc x64/sse2,boost (pool),1346
-Serialize random.json,gcc x64/sse2,boost,1333
-Serialize random.json,gcc x64/sse2,rapidjson (pool),805
-Serialize random.json,gcc x64/sse2,rapidjson,876
-Serialize random.json,gcc x64/sse2,nlohmann,329
-Serialize twitter.json,gcc x64/sse2,boost (pool),2295
-Serialize twitter.json,gcc x64/sse2,boost,2163
-Serialize twitter.json,gcc x64/sse2,rapidjson (pool),1228
-Serialize twitter.json,gcc x64/sse2,rapidjson,1327
-Serialize twitter.json,gcc x64/sse2,nlohmann,419
-Serialize twitterescaped.json,gcc x64/sse2,boost (pool),2039
-Serialize twitterescaped.json,gcc x64/sse2,boost,1930
-Serialize twitterescaped.json,gcc x64/sse2,rapidjson (pool),1096
-Serialize twitterescaped.json,gcc x64/sse2,rapidjson,1181
-Serialize twitterescaped.json,gcc x64/sse2,nlohmann,373
-Serialize update-center.json,gcc x64/sse2,boost (pool),1342
-Serialize update-center.json,gcc x64/sse2,boost,1331
-Serialize update-center.json,gcc x64/sse2,rapidjson (pool),903
-Serialize update-center.json,gcc x64/sse2,rapidjson,973
-Serialize update-center.json,gcc x64/sse2,nlohmann,289
+Parse twitter.json,gcc x64/sse2,boost (pool),597
+Parse twitter.json,gcc x64/sse2,boost,308
+Parse twitter.json,gcc x64/sse2,rapidjson (pool),630
+Parse twitter.json,gcc x64/sse2,rapidjson,423
+Parse twitter.json,gcc x64/sse2,nlohmann,123
+Parse twitterescaped.json,gcc x64/sse2,boost (pool),533
+Parse twitterescaped.json,gcc x64/sse2,boost,270
+Parse twitterescaped.json,gcc x64/sse2,rapidjson (pool),475
+Parse twitterescaped.json,gcc x64/sse2,rapidjson,333
+Parse twitterescaped.json,gcc x64/sse2,nlohmann,108
+Parse update-center.json,gcc x64/sse2,boost (pool),509
+Parse update-center.json,gcc x64/sse2,boost,231
+Parse update-center.json,gcc x64/sse2,rapidjson (pool),418
+Parse update-center.json,gcc x64/sse2,rapidjson,282
+Parse update-center.json,gcc x64/sse2,nlohmann,95
+Serialize apache_builds.json,gcc x64/sse2,boost (pool),2102
+Serialize apache_builds.json,gcc x64/sse2,boost,2029
+Serialize apache_builds.json,gcc x64/sse2,rapidjson (pool),1424
+Serialize apache_builds.json,gcc x64/sse2,rapidjson,1526
+Serialize apache_builds.json,gcc x64/sse2,nlohmann,448
+Serialize canada.json,gcc x64/sse2,boost (pool),563
+Serialize canada.json,gcc x64/sse2,boost,541
+Serialize canada.json,gcc x64/sse2,rapidjson (pool),335
+Serialize canada.json,gcc x64/sse2,rapidjson,327
+Serialize canada.json,gcc x64/sse2,nlohmann,156
+Serialize citm_catalog.json,gcc x64/sse2,boost (pool),3474
+Serialize citm_catalog.json,gcc x64/sse2,boost,3263
+Serialize citm_catalog.json,gcc x64/sse2,rapidjson (pool),2453
+Serialize citm_catalog.json,gcc x64/sse2,rapidjson,2469
+Serialize citm_catalog.json,gcc x64/sse2,nlohmann,1204
+Serialize github_events.json,gcc x64/sse2,boost (pool),2091
+Serialize github_events.json,gcc x64/sse2,boost,2069
+Serialize github_events.json,gcc x64/sse2,rapidjson (pool),1475
+Serialize github_events.json,gcc x64/sse2,rapidjson,1658
+Serialize github_events.json,gcc x64/sse2,nlohmann,413
+Serialize gsoc-2018.json,gcc x64/sse2,boost (pool),2048
+Serialize gsoc-2018.json,gcc x64/sse2,boost,1991
+Serialize gsoc-2018.json,gcc x64/sse2,rapidjson (pool),2901
+Serialize gsoc-2018.json,gcc x64/sse2,rapidjson,3073
+Serialize gsoc-2018.json,gcc x64/sse2,nlohmann,365
+Serialize instruments.json,gcc x64/sse2,boost (pool),2381
+Serialize instruments.json,gcc x64/sse2,boost,2319
+Serialize instruments.json,gcc x64/sse2,rapidjson (pool),1453
+Serialize instruments.json,gcc x64/sse2,rapidjson,1514
+Serialize instruments.json,gcc x64/sse2,nlohmann,613
+Serialize marine_ik.json,gcc x64/sse2,boost (pool),469
+Serialize marine_ik.json,gcc x64/sse2,boost,455
+Serialize marine_ik.json,gcc x64/sse2,rapidjson (pool),504
+Serialize marine_ik.json,gcc x64/sse2,rapidjson,494
+Serialize marine_ik.json,gcc x64/sse2,nlohmann,235
+Serialize mesh.json,gcc x64/sse2,boost (pool),476
+Serialize mesh.json,gcc x64/sse2,boost,466
+Serialize mesh.json,gcc x64/sse2,rapidjson (pool),415
+Serialize mesh.json,gcc x64/sse2,rapidjson,413
+Serialize mesh.json,gcc x64/sse2,nlohmann,278
+Serialize mesh.pretty.json,gcc x64/sse2,boost (pool),1081
+Serialize mesh.pretty.json,gcc x64/sse2,boost,1056
+Serialize mesh.pretty.json,gcc x64/sse2,rapidjson (pool),950
+Serialize mesh.pretty.json,gcc x64/sse2,rapidjson,945
+Serialize mesh.pretty.json,gcc x64/sse2,nlohmann,624
+Serialize numbers.json,gcc x64/sse2,boost (pool),418
+Serialize numbers.json,gcc x64/sse2,boost,417
+Serialize numbers.json,gcc x64/sse2,rapidjson (pool),322
+Serialize numbers.json,gcc x64/sse2,rapidjson,321
+Serialize numbers.json,gcc x64/sse2,nlohmann,240
+Serialize random.json,gcc x64/sse2,boost (pool),1464
+Serialize random.json,gcc x64/sse2,boost,1420
+Serialize random.json,gcc x64/sse2,rapidjson (pool),850
+Serialize random.json,gcc x64/sse2,rapidjson,922
+Serialize random.json,gcc x64/sse2,nlohmann,351
+Serialize twitter.json,gcc x64/sse2,boost (pool),2367
+Serialize twitter.json,gcc x64/sse2,boost,2281
+Serialize twitter.json,gcc x64/sse2,rapidjson (pool),1244
+Serialize twitter.json,gcc x64/sse2,rapidjson,1401
+Serialize twitter.json,gcc x64/sse2,nlohmann,447
+Serialize twitterescaped.json,gcc x64/sse2,boost (pool),2053
+Serialize twitterescaped.json,gcc x64/sse2,boost,1985
+Serialize twitterescaped.json,gcc x64/sse2,rapidjson (pool),1077
+Serialize twitterescaped.json,gcc x64/sse2,rapidjson,1216
+Serialize twitterescaped.json,gcc x64/sse2,nlohmann,388
+Serialize update-center.json,gcc x64/sse2,boost (pool),1350
+Serialize update-center.json,gcc x64/sse2,boost,1298
+Serialize update-center.json,gcc x64/sse2,rapidjson (pool),901
+Serialize update-center.json,gcc x64/sse2,rapidjson,975
+Serialize update-center.json,gcc x64/sse2,nlohmann,299
 
-Parse apache_builds.json,msvc x64/sse2,boost (pool),676
-Parse apache_builds.json,msvc x64/sse2,boost,268
-Parse apache_builds.json,msvc x64/sse2,rapidjson (pool),431
-Parse apache_builds.json,msvc x64/sse2,rapidjson,275
-Parse apache_builds.json,msvc x64/sse2,nlohmann,116
-Parse canada.json,msvc x64/sse2,boost (pool),672
-Parse canada.json,msvc x64/sse2,boost,389
-Parse canada.json,msvc x64/sse2,rapidjson (pool),483
-Parse canada.json,msvc x64/sse2,rapidjson,306
+Parse apache_builds.json,msvc x64/sse2,boost (pool),616
+Parse apache_builds.json,msvc x64/sse2,boost,277
+Parse apache_builds.json,msvc x64/sse2,rapidjson (pool),385
+Parse apache_builds.json,msvc x64/sse2,rapidjson,270
+Parse apache_builds.json,msvc x64/sse2,nlohmann,121
+Parse canada.json,msvc x64/sse2,boost (pool),637
+Parse canada.json,msvc x64/sse2,boost,369
+Parse canada.json,msvc x64/sse2,rapidjson (pool),490
+Parse canada.json,msvc x64/sse2,rapidjson,312
 Parse canada.json,msvc x64/sse2,nlohmann,52
-Parse citm_catalog.json,msvc x64/sse2,boost (pool),1008
-Parse citm_catalog.json,msvc x64/sse2,boost,469
-Parse citm_catalog.json,msvc x64/sse2,rapidjson (pool),1019
-Parse citm_catalog.json,msvc x64/sse2,rapidjson,667
-Parse citm_catalog.json,msvc x64/sse2,nlohmann,147
-Parse github_events.json,msvc x64/sse2,boost (pool),788
-Parse github_events.json,msvc x64/sse2,boost,315
-Parse github_events.json,msvc x64/sse2,rapidjson (pool),406
-Parse github_events.json,msvc x64/sse2,rapidjson,284
-Parse github_events.json,msvc x64/sse2,nlohmann,129
-Parse gsoc-2018.json,msvc x64/sse2,boost (pool),862
-Parse gsoc-2018.json,msvc x64/sse2,boost,609
-Parse gsoc-2018.json,msvc x64/sse2,rapidjson (pool),470
-Parse gsoc-2018.json,msvc x64/sse2,rapidjson,372
-Parse gsoc-2018.json,msvc x64/sse2,nlohmann,240
-Parse instruments.json,msvc x64/sse2,boost (pool),652
-Parse instruments.json,msvc x64/sse2,boost,285
-Parse instruments.json,msvc x64/sse2,rapidjson (pool),482
-Parse instruments.json,msvc x64/sse2,rapidjson,347
-Parse instruments.json,msvc x64/sse2,nlohmann,107
-Parse marine_ik.json,msvc x64/sse2,boost (pool),478
-Parse marine_ik.json,msvc x64/sse2,boost,295
-Parse marine_ik.json,msvc x64/sse2,rapidjson (pool),467
-Parse marine_ik.json,msvc x64/sse2,rapidjson,340
-Parse marine_ik.json,msvc x64/sse2,nlohmann,52
-Parse mesh.json,msvc x64/sse2,boost (pool),582
-Parse mesh.json,msvc x64/sse2,boost,571
-Parse mesh.json,msvc x64/sse2,rapidjson (pool),394
-Parse mesh.json,msvc x64/sse2,rapidjson,343
+Parse citm_catalog.json,msvc x64/sse2,boost (pool),999
+Parse citm_catalog.json,msvc x64/sse2,boost,477
+Parse citm_catalog.json,msvc x64/sse2,rapidjson (pool),978
+Parse citm_catalog.json,msvc x64/sse2,rapidjson,659
+Parse citm_catalog.json,msvc x64/sse2,nlohmann,148
+Parse github_events.json,msvc x64/sse2,boost (pool),713
+Parse github_events.json,msvc x64/sse2,boost,318
+Parse github_events.json,msvc x64/sse2,rapidjson (pool),356
+Parse github_events.json,msvc x64/sse2,rapidjson,278
+Parse github_events.json,msvc x64/sse2,nlohmann,134
+Parse gsoc-2018.json,msvc x64/sse2,boost (pool),881
+Parse gsoc-2018.json,msvc x64/sse2,boost,628
+Parse gsoc-2018.json,msvc x64/sse2,rapidjson (pool),375
+Parse gsoc-2018.json,msvc x64/sse2,rapidjson,336
+Parse gsoc-2018.json,msvc x64/sse2,nlohmann,243
+Parse instruments.json,msvc x64/sse2,boost (pool),562
+Parse instruments.json,msvc x64/sse2,boost,286
+Parse instruments.json,msvc x64/sse2,rapidjson (pool),481
+Parse instruments.json,msvc x64/sse2,rapidjson,349
+Parse instruments.json,msvc x64/sse2,nlohmann,112
+Parse marine_ik.json,msvc x64/sse2,boost (pool),448
+Parse marine_ik.json,msvc x64/sse2,boost,298
+Parse marine_ik.json,msvc x64/sse2,rapidjson (pool),482
+Parse marine_ik.json,msvc x64/sse2,rapidjson,350
+Parse marine_ik.json,msvc x64/sse2,nlohmann,56
+Parse mesh.json,msvc x64/sse2,boost (pool),536
+Parse mesh.json,msvc x64/sse2,boost,535
+Parse mesh.json,msvc x64/sse2,rapidjson (pool),400
+Parse mesh.json,msvc x64/sse2,rapidjson,347
 Parse mesh.json,msvc x64/sse2,nlohmann,57
-Parse mesh.pretty.json,msvc x64/sse2,boost (pool),1070
-Parse mesh.pretty.json,msvc x64/sse2,boost,1143
-Parse mesh.pretty.json,msvc x64/sse2,rapidjson (pool),766
-Parse mesh.pretty.json,msvc x64/sse2,rapidjson,679
-Parse mesh.pretty.json,msvc x64/sse2,nlohmann,106
-Parse numbers.json,msvc x64/sse2,boost (pool),1126
-Parse numbers.json,msvc x64/sse2,boost,996
-Parse numbers.json,msvc x64/sse2,rapidjson (pool),460
-Parse numbers.json,msvc x64/sse2,rapidjson,438
-Parse numbers.json,msvc x64/sse2,nlohmann,61
-Parse random.json,msvc x64/sse2,boost (pool),350
-Parse random.json,msvc x64/sse2,boost,164
-Parse random.json,msvc x64/sse2,rapidjson (pool),312
-Parse random.json,msvc x64/sse2,rapidjson,213
-Parse random.json,msvc x64/sse2,nlohmann,77
-Parse twitter.json,msvc x64/sse2,boost (pool),598
+Parse mesh.pretty.json,msvc x64/sse2,boost (pool),1057
+Parse mesh.pretty.json,msvc x64/sse2,boost,1132
+Parse mesh.pretty.json,msvc x64/sse2,rapidjson (pool),813
+Parse mesh.pretty.json,msvc x64/sse2,rapidjson,717
+Parse mesh.pretty.json,msvc x64/sse2,nlohmann,112
+Parse numbers.json,msvc x64/sse2,boost (pool),981
+Parse numbers.json,msvc x64/sse2,boost,895
+Parse numbers.json,msvc x64/sse2,rapidjson (pool),465
+Parse numbers.json,msvc x64/sse2,rapidjson,443
+Parse numbers.json,msvc x64/sse2,nlohmann,62
+Parse random.json,msvc x64/sse2,boost (pool),324
+Parse random.json,msvc x64/sse2,boost,171
+Parse random.json,msvc x64/sse2,rapidjson (pool),297
+Parse random.json,msvc x64/sse2,rapidjson,222
+Parse random.json,msvc x64/sse2,nlohmann,82
+Parse twitter.json,msvc x64/sse2,boost (pool),548
 Parse twitter.json,msvc x64/sse2,boost,307
-Parse twitter.json,msvc x64/sse2,rapidjson (pool),429
-Parse twitter.json,msvc x64/sse2,rapidjson,306
-Parse twitter.json,msvc x64/sse2,nlohmann,126
-Parse twitterescaped.json,msvc x64/sse2,boost (pool),542
-Parse twitterescaped.json,msvc x64/sse2,boost,276
-Parse twitterescaped.json,msvc x64/sse2,rapidjson (pool),300
-Parse twitterescaped.json,msvc x64/sse2,rapidjson,229
-Parse twitterescaped.json,msvc x64/sse2,nlohmann,111
-Parse update-center.json,msvc x64/sse2,boost (pool),532
-Parse update-center.json,msvc x64/sse2,boost,232
-Parse update-center.json,msvc x64/sse2,rapidjson (pool),318
-Parse update-center.json,msvc x64/sse2,rapidjson,215
-Parse update-center.json,msvc x64/sse2,nlohmann,96
-Serialize apache_builds.json,msvc x64/sse2,boost (pool),1385
-Serialize apache_builds.json,msvc x64/sse2,boost,1277
-Serialize apache_builds.json,msvc x64/sse2,rapidjson (pool),1246
-Serialize apache_builds.json,msvc x64/sse2,rapidjson,1340
-Serialize apache_builds.json,msvc x64/sse2,nlohmann,345
-Serialize canada.json,msvc x64/sse2,boost (pool),477
-Serialize canada.json,msvc x64/sse2,boost,465
-Serialize canada.json,msvc x64/sse2,rapidjson (pool),308
-Serialize canada.json,msvc x64/sse2,rapidjson,304
-Serialize canada.json,msvc x64/sse2,nlohmann,155
-Serialize citm_catalog.json,msvc x64/sse2,boost (pool),2178
-Serialize citm_catalog.json,msvc x64/sse2,boost,2130
-Serialize citm_catalog.json,msvc x64/sse2,rapidjson (pool),2137
-Serialize citm_catalog.json,msvc x64/sse2,rapidjson,2153
-Serialize citm_catalog.json,msvc x64/sse2,nlohmann,1153
-Serialize github_events.json,msvc x64/sse2,boost (pool),1489
-Serialize github_events.json,msvc x64/sse2,boost,1445
-Serialize github_events.json,msvc x64/sse2,rapidjson (pool),1332
-Serialize github_events.json,msvc x64/sse2,rapidjson,1466
-Serialize github_events.json,msvc x64/sse2,nlohmann,294
-Serialize gsoc-2018.json,msvc x64/sse2,boost (pool),1708
-Serialize gsoc-2018.json,msvc x64/sse2,boost,1598
-Serialize gsoc-2018.json,msvc x64/sse2,rapidjson (pool),2722
-Serialize gsoc-2018.json,msvc x64/sse2,rapidjson,2861
-Serialize gsoc-2018.json,msvc x64/sse2,nlohmann,216
-Serialize instruments.json,msvc x64/sse2,boost (pool),1372
-Serialize instruments.json,msvc x64/sse2,boost,1303
-Serialize instruments.json,msvc x64/sse2,rapidjson (pool),1212
-Serialize instruments.json,msvc x64/sse2,rapidjson,1282
-Serialize instruments.json,msvc x64/sse2,nlohmann,528
-Serialize marine_ik.json,msvc x64/sse2,boost (pool),393
-Serialize marine_ik.json,msvc x64/sse2,boost,384
-Serialize marine_ik.json,msvc x64/sse2,rapidjson (pool),419
-Serialize marine_ik.json,msvc x64/sse2,rapidjson,414
-Serialize marine_ik.json,msvc x64/sse2,nlohmann,202
+Parse twitter.json,msvc x64/sse2,rapidjson (pool),394
+Parse twitter.json,msvc x64/sse2,rapidjson,299
+Parse twitter.json,msvc x64/sse2,nlohmann,130
+Parse twitterescaped.json,msvc x64/sse2,boost (pool),467
+Parse twitterescaped.json,msvc x64/sse2,boost,264
+Parse twitterescaped.json,msvc x64/sse2,rapidjson (pool),284
+Parse twitterescaped.json,msvc x64/sse2,rapidjson,222
+Parse twitterescaped.json,msvc x64/sse2,nlohmann,112
+Parse update-center.json,msvc x64/sse2,boost (pool),446
+Parse update-center.json,msvc x64/sse2,boost,223
+Parse update-center.json,msvc x64/sse2,rapidjson (pool),278
+Parse update-center.json,msvc x64/sse2,rapidjson,206
+Parse update-center.json,msvc x64/sse2,nlohmann,99
+Serialize apache_builds.json,msvc x64/sse2,boost (pool),1446
+Serialize apache_builds.json,msvc x64/sse2,boost,1389
+Serialize apache_builds.json,msvc x64/sse2,rapidjson (pool),1286
+Serialize apache_builds.json,msvc x64/sse2,rapidjson,1368
+Serialize apache_builds.json,msvc x64/sse2,nlohmann,346
+Serialize canada.json,msvc x64/sse2,boost (pool),473
+Serialize canada.json,msvc x64/sse2,boost,460
+Serialize canada.json,msvc x64/sse2,rapidjson (pool),305
+Serialize canada.json,msvc x64/sse2,rapidjson,300
+Serialize canada.json,msvc x64/sse2,nlohmann,141
+Serialize citm_catalog.json,msvc x64/sse2,boost (pool),2182
+Serialize citm_catalog.json,msvc x64/sse2,boost,2128
+Serialize citm_catalog.json,msvc x64/sse2,rapidjson (pool),2116
+Serialize citm_catalog.json,msvc x64/sse2,rapidjson,2135
+Serialize citm_catalog.json,msvc x64/sse2,nlohmann,1142
+Serialize github_events.json,msvc x64/sse2,boost (pool),1541
+Serialize github_events.json,msvc x64/sse2,boost,1501
+Serialize github_events.json,msvc x64/sse2,rapidjson (pool),1336
+Serialize github_events.json,msvc x64/sse2,rapidjson,1459
+Serialize github_events.json,msvc x64/sse2,nlohmann,291
+Serialize gsoc-2018.json,msvc x64/sse2,boost (pool),1726
+Serialize gsoc-2018.json,msvc x64/sse2,boost,1666
+Serialize gsoc-2018.json,msvc x64/sse2,rapidjson (pool),2679
+Serialize gsoc-2018.json,msvc x64/sse2,rapidjson,2821
+Serialize gsoc-2018.json,msvc x64/sse2,nlohmann,206
+Serialize instruments.json,msvc x64/sse2,boost (pool),1442
+Serialize instruments.json,msvc x64/sse2,boost,1409
+Serialize instruments.json,msvc x64/sse2,rapidjson (pool),1239
+Serialize instruments.json,msvc x64/sse2,rapidjson,1317
+Serialize instruments.json,msvc x64/sse2,nlohmann,550
+Serialize marine_ik.json,msvc x64/sse2,boost (pool),397
+Serialize marine_ik.json,msvc x64/sse2,boost,385
+Serialize marine_ik.json,msvc x64/sse2,rapidjson (pool),425
+Serialize marine_ik.json,msvc x64/sse2,rapidjson,419
+Serialize marine_ik.json,msvc x64/sse2,nlohmann,179
 Serialize mesh.json,msvc x64/sse2,boost (pool),401
 Serialize mesh.json,msvc x64/sse2,boost,401
-Serialize mesh.json,msvc x64/sse2,rapidjson (pool),341
-Serialize mesh.json,msvc x64/sse2,rapidjson,339
-Serialize mesh.json,msvc x64/sse2,nlohmann,214
-Serialize mesh.pretty.json,msvc x64/sse2,boost (pool),873
-Serialize mesh.pretty.json,msvc x64/sse2,boost,873
-Serialize mesh.pretty.json,msvc x64/sse2,rapidjson (pool),742
-Serialize mesh.pretty.json,msvc x64/sse2,rapidjson,738
-Serialize mesh.pretty.json,msvc x64/sse2,nlohmann,463
-Serialize numbers.json,msvc x64/sse2,boost (pool),360
-Serialize numbers.json,msvc x64/sse2,boost,360
-Serialize numbers.json,msvc x64/sse2,rapidjson (pool),266
-Serialize numbers.json,msvc x64/sse2,rapidjson,265
-Serialize numbers.json,msvc x64/sse2,nlohmann,164
-Serialize random.json,msvc x64/sse2,boost (pool),837
-Serialize random.json,msvc x64/sse2,boost,806
-Serialize random.json,msvc x64/sse2,rapidjson (pool),720
-Serialize random.json,msvc x64/sse2,rapidjson,772
-Serialize random.json,msvc x64/sse2,nlohmann,293
-Serialize twitter.json,msvc x64/sse2,boost (pool),1565
-Serialize twitter.json,msvc x64/sse2,boost,1495
-Serialize twitter.json,msvc x64/sse2,rapidjson (pool),1186
-Serialize twitter.json,msvc x64/sse2,rapidjson,1304
-Serialize twitter.json,msvc x64/sse2,nlohmann,388
-Serialize twitterescaped.json,msvc x64/sse2,boost (pool),1396
-Serialize twitterescaped.json,msvc x64/sse2,boost,1335
-Serialize twitterescaped.json,msvc x64/sse2,rapidjson (pool),1054
-Serialize twitterescaped.json,msvc x64/sse2,rapidjson,1162
-Serialize twitterescaped.json,msvc x64/sse2,nlohmann,346
-Serialize update-center.json,msvc x64/sse2,boost (pool),959
-Serialize update-center.json,msvc x64/sse2,boost,914
-Serialize update-center.json,msvc x64/sse2,rapidjson (pool),820
-Serialize update-center.json,msvc x64/sse2,rapidjson,883
-Serialize update-center.json,msvc x64/sse2,nlohmann,229
+Serialize mesh.json,msvc x64/sse2,rapidjson (pool),342
+Serialize mesh.json,msvc x64/sse2,rapidjson,341
+Serialize mesh.json,msvc x64/sse2,nlohmann,212
+Serialize mesh.pretty.json,msvc x64/sse2,boost (pool),918
+Serialize mesh.pretty.json,msvc x64/sse2,boost,918
+Serialize mesh.pretty.json,msvc x64/sse2,rapidjson (pool),782
+Serialize mesh.pretty.json,msvc x64/sse2,rapidjson,779
+Serialize mesh.pretty.json,msvc x64/sse2,nlohmann,481
+Serialize numbers.json,msvc x64/sse2,boost (pool),359
+Serialize numbers.json,msvc x64/sse2,boost,353
+Serialize numbers.json,msvc x64/sse2,rapidjson (pool),268
+Serialize numbers.json,msvc x64/sse2,rapidjson,268
+Serialize numbers.json,msvc x64/sse2,nlohmann,165
+Serialize random.json,msvc x64/sse2,boost (pool),887
+Serialize random.json,msvc x64/sse2,boost,865
+Serialize random.json,msvc x64/sse2,rapidjson (pool),761
+Serialize random.json,msvc x64/sse2,rapidjson,813
+Serialize random.json,msvc x64/sse2,nlohmann,308
+Serialize twitter.json,msvc x64/sse2,boost (pool),1612
+Serialize twitter.json,msvc x64/sse2,boost,1556
+Serialize twitter.json,msvc x64/sse2,rapidjson (pool),1217
+Serialize twitter.json,msvc x64/sse2,rapidjson,1341
+Serialize twitter.json,msvc x64/sse2,nlohmann,393
+Serialize twitterescaped.json,msvc x64/sse2,boost (pool),1400
+Serialize twitterescaped.json,msvc x64/sse2,boost,1351
+Serialize twitterescaped.json,msvc x64/sse2,rapidjson (pool),1057
+Serialize twitterescaped.json,msvc x64/sse2,rapidjson,1163
+Serialize twitterescaped.json,msvc x64/sse2,nlohmann,341
+Serialize update-center.json,msvc x64/sse2,boost (pool),969
+Serialize update-center.json,msvc x64/sse2,boost,941
+Serialize update-center.json,msvc x64/sse2,rapidjson (pool),795
+Serialize update-center.json,msvc x64/sse2,rapidjson,864
+Serialize update-center.json,msvc x64/sse2,nlohmann,224
