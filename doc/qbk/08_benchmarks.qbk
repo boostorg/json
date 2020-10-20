@@ -194,7 +194,7 @@ The input files, available in the bench/data directory, are laid out thusly:
 Hardware used for testing: [*Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz],
 Windows 10, 32GB RAM. 
 
-Compilers and optimization flags: gcc 8.1 (-O3), clang 10.0 (-O3), and msvc 19.26 (/O2).
+Compilers and optimization flags: gcc 8.1 (-O3), clang 12.0 (-O3), and msvc 19.26 (/O2).
 
 [/-----------------------------------------------------------------------------]
 
