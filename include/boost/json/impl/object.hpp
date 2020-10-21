@@ -33,7 +33,7 @@ struct alignas(key_value_pair)
     //        padding.
     BOOST_STATIC_ASSERT(
         sizeof(key_value_pair) == 32);
-    char pad[4]; // silence warnings
+    char pad[4] = {}; // silence warnings
 #endif
 
     constexpr table();
