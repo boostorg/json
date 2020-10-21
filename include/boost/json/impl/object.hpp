@@ -20,7 +20,7 @@ BOOST_JSON_NS_BEGIN
 
 //----------------------------------------------------------
 
-struct alignas(alignof(key_value_pair))
+struct alignas(key_value_pair)
     object::table
 {
     std::uint32_t size = 0;

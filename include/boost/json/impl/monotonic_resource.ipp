@@ -19,7 +19,7 @@
 
 BOOST_JSON_NS_BEGIN
 
-struct alignas(alignof(detail::max_align_t))
+struct alignas(detail::max_align_t)
     monotonic_resource::block : block_base
 {
 };
