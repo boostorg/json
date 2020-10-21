@@ -72,14 +72,14 @@ local LIMIT_SOURCES =
 
 local RUN_TESTS ;
 
+project : requirements $(c11-requires) ;
+
 for local f in $(SOURCES)
 {
     RUN_TESTS += [
         run $(f) main.cpp
             /boost//container/<warnings-as-errors>off
-            : : :
-            $(LIB)
-            <include>.
+            : : : $(LIB) <include>.
         ] ;
 }
 

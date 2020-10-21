@@ -7,6 +7,20 @@
 # Official repository: https://github.com/boostorg/json
 #
 
+import ../config/checks/config : requires ;
+
+# These make sure we only build
+# on C++11 or later toolchains.
+local c11-requires =
+    [ requires
+    cxx11_constexpr
+    cxx11_decltype
+    cxx11_hdr_tuple
+    cxx11_template_aliases
+    cxx11_variadic_templates
+    ]
+    ;
+
 path-constant LIB_DIR : . ;
 
 build-project bench ;
