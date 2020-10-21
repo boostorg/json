@@ -2883,7 +2883,7 @@ BOOST_JSON_NS_END
 #ifndef BOOST_JSON_DOCS
 namespace std {
 template<>
-struct hash<::boost::json::string>
+struct hash< ::boost::json::string >
 {
     hash() = default;
     hash(hash const&) = default;

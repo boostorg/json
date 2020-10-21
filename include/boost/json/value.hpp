@@ -3888,7 +3888,7 @@ namespace std {
 /** Tuple-like size access for key_value_pair
 */
 template<>
-struct tuple_size<::boost::json::key_value_pair>
+struct tuple_size< ::boost::json::key_value_pair >
     : std::integral_constant<std::size_t, 2> 
 {
 };
