@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2013-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+# Copyright (c) 2019 Vinnie Falco (vinnie dot falco at gmail dot com)
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -11,7 +11,7 @@ import ../config/checks/config : requires ;
 
 # These make sure we only build
 # on C++11 or later toolchains.
-local c11-requires =
+constant c11-requires =
     [ requires
     cxx11_constexpr
     cxx11_decltype
