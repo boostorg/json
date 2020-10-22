@@ -24,6 +24,12 @@ else
 
 project : requirements $(c11-requires) ;
 
+exe hash :
+    hash.cpp
+    : :
+    $(LIB)
+    ;
+
 exe path :
     path.cpp
     : :

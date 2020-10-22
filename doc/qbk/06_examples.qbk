@@ -12,6 +12,10 @@
 [section Examples]
 [block'''<?dbhtml stop-chunking?>''']
 
+[section Hash]
+[example_hash]
+[endsect]
+
 [section Pretty]
 [example_pretty]
 [endsect]

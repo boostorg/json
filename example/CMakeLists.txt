@@ -9,11 +9,20 @@
 
 source_group("" FILES
     file.hpp
+    hash.cpp
     path.cpp
     pretty.cpp
     proxy.cpp
     validate.cpp
 )
+
+#
+
+add_executable(hash
+        hash.cpp
+        )
+set_property(TARGET hash PROPERTY FOLDER "example")
+target_link_libraries(hash PRIVATE Boost::json)
 
 #
 
@@ -49,3 +58,4 @@ add_executable(validate
 )
 set_property(TARGET validate PROPERTY FOLDER "example")
 target_link_libraries(validate PRIVATE Boost::json)
+
