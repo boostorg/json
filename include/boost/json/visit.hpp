@@ -25,27 +25,24 @@ BOOST_JSON_NS_BEGIN
 
     @param jv The value to visit.
 */
+/** @{ */
 template<class Visitor>
 auto
 visit(
     Visitor&& v,
-    value&& jv) -> decltype(
-        std::declval<Visitor>()(nullptr))
-{
-    switch(jv.kind())
-    {
-    default: // unreachable()?
-    case kind::null:    return std::forward<Visitor>(v)(nullptr);
-    case kind::bool_:   return std::forward<Visitor>(v)(jv.get_bool());
-    case kind::int64:   return std::forward<Visitor>(v)(jv.get_int64());
-    case kind::uint64:  return std::forward<Visitor>(v)(jv.get_uint64());
-    case kind::double_: return std::forward<Visitor>(v)(jv.get_double());
-    case kind::string:  return std::forward<Visitor>(v)(jv.get_string());
-    case kind::array:   return std::forward<Visitor>(v)(jv.get_array());
-    case kind::object:  return std::forward<Visitor>(v)(jv.get_object());
-    }
-}
+    value& jv) -> decltype(
+        std::declval<Visitor>()(nullptr));
+
+template<class Visitor>
+auto
+visit(
+    Visitor &&v,
+    value const &jv) -> decltype(
+        std::declval<Visitor>()(nullptr));
+/** @} */
 
 BOOST_JSON_NS_END
+
+#include <boost/json/impl/visit.hpp>
 
 #endif

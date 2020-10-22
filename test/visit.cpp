@@ -17,31 +17,68 @@ BOOST_JSON_NS_BEGIN
 class visit_test
 {
 public:
-    struct check
+    template<class T>
+    void
+    check_const(kind k, T t)
     {
-        kind k;
-        bool operator()(std::nullptr_t) { return k == kind::null; }
-        bool operator()(bool) { return k == kind::bool_; }
-        bool operator()(std::int64_t) { return k == kind::int64; }
-        bool operator()(std::uint64_t) { return k == kind::uint64; }
-        bool operator()(double) { return k == kind::double_; }
-        bool operator()(string const&) { return k == kind::string; }
-        bool operator()(array const&) { return k == kind::array; }
-        bool operator()(object const&) { return k == kind::object; }
-        bool operator()(...) { return false; }
-    };
+        struct f
+        {
+            kind k;
+            bool operator()(std::nullptr_t) { return k == kind::null; }
+            bool operator()(bool) { return k == kind::bool_; }
+            bool operator()(std::int64_t) { return k == kind::int64; }
+            bool operator()(std::uint64_t) { return k == kind::uint64; }
+            bool operator()(double) { return k == kind::double_; }
+            bool operator()(string const&) { return k == kind::string; }
+            bool operator()(array const&) { return k == kind::array; }
+            bool operator()(object const&) { return k == kind::object; }
+            bool operator()(...) { return false; }
+        };
+        value const v(t);
+        BOOST_TEST(visit(f{k}, v));
+    }
+
+    template<class T>
+    void
+    check_mutable(kind k, T t)
+    {
+        struct f
+        {
+            kind k;
+            bool operator()(std::nullptr_t) { return k == kind::null; }
+            bool operator()(bool&) { return k == kind::bool_; }
+            bool operator()(std::int64_t&) { return k == kind::int64; }
+            bool operator()(std::uint64_t&) { return k == kind::uint64; }
+            bool operator()(double&) { return k == kind::double_; }
+            bool operator()(string&) { return k == kind::string; }
+            bool operator()(array&) { return k == kind::array; }
+            bool operator()(object&) { return k == kind::object; }
+            bool operator()(...) { return false; }
+        };
+        value v(t);
+        BOOST_TEST(visit(f{k}, v));
+    }
 
     void
     testVisit()
     {
-        BOOST_TEST(visit(check{kind::null},    value(nullptr)));
-        BOOST_TEST(visit(check{kind::bool_},   value(true)));
-        BOOST_TEST(visit(check{kind::int64},   value(1)));
-        BOOST_TEST(visit(check{kind::uint64},  value(1UL)));
-        BOOST_TEST(visit(check{kind::double_}, value(1.5)));
-        BOOST_TEST(visit(check{kind::string},  value(string_kind)));
-        BOOST_TEST(visit(check{kind::array},   value(array_kind)));
-        BOOST_TEST(visit(check{kind::object},  value(object_kind)));
+        check_const(kind::null,    nullptr);
+        check_const(kind::bool_,   true);
+        check_const(kind::int64,   -1);
+        check_const(kind::uint64,  1U);
+        check_const(kind::double_, 3.14);
+        check_const(kind::string,  string_kind);
+        check_const(kind::array,   array_kind);
+        check_const(kind::object,  object_kind);
+
+        check_mutable(kind::null,    nullptr);
+        check_mutable(kind::bool_,   true);
+        check_mutable(kind::int64,   -1);
+        check_mutable(kind::uint64,  1U);
+        check_mutable(kind::double_, 3.14);
+        check_mutable(kind::string,  string_kind);
+        check_mutable(kind::array,   array_kind);
+        check_mutable(kind::object,  object_kind);
     }
 
     void run()
