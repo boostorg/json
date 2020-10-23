@@ -14,12 +14,25 @@ BOOST_JSON_NS_BEGIN
 namespace detail {
 
 // Calculate salted digest of string
-BOOST_JSON_DECL
+inline
 std::size_t
 digest(
     char const* s,
     std::size_t n,
-    std::size_t salt) noexcept;
+    std::size_t salt) noexcept
+{
+#if BOOST_JSON_ARCH == 64
+    std::uint64_t const prime = 0x100000001B3ULL;
+    std::uint64_t hash  = 0xcbf29ce484222325ULL;
+#else
+    std::uint32_t const prime = 0x01000193UL;
+    std::uint32_t hash  = 0x811C9DC5UL;
+#endif
+    hash += salt;
+    for(;n--;++s)
+        hash = (*s ^ hash) * prime;
+    return hash;
+}
 
 } // detail
 BOOST_JSON_NS_END
