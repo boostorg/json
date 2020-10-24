@@ -119,9 +119,15 @@ pow10(int exp) noexcept
 
         1e+300, 1e+301, 1e+302, 1e+303, 1e+304, 1e+305, 1e+306, 1e+307, 1e+308 };
 
-    if(exp < -308 || exp > 308)
+    if( exp > 308 )
     {
-        return std::pow(10.0, exp);
+        return INFINITY;
+    }
+    else if( exp < -308 )
+    {
+        // due to the way pow10 is used by dec_to_float,
+        // we can afford to return 0.0 here
+        return 0.0;
     }
     else
     {
