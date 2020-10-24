@@ -361,17 +361,15 @@ public:
         );
     }
 
-    void checkAccuracy(const char* nm)
+    void checkAccuracy(const char* nm, int max_ulp)
     {
-        constexpr int limit = 3;
-
         double x = std::strtod( nm, 0 );
         double y = boost::json::parse( nm ).as_double();
         std::uint64_t bx, by;
         std::memcpy( &bx, &x, sizeof(x) );
         std::memcpy( &by, &y, sizeof(y) );
         std::int64_t diff = bx - by;
-        if (!BOOST_TEST(std::abs( diff ) < limit))
+        if (!BOOST_TEST(std::abs( diff ) <= max_ulp))
             std::fprintf(stderr,
                          "%s: difference %" PRId64 " ulp\n"
                          "  strtod:       %.13a %.16g\n"
@@ -384,7 +382,7 @@ public:
     {
         std::mt19937_64 rng;
 
-        checkAccuracy("10199214983525025199.13135016100190689227e-308");
+        checkAccuracy("10199214983525025199.13135016100190689227e-308", 2);
 
         for( int i = 0; i < 1000000; ++i )
         {
@@ -395,7 +393,15 @@ public:
             char buffer[ 128 ];
             std::sprintf( buffer, "%llu.%llue%d", x1, x2, x3 );
 
-            checkAccuracy( buffer );
+            checkAccuracy( buffer, 2 );
+        }
+
+        for( int i = -326; i <= +309; ++i )
+        {
+            char buffer[ 128 ];
+            std::sprintf( buffer, "1e%d", i );
+
+            checkAccuracy( buffer, 1 ); // 1e-307 is 1ulp, rest 0
         }
     };
 
