@@ -11,6 +11,8 @@
 #include <boost/json/object.hpp>
 
 #include <boost/json/monotonic_resource.hpp>
+#include <boost/json/parse.hpp>
+#include <boost/json/serialize.hpp>
 
 #include <cmath>
 #include <string>
@@ -28,17 +30,62 @@ BOOST_STATIC_ASSERT( std::is_nothrow_move_constructible<object>::value );
 class object_test
 {
 public:
+    static
+    constexpr
+    std::size_t
+    size0_ =
+        detail::small_object_size_ - 2;
+
+    static
+    constexpr
+    std::size_t
+    size1_ = size0_ + 4;
+
     test_suite::log_type log;
     string_view const str_;
 
+    using init_list =
+        std::initializer_list<
+            std::pair<string_view, value_ref>>;
+
+#define DECLARE_INIT_LISTS \
+    init_list i0_ = { \
+        {  "0",  0 }, {  "1",  1 }, {  "2",  2 }, {  "3",  3 }, {  "4",  4 }, \
+        {  "5",  5 }, {  "6",  6 }, {  "7",  7 }, {  "8",  8 }, {  "9",  9 }, \
+        { "10", 10 }, { "11", 11 }, { "12", 12 }, { "13", 13 }, { "14", 14 }, \
+        { "15", 15 } }; \
+    init_list i1_ = { \
+        {  "0",  0 }, {  "1",  1 }, {  "2",  2 }, {  "3",  3 }, {  "4",  4 }, \
+        {  "5",  5 }, {  "6",  6 }, {  "7",  7 }, {  "8",  8 }, {  "9",  9 }, \
+        { "10", 10 }, { "11", 11 }, { "12", 12 }, { "13", 13 }, { "14", 14 }, \
+        { "15", 15 }, { "16", 16 }, { "17", 17 }, { "18", 18 }, { "19", 19 } }
+
+    string_view const s0_ =
+        R"({"0":0,"1":1,"2":2,"3":3,"4":4,)"
+        R"("5":5,"6":6,"7":7,"8":8,"9":9,)"
+        R"("10":10,"11":11,"12":12,"13":13,"14":14,)"
+        R"("15":15})";
+
+    string_view const s1_ =
+        R"({"0":0,"1":1,"2":2,"3":3,"4":4,)"
+        R"("5":5,"6":6,"7":7,"8":8,"9":9,)"
+        R"("10":10,"11":11,"12":12,"13":13,"14":14,)"
+        R"("15":15,"16":16,"17":17,"18":18,"19":19})";
+
     object_test()
-        : str_(
-            "abcdefghijklmnopqrstuvwxyz")
+        : str_("abcdefghijklmnopqrstuvwxyz")
     {
         // ensure this string does
         // not fit in the SBO area.
         BOOST_ASSERT(str_.size() >
             string().capacity());
+
+        DECLARE_INIT_LISTS;
+
+        BOOST_TEST(
+            i0_.size() == size0_);
+        BOOST_TEST(
+            i1_.size() == size1_);
     }
 
     template<class T, class U, class = void>
@@ -106,7 +153,21 @@ public:
 
     BOOST_STATIC_ASSERT(is_unequal_comparable<object::const_reverse_iterator, object::reverse_iterator>::value);
     BOOST_STATIC_ASSERT(is_unequal_comparable<object::const_reverse_iterator, object::const_reverse_iterator>::value);
-    
+ 
+    static
+    void
+    check(
+        object const& o,
+        string_view s,
+        std::size_t capacity = 0)
+    {
+        BOOST_TEST(
+            parse(serialize(o)).as_object() ==
+            parse(s).as_object());
+        if(capacity != 0)
+            BOOST_TEST(o.capacity() == capacity);
+    }
+
     static
     void
     check(
@@ -124,11 +185,52 @@ public:
     }
 
     void
-    testSpecial()
+    testDtor()
     {
         // ~object()
         {
-            // implied
+            object o;
+        }
+    }
+
+    void
+    testCtors()
+    {
+        DECLARE_INIT_LISTS;
+
+        // object(detail::unchecked_object&&)
+        {
+            // small
+            {
+                value const jv = parse(s0_);
+                check(jv.as_object(), s0_, i0_.size());
+            }
+
+            // small, duplicate
+            {
+                value const jv = parse(
+                    R"({"0":0,"1":1,"2":2,"3":3,"4":4,)"
+                    R"("5":5,"6":6,"7":7,"8":8,"9":9,)"
+                    R"("10":10,"11":11,"12":12,"13":13,"14":14,)"
+                    R"("15":15,"10":10})");
+                check(jv.as_object(), s0_, i0_.size() + 1);
+            }
+
+            // large
+            {
+                value const jv = parse(s1_);
+                check(jv.as_object(), s1_, i1_.size());
+            }
+
+            // large, duplicate
+            {
+                value const jv = parse(
+                    R"({"0":0,"1":1,"2":2,"3":3,"4":4,)"
+                    R"("5":5,"6":6,"7":7,"8":8,"9":9,)"
+                    R"("10":10,"11":11,"12":12,"13":13,"14":14,)"
+                    R"("15":15,"16":16,"17":17,"18":18,"19":19,"10":10})");
+                check(jv.as_object(), s1_, i1_.size() + 1);
+            }
         }
 
         // object()
@@ -151,129 +253,155 @@ public:
 
         // object(std::size_t, storage_ptr)
         {
+            // small
             {
-                object o(10);
+                object o(size0_);
                 BOOST_TEST(o.empty());
                 BOOST_TEST(o.size() == 0);
-                BOOST_TEST(o.capacity() >= 10);
+                BOOST_TEST(o.capacity() == size0_);
             }
 
+            // small
             fail_loop([&](storage_ptr const& sp)
             {
-                object o(10, sp);
+                object o(size0_, sp);
                 check_storage(o, sp);
                 BOOST_TEST(o.empty());
                 BOOST_TEST(o.size() == 0);
-                BOOST_TEST(o.capacity() >= 10);
+                BOOST_TEST(o.capacity() == size0_);
+            });
+
+            // large
+            {
+                object o(size1_);
+                BOOST_TEST(o.empty());
+                BOOST_TEST(o.size() == 0);
+                BOOST_TEST(o.capacity() == size1_);
+            }
+
+            // large
+            fail_loop([&](storage_ptr const& sp)
+            {
+                object o(size1_, sp);
+                check_storage(o, sp);
+                BOOST_TEST(o.empty());
+                BOOST_TEST(o.size() == 0);
+                BOOST_TEST(o.capacity() == size1_);
             });
         }
 
         // object(InputIt, InputIt, size_type, storage_ptr)
         {
+            // small
             {
-                std::initializer_list<std::pair<
-                    string_view, value>> init = {
-                        {"a", 1},
-                        {"b", true},
-                        {"c", "hello"}};
-                object o(init.begin(), init.end());
-                check(o, 3);
+                object o(i0_.begin(), i0_.end());
+                check(o, s0_, i0_.size());
             }
 
-            {
-                std::initializer_list<std::pair<
-                    string_view, value>> init = {
-                        {"a", 1},
-                        {"b", true},
-                        {"c", "hello"}};
-                object o(init.begin(), init.end(), 5);
-                check(o, 5);
-            }
-
+            // small, ForwardIterator
             fail_loop([&](storage_ptr const& sp)
             {
-                std::initializer_list<std::pair<
-                    string_view, value>> init = {
-                        {"a", 1},
-                        {"b", true},
-                        {"c", "hello"}};
-                object o(init.begin(), init.end(), 5, sp);
+                object o(i0_.begin(), i0_.end(), size0_ + 1, sp);
                 BOOST_TEST(! o.empty());
-                BOOST_TEST(o.size() == 3);
-                check(o, 5);
+                check(o, s0_, size0_ + 1);
                 check_storage(o, sp);
             });
 
+            // small, InputIterator
             fail_loop([&](storage_ptr const& sp)
             {
-                std::initializer_list<std::pair<
-                    string_view, value>> init = {
-                        {"a", 1},
-                        {"b", true},
-                        {"c", "hello"}};
                 object o(
-                    make_input_iterator(init.begin()),
-                    make_input_iterator(init.end()),
-                    5, sp);
+                    make_input_iterator(i0_.begin()),
+                    make_input_iterator(i0_.end()), size0_ + 1, sp);
                 BOOST_TEST(! o.empty());
-                BOOST_TEST(o.size() == 3);
-                BOOST_TEST(o.capacity() == 5);
-                check(o, 5);
+                BOOST_TEST(o.capacity() == size0_ + 1);
+                check(o, s0_, size0_ + 1);
+                check_storage(o, sp);
+            });
+
+            // large
+            {
+                object o(i1_.begin(), i1_.end());
+                check(o, s1_, i1_.size());
+            }
+
+            // large, ForwardIterator
+            fail_loop([&](storage_ptr const& sp)
+            {
+                object o(i1_.begin(), i1_.end(), size1_ + 1, sp);
+                BOOST_TEST(! o.empty());
+                BOOST_TEST(o.capacity() == size1_ + 1);
+                check(o, s1_, size1_ + 1);
+                check_storage(o, sp);
+            });
+
+            // large, InputIterator
+            fail_loop([&](storage_ptr const& sp)
+            {
+                object o(
+                    make_input_iterator(i1_.begin()),
+                    make_input_iterator(i1_.end()), size1_ + 1, sp);
+                BOOST_TEST(! o.empty());
+                BOOST_TEST(o.capacity() == size1_ + 1);
+                check(o, s1_, size1_ + 1);
                 check_storage(o, sp);
             });
         }
 
         // object(object&&)
         {
-            object o1({
-                {"a", 1},
-                {"b", true},
-                {"c", "hello"}
-                });
-            check(o1, 3);
+            object o1(i0_);
+            check(o1, s0_);
             auto const sp =
                 storage_ptr{};
             object o2(std::move(o1));
             BOOST_TEST(o1.empty());
             BOOST_TEST(o1.size() == 0);
-            check(o2, 3);
+            check(o2, s0_);
             check_storage(o1, sp);
             check_storage(o2, sp);
         }
 
         // object(object&&, storage_ptr)
-        fail_loop([&](storage_ptr const& sp)
         {
-            object o1({
-                {"a", 1},
-                {"b", true},
-                {"c", "hello"}
-                });
-            object o2(std::move(o1), sp);
-            BOOST_TEST(! o1.empty());
-            check(o2, 3);
-            check_storage(o1,
-                storage_ptr{});
-            check_storage(o2, sp);
-        });
+            // small
+            fail_loop([&](storage_ptr const& sp)
+            {
+                object o1(i0_);
+                object o2(std::move(o1), sp);
+                BOOST_TEST(! o1.empty());
+                check(o2, s0_, i0_.size());
+                check_storage(o1,
+                    storage_ptr{});
+                check_storage(o2, sp);
+            });
+
+            // large
+            fail_loop([&](storage_ptr const& sp)
+            {
+                object o1(i1_);
+                object o2(std::move(o1), sp);
+                BOOST_TEST(! o1.empty());
+                check(o2, s1_, i1_.size());
+                check_storage(o1,
+                    storage_ptr{});
+                check_storage(o2, sp);
+            });
+        }
 
         // object(pilfered<object>)
         {
             {
                 auto const sp =
                     make_shared_resource<unique_resource>();
-                object o1({
-                    {"a", 1},
-                    {"b", true},
-                    {"c", "hello"}
-                    }, sp);
+                object o1(i0_, sp);
                 object o2(pilfer(o1));
                 BOOST_TEST(
                     o1.storage() == storage_ptr());
                 BOOST_TEST(
                     *o2.storage() == *sp);
                 BOOST_TEST(o1.empty());
-                check(o2, 3);
+                check(o2, s0_, i0_.size());
             }
 
             // ensure pilfered-from objects
@@ -287,93 +415,110 @@ public:
             }
         }
 
-        auto const sp = make_shared_resource<unique_resource>();
+        auto const sp =
+            make_shared_resource<
+                unique_resource>();
         auto const sp0 = storage_ptr{};
 
         // object(object const&)
         {
-            object o1({
-                {"a", 1},
-                {"b", true},
-                {"c", "hello"}
-                });
-            object o2(o1);
-            BOOST_TEST(! o1.empty());
-            check(o2, 3);
+            // small
+            {
+                object o1(i0_);
+                object o2(o1);
+                BOOST_TEST(! o1.empty());
+                check(o2, s0_, i0_.size());
+            }
+
+            // large
+            {
+                object o1(i1_);
+                object o2(o1);
+                BOOST_TEST(! o1.empty());
+                check(o2, s1_, i1_.size());
+            }
         }
 
         // object(object const&, storage_ptr)
-        fail_loop([&](storage_ptr const& sp)
         {
-            object o1({
-                {"a", 1},
-                {"b", true},
-                {"c", "hello"}
-                });
-            object o2(o1, sp);
-            BOOST_TEST(! o1.empty());
-            check(o2, 3);
-            check_storage(o2, sp);
-        });
+            // small
+            fail_loop([&](storage_ptr const& sp)
+            {
+                object o1(i0_);
+                object o2(o1, sp);
+                BOOST_TEST(! o1.empty());
+                check(o2, s0_, i0_.size());
+                check_storage(o2, sp);
+            });
+
+            // large
+            fail_loop([&](storage_ptr const& sp)
+            {
+                object o1(i1_);
+                object o2(o1, sp);
+                BOOST_TEST(! o1.empty());
+                check(o2, s1_, i1_.size());
+                check_storage(o2, sp);
+            });
+        }
 
         // object(initializer_list, storage_ptr)
         {
+            // small
             {
-                object o({
-                    {"a", 1},
-                    {"b", true},
-                    {"c", "hello"}});
-                check(o, 3);
+                object o(i0_);
+                check(o, s0_, i0_.size());
             }
 
+            // small
             fail_loop([&](storage_ptr const& sp)
             {
-                object o({
-                    {"a", 1},
-                    {"b", true},
-                    {"c", "hello"}},
-                    sp);
-                check(o, 3);
+                object o(i0_, sp);
+                check(o, s0_, i0_.size());
+                check_storage(o, sp);
+            });
+
+            // large
+            {
+                object o(i1_);
+                check(o, s1_, i1_.size());
+            }
+
+            // large
+            fail_loop([&](storage_ptr const& sp)
+            {
+                object o(i1_, sp);
+                check(o, s1_, i1_.size());
                 check_storage(o, sp);
             });
         }
 
         // object(initializer_list, std::size_t, storage_ptr)
         {
+            // small
             {
-                object o({
-                    {"a", 1},
-                    {"b", true},
-                    {"c", "hello"}},
-                    5);
-                check(o, 5);
+                object o(i0_, size0_ + 1);
+                check(o, s0_, size0_ + 1);
             }
 
+            // small
             fail_loop([&](storage_ptr const& sp)
             {
-                object o({
-                    {"a", 1},
-                    {"b", true},
-                    {"c", "hello"}
-                    },
-                    5, sp);
+                object o(i0_, size0_ + 1, sp);
                 BOOST_TEST(
                     *o.storage() == *sp);
-                check(o, 5);
+                check(o, s0_, size0_ + 1);
             });
         }
 
         // operator=(object const&)
         {
             {
-                object o1({
-                    {"a", 1},
-                    {"b", true},
-                    {"c", "hello"}});
+                object o1(i0_);
                 object o2;
                 o2 = o1;
-                check(o1, 3);
-                check(o2, 3);
+                check(o1, s0_, i0_.size());
+                check(o2, s0_, i0_.size());
                 check_storage(o1,
                     storage_ptr{});
                 check_storage(o2,
@@ -382,14 +527,11 @@ public:
 
             fail_loop([&](storage_ptr const& sp)
             {
-                object o1({
-                    {"a", 1},
-                    {"b", true},
-                    {"c", "hello"}});
+                object o1(i0_);
                 object o2(sp);
                 o2 = o1;
-                check(o1, 3);
-                check(o2, 3);
+                check(o1, s0_, i0_.size());
+                check(o2, s0_, i0_.size());
                 check_storage(o1,
                     storage_ptr{});
                 check_storage(o2, sp);
@@ -397,13 +539,10 @@ public:
 
             // self-assign
             {
-                object o1({
-                    {"a", 1},
-                    {"b", true},
-                    {"c", "hello"}});
+                object o1(i0_);
                 object const& o2(o1);
                 o1 = o2;
-                check(o1, 3);
+                check(o1, s0_, i0_.size());
             }
 
             // copy from child
@@ -651,17 +790,28 @@ public:
     void
     testModifiers()
     {
+        DECLARE_INIT_LISTS;
+
         // clear
         {
+            // empty
             {
                 object o;
                 o.clear();
                 BOOST_TEST(o.empty());
             }
 
+            // small
             {
-                object o;
-                o.emplace("x", 1);
+                object o(i0_);
+                BOOST_TEST(! o.empty());
+                o.clear();
+                BOOST_TEST(o.empty());
+            }
+
+            // large
+            {
+                object o(i1_);
                 BOOST_TEST(! o.empty());
                 o.clear();
                 BOOST_TEST(o.empty());
@@ -722,43 +872,155 @@ public:
 
         // insert(InputIt, InputIt)
         {
+            // small
+            {
+                // ForwardIterator
+                fail_loop([&](storage_ptr const& sp)
+                {
+                    object o(sp);
+                    o.insert(i0_.begin(), i0_.end());
+                    check(o, s0_);
+                });
+
+                // InputIterator
+                fail_loop([&](storage_ptr const& sp)
+                {
+                    object o(sp);
+                    o.insert(
+                        make_input_iterator(i0_.begin()),
+                        make_input_iterator(i0_.end()));
+                    check(o, s0_);
+                });
+
+                // existing duplicate key, ForwardIterator
+                {
+                    object o({{"0",0},{"1",1},{"2",2}});
+                    init_list i = {{"2",nullptr},{"3",3}};
+                    o.insert(i.begin(), i.end());
+                    BOOST_TEST(o.capacity() <=
+                        detail::small_object_size_);
+                    check(o, R"({"0":0,"1":1,"2":2,"3":3})");
+                }
+
+                // existing duplicate key, InputIterator
+                {
+                    object o({{"0",0},{"1",1},{"2",2}});
+                    init_list i = {{"2",nullptr},{"3",3}};
+                    o.insert(
+                        make_input_iterator(i.begin()),
+                        make_input_iterator(i.end()));
+                    BOOST_TEST(o.capacity() <=
+                        detail::small_object_size_);
+                    check(o, R"({"0":0,"1":1,"2":2,"3":3})");
+                }
+
+                // new duplicate key, ForwardIterator
+                {
+                    object o({{"0",0},{"1",1},{"2",2}});
+                    init_list i = {{"3",3},{"4",4},{"3",5}};
+                    o.insert(i.begin(), i.end());
+                    BOOST_TEST(o.capacity() <=
+                        detail::small_object_size_);
+                    check(o, R"({"0":0,"1":1,"2":2,"3":3,"4":4})");
+                }
+
+                // new duplicate key, InputIterator
+                {
+                    object o({{"0",0},{"1",1},{"2",2}});
+                    init_list i = {{"3",3},{"4",4},{"3",5}};
+                    o.insert(
+                        make_input_iterator(i.begin()),
+                        make_input_iterator(i.end()));
+                    BOOST_TEST(o.capacity() <=
+                        detail::small_object_size_);
+                    check(o, R"({"0":0,"1":1,"2":2,"3":3,"4":4})");
+                }
+            }
+
+            // large, ForwardIterator
             fail_loop([&](storage_ptr const& sp)
             {
-                std::initializer_list<std::pair<
-                    string_view, value>> init = {
-                        {"a", 1},
-                        {"b", true},
-                        {"c", "hello"}};
                 object o(sp);
-                o.insert(init.begin(), init.end());
-                check(o, 3);
+                o.insert(i1_.begin(), i1_.end());
+                check(o, s1_);
             });
 
+            // large, InputIterator
             fail_loop([&](storage_ptr const& sp)
             {
-                std::initializer_list<std::pair<
-                    string_view, value>> init = {
-                        {"a", 1},
-                        {"b", true},
-                        {"c", "hello"}};
                 object o(sp);
                 o.insert(
-                    make_input_iterator(init.begin()),
-                    make_input_iterator(init.end()));
-                check(o, 3);
+                    make_input_iterator(i1_.begin()),
+                    make_input_iterator(i1_.end()));
+                check(o, s1_);
             });
         }
 
         // insert(initializer_list)
         {
+            // small
             fail_loop([&](storage_ptr const& sp)
             {
                 object o(sp);
-                o.emplace("a", 1);
-                o.insert({
-                    { "b", true },
-                    { "c", "hello" }});
-                check(o, 3);
+                o.insert(i0_);
+                check(o, s0_);
+            });
+
+            // small, existing duplicate
+            fail_loop([&](storage_ptr const& sp)
+            {
+                object o({{"0",0},{"1",1},/*{"2",2},*/{"3",3},{"4",4}}, sp);
+                BOOST_TEST(o.capacity() <= detail::small_object_size_);
+                o.insert({{"2",2},{"3",3}});
+                BOOST_TEST(o.capacity() <= detail::small_object_size_);
+                check(o, R"({"0":0,"1":1,"2":2,"3":3,"4":4})");
+            });
+
+            // small, new duplicate
+            fail_loop([&](storage_ptr const& sp)
+            {
+                object o({{"0",0},{"1",1},/*{"2",2},{"3",3},*/{"4",4}}, sp);
+                BOOST_TEST(o.capacity() <= detail::small_object_size_);
+                o.insert({{"2",2},{"3",3},{"2",2}});
+                BOOST_TEST(o.capacity() <= detail::small_object_size_);
+                check(o, R"({"0":0,"1":1,"2":2,"3":3,"4":4})");
+            });
+
+            // large
+            fail_loop([&](storage_ptr const& sp)
+            {
+                object o(sp);
+                o.insert(i1_);
+                check(o, s1_);
+            });
+
+            // large, existing duplicate
+            fail_loop([&](storage_ptr const& sp)
+            {
+                object o({
+                    {"0",0},{"1",1},{"2",2},{"3",3},{"4",4},
+                    {"5",5},{"6",6},{"7",7},{"8",8},{"9",9},
+                    /*{"10",10},*/{"11",11},{"12",12},{"13",13},{"14",14},
+                    {"15",15},{"16",16},{"17",17},{"18",18},{"19",19}}, sp);
+                BOOST_TEST(o.capacity() > detail::small_object_size_);
+                o.insert({{"10",10},{"11",11}});
+                BOOST_TEST(o.capacity() > detail::small_object_size_);
+                check(o, s1_);
+            });
+
+            // large, new duplicate
+            fail_loop([&](storage_ptr const& sp)
+            {
+                object o({
+                    {"0",0},{"1",1},{"2",2},{"3",3},{"4",4},
+                    {"5",5},{"6",6},{"7",7},{"8",8},{"9",9},
+                    /*{"10",10},{"11",11},*/{"12",12},{"13",13},{"14",14},
+                    {"15",15},{"16",16},{"17",17},{"18",18},{"19",19}},
+                    detail::small_object_size_ + 1, sp);
+                BOOST_TEST(o.capacity() > detail::small_object_size_);
+                o.insert({{"10",10},{"11",11},{"10",10}});
+                BOOST_TEST(o.capacity() > detail::small_object_size_);
+                check(o, s1_);
             });
 
             // do rollback in ~revert_insert
@@ -866,19 +1128,32 @@ public:
 
         // erase(pos)
         {
-            fail_loop([&](storage_ptr const& sp)
+            // small
             {
-                object o({
-                    {"d", nullptr },
-                    {"a", 1},
-                    {"b", true},
-                    {"c", "hello"}}, sp);
-                auto it = o.erase(o.begin());
-                BOOST_TEST(it->key() == "c");
+                object o(i0_);
+                auto it = o.erase(o.find("10"));
+                BOOST_TEST(it->key() == "15");
                 BOOST_TEST(
-                    it->value().as_string() == "hello");
-                check(o, 4);
-            });
+                    it->value().as_int64() == 15);
+                BOOST_TEST(serialize(o) ==
+                    R"({"0":0,"1":1,"2":2,"3":3,"4":4,)"
+                    R"("5":5,"6":6,"7":7,"8":8,"9":9,)"
+                    R"("15":15,"11":11,"12":12,"13":13,"14":14})");
+            }
+
+            // large
+            {
+                object o(i1_);
+                auto it = o.erase(o.find("10"));
+                BOOST_TEST(it->key() == "19");
+                BOOST_TEST(
+                    it->value().as_int64() == 19);
+                BOOST_TEST(serialize(o) ==
+                    R"({"0":0,"1":1,"2":2,"3":3,"4":4,)"
+                    R"("5":5,"6":6,"7":7,"8":8,"9":9,)"
+                    R"("19":19,"11":11,"12":12,"13":13,"14":14,)"
+                    R"("15":15,"16":16,"17":17,"18":18})");
+            }
         }
 
         // erase(key)
@@ -1060,7 +1335,7 @@ public:
                 {"b", {1,2,3}},
                 {"c", "hello"}});
             BOOST_TEST(o.at("a").as_int64() == 1);
-            BOOST_TEST(o.at("b").as_array() == array({1,2,3}));
+            BOOST_TEST(o.at("b").as_bool() == true);
             BOOST_TEST(o.at("c").as_string() == "hello");
         }
 
@@ -1100,8 +1375,11 @@ public:
     void
     testCollisions()
     {
-        int constexpr buckets = 3;
+        int constexpr buckets =
+            detail::small_object_size_ + 1;
         int constexpr collisions = 3;
+
+        //DECLARE_INIT_LISTS;
 
         // find a set of keys that collide
         std::vector<std::string> v;
@@ -1194,7 +1472,8 @@ public:
     void
     run()
     {
-        testSpecial();
+        testDtor();
+        testCtors();
         testIterators();
         testCapacity();
         testModifiers();

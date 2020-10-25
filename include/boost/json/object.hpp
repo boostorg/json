@@ -75,9 +75,8 @@ class object
     static index_t constexpr null_index_ =
         std::uint32_t(-1);
 
-    storage_ptr sp_;    // must come first
-    kind k_ =           // must come second
-        kind::object;
+    storage_ptr sp_;            // must come first
+    kind k_ = kind::object;     // must come second
     table* t_;
 
     BOOST_JSON_DECL
@@ -240,7 +239,7 @@ public:
         using the specified memory resource.
         If there are elements with duplicate keys; that
         is, if multiple elements in the range have keys
-        that compare equal, only the last equivalent
+        that compare equal, only the first equivalent
         element will be inserted.
 
         @par Constraints
@@ -435,7 +434,7 @@ public:
         specified memory resource.
         If there are elements with duplicate keys; that
         is, if multiple elements in the range have keys
-        that compare equal, only the last equivalent
+        that compare equal, only the first equivalent
         element will be inserted.
 
         @par Complexity
@@ -468,7 +467,7 @@ public:
         specified memory resource.
         If there are elements with duplicate keys; that
         is, if multiple elements in the range have keys
-        that compare equal, only the last equivalent
+        that compare equal, only the first equivalent
         element will be inserted.
 
         @par Complexity
@@ -969,11 +968,11 @@ public:
 
     /** Insert elements.
 
-        The elements in the range `{first, last)` are
-        appended to the end, in order.
+        The elements in the range `{first, last)` whose
+        keys are unique are inserted one at a time, in order.
         If there are elements with duplicate keys; that
         is, if multiple elements in the range have keys
-        that compare equal, only the last equivalent
+        that compare equal, only the first equivalent
         element will be inserted.
 
         @par Precondition
@@ -1016,11 +1015,11 @@ public:
 
     /** Insert elements.
 
-        The elements in the initializer list are
-        inserted at the end, in order.
+        The elements in the initializer list whose
+        keys are unique are inserted one at a time, in order.
         If there are elements with duplicate keys; that
         is, if multiple elements in the range have keys
-        that compare equal, only the last equivalent
+        that compare equal, only the first equivalent
         element will be inserted.
 
         @par Complexity      

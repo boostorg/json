@@ -45,7 +45,7 @@
     <DisplayString Condition="sca_.k==kind::string+64">{((char*)(str_.impl_.k_.s)),[str_.impl_.k_.n]s}:</DisplayString>
     <DisplayString Condition="sca_.k==kind::string+128">{str_.impl_.s_.buf,[detail::string_impl::sbo_chars_-str_.impl_.s_.buf[detail::string_impl::sbo_chars_]]s}</DisplayString>
     <DisplayString Condition="sca_.k==kind::array">array [{arr_.t_->size}]</DisplayString>
-    <DisplayString Condition="sca_.k==kind::object">object [{obj_.impl_.tab_?obj_.impl_.tab_->size:0}]</DisplayString>
+    <DisplayString Condition="sca_.k==kind::object">object [{obj_.t_->size}]</DisplayString>
     <Expand>
       <ExpandedItem Condition="sca_.k==kind::string">str_</ExpandedItem>
       <ExpandedItem Condition="sca_.k==kind::string+64">str_</ExpandedItem>

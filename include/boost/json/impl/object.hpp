@@ -18,6 +18,22 @@
 
 BOOST_JSON_NS_BEGIN
 
+namespace detail {
+
+// Objects with size less than or equal
+// to this number will use a linear search
+// instead of the more expensive hash function.
+static
+constexpr
+std::size_t
+small_object_size_ = 18;
+
+BOOST_STATIC_ASSERT(
+    small_object_size_ <
+    BOOST_JSON_MAX_STRUCTURED_SIZE);
+
+} // detail
+
 //----------------------------------------------------------
 
 struct alignas(key_value_pair)
@@ -37,6 +53,14 @@ struct alignas(key_value_pair)
 #endif
 
     constexpr table();
+
+    // returns true if we use a linear
+    // search instead of the hash table.
+    bool is_small() const noexcept
+    {
+        return capacity <=
+            detail::small_object_size_;
+    }
 
     key_value_pair&
     operator[](
@@ -80,10 +104,15 @@ struct alignas(key_value_pair)
     {
         if(p == &empty_)
             return;
-        sp->deallocate(p,
-            sizeof(table) + p->capacity * (
-                sizeof(key_value_pair) +
-                sizeof(index_t)));
+        if(p->is_small())
+            sp->deallocate(p,
+                sizeof(table) + p->capacity * (
+                    sizeof(key_value_pair) +
+                    sizeof(index_t)));
+        else
+            sp->deallocate(p,
+                sizeof(table) + p->capacity *
+                    sizeof(key_value_pair));
     }
 };
 
