@@ -235,40 +235,43 @@ jobs:
       arch: arm64
       addons: *gcc-9
 
+# VFALCO Disabled this because the toolchain
+#        keeps failing to install on Travis.
+#
     # Intel oneAPI Toolkit
-    - os: linux
-      dist: bionic
-      env:
-        - COMMENT="Intel oneAPI Toolkit"
-        - B2_TOOLSET=intel-linux
-        - B2_CXXSTD=11,14,17
-        # - B2_FLAGS="warnings=extra warnings-as-errors=on"
-        - B2_FLAGS="warnings=on warnings-as-errors=off"
-      addons:
-        apt:
-          sources:
-            - sourceline: "ppa:ubuntu-toolchain-r/test"
-            - sourceline: 'deb https://apt.repos.intel.com/oneapi all main'
-              key_url: 'https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB'
-          packages:
-            # - intel-basekit
-            - intel-oneapi-icc
-            - g++-7
-            - cmake
-            - build-essential
-            - pkg-config
-      install:
-        - source /opt/intel/oneapi/compiler/latest/env/vars.sh
-        - git clone https://github.com/boostorg/boost-ci.git boost-ci-cloned
-        - cp -prf boost-ci-cloned/ci .
-        - rm -rf boost-ci-cloned
-        - source ci/travis/install.sh
-      script:
-        - cd $BOOST_ROOT/libs/$SELF
-        - while sleep 5m; do echo "=====[ $SECONDS seconds check_  ]====="; done &
-        - travis_wait 60 $BOOST_ROOT/libs/$SELF/ci/travis/build.sh > travisoutput.txt 2>&1
-        - kill %1
-        - tail -n 15000 travisoutput.txt
+#    - os: linux
+#      dist: bionic
+#      env:
+#        - COMMENT="Intel oneAPI Toolkit"
+#        - B2_TOOLSET=intel-linux
+#        - B2_CXXSTD=11,14,17
+#        # - B2_FLAGS="warnings=extra warnings-as-errors=on"
+#        - B2_FLAGS="warnings=on warnings-as-errors=off"
+#      addons:
+#        apt:
+#          sources:
+#            - sourceline: "ppa:ubuntu-toolchain-r/test"
+#            - sourceline: 'deb https://apt.repos.intel.com/oneapi all main'
+#              key_url: 'https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB'
+#          packages:
+#            # - intel-basekit
+#            - intel-oneapi-icc
+#            - g++-7
+#            - cmake
+#            - build-essential
+#            - pkg-config
+#      install:
+#        - source /opt/intel/oneapi/compiler/latest/env/vars.sh
+#        - git clone https://github.com/boostorg/boost-ci.git boost-ci-cloned
+#        - cp -prf boost-ci-cloned/ci .
+#        - rm -rf boost-ci-cloned
+#        - source ci/travis/install.sh
+#      script:
+#        - cd $BOOST_ROOT/libs/$SELF
+#        - while sleep 5m; do echo "=====[ $SECONDS seconds check_  ]====="; done &
+#        - travis_wait 60 $BOOST_ROOT/libs/$SELF/ci/travis/build.sh > travisoutput.txt 2>&1
+#        - kill %1
+#        - tail -n 15000 travisoutput.txt
 
     # Intel Parallel Studio XE
     # define INTEL_ICC_SERIAL_NUMBER and the following (under development):
