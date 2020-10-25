@@ -300,6 +300,36 @@ capacity() const noexcept ->
 }
 
 //----------------------------------------------------------
+//
+// Lookup
+//
+//----------------------------------------------------------
+
+auto
+object::
+at(string_view key) ->
+    value&
+{
+    auto it = find(key);
+    if(it == end())
+        detail::throw_out_of_range(
+            BOOST_CURRENT_LOCATION);
+    return it->value();
+}
+    
+auto
+object::
+at(string_view key) const ->
+    value const&
+{
+    auto it = find(key);
+    if(it == end())
+        detail::throw_out_of_range(
+            BOOST_CURRENT_LOCATION);
+    return it->value();
+}
+
+//----------------------------------------------------------
 
 template<class P, class>
 auto

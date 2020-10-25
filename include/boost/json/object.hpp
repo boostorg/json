@@ -1257,7 +1257,7 @@ public:
 
         @throw std::out_of_range if no such element exists.
     */
-    BOOST_JSON_DECL
+    inline
     value&
     at(string_view key);
 
@@ -1278,7 +1278,7 @@ public:
 
         @throw std::out_of_range if no such element exists.
     */
-    BOOST_JSON_DECL
+    inline
     value const&
     at(string_view key) const;
 
