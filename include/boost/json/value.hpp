@@ -2453,8 +2453,10 @@ public:
         else if(sca_.k == json::kind::double_)
         {
             auto const d = sca_.d;
-            if( d > (std::numeric_limits<T>::max)() ||
-                d < (std::numeric_limits<T>::min)() ||
+            if( d > static_cast<double>(
+                    (std::numeric_limits<T>::max)()) ||
+                d < static_cast<double>(
+                    (std::numeric_limits<T>::min)()) ||
                 static_cast<T>(d) != d)
             {
                 ec = error::not_exact;
@@ -2509,7 +2511,8 @@ public:
         {
             auto const d = sca_.d;
             if( d < 0 ||
-                d > (std::numeric_limits<T>::max)() ||
+                d > static_cast<double>(
+                    (std::numeric_limits<T>::max)()) ||
                 static_cast<T>(d) != d)
             {
                 ec = error::not_exact;
