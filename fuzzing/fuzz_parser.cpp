@@ -13,6 +13,7 @@
 #include <boost/json/monotonic_resource.hpp>
 #include <boost/json/null_resource.hpp>
 #include <boost/json/static_resource.hpp>
+#include <memory>
 
 using namespace boost::json;
 
