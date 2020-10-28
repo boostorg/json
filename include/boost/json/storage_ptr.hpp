@@ -97,8 +97,9 @@ class storage_ptr
     shared_resource*
     get_counted() const noexcept
     {
-        return reinterpret_cast<
-            shared_resource*>(i_ & ~3);
+        return static_cast<shared_resource*>(
+            reinterpret_cast<memory_resource*>(
+                i_ & ~3));
     }
 
     void
