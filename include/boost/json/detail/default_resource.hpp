@@ -16,6 +16,12 @@
 BOOST_JSON_NS_BEGIN
 namespace detail {
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4251) // class needs to have dll-interface to be used by clients of class
+#pragma warning(disable: 4275) // non dll-interface class used as base for dll-interface class 
+#endif
+
 // A simple memory resource that uses operator new and delete.
 class
     BOOST_SYMBOL_VISIBLE
@@ -65,6 +71,9 @@ public:
         memory_resource const& mr) const noexcept override;
 };
 
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 union default_resource::
     holder
