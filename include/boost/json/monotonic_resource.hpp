@@ -19,6 +19,12 @@
 
 BOOST_JSON_NS_BEGIN
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4251) // class needs to have dll-interface to be used by clients of class
+#pragma warning(disable: 4275) // non dll-interface class used as base for dll-interface class 
+#endif
+
 //----------------------------------------------------------
 
 /** A dynamically allocating resource with a trivial deallocate
@@ -327,6 +333,10 @@ protected:
         memory_resource const& mr) const noexcept override;
 #endif
 };
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 template<>
 struct is_deallocate_trivial<

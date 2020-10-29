@@ -16,6 +16,11 @@
 
 BOOST_JSON_NS_BEGIN
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4275) // non dll-interface class used as base for dll-interface class 
+#endif
+
 //----------------------------------------------------------
 
 /** A resource using a caller-owned buffer, with a trivial deallocate
@@ -221,6 +226,10 @@ protected:
             ) const noexcept override;
 #endif
 };
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 template<>
 struct is_deallocate_trivial<

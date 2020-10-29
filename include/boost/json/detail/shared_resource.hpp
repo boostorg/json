@@ -17,6 +17,11 @@
 BOOST_JSON_NS_BEGIN
 namespace detail {
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4275) // non dll-interface class used as base for dll-interface class 
+#endif
+
 struct BOOST_SYMBOL_VISIBLE
     shared_resource
     : memory_resource
@@ -69,6 +74,10 @@ public:
         return false;
     }
 };
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 } // detail
 BOOST_JSON_NS_END
