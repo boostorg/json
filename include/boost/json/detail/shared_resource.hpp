@@ -34,6 +34,7 @@ template<class T>
 class shared_resource_impl final
     : public shared_resource
 {
+    bool padding;
     T t;
 
 public:
