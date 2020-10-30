@@ -22,6 +22,20 @@
 
 BOOST_JSON_NS_BEGIN
 
+template<std::size_t N, class... Args>
+void
+sprintf(char (&buf)[N],
+    char const* format, Args&&... args)
+{
+#ifdef _MSC_VER
+    sprintf_s(buf, format,
+        std::forward<Args>(args)...);
+#else
+    std::sprintf(buf, format,
+        std::forward<Args>(args)...);
+#endif
+}
+
 class double_test
 {
 public:
@@ -391,7 +405,7 @@ public:
             int x3 = std::uniform_int_distribution<>( -308, +308 )( rng );
 
             char buffer[ 128 ];
-            std::sprintf( buffer, "%llu.%llue%d", x1, x2, x3 );
+            sprintf( buffer, "%llu.%llue%d", x1, x2, x3 );
 
             checkAccuracy( buffer, 2 );
         }
@@ -399,7 +413,7 @@ public:
         for( int i = -326; i <= +309; ++i )
         {
             char buffer[ 128 ];
-            std::sprintf( buffer, "1e%d", i );
+            sprintf( buffer, "1e%d", i );
 
             checkAccuracy( buffer, 1 ); // 1e-307 is 1ulp, rest 0
         }
