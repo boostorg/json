@@ -97,7 +97,7 @@ class storage_ptr
     shared_resource*
     get_shared() const noexcept
     {
-        return dynamic_cast<shared_resource*>(
+        return static_cast<shared_resource*>(
             reinterpret_cast<memory_resource*>(
                 i_ & ~3));
     }
