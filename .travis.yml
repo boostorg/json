@@ -333,37 +333,38 @@ jobs:
         - cmake -DBOOST_JSON_STANDALONE=1 ..
         - cmake --build .
         - ctest -V -C Debug .
-        
+
+    # VFALCO The Intel compiler is timing out on install 
     # icc
-    - env:
-        - B2_TOOLSET=intel
-        - B2_CXXSTD=11,14,17
-      dist: bionic
-      addons:
-        apt:
-          sources:
-            - sourceline: "ppa:ubuntu-toolchain-r/test"
-            - sourceline: 'deb https://apt.repos.intel.com/oneapi all main'
-              key_url: 'https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB'
-          packages:
-            - intel-oneapi-icc
-            - g++-7
-            - cmake
-            - build-essential
-            - pkg-config
-      install:
-        - source /opt/intel/oneapi/compiler/latest/env/vars.sh
-        - git clone https://github.com/boostorg/boost-ci.git boost-ci-cloned --depth 1
-        - cp -prf boost-ci-cloned/ci .
-        - rm -rf boost-ci-cloned
-        - source ci/travis/install.sh
-      script:
-        - export B2_FLAGS="warnings=on"
-        - cd $BOOST_ROOT/libs/$SELF
-        - while sleep 5m; do echo "=====[ $SECONDS seconds check_  ]====="; done &
-        - travis_wait 60 $BOOST_ROOT/libs/$SELF/ci/travis/build.sh > travisoutput.txt 2>&1
-        - kill %1
-        - tail -n 15000 travisoutput.txt
+#    - env:
+#        - B2_TOOLSET=intel
+#        - B2_CXXSTD=11,14,17
+#      dist: bionic
+#      addons:
+#        apt:
+#          sources:
+#            - sourceline: "ppa:ubuntu-toolchain-r/test"
+#            - sourceline: 'deb https://apt.repos.intel.com/oneapi all main'
+#              key_url: 'https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB'
+#          packages:
+#            - intel-oneapi-icc
+#            - g++-7
+#            - cmake
+#            - build-essential
+#            - pkg-config
+#      install:
+#        - source /opt/intel/oneapi/compiler/latest/env/vars.sh
+#        - git clone https://github.com/boostorg/boost-ci.git boost-ci-cloned --depth 1
+#        - cp -prf boost-ci-cloned/ci .
+#        - rm -rf boost-ci-cloned
+#        - source ci/travis/install.sh
+#      script:
+#        - export B2_FLAGS="warnings=on"
+#        - cd $BOOST_ROOT/libs/$SELF
+#        - while sleep 5m; do echo "=====[ $SECONDS seconds check_  ]====="; done &
+#        - travis_wait 60 $BOOST_ROOT/libs/$SELF/ci/travis/build.sh > travisoutput.txt 2>&1
+#        - kill %1
+#        - tail -n 15000 travisoutput.txt
 
     # gcc
     - { dist: "trusty",  # xenial has libstdc++ from gcc 5.4.0 with newer ABI
@@ -381,16 +382,17 @@ jobs:
     - { dist: "focal",
         env: [ "COMMENT=standalone", "CXX=g++-10"      ], addons: *gcc-10, <<: *standalone }
 
-    - env:
-        - B2_TOOLSET=gcc-11
-        - B2_CXXSTD=17,2a
-      dist: "focal"
-      before_install:
-        - wget http://kayari.org/gcc-latest/gcc-latest.deb
-        - sudo dpkg -i gcc-latest.deb
-        - export PATH=/opt/gcc-latest/bin:$PATH
-        - export LD_RUN_PATH=/opt/gcc-latest/lib64
-      <<: *boost
+    # G++11 is PRE-RELEASE!
+#    - env:
+#        - B2_TOOLSET=gcc-11
+#        - B2_CXXSTD=17,2a
+#      dist: "focal"
+#      before_install:
+#        - wget http://kayari.org/gcc-latest/gcc-latest.deb
+#        - sudo dpkg -i gcc-latest.deb
+#        - export PATH=/opt/gcc-latest/bin:$PATH
+#        - export LD_RUN_PATH=/opt/gcc-latest/lib64
+#      <<: *boost
 
     - env:
         - COMMENT=standalone
