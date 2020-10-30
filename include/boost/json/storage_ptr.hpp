@@ -95,9 +95,9 @@ class storage_ptr
     std::uintptr_t i_;
 
     shared_resource*
-    get_counted() const noexcept
+    get_shared() const noexcept
     {
-        return static_cast<shared_resource*>(
+        return dynamic_cast<shared_resource*>(
             reinterpret_cast<memory_resource*>(
                 i_ & ~3));
     }
@@ -106,7 +106,8 @@ class storage_ptr
     addref() const noexcept
     {
         if(is_shared())
-            get_counted()->refs.fetch_add(1, std::memory_order_relaxed);
+            get_shared()->refs.fetch_add(
+                1, std::memory_order_relaxed);
     }
 
     void
@@ -114,8 +115,9 @@ class storage_ptr
     {
         if(is_shared())
         {
-            auto const p = get_counted();
-            if(p->refs.fetch_sub(1, std::memory_order_acq_rel) == 1)
+            auto const p = get_shared();
+            if(p->refs.fetch_sub(1,
+                    std::memory_order_acq_rel) == 1)
                 delete p;
         }
     }
@@ -123,8 +125,8 @@ class storage_ptr
     template<class T>
     storage_ptr(
         detail::shared_resource_impl<T>* p) noexcept
-        : i_(reinterpret_cast<
-            std::uintptr_t>(p) + 1 +
+        : i_(reinterpret_cast<std::uintptr_t>(
+                static_cast<memory_resource*>(p)) + 1 +
             (json::is_deallocate_trivial<T>::value ? 2 : 0))
     {
         BOOST_ASSERT(p);
