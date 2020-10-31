@@ -383,16 +383,16 @@ jobs:
         env: [ "COMMENT=standalone", "CXX=g++-10"      ], addons: *gcc-10, <<: *standalone }
 
     # g++11 is PRE-RELEASE!
-    - env:
-        - B2_TOOLSET=gcc-11
-        - B2_CXXSTD=17,2a
-      dist: "focal"
-      before_install:
-        - wget http://kayari.org/gcc-latest/gcc-latest.deb
-        - sudo dpkg -i gcc-latest.deb
-        - export PATH=/opt/gcc-latest/bin:$PATH
-        - export LD_RUN_PATH=/opt/gcc-latest/lib64
-      <<: *boost
+#    - env:
+#        - B2_TOOLSET=gcc-11
+#        - B2_CXXSTD=17,2a
+#      dist: "focal"
+#      before_install:
+#        - wget http://kayari.org/gcc-latest/gcc-latest.deb
+#        - sudo dpkg -i gcc-latest.deb
+#        - export PATH=/opt/gcc-latest/bin:$PATH
+#        - export LD_RUN_PATH=/opt/gcc-latest/lib64
+#      <<: *boost
 
     - env:
         - COMMENT=standalone
