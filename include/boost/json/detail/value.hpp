@@ -13,6 +13,7 @@
 #include <boost/json/kind.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <cstdint>
+#include <limits>
 #include <new>
 #include <utility>
 
@@ -22,6 +23,142 @@ namespace detail {
 struct key_t
 {
 };
+
+#if 0
+template<class T>
+struct to_number_limit
+    : std::numeric_limits<T>
+{
+};
+
+template<class T>
+struct to_number_limit<T const>
+    : to_number_limit<T>
+{
+};
+
+template<>
+struct to_number_limit<long long>
+{
+    static constexpr long long (min)() noexcept
+    {
+        return -9223372036854774784;
+    }
+
+    static constexpr long long (max)() noexcept
+    {
+        return 9223372036854774784;
+    }
+};
+
+template<>
+struct to_number_limit<unsigned long long>
+{
+    static constexpr
+    unsigned long long (min)() noexcept
+    {
+        return 0;
+    }
+
+    static constexpr
+    unsigned long long (max)() noexcept
+    {
+        return 18446744073709549568ULL;
+    }
+};
+#else
+
+template<class T>
+class to_number_limit
+{
+    // unsigned
+
+    static constexpr
+    double min1(std::false_type)
+    {
+        return 0.0;
+    }
+
+    static constexpr
+    double max1(std::false_type)
+    {
+        return max2u(std::integral_constant<
+            bool, (std::numeric_limits<T>::max)() ==
+            UINT64_MAX>{});
+    }
+
+    static constexpr
+    double max2u(std::false_type)
+    {
+        return static_cast<double>(
+            (std::numeric_limits<T>::max)());
+    }
+
+    static constexpr
+    double max2u(std::true_type)
+    {
+        return 18446744073709549568.0;
+    }
+
+    // signed
+
+    static constexpr
+    double min1(std::true_type)
+    {
+        return min2s(std::integral_constant<
+            bool, (std::numeric_limits<T>::max)() ==
+            INT64_MAX>{});
+    }
+
+    static constexpr
+    double min2s(std::false_type)
+    {
+        return static_cast<double>(
+            (std::numeric_limits<T>::min)());
+    }
+
+    static constexpr
+    double min2s(std::true_type)
+    {
+        return -9223372036854774784.0;
+    }
+
+    static constexpr
+    double max1(std::true_type)
+    {
+        return max2s(std::integral_constant<
+            bool, (std::numeric_limits<T>::max)() ==
+            INT64_MAX>{});
+    }
+
+    static constexpr
+    double max2s(std::false_type)
+    {
+        return static_cast<double>(
+            (std::numeric_limits<T>::max)());
+    }
+
+    static constexpr
+    double max2s(std::true_type)
+    {
+        return 9223372036854774784.0;
+    }
+
+public:
+    static constexpr
+    double (min)() noexcept
+    {
+        return min1(std::is_signed<T>{});
+    }
+
+    static constexpr
+    double (max)() noexcept
+    {
+        return max1(std::is_signed<T>{});
+    }
+};
+
+#endif
 
 struct scalar
 {

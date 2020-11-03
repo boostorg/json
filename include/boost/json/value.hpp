@@ -2423,54 +2423,47 @@ public:
             ! std::is_floating_point<T>::value,
                 T>::type
     {
-        T result{};
         if(sca_.k == json::kind::int64)
         {
             auto const i = sca_.i;
-            if( i > (std::numeric_limits<T>::max)() ||
-                i < (std::numeric_limits<T>::min)())
+            if( i >= (std::numeric_limits<T>::min)() &&
+                i <= (std::numeric_limits<T>::max)())
             {
-                ec = error::not_exact;
+                ec = {};
+                return static_cast<T>(i);
             }
-            else
-            {
-                result = static_cast<T>(i);
-            }
+            ec = error::not_exact;
         }
         else if(sca_.k == json::kind::uint64)
         {
             auto const u = sca_.u;
-            if(u > static_cast<std::uint64_t>((
+            if(u <= static_cast<std::uint64_t>((
                 std::numeric_limits<T>::max)()))
             {
-                ec = error::not_exact;
+                ec = {};
+                return static_cast<T>(u);
             }
-            else
-            {
-                result = static_cast<T>(u);
-            }
+            ec = error::not_exact;
         }
         else if(sca_.k == json::kind::double_)
         {
             auto const d = sca_.d;
-            if( d > static_cast<double>(
-                    (std::numeric_limits<T>::max)()) ||
-                d < static_cast<double>(
-                    (std::numeric_limits<T>::min)()) ||
-                static_cast<T>(d) != d)
+            if( d >= static_cast<double>(
+                    (detail::to_number_limit<T>::min)()) &&
+                d <= static_cast<double>(
+                    (detail::to_number_limit<T>::max)()) &&
+                static_cast<T>(d) == d)
             {
-                ec = error::not_exact;
+                ec = {};
+                return static_cast<T>(d);
             }
-            else
-            {
-                result = static_cast<T>(d);
-            }
+            ec = error::not_exact;
         }
         else
         {
             ec = error::not_number;
         }
-        return result;
+        return T{};
     }
 
     template<class T>
@@ -2481,52 +2474,44 @@ public:
             ! std::is_same<T, bool>::value,
                 T>::type
     {
-        T result{};
         if(sca_.k == json::kind::int64)
         {
             auto const i = sca_.i;
-            if( i < 0 || static_cast<std::uint64_t>(i) >
+            if( i >= 0 && static_cast<std::uint64_t>(i) <=
                 (std::numeric_limits<T>::max)())
             {
-                ec = error::not_exact;
+                ec = {};
+                return static_cast<T>(i);
             }
-            else
-            {
-                result = static_cast<T>(i);
-            }
+            ec = error::not_exact;
         }
         else if(sca_.k == json::kind::uint64)
         {
             auto const u = sca_.u;
-            if(u > (std::numeric_limits<T>::max)())
+            if(u <= (std::numeric_limits<T>::max)())
             {
-                ec = error::not_exact;
+                ec = {};
+                return static_cast<T>(u);
             }
-            else
-            {
-                result = static_cast<T>(u);
-            }
+            ec = error::not_exact;
         }
         else if(sca_.k == json::kind::double_)
         {
             auto const d = sca_.d;
-            if( d < 0 ||
-                d > static_cast<double>(
-                    (std::numeric_limits<T>::max)()) ||
-                static_cast<T>(d) != d)
+            if( d >= 0 &&
+                d <= (detail::to_number_limit<T>::max)() &&
+                static_cast<T>(d) == d)
             {
-                ec = error::not_exact;
+                ec = {};
+                return static_cast<T>(d);
             }
-            else
-            {
-                result = static_cast<T>(d);
-            }
+            ec = error::not_exact;
         }
         else
         {
             ec = error::not_number;
         }
-        return result;
+        return T{};
     }
 
     template<class T>
