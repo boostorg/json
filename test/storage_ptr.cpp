@@ -17,6 +17,11 @@
 
 //----------------------------------------------------------
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4702) // unreachable code
+#endif
+
 BOOST_JSON_NS_BEGIN
 
 BOOST_STATIC_ASSERT(
@@ -203,3 +208,7 @@ value storage_ptr_test::jv2 = {1, 2, 3};
 TEST_SUITE(storage_ptr_test, "boost.json.storage_ptr");
 
 BOOST_JSON_NS_END
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
