@@ -1927,6 +1927,25 @@ public:
             kind() == json::kind::double_;
     }
 
+    /** Returns true if this is a signed or unsigned integer.
+
+        This function returns `true` when
+        @ref kind() is `kind::int64` or `kind::uint64`.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    bool
+    is_integral() const noexcept
+    {
+        return
+            kind() == json::kind::int64 ||
+            kind() == json::kind::uint64;
+    }
+
     //------------------------------------------------------
 
     /** Return an @ref array pointer if this is an array, else return `nullptr`

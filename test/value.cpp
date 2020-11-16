@@ -1133,16 +1133,16 @@ public:
             BOOST_TEST(  nul.is_null());
         }
 
-        // is_number()
+        // is_structured()
         {
-            BOOST_TEST(! obj.is_number());
-            BOOST_TEST(! arr.is_number());
-            BOOST_TEST(! str.is_number());
-            BOOST_TEST(  i64.is_number());
-            BOOST_TEST(  u64.is_number());
-            BOOST_TEST(  dub.is_number());
-            BOOST_TEST(! boo.is_number());
-            BOOST_TEST(! nul.is_number());
+            BOOST_TEST(  obj.is_structured());
+            BOOST_TEST(  arr.is_structured());
+            BOOST_TEST(! str.is_structured());
+            BOOST_TEST(! i64.is_structured());
+            BOOST_TEST(! u64.is_structured());
+            BOOST_TEST(! dub.is_structured());
+            BOOST_TEST(! boo.is_structured());
+            BOOST_TEST(! nul.is_structured());
         }
 
         // is_primitive()
@@ -1157,16 +1157,28 @@ public:
             BOOST_TEST(  nul.is_primitive());
         }
 
-        // is_structured()
+        // is_number()
         {
-            BOOST_TEST(  obj.is_structured());
-            BOOST_TEST(  arr.is_structured());
-            BOOST_TEST(! str.is_structured());
-            BOOST_TEST(! i64.is_structured());
-            BOOST_TEST(! u64.is_structured());
-            BOOST_TEST(! dub.is_structured());
-            BOOST_TEST(! boo.is_structured());
-            BOOST_TEST(! nul.is_structured());
+            BOOST_TEST(! obj.is_number());
+            BOOST_TEST(! arr.is_number());
+            BOOST_TEST(! str.is_number());
+            BOOST_TEST(  i64.is_number());
+            BOOST_TEST(  u64.is_number());
+            BOOST_TEST(  dub.is_number());
+            BOOST_TEST(! boo.is_number());
+            BOOST_TEST(! nul.is_number());
+        }
+
+        // is_integral()
+        {
+            BOOST_TEST(! obj.is_integral());
+            BOOST_TEST(! arr.is_integral());
+            BOOST_TEST(! str.is_integral());
+            BOOST_TEST(  i64.is_integral());
+            BOOST_TEST(  u64.is_integral());
+            BOOST_TEST(! dub.is_integral());
+            BOOST_TEST(! boo.is_integral());
+            BOOST_TEST(! nul.is_integral());
         }
     }
 
