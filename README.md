@@ -96,6 +96,21 @@ file in your project.
 #include <boost/json/src.hpp>
 ```
 
+### Standalone Shared Library
+
+To build a standalone shared library, it is necessary to define the
+macros `BOOST_JSON_DECL` and `BOOST_JSON_CLASS_DECL` as appropriate
+for your toolchain. Example for MSVC:
+```
+// When building the DLL
+#define BOOST_JSON_DECL       __declspec(dllexport)
+#define BOOST_JSON_CLASS_DECL __declspec(dllexport)
+
+// When building the application which uses the DLL
+#define BOOST_JSON_DECL       __declspec(dllimport)
+#define BOOST_JSON_CLASS_DECL __declspec(dllimport)
+```
+
 ### Embedded
 
 Boost.JSON works great on embedded devices. The library uses local

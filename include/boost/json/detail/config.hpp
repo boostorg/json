@@ -177,11 +177,13 @@
 #  endif
 # endif
 #else
-# ifndef BOOST_JSON_DECL
-# define BOOST_JSON_DECL
-# endif
+// For standalone, shared library builds, users must manually
+// define the macros BOOST_JSON_DECL and BOOST_JSON_CLASS_DECL
 #endif
 
+#ifndef BOOST_JSON_DECL
+#define BOOST_JSON_DECL
+#endif
 #ifndef BOOST_JSON_CLASS_DECL 
 #define BOOST_JSON_CLASS_DECL 
 #endif
