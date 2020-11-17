@@ -102,7 +102,7 @@ struct alignas(key_value_pair)
         table* p,
         storage_ptr const& sp) noexcept
     {
-        if(p == &empty_)
+        if(p->capacity == 0)
             return;
         if(p->is_small())
             sp->deallocate(p,

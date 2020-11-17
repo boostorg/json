@@ -242,7 +242,7 @@ object::
 {
     if(sp_.is_not_shared_and_deallocate_is_trivial())
         return;
-    if(t_ == &empty_)
+    if(t_->capacity == 0)
         return;
     destroy();
 }
@@ -630,7 +630,7 @@ find_impl(
             key_value_pair*,
             std::size_t>
 {
-    BOOST_ASSERT(t_ != &empty_);
+    BOOST_ASSERT(t_->capacity > 0);
     if(t_->is_small())
     {
         auto it = &(*t_)[0];
@@ -803,7 +803,7 @@ void
 object::
 destroy() noexcept
 {
-    BOOST_ASSERT(t_ != &empty_);
+    BOOST_ASSERT(t_->capacity > 0);
     BOOST_ASSERT(! sp_.is_not_shared_and_deallocate_is_trivial());
     destroy(begin(), end());
     table::deallocate(t_, sp_);

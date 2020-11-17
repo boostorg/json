@@ -58,7 +58,7 @@ deallocate(
     table* p,
     storage_ptr const& sp)
 {
-    if(p == &empty_)
+    if(p->capacity == 0)
         return;
     sp->deallocate(p,
         sizeof(table) +
