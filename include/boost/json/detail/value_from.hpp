@@ -83,11 +83,13 @@ tag_invoke(
 // Generic conversions
 
 // string-like types
+// NOTE: original check for size used is_convertible but 
+// MSVC-140 selects wrong specialisation if used
 template<class T, typename std::enable_if<
     std::is_constructible<remove_cvref<T>, const char*, std::size_t>::value &&
-        std::is_convertible<decltype(std::declval<T&>().data()), const char*>::value && 
-    std::is_convertible<decltype(std::declval<T&>().size()),
-        std::size_t>::value>::type* = nullptr>
+    std::is_convertible<decltype(std::declval<T&>().data()), const char*>::value && 
+    std::is_integral<decltype(std::declval<T&>().size())>::value
+>::type* = nullptr>
 void 
 value_from_generic(
     value& jv,
