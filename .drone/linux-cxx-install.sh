@@ -5,7 +5,7 @@
 # LLVM_VER: The LLVM toolset version to point the repo at.
 # PACKAGES: Compiler packages to install.
 
-set -e
+set -xe
 echo ">>>>>"
 echo ">>>>> APT: REPO.."
 echo ">>>>>"
