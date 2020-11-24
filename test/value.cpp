@@ -19,6 +19,8 @@
 #include "test.hpp"
 #include "test_suite.hpp"
 
+// test
+
 BOOST_JSON_NS_BEGIN
 
 BOOST_STATIC_ASSERT( std::is_nothrow_destructible<value>::value );
