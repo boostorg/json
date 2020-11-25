@@ -20,7 +20,6 @@ def main(ctx):
   addon_clang_9 = { "apt": { "packages": [ "clang-9", "libstdc++-9-dev" ] } }
   addon_clang_10 = { "apt": { "packages": [ "clang-10", "libstdc++-9-dev" ] } }
   addon_clang_11 = { "apt": { "packages": [ "clang-11", "libstdc++-9-dev" ] } }
-  addon_clang_12 = { "apt": { "packages": [ "clang-12", "libstdc++-9-dev" ] } }
 
   addon_gcc_44 = { "apt": { "packages": [ "g++-4.4" ] } }
   addon_gcc_46 = { "apt": { "packages": [ "g++-4.6" ] } }
@@ -33,7 +32,6 @@ def main(ctx):
   addon_gcc_8 =  { "apt": { "packages": [ "g++-8"   ] } }
   addon_gcc_9 =  { "apt": { "packages": [ "g++-9"   ] } }
   addon_gcc_10 = { "apt": { "packages": [ "g++-10"  ] } }
-  addon_gcc_11 = { "apt": { "packages": [ ] } }
 
   return [
     linux_cxx("Clang 3.8", "clang++-3.8", packages=" ".join(addon_clang_38["apt"]["packages"]), llvm_os="trusty", llvm_ver="3.8", image="ubuntu:14.04", buildtype="boost", environment={"B2_TOOLSET": "clang-3.8", "B2_CXXSTD": "11"}),
@@ -48,8 +46,6 @@ def main(ctx):
     linux_cxx("Clang 10", "clang++-10", packages=" ".join(addon_clang_10["apt"]["packages"]), llvm_os="bionic", llvm_ver="10", buildtype="boost", environment={"B2_TOOLSET": "clang-10", "B2_CXXSTD": "17,2a"}),
     linux_cxx("Clang 11 standalone", "clang++-11", packages=" ".join(addon_clang_11["apt"]["packages"]), llvm_os="bionic", llvm_ver="11", buildtype="standalone", environment={"COMMENT": "standalone", "CXX":"clang++-11"}),
     linux_cxx("Clang 11", "clang++-11", packages=" ".join(addon_clang_11["apt"]["packages"]), llvm_os="bionic", llvm_ver="11", buildtype="boost", environment={"B2_TOOLSET": "clang-11", "B2_CXXSTD":"17,2a"}),
-    linux_cxx("Clang 12", "clang++-12", packages=" ".join(addon_clang_12["apt"]["packages"]), llvm_os="bionic", buildtype="boost", environment={"B2_TOOLSET": "clang-12", "B2_CXXSTD": "17,2a", "B2_FLAGS": "warnings=extra warnings-as-errors=off"}),
-    linux_cxx("Clang 12 standalone", "clang++-12", packages=" ".join(addon_clang_12["apt"]["packages"]), llvm_os="bionic", buildtype="standalone", environment={"COMMENT": "standalone", "CXX": "clang++-12"}),
     linux_cxx("gcc 4.8", "g++-4.8", packages=" ".join(addon_gcc_48["apt"]["packages"]), image="ubuntu:14.04", buildtype="boost", environment={"B2_TOOLSET": "gcc-4.8", "B2_CXXSTD": "11"}),
     linux_cxx("gcc 4.9", "g++-4.9", packages=" ".join(addon_gcc_49["apt"]["packages"]), image="ubuntu:14.04", buildtype="boost", environment={"B2_TOOLSET": "gcc-4.9", "B2_CXXSTD": "11"}),
     linux_cxx("gcc 5", "g++-5", packages=" ".join(addon_gcc_5["apt"]["packages"]), image="ubuntu:16.04", buildtype="boost", environment={"B2_TOOLSET": "gcc-5", "B2_CXXSTD": "11"}),
@@ -60,8 +56,6 @@ def main(ctx):
     linux_cxx("gcc 9 standalone", "g++-9", packages=" ".join(addon_gcc_9["apt"]["packages"]), image="ubuntu:18.04", buildtype="standalone", environment={"COMMENT": "standalone", "CXX": "g++-9"}),
     linux_cxx("gcc 10", "g++-10", packages=" ".join(addon_gcc_10["apt"]["packages"]), image="ubuntu:18.04", buildtype="boost", environment={"B2_TOOLSET": "gcc-10", "B2_CXXSTD": "17,2a"}),
     linux_cxx("gcc 10 standalone", "g++-10", packages=" ".join(addon_gcc_10["apt"]["packages"]), image="ubuntu:18.04", buildtype="standalone", environment={"COMMENT": "standalone", "CXX": "g++-10"}),
-    linux_cxx("gcc 11", "g++", packages=" ".join(addon_gcc_11["apt"]["packages"]), image="ubuntu:20.04", buildtype="boost", environment={"B2_TOOLSET": "gcc-11", "B2_CXXSTD": "17,2a", "B2_FLAGS": "warnings=extra warnings-as-errors=off", "DRONE_BEFORE_INSTALL" : "gcc11"}),
-    linux_cxx("gcc 11 standalone", "g++", packages=" ".join(addon_gcc_11["apt"]["packages"]), image="ubuntu:20.04", buildtype="standalone", environment={"COMMENT": "standalone", "CXX": "g++-11", "DRONE_BEFORE_INSTALL" : "gcc11"}),
     linux_cxx("coverity", "", packages="", image="ubuntu:18.04", buildtype="coverity", environment={}),
     linux_cxx("docs", "", packages="docbook docbook-xml docbook-xsl xsltproc libsaxonhe-java default-jre-headless flex libfl-dev bison unzip", image="ubuntu:16.04", buildtype="docs", environment={"COMMENT": "docs"}),
     linux_cxx("codecov", "", packages=" ".join(addon_gcc_8["apt"]["packages"]), image="ubuntu:16.04", buildtype="codecov", environment={"COMMENT": "codecov.io","LCOV_BRANCH_COVERAGE": 0,"B2_CXXSTD": 11,"B2_TOOLSET": "gcc-8", "B2_DEFINES": "BOOST_NO_STRESS_TEST=1"}),
