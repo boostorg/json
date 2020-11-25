@@ -60,7 +60,7 @@ def main(ctx):
     linux_cxx("docs", "", packages="docbook docbook-xml docbook-xsl xsltproc libsaxonhe-java default-jre-headless flex libfl-dev bison unzip", image="ubuntu:16.04", buildtype="docs", environment={"COMMENT": "docs"}),
     linux_cxx("codecov", "", packages=" ".join(addon_gcc_8["apt"]["packages"]), image="ubuntu:16.04", buildtype="codecov", environment={"COMMENT": "codecov.io","LCOV_BRANCH_COVERAGE": 0,"B2_CXXSTD": 11,"B2_TOOLSET": "gcc-8", "B2_DEFINES": "BOOST_NO_STRESS_TEST=1"}),
     linux_cxx("valgrind", "", packages=" ".join(addon_clang_6["apt"]["packages"]) + " autotools-dev automake", image="ubuntu:16.04", buildtype="valgrind", environment={"COMMENT": "valgrind","B2_TOOLSET": "clang-6.0", "B2_CXXSTD": "11,14", "B2_DEFINES": "BOOST_NO_STRESS_TEST=1", "B2_VARIANT": "debug", "B2_TESTFLAGS": "testing.launcher=valgrind","VALGRIND_OPTS": "--error-exitcode=1" }),
-    linux_cxx("asan", "clang++-11", packages=" ".join(addon_clang_11["apt"]["packages"]), image="ubuntu:16.04", llvm_os="xenial", llvm_ver="11", buildtype="boost", environment={"COMMENT": "asan", "B2_VARIANT": "debug", "B2_TOOLSET": "clang-11", "B2_CXXSTD":"17", "B2_ASAN": "1", "B2_DEFINES": "BOOST_NO_STRESS_TEST=1" }),
+    linux_cxx("asan", "clang++-11", packages=" ".join(addon_clang_11["apt"]["packages"]), image="ubuntu:16.04", llvm_os="xenial", llvm_ver="11", buildtype="boost", environment={"COMMENT": "asan", "B2_VARIANT": "debug", "B2_TOOLSET": "clang-11", "B2_CXXSTD":"17", "B2_ASAN": "1", "B2_DEFINES": "BOOST_NO_STRESS_TEST=1"}, privileged=True),
     linux_cxx("ubsan", "clang++-11", packages=" ".join(addon_clang_11["apt"]["packages"]), llvm_os="bionic", llvm_ver="11", buildtype="boost", environment={"COMMENT": "asan", "B2_VARIANT": "debug", "B2_TOOLSET": "clang-11", "B2_CXXSTD":"17", "B2_UBSAN": "1", "B2_DEFINES": "BOOST_NO_STRESS_TEST=1" }),
     # linux_cxx("Intel", "", packages="g++-7 cmake build-essential pkg-config", buildtype="intel", environment={"COMMENT": "Intel oneAPI Toolkit", "B2_TOOLSET": "intel-linux", "B2_CXXSTD": "11,14,17", "B2_FLAGS": "warnings=on warnings-as-errors=off" }),
     windows_cxx("msvc-14.1", "g++", image="cppalliance/dronevs2017", buildtype="boost", environment={"B2_TOOLSET": "msvc-14.1", "B2_CXXSTD": "11,14,17"}),
@@ -70,7 +70,7 @@ def main(ctx):
     ]
 
 # Generate pipeline for Linux platform compilers.
-def linux_cxx(name, cxx, cxxflags="", packages="", llvm_os="", llvm_ver="", arch="amd64", image="ubuntu:18.04", buildtype="boost", environment={}):
+def linux_cxx(name, cxx, cxxflags="", packages="", llvm_os="", llvm_ver="", arch="amd64", image="ubuntu:18.04", buildtype="boost", environment={}, privileged=False):
   environment_global = {
       "CXX": cxx,
       "CXXFLAGS": cxxflags,
@@ -103,6 +103,7 @@ def linux_cxx(name, cxx, cxxflags="", packages="", llvm_os="", llvm_ver="", arch
       {
         "name": "Everything",
         "image": image,
+        "privileged" : privileged,
         "commands": [
 
           "echo '==================================> SETUP'",

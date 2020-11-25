@@ -11,17 +11,8 @@
 #include <boost/json/error.hpp>
 
 #include <memory>
-#include <system_error>
 
 #include "test_suite.hpp"
-
-namespace std {
-template<>
-struct is_error_code_enum<::boost::json::error>
-    : std::true_type
-{
-};
-} // std
 
 BOOST_JSON_NS_BEGIN
 
@@ -75,11 +66,6 @@ public:
         check(condition::assign_error, error::not_exact);
     
         check(error::test_failure);
-
-        std::error_code ec;
-        if(ec == error::array_too_large)
-        {
-        }
     }
 };
 
