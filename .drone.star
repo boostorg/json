@@ -99,6 +99,7 @@ def linux_cxx(name, cxx, cxxflags="", packages="", llvm_os="", llvm_ver="", arch
     },
     # Create env vars per generation arguments.
     "environment": environment_current,
+    "clone": { "depth": 5 },
     "steps": [
       {
         "name": "Everything",
@@ -150,6 +151,7 @@ def windows_cxx(name, cxx="g++", cxxflags="", packages="", llvm_os="", llvm_ver=
     },
     # Create env vars per generation arguments.
     "environment": environment_current,
+    "clone": { "depth": 5 },
     "steps": [
       {
         "name": "Everything",
