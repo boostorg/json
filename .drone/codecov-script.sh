@@ -1,6 +1,8 @@
 #!/bin/bash
 
 set -ex
+export TRAVIS_BUILD_DIR=$(pwd)
+export TRAVIS_BRANCH=$DRONE_BRANCH
 
 echo '==================================> BEFORE_INSTALL'
 
@@ -13,7 +15,7 @@ rm -rf boost-ci-cloned
 # The contents of install.sh below:
 
 export SELF=`basename $DRONE_REPO`
-export BOOST_CI_TARGET_BRANCH="$DRONE_COMMIT_BRANCH"
+export BOOST_CI_TARGET_BRANCH="$DRONE_TARGET_BRANCH"
 export BOOST_CI_SRC_FOLDER=$(pwd)
 echo "SELF IS $SELF and BOOST_ROOT is $BOOST_ROOT X"
 
