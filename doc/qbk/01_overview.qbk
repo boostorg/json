@@ -149,10 +149,10 @@ Boost.JSON has been tested with the following compilers:
 The development infrastructure for the library includes
 these per-commit analyses:
 
-* coverage reports
-* benchmark performance comparisons
-* compilation and tests on Travis, Azure Pipelines, Appveyor
-* fuzzing using clang-llvm and machine learning
+* Coverage reports
+* Benchmark performance comparisons
+* Compilation and tests on Drone.io, Azure Pipelines, Appveyor
+* Fuzzing using clang-llvm and machine learning
 
 [endsect]
 
