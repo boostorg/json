@@ -92,7 +92,7 @@ def linux_cxx(name, cxx, cxxflags="", packages="", llvm_os="", llvm_ver="", arch
     "name": "Linux %s" % name,
     "kind": "pipeline",
     "type": "docker",
-    "trigger": { "branch": [ "master","develop", "drone", "bugfix/*", "feature/*", "fix/*", "pr/*" ] },
+    "trigger": { "branch": [ "master","develop", "drone*", "bugfix/*", "feature/*", "fix/*", "pr/*" ] },
     "platform": {
       "os": "linux",
       "arch": arch
@@ -110,7 +110,7 @@ def linux_cxx(name, cxx, cxxflags="", packages="", llvm_os="", llvm_ver="", arch
 
           "echo '==================================> SETUP'",
           "uname -a",
-          "apt-get -o Acquire::Retries=3 update && DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata && apt-get -o Acquire::Retries=3 install -y sudo software-properties-common wget apt-transport-https git cmake apt-file sudo mercurial && rm -rf /var/lib/apt/lists/*",
+          "apt-get -o Acquire::Retries=3 update && DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata && apt-get -o Acquire::Retries=3 install -y sudo software-properties-common wget curl apt-transport-https git cmake apt-file sudo mercurial && rm -rf /var/lib/apt/lists/*",
 
           "echo '==================================> PACKAGES'",
           "./.drone/linux-cxx-install.sh",
