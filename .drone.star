@@ -58,7 +58,7 @@ def main(ctx):
     linux_cxx("gcc 10 standalone", "g++-10", packages=" ".join(addon_gcc_10["apt"]["packages"]), image="ubuntu:18.04", buildtype="standalone", environment={"COMMENT": "standalone", "CXX": "g++-10"}),
     linux_cxx("coverity", "", packages="", image="ubuntu:18.04", buildtype="coverity", environment={}),
     linux_cxx("docs", "", packages="docbook docbook-xml docbook-xsl xsltproc libsaxonhe-java default-jre-headless flex libfl-dev bison unzip", image="ubuntu:16.04", buildtype="docs", environment={"COMMENT": "docs"}),
-    linux_cxx("codecov", "", packages=" ".join(addon_gcc_8["apt"]["packages"]), image="ubuntu:16.04", buildtype="codecov", environment={"COMMENT": "codecov.io","LCOV_BRANCH_COVERAGE": 0,"B2_CXXSTD": 11,"B2_TOOLSET": "gcc-8", "B2_DEFINES": "BOOST_NO_STRESS_TEST=1"}),
+    linux_cxx("codecov", "", packages=" ".join(addon_gcc_8["apt"]["packages"]), image="ubuntu:16.04", buildtype="codecov", environment={"COMMENT": "codecov.io","LCOV_BRANCH_COVERAGE": 0,"B2_CXXSTD": 11,"B2_TOOLSET": "gcc-8", "B2_DEFINES": "BOOST_NO_STRESS_TEST=1"}, stepenvironment={"CODECOV_TOKEN": {"from_secret": "codecov_token"} }),
     linux_cxx("valgrind", "", packages=" ".join(addon_clang_6["apt"]["packages"]) + " autotools-dev automake", image="ubuntu:16.04", buildtype="valgrind", environment={"COMMENT": "valgrind","B2_TOOLSET": "clang-6.0", "B2_CXXSTD": "11,14", "B2_DEFINES": "BOOST_NO_STRESS_TEST=1", "B2_VARIANT": "debug", "B2_TESTFLAGS": "testing.launcher=valgrind","VALGRIND_OPTS": "--error-exitcode=1" }),
     linux_cxx("asan", "clang++-11", packages=" ".join(addon_clang_11["apt"]["packages"]), image="ubuntu:16.04", llvm_os="xenial", llvm_ver="11", buildtype="boost", environment={"COMMENT": "asan", "B2_VARIANT": "debug", "B2_TOOLSET": "clang-11", "B2_CXXSTD":"17", "B2_ASAN": "1", "B2_DEFINES": "BOOST_NO_STRESS_TEST=1"}, privileged=True),
     linux_cxx("ubsan", "clang++-11", packages=" ".join(addon_clang_11["apt"]["packages"]), llvm_os="bionic", llvm_ver="11", buildtype="boost", environment={"COMMENT": "asan", "B2_VARIANT": "debug", "B2_TOOLSET": "clang-11", "B2_CXXSTD":"17", "B2_UBSAN": "1", "B2_DEFINES": "BOOST_NO_STRESS_TEST=1" }),
@@ -70,7 +70,7 @@ def main(ctx):
     ]
 
 # Generate pipeline for Linux platform compilers.
-def linux_cxx(name, cxx, cxxflags="", packages="", llvm_os="", llvm_ver="", arch="amd64", image="ubuntu:18.04", buildtype="boost", environment={}, privileged=False):
+def linux_cxx(name, cxx, cxxflags="", packages="", llvm_os="", llvm_ver="", arch="amd64", image="ubuntu:18.04", buildtype="boost", environment={}, stepenvironment={}, privileged=False):
   environment_global = {
       "CXX": cxx,
       "CXXFLAGS": cxxflags,
@@ -92,23 +92,25 @@ def linux_cxx(name, cxx, cxxflags="", packages="", llvm_os="", llvm_ver="", arch
     "name": "Linux %s" % name,
     "kind": "pipeline",
     "type": "docker",
-    "trigger": { "branch": [ "master","develop", "drone", "bugfix/*", "feature/*", "fix/*", "pr/*" ] },
+    "trigger": { "branch": [ "master","develop", "drone*", "bugfix/*", "feature/*", "fix/*", "pr/*" ] },
     "platform": {
       "os": "linux",
       "arch": arch
     },
     # Create env vars per generation arguments.
     "environment": environment_current,
+    "clone": { "depth": 5 },
     "steps": [
       {
         "name": "Everything",
         "image": image,
         "privileged" : privileged,
+        "environment": stepenvironment,
         "commands": [
 
           "echo '==================================> SETUP'",
           "uname -a",
-          "apt-get -o Acquire::Retries=3 update && DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata && apt-get -o Acquire::Retries=3 install -y sudo software-properties-common wget apt-transport-https git cmake apt-file sudo $PYTHON_PACKAGES && rm -rf /var/lib/apt/lists/*",
+          "apt-get -o Acquire::Retries=3 update && DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata && apt-get -o Acquire::Retries=3 install -y sudo software-properties-common wget curl apt-transport-https git cmake apt-file sudo mercurial && rm -rf /var/lib/apt/lists/*",
 
           "echo '==================================> PACKAGES'",
           "./.drone/linux-cxx-install.sh",
@@ -149,6 +151,7 @@ def windows_cxx(name, cxx="g++", cxxflags="", packages="", llvm_os="", llvm_ver=
     },
     # Create env vars per generation arguments.
     "environment": environment_current,
+    "clone": { "depth": 5 },
     "steps": [
       {
         "name": "Everything",
