@@ -3,10 +3,12 @@
 set -ex
 export TRAVIS_BUILD_DIR=$(pwd)
 export TRAVIS_BRANCH=$DRONE_BRANCH
+export VCS_COMMIT_ID=$DRONE_COMMIT
+export GIT_COMMIT=$DRONE_COMMIT
 
 echo '==================================> BEFORE_INSTALL'
 
-pip install --user https://github.com/codecov/codecov-python/archive/master.zip
+# pip install --user https://github.com/codecov/codecov-python/archive/master.zip
 
 echo '==================================> INSTALL'
 
@@ -91,7 +93,6 @@ lcov --gcov-tool=$GCOV --rc lcov_branch_coverage=${LCOV_BRANCH_COVERAGE:-1} --li
 # upload to codecov.io
 #
 
-#curl -s https://codecov.io/bash > .codecov
-#chmod +x .codecov
-#./.codecov -f $TRAVIS_BUILD_DIR/coverage.info -X gcov -x "$GCOV"
-~/.local/bin/codecov -f $TRAVIS_BUILD_DIR/coverage.info -X gcov
+curl -s https://codecov.io/bash > .codecov
+chmod +x .codecov
+./.codecov -f $TRAVIS_BUILD_DIR/coverage.info -X gcov -x "$GCOV"
