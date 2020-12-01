@@ -1,6 +1,10 @@
 #!/bin/bash
 
 set -ex
+export TRAVIS_BUILD_DIR=$(pwd)
+export TRAVIS_BRANCH=$DRONE_BRANCH
+export VCS_COMMIT_ID=$DRONE_COMMIT
+export GIT_COMMIT=$DRONE_COMMIT
 
 echo '==================================> BEFORE_INSTALL'
 
@@ -15,9 +19,15 @@ rm -rf boost-ci-cloned
 export SELF=`basename $DRONE_REPO`
 export BOOST_CI_TARGET_BRANCH="$DRONE_COMMIT_BRANCH"
 export BOOST_CI_SRC_FOLDER=$(pwd)
+echo "Before common_install.sh"
 echo "SELF IS $SELF and BOOST_ROOT is $BOOST_ROOT X"
+pwd
 
 . ./ci/common_install.sh
+
+echo "After common_install.sh"
+echo "SELF IS $SELF and BOOST_ROOT is $BOOST_ROOT X"
+pwd
 
 echo '==================================> COMPILE'
 
