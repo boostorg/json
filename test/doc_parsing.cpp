@@ -103,7 +103,7 @@ class connection
 public:
     void do_read( string_view s )                   // called for each complete message from the network
     {
-        p_.reset();                                 // start parsing a new JSON
+        p_.reset();                                 // start parsing a new JSON using the default resource
         p_.write( s );                              // parse the buffer, using exceptions to indicate error
         do_rpc( p_.release() );                     // process the command
     }
@@ -114,7 +114,37 @@ public:
 
 //----------------------------------------------------------
 
+static void set2() {
+
+//----------------------------------------------------------
+{
 //[doc_parsing_8
+stream_parser p;
+error_code ec;
+string_view s = "[1,2,3] %HOME%";
+std::size_t n = p.write_some( s, ec );
+assert( ! ec && p.done() && n == 8 );
+s = s.substr( n );
+value jv = p.release();
+assert( s == "%HOME%" );
+//]
+}
+//----------------------------------------------------------
+{
+//[doc_parsing_9
+parse_options opt;                                  // All extensions default to off
+opt.allow_comments = true;                          // Permit C and C++ style comments to appear in whitespace
+opt.allow_trailing_commas = true;                   // Allow an additional trailing comma in object and array element lists
+opt.allow_invalid_utf8 = true;                      // Skip utf-8 validation of keys and strings
+stream_parser p( storage_ptr(), opt );                     // The stream_parser will use the options
+//]
+}
+//----------------------------------------------------------
+
+} // set2
+
+//----------------------------------------------------------
+//[doc_parsing_10
 value read_json( std::istream& is, error_code& ec )
 {
     stream_parser p;
@@ -134,31 +164,8 @@ value read_json( std::istream& is, error_code& ec )
 
 //----------------------------------------------------------
 
-static void set2() {
+static void set3() {
 
-//----------------------------------------------------------
-{
-//[doc_parsing_9
-stream_parser p;
-error_code ec;
-string_view s = "[1,2,3] %HOME%";
-std::size_t n = p.write_some( s, ec );
-assert( ! ec && p.done() && n == 8 );
-s = s.substr( n );
-value jv = p.release();
-assert( s == "%HOME%" );
-//]
-}
-//----------------------------------------------------------
-{
-//[doc_parsing_10
-parse_options opt;                                  // All extensions default to off
-opt.allow_comments = true;                          // Permit C and C++ style comments to appear in whitespace
-opt.allow_trailing_commas = true;                   // Allow an additional trailing comma in object and array element lists
-opt.allow_invalid_utf8 = true;                      // Skip utf-8 validation of keys and strings
-stream_parser p( storage_ptr(), opt );                     // The stream_parser will use the options
-//]
-}
 //----------------------------------------------------------
 {
 //[doc_parsing_11
@@ -185,7 +192,7 @@ stream_parser p(
 }
 //----------------------------------------------------------
 
-} // set2
+} // set3
 
 //----------------------------------------------------------
 
@@ -210,17 +217,15 @@ template< class Handler >
 void do_rpc( string_view s, Handler&& handler )
 {
     unsigned char temp[ 4096 ];                 // The stream_parser will use this storage for its temporary needs
-    stream_parser p(                                   // Construct a strict stream_parser using the temp buffer and no dynamic memory
-        get_null_resource(),                    // The null resource guarantees we will never dynamically allocate
+    parser p(                                   // Construct a strict parser using the temp buffer and no dynamic memory
+        get_null_resource(),                    // The null resource never dynamically allocates memory
         parse_options(),                        // Default constructed parse options allow only standard JSON
         temp );
 
     unsigned char buf[ 16384 ];                 // Now we need a buffer to hold the actual JSON values
     static_resource mr2( buf );                 // The static resource is monotonic, using only a caller-provided buffer
     p.reset( &mr2 );                            // Use the static resource for producing the value
-
     p.write( s );                               // Parse the entire string we received from the network client
-    p.finish();                                 // Inform the stream_parser that the complete input has been provided
 
     // Retrieve the value and invoke the handler with it.
     // The value will use `buf` for storage. The handler
@@ -240,6 +245,7 @@ public:
     {
         (void)&set1;
         (void)&set2;
+        (void)&set3;
     }
 };
 

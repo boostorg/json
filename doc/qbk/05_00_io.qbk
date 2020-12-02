@@ -10,6 +10,11 @@
 [/-----------------------------------------------------------------------------]
 
 [section Input/Output]
+[block'''<?dbhtml stop-chunking?>''']
+
+The library provides parsing and serialization algorithms to transform
+JSON to and from the __value__ container as needed. This is accomplished
+through free functions and classes, described as follows.
 
 [include 05_01_parsing.qbk]
 [include 05_02_serializing.qbk]
