@@ -52,27 +52,42 @@ tuple_to_array(
 }
 
 //----------------------------------------------------------
+// User-provided conversion
+
+template<class T, void_t<decltype(tag_invoke(value_from_tag(),
+    std::declval<value&>(), std::declval<T&&>()))>* = nullptr>
+void
+value_from_helper(
+    value& jv,
+    T&& from,
+    priority_tag<5>)
+{
+    tag_invoke(value_from_tag(), jv, std::forward<T>(from));
+}
+
+
+//----------------------------------------------------------
 // Native conversion
 
 template<class T, typename std::enable_if<
     detail::value_constructible<T>::value>::type* = nullptr>
 void
-tag_invoke(
-    value_from_tag,
+value_from_helper(
     value& jv,
-    T&& from)
+    T&& from,
+    priority_tag<4>)
 {
     jv = std::forward<T>(from);
 }
 
 template<class T, typename std::enable_if<
-    std::is_same<detail::remove_cvref<T>, 
+    std::is_same<detail::remove_cvref<T>,
         std::nullptr_t>::value>::type* = nullptr>
 void
-tag_invoke(
-    value_from_tag,
+value_from_helper(
     value& jv,
-    T&&)
+    T&&,
+    priority_tag<4>)
 {
     // do nothing
     BOOST_ASSERT(jv.is_null());
@@ -83,15 +98,15 @@ tag_invoke(
 // Generic conversions
 
 // string-like types
-// NOTE: original check for size used is_convertible but 
+// NOTE: original check for size used is_convertible but
 // MSVC-140 selects wrong specialisation if used
 template<class T, typename std::enable_if<
     std::is_constructible<remove_cvref<T>, const char*, std::size_t>::value &&
-    std::is_convertible<decltype(std::declval<T&>().data()), const char*>::value && 
+    std::is_convertible<decltype(std::declval<T&>().data()), const char*>::value &&
     std::is_integral<decltype(std::declval<T&>().size())>::value
 >::type* = nullptr>
-void 
-value_from_generic(
+void
+value_from_helper(
     value& jv,
     T&& from,
     priority_tag<3>)
@@ -104,7 +119,7 @@ value_from_generic(
 template<class T, typename std::enable_if<
     (std::tuple_size<remove_cvref<T>>::value > 0)>::type* = nullptr>
 void
-value_from_generic(
+value_from_helper(
     value& jv,
     T&& from,
     priority_tag<2>)
@@ -119,12 +134,12 @@ value_from_generic(
 
 // map-like types
 template<class T, typename std::enable_if<
-    map_traits<T>::has_unique_keys && 
+    map_traits<T>::has_unique_keys &&
         has_value_from<typename map_traits<T>::pair_value_type>::value &&
-    std::is_convertible<typename map_traits<T>::pair_key_type, 
+    std::is_convertible<typename map_traits<T>::pair_key_type,
         string_view>::value>::type* = nullptr>
 void
-value_from_generic(
+value_from_helper(
     value& jv,
     T&& from,
     priority_tag<1>)
@@ -142,7 +157,7 @@ template<class T, typename std::enable_if<
     has_value_from<typename container_traits<T>::
         value_type>::value>::type* = nullptr>
 void
-value_from_generic(
+value_from_helper(
     value& jv,
     T&& from,
     priority_tag<0>)
@@ -154,36 +169,21 @@ value_from_generic(
             value_from(elem, result.storage()));
 }
 
-template<class T, void_t<typename std::enable_if<
-    ! detail::value_constructible<T>::value && ! std::is_same<
-        detail::remove_cvref<T>, std::nullptr_t>::value>::type,
-    decltype(detail::value_from_generic(std::declval<value&>(), 
-        std::declval<T&&>(), priority_tag<3>()))>* = nullptr>
-void
-tag_invoke(
-    value_from_tag,
-    value& jv,
-    T&& from)
-{
-    detail::value_from_generic(jv,
-        std::forward<T>(from), priority_tag<3>());
-}
-
 //----------------------------------------------------------
 
 // Calls to value_from are forwarded to this function
 // so we can use ADL and hide the built-in tag_invoke
 // overloads in the detail namespace
 template<class T, void_t<
-    decltype(tag_invoke(std::declval<value_from_tag&>(),
-        std::declval<value&>(), std::declval<T&&>()))>* = nullptr>
+    decltype(detail::value_from_helper(std::declval<value&>(),
+        std::declval<T&&>(), priority_tag<5>()))>* = nullptr>
 value
 value_from_impl(
     T&& from,
     storage_ptr sp)
 {
     value jv(std::move(sp));
-    tag_invoke(value_from_tag(), jv, std::forward<T>(from));
+    detail::value_from_helper(jv, std::forward<T>(from), priority_tag<5>());
     return jv;
 }
 
