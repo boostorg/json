@@ -85,6 +85,23 @@ BOOST_STATIC_ASSERT(! ::boost::json::has_value_from<T4>::value);
 
 //----------------------------------------------------------
 
+struct T5 : std::vector<int>
+{
+    using std::vector<int>::vector;
+};
+
+void
+tag_invoke(
+    ::boost::json::value_from_tag,
+    ::boost::json::value& jv,
+    T5 const&)
+{
+    jv = "T5";
+}
+
+
+//----------------------------------------------------------
+
 } // value_from_test_ns
 
 template<class T>
@@ -243,6 +260,14 @@ public:
         }
     }
 
+    static
+    void
+    testPreferUserCustomizations()
+    {
+        value_from_test_ns::T5 t5;
+        BOOST_TEST((::boost::json::value_from(t5) == "T5"));
+    }
+
     void
     run()
     {
@@ -252,6 +277,7 @@ public:
         testValueCtors();
         testGeneral();
         testAssociative();
+        testPreferUserCustomizations();
     }
 };
 
