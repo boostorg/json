@@ -23,6 +23,54 @@
 #include <type_traits>
 
 BOOST_JSON_NS_BEGIN
+namespace detail {
+
+template<class CharRange>
+std::pair<key_value_pair*, std::size_t>
+find_in_object(
+    object const& obj,
+    CharRange key) noexcept
+{
+    BOOST_ASSERT(obj.t_->capacity > 0);
+    if(obj.t_->is_small())
+    {
+        auto it = &(*obj.t_)[0];
+        auto const last =
+            &(*obj.t_)[obj.t_->size];
+        for(;it != last; ++it)
+            if( key == it->key() )
+                return { it, 0 };
+        return { nullptr, 0 };
+    }
+    std::pair<
+        key_value_pair*,
+        std::size_t> result;
+    BOOST_ASSERT(obj.t_->salt != 0);
+    result.second = detail::digest(key.begin(), key.end(), obj.t_->salt);
+    auto i = obj.t_->bucket(
+        result.second);
+    while(i != object::null_index_)
+    {
+        auto& v = (*obj.t_)[i];
+        if( key == v.key() )
+        {
+            result.first = &v;
+            return result;
+        }
+        i = access::next(v);
+    }
+    result.first = nullptr;
+    return result;
+}
+
+
+template
+std::pair<key_value_pair*, std::size_t>
+find_in_object<string_view>(
+    object const& obj,
+    string_view key) noexcept;
+
+} // namespace detail
 
 //----------------------------------------------------------
 
@@ -38,7 +86,7 @@ digest(string_view key) const noexcept
 {
     BOOST_ASSERT(salt != 0);
     return detail::digest(
-        key.data(), key.size(), salt);
+        key.begin(), key.end(), salt);
 }
 
 auto
@@ -176,7 +224,7 @@ object(detail::unchecked_object&& uo)
             access::construct_key_value_pair(
                 dest, pilfer(src[0]), pilfer(src[1]));
             src += 2;
-            auto result = find_impl(dest->key());
+            auto result = detail::find_in_object(*this, dest->key());
             if(! result.first)
             {
                 ++dest;
@@ -409,7 +457,7 @@ insert(
         for(auto& iv : init)
         {
             auto result =
-                find_impl(iv.first);
+                detail::find_in_object(*this, iv.first);
             if(result.first)
             {
                 // ignore duplicate
@@ -564,7 +612,7 @@ find(string_view key) noexcept ->
     if(empty())
         return end();
     auto const p =
-        find_impl(key).first;
+        detail::find_in_object(*this, key).first;
     if(p)
         return p;
     return end();
@@ -578,7 +626,7 @@ find(string_view key) const noexcept ->
     if(empty())
         return end();
     auto const p =
-        find_impl(key).first;
+        detail::find_in_object(*this, key).first;
     if(p)
         return p;
     return end();
@@ -591,8 +639,8 @@ contains(
 {
     if(empty())
         return false;
-    return find_impl(
-        key).first != nullptr;
+    return detail::find_in_object(*this, key).first
+        != nullptr;
 }
 
 value const*
@@ -625,45 +673,6 @@ if_contains(
 
 auto
 object::
-find_impl(
-    string_view key) const noexcept ->
-        std::pair<
-            key_value_pair*,
-            std::size_t>
-{
-    BOOST_ASSERT(t_->capacity > 0);
-    if(t_->is_small())
-    {
-        auto it = &(*t_)[0];
-        auto const last =
-            &(*t_)[t_->size];
-        for(;it != last; ++it)
-            if(key == it->key())
-                return { it, 0 };
-        return { nullptr, 0 };
-    }
-    std::pair<
-        key_value_pair*,
-        std::size_t> result;
-    result.second = t_->digest(key);
-    auto i = t_->bucket(
-        result.second);
-    while(i != null_index_)
-    {
-        auto& v = (*t_)[i];
-        if(v.key() == key)
-        {
-            result.first = &v;
-            return result;
-        }
-        i = access::next(v);
-    }
-    result.first = nullptr;
-    return result;
-}
-
-auto
-object::
 insert_impl(
     pilfered<key_value_pair> p) ->
         std::pair<iterator, bool>
@@ -672,7 +681,7 @@ insert_impl(
     // for preventing aliasing.
     reserve(size() + 1);
     auto const result =
-        find_impl(p.get().key());
+        detail::find_in_object(*this, p.get().key());
     if(result.first)
         return { result.first, false };
     return { insert_impl(
@@ -836,7 +845,7 @@ std::hash<::boost::json::object>::operator()(
     std::size_t seed = jo.size();
     for (const auto& kv_pair : jo) {
         auto const hk = ::boost::json::detail::digest(
-            kv_pair.key().data(), kv_pair.key().size(), 0);
+            kv_pair.key().begin(), kv_pair.key().end(), 0);
         auto const hkv = ::boost::json::detail::hash_combine(
             hk,
             std::hash<::boost::json::value>{}(kv_pair.value()));

@@ -56,5 +56,6 @@ These containers are explored in-depth in the sections that follow.
 [include 03_05_numbers.qbk]
 [include 03_06_conversion.qbk]
 [include 03_07_init_lists.qbk]
+[include 03_08_nested_access.qbk]
 
 [endsect]

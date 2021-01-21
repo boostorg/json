@@ -11,10 +11,12 @@
 #define BOOST_JSON_DETAIL_OBJECT_HPP
 
 #include <boost/json/storage_ptr.hpp>
+#include <boost/json/string_view.hpp>
 #include <cstdlib>
 
 BOOST_JSON_NS_BEGIN
 
+class object;
 class value;
 class key_value_pair;
 
@@ -72,6 +74,19 @@ public:
         return data;
     }
 };
+
+template<class CharRange>
+std::pair<key_value_pair*, std::size_t>
+find_in_object(
+    object const& obj,
+    CharRange key) noexcept;
+
+extern template
+BOOST_JSON_DECL
+std::pair<key_value_pair*, std::size_t>
+find_in_object<string_view>(
+    object const&,
+    string_view key) noexcept;
 
 } // detail
 BOOST_JSON_NS_END

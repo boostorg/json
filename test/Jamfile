@@ -33,6 +33,7 @@ local SOURCES =
     parse.cpp
     parser.cpp
     pilfer.cpp
+    pointer.cpp
     serialize.cpp
     serializer.cpp
     snippets.cpp

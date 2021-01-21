@@ -76,6 +76,31 @@ enum class error
 
     /// test failure
     test_failure,
+
+    //
+    // JSON Pointer errors
+    //
+
+    /// missing slash character before token reference
+    missing_slash,
+
+    /// invalid escape sequence
+    invalid_escape,
+
+    /// token should be a number but cannot be parsed as such
+    token_not_number,
+
+    /// current value is neither an object nor an array
+    value_is_scalar,
+
+    /// current value does not contain referenced value
+    not_found,
+
+    /// token cannot be represented by std::size_t
+    token_overflow,
+
+    /// past-the-end index is not supported
+    past_the_end,
 };
 
 /** Error conditions corresponding to JSON errors
@@ -86,7 +111,13 @@ enum class condition
     parse_error = 1,
 
     /// An error on assignment to or from a JSON value
-    assign_error
+    assign_error,
+
+    /// An error related to parsing JSON pointer string
+    pointer_parse_error,
+
+    /// An error related to applying JSON pointer string to a value
+    pointer_use_error,
 };
 
 BOOST_JSON_NS_END

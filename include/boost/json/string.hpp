@@ -2918,7 +2918,7 @@ struct hash< ::boost::json::string >
     operator()(::boost::json::string const& js) const noexcept
     {
         return ::boost::json::detail::digest(
-            js.data(), js.size(), salt_);
+            js.begin(), js.end(), salt_);
     }
 
 private:
