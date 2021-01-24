@@ -45,10 +45,18 @@ namespace detail {
 template<class E>
 void
 BOOST_NORETURN
+#if BOOST_VERSION >= 107300
+throw_exception(E e, source_location const& loc)
+{
+    (void)loc;
+    throw e;
+}
+#else
 throw_exception(E e)
 {
     throw e;
 }
+#endif
 #endif
 
 void
