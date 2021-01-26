@@ -207,7 +207,7 @@ at(std::size_t pos)
 {
     if(pos >= t_->size)
         detail::throw_out_of_range(
-            BOOST_CURRENT_LOCATION);
+            BOOST_JSON_SOURCE_POS);
     return (*t_)[pos];
 }
 
@@ -217,7 +217,7 @@ at(std::size_t pos) const
 {
     if(pos >= t_->size)
         detail::throw_out_of_range(
-            BOOST_CURRENT_LOCATION);
+            BOOST_JSON_SOURCE_POS);
     return (*t_)[pos];
 }
 

@@ -45,7 +45,7 @@ parse(
         s, ec, std::move(sp), opt);
     if(ec)
         detail::throw_system_error(ec,
-            BOOST_CURRENT_LOCATION);
+            BOOST_JSON_SOURCE_POS);
     return jv;
 }
 

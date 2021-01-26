@@ -77,7 +77,7 @@ write_some(
         data, size, ec);
     if(ec)
         detail::throw_system_error(ec,
-            BOOST_CURRENT_LOCATION);
+            BOOST_JSON_SOURCE_POS);
     return n;
 }
 
@@ -109,7 +109,7 @@ write(
         data, size, ec);
     if(ec)
         detail::throw_system_error(ec,
-            BOOST_CURRENT_LOCATION);
+            BOOST_JSON_SOURCE_POS);
     return n;
 }
 
@@ -128,7 +128,7 @@ finish()
     finish(ec);
     if(ec)
         detail::throw_system_error(ec,
-            BOOST_CURRENT_LOCATION);
+            BOOST_JSON_SOURCE_POS);
 }
 
 value

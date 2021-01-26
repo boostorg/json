@@ -342,10 +342,10 @@ at(string_view key) ->
     auto it = find(key);
     if(it == end())
         detail::throw_out_of_range(
-            BOOST_CURRENT_LOCATION);
+            BOOST_JSON_SOURCE_POS);
     return it->value();
 }
-    
+
 auto
 object::
 at(string_view key) const ->
@@ -354,7 +354,7 @@ at(string_view key) const ->
     auto it = find(key);
     if(it == end())
         detail::throw_out_of_range(
-            BOOST_CURRENT_LOCATION);
+            BOOST_JSON_SOURCE_POS);
     return it->value();
 }
 
@@ -492,7 +492,7 @@ insert(
     if(n > max_size() - n0)
         detail::throw_length_error(
             "object too large",
-            BOOST_CURRENT_LOCATION);
+            BOOST_JSON_SOURCE_POS);
     reserve(n0 + n);
     revert_insert r(*this);
     while(first != last)

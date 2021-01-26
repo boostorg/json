@@ -24,7 +24,7 @@ namespace detail {
 */
 class null_resource final
     : public memory_resource
-{   
+{
 public:
     /// Copy constructor (deleted)
     null_resource(
@@ -66,7 +66,7 @@ protected:
         std::size_t) override
     {
         detail::throw_bad_alloc(
-            BOOST_CURRENT_LOCATION);
+            BOOST_JSON_SOURCE_POS);
     }
 
     void

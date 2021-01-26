@@ -180,7 +180,7 @@ public:
         This is more efficient than move construction, when
         it is known that the moved-from object will be
         immediately destroyed afterwards.
-        
+
         @par Complexity
         Constant.
 
@@ -250,7 +250,7 @@ public:
         The value is constructed by acquiring ownership of
         the contents of `other` and shared ownership of
         `other`'s memory resource.
-        
+
         @note
 
         After construction, the moved-from value becomes a
@@ -284,7 +284,7 @@ public:
         `other.is_structured() == true`, which may throw.
         In this case, the moved-from value is not
         changed.
-        
+
         @par Complexity
         Constant or linear in the size of `other`.
 
@@ -613,7 +613,7 @@ public:
         @par Complexity
         Linear in `s.size()`.
 
-        @par Exception Safety  
+        @par Exception Safety
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -639,7 +639,7 @@ public:
         @par Complexity
         Linear in `std::strlen(s)`.
 
-        @par Exception Safety    
+        @par Exception Safety
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
@@ -1013,7 +1013,7 @@ public:
 
         If the initializer list consists of key/value
         pairs, an @ref object is created. Otherwise
-        an @ref array is created. The contents of the 
+        an @ref array is created. The contents of the
         initializer list are copied to the newly constructed
         value using the specified memory resource.
 
@@ -1024,7 +1024,7 @@ public:
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
-        @param init The initializer list to construct from. 
+        @param init The initializer list to construct from.
 
         @param sp A pointer to the @ref memory_resource
         to use. The container will acquire shared
@@ -1658,7 +1658,7 @@ public:
     {
         lhs.swap(rhs);
     }
-    
+
     //------------------------------------------------------
     //
     // Observers
@@ -2320,7 +2320,7 @@ public:
         This function attempts to return the stored value
         converted to the arithmetic type `T` which may not
         be `bool`:
-        
+
         @li If `T` is an integral type and the stored
         value is a number which can be losslessly converted,
         the conversion is performed without error and the
@@ -2364,7 +2364,7 @@ public:
         This function attempts to return the stored value
         converted to the arithmetic type `T` which may not
         be `bool`:
-        
+
         @li If `T` is an integral type and the stored
         value is a number which can be losslessly converted,
         the conversion is performed without error and the
@@ -2410,7 +2410,7 @@ public:
         auto result = to_number<T>(ec);
         if(ec)
             detail::throw_system_error(ec,
-                BOOST_CURRENT_LOCATION);
+                BOOST_JSON_SOURCE_POS);
         return result;
     }
 
@@ -2604,7 +2604,7 @@ public:
         if(! is_object())
             detail::throw_invalid_argument(
                 "not an object",
-                BOOST_CURRENT_LOCATION);
+                BOOST_JSON_SOURCE_POS);
         return obj_;
     }
 
@@ -2628,7 +2628,7 @@ public:
         if(! is_object())
             detail::throw_invalid_argument(
                 "not an object",
-                BOOST_CURRENT_LOCATION);
+                BOOST_JSON_SOURCE_POS);
         return obj_;
     }
 
@@ -2652,7 +2652,7 @@ public:
         if(! is_array())
             detail::throw_invalid_argument(
                 "array required",
-                BOOST_CURRENT_LOCATION);
+                BOOST_JSON_SOURCE_POS);
         return arr_;
     }
 
@@ -2676,7 +2676,7 @@ public:
         if(! is_array())
             detail::throw_invalid_argument(
                 "array required",
-                BOOST_CURRENT_LOCATION);
+                BOOST_JSON_SOURCE_POS);
         return arr_;
     }
 
@@ -2700,7 +2700,7 @@ public:
         if(! is_string())
             detail::throw_invalid_argument(
                 "not a string",
-                BOOST_CURRENT_LOCATION);
+                BOOST_JSON_SOURCE_POS);
         return str_;
     }
 
@@ -2724,7 +2724,7 @@ public:
         if(! is_string())
             detail::throw_invalid_argument(
                 "not a string",
-                BOOST_CURRENT_LOCATION);
+                BOOST_JSON_SOURCE_POS);
         return str_;
     }
 
@@ -2748,7 +2748,7 @@ public:
         if(! is_int64())
             detail::throw_invalid_argument(
                 "not an int64",
-                BOOST_CURRENT_LOCATION);
+                BOOST_JSON_SOURCE_POS);
         return sca_.i;
     }
 
@@ -2772,7 +2772,7 @@ public:
         if(! is_int64())
             detail::throw_invalid_argument(
                 "not an int64",
-                BOOST_CURRENT_LOCATION);
+                BOOST_JSON_SOURCE_POS);
         return sca_.i;
     }
 
@@ -2796,7 +2796,7 @@ public:
         if(! is_uint64())
             detail::throw_invalid_argument(
                 "not a uint64",
-                BOOST_CURRENT_LOCATION);
+                BOOST_JSON_SOURCE_POS);
         return sca_.u;
     }
 
@@ -2820,7 +2820,7 @@ public:
         if(! is_uint64())
             detail::throw_invalid_argument(
                 "not a uint64",
-                BOOST_CURRENT_LOCATION);
+                BOOST_JSON_SOURCE_POS);
         return sca_.u;
     }
 
@@ -2844,7 +2844,7 @@ public:
         if(! is_double())
             detail::throw_invalid_argument(
                 "not a double",
-                BOOST_CURRENT_LOCATION);
+                BOOST_JSON_SOURCE_POS);
         return sca_.d;
     }
 
@@ -2868,7 +2868,7 @@ public:
         if(! is_double())
             detail::throw_invalid_argument(
                 "not a double",
-                BOOST_CURRENT_LOCATION);
+                BOOST_JSON_SOURCE_POS);
         return sca_.d;
     }
 
@@ -2892,7 +2892,7 @@ public:
         if(! is_bool())
             detail::throw_invalid_argument(
                 "bool required",
-                BOOST_CURRENT_LOCATION);
+                BOOST_JSON_SOURCE_POS);
         return sca_.b;
     }
 
@@ -2916,7 +2916,7 @@ public:
         if(! is_bool())
             detail::throw_invalid_argument(
                 "bool required",
-                BOOST_CURRENT_LOCATION);
+                BOOST_JSON_SOURCE_POS);
         return sca_.b;
     }
 
@@ -2928,7 +2928,7 @@ public:
         representation when the kind is known in advance.
 
         @par Preconditions
-        
+
         @code
         this->is_object()
         @endcode
@@ -2952,7 +2952,7 @@ public:
         representation when the kind is known in advance.
 
         @par Preconditions
-        
+
         @code
         this->is_object()
         @endcode
@@ -2976,7 +2976,7 @@ public:
         representation when the kind is known in advance.
 
         @par Preconditions
-        
+
         @code
         this->is_array()
         @endcode
@@ -3000,7 +3000,7 @@ public:
         representation when the kind is known in advance.
 
         @par Preconditions
-        
+
         @code
         this->is_array()
         @endcode
@@ -3024,7 +3024,7 @@ public:
         representation when the kind is known in advance.
 
         @par Preconditions
-        
+
         @code
         this->is_string()
         @endcode
@@ -3048,7 +3048,7 @@ public:
         representation when the kind is known in advance.
 
         @par Preconditions
-        
+
         @code
         this->is_string()
         @endcode
@@ -3072,7 +3072,7 @@ public:
         representation when the kind is known in advance.
 
         @par Preconditions
-        
+
         @code
         this->is_int64()
         @endcode
@@ -3096,7 +3096,7 @@ public:
         representation when the kind is known in advance.
 
         @par Preconditions
-        
+
         @code
         this->is_int64()
         @endcode
@@ -3120,7 +3120,7 @@ public:
         representation when the kind is known in advance.
 
         @par Preconditions
-        
+
         @code
         this->is_uint64()
         @endcode
@@ -3144,7 +3144,7 @@ public:
         representation when the kind is known in advance.
 
         @par Preconditions
-        
+
         @code
         this->is_uint64()
         @endcode
@@ -3168,7 +3168,7 @@ public:
         representation when the kind is known in advance.
 
         @par Preconditions
-        
+
         @code
         this->is_double()
         @endcode
@@ -3192,7 +3192,7 @@ public:
         representation when the kind is known in advance.
 
         @par Preconditions
-        
+
         @code
         this->is_double()
         @endcode
@@ -3216,7 +3216,7 @@ public:
         representation when the kind is known in advance.
 
         @par Preconditions
-        
+
         @code
         this->is_bool()
         @endcode
@@ -3240,7 +3240,7 @@ public:
         representation when the kind is known in advance.
 
         @par Preconditions
-        
+
         @code
         this->is_bool()
         @endcode
@@ -3380,7 +3380,7 @@ private:
 BOOST_STATIC_ASSERT(sizeof(value) == 24);
 #elif BOOST_JSON_ARCH == 32
 BOOST_STATIC_ASSERT(sizeof(value) == 16);
-#else 
+#else
 # error Unknown architecture
 #endif
 
@@ -3472,7 +3472,7 @@ public:
         The pair is constructed by acquiring
         ownership of the contents of `other` and
         shared ownership of `other`'s memory resource.
-        
+
         @note
 
         After construction, the moved-from pair holds an
@@ -3498,13 +3498,13 @@ public:
     }
 
     /** Pilfer constructor.
-    
+
         The pair is constructed by acquiring ownership
         of the contents of `other` using pilfer semantics.
         This is more efficient than move construction, when
         it is known that the moved-from object will be
         immediately destroyed afterwards.
-        
+
         @par Complexity
         Constant.
 
@@ -3552,7 +3552,7 @@ public:
         if(key.size() > string::max_size())
             detail::throw_length_error(
                 "key too large",
-                BOOST_CURRENT_LOCATION);
+                BOOST_JSON_SOURCE_POS);
         auto s = reinterpret_cast<
             char*>(value_.storage()->
                 allocate(key.size() + 1));
@@ -3711,15 +3711,15 @@ private:
 #ifdef BOOST_JSON_DOCS
 
 /** Tuple-like element access.
-    
+
     This overload permits the key and value
     of a `key_value_pair` to be accessed
     by index. For example:
 
-    @code 
+    @code
 
     key_value_pair kvp("num", 42);
-    
+
     string_view key = get<0>(kvp);
     value& jv = get<1>(kvp);
 
@@ -3744,7 +3744,7 @@ private:
     @li `string_view const` if `I == 0`, or
 
     @li `value&`, `value const&`, or `value&&` if `I == 1`.
-    
+
     Any other value for `I` is ill-formed.
 
     @tparam I The element index to access.
@@ -3753,7 +3753,7 @@ private:
 
     `std::is_same_v< std::remove_cvref_t<T>, key_value_pair >`
 
-    @return `kvp.key()` if `I == 0`, or `kvp.value()` 
+    @return `kvp.key()` if `I == 0`, or `kvp.value()`
     if `I == 1`.
 
     @param kvp The @ref key_value_pair object
@@ -3774,7 +3774,7 @@ get(key_value_pair const&) noexcept ->
         string_view const,
         value const&>::type
 {
-    static_assert(I == 0, 
+    static_assert(I == 0,
         "key_value_pair index out of range");
 }
 
@@ -3785,7 +3785,7 @@ get(key_value_pair&) noexcept ->
         string_view const,
         value&>::type
 {
-    static_assert(I == 0, 
+    static_assert(I == 0,
         "key_value_pair index out of range");
 }
 
@@ -3796,7 +3796,7 @@ get(key_value_pair&&) noexcept ->
         string_view const,
         value&&>::type
 {
-    static_assert(I == 0, 
+    static_assert(I == 0,
         "key_value_pair index out of range");
 }
 
@@ -3805,7 +3805,7 @@ get(key_value_pair&&) noexcept ->
 template<>
 inline
 string_view const
-get<0>(key_value_pair const& kvp) noexcept 
+get<0>(key_value_pair const& kvp) noexcept
 {
     return kvp.key();
 }
@@ -3877,14 +3877,14 @@ namespace std {
 */
 template<>
 struct tuple_size< ::boost::json::key_value_pair >
-    : std::integral_constant<std::size_t, 2> 
+    : std::integral_constant<std::size_t, 2>
 {
 };
 
 /** Tuple-like access for the key type of key_value_pair
 */
 template<>
-struct tuple_element<0, ::boost::json::key_value_pair> 
+struct tuple_element<0, ::boost::json::key_value_pair>
 {
     using type = ::boost::json::string_view const;
 };
@@ -3892,7 +3892,7 @@ struct tuple_element<0, ::boost::json::key_value_pair>
 /** Tuple-like access for the value type of key_value_pair
 */
 template<>
-struct tuple_element<1, ::boost::json::key_value_pair> 
+struct tuple_element<1, ::boost::json::key_value_pair>
 {
     using type = ::boost::json::value&;
 };
@@ -3900,7 +3900,7 @@ struct tuple_element<1, ::boost::json::key_value_pair>
 /** Tuple-like access for the value type of key_value_pair
 */
 template<>
-struct tuple_element<1, ::boost::json::key_value_pair const> 
+struct tuple_element<1, ::boost::json::key_value_pair const>
 {
     using type = ::boost::json::value const&;
 };

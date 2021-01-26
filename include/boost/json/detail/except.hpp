@@ -25,9 +25,10 @@ namespace detail {
 
 // VFALCO we are supporting Boost 1.67 because it is in a lot of distros
 #if ! defined(BOOST_JSON_STANDALONE) && defined(BOOST_CURRENT_LOCATION)
+# define BOOST_JSON_SOURCE_POS BOOST_CURRENT_LOCATION
 using source_location = boost::source_location;
 #else
-# define BOOST_CURRENT_LOCATION {}
+# define BOOST_JSON_SOURCE_POS {}
 struct source_location{};
 #endif
 
