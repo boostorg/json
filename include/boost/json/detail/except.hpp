@@ -13,17 +13,13 @@
 #include <boost/json/error.hpp>
 
 #ifndef BOOST_JSON_STANDALONE
-#include <boost/version.hpp>
-#if BOOST_VERSION >= 107300
-# include <boost/assert/source_location.hpp>
-#endif
+#include <boost/assert/source_location.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #endif
 
 BOOST_JSON_NS_BEGIN
 namespace detail {
 
-// VFALCO we are supporting Boost 1.67 because it is in a lot of distros
 #if ! defined(BOOST_JSON_STANDALONE) && defined(BOOST_CURRENT_LOCATION)
 # define BOOST_JSON_SOURCE_POS BOOST_CURRENT_LOCATION
 using source_location = boost::source_location;

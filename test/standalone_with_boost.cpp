@@ -8,5 +8,6 @@
 //
 
 #include <boost/assert/source_location.hpp>
+#include <boost/version.hpp>
 #include <boost/json.hpp>
 #include <boost/json/src.hpp>

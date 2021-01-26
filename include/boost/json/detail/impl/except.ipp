@@ -58,7 +58,7 @@ throw_bad_alloc(
     (void)loc;
     throw_exception(
         std::bad_alloc()
-#if BOOST_VERSION >= 107300
+#if ! defined(BOOST_JSON_STANDALONE)
         , loc
 #endif
         );
@@ -72,7 +72,7 @@ throw_length_error(
     (void)loc;
     throw_exception(
         std::length_error(what)
-#if BOOST_VERSION >= 107300
+#if ! defined(BOOST_JSON_STANDALONE)
         , loc
 #endif
         );
@@ -86,7 +86,7 @@ throw_invalid_argument(
     (void)loc;
     throw_exception(
         std::invalid_argument(what)
-#if BOOST_VERSION >= 107300
+#if ! defined(BOOST_JSON_STANDALONE)
         , loc
 #endif
         );
@@ -100,7 +100,7 @@ throw_out_of_range(
     throw_exception(
         std::out_of_range(
             "out of range")
-#if BOOST_VERSION >= 107300
+#if ! defined(BOOST_JSON_STANDALONE)
         , loc
 #endif
         );
@@ -114,7 +114,7 @@ throw_system_error(
     (void)loc;
     throw_exception(
         system_error(ec)
-#if BOOST_VERSION >= 107300
+#if ! defined(BOOST_JSON_STANDALONE)
         , loc
 #endif
         );
