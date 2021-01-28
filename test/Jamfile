@@ -72,7 +72,7 @@ local LIMIT_SOURCES =
 
 local RUN_TESTS ;
 
-project : requirements $(c11-requires) ;
+project : requirements <source>..//c11-requires ;
 
 for local f in $(SOURCES)
 {
