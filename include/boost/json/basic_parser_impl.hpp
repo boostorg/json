@@ -151,6 +151,8 @@ dec_to_float(
     if(e < -305)
         return x * 1e-305 *
             pow10(e+305);
+    if(e < 0 && e > -23)
+        return x / pow10(-e);
     return x * pow10(e);
 }
 
