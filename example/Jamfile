@@ -22,7 +22,7 @@ else
     LIB = <library>/boost/json//boost_json ;
 }
 
-project : requirements <source>..//c11-requires ;
+project : requirements $(c11-requires) ;
 
 exe path :
     path.cpp
