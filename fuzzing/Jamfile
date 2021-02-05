@@ -22,6 +22,8 @@ else
     LIB = <library>/boost/json//boost_json ;
 }
 
+project : requirements $(c11-requires) ;
+
 # See the comments in CMakeLists.txt for why
 # these are libraries and not exe targets.
 lib fuzzerlib_basic_parser :
