@@ -46,6 +46,7 @@ def main(ctx):
     linux_cxx("Clang 10", "clang++-10", packages=" ".join(addon_clang_10["apt"]["packages"]), llvm_os="bionic", llvm_ver="10", buildtype="boost", environment={"B2_TOOLSET": "clang-10", "B2_CXXSTD": "17,2a"}),
     linux_cxx("Clang 11 standalone", "clang++-11", packages=" ".join(addon_clang_11["apt"]["packages"]), llvm_os="bionic", llvm_ver="11", buildtype="standalone", environment={"COMMENT": "standalone", "CXX":"clang++-11"}),
     linux_cxx("Clang 11", "clang++-11", packages=" ".join(addon_clang_11["apt"]["packages"]), llvm_os="bionic", llvm_ver="11", buildtype="boost", environment={"B2_TOOLSET": "clang-11", "B2_CXXSTD":"17,2a"}),
+    linux_cxx("gcc 4.8 C++03 (no op)", "g++-4.8", packages=" ".join(addon_gcc_48["apt"]["packages"]), image="ubuntu:14.04", buildtype="boost", environment={"B2_TOOLSET": "gcc-4.8", "B2_CXXSTD": "03"}),
     linux_cxx("gcc 4.8", "g++-4.8", packages=" ".join(addon_gcc_48["apt"]["packages"]), image="ubuntu:14.04", buildtype="boost", environment={"B2_TOOLSET": "gcc-4.8", "B2_CXXSTD": "11"}),
     linux_cxx("gcc 4.9", "g++-4.9", packages=" ".join(addon_gcc_49["apt"]["packages"]), image="ubuntu:14.04", buildtype="boost", environment={"B2_TOOLSET": "gcc-4.9", "B2_CXXSTD": "11"}),
     linux_cxx("gcc 5", "g++-5", packages=" ".join(addon_gcc_5["apt"]["packages"]), image="ubuntu:16.04", buildtype="boost", environment={"B2_TOOLSET": "gcc-5", "B2_CXXSTD": "11"}),
