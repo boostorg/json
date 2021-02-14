@@ -1809,9 +1809,6 @@ parse_number(const char* p,
             ++cs;
 
         num.neg = negative;
-        num.frac = false;
-        num.exp = 0;
-        num.bias = 0;
 
         // fast path
         if( cs.remain() >= 16 + 1 + 16 ) // digits . digits
