@@ -681,8 +681,8 @@ public:
 
         @param other The string to construct with.
     */
-    value(
-        string other) noexcept
+    explicit value(
+        string&& other) noexcept
         : str_(std::move(other))
     {
     }
@@ -799,7 +799,7 @@ public:
 
         @param other The array to construct with.
     */
-    value(array other) noexcept
+    explicit value(array&& other) noexcept
         : arr_(std::move(other))
     {
     }
@@ -916,7 +916,7 @@ public:
 
         @param other The object to construct with.
     */
-    value(object other) noexcept
+    explicit value(object&& other) noexcept
         : obj_(std::move(other))
     {
     }

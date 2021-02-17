@@ -240,6 +240,8 @@ object(detail::unchecked_object&& uo)
 object::
 ~object()
 {
+    if(k_ != json::kind::object)
+        return;
     if(sp_.is_not_shared_and_deallocate_is_trivial())
         return;
     if(t_->capacity == 0)

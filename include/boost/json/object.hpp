@@ -1438,6 +1438,24 @@ public:
     value*
     if_contains(string_view key) noexcept;
 
+    BOOST_JSON_DECL
+    operator value& () &
+    {
+        return reinterpret_cast<value&>(*this);
+    }
+
+    BOOST_JSON_DECL
+    operator value const& () const&
+    {
+        return reinterpret_cast<value const&>(*this);
+    }
+
+    BOOST_JSON_DECL
+    explicit operator value&& () &&
+    {
+        return reinterpret_cast<value&&>(*this);
+    }
+
     /** Return `true` if two objects are equal.
 
         Objects are equal when their sizes are the same,

@@ -191,6 +191,7 @@ array(detail::unchecked_array&& ua)
 array::
 ~array()
 {
+    if (k_ != json::kind::array) return;
     destroy();
 }
 

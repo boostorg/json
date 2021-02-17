@@ -2369,6 +2369,24 @@ public:
     void
     swap(string& other);
 
+    BOOST_JSON_DECL
+    operator value& () &
+    {
+        return reinterpret_cast<value&>(*this);
+    }
+
+    BOOST_JSON_DECL
+    operator value const& () const&
+    {
+        return reinterpret_cast<value const&>(*this);
+    }
+
+    BOOST_JSON_DECL
+    explicit operator value&& () &&
+    {
+        return reinterpret_cast<value&&>(*this);
+    }
+
     /** Exchange the given values.
 
         Exchanges the contents of the string `lhs` with
