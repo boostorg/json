@@ -245,6 +245,8 @@ public:
         grind_double("-0.010", -0.01);
         grind_double("-0.0", -0.0);
         grind_double("-0e0", -0.0);
+        grind_double( "18.4",  18.4);
+        grind_double("-18.4", -18.4);
         grind_double( "18446744073709551616",  1.8446744073709552e+19);
         grind_double("-18446744073709551616", -1.8446744073709552e+19);
         grind_double( "18446744073709551616.0",  1.8446744073709552e+19);
@@ -415,7 +417,7 @@ public:
             char buffer[ 128 ];
             sprintf( buffer, "1e%d", i );
 
-            checkAccuracy( buffer, 1 ); // 1e-307 is 1ulp, rest 0
+            checkAccuracy( buffer, 0 );
         }
     };
 

@@ -144,13 +144,19 @@ dec_to_float(
     std::int32_t e,
     bool neg) noexcept
 {
-    auto x =
-        static_cast<double>(m);
+    double x = m;
     if(neg)
         x = -x;
+
     if(e < -305)
-        return x * 1e-305 *
-            pow10(e+305);
+    {
+        x *= 1e-305 ;
+        e += 305;
+    }
+
+    if(e >= -22 && e < 0)
+        return x / pow10(-e);
+
     return x * pow10(e);
 }
 
