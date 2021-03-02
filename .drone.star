@@ -64,9 +64,9 @@ def main(ctx):
     linux_cxx("asan", "clang++-11", packages=" ".join(addon_clang_11["apt"]["packages"]), image="ubuntu:16.04", llvm_os="xenial", llvm_ver="11", buildtype="boost", environment={"COMMENT": "asan", "B2_VARIANT": "debug", "B2_TOOLSET": "clang-11", "B2_CXXSTD":"17", "B2_ASAN": "1", "B2_DEFINES": "BOOST_NO_STRESS_TEST=1"}, privileged=True),
     linux_cxx("ubsan", "clang++-11", packages=" ".join(addon_clang_11["apt"]["packages"]), llvm_os="bionic", llvm_ver="11", buildtype="boost", environment={"COMMENT": "asan", "B2_VARIANT": "debug", "B2_TOOLSET": "clang-11", "B2_CXXSTD":"17", "B2_UBSAN": "1", "B2_DEFINES": "BOOST_NO_STRESS_TEST=1" }),
     # linux_cxx("Intel", "", packages="g++-7 cmake build-essential pkg-config", buildtype="intel", environment={"COMMENT": "Intel oneAPI Toolkit", "B2_TOOLSET": "intel-linux", "B2_CXXSTD": "11,14,17", "B2_FLAGS": "warnings=on warnings-as-errors=off" }),
-    windows_cxx("msvc-14.1", "g++", image="cppalliance/dronevs2017", buildtype="boost", environment={"B2_TOOLSET": "msvc-14.1", "B2_CXXSTD": "11,14,17"}),
+    windows_cxx("msvc-14.1", "", image="cppalliance/dronevs2017", buildtype="boost", environment={"B2_TOOLSET": "msvc-14.1", "B2_CXXSTD": "11,14,17"}),
     windows_cxx("msvc-14.1 standalone", "msvc-14.1", image="cppalliance/dronevs2017", buildtype="standalone-windows", environment={"COMMENT": "standalone","CXX": "msvc-14.1"}),
-    windows_cxx("msvc-14.2", "g++", image="cppalliance/dronevs2019", buildtype="boost", environment={"B2_TOOLSET": "msvc-14.2", "B2_CXXSTD": "17,latest"}),
+    windows_cxx("msvc-14.2", "", image="cppalliance/dronevs2019", buildtype="boost", environment={"B2_TOOLSET": "msvc-14.2", "B2_CXXSTD": "17,latest"}),
     windows_cxx("msvc-14.2 standalone", "msvc-14.2", image="cppalliance/dronevs2019", buildtype="standalone-windows", environment={"COMMENT": "standalone","CXX": "msvc-14.2"})
     ]
 
@@ -123,7 +123,7 @@ def linux_cxx(name, cxx, cxxflags="", packages="", llvm_os="", llvm_ver="", arch
     ]
   }
 
-def windows_cxx(name, cxx="g++", cxxflags="", packages="", llvm_os="", llvm_ver="", arch="amd64", image="ubuntu:18.04", buildtype="boost", environment={}):
+def windows_cxx(name, cxx="", cxxflags="", packages="", llvm_os="", llvm_ver="", arch="amd64", image="ubuntu:18.04", buildtype="boost", environment={}):
   environment_global = {
       "CXX": cxx,
       "CXXFLAGS": cxxflags,
@@ -160,10 +160,10 @@ def windows_cxx(name, cxx="g++", cxxflags="", packages="", llvm_os="", llvm_ver=
         "commands": [
           "echo '==================================> SETUP'",
           "echo '==================================> PACKAGES'",
-          "bash.exe ./.drone/windows-msvc-install.sh",
+          ".drone/windows-msvc-install.bat",
 
           "echo '==================================> INSTALL AND COMPILE'",
-          "bash.exe ./.drone/%s-script.sh" % buildtype,
+          ".drone/%s-script.bat" % buildtype,
         ]
       }
     ]
