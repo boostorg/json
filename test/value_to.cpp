@@ -21,7 +21,7 @@ BOOST_JSON_NS_BEGIN
 class value_to_test
 {
 public:
-    
+
     template<class T>
     void
     check(T t)
@@ -66,6 +66,20 @@ public:
             { "a", 1 }, {"b", 2}, {"c", 3}
         });
         check(std::vector<int>{1, 2, 3, 4});
+        check(std::make_pair(std::string("test"), 5));
+        check(std::make_tuple(std::string("outer"),
+            std::make_pair(std::string("test"), 5)));
+        check(std::map<int, int>
+        {
+            {2, 4}, {3, 9}, {5, 25}
+        });
+
+        BOOST_TEST_THROWS(
+            (value_to<std::tuple<int, int>>(value{1, 2, 3})),
+            std::invalid_argument);
+        BOOST_TEST_THROWS(
+            (value_to<std::tuple<int, int, int, int>>(value{1, 2, 3})),
+            std::invalid_argument);
     }
 
     void

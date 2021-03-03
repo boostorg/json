@@ -22,6 +22,10 @@
 
 * __object__ deallocates the correct size.
 
+[*Improvements]
+
+* __value_to__ supports `TupleLike` types.
+
 [heading Boost 1.76.0]
 
 [*Fixes]

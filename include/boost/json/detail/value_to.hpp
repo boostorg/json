@@ -1,6 +1,7 @@
 //
 // Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
 // Copyright (c) 2020 Krystian Stasiowski (sdkrystian@gmail.com)
+// Copyright (c) 2021 Dmitry Arkhipov (grisumbras@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -12,6 +13,7 @@
 #define BOOST_JSON_DETAIL_VALUE_TO_HPP
 
 #include <boost/json/value.hpp>
+#include <boost/json/detail/index_sequence.hpp>
 #include <boost/json/detail/value_traits.hpp>
 
 #include <type_traits>
@@ -110,10 +112,37 @@ template<class T, typename std::enable_if<
 T
 value_to_generic(
     const value& jv,
-    priority_tag<2>)
+    priority_tag<3>)
 {
     auto& str = jv.as_string();
     return T(str.data(), str.size());
+}
+
+template <class T, std::size_t... Is>
+T
+make_tuple_like(const array& arr, index_sequence<Is...>)
+{
+    return T(value_to<typename std::tuple_element<Is, T>::type>(arr[Is])...);
+}
+
+// tuple-like types
+template<class T, typename std::enable_if<
+    (std::tuple_size<remove_cvref<T>>::value > 0)>::type* = nullptr>
+T
+value_to_generic(
+    const value& jv,
+    priority_tag<2>)
+{
+    auto& arr = jv.as_array();
+    constexpr std::size_t N = std::tuple_size<remove_cvref<T>>::value;
+    if ( N != arr.size() )
+    {
+        detail::throw_invalid_argument(
+            "array size does not match tuple size",
+            BOOST_JSON_SOURCE_POS);
+    }
+
+    return make_tuple_like<T>(arr, make_index_sequence<N>());
 }
 
 // map like containers
@@ -170,7 +199,7 @@ tag_invoke(
     value const& jv)
 {
     return value_to_generic<T>(
-        jv, priority_tag<2>());
+        jv, priority_tag<3>());
 }
 
 //----------------------------------------------------------

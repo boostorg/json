@@ -1,6 +1,7 @@
 Boost 1.77.0:
 
 *  Implicit conversion operator from `string` to `std::string_view`.
+* `value_to` supports `TupleLike` types.
 * `object` deallocates the correct size.
 
 Boost 1.76.0:

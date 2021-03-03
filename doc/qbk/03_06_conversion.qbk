@@ -189,6 +189,8 @@ if `std::is_arithmetic<T>::value` is `true`, or
 
 * `T` satisfies ['StringLike], or
 
+* `T` satisfies ['TupleLike], or
+
 * `T` satisfies ['ToMapLike], or
 
 * `T` satisfies ['ToContainerLike].
