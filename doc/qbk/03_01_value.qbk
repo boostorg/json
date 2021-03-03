@@ -56,7 +56,7 @@ may be used to check whether or not the value is a particular kind:
 [snippet_value_2]
 
 Functions like
-[link json.ref.boost__json__value.is_object `value::is_object`]
+[link json.ref.boost__json__value.if_object `value::if_object`]
 actually return a pointer to the object if the value is an object,
 otherwise they return null. This allows them to be used both in
 boolean contexts as above, and in assignments or conditional
