@@ -22,7 +22,7 @@ The conversion in the opposite direction is done with __value_to__.
 [heading Customization Points]
 
 A ['customization point] is a mechanism where a library delegates behavior
-of some operation to the user, or gives the use the option of controlling
+of some operation to the user, or gives the user the option of controlling
 the behavior of some operation for a specific type.
 Within the standard library, the `swap` function is a customization point
 that uses [@https://en.cppreference.com/w/cpp/language/adl argument-dependent lookup]

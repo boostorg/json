@@ -53,7 +53,7 @@ following parameter combinations as an input string:
 * a parameter of type `const_pointer` and a `size_type` parameter
 that specifies the length of the string
 
-are replaced with with an overload accepting a __string_view__ parameter.
+are replaced with an overload accepting a __string_view__ parameter.
 
 This design removes several redundant overloads from the interface.
 For example, the 11 overloads of `std::string::insert` are reduced
