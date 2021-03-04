@@ -151,7 +151,7 @@ private:
     template<typename U>
     struct unique_keys<U, typename std::enable_if<
         (std::tuple_size<remove_cvref<decltype(std::declval<
-            remove_cvref<U>&>().emplace(std::declval<typename 
+            remove_cvref<U>&>().emplace(std::declval<typename
         remove_cvref<U>::value_type>()))>>::value > 0)>::type>
             : std::true_type { };
 public:
@@ -168,13 +168,13 @@ public:
 // does not include std::nullptr_t
 template<class T>
 using value_constructible = std::integral_constant<bool,
-    std::is_same<detail::remove_cvref<T>, value>::value || 
+    std::is_same<detail::remove_cvref<T>, value>::value ||
         std::is_same<detail::remove_cvref<T>, object>::value ||
     std::is_same<detail::remove_cvref<T>, array>::value ||
         std::is_same<detail::remove_cvref<T>, string>::value ||
     std::is_same<detail::remove_cvref<T>, string_view>::value ||
-        std::is_arithmetic<detail::remove_cvref<T>>::value ||    
-    std::is_same<detail::remove_cvref<T>, 
+        std::is_arithmetic<detail::remove_cvref<T>>::value ||
+    std::is_same<detail::remove_cvref<T>,
         std::initializer_list<value_ref>>::value ||
     std::is_same<detail::remove_cvref<T>, value_ref>::value>;
 
