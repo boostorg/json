@@ -127,19 +127,27 @@ check(
     }
 }
 
+BOOST_JSON_NS_BEGIN
+
+namespace {
+
+template<class T>
+static
+void
+testValueCtor(T const& t)
+{
+    BOOST_TEST( serialize(value_from(t)) == serialize(value(t)) );
+}
+
 template<class T>
 static
 void
 testValueCtor()
 {
-    BOOST_TEST(
-        ::boost::json::serialize(
-            ::boost::json::value_from(T{})) ==
-        ::boost::json::serialize(
-            ::boost::json::value(T{})));
+    testValueCtor(T{});
 }
 
-BOOST_JSON_NS_BEGIN
+} // namespace
 
 // integral
 BOOST_STATIC_ASSERT(has_value_from<int>::value);
@@ -173,7 +181,10 @@ public:
     {
         // value_from supports every value constructor
 
-        testValueCtor<value const&>();
+        testValueCtor<value>();
+
+        char const* s = "5";
+        testValueCtor(s);
     }
 
     static

@@ -174,6 +174,7 @@ using value_constructible = std::integral_constant<bool,
         std::is_same<detail::remove_cvref<T>, string>::value ||
     std::is_same<detail::remove_cvref<T>, string_view>::value ||
         std::is_arithmetic<detail::remove_cvref<T>>::value ||
+    std::is_same<detail::remove_cvref<T>, char const*>::value ||
     std::is_same<detail::remove_cvref<T>,
         std::initializer_list<value_ref>>::value ||
     std::is_same<detail::remove_cvref<T>, value_ref>::value>;
