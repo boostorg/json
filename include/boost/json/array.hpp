@@ -1740,6 +1740,16 @@ private:
 
 BOOST_JSON_NS_END
 
+// std::hash specialization
+#ifndef BOOST_JSON_DOCS
+namespace std {
+template <>
+struct hash< ::boost::json::array > {
+  std::size_t operator()(::boost::json::array const& ja) const noexcept;
+};
+} // std
+#endif
+
 // Must be included here for this file to stand alone
 #include <boost/json/value.hpp>
 

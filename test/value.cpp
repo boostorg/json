@@ -2087,6 +2087,38 @@ public:
             {"a",1}, {"b",2}, {"c",3} }) != value(nullptr));
     }
 
+    void
+    testHash()
+    {
+        auto hnull = std::hash<value>{}(value(nullptr));
+        auto htrue = std::hash<value>{}(value(true));
+        auto hfalse = std::hash<value>{}(value(false));
+        auto hi0 = std::hash<value>{}(value(2021));
+        auto hu0 = std::hash<value>{}(value(2021U));
+        auto hd0 = std::hash<value>{}(value(2021.0));
+
+        auto hobj0 = std::hash<value>{}(value({{"a",1}, {"b",2}, {"c",3}}));
+        auto hobj1 = std::hash<value>{}(value({{"b",2}, {"c",3}, {"a",1}}));
+        auto hobj2 = std::hash<value>{}(value({{"b",2}, {"c",3}}));
+
+        auto harr0 = std::hash<value>{}(value{"a", "b", 17});
+        auto harr1 = std::hash<value>{}(value{"a", "b", 17U});
+        auto harr2 = std::hash<value>{}(value{17, "a", "b"});
+
+        BOOST_TEST(hnull != htrue);
+        BOOST_TEST(hnull != hfalse);
+        BOOST_TEST(htrue != hfalse);
+        BOOST_TEST(hi0 == hu0);
+        BOOST_TEST(hi0 != hd0);
+
+        BOOST_TEST(hobj0 == hobj1);
+        BOOST_TEST(hobj0 != hobj2);
+
+        BOOST_TEST(harr0 == harr1);
+        BOOST_TEST(harr1 != harr2);
+
+    }
+
     //------------------------------------------------------
 
     void
@@ -2108,6 +2140,7 @@ public:
         testStdConstruction();
         testInitList();
         testEquality();
+        testHash();
     }
 };
 

@@ -3909,6 +3909,17 @@ struct tuple_element<1, ::boost::json::key_value_pair const>
 
 #endif
 
+// std::hash specialization
+#ifndef BOOST_JSON_DOCS
+namespace std {
+template <>
+struct hash< ::boost::json::value > {
+  std::size_t operator()(::boost::json::value const& jv) const noexcept;
+};
+} // std
+#endif
+
+
 #ifdef __clang__
 # pragma clang diagnostic pop
 #endif
