@@ -1745,7 +1745,9 @@ BOOST_JSON_NS_END
 namespace std {
 template <>
 struct hash< ::boost::json::array > {
-  std::size_t operator()(::boost::json::array const& ja) const noexcept;
+    BOOST_JSON_DECL
+    std::size_t 
+    operator()(::boost::json::array const& ja) const noexcept;
 };
 } // std
 #endif
