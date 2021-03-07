@@ -829,22 +829,21 @@ BOOST_JSON_NS_END
 //
 //----------------------------------------------------------
 
-namespace std {
-std::size_t 
-hash<::boost::json::object>::operator()(
-    ::boost::json::object const& jo) const noexcept 
+std::size_t
+std::hash<::boost::json::object>::operator()(
+    ::boost::json::object const& jo) const noexcept
 {
     std::size_t seed = jo.size();
     for (const auto& kv_pair : jo) {
-        const auto hk = std::hash<boost::json::string>{}(kv_pair.key());
-        const auto hkv = boost::json::detail::hash_combine(
-            hk, 
-            std::hash<boost::json::value>{}(kv_pair.value()));
-        seed = boost::json::detail::hash_combine_commutative(seed, hkv);
+        auto const hk = ::boost::json::detail::digest(
+            kv_pair.key().data(), kv_pair.key().size(), 0);
+        auto const hkv = ::boost::json::detail::hash_combine(
+            hk,
+            std::hash<::boost::json::value>{}(kv_pair.value()));
+        seed = ::boost::json::detail::hash_combine_commutative(seed, hkv);
     }
     return seed;
 };
-}
 
 //----------------------------------------------------------
 

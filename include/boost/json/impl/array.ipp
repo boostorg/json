@@ -761,20 +761,18 @@ BOOST_JSON_NS_END
 //
 //----------------------------------------------------------
 
-namespace std {
-std::size_t 
-hash<::boost::json::array>::operator()(
-    ::boost::json::array const& ja) const noexcept 
+std::size_t
+std::hash<::boost::json::array>::operator()(
+    ::boost::json::array const& ja) const noexcept
 {
   std::size_t seed = ja.size();
   for (const auto& jv : ja) {
-    seed = boost::json::detail::hash_combine(
-        seed, 
+    seed = ::boost::json::detail::hash_combine(
+        seed,
         std::hash<::boost::json::value>{}(jv));
   }
-  return seed;  
+  return seed;
 };
-}
 
 //----------------------------------------------------------
 
