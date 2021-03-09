@@ -516,11 +516,11 @@ std::hash<::boost::json::value>::operator()(
         hash<bool>{}(jv.get_bool()));
     case ::boost::json::kind::int64:
       return ::boost::json::detail::hash_combine(
-        seed,
-        hash<std::int64_t>{}(jv.get_int64()));
+        static_cast<size_t>(::boost::json::kind::uint64),
+        hash<std::uint64_t>{}(jv.get_int64()));
     case ::boost::json::kind::uint64:
       return ::boost::json::detail::hash_combine(
-        static_cast<size_t>(::boost::json::kind::int64),
+        seed,
         hash<std::uint64_t>{}(jv.get_uint64()));
     case ::boost::json::kind::double_:
       return ::boost::json::detail::hash_combine(
