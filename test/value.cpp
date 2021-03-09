@@ -2090,33 +2090,57 @@ public:
     void
     testHash()
     {
-        auto hnull = std::hash<value>{}(value(nullptr));
-        auto htrue = std::hash<value>{}(value(true));
-        auto hfalse = std::hash<value>{}(value(false));
-        auto hi0 = std::hash<value>{}(value(2021));
-        auto hu0 = std::hash<value>{}(value(2021U));
-        auto hd0 = std::hash<value>{}(value(2021.0));
+        BOOST_TEST(check_hash_equal(value(nullptr), value(nullptr)));
+        BOOST_TEST(check_hash_equal(value(nullptr), value()));
+        BOOST_TEST(check_hash_equal(value(nullptr), value{}));
+        BOOST_TEST(expect_hash_not_equal(value(nullptr), value({})));
+        BOOST_TEST(expect_hash_not_equal(value(nullptr), value({{}})));
+        BOOST_TEST(expect_hash_not_equal(value(nullptr), value(true)));
+        BOOST_TEST(expect_hash_not_equal(value(nullptr), value(false)));
+        BOOST_TEST(expect_hash_not_equal(value(nullptr), value(0)));
+        BOOST_TEST(expect_hash_not_equal(value(nullptr), value(0UL)));
+        BOOST_TEST(expect_hash_not_equal(value(nullptr), value(0.0)));
+        BOOST_TEST(expect_hash_not_equal(value(nullptr), value("")));
 
-        auto hobj0 = std::hash<value>{}(value({{"a",1}, {"b",2}, {"c",3}}));
-        auto hobj1 = std::hash<value>{}(value({{"b",2}, {"c",3}, {"a",1}}));
-        auto hobj2 = std::hash<value>{}(value({{"b",2}, {"c",3}}));
+        BOOST_TEST(check_hash_equal(value(true), value(true)));
+        BOOST_TEST(check_hash_equal(value(false), value(false)));
+        BOOST_TEST(expect_hash_not_equal(value(false), value(true)));
+        BOOST_TEST(expect_hash_not_equal(value(false), value(0)));
+        BOOST_TEST(expect_hash_not_equal(value(false), value(0UL)));
+        BOOST_TEST(expect_hash_not_equal(value(false), value(0.0)));
+        BOOST_TEST(expect_hash_not_equal(value(true), value(1)));
+        BOOST_TEST(expect_hash_not_equal(value(true), value(1UL)));
+        BOOST_TEST(expect_hash_not_equal(value(true), value(1.0)));
 
-        auto harr0 = std::hash<value>{}(value{"a", "b", 17});
-        auto harr1 = std::hash<value>{}(value{"a", "b", 17U});
-        auto harr2 = std::hash<value>{}(value{17, "a", "b"});
+        BOOST_TEST(check_hash_equal(value(2021), value(2021UL)));
+        BOOST_TEST(expect_hash_not_equal(value(2021U), value(-2021)));
+        BOOST_TEST(expect_hash_not_equal(value(2021UL), value(2021.0)));
 
-        BOOST_TEST(hnull != htrue);
-        BOOST_TEST(hnull != hfalse);
-        BOOST_TEST(htrue != hfalse);
-        BOOST_TEST(hi0 == hu0);
-        BOOST_TEST(hi0 != hd0);
+        BOOST_TEST(expect_hash_not_equal(value({}), value({{}})));
+        BOOST_TEST(expect_hash_not_equal(value({}), value("")));
+        BOOST_TEST(expect_hash_not_equal(value({{}}), value("")));
 
-        BOOST_TEST(hobj0 == hobj1);
-        BOOST_TEST(hobj0 != hobj2);
-
-        BOOST_TEST(harr0 == harr1);
-        BOOST_TEST(harr1 != harr2);
-
+        BOOST_TEST(check_hash_equal(
+            value({{"a",1}, {"b",2}, {"c",3}}),
+            value({{"b",2}, {"c",3}, {"a",1}})));
+        BOOST_TEST(expect_hash_not_equal(
+            value({{"a",1}, {"b",2}, {"c",3}}),
+            object({{"b",2}, {"c",3}, {"a",1}})));
+        BOOST_TEST(expect_hash_not_equal(
+            value({{"a",1}, {"b",2}, {"c",3}}), 
+            value({{"b",2}, {"c",3}})));
+        BOOST_TEST(check_hash_equal(
+            value({"a", "b", 17}),
+            value({"a", "b", 17U})));
+        BOOST_TEST(expect_hash_not_equal(
+            value({"a", "b", 17}),
+            array({"a", "b", 17})));
+        BOOST_TEST(expect_hash_not_equal(
+            value({"a", "b", 17}),
+            value({17, "a", "b"})));
+        BOOST_TEST(expect_hash_not_equal(
+            value({"a", "b"}),
+            value({{"a", "b"}})));
     }
 
     //------------------------------------------------------

@@ -1053,6 +1053,57 @@ equal(
     return false;
 }
 
+template<typename T>
+inline
+bool
+check_hash_equal(
+    T const& lhs,
+    T const& rhs)
+{    
+    if(lhs == rhs){
+        return (std::hash<T>{}(lhs) == std::hash<T>{}(rhs));
+    }
+    return false; // ensure lhs == rhs intention 
+}
+
+template<typename T, typename U>
+inline
+bool
+check_hash_equal(
+    T const& lhs,
+    U const& rhs)
+{
+    if(lhs == rhs){
+        return (std::hash<value>{}(lhs) == std::hash<value>{}(rhs));
+    }
+    return false; // ensure lhs == rhs intention 
+}
+
+template<typename T>
+inline
+bool
+expect_hash_not_equal(
+    T const& lhs,
+    T const& rhs)
+{
+    if(std::hash<T>{}(lhs) != std::hash<T>{}(rhs)){
+        return lhs != rhs;
+    }
+    return true; // pass if hash values collide
+}
+
+template<typename T, typename U>
+inline
+bool
+expect_hash_not_equal(
+    T const& lhs,
+    U const& rhs)
+{
+    if(std::hash<value>{}(lhs) != std::hash<value>{}(rhs)){
+        return lhs != rhs;
+    }
+    return true; // pass if hash values collide
+}
 //----------------------------------------------------------
 
 namespace detail {

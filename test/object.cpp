@@ -1522,6 +1522,21 @@ public:
         BOOST_TEST(res.allocated == res.deallocated);
     }
 
+    void    
+    testHash()
+    {
+        BOOST_TEST(check_hash_equal(
+            object(), object({})));
+        BOOST_TEST(expect_hash_not_equal(
+            object(), object({{"1",1},{"2",2}})));
+        BOOST_TEST(check_hash_equal(
+            object({{"a",1}, {"b",2}, {"c",3}}),
+            object({{"b",2}, {"c",3}, {"a",1}})));
+        BOOST_TEST(expect_hash_not_equal(
+            object({{"a",1}, {"b",2}, {"c",3}}), 
+            object({{"b",2}, {"c",3}})));
+    }
+
     void
     run()
     {
@@ -1536,6 +1551,7 @@ public:
         testCollisions();
         testEquality();
         testAllocation();
+        testHash();
     }
 };
 

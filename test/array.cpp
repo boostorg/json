@@ -1224,6 +1224,25 @@ public:
     }
 
     void
+    testHash()
+    {
+        BOOST_TEST(check_hash_equal(
+            array{}, array()));
+        BOOST_TEST(check_hash_equal(
+            array{1,1}, array{1,1}));
+        BOOST_TEST(check_hash_equal(
+            array{1,1}, array{1,1}));
+        BOOST_TEST(expect_hash_not_equal(
+            array{1,1}, array{1,2}));
+        BOOST_TEST(check_hash_equal(
+            array{"a", "b", 17},
+            array{"a", "b", 17U}));
+        BOOST_TEST(expect_hash_not_equal(
+            array{"a", "b", nullptr},
+            array{nullptr, "a", "b"}));
+    }
+
+    void
     run()
     {
         testDestroy();
@@ -1236,6 +1255,7 @@ public:
         testModifiers();
         testExceptions();
         testEquality();
+        testHash();
     }
 };
 
