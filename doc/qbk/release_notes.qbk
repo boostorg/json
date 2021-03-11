@@ -1,0 +1,28 @@
+[/
+    Copyright (c) 2021 Dmitry Arkhipov (grisumbras@gmail.com)
+
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+    Official repository: https://github.com/boostorg/beast
+]
+
+[section Release Notes]
+
+[/-----------------------------------------------------------------------------]
+
+[heading Boost 1.76.0]
+
+[*Fixes]
+
+* [issue 481] Refactored __value_from__ implementation; user customizations are
+  now always preferred over library-provided overloads.
+* [issue 484] Fixed imprecise parsing for some floating point numbers.
+* [issue 485] Fixed link errors in standalone mode, when used alongside Boost.
+* [issue 497] Fix Boost.Build builds on GCC 4.8.
+
+[heading Boost 1.75.0]
+
+* Initial release.
+
+[endsect]

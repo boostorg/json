@@ -127,4 +127,6 @@
 [endsect]
 [block'''</reference>''']
 
+[include release_notes.qbk]
+
 [xinclude index.xml]
