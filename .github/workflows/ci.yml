@@ -390,7 +390,7 @@ jobs:
           if [ -n "$PACKAGES_TO_REMOVE" ]; then sudo apt-get purge -y $PACKAGES_TO_REMOVE; fi
           echo ">>>>> APT: REPO.."
           for i in {1..3}; do sudo -E apt-add-repository -y "ppa:ubuntu-toolchain-r/test" && break || sleep 2; done
-          
+
           if test -n "${LLVM_OS}" ; then
               wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
               if test -n "${LLVM_VER}" ; then
@@ -659,21 +659,21 @@ jobs:
 
           echo "Running boost job"
           echo '==================================> INSTALL'
-          
+
           git clone https://github.com/boostorg/boost-ci.git boost-ci-cloned --depth 1
           cp -prf boost-ci-cloned/ci .
           rm -rf boost-ci-cloned
           REM source ci/travis/install.sh
           REM The contents of install.sh below:
-          
+
           for /F %%i in ("!GITHUB_REPOSITORY!") do @set SELF=%%~nxi
           SET BOOST_CI_TARGET_BRANCH=!GHA_TARGET_BRANCH!
           SET BOOST_CI_SRC_FOLDER=!cd!
-          
+
           call ci\common_install.bat
-          
+
           echo '==================================> COMPILE'
-          
+
           call !BOOST_ROOT!\libs\!SELF!\ci\build.bat
 
           ) else if "!JOB_BUILDTYPE!" == "standalone-windows" (
