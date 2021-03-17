@@ -144,7 +144,8 @@ dec_to_float(
     std::int32_t e,
     bool neg) noexcept
 {
-    double x = m;
+    // convert to double explicitly to silence warnings
+    double x = static_cast<double>(m);
     if(neg)
         x = -x;
 
