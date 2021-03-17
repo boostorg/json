@@ -65,7 +65,7 @@ tag_invoke(
     T2 const& t)
 {
     jv = { t.v, t.s };
-};
+}
 
 struct T3
 {
