@@ -27,7 +27,7 @@ struct has_value_to;
 template<class T, class U,
     typename std::enable_if<
         ! std::is_reference<T>::value &&
-    std::is_same<U, value>::value>::type* = nullptr>
+    std::is_same<U, value>::value>::type>
 T value_to(U const&);
 
 namespace detail {

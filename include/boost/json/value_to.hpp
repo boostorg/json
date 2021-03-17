@@ -79,9 +79,9 @@ T
 value_to(const value& jv);
 #else
 template<class T, class U
-    , typename std::enable_if<
+    , class = typename std::enable_if<
         ! std::is_reference<T>::value &&
-    std::is_same<U, value>::value>::type*
+    std::is_same<U, value>::value>::type
 >
 T
 value_to(const U& jv)

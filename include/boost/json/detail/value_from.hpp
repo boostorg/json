@@ -174,9 +174,9 @@ value_from_helper(
 // Calls to value_from are forwarded to this function
 // so we can use ADL and hide the built-in tag_invoke
 // overloads in the detail namespace
-template<class T, void_t<
+template<class T, class = void_t<
     decltype(detail::value_from_helper(std::declval<value&>(),
-        std::declval<T&&>(), priority_tag<5>()))>* = nullptr>
+        std::declval<T&&>(), priority_tag<5>()))>>
 value
 value_from_impl(
     T&& from,
