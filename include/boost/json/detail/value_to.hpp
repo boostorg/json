@@ -100,11 +100,11 @@ tag_invoke(
 // Use generic conversion
 
 // string-like types
-// NOTE: original check for size used is_convertible but 
+// NOTE: original check for size used is_convertible but
 // MSVC-140 selects wrong specialisation if used
 template<class T, typename std::enable_if<
     std::is_constructible<T, const char*, std::size_t>::value &&
-    std::is_convertible<decltype(std::declval<T&>().data()), const char*>::value && 
+    std::is_convertible<decltype(std::declval<T&>().data()), const char*>::value &&
     std::is_integral<decltype(std::declval<T&>().size())>::value
 >::type* = nullptr>
 T
@@ -119,11 +119,11 @@ value_to_generic(
 // map like containers
 template<class T, typename std::enable_if<
     has_value_to<typename map_traits<T>::pair_value_type>::value &&
-        std::is_constructible<typename map_traits<T>::pair_key_type, 
+        std::is_constructible<typename map_traits<T>::pair_key_type,
     string_view>::value>::type* = nullptr>
 T
 value_to_generic(
-    const value& jv, 
+    const value& jv,
     priority_tag<1>)
 {
     using value_type = typename
@@ -162,7 +162,7 @@ value_to_generic(
 template<class T, void_t<typename std::enable_if<
     !std::is_constructible<T, const value&>::value &&
         !std::is_arithmetic<T>::value>::type, decltype(
-    value_to_generic<T>(std::declval<const value&>(), 
+    value_to_generic<T>(std::declval<const value&>(),
         priority_tag<2>()))>* = nullptr>
 T
 tag_invoke(

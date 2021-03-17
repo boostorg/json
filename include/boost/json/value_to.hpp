@@ -42,11 +42,11 @@ struct value_to_tag;
     @li a library-provided generic conversion, or
 
     @li a user-provided overload of `tag_invoke`.
-    
+
     In all cases, the conversion is done by calling
     an overload of `tag_invoke` found by argument-dependent
     lookup. Its signature should be similar to:
-    
+
     @code
     T tag_invoke( value_to_tag<T>, value );
     @endcode
@@ -93,7 +93,7 @@ value_to(const U& jv)
 
 /** Determine a @ref value can be converted to `T`.
 
-    If @ref value can be converted to `T` via a 
+    If @ref value can be converted to `T` via a
     call to @ref value_to, the static data member `value`
     is defined as `true`. Otherwise, `value` is
     defined as `false`.
