@@ -158,6 +158,19 @@ these per-commit analyses:
 
 [/-----------------------------------------------------------------------------]
 
+[section Security Review (Bishop Fox)]
+
+As part of our commitment to producing the very finest C++ libraries that
+application developers can trust, the C++ Alliance has commissioned Bishop
+Fox to perform a security audit of the Boost.JSON library. The report
+is linked here:
+
+[@https://cppalliance.org/pdf/C%20Plus%20Plus%20Alliance%20-%20Boost%20JSON%20Security%20Assessment%202020%20-%20Assessment%20Report%20-%2020210317.pdf C Plus Plus Alliance - Boost JSON Security Assessment 2020 - Assessment Report - 20210317]
+
+[endsect]
+
+[/-----------------------------------------------------------------------------]
+
 [h1 Credits]
 
 This library wouldn't be where it is today without the help of
