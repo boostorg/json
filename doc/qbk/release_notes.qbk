@@ -13,6 +13,11 @@
 
 [heading Boost 1.77.0]
 
+[*New Features]
+
+* [issue 538] [link json.ref.boost__json__string.operator_std__string_view
+  Implicit conversion operator from `string` to `std::string_view`].
+
 [*Fixes]
 
 * __object__ deallocates the correct size.

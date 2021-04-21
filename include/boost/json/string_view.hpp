@@ -13,6 +13,9 @@
 #include <boost/json/detail/config.hpp>
 #ifndef BOOST_JSON_STANDALONE
 # include <boost/utility/string_view.hpp>
+# ifndef BOOST_NO_CXX17_HDR_STRING_VIEW
+#  include <string_view>
+# endif
 #else
 # if __has_include(<string_view>)
 #  include <string_view>
