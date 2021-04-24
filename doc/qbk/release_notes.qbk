@@ -11,6 +11,12 @@
 
 [/-----------------------------------------------------------------------------]
 
+[heading Boost 1.77.0]
+
+[*Fixes]
+
+* __object__ deallocates the correct size.
+
 [heading Boost 1.76.0]
 
 [*Fixes]

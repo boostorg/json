@@ -24,6 +24,39 @@
 
 BOOST_JSON_NS_BEGIN
 
+
+namespace {
+
+struct counting_resource
+    : memory_resource
+{
+    std::size_t allocated = 0;
+    std::size_t deallocated = 0;
+
+private:
+    void* do_allocate(std::size_t size, std::size_t alignment) override
+    {
+        allocated += size;
+        return detail::default_resource::get()->allocate(size, alignment);
+    }
+
+    void do_deallocate(void* ptr, std::size_t size, std::size_t alignment)
+        override
+    {
+        deallocated += size;
+        return detail::default_resource::get()->deallocate(ptr, size,
+            alignment);
+    }
+
+    bool do_is_equal(memory_resource const& other) const noexcept
+        override
+    {
+        return this == &other;
+    }
+};
+
+} // namespace
+
 BOOST_STATIC_ASSERT( std::is_nothrow_destructible<object>::value );
 BOOST_STATIC_ASSERT( std::is_nothrow_move_constructible<object>::value );
 
@@ -1470,6 +1503,26 @@ public:
     }
 
     void
+    testAllocation()
+    {
+        counting_resource res;
+        {
+            storage_ptr sp(&res);
+            object o(sp);
+            o.reserve(1);
+        }
+        BOOST_TEST(res.allocated == res.deallocated);
+
+        res = {};
+        {
+            storage_ptr sp(&res);
+            object o(sp);
+            o.reserve(1000);
+        }
+        BOOST_TEST(res.allocated == res.deallocated);
+    }
+
+    void
     run()
     {
         testDtor();
@@ -1482,6 +1535,7 @@ public:
         testImplementation();
         testCollisions();
         testEquality();
+        testAllocation();
     }
 };
 

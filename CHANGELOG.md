@@ -1,3 +1,7 @@
+Boost 1.77.0:
+
+* `object` deallocates the correct size.
+
 Boost 1.76.0:
 
 * Refactored `value_from` implementation; user customizations are now always
