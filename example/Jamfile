@@ -24,6 +24,12 @@ else
 
 project : requirements $(c11-requires) ;
 
+exe if_contains :
+    if_contains.cpp
+    : :
+    $(LIB)
+    ;
+
 exe path :
     path.cpp
     : :

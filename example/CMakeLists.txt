@@ -8,12 +8,22 @@
 #
 
 source_group("" FILES
+    if_contains.cpp
     file.hpp
     path.cpp
     pretty.cpp
     proxy.cpp
     validate.cpp
 )
+
+#
+
+add_executable(if_contains
+        file.hpp
+        if_contains.cpp
+        )
+set_property(TARGET if_contains PROPERTY FOLDER "example")
+target_link_libraries(if_contains PRIVATE Boost::json)
 
 #
 
