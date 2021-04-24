@@ -104,7 +104,7 @@ struct alignas(key_value_pair)
     {
         if(p->capacity == 0)
             return;
-        if(p->is_small())
+        if(! p->is_small())
             sp->deallocate(p,
                 sizeof(table) + p->capacity * (
                     sizeof(key_value_pair) +
