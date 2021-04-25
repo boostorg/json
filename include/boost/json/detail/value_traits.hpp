@@ -12,7 +12,6 @@
 
 #include <boost/json/detail/config.hpp>
 #include <type_traits>
-#include <tuple>
 #include <utility>
 
 BOOST_JSON_NS_BEGIN
