@@ -90,7 +90,7 @@ public:
 
     template<class T, class U, class = void>
     struct is_equal_comparable : std::false_type {};
-    
+
     template<class T, class U>
     struct is_equal_comparable<T, U, detail::void_t<decltype(
         std::declval<T const&>() == std::declval<U const&>()
@@ -98,7 +98,7 @@ public:
 
     template<class T, class U, class = void>
     struct is_unequal_comparable : std::false_type {};
-    
+
     template<class T, class U>
     struct is_unequal_comparable<T, U, detail::void_t<decltype(
         std::declval<T const&>() != std::declval<U const&>()
@@ -153,7 +153,7 @@ public:
 
     BOOST_STATIC_ASSERT(is_unequal_comparable<object::const_reverse_iterator, object::reverse_iterator>::value);
     BOOST_STATIC_ASSERT(is_unequal_comparable<object::const_reverse_iterator, object::const_reverse_iterator>::value);
- 
+
     static
     void
     check(
