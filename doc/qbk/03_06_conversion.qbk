@@ -30,7 +30,7 @@ to find user-provided overloads within the namespace of the arguments:
 
 [snippet_conv_2]
 
-Another example would be the class template `std::hash`, which can be 
+Another example would be the class template `std::hash`, which can be
 specialized for some type `T` to implement custom behavior:
 
 [snippet_conv_3]
@@ -48,17 +48,17 @@ As the name suggests, a tag type is passed as an argument in order to:
 * discard candidates that are unrelated to that particular customization point, and
 
 * embed the user-defined type into the arguments list (e.g. by using a tag type template
-such as `value_to_tag<T>`) so that its 
+such as `value_to_tag<T>`) so that its
 [@http://eel.is/c++draft/basic.lookup.argdep#2 associated namespaces and entities] are examined
 when name lookup is performed.
 
 This has the effect of finding user-provided `tag_invoke` overloads, even if they
-are declared (lexically) after the definition of the calling function. 
+are declared (lexically) after the definition of the calling function.
 
 [heading `tag_invoke` overloads]
 
 In all cases, conversions are done by calling an appropriate
-overload of `tag_invoke`. For __value_from__, these have the form: 
+overload of `tag_invoke`. For __value_from__, these have the form:
 
 ```
 void tag_invoke( const value_from_tag&, value&, T );
@@ -112,13 +112,13 @@ tuples, and strings).
 
 [heading Converting to json::value]
 
-The function template __value_from__ provides an interface to 
+The function template __value_from__ provides an interface to
 construct a __value__ from a user- or library-provided
 type `T`. The optionally supplied __storage_ptr__ argument is
-used as the __memory_resource__ for the resulting __value__ object. 
+used as the __memory_resource__ for the resulting __value__ object.
 The parameter of type `value&` is the result
 of the conversion; this ensures that the __storage_ptr__
-is correctly propagated to the result. For example, 
+is correctly propagated to the result. For example,
 consider the following struct:
 
 [snippet_conv_10]
@@ -126,7 +126,7 @@ consider the following struct:
 If our store has a lot of customers,
 it may be desirable to use a __monotonic_resource__ when serializing
 `customer` objects to JSON. __value_from__ ensures that the
-correct __memory_resource__ is used: 
+correct __memory_resource__ is used:
 
 [snippet_conv_11]
 
@@ -162,11 +162,11 @@ the one corresponding to ['FromMapLike]; it will not be ambiguous.
 
 [snippet_conv_12]
 
-The conversion performed when the first condition is met 
+The conversion performed when the first condition is met
 (the library-provided built-in conversion) is assignment to the
 __value__ parameter. For the generic conversions, types that satisfy
 ['TupleLike] or ['FromContainerLike] are converted to __array__,
-those that satisfy ['FromMapLike] are converted to __object__, 
+those that satisfy ['FromMapLike] are converted to __object__,
 and types that satisfy ['StringLike] are converted to __string__.
 
 [heading Converting to Foreign Types]
@@ -181,7 +181,7 @@ __storage_ptr__ to propagate.
 As with __value_from__, the library provides its own
 overload of `tag_invoke` when certain conditions are met.
 
-If, for the type `T` 
+If, for the type `T`
 
 * `T` is __value__, __object__, __array__, __string__, __string_view__,
 __value_ref__, `std::initializer_list<value_ref>` or `bool`, or
@@ -242,9 +242,9 @@ In each of the following:
 (when ['R] is prefixed with ['To]) or __has_value_from__
 (when ['R] is prefixed with ['From]).
 
-* The namespace-scope declarations `using std::begin;` and 
-`using std::end;` precede the point at which the validity 
-and semantics of an expression is determined.  
+* The namespace-scope declarations `using std::begin;` and
+`using std::end;` precede the point at which the validity
+and semantics of an expression is determined.
 
 [h2 ['TupleLike] Requirements]
 
