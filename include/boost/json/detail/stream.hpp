@@ -15,8 +15,6 @@ namespace detail {
 
 class const_stream
 {
-    friend class local_const_stream;
-
     char const* p_;
     char const* end_;
 
@@ -86,36 +84,6 @@ public:
     {
         BOOST_ASSERT(p <= end_ && p >= p_);
         p_ = p;
-    }
-};
-
-class local_const_stream
-    : public const_stream
-{
-    const_stream& src_;
-
-public:
-    explicit
-    local_const_stream(
-        const_stream& src) noexcept
-        : const_stream(src)
-        , src_(src)
-    {
-    }
-
-    ~local_const_stream()
-    {
-        src_.p_ = p_;
-    }
-
-    void
-    clip(std::size_t n) noexcept
-    {
-        if(static_cast<std::size_t>(
-            src_.end_ - p_) > n)
-            end_ = p_ + n;
-        else
-            end_ = src_.end_;
     }
 };
 
@@ -239,8 +207,6 @@ public:
 
 class stream
 {
-    friend class local_stream;
-
     char* p_;
     char* end_;
 
@@ -321,26 +287,6 @@ public:
     {
         BOOST_ASSERT(remain() >= n);
         p_ += n;
-    }
-};
-
-class local_stream
-    : public stream
-{
-    stream& src_;
-
-public:
-    explicit
-    local_stream(
-        stream& src)
-        : stream(src)
-        , src_(src)
-    {
-    }
-
-    ~local_stream()
-    {
-        src_.p_ = p_;
     }
 };
 

@@ -76,9 +76,8 @@ suspend(
 template<bool StackEmpty>
 bool
 serializer::
-write_null(stream& ss0)
+write_null(stream& ss)
 {
-    local_stream ss(ss0);
     if(! StackEmpty && ! st_.empty())
     {
         state st;
@@ -118,9 +117,8 @@ do_nul4:
 template<bool StackEmpty>
 bool
 serializer::
-write_true(stream& ss0)
+write_true(stream& ss)
 {
-    local_stream ss(ss0);
     if(! StackEmpty && ! st_.empty())
     {
         state st;
@@ -160,9 +158,8 @@ do_tru4:
 template<bool StackEmpty>
 bool
 serializer::
-write_false(stream& ss0)
+write_false(stream& ss)
 {
-    local_stream ss(ss0);
     if(! StackEmpty && ! st_.empty())
     {
         state st;
@@ -208,10 +205,8 @@ do_fal5:
 template<bool StackEmpty>
 bool
 serializer::
-write_string(stream& ss0)
+write_string(stream& ss)
 {
-    local_stream ss(ss0);
-    local_const_stream cs(cs0_);
     if(! StackEmpty && ! st_.empty())
     {
         state st;
@@ -254,19 +249,19 @@ do_str1:
 do_str2:
     if(BOOST_JSON_LIKELY(ss))
     {
-        std::size_t n = cs.remain();
+        std::size_t n = cs0_.remain();
         if(BOOST_JSON_LIKELY(n > 0))
         {
             if(ss.remain() > n)
                 n = detail::count_unescaped(
-                    cs.data(), n);
+                    cs0_.data(), n);
             else
                 n = detail::count_unescaped(
-                    cs.data(), ss.remain());
+                    cs0_.data(), ss.remain());
             if(n > 0)
             {
-                ss.append(cs.data(), n);
-                cs.skip(n);
+                ss.append(cs0_.data(), n);
+                cs0_.skip(n);
                 if(! ss)
                     return suspend(state::str2);
             }
@@ -287,12 +282,12 @@ do_str2:
 do_str3:
     while(BOOST_JSON_LIKELY(ss))
     {
-        if(BOOST_JSON_LIKELY(cs))
+        if(BOOST_JSON_LIKELY(cs0_))
         {
-            auto const ch = *cs;
+            auto const ch = *cs0_;
             auto const c = esc[static_cast<
                 unsigned char>(ch)];
-            ++cs;
+            ++cs0_;
             if(! c)
             {
                 ss.append(ch);
@@ -385,9 +380,8 @@ do_utf5:
 template<bool StackEmpty>
 bool
 serializer::
-write_number(stream& ss0)
+write_number(stream& ss)
 {
-    local_stream ss(ss0);
     if(StackEmpty || st_.empty())
     {
         switch(jv_->kind())
@@ -455,10 +449,9 @@ write_number(stream& ss0)
 template<bool StackEmpty>
 bool
 serializer::
-write_array(stream& ss0)
+write_array(stream& ss)
 {
     array const* pa;
-    local_stream ss(ss0);
     array::const_iterator it;
     array::const_iterator end;
     if(StackEmpty || st_.empty())
@@ -521,10 +514,9 @@ do_arr4:
 template<bool StackEmpty>
 bool
 serializer::
-write_object(stream& ss0)
+write_object(stream& ss)
 {
     object const* po;
-    local_stream ss(ss0);
     object::const_iterator it;
     object::const_iterator end;
     if(StackEmpty || st_.empty())

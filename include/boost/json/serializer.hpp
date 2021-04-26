@@ -59,9 +59,6 @@ class serializer
     // VFALCO Too many streams
     using stream = detail::stream;
     using const_stream = detail::const_stream;
-    using local_stream = detail::local_stream;
-    using local_const_stream =
-        detail::local_const_stream;
 
     using fn_t = bool (serializer::*)(stream&);
 
