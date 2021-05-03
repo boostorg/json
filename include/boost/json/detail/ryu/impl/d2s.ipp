@@ -727,14 +727,6 @@ d2s_buffered(
     result[index] = '\0';
 }
 
-char*
-d2s(double f) noexcept
-{
-    static thread_local char result[25];
-    d2s_buffered(f, result);
-    return result;
-}
-
 } // ryu
 
 } // detail

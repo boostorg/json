@@ -32,6 +32,7 @@
 #endif
 #include <boost/json/detail/ryu/detail/d2s.hpp>
 #include <boost/json/detail/ryu/detail/d2s_full_table.hpp>
+#include <array>
 #include <cstdint>
 #include <cmath>
 #include "gtest.hpp"

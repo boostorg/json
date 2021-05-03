@@ -35,9 +35,6 @@ int d2s_buffered_n(double f, char* result) noexcept;
 BOOST_JSON_DECL
 void d2s_buffered(double f, char* result) noexcept;
 
-BOOST_JSON_DECL
-char* d2s(double f) noexcept;
-
 } // ryu
 
 } // detail
