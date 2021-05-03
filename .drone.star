@@ -57,6 +57,7 @@ def main(ctx):
     linux_cxx("gcc 9 standalone", "g++-9", packages=" ".join(addon_gcc_9["apt"]["packages"]), image="ubuntu:18.04", buildtype="standalone", environment={"COMMENT": "standalone", "CXX": "g++-9"}),
     linux_cxx("gcc 10", "g++-10", packages=" ".join(addon_gcc_10["apt"]["packages"]), image="ubuntu:18.04", buildtype="boost", environment={"B2_TOOLSET": "gcc-10", "B2_CXXSTD": "17,2a"}),
     linux_cxx("gcc 10 standalone", "g++-10", packages=" ".join(addon_gcc_10["apt"]["packages"]), image="ubuntu:18.04", buildtype="standalone", environment={"COMMENT": "standalone", "CXX": "g++-10"}),
+    linux_cxx("gcc 10 cmake-superproject", "g++-10", packages=" ".join(addon_gcc_10["apt"]["packages"]), image="ubuntu:18.04", buildtype="cmake-superproject", environment={"COMMENT": "cmake-superproject", "CXX": "g++-10"}),
     linux_cxx("coverity", "", packages="", image="ubuntu:18.04", buildtype="coverity", environment={}),
     linux_cxx("docs", "", packages="docbook docbook-xml docbook-xsl xsltproc libsaxonhe-java default-jre-headless flex libfl-dev bison unzip rsync", image="cppalliance/droneubuntu1604:1", buildtype="docs", environment={"COMMENT": "docs"}),
     linux_cxx("codecov", "", packages=" ".join(addon_gcc_8["apt"]["packages"]), image="ubuntu:18.04", buildtype="codecov", environment={"COMMENT": "codecov.io","LCOV_BRANCH_COVERAGE": 0,"B2_CXXSTD": 11,"B2_TOOLSET": "gcc-8", "B2_DEFINES": "BOOST_NO_STRESS_TEST=1"}, stepenvironment={"CODECOV_TOKEN": {"from_secret": "codecov_token"} }),

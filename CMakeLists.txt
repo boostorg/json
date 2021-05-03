@@ -84,6 +84,7 @@ elseif(BOOST_SUPERPROJECT_VERSION)
             Boost::config
             Boost::container
             Boost::exception
+            Boost::mp11
             Boost::system
             Boost::throw_exception
             Boost::utility
