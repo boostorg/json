@@ -82,7 +82,7 @@ value jv = parse( "[1,2,3,] // comment ", storage_ptr(), opt );
 #if __cpp_designated_initializers >= 201707L
 //[doc_parsing_6
 value jv = parse( "[1,2,3,] // comment ", storage_ptr(),
-    { 
+    {
         .allow_comments = true,             // permit C and C++ style comments to appear in whitespace
         .allow_trailing_commas = true,      // allow a trailing comma in object and array lists
         .allow_invalid_utf8 = true          // skip utf-8 validation of keys and strings
