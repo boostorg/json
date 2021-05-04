@@ -127,11 +127,25 @@ public:
     }
 
     void
+    testAlignment() {
+        // value is enough, as the underlying key_value_pair is tested
+        {
+            // get_allocator
+            {
+                value jv(std::pmr::new_delete_resource());
+                jv = {{"test", 1}, {"test2", 2}};
+                BOOST_TEST(jv.get_allocator().resource() == std::pmr::new_delete_resource());
+            }
+        }
+    }
+
+    void
     run()
     {
         testBoostPmr();
         testStdPmr();
         testPmr();
+        testAlignment();
     }
 };
 

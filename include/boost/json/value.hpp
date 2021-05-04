@@ -3424,7 +3424,7 @@ public:
         if(key_ == empty_)
             return;
         sp->deallocate(const_cast<char*>(key_),
-            len_ + 1, alignof(char));
+            len_ + 1);
     }
 
     /** Copy constructor.
