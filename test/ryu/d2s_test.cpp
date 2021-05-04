@@ -42,7 +42,8 @@ static double ieeeParts2Double(const bool sign, const uint32_t ieeeExponent, con
 }
 
 char const* d2s_test_helper(char* result, double f) {
-    d2s_buffered(f, result);
+    int index = d2s_buffered_n(f, result);
+    result[index] = '\0';
     return result;
 }
 

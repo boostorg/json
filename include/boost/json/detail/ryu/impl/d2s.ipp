@@ -716,17 +716,6 @@ d2s_buffered_n(
     return to_chars(v, ieeeSign, result);
 }
 
-void
-d2s_buffered(
-    double f,
-    char* result) noexcept
-{
-    const int index = d2s_buffered_n(f, result);
-
-    // Terminate the string.
-    result[index] = '\0';
-}
-
 } // ryu
 
 } // detail
