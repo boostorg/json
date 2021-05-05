@@ -2354,10 +2354,22 @@ public:
 
         @param ec Set to the error, if any occurred.
     */
-#ifdef BOOST_JSON_DOCS
     template<class T>
-    T to_number(error_code& ec) const noexcept;
+#ifdef BOOST_JSON_DOCS
+    T
+#else
+    typename std::enable_if<
+        std::is_arithmetic<T>::value &&
+        ! std::is_same<T, bool>::value,
+            T>::type
 #endif
+    to_number(error_code& ec) const noexcept
+    {
+        error e;
+        auto result = to_number<T>(e);
+        ec = e;
+        return result;
+    }
 
     /** Return the stored number cast to an arithmetic type.
 
@@ -2406,140 +2418,13 @@ public:
 #endif
     to_number() const
     {
-        error_code ec;
-        auto result = to_number<T>(ec);
-        if(ec)
-            detail::throw_system_error(ec,
+        error e;
+        auto result = to_number<T>(e);
+        if(error() != e)
+            detail::throw_system_error(e,
                 BOOST_JSON_SOURCE_POS);
         return result;
     }
-
-#ifndef BOOST_JSON_DOCS
-    template<class T>
-    auto
-    to_number(error_code& ec) const noexcept ->
-        typename std::enable_if<
-            std::is_signed<T>::value &&
-            ! std::is_floating_point<T>::value,
-                T>::type
-    {
-        if(sca_.k == json::kind::int64)
-        {
-            auto const i = sca_.i;
-            if( i >= (std::numeric_limits<T>::min)() &&
-                i <= (std::numeric_limits<T>::max)())
-            {
-                ec = {};
-                return static_cast<T>(i);
-            }
-            ec = error::not_exact;
-        }
-        else if(sca_.k == json::kind::uint64)
-        {
-            auto const u = sca_.u;
-            if(u <= static_cast<std::uint64_t>((
-                std::numeric_limits<T>::max)()))
-            {
-                ec = {};
-                return static_cast<T>(u);
-            }
-            ec = error::not_exact;
-        }
-        else if(sca_.k == json::kind::double_)
-        {
-            auto const d = sca_.d;
-            if( d >= static_cast<double>(
-                    (detail::to_number_limit<T>::min)()) &&
-                d <= static_cast<double>(
-                    (detail::to_number_limit<T>::max)()) &&
-                static_cast<T>(d) == d)
-            {
-                ec = {};
-                return static_cast<T>(d);
-            }
-            ec = error::not_exact;
-        }
-        else
-        {
-            ec = error::not_number;
-        }
-        return T{};
-    }
-
-    template<class T>
-    auto
-    to_number(error_code& ec) const noexcept ->
-        typename std::enable_if<
-            std::is_unsigned<T>::value &&
-            ! std::is_same<T, bool>::value,
-                T>::type
-    {
-        if(sca_.k == json::kind::int64)
-        {
-            auto const i = sca_.i;
-            if( i >= 0 && static_cast<std::uint64_t>(i) <=
-                (std::numeric_limits<T>::max)())
-            {
-                ec = {};
-                return static_cast<T>(i);
-            }
-            ec = error::not_exact;
-        }
-        else if(sca_.k == json::kind::uint64)
-        {
-            auto const u = sca_.u;
-            if(u <= (std::numeric_limits<T>::max)())
-            {
-                ec = {};
-                return static_cast<T>(u);
-            }
-            ec = error::not_exact;
-        }
-        else if(sca_.k == json::kind::double_)
-        {
-            auto const d = sca_.d;
-            if( d >= 0 &&
-                d <= (detail::to_number_limit<T>::max)() &&
-                static_cast<T>(d) == d)
-            {
-                ec = {};
-                return static_cast<T>(d);
-            }
-            ec = error::not_exact;
-        }
-        else
-        {
-            ec = error::not_number;
-        }
-        return T{};
-    }
-
-    template<class T>
-    auto
-    to_number(error_code& ec) const noexcept ->
-        typename std::enable_if<
-            std::is_floating_point<
-                T>::value, T>::type
-    {
-        if(sca_.k == json::kind::int64)
-        {
-            ec = {};
-            return static_cast<T>(sca_.i);
-        }
-        if(sca_.k == json::kind::uint64)
-        {
-            ec = {};
-            return static_cast<T>(sca_.u);
-        }
-        if(sca_.k == json::kind::double_)
-        {
-            ec = {};
-            return static_cast<T>(sca_.d);
-        }
-        ec = error::not_number;
-        return {};
-    }
-#endif
 
     //------------------------------------------------------
     //
@@ -3373,6 +3258,131 @@ private:
     BOOST_JSON_DECL
     bool
     equal(value const& other) const noexcept;
+
+    template<class T>
+    auto
+    to_number(error& e) const noexcept ->
+        typename std::enable_if<
+            std::is_signed<T>::value &&
+            ! std::is_floating_point<T>::value,
+                T>::type
+    {
+        if(sca_.k == json::kind::int64)
+        {
+            auto const i = sca_.i;
+            if( i >= (std::numeric_limits<T>::min)() &&
+                i <= (std::numeric_limits<T>::max)())
+            {
+                e = {};
+                return static_cast<T>(i);
+            }
+            e = error::not_exact;
+        }
+        else if(sca_.k == json::kind::uint64)
+        {
+            auto const u = sca_.u;
+            if(u <= static_cast<std::uint64_t>((
+                std::numeric_limits<T>::max)()))
+            {
+                e = {};
+                return static_cast<T>(u);
+            }
+            e = error::not_exact;
+        }
+        else if(sca_.k == json::kind::double_)
+        {
+            auto const d = sca_.d;
+            if( d >= static_cast<double>(
+                    (detail::to_number_limit<T>::min)()) &&
+                d <= static_cast<double>(
+                    (detail::to_number_limit<T>::max)()) &&
+                static_cast<T>(d) == d)
+            {
+                e = {};
+                return static_cast<T>(d);
+            }
+            e = error::not_exact;
+        }
+        else
+        {
+            e = error::not_number;
+        }
+        return T{};
+    }
+
+    template<class T>
+    auto
+    to_number(error& e) const noexcept ->
+        typename std::enable_if<
+            std::is_unsigned<T>::value &&
+            ! std::is_same<T, bool>::value,
+                T>::type
+    {
+        if(sca_.k == json::kind::int64)
+        {
+            auto const i = sca_.i;
+            if( i >= 0 && static_cast<std::uint64_t>(i) <=
+                (std::numeric_limits<T>::max)())
+            {
+                e = {};
+                return static_cast<T>(i);
+            }
+            e = error::not_exact;
+        }
+        else if(sca_.k == json::kind::uint64)
+        {
+            auto const u = sca_.u;
+            if(u <= (std::numeric_limits<T>::max)())
+            {
+                e = {};
+                return static_cast<T>(u);
+            }
+            e = error::not_exact;
+        }
+        else if(sca_.k == json::kind::double_)
+        {
+            auto const d = sca_.d;
+            if( d >= 0 &&
+                d <= (detail::to_number_limit<T>::max)() &&
+                static_cast<T>(d) == d)
+            {
+                e = {};
+                return static_cast<T>(d);
+            }
+            e = error::not_exact;
+        }
+        else
+        {
+            e = error::not_number;
+        }
+        return T{};
+    }
+
+    template<class T>
+    auto
+    to_number(error& e) const noexcept ->
+        typename std::enable_if<
+            std::is_floating_point<
+                T>::value, T>::type
+    {
+        if(sca_.k == json::kind::int64)
+        {
+            e = {};
+            return static_cast<T>(sca_.i);
+        }
+        if(sca_.k == json::kind::uint64)
+        {
+            e = {};
+            return static_cast<T>(sca_.u);
+        }
+        if(sca_.k == json::kind::double_)
+        {
+            e = {};
+            return static_cast<T>(sca_.d);
+        }
+        e = error::not_number;
+        return {};
+    }
 };
 
 // Make sure things are as big as we think they should be

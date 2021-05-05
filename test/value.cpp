@@ -1647,6 +1647,10 @@ public:
             EQAL(float);
             EQAL(double);
         }
+
+        error_code ec;
+        value(nullptr).to_number<double>(ec);
+        BOOST_TEST(error::not_number == ec);
     }
 
     void
@@ -2026,7 +2030,7 @@ public:
         check_array(value{false,2},             false, 2);
         check_array(value{false,2,"3",nullptr}, false, 2, "3", nullptr);
         check_array(value{2,false,"3"},         2, false, "3");
-        check_array(value{true,2,"3"},          true, 2, "3");    
+        check_array(value{true,2,"3"},          true, 2, "3");
     }
 
     //------------------------------------------------------
@@ -2127,7 +2131,7 @@ public:
             value({{"a",1}, {"b",2}, {"c",3}}),
             object({{"b",2}, {"c",3}, {"a",1}})));
         BOOST_TEST(expect_hash_not_equal(
-            value({{"a",1}, {"b",2}, {"c",3}}), 
+            value({{"a",1}, {"b",2}, {"c",3}}),
             value({{"b",2}, {"c",3}})));
         BOOST_TEST(check_hash_equal(
             value({"a", "b", 17}),

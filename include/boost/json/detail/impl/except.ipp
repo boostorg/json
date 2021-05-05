@@ -120,6 +120,20 @@ throw_system_error(
         );
 }
 
+void
+throw_system_error(
+    error e,
+    source_location const& loc)
+{
+    (void)loc;
+    throw_exception(
+        system_error(e)
+#if ! defined(BOOST_JSON_STANDALONE)
+        , loc
+#endif
+        );
+}
+
 } // detail
 BOOST_JSON_NS_END
 
