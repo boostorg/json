@@ -1522,7 +1522,7 @@ public:
         BOOST_TEST(res.allocated == res.deallocated);
     }
 
-    void    
+    void
     testHash()
     {
         BOOST_TEST(check_hash_equal(
@@ -1533,7 +1533,7 @@ public:
             object({{"a",1}, {"b",2}, {"c",3}}),
             object({{"b",2}, {"c",3}, {"a",1}})));
         BOOST_TEST(expect_hash_not_equal(
-            object({{"a",1}, {"b",2}, {"c",3}}), 
+            object({{"a",1}, {"b",2}, {"c",3}}),
             object({{"b",2}, {"c",3}})));
     }
 
