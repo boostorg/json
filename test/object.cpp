@@ -15,6 +15,8 @@
 #include <boost/json/serialize.hpp>
 
 #include <cmath>
+#include <forward_list>
+#include <map>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -325,6 +327,29 @@ public:
 
         // object(InputIt, InputIt, size_type, storage_ptr)
         {
+            // empty range
+            {
+                // random-access iterator
+                std::vector<std::pair<string_view, value>> i1;
+                object o1(i1.begin(), i1.end());
+                BOOST_TEST(o1.empty());
+
+                // bidirectional iterator
+                std::map<string_view, value> i2;
+                object o2(i2.begin(), i2.end());
+                BOOST_TEST(o2.empty());
+
+                // forward iterator
+                std::forward_list<std::pair<string_view, value>> i3;
+                object o3(i3.begin(), i3.end());
+                BOOST_TEST(o3.empty());
+
+                // input iterator
+                auto const it = make_input_iterator(i3.begin());
+                object o4(it, it);
+                BOOST_TEST(o4.empty());
+            }
+
             // small
             {
                 object o(i0_.begin(), i0_.end());
