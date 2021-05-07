@@ -12,6 +12,10 @@
 
 #include <boost/json/monotonic_resource.hpp>
 
+#include <forward_list>
+#include <list>
+#include <iterator>
+
 #include "test.hpp"
 #include "test_suite.hpp"
 
@@ -148,6 +152,29 @@ public:
 
         // array(InputIt, InputIt, storage)
         {
+            // empty range
+            {
+                // random-access iterator
+                std::vector<value> i1;
+                array a1(i1.begin(), i1.end());
+                BOOST_TEST(a1.empty());
+
+                // bidirectional iterator
+                std::list<value> i2;
+                array a2(i2.begin(), i2.end());
+                BOOST_TEST(a2.empty());
+
+                // forward iterator
+                std::forward_list<value> i3;
+                array a3(i3.begin(), i3.end());
+                BOOST_TEST(a3.empty());
+
+                // input iterator
+                auto const it = make_input_iterator(i3.begin());
+                array a4(it, it);
+                BOOST_TEST(a4.empty());
+            }
+
             // default storage
             {
                 init_list init{ 0, 1, str_, 3, 4 };

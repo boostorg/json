@@ -493,6 +493,12 @@ array(
 {
     std::size_t n =
         std::distance(first, last);
+    if( n == 0 )
+    {
+        t_ = &empty_;
+        return;
+    }
+
     t_ = table::allocate(n, sp_);
     t_->size = 0;
     revert_construct r(*this);

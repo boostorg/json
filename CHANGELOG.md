@@ -3,6 +3,8 @@ Boost 1.77.0:
 *  Implicit conversion operator from `string` to `std::string_view`.
 * `value_to` supports `TupleLike` types.
 * `object` deallocates the correct size.
+* Fixed crash when constructing `array` from a pair of iterators that form an
+  empty range.
 
 Boost 1.76.0:
 

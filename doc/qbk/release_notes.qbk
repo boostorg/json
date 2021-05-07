@@ -21,6 +21,8 @@
 [*Fixes]
 
 * __object__ deallocates the correct size.
+* Fixed crash when constructing __array__ from a pair of iterators that form an
+  empty range.
 
 [*Improvements]
 
