@@ -3924,8 +3924,8 @@ struct tuple_element<1, ::boost::json::key_value_pair const>
 namespace std {
 template <>
 struct hash< ::boost::json::value > {
-    BOOST_JSON_DECL 
-    std::size_t 
+    BOOST_JSON_DECL
+    std::size_t
     operator()(::boost::json::value const& jv) const noexcept;
 };
 } // std
