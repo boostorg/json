@@ -23,6 +23,7 @@
 * __object__ deallocates the correct size.
 * Fixed crash when constructing __array__ from a pair of iterators that form an
   empty range.
+* __key_value_pair__ allocates with the correct alignment.
 
 [*Improvements]
 

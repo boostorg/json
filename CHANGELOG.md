@@ -5,6 +5,7 @@ Boost 1.77.0:
 * `object` deallocates the correct size.
 * Fixed crash when constructing `array` from a pair of iterators that form an
   empty range.
+* `key_value_pair` allocates with the correct alignment.
 
 Boost 1.76.0:
 

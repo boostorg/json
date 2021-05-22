@@ -3565,7 +3565,7 @@ public:
                 BOOST_JSON_SOURCE_POS);
         auto s = reinterpret_cast<
             char*>(value_.storage()->
-                allocate(key.size() + 1));
+                allocate(key.size() + 1, alignof(char)));
         std::memcpy(s, key.data(), key.size());
         s[key.size()] = 0;
         key_ = s;

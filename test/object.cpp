@@ -1509,6 +1509,11 @@ public:
             object o(&res);
             o.reserve(1000);
         }
+
+        {
+            checking_resource res;
+            object o({std::make_pair("one", 1)}, &res);
+        }
     }
 
     void
