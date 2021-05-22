@@ -84,26 +84,6 @@ private:
         return 0;
     }
 
-    template<typename U>
-    static
-    auto
-    reserve_impl(
-        U& cont,
-        std::size_t size,
-        priority_tag<1>) ->
-            void_t<decltype(
-                std::declval<U&>().reserve(0))>
-    {
-        cont.reserve(size);
-    }
-
-    template<typename U>
-    static
-    void
-    reserve_impl(
-        U&,
-        std::size_t,
-        priority_tag<0>) { }
 public:
     static constexpr bool is_container = true;
     using value_type = remove_cvref<
@@ -116,17 +96,6 @@ public:
     {
         return container_traits::size_impl(
             cont, priority_tag<2>());
-    }
-
-    template<typename U>
-    static
-    void
-    try_reserve(
-        U& cont,
-        std::size_t size)
-    {
-        container_traits::reserve_impl(
-            cont, size, priority_tag<1>());
     }
 };
 

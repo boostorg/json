@@ -211,12 +211,10 @@ public:
             a.fill(0);
 
             value b;
-            auto& b_arr = b.emplace_array();
+            array& b_arr = b.emplace_array();
             b_arr.insert(b_arr.end(), a.begin(), a.end());
 
-            value c = value_from(a);
-            BOOST_TEST(c.is_array());
-            BOOST_TEST(serialize(c) == serialize(b));
+            BOOST_TEST(value_from(a) == b);
         }
         {
             std::pair<int, string> a{1, string("2")};

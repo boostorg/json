@@ -34,6 +34,62 @@ T value_to(U const&);
 
 namespace detail {
 
+template<class T, typename std::enable_if<
+    (std::tuple_size<remove_cvref<T>>::value > 0)>::type* = nullptr>
+void
+try_reserve(
+    T&,
+    std::size_t size,
+    priority_tag<2>)
+{
+    constexpr std::size_t N = std::tuple_size<remove_cvref<T>>::value;
+    if ( N != size )
+    {
+        detail::throw_invalid_argument(
+            "target array size does not match source array size",
+            BOOST_JSON_SOURCE_POS);
+    }
+}
+
+template<typename T, void_t<decltype(
+    std::declval<T&>().reserve(0))>* = nullptr>
+void
+try_reserve(
+    T& cont,
+    std::size_t size,
+    priority_tag<1>)
+{
+    cont.reserve(size);
+}
+
+template<typename T>
+void
+try_reserve(
+    T&,
+    std::size_t,
+    priority_tag<0>)
+{
+}
+
+template<class T, typename std::enable_if<
+    (std::tuple_size<remove_cvref<T>>::value > 0)>::type* = nullptr>
+typename remove_cvref<T>::iterator
+inserter(
+    T& target,
+    priority_tag<1>)
+{
+    return target.begin();
+}
+
+template<class T>
+std::insert_iterator<T>
+inserter(
+    T& target,
+    priority_tag<0>)
+{
+    return std::inserter(target, end(target));
+}
+
 //----------------------------------------------------------
 // Use native conversion
 
@@ -118,6 +174,49 @@ value_to_generic(
     return T(str.data(), str.size());
 }
 
+// map-like containers; should go before other containers in order to be able
+// to tell them apart
+template<class T, typename std::enable_if<
+    has_value_to<typename map_traits<T>::pair_value_type>::value &&
+        std::is_constructible<typename map_traits<T>::pair_key_type,
+    string_view>::value>::type* = nullptr>
+T
+value_to_generic(
+    const value& jv,
+    priority_tag<2>)
+{
+    using value_type = typename
+        container_traits<T>::value_type;
+    const object& obj = jv.as_object();
+    T result;
+    try_reserve(result, obj.size(), priority_tag<2>());
+    for (const auto& val : obj)
+        result.insert(value_type{typename map_traits<T>::
+            pair_key_type(val.key()), value_to<typename
+                map_traits<T>::pair_value_type>(val.value())});
+    return result;
+}
+
+// all other containers; should go before tuple-like in order to handle
+// std::array with this overload
+template<class T, typename std::enable_if<
+    has_value_to<typename container_traits<T>::
+        value_type>::value>::type* = nullptr>
+T
+value_to_generic(
+    const value& jv,
+    priority_tag<1>)
+{
+    const array& arr = jv.as_array();
+    T result;
+    detail::try_reserve(result, arr.size(), priority_tag<2>());
+    std::transform(arr.begin(), arr.end(),
+        detail::inserter(result, priority_tag<1>()), [](value const& val) {
+            return value_to<typename container_traits<T>::value_type>(val);
+        });
+    return result;
+}
+
 template <class T, std::size_t... Is>
 T
 make_tuple_like(const array& arr, index_sequence<Is...>)
@@ -131,7 +230,7 @@ template<class T, typename std::enable_if<
 T
 value_to_generic(
     const value& jv,
-    priority_tag<2>)
+    priority_tag<0>)
 {
     auto& arr = jv.as_array();
     constexpr std::size_t N = std::tuple_size<remove_cvref<T>>::value;
@@ -143,48 +242,6 @@ value_to_generic(
     }
 
     return make_tuple_like<T>(arr, make_index_sequence<N>());
-}
-
-// map like containers
-template<class T, typename std::enable_if<
-    has_value_to<typename map_traits<T>::pair_value_type>::value &&
-        std::is_constructible<typename map_traits<T>::pair_key_type,
-    string_view>::value>::type* = nullptr>
-T
-value_to_generic(
-    const value& jv,
-    priority_tag<1>)
-{
-    using value_type = typename
-        container_traits<T>::value_type;
-    const object& obj = jv.as_object();
-    T result;
-    container_traits<T>::try_reserve(
-        result, obj.size());
-    for (const auto& val : obj)
-        result.insert(value_type{typename map_traits<T>::
-            pair_key_type(val.key()), value_to<typename
-                map_traits<T>::pair_value_type>(val.value())});
-    return result;
-}
-
-// all other containers
-template<class T, typename std::enable_if<
-    has_value_to<typename container_traits<T>::
-        value_type>::value>::type* = nullptr>
-T
-value_to_generic(
-    const value& jv,
-    priority_tag<0>)
-{
-    const array& arr = jv.as_array();
-    T result;
-    container_traits<T>::try_reserve(
-        result, arr.size());
-    for (const auto& val : arr)
-        result.insert(end(result), value_to<typename
-            container_traits<T>::value_type>(val));
-    return result;
 }
 
 // Matches containers

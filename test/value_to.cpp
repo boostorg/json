@@ -12,6 +12,7 @@
 
 #include "test_suite.hpp"
 
+#include <array>
 #include <map>
 #include <unordered_map>
 #include <vector>
@@ -74,11 +75,24 @@ public:
             {2, 4}, {3, 9}, {5, 25}
         });
 
+        {
+            std::array<int, 1000> arr;
+            arr.fill(0);
+            check(arr);
+        }
+
         BOOST_TEST_THROWS(
             (value_to<std::tuple<int, int>>(value{1, 2, 3})),
             std::invalid_argument);
         BOOST_TEST_THROWS(
             (value_to<std::tuple<int, int, int, int>>(value{1, 2, 3})),
+            std::invalid_argument);
+
+        BOOST_TEST_THROWS(
+            (value_to<std::array<int, 4>>(value{1, 2, 3})),
+            std::invalid_argument);
+        BOOST_TEST_THROWS(
+            (value_to<std::array<int, 4>>(value{1, 2, 3, 4, 5})),
             std::invalid_argument);
     }
 

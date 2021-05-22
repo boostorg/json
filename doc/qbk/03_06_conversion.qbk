@@ -189,11 +189,11 @@ if `std::is_arithmetic<T>::value` is `true`, or
 
 * `T` satisfies ['StringLike], or
 
-* `T` satisfies ['TupleLike], or
-
 * `T` satisfies ['ToMapLike], or
 
-* `T` satisfies ['ToContainerLike].
+* `T` satisfies ['ToContainerLike], or
+
+* `T` satisfies ['TupleLike].
 
 Then a function template of the form
 
