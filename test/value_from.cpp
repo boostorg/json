@@ -16,6 +16,7 @@
 
 #include "test_suite.hpp"
 
+#include <array>
 #include <string>
 #include <vector>
 #include <tuple>
@@ -201,6 +202,18 @@ public:
         {
             std::tuple<int, string, int, bool> a{1, "2", 42, true};
             value b{1, "2", 42, true};
+            value c = value_from(a);
+            BOOST_TEST(c.is_array());
+            BOOST_TEST(serialize(c) == serialize(b));
+        }
+        {
+            std::array<int, 1000> a;
+            a.fill(0);
+
+            value b;
+            auto& b_arr = b.emplace_array();
+            b_arr.insert(b_arr.end(), a.begin(), a.end());
+
             value c = value_from(a);
             BOOST_TEST(c.is_array());
             BOOST_TEST(serialize(c) == serialize(b));

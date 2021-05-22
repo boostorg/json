@@ -115,24 +115,8 @@ value_from_helper(
         from.data(), from.size());
 }
 
-// tuple-like types
-template<class T, typename std::enable_if<
-    (std::tuple_size<remove_cvref<T>>::value > 0)>::type* = nullptr>
-void
-value_from_helper(
-    value& jv,
-    T&& from,
-    priority_tag<2>)
-{
-    constexpr std::size_t n =
-        std::tuple_size<remove_cvref<T>>::value;
-    array& arr = jv.emplace_array();
-    arr.reserve(n);
-    detail::tuple_to_array<n>(std::forward<T>(from),
-        arr, std::integral_constant<std::size_t, 0>());
-}
-
-// map-like types
+// map-like types; should go before ranges, so that we can differentiate
+// map-like and other ranges
 template<class T, typename std::enable_if<
     map_traits<T>::has_unique_keys &&
         has_value_from<typename map_traits<T>::pair_value_type>::value &&
@@ -142,7 +126,7 @@ void
 value_from_helper(
     value& jv,
     T&& from,
-    priority_tag<1>)
+    priority_tag<2>)
 {
     using std::get;
     object& obj = jv.emplace_object();
@@ -152,7 +136,8 @@ value_from_helper(
             get<1>(elem), obj.storage()));
 }
 
-// all other containers
+// ranges; should go before tuple-like in order for std::array being handled
+// by this overload
 template<class T, typename std::enable_if<
     has_value_from<typename container_traits<T>::
         value_type>::value>::type* = nullptr>
@@ -160,13 +145,30 @@ void
 value_from_helper(
     value& jv,
     T&& from,
-    priority_tag<0>)
+    priority_tag<1>)
 {
     array& result = jv.emplace_array();
     result.reserve(container_traits<T>::try_size(from));
     for (auto&& elem : from)
         result.emplace_back(
             value_from(elem, result.storage()));
+}
+
+// tuple-like types
+template<class T, typename std::enable_if<
+    (std::tuple_size<remove_cvref<T>>::value > 0)>::type* = nullptr>
+void
+value_from_helper(
+    value& jv,
+    T&& from,
+    priority_tag<0>)
+{
+    constexpr std::size_t n =
+        std::tuple_size<remove_cvref<T>>::value;
+    array& arr = jv.emplace_array();
+    arr.reserve(n);
+    detail::tuple_to_array<n>(std::forward<T>(from),
+        arr, std::integral_constant<std::size_t, 0>());
 }
 
 //----------------------------------------------------------
