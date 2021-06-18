@@ -389,43 +389,31 @@ destroy() noexcept
 
 bool
 value::
-equal(value const& other) const noexcept
-{
-    switch(kind())
+number_equal(const value &other) const noexcept {
+    switch (kind())
     {
-    default: // unreachable()?
-    case json::kind::null:
-        return other.kind() == json::kind::null;
-
-    case json::kind::bool_:
-        return
-            other.kind() == json::kind::bool_ &&
-            get_bool() == other.get_bool();
-
     case json::kind::int64:
-        switch(other.kind())
-        {
+        switch (other.kind()) {
         case json::kind::int64:
             return get_int64() == other.get_int64();
         case json::kind::uint64:
-            if(get_int64() < 0)
+            if (get_int64() < 0)
                 return false;
             return static_cast<std::uint64_t>(
-                get_int64()) == other.get_uint64();
+                           get_int64()) == other.get_uint64();
         default:
             return false;
         }
 
     case json::kind::uint64:
-        switch(other.kind())
-        {
+        switch (other.kind()) {
         case json::kind::uint64:
             return get_uint64() == other.get_uint64();
         case json::kind::int64:
-            if(other.get_int64() < 0)
+            if (other.get_int64() < 0)
                 return false;
             return static_cast<std::uint64_t>(
-                other.get_int64()) == get_uint64();
+                           other.get_int64()) == get_uint64();
         default:
             return false;
         }
@@ -434,21 +422,37 @@ equal(value const& other) const noexcept
         return
             other.kind() == json::kind::double_ &&
             get_double() == other.get_double();
+    }
+}
+
+bool
+value::
+equal(value const& other) const noexcept
+{
+    if (is_number()){
+        return number_equal(other);
+    }
+    if (kind() != other.kind()){
+        return false;
+    }
+    switch(kind())
+    {
+    default: // unreachable()?
+
+    case json::kind::null:
+        return other.kind() == json::kind::null;
+
+    case json::kind::bool_:
+        return get_bool() == other.get_bool();
 
     case json::kind::string:
-        return
-            other.kind() == json::kind::string &&
-            get_string() == other.get_string();
+        return get_string() == other.get_string();
 
     case json::kind::array:
-        return
-            other.kind() == json::kind::array &&
-            get_array() == other.get_array();
+        return get_array() == other.get_array();
 
     case json::kind::object:
-        return
-            other.kind() == json::kind::object &&
-            get_object() == other.get_object();
+        return get_object() == other.get_object();
     }
 }
 

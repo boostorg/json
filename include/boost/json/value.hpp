@@ -3259,6 +3259,10 @@ private:
     bool
     equal(value const& other) const noexcept;
 
+    BOOST_JSON_DECL
+    bool
+    number_equal(value const& other) const noexcept;
+
     template<class T>
     auto
     to_number(error& e) const noexcept ->
