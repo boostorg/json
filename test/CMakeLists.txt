@@ -9,9 +9,7 @@
 
 file(GLOB_RECURSE BOOST_JSON_TESTS_FILES CONFIGURE_DEPENDS Jamfile *.cpp *.hpp)
 list(FILTER BOOST_JSON_TESTS_FILES EXCLUDE REGEX "^${CMAKE_CURRENT_SOURCE_DIR}/cmake_install_test/.*$")
-if(BOOST_JSON_STANDALONE)
-    list(FILTER BOOST_JSON_TESTS_FILES EXCLUDE REGEX "standalone_with_boost.cpp")
-endif()
+list(FILTER BOOST_JSON_TESTS_FILES EXCLUDE REGEX standalone_with_boost.cpp)
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX "" FILES ${BOOST_JSON_TESTS_FILES})
 add_executable(boost_json-tests ${BOOST_JSON_TESTS_FILES})
@@ -61,3 +59,11 @@ else()
 endif()
 
 add_test(NAME boost_json-limits COMMAND boost_json-limits)
+
+if(NOT BOOST_JSON_STANDALONE)
+    add_library(boost_json-standalone_with_boost STATIC standalone_with_boost.cpp)
+    target_include_directories(boost_json-standalone_with_boost PRIVATE ../include)
+    target_compile_definitions(boost_json-standalone_with_boost PRIVATE BOOST_JSON_STANDALONE)
+    target_compile_features(boost_json-standalone_with_boost PRIVATE cxx_std_17)
+    target_link_libraries(boost_json-standalone_with_boost PRIVATE Boost::assert)
+endif()
