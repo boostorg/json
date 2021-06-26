@@ -1473,8 +1473,9 @@ public:
             THRO(std::uint16_t);
             EQUS(std::uint32_t);
             EQUS(std::uint64_t);
-            EQUF(float);
             EQAL(double);
+            // EQUF(float) will result in loss of precision, so the test might
+            // fail depending on compilation flags and target platform
         }
         {
             auto V = max_of<std::int64_t>();
@@ -1487,8 +1488,9 @@ public:
             THRO(std::uint16_t);
             THRO(std::uint32_t);
             EQUS(std::uint64_t);
-            EQUF(float);
             EQUF(double);
+            // EQUF(float) will result in loss of precision, so the test might
+            // fail depending on compilation flags and target platform
         }
         //---
         {
@@ -1646,6 +1648,19 @@ public:
             THRO(std::uint64_t);
             EQAL(float);
             EQAL(double);
+        }
+        //---
+        {
+            // fill with the number of ones equal to the size of float's
+            // mantissa; such a number can be converted to float without loss
+            // of precision
+            std::int64_t V = 1;
+            for( int i = 0; i <= std::numeric_limits<float>::digits - 1; ++i )
+                V *= 2;
+            --V;
+
+            value const jv(V);
+            EQUF(float);
         }
 
         error_code ec;
