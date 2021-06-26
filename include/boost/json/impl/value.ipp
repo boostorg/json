@@ -539,7 +539,7 @@ std::hash<::boost::json::value>::operator()(
         seed,
         hash<::boost::json::object>{}(jv.get_object()));
   }
-};
+}
 
 //----------------------------------------------------------
 

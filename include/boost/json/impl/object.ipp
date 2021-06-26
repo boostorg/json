@@ -843,7 +843,7 @@ std::hash<::boost::json::object>::operator()(
         seed = ::boost::json::detail::hash_combine_commutative(seed, hkv);
     }
     return seed;
-};
+}
 
 //----------------------------------------------------------
 

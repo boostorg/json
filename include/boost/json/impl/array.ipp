@@ -772,7 +772,7 @@ std::hash<::boost::json::array>::operator()(
         std::hash<::boost::json::value>{}(jv));
   }
   return seed;
-};
+}
 
 //----------------------------------------------------------
 
