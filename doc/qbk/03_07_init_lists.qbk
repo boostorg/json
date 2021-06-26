@@ -33,7 +33,7 @@ it represents an __array__ or an __object__:
 
 In such cases, if every element consists
 of a string followed by a single value, then the enclosing
-initializer list is interpreted as an __object__. 
+initializer list is interpreted as an __object__.
 Otherwise, it is interpreted as an __array__.
 
 [snippet_init_list_5]

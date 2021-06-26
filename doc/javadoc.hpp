@@ -42,17 +42,17 @@ be present.
 Elements shall appear in the following order:
 
 /** {Brief}
-    
+
     {Description}
 
 
     [@par Complexity
-                   
+
     {Complexity}]
 
 
     @par Preconditions
-    
+
     {Preconditions}
 
 
@@ -119,15 +119,15 @@ going into much depth. For functions with no side effects, preconditions,
 thrown exceptions and parameters, this should state what the function returns;
 further description can be done as a remark. For functions with side effects, it
 should be a synopsis of what the function does. For class types, it should describe
-what the class does, and for type aliases it should describe what the type represents. 
+what the class does, and for type aliases it should describe what the type represents.
 
-Length requirement: Length should be no more than 200 characters. 
+Length requirement: Length should be no more than 200 characters.
 ---------------------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------------------
 Description
 Appearance: This should be included if the brief and remarks are not sufficient
-to describe what the entity does. This shall not be present for type aliases, 
+to describe what the entity does. This shall not be present for type aliases,
 or function that have no side effects.
 
 Description: Sufficiently describes the function including all its effects upon its
@@ -202,7 +202,7 @@ Exception Safety
 Appearance: Shall be present for functions that are potentially throwing
 
 Description: Specifies the exception safety guarantee of the function. Shall be
-one of: "Strong guarantee", "Basic guarantee", or "No guarantee". 
+one of: "Strong guarantee", "Basic guarantee", or "No guarantee".
 ---------------------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------------------
@@ -230,7 +230,7 @@ Exceptions
 Appearance: Shall be present for functions that are potentially throwing
 
 Description: Specifies which exceptions can potentially be directly
-thrown by that function and under which conditions they are thrown. 
+thrown by that function and under which conditions they are thrown.
 ---------------------------------------------------------------------------------------
 
                           ------------- OPTIONAL -------------

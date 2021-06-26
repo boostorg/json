@@ -30,7 +30,7 @@ BOOST_JSON_NS_BEGIN
 struct parse_options
 {
     /** Maximum nesting level of arrays and objects.
-        
+
         This specifies the maximum number of nested
         structures allowed while parsing a JSON. If
         this limit is exceeded during a parse, an

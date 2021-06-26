@@ -72,7 +72,7 @@ append(InputIt first, InputIt last)
 }
 
 // KRYSTIAN TODO: this can be done without copies when
-// reallocation is not needed, when the iterator is a 
+// reallocation is not needed, when the iterator is a
 // FowardIterator or better, as we can use std::distance
 template<class InputIt, class>
 auto
@@ -109,7 +109,7 @@ insert(
 }
 
 // KRYSTIAN TODO: this can be done without copies when
-// reallocation is not needed, when the iterator is a 
+// reallocation is not needed, when the iterator is a
 // FowardIterator or better, as we can use std::distance
 template<class InputIt, class>
 auto
@@ -141,9 +141,9 @@ replace(
     cleanup c{tmp, dsp};
     std::memcpy(
         impl_.replace_unchecked(
-            first - begin(), 
-            last - first, 
-            tmp.size(), 
+            first - begin(),
+            last - first,
+            tmp.size(),
             sp_),
         tmp.data(),
         tmp.size());

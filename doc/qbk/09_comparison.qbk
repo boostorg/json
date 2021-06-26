@@ -79,7 +79,7 @@ vocabulary type.
 * Value Type: [@https://github.com/Tencent/rapidjson/blob/bb5f966b9939d6cdfbac3462a0410e185099b3af/include/rapidjson/document.h#L608 `rapidjson::GenericValue`]
 
 ```
-template <typename Encoding, typename Allocator = MemoryPoolAllocator<> > 
+template <typename Encoding, typename Allocator = MemoryPoolAllocator<> >
 class GenericValue;
 
 template <bool Const, typename ValueT>

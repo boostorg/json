@@ -22,7 +22,7 @@ BOOST_JSON_NS_BEGIN
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable: 4251) // class needs to have dll-interface to be used by clients of class
-#pragma warning(disable: 4275) // non dll-interface class used as base for dll-interface class 
+#pragma warning(disable: 4275) // non dll-interface class used as base for dll-interface class
 #endif
 
 //----------------------------------------------------------
@@ -85,7 +85,7 @@ BOOST_JSON_NS_BEGIN
 class BOOST_JSON_CLASS_DECL
     monotonic_resource final
     : public memory_resource
-{   
+{
     struct block;
     struct block_base
     {

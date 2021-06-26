@@ -40,7 +40,7 @@ BOOST_JSON_NS_BEGIN
     deallocate.
 
     @li Owning, when constructing using the function
-    @ref make_shared_resource. In this case 
+    @ref make_shared_resource. In this case
     ownership is shared; the lifetime of the memory
     resource extends until the last copy of the
     @ref storage_ptr is destroyed.
@@ -68,7 +68,7 @@ BOOST_JSON_NS_BEGIN
     @endcode
 
     @par Thread Safety
-    
+
     Instances of this type provide the default level of
     thread safety for all C++ objects. Specifically, it
     conforms to
@@ -489,7 +489,7 @@ make_shared_resource(Args&&... args)
     BOOST_STATIC_ASSERT(
         std::is_base_of<
             memory_resource, T>::value);
-    return storage_ptr(new 
+    return storage_ptr(new
         detail::shared_resource_impl<T>(
             std::forward<Args>(args)...));
 }

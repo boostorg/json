@@ -19,7 +19,7 @@ namespace detail {
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable: 4251) // class needs to have dll-interface to be used by clients of class
-#pragma warning(disable: 4275) // non dll-interface class used as base for dll-interface class 
+#pragma warning(disable: 4275) // non dll-interface class used as base for dll-interface class
 #endif
 
 // A simple memory resource that uses operator new and delete.
@@ -52,7 +52,7 @@ public:
             reinterpret_cast<std::uintptr_t*>(
                 &instance_));
     }
-    
+
     ~default_resource();
 
     void*

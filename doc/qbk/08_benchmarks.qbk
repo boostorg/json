@@ -13,7 +13,7 @@ This section compares the performance of Boost.JSON with two widely
 used libraries with similar functionality:
 RapidJSON
 which is known for its performance, and
-JSON for Modern C++ 
+JSON for Modern C++
 which is known for feature-richness.
 The bench program measures the throughput of parsing and
 serialization for the a set of JSON representing typical
@@ -192,7 +192,7 @@ The input files, available in the bench/data directory, are laid out thusly:
 ]
 
 Hardware used for testing: [*Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz],
-Windows 10, 32GB RAM. 
+Windows 10, 32GB RAM.
 
 Compilers and optimization flags: gcc 8.1 (-O3), clang 12.0 (-O3), and msvc 19.26 (/O2).
 

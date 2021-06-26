@@ -158,7 +158,7 @@ public:
     {
         return p_ < end_;
     }
-    
+
     const char* begin() const noexcept
     {
         return p_;

@@ -13,7 +13,7 @@
 [section string]
 
 Modifiable sequences of characters are represented using objects of type __string__.
-The interface and functionality of __string__ is 
+The interface and functionality of __string__ is
 the same as `std::basic_string` except that:
 
 * __string__ is not a class template,
@@ -29,10 +29,10 @@ with a __string_view__ based interface,
 
 With augmented interface, operations requiring an input string
 are implemented as a single overload with a parameter of type
-__string_view__, and can accept most string-like objects. 
+__string_view__, and can accept most string-like objects.
 Objects such as null terminated character pointers, `std::string`,
 `json::string`, subranges of strings, and objects
-convertible to __string_view__ can all be passed to these functions. 
+convertible to __string_view__ can all be passed to these functions.
 
 [snippet_strings_4]
 

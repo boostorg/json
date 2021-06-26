@@ -574,7 +574,7 @@ struct instance
     {
         auto const saved =
             current();
-        //current()->os_ 
+        //current()->os_
         T().run();
         current() = saved;
     }

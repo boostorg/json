@@ -95,7 +95,7 @@ public:
 };
 
 #ifndef BOOST_JSON_DOCS
-// VFALCO Renamed this to work around an msvc bug 
+// VFALCO Renamed this to work around an msvc bug
 namespace detail_pilfer {
 template<class>
 struct not_pilfered

@@ -182,7 +182,7 @@ public:
     }
 
     explicit
-    null_parser(parse_options po) 
+    null_parser(parse_options po)
         : p_(po)
     {
     }
@@ -281,7 +281,7 @@ class fail_parser
         bool
         on_key_part(
             string_view,
-            std::size_t, 
+            std::size_t,
             error_code& ec)
         {
             return maybe_fail(ec);
@@ -290,16 +290,16 @@ class fail_parser
         bool
         on_key(
             string_view,
-            std::size_t, 
+            std::size_t,
             error_code& ec)
         {
             return maybe_fail(ec);
         }
-        
+
         bool
         on_string_part(
             string_view,
-            std::size_t, 
+            std::size_t,
             error_code& ec)
         {
             return maybe_fail(ec);
@@ -308,7 +308,7 @@ class fail_parser
         bool
         on_string(
             string_view,
-            std::size_t, 
+            std::size_t,
             error_code& ec)
         {
             return maybe_fail(ec);
@@ -363,19 +363,19 @@ class fail_parser
             return maybe_fail(ec);
         }
 
-        bool 
+        bool
         on_comment_part(
-            string_view, 
-            error_code& ec) 
-        { 
-            return maybe_fail(ec); 
+            string_view,
+            error_code& ec)
+        {
+            return maybe_fail(ec);
         }
-    
+
         bool
         on_comment(
-            string_view, 
-            error_code& ec) 
-        { 
+            string_view,
+            error_code& ec)
+        {
             return maybe_fail(ec);
         }
     };
@@ -525,7 +525,7 @@ class throw_parser
         bool
         on_key_part(
             string_view,
-            std::size_t, 
+            std::size_t,
             error_code&)
         {
             return maybe_throw();
@@ -534,16 +534,16 @@ class throw_parser
         bool
         on_key(
             string_view,
-            std::size_t, 
+            std::size_t,
             error_code&)
         {
             return maybe_throw();
         }
-        
+
         bool
         on_string_part(
             string_view,
-            std::size_t, 
+            std::size_t,
             error_code&)
         {
             return maybe_throw();
@@ -552,7 +552,7 @@ class throw_parser
         bool
         on_string(
             string_view,
-            std::size_t, 
+            std::size_t,
             error_code&)
         {
             return maybe_throw();
@@ -607,19 +607,19 @@ class throw_parser
             return maybe_throw();
         }
 
-        bool 
+        bool
         on_comment_part(
-            string_view, 
-            error_code&) 
-        { 
-            return maybe_throw(); 
+            string_view,
+            error_code&)
+        {
+            return maybe_throw();
         }
-    
+
         bool
         on_comment(
-            string_view, 
-            error_code&) 
-        { 
+            string_view,
+            error_code&)
+        {
             return maybe_throw();
         }
     };
@@ -1059,11 +1059,11 @@ bool
 check_hash_equal(
     T const& lhs,
     T const& rhs)
-{    
+{
     if(lhs == rhs){
         return (std::hash<T>{}(lhs) == std::hash<T>{}(rhs));
     }
-    return false; // ensure lhs == rhs intention 
+    return false; // ensure lhs == rhs intention
 }
 
 template<typename T, typename U>
@@ -1076,7 +1076,7 @@ check_hash_equal(
     if(lhs == rhs){
         return (std::hash<value>{}(lhs) == std::hash<value>{}(rhs));
     }
-    return false; // ensure lhs == rhs intention 
+    return false; // ensure lhs == rhs intention
 }
 
 template<typename T>

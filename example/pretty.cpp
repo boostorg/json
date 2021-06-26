@@ -89,7 +89,7 @@ pretty_print( std::ostream& os, json::value const& jv, std::string* indent = nul
                 if(++it == arr.end())
                     break;
                 os << ",\n";
-            }   
+            }
         }
         os << "\n";
         indent->resize(indent->size() - 4);

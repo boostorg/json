@@ -14,14 +14,14 @@
 JSON numbers are represented using `std::int64_t`, `std::uint64_t`, and `double`.
 When a __value__ is constructed from an unsigned integer, its __kind__
 will be `kind::uint64`. Likewise, a __value__ constructed from
-a signed integer will have `kind::int64`, or `kind::double_` if 
+a signed integer will have `kind::int64`, or `kind::double_` if
 constructed from a floating-point type:
 
 [doc_using_numbers_1]
 
 When accessing a number contained within a __value__, the function
-used must match the value's __kind__ exactly; no conversions will be performed. 
-For example if `as_double` is called on a __value__ that contains a `std::uint64_t`, 
+used must match the value's __kind__ exactly; no conversions will be performed.
+For example if `as_double` is called on a __value__ that contains a `std::uint64_t`,
 an exception is thrown. Similarly, the function `if_double` will return `nullptr`
 and calling `get_double` will result in undefined behavior:
 
@@ -65,7 +65,7 @@ More formally, if the number:
 * is negative and its value is less than `INT64_MIN`, or
 * is positive and its value is greater than `UINT64_MAX`,
 
-then its type is `double`. 
+then its type is `double`.
 Otherwise, if the number is positive and its value is
 greater than `INT64_MAX`, then its type is `std::uint64_t`.
 All other numbers are parsed as `std::int64_t`.

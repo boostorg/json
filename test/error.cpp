@@ -51,7 +51,7 @@ public:
         check(condition::parse_error, error::extra_data);
         check(condition::parse_error, error::incomplete);
         check(condition::parse_error, error::exponent_overflow);
-        check(condition::parse_error, error::too_deep);       
+        check(condition::parse_error, error::too_deep);
         check(condition::parse_error, error::illegal_leading_surrogate);
         check(condition::parse_error, error::illegal_trailing_surrogate);
         check(condition::parse_error, error::expected_hex_digit);
@@ -64,7 +64,7 @@ public:
 
         check(condition::assign_error, error::not_number);
         check(condition::assign_error, error::not_exact);
-    
+
         check(error::test_failure);
     }
 };

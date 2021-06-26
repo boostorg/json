@@ -307,7 +307,7 @@ public:
 
         After construction, the moved-from object behaves
         as if newly constructed with its current memory resource.
-        
+
         @par Complexity
         Constant.
 
@@ -336,7 +336,7 @@ public:
         element-wise copy is performed, which may throw.
         In this case, the moved-from object is not
         changed.
-        
+
         @par Complexity
         Constant or linear in `other.size()`.
 
@@ -362,7 +362,7 @@ public:
         This is more efficient than move construction, when
         it is known that the moved-from object will be
         immediately destroyed afterwards.
-        
+
         @par Complexity
         Constant.
 
@@ -944,7 +944,7 @@ public:
         @par Exception Safety
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
-        
+
         @param p The value to insert.
 
         @throw std::length_error key is too long.
@@ -983,13 +983,13 @@ public:
         std::is_constructible_v<value_type, std::iterator_traits<InputIt>::value_type>
         @endcode
 
-        @par Complexity      
+        @par Complexity
         Linear in `std::distance(first, last)`.
 
         @par Exception Safety
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
-        
+
         @param first An input iterator pointing to the first
         element to insert, or pointing to the end of the range.
 
@@ -1022,13 +1022,13 @@ public:
         that compare equal, only the first equivalent
         element will be inserted.
 
-        @par Complexity      
+        @par Complexity
         Linear in `init.size()`.
 
         @par Exception Safety
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
-        
+
         @param init The initializer list to insert
     */
     BOOST_JSON_DECL
@@ -1138,7 +1138,7 @@ public:
     BOOST_JSON_DECL
     iterator
     erase(const_iterator pos) noexcept;
-    
+
     /** Erase an element
 
         Remove the element which matches `key`, if it exists.
@@ -1566,7 +1566,7 @@ namespace std {
 template <>
 struct hash< ::boost::json::object > {
     BOOST_JSON_DECL
-    std::size_t 
+    std::size_t
     operator()(::boost::json::object const& jo) const noexcept;
 };
 } // std

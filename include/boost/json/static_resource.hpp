@@ -18,7 +18,7 @@ BOOST_JSON_NS_BEGIN
 
 #ifdef _MSC_VER
 #pragma warning(push)
-#pragma warning(disable: 4275) // non dll-interface class used as base for dll-interface class 
+#pragma warning(disable: 4275) // non dll-interface class used as base for dll-interface class
 #endif
 
 //----------------------------------------------------------
@@ -65,7 +65,7 @@ BOOST_JSON_NS_BEGIN
 class BOOST_JSON_CLASS_DECL
     static_resource final
     : public memory_resource
-{   
+{
     void* p_;
     std::size_t n_;
     std::size_t size_;

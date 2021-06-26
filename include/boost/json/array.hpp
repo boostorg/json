@@ -363,7 +363,7 @@ public:
         This is more efficient than move construction, when
         it is known that the moved-from object will be
         immediately destroyed afterwards.
-        
+
         @par Complexity
         Constant.
 
@@ -396,7 +396,7 @@ public:
         After construction, the moved-from array behaves
         as if newly constructed with its current storage
         pointer.
-        
+
         @par Complexity
         Constant.
 
@@ -429,7 +429,7 @@ public:
         element-wise copy is performed, which may throw.
         In this case, the moved-from array is not
         changed.
-        
+
         @par Complexity
         At most, linear in `other.size()`.
 
@@ -1224,7 +1224,7 @@ public:
         be inserted. This may be the @ref end() iterator.
 
         @param count The number of copies to insert.
-        
+
         @param v The value to insert. Copies will be made
         using container's associated @ref memory_resource.
 
@@ -1274,7 +1274,7 @@ public:
 
         @param pos Iterator before which the content will
         be inserted. This may be the @ref end() iterator.
-        
+
         @param first An input iterator pointing to the first
         element to insert, or pointing to the end of the range.
 
@@ -1318,7 +1318,7 @@ public:
 
         @param pos Iterator before which the content will
         be inserted. This may be the @ref end() iterator.
-        
+
         @param init The initializer list to insert
 
         @return An iterator to the first inserted value, or
@@ -1351,7 +1351,7 @@ public:
 
         @param pos Iterator before which the element will
         be inserted. This may be the @ref end() iterator.
-        
+
         @param arg The argument to forward to the @ref value
         constructor.
 
@@ -1476,7 +1476,7 @@ public:
         @par Exception Safety
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
-        
+
         @param arg The argument to forward to the @ref value
         constructor.
 
@@ -1513,7 +1513,7 @@ public:
 
         @li If `size() < count`, additional null values
         are appended.
-        
+
         @par Complexity
         Linear in `abs(size() - count)`, plus the cost of
         reallocation if @ref capacity() is less than `count`.
@@ -1541,7 +1541,7 @@ public:
 
         @li If `size() < count`, additional copies of `v`
         are appended.
-        
+
         @par Complexity
         Linear in `abs(size() - count)`, plus the cost of
         reallocation if @ref capacity() is less than `count`.
@@ -1575,7 +1575,7 @@ public:
         the contents are logically swapped by making copies,
         which can throw. In this case all iterators and
         references are invalidated.
-        
+
         @par Complexity
         Constant or linear in @ref size() plus `other.size()`.
 
@@ -1610,7 +1610,7 @@ public:
         @code
         lhs.swap( rhs );
         @endcode
-        
+
         @par Complexity
         Constant or linear in `lhs.size() + rhs.size()`.
 
@@ -1746,7 +1746,7 @@ namespace std {
 template <>
 struct hash< ::boost::json::array > {
     BOOST_JSON_DECL
-    std::size_t 
+    std::size_t
     operator()(::boost::json::array const& ja) const noexcept;
 };
 } // std

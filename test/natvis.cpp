@@ -102,7 +102,7 @@ public:
             monotonic_resource mr1;
             static_resource mr2(buf);
             storage_ptr sp;
-            
+
             sp = &mr1;
             sp = &mr2;
             sp = {};

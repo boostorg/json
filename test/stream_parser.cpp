@@ -306,7 +306,7 @@ public:
 
     void
     static
-    check_round_trip(value const& jv1, 
+    check_round_trip(value const& jv1,
         const parse_options& po = parse_options())
     {
         auto const s2 =
@@ -343,7 +343,7 @@ public:
     template<class F>
     static
     void
-    grind(string_view s, F const& f, 
+    grind(string_view s, F const& f,
         const parse_options& po = parse_options())
     {
         try
@@ -387,7 +387,7 @@ public:
 
     static
     void
-    grind(string_view s, 
+    grind(string_view s,
         const parse_options& po = parse_options())
     {
         grind(s,
@@ -533,13 +533,13 @@ public:
                     if(BOOST_TEST(! ec))
                         check_round_trip(
                             p.release());
-                }   
+                }
             }
         }
     }
 
     //------------------------------------------------------
-    
+
     struct f_boost
     {
         static
@@ -1027,7 +1027,7 @@ R"xx({
         }
     }
 })xx";
-        string_view out = 
+        string_view out =
             "{\"glossary\":{\"title\":\"example glossary\",\"GlossDiv\":"
             "{\"title\":\"S\",\"GlossList\":{\"GlossEntry\":{\"ID\":\"SGML\","
             "\"SortAs\":\"SGML\",\"GlossTerm\":\"Standard Generalized Markup "
@@ -1035,7 +1035,7 @@ R"xx({
             "\"GlossDef\":{\"para\":\"A meta-markup language, used to create "
             "markup languages such as DocBook.\",\"GlossSeeAlso\":[\"GML\",\"XML\"]},"
             "\"GlossSee\":\"markup\"}}}}}";
-        storage_ptr sp = 
+        storage_ptr sp =
             make_shared_resource<monotonic_resource>();
         stream_parser p(sp);
         error_code ec;
@@ -1046,7 +1046,7 @@ R"xx({
             BOOST_TEST(serialize(p.release()) == out);
     }
 
-    void 
+    void
     testTrailingCommas()
     {
         parse_options enabled;
@@ -1096,7 +1096,7 @@ R"xx({
         grind("{\"a\":1// c++ \n, \"b\":2}", enabled);
         grind("{\"a\":1, // c++ \n \"b\":2}", enabled);
         grind("{\"a\"// c++ \n:1}", enabled);
-        grind("{\"a\":// c++ \n1}", enabled);   
+        grind("{\"a\":// c++ \n1}", enabled);
     }
 
     void

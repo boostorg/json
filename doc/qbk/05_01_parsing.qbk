@@ -149,7 +149,7 @@ allow some non-standard JSON extensions to be recognized:
 
 [heading Streaming Parser]
 
-The __stream_parser__ implements a 
+The __stream_parser__ implements a
 [@https://en.wikipedia.org/wiki/Online_algorithm ['streaming algorithm]];
 it allows incremental processing of large JSON inputs using one or more
 contiguous character buffers. The entire input JSON does not need to be

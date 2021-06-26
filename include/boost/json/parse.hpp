@@ -78,7 +78,7 @@ parse(
 
     @return A value representing the parsed
     JSON upon success.
-    
+
     @param s The string to parse.
 
     @param sp The memory resource that the new value and all

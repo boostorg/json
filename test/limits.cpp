@@ -339,7 +339,7 @@ public:
             auto jv = parse(js, ec);
             BOOST_TEST(ec == error::string_too_large);
         }
-        
+
 
         // object overflow
         {
@@ -349,7 +349,7 @@ public:
                 "10":0,"11":0,"12":0,"13":0,"14":0,"15":0,"16":0,"17":0,"18":0,"19":0,
                 "20":0
                 })";
-                
+
             auto jv = parse(s, ec);
             BOOST_TEST(ec == error::object_too_large);
         }

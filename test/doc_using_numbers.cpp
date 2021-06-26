@@ -40,7 +40,7 @@ static void set1() {
 value jv1 = 1;
 
 assert( jv1.is_int64() );
-        
+
 // construction from unsigned int
 value jv2 = 2u;
 
@@ -59,7 +59,7 @@ assert( jv3.is_double() );
 value jv = 1;
 
 assert( jv.is_int64() );
-        
+
 // jv.kind() != kind::uint64; throws
 std::uint64_t r1 = jv.as_uint64();
 
@@ -156,7 +156,7 @@ assert( ja[0].is_int64() );
 
 // represented by std::int64_t
 assert( ja[1].is_int64() );
-        
+
 // contains decimal point, represented as double
 assert( ja[2].is_double() );
 

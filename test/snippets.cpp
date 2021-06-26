@@ -196,9 +196,9 @@ usingValues()
         jv = value( array_kind );
 
         assert( jv.is_array() );
-        
+
         jv.emplace_string();
-        
+
         assert( jv.is_string() );
 
         //]
@@ -228,7 +228,7 @@ usingValues()
 
             //]
         }
-        catch(...) 
+        catch(...)
         {
         }
     }
@@ -304,7 +304,7 @@ usingInitLists()
         //[snippet_init_list_4
 
         // Should this be an array or an object?
-        value jv = { { "hello", 42 }, { "world", 43 } }; 
+        value jv = { { "hello", 42 }, { "world", 43 } };
 
         //]
     }
@@ -329,7 +329,7 @@ usingInitLists()
         value jv4 = { { "color", "blue" }, { 1, "red" } };
 
         assert( jv2.is_array() && jv3.is_array() && jv4.is_array() );
-        
+
         //]
     }
 
@@ -368,10 +368,10 @@ usingInitLists()
 
         (void)ja;
     }
-    
+
     {
         //[snippet_init_list_8
-        
+
         object jo = { { "mercury", { { "distance", 36 } } }, { "venus", { 67, "million miles" } }, { "earth", 93 } };
 
         assert( jo["mercury"].is_object() );
@@ -383,13 +383,13 @@ usingInitLists()
 
     {
         //[snippet_init_list_9
-        
+
         object jo1 = { { "john", 100 }, { "dave", 500 }, { "joe", 300 } };
-        
+
         value jv = { { "clients", std::move(jo1) } };
 
         object& jo2 = jv.as_object()["clients"].as_object();
-        
+
         assert( ! jo2.empty() && jo1.empty() );
 
         assert( serialize(jv) == R"({"clients":{"john":100,"dave":500,"joe":300}})" );
@@ -442,7 +442,7 @@ usingArrays()
 
         //]
     }
-    catch (...) 
+    catch (...)
     {
     }
 }
@@ -531,10 +531,10 @@ struct vec3
 template< class T >
 void tag_invoke( const value_from_tag&, value& jv, const vec3<T>& vec )
 {
-    jv = { 
-        { "x", vec.x }, 
-        { "y", vec.y }, 
-        { "z", vec.z } 
+    jv = {
+        { "x", vec.x },
+        { "y", vec.y },
+        { "z", vec.z }
     };
 }
 
@@ -668,7 +668,7 @@ usingExchange()
         value jv = value_from( positions );
 
         assert( jv.is_object() );
-        
+
         object& jo = jv.as_object();
 
         assert( jo.size() == 3 );
@@ -678,7 +678,7 @@ usingExchange()
             []( std::int64_t total, const key_value_pair& jp )
             {
                 assert ( jp.value().is_object() );
-                
+
                 const object& pos = jp.value().as_object();
 
                 return total + pos.at( "x" ).as_int64() +
@@ -686,7 +686,7 @@ usingExchange()
                     pos.at( "z" ).as_int64();
 
             } ) == 0 );
-   
+
         //]
 
         (void)jo;
@@ -726,7 +726,7 @@ usingExchange()
         value jv = value_from( available_tools );
 
         assert( jv.is_object() );
-        
+
         //]
     }
     {

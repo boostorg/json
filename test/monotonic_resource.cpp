@@ -229,19 +229,19 @@ public:
         }
         // test if sizes are correctly determined from initial buffers
         {
-            {   
+            {
                 unsigned char buf[512];
                 monotonic_resource mr(buf, 512);
                 BOOST_TEST(all_alloc_in_same_block(mr, 512, 1));
                 BOOST_TEST(all_alloc_in_same_block(mr, 1024, 1));
             }
-            {   
+            {
                 unsigned char buf[2048];
                 monotonic_resource mr(buf, 2048);
                 BOOST_TEST(all_alloc_in_same_block(mr, 2048, 1));
                 BOOST_TEST(all_alloc_in_same_block(mr, 4096, 1));
             }
-            {   
+            {
                 unsigned char buf[4000];
                 monotonic_resource mr(buf, 4000);
                 BOOST_TEST(all_alloc_in_same_block(mr, 4000, 1));

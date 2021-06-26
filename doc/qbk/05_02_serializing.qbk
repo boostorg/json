@@ -51,11 +51,11 @@ The __serialize__ function converts a __value__ into a __std_string__:
 
 [doc_serializing_2]
 
-In situations where serializing a __value__ 
+In situations where serializing a __value__
 in its entirety is inefficient or even impossible,
 __serializer__ can be used to incrementally serialize
 a __value__ incrementally. This may be done for a variety
-of reasons, such as to avoid buffering the entire output, 
+of reasons, such as to avoid buffering the entire output,
 or to ensure that a fixed amount of work is performed
 in each cycle. Instances of __serializer__ maintain an
 output state using internal dynamically allocated structures,

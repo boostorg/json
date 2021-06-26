@@ -139,7 +139,7 @@ private:
 
         return ::operator new( bytes );
     }
-    
+
     void do_deallocate( void* ptr, std::size_t bytes, std::size_t align ) override
     {
         std::cout << "Deallocating " << bytes << " bytes with alignment " << align << " @ address " << ptr << '\n';
@@ -153,7 +153,7 @@ private:
         // any instance of a logging_resource can deallocate memory allocated
         // by another instance of a logging_resource
 
-        return dynamic_cast< logging_resource const* >( &other ) != nullptr; 
+        return dynamic_cast< logging_resource const* >( &other ) != nullptr;
     }
 };
 //]

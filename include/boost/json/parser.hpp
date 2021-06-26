@@ -134,7 +134,7 @@ public:
         No-throw guarantee.
     */
     ~parser() = default;
-   
+
     /** Constructor.
 
         This constructs a new parser which first uses

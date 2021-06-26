@@ -46,22 +46,22 @@
 #endif
 
 #ifndef BOOST_JSON_REQUIRE_CONST_INIT
-# define BOOST_JSON_REQUIRE_CONST_INIT		
+# define BOOST_JSON_REQUIRE_CONST_INIT
 # if __cpp_constinit >= 201907L
-#  undef BOOST_JSON_REQUIRE_CONST_INIT		
+#  undef BOOST_JSON_REQUIRE_CONST_INIT
 #  define BOOST_JSON_REQUIRE_CONST_INIT constinit
-# elif defined(__clang__) && defined(__has_cpp_attribute)		
-#  if __has_cpp_attribute(clang::require_constant_initialization)		
-#   undef BOOST_JSON_REQUIRE_CONST_INIT		
-#   define BOOST_JSON_REQUIRE_CONST_INIT [[clang::require_constant_initialization]]		
+# elif defined(__clang__) && defined(__has_cpp_attribute)
+#  if __has_cpp_attribute(clang::require_constant_initialization)
+#   undef BOOST_JSON_REQUIRE_CONST_INIT
+#   define BOOST_JSON_REQUIRE_CONST_INIT [[clang::require_constant_initialization]]
 #  endif
 # endif
 #endif
 
-#ifndef BOOST_JSON_NO_DESTROY	
-# if defined(__clang__) && defined(__has_cpp_attribute)		
-#  if __has_cpp_attribute(clang::no_destroy)		
-#   define BOOST_JSON_NO_DESTROY [[clang::no_destroy]]		
+#ifndef BOOST_JSON_NO_DESTROY
+# if defined(__clang__) && defined(__has_cpp_attribute)
+#  if __has_cpp_attribute(clang::no_destroy)
+#   define BOOST_JSON_NO_DESTROY [[clang::no_destroy]]
 #  endif
 # endif
 #endif
@@ -79,7 +79,7 @@
 #    if __has_attribute(noreturn)
 #      define BOOST_NORETURN [[noreturn]]
 #    endif
-#  elif defined(__has_cpp_attribute) 
+#  elif defined(__has_cpp_attribute)
 #    if __has_cpp_attribute(noreturn)
 #      define BOOST_NORETURN [[noreturn]]
 #    endif
@@ -184,8 +184,8 @@
 #ifndef BOOST_JSON_DECL
 #define BOOST_JSON_DECL
 #endif
-#ifndef BOOST_JSON_CLASS_DECL 
-#define BOOST_JSON_CLASS_DECL 
+#ifndef BOOST_JSON_CLASS_DECL
+#define BOOST_JSON_CLASS_DECL
 #endif
 
 #ifndef BOOST_JSON_LIKELY
@@ -212,7 +212,7 @@
 # elif defined(__has_builtin)
 #  if __has_builtin(__builtin_unreachable)
 #   undef BOOST_JSON_UNREACHABLE
-#   define BOOST_JSON_UNREACHABLE() __builtin_unreachable() 
+#   define BOOST_JSON_UNREACHABLE() __builtin_unreachable()
 #  endif
 # endif
 #endif
@@ -230,7 +230,7 @@
 # endif
 #endif
 
-// older versions of msvc and clang don't always 
+// older versions of msvc and clang don't always
 // constant initialize when they are supposed to
 #ifndef BOOST_JSON_WEAK_CONSTINIT
 # if defined(_MSC_VER) && ! defined(__clang__) && _MSC_VER < 1920

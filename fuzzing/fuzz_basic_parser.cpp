@@ -57,7 +57,7 @@ public:
     ~null_parser()
     {
     }
-        
+
     std::size_t
     write(
         char const* data,

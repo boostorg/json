@@ -61,7 +61,7 @@ class string;
     class my_type
     {
         value jv_;
-    
+
     public:
         my_type( std::initializer_list< value_ref > init )
             : jv_(init)

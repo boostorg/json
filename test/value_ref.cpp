@@ -24,7 +24,7 @@ BOOST_JSON_NS_BEGIN
     class my_type
     {
         json::value jv_;
-    
+
     public:
         my_type( std::initializer_list< json::value_ref > init )
             : jv_(init)
@@ -116,7 +116,7 @@ public:
             (void)value_ref(std::move(val));
         }
     }
-    
+
     void
     testInitList()
     {
@@ -189,14 +189,14 @@ public:
             string const s{};
             (void)init_list{s};
         }
-        
+
         // init_list
         (void)init_list{{1,2,3,4,5}};
         (void)init_list{{{1,2},{3,4,5}}};
         (void)init_list{{1,2,{3,{4,5}}}};
 
         {
-            init_list init = 
+            init_list init =
                 { { "key", true } };
             (void)init;
         }

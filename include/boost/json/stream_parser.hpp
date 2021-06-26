@@ -155,7 +155,7 @@ public:
         No-throw guarantee.
     */
     ~stream_parser() = default;
-   
+
     /** Constructor.
 
         This constructs a new parser which first uses
