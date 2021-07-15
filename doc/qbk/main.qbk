@@ -79,8 +79,10 @@
 [def __value_stack__            [link json.ref.boost__json__value_stack `value_stack`]]
 [def __value_to__               [link json.ref.boost__json__value_to `value_to`]]
 
+[def __std_array__              [@https://en.cppreference.com/w/cpp/container/array `std::array`]]
 [def __initializer_list__       [@https://en.cppreference.com/w/cpp/utility/initializer_list `std::initializer_list`]]
 [def __std_complex__            [@https://en.cppreference.com/w/cpp/numeric/complex `std::complex`]]
+[def __std_hash__               [@https://en.cppreference.com/w/cpp/utility/hash `std::hash`]]
 [def __std_memory_resource__    [@https://en.cppreference.com/w/cpp/memory/memory_resource `std::pmr::memory_resource`]]
 [def __std_ostream__            [@https://en.cppreference.com/w/cpp/io/basic_ostream `std::ostream`]]
 [def __std_polymorphic_allocator__ [@https://en.cppreference.com/w/cpp/memory/polymorphic_allocator `std::pmr::polymorphic_allocator`]]

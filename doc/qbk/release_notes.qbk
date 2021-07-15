@@ -17,6 +17,7 @@
 
 * [issue 538] [link json.ref.boost__json__string.operator_std__string_view
   Implicit conversion operator from `string` to `std::string_view`].
+* [issue 521] __std_hash__ specializations for json types.
 
 [*Fixes]
 
@@ -28,6 +29,7 @@
 [*Improvements]
 
 * __value_to__ supports `TupleLike` types.
+* __value_to__ and __value_from__ support __std_array__ and similar types.
 
 [heading Boost 1.76.0]
 
