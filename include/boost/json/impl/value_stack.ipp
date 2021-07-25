@@ -117,7 +117,7 @@ value_stack::
 stack::
 grow_one()
 {
-    BOOST_ASSERT(chars_ == 0);
+    BOOST_JSON_ASSERT(chars_ == 0);
     std::size_t const capacity =
         end_ - begin_;
     std::size_t new_cap = min_size_;
@@ -159,7 +159,7 @@ grow(std::size_t nchars)
                 sizeof(value));
     std::size_t const capacity =
         end_ - begin_;
-    BOOST_ASSERT(
+    BOOST_JSON_ASSERT(
         needed > capacity);
     std::size_t new_cap = min_size_;
     // VFALCO check overflow here
@@ -217,7 +217,7 @@ append(string_view s)
 
     // ensure a pushed value cannot
     // clobber the released string.
-    BOOST_ASSERT(
+    BOOST_JSON_ASSERT(
         reinterpret_cast<char*>(
             top_ + 1) + chars_ <=
         reinterpret_cast<char*>(
@@ -231,7 +231,7 @@ release_string() noexcept
 {
     // ensure a pushed value cannot
     // clobber the released string.
-    BOOST_ASSERT(
+    BOOST_JSON_ASSERT(
         reinterpret_cast<char*>(
             top_ + 1) + chars_ <=
         reinterpret_cast<char*>(
@@ -249,8 +249,8 @@ value_stack::
 stack::
 release(std::size_t n) noexcept
 {
-    BOOST_ASSERT(n <= size());
-    BOOST_ASSERT(chars_ == 0);
+    BOOST_JSON_ASSERT(n <= size());
+    BOOST_JSON_ASSERT(chars_ == 0);
     top_ -= n;
     return top_;
 }
@@ -261,7 +261,7 @@ value_stack::
 stack::
 push(Args&&... args)
 {
-    BOOST_ASSERT(chars_ == 0);
+    BOOST_JSON_ASSERT(chars_ == 0);
     if(top_ >= end_)
         grow_one();
     value& jv = detail::access::
@@ -277,7 +277,7 @@ value_stack::
 stack::
 exchange(Unchecked&& u)
 {
-    BOOST_ASSERT(chars_ == 0);
+    BOOST_JSON_ASSERT(chars_ == 0);
     union U
     {
         value v;
@@ -342,7 +342,7 @@ release() noexcept
     // This means the caller did not
     // cause a single top level element
     // to be produced.
-    BOOST_ASSERT(st_.size() == 1);
+    BOOST_JSON_ASSERT(st_.size() == 1);
 
     // give up shared ownership
     sp_ = {};

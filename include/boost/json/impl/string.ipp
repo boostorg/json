@@ -372,7 +372,7 @@ void
 string::
 swap(string& other)
 {
-    BOOST_ASSERT(this != &other);
+    BOOST_JSON_ASSERT(this != &other);
     if(*sp_ == *other.sp_)
     {
         std::swap(impl_, other.impl_);
@@ -394,7 +394,7 @@ void
 string::
 reserve_impl(size_type new_cap)
 {
-    BOOST_ASSERT(
+    BOOST_JSON_ASSERT(
         new_cap >= impl_.capacity());
     if(new_cap > impl_.capacity())
     {

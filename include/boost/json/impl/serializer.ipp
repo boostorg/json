@@ -437,7 +437,7 @@ write_number(stream& ss0)
     {
         state st;
         st_.pop(st);
-        BOOST_ASSERT(
+        BOOST_JSON_ASSERT(
             st == state::num);
     }
     auto const n = ss.remain();
@@ -718,7 +718,7 @@ read_some(
     // to call reset() before seriailzing a
     // new value, or you never checked done()
     // to see if you should stop.
-    BOOST_ASSERT(! done_);
+    BOOST_JSON_ASSERT(! done_);
 
     stream ss(dest, size);
     if(st_.empty())

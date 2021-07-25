@@ -37,7 +37,7 @@ serialize_impl(
     std::size_t len = sv.size();
     s.reserve(len * 2);
     s.resize(s.capacity());
-    BOOST_ASSERT(
+    BOOST_JSON_ASSERT(
         s.size() >= len * 2);
     std::memcpy(&s[0],
         sv.data(), sv.size());

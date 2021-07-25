@@ -90,7 +90,7 @@ value_from_helper(
     priority_tag<4>)
 {
     // do nothing
-    BOOST_ASSERT(jv.is_null());
+    BOOST_JSON_ASSERT(jv.is_null());
     (void)jv;
 }
 

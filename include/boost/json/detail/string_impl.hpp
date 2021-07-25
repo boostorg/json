@@ -217,7 +217,7 @@ public:
     release_key(
         std::size_t& n) noexcept
     {
-        BOOST_ASSERT(
+        BOOST_JSON_ASSERT(
             k_.k == key_string_);
         n = k_.n;
         auto const s = k_.s;
@@ -243,7 +243,7 @@ public:
         }
         else
         {
-            BOOST_ASSERT(
+            BOOST_JSON_ASSERT(
                 s_.k == key_string_);
             // VFALCO unfortunately the key string
             // kind increases the cost of the destructor.

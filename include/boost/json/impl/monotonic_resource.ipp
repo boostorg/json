@@ -141,7 +141,7 @@ do_allocate(
 
     p = detail::align(
         align, n, head_->p, head_->avail);
-    BOOST_ASSERT(p);
+    BOOST_JSON_ASSERT(p);
     head_->p = reinterpret_cast<
         unsigned char*>(p) + n;
     head_->avail -= n;

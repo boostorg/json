@@ -64,7 +64,7 @@ write_some(
 {
     auto const n = p_.write_some(
         false, data, size, ec);
-    BOOST_ASSERT(ec || p_.done());
+    BOOST_JSON_ASSERT(ec || p_.done());
     return n;
 }
 

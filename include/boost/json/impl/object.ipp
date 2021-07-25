@@ -36,7 +36,7 @@ std::size_t
 object::table::
 digest(string_view key) const noexcept
 {
-    BOOST_ASSERT(salt != 0);
+    BOOST_JSON_ASSERT(salt != 0);
     return detail::digest(
         key.data(), key.size(), salt);
 }
@@ -63,7 +63,7 @@ void
 object::table::
 clear() noexcept
 {
-    BOOST_ASSERT(! is_small());
+    BOOST_JSON_ASSERT(! is_small());
     // initialize buckets
     std::memset(
         reinterpret_cast<index_t*>(
@@ -82,8 +82,8 @@ allocate(
     BOOST_JSON_STATIC_ASSERT(
         alignof(key_value_pair) >=
         alignof(index_t));
-    BOOST_ASSERT(capacity > 0);
-    BOOST_ASSERT(capacity <= max_size());
+    BOOST_JSON_ASSERT(capacity > 0);
+    BOOST_JSON_ASSERT(capacity <= max_size());
     table* p;
     if(capacity <= detail::small_object_size_)
     {
@@ -158,7 +158,7 @@ object(detail::unchecked_object&& uo)
         return;
     }
     // should already be checked
-    BOOST_ASSERT(
+    BOOST_JSON_ASSERT(
         uo.size() <= max_size());
     t_ = table::allocate(
         uo.size(), 0, sp_);
@@ -631,7 +631,7 @@ find_impl(
             key_value_pair*,
             std::size_t>
 {
-    BOOST_ASSERT(t_->capacity > 0);
+    BOOST_JSON_ASSERT(t_->capacity > 0);
     if(t_->is_small())
     {
         auto it = &(*t_)[0];
@@ -685,7 +685,7 @@ insert_impl(
     pilfered<key_value_pair> p,
     std::size_t hash)
 {
-    BOOST_ASSERT(
+    BOOST_JSON_ASSERT(
         capacity() > size());
     if(t_->is_small())
     {
@@ -709,7 +709,7 @@ void
 object::
 rehash(std::size_t new_capacity)
 {
-    BOOST_ASSERT(
+    BOOST_JSON_ASSERT(
         new_capacity > t_->capacity);
     auto t = table::allocate(
         growth(new_capacity),
@@ -785,7 +785,7 @@ remove(
     index_t& head,
     key_value_pair& v) noexcept
 {
-    BOOST_ASSERT(! t_->is_small());
+    BOOST_JSON_ASSERT(! t_->is_small());
     auto const i = static_cast<
         index_t>(&v - begin());
     if(head == i)
@@ -804,8 +804,8 @@ void
 object::
 destroy() noexcept
 {
-    BOOST_ASSERT(t_->capacity > 0);
-    BOOST_ASSERT(! sp_.is_not_shared_and_deallocate_is_trivial());
+    BOOST_JSON_ASSERT(t_->capacity > 0);
+    BOOST_JSON_ASSERT(! sp_.is_not_shared_and_deallocate_is_trivial());
     destroy(begin(), end());
     table::deallocate(t_, sp_);
 }
@@ -816,7 +816,7 @@ destroy(
     key_value_pair* first,
     key_value_pair* last) noexcept
 {
-    BOOST_ASSERT(! sp_.is_not_shared_and_deallocate_is_trivial());
+    BOOST_JSON_ASSERT(! sp_.is_not_shared_and_deallocate_is_trivial());
     while(last != first)
         (--last)->~key_value_pair();
 }

@@ -61,7 +61,7 @@ public:
     char
     operator*() const noexcept
     {
-        BOOST_ASSERT(p_ < end_);
+        BOOST_JSON_ASSERT(p_ < end_);
         return *p_;
     }
 
@@ -69,7 +69,7 @@ public:
     const_stream&
     operator++() noexcept
     {
-        BOOST_ASSERT(p_ < end_);
+        BOOST_JSON_ASSERT(p_ < end_);
         ++p_;
         return *this;
     }
@@ -77,14 +77,14 @@ public:
     void
     skip(std::size_t n) noexcept
     {
-        BOOST_ASSERT(n <= remain());
+        BOOST_JSON_ASSERT(n <= remain());
         p_ += n;
     }
 
     void
     skip_to(const char* p) noexcept
     {
-        BOOST_ASSERT(p <= end_ && p >= p_);
+        BOOST_JSON_ASSERT(p <= end_ && p >= p_);
         p_ = p;
     }
 };
@@ -284,7 +284,7 @@ public:
     char&
     operator*() noexcept
     {
-        BOOST_ASSERT(p_ < end_);
+        BOOST_JSON_ASSERT(p_ < end_);
         return *p_;
     }
 
@@ -292,7 +292,7 @@ public:
     stream&
     operator++() noexcept
     {
-        BOOST_ASSERT(p_ < end_);
+        BOOST_JSON_ASSERT(p_ < end_);
         ++p_;
         return *this;
     }
@@ -303,7 +303,7 @@ public:
         char const* src,
         std::size_t n) noexcept
     {
-        BOOST_ASSERT(remain() >= n);
+        BOOST_JSON_ASSERT(remain() >= n);
         std::memcpy(p_, src, n);
         p_ += n;
     }
@@ -312,14 +312,14 @@ public:
     void
     append(char c) noexcept
     {
-        BOOST_ASSERT(p_ < end_);
+        BOOST_JSON_ASSERT(p_ < end_);
         *p_++ = c;
     }
 
     void
     advance(std::size_t n) noexcept
     {
-        BOOST_ASSERT(remain() >= n);
+        BOOST_JSON_ASSERT(remain() >= n);
         p_ += n;
     }
 };

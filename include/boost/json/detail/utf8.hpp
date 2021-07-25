@@ -186,7 +186,7 @@ public:
     bool
     valid() const noexcept
     {
-        BOOST_ASSERT(size_ >= length());
+        BOOST_JSON_ASSERT(size_ >= length());
         return is_valid_utf8(seq_, first_);
     }
 };

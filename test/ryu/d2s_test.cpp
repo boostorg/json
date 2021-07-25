@@ -36,8 +36,8 @@ static double int64Bits2Double(uint64_t bits) {
 }
 
 static double ieeeParts2Double(const bool sign, const uint32_t ieeeExponent, const uint64_t ieeeMantissa) {
-  BOOST_ASSERT(ieeeExponent <= 2047);
-  BOOST_ASSERT(ieeeMantissa <= ((std::uint64_t)1 << 53) - 1);
+  BOOST_JSON_ASSERT(ieeeExponent <= 2047);
+  BOOST_JSON_ASSERT(ieeeMantissa <= ((std::uint64_t)1 << 53) - 1);
   return int64Bits2Double(((std::uint64_t)sign << 63) | ((std::uint64_t)ieeeExponent << 52) | ieeeMantissa);
 }
 

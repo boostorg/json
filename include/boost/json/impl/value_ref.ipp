@@ -67,7 +67,7 @@ string_view
 value_ref::
 get_string() const noexcept
 {
-    BOOST_ASSERT(
+    BOOST_JSON_ASSERT(
         what_ == what::str ||
         what_ == what::strfunc);
     if (what_ == what::strfunc)
@@ -96,11 +96,11 @@ make_value(
     case what::func:
         return f_.f(f_.p,
             std::move(sp));
-    
+
     case what::strfunc:
         return f_.f(f_.p,
             std::move(sp));
-    
+
     case what::cfunc:
         return cf_.f(cf_.p,
             std::move(sp));

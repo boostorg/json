@@ -2343,7 +2343,7 @@ public:
     void
     grow(std::size_t n) noexcept
     {
-        BOOST_ASSERT(
+        BOOST_JSON_ASSERT(
             n <= impl_.capacity() - impl_.size());
         impl_.term(impl_.size() + n);
     }

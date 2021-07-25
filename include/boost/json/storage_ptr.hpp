@@ -129,7 +129,7 @@ class storage_ptr
                 static_cast<memory_resource*>(p)) + 1 +
             (json::is_deallocate_trivial<T>::value ? 2 : 0))
     {
-        BOOST_ASSERT(p);
+        BOOST_JSON_ASSERT(p);
     }
 
 public:
@@ -204,7 +204,7 @@ public:
                 static_cast<memory_resource *>(r)) +
             (json::is_deallocate_trivial<T>::value ? 2 : 0))
     {
-        BOOST_ASSERT(r);
+        BOOST_JSON_ASSERT(r);
     }
 
     /** Constructor

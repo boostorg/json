@@ -37,7 +37,7 @@ allocate(
     storage_ptr const& sp) ->
         table*
 {
-    BOOST_ASSERT(capacity > 0);
+    BOOST_JSON_ASSERT(capacity > 0);
     if(capacity > array::max_size())
         detail::throw_length_error(
             "array too large",
@@ -79,7 +79,7 @@ revert_insert(
     , i_(pos - arr_->data())
     , n_(n)
 {
-    BOOST_ASSERT(
+    BOOST_JSON_ASSERT(
         pos >= arr_->begin() &&
         pos <= arr_->end());
     if( n_ <= arr_->capacity() -
@@ -126,7 +126,7 @@ revert_insert::
 {
     if(! arr_)
         return;
-    BOOST_ASSERT(n_ != 0);
+    BOOST_JSON_ASSERT(n_ != 0);
     auto const pos =
         arr_->data() + i_;
     arr_->destroy(pos, p);
@@ -485,7 +485,7 @@ erase(
     const_iterator pos) noexcept ->
     iterator
 {
-    BOOST_ASSERT(
+    BOOST_JSON_ASSERT(
         pos >= begin() &&
         pos <= end());
     auto const p = &(*t_)[0] +
@@ -594,7 +594,7 @@ void
 array::
 swap(array& other)
 {
-    BOOST_ASSERT(this != &other);
+    BOOST_JSON_ASSERT(this != &other);
     if(*sp_ == *other.sp_)
     {
         t_ = detail::exchange(
@@ -646,7 +646,7 @@ array::
 reserve_impl(
     std::size_t new_capacity)
 {
-    BOOST_ASSERT(
+    BOOST_JSON_ASSERT(
         new_capacity > t_->capacity);
     auto t = table::allocate(
         growth(new_capacity), sp_);
@@ -698,7 +698,7 @@ insert(
     pilfered<value> pv) ->
         iterator
 {
-    BOOST_ASSERT(
+    BOOST_JSON_ASSERT(
         pos >= begin() &&
         pos <= end());
     std::size_t const n =

@@ -52,7 +52,7 @@ inline uint64_t shiftright128(const uint64_t lo, const uint64_t hi, const uint32
   // Otherwise in the range [2, 59].)
   // Check this here in case a future change requires larger shift
   // values. In this case this function needs to be adjusted.
-  BOOST_ASSERT(dist < 64);
+  BOOST_JSON_ASSERT(dist < 64);
   return __shiftright128(lo, hi, (unsigned char) dist);
 }
 
@@ -90,13 +90,13 @@ inline uint64_t umul128(const uint64_t a, const uint64_t b, uint64_t* const prod
 
 inline uint64_t shiftright128(const uint64_t lo, const uint64_t hi, const uint32_t dist) {
   // We don't need to handle the case dist >= 64 here (see above).
-  BOOST_ASSERT(dist < 64);
+  BOOST_JSON_ASSERT(dist < 64);
 #if defined(RYU_OPTIMIZE_SIZE) || !defined(RYU_32_BIT_PLATFORM)
-  BOOST_ASSERT(dist > 0);
+  BOOST_JSON_ASSERT(dist > 0);
   return (hi << (64 - dist)) | (lo >> dist);
 #else
   // Avoid a 64-bit shift by taking advantage of the range of shift values.
-  BOOST_ASSERT(dist >= 32);
+  BOOST_JSON_ASSERT(dist >= 32);
   return (hi << (64 - dist)) | ((uint32_t)(lo >> 32) >> (dist - 32));
 #endif
 }
@@ -194,7 +194,7 @@ inline uint32_t mod1e9(const uint64_t x) {
 inline uint32_t pow5Factor(uint64_t value) {
   uint32_t count = 0;
   for (;;) {
-    BOOST_ASSERT(value != 0);
+    BOOST_JSON_ASSERT(value != 0);
     const uint64_t q = div5(value);
     const uint32_t r = ((uint32_t) value) - 5 * ((uint32_t) q);
     if (r != 0) {
@@ -214,7 +214,7 @@ inline bool multipleOfPowerOf5(const uint64_t value, const uint32_t p) {
 
 // Returns true if value is divisible by 2^p.
 inline bool multipleOfPowerOf2(const uint64_t value, const uint32_t p) {
-  BOOST_ASSERT(value != 0);
+  BOOST_JSON_ASSERT(value != 0);
   // return __builtin_ctzll(value) >= p;
   return (value & ((1ull << p) - 1)) == 0;
 }

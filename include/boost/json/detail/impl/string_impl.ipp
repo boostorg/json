@@ -77,7 +77,7 @@ string_impl(
     string_view s,
     storage_ptr const& sp)
 {
-    BOOST_ASSERT(
+    BOOST_JSON_ASSERT(
         s.size() <= max_size());
     k_.k = key_string_;
     k_.n = static_cast<
@@ -99,7 +99,7 @@ string_impl(
     storage_ptr const& sp)
 {
     auto len = s1.size() + s2.size();
-    BOOST_ASSERT(len <= max_size());
+    BOOST_JSON_ASSERT(len <= max_size());
     k_.k = key_string_;
     k_.n = static_cast<
         std::uint32_t>(len);

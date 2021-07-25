@@ -2827,7 +2827,7 @@ public:
     object&
     get_object() noexcept
     {
-        BOOST_ASSERT(is_object());
+        BOOST_JSON_ASSERT(is_object());
         return obj_;
     }
 
@@ -2851,7 +2851,7 @@ public:
     object const&
     get_object() const noexcept
     {
-        BOOST_ASSERT(is_object());
+        BOOST_JSON_ASSERT(is_object());
         return obj_;
     }
 
@@ -2875,7 +2875,7 @@ public:
     array&
     get_array() noexcept
     {
-        BOOST_ASSERT(is_array());
+        BOOST_JSON_ASSERT(is_array());
         return arr_;
     }
 
@@ -2899,7 +2899,7 @@ public:
     array const&
     get_array() const noexcept
     {
-        BOOST_ASSERT(is_array());
+        BOOST_JSON_ASSERT(is_array());
         return arr_;
     }
 
@@ -2923,7 +2923,7 @@ public:
     string&
     get_string() noexcept
     {
-        BOOST_ASSERT(is_string());
+        BOOST_JSON_ASSERT(is_string());
         return str_;
     }
 
@@ -2947,7 +2947,7 @@ public:
     string const&
     get_string() const noexcept
     {
-        BOOST_ASSERT(is_string());
+        BOOST_JSON_ASSERT(is_string());
         return str_;
     }
 
@@ -2971,7 +2971,7 @@ public:
     std::int64_t&
     get_int64() noexcept
     {
-        BOOST_ASSERT(is_int64());
+        BOOST_JSON_ASSERT(is_int64());
         return sca_.i;
     }
 
@@ -2995,7 +2995,7 @@ public:
     std::int64_t
     get_int64() const noexcept
     {
-        BOOST_ASSERT(is_int64());
+        BOOST_JSON_ASSERT(is_int64());
         return sca_.i;
     }
 
@@ -3019,7 +3019,7 @@ public:
     std::uint64_t&
     get_uint64() noexcept
     {
-        BOOST_ASSERT(is_uint64());
+        BOOST_JSON_ASSERT(is_uint64());
         return sca_.u;
     }
 
@@ -3043,7 +3043,7 @@ public:
     std::uint64_t
     get_uint64() const noexcept
     {
-        BOOST_ASSERT(is_uint64());
+        BOOST_JSON_ASSERT(is_uint64());
         return sca_.u;
     }
 
@@ -3067,7 +3067,7 @@ public:
     double&
     get_double() noexcept
     {
-        BOOST_ASSERT(is_double());
+        BOOST_JSON_ASSERT(is_double());
         return sca_.d;
     }
 
@@ -3091,7 +3091,7 @@ public:
     double
     get_double() const noexcept
     {
-        BOOST_ASSERT(is_double());
+        BOOST_JSON_ASSERT(is_double());
         return sca_.d;
     }
 
@@ -3115,7 +3115,7 @@ public:
     bool&
     get_bool() noexcept
     {
-        BOOST_ASSERT(is_bool());
+        BOOST_JSON_ASSERT(is_bool());
         return sca_.b;
     }
 
@@ -3139,7 +3139,7 @@ public:
     bool
     get_bool() const noexcept
     {
-        BOOST_ASSERT(is_bool());
+        BOOST_JSON_ASSERT(is_bool());
         return sca_.b;
     }
 

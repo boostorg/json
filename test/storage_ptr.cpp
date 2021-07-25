@@ -186,7 +186,7 @@ public:
     void
     testInitOrder()
     {
-        BOOST_ASSERT(jv1.storage() == jv2.storage());
+        BOOST_JSON_ASSERT(jv1.storage() == jv2.storage());
         BOOST_TEST(! jv1.storage().is_deallocate_trivial());
         BOOST_TEST(! jv1.storage().is_shared());
     }

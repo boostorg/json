@@ -175,7 +175,7 @@ emplace(
     Arg&& arg) ->
         iterator
 {
-    BOOST_ASSERT(
+    BOOST_JSON_ASSERT(
         pos >= begin() &&
         pos <= end());
     value jv(
@@ -225,7 +225,7 @@ value&
 array::
 operator[](std::size_t pos) noexcept
 {
-    BOOST_ASSERT(pos < t_->size);
+    BOOST_JSON_ASSERT(pos < t_->size);
     return (*t_)[pos];
 }
 
@@ -233,7 +233,7 @@ value const&
 array::
 operator[](std::size_t pos) const noexcept
 {
-    BOOST_ASSERT(pos < t_->size);
+    BOOST_JSON_ASSERT(pos < t_->size);
     return (*t_)[pos];
 }
 
@@ -241,7 +241,7 @@ value&
 array::
 front() noexcept
 {
-    BOOST_ASSERT(t_->size > 0);
+    BOOST_JSON_ASSERT(t_->size > 0);
     return (*t_)[0];
 }
 
@@ -249,7 +249,7 @@ value const&
 array::
 front() const noexcept
 {
-    BOOST_ASSERT(t_->size > 0);
+    BOOST_JSON_ASSERT(t_->size > 0);
     return (*t_)[0];
 }
 
@@ -257,7 +257,7 @@ value&
 array::
 back() noexcept
 {
-    BOOST_ASSERT(
+    BOOST_JSON_ASSERT(
         t_->size > 0);
     return (*t_)[t_->size - 1];
 }
@@ -266,7 +266,7 @@ value const&
 array::
 back() const noexcept
 {
-    BOOST_ASSERT(
+    BOOST_JSON_ASSERT(
         t_->size > 0);
     return (*t_)[t_->size - 1];
 }
@@ -520,7 +520,7 @@ insert(
     std::input_iterator_tag) ->
         iterator
 {
-    BOOST_ASSERT(
+    BOOST_JSON_ASSERT(
         pos >= begin() && pos <= end());
     if(first == last)
         return data() + (pos - data());

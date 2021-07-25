@@ -132,7 +132,7 @@ pow10(int exp) noexcept
     else
     {
         exp += 308;
-        BOOST_ASSERT(exp >= 0 && exp < 618);
+        BOOST_JSON_ASSERT(exp >= 0 && exp < 618);
         return tab[exp];
     }
 }
@@ -402,7 +402,7 @@ parse_comment(const char* p,
             case state::com4: goto do_com4;
         }
     }
-    BOOST_ASSERT(*cs == '/');
+    BOOST_JSON_ASSERT(*cs == '/');
     ++cs;
 do_com1:
     if(BOOST_JSON_UNLIKELY(! cs))
@@ -698,7 +698,7 @@ resume_value(const char* p,
     case state::val1:
     {
         st_.pop(st);
-        BOOST_ASSERT(st_.empty());
+        BOOST_JSON_ASSERT(st_.empty());
         p = detail::count_whitespace(p, end_);
         if(BOOST_JSON_UNLIKELY(p == end_))
             return maybe_suspend(p, state::val1);
@@ -711,7 +711,7 @@ resume_value(const char* p,
         p = parse_comment(p, stack_empty, std::false_type());
         if(BOOST_JSON_UNLIKELY(p == sentinel()))
             return maybe_suspend(p, state::val2);
-        BOOST_ASSERT(st_.empty());
+        BOOST_JSON_ASSERT(st_.empty());
         return parse_value(p, std::true_type(), std::true_type(), allow_trailing, allow_bad_utf8);
     }
     }
@@ -955,7 +955,7 @@ parse_unescaped(const char* p,
     std::size_t total;
     if(stack_empty || st_.empty())
     {
-        BOOST_ASSERT(*cs == '\x22'); // '"'
+        BOOST_JSON_ASSERT(*cs == '\x22'); // '"'
         ++cs;
         total = 0;
     }
@@ -972,7 +972,7 @@ parse_unescaped(const char* p,
     std::size_t size = cs.used(start);
     if(is_key)
     {
-        BOOST_ASSERT(total <= Handler::max_key_size);
+        BOOST_JSON_ASSERT(total <= Handler::max_key_size);
         if(BOOST_JSON_UNLIKELY(size >
             Handler::max_key_size - total))
             return fail(cs.begin(),
@@ -980,7 +980,7 @@ parse_unescaped(const char* p,
     }
     else
     {
-        BOOST_ASSERT(total <= Handler::max_string_size);
+        BOOST_JSON_ASSERT(total <= Handler::max_string_size);
         if(BOOST_JSON_UNLIKELY(size >
             Handler::max_string_size - total))
             return fail(cs.begin(),
@@ -1129,14 +1129,14 @@ parse_escaped(
     // the size of the input stream is temporarily "clipped" to the size
     // of the temporary buffer.
     // handle escaped character
-    BOOST_ASSERT(*cs == '\\');
+    BOOST_JSON_ASSERT(*cs == '\\');
     ++cs;
 do_str3:
     if(BOOST_JSON_UNLIKELY(! cs))
     {
         if(BOOST_JSON_LIKELY(! temp.empty()))
         {
-            BOOST_ASSERT(total <= max_size);
+            BOOST_JSON_ASSERT(total <= max_size);
             if(BOOST_JSON_UNLIKELY(
                 temp.size() > max_size - total))
                 return fail(cs.begin(), ev_too_large);
@@ -1291,7 +1291,7 @@ do_str3:
         // flush
         if(BOOST_JSON_LIKELY(! temp.empty()))
         {
-            BOOST_ASSERT(total <= max_size);
+            BOOST_JSON_ASSERT(total <= max_size);
             if(BOOST_JSON_UNLIKELY(
                 temp.size() > max_size - total))
                 return fail(cs.begin(), ev_too_large);
@@ -1348,7 +1348,7 @@ do_str7:
         if(BOOST_JSON_LIKELY(
             u1_ < 0xd800 || u1_ > 0xdfff))
         {
-            BOOST_ASSERT(temp.empty());
+            BOOST_JSON_ASSERT(temp.empty());
             // utf-8 codepoint
             temp.append_utf8(u1_);
             break;
@@ -1412,7 +1412,7 @@ do_sur6:
             ((u1_ - 0xd800) << 10) +
             ((u2_ - 0xdc00)) +
                 0x10000;
-        BOOST_ASSERT(temp.empty());
+        BOOST_JSON_ASSERT(temp.empty());
         // utf-16 surrogate pair
         temp.append_utf8(cp);
     }
@@ -1426,7 +1426,7 @@ do_str2:
             // flush
             if(BOOST_JSON_LIKELY(! temp.empty()))
             {
-                BOOST_ASSERT(total <= max_size);
+                BOOST_JSON_ASSERT(total <= max_size);
                 if(BOOST_JSON_UNLIKELY(
                     temp.size() > max_size - total))
                     return fail(cs.begin(), ev_too_large);
@@ -1448,7 +1448,7 @@ do_str2:
         c = *cs;
         if(BOOST_JSON_LIKELY(c == '\x22')) // '"'
         {
-            BOOST_ASSERT(total <= max_size);
+            BOOST_JSON_ASSERT(total <= max_size);
             if(BOOST_JSON_UNLIKELY(
                 temp.size() > max_size - total))
                 return fail(cs.begin(), ev_too_large);
@@ -1471,7 +1471,7 @@ do_str2:
             {
                 if(BOOST_JSON_LIKELY(! temp.empty()))
                 {
-                    BOOST_ASSERT(total <= max_size);
+                    BOOST_JSON_ASSERT(total <= max_size);
                     if(BOOST_JSON_UNLIKELY(
                         temp.size() > max_size - total))
                         return fail(cs.begin(), ev_too_large);
@@ -1560,7 +1560,7 @@ parse_object(const char* p,
         case state::obj11: goto do_obj11;
         }
     }
-    BOOST_ASSERT(*cs == '{');
+    BOOST_JSON_ASSERT(*cs == '{');
     size = 0;
     if(BOOST_JSON_UNLIKELY(! depth_))
         return fail(cs.begin(), error::too_deep);
@@ -1708,7 +1708,7 @@ parse_array(const char* p,
         case state::arr6: goto do_arr6;
         }
     }
-    BOOST_ASSERT(*cs == '[');
+    BOOST_JSON_ASSERT(*cs == '[');
     size = 0;
     if(BOOST_JSON_UNLIKELY(! depth_))
         return fail(cs.begin(), error::too_deep);
@@ -1811,7 +1811,7 @@ parse_number(const char* p,
         // '-'
         // leading minus sign
         //
-        BOOST_ASSERT(cs);
+        BOOST_JSON_ASSERT(cs);
         if(negative)
             ++cs;
 
@@ -1829,7 +1829,7 @@ parse_number(const char* p,
                 (negative && *cs != '0') )
             {
                 n1 = detail::count_digits( cs.begin() );
-                BOOST_ASSERT(n1 >= 0 && n1 <= 16);
+                BOOST_JSON_ASSERT(n1 >= 0 && n1 <= 16);
 
                 if( ! nonzero_first && n1 == 0 )
                 {
@@ -1876,7 +1876,7 @@ parse_number(const char* p,
             ++cs;
 
             int n2 = detail::count_digits( cs.begin() );
-            BOOST_ASSERT(n2 >= 0 && n2 <= 16);
+            BOOST_JSON_ASSERT(n2 >= 0 && n2 <= 16);
 
             if( n2 == 0 )
             {
@@ -1892,7 +1892,7 @@ parse_number(const char* p,
 
             num.mant = detail::parse_unsigned( num.mant, cs.begin(), n2 );
 
-            BOOST_ASSERT(num.bias == 0);
+            BOOST_JSON_ASSERT(num.bias == 0);
 
             num.bias -= n2;
 
@@ -2496,7 +2496,7 @@ write_some(
 
     if(BOOST_JSON_LIKELY(p != sentinel()))
     {
-        BOOST_ASSERT(! ec_);
+        BOOST_JSON_ASSERT(! ec_);
         if(! done_)
         {
             done_ = true;

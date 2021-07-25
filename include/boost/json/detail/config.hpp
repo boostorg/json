@@ -87,8 +87,10 @@
 #  endif
 #endif
 
-#ifndef BOOST_ASSERT
-#define BOOST_ASSERT assert
+#ifndef BOOST_JSON_STANDALONE
+#  define BOOST_JSON_ASSERT BOOST_ASSERT
+# else
+#  define BOOST_JSON_ASSERT assert
 #endif
 
 #ifndef BOOST_JSON_STANDALONE

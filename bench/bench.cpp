@@ -469,7 +469,7 @@ public:
             p.reset();
             error_code ec;
             p.write(s.data(), s.size(), ec);
-            BOOST_ASSERT(! ec);
+            BOOST_JSON_ASSERT(! ec);
         }
     }
 

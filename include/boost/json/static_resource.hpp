@@ -174,7 +174,7 @@ public:
         // If this goes off, check your parameters
         // closely, chances are you passed an array
         // thinking it was a pointer.
-        BOOST_ASSERT(n <= N);
+        BOOST_JSON_ASSERT(n <= N);
     }
 
 #ifdef __cpp_lib_byte
@@ -187,7 +187,7 @@ public:
         // If this goes off, check your parameters
         // closely, chances are you passed an array
         // thinking it was a pointer.
-        BOOST_ASSERT(n <= N);
+        BOOST_JSON_ASSERT(n <= N);
     }
 #endif
 #endif

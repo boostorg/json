@@ -53,7 +53,7 @@ public:
         // means the calling code did not
         // reserve enough to prevent a
         // reallocation.
-        //BOOST_ASSERT(cap_ >= size_ + n);
+        //BOOST_JSON_ASSERT(cap_ >= size_ + n);
         reserve(size_ + n);
         std::memcpy(
             buf_ + size_, &t, n);
@@ -65,7 +65,7 @@ public:
     push_unchecked(T const& t)
     {
         auto const n = sizeof(T);
-        BOOST_ASSERT(size_ + n <= cap_);
+        BOOST_JSON_ASSERT(size_ + n <= cap_);
         std::memcpy(
             buf_ + size_, &t, n);
         size_ += n;
@@ -76,7 +76,7 @@ public:
     peek(T& t)
     {
         auto const n = sizeof(T);
-        BOOST_ASSERT(size_ >= n);
+        BOOST_JSON_ASSERT(size_ >= n);
         std::memcpy(&t,
             buf_ + size_ - n, n);
     }
@@ -86,7 +86,7 @@ public:
     pop(T& t)
     {
         auto const n = sizeof(T);
-        BOOST_ASSERT(size_ >= n);
+        BOOST_JSON_ASSERT(size_ >= n);
         size_ -= n;
         std::memcpy(
             &t, buf_ + size_, n);
