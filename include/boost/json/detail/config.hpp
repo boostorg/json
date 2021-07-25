@@ -99,8 +99,10 @@
 #  define BOOST_JSON_STATIC_ASSERT( ... ) static_assert(__VA_ARGS__, #__VA_ARGS__)
 #endif
 
-#ifndef BOOST_FALLTHROUGH
-#define BOOST_FALLTHROUGH [[fallthrough]]
+#ifndef BOOST_JSON_STANDALONE
+#  define BOOST_JSON_FALLTHROUGH BOOST_FALLTHROUGH
+# else
+#  define BOOST_JSON_FALLTHROUGH [[fallthrough]]
 #endif
 
 #ifndef BOOST_FORCEINLINE

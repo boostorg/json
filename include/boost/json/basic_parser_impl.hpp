@@ -610,7 +610,7 @@ loop:
             // or just leave it as is
             if(BOOST_JSON_UNLIKELY(p == sentinel()))
                 return maybe_suspend(p, state::val2);
-            // intentional fallthrough
+            BOOST_JSON_FALLTHROUGH;
         case ' ':
         case '\t':
         case '\n':
@@ -1663,7 +1663,7 @@ do_obj11:
             }
             return fail(cs.begin(), error::syntax);
         }
-        // got closing brace, fall through
+        // got closing brace
     }
     if(BOOST_JSON_UNLIKELY(
         ! h_.on_object_end(size, ec_)))
@@ -1770,7 +1770,7 @@ do_arr6:
             }
             return fail(cs.begin(), error::syntax);
         }
-        // got closing bracket; fall through
+        // got closing bracket
     }
     if(BOOST_JSON_UNLIKELY(
         ! h_.on_array_end(size, ec_)))
