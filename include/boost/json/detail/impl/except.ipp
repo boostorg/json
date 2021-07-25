@@ -26,7 +26,7 @@ namespace boost {
 // When exceptions are disabled
 // in standalone, you must provide
 // this function.
-BOOST_NORETURN
+BOOST_JSON_NORETURN
 void
 throw_exception(std::exception const&);
 #endif
@@ -44,7 +44,7 @@ namespace detail {
 // colliding with boost::throw_exception
 template<class E>
 void
-BOOST_NORETURN
+BOOST_JSON_NORETURN
 throw_exception(E e)
 {
     throw e;

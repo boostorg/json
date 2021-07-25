@@ -67,23 +67,23 @@
 # endif
 #endif
 
-// BOOST_NORETURN ---------------------------------------------//
+// BOOST_JSON_NORETURN ---------------------------------------------//
 // Macro to use before a function declaration/definition to designate
 // the function as not returning normally (i.e. with a return statement
 // or by leaving the function scope, if the function return type is void).
-#if !defined(BOOST_NORETURN)
-#  if defined(_MSC_VER)
-#    define BOOST_NORETURN __declspec(noreturn)
-#  elif defined(__GNUC__)
-#    define BOOST_NORETURN __attribute__ ((__noreturn__))
-#  elif defined(__has_attribute) && defined(__SUNPRO_CC) && (__SUNPRO_CC > 0x5130)
-#    if __has_attribute(noreturn)
-#      define BOOST_NORETURN [[noreturn]]
-#    endif
-#  elif defined(__has_cpp_attribute)
-#    if __has_cpp_attribute(noreturn)
-#      define BOOST_NORETURN [[noreturn]]
-#    endif
+#ifndef BOOST_JSON_STANDALONE
+#  define BOOST_JSON_NORETURN BOOST_NORETURN
+# elif defined(_MSC_VER)
+#  define BOOST_JSON_NORETURN __declspec(noreturn)
+# elif defined(__GNUC__)
+#  define BOOST_JSON_NORETURN __attribute__ ((__noreturn__))
+# elif defined(__has_attribute) && defined(__SUNPRO_CC) && (__SUNPRO_CC > 0x5130)
+#  if __has_attribute(noreturn)
+#   define BOOST_JSON_NORETURN [[noreturn]]
+#  endif
+# elif defined(__has_cpp_attribute)
+#  if __has_cpp_attribute(noreturn)
+#   define BOOST_JSON_NORETURN [[noreturn]]
 #  endif
 #endif
 
