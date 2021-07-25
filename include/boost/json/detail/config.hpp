@@ -115,14 +115,6 @@
 #  define BOOST_JSON_NOINLINE
 #endif
 
-#ifndef BOOST_THROW_EXCEPTION
-# ifndef BOOST_NO_EXCEPTIONS
-#  define BOOST_THROW_EXCEPTION(x) throw(x)
-# else
-#  define BOOST_THROW_EXCEPTION(x) do{}while(0)
-# endif
-#endif
-
 #if ! defined(BOOST_JSON_NO_SSE2) && \
     ! defined(BOOST_JSON_USE_SSE2)
 # if (defined(_M_IX86) && _M_IX86_FP == 2) || \
