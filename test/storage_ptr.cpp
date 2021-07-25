@@ -24,7 +24,7 @@
 
 BOOST_JSON_NS_BEGIN
 
-BOOST_STATIC_ASSERT(
+BOOST_JSON_STATIC_ASSERT(
     std::is_nothrow_move_constructible<storage_ptr>::value);
 
 class storage_ptr_test

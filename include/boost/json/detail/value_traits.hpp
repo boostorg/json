@@ -147,7 +147,7 @@ using value_constructible = std::integral_constant<bool,
         std::initializer_list<value_ref>>::value ||
     std::is_same<detail::remove_cvref<T>, value_ref>::value>;
 
-BOOST_STATIC_ASSERT(value_constructible<value>::value);
+BOOST_JSON_STATIC_ASSERT(value_constructible<value>::value);
 
 } // detail
 BOOST_JSON_NS_END

@@ -18,7 +18,7 @@
 
 BOOST_JSON_NS_BEGIN
 
-BOOST_STATIC_ASSERT( std::is_nothrow_destructible<static_resource>::value );
+BOOST_JSON_STATIC_ASSERT( std::is_nothrow_destructible<static_resource>::value );
 
 class static_resource_test
 {

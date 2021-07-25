@@ -72,7 +72,7 @@ struct T3
 {
 };
 
-BOOST_STATIC_ASSERT(! ::boost::json::has_value_from<T3>::value);
+BOOST_JSON_STATIC_ASSERT(! ::boost::json::has_value_from<T3>::value);
 
 struct T4
 {
@@ -82,7 +82,7 @@ struct T4
     }
 };
 
-BOOST_STATIC_ASSERT(! ::boost::json::has_value_from<T4>::value);
+BOOST_JSON_STATIC_ASSERT(! ::boost::json::has_value_from<T4>::value);
 
 //----------------------------------------------------------
 
@@ -151,27 +151,27 @@ testValueCtor()
 } // namespace
 
 // integral
-BOOST_STATIC_ASSERT(has_value_from<int>::value);
-BOOST_STATIC_ASSERT(has_value_from<int&>::value);
-BOOST_STATIC_ASSERT(has_value_from<int&&>::value);
+BOOST_JSON_STATIC_ASSERT(has_value_from<int>::value);
+BOOST_JSON_STATIC_ASSERT(has_value_from<int&>::value);
+BOOST_JSON_STATIC_ASSERT(has_value_from<int&&>::value);
 // array
-BOOST_STATIC_ASSERT(has_value_from<int[4]>::value);
-BOOST_STATIC_ASSERT(has_value_from<int(&)[4]>::value);
-BOOST_STATIC_ASSERT(has_value_from<int(&&)[4]>::value);
+BOOST_JSON_STATIC_ASSERT(has_value_from<int[4]>::value);
+BOOST_JSON_STATIC_ASSERT(has_value_from<int(&)[4]>::value);
+BOOST_JSON_STATIC_ASSERT(has_value_from<int(&&)[4]>::value);
 // forward range
-BOOST_STATIC_ASSERT(has_value_from<std::vector<int>>::value);
-BOOST_STATIC_ASSERT(has_value_from<std::vector<int>&>::value);
-BOOST_STATIC_ASSERT(has_value_from<std::vector<int>&&>::value);
+BOOST_JSON_STATIC_ASSERT(has_value_from<std::vector<int>>::value);
+BOOST_JSON_STATIC_ASSERT(has_value_from<std::vector<int>&>::value);
+BOOST_JSON_STATIC_ASSERT(has_value_from<std::vector<int>&&>::value);
 // tuple-like
-BOOST_STATIC_ASSERT(has_value_from<std::tuple<int, int>>::value);
-BOOST_STATIC_ASSERT(has_value_from<std::tuple<int, int>&>::value);
-BOOST_STATIC_ASSERT(has_value_from<std::tuple<int, int>&&>::value);
-BOOST_STATIC_ASSERT(has_value_from<key_value_pair>::value);
-BOOST_STATIC_ASSERT(has_value_from<key_value_pair&>::value);
-BOOST_STATIC_ASSERT(has_value_from<key_value_pair&&>::value);
+BOOST_JSON_STATIC_ASSERT(has_value_from<std::tuple<int, int>>::value);
+BOOST_JSON_STATIC_ASSERT(has_value_from<std::tuple<int, int>&>::value);
+BOOST_JSON_STATIC_ASSERT(has_value_from<std::tuple<int, int>&&>::value);
+BOOST_JSON_STATIC_ASSERT(has_value_from<key_value_pair>::value);
+BOOST_JSON_STATIC_ASSERT(has_value_from<key_value_pair&>::value);
+BOOST_JSON_STATIC_ASSERT(has_value_from<key_value_pair&&>::value);
 
 // object-like
-BOOST_STATIC_ASSERT(has_value_from<std::map<string_view, int>>::value);
+BOOST_JSON_STATIC_ASSERT(has_value_from<std::map<string_view, int>>::value);
 
 class value_from_test
 {

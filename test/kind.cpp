@@ -21,7 +21,7 @@ BOOST_JSON_NS_BEGIN
 class kind_test
 {
 public:
-    BOOST_STATIC_ASSERT(
+    BOOST_JSON_STATIC_ASSERT(
         std::is_enum<kind>::value);
 
     void

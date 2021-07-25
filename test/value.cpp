@@ -21,8 +21,8 @@
 
 BOOST_JSON_NS_BEGIN
 
-BOOST_STATIC_ASSERT( std::is_nothrow_destructible<value>::value );
-BOOST_STATIC_ASSERT( std::is_nothrow_move_constructible<value>::value );
+BOOST_JSON_STATIC_ASSERT( std::is_nothrow_destructible<value>::value );
+BOOST_JSON_STATIC_ASSERT( std::is_nothrow_move_constructible<value>::value );
 
 namespace {
 
@@ -45,7 +45,7 @@ T min_of()
 class value_test
 {
 public:
-    //BOOST_STATIC_ASSERT(has_value_from<short>::value);
+    //BOOST_JSON_STATIC_ASSERT(has_value_from<short>::value);
 
     string_view const str_;
 
@@ -1973,12 +1973,12 @@ public:
         BOOST_TEST(std::memcmp(
             v3.key_c_str(), "key\0", 4) == 0);
 
-        BOOST_STATIC_ASSERT(std::tuple_size<key_value_pair>::value == 2);
+        BOOST_JSON_STATIC_ASSERT(std::tuple_size<key_value_pair>::value == 2);
         BOOST_TEST(get<0>(v3) == "key");
         BOOST_TEST(
             get<1>(v3).get_string() == "value");
 
-        BOOST_STATIC_ASSERT(std::is_same<
+        BOOST_JSON_STATIC_ASSERT(std::is_same<
             decltype(get<1>(std::declval<kvp>())), json::value&&>::value);
 
 #if __cplusplus >= 201703L || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)

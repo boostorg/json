@@ -24,7 +24,7 @@
 
 BOOST_JSON_NS_BEGIN
 
-BOOST_STATIC_ASSERT( std::is_nothrow_destructible<stream_parser>::value );
+BOOST_JSON_STATIC_ASSERT( std::is_nothrow_destructible<stream_parser>::value );
 
 class stream_parser_test
 {
@@ -37,11 +37,11 @@ public:
     testCtors()
     {
         // stream_parser(stream_parser const&)
-        BOOST_STATIC_ASSERT(
+        BOOST_JSON_STATIC_ASSERT(
             ! std::is_copy_constructible<stream_parser>::value);
 
         // operator=(stream_parser const&)
-        BOOST_STATIC_ASSERT(
+        BOOST_JSON_STATIC_ASSERT(
             ! std::is_copy_assignable<stream_parser>::value);
 
         // ~stream_parser()

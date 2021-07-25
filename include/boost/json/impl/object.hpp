@@ -28,7 +28,7 @@ constexpr
 std::size_t
 small_object_size_ = 18;
 
-BOOST_STATIC_ASSERT(
+BOOST_JSON_STATIC_ASSERT(
     small_object_size_ <
     BOOST_JSON_MAX_STRUCTURED_SIZE);
 
@@ -47,7 +47,7 @@ struct alignas(key_value_pair)
     // VFALCO If we make key_value_pair smaller,
     //        then we might want to revisit this
     //        padding.
-    BOOST_STATIC_ASSERT(
+    BOOST_JSON_STATIC_ASSERT(
         sizeof(key_value_pair) == 32);
     char pad[4] = {}; // silence warnings
 #endif

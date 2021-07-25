@@ -24,8 +24,8 @@
 
 BOOST_JSON_NS_BEGIN
 
-BOOST_STATIC_ASSERT( std::is_nothrow_destructible<string>::value );
-BOOST_STATIC_ASSERT( std::is_nothrow_move_constructible<string>::value );
+BOOST_JSON_STATIC_ASSERT( std::is_nothrow_destructible<string>::value );
+BOOST_JSON_STATIC_ASSERT( std::is_nothrow_move_constructible<string>::value );
 
 class string_test
 {

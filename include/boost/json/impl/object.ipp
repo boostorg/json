@@ -79,7 +79,7 @@ allocate(
     std::uintptr_t salt,
     storage_ptr const& sp)
 {
-    BOOST_STATIC_ASSERT(
+    BOOST_JSON_STATIC_ASSERT(
         alignof(key_value_pair) >=
         alignof(index_t));
     BOOST_ASSERT(capacity > 0);

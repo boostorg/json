@@ -740,7 +740,7 @@ serializer::
 serializer() noexcept
 {
     // ensure room for \uXXXX escape plus one
-    BOOST_STATIC_ASSERT(
+    BOOST_JSON_STATIC_ASSERT(
         sizeof(serializer::buf_) >= 7);
 }
 

@@ -783,17 +783,17 @@ usingExchange()
     }
 }
 
-BOOST_STATIC_ASSERT(
+BOOST_JSON_STATIC_ASSERT(
     has_value_from<customer>::value);
 
-BOOST_STATIC_ASSERT(
+BOOST_JSON_STATIC_ASSERT(
     has_value_from<std::complex<float>>::value);
-BOOST_STATIC_ASSERT(
+BOOST_JSON_STATIC_ASSERT(
     has_value_from<std::complex<double>>::value);
 
-BOOST_STATIC_ASSERT(
+BOOST_JSON_STATIC_ASSERT(
     has_value_to<std::complex<float>>::value);
-BOOST_STATIC_ASSERT(
+BOOST_JSON_STATIC_ASSERT(
     has_value_to<std::complex<double>>::value);
 
 } // (anon)

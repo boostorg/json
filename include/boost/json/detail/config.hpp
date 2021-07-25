@@ -13,6 +13,7 @@
 #ifndef BOOST_JSON_STANDALONE
 # include <boost/config.hpp>
 # include <boost/assert.hpp>
+# include <boost/static_assert.hpp>
 # include <boost/throw_exception.hpp>
 #else
 # include <cassert>
@@ -90,8 +91,10 @@
 #define BOOST_ASSERT assert
 #endif
 
-#ifndef BOOST_STATIC_ASSERT
-#define BOOST_STATIC_ASSERT( ... ) static_assert(__VA_ARGS__, #__VA_ARGS__)
+#ifndef BOOST_JSON_STANDALONE
+#  define BOOST_JSON_STATIC_ASSERT BOOST_STATIC_ASSERT
+# else
+#  define BOOST_JSON_STATIC_ASSERT( ... ) static_assert(__VA_ARGS__, #__VA_ARGS__)
 #endif
 
 #ifndef BOOST_FALLTHROUGH

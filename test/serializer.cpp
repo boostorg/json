@@ -20,7 +20,7 @@
 
 BOOST_JSON_NS_BEGIN
 
-BOOST_STATIC_ASSERT( std::is_nothrow_destructible<serializer>::value );
+BOOST_JSON_STATIC_ASSERT( std::is_nothrow_destructible<serializer>::value );
 
 class serializer_test
 {

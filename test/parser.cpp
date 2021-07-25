@@ -21,11 +21,11 @@ public:
     testCtors()
     {
         // parser(parser const&)
-        BOOST_STATIC_ASSERT(
+        BOOST_JSON_STATIC_ASSERT(
             ! std::is_copy_constructible<parser>::value);
 
         // operator=(parser const&)
-        BOOST_STATIC_ASSERT(
+        BOOST_JSON_STATIC_ASSERT(
             ! std::is_copy_assignable<parser>::value);
 
         // ~parser()

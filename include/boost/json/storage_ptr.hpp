@@ -486,7 +486,7 @@ make_shared_resource(Args&&... args)
 {
     // If this generates an error, it means that
     // `T` is not a memory resource.
-    BOOST_STATIC_ASSERT(
+    BOOST_JSON_STATIC_ASSERT(
         std::is_base_of<
             memory_resource, T>::value);
     return storage_ptr(new

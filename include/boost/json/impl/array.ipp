@@ -175,7 +175,7 @@ array::
 array(detail::unchecked_array&& ua)
     : sp_(ua.storage())
 {
-    BOOST_STATIC_ASSERT(
+    BOOST_JSON_STATIC_ASSERT(
         alignof(table) == alignof(value));
     if(ua.size() == 0)
     {

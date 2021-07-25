@@ -21,7 +21,7 @@
 
 BOOST_JSON_NS_BEGIN
 
-BOOST_STATIC_ASSERT( std::is_nothrow_destructible<monotonic_resource>::value );
+BOOST_JSON_STATIC_ASSERT( std::is_nothrow_destructible<monotonic_resource>::value );
 
 class monotonic_resource_test
 {

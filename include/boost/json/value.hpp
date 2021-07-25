@@ -3387,9 +3387,9 @@ private:
 
 // Make sure things are as big as we think they should be
 #if BOOST_JSON_ARCH == 64
-BOOST_STATIC_ASSERT(sizeof(value) == 24);
+BOOST_JSON_STATIC_ASSERT(sizeof(value) == 24);
 #elif BOOST_JSON_ARCH == 32
-BOOST_STATIC_ASSERT(sizeof(value) == 16);
+BOOST_JSON_STATIC_ASSERT(sizeof(value) == 16);
 #else
 # error Unknown architecture
 #endif

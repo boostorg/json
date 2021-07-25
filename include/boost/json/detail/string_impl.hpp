@@ -83,13 +83,13 @@ class string_impl
     };
 
 #if BOOST_JSON_ARCH == 64
-    BOOST_STATIC_ASSERT(sizeof(sbo) <= 16);
-    BOOST_STATIC_ASSERT(sizeof(pointer) <= 16);
-    BOOST_STATIC_ASSERT(sizeof(key) <= 16);
+    BOOST_JSON_STATIC_ASSERT(sizeof(sbo) <= 16);
+    BOOST_JSON_STATIC_ASSERT(sizeof(pointer) <= 16);
+    BOOST_JSON_STATIC_ASSERT(sizeof(key) <= 16);
 #elif BOOST_JSON_ARCH == 32
-    BOOST_STATIC_ASSERT(sizeof(sbo) <= 24);
-    BOOST_STATIC_ASSERT(sizeof(pointer) <= 24);
-    BOOST_STATIC_ASSERT(sizeof(key) <= 24);
+    BOOST_JSON_STATIC_ASSERT(sizeof(sbo) <= 24);
+    BOOST_JSON_STATIC_ASSERT(sizeof(pointer) <= 24);
+    BOOST_JSON_STATIC_ASSERT(sizeof(key) <= 24);
 #endif
 
 public:

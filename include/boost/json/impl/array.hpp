@@ -141,7 +141,7 @@ array(
         std::move(sp),
         iter_cat<InputIt>{})
 {
-    BOOST_STATIC_ASSERT(
+    BOOST_JSON_STATIC_ASSERT(
         std::is_constructible<value,
             decltype(*first)>::value);
 }
@@ -160,7 +160,7 @@ insert(
     InputIt first, InputIt last) ->
         iterator
 {
-    BOOST_STATIC_ASSERT(
+    BOOST_JSON_STATIC_ASSERT(
         std::is_constructible<value,
             decltype(*first)>::value);
     return insert(pos, first, last,
