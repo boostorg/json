@@ -22,7 +22,7 @@ namespace detail {
 #pragma warning(disable: 4275) // non dll-interface class used as base for dll-interface class
 #endif
 
-struct BOOST_SYMBOL_VISIBLE
+struct BOOST_JSON_SYMBOL_VISIBLE
     shared_resource
     : memory_resource
 {
