@@ -115,14 +115,14 @@
 # endif
 #endif
 
-#ifndef BOOST_NOINLINE
-# ifdef _MSC_VER
-#  define BOOST_NOINLINE __declspec(noinline)
+#ifndef BOOST_JSON_STANDALONE
+#  define BOOST_JSON_NOINLINE BOOST_NOINLINE
+# elif defined(_MSC_VER)
+#  define BOOST_JSON_NOINLINE __declspec(noinline)
 # elif defined(__GNUC__) || defined(__clang__)
-#  define BOOST_NOINLINE __attribute__((noinline))
+#  define BOOST_JSON_NOINLINE __attribute__((noinline))
 # else
-#  define BOOST_NOINLINE
-# endif
+#  define BOOST_JSON_NOINLINE
 #endif
 
 #ifndef BOOST_THROW_EXCEPTION

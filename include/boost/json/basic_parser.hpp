@@ -328,38 +328,38 @@ class basic_parser
 #pragma warning disable 2196
 #endif
 
-    BOOST_NOINLINE
+    BOOST_JSON_NOINLINE
     inline
     const char*
     suspend_or_fail(state st);
 
-    BOOST_NOINLINE
+    BOOST_JSON_NOINLINE
     inline
     const char*
     suspend_or_fail(
         state st,
         std::size_t n);
 
-    BOOST_NOINLINE
+    BOOST_JSON_NOINLINE
     inline
     const char*
     fail(const char* p) noexcept;
 
-    BOOST_NOINLINE
+    BOOST_JSON_NOINLINE
     inline
     const char*
     fail(
         const char* p,
         error ev) noexcept;
 
-    BOOST_NOINLINE
+    BOOST_JSON_NOINLINE
     inline
     const char*
     maybe_suspend(
         const char* p,
         state st);
 
-    BOOST_NOINLINE
+    BOOST_JSON_NOINLINE
     inline
     const char*
     maybe_suspend(
@@ -367,7 +367,7 @@ class basic_parser
         state st,
         std::size_t n);
 
-    BOOST_NOINLINE
+    BOOST_JSON_NOINLINE
     inline
     const char*
     maybe_suspend(
@@ -375,14 +375,14 @@ class basic_parser
         state st,
         const number& num);
 
-    BOOST_NOINLINE
+    BOOST_JSON_NOINLINE
     inline
     const char*
     suspend(
         const char* p,
         state st);
 
-    BOOST_NOINLINE
+    BOOST_JSON_NOINLINE
     inline
     const char*
     suspend(

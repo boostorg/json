@@ -231,7 +231,7 @@ incomplete(
 
 //----------------------------------------------------------
 //
-// These functions are declared with the BOOST_NOINLINE
+// These functions are declared with the BOOST_JSON_NOINLINE
 // attribute to avoid polluting the parsers hot-path.
 // They return the canary value to indicate suspension
 // or failure.
