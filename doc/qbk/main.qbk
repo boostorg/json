@@ -109,6 +109,7 @@
 [import ../../test/doc_uses_allocator.cpp]
 [import ../../test/doc_using_numbers.cpp]
 [import ../../test/snippets.cpp]
+[import ../../test/doc_forward_conversion.cpp]
 
 [include 01_overview.qbk]
 [include 02_quick_look.qbk]

@@ -19,6 +19,24 @@
 
 BOOST_JSON_NS_BEGIN
 
+
+template <class T, class = void>
+struct can_apply_value_to
+    : std::false_type
+{
+};
+
+template <class T>
+struct can_apply_value_to<T, detail::void_t<decltype(
+    value_to<int>(std::declval<T>()))
+>>
+    : std::true_type
+{
+};
+
+BOOST_STATIC_ASSERT(!can_apply_value_to<int>::value);
+
+
 class value_to_test
 {
 public:

@@ -66,6 +66,11 @@ run limits.cpp main.cpp /boost/json//json_sources
     <define>BOOST_JSON_STACK_BUFFER_SIZE=256
     ;
 
+run doc_forward_conversion.cpp main.cpp /boost/json//boost_json
+    : requirements
+      <boost.json.mode>boost
+    ;
+
 compile standalone_with_boost.cpp
     : <boost.json.mode>standalone
       <dependency>/boost/json//json_sources

@@ -88,6 +88,48 @@ value_from(
         std::forward<T>(t), std::move(sp));
 }
 
+/** Convert an object of type `T` to @ref value.
+
+    This function attempts to convert an object
+    of type `T` to @ref value using
+
+    @li one of @ref value's constructors,
+
+    @li a library-provided generic conversion, or
+
+    @li a user-provided overload of `tag_invoke`.
+
+    In all cases, the conversion is done by calling
+    an overload of `tag_invoke` found by argument-dependent
+    lookup. Its signature should be similar to:
+
+    @code
+    void tag_invoke( value_from_tag, value&, T );
+    @endcode
+
+    @par Exception Safety
+    Strong guarantee.
+
+    @tparam T The type of the object to convert.
+
+    @param t The object to convert.
+
+    @param jv @ref value out parameter.
+
+    @see @ref value_from_tag, @ref value_to,
+    <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1895r0.pdf">
+        tag_invoke: A general pattern for supporting customisable functions</a>
+*/
+template<class T>
+void
+value_from(
+    T&& t,
+    value& jv)
+{
+    jv = detail::value_from_impl(
+        std::forward<T>(t), jv.storage());
+}
+
 /** Determine if `T` can be converted to @ref value.
 
     If `T` can be converted to @ref value via a

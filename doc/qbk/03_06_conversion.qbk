@@ -1,6 +1,7 @@
 [/
     Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
     Copyright (c) 2020 Krystian Stasiowski (sdkrystian@gmail.com)
+    Copyright (c) 2021 Dmitry Arkhipov (grisumbras@gmail.com)
 
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -224,6 +225,26 @@ are selected, an attempt will be made to convert
 the __value__ to `T`.
 
 [snippet_conv_16]
+
+[heading Providing Conversions Without Adding Dependency on Boost.JSON ]
+
+[important The contents of this subsection do not apply to
+    [link json.overview.requirements.without_boost standalone mode] ]
+
+Library authors may wish to provide conversions between types in their
+libraries and __value__. It's possible to do this even without adding a
+physical dependency on Boost.JSON with the help of a few forward declarations.
+
+[doc_forward_conversion_1]
+
+Note that __value_from__ is declared using an out-parameter, rather then
+returning its result. This overload is specifically designed for this use-case.
+
+After that the definitions of `tag_invoke` overloads should be provided. These
+overlaods have to be templates, since __value__ is only forward-declared and
+hence is an incomplete type.
+
+[doc_forward_conversion_2]
 
 [heading Named Requirements for Generic Conversions]
 
