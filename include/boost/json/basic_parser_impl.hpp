@@ -2010,7 +2010,7 @@ do_num2:
                 if( num.mant  > 922337203685477580 || (
                     num.mant == 922337203685477580 && c > '8'))
                     break;
-                num.mant = 10 * num.mant + c - '0';
+                num.mant = 10 * num.mant + ( c - '0' );
                 continue;
             }
             goto do_num6; // [.eE]
@@ -2041,7 +2041,7 @@ do_num2:
                 if( num.mant  > 1844674407370955161 || (
                     num.mant == 1844674407370955161 && c > '5'))
                     break;
-                num.mant = 10 * num.mant + c - '0';
+                num.mant = 10 * num.mant + ( c - '0' );
             }
             else
             {
@@ -2260,7 +2260,7 @@ do_num8:
                 num.mant <= 9007199254740991)) // 2^53-1
             {
                 --num.bias;
-                num.mant = 10 * num.mant + c - '0';
+                num.mant = 10 * num.mant + ( c - '0' );
             }
             else
             {
@@ -2363,7 +2363,7 @@ do_exp3:
                     num.exp == 214748364 && c > '7')))
                 return fail(cs.begin(), error::exponent_overflow);
             ++cs;
-            num.exp = 10 * num.exp + c - '0';
+            num.exp = 10 * num.exp + ( c - '0' );
             continue;
         }
         goto finish_dub;
