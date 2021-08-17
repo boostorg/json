@@ -2363,7 +2363,7 @@ do_exp3:
                     num.exp == 214748364 && c > '7')))
                 return fail(cs.begin(), error::exponent_overflow);
             ++cs;
-            num.exp = 10 * num.exp + c - '0';
+            num.exp = 10 * num.exp + ( c - '0' );
             continue;
         }
         goto finish_dub;
