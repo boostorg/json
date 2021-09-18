@@ -42,45 +42,14 @@ include(GNUInstallDirs)
 if(BOOST_JSON_IS_ROOT AND NOT BOOST_JSON_STANDALONE)
     #
     # Building inside Boost tree, but as a separate project e.g. on Travis or
-    # other CI, or when producing Visual Studio Solution and Projects. This is
-    # when we have to add dependencies to the project manually.
-    foreach(lib
-        # direct dependencies
-        align
-        assert
-        config
-        container
-        exception
-        mp11
-        system
-        throw_exception
-        utility
+    # other CI, or when producing Visual Studio Solution and Projects.
 
-        # indirect dependencies
-        container_hash
-        core
-        detail
-        integer
-        intrusive
-        io
-        move
-        predef
-        preprocessor
-        smart_ptr
-        static_assert
-        tuple
-        type_traits
-        winapi
-    )
-        add_subdirectory(../${lib} libs/${lib} EXCLUDE_FROM_ALL)
-        set(target boost_${lib})
-        if(TARGET ${target})
-          get_target_property(lib_type ${target} TYPE)
-          if(NOT ${lib_type} STREQUAL INTERFACE_LIBRARY)
-            set_property(TARGET ${target} PROPERTY FOLDER _deps/${lib})
-          endif()
-        endif()
-    endforeach()
+    set(BOOST_INCLUDE_LIBRARIES json)
+    set(BOOST_EXCLUDE_LIBRARIES json)
+
+    set(CMAKE_FOLDER _deps)
+    add_subdirectory(../.. _deps/boost EXCLUDE_FROM_ALL)
+    unset(CMAKE_FOLDER)
 endif()
 
 
