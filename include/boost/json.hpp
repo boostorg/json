@@ -16,6 +16,7 @@
 #include <boost/json/basic_parser.hpp>
 #include <boost/json/error.hpp>
 #include <boost/json/fwd.hpp>
+#include <boost/json/iostreams.hpp>
 #include <boost/json/kind.hpp>
 #include <boost/json/memory_resource.hpp>
 #include <boost/json/monotonic_resource.hpp>

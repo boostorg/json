@@ -22,6 +22,7 @@ local SOURCES =
     double.cpp
     error.cpp
     fwd.cpp
+    iostreams.cpp
     json.cpp
     kind.cpp
     memory_resource.cpp
