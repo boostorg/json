@@ -1388,7 +1388,7 @@ public:
         The elements in the range `{first, last)` are removed.
 
         @par Complexity
-        Linear in `std::distance(first, last) + std::distance(pos, end())`
+        Linear in `std::distance(first, end())`
 
         @par Exception Safety
         No-throw guarantee.
@@ -1401,7 +1401,7 @@ public:
         range.
 
         @return Iterator following the last removed element.
-        If the iterator `pos` refers to the last element,
+        If the iterator `last` refers to the last element,
         the @ref end() iterator is returned.
     */
     BOOST_JSON_DECL
