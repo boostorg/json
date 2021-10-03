@@ -7,26 +7,9 @@
 # Official repository: https://github.com/boostorg/json
 #
 
-import os ;
-
-STANDALONE = [ os.environ STANDALONE ] ;
-if $(STANDALONE)
-{
-    LIB =
-        <define>BOOST_JSON_STANDALONE=1
-        <source>../src/src.cpp
-        ;
-}
-else
-{
-    LIB = <library>/boost/json//boost_json ;
-}
-
 # See the comments in CMakeLists.txt for why
 # these are libraries and not exe targets.
 lib fuzzerlib_basic_parser :
     fuzz_basic_parser.cpp
-    : :
-    $(LIB)
+    /boost/json//boost_json
     ;
-
