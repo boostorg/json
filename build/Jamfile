@@ -1,5 +1,6 @@
 #
 # Copyright (c) 2019 Vinnie Falco (vinnie dot falco at gmail dot com)
+# Copyright (c) 2021 Dmitry Arkhipov (grisumbras@gmail.com)
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -9,17 +10,32 @@
 
 import ../../config/checks/config : requires ;
 
+# These make sure we only build on compatible C++11 or later toolchains.
+obj check_basic_alignas : ../check/basic_alignas.cpp ;
+explicit check_basic_alignas ;
+
 project boost/json
     : requirements
-      $(c11-requires)
+      [ requires
+        cxx11_constexpr
+        cxx11_decltype
+        cxx11_hdr_tuple
+        cxx11_template_aliases
+        cxx11_variadic_templates
+      ]
+      # We only require limited alignas support,
+      # so we have to use a custom check
+      [ check-target-builds
+        check_basic_alignas cxx11_basic_alignas : : <build>no
+      ]
       <link>shared:<define>BOOST_JSON_DYN_LINK=1
       <link>static:<define>BOOST_JSON_STATIC_LINK=1
       <library>/boost//container/<warnings-as-errors>off
       <define>BOOST_JSON_SOURCE
     : usage-requirements
-      $(c11-requires)
       <link>shared:<define>BOOST_JSON_DYN_LINK=1
       <link>static:<define>BOOST_JSON_STATIC_LINK=1
+      <library>/boost//container/<warnings-as-errors>off
     : source-location ../src
     ;
 

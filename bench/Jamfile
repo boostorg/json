@@ -22,8 +22,6 @@ else
     LIB = <library>/boost/json//boost_json ;
 }
 
-project : requirements $(c11-requires) ;
-
 exe bench :
     bench.cpp
     :
