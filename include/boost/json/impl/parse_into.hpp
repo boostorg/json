@@ -11,7 +11,11 @@
 #ifndef BOOST_JSON_IMPL_PARSE_INTO_HPP
 #define BOOST_JSON_IMPL_PARSE_INTO_HPP
 
+#include <boost/json/detail/config.hpp>
 #include <boost/json/error.hpp>
+
+#ifndef BOOST_JSON_STANDALONE
+
 #include <boost/json/detail/parse_into.hpp>
 
 BOOST_JSON_NS_BEGIN
@@ -35,5 +39,7 @@ parse_into(
 }
 
 BOOST_JSON_NS_END
+
+#endif
 
 #endif

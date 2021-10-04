@@ -75,7 +75,7 @@ public:
 
     bool on_int64( std::int64_t v, string_view, error_code& ec )
     {
-        if( v < std::numeric_limits<V>::min() || v > std::numeric_limits<V>::max() )
+        if( v < (std::numeric_limits<V>::min)() || v > (std::numeric_limits<V>::max)() )
         {
             BOOST_JSON_FAIL( ec, error::number_out_of_range );
             return false;
@@ -89,7 +89,7 @@ public:
 
     bool on_uint64( std::uint64_t v, string_view, error_code& ec )
     { 
-        if( v > std::numeric_limits<V>::max() )
+        if( v > (std::numeric_limits<V>::max)() )
         {
             BOOST_JSON_FAIL( ec, error::number_out_of_range );
             return false;

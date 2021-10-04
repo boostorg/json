@@ -10,6 +10,8 @@
 // Test that header file is self-contained.
 #include <boost/json/parse_into.hpp>
 
+#ifndef BOOST_JSON_STANDALONE
+
 #include <boost/json/serialize.hpp>
 #include <boost/json/value_from.hpp>
 
@@ -192,3 +194,5 @@ public:
 TEST_SUITE(parse_into_test, "boost.json.parse_into");
 
 BOOST_JSON_NS_END
+
+#endif
