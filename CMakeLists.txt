@@ -52,7 +52,6 @@ if(BOOST_JSON_IS_ROOT AND NOT BOOST_JSON_STANDALONE)
     unset(CMAKE_FOLDER)
 endif()
 
-
 function(boost_json_setup_properties target)
     target_compile_features(${target} PUBLIC cxx_constexpr)
     target_compile_definitions(${target} PUBLIC BOOST_JSON_NO_LIB=1)
@@ -77,6 +76,7 @@ function(boost_json_setup_properties target)
               Boost::assert
               Boost::config
               Boost::container
+              Boost::describe
               Boost::exception
               Boost::mp11
               Boost::system

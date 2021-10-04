@@ -62,6 +62,11 @@ public:
         check(condition::parse_error, error::string_too_large);
         check(condition::parse_error, error::exception);
 
+        check(condition::parse_error, error::expected_integer);
+        check(condition::parse_error, error::expected_number);
+        check(condition::parse_error, error::expected_string);
+        check(condition::parse_error, error::expected_bool);
+
         check(condition::assign_error, error::not_number);
         check(condition::assign_error, error::not_exact);
 
