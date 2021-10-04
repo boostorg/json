@@ -603,13 +603,14 @@ template<class S, class... T> struct handler_tuple_impl;
 
 template<std::size_t... I, class... T> struct handler_tuple_impl<boost::mp11::index_sequence<I...>, T...>: handler_tuple_element<I, T>...
 {
+    template<class... A> handler_tuple_impl( A... a ): handler_tuple_element<I, T>{{ a.first, a.second }}... {}
 };
 
 template<class P, class... V> struct handler_tuple: public handler_tuple_impl<boost::mp11::index_sequence_for<V...>, get_handler<V, P>...>
 {
     using base_type = handler_tuple_impl<boost::mp11::index_sequence_for<V...>, get_handler<V, P>...>;
 
-    template<class... A> handler_tuple( A... a ): base_type{ { { a.first, a.second } }... }
+    template<class... A> handler_tuple( A... a ): base_type( a... )
     {
     }
 
