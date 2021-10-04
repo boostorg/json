@@ -11,6 +11,8 @@ project : requirements <library>/boost/json//boost_json ;
 
 exe path : path.cpp ;
 
+exe parse_into : parse_into.cpp ;
+
 exe pretty : pretty.cpp ;
 
 exe proxy : proxy.cpp ;
