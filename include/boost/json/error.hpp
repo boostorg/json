@@ -225,6 +225,31 @@ enum class error
      */
     expected_bool,
 
+    /**
+     * parse_into expected an array
+     */
+    expected_array,
+
+    /**
+     * parse_into expected an object
+     */
+    expected_object,
+
+    /**
+     * number out of range for the target type
+     */
+    number_out_of_range,
+
+    /**
+     * invalid array size for the target tuple
+     */
+    invalid_array_size,
+
+    /**
+     * invalid member name for the target struct
+     */
+    invalid_member_name,
+
     //----------------------------------
 
     /// not a number
