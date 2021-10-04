@@ -21,13 +21,12 @@ void
 parse_into(
     V& v,
     string_view sv,
-    error_code& ec )
+    error_code& ec,
+    parse_options const& opt )
 {
-    using handler_type = detail::into_handler<V>;
+    parser_for<V> p( opt, &v );
 
-    basic_parser<handler_type> p_( {}, &v );
-
-    std::size_t n = p_.write_some( false, sv.data(), sv.size(), ec );
+    std::size_t n = p.write_some( false, sv.data(), sv.size(), ec );
 
     if( !ec && n < sv.size() )
     {

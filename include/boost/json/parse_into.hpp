@@ -46,13 +46,17 @@ using parser_for =
     @param sv The JSON text to parse.
 
     @param ec Set to the error if any occurred
+
+    @param opt The options for the parser. If this parameter
+    is omitted, the parser will accept only standard JSON.
 */
 template<class V>
 void
 parse_into(
     V& v,
     string_view sv,
-    error_code& ec );
+    error_code& ec,
+    parse_options const& opt = {} );
 
 BOOST_JSON_NS_END
 
