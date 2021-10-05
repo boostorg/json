@@ -702,7 +702,7 @@ public:
         BOOST_JSON_FAIL( ec, error::invalid_array_size ); \
         return false; \
     } \
-    return boost::mp11::mp_with_index<N>( inner_active_, [&](auto I){ \
+    return boost::mp11::mp_with_index<N>( inner_active_, [&](std::size_t I){ \
         return get<I>( inner_.handlers_ ).fn; \
     });
 
@@ -734,7 +734,7 @@ public:
             return true;
         }
 
-        return boost::mp11::mp_with_index<N>( inner_active_, [&](auto I){
+        return boost::mp11::mp_with_index<N>( inner_active_, [&](std::size_t I){
 
             return get<I>( inner_.handlers_ ).on_array_begin( ec );
 
@@ -757,7 +757,7 @@ public:
             return true;
         }
 
-        return boost::mp11::mp_with_index<N>( inner_active_, [&](auto I){
+        return boost::mp11::mp_with_index<N>( inner_active_, [&](std::size_t I){
 
             return get<I>( inner_.handlers_ ).on_array_end( n, ec );
 
@@ -877,7 +877,7 @@ public:
         BOOST_JSON_FAIL( ec, error::expected_object ); \
         return false; \
     } \
-    return boost::mp11::mp_with_index<boost::mp11::mp_size<Dm>>( inner_active_, [&](auto I){ \
+    return boost::mp11::mp_with_index<boost::mp11::mp_size<Dm>>( inner_active_, [&](std::size_t I){ \
         return get<I>( inner_.handlers_ ).fn; \
     });
 

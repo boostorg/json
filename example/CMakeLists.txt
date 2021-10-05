@@ -14,12 +14,14 @@ source_group("" FILES
     pretty.cpp
     proxy.cpp
     validate.cpp
+    Jamfile
 )
 
 #
 
 add_executable(parse_into
     parse_into.cpp
+    Jamfile
 )
 set_property(TARGET parse_into PROPERTY FOLDER "example")
 target_link_libraries(parse_into PRIVATE Boost::json)
@@ -28,6 +30,7 @@ target_link_libraries(parse_into PRIVATE Boost::json)
 
 add_executable(path
     path.cpp
+    Jamfile
 )
 set_property(TARGET path PROPERTY FOLDER "example")
 target_link_libraries(path PRIVATE Boost::json)
@@ -37,6 +40,7 @@ target_link_libraries(path PRIVATE Boost::json)
 add_executable(pretty
     file.hpp
     pretty.cpp
+    Jamfile
 )
 set_property(TARGET pretty PROPERTY FOLDER "example")
 target_link_libraries(pretty PRIVATE Boost::json)
@@ -46,6 +50,7 @@ target_link_libraries(pretty PRIVATE Boost::json)
 add_executable(proxy
     file.hpp
     proxy.cpp
+    Jamfile
 )
 set_property(TARGET proxy PROPERTY FOLDER "example")
 target_link_libraries(proxy PRIVATE Boost::json)
@@ -55,6 +60,7 @@ target_link_libraries(proxy PRIVATE Boost::json)
 add_executable(validate
     file.hpp
     validate.cpp
+    Jamfile
 )
 set_property(TARGET validate PROPERTY FOLDER "example")
 target_link_libraries(validate PRIVATE Boost::json)

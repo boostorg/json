@@ -8,8 +8,11 @@
 //
 
 #include <boost/json.hpp>
-#include <vector>
 #include <iostream>
+
+#ifndef BOOST_JSON_STANDALONE
+
+#include <vector>
 #include <fstream>
 #include <iterator>
 #include <chrono>
@@ -237,3 +240,12 @@ int main()
         std::cout << "  x: " << x << ", y: " << y << ", z: " << z << ": " << (tp3 - tp2) / 1ms << " ms\n";
     }
 }
+
+#else
+
+int main()
+{
+    std::cout << "Only available in Boost.JSON!" << std::endl;
+}
+
+#endif
