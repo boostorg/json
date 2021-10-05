@@ -7,20 +7,53 @@
 // Official repository: https://github.com/boostorg/json
 //
 
-#include <boost/json.hpp>
+//
+// An example that compares the performance of json::parse and
+// json::parse_into, using https://github.com/kostya/benchmarks#json
+//
+// Typical results:
+//
+// 1.json: 115075437 bytes
+// boost::json::parse: 721 ms
+//   x: -5.00335e-30, y: 5.00428e+30, z: 0.499722: 121 ms
+// parse_into coordinates: 398 ms
+//   x: -5.00335e-30, y: 5.00428e+30, z: 0.499722: 3 ms
+// parse_into coordinates2: 326 ms
+//   x: -5.00335e-30, y: 5.00428e+30, z: 0.499722: 0 ms
+//
+
+#include <boost/json/value_from.hpp>
+#include <boost/json/parse.hpp>
+#include <boost/json/parse_into.hpp>
+#include <boost/describe.hpp>
+#include <boost/mp11.hpp>
 #include <vector>
+#include <map>
 #include <iostream>
 #include <fstream>
 #include <iterator>
 #include <chrono>
 
+// An std::map<std::string, std::pair<int, bool>> replacement
+// We don't need to store the options
+
+struct options
+{
+    using mapped_type = std::pair<int, bool>;
+
+    void emplace( std::string const&, mapped_type const& )
+    {
+    }
+};
+
 struct coordinate
 {
     double x{}, y{}, z{};
     std::string name;
+    options opts;
 };
 
-BOOST_DESCRIBE_STRUCT(coordinate, (), (x, y, z, name))
+BOOST_DESCRIBE_STRUCT(coordinate, (), (x, y, z, name, opts))
 
 struct coordinates
 {
@@ -29,6 +62,8 @@ struct coordinates
 };
 
 BOOST_DESCRIBE_STRUCT(coordinates, (), (coordinates, info))
+
+// This will hopefully not be needed in the future
 
 template<class T,
     class D1 = boost::describe::describe_members<T,
@@ -47,28 +82,8 @@ template<class T,
     });
 }
 
-template<class T,
-    class Bd = boost::describe::describe_bases<T, boost::describe::mod_any_access>,
-    class Md = boost::describe::describe_members<T, boost::describe::mod_any_access>>
-    bool operator==( T const& t1, T const& t2 )
-{
-    bool r = true;
-
-    boost::mp11::mp_for_each<Bd>([&](auto D){
-
-        using B = typename decltype(D)::type;
-        r = r && (B const&)t1 == (B const&)t2;
-
-    });
-
-    boost::mp11::mp_for_each<Md>([&](auto D){
-
-        r = r && t1.*D.pointer == t2.*D.pointer;
-
-    });
-
-    return r;
-}
+// std::vector<coordinate> replacement that just
+// keeps a running sum
 
 struct accumulator
 {
@@ -102,51 +117,13 @@ using namespace std::chrono_literals;
 
 int main()
 {
-
-    // using T = std::map<std::string, int>;
-    // T t1{ { "one", 1 }, { "two", 2 }, { "three", 3 } };
-
-    // using T = std::vector< std::vector<int> >;
-    // T t1{ {}, {1}, {2, 3}, {4, 5, 6} };
-
-    // using T = std::map<std::string, std::vector<int>>;
-    // T t1{ { "one", {1} }, { "two", {2, 2} }, { "three", {3, 3, 3} } };
-
-    // using T = std::map<std::string, std::pair<int, int>>;
-    // T t1{ { "one", { 1, 2 } }, { "two", { 3, 4 } } };
-
-    // using T = std::vector<coordinate>;
-    // T t1{ { 1, 1, 1, "1" }, { 2, 2, 2, "2" } };
-/*
-    using T = coordinates;
-    T t1{};
-    std::string json = boost::json::serialize( boost::json::value_from( t1 ) );
-    std::cout << "json: " << json << std::endl;
-    T t2;
-    boost::json::error_code ec;
-    parse_into( t2, json, ec );
-    if( ec.failed() )
-    {
-        std::cout << "Error: " << ec.what();
-        return -1;
-    }
-    std::string json2 = boost::json::serialize( boost::json::value_from( t2 ) );
-    std::cout << "json2: " << json2 << std::endl;
-    if( t1 != t2 )
-    {
-        std::cout << "Mismatch!" << std::endl;
-    }
-    else
-    {
-        std::cout << "Match!" << std::endl;
-    }
-*/
-
+    // https://github.com/kostya/benchmarks/blob/master/json/generate_json.rb
     std::ifstream is( "/tmp/1.json" );
     std::string json( std::istreambuf_iterator<char>( is ), std::istreambuf_iterator<char>{} );
 
     std::cout << "1.json: " << json.size() << " bytes\n";
 
+    // https://github.com/kostya/benchmarks/blob/master/json/test_boost_json.cpp
     {
         auto tp1 = std::chrono::steady_clock::now();
 
@@ -229,7 +206,7 @@ int main()
         auto tp2 = std::chrono::steady_clock::now();
         std::cout << "parse_into coordinates2: " << (tp2 - tp1) / 1ms << " ms\n";
 
-        double x = w.coordinates.z / w.coordinates.len;
+        double x = w.coordinates.x / w.coordinates.len;
         double y = w.coordinates.y / w.coordinates.len;
         double z = w.coordinates.z / w.coordinates.len;
 
