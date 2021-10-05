@@ -13,7 +13,7 @@
 
 #include <boost/json/detail/config.hpp>
 
-#ifndef BOOST_JSON_STANDALONE
+#ifndef BOOST_JSON_NOPARSE_INTO
 
 #include <boost/json/basic_parser_impl.hpp>
 #include <boost/json/error.hpp>

@@ -265,6 +265,12 @@
 # endif
 #endif
 
+#if defined(BOOST_JSON_STANDALONE) || (__cplusplus < 201400)
+# ifndef BOOST_JSON_NO_PARSE_INTO
+#  define BOOST_JSON_NO_PARSE_INTO
+# endif
+#endif
+
 BOOST_JSON_NS_BEGIN
 namespace detail {
 

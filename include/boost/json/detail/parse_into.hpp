@@ -11,6 +11,10 @@
 #ifndef BOOST_JSON_DETAIL_PARSE_INTO_HPP
 #define BOOST_JSON_DETAIL_PARSE_INTO_HPP
 
+#include <boost/json/detail/config.hpp>
+
+#ifndef BOOST_JSON_NOPARSE_INTO
+
 #include <boost/json/error.hpp>
 #include <boost/mp11.hpp>
 #include <boost/describe.hpp>
@@ -1140,5 +1144,7 @@ public:
 } // detail
 
 BOOST_JSON_NS_END
+
+#endif
 
 #endif

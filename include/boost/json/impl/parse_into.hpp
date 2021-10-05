@@ -12,10 +12,10 @@
 #define BOOST_JSON_IMPL_PARSE_INTO_HPP
 
 #include <boost/json/detail/config.hpp>
+
+#ifndef BOOST_JSON_NOPARSE_INTO
+
 #include <boost/json/error.hpp>
-
-#ifndef BOOST_JSON_STANDALONE
-
 #include <boost/json/detail/parse_into.hpp>
 
 BOOST_JSON_NS_BEGIN

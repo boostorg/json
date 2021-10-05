@@ -10,7 +10,7 @@
 #include <boost/json.hpp>
 #include <iostream>
 
-#ifndef BOOST_JSON_STANDALONE
+#ifndef BOOST_JSON_NOPARSE_INTO
 
 #include <vector>
 #include <fstream>
