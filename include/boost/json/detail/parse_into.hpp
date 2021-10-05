@@ -676,7 +676,7 @@ public:
         BOOST_JSON_FAIL( ec, error::expected_array ); \
         return false; \
     } \
-    constexpr std::size_t N = std::tuple_size<T>::value; \
+    constexpr int N = std::tuple_size<T>::value; \
     if( inner_active_ >= N ) \
     { \
         BOOST_JSON_FAIL( ec, error::invalid_array_size ); \
@@ -706,7 +706,7 @@ public:
             return true;
         }
 
-        constexpr std::size_t N = std::tuple_size<T>::value;
+        constexpr int N = std::tuple_size<T>::value;
 
         if( inner_active_ >= N )
         {
@@ -729,7 +729,7 @@ public:
             return true;
         }
 
-        constexpr std::size_t N = std::tuple_size<T>::value;
+        constexpr int N = std::tuple_size<T>::value;
 
         if( inner_active_ >= N )
         {
