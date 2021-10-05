@@ -16,6 +16,7 @@
 #include <boost/json/value_from.hpp>
 
 #include <boost/describe.hpp>
+#include <boost/config.hpp>
 #include <climits>
 
 #include "test.hpp"
@@ -50,6 +51,8 @@ bool operator==( Y const& y1, Y const& y2 )
 
 // This needs to be removed once built-in struct support is added
 
+#if BOOST_CXX_VERSION >= 201400L
+
 template<class T,
     class D1 = boost::describe::describe_members<T,
         boost::describe::mod_public | boost::describe::mod_protected>,
@@ -66,6 +69,8 @@ template<class T,
 
     });
 }
+
+#endif
 
 BOOST_JSON_NS_BEGIN
 
@@ -159,6 +164,8 @@ public:
 
     void testTuple()
     {
+#if BOOST_CXX_VERSION >= 201400L
+
         testParseInto<std::pair<int, float>>( {} );
         testParseInto<std::pair<int, float>>( { 1, 3.14f } );
 
@@ -167,15 +174,21 @@ public:
 
         testParseInto<std::pair<std::vector<int>, std::map<std::string, std::pair<int, bool>>>>( {} );
         testParseInto<std::pair<std::vector<int>, std::map<std::string, std::pair<int, bool>>>>( { { 1, 2, 3 }, { { "one", { 7, true } } } } );
+
+#endif
     }
 
     void testStruct()
     {
+#if BOOST_CXX_VERSION >= 201400L
+
         testParseInto<X>( {} );
         testParseInto<X>( { 1, 3.14f, "hello" } );
 
         testParseInto<Y>( {} );
         testParseInto<Y>( { { { 1, 1.0f, "one" }, { 2, 2.0f, "two" } }, { { "one", { 1, 1.1f, "1" } }, { "two", { 2, 2.2f, "2" } } } } );
+
+#endif
     }
 
     void run()

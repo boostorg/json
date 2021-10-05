@@ -14,6 +14,8 @@
 #include <boost/json/error.hpp>
 #include <boost/mp11.hpp>
 #include <boost/describe.hpp>
+#include <boost/config.hpp>
+#include <limits>
 
 BOOST_JSON_NS_BEGIN
 
@@ -658,6 +660,12 @@ template<class P, template<class...> class L, class... V> struct tuple_inner_han
 
 template<class T, class P> class tuple_handler
 {
+#if BOOST_CXX_VERSION < 201400L
+
+    static_assert( sizeof(T) == 0, "Tuple support requires C++14" );
+
+#else
+
 private:
 
     T * value_;
@@ -815,11 +823,13 @@ public:
     }
 
 #undef BOOST_JSON_INVOKE_INNER
+
+#endif // #if BOOST_CXX_VERSION < 201400L
 };
 
 // described_struct_handler
 
-template<class T, class D> using struct_member_type = std::remove_reference_t< decltype( std::declval<T&>().*D::pointer ) >;
+template<class T, class D> using struct_member_type = typename std::remove_reference< decltype( std::declval<T&>().*D::pointer ) >::type;
 
 template<class P, class T, class L> struct struct_inner_handlers;
 
@@ -834,6 +844,12 @@ template<class P, class T, template<class...> class L, class... D> struct struct
 
 template<class V, class P> class described_struct_handler
 {
+#if BOOST_CXX_VERSION < 201400L
+
+    static_assert( sizeof(V) == 0, "Struct support requires C++14" );
+
+#else
+
 private:
 
     V * value_;
@@ -1002,6 +1018,8 @@ public:
     }
 
 #undef BOOST_JSON_INVOKE_INNER
+
+#endif // #if BOOST_CXX_VERSION < 201400L
 };
 
 // into_handler
