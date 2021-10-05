@@ -50,6 +50,26 @@ public:
 
 // integral_handler
 
+template<class V,
+    typename std::enable_if<std::is_signed<V>::value, int>::type = 0>
+    bool integral_in_range( std::int64_t v )
+{
+    return v >= (std::numeric_limits<V>::min)() && v <= (std::numeric_limits<V>::max)();
+}
+
+template<class V,
+    typename std::enable_if<!std::is_signed<V>::value, int>::type = 0>
+    bool integral_in_range( std::int64_t v )
+{
+    return v >= 0 && static_cast<std::uint64_t>( v ) <= (std::numeric_limits<V>::max)();
+}
+
+template<class V>
+    bool integral_in_range( std::uint64_t v )
+{
+    return v <= static_cast<typename std::make_unsigned<V>::type>( (std::numeric_limits<V>::max)() );
+}
+
 template<class V, class P> class integral_handler: public handler_error_base<error::expected_integer>
 {
 private:
@@ -75,7 +95,7 @@ public:
 
     bool on_int64( std::int64_t v, string_view, error_code& ec )
     {
-        if( v < (std::numeric_limits<V>::min)() || v > (std::numeric_limits<V>::max)() )
+        if( !integral_in_range<V>( v ) )
         {
             BOOST_JSON_FAIL( ec, error::number_out_of_range );
             return false;
@@ -89,7 +109,7 @@ public:
 
     bool on_uint64( std::uint64_t v, string_view, error_code& ec )
     { 
-        if( v > (std::numeric_limits<V>::max)() )
+        if( !integral_in_range<V>( v ) )
         {
             BOOST_JSON_FAIL( ec, error::number_out_of_range );
             return false;
