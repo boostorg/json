@@ -857,7 +857,10 @@ private:
 
     std::string key_;
 
-    using Dm = boost::describe::describe_members<V, boost::describe::mod_public>;
+    using Dm = boost::describe::describe_members<V, boost::describe::mod_public | boost::describe::mod_protected>;
+
+    static_assert( boost::mp11::mp_empty< boost::describe::describe_members<V, boost::describe::mod_private> >::value, "Types with private members are not supported" );
+    static_assert( boost::mp11::mp_empty< boost::describe::describe_bases<V, boost::describe::mod_any_access> >::value, "Types with base classes are not supported" );
 
     struct_inner_handlers<described_struct_handler, V, Dm> inner_;
     int inner_active_ = -1;
