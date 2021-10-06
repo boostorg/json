@@ -66,6 +66,11 @@ public:
         check(condition::parse_error, error::expected_number);
         check(condition::parse_error, error::expected_string);
         check(condition::parse_error, error::expected_bool);
+        check(condition::parse_error, error::expected_array);
+        check(condition::parse_error, error::expected_object);
+        check(condition::parse_error, error::number_out_of_range);
+        check(condition::parse_error, error::invalid_array_size);
+        check(condition::parse_error, error::invalid_member_name);
 
         check(condition::assign_error, error::not_number);
         check(condition::assign_error, error::not_exact);
