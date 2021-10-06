@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+// Copyright (c) 2021 Peter Dimov
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -171,6 +172,17 @@ public:
 
         testParseInto<std::tuple<int, float, std::string>>( {} );
         testParseInto<std::tuple<int, float, std::string>>( { 1, 3.14f, "hello" } );
+
+        testParseInto<std::vector<std::pair<int, int>>>( {} );
+        testParseInto<std::vector<std::pair<int, int>>>( { { 1, 2 }, { 3, 4 } } );
+
+        testParseInto<std::vector<std::vector<std::pair<int, int>>>>( {} );
+        testParseInto<std::vector<std::vector<std::pair<int, int>>>>( { { { 1, 2 }, { 3, 4 } } } );
+        testParseInto<std::vector<std::vector<std::pair<int, int>>>>( { { { 1, 2 }, { 3, 4 } }, { { 5, 6 }, { 7, 8 } } } );
+
+        testParseInto<std::map<std::string, std::vector<std::pair<int, int>>>>( {} );
+        testParseInto<std::map<std::string, std::vector<std::pair<int, int>>>>( { { "one", {} } } );
+        testParseInto<std::map<std::string, std::vector<std::pair<int, int>>>>( { { "one", { { 1, 2 }, { 3, 4 } } } } );
 
         testParseInto<std::pair<std::vector<int>, std::map<std::string, std::pair<int, bool>>>>( {} );
         testParseInto<std::pair<std::vector<int>, std::map<std::string, std::pair<int, bool>>>>( { { 1, 2, 3 }, { { "one", { 7, true } } } } );
