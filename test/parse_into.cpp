@@ -171,7 +171,7 @@ public:
         testParseInto<std::pair<int, float>>( { 1, 3.14f } );
 
         testParseInto<std::tuple<int, float, std::string>>( {} );
-        testParseInto<std::tuple<int, float, std::string>>( { 1, 3.14f, std::string( "hello" ) } );
+        testParseInto<std::tuple<int, float, std::string>>( std::tuple<int, float, std::string>( 1, 3.14f, "hello" ) );
 
         testParseInto<std::vector<std::pair<int, int>>>( {} );
         testParseInto<std::vector<std::pair<int, int>>>( { { 1, 2 }, { 3, 4 } } );
