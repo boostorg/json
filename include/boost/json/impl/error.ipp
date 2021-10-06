@@ -54,6 +54,7 @@ case error::expected_string: return "expected string";
 case error::expected_bool: return "expected bool";
 case error::expected_array: return "expected array";
 case error::expected_object: return "expected object";
+case error::expected_null: return "expected null";
 case error::number_out_of_range: return "number out of range";
 case error::invalid_array_size: return "invalid array size";
 case error::invalid_member_name: return "invalid member name";
@@ -91,6 +92,7 @@ case error::expected_string:
 case error::expected_bool:
 case error::expected_array:
 case error::expected_object:
+case error::expected_null:
 case error::number_out_of_range:
 case error::invalid_array_size:
 case error::invalid_member_name:

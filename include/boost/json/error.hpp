@@ -236,6 +236,11 @@ enum class error
     expected_object,
 
     /**
+     * parse_into expected a null
+     */
+    expected_null,
+
+    /**
      * number out of range for the target type
      */
     number_out_of_range,

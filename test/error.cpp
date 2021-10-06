@@ -68,6 +68,7 @@ public:
         check(condition::parse_error, error::expected_bool);
         check(condition::parse_error, error::expected_array);
         check(condition::parse_error, error::expected_object);
+        check(condition::parse_error, error::expected_null);
         check(condition::parse_error, error::number_out_of_range);
         check(condition::parse_error, error::invalid_array_size);
         check(condition::parse_error, error::invalid_member_name);

@@ -257,6 +257,41 @@ public:
     }
 };
 
+// null_handler
+
+template<class V, class P> class null_handler: public handler_error_base<error::expected_null>
+{
+private:
+
+    V * value_;
+    P * parent_;
+
+public:
+
+    null_handler( null_handler const& ) = delete;
+    null_handler& operator=( null_handler const& ) = delete;
+
+public:
+
+    null_handler( V* v, P* p ): value_( v ), parent_( p )
+    {
+    }
+
+    bool on_null( error_code& )
+    {
+        *value_ = {};
+
+        parent_->signal_value();
+        return true;
+    }
+
+    bool on_array_end( std::size_t, error_code& )
+    {
+        parent_->signal_end();
+        return true;
+    }
+};
+
 // forward declarations
 
 template<class V, class P> class sequence_handler;
@@ -319,6 +354,7 @@ template<class T> struct is_described_struct<T, decltype((void)boost::describe::
 
 template<class V, class P> using get_handler = boost::mp11::mp_cond<
 
+    std::is_same<V, std::nullptr_t>, null_handler<V, P>,
     std::is_same<V, bool>, bool_handler<V, P>,
     std::is_integral<V>, integral_handler<V, P>,
     std::is_floating_point<V>, floating_point_handler<V, P>,
