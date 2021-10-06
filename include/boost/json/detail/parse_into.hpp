@@ -762,6 +762,8 @@ public:
         if( inner_active_ >= N )
         {
             parent_->signal_value();
+
+            inner_active_ = -1;
             return true;
         }
 
