@@ -69,6 +69,11 @@ public:
         BOOST_TEST( !ec.failed() ) && BOOST_TEST( t1 == t2 );
     }
 
+    void testNull()
+    {
+        testParseInto( nullptr );
+    }
+
     void testBoolean()
     {
         testParseInto( false );
@@ -107,6 +112,8 @@ public:
 
     void testSequence()
     {
+        testParseInto<std::vector<std::nullptr_t>>( { nullptr, nullptr } );
+
         testParseInto< std::vector<bool> >( {} );
         testParseInto< std::vector<bool> >( { true, false } );
 
@@ -176,6 +183,7 @@ public:
 
     void run()
     {
+        testNull();
         testBoolean();
         testIntegral();
         testFloatingPoint();
