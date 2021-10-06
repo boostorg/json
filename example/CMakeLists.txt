@@ -18,11 +18,15 @@ source_group("" FILES
 
 #
 
+if(NOT BOOST_JSON_STANDALONE)
+
 add_executable(parse_into
     parse_into.cpp
 )
 set_property(TARGET parse_into PROPERTY FOLDER "example")
 target_link_libraries(parse_into PRIVATE Boost::json)
+
+endif()
 
 #
 
