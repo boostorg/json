@@ -72,6 +72,7 @@ public:
         check(condition::parse_error, error::number_out_of_range);
         check(condition::parse_error, error::invalid_array_size);
         check(condition::parse_error, error::invalid_member_name);
+        check(condition::parse_error, error::unexpected_type);
 
         check(condition::assign_error, error::not_number);
         check(condition::assign_error, error::not_exact);

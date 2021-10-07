@@ -12,8 +12,10 @@
 #define BOOST_JSON_DETAIL_PARSE_INTO_HPP
 
 #include <boost/json/error.hpp>
+#include <boost/describe/bases.hpp>
+#include <boost/describe/members.hpp>
+#include <boost/variant2/variant.hpp>
 #include <boost/mp11.hpp>
-#include <boost/describe.hpp>
 #include <boost/config.hpp>
 #include <limits>
 
@@ -297,12 +299,29 @@ public:
 template<class V, class P> class sequence_handler;
 template<class V, class P> class map_handler;
 template<class V, class P> class tuple_handler;
-template<class V, class P> class described_struct_handler;
+template<class V, class P> class struct_handler;
+template<class V, class P> class variant_handler;
 
 template<class V> struct unknown_type_handler
 {
     static_assert( sizeof(V) == 0, "This type is not supported" );
 };
+
+// is_null
+
+template<class T> using is_null = std::is_same<T, std::nullptr_t>;
+
+// is_bool
+
+template<class T> using is_bool = std::is_same<T, bool>;
+
+// is_integral
+
+template<class T> using is_integral = std::is_integral<T>;
+
+// is_floating_point
+
+template<class T> using is_floating_point = std::is_floating_point<T>;
 
 // is_string
 
@@ -340,13 +359,23 @@ template<class T> struct is_tuple<T, decltype( (void)std::tuple_size<T>::value )
 {
 };
 
-// is_described_struct
+// is_struct
 
-template<class T, class E = void> struct is_described_struct: std::false_type
+template<class T, class E = void> struct is_struct: std::false_type
 {
 };
 
-template<class T> struct is_described_struct<T, decltype((void)boost::describe::describe_members<T, boost::describe::mod_any_access>())>: std::true_type
+template<class T> struct is_struct<T, decltype((void)boost::describe::describe_members<T, boost::describe::mod_any_access>())>: std::true_type
+{
+};
+
+// is_variant
+
+template<class T, class E = void> struct is_variant: std::false_type
+{
+};
+
+template<class... T> struct is_variant<boost::variant2::variant<T...>>: std::true_type
 {
 };
 
@@ -354,15 +383,16 @@ template<class T> struct is_described_struct<T, decltype((void)boost::describe::
 
 template<class V, class P> using get_handler = boost::mp11::mp_cond<
 
-    std::is_same<V, std::nullptr_t>, null_handler<V, P>,
-    std::is_same<V, bool>, bool_handler<V, P>,
-    std::is_integral<V>, integral_handler<V, P>,
-    std::is_floating_point<V>, floating_point_handler<V, P>,
+    is_null<V>, null_handler<V, P>,
+    is_bool<V>, bool_handler<V, P>,
+    is_integral<V>, integral_handler<V, P>,
+    is_floating_point<V>, floating_point_handler<V, P>,
+    is_variant<V>, variant_handler<V, P>,
     is_string<V>, string_handler<V, P>,
     is_map<V>, map_handler<V, P>,
     is_sequence<V>, sequence_handler<V, P>,
     is_tuple<V>, tuple_handler<V, P>,
-    is_described_struct<V>, described_struct_handler<V, P>,
+    is_struct<V>, struct_handler<V, P>,
     boost::mp11::mp_true, unknown_type_handler<V>
 >;
 
@@ -865,7 +895,7 @@ public:
 #endif // #if BOOST_CXX_VERSION < 201400L
 };
 
-// described_struct_handler
+// struct_handler
 
 template<class T, class D> using struct_member_type = typename std::remove_reference< decltype( std::declval<T&>().*D::pointer ) >::type;
 
@@ -880,7 +910,7 @@ template<class P, class T, template<class...> class L, class... D> struct struct
     }
 };
 
-template<class V, class P> class described_struct_handler
+template<class V, class P> class struct_handler
 {
 #if BOOST_CXX_VERSION < 201400L
 
@@ -900,17 +930,17 @@ private:
     static_assert( boost::mp11::mp_empty< boost::describe::describe_members<V, boost::describe::mod_private> >::value, "Types with private members are not supported" );
     static_assert( boost::mp11::mp_empty< boost::describe::describe_bases<V, boost::describe::mod_any_access> >::value, "Types with base classes are not supported" );
 
-    struct_inner_handlers<described_struct_handler, V, Dm> inner_;
+    struct_inner_handlers<struct_handler, V, Dm> inner_;
     int inner_active_ = -1;
 
 public:
 
-    described_struct_handler( described_struct_handler const& ) = delete;
-    described_struct_handler& operator=( described_struct_handler const& ) = delete;
+    struct_handler( struct_handler const& ) = delete;
+    struct_handler& operator=( struct_handler const& ) = delete;
 
 public:
 
-    described_struct_handler( V* v, P* p ): value_( v ), parent_( p ), inner_( v, this )
+    struct_handler( V* v, P* p ): value_( v ), parent_( p ), inner_( v, this )
     {
     }
 
@@ -1055,6 +1085,252 @@ public:
     
     bool on_null( error_code& ec )
     {
+        BOOST_JSON_INVOKE_INNER( on_null( ec ) );
+    }
+
+#undef BOOST_JSON_INVOKE_INNER
+
+#endif // #if BOOST_CXX_VERSION < 201400L
+};
+
+// variant_handler
+
+template<class V, class P> class variant_handler
+{
+#if BOOST_CXX_VERSION < 201400L
+
+    static_assert( sizeof(T) == 0, "Variant support requires C++14" );
+
+#else
+
+private:
+
+    V * value_;
+    P * parent_;
+
+    mp11::mp_push_front<mp11::mp_transform_q<mp11::mp_bind_back<get_handler, variant_handler>, V>, boost::variant2::monostate> inner_;
+
+public:
+
+    variant_handler( variant_handler const& ) = delete;
+    variant_handler& operator=( variant_handler const& ) = delete;
+
+public:
+
+    variant_handler( V* v, P* p ): value_( v ), parent_( p )
+    {
+    }
+
+    void signal_value()
+    {
+        inner_.template emplace<0>();
+        parent_->signal_value();
+    }
+
+    void signal_end()
+    {
+        inner_.template emplace<0>();
+        parent_->signal_value();
+    }
+
+#define BOOST_JSON_INVOKE_INNER(fn) \
+    if( inner_.index() != 0 ) \
+    { \
+        return mp11::mp_with_index<mp11::mp_size<V>::value>( inner_.index() - 1, [&](auto I){ \
+            return get<I+1>( inner_ ).fn; \
+        }); \
+    } \
+    else \
+    { \
+        BOOST_JSON_FAIL(ec, error::syntax); \
+        return false; \
+    }
+
+private:
+
+    template<std::size_t I> bool activate( mp11::mp_size_t<I>, error_code& )
+    {
+        inner_.template emplace<I+1>( &value_->template emplace<I>(), this );
+        return true;
+    }
+
+    bool activate( mp11::mp_size<V>, error_code& ec )
+    {
+        BOOST_JSON_FAIL(ec, error::unexpected_type);
+        return false;
+    }
+
+public:
+
+private:
+
+    template<class T> using is_object_ = mp11::mp_bool<
+        !is_string<T>::value && ( is_map<T>::value ||
+        ( !is_sequence<T>::value && !is_tuple<T>::value && is_struct<T>::value )
+        ) >;
+
+public:
+
+    bool on_object_begin( error_code& ec )
+    {
+        if( inner_.index() == 0 )
+        {
+            if( !activate( mp11::mp_find_if<V, is_object_>(), ec ) )
+            {
+                return false;
+            }
+        }
+
+        BOOST_JSON_INVOKE_INNER( on_object_begin( ec ) );
+    }
+
+    bool on_object_end( std::size_t n, error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_object_end( n, ec ) );
+    }
+
+private:
+
+    template<class T> using is_array_ = mp11::mp_bool<
+        !is_string<T>::value && ( is_sequence<T>::value ||
+        ( !is_map<T>::value && is_tuple<T>::value )
+        ) >;
+
+public:
+
+    bool on_array_begin( error_code& ec )
+    {
+        if( inner_.index() == 0 )
+        {
+            if( !activate( mp11::mp_find_if<V, is_array_>(), ec ) )
+            {
+                return false;
+            }
+        }
+
+        BOOST_JSON_INVOKE_INNER( on_array_begin( ec ) );
+    }
+
+    bool on_array_end( std::size_t n, error_code& ec )
+    {
+        if( inner_.index() == 0 )
+        {
+            parent_->signal_end();
+            return true;
+        }
+
+        BOOST_JSON_INVOKE_INNER( on_array_end( n, ec ) );
+    }
+
+    bool on_key_part( string_view sv, std::size_t n, error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_key_part( sv, n, ec ) );
+    }
+
+    bool on_key( string_view sv, std::size_t n, error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_key( sv, n, ec ) );
+    }
+
+    bool on_string_part( string_view sv, std::size_t n, error_code& ec )
+    {
+        if( inner_.index() == 0 )
+        {
+            if( !activate( mp11::mp_find_if<V, is_string>(), ec ) )
+            {
+                return false;
+            }
+        }
+
+        BOOST_JSON_INVOKE_INNER( on_string_part( sv, n, ec ) );
+    }
+
+    bool on_string( string_view sv, std::size_t n, error_code& ec )
+    {
+        if( inner_.index() == 0 )
+        {
+            if( !activate( mp11::mp_find_if<V, is_string>(), ec ) )
+            {
+                return false;
+            }
+        }
+
+        BOOST_JSON_INVOKE_INNER( on_string( sv, n, ec ) );
+    }
+
+    bool on_number_part( string_view sv, error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_number_part( sv, ec ) );
+    }
+
+private:
+
+    template<class T> using is_integral_ = mp11::mp_bool< !is_bool<T>::value && is_integral<T>::value >;
+
+public:
+
+    bool on_int64( std::int64_t v, string_view sv, error_code& ec )
+    {
+        if( inner_.index() == 0 )
+        {
+            if( !activate( mp11::mp_find_if<V, is_integral_>(), ec ) )
+            {
+                return false;
+            }
+        }
+
+        BOOST_JSON_INVOKE_INNER( on_int64( v, sv, ec ) );
+    }
+
+    bool on_uint64( std::uint64_t v, string_view sv, error_code& ec )
+    {
+        if( inner_.index() == 0 )
+        {
+            if( !activate( mp11::mp_find_if<V, is_integral_>(), ec ) )
+            {
+                return false;
+            }
+        }
+
+        BOOST_JSON_INVOKE_INNER( on_uint64( v, sv, ec ) );
+    }
+
+    bool on_double( double v, string_view sv, error_code& ec )
+    {
+        if( inner_.index() == 0 )
+        {
+            if( !activate( mp11::mp_find_if<V, is_floating_point>(), ec ) )
+            {
+                return false;
+            }
+        }
+
+        BOOST_JSON_INVOKE_INNER( on_double( v, sv, ec ) );
+    }
+
+    bool on_bool( bool v, error_code& ec )
+    {
+        if( inner_.index() == 0 )
+        {
+            if( !activate( mp11::mp_find_if<V, is_bool>(), ec ) )
+            {
+                return false;
+            }
+        }
+
+        BOOST_JSON_INVOKE_INNER( on_bool( v, ec ) );
+    }
+
+    bool on_null( error_code& ec )
+    {
+        if( inner_.index() == 0 )
+        {
+            if( !activate( mp11::mp_find_if<V, is_null>(), ec ) )
+            {
+                return false;
+            }
+        }
+
         BOOST_JSON_INVOKE_INNER( on_null( ec ) );
     }
 

@@ -255,6 +255,11 @@ enum class error
      */
     invalid_member_name,
 
+    /**
+     * unexpected type for the target variant
+     */
+    unexpected_type,
+
     //----------------------------------
 
     /// not a number

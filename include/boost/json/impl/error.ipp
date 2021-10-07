@@ -58,6 +58,7 @@ case error::expected_null: return "expected null";
 case error::number_out_of_range: return "number out of range";
 case error::invalid_array_size: return "invalid array size";
 case error::invalid_member_name: return "invalid member name";
+case error::unexpected_type: return "unpexpected type";
 
 case error::test_failure: return "test failure";
             }
@@ -96,6 +97,7 @@ case error::expected_null:
 case error::number_out_of_range:
 case error::invalid_array_size:
 case error::invalid_member_name:
+case error::unexpected_type:
     return condition::parse_error;
 
 case error::not_number:

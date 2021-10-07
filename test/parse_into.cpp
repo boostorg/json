@@ -17,6 +17,7 @@
 #include <boost/json/value_from.hpp>
 
 #include <boost/describe.hpp>
+#include <boost/variant2/variant.hpp>
 #include <boost/config.hpp>
 #include <climits>
 
@@ -210,6 +211,47 @@ public:
 #endif
     }
 
+    template<class T> void testParseInto( T const& t1, string_view const& json )
+    {
+        T t2{};
+
+        error_code ec;
+        parse_into( t2, json, ec );
+
+        BOOST_TEST( !ec.failed() ) && BOOST_TEST( t1 == t2 );
+    }
+
+    void testVariant()
+    {
+#if BOOST_CXX_VERSION >= 201400L
+
+        using V1 = boost::variant2::variant<std::nullptr_t, bool, int, float, std::string, std::vector<int>, X>;
+
+        testParseInto<V1>( nullptr, "null" );
+        testParseInto<V1>( true, "true" );
+        testParseInto<V1>( 11, "11" );
+        testParseInto<V1>( 3.14f, "3.14" );
+        testParseInto<V1>( std::string( "test" ), "\"test\"" );
+        testParseInto<V1>( std::vector<int>{ 1, 2 }, "[1, 2]" );
+        testParseInto<V1>( X{ 1, 3.14f, "hello" }, "{ \"a\": 1, \"b\": 3.14, \"c\": \"hello\"}" );
+
+        using V2 = boost::variant2::variant<std::nullptr_t, bool, int, float, std::string, std::map<std::string, int>, std::tuple<int, float, std::string>>;
+
+        testParseInto<V2>( nullptr, "null" );
+        testParseInto<V2>( true, "true" );
+        testParseInto<V2>( 11, "11" );
+        testParseInto<V2>( 3.14f, "3.14" );
+        testParseInto<V2>( std::string( "test" ), "\"test\"" );
+        testParseInto<V2>( std::map<std::string, int>{ { "x", 1 }, { "y", 2 } }, "{ \"x\": 1, \"y\": 2}" );
+        testParseInto<V2>( std::tuple<int, float, std::string>{ 1, 3.14f, "hello" }, "[ 1, 3.14, \"hello\"]" );
+
+        testParseInto<std::vector<V1>>( { V1{ nullptr }, V1{ 1 }, V1{ 3.14f } }, "[ null, 1, 3.14 ]" );
+
+        testParseInto<std::map<std::string, V2>>( { { "x", V2{ nullptr } }, { "y", V2{ 1 } }, { "z", V2{ 3.14f } } }, "{ \"x\": null, \"y\": 1, \"z\": 3.14 }" );
+
+#endif
+    }
+
     void run()
     {
         testNull();
@@ -221,6 +263,7 @@ public:
         testMap();
         testTuple();
         testStruct();
+        testVariant();
     }
 };
 
