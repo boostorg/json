@@ -30,8 +30,14 @@ target_link_libraries(parse_into PRIVATE Boost::json)
 add_executable(parse_into_canada
     parse_into_canada.cpp
 )
-set_property(TARGET parse_into PROPERTY FOLDER "example")
-target_link_libraries(parse_into PRIVATE Boost::json)
+set_property(TARGET parse_into_canada PROPERTY FOLDER "example")
+target_link_libraries(parse_into_canada PRIVATE Boost::json)
+
+add_executable(parse_into_citm_catalog
+    parse_into_citm_catalog.cpp
+)
+set_property(TARGET parse_into_citm_catalog PROPERTY FOLDER "example")
+target_link_libraries(parse_into_citm_catalog PRIVATE Boost::json)
 
 endif()
 

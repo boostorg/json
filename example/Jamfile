@@ -13,6 +13,10 @@ exe path : path.cpp ;
 
 exe parse_into : parse_into.cpp ;
 
+exe parse_into_canada : parse_into_canada.cpp ;
+
+exe parse_into_citm_catalog : parse_into_citm_catalog.cpp ;
+
 exe pretty : pretty.cpp ;
 
 exe proxy : proxy.cpp ;
