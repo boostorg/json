@@ -40,7 +40,7 @@ common_install
 
 echo '==================================> SCRIPT'
 
-$BOOST_ROOT/libs/$SELF/ci/travis/build.sh
+./b2 "libs/$SELF/test" "libs/$SELF/example" "${B2_ARGS[@]}" "$@"
 
 elif [ "$DRONE_JOB_BUILDTYPE" == "docs" ]; then
 
