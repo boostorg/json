@@ -325,7 +325,13 @@ template<class T> using is_floating_point = std::is_floating_point<T>;
 
 // is_string
 
-template<class T> struct is_string: std::is_same<T, std::string>
+template<class T, class E = void> struct is_string: std::false_type
+{
+};
+
+template<class T> struct is_string<T, decltype(
+    std::declval<T&>().append( std::declval<char const*>(), std::declval<std::size_t>() ),
+    (typename std::enable_if<std::is_same<typename T::value_type, char>::value>::type)0 )>: std::true_type
 {
 };
 
@@ -335,7 +341,9 @@ template<class T, class E = void> struct is_map: std::false_type
 {
 };
 
-template<class T> struct is_map<T, decltype( std::declval<T&>().emplace( std::declval<std::string>(), std::declval<typename T::mapped_type>() ), (void)0 )>: std::true_type
+template<class T> struct is_map<T, decltype(
+    std::declval<T&>().emplace( std::declval<std::string>(), std::declval<typename T::mapped_type>() ),
+    (void)0 )>: std::true_type
 {
 };
 
@@ -345,7 +353,9 @@ template<class T, class E = void> struct is_sequence: std::false_type
 {
 };
 
-template<class T> struct is_sequence<T, decltype( std::declval<T&>().push_back( std::declval<typename T::value_type>() ), (void)0 )>: std::true_type
+template<class T> struct is_sequence<T, decltype(
+    std::declval<T&>().push_back( std::declval<typename T::value_type>() ),
+    (void)0 )>: std::true_type
 {
 };
 
@@ -365,7 +375,8 @@ template<class T, class E = void> struct is_struct: std::false_type
 {
 };
 
-template<class T> struct is_struct<T, decltype((void)boost::describe::describe_members<T, boost::describe::mod_any_access>())>: std::true_type
+template<class T> struct is_struct<T,
+    decltype((void)boost::describe::describe_members<T, boost::describe::mod_any_access>())>: std::true_type
 {
 };
 
