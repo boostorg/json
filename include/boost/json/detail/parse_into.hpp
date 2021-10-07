@@ -691,7 +691,13 @@ public:
 #undef BOOST_JSON_INVOKE_INNER
 };
 
-// into_handler tuple
+// handler_tuple
+
+#if defined(BOOST_MSVC) && BOOST_MSVC < 1910
+
+// MSVC 2015 can't handle handler_tuple_impl
+
+#else
 
 template<std::size_t I, class T> struct handler_tuple_element
 {
@@ -735,11 +741,13 @@ template<class P, template<class...> class L, class... V> struct tuple_inner_han
     }
 };
 
+#endif
+
 template<class T, class P> class tuple_handler
 {
-#if BOOST_CXX_VERSION < 201400L
+#if BOOST_CXX_VERSION < 201400L || ( defined(BOOST_MSVC) && BOOST_MSVC < 1910 )
 
-    static_assert( sizeof(T) == 0, "Tuple support requires C++14" );
+    static_assert( sizeof(T) == 0, "Tuple support requires C++14 or MSVC 2017 or later" );
 
 #else
 
@@ -908,6 +916,12 @@ public:
 
 // struct_handler
 
+#if defined(BOOST_MSVC) && BOOST_MSVC < 1910
+
+// MSVC 2015 can't handle handler_tuple_impl
+
+#else
+
 template<class T, class D> using struct_member_type = typename std::remove_reference< decltype( std::declval<T&>().*D::pointer ) >::type;
 
 template<class P, class T, class L> struct struct_inner_handlers;
@@ -921,11 +935,13 @@ template<class P, class T, template<class...> class L, class... D> struct struct
     }
 };
 
+#endif
+
 template<class V, class P> class struct_handler
 {
-#if BOOST_CXX_VERSION < 201400L
+#if BOOST_CXX_VERSION < 201400L || ( defined(BOOST_MSVC) && BOOST_MSVC < 1910 )
 
-    static_assert( sizeof(V) == 0, "Struct support requires C++14" );
+    static_assert( sizeof(V) == 0, "Struct support requires C++14 or MSVC 2017 or later" );
 
 #else
 

@@ -173,7 +173,7 @@ public:
 
     void testTuple()
     {
-#if BOOST_CXX_VERSION >= 201400L
+#if BOOST_CXX_VERSION >= 201400L && ( !defined(BOOST_MSVC) || BOOST_MSVC >= 1910 )
 
         testParseInto<std::pair<int, float>>( {} );
         testParseInto<std::pair<int, float>>( { 1, 3.14f } );
@@ -200,7 +200,7 @@ public:
 
     void testStruct()
     {
-#if BOOST_CXX_VERSION >= 201400L
+#if BOOST_CXX_VERSION >= 201400L && ( !defined(BOOST_MSVC) || BOOST_MSVC >= 1910 )
 
         testParseInto<X>( {} );
         testParseInto<X>( { 1, 3.14f, "hello" } );
@@ -223,7 +223,7 @@ public:
 
     void testVariant()
     {
-#if BOOST_CXX_VERSION >= 201400L
+#if BOOST_CXX_VERSION >= 201400L && ( !defined(BOOST_MSVC) || BOOST_MSVC >= 1910 )
 
         using V1 = boost::variant2::variant<std::nullptr_t, bool, int, float, std::string, std::vector<int>, X>;
 
