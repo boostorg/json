@@ -11,6 +11,7 @@ source_group("" FILES
     file.hpp
     parse_into.cpp
     parse_into_canada.cpp
+    parse_into_citm_catalog.cpp
     path.cpp
     pretty.cpp
     proxy.cpp
@@ -30,6 +31,12 @@ add_executable(parse_into_canada
 )
 set_property(TARGET parse_into_canada PROPERTY FOLDER "example")
 target_link_libraries(parse_into_canada PRIVATE Boost::json)
+
+add_executable(parse_into_citm_catalog
+    parse_into_citm_catalog.cpp
+)
+set_property(TARGET parse_into_citm_catalog PROPERTY FOLDER "example")
+target_link_libraries(parse_into_citm_catalog PRIVATE Boost::json)
 
 #
 
