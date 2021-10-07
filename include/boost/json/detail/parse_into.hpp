@@ -1099,7 +1099,7 @@ template<class V, class P> class variant_handler
 {
 #if BOOST_CXX_VERSION < 201400L
 
-    static_assert( sizeof(T) == 0, "Variant support requires C++14" );
+    static_assert( sizeof(V) == 0, "Variant support requires C++14" );
 
 #else
 
