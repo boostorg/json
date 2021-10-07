@@ -16,6 +16,8 @@
 #include <boost/json/parse_into.hpp>
 #include <boost/variant2/variant.hpp>
 #include <boost/describe.hpp>
+#include <boost/config.hpp>
+#include <boost/config/pragma_message.hpp>
 #include <vector>
 #include <map>
 #include <iostream>
@@ -23,6 +25,14 @@
 #include <iterator>
 #include <chrono>
 #include <utility>
+
+#if BOOST_CXX_VERSION < 201400L || ( defined(BOOST_MSVC) && BOOST_MSVC < 1910 )
+
+BOOST_PRAGMA_MESSAGE( "This example requires C++14 or VS2017 or later" )
+
+int main() {}
+
+#else
 
 struct event
 {
@@ -132,3 +142,5 @@ int main()
         std::cout << "parse_into<citm_catalog>: " << (tp2 - tp1) / 1ms << " ms\n";
     }
 }
+
+#endif

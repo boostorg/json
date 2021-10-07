@@ -15,6 +15,8 @@
 #include <boost/json/parse.hpp>
 #include <boost/json/parse_into.hpp>
 #include <boost/describe.hpp>
+#include <boost/config.hpp>
+#include <boost/config/pragma_message.hpp>
 #include <vector>
 #include <map>
 #include <iostream>
@@ -22,6 +24,14 @@
 #include <iterator>
 #include <chrono>
 #include <utility>
+
+#if BOOST_CXX_VERSION < 201400L || ( defined(BOOST_MSVC) && BOOST_MSVC < 1910 )
+
+BOOST_PRAGMA_MESSAGE( "This example requires C++14 or VS2017 or later" )
+
+int main() {}
+
+#else
 
 struct geometry_type
 {
@@ -83,3 +93,5 @@ int main()
         std::cout << "parse_into<canada>: " << (tp2 - tp1) / 1ms << " ms\n";
     }
 }
+
+#endif

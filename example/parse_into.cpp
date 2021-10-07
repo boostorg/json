@@ -27,12 +27,22 @@
 #include <boost/json/parse_into.hpp>
 #include <boost/describe.hpp>
 #include <boost/mp11.hpp>
+#include <boost/config.hpp>
+#include <boost/config/pragma_message.hpp>
 #include <vector>
 #include <map>
 #include <iostream>
 #include <fstream>
 #include <iterator>
 #include <chrono>
+
+#if BOOST_CXX_VERSION < 201400L || ( defined(BOOST_MSVC) && BOOST_MSVC < 1910 )
+
+BOOST_PRAGMA_MESSAGE( "This example requires C++14 or VS2017 or later" )
+
+int main() {}
+
+#else
 
 // An std::map<std::string, std::pair<int, bool>> replacement
 // We don't need to store the options
@@ -214,3 +224,5 @@ int main()
         std::cout << "  x: " << x << ", y: " << y << ", z: " << z << ": " << (tp3 - tp2) / 1ms << " ms\n";
     }
 }
+
+#endif
