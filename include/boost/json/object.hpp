@@ -164,7 +164,7 @@ public:
         No-throw guarantee.
     */
     BOOST_JSON_DECL
-    ~object();
+    ~object() noexcept;
 
     //------------------------------------------------------
 

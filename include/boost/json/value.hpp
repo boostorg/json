@@ -134,7 +134,7 @@ public:
         No-throw guarantee.
     */
     BOOST_JSON_DECL
-    ~value();
+    ~value() noexcept;
 
     /** Default constructor.
 
@@ -3426,7 +3426,7 @@ public:
         The value is destroyed and all internally
         allocated memory is freed.
     */
-    ~key_value_pair()
+    ~key_value_pair() noexcept
     {
         auto const& sp = value_.storage();
         if(sp.is_not_shared_and_deallocate_is_trivial())

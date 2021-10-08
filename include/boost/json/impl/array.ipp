@@ -190,7 +190,7 @@ array(detail::unchecked_array&& ua)
 }
 
 array::
-~array()
+~array() noexcept
 {
     destroy();
 }

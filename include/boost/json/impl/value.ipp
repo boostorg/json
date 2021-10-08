@@ -20,7 +20,7 @@
 BOOST_JSON_NS_BEGIN
 
 value::
-~value()
+~value() noexcept
 {
     switch(kind())
     {

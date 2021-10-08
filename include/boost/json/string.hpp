@@ -153,7 +153,7 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    ~string()
+    ~string() noexcept
     {
         impl_.destroy(sp_);
     }

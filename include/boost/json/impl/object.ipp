@@ -239,7 +239,7 @@ object(detail::unchecked_object&& uo)
 }
 
 object::
-~object()
+~object() noexcept
 {
     if(sp_.is_not_shared_and_deallocate_is_trivial())
         return;

@@ -146,7 +146,7 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    ~storage_ptr()
+    ~storage_ptr() noexcept
     {
         release();
     }

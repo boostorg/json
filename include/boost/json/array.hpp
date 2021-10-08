@@ -177,7 +177,7 @@ public:
         No-throw guarantee.
     */
     BOOST_JSON_DECL
-    ~array();
+    ~array() noexcept;
 
     //------------------------------------------------------
 
