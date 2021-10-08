@@ -544,6 +544,7 @@ jobs:
 
           echo '==================================> SCRIPT'
 
+          export B2_TARGETS="libs/$SELF/test libs/$SELF/example"
           $BOOST_ROOT/libs/$SELF/ci/travis/build.sh
 
           elif [ "$JOB_BUILDTYPE" == "standalone" ]; then
@@ -693,6 +694,7 @@ jobs:
 
           echo '==================================> COMPILE'
 
+          set B2_TARGETS=libs/!SELF!/test libs/!SELF!/example
           call !BOOST_ROOT!\libs\!SELF!\ci\build.bat
 
           ) else if "!JOB_BUILDTYPE!" == "standalone-windows" (

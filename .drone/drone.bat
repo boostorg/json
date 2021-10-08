@@ -20,7 +20,8 @@ call ci\common_install.bat
 
 echo '==================================> COMPILE'
 
-call !BOOST_ROOT!\libs\!SELF!\.drone\build.bat
+set B2_TARGETS=libs/!SELF!/test libs/!SELF!/example
+call !BOOST_ROOT!\libs\!SELF!\ci\build.bat
 
 ) else if "%DRONE_JOB_BUILDTYPE%" == "standalone-windows" (
 
