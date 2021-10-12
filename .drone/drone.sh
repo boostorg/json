@@ -47,6 +47,8 @@ elif [ "$DRONE_JOB_BUILDTYPE" == "docs" ]; then
 
 echo '==================================> INSTALL'
 
+export SELF=`basename $REPO_NAME`
+
 pwd
 cd ..
 mkdir -p $HOME/cache && cd $HOME/cache
@@ -70,7 +72,7 @@ git submodule update --init tools/boostbook
 git submodule update --init tools/boostdep
 git submodule update --init tools/docca
 git submodule update --init tools/quickbook
-rsync -av $TRAVIS_BUILD_DIR/ libs/json
+rsync -av $TRAVIS_BUILD_DIR/ libs/$SELF
 python tools/boostdep/depinst/depinst.py ../tools/quickbook
 ./bootstrap.sh
 ./b2 headers
@@ -78,7 +80,7 @@ python tools/boostdep/depinst/depinst.py ../tools/quickbook
 echo '==================================> SCRIPT'
 
 echo "using doxygen ; using boostbook ; using saxonhe ;" > tools/build/src/user-config.jam
-./b2 -j3 libs/json/doc//boostrelease
+./b2 -j3 libs/$SELF/doc//boostrelease
 
 elif [ "$DRONE_JOB_BUILDTYPE" == "codecov" ]; then
 
@@ -150,17 +152,17 @@ export CXXFLAGS="-Wall -Wextra -Werror"
 mkdir __build_static
 cd __build_static
 cmake -DBOOST_ENABLE_CMAKE=1 -DBUILD_TESTING=ON -DBoost_VERBOSE=1 \
-    -DBOOST_INCLUDE_LIBRARIES=json ..
+    -DBOOST_INCLUDE_LIBRARIES=$SELF ..
 cmake --build .
-ctest --output-on-failure -R boost_json
+ctest --output-on-failure -R boost_$SELF
 
 cd ..
 
 mkdir __build_shared
 cd __build_shared
 cmake -DBOOST_ENABLE_CMAKE=1 -DBUILD_TESTING=ON -DBoost_VERBOSE=1 \
-    -DBOOST_INCLUDE_LIBRARIES=json -DBUILD_SHARED_LIBS=ON ..
+    -DBOOST_INCLUDE_LIBRARIES=$SELF -DBUILD_SHARED_LIBS=ON ..
 cmake --build .
-ctest --output-on-failure -R boost_json
+ctest --output-on-failure -R boost_$SELF
 
 fi
