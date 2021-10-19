@@ -10,6 +10,14 @@
 #ifndef BOOST_JSON_DETAIL_CONFIG_HPP
 #define BOOST_JSON_DETAIL_CONFIG_HPP
 
+#ifdef BOOST_JSON_STANDALONE
+# if defined(__GNUC__) || defined(__clang__)
+#  pragma GCC warning "Standalone mode is deprecated and will be removed in a future release of Boost.JSON"
+# elif defined(_MSC_VER)
+#  pragma message("Standalone mode is deprecated and will be removed in a future release of Boost.JSON")
+# endif
+#endif
+
 #ifndef BOOST_JSON_STANDALONE
 # include <boost/config.hpp>
 # include <boost/assert.hpp>

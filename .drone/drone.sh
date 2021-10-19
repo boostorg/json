@@ -20,15 +20,15 @@ common_install () {
   git clone https://github.com/boostorg/boost-ci.git boost-ci-cloned --depth 1
   cp -prf boost-ci-cloned/ci .
   rm -rf boost-ci-cloned
-  
+
   if [ "$TRAVIS_OS_NAME" == "osx" ]; then
       unset -f cd
   fi
-  
+
   export SELF=`basename $REPO_NAME`
   export BOOST_CI_TARGET_BRANCH="$TRAVIS_BRANCH"
   export BOOST_CI_SRC_FOLDER=$(pwd)
-  
+
   . ./ci/common_install.sh
 }
 
@@ -36,7 +36,7 @@ if [ "$DRONE_JOB_BUILDTYPE" == "boost" ]; then
 
 echo '==================================> INSTALL'
 
-common_install 
+common_install
 
 echo '==================================> SCRIPT'
 
@@ -113,13 +113,13 @@ echo '==================================> INSTALL'
 
 echo '==================================> SCRIPT'
 
-export CXXFLAGS="-Wall -Wextra -Werror -std=c++17"
+export CXXFLAGS="-Wextra -Werror -std=c++17"
 mkdir __build_17
 cd __build_17
 cmake -DBOOST_JSON_STANDALONE=1 ..
 cmake --build .
 ctest -V .
-export CXXFLAGS="-Wall -Wextra -Werror -std=c++2a"
+export CXXFLAGS="-Wextra -Werror -std=c++2a"
 mkdir ../__build_2a
 cd ../__build_2a
 cmake -DBOOST_JSON_STANDALONE=1 ..

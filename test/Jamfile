@@ -69,4 +69,5 @@ run limits.cpp main.cpp /boost/json//json_sources
 compile standalone_with_boost.cpp
     : <boost.json.mode>standalone
       <dependency>/boost/json//json_sources
+      <warnings-as-errors>off
     ;

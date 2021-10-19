@@ -52,7 +52,7 @@ Boost.JSON offers these features:
 * Constant-time key lookup for objects
 * Options to allow non-standard JSON
 * Easy and safe modern API with allocator support
-* Compile without Boost, define `BOOST_JSON_STANDALONE`
+* Compile without Boost, define `BOOST_JSON_STANDALONE` (*deprecated*)
 * Optional header-only, without linking to a library
 
 ## Requirements
@@ -77,6 +77,9 @@ as part of Boost, or in the standalone flavor (without Boost):
 
 ### Without Boost
 
+> Warning: standalone use is deprecated and will be removed in a future release
+> of Boost.JSON.
+
 * Requires C++17
 * Aliases for standard types use their `std` equivalents
 * Obtained when defining the macro `BOOST_JSON_STANDALONE`
@@ -97,6 +100,9 @@ file in your project.
 ```
 
 ### Standalone Shared Library
+
+> Warning: standalone use is deprecated and will be removed in a future release
+> of Boost.JSON.
 
 To build a standalone shared library, it is necessary to define the
 macros `BOOST_JSON_DECL` and `BOOST_JSON_CLASS_DECL` as appropriate
