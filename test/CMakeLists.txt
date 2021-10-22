@@ -48,6 +48,8 @@ if(NOT BOOST_JSON_STANDALONE)
     target_sources(boost_json-tests PRIVATE doc_forward_conversion.cpp)
 
     add_library(boost_json-standalone_with_boost STATIC standalone_with_boost.cpp)
+    target_compile_options(boost_json-standalone_with_boost PRIVATE
+        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wno-error>)
     target_compile_definitions(boost_json-standalone_with_boost PRIVATE BOOST_JSON_STANDALONE)
     target_compile_features(boost_json-standalone_with_boost PRIVATE cxx_std_17)
     target_link_libraries(boost_json-standalone_with_boost PRIVATE Boost::assert)
