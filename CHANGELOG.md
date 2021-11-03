@@ -1,3 +1,10 @@
+Boost 1.78.0
+* Standalone mode of the library is deprecated.
+* Allow external libraries to forward declare `value_to` and `value_from`.
+* Fixed signed integer overflow in number parsing.
+* Documentation fixes.
+* Add support for `/Zc:implicitNoexcept-` on MSVC.
+
 Boost 1.77.0:
 
 *  Implicit conversion operator from `string` to `std::string_view`.

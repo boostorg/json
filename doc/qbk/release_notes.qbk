@@ -11,6 +11,26 @@
 
 [/-----------------------------------------------------------------------------]
 
+[heading Boost 1.78.0]
+
+[*API Changes]
+
+* [issue 628] Standalone mode of the library is deprecated.
+
+[*New Features]
+
+* [issue 549] [issue 550] Allow external libraries to forward declare
+  __value_to__ and __value_from__.
+
+[*Fixes]
+
+* [issue 608] [issue 612] Fixed signed integer overflow in number parsing.
+* [issue 620] Documentation fixes.
+
+[*Improvements]
+
+* [issue 557] Add support for `/Zc:implicitNoexcept-` on MSVC.
+
 [heading Boost 1.77.0]
 
 [*New Features]
