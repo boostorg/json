@@ -26,7 +26,6 @@
 #include <boost/json/parse.hpp>
 #include <boost/json/parse_into.hpp>
 #include <boost/describe.hpp>
-#include <boost/mp11.hpp>
 #include <boost/config.hpp>
 #include <boost/config/pragma_message.hpp>
 #include <vector>
@@ -72,25 +71,6 @@ struct coordinates
 };
 
 BOOST_DESCRIBE_STRUCT(coordinates, (), (coordinates, info))
-
-// This will hopefully not be needed in the future
-
-template<class T,
-    class D1 = boost::describe::describe_members<T,
-        boost::describe::mod_public | boost::describe::mod_protected>,
-    class D2 = boost::describe::describe_members<T, boost::describe::mod_private>,
-    class En = std::enable_if_t<boost::mp11::mp_empty<D2>::value> >
-
-    void tag_invoke( boost::json::value_from_tag const&, boost::json::value& v, T const & t )
-{
-    auto& obj = v.emplace_object();
-
-    boost::mp11::mp_for_each<D1>([&](auto D){
-
-        obj[ D.name ] = boost::json::value_from( t.*D.pointer );
-
-    });
-}
 
 // std::vector<coordinate> replacement that just
 // keeps a running sum
