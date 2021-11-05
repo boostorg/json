@@ -9,7 +9,7 @@
 
 //
 // An example that compares the performance of json::parse and
-// json::parse_into on twitter.json
+// json::parse_into on citm_catalog.json
 //
 
 #include <boost/json/parse.hpp>
