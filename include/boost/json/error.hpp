@@ -11,50 +11,9 @@
 #define BOOST_JSON_ERROR_HPP
 
 #include <boost/json/detail/config.hpp>
-#include <boost/system/error_code.hpp>
-#include <boost/system/system_error.hpp>
+#include <boost/json/system_error.hpp>
 
 BOOST_JSON_NS_BEGIN
-
-#ifdef BOOST_JSON_DOCS
-
-/** The type of error code used by the library.
-
-    Alias for `boost::system::error_code`.
-*/
-using error_code = __see_below__;
-
-/** The type of error category used by the library.
-
-    Alias for `boost::system::error_category`.
-*/
-using error_category = __see_below__;
-
-/** The type of error condition used by the library.
-
-    Alias for `boost::system::error_condition`.
-*/
-using error_condition = __see_below__;
-
-/** The type of system error thrown by the library.
-
-    Alias for `boost::system::system_error`.
-*/
-using system_error = __see_below__;
-
-/// Returns the generic error category used by the library.
-error_category const&
-generic_category();
-
-#else
-
-using error_code = boost::system::error_code;
-using error_category = boost::system::error_category;
-using error_condition = boost::system::error_condition;
-using system_error = boost::system::system_error;
-using boost::system::generic_category;
-
-#endif
 
 /** Error codes returned by JSON operations
 
