@@ -13,8 +13,8 @@
 #define BOOST_JSON_DETAIL_VALUE_TO_HPP
 
 #include <boost/json/value.hpp>
-#include <boost/json/detail/index_sequence.hpp>
 #include <boost/json/detail/value_traits.hpp>
+#include <boost/mp11/integer_sequence.hpp>
 
 #include <type_traits>
 
@@ -219,7 +219,7 @@ value_to_generic(
 
 template <class T, std::size_t... Is>
 T
-make_tuple_like(const array& arr, index_sequence<Is...>)
+make_tuple_like(const array& arr, boost::mp11::index_sequence<Is...>)
 {
     return T(value_to<typename std::tuple_element<Is, T>::type>(arr[Is])...);
 }
@@ -241,7 +241,7 @@ value_to_generic(
             BOOST_JSON_SOURCE_POS);
     }
 
-    return make_tuple_like<T>(arr, make_index_sequence<N>());
+    return make_tuple_like<T>(arr, boost::mp11::make_index_sequence<N>());
 }
 
 // Matches containers
