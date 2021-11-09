@@ -13,6 +13,7 @@ local SOURCES =
     array.cpp
     basic_parser.cpp
     doc_background.cpp
+    doc_forward_conversion.cpp
     doc_parsing.cpp
     doc_quick_look.cpp
     doc_serializing.cpp
@@ -64,15 +65,4 @@ run limits.cpp main.cpp /boost/json//json_sources
     <define>BOOST_JSON_MAX_STRING_SIZE=1000
     <define>BOOST_JSON_MAX_STRUCTURED_SIZE=20
     <define>BOOST_JSON_STACK_BUFFER_SIZE=256
-    ;
-
-run doc_forward_conversion.cpp main.cpp /boost/json//boost_json
-    : requirements
-      <boost.json.mode>boost
-    ;
-
-compile standalone_with_boost.cpp
-    : <boost.json.mode>standalone
-      <dependency>/boost/json//json_sources
-      <warnings-as-errors>off
     ;

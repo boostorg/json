@@ -12,22 +12,8 @@
 
 #include <boost/json/detail/config.hpp>
 
-#ifdef BOOST_JSON_STANDALONE
-# if __has_include(<memory_resource>)
-#  include <memory_resource>
-#  ifndef __cpp_lib_memory_resource
-#   error Support for std::memory_resource is required to use Boost.JSON standalone
-#  endif
-# elif __has_include(<experimental/memory_resource>)
-#  include <experimental/memory_resource>
-#  warning Support for std::memory_resource is required to use Boost.JSON standalone, using std::experimental::memory_resource as fallback
-# else
-#  error Header <memory_resource> is required to use Boost.JSON standalone
-# endif
-#else
-# include <boost/container/pmr/memory_resource.hpp>
-# include <boost/container/pmr/polymorphic_allocator.hpp>
-#endif
+#include <boost/container/pmr/memory_resource.hpp>
+#include <boost/container/pmr/polymorphic_allocator.hpp>
 
 BOOST_JSON_NS_BEGIN
 
@@ -35,28 +21,7 @@ BOOST_JSON_NS_BEGIN
 
 /** The type of memory resource used by the library.
 
-    This type alias is set depending
-    on how the library is configured:
-
-    @par Use with Boost
-
-    If the macro `BOOST_JSON_STANDALONE` is
-    not defined, this type will be an alias
-    for `boost::container::pmr::memory_resource`.
-    Compiling a program using the library will
-    require Boost, and a compiler conforming
-    to C++11 or later.
-
-    @par Use without Boost
-
-    If the macro `BOOST_JSON_STANDALONE` is
-    defined, this type will be an alias
-    for `std::pmr::memory_resource`.
-    Compiling a program using the library will
-    require only a compiler conforming to C++17
-    or later.
-
-    @see https://en.cppreference.com/w/cpp/memory/memory_resource
+    Alias for `boost::container::pmr::memory_resource`.
 */
 class memory_resource
 {
@@ -64,50 +29,13 @@ class memory_resource
 
 /** The type of polymorphic allocator used by the library.
 
-    This type alias is set depending
-    on how the library is configured:
-
-    @par Use with Boost
-
-    If the macro `BOOST_JSON_STANDALONE` is
-    not defined, this type will be an alias template
-    for `boost::container::pmr::polymorphic_allocator`.
-    Compiling a program using the library will
-    require Boost, and a compiler conforming
-    to C++11 or later.
-
-    @par Use without Boost
-
-    If the macro `BOOST_JSON_STANDALONE` is
-    defined, this type will be an alias template
-    for `std::pmr::polymorphic_allocator`.
-    Compiling a program using the library will
-    require only a compiler conforming to C++17
-    or later.
-
-    @see https://en.cppreference.com/w/cpp/memory/polymorphic_allocator
+    Alias template for `boost::container::pmr::polymorphic_allocator`.
 */
 template<class T>
 class polymorphic_allocator;
 
 // VFALCO Bug: doc toolchain won't make this a ref
 //using memory_resource = __see_below__;
-
-#elif defined(BOOST_JSON_STANDALONE)
-
-# if __has_include(<memory_resource>)
-using memory_resource = std::pmr::memory_resource;
-template<class T>
-using polymorphic_allocator =
-    std::pmr::polymorphic_allocator<T>;
-
-# else
-using memory_resource = std::experimental::pmr::memory_resource;
-template<class T>
-using polymorphic_allocator =
-    std::experimental::pmr::polymorphic_allocator<T>;
-
-# endif
 
 #else
 using memory_resource = boost::container::pmr::memory_resource;

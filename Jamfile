@@ -9,12 +9,6 @@
 
 import feature ;
 
-# b2 feature to choose Boost or standalone mode
-feature.feature boost.json.mode
-    : boost standalone
-    : propagated
-    ;
-
 build-project bench ;
 build-project test ;
 build-project fuzzing ;

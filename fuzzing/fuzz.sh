@@ -60,7 +60,6 @@ if [ ! -e $fuzzer -o $srcfile -nt $fuzzer ] ; then
         -g \
         -fsanitize=fuzzer,address,undefined \
         -fno-sanitize-recover=undefined \
-        -DBOOST_JSON_STANDALONE \
         -I../include \
         -DBOOST_JSON_STACK_BUFFER_SIZE=64  \
         -o $fuzzer \

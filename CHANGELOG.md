@@ -1,3 +1,6 @@
+Boost 1.79.0
+* Standalone mode of the library is removed.
+
 Boost 1.78.0
 * Standalone mode of the library is deprecated.
 * Allow external libraries to forward declare `value_to` and `value_from`.

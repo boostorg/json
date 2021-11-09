@@ -35,25 +35,4 @@ echo '==================================> COMPILE'
 set B2_TARGETS=libs/!SELF!/test libs/!SELF!/example
 call !BOOST_ROOT!\libs\!SELF!\ci\build.bat
 
-) else if "%DRONE_JOB_BUILDTYPE%" == "standalone-windows" (
-
-echo '==================================> INSTALL'
-
-REM Installing cmake with choco in the Dockerfile, so not required here:
-REM choco install cmake
-
-echo '==================================> COMPILE'
-
-set CXXFLAGS="/std:c++17"
-mkdir __build_17
-cd __build_17
-cmake -DBOOST_JSON_STANDALONE=1 ..
-cmake --build .
-ctest -V -C Debug .
-set CXXFLAGS="/std:c++latest"
-mkdir ..\__build_2a
-cd ..\__build_2a
-cmake -DBOOST_JSON_STANDALONE=1 ..
-cmake --build .
-ctest -V -C Debug .
 )

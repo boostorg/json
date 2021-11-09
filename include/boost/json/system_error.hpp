@@ -11,16 +11,10 @@
 #define BOOST_JSON_SYSTEM_ERROR_HPP
 
 #include <boost/json/detail/config.hpp>
-#ifndef BOOST_JSON_STANDALONE
-# include <boost/system/error_code.hpp>
-# include <boost/system/system_error.hpp>
-#else
-# include <system_error>
-#endif
+#include <boost/system/error_code.hpp>
+#include <boost/system/system_error.hpp>
 
 BOOST_JSON_NS_BEGIN
-
-#ifndef BOOST_JSON_STANDALONE
 
 /// The type of error code used by the library.
 using error_code = boost::system::error_code;
@@ -40,16 +34,6 @@ error_category const&
 generic_category();
 #else
 using boost::system::generic_category;
-#endif
-
-#else
-
-using error_code = std::error_code;
-using error_category = std::error_category;
-using error_condition = std::error_condition;
-using system_error = std::system_error;
-using std::generic_category;
-
 #endif
 
 BOOST_JSON_NS_END

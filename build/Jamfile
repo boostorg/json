@@ -54,11 +54,6 @@ rule warn-if-requested ( properties * )
     }
 }
 
-local cxx17-requires = [ config.requires
-      cxx17_hdr_string_view
-      cxx17_hdr_memory_resource
-    ] ;
-
 project boost/json
     : requirements
       [ requires
@@ -71,35 +66,27 @@ project boost/json
         # so we have to use a custom check
         cxx11_basic_alignas
       ]
-      <boost.json.mode>standalone":$(cxx17-requires)"
       <link>shared:<define>BOOST_JSON_DYN_LINK=1
       <link>static:<define>BOOST_JSON_STATIC_LINK=1
       <define>BOOST_JSON_SOURCE
     : usage-requirements
       <link>shared:<define>BOOST_JSON_DYN_LINK=1
       <link>static:<define>BOOST_JSON_STATIC_LINK=1
-      <boost.json.mode>standalone:<define>BOOST_JSON_STANDALONE=1
     : source-location ../src
     ;
 
 alias json_sources
    : src.cpp
    : usage-requirements
-     <boost.json.mode>boost:<library>/boost//container/<warnings-as-errors>off
+     <library>/boost//container/<warnings-as-errors>off
    ;
 
 explicit json_sources ;
 
 lib boost_json
    : json_sources
-   : <boost.json.mode>boost
-   :
-   : <library>/boost//container/<warnings-as-errors>off
-   ;
-
-alias boost_json
-   : json_sources
-   : <boost.json.mode>standalone
+   : usage-requirements
+     <library>/boost//container/<warnings-as-errors>off
    ;
 
 boost-install boost_json ;

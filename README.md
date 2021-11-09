@@ -52,10 +52,13 @@ Boost.JSON offers these features:
 * Constant-time key lookup for objects
 * Options to allow non-standard JSON
 * Easy and safe modern API with allocator support
-* Compile without Boost, define `BOOST_JSON_STANDALONE` (*deprecated*)
 * Optional header-only, without linking to a library
 
 ## Requirements
+
+* Requires only C++11
+* Link to a built static or dynamic Boost library, or use header-only (see below)
+* Supports -fno-exceptions, detected automatically
 
 The library relies heavily on these well known C++ types in
 its interfaces (henceforth termed _standard types_):
@@ -63,31 +66,6 @@ its interfaces (henceforth termed _standard types_):
 * `string_view`
 * `memory_resource`, `polymorphic_allocator`
 * `error_category`, `error_code`, `error_condition`, `system_error`
-
-The requirements for Boost.JSON depend on whether the library is used
-as part of Boost, or in the standalone flavor (without Boost):
-
-### Using Boost
-
-* Requires only C++11
-* The default configuration
-* Aliases for standard types use their Boost equivalents
-* Link to a built static or dynamic Boost library, or use header-only (see below)
-* Supports -fno-exceptions, detected automatically
-
-### Without Boost
-
-> Warning: standalone use is deprecated and will be removed in a future release
-> of Boost.JSON.
-
-* Requires C++17
-* Aliases for standard types use their `std` equivalents
-* Obtained when defining the macro `BOOST_JSON_STANDALONE`
-* Link to a built static or dynamic standalone library, or use header-only (see below)
-* Supports -fno-exceptions: define `BOOST_NO_EXCEPTIONS` and `boost::throw_exception` manually
-
-When using without Boost, support for `<memory_resource>` is required.
-In particular, if using libstdc++ then version 8.3 or later is needed.
 
 ### Header-Only
 
@@ -97,24 +75,6 @@ place the following line in exactly one new or existing source
 file in your project.
 ```
 #include <boost/json/src.hpp>
-```
-
-### Standalone Shared Library
-
-> Warning: standalone use is deprecated and will be removed in a future release
-> of Boost.JSON.
-
-To build a standalone shared library, it is necessary to define the
-macros `BOOST_JSON_DECL` and `BOOST_JSON_CLASS_DECL` as appropriate
-for your toolchain. Example for MSVC:
-```
-// When building the DLL
-#define BOOST_JSON_DECL       __declspec(dllexport)
-#define BOOST_JSON_CLASS_DECL __declspec(dllexport)
-
-// When building the application which uses the DLL
-#define BOOST_JSON_DECL       __declspec(dllimport)
-#define BOOST_JSON_CLASS_DECL __declspec(dllimport)
 ```
 
 ### Embedded
@@ -129,12 +89,6 @@ building the library or including the function definitions:
 #define BOOST_JSON_STACK_BUFFER_SIZE 1024
 #include <boost/json/src.hpp>
 ```
-
-#### Note
-    This library uses separate inline namespacing for the standalone
-    mode to allow libraries which use different modes to compose
-    without causing link errors. Linking to both modes of Boost.JSON
-    (Boost and standalone) is possible, but not recommended.
 
 ### Supported Compilers
 

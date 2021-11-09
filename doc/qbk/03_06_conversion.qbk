@@ -228,9 +228,6 @@ the __value__ to `T`.
 
 [heading Providing Conversions Without Adding Dependency on Boost.JSON ]
 
-[important The contents of this subsection do not apply to
-    [link json.overview.requirements.without_boost standalone mode] ]
-
 Library authors may wish to provide conversions between types in their
 libraries and __value__. It's possible to do this even without adding a
 physical dependency on Boost.JSON with the help of a few forward declarations.

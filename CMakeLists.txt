@@ -27,7 +27,6 @@ if(BOOST_JSON_IS_ROOT)
     include(CTest)
 endif()
 if(NOT BOOST_SUPERPROJECT_VERSION)
-    option(BOOST_JSON_STANDALONE "Build boost::json as a standalone library" OFF)
     option(BOOST_JSON_INSTALL "Install boost::json files" ON)
     option(BOOST_JSON_BUILD_TESTS "Build boost::json tests" ${BUILD_TESTING})
     option(BOOST_JSON_BUILD_FUZZERS "Build boost::json fuzzers" ${BOOST_JSON_IS_ROOT})
@@ -39,7 +38,7 @@ endif()
 
 
 include(GNUInstallDirs)
-if(BOOST_JSON_IS_ROOT AND NOT BOOST_JSON_STANDALONE)
+if(BOOST_JSON_IS_ROOT)
     #
     # Building inside Boost tree, but as a separate project e.g. on Travis or
     # other CI, or when producing Visual Studio Solution and Projects.
@@ -67,23 +66,18 @@ function(boost_json_setup_properties target)
         )
     endif()
 
-  if(BOOST_JSON_STANDALONE)
-      target_compile_definitions(${target} PUBLIC BOOST_JSON_STANDALONE)
-      target_compile_features(${target} PUBLIC cxx_std_17)
-  else()
-      target_link_libraries(${target}
-          PUBLIC
-              Boost::align
-              Boost::assert
-              Boost::config
-              Boost::container
-              Boost::exception
-              Boost::mp11
-              Boost::system
-              Boost::throw_exception
-              Boost::utility
-      )
-  endif()
+  target_link_libraries(${target}
+      PUBLIC
+          Boost::align
+          Boost::assert
+          Boost::config
+          Boost::container
+          Boost::exception
+          Boost::mp11
+          Boost::system
+          Boost::throw_exception
+          Boost::utility
+  )
 endfunction()
 
 

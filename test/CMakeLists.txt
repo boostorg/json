@@ -17,8 +17,6 @@ endif()
 
 file(GLOB_RECURSE BOOST_JSON_TESTS_FILES CONFIGURE_DEPENDS Jamfile *.cpp *.hpp)
 list(FILTER BOOST_JSON_TESTS_FILES EXCLUDE REGEX cmake_install_test/.*$)
-list(FILTER BOOST_JSON_TESTS_FILES EXCLUDE REGEX standalone_with_boost.cpp)
-list(FILTER BOOST_JSON_TESTS_FILES EXCLUDE REGEX doc_forward_conversion.cpp)
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX "" FILES ${BOOST_JSON_TESTS_FILES})
 add_executable(boost_json-tests ${BOOST_JSON_TESTS_FILES})
@@ -42,17 +40,3 @@ target_compile_definitions(boost_json-limits PRIVATE
 
 add_test(NAME boost_json-limits COMMAND boost_json-limits)
 add_dependencies(tests boost_json-limits)
-
-
-if(NOT BOOST_JSON_STANDALONE)
-    target_sources(boost_json-tests PRIVATE doc_forward_conversion.cpp)
-
-    add_library(boost_json-standalone_with_boost STATIC standalone_with_boost.cpp)
-    target_compile_options(boost_json-standalone_with_boost PRIVATE
-        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wno-error>)
-    target_compile_definitions(boost_json-standalone_with_boost PRIVATE BOOST_JSON_STANDALONE)
-    target_compile_features(boost_json-standalone_with_boost PRIVATE cxx_std_17)
-    target_link_libraries(boost_json-standalone_with_boost PRIVATE Boost::assert)
-    boost_json_setup_properties(boost_json-standalone_with_boost)
-    add_dependencies(tests boost_json-standalone_with_boost)
-endif()

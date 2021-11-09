@@ -9,8 +9,6 @@
 
 #include <boost/json.hpp>
 
-#ifndef BOOST_JSON_STANDALONE
-
 #include <algorithm>
 #include <cmath>
 #include <complex>
@@ -848,5 +846,3 @@ public:
 TEST_SUITE(snippets_test, "boost.json.snippets");
 
 BOOST_JSON_NS_END
-
-#endif

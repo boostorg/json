@@ -1134,15 +1134,14 @@ public:
         return {data(), size()};
     }
 
-#if ! defined(BOOST_JSON_STANDALONE) && \
-    ! defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
+#if ! defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
     /** Convert to a `std::string_view` referring to the string.
 
         Returns a string view to the underlying character string. The size of
         the view does not include the null terminator.
 
-        This overload is not defined when either `BOOST_JSON_STANDALONE` or
-        `BOOST_NO_CXX17_HDR_STRING_VIEW` is defined.
+        This overload is not defined when `BOOST_NO_CXX17_HDR_STRING_VIEW`
+        is defined.
 
         @par Complexity
 

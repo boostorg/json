@@ -11,12 +11,8 @@
 #define BOOST_JSON_ERROR_HPP
 
 #include <boost/json/detail/config.hpp>
-#ifndef BOOST_JSON_STANDALONE
-# include <boost/system/error_code.hpp>
-# include <boost/system/system_error.hpp>
-#else
-# include <system_error>
-#endif
+#include <boost/system/error_code.hpp>
+#include <boost/system/system_error.hpp>
 
 BOOST_JSON_NS_BEGIN
 
@@ -24,109 +20,25 @@ BOOST_JSON_NS_BEGIN
 
 /** The type of error code used by the library.
 
-    This type alias is set depending
-    on how the library is configured:
-
-    @par Use with Boost
-
-    If the macro `BOOST_JSON_STANDALONE` is
-    not defined, this type will be an alias
-    for `boost::system::error_code`.
-    Compiling a program using the library will
-    require Boost, and a compiler conforming
-    to C++11 or later.
-
-    @par Use without Boost
-
-    If the macro `BOOST_JSON_STANDALONE` is
-    defined, this type will be an alias
-    for `std::error_code`.
-    Compiling a program using the library will
-    require only a compiler conforming to C++17
-    or later.
-
-    @see https://en.cppreference.com/w/cpp/error/error_code
+    Alias for `boost::system::error_code`.
 */
 using error_code = __see_below__;
 
 /** The type of error category used by the library.
 
-    This type alias is set depending
-    on how the library is configured:
-
-    @par Use with Boost
-
-    If the macro `BOOST_JSON_STANDALONE` is
-    not defined, this type will be an alias
-    for `boost::system::error_category`.
-    Compiling a program using the library will
-    require Boost, and a compiler conforming
-    to C++11 or later.
-
-    @par Use without Boost
-
-    If the macro `BOOST_JSON_STANDALONE` is
-    defined, this type will be an alias
-    for `std::error_category`.
-    Compiling a program using the library will
-    require only a compiler conforming to C++17
-    or later.
-
-    @see https://en.cppreference.com/w/cpp/error/error_category
+    Alias for `boost::system::error_category`.
 */
 using error_category = __see_below__;
 
 /** The type of error condition used by the library.
 
-    This type alias is set depending
-    on how the library is configured:
-
-    @par Use with Boost
-
-    If the macro `BOOST_JSON_STANDALONE` is
-    not defined, this type will be an alias
-    for `boost::system::error_condition`.
-    Compiling a program using the library will
-    require Boost, and a compiler conforming
-    to C++11 or later.
-
-    @par Use without Boost
-
-    If the macro `BOOST_JSON_STANDALONE` is
-    defined, this type will be an alias
-    for `std::error_condition`.
-    Compiling a program using the library will
-    require only a compiler conforming to C++17
-    or later.
-
-    @see https://en.cppreference.com/w/cpp/error/error_condition
+    Alias for `boost::system::error_condition`.
 */
 using error_condition = __see_below__;
 
 /** The type of system error thrown by the library.
 
-    This type alias is set depending
-    on how the library is configured:
-
-    @par Use with Boost
-
-    If the macro `BOOST_JSON_STANDALONE` is
-    not defined, this type will be an alias
-    for `boost::system::system_error`.
-    Compiling a program using the library will
-    require Boost, and a compiler conforming
-    to C++11 or later.
-
-    @par Use without Boost
-
-    If the macro `BOOST_JSON_STANDALONE` is
-    defined, this type will be an alias
-    for `std::system_error`.
-    Compiling a program using the library will
-    require only a compiler conforming to C++17
-    or later.
-
-    @see https://en.cppreference.com/w/cpp/error/system_error
+    Alias for `boost::system::system_error`.
 */
 using system_error = __see_below__;
 
@@ -134,21 +46,13 @@ using system_error = __see_below__;
 error_category const&
 generic_category();
 
-#elif ! defined(BOOST_JSON_STANDALONE)
+#else
 
 using error_code = boost::system::error_code;
 using error_category = boost::system::error_category;
 using error_condition = boost::system::error_condition;
 using system_error = boost::system::system_error;
 using boost::system::generic_category;
-
-#else
-
-using error_code = std::error_code;
-using error_category = std::error_category;
-using error_condition = std::error_condition;
-using system_error = std::system_error;
-using std::generic_category;
 
 #endif
 

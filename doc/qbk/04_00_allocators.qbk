@@ -17,13 +17,6 @@ C++ standard, followed by an explanation of the model used in
 this library and its benefits. Finally we discuss how the library
 interoperates with existing code that uses polymorphic allocators.
 
-[note
-    In the sections which follow, the aliases
-    __memory_resource__ and __polymorphic_allocator__
-    refer to either Boost types, or `std` types when
-    `BOOST_JSON_STANDALONE` is defined.
-]
-
 [include 04_01_background.qbk]
 [include 04_02_storage_ptr.qbk]
 [include 04_03_pmr.qbk]

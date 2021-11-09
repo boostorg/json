@@ -15,6 +15,12 @@
 
 [*API Changes]
 
+* [issue 628] Standalone mode of the library is removed.
+
+[heading Boost 1.78.0]
+
+[*API Changes]
+
 * [issue 628] Standalone mode of the library is deprecated.
 
 [*New Features]

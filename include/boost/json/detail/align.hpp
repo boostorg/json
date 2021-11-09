@@ -10,17 +10,11 @@
 #ifndef BOOST_JSON_DETAIL_ALIGN_HPP
 #define BOOST_JSON_DETAIL_ALIGN_HPP
 
-#ifndef BOOST_JSON_STANDALONE
 #include <boost/align/align.hpp>
-#else
-#include <cstddef>
-#include <memory>
-#endif
 
 BOOST_JSON_NS_BEGIN
 namespace detail {
 
-#ifndef BOOST_JSON_STANDALONE
 using boost::alignment::align;
 
 // VFALCO workaround until Boost.Align has the type
@@ -63,11 +57,6 @@ struct max_align_t
     // nullptr
     std::nullptr_t w;
 };
-
-#else
-using std::align;
-using max_align_t = std::max_align_t;
-#endif
 
 } // detail
 BOOST_JSON_NS_END

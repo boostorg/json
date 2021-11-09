@@ -12,8 +12,6 @@
 
 #include <type_traits>
 
-#ifndef BOOST_JSON_STANDALONE
-
 namespace boost {
 namespace system {
 template<>
@@ -28,23 +26,6 @@ struct is_error_condition_enum< ::boost::json::condition >
 };
 } // system
 } // boost
-
-#else
-
-namespace std {
-template<>
-struct is_error_code_enum< ::boost::json::error >
-{
-    static bool const value = true;
-};
-template<>
-struct is_error_condition_enum< ::boost::json::condition >
-{
-    static bool const value = true;
-};
-} // std
-
-#endif
 
 BOOST_JSON_NS_BEGIN
 

@@ -10,21 +10,9 @@
 #ifndef BOOST_JSON_DETAIL_CONFIG_HPP
 #define BOOST_JSON_DETAIL_CONFIG_HPP
 
-#ifdef BOOST_JSON_STANDALONE
-# if defined(__GNUC__) || defined(__clang__)
-#  pragma GCC warning "Standalone mode is deprecated and will be removed in a future release of Boost.JSON"
-# elif defined(_MSC_VER)
-#  pragma message("Standalone mode is deprecated and will be removed in a future release of Boost.JSON")
-# endif
-#endif
-
-#ifndef BOOST_JSON_STANDALONE
-# include <boost/config.hpp>
-# include <boost/assert.hpp>
-# include <boost/throw_exception.hpp>
-#else
-# include <cassert>
-#endif
+#include <boost/config.hpp>
+#include <boost/assert.hpp>
+#include <boost/throw_exception.hpp>
 #include <cstdint>
 #include <type_traits>
 #include <utility>
@@ -146,47 +134,36 @@
 #define BOOST_SYMBOL_VISIBLE
 #endif
 
-#ifdef BOOST_JSON_STANDALONE
-# define BOOST_JSON_NS_BEGIN \
-    namespace boost { \
-    namespace json { \
-    inline namespace standalone {
-# define BOOST_JSON_NS_END } } }
-#elif ! defined(BOOST_JSON_DOCS)
+#if ! defined(BOOST_JSON_DOCS)
 # define BOOST_JSON_NS_BEGIN \
     namespace boost { \
     namespace json {
 # define BOOST_JSON_NS_END } }
 #endif
 
-#ifndef BOOST_JSON_STANDALONE
-# if defined(BOOST_JSON_DOCS)
-#  define BOOST_JSON_DECL
-# else
-#  if (defined(BOOST_JSON_DYN_LINK) || defined(BOOST_ALL_DYN_LINK)) && !defined(BOOST_JSON_STATIC_LINK)
-#   if defined(BOOST_JSON_SOURCE)
-#    define BOOST_JSON_DECL        BOOST_SYMBOL_EXPORT
-#    define BOOST_JSON_CLASS_DECL  BOOST_SYMBOL_EXPORT
-#    define BOOST_JSON_BUILD_DLL
-#   else
-#    define BOOST_JSON_DECL        BOOST_SYMBOL_IMPORT
-#    define BOOST_JSON_CLASS_DECL  BOOST_SYMBOL_IMPORT
-#   endif
-#  endif // shared lib
-#  ifndef  BOOST_JSON_DECL
-#   define BOOST_JSON_DECL
-#  endif
-#  if !defined(BOOST_JSON_SOURCE) && !defined(BOOST_ALL_NO_LIB) && !defined(BOOST_JSON_NO_LIB)
-#   define BOOST_LIB_NAME boost_json
-#   if defined(BOOST_ALL_DYN_LINK) || defined(BOOST_JSON_DYN_LINK)
-#    define BOOST_DYN_LINK
-#   endif
-#   include <boost/config/auto_link.hpp>
-#  endif
-# endif
+#if defined(BOOST_JSON_DOCS)
+# define BOOST_JSON_DECL
 #else
-// For standalone, shared library builds, users must manually
-// define the macros BOOST_JSON_DECL and BOOST_JSON_CLASS_DECL
+# if (defined(BOOST_JSON_DYN_LINK) || defined(BOOST_ALL_DYN_LINK)) && !defined(BOOST_JSON_STATIC_LINK)
+#  if defined(BOOST_JSON_SOURCE)
+#   define BOOST_JSON_DECL        BOOST_SYMBOL_EXPORT
+#   define BOOST_JSON_CLASS_DECL  BOOST_SYMBOL_EXPORT
+#   define BOOST_JSON_BUILD_DLL
+#  else
+#   define BOOST_JSON_DECL        BOOST_SYMBOL_IMPORT
+#   define BOOST_JSON_CLASS_DECL  BOOST_SYMBOL_IMPORT
+#  endif
+# endif // shared lib
+# ifndef  BOOST_JSON_DECL
+#  define BOOST_JSON_DECL
+# endif
+# if !defined(BOOST_JSON_SOURCE) && !defined(BOOST_ALL_NO_LIB) && !defined(BOOST_JSON_NO_LIB)
+#  define BOOST_LIB_NAME boost_json
+#  if defined(BOOST_ALL_DYN_LINK) || defined(BOOST_JSON_DYN_LINK)
+#   define BOOST_DYN_LINK
+#  endif
+#  include <boost/config/auto_link.hpp>
+# endif
 #endif
 
 #ifndef BOOST_JSON_DECL
