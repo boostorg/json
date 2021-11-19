@@ -2,8 +2,14 @@
 @ECHO ON
 setlocal enabledelayedexpansion
 
+IF "!GHA_TARGET_BRANCH!" == "" (
+  for /F %%i in ("!GITHUB_REF!") do @set GHA_TARGET_BRANCH=%%~nxi
+  for /F %%i in ("!GITHUB_REF!") do @set TRAVIS_BRANCH=%%~nxi
+)
+
 if "%DRONE_JOB_BUILDTYPE%" == "boost" (
 
+echo "Running boost job"
 echo '==================================> INSTALL'
 
 git clone https://github.com/boostorg/boost-ci.git boost-ci-cloned --depth 1

@@ -389,7 +389,6 @@ jobs:
           LLVM_VER: ${{ matrix.llvm_ver }}
           PACKAGES: ${{ matrix.packages }}
           PACKAGES_TO_REMOVE: ${{ matrix.packages_to_remove }}
-          JOB_BUILDTYPE: ${{ matrix.buildtype }}
           COMMENT: ${{ matrix.comment }}
           LCOV_BRANCH_COVERAGE: ${{ matrix.lcov_branch_coverage }}
           B2_CXXSTD: ${{ matrix.b2_cxxstd }}
@@ -401,6 +400,9 @@ jobs:
           B2_ASAN: ${{ matrix.b2_asan }}
           B2_UBSAN: ${{ matrix.b2_ubsan }}
           TRAVIS_BRANCH: ${{ github.base_ref }}
+          DRONE_BUILD_EVENT: ${{ github.event_name }}
+          DRONE_COMMIT: ${{ github.sha }}
+          DRONE_JOB_BUILDTYPE: ${{ matrix.buildtype }}
           TRAVIS_OS_NAME: "linux"
         run: |
           echo '==================================> SETUP'
@@ -431,171 +433,9 @@ jobs:
           sudo -E DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=3 -y --no-install-suggests --no-install-recommends install ${PACKAGES}
 
           echo '==================================> INSTALL AND COMPILE'
-          set -e
-          export TRAVIS_BUILD_DIR=$(pwd)
-          export TRAVIS_BRANCH=${TRAVIS_BRANCH:-$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')}
-          export VCS_COMMIT_ID=$GITHUB_SHA
-          export GIT_COMMIT=$GITHUB_SHA
-          export REPO_NAME=$(basename $GITHUB_REPOSITORY)
-          export USER=$(whoami)
-          export CC=${CC:-gcc}
-          export PATH=~/.local/bin:/usr/local/bin:$PATH
-
-          if [ "$JOB_BUILDTYPE" == "docs" ]; then
-
-          echo '==================================> INSTALL'
-
-          export SELF=`basename $REPO_NAME`
-
-          pwd
-          cd ..
-          mkdir -p $HOME/cache && cd $HOME/cache
-          if [ ! -d doxygen ]; then git clone -b 'Release_1_8_15' --depth 1 https://github.com/doxygen/doxygen.git && echo "not-cached" ; else echo "cached" ; fi
-          cd doxygen
-          cmake -H. -Bbuild -DCMAKE_BUILD_TYPE=Release
-          cd build
-          sudo make install
-          cd ../..
-          if [ ! -f saxonhe.zip ]; then wget -O saxonhe.zip https://sourceforge.net/projects/saxon/files/Saxon-HE/9.9/SaxonHE9-9-1-4J.zip/download && echo "not-cached" ; else echo "cached" ; fi
-          unzip -o saxonhe.zip
-          sudo rm /usr/share/java/Saxon-HE.jar
-          sudo cp saxon9he.jar /usr/share/java/Saxon-HE.jar
-          cd ..
-          BOOST_BRANCH=develop && [ "$TRAVIS_BRANCH" == "master" ] && BOOST_BRANCH=master || true
-          git clone -b $BOOST_BRANCH https://github.com/boostorg/boost.git boost-root --depth 1
-          cd boost-root
-          export BOOST_ROOT=$(pwd)
-          git submodule update --init libs/context
-          git submodule update --init tools/boostbook
-          git submodule update --init tools/boostdep
-          git submodule update --init tools/docca
-          git submodule update --init tools/quickbook
-          rsync -av $TRAVIS_BUILD_DIR/ libs/$SELF
-          python tools/boostdep/depinst/depinst.py ../tools/quickbook
-          ./bootstrap.sh
-          ./b2 headers
-
-          echo '==================================> SCRIPT'
-
-          echo "using doxygen ; using boostbook ; using saxonhe ;" > tools/build/src/user-config.jam
-          ./b2 -j3 libs/$SELF/doc//boostrelease
-
-          elif [ "$JOB_BUILDTYPE" == "codecov" ]; then
-
-          echo '==================================> INSTALL'
-
-          git clone https://github.com/boostorg/boost-ci.git boost-ci-cloned --depth 1
-          cp -prf boost-ci-cloned/ci .
-          rm -rf boost-ci-cloned
-
-          if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-              unset -f cd
-          fi
-
-          export SELF=`basename $REPO_NAME`
-          export BOOST_CI_TARGET_BRANCH="$TRAVIS_BRANCH"
-          export BOOST_CI_SRC_FOLDER=$(pwd)
-
-          . ./ci/common_install.sh
-
-          echo '==================================> SCRIPT'
-
-          cd $BOOST_ROOT/libs/$SELF
-          ci/travis/codecov.sh
-
-          elif [ "$JOB_BUILDTYPE" == "valgrind" ]; then
-
-          echo '==================================> INSTALL'
-
-          git clone https://github.com/boostorg/boost-ci.git boost-ci-cloned --depth 1
-          cp -prf boost-ci-cloned/ci .
-          rm -rf boost-ci-cloned
-
-          if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-              unset -f cd
-          fi
-
-          export SELF=`basename $REPO_NAME`
-          export BOOST_CI_TARGET_BRANCH="$TRAVIS_BRANCH"
-          export BOOST_CI_SRC_FOLDER=$(pwd)
-
-          . ./ci/common_install.sh
-
-          echo '==================================> SCRIPT'
-
-          cd $BOOST_ROOT/libs/$SELF
-          ci/travis/valgrind.sh
-
-          elif [ "$JOB_BUILDTYPE" == "boost" ]; then
-
-          echo '==================================> INSTALL'
-
-          git clone https://github.com/boostorg/boost-ci.git boost-ci-cloned --depth 1
-          cp -prf boost-ci-cloned/ci .
-          rm -rf boost-ci-cloned
-
-          if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-              unset -f cd
-          fi
-
-          export SELF=`basename $REPO_NAME`
-          export BOOST_CI_TARGET_BRANCH="$TRAVIS_BRANCH"
-          export BOOST_CI_SRC_FOLDER=$(pwd)
-
-          . ./ci/common_install.sh
-
-          echo '==================================> SCRIPT'
-
-          export B2_TARGETS="libs/$SELF/test libs/$SELF/example"
-          $BOOST_ROOT/libs/$SELF/ci/travis/build.sh
-
-          elif [ "$JOB_BUILDTYPE" == "standalone" ]; then
-
-          echo '==================================> INSTALL'
-
-          pip install --user cmake
-
-          echo '==================================> SCRIPT'
-
-          export CXXFLAGS="-Wall -Wextra -std=c++17"
-          mkdir __build_17
-          cd __build_17
-          cmake -DBOOST_JSON_STANDALONE=1 ..
-          cmake --build .
-          ctest -V .
-          export CXXFLAGS="-Wall -Wextra -std=c++2a"
-          mkdir ../__build_2a
-          cd ../__build_2a
-          cmake -DBOOST_JSON_STANDALONE=1 ..
-          cmake --build .
-          ctest -V .
-
-          elif [ "$JOB_BUILDTYPE" == "coverity" ]; then
-
-          echo '==================================> INSTALL'
-
-          git clone https://github.com/boostorg/boost-ci.git boost-ci-cloned --depth 1
-          cp -prf boost-ci-cloned/ci .
-          rm -rf boost-ci-cloned
-
-          if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-              unset -f cd
-          fi
-
-          export SELF=`basename $REPO_NAME`
-          export BOOST_CI_TARGET_BRANCH="$TRAVIS_BRANCH"
-          export BOOST_CI_SRC_FOLDER=$(pwd)
-
-          . ./ci/common_install.sh
-
-          echo '==================================> SCRIPT'
-
-          if  [ -n "${COVERITY_SCAN_NOTIFICATION_EMAIL}" -a \( "$TRAVIS_BRANCH" = "develop" -o "$TRAVIS_BRANCH" = "master" \) -a \("$GITHUB_EVENT_NAME" = "push" -o "$GITHUB_EVENT_NAME" = "cron" \) ] ; then
-          cd $BOOST_ROOT/libs/$SELF
-          ci/travis/coverity.sh
-          fi
-
-          fi
+          export DRONE_BRANCH=${TRAVIS_BRANCH:-$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')}
+          export DRONE_REPO=$(basename $GITHUB_REPOSITORY)
+          . .drone/drone.sh
   windows:
     strategy:
       fail-fast: false
@@ -653,7 +493,6 @@ jobs:
           LLVM_OS: ${{ matrix.llvm_os }}
           LLVM_VER: ${{ matrix.llvm_ver }}
           PACKAGES: ${{ matrix.packages }}
-          JOB_BUILDTYPE: ${{ matrix.buildtype }}
           COMMENT: ${{ matrix.comment }}
           LCOV_BRANCH_COVERAGE: ${{ matrix.lcov_branch_coverage }}
           B2_CXXSTD: ${{ matrix.b2_cxxstd }}
@@ -666,62 +505,9 @@ jobs:
           B2_UBSAN: ${{ matrix.b2_ubsan }}
           GHA_TARGET_BRANCH: ${{ github.base_ref }}
           TRAVIS_BRANCH: ${{ github.base_ref }}
+          DRONE_JOB_BUILDTYPE: ${{ matrix.buildtype }}
+          DRONE_COMMIT_BRANCH: ${{ github.base_ref }}
+          DRONE_REPO: ${{ github.repository }}
           TRAVIS_OS_NAME: "windows"
         run: |
-
-          @ECHO ON
-          setlocal enabledelayedexpansion
-
-          IF "!GHA_TARGET_BRANCH!" == "" (
-              for /F %%i in ("!GITHUB_REF!") do @set GHA_TARGET_BRANCH=%%~nxi
-              for /F %%i in ("!GITHUB_REF!") do @set TRAVIS_BRANCH=%%~nxi
-          )
-
-          if "!JOB_BUILDTYPE!" == "boost" (
-
-          echo "Running boost job"
-          echo '==================================> INSTALL'
-
-          git clone https://github.com/boostorg/boost-ci.git boost-ci-cloned --depth 1
-          cp -prf boost-ci-cloned/ci .
-          rm -rf boost-ci-cloned
-          REM source ci/travis/install.sh
-          REM The contents of install.sh below:
-
-          for /F %%i in ("!GITHUB_REPOSITORY!") do @set SELF=%%~nxi
-          SET BOOST_CI_TARGET_BRANCH=!GHA_TARGET_BRANCH!
-          SET BOOST_CI_SRC_FOLDER=!cd!
-
-          call ci\common_install.bat
-
-          echo '==================================> COMPILE'
-
-          set B2_TARGETS=libs/!SELF!/test libs/!SELF!/example
-          call !BOOST_ROOT!\libs\!SELF!\ci\build.bat
-
-          ) else if "!JOB_BUILDTYPE!" == "standalone-windows" (
-
-          echo "Running standalone-windows"
-          echo '==================================> BEFORE_INSTALL'
-
-          echo '==================================> INSTALL'
-
-          REM Installing cmake with choco in the Dockerfile, so not required here:
-          REM choco install cmake
-
-          echo '==================================> COMPILE'
-
-          set CXXFLAGS="/std:c++17"
-          mkdir __build_17
-          cd __build_17
-          cmake -DBOOST_JSON_STANDALONE=1 ..
-          cmake --build .
-          ctest -V -C Debug .
-          set CXXFLAGS="/std:c++latest"
-          mkdir ..\__build_2a
-          cd ..\__build_2a
-          cmake -DBOOST_JSON_STANDALONE=1 ..
-          cmake --build .
-          ctest -V -C Debug .
-          )
-
+          call .drone\drone.bat
