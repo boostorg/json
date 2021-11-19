@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Copyright 2020 Rene Rivera, Sam Darwin
+# Copyright 2021 Dmitry Arkhipov (grisumbras@gmail.com)
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE.txt or copy at http://boost.org/LICENSE_1_0.txt)
 
@@ -148,21 +149,27 @@ common_install
 echo '==================================> COMPILE'
 
 export CXXFLAGS="-Wall -Wextra -Werror"
+export CMAKE_OPTIONS=${CMAKE_OPTIONS:--DBUILD_TESTING=ON}
+export CMAKE_SHARED_LIBS=${CMAKE_SHARED_LIBS:-1}
 
 mkdir __build_static
 cd __build_static
-cmake -DBOOST_ENABLE_CMAKE=1 -DBUILD_TESTING=ON -DBoost_VERBOSE=1 \
+cmake -DBOOST_ENABLE_CMAKE=1 -DBoost_VERBOSE=1 ${CMAKE_OPTIONS} \
     -DBOOST_INCLUDE_LIBRARIES=$SELF ..
 cmake --build .
 ctest --output-on-failure -R boost_$SELF
 
 cd ..
 
+if [ "$CMAKE_SHARED_LIBS" = 1 ]; then
+
 mkdir __build_shared
 cd __build_shared
-cmake -DBOOST_ENABLE_CMAKE=1 -DBUILD_TESTING=ON -DBoost_VERBOSE=1 \
+cmake -DBOOST_ENABLE_CMAKE=1 -DBoost_VERBOSE=1 ${CMAKE_OPTIONS} \
     -DBOOST_INCLUDE_LIBRARIES=$SELF -DBUILD_SHARED_LIBS=ON ..
 cmake --build .
 ctest --output-on-failure -R boost_$SELF
+
+fi
 
 fi
