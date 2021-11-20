@@ -11,36 +11,51 @@ jobs:
   fuzz:
 
     runs-on: ubuntu-latest
-    
-    steps:       
-    - uses: actions/checkout@v2
+
+    steps:
+    - name: Fetch head
+      uses: actions/checkout@v2
+      with:
+        path: 'head'
     - uses: actions/cache@v2
       id: cache-corpus
       with:
-        path: fuzzing/corpus.tar
+        path: head/fuzzing/corpus.tar
         key: corpus-${{ github.run_id }}
         restore-keys: corpus-
     - name: build and run
-      run: ./fuzz.sh
-      working-directory: fuzzing/
-    - name: Pack the corpus
-      working-directory: fuzzing/
+      env:
+        CXX: clang++
+        B2_TOOLSET: clang
+        B2_VARIANT: release
+        TRAVIS_BRANCH: ${{ github.base_ref }}
+        TRAVIS_OS_NAME: "linux"
+        B2_TARGETS: libs/json/fuzzing//run
+        DRONE_BUILD_EVENT: ${{ github.event_name }}
+        DRONE_COMMIT: ${{ github.sha }}
+        DRONE_JOB_BUILDTYPE: 'boost'
       run: |
-        tar cf - cmin > corpus.tar.tmp && mv corpus.tar.tmp corpus.tar
+        export DRONE_BRANCH=${TRAVIS_BRANCH:-$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')}
+        export DRONE_REPO=$(basename $GITHUB_REPOSITORY)
+        cd head
+        . .drone/drone.sh
+    - name: Pack the corpus
+      working-directory: boost-root/libs/json/fuzzing/
+      run: |
+        tar cf - cmin > corpus.tar.tmp && mv corpus.tar.tmp "${GITHUB_WORKSPACE}"/head/fuzzing
     - name: Save the corpus as a github artifact
       uses: actions/upload-artifact@v2
       if: success()
       with:
         name: corpus
-        path: fuzzing/corpus.tar
+        path: head/fuzzing/corpus.tar
     - name: Archive any crashes as an artifact
       uses: actions/upload-artifact@v2
       if: always()
       with:
         name: crashes
         path: |
-          fuzzing/crash-*
-          fuzzing/leak-*
-          fuzzing/timeout-*
+          boost-root/crash-*
+          boost-root/leak-*
+          boost-root/timeout-*
         if-no-files-found: ignore
-
