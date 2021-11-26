@@ -378,6 +378,33 @@ public:
             BOOST_TEST(sr.done());
         }
 
+        {
+            value jv = std::numeric_limits<double>::quiet_NaN();
+            serializer sr;
+            sr.reset(&jv);
+            BOOST_TEST(! sr.done());
+            char buf[32];
+            BOOST_TEST(sr.read(buf) == "NaN");
+            BOOST_TEST(sr.done());
+        }
+        {
+            value jv = std::numeric_limits<double>::infinity();
+            serializer sr;
+            sr.reset(&jv);
+            BOOST_TEST(! sr.done());
+            char buf[32];
+            BOOST_TEST(sr.read(buf) == "Infinity");
+            BOOST_TEST(sr.done());
+        }
+        {
+            value jv = -std::numeric_limits<double>::infinity();
+            serializer sr;
+            sr.reset(&jv);
+            BOOST_TEST(! sr.done());
+            char buf[32];
+            BOOST_TEST(sr.read(buf) == "-Infinity");
+            BOOST_TEST(sr.done());
+        }
         // read()
         {
             value jv = 1;

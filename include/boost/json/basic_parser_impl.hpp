@@ -595,6 +595,10 @@ loop:
             return parse_false(p, std::true_type());
         case 'n':
             return parse_null(p, std::true_type());
+        case 'N':
+            return parse_nan(p, std::true_type());
+        case 'I':
+            return parse_infinity(p, std::true_type(), std::false_type());
         case '"':
             return parse_unescaped(p, std::true_type(), std::false_type(), allow_bad_utf8);
         case '[':
@@ -648,6 +652,19 @@ resume_value(const char* p,
     case state::nul1: case state::nul2:
     case state::nul3:
         return parse_null(p, stack_empty);
+
+    case state::nan1:
+    case state::nan2:
+        return parse_nan(p, stack_empty);
+
+    case state::inf1:
+    case state::inf2:
+    case state::inf3:
+    case state::inf4:
+    case state::inf5:
+    case state::inf6:
+    case state::inf7:
+        return parse_infinity(p, stack_empty, std::false_type());
 
     case state::tru1: case state::tru2:
     case state::tru3:
@@ -771,6 +788,146 @@ do_nul3:
         return fail(cs.begin(), error::syntax);
     if(BOOST_JSON_UNLIKELY(
         ! h_.on_null(ec_)))
+        return fail(cs.begin());
+    ++cs;
+    return cs.begin();
+}
+
+template<class Handler>
+template<bool StackEmpty_>
+const char *
+basic_parser<Handler>::
+parse_nan(const char *p,
+          std::integral_constant<bool, StackEmpty_> stack_empty) {
+    detail::const_stream_wrapper cs(p, end_);
+    if (stack_empty || st_.empty()) {
+        if (BOOST_JSON_LIKELY(cs.remain() >= 3)) {
+            if (BOOST_JSON_UNLIKELY(
+                    std::memcmp(cs.begin(), "NaN", 3) != 0))
+                return fail(cs.begin(), error::syntax);
+            if (BOOST_JSON_UNLIKELY(
+                    !h_.on_double(std::numeric_limits<double>::quiet_NaN(), {}, ec_)))
+                return fail(cs.begin());
+            cs += 3;
+            return cs.begin();
+        }
+    } else {
+        state st;
+        st_.pop(st);
+        switch (st) {
+            default:
+                BOOST_JSON_UNREACHABLE();
+            case state::nan1:
+                goto do_nan1;
+            case state::nan2:
+                goto do_nan2;
+        }
+    }
+    ++cs;
+    do_nan1:
+    if (BOOST_JSON_UNLIKELY(!cs))
+        return maybe_suspend(cs.begin(), state::nan1);
+    if (BOOST_JSON_UNLIKELY(*cs != 'a'))
+        return fail(cs.begin(), error::syntax);
+    ++cs;
+    do_nan2:
+    if (BOOST_JSON_UNLIKELY(!cs))
+        return maybe_suspend(cs.begin(), state::nan2);
+    if (BOOST_JSON_UNLIKELY(*cs != 'N'))
+        return fail(cs.begin(), error::syntax);
+    if (BOOST_JSON_UNLIKELY(
+            !h_.on_double(std::numeric_limits<double>::quiet_NaN(), {}, ec_)))
+        return fail(cs.begin());
+    ++cs;
+    return cs.begin();
+}
+
+template<class Handler>
+template<bool StackEmpty_, bool IsNegative_>
+const char *
+basic_parser<Handler>::
+parse_infinity(const char *p,
+          std::integral_constant<bool, StackEmpty_> stack_empty,
+          std::integral_constant<bool, IsNegative_> is_negative) {
+    detail::const_stream_wrapper cs(p, end_);
+    if (stack_empty || st_.empty()) {
+        if (BOOST_JSON_LIKELY(cs.remain() >= 8)) {
+            if (BOOST_JSON_UNLIKELY(
+                    std::memcmp(cs.begin(), "Infinity", 8) != 0))
+                return fail(cs.begin(), error::syntax);
+            if (BOOST_JSON_UNLIKELY(
+                    !h_.on_double(is_negative ? -std::numeric_limits<double>::infinity() : std::numeric_limits<double>::infinity(), {}, ec_)))
+                return fail(cs.begin());
+            cs += 8;
+            return cs.begin();
+        }
+        num_.neg = is_negative;
+    } else {
+        state st;
+        st_.pop(st);
+        switch (st) {
+            default:
+                BOOST_JSON_UNREACHABLE();
+            case state::inf1:
+                goto do_inf1;
+            case state::inf2:
+                goto do_inf2;
+            case state::inf3:
+                goto do_inf3;
+            case state::inf4:
+                goto do_inf4;
+            case state::inf5:
+                goto do_inf5;
+            case state::inf6:
+                goto do_inf6;
+            case state::inf7:
+                goto do_inf7;
+        }
+    }
+    ++cs;
+    do_inf1:
+    if (BOOST_JSON_UNLIKELY(!cs))
+        return maybe_suspend(cs.begin(), state::inf1);
+    if (BOOST_JSON_UNLIKELY(*cs != 'n'))
+        return fail(cs.begin(), error::syntax);
+    ++cs;
+    do_inf2:
+    if (BOOST_JSON_UNLIKELY(!cs))
+        return maybe_suspend(cs.begin(), state::inf2);
+    if (BOOST_JSON_UNLIKELY(*cs != 'f'))
+        return fail(cs.begin(), error::syntax);
+    ++cs;
+    do_inf3:
+    if (BOOST_JSON_UNLIKELY(!cs))
+        return maybe_suspend(cs.begin(), state::inf3);
+    if (BOOST_JSON_UNLIKELY(*cs != 'i'))
+        return fail(cs.begin(), error::syntax);
+    ++cs;
+    do_inf4:
+    if (BOOST_JSON_UNLIKELY(!cs))
+        return maybe_suspend(cs.begin(), state::inf4);
+    if (BOOST_JSON_UNLIKELY(*cs != 'n'))
+        return fail(cs.begin(), error::syntax);
+    ++cs;
+    do_inf5:
+    if (BOOST_JSON_UNLIKELY(!cs))
+        return maybe_suspend(cs.begin(), state::inf5);
+    if (BOOST_JSON_UNLIKELY(*cs != 'i'))
+        return fail(cs.begin(), error::syntax);
+    ++cs;
+    do_inf6:
+    if (BOOST_JSON_UNLIKELY(!cs))
+        return maybe_suspend(cs.begin(), state::inf6);
+    if (BOOST_JSON_UNLIKELY(*cs != 't'))
+        return fail(cs.begin(), error::syntax);
+    ++cs;
+    do_inf7:
+    if (BOOST_JSON_UNLIKELY(!cs))
+        return maybe_suspend(cs.begin(), state::inf7);
+    if (BOOST_JSON_UNLIKELY(*cs != 'y'))
+        return fail(cs.begin(), error::syntax);
+    if (BOOST_JSON_UNLIKELY(
+            !h_.on_double(num_.neg ? -std::numeric_limits<double>::infinity() : std::numeric_limits<double>::infinity(), {}, ec_)))
         return fail(cs.begin());
     ++cs;
     return cs.begin();
@@ -1813,7 +1970,13 @@ parse_number(const char* p,
         //
         BOOST_ASSERT(cs);
         if(negative)
+        {
             ++cs;
+            if (/* allow_nan_infinity */ cs && *cs == 'I')
+            {
+                return parse_infinity(cs.begin(), std::true_type(), std::true_type());
+            }
+        }
 
         num.neg = negative;
         num.frac = false;
@@ -1963,6 +2126,17 @@ do_num1:
             ++cs;
             num.mant = 0;
             goto do_num6;
+        }
+        else if (BOOST_JSON_UNLIKELY(
+            c == 'I'))
+        {
+        	if (num.neg)
+        	{
+                return parse_infinity(cs.begin(), std::true_type(), std::true_type());
+            } else
+            {
+                return parse_infinity(cs.begin(), std::true_type(), std::false_type());
+            }
         }
         else
         {

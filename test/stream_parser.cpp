@@ -432,7 +432,11 @@ public:
             {
                 if(! BOOST_TEST(jv.is_double()))
                     return;
-                BOOST_TEST(jv.get_double() == v);
+                if (std::isnan(v)) {
+                    BOOST_TEST(std::isnan(jv.get_double()));
+                } else {
+                    BOOST_TEST(jv.get_double() == v);
+                }
             });
     }
 
@@ -692,6 +696,9 @@ public:
         grind_double( "1.11111", 1.11111);
         grind_double( "11.1111", 11.1111);
         grind_double( "111.111", 111.111);
+        grind_double( "NaN", std::numeric_limits<double>::quiet_NaN());
+        grind_double( "Infinity", std::numeric_limits<double>::infinity());
+        grind_double("-Infinity", -std::numeric_limits<double>::infinity());
 
         fc("-999999999999999999999");
         fc("-100000000000000000009");

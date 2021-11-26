@@ -289,7 +289,10 @@ class basic_parser
         num1,  num2,  num3,  num4,
         num5,  num6,  num7,  num8,
         exp1,  exp2,  exp3,
-        val1,  val2
+        val1,  val2,
+        nan1, nan2,
+        inf1, inf2, inf3, inf4,
+        inf5, inf6, inf7
     };
 
     struct number
@@ -438,6 +441,15 @@ class basic_parser
     template<bool StackEmpty_>
     const char* parse_null(const char* p,
         std::integral_constant<bool, StackEmpty_> stack_empty);
+
+    template<bool StackEmpty_>
+    const char* parse_nan(const char* p,
+                           std::integral_constant<bool, StackEmpty_> stack_empty);
+
+    template<bool StackEmpty_, bool IsNegative_>
+    const char* parse_infinity(const char* p,
+                          std::integral_constant<bool, StackEmpty_> stack_empty,
+                          std::integral_constant<bool, IsNegative_> is_negative);
 
     template<bool StackEmpty_>
     const char* parse_true(const char* p,
