@@ -17,7 +17,7 @@ env:
     B2_FLAGS: warnings=extra warnings-as-errors=on
 
 jobs:
-  posix:
+  ci:
     strategy:
       fail-fast: false
       matrix:
@@ -359,53 +359,6 @@ jobs:
             llvm_ver: ""
             comment: "Coverity Scan"
             b2_toolset: "clang"
-
-    runs-on: ${{ matrix.os }}
-    container: ${{ matrix.container }}
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - uses: ./.github/actions/setup-container
-        with:
-          container: ${{ matrix.container }}
-
-      - uses: ./.github/actions/setup-packages
-        with:
-          install: ${{ matrix.packages }}
-          remove: ${{ matrix.packages_to_remove }}
-          sources: ${{ matrix.sources }}
-          os: ${{ matrix.llvm_os }}
-          llvm_version: ${{ matrix.llvm_ver }}
-
-      - name: linux
-        shell: bash
-        env:
-          CXX: ${{ matrix.cxx }}
-          COMMENT: ${{ matrix.comment }}
-          LCOV_BRANCH_COVERAGE: ${{ matrix.lcov_branch_coverage }}
-          B2_CXXSTD: ${{ matrix.b2_cxxstd }}
-          B2_TOOLSET: ${{ matrix.b2_toolset }}
-          B2_DEFINES: ${{ matrix.b2_defines }}
-          B2_VARIANT: ${{ matrix.b2_variant }}
-          B2_TESTFLAGS: ${{ matrix.b2_testflags }}
-          VALGRIND_OPTS: ${{ matrix.valgrind_opts }}
-          B2_ASAN: ${{ matrix.b2_asan }}
-          B2_UBSAN: ${{ matrix.b2_ubsan }}
-          TRAVIS_BRANCH: ${{ github.base_ref }}
-          DRONE_BUILD_EVENT: ${{ github.event_name }}
-          DRONE_COMMIT: ${{ github.sha }}
-          DRONE_JOB_BUILDTYPE: ${{ matrix.buildtype }}
-          TRAVIS_OS_NAME: "linux"
-        run: |
-          export DRONE_BRANCH=${TRAVIS_BRANCH:-$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')}
-          export DRONE_REPO=$(basename $GITHUB_REPOSITORY)
-          . .drone/drone.sh
-  windows:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
           - name: "msvc-14.1"
             buildtype: "boost"
             packages: ""
@@ -446,11 +399,50 @@ jobs:
             comment: "standalone"
 
     runs-on: ${{ matrix.os }}
+    container: ${{ matrix.container }}
 
     steps:
       - uses: actions/checkout@v2
 
+      - uses: ./.github/actions/setup-container
+        with:
+          container: ${{ matrix.container }}
+
+      - uses: ./.github/actions/setup-packages
+        with:
+          install: ${{ matrix.packages }}
+          remove: ${{ matrix.packages_to_remove }}
+          sources: ${{ matrix.sources }}
+          os: ${{ matrix.llvm_os }}
+          llvm_version: ${{ matrix.llvm_ver }}
+
+      - name: linux
+        if: runner.os == 'Linux'
+        shell: bash
+        env:
+          CXX: ${{ matrix.cxx }}
+          COMMENT: ${{ matrix.comment }}
+          LCOV_BRANCH_COVERAGE: ${{ matrix.lcov_branch_coverage }}
+          B2_CXXSTD: ${{ matrix.b2_cxxstd }}
+          B2_TOOLSET: ${{ matrix.b2_toolset }}
+          B2_DEFINES: ${{ matrix.b2_defines }}
+          B2_VARIANT: ${{ matrix.b2_variant }}
+          B2_TESTFLAGS: ${{ matrix.b2_testflags }}
+          VALGRIND_OPTS: ${{ matrix.valgrind_opts }}
+          B2_ASAN: ${{ matrix.b2_asan }}
+          B2_UBSAN: ${{ matrix.b2_ubsan }}
+          TRAVIS_BRANCH: ${{ github.base_ref }}
+          DRONE_BUILD_EVENT: ${{ github.event_name }}
+          DRONE_COMMIT: ${{ github.sha }}
+          DRONE_JOB_BUILDTYPE: ${{ matrix.buildtype }}
+          TRAVIS_OS_NAME: "linux"
+        run: |
+          export DRONE_BRANCH=${TRAVIS_BRANCH:-$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')}
+          export DRONE_REPO=$(basename $GITHUB_REPOSITORY)
+          . .drone/drone.sh
+
       - name: windows
+        if: runner.os == 'Windows'
         shell: cmd
         env:
           CXX: ${{ matrix.cxx }}

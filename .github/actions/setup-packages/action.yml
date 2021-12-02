@@ -24,7 +24,8 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - shell: bash
+    - if: runner.os == 'Linux'
+      shell: bash
       env:
         LLVM_OS: ${{ inputs.os }}
         LLVM_VER: ${{ inputs.llvm_version }}
