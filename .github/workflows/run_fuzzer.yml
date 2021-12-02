@@ -23,21 +23,12 @@ jobs:
         path: head/fuzzing/corpus.tar
         key: corpus-${{ github.run_id }}
         restore-keys: corpus-
-    - name: build and run
-      env:
-        CXX: clang++
-        B2_TOOLSET: clang
-        B2_VARIANT: release
-        TRAVIS_OS_NAME: "linux"
-        B2_TARGETS: libs/json/fuzzing//run
-        DRONE_BUILD_EVENT: ${{ github.event_name }}
-        DRONE_COMMIT: ${{ github.sha }}
-        DRONE_BRANCH: ${{ github.base_ref }}
-        DRONE_REPO: ${{ github.repository }}
-        DRONE_JOB_BUILDTYPE: 'boost'
-      run: |
-        cd head
-        . .drone/drone.sh
+    - uses: ./head/.github/actions/build
+      with:
+        buildtype: 'boost'
+        path: 'head'
+        toolset: clang
+        targets: libs/json/fuzzing//run
     - name: Pack the corpus
       working-directory: boost-root/libs/json/fuzzing/
       run: |

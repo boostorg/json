@@ -6,6 +6,10 @@ inputs:
     description: Human-readable job description
     required: false
     default: ''
+  path:
+    description: Path to project root
+    required: false
+    default: ''
   buildtype:
     description: Build type
     required: false
@@ -32,6 +36,10 @@ inputs:
     default: release
   testflags:
     description: B2 test properties to set
+    required: false
+    default: ''
+  targets:
+    description: B2 targets to build (separated by spaces)
     required: false
     default: ''
   b2_flags:
@@ -73,6 +81,7 @@ runs:
         echo "VALGRIND_OPTS=${{ inputs.valgrind_opts }}" >> $GITHUB_ENV
         echo "B2_ASAN=${{ inputs.asan }}" >> $GITHUB_ENV
         echo "B2_UBSAN=${{ inputs.ubsan }}" >> $GITHUB_ENV
+        echo "B2_TARGETS=${{ inputs.targets }}" >> $GITHUB_ENV
         echo "B2_FLAGS=${{ inputs.b2_flags }}" >> $GITHUB_ENV
         echo "DRONE_BUILD_EVENT=${{ github.event_name }}" >> $GITHUB_ENV
         echo "DRONE_JOB_BUILDTYPE=${{ inputs.buildtype }}" >> $GITHUB_ENV
@@ -84,8 +93,10 @@ runs:
       if: runner.os == 'Linux'
       shell: bash
       run: . .drone/drone.sh
+      working-directory: ${{ inputs.path }}
 
     - name: windows
       if: runner.os == 'Windows'
       shell: cmd
       run: call .drone/drone.bat
+      working-directory: ${{ inputs.path }}

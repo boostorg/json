@@ -3,9 +3,6 @@ name: analyze-bloat
 on: [push, pull_request]
 
 env:
-    DRONE_BUILD_EVENT: ${{ github.event_name }}
-    DRONE_COMMIT: ${{ github.sha }}
-    DRONE_JOB_BUILDTYPE: 'cmake-superproject'
     CMAKE_SHARED_LIBS: '0'
     CMAKE_OPTIONS: >
       -DBOOST_JSON_BUILD_TESTS=OFF
@@ -24,13 +21,10 @@ jobs:
         with:
           path: 'head_ref/root'
       - name: Compile static lib for head ref
-        env:
-          DRONE_BRANCH: ${{ github.base_ref }}
-          DRONE_REPO: ${{ github.repository }}
-        run: |
-          echo ${{ github.event_name }}
-          cd head_ref/root
-          . .drone/drone.sh
+        uses: ./head_ref/root/.github/actions/build
+        with:
+          buildtype: 'cmake-superproject'
+          path: 'head_ref/root'
       - name: Bloat analysis - absolute values
         uses: djarek/bloaty-analyze@v1.0.0
         with:
@@ -44,13 +38,10 @@ jobs:
           path: 'base_ref/root'
       - name: Compile static lib for base ref
         if: ${{ github.event_name == 'pull_request' }}
-        env:
-          DRONE_BRANCH: ${{ github.base_ref }}
-          DRONE_REPO: ${{ github.repository }}
-        run: |
-          echo ${{ github.event_name }}
-          cd base_ref/root
-          . .drone/drone.sh
+        uses: ./head_ref/root/.github/actions/build
+        with:
+          buildtype: 'cmake-superproject'
+          path: 'base_ref/root'
       - name: Bloat analysis - diff
         uses: djarek/bloaty-analyze@v1.0.0
         if: ${{ github.event_name == 'pull_request' }}
