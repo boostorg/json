@@ -2,9 +2,12 @@
 @ECHO ON
 setlocal enabledelayedexpansion
 
-IF "!GHA_TARGET_BRANCH!" == "" (
-  for /F %%i in ("!GITHUB_REF!") do @set GHA_TARGET_BRANCH=%%~nxi
+set TRAVIS_OS_NAME=windows
+
+IF "!DRONE_BRANCH!" == "" (
   for /F %%i in ("!GITHUB_REF!") do @set TRAVIS_BRANCH=%%~nxi
+) else (
+  SET TRAVIS_BRANCH=!DRONE_BRANCH!
 )
 
 if "%DRONE_JOB_BUILDTYPE%" == "boost" (
@@ -19,7 +22,7 @@ REM source ci/travis/install.sh
 REM The contents of install.sh below:
 
 for /F %%i in ("%DRONE_REPO%") do @set SELF=%%~nxi
-SET BOOST_CI_TARGET_BRANCH=%DRONE_COMMIT_BRANCH%
+SET BOOST_CI_TARGET_BRANCH=!TRAVIS_BRANCH!
 SET BOOST_CI_SRC_FOLDER=%cd%
 
 call ci\common_install.bat

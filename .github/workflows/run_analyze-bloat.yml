@@ -24,10 +24,11 @@ jobs:
         with:
           path: 'head_ref/root'
       - name: Compile static lib for head ref
+        env:
+          DRONE_BRANCH: ${{ github.base_ref }}
+          DRONE_REPO: ${{ github.repository }}
         run: |
           echo ${{ github.event_name }}
-          export DRONE_BRANCH=${TRAVIS_BRANCH:-$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')}
-          export DRONE_REPO=$(basename $GITHUB_REPOSITORY)
           cd head_ref/root
           . .drone/drone.sh
       - name: Bloat analysis - absolute values
@@ -43,10 +44,11 @@ jobs:
           path: 'base_ref/root'
       - name: Compile static lib for base ref
         if: ${{ github.event_name == 'pull_request' }}
+        env:
+          DRONE_BRANCH: ${{ github.base_ref }}
+          DRONE_REPO: ${{ github.repository }}
         run: |
           echo ${{ github.event_name }}
-          export DRONE_BRANCH=${TRAVIS_BRANCH:-$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')}
-          export DRONE_REPO=$(basename $GITHUB_REPOSITORY)
           cd base_ref/root
           . .drone/drone.sh
       - name: Bloat analysis - diff

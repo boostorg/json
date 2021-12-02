@@ -28,15 +28,14 @@ jobs:
         CXX: clang++
         B2_TOOLSET: clang
         B2_VARIANT: release
-        TRAVIS_BRANCH: ${{ github.base_ref }}
         TRAVIS_OS_NAME: "linux"
         B2_TARGETS: libs/json/fuzzing//run
         DRONE_BUILD_EVENT: ${{ github.event_name }}
         DRONE_COMMIT: ${{ github.sha }}
+        DRONE_BRANCH: ${{ github.base_ref }}
+        DRONE_REPO: ${{ github.repository }}
         DRONE_JOB_BUILDTYPE: 'boost'
       run: |
-        export DRONE_BRANCH=${TRAVIS_BRANCH:-$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')}
-        export DRONE_REPO=$(basename $GITHUB_REPOSITORY)
         cd head
         . .drone/drone.sh
     - name: Pack the corpus
