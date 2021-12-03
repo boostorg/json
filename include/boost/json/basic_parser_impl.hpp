@@ -2138,13 +2138,13 @@ do_num1:
             goto do_num6;
         }
         else if (BOOST_JSON_UNLIKELY(
-            c == 'I'))
+                c == 'I'))
         {
-        	if (num.neg)
-        	{
+            if (num.neg)
+            {
                 return parse_infinity(cs.begin(), std::true_type(), std::true_type());
             }
-        	else
+            else
             {
                 return parse_infinity(cs.begin(), std::true_type(), std::false_type());
             }
