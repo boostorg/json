@@ -800,8 +800,10 @@ basic_parser<Handler>::
 parse_nan(const char *p,
           std::integral_constant<bool, StackEmpty_> stack_empty) {
     detail::const_stream_wrapper cs(p, end_);
-    if (stack_empty || st_.empty()) {
-        if (BOOST_JSON_LIKELY(cs.remain() >= 3)) {
+    if (stack_empty || st_.empty())
+    {
+        if (BOOST_JSON_LIKELY(cs.remain() >= 3))
+        {
             if (BOOST_JSON_UNLIKELY(
                     std::memcmp(cs.begin(), "NaN", 3) != 0))
                 return fail(cs.begin(), error::syntax);
@@ -811,10 +813,13 @@ parse_nan(const char *p,
             cs += 3;
             return cs.begin();
         }
-    } else {
+    }
+    else
+    {
         state st;
         st_.pop(st);
-        switch (st) {
+        switch (st)
+        {
             default:
                 BOOST_JSON_UNREACHABLE();
             case state::nan1:
@@ -850,8 +855,10 @@ parse_infinity(const char *p,
           std::integral_constant<bool, StackEmpty_> stack_empty,
           std::integral_constant<bool, IsNegative_> is_negative) {
     detail::const_stream_wrapper cs(p, end_);
-    if (stack_empty || st_.empty()) {
-        if (BOOST_JSON_LIKELY(cs.remain() >= 8)) {
+    if (stack_empty || st_.empty())
+    {
+        if (BOOST_JSON_LIKELY(cs.remain() >= 8))
+        {
             if (BOOST_JSON_UNLIKELY(
                     std::memcmp(cs.begin(), "Infinity", 8) != 0))
                 return fail(cs.begin(), error::syntax);
@@ -862,10 +869,13 @@ parse_infinity(const char *p,
             return cs.begin();
         }
         num_.neg = is_negative;
-    } else {
+    }
+    else
+    {
         state st;
         st_.pop(st);
-        switch (st) {
+        switch (st)
+        {
             default:
                 BOOST_JSON_UNREACHABLE();
             case state::inf1:
@@ -2133,7 +2143,8 @@ do_num1:
         	if (num.neg)
         	{
                 return parse_infinity(cs.begin(), std::true_type(), std::true_type());
-            } else
+            }
+        	else
             {
                 return parse_infinity(cs.begin(), std::true_type(), std::false_type());
             }
