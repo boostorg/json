@@ -2098,7 +2098,7 @@ public:
         BOOST_TEST(check_hash_equal(value(nullptr), value()));
         BOOST_TEST(check_hash_equal(value(nullptr), value{}));
         BOOST_TEST(expect_hash_not_equal(value(nullptr), value({})));
-        BOOST_TEST(expect_hash_not_equal(value(nullptr), value({{}})));
+        BOOST_TEST(expect_hash_not_equal(value(nullptr), value({object()})));
         BOOST_TEST(expect_hash_not_equal(value(nullptr), value(true)));
         BOOST_TEST(expect_hash_not_equal(value(nullptr), value(false)));
         BOOST_TEST(expect_hash_not_equal(value(nullptr), value(0)));
@@ -2120,9 +2120,9 @@ public:
         BOOST_TEST(expect_hash_not_equal(value(2021U), value(-2021)));
         BOOST_TEST(expect_hash_not_equal(value(2021UL), value(2021.0)));
 
-        BOOST_TEST(expect_hash_not_equal(value({}), value({{}})));
+        BOOST_TEST(expect_hash_not_equal(value({}), value({object()})));
         BOOST_TEST(expect_hash_not_equal(value({}), value("")));
-        BOOST_TEST(expect_hash_not_equal(value({{}}), value("")));
+        BOOST_TEST(expect_hash_not_equal(value({object()}), value("")));
 
         BOOST_TEST(check_hash_equal(
             value({{"a",1}, {"b",2}, {"c",3}}),
