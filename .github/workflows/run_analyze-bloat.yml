@@ -24,6 +24,7 @@ jobs:
         uses: ./head_ref/root/.github/actions/build
         with:
           buildtype: 'cmake-superproject'
+          toolset: gcc
           path: 'head_ref/root'
       - name: Bloat analysis - absolute values
         uses: djarek/bloaty-analyze@v1.0.0
@@ -41,6 +42,7 @@ jobs:
         uses: ./head_ref/root/.github/actions/build
         with:
           buildtype: 'cmake-superproject'
+          toolset: gcc
           path: 'base_ref/root'
       - name: Bloat analysis - diff
         uses: djarek/bloaty-analyze@v1.0.0

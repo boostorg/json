@@ -2,6 +2,13 @@ name: Run and build
 description: Build the project
 
 inputs:
+  toolset:
+    description: B2 toolset module to use
+    required: true
+  version:
+    description: B2 toolset version to use
+    required: false
+    default: ''
   comment:
     description: Human-readable job description
     required: false
@@ -14,16 +21,8 @@ inputs:
     description: Build type
     required: false
     default: ''
-  cxx:
-    description: Compiler executable to use
-    required: false
-    default: ''
   cxxstd:
     description: C++ standard versions to use (separated by commas)
-    required: false
-    default: ''
-  toolset:
-    description: B2 toolset to use
     required: false
     default: ''
   defines:
@@ -69,12 +68,23 @@ runs:
     - name: Setup environment variables
       shell: bash
       run: |
-        echo "CXX=${{ inputs.cxx }}" >> $GITHUB_ENV
+        B2_TOOLSET=${{ inputs.toolset }}
+        case $B2_TOOLSET in
+          gcc)   CXX=g++ ;;
+          clang) CXX=clang++ ;;
+          *)     CXX=$B2_TOOLSET ;;
+        esac
+        if [ -n "${{ inputs.version }}" ]; then
+          B2_TOOLSET=$B2_TOOLSET-${{ inputs.version }}
+          CXX=$CXX-${{ inputs.version }}
+        fi
+
+        echo "CXX=$CXX" >> $GITHUB_ENV
         echo "COMMENT=${{ inputs.comment }}" >> $GITHUB_ENV
         echo "LCOV_BRANCH_COVERAGE=${{ inputs.lcov_branch_coverage }}" >> $GITHUB_ENV
         echo "B2_CI_VERSION=1" >> $GITHUB_ENV
         echo "B2_CXXSTD=${{ inputs.cxxstd }}" >> $GITHUB_ENV
-        echo "B2_TOOLSET=${{ inputs.toolset }}" >> $GITHUB_ENV
+        echo "B2_TOOLSET=$B2_TOOLSET" >> $GITHUB_ENV
         echo "B2_DEFINES=${{ inputs.defines }}" >> $GITHUB_ENV
         echo "B2_VARIANT=${{ inputs.variant }}" >> $GITHUB_ENV
         echo "B2_TESTFLAGS=${{ inputs.testflags }}" >> $GITHUB_ENV

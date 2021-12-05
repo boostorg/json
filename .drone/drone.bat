@@ -14,6 +14,9 @@ if "%DRONE_JOB_BUILDTYPE%" == "boost" (
 
 echo "Running boost job"
 echo '==================================> INSTALL'
+REM there seems to be some problem with b2 bootstrap on Windows
+REM when CXX env variable is set
+SET "CXX="
 
 git clone https://github.com/boostorg/boost-ci.git boost-ci-cloned --depth 1
 cp -prf boost-ci-cloned/ci .
