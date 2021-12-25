@@ -458,6 +458,13 @@ public:
     make_shared_resource(Args&&... args);
 };
 
+#if defined(_MSC_VER)
+# pragma warning( push )
+# if !defined(__clang__) && _MSC_VER <= 1900
+#  pragma message( "MSVC " )
+#  pragma warning( disable : 4702 )
+# endif
+#endif
 /** Return shared ownership of a new, dynamically allocated memory resource.
 
     This function dynamically allocates a new memory resource
@@ -493,6 +500,9 @@ make_shared_resource(Args&&... args)
         detail::shared_resource_impl<T>(
             std::forward<Args>(args)...));
 }
+#if defined(_MSC_VER)
+# pragma warning( pop )
+#endif
 
 /** Return true if two storage pointers point to the same memory resource.
 
