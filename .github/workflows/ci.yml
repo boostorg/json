@@ -24,17 +24,6 @@ jobs:
             container: "ubuntu:16.04"
             toolset: "gcc"
             comment: "docs"
-          - name: "COMMENT=codecov.io LCOV_BRANCH_COVERAGE=0 B2_ Job 1"
-            buildtype: "codecov"
-            packages: "g++-8"
-            os: "ubuntu-20.04"
-            container: "ubuntu:16.04"
-            toolset: "gcc"
-            toolset_version: "8"
-            comment: "codecov.io"
-            lcov_branch_coverage: "0"
-            b2_cxxstd: "11"
-            b2_defines: "BOOST_NO_STRESS_TEST=1"
           - name: "COMMENT=valgrind B2_TOOLSET=clang-6.0 B2_CXXS Job 2"
             buildtype: "valgrind"
             packages: "clang-6.0 libc6-dbg libstdc++-8-dev"
@@ -297,7 +286,6 @@ jobs:
           defines: ${{ matrix.b2_defines }}
           variant: ${{ matrix.b2_variant }}
           testflags: ${{ matrix.b2_testflags }}
-          lcov_branch_coverage: ${{ matrix.lcov_branch_coverage }}
           valgrind_options: ${{ matrix.valgrind_opts }}
           asan: ${{ matrix.b2_asan }}
           ubsan: ${{ matrix.b2_ubsan }}

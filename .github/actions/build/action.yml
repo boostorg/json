@@ -45,10 +45,6 @@ inputs:
     description: Extra B2 flags to use
     required: false
     default: 'warnings=extra warnings-as-errors=on'
-  lcov_branch_coverage:
-    description: Whether branch coverage data should be collected and processed
-    required: false
-    default: ''
   valgrind_options:
     description: Valgrind options to use
     required: false
@@ -81,7 +77,7 @@ runs:
 
         echo "CXX=$CXX" >> $GITHUB_ENV
         echo "COMMENT=${{ inputs.comment }}" >> $GITHUB_ENV
-        echo "LCOV_BRANCH_COVERAGE=${{ inputs.lcov_branch_coverage }}" >> $GITHUB_ENV
+        echo "LCOV_BRANCH_COVERAGE=$LCOV_BRANCH_COVERAGE" >> $GITHUB_ENV
         echo "B2_CI_VERSION=1" >> $GITHUB_ENV
         echo "B2_CXXSTD=${{ inputs.cxxstd }}" >> $GITHUB_ENV
         echo "B2_TOOLSET=$B2_TOOLSET" >> $GITHUB_ENV
