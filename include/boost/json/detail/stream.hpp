@@ -18,7 +18,8 @@ class const_stream
     friend class local_const_stream;
 
     char const* p_;
-    char const* end_;
+    char const* start_;
+    size_t size_;
 
 public:
     const_stream() = default;
@@ -29,7 +30,8 @@ public:
         char const* data,
         std::size_t size) noexcept
         : p_(data)
-        , end_(data + size)
+        , start_(data)
+        , size_(size)
     {
     }
 
@@ -43,7 +45,7 @@ public:
     size_t
     remain() const noexcept
     {
-        return end_ - p_;
+        return (start_+size_) - p_;
     }
 
     char const*
@@ -54,14 +56,14 @@ public:
 
     operator bool() const noexcept
     {
-        return p_ < end_;
+        return p_ < (start_+size_);
     }
 
     // unchecked
     char
     operator*() const noexcept
     {
-        BOOST_ASSERT(p_ < end_);
+        BOOST_ASSERT(p_ < (start_+size_));
         return *p_;
     }
 
@@ -69,7 +71,7 @@ public:
     const_stream&
     operator++() noexcept
     {
-        BOOST_ASSERT(p_ < end_);
+        BOOST_ASSERT(p_ < (start_+size_));
         ++p_;
         return *this;
     }
@@ -84,7 +86,7 @@ public:
     void
     skip_to(const char* p) noexcept
     {
-        BOOST_ASSERT(p <= end_ && p >= p_);
+        BOOST_ASSERT(p <= (start_+size_) && p >= p_);
         p_ = p;
     }
 };
@@ -112,10 +114,10 @@ public:
     clip(std::size_t n) noexcept
     {
         if(static_cast<std::size_t>(
-            src_.end_ - p_) > n)
-            end_ = p_ + n;
+            (src_.start_+src_.size_) - p_) > n)
+            size_ = p_ + n - src_.start_;
         else
-            end_ = src_.end_;
+            size_ = src_.size_;
     }
 };
 
