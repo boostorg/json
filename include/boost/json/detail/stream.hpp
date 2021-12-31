@@ -244,7 +244,8 @@ class stream
     friend class local_stream;
 
     char* p_;
-    char* end_;
+    char* start_;
+    size_t size_;
 
 public:
     stream(
@@ -254,7 +255,8 @@ public:
         char* data,
         std::size_t size) noexcept
         : p_(data)
-        , end_(data + size)
+        , start_(data)
+        , size_(size)
     {
     }
 
@@ -268,7 +270,7 @@ public:
     size_t
     remain() const noexcept
     {
-        return end_ - p_;
+        return size_ - (p_ - start_);
     }
 
     char*
@@ -279,14 +281,14 @@ public:
 
     operator bool() const noexcept
     {
-        return p_ < end_;
+        return p_ - start_ < size_;
     }
 
     // unchecked
     char&
     operator*() noexcept
     {
-        BOOST_ASSERT(p_ < end_);
+        BOOST_ASSERT(p_ < (start_ + size_));
         return *p_;
     }
 
@@ -294,7 +296,7 @@ public:
     stream&
     operator++() noexcept
     {
-        BOOST_ASSERT(p_ < end_);
+        BOOST_ASSERT(p_ < (start_ + size_));
         ++p_;
         return *this;
     }
@@ -314,7 +316,7 @@ public:
     void
     append(char c) noexcept
     {
-        BOOST_ASSERT(p_ < end_);
+        BOOST_ASSERT(p_ - start_ < size_);
         *p_++ = c;
     }
 
