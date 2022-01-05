@@ -152,23 +152,6 @@ class value_ref
         explicit arg_type(std::nullptr_t) noexcept : nullptr_() {}
     };
 
-    template<class T>
-    using is_builtin =
-        std::integral_constant<bool,
-            std::is_same<T, signed char>::value ||
-            std::is_same<T, short>::value ||
-            std::is_same<T, int>::value ||
-            std::is_same<T, long>::value ||
-            std::is_same<T, long long>::value ||
-            std::is_same<T, unsigned char>::value ||
-            std::is_same<T, unsigned short>::value ||
-            std::is_same<T, unsigned int>::value ||
-            std::is_same<T, unsigned long>::value ||
-            std::is_same<T, unsigned long long>::value ||
-            std::is_same<T, float>::value ||
-            std::is_same<T, double>::value ||
-            std::is_same<T, std::nullptr_t>::value>;
-
     arg_type arg_;
 #ifndef BOOST_JSON_DOCS
     // VFALCO doc toolchain erroneously
