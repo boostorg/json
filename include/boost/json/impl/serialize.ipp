@@ -49,8 +49,10 @@ serialize_impl(
         len += sv.size();
         if(sr.done())
             break;
-        s.resize(
+        s.reserve(
             s.capacity() + 1);
+        s.resize(
+            s.capacity());
     }
     s.resize(len);
 }
