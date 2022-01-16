@@ -461,7 +461,6 @@ public:
 #if defined(_MSC_VER)
 # pragma warning( push )
 # if !defined(__clang__) && _MSC_VER <= 1900
-#  pragma message( "MSVC " )
 #  pragma warning( disable : 4702 )
 # endif
 #endif
