@@ -2354,6 +2354,7 @@ public:
 
         @param ec Set to the error, if any occurred.
     */
+/** @{ */
     template<class T>
 #ifdef BOOST_JSON_DOCS
     T
@@ -2370,6 +2371,24 @@ public:
         ec = e;
         return result;
     }
+
+    template<class T>
+#ifdef BOOST_JSON_DOCS
+    T
+#else
+    typename std::enable_if<
+        std::is_arithmetic<T>::value &&
+        ! std::is_same<T, bool>::value,
+            T>::type
+#endif
+    to_number(std::error_code& ec) const noexcept
+    {
+        error_code jec;
+        auto result = to_number<T>(jec);
+        ec = jec;
+        return result;
+    }
+/** @} */
 
     /** Return the stored number cast to an arithmetic type.
 

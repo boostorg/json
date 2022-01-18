@@ -702,12 +702,21 @@ public:
 
         @param ec Set to the error, if any occurred.
     */
+/** @{ */
     std::size_t
     write_some(
         bool more,
         char const* data,
         std::size_t size,
         error_code& ec);
+
+    std::size_t
+    write_some(
+        bool more,
+        char const* data,
+        std::size_t size,
+        std::error_code& ec);
+/** @} */
 };
 
 BOOST_JSON_NS_END

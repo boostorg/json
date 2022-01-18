@@ -2547,6 +2547,21 @@ write_some(
     return p - data;
 }
 
+template<class Handler>
+std::size_t
+basic_parser<Handler>::
+write_some(
+    bool more,
+    char const* data,
+    std::size_t size,
+    std::error_code& ec)
+{
+    error_code jec;
+    std::size_t const result = write_some(more, data, size, jec);
+    ec = jec;
+    return result;
+}
+
 #endif
 
 BOOST_JSON_NS_END

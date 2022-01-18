@@ -1648,9 +1648,17 @@ public:
             EQAL(double);
         }
 
-        error_code ec;
-        value(nullptr).to_number<double>(ec);
-        BOOST_TEST(error::not_number == ec);
+        {
+            error_code ec;
+            value(nullptr).to_number<double>(ec);
+            BOOST_TEST(error::not_number == ec);
+        }
+
+        {
+            std::error_code ec;
+            value(nullptr).to_number<double>(ec);
+            BOOST_TEST(error::not_number == ec);
+        }
     }
 
     void

@@ -66,6 +66,11 @@ public:
         check(condition::assign_error, error::not_exact);
 
         check(error::test_failure);
+
+        // check std interop
+        std::error_code const ec = error::syntax;
+        BOOST_TEST(ec == error::syntax);
+        BOOST_TEST(ec == condition::parse_error);
     }
 };
 

@@ -139,7 +139,9 @@ public:
     testMembers()
     {
         // write_some(char const*, size_t, error_code&)
+        // write_some(char const*, size_t, std::error_code&)
         // write_some(string_view, error_code&)
+        // write_some(string_view, std::error_code&)
         {
             {
                 stream_parser p;
@@ -150,7 +152,21 @@ public:
             }
             {
                 stream_parser p;
+                std::error_code ec;
+                BOOST_TEST(p.write_some(
+                    "[]*", ec) == 2);
+                BOOST_TEST(! ec);
+            }
+            {
+                stream_parser p;
                 error_code ec;
+                BOOST_TEST(p.write_some(
+                    "[*", ec) == 1);
+                BOOST_TEST(ec);
+            }
+            {
+                stream_parser p;
+                std::error_code ec;
                 BOOST_TEST(p.write_some(
                     "[*", ec) == 1);
                 BOOST_TEST(ec);
@@ -174,7 +190,9 @@ public:
         }
 
         // write(char const*, size_t, error_code&)
+        // write(char const*, size_t, std::error_code&)
         // write(string_view, error_code&)
+        // write(string_view, std::error_code&)
         {
             {
                 stream_parser p;
@@ -185,10 +203,23 @@ public:
             }
             {
                 stream_parser p;
+                std::error_code ec;
+                BOOST_TEST(p.write(
+                    "null", ec) == 4);
+                BOOST_TEST(! ec);
+            }
+            {
+                stream_parser p;
                 error_code ec;
                 p.write("[]*", ec),
                 BOOST_TEST(
                     ec == error::extra_data);
+            }
+            {
+                stream_parser p;
+                std::error_code ec;
+                p.write("[]*", ec),
+                BOOST_TEST(ec == error::extra_data);
             }
         }
 
@@ -208,8 +239,9 @@ public:
             }
         }
 
-        // finish(error_code&)
         // finish()
+        // finish(error_code&)
+        // finish(std::error_code&)
         {
             {
                 stream_parser p;
@@ -238,6 +270,22 @@ public:
                 stream_parser p;
                 p.write("[1,2");
                 error_code ec;
+                p.finish(ec);
+                BOOST_TEST_THROWS(
+                    p.finish(),
+                    system_error);
+            }
+            {
+                stream_parser p;
+                p.write("[1,2");
+                std::error_code ec;
+                p.finish(ec);
+                BOOST_TEST(ec == error::incomplete);
+            }
+            {
+                stream_parser p;
+                p.write("[1,2");
+                std::error_code ec;
                 p.finish(ec);
                 BOOST_TEST_THROWS(
                     p.finish(),

@@ -22,10 +22,11 @@ BOOST_JSON_NS_BEGIN
 class parse_test
 {
 public:
+    template <class ErrorCode>
     void
-    good(string_view s)
+    good_impl(string_view s)
     {
-        error_code ec;
+        ErrorCode ec;
         auto jv = parse(s, ec);
         if(! BOOST_TEST(! ec))
             return;
@@ -33,12 +34,27 @@ public:
             serialize(jv) == s);
     }
 
+    template <class ErrorCode>
+    void
+    bad_impl(string_view s)
+    {
+        ErrorCode ec;
+        auto jv = parse(s, ec);
+        BOOST_TEST(ec);
+    }
+
+    void
+    good(string_view s)
+    {
+        good_impl<error_code>(s);
+        good_impl<std::error_code>(s);
+    }
+
     void
     bad(string_view s)
     {
-        error_code ec;
-        auto jv = parse(s, ec);
-        BOOST_TEST(ec);
+        bad_impl<error_code>(s);
+        bad_impl<std::error_code>(s);
     }
 
     void
