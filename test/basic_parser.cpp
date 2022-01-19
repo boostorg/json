@@ -1535,7 +1535,12 @@ public:
         }
     }
 
-    // The null parser, but uses std::error_codes
+#ifndef BOOST_NO_CXX17_HDR_STRING_VIEW
+    using SV = std::string_view;
+#else
+    using SV = string_view;
+#endif
+    // The null parser, but uses std type equivalents
     class std_null_parser
     {
         struct handler
@@ -1551,18 +1556,18 @@ public:
             bool on_object_end( std::size_t, std::error_code& ) { return true; }
             bool on_array_begin( std::error_code& ) { return true; }
             bool on_array_end( std::size_t, std::error_code& ) { return true; }
-            bool on_key_part( string_view, std::size_t, std::error_code& ) { return true; }
-            bool on_key( string_view, std::size_t, std::error_code& ) { return true; }
-            bool on_string_part( string_view, std::size_t, std::error_code& ) { return true; }
-            bool on_string( string_view, std::size_t, std::error_code& ) { return true; }
-            bool on_number_part( string_view, std::error_code&) { return true; }
-            bool on_int64( std::int64_t, string_view, std::error_code& ) { return true; }
-            bool on_uint64( std::uint64_t, string_view, std::error_code& ) { return true; }
-            bool on_double( double, string_view, std::error_code& ) { return true; }
+            bool on_key_part( SV, std::size_t, std::error_code& ) { return true; }
+            bool on_key( SV, std::size_t, std::error_code& ) { return true; }
+            bool on_string_part( SV, std::size_t, std::error_code& ) { return true; }
+            bool on_string( SV, std::size_t, std::error_code& ) { return true; }
+            bool on_number_part( SV, std::error_code&) { return true; }
+            bool on_int64( std::int64_t, SV, std::error_code& ) { return true; }
+            bool on_uint64( std::uint64_t, SV, std::error_code& ) { return true; }
+            bool on_double( double, SV, std::error_code& ) { return true; }
             bool on_bool( bool, std::error_code& ) { return true; }
             bool on_null( std::error_code& ) { return true; }
-            bool on_comment_part( string_view, std::error_code& ) { return true; }
-            bool on_comment( string_view, std::error_code& ) { return true; }
+            bool on_comment_part( SV, std::error_code& ) { return true; }
+            bool on_comment( SV, std::error_code& ) { return true; }
         };
 
         basic_parser<handler> p_;
@@ -1587,27 +1592,23 @@ public:
 
         std::size_t
         write(
-            char const* data,
-            std::size_t size,
+            SV s,
             std::error_code& ec)
         {
             auto const n = p_.write_some(
-                false, data, size, ec);
-            if(! ec && n < size)
+                false, s.data(), s.size(), ec);
+            if(! ec && n < s.size())
                 ec = error::extra_data;
             return n;
         }
     };
 
-    void testStdErrorCodes()
+    void testStdTypes()
     {
         std_null_parser p;
         std::error_code ec;
         std::string const doc = "{}";
-        p.write(
-            doc.data(),
-            doc.size(),
-            ec);
+        p.write(doc, ec);
         if(! BOOST_TEST(! ec))
         {
             log << "    failed to parse: " << doc << '\n';
@@ -1636,7 +1637,7 @@ public:
         testMaxDepth();
         testNumberLiteral();
         testStickyErrors();
-        testStdErrorCodes();
+        testStdTypes();
     }
 };
 

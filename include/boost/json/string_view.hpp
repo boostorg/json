@@ -11,7 +11,7 @@
 #define BOOST_JSON_STRING_VIEW_HPP
 
 #include <boost/json/detail/config.hpp>
-#include <boost/utility/string_view.hpp>
+#include <boost/core/detail/string_view.hpp>
 #include <type_traits>
 #ifndef BOOST_NO_CXX17_HDR_STRING_VIEW
 # include <string_view>
@@ -23,13 +23,14 @@ BOOST_JSON_NS_BEGIN
 
 /** The type of string view used by the library.
 
-    Alias for `boost::string_view`.
+    The type has API equivalent to that of `std::string_view` and is
+    convertible to/from it.
 */
 using string_view = __see_below__;
 
 #else
 
-using string_view = boost::string_view;
+using string_view = boost::core::string_view;
 
 #endif
 

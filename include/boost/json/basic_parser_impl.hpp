@@ -1143,7 +1143,9 @@ do_str3:
                 return fail(cs.begin(), ev_too_large);
             total += temp.size();
             {
-                bool r = is_key? h_.on_key_part(temp, total, ec_): h_.on_string_part(temp, total, ec_);
+                bool r = is_key
+                    ? h_.on_key_part(temp.get(), total, ec_)
+                    : h_.on_string_part(temp.get(), total, ec_);
 
                 if(BOOST_JSON_UNLIKELY(!r))
                 {
@@ -1298,7 +1300,9 @@ do_str3:
                 return fail(cs.begin(), ev_too_large);
             total += temp.size();
             {
-                bool r = is_key? h_.on_key_part(temp, total, ec_): h_.on_string_part(temp, total, ec_);
+                bool r = is_key
+                    ? h_.on_key_part(temp.get(), total, ec_)
+                    : h_.on_string_part(temp.get(), total, ec_);
 
                 if(BOOST_JSON_UNLIKELY(!r))
                 {
@@ -1433,7 +1437,9 @@ do_str2:
                     return fail(cs.begin(), ev_too_large);
                 total += temp.size();
                 {
-                    bool r = is_key? h_.on_key_part(temp, total, ec_): h_.on_string_part(temp, total, ec_);
+                    bool r = is_key
+                        ? h_.on_key_part(temp.get(), total, ec_)
+                        : h_.on_string_part(temp.get(), total, ec_);
 
                     if(BOOST_JSON_UNLIKELY(!r))
                     {
@@ -1455,7 +1461,9 @@ do_str2:
                 return fail(cs.begin(), ev_too_large);
             total += temp.size();
             {
-                bool r = is_key? h_.on_key(temp, total, ec_): h_.on_string(temp, total, ec_);
+                bool r = is_key
+                    ? h_.on_key(temp.get(), total, ec_)
+                    : h_.on_string(temp.get(), total, ec_);
 
                 if(BOOST_JSON_UNLIKELY(!r))
                 {
@@ -1478,7 +1486,9 @@ do_str2:
                         return fail(cs.begin(), ev_too_large);
                     total += temp.size();
                     {
-                        bool r = is_key? h_.on_key_part(temp, total, ec_): h_.on_string_part(temp, total, ec_);
+                        bool r = is_key
+                            ? h_.on_key_part(temp.get(), total, ec_)
+                            : h_.on_string_part(temp.get(), total, ec_);
 
                         if(BOOST_JSON_UNLIKELY(!r))
                         {
