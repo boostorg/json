@@ -20,13 +20,14 @@ static
 void
 serialize_impl(
     std::string& s,
-    serializer& sr)
+    serializer& sr,
+    const serialize_options & opt)
 {
     // serialize to a small buffer to avoid
     // the first few allocations in std::string
     char buf[BOOST_JSON_STACK_BUFFER_SIZE];
     string_view sv;
-    sv = sr.read(buf);
+    sv = sr.read(buf, opt);
     if(sr.done())
     {
         // fast path
@@ -45,7 +46,8 @@ serialize_impl(
     {
         sv = sr.read(
             &s[0] + len,
-            s.size() - len);
+            s.size() - len, 
+            opt);
         len += sv.size();
         if(sr.done())
             break;
@@ -59,61 +61,172 @@ serialize_impl(
 
 std::string
 serialize(
-    value const& jv)
+    value const& jv,
+    const serialize_options & opt)
 {
     std::string s;
     serializer sr;
     sr.reset(&jv);
-    serialize_impl(s, sr);
+    serialize_impl(s, sr, opt);
     return s;
 }
 
 std::string
 serialize(
-    array const& arr)
+    array const& arr,
+    const serialize_options & opt)
 {
     std::string s;
     serializer sr;
     sr.reset(&arr);
-    serialize_impl(s, sr);
+    serialize_impl(s, sr, opt);
     return s;
 }
 
 std::string
 serialize(
-    object const& obj)
+    object const& obj,
+    const serialize_options & opt)
 {
     std::string s;
     serializer sr;
     sr.reset(&obj);
-    serialize_impl(s, sr);
+    serialize_impl(s, sr, opt);
     return s;
 }
 
 std::string
 serialize(
-    string const& str)
+    string const& str,
+    const serialize_options & opt)
 {
     std::string s;
     serializer sr;
     sr.reset(&str);
-    serialize_impl(s, sr);
+    serialize_impl(s, sr, opt);
     return s;
 }
 
 // this is here for key_value_pair::key()
 std::string
 serialize(
-    string_view sv)
+    string_view sv,
+    const serialize_options & opt)
 {
     std::string s;
     serializer sr;
     sr.reset(sv);
-    serialize_impl(s, sr);
+    serialize_impl(s, sr, opt);
     return s;
 }
 
 //----------------------------------------------------------
+
+
+static
+void
+serialize_impl(
+    std::string& s,
+    serializer& sr,
+    error_code & ec)
+{
+  // serialize to a small buffer to avoid
+  // the first few allocations in std::string
+  char buf[BOOST_JSON_STACK_BUFFER_SIZE];
+  string_view sv;
+  sv = sr.read(buf, ec);
+  if(sr.done())
+  {
+    // fast path
+    s.append(
+        sv.data(), sv.size());
+    return;
+  }
+  std::size_t len = sv.size();
+  s.reserve(len * 2);
+  s.resize(s.capacity());
+      BOOST_ASSERT(
+      s.size() >= len * 2);
+  std::memcpy(&s[0],
+              sv.data(), sv.size());
+  for(;;)
+  {
+    sv = sr.read(
+        &s[0] + len,
+        s.size() - len,
+        ec);
+    len += sv.size();
+    if(sr.done())
+      break;
+    s.reserve(
+        s.capacity() + 1);
+    s.resize(
+        s.capacity());
+  }
+  s.resize(len);
+}
+
+std::string
+serialize(
+    value const& jv,
+    error_code & ec)
+{
+  std::string s;
+  serializer sr;
+  sr.reset(&jv);
+  serialize_impl(s, sr, ec);
+  return s;
+}
+
+std::string
+serialize(
+    array const& arr,
+    error_code & ec)
+{
+  std::string s;
+  serializer sr;
+  sr.reset(&arr);
+  serialize_impl(s, sr, ec);
+  return s;
+}
+
+std::string
+serialize(
+    object const& obj,
+    error_code & ec)
+{
+  std::string s;
+  serializer sr;
+  sr.reset(&obj);
+  serialize_impl(s, sr, ec);
+  return s;
+}
+
+std::string
+serialize(
+    string const& str,
+    error_code & ec)
+{
+  std::string s;
+  serializer sr;
+  sr.reset(&str);
+  serialize_impl(s, sr, ec);
+  return s;
+}
+
+// this is here for key_value_pair::key()
+std::string
+serialize(
+    string_view sv,
+    error_code & ec)
+{
+  std::string s;
+  serializer sr;
+  sr.reset(sv);
+  serialize_impl(s, sr, ec);
+  return s;
+}
+
 
 //[example_operator_lt__lt_
 // Serialize a value into an output stream

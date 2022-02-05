@@ -12,6 +12,7 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/value.hpp>
+#include <boost/json/serialize_options.hpp>
 #include <boost/json/detail/format.hpp>
 #include <boost/json/detail/stack.hpp>
 #include <boost/json/detail/stream.hpp>
@@ -63,7 +64,8 @@ class serializer
     using local_const_stream =
         detail::local_const_stream;
 
-    using fn_t = bool (serializer::*)(stream&);
+    using fn_opt_t = bool (serializer::*)(stream&, const serialize_options &);
+    using fn_err_t = bool (serializer::*)(stream&, error_code &);
 
 #ifndef BOOST_JSON_DOCS
     union
@@ -73,8 +75,13 @@ class serializer
         object const* po_;
     };
 #endif
-    fn_t fn0_ = &serializer::write_null<true>;
-    fn_t fn1_ = &serializer::write_null<false>;
+    fn_opt_t fn0_opt_ = &serializer::write_null<true>;
+    fn_opt_t fn1_opt_ = &serializer::write_null<false>;
+
+    fn_err_t fn0_err_ = &serializer::write_null<true>;
+    fn_err_t fn1_err_ = &serializer::write_null<false>;
+
+
     value const* jv_ = nullptr;
     detail::stack st_;
     const_stream cs0_;
@@ -86,16 +93,19 @@ class serializer
         state st, array::const_iterator it, array const* pa);
     inline bool suspend(
         state st, object::const_iterator it, object const* po);
-    template<bool StackEmpty> bool write_null   (stream& ss);
-    template<bool StackEmpty> bool write_true   (stream& ss);
-    template<bool StackEmpty> bool write_false  (stream& ss);
-    template<bool StackEmpty> bool write_string (stream& ss);
-    template<bool StackEmpty> bool write_number (stream& ss);
-    template<bool StackEmpty> bool write_array  (stream& ss);
-    template<bool StackEmpty> bool write_object (stream& ss);
-    template<bool StackEmpty> bool write_value  (stream& ss);
-    inline string_view read_some(char* dest, std::size_t size);
+    template<bool StackEmpty, typename Opt> bool write_null   (stream& ss, Opt & opt);
+    template<bool StackEmpty, typename Opt> bool write_true   (stream& ss, Opt & opt);
+    template<bool StackEmpty, typename Opt> bool write_false  (stream& ss, Opt & opt);
+    template<bool StackEmpty, typename Opt> bool write_string (stream& ss, Opt & opt);
+    template<bool StackEmpty, typename Opt> bool write_number (stream& ss, Opt & opt);
+    template<bool StackEmpty, typename Opt> bool write_array  (stream& ss, Opt & opt);
+    template<bool StackEmpty, typename Opt> bool write_object (stream& ss, Opt & opt);
+    template<bool StackEmpty, typename Opt> bool write_value  (stream& ss, Opt & opt);
+    inline string_view read_some(char* dest, std::size_t size, const serialize_options & opt);
+    inline string_view read_some(char* dest, std::size_t size, error_code &ec);
 
+    static bool errored(const error_code &ec) { return static_cast<bool>(ec); }
+    constexpr static bool errored(const serialize_options) { return false; }
 public:
     /// Move constructor (deleted)
     serializer(serializer&&) = delete;
@@ -228,10 +238,56 @@ public:
 
         @param size The maximum number of characters
         to write to the memory pointed to by `dest`.
+
+        @param opts The options for serialization.
     */
     BOOST_JSON_DECL
     string_view
-    read(char* dest, std::size_t size);
+    read(char* dest, std::size_t size, const serialize_options & opts = {});
+
+
+    /** Read the next buffer of serialized JSON
+
+        This function attempts to fill the caller
+        provided buffer starting at `dest` with
+        up to `size` characters of the serialized
+        JSON that represents the value. If the
+        buffer is not large enough, multiple calls
+        may be required.
+  \n
+        If serialization completes during this call;
+        that is, that all of the characters belonging
+        to the serialized value have been written to
+        caller-provided buffers, the function
+        @ref done will return `true`.
+
+        @par Preconditions
+        `this->done() == true`
+
+        @par Complexity
+        Linear in `size`.
+
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
+        @return A @ref string_view containing the
+        characters written, which may be less than
+        `size`.
+
+        @param dest A pointer to valid memory of at
+        least `size` bytes.
+
+        @param size The maximum number of characters
+        to write to the memory pointed to by `dest`.
+
+        @param ec The error code if serialization goes wrong.
+    */
+    BOOST_JSON_DECL
+    string_view
+    read(char* dest, std::size_t size, error_code & ec);
+
+
 
     /** Read the next buffer of serialized JSON
 
@@ -258,12 +314,47 @@ public:
         `size`.
 
         @param dest The character array to write to.
+        @param opts The options for serialization.
     */
     template<std::size_t N>
     string_view
-    read(char(&dest)[N])
+    read(char(&dest)[N], const serialize_options & opts = {})
     {
-        return read(dest, N);
+        return read(dest, N, opts);
+    }
+
+    /** Read the next buffer of serialized JSON
+
+        This function allows reading into a
+        character array, with a deduced maximum size.
+
+        @par Preconditions
+        `this->done() == true`
+
+        @par Effects
+        @code
+        return this->read( dest, N );
+        @endcode
+
+        @par Complexity
+        Linear in `N`.
+
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
+        @return A @ref string_view containing the
+        characters written, which may be less than
+        `size`.
+
+        @param dest The character array to write to.
+        @param ec The error code if serialization goes wrong.
+    */
+    template<std::size_t N>
+    string_view
+    read(char(&dest)[N], error_code & ec)
+    {
+      return read(dest, N, ec);
     }
 
 #ifndef BOOST_JSON_DOCS

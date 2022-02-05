@@ -12,6 +12,7 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/value.hpp>
+#include <boost/json/serialize_options.hpp>
 #include <iosfwd>
 #include <string>
 
@@ -32,27 +33,67 @@ BOOST_JSON_NS_BEGIN
     @return The serialized string
 
     @param t The value to serialize
+    @param opt The serialization options
 */
 /** @{ */
 BOOST_JSON_DECL
 std::string
-serialize(value const& t);
+serialize(value const& t, const serialize_options & opt = {});
 
 BOOST_JSON_DECL
 std::string
-serialize(array const& t);
+serialize(array const& t, const serialize_options & opt = {});
 
 BOOST_JSON_DECL
 std::string
-serialize(object const& t);
+serialize(object const& t, const serialize_options & opt = {});
 
 BOOST_JSON_DECL
 std::string
-serialize(string const& t);
+serialize(string const& t, const serialize_options & opt = {});
 
 BOOST_JSON_DECL
 std::string
-serialize(string_view t);
+serialize(string_view t, const serialize_options & opt = {});
+/** @} */
+
+/** Return a string representing a serialized element.
+
+    This function serializes `t` as JSON and returns
+    it as a `std::string`.
+
+    @par Complexity
+    Constant or linear in the size of `t`.
+
+    @par Exception Safety
+    Strong guarantee.
+    Calls to allocate may throw.
+
+    @return The serialized string
+
+    @param t The value to serialize
+    @param ec The error_code if something went wrong
+*/
+/** @{ */
+BOOST_JSON_DECL
+std::string
+serialize(value const& t, error_code & ec);
+
+BOOST_JSON_DECL
+std::string
+serialize(array const& t, error_code & ec);
+
+BOOST_JSON_DECL
+std::string
+serialize(object const& t, error_code & ec);
+
+BOOST_JSON_DECL
+std::string
+serialize(string const& t, error_code & ec);
+
+BOOST_JSON_DECL
+std::string
+serialize(string_view t, error_code & ec);
 /** @} */
 
 /** Serialize an element to an output stream.

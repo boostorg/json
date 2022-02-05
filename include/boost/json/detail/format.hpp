@@ -13,12 +13,18 @@
 BOOST_JSON_NS_BEGIN
 namespace detail {
 
-int constexpr max_number_chars =
+std::size_t constexpr max_number_chars =
      1 +    // '-'
     19 +    // unsigned 64-bit mantissa
      1 +    // 'e'
      1 +    // '-'
      5;     // unsigned 16-bit exponent
+
+std::size_t constexpr max_number_chars_for(const error_code & ) { return max_number_chars;}
+std::size_t constexpr max_number_chars_for(const serialize_options & opt )
+{
+    return (std::max)({max_number_chars, opt.nan.size(), opt.ninf.size(), opt.pinf.size() });
+}
 
 BOOST_JSON_DECL
 unsigned
@@ -34,7 +40,12 @@ format_int64(
 BOOST_JSON_DECL
 unsigned
 format_double(
-    char* dest, double d) noexcept;
+    char* dest, double d, const serialize_options &) noexcept;
+
+BOOST_JSON_DECL
+unsigned
+    format_double(
+    char* dest, double d, error_code &) noexcept;
 
 } // detail
 BOOST_JSON_NS_END

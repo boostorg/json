@@ -73,10 +73,10 @@ suspend(
     return false;
 }
 
-template<bool StackEmpty>
+template<bool StackEmpty, typename Opt>
 bool
 serializer::
-write_null(stream& ss0)
+write_null(stream& ss0, Opt &)
 {
     local_stream ss(ss0);
     if(! StackEmpty && ! st_.empty())
@@ -115,10 +115,10 @@ do_nul4:
     return true;
 }
 
-template<bool StackEmpty>
+template<bool StackEmpty, typename Opt>
 bool
 serializer::
-write_true(stream& ss0)
+write_true(stream& ss0, Opt &)
 {
     local_stream ss(ss0);
     if(! StackEmpty && ! st_.empty())
@@ -157,10 +157,10 @@ do_tru4:
     return true;
 }
 
-template<bool StackEmpty>
+template<bool StackEmpty, typename Opt>
 bool
 serializer::
-write_false(stream& ss0)
+write_false(stream& ss0, Opt &)
 {
     local_stream ss(ss0);
     if(! StackEmpty && ! st_.empty())
@@ -205,10 +205,10 @@ do_fal5:
     return true;
 }
 
-template<bool StackEmpty>
+template<bool StackEmpty, typename Opt>
 bool
 serializer::
-write_string(stream& ss0)
+write_string(stream& ss0, Opt &)
 {
     local_stream ss(ss0);
     local_const_stream cs(cs0_);
@@ -382,10 +382,10 @@ do_utf5:
     goto do_str3;
 }
 
-template<bool StackEmpty>
+template<bool StackEmpty, typename Opt>
 bool
 serializer::
-write_number(stream& ss0)
+write_number(stream& ss0, Opt & opt)
 {
     local_stream ss(ss0);
     if(StackEmpty || st_.empty())
@@ -421,15 +421,14 @@ write_number(stream& ss0)
 
         case kind::double_:
             if(BOOST_JSON_LIKELY(
-                ss.remain() >=
-                    detail::max_number_chars))
+                ss.remain() >= detail::max_number_chars_for(opt)))
             {
                 ss.advance(detail::format_double(
-                    ss.data(), jv_->get_double()));
+                    ss.data(), jv_->get_double(), opt));
                 return true;
             }
             cs0_ = { buf_, detail::format_double(
-                buf_, jv_->get_double()) };
+                buf_, jv_->get_double(), opt) };
             break;
         }
     }
@@ -452,10 +451,10 @@ write_number(stream& ss0)
     return true;
 }
 
-template<bool StackEmpty>
+template<bool StackEmpty, typename Opt>
 bool
 serializer::
-write_array(stream& ss0)
+write_array(stream& ss0, Opt & opt)
 {
     array const* pa;
     local_stream ss(ss0);
@@ -492,15 +491,15 @@ do_arr1:
             state::arr1, it, pa);
     if(it == end)
         goto do_arr4;
-    for(;;)
+    for (;;)
     {
 do_arr2:
         jv_ = &*it;
-        if(! write_value<StackEmpty>(ss))
+        if(! write_value<StackEmpty>(ss, opt))
             return suspend(
                 state::arr2, it, pa);
-        if(BOOST_JSON_UNLIKELY(
-            ++it == end))
+        ++it;
+        if(BOOST_JSON_UNLIKELY(it == end  || errored(opt)))
             break;
 do_arr3:
         if(BOOST_JSON_LIKELY(ss))
@@ -510,6 +509,9 @@ do_arr3:
                 state::arr3, it, pa);
     }
 do_arr4:
+    if (errored(opt))
+        return true;
+
     if(BOOST_JSON_LIKELY(ss))
         ss.append(']');
     else
@@ -518,10 +520,10 @@ do_arr4:
     return true;
 }
 
-template<bool StackEmpty>
+template<bool StackEmpty, typename Opt>
 bool
 serializer::
-write_object(stream& ss0)
+write_object(stream& ss0, Opt & opt)
 {
     object const* po;
     local_stream ss(ss0);
@@ -568,7 +570,7 @@ do_obj1:
             it->key().size() };
 do_obj2:
         if(BOOST_JSON_UNLIKELY(
-            ! write_string<StackEmpty>(ss)))
+            ! write_string<StackEmpty>(ss, opt)))
             return suspend(
                 state::obj2, it, po);
 do_obj3:
@@ -580,11 +582,11 @@ do_obj3:
 do_obj4:
         jv_ = &it->value();
         if(BOOST_JSON_UNLIKELY(
-            ! write_value<StackEmpty>(ss)))
+            ! write_value<StackEmpty>(ss, opt)))
             return suspend(
                 state::obj4, it, po);
         ++it;
-        if(BOOST_JSON_UNLIKELY(it == end))
+        if(BOOST_JSON_UNLIKELY(it == end || errored(opt)))
             break;
 do_obj5:
         if(BOOST_JSON_LIKELY(ss))
@@ -593,7 +595,10 @@ do_obj5:
             return suspend(
                 state::obj5, it, po);
     }
-do_obj6:
+  do_obj6:
+    if (errored(opt))
+      return true;
+
     if(BOOST_JSON_LIKELY(ss))
     {
         ss.append('}');
@@ -603,10 +608,10 @@ do_obj6:
         state::obj6, it, po);
 }
 
-template<bool StackEmpty>
+template<bool StackEmpty, typename Opt>
 bool
 serializer::
-write_value(stream& ss)
+write_value(stream& ss, Opt & opt)
 {
     if(StackEmpty || st_.empty())
     {
@@ -616,23 +621,23 @@ write_value(stream& ss)
         default:
         case kind::object:
             po_ = &jv.get_object();
-            return write_object<true>(ss);
+            return write_object<true>(ss, opt);
 
         case kind::array:
             pa_ = &jv.get_array();
-            return write_array<true>(ss);
+            return write_array<true>(ss, opt);
 
         case kind::string:
         {
             auto const& js = jv.get_string();
             cs0_ = { js.data(), js.size() };
-            return write_string<true>(ss);
+            return write_string<true>(ss, opt);
         }
 
         case kind::int64:
         case kind::uint64:
         case kind::double_:
-            return write_number<true>(ss);
+            return write_number<true>(ss, opt);
 
         case kind::bool_:
             if(jv.get_bool())
@@ -643,7 +648,7 @@ write_value(stream& ss)
                     ss.append("true", 4);
                     return true;
                 }
-                return write_true<true>(ss);
+                return write_true<true>(ss, opt);
             }
             else
             {
@@ -653,7 +658,7 @@ write_value(stream& ss)
                     ss.append("false", 5);
                     return true;
                 }
-                return write_false<true>(ss);
+                return write_false<true>(ss, opt);
             }
 
         case kind::null:
@@ -663,7 +668,7 @@ write_value(stream& ss)
                 ss.append("null", 4);
                 return true;
             }
-            return write_null<true>(ss);
+            return write_null<true>(ss, opt);
         }
     }
     else
@@ -675,16 +680,16 @@ write_value(stream& ss)
         default:
         case state::nul1: case state::nul2:
         case state::nul3: case state::nul4:
-            return write_null<StackEmpty>(ss);
+            return write_null<StackEmpty>(ss, opt);
 
         case state::tru1: case state::tru2:
         case state::tru3: case state::tru4:
-            return write_true<StackEmpty>(ss);
+            return write_true<StackEmpty>(ss, opt);
 
         case state::fal1: case state::fal2:
         case state::fal3: case state::fal4:
         case state::fal5:
-            return write_false<StackEmpty>(ss);
+            return write_false<StackEmpty>(ss, opt);
 
         case state::str1: case state::str2:
         case state::str3: case state::str4:
@@ -692,19 +697,19 @@ write_value(stream& ss)
         case state::utf1: case state::utf2:
         case state::utf3: case state::utf4:
         case state::utf5:
-            return write_string<StackEmpty>(ss);
+            return write_string<StackEmpty>(ss, opt);
 
         case state::num:
-            return write_number<StackEmpty>(ss);
+            return write_number<StackEmpty>(ss, opt);
 
         case state::arr1: case state::arr2:
         case state::arr3: case state::arr4:
-            return write_array<StackEmpty>(ss);
+            return write_array<StackEmpty>(ss, opt);
 
         case state::obj1: case state::obj2:
         case state::obj3: case state::obj4:
         case state::obj5: case state::obj6:
-            return write_object<StackEmpty>(ss);
+            return write_object<StackEmpty>(ss, opt);
         }
     }
 }
@@ -712,7 +717,7 @@ write_value(stream& ss)
 string_view
 serializer::
 read_some(
-    char* dest, std::size_t size)
+    char* dest, std::size_t size, const serialize_options & opt)
 {
     // If this goes off it means you forgot
     // to call reset() before seriailzing a
@@ -722,9 +727,34 @@ read_some(
 
     stream ss(dest, size);
     if(st_.empty())
-        (this->*fn0_)(ss);
+        (this->*fn0_opt_)(ss, opt);
     else
-        (this->*fn1_)(ss);
+        (this->*fn1_opt_)(ss, opt);
+    if(st_.empty())
+    {
+        done_ = true;
+        jv_ = nullptr;
+    }
+    return string_view(
+        dest, ss.used(dest));
+}
+
+string_view
+serializer::
+read_some(
+    char* dest, std::size_t size, error_code & ec)
+{
+    // If this goes off it means you forgot
+    // to call reset() before seriailzing a
+    // new value, or you never checked done()
+    // to see if you should stop.
+    BOOST_ASSERT(! done_);
+
+    stream ss(dest, size);
+    if(st_.empty())
+        (this->*fn0_err_)(ss, ec);
+    else
+        (this->*fn1_err_)(ss, ec);
     if(st_.empty())
     {
         done_ = true;
@@ -749,9 +779,10 @@ serializer::
 reset(value const* p) noexcept
 {
     pv_ = p;
-    fn0_ = &serializer::write_value<true>;
-    fn1_ = &serializer::write_value<false>;
-
+    fn0_opt_ = &serializer::write_value<true>;
+    fn1_opt_ = &serializer::write_value<false>;
+    fn0_err_ = &serializer::write_value<true>;
+    fn1_err_ = &serializer::write_value<false>;
     jv_ = p;
     st_.clear();
     done_ = false;
@@ -762,8 +793,10 @@ serializer::
 reset(array const* p) noexcept
 {
     pa_ = p;
-    fn0_ = &serializer::write_array<true>;
-    fn1_ = &serializer::write_array<false>;
+    fn0_opt_ = &serializer::write_array<true>;
+    fn1_opt_ = &serializer::write_array<false>;
+    fn0_err_ = &serializer::write_array<true>;
+    fn1_err_ = &serializer::write_array<false>;
     st_.clear();
     done_ = false;
 }
@@ -773,8 +806,10 @@ serializer::
 reset(object const* p) noexcept
 {
     po_ = p;
-    fn0_ = &serializer::write_object<true>;
-    fn1_ = &serializer::write_object<false>;
+    fn0_opt_ = &serializer::write_object<true>;
+    fn1_opt_ = &serializer::write_object<false>;
+    fn0_err_ = &serializer::write_object<true>;
+    fn1_err_ = &serializer::write_object<false>;
     st_.clear();
     done_ = false;
 }
@@ -784,8 +819,10 @@ serializer::
 reset(string const* p) noexcept
 {
     cs0_ = { p->data(), p->size() };
-    fn0_ = &serializer::write_string<true>;
-    fn1_ = &serializer::write_string<false>;
+    fn0_opt_ = &serializer::write_string<true>;
+    fn1_opt_ = &serializer::write_string<false>;
+    fn0_err_ = &serializer::write_string<true>;
+    fn1_err_ = &serializer::write_string<false>;
     st_.clear();
     done_ = false;
 }
@@ -795,22 +832,36 @@ serializer::
 reset(string_view sv) noexcept
 {
     cs0_ = { sv.data(), sv.size() };
-    fn0_ = &serializer::write_string<true>;
-    fn1_ = &serializer::write_string<false>;
+    fn0_opt_ = &serializer::write_string<true>;
+    fn1_opt_ = &serializer::write_string<false>;
+    fn0_err_ = &serializer::write_string<true>;
+    fn1_err_ = &serializer::write_string<false>;
     st_.clear();
     done_ = false;
 }
 
 string_view
 serializer::
-read(char* dest, std::size_t size)
+read(char* dest, std::size_t size, const serialize_options & opts)
 {
     if(! jv_)
     {
         static value const null;
         jv_ = &null;
     }
-    return read_some(dest, size);
+    return read_some(dest, size, opts);
+}
+
+string_view
+serializer::
+read(char* dest, std::size_t size, error_code & ec)
+{
+  if(! jv_)
+  {
+    static value const null;
+    jv_ = &null;
+  }
+  return read_some(dest, size, ec);
 }
 
 BOOST_JSON_NS_END

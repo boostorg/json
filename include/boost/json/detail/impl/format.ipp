@@ -111,10 +111,44 @@ format_int64(
 
 unsigned
 format_double(
-    char* dest, double d) noexcept
+    char* dest, double d, const serialize_options & opt) noexcept
 {
-    return static_cast<int>(
-        ryu::d2s_buffered_n(d, dest));
+    if (std::isnan(d))
+    {
+        std::copy(opt.nan.begin(), opt.nan.end(), dest);
+        return opt.nan.size();
+    }
+    else if (std::isinf(d))
+    {
+        if (d > 0.)
+        {
+            std::copy(opt.pinf.begin(), opt.pinf.end(), dest);
+            return opt.pinf.size();
+        }
+        else
+        {
+            std::copy(opt.ninf.begin(), opt.ninf.end(), dest);
+            return opt.ninf.size();
+        }
+    }
+    else
+        return static_cast<int>(
+            ryu::d2s_buffered_n(d, dest));
+}
+
+unsigned
+format_double(
+    char* dest, double d, error_code & ec) noexcept
+{
+    if (std::isnan(d))
+        ec = make_error_code(error::not_number);
+    else if (std::isinf(d))
+        ec = make_error_code(error::exponent_overflow);
+    else
+        return static_cast<int>(
+            ryu::d2s_buffered_n(d, dest));
+
+    return 0u;
 }
 
 } // detail

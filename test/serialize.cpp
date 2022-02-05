@@ -34,24 +34,33 @@ public:
     void
     testSerialize()
     {
-        {
+      error_code ec;
+      {
             value const jv = { 1, 2, 3 };
             BOOST_TEST(serialize(jv) == "[1,2,3]");
+            BOOST_TEST(serialize(jv, ec) == "[1,2,3]");
+            BOOST_TEST(!ec);
             BOOST_TEST(print(jv) == "[1,2,3]");
         }
         {
             array const arr = { 1, 2 ,3 };
             BOOST_TEST(serialize(arr) == "[1,2,3]");
+            BOOST_TEST(serialize(arr, ec) == "[1,2,3]");
+            BOOST_TEST(!ec);
             BOOST_TEST(print(arr) == "[1,2,3]");
         }
         {
             object const obj = { {"k1",1}, {"k2",2} };
             BOOST_TEST(serialize(obj) == "{\"k1\":1,\"k2\":2}");
+            BOOST_TEST(serialize(obj, ec) == "{\"k1\":1,\"k2\":2}");
+            BOOST_TEST(!ec);
             BOOST_TEST(print(obj) == "{\"k1\":1,\"k2\":2}");
         }
         {
             string const str = "123";
             BOOST_TEST(serialize(str) == "\"123\"");
+            BOOST_TEST(serialize(str, ec) == "\"123\"");
+            BOOST_TEST(!ec);
             BOOST_TEST(print(str) == "\"123\"");
         }
     }

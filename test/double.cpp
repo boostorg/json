@@ -421,11 +421,45 @@ public:
         }
     };
 
+    void testInvalid()
+    {
+      const json::serialize_options testOpts = {"printed dollars", "government debt", "usd value"};
+      error_code ec;
+
+      BOOST_TEST("null" == json::serialize(json::value(NAN)));
+      BOOST_TEST("usd value" == json::serialize(json::value(NAN), testOpts));
+
+      BOOST_TEST(json::serialize(json::value(NAN), ec).empty());
+      BOOST_TEST(ec == json::error::not_number);
+      ec.clear();
+      std::cout << "'" << json::serialize(json::value(NAN), ec) << "'" << std::endl;
+
+      BOOST_TEST("null" == json::serialize(json::value(INFINITY)));
+      BOOST_TEST("printed dollars" == json::serialize(json::value(INFINITY), testOpts));
+
+      BOOST_TEST(json::serialize(json::value(INFINITY), ec).empty());
+      BOOST_TEST(ec == json::error::exponent_overflow);
+      ec.clear();
+
+
+      BOOST_TEST("null" == json::serialize(json::value(-INFINITY)));
+      BOOST_TEST("government debt" == json::serialize(json::value(-INFINITY), testOpts));
+
+      BOOST_TEST(json::serialize(json::value(-INFINITY), ec).empty());
+      BOOST_TEST(ec == json::error::exponent_overflow);
+      ec.clear();
+
+      //check early stop on error.
+      BOOST_TEST(R"({"foobar":)" == json::serialize(json::value{{"foobar", -INFINITY}, {"foo", "bar"}}, ec));
+      BOOST_TEST(R"(["foobar")"  == json::serialize(json::array{"foobar", -INFINITY, "foo", "bar"}, ec));
+    }
+
     void
     run()
     {
         testDouble();
         testWithinULP();
+        testInvalid();
     }
 };
 

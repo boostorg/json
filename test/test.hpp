@@ -928,9 +928,10 @@ to_string_test(
     case kind::double_:
     {
         char buf[detail::max_number_chars];
+        error_code ec;
         auto const n =
             detail::format_double(
-                buf, jv.as_double());
+                buf, jv.as_double(), ec);
         dest.append(string_view(buf).substr(0, n));
         break;
     }
