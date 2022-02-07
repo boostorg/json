@@ -83,8 +83,10 @@ case error::not_exact:
             }
         }
     };
-
-    static codes const cat{};
+    // on some versions of msvc-14.2 the category is put in RO memory
+    // erroneusly, if the category object is const,
+    // and that may result in crash
+    static codes cat{};
     return error_code{static_cast<
         std::underlying_type<error>::type>(e), cat};
 }
@@ -113,7 +115,10 @@ make_error_condition(condition c)
             }
         }
     };
-    static codes const cat{};
+    // on some versions of msvc-14.2 the category is put in RO memory
+    // erroneusly, if the category object is const,
+    // and that may result in crash
+    static codes cat{};
     return error_condition{static_cast<
         std::underlying_type<condition>::type>(c), cat};
 }
