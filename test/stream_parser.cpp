@@ -214,6 +214,7 @@ public:
                 p.write("[]*", ec),
                 BOOST_TEST(
                     ec == error::extra_data);
+                BOOST_TEST(ec.has_location());
             }
             {
                 stream_parser p;
@@ -265,6 +266,7 @@ public:
                 p.finish(ec);
                 BOOST_TEST(
                     ec == error::incomplete);
+                BOOST_TEST(ec.has_location());
             }
             {
                 stream_parser p;
@@ -325,6 +327,7 @@ public:
                 p.write("[]*", ec);
                 BOOST_TEST(
                     ec == error::extra_data);
+                BOOST_TEST(ec.has_location());
                 BOOST_TEST(! p.done());
                 BOOST_TEST_THROWS(
                     p.release(),
@@ -904,6 +907,7 @@ public:
             p.write("[]", 2, ec);
             BOOST_TEST(
                 ec == error::too_deep);
+            BOOST_TEST(ec.has_location());
         }
     }
 
@@ -970,6 +974,7 @@ public:
             p.write("{}", 2, ec);
             BOOST_TEST(
                 ec == error::too_deep);
+            BOOST_TEST(ec.has_location());
         }
     }
 
@@ -994,6 +999,7 @@ public:
                 error_code ec;
                 auto jv = parse("xxx", ec);
                 BOOST_TEST(ec);
+                BOOST_TEST(ec.has_location());
                 BOOST_TEST(jv.is_null());
             }
         }
@@ -1013,6 +1019,7 @@ public:
                 monotonic_resource mr;
                 auto jv = parse("xxx", ec, &mr);
                 BOOST_TEST(ec);
+                BOOST_TEST(ec.has_location());
                 BOOST_TEST(jv.is_null());
             }
         }

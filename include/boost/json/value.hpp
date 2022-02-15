@@ -2368,7 +2368,8 @@ public:
     {
         error e;
         auto result = to_number<T>(e);
-        ec = e;
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+        BOOST_JSON_ASSIGN_ERROR_CODE(ec, e, &loc);
         return result;
     }
 
@@ -2437,11 +2438,10 @@ public:
 #endif
     to_number() const
     {
-        error e;
-        auto result = to_number<T>(e);
-        if(error() != e)
-            detail::throw_system_error(e,
-                BOOST_JSON_SOURCE_POS);
+        error_code ec;
+        auto result = to_number<T>(ec);
+        if(ec)
+            detail::throw_system_error(ec, BOOST_JSON_SOURCE_POS);
         return result;
     }
 

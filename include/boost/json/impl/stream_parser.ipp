@@ -92,7 +92,8 @@ write(
         data, size, ec);
     if(! ec && n < size)
     {
-        ec = error::extra_data;
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+        BOOST_JSON_ASSIGN_ERROR_CODE(ec, error::extra_data, &loc);
         p_.fail(ec);
     }
     return n;

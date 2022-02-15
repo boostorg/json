@@ -22,6 +22,16 @@ BOOST_JSON_NS_BEGIN
 class parse_test
 {
 public:
+    bool hasLocation(std::error_code const&)
+    {
+        return true;
+    }
+
+    bool hasLocation(error_code const& ec)
+    {
+        return ec.has_location();
+    }
+
     template <class ErrorCode>
     void
     good_impl(string_view s)
@@ -41,6 +51,7 @@ public:
         ErrorCode ec;
         auto jv = parse(s, ec);
         BOOST_TEST(ec);
+        BOOST_TEST(hasLocation(ec));
     }
 
     void

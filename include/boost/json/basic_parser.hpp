@@ -12,6 +12,7 @@
 #define BOOST_JSON_BASIC_PARSER_HPP
 
 #include <boost/json/detail/config.hpp>
+#include <boost/json/detail/except.hpp>
 #include <boost/json/error.hpp>
 #include <boost/json/kind.hpp>
 #include <boost/json/parse_options.hpp>
@@ -350,7 +351,8 @@ class basic_parser
     const char*
     fail(
         const char* p,
-        error ev) noexcept;
+        error ev,
+        source_location const* loc) noexcept;
 
     BOOST_NOINLINE
     inline

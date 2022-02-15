@@ -668,8 +668,29 @@ using log_type = detail::log_ostream<char>;
             TEST_SUITE_FUNCTION); \
     }
 
+# define BOOST_TEST_THROWS_WITH_LOCATION( expr ) \
+    try \
+    { \
+        expr; \
+        ::test_suite::detail::current()->fail( \
+            "system_error", __FILE__, __LINE__, \
+            TEST_SUITE_FUNCTION); \
+    } \
+    catch (::boost::json::system_error const& exc) \
+    { \
+        ::test_suite::detail::current()->maybe_fail( \
+            exc.code().has_location(), "has_location()", __FILE__, __LINE__, \
+            TEST_SUITE_FUNCTION); \
+    } \
+    catch(...) { \
+        ::test_suite::detail::current()->fail( \
+            "system_error", __FILE__, __LINE__, \
+            TEST_SUITE_FUNCTION); \
+    }
+
 #else
    #define BOOST_TEST_THROWS( expr, except )
+   #define BOOST_TEST_THROWS_WITH_LOCATION(expr)
 #endif
 
 #define TEST_SUITE(type, name) \

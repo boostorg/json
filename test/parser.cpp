@@ -17,6 +17,18 @@ BOOST_JSON_NS_BEGIN
 class parser_test
 {
 public:
+    bool
+    hasLocation(std::error_code const&)
+    {
+        return true;
+    }
+
+    bool
+    hasLocation(error_code const& ec)
+    {
+        return ec.has_location();
+    }
+
     void
     testCtors()
     {
@@ -361,6 +373,7 @@ public:
                 ErrorCode ec;
                 p.write("nul", ec);
                 BOOST_TEST(ec);
+                BOOST_TEST(hasLocation(ec));
                 BOOST_TEST_THROWS(
                     p.release(),
                     system_error);

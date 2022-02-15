@@ -68,16 +68,6 @@ throw_system_error(
         loc);
 }
 
-void
-throw_system_error(
-    error e,
-    source_location const& loc)
-{
-    throw_exception(
-        system_error(e),
-        loc);
-}
-
 } // detail
 BOOST_JSON_NS_END
 

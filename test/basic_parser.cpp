@@ -1340,6 +1340,7 @@ public:
             error_code ec;
             p.write(s.data(), s.size(), ec);
             BOOST_TEST(ec == error::too_deep);
+            BOOST_TEST(ec.has_location());
         }
         {
             string_view s = "[[[[]]], [[[[]]]]]";
@@ -1349,6 +1350,7 @@ public:
             error_code ec;
             p.write(s.data(), s.size(), ec);
             BOOST_TEST(ec == error::too_deep);
+            BOOST_TEST(ec.has_location());
         }
         {
             string_view s =
@@ -1359,6 +1361,7 @@ public:
             error_code ec;
             p.write(s.data(), s.size(), ec);
             BOOST_TEST(ec == error::too_deep);
+            BOOST_TEST(ec.has_location());
         }
         {
             string_view s =
@@ -1369,6 +1372,7 @@ public:
             error_code ec;
             p.write(s.data(), s.size(), ec);
             BOOST_TEST(ec == error::too_deep);
+            BOOST_TEST(ec.has_location());
         }
     }
 
@@ -1531,6 +1535,7 @@ public:
                 error_code ec;
                 p.write(false, "null", 4, ec);
                 BOOST_TEST(ec == error::exception);
+                BOOST_TEST(ec.has_location());
             }
         }
     }

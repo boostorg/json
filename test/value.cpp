@@ -1400,25 +1400,25 @@ public:
 #define EQAL(T) BOOST_TEST(jv.to_number<T>() == V)
 #define EQUS(T) BOOST_TEST((V >= 0) && jv.to_number<T>() == static_cast<std::uint64_t>(V))
 #define EQUF(T) BOOST_TEST(static_cast<float>(V) == static_cast<float>(jv.to_number<T>()))
-#define THRO(T) BOOST_TEST_THROWS(jv.to_number<T>(), system_error)
+#define THRO(T) BOOST_TEST_THROWS_WITH_LOCATION(jv.to_number<T>());
 
-        BOOST_TEST_THROWS(value(nullptr).to_number<int>(), system_error);
-        BOOST_TEST_THROWS(value(false).to_number<int>(), system_error);
-        BOOST_TEST_THROWS(value(string_kind).to_number<int>(), system_error);
-        BOOST_TEST_THROWS(value(array_kind).to_number<int>(), system_error);
-        BOOST_TEST_THROWS(value(object_kind).to_number<int>(), system_error);
+        BOOST_TEST_THROWS_WITH_LOCATION(value(nullptr).to_number<int>());
+        BOOST_TEST_THROWS_WITH_LOCATION(value(false).to_number<int>());
+        BOOST_TEST_THROWS_WITH_LOCATION(value(string_kind).to_number<int>());
+        BOOST_TEST_THROWS_WITH_LOCATION(value(array_kind).to_number<int>());
+        BOOST_TEST_THROWS_WITH_LOCATION(value(object_kind).to_number<int>());
 
-        BOOST_TEST_THROWS(value(nullptr).to_number<unsigned>(), system_error);
-        BOOST_TEST_THROWS(value(false).to_number<unsigned>(), system_error);
-        BOOST_TEST_THROWS(value(string_kind).to_number<unsigned>(), system_error);
-        BOOST_TEST_THROWS(value(array_kind).to_number<unsigned>(), system_error);
-        BOOST_TEST_THROWS(value(object_kind).to_number<unsigned>(), system_error);
+        BOOST_TEST_THROWS_WITH_LOCATION(value(nullptr).to_number<unsigned>());
+        BOOST_TEST_THROWS_WITH_LOCATION(value(false).to_number<unsigned>());
+        BOOST_TEST_THROWS_WITH_LOCATION(value(string_kind).to_number<unsigned>());
+        BOOST_TEST_THROWS_WITH_LOCATION(value(array_kind).to_number<unsigned>());
+        BOOST_TEST_THROWS_WITH_LOCATION(value(object_kind).to_number<unsigned>());
 
-        BOOST_TEST_THROWS(value(nullptr).to_number<double>(), system_error);
-        BOOST_TEST_THROWS(value(false).to_number<double>(), system_error);
-        BOOST_TEST_THROWS(value(string_kind).to_number<double>(), system_error);
-        BOOST_TEST_THROWS(value(array_kind).to_number<double>(), system_error);
-        BOOST_TEST_THROWS(value(object_kind).to_number<double>(), system_error);
+        BOOST_TEST_THROWS_WITH_LOCATION(value(nullptr).to_number<double>());
+        BOOST_TEST_THROWS_WITH_LOCATION(value(false).to_number<double>());
+        BOOST_TEST_THROWS_WITH_LOCATION(value(string_kind).to_number<double>());
+        BOOST_TEST_THROWS_WITH_LOCATION(value(array_kind).to_number<double>());
+        BOOST_TEST_THROWS_WITH_LOCATION(value(object_kind).to_number<double>());
 
         {
             unsigned char V = 0;
@@ -1651,7 +1651,8 @@ public:
         {
             error_code ec;
             value(nullptr).to_number<double>(ec);
-            BOOST_TEST(error::not_number == ec);
+            BOOST_TEST(ec == error::not_number);
+            BOOST_TEST(ec.has_location());
         }
 
         {

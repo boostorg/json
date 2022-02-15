@@ -243,6 +243,7 @@ public:
             error_code ec;
             auto jv = parse(js, ec);
             BOOST_TEST(ec == error::string_too_large);
+            BOOST_TEST(ec.has_location());
         }
 
         // key in parser
@@ -255,6 +256,7 @@ public:
             error_code ec;
             auto jv = parse(js, ec);
             BOOST_TEST(ec == error::key_too_large);
+            BOOST_TEST(ec.has_location());
         }
     }
 
@@ -299,6 +301,7 @@ public:
                 "{\"" + big + "\":null}";
             auto jv = parse(js, ec);
             BOOST_TEST(ec == error::key_too_large);
+            BOOST_TEST(ec.has_location());
         }
 
         // overflow in on_key
@@ -312,6 +315,7 @@ public:
                 "{\"" + big + "\":null}";
             auto jv = parse(js, ec);
             BOOST_TEST(ec == error::key_too_large);
+            BOOST_TEST(ec.has_location());
         }
 
         // overflow in on_string_part
@@ -325,6 +329,7 @@ public:
                 "\"" + big + "\"";
             auto jv = parse(js, ec);
             BOOST_TEST(ec == error::string_too_large);
+            BOOST_TEST(ec.has_location());
         }
 
         // overflow in on_string
@@ -338,6 +343,7 @@ public:
                 "\"" + big + "\"";
             auto jv = parse(js, ec);
             BOOST_TEST(ec == error::string_too_large);
+            BOOST_TEST(ec.has_location());
         }
 
 
@@ -352,6 +358,7 @@ public:
 
             auto jv = parse(s, ec);
             BOOST_TEST(ec == error::object_too_large);
+            BOOST_TEST(ec.has_location());
         }
 
         // array overflow
@@ -364,6 +371,7 @@ public:
                 "]";
             auto jv = parse(s, ec);
             BOOST_TEST(ec == error::array_too_large);
+            BOOST_TEST(ec.has_location());
         }
     }
 

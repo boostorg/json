@@ -94,7 +94,8 @@ write(
         data, size, ec);
     if(! ec && n < size)
     {
-        ec = error::extra_data;
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+        BOOST_JSON_ASSIGN_ERROR_CODE(ec, error::extra_data, &loc);
         p_.fail(ec);
     }
     return n;
@@ -123,7 +124,12 @@ release()
     {
         // prevent undefined behavior
         if(! p_.last_error())
-            p_.fail(error::incomplete);
+        {
+            error_code ec;
+            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_JSON_ASSIGN_ERROR_CODE(ec, error::incomplete, &loc);
+            p_.fail(ec);
+        }
         detail::throw_system_error(
             p_.last_error(),
             BOOST_JSON_SOURCE_POS);
