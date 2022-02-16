@@ -103,6 +103,17 @@ tag_invoke(
 
 //----------------------------------------------------------
 
+struct T6
+{
+};
+
+inline
+std::size_t
+size(T6 const&)
+{
+    return 3;
+}
+
 } // value_from_test_ns
 
 template<class T>
@@ -291,6 +302,31 @@ public:
     }
 
     void
+    testTrySize()
+    {
+        {
+            std::vector<int> v{1, 2, 3};
+            using impl = detail::size_implementation<decltype(v)>;
+            BOOST_TEST(detail::try_size(v, impl()) == 3);
+        }
+        {
+            int arr[4] = {1, 2, 3, 4};
+            using impl = detail::size_implementation<decltype(arr)>;
+            BOOST_TEST(detail::try_size(arr, impl()) == 4);
+        }
+        {
+            value_from_test_ns::T6 t;
+            using impl = detail::size_implementation<decltype(t)>;
+            BOOST_TEST(detail::try_size(t, impl()) == 3);
+        }
+        {
+            value_from_test_ns::T1 t;
+            using impl = detail::size_implementation<decltype(t)>;
+            BOOST_TEST(detail::try_size(t, impl()) == 0);
+        }
+    }
+
+    void
     run()
     {
         check("42", ::value_from_test_ns::T1{});
@@ -300,6 +336,7 @@ public:
         testGeneral();
         testAssociative();
         testPreferUserCustomizations();
+        testTrySize();
     }
 };
 

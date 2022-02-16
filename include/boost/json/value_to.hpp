@@ -1,6 +1,7 @@
 //
 // Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
 // Copyright (c) 2020 Krystian Stasiowski (sdkrystian@gmail.com)
+// Copyright (c) 2022 Dmitry Arkhipov (grisumbras@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -78,8 +79,9 @@ T
 value_to(const value& jv)
 {
     BOOST_STATIC_ASSERT(! std::is_reference<T>::value);
+    using impl = detail::value_to_implementation<detail::remove_cvref<T>>;
     return detail::value_to_impl(
-        value_to_tag<typename std::remove_cv<T>::type>(), jv);
+        value_to_tag<detail::remove_cvref<T>>(), jv, impl());
 }
 
 /** Convert a @ref value to an object of type `T`.
@@ -113,18 +115,9 @@ value_to(U const& jv) = delete;
 template<class T>
 using has_value_to = __see_below__;
 #else
-template<class T, class>
-struct has_value_to
-    : std::false_type { };
-
 template<class T>
-struct has_value_to<T, detail::void_t<decltype(
-    detail::value_to_impl(
-        value_to_tag<detail::remove_cvref<T>>(),
-        std::declval<const value&>())),
-    typename std::enable_if<
-        ! std::is_reference<T>::value>::type
-    > > : std::true_type { };
+using has_value_to = detail::can_convert<
+    detail::remove_cvref<T>, detail::value_to_conversion>;
 #endif
 
 BOOST_JSON_NS_END

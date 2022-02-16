@@ -80,6 +80,10 @@ public:
         {
             {"a", 1}, {"b", 2}, {"c", 3}
         });
+        check(std::multimap<std::string, int>
+        {
+            {"2", 4}, {"3", 9}, {"5", 25}
+        });
         check(std::unordered_map<std::string, int>
         {
             { "a", 1 }, {"b", 2}, {"c", 3}
@@ -115,11 +119,37 @@ public:
     }
 
     void
+    testContainerHelpers()
+    {
+        {
+            std::vector<int> v;
+            detail::try_reserve(
+                v, 10, detail::reserve_implementation<decltype(v)>());
+            BOOST_TEST(v.capacity() >= 10);
+            BOOST_STATIC_ASSERT(std::is_same<
+                decltype(detail::inserter(
+                    v, detail::inserter_implementation<decltype(v)>())),
+                decltype(std::back_inserter(v)) >::value);
+        }
+        {
+            std::array<int, 2> arr;
+            detail::try_reserve(
+                arr, 2, detail::reserve_implementation<decltype(arr)>());
+        }
+        {
+            int n;
+            detail::try_reserve(
+                n, 5, detail::reserve_implementation<decltype(n)>());
+        }
+    }
+
+    void
     run()
     {
         testNumberCast();
         testJsonTypes();
         testGenerics();
+        testContainerHelpers();
     }
 };
 

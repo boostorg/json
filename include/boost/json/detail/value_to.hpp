@@ -20,12 +20,6 @@
 
 BOOST_JSON_NS_BEGIN
 
-template<class>
-struct value_to_tag { };
-
-template<class, class = void>
-struct has_value_to;
-
 template<class T, class U,
     typename std::enable_if<
         ! std::is_reference<T>::value &&
@@ -34,13 +28,22 @@ T value_to(U const&);
 
 namespace detail {
 
-template<class T, typename std::enable_if<
-    (std::tuple_size<remove_cvref<T>>::value > 0)>::type* = nullptr>
+template<class T>
+using has_reserve_member_helper = decltype(std::declval<T&>().reserve(0));
+template<class T>
+using has_reserve_member = mp11::mp_valid<has_reserve_member_helper, T>;
+template<class T>
+using reserve_implementation = mp11::mp_cond<
+    is_tuple_like<T>,      mp11::mp_int<2>,
+    has_reserve_member<T>, mp11::mp_int<1>,
+    mp11::mp_true,         mp11::mp_int<0>>;
+
+template<class T>
 void
 try_reserve(
     T&,
     std::size_t size,
-    priority_tag<2>)
+    mp11::mp_int<2>)
 {
     constexpr std::size_t N = std::tuple_size<remove_cvref<T>>::value;
     if ( N != size )
@@ -51,13 +54,12 @@ try_reserve(
     }
 }
 
-template<typename T, void_t<decltype(
-    std::declval<T&>().reserve(0))>* = nullptr>
+template<typename T>
 void
 try_reserve(
     T& cont,
     std::size_t size,
-    priority_tag<1>)
+    mp11::mp_int<1>)
 {
     cont.reserve(size);
 }
@@ -67,38 +69,56 @@ void
 try_reserve(
     T&,
     std::size_t,
-    priority_tag<0>)
+    mp11::mp_int<0>)
 {
 }
 
-template<class T, typename std::enable_if<
-    (std::tuple_size<remove_cvref<T>>::value > 0)>::type* = nullptr>
+
+template<class T>
+using has_push_back_helper
+    = decltype(std::declval<T&>().push_back(std::declval<value_type<T>>()));
+template<class T>
+using has_push_back = mp11::mp_valid<has_push_back_helper, T>;
+template<class T>
+using inserter_implementation = mp11::mp_cond<
+    is_tuple_like<T>, mp11::mp_int<2>,
+    has_push_back<T>, mp11::mp_int<1>,
+    mp11::mp_true,    mp11::mp_int<0>>;
+
+template<class T>
 typename remove_cvref<T>::iterator
 inserter(
     T& target,
-    priority_tag<1>)
+    mp11::mp_int<2>)
 {
     return target.begin();
+}
+
+template<class T>
+std::back_insert_iterator<T>
+inserter(
+    T& target,
+    mp11::mp_int<1>)
+{
+    return std::back_inserter(target);
 }
 
 template<class T>
 std::insert_iterator<T>
 inserter(
     T& target,
-    priority_tag<0>)
+    mp11::mp_int<0>)
 {
     return std::inserter(target, end(target));
 }
 
-//----------------------------------------------------------
-// Use native conversion
-
 // identity conversion
 inline
 value
-tag_invoke(
+value_to_impl(
     value_to_tag<value>,
-    value const& jv)
+    value const& jv,
+    value_conversion_tag)
 {
     return jv;
 }
@@ -106,9 +126,10 @@ tag_invoke(
 // object
 inline
 object
-tag_invoke(
+value_to_impl(
     value_to_tag<object>,
-    value const& jv)
+    value const& jv,
+    object_conversion_tag)
 {
     return jv.as_object();
 }
@@ -116,9 +137,10 @@ tag_invoke(
 // array
 inline
 array
-tag_invoke(
+value_to_impl(
     value_to_tag<array>,
-    value const& jv)
+    value const& jv,
+    array_conversion_tag)
 {
     return jv.as_array();
 }
@@ -126,9 +148,10 @@ tag_invoke(
 // string
 inline
 string
-tag_invoke(
+value_to_impl(
     value_to_tag<string>,
-    value const& jv)
+    value const& jv,
+    string_conversion_tag)
 {
     return jv.as_string();
 }
@@ -136,83 +159,73 @@ tag_invoke(
 // bool
 inline
 bool
-tag_invoke(
+value_to_impl(
     value_to_tag<bool>,
-    value const& jv)
+    value const& jv,
+    bool_conversion_tag)
 {
     return jv.as_bool();
 }
 
 // integral and floating point
-template<class T, typename std::enable_if<
-    std::is_arithmetic<T>::value>::type* = nullptr>
+template<class T>
 T
-tag_invoke(
+value_to_impl(
     value_to_tag<T>,
-    value const& jv)
+    value const& jv,
+    number_conversion_tag)
 {
     return jv.to_number<T>();
 }
 
-//----------------------------------------------------------
-// Use generic conversion
-
 // string-like types
-// NOTE: original check for size used is_convertible but
-// MSVC-140 selects wrong specialisation if used
-template<class T, typename std::enable_if<
-    std::is_constructible<T, const char*, std::size_t>::value &&
-    std::is_convertible<decltype(std::declval<T&>().data()), const char*>::value &&
-    std::is_integral<decltype(std::declval<T&>().size())>::value
->::type* = nullptr>
+template<class T>
 T
-value_to_generic(
-    const value& jv,
-    priority_tag<3>)
+value_to_impl(
+    value_to_tag<T>,
+    value const& jv,
+    string_like_conversion_tag)
 {
     auto& str = jv.as_string();
     return T(str.data(), str.size());
 }
 
-// map-like containers; should go before other containers in order to be able
-// to tell them apart
-template<class T, typename std::enable_if<
-    has_value_to<typename map_traits<T>::pair_value_type>::value &&
-        std::is_constructible<typename map_traits<T>::pair_key_type,
-    string_view>::value>::type* = nullptr>
+// map-like containers
+template<class T>
 T
-value_to_generic(
-    const value& jv,
-    priority_tag<2>)
+value_to_impl(
+    value_to_tag<T>,
+    value const& jv,
+    map_like_conversion_tag)
 {
-    using value_type = typename
-        container_traits<T>::value_type;
     const object& obj = jv.as_object();
     T result;
-    try_reserve(result, obj.size(), priority_tag<2>());
-    for (const auto& val : obj)
-        result.insert(value_type{typename map_traits<T>::
-            pair_key_type(val.key()), value_to<typename
-                map_traits<T>::pair_value_type>(val.value())});
+    detail::try_reserve(result, obj.size(), reserve_implementation<T>());
+    std::transform(obj.begin(), obj.end(),
+        detail::inserter(result, inserter_implementation<T>()),
+        [](key_value_pair const& val) {
+            return value_type<T>{
+                key_type<T>(val.key()),
+                value_to<mapped_type<T>>(val.value())};
+        });
     return result;
 }
 
-// all other containers; should go before tuple-like in order to handle
-// std::array with this overload
-template<class T, typename std::enable_if<
-    has_value_to<typename container_traits<T>::
-        value_type>::value>::type* = nullptr>
+// all other containers
+template<class T>
 T
-value_to_generic(
-    const value& jv,
-    priority_tag<1>)
+value_to_impl(
+    value_to_tag<T>,
+    value const& jv,
+    sequence_conversion_tag)
 {
-    const array& arr = jv.as_array();
+    array const& arr = jv.as_array();
     T result;
-    detail::try_reserve(result, arr.size(), priority_tag<2>());
+    detail::try_reserve(result, arr.size(), reserve_implementation<T>());
+    using inserter_impl = inserter_implementation<T>;
     std::transform(arr.begin(), arr.end(),
-        detail::inserter(result, priority_tag<1>()), [](value const& val) {
-            return value_to<typename container_traits<T>::value_type>(val);
+        detail::inserter(result, inserter_impl()), [](value const& val) {
+            return value_to<value_type<T>>(val);
         });
     return result;
 }
@@ -225,12 +238,12 @@ make_tuple_like(const array& arr, boost::mp11::index_sequence<Is...>)
 }
 
 // tuple-like types
-template<class T, typename std::enable_if<
-    (std::tuple_size<remove_cvref<T>>::value > 0)>::type* = nullptr>
+template<class T>
 T
-value_to_generic(
-    const value& jv,
-    priority_tag<0>)
+value_to_impl(
+    value_to_tag<T>,
+    value const& jv,
+    tuple_conversion_tag)
 {
     auto& arr = jv.as_array();
     constexpr std::size_t N = std::tuple_size<remove_cvref<T>>::value;
@@ -244,35 +257,33 @@ value_to_generic(
     return make_tuple_like<T>(arr, boost::mp11::make_index_sequence<N>());
 }
 
-// Matches containers
-template<class T, void_t<typename std::enable_if<
-    !std::is_constructible<T, const value&>::value &&
-        !std::is_arithmetic<T>::value>::type, decltype(
-    value_to_generic<T>(std::declval<const value&>(),
-        priority_tag<2>()))>* = nullptr>
-T
-tag_invoke(
-    value_to_tag<T>,
-    value const& jv)
-{
-    return value_to_generic<T>(
-        jv, priority_tag<3>());
-}
-
 //----------------------------------------------------------
-
-// Calls to value_to are forwarded to this function
-// so we can use ADL and hide the built-in tag_invoke
-// overloads in the detail namespace
-template<class T, void_t<
-    decltype(tag_invoke(std::declval<value_to_tag<T>&>(),
-        std::declval<const value&>()))>* = nullptr>
+// User-provided conversion
+template<class T>
 T
 value_to_impl(
     value_to_tag<T> tag,
-    value const& jv)
+    value const& jv,
+    user_conversion_tag)
 {
     return tag_invoke(tag, jv);
+}
+
+template<class T>
+using value_to_implementation
+    = conversion_implementation<T, value_to_conversion>;
+
+// no suitable conversion implementation
+template<class T>
+T
+value_to_impl(
+    value_to_tag<T>,
+    value const&,
+    no_conversion_tag)
+{
+    static_assert(
+        !std::is_same<T, T>::value,
+        "No suitable tag_invoke overload found for the type");
 }
 
 } // detail
