@@ -156,6 +156,21 @@ value_to_impl(
     return jv.as_string();
 }
 
+// nullptr conversion
+// this is barely useful, and provided mostly for consistency
+inline
+std::nullptr_t
+value_to_impl(
+    value_to_tag<std::nullptr_t>,
+    value const& jv,
+    nullptr_conversion_tag)
+{
+    if( jv.is_null() )
+        return nullptr;
+    detail::throw_invalid_argument(
+        "source value is not null", BOOST_JSON_SOURCE_POS);
+}
+
 // bool
 inline
 bool

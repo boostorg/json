@@ -189,11 +189,11 @@ using conversion_implementation = mp11::mp_cond<
     // user conversion (via tag_invoke)
     has_user_conversion<T, Dir>,       user_conversion_tag,
     // native conversions (constructors and member functions of value)
-    std::is_same<T, std::nullptr_t>,   nullptr_conversion_tag,
     std::is_same<T, value>,            value_conversion_tag,
     std::is_same<T, array>,            array_conversion_tag,
     std::is_same<T, object>,           object_conversion_tag,
     std::is_same<T, string>,           string_conversion_tag,
+    std::is_same<T, std::nullptr_t>,   nullptr_conversion_tag,
     std::is_same<T, bool>,             bool_conversion_tag,
     std::is_arithmetic<T>,             number_conversion_tag,
     other_value_constructible<T, Dir>, native_conversion_tag,

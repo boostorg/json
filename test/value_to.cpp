@@ -143,6 +143,13 @@ public:
         }
     }
 
+    void testNullptr()
+    {
+        (void)value_to<std::nullptr_t>(value());
+        BOOST_TEST_THROWS(
+            (value_to<std::nullptr_t>(value(1))), std::invalid_argument);
+    }
+
     void
     run()
     {
@@ -150,6 +157,7 @@ public:
         testJsonTypes();
         testGenerics();
         testContainerHelpers();
+        testNullptr();
     }
 };
 
