@@ -65,7 +65,7 @@ tag_invoke(
     ::boost::json::value& jv,
     T2 const& t)
 {
-    jv = { t.v, t.s };
+    jv = { boost::json::value_from(t.v), boost::json::value_from(t.s) };
 }
 
 struct T3

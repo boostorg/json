@@ -34,7 +34,7 @@ from_const(
     void const* p,
     storage_ptr sp)
 {
-    return value_from(
+    return value(
         *reinterpret_cast<
             T const*>(p),
         std::move(sp));
@@ -47,7 +47,7 @@ from_rvalue(
     void* p,
     storage_ptr sp)
 {
-    return value_from(
+    return value(
         std::move(
             *reinterpret_cast<T*>(p)),
         std::move(sp));
