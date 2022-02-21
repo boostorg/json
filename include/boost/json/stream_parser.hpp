@@ -518,17 +518,12 @@ public:
         std::size_t size,
         error_code& ec);
 
+    BOOST_JSON_DECL
     std::size_t
     write_some(
         char const* data,
         std::size_t size,
-        std::error_code& ec)
-    {
-        error_code jec;
-        std::size_t const result = write_some(data, size, jec);
-        ec = jec;
-        return result;
-    }
+        std::error_code& ec);
 /** @} */
 
     /** Parse a buffer containing all or part of a complete JSON.
@@ -754,17 +749,12 @@ public:
         std::size_t size,
         error_code& ec);
 
+    BOOST_JSON_DECL
     std::size_t
     write(
         char const* data,
         std::size_t size,
-        std::error_code& ec)
-    {
-        error_code jec;
-        std::size_t const result = write(data, size, jec);
-        ec = jec;
-        return result;
-    }
+        std::error_code& ec);
 /** @} */
 
     /** Parse a buffer containing all or part of a complete JSON.
@@ -966,13 +956,9 @@ public:
     void
     finish(error_code& ec);
 
+    BOOST_JSON_DECL
     void
-    finish(std::error_code& ec)
-    {
-        error_code jec;
-        finish(jec);
-        ec = jec;
-    }
+    finish(std::error_code& ec);
 /** @} */
 
     /** Indicate the end of JSON input.

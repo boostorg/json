@@ -63,19 +63,13 @@ parse(
     storage_ptr sp = {},
     parse_options const& opt = {});
 
-inline
+BOOST_JSON_DECL
 value
 parse(
     string_view s,
     std::error_code& ec,
     storage_ptr sp = {},
-    parse_options const& opt = {})
-{
-    error_code jec;
-    value result = parse(s, jec, std::move(sp), opt);
-    ec = jec;
-    return result;
-}
+    parse_options const& opt = {});
 /** @} */
 
 /** Parse a string of JSON into a @ref value.

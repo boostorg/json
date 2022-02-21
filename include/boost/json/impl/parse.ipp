@@ -37,6 +37,19 @@ parse(
 value
 parse(
     string_view s,
+    std::error_code& ec,
+    storage_ptr sp,
+    parse_options const& opt)
+{
+    error_code jec;
+    value result = parse(s, jec, std::move(sp), opt);
+    ec = jec;
+    return result;
+}
+
+value
+parse(
+    string_view s,
     storage_ptr sp,
     const parse_options& opt)
 {

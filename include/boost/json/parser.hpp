@@ -469,13 +469,7 @@ public:
     write_some(
         char const* data,
         std::size_t size,
-        std::error_code& ec)
-    {
-        error_code jec;
-        std::size_t const result = write_some(data, size, jec);
-        ec = jec;
-        return result;
-    }
+        std::error_code& ec);
 /** @} */
 
     /** Parse a buffer containing a complete JSON.
@@ -665,17 +659,12 @@ public:
         std::size_t size,
         error_code& ec);
 
+    BOOST_JSON_DECL
     std::size_t
     write(
         char const* data,
         std::size_t size,
-        std::error_code& ec)
-    {
-        error_code jec;
-        std::size_t const result = write(data, size, jec);
-        ec = jec;
-        return result;
-    }
+        std::error_code& ec);
 /** @} */
 
     /** Parse a buffer containing a complete JSON.
