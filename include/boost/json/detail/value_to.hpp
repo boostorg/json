@@ -284,10 +284,6 @@ value_to_impl(
     return tag_invoke(tag, jv);
 }
 
-template<class T>
-using value_to_implementation
-    = conversion_implementation<T, value_to_conversion>;
-
 // no suitable conversion implementation
 template<class T>
 T
@@ -300,6 +296,10 @@ value_to_impl(
         !std::is_same<T, T>::value,
         "No suitable tag_invoke overload found for the type");
 }
+
+template<class T>
+using value_to_implementation
+    = conversion_implementation<T, value_to_conversion>;
 
 } // detail
 BOOST_JSON_NS_END

@@ -77,6 +77,8 @@ value_from(
     value& jv)
 {
     using bare_T = detail::remove_cvref<T>;
+    BOOST_STATIC_ASSERT(detail::conversion_round_trips<
+        bare_T, detail::value_from_conversion>::value);
     using impl = detail::value_from_implementation<bare_T>;
     detail::value_from_helper(jv, std::forward<T>(t), impl());
 }

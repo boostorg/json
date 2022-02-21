@@ -208,6 +208,25 @@ using can_convert = mp11::mp_not<
         detail::conversion_implementation<T, Dir>,
         detail::no_conversion_tag>>;
 
+template<class T>
+using value_from_implementation
+    = conversion_implementation<T, value_from_conversion>;
+
+template<class T>
+using value_to_implementation
+    = conversion_implementation<T, value_to_conversion>;
+
+template<class Main, class Opposite>
+using conversion_round_trips_helper = mp11::mp_or<
+    std::is_same<Main, Opposite>,
+    std::is_same<user_conversion_tag, Main>,
+    std::is_same<user_conversion_tag, Opposite>,
+    std::is_same<no_conversion_tag, Opposite>>;
+template<class T, class Dir>
+using conversion_round_trips  = conversion_round_trips_helper<
+    conversion_implementation<T, Dir>,
+    conversion_implementation<T, mp11::mp_not<Dir>>>;
+
 } // detail
 BOOST_JSON_NS_END
 

@@ -147,10 +147,6 @@ value_from_helper(
         "No suitable tag_invoke overload found for the type");
 }
 
-template<class T>
-using value_from_implementation
-    = conversion_implementation<T, value_from_conversion>;
-
 } // detail
 BOOST_JSON_NS_END
 

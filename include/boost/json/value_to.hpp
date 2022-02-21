@@ -79,9 +79,11 @@ T
 value_to(const value& jv)
 {
     BOOST_STATIC_ASSERT(! std::is_reference<T>::value);
-    using impl = detail::value_to_implementation<detail::remove_cvref<T>>;
-    return detail::value_to_impl(
-        value_to_tag<detail::remove_cvref<T>>(), jv, impl());
+    using bare_T = detail::remove_cvref<T>;
+    BOOST_STATIC_ASSERT(detail::conversion_round_trips<
+        bare_T, detail::value_to_conversion>::value);
+    using impl = detail::value_to_implementation<bare_T>;
+    return detail::value_to_impl(value_to_tag<bare_T>(), jv, impl());
 }
 
 /** Convert a @ref value to an object of type `T`.
