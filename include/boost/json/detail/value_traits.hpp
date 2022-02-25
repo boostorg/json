@@ -176,13 +176,10 @@ using is_map_like = mp11::mp_all<
         key_type<T>,
         string_view>>;
 
+// matches char const*, but only for value_from
 template<class T, class Dir>
-using other_value_constructible = mp11::mp_and<
-    Dir, // is value_from_conversion
-    mp11::mp_or<
-        std::is_same<T, char const*>,
-        std::is_same<T, std::initializer_list<value_ref>>,
-        std::is_same<T, value_ref>>>;
+using is_char_star
+    = mp11::mp_and<Dir, std::is_same<T, char const*>>;
 
 template<class T, class Dir>
 using conversion_implementation = mp11::mp_cond<
@@ -196,7 +193,7 @@ using conversion_implementation = mp11::mp_cond<
     std::is_same<T, std::nullptr_t>,   nullptr_conversion_tag,
     std::is_same<T, bool>,             bool_conversion_tag,
     std::is_arithmetic<T>,             number_conversion_tag,
-    other_value_constructible<T, Dir>, native_conversion_tag,
+    is_char_star<T, Dir>,              native_conversion_tag,
     // generic conversions
     is_string_like<T>,                 string_like_conversion_tag,
     is_map_like<T, Dir>,               map_like_conversion_tag,
