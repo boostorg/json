@@ -11,6 +11,27 @@
 
 [/-----------------------------------------------------------------------------]
 
+[heading Boost 1.79.0]
+
+[*API Changes]
+
+* [issue 650] Standalone mode of the library is removed. Users who wish to
+  continue using standalone JSON can switch to
+  [@https://github.com/CPPAlliance/standalone-json.git the C++ Alliance fork].
+
+[*New Features]
+
+* [issue 480] Add support for JSON Pointer.
+
+[*Improvements]
+
+* Add `std::error_code` overloads.
+* [issue 680] Add `boost::source_location` to `error_codes`.
+
+[*Fixes]
+
+* [issue 668] Naturally grow string during serialization.
+
 [heading Boost 1.78.0]
 
 [*API Changes]

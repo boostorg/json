@@ -1,5 +1,12 @@
 Boost 1.79.0
-* Standalone mode of the library is removed.
+
+* Standalone mode of the library is removed. Users who wish to
+  continue using standalone JSON can switch to
+  [the C++ Alliance fork](https://github.com/CPPAlliance/standalone-json.git).
+* Add support for JSON Pointer.
+* Add `std::error_code` overloads.
+* Add `boost::source_location` to `error_codes`.
+* Naturally grow string during serialization.
 
 Boost 1.78.0
 * Standalone mode of the library is deprecated.
