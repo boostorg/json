@@ -488,12 +488,7 @@ erase(
     BOOST_ASSERT(
         pos >= begin() &&
         pos <= end());
-    auto const p = &(*t_)[0] +
-        (pos - &(*t_)[0]);
-    destroy(p, p + 1);
-    relocate(p, p + 1, 1);
-    --t_->size;
-    return p;
+    return erase(pos, pos + 1);
 }
 
 auto
@@ -503,6 +498,10 @@ erase(
     const_iterator last) noexcept ->
         iterator
 {
+    BOOST_ASSERT(
+        first >= begin() &&
+        last >= first &&
+        last <= end());
     std::size_t const n =
         last - first;
     auto const p = &(*t_)[0] +
