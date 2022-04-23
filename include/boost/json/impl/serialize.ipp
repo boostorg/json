@@ -41,6 +41,8 @@ serialize_impl(
         s.size() >= len * 2);
     std::memcpy(&s[0],
         sv.data(), sv.size());
+    auto const lim =
+        s.max_size() / 2;
     for(;;)
     {
         sv = sr.read(
@@ -49,10 +51,11 @@ serialize_impl(
         len += sv.size();
         if(sr.done())
             break;
-        s.reserve(
-            s.capacity() + 1);
-        s.resize(
-            s.capacity());
+        // growth factor 2x
+        if(s.size() < lim)
+            s.resize(s.size() * 2);
+        else
+            s.resize(2 * lim);
     }
     s.resize(len);
 }
