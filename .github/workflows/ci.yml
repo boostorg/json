@@ -198,18 +198,18 @@ jobs:
             container: "ubuntu:16.04"
             toolset: "clang"
             comment: "Coverity Scan"
-          - name: "msvc-14.1"
-            buildtype: "boost"
-            os: "windows-2016"
-            toolset: "msvc"
-            toolset_version: "14.1"
-            b2_cxxstd: "11,14,17"
           - name: "msvc-14.2"
             buildtype: "boost"
             os: "windows-2019"
             toolset: "msvc"
             toolset_version: "14.2"
-            b2_cxxstd: "17,latest"
+            b2_cxxstd: "17,20"
+          - name: "msvc-14.3"
+            buildtype: "boost"
+            os: "windows-2022"
+            toolset: "msvc"
+            toolset_version: "14.3"
+            b2_cxxstd: "17,20"
 
     runs-on: ${{ matrix.os }}
     container: ${{ matrix.container }}
@@ -225,7 +225,7 @@ jobs:
         with:
           install: ${{ matrix.packages }}
           toolset: ${{ matrix.toolset }}
-          llvm_version: ${{ matrix.toolset_version }}
+          version: ${{ matrix.toolset_version }}
 
       - uses: ./.github/actions/build
         with:

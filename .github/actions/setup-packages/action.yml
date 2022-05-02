@@ -41,8 +41,8 @@ runs:
             . /etc/lsb-release
             wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
             LLVM_DISTRIB=llvm-toolchain-${DISTRIB_CODENAME}
-            if test -n "${{ inputs.llvm_version }}" ; then
-                LLVM_DISTRIB=${LLVM_DISTRIB}-${{ inputs.llvm_version }}
+            if test -n "${{ inputs.version }}" ; then
+                LLVM_DISTRIB=${LLVM_DISTRIB}-${{ inputs.version }}
             fi
             sudo -E apt-add-repository "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ ${LLVM_DISTRIB} main"
         fi
