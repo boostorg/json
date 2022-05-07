@@ -54,6 +54,18 @@ which creates a null element if the key does not already exist:
 Internally, the container computes a hash table over the keys
 so that the complexity of lookups is in constant time, on average.
 
+[warning
+    Unlike traditional node based containers like `std::set`, there is no
+    guarantee of reference stability or iterator stability on insertions
+    and erasures.
+]
+
+For example:
+
+[snippet_objects_5]
+
+Using `arr` after adding another value to `obj` results in undefined behavior.
+
 For the complete listing of all available member functions and nested
 types, see the reference page for __object__.
 

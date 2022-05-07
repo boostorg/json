@@ -495,6 +495,17 @@ usingObjects()
     catch (...)
     {
     }
+    {
+        //[snippet_objects_5
+
+        object obj{{"arr", {1, 11}}};
+        value& arr = obj.at("arr");
+        obj.emplace("added", "value"); // invalidates arr
+
+        //]
+
+        (void)arr;
+    }
 }
 
 //----------------------------------------------------------
