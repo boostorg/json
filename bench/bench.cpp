@@ -482,6 +482,54 @@ public:
 
 //----------------------------------------------------------
 
+class boost_simple_impl : public any_impl
+{
+    std::string name_;
+
+public:
+    boost_simple_impl(
+        std::string const& branch)
+    {
+        name_ = "boost (convenient)";
+        if(! branch.empty())
+            name_ += " " + branch;
+    }
+
+    string_view
+    name() const noexcept override
+    {
+        return name_;
+    }
+
+    void
+    parse(
+        string_view s,
+        std::size_t repeat) const override
+    {
+        while(repeat--)
+        {
+            error_code ec;
+            auto jv = json::parse(s, ec);
+            (void)jv;
+        }
+    }
+
+    void
+    serialize(
+        string_view s,
+        std::size_t repeat) const override
+    {
+        auto jv = json::parse(s);
+        std::string out;
+        while(repeat--)
+        {
+            out = json::serialize(jv);
+        }
+    }
+};
+
+//----------------------------------------------------------
+//
 struct rapidjson_crt_impl : public any_impl
 {
     string_view
@@ -673,6 +721,10 @@ static bool add_impl( impl_list & vi, char impl )
         vi.emplace_back(new boost_null_impl(s_branch));
         break;
 
+    case 's':
+        vi.emplace_back(new boost_simple_impl(s_branch));
+        break;
+
     case 'r':
 
         vi.emplace_back(new rapidjson_memory_impl);
@@ -736,6 +788,7 @@ main(
             "                                 (b: Boost.JSON, pool storage)\n"
             "                                 (d: Boost.JSON, default storage)\n"
             "                                 (u: Boost.JSON, null parser)\n"
+            "                                 (s: Boost.JSON, convenient functions)\n"
             "                                 (r: RapidJSON, memory storage)\n"
             "                                 (c: RapidJSON, CRT storage)\n"
             "                                 (n: nlohmann/json)\n"
