@@ -1961,6 +1961,15 @@ public:
         BOOST_TEST_THROWS( value({false,2,"3",nullptr}).at(4), std::out_of_range );
         BOOST_TEST_THROWS( value({2,false,"3"}).at(4), std::out_of_range );
         BOOST_TEST_THROWS( value({true,2,"3"}).at(4), std::out_of_range );
+
+        // non-const .at() overloads
+        value jv({{"k1", nullptr}});
+        jv.at("k1") = {1, 2, 3};
+        BOOST_TEST(
+            jv.at("k1") == array({1, 2, 3}));
+        jv.at("k1").at(1) = "item";
+        BOOST_TEST(
+            jv.at("k1") == array({1, "item", 3}));
     }
 
     //------------------------------------------------------
