@@ -206,8 +206,8 @@ T tag_invoke( value_to_tag< T >, const value& jv );
 is added to the set of user-provided overloads found by
 argument-dependent lookup. As with __value_from__, it performs
 the conversion corresponding to first condition met
-by `T` in the above list. Given the following definition of
-`customer::customer( const value& )`:
+by `T` in the above list. Otherwise an overload similar to the
+following can be provided by the user:
 
 [snippet_conv_14]
 

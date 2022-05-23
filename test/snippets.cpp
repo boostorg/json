@@ -574,8 +574,6 @@ struct customer
 
     customer( std::uint64_t i, const std::string& n, bool l )
         : id( i ), name( n ), late( l ) { }
-
-    explicit customer( value const& );
 };
 
 void tag_invoke( const value_from_tag&, value& jv, customer const& c )
