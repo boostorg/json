@@ -75,15 +75,8 @@ if(double* d = jv.if_double())
 //----------------------------------------------------------
 {
 //[doc_using_numbers_3
-struct convert_int64
-{
-    value jv;
-
-    operator int() const
-    {
-        return value_to< int >( this->jv );
-    }
-};
+value jv = 1;
+assert( jv.to_number< int >() == 1 );
 //]
 }
 //----------------------------------------------------------
@@ -95,30 +88,30 @@ try
     assert( jv1.is_int64() );
 
     // ok, identity conversion
-    std::int64_t r1 = value_to< std::int64_t >( jv1 );
+    std::int64_t r1 = jv1.to_number< std::int64_t >( );
 
     // loss of data, throws system_error
-    char r2 = value_to< char >( jv1 );
+    char r2 = jv1.to_number< char >();
 
     // ok, no loss of data
-    double r3 = value_to< double >( jv1 );
+    double r3 = jv1.to_number< double >();
 
     value jv2 = 1.23;
 
     assert( jv1.is_double() );
 
     // ok, same as static_cast<float>( jv2.get_double() )
-    float r4 = value_to< float >( jv2 );
+    float r4 = jv2.to_number< float >();
 
     // not exact, throws system_error
-    int r5 = value_to< int >( jv2 );
+    int r5 = jv2.to_number< int >();
 
     value jv3 = {1, 2, 3};
 
     assert( ! jv3.is_number() );
 
     // not a number, throws system_error
-    int r6 = value_to< int >( jv3 );
+    int r6 = jv3.to_number< int >();
 //]
 }
 catch(...)
