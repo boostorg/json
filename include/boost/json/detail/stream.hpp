@@ -22,8 +22,6 @@ class const_stream
 
 public:
     const_stream() = default;
-    const_stream(
-        const_stream const&) = default;
 
     const_stream(
         char const* data,
@@ -245,9 +243,6 @@ class stream
     char* end_;
 
 public:
-    stream(
-        stream const&) = default;
-
     stream(
         char* data,
         std::size_t size) noexcept
