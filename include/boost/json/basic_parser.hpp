@@ -264,7 +264,8 @@ BOOST_JSON_NS_BEGIN
 
     @see
         @ref parse,
-        @ref stream_parser.
+        @ref stream_parser,
+        [Validating parser example](../../doc/html/json/examples.html#json.examples.validate).
 
     @headerfile <boost/json/basic_parser.hpp>
 */
