@@ -929,8 +929,14 @@ public:
 
     /** Insert elements.
 
-        Inserts `p`, from which @ref value_type must
-        be constructible.
+        Inserts `p` if `this->contains(value_type(p).key())` is `false`.
+        @ref value_type must be constructible from `p`.
+
+        If the insertion occurs and results in a rehashing
+        of the container, all iterators and references are invalidated.
+        Otherwise, they are not affected.
+        Rehashing occurs only if the new number of elements
+        is greater than @ref capacity().
 
         @par Constraints
         @code
@@ -953,8 +959,7 @@ public:
 
         @return A pair where `first` is an iterator
         to the existing or inserted element, and `second`
-        is `true` if the insertion took place or `false` if
-        the assignment took place.
+        is `true` if the insertion took place or `false` otherwise.
     */
     template<class P
 #ifndef BOOST_JSON_DOCS
@@ -968,15 +973,19 @@ public:
 
     /** Insert elements.
 
-        The elements in the range `{first, last)` whose
-        keys are unique are inserted one at a time, in order.
-        If there are elements with duplicate keys; that
-        is, if multiple elements in the range have keys
-        that compare equal, only the first equivalent
-        element will be inserted.
+        The elements in the range `[first, last)` are inserted one at a time,
+        in order. Any element with key that is a duplicate of a key already
+        present in container will be skipped. This also means, that if there
+        are two keys within the range that are equal to each other, only the
+        first will be inserted.
+
+        If the size necessary to accomodate elements from the range exceeds
+        @ref capacity(), a rehashing can occur. In that case all iterators and
+        references are invalidated. Otherwise, they are not affected.
 
         @par Precondition
         `first` and `last` are not iterators into `*this`.
+        `first` and `last` form a valid range.
 
         @par Constraints
         @code
@@ -987,7 +996,7 @@ public:
         Linear in `std::distance(first, last)`.
 
         @par Exception Safety
-        Strong guarantee.
+        Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
 
         @param first An input iterator pointing to the first
@@ -1015,18 +1024,22 @@ public:
 
     /** Insert elements.
 
-        The elements in the initializer list whose
-        keys are unique are inserted one at a time, in order.
-        If there are elements with duplicate keys; that
-        is, if multiple elements in the range have keys
-        that compare equal, only the first equivalent
-        element will be inserted.
+        The elements in the initializer list are inserted one at a time, in
+        order. Any element with key that is a duplicate of a key already
+        present in container will be skipped. This also means, that if there
+        are two keys within the initializer list that are equal to each other,
+        only the first will be inserted.
+
+        If the size necessary to accomodate elements from the initializer list
+        exceeds @ref capacity(), a rehashing can occur. In that case all
+        iterators and references are invalidated. Otherwise, they are not
+        affected.
 
         @par Complexity
         Linear in `init.size()`.
 
         @par Exception Safety
-        Strong guarantee.
+        Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
 
         @param init The initializer list to insert
@@ -1039,18 +1052,15 @@ public:
     /** Insert an element or assign to the current element if the key already exists.
 
         If the key equivalent to `key` already exists in the
-        container. assigns `std::forward<M>(obj)` to the
-        `mapped type` corresponding to the key. Otherwise,
+        container, assigns `std::forward<M>(m)` to the
+        `mapped_type` corresponding to the key. Otherwise,
         inserts the new value at the end as if by insert,
-        constructing it from
-        `value_type(key, std::forward<M>(obj))`.
+        constructing it from `value_type(key, std::forward<M>(m))`.
 
-        If the insertion occurs and results in a rehashing
-        of the container, all iterators are invalidated.
-        Otherwise, iterators are not affected.
-        References are not invalidated.
-        Rehashing occurs only if the new number of elements
-        is greater than @ref capacity().
+        If the insertion occurs and results in a rehashing of the container,
+        all iterators and references are invalidated. Otherwise, they are not
+        affected. Rehashing occurs only if the new number of elements is
+        greater than @ref capacity().
 
         @par Complexity
         Amortized constant on average, worst case linear in @ref size().
@@ -1079,16 +1089,12 @@ public:
 
         Inserts a new element into the container constructed
         in-place with the given argument if there is no
-        element with the key in the container.
-        The element is inserted after all the existing
-        elements.
+        element with the `key` in the container.
 
-        If the insertion occurs and results in a rehashing
-        of the container, all iterators are invalidated.
-        Otherwise, iterators are not affected.
-        References are not invalidated.
-        Rehashing occurs only if the new number of elements
-        is greater than @ref capacity().
+        If the insertion occurs and results in a rehashing of the container,
+        all iterators and references are invalidated. Otherwise, they are not
+        affected. Rehashing occurs only if the new number of elements is
+        greater than @ref capacity().
 
         @par Complexity
         Amortized constant on average, worst case linear in @ref size().
@@ -1099,8 +1105,7 @@ public:
 
         @return A `std::pair` where `first` is an iterator
         to the existing or inserted element, and `second`
-        is `true` if the insertion took place or `false` if
-        the assignment took place.
+        is `true` if the insertion took place or `false` otherwise.
 
         @param key The key used for lookup and insertion
 
