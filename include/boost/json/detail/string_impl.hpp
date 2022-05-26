@@ -351,6 +351,13 @@ public:
     }
 };
 
+template<class T>
+string_view
+to_string_view(T const& t) noexcept
+{
+    return string_view(t);
+}
+
 } // detail
 BOOST_JSON_NS_END
 

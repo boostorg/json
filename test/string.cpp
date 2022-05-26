@@ -1134,10 +1134,8 @@ public:
 
         // operator string_view()
         {
-            BOOST_TEST(
-                string_view(cs1) == t.v1);
-            BOOST_TEST(
-                string_view(cs2) == t.v2);
+            BOOST_TEST(cs1.subview() == t.v1);
+            BOOST_TEST(cs2.subview() == t.v2);
         }
     }
 
