@@ -1945,7 +1945,7 @@ public:
     int
     compare(string_view sv) const noexcept
     {
-        return string_view(*this).compare(sv);
+        return subview().compare(sv);
     }
 
     //------------------------------------------------------
@@ -2246,13 +2246,23 @@ public:
 
         @throw std::out_of_range `pos > size()`
     */
+    /**@{*/
     string_view
     subview(
-        std::size_t pos = 0,
+        std::size_t pos,
         std::size_t count = npos) const
     {
-        return string_view(*this).substr(pos, count);
+        return subview().substr(pos, count);
     }
+
+    // this is a faster, leaner, noexcept
+    // version of subview() with no args
+    string_view
+    subview() const noexcept
+    {
+        return string_view( data(), size() );
+    }
+    /**@}*/
 
     //------------------------------------------------------
 
@@ -2281,7 +2291,7 @@ public:
         std::size_t count,
         std::size_t pos = 0) const
     {
-        return string_view(*this).copy(dest, count, pos);
+        return subview().copy(dest, count, pos);
     }
 
     //------------------------------------------------------
@@ -2460,7 +2470,7 @@ public:
         string_view sv,
         std::size_t pos = 0) const noexcept
     {
-        return string_view(*this).find(sv, pos);
+        return subview().find(sv, pos);
     }
 
     /** Find the first occurrence of a character within the string.
@@ -2487,7 +2497,7 @@ public:
         char ch,
         std::size_t pos = 0) const noexcept
     {
-        return string_view(*this).find(ch, pos);
+        return subview().find(ch, pos);
     }
 
     //------------------------------------------------------
@@ -2518,7 +2528,7 @@ public:
         string_view sv,
         std::size_t pos = npos) const noexcept
     {
-        return string_view(*this).rfind(sv, pos);
+        return subview().rfind(sv, pos);
     }
 
     /** Find the last occurrence of a character within the string.
@@ -2546,7 +2556,7 @@ public:
         char ch,
         std::size_t pos = npos) const noexcept
     {
-        return string_view(*this).rfind(ch, pos);
+        return subview().rfind(ch, pos);
     }
 
     //------------------------------------------------------
@@ -2577,7 +2587,7 @@ public:
         string_view sv,
         std::size_t pos = 0) const noexcept
     {
-        return string_view(*this).find_first_of(sv, pos);
+        return subview().find_first_of(sv, pos);
     }
 
     //------------------------------------------------------
@@ -2607,7 +2617,7 @@ public:
         string_view sv,
         std::size_t pos = 0) const noexcept
     {
-        return string_view(*this).find_first_not_of(sv, pos);
+        return subview().find_first_not_of(sv, pos);
     }
 
     /** Find the first occurrence of a character not equal to `ch`.
@@ -2634,7 +2644,7 @@ public:
         char ch,
         std::size_t pos = 0) const noexcept
     {
-        return string_view(*this).find_first_not_of(ch, pos);
+        return subview().find_first_not_of(ch, pos);
     }
 
     //------------------------------------------------------
@@ -2666,7 +2676,7 @@ public:
         string_view sv,
         std::size_t pos = npos) const noexcept
     {
-        return string_view(*this).find_last_of(sv, pos);
+        return subview().find_last_of(sv, pos);
     }
 
     //------------------------------------------------------
@@ -2696,7 +2706,7 @@ public:
         string_view sv,
         std::size_t pos = npos) const noexcept
     {
-        return string_view(*this).find_last_not_of(sv, pos);
+        return subview().find_last_not_of(sv, pos);
     }
 
     /** Find the last occurrence of a character not equal to `ch`.
@@ -2725,7 +2735,7 @@ public:
         char ch,
         std::size_t pos = npos) const noexcept
     {
-        return string_view(*this).find_last_not_of(ch, pos);
+        return subview().find_last_not_of(ch, pos);
     }
 
 private:
@@ -2762,6 +2772,25 @@ private:
 
 //----------------------------------------------------------
 
+namespace detail {
+
+template<class T>
+inline
+string_view
+to_sv(T const& t) noexcept
+{
+    return string_view(t);
+}
+
+inline
+string_view
+to_sv(json::string const& jv) noexcept
+{
+    return jv.subview();
+}
+
+} // detail
+
 /** Return true if lhs equals rhs.
 
     A lexicographical comparison is used.
@@ -2782,7 +2811,7 @@ typename std::enable_if<
 operator==(T const& lhs, U const& rhs) noexcept
 #endif
 {
-    return string_view(lhs) == string_view(rhs);
+    return detail::to_sv(lhs) == detail::to_sv(rhs);
 }
 
 /** Return true if lhs does not equal rhs.
@@ -2805,7 +2834,7 @@ typename std::enable_if<
 operator!=(T const& lhs, U const& rhs) noexcept
 #endif
 {
-    return string_view(lhs) != string_view(rhs);
+    return detail::to_sv(lhs) != detail::to_sv(rhs);
 }
 
 /** Return true if lhs is less than rhs.
@@ -2828,7 +2857,7 @@ typename std::enable_if<
 operator<(T const& lhs, U const& rhs) noexcept
 #endif
 {
-    return string_view(lhs) < string_view(rhs);
+    return detail::to_sv(lhs) < detail::to_sv(rhs);
 }
 
 /** Return true if lhs is less than or equal to rhs.
@@ -2851,7 +2880,7 @@ typename std::enable_if<
 operator<=(T const& lhs, U const& rhs) noexcept
 #endif
 {
-    return string_view(lhs) <= string_view(rhs);
+    return detail::to_sv(lhs) <= detail::to_sv(rhs);
 }
 
 #ifdef BOOST_JSON_DOCS
@@ -2870,7 +2899,7 @@ typename std::enable_if<
 operator>=(T const& lhs, U const& rhs) noexcept
 #endif
 {
-    return string_view(lhs) >= string_view(rhs);
+    return detail::to_sv(lhs) >= detail::to_sv(rhs);
 }
 
 /** Return true if lhs is greater than rhs.
@@ -2893,7 +2922,7 @@ typename std::enable_if<
 operator>(T const& lhs, U const& rhs) noexcept
 #endif
 {
-    return string_view(lhs) > string_view(rhs);
+    return detail::to_sv(lhs) > detail::to_sv(rhs);
 }
 
 BOOST_JSON_NS_END
