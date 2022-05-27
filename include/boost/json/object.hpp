@@ -1483,12 +1483,15 @@ public:
     }
 
 private:
+#ifndef BOOST_JSON_DOCS
+    // VFALCO friending a detail function makes it public
     template<class CharRange>
     friend
     std::pair<key_value_pair*, std::size_t>
     detail::find_in_object(
         object const& obj,
         CharRange key) noexcept;
+#endif
 
     template<class InputIt>
     void
