@@ -2226,7 +2226,7 @@ public:
 
     //------------------------------------------------------
 
-    /** Return a substring.
+    /** Return a view.
 
         Returns a view of a substring.
 
@@ -2234,8 +2234,7 @@ public:
 
         Strong guarantee.
 
-        @return A `string_view` object referring
-        to `{data() + pos, std::min(count, size() - pos))`.
+        @return `this->subview().substr(pos, count)`
 
         @param pos The index to being the substring at.
         The default argument for this parameter is `0`.
@@ -2249,23 +2248,26 @@ public:
     string_view
     subview(
         std::size_t pos
-#ifdef BOOST_JSON_DOCS
-        = 0
-#endif
         ,std::size_t count = npos) const
     {
         return subview().substr(pos, count);
     }
 
-    // this is a faster, leaner, noexcept
-    // version of subview() with no args
-#ifndef BOOST_JSON_DOCS
+    /** Return a view.
+
+        Returns a view of the whole string.
+
+        @par Exception Safety
+
+        `noexcept`
+
+        @return `string_view(this->data(), this->size())`.
+    */
     string_view
     subview() const noexcept
     {
         return string_view( data(), size() );
     }
-#endif
 
     //------------------------------------------------------
 
