@@ -21,6 +21,7 @@
 BOOST_JSON_NS_BEGIN
 
 class value;
+class string;
 
 namespace detail {
 
@@ -357,6 +358,18 @@ to_string_view(T const& t) noexcept
 {
     return string_view(t);
 }
+
+template<class T, class U>
+using string_and_stringlike = std::integral_constant<bool,
+    std::is_same<T, string>::value &&
+    std::is_convertible<U const&, string_view>::value>;
+
+template<class T, class U>
+using string_comp_op_requirement
+    = typename std::enable_if<
+        string_and_stringlike<T, U>::value ||
+        string_and_stringlike<U, T>::value,
+        bool>::type;
 
 } // detail
 BOOST_JSON_NS_END

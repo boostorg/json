@@ -2800,14 +2800,7 @@ bool
 operator==(string const& lhs, string const& rhs) noexcept
 #else
 template<class T, class U>
-typename std::enable_if<
-    (std::is_same<T, string>::value &&
-     std::is_convertible<
-        U const&, string_view>::value) ||
-    (std::is_same<U, string>::value &&
-     std::is_convertible<
-        T const&, string_view>::value),
-    bool>::type
+detail::string_comp_op_requirement<T, U>
 operator==(T const& lhs, U const& rhs) noexcept
 #endif
 {
@@ -2823,14 +2816,7 @@ bool
 operator!=(string const& lhs, string const& rhs) noexcept
 #else
 template<class T, class U>
-typename std::enable_if<
-    (std::is_same<T, string>::value &&
-     std::is_convertible<
-        U const&, string_view>::value) ||
-    (std::is_same<U, string>::value &&
-     std::is_convertible<
-        T const&, string_view>::value),
-    bool>::type
+detail::string_comp_op_requirement<T, U>
 operator!=(T const& lhs, U const& rhs) noexcept
 #endif
 {
@@ -2846,14 +2832,7 @@ bool
 operator<(string const& lhs, string const& rhs) noexcept
 #else
 template<class T, class U>
-typename std::enable_if<
-    (std::is_same<T, string>::value &&
-     std::is_convertible<
-        U const&, string_view>::value) ||
-    (std::is_same<U, string>::value &&
-     std::is_convertible<
-        T const&, string_view>::value),
-    bool>::type
+detail::string_comp_op_requirement<T, U>
 operator<(T const& lhs, U const& rhs) noexcept
 #endif
 {
@@ -2869,14 +2848,7 @@ bool
 operator<=(string const& lhs, string const& rhs) noexcept
 #else
 template<class T, class U>
-typename std::enable_if<
-    (std::is_same<T, string>::value &&
-     std::is_convertible<
-        U const&, string_view>::value) ||
-    (std::is_same<U, string>::value &&
-     std::is_convertible<
-        T const&, string_view>::value),
-    bool>::type
+detail::string_comp_op_requirement<T, U>
 operator<=(T const& lhs, U const& rhs) noexcept
 #endif
 {
@@ -2888,14 +2860,7 @@ bool
 operator>=(string const& lhs, string const& rhs) noexcept
 #else
 template<class T, class U>
-typename std::enable_if<
-    (std::is_same<T, string>::value &&
-     std::is_convertible<
-        U const&, string_view>::value) ||
-    (std::is_same<U, string>::value &&
-     std::is_convertible<
-        T const&, string_view>::value),
-    bool>::type
+detail::string_comp_op_requirement<T, U>
 operator>=(T const& lhs, U const& rhs) noexcept
 #endif
 {
@@ -2911,14 +2876,7 @@ bool
 operator>(string const& lhs, string const& rhs) noexcept
 #else
 template<class T, class U>
-typename std::enable_if<
-    (std::is_same<T, string>::value &&
-     std::is_convertible<
-        U const&, string_view>::value) ||
-    (std::is_same<U, string>::value &&
-     std::is_convertible<
-        T const&, string_view>::value),
-    bool>::type
+detail::string_comp_op_requirement<T, U>
 operator>(T const& lhs, U const& rhs) noexcept
 #endif
 {
