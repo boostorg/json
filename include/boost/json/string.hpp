@@ -2246,23 +2246,26 @@ public:
 
         @throw std::out_of_range `pos > size()`
     */
-    /**@{*/
     string_view
     subview(
-        std::size_t pos,
-        std::size_t count = npos) const
+        std::size_t pos
+#ifdef BOOST_JSON_DOCS
+        = 0
+#endif
+        ,std::size_t count = npos) const
     {
         return subview().substr(pos, count);
     }
 
     // this is a faster, leaner, noexcept
     // version of subview() with no args
+#ifndef BOOST_JSON_DOCS
     string_view
     subview() const noexcept
     {
         return string_view( data(), size() );
     }
-    /**@}*/
+#endif
 
     //------------------------------------------------------
 
