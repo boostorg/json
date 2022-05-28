@@ -16,6 +16,7 @@
 #include <boost/json/kind.hpp>
 #include <boost/json/object.hpp>
 #include <boost/json/pilfer.hpp>
+#include <boost/json/set_pointer_options.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/string.hpp>
 #include <boost/json/string_view.hpp>
@@ -3265,6 +3266,152 @@ public:
     value*
     find_pointer(string_view ptr, std::error_code& ec) noexcept;
 /** @} */
+
+    //------------------------------------------------------
+
+    /** Set an element via JSON Pointer.
+
+        This function is used to insert or assign to a potentially nested
+        element of the value using a JSON Pointer string. The function may
+        create intermediate elements corresponding to pointer segments.
+        <br/>
+
+        The particular conditions when and what kind of intermediate element
+        is created is governed by the `ptr` parameter.
+
+        Each pointer token is considered in sequence. For each token
+
+        - if the containing value is an @ref object, then a new `null`
+        element is created with key equal to unescaped token string; otherwise
+
+        - if the containing value is an @ref array, and the token represents a
+        past-the-end marker, then a `null` element is appended to the array;
+        otherwise
+
+        - if the containing value is an @ref array, and the token represents a
+        number, then if the difference between the number and array's size
+        is smaller than `opts.max_created_elements`, then the size of the
+        array is increased, so that the number can reference an element in the
+        array; otherwise
+
+        - if the containing value is of different @ref kind and
+          `opts.replace_any_scalar` is `true`, or the value is `null`, then
+
+           - if `opts.create_arrays` is `true` and the token either represents
+             past-the-end marker or a number, then the value is replaced with
+             an empty array and the token is considered again; otherwise
+
+           - if `opts.create_objects` is `true`, then the value is replaced
+             with an empty object and the token is considered again; otherwise
+
+        - an error is produced.
+
+        @par Complexity
+        Linear in the sum of size of `ptr`, size of underlying array, object,
+        or string and `opts.max_created_elements`.
+
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
+        @param sv JSON Pointer string.
+
+        @param ref The value to assign to pointed element.
+
+        @param opts The options for the algorithm.
+
+        @return Reference to the element identified by `ptr`.
+
+        @see @ref set_pointer_options,
+        <a href="https://datatracker.ietf.org/doc/html/rfc6901">
+            RFC 6901 - JavaScript Object Notation (JSON) Pointer</a>.
+    */
+    BOOST_JSON_DECL
+    value&
+    set_at_pointer(
+        string_view sv,
+        value_ref ref,
+        set_pointer_options const& opts = {} );
+
+    /** Set an element via JSON Pointer.
+
+        This function is used to insert or assign to a potentially nested
+        element of the value using a JSON Pointer string. The function may
+        create intermediate elements corresponding to pointer segments.
+        <br/>
+
+        The particular conditions when and what kind of intermediate element
+        is created is governed by the `ptr` parameter.
+
+        Each pointer token is considered in sequence. For each token
+
+        - if the containing value is an @ref object, then a new `null`
+          element is created with key equal to unescaped token string;
+          otherwise
+
+        - if the containing value is an @ref array, and the token represents a
+          past-the-end marker, then a `null` element is appended to the array;
+          otherwise
+
+        - if the containing value is an @ref array, and the token represents a
+          number, then if the difference between the number and array's size
+          is smaller than `opts.max_created_elements`, then the size of the
+          array is increased, so that the number can reference an element in the
+          array; otherwise
+
+        - if the containing value is of different @ref kind and
+          `opts.replace_any_scalar` is `true`, or the value is `null`, then
+
+           - if `opts.create_arrays` is `true` and the token either represents
+             past-the-end marker or a number, then the value is replaced with
+             an empty array and the token is considered again; otherwise
+
+           - if `opts.create_objects` is `true`, then the value is replaced
+             with an empty object and the token is considered again; otherwise
+
+        - an error is produced.
+
+        @par Complexity
+        Linear in the sum of size of `ptr`, size of underlying array, object,
+        or string and `opts.max_created_elements`.
+
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
+        @param sv JSON Pointer string.
+
+        @param ref The value to assign to pointed element.
+
+        @param ec Set to the error, if any occurred.
+
+        @param opts The options for the algorithm.
+
+        @return Pointer to the element identified by `ptr`.
+
+        @see @ref set_pointer_options,
+        <a href="https://datatracker.ietf.org/doc/html/rfc6901">
+            RFC 6901 - JavaScript Object Notation (JSON) Pointer</a>.
+    */
+/** @{ */
+    BOOST_JSON_DECL
+    value*
+    set_at_pointer(
+        string_view sv,
+        value_ref ref,
+        error_code& ec,
+        set_pointer_options const& opts = {} );
+
+    BOOST_JSON_DECL
+    value*
+    set_at_pointer(
+        string_view sv,
+        value_ref ref,
+        std::error_code& ec,
+        set_pointer_options const& opts = {} );
+/** @} */
+
+    //------------------------------------------------------
 
     /** Return `true` if two values are equal.
 

@@ -28,6 +28,7 @@
           <member><link linkend="json.ref.boost__json__parser">parser</link></member>
           <member><link linkend="json.ref.boost__json__parse_options">parse_options</link></member>
           <member><link linkend="json.ref.boost__json__serializer">serializer</link></member>
+          <member><link linkend="json.ref.boost__json__set_pointer_options">set_pointer_options</link></member>
           <member><link linkend="json.ref.boost__json__static_resource">static_resource</link></member>
           <member><link linkend="json.ref.boost__json__storage_ptr">storage_ptr</link></member>
           <member><link linkend="json.ref.boost__json__stream_parser">stream_parser</link></member>

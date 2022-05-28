@@ -13,7 +13,6 @@
 
 BOOST_JSON_NS_BEGIN
 
-
 class pointer_test
 {
     bool
@@ -136,8 +135,11 @@ public:
     void
     testNonThrowing()
     {
+        ErrorCode ec;
+        BOOST_TEST( !value().find_pointer("/x", ec) );
+        BOOST_TEST( ec == error::value_is_scalar );
+
         value jv = testValue();
-        ErrorCode ec = error::syntax;
         BOOST_TEST(jv.find_pointer("/foo/0", ec) == &jv.at("foo").at(0));
         BOOST_TEST(!ec);
 
@@ -231,6 +233,119 @@ public:
     }
 
     void
+    testSet()
+    {
+        value* result;
+        value jv;
+        result = &jv.set_at_pointer("", array());
+        BOOST_TEST(( jv == array() ));
+        BOOST_TEST( result == &jv );
+
+        result = &jv.set_at_pointer("/0", 10);
+        BOOST_TEST(( jv == array{10} ));
+        BOOST_TEST( *result == 10 );
+
+        result = &jv.set_at_pointer("/-", 20);
+        BOOST_TEST(( jv == array{10, 20} ));
+        BOOST_TEST( *result == 20 );
+
+        result = &jv.set_at_pointer("/-", 30);
+        BOOST_TEST(( jv == array{10, 20, 30} ));
+        BOOST_TEST( *result == 30 );
+
+        result = &jv.set_at_pointer("/1", 25);
+        BOOST_TEST(( jv == array{10, 25, 30} ));
+        BOOST_TEST( *result == 25 );
+
+        result = &jv.set_at_pointer("/-/x", 1);
+        BOOST_TEST(( jv == array{10, 25, 30, object{{"x", 1}}} ));
+        BOOST_TEST( *result == 1 );
+
+        result = &jv.set_at_pointer("/3/0", 2);
+        BOOST_TEST(( jv == array{10, 25, 30, object{{"x", 1}, {"0", 2}}} ));
+        BOOST_TEST( *result == 2 );
+
+        result = &jv.set_at_pointer("/-/0", 3);
+        BOOST_TEST((
+            jv == array{
+                10,
+                25,
+                30,
+                object{{"x", 1}, {"0", 2}},
+                array{3} } ));
+        BOOST_TEST( *result == 3 );
+
+        BOOST_TEST_THROWS(jv.set_at_pointer("/0/1", 1), system_error);
+
+        jv = value();
+        result = &jv.set_at_pointer("/a/b/c/d/e/f/g/h/i/j/k/l", "m");
+        BOOST_TEST( *result == "m" );
+        BOOST_TEST( result == &jv.at_pointer("/a/b/c/d/e/f/g/h/i/j/k/l") );
+
+        result = &jv.set_at_pointer("/a/b/c/d/e/f/g/h/i/j/k/l", "n");
+        BOOST_TEST( *result == "n" );
+        BOOST_TEST( result == &jv.at_pointer("/a/b/c/d/e/f/g/h/i/j/k/l") );
+
+        set_pointer_options opts;
+        opts.replace_any_scalar = true;
+        jv = 1;
+        result = &jv.set_at_pointer( "/x", 1, opts );
+        BOOST_TEST(( jv == object{ {"x", 1} } ));
+        BOOST_TEST( *result == 1 );
+        BOOST_TEST( result == &jv.at_pointer("/x") );
+
+        opts = {};
+        opts.max_created_elements = 5;
+        jv = array();
+        BOOST_TEST_THROWS( jv.set_at_pointer("/5", 1, opts), system_error );
+        result = &jv.set_at_pointer( "/4", 0, opts );
+        BOOST_TEST(( jv == array{nullptr, nullptr, nullptr, nullptr, 0} ));
+        BOOST_TEST( *result == 0 );
+        BOOST_TEST( result == &jv.at_pointer("/4") );
+
+        opts = {};
+        opts.create_arrays = false;
+        opts.create_objects = false;
+        jv = object();
+        result = &jv.set_at_pointer( "/x", 1, opts );
+        BOOST_TEST(( jv == object{ {"x", 1} } ));
+        BOOST_TEST( *result == 1 );
+        BOOST_TEST( result == &jv.at_pointer("/x") );
+    }
+
+    template<class ErrorCode>
+    void
+    testSetNonThrowing()
+    {
+        ErrorCode ec;
+
+        value* result;
+        value jv;
+
+        result = jv.set_at_pointer( "", array(), ec );
+        BOOST_TEST( result );
+        BOOST_TEST( !ec );
+
+        result = jv.set_at_pointer( "/1", 0, ec );
+        BOOST_TEST( !result );
+        BOOST_TEST( ec == error::not_found );
+        BOOST_TEST( hasLocation(ec) );
+
+        result = jv.set_at_pointer( "/x", 0, ec );
+        BOOST_TEST( !result );
+        BOOST_TEST( ec == error::token_not_number );
+        BOOST_TEST( hasLocation(ec) );
+
+        result = jv.set_at_pointer( "/-", "", ec );
+        BOOST_TEST( result );
+        BOOST_TEST( !ec );
+
+        result = jv.set_at_pointer( "/0/x", 1, ec );
+        BOOST_TEST( ec == error::value_is_scalar );
+        BOOST_TEST( hasLocation(ec) );
+    }
+
+    void
     run()
     {
         testRootPointer();
@@ -240,6 +355,9 @@ public:
         testErrors();
         testNonThrowing<error_code>();
         testNonThrowing<std::error_code>();
+        testSet();
+        testSetNonThrowing<error_code>();
+        testSetNonThrowing<std::error_code>();
     }
 };
 
