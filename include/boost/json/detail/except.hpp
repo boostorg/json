@@ -12,7 +12,6 @@
 
 #include <boost/json/error.hpp>
 #include <boost/assert/source_location.hpp>
-#include <boost/exception/diagnostic_information.hpp>
 
 BOOST_JSON_NS_BEGIN
 namespace detail {
