@@ -250,6 +250,24 @@
 # endif
 #endif
 
+
+#if ! defined(BOOST_JSON_BIG_ENDIAN) && ! defined(BOOST_JSON_LITTLE_ENDIAN)
+// Copied from Boost.Endian
+# if defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#  define BOOST_JSON_LITTLE_ENDIAN
+# elif defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#  define BOOST_JSON_BIG_ENDIAN
+# elif defined(__LITTLE_ENDIAN__)
+#  define BOOST_JSON_LITTLE_ENDIAN
+# elif defined(__BIG_ENDIAN__)
+#  define BOOST_JSON_BIG_ENDIAN
+# elif defined(_MSC_VER) || defined(__i386__) || defined(__x86_64__)
+#  define BOOST_JSON_LITTLE_ENDIAN
+# else
+#  error The Boost.JSON library could not determine the endianness of this platform. Define either BOOST_JSON_BIG_ENDIAN or BOOST_JSON_LITTLE_ENDIAN.
+# endif
+#endif
+
 BOOST_JSON_NS_BEGIN
 namespace detail {
 
