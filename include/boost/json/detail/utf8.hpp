@@ -23,8 +23,7 @@ template<int N>
 std::uint32_t
 load_little_endian(void const* p)
 {
-    // VFALCO do we need to initialize this to 0?
-    std::uint32_t v;
+    std::uint32_t v = 0;
     std::memcpy(&v, p, N);
 #ifdef BOOST_JSON_BIG_ENDIAN
     v = ((v & 0xFF000000) >> 24) |
