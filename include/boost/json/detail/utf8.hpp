@@ -87,7 +87,6 @@ is_valid_utf8(const char* p, uint16_t first)
     // 3 bytes, second byte [A0, BF]
     case 2:
         v = load_little_endian<3>(p);
-        std::memcpy(&v, p, 3);
         return (v & 0xC0E000) == 0x80A000;
 
     // 3 bytes, second byte [80, BF]
