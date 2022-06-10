@@ -131,7 +131,7 @@ count_valid<false>(
             continue;
         }
         // validate utf-8
-        uint16_t first = classify_utf8(c & 0x7F);
+        uint16_t first = classify_utf8(c);
         uint8_t len = first & 0xFF;
         if(BOOST_JSON_UNLIKELY(end - p < len))
             break;
@@ -180,7 +180,7 @@ count_valid<false>(
             continue;
         }
         // validate utf-8
-        uint16_t first = classify_utf8(c & 0x7F);
+        uint16_t first = classify_utf8(c);
         uint8_t len = first & 0xFF;
         if(BOOST_JSON_UNLIKELY(end - p < len))
             break;

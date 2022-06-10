@@ -10,6 +10,8 @@
 #ifndef BOOST_JSON_DETAIL_UTF8_HPP
 #define BOOST_JSON_DETAIL_UTF8_HPP
 
+#include <boost/json/detail/config.hpp>
+
 #include <cstddef>
 #include <cstring>
 #include <cstdint>
@@ -65,7 +67,7 @@ classify_utf8(char c)
        0x504, 0x604, 0x604, 0x604, 0x704, 0x000, 0x000, 0x000,
        0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000,
     };
-    return first[static_cast<unsigned char>(c)];
+    return first[static_cast<unsigned char>(c & 0x7F)];
 }
 
 inline
@@ -128,7 +130,7 @@ public:
         const char* p,
         std::size_t remain) noexcept
     {
-        first_ = classify_utf8(*p & 0x7F);
+        first_ = classify_utf8(*p );
         if(remain >= length())
             size_ = length();
         else
