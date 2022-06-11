@@ -1064,6 +1064,9 @@ parse_unescaped(const char* p,
         }
         return maybe_suspend(cs.begin(), state::str1, total);
     }
+    // at this point all valid characters have been skipped, so any remaining
+    // if there are any more characters, they are either escaped, or incomplete
+    // utf8, or invalid utf8
     if(BOOST_JSON_UNLIKELY(*cs != '\x22')) // '"'
     {
         // sequence is invalid or incomplete
