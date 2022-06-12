@@ -120,6 +120,12 @@ building the library or including the function definitions:
 #include <boost/json/src.hpp>
 ```
 
+[heading Endianness]
+
+Boost.JSON uses
+[@https://www.boost.org/doc/libs/release/libs/endian/doc/html/endian.html
+Boost.Endian] in order to support both little endian and big endian platforms.
+
 [heading Supported Compilers]
 
 Boost.JSON has been tested with the following compilers:
