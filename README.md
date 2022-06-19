@@ -12,8 +12,6 @@ Fuzzing         | --- |  [![fuzz](https://github.com/boostorg/json/workflows/fuz
 
 # Boost.JSON
 
-Release Documentation: https://boost.org/libs/json
-
 ## Overview
 
 Boost.JSON is a portable C++ library which provides containers and
@@ -55,6 +53,9 @@ Boost.JSON offers these features:
 * Options to allow non-standard JSON
 * Easy and safe modern API with allocator support
 * Optional header-only, without linking to a library
+
+For more information check out the release documentation
+at https://boost.org/libs/json
 
 ## Requirements
 
