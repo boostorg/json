@@ -54,8 +54,7 @@ Boost.JSON offers these features:
 * Easy and safe modern API with allocator support
 * Optional header-only, without linking to a library
 
-For more information check out the release documentation
-at https://boost.org/libs/json
+Visit https://boost.org/libs/json for complete documentation.
 
 ## Requirements
 
