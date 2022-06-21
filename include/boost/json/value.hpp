@@ -2368,8 +2368,7 @@ public:
     {
         error e;
         auto result = to_number<T>(e);
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
-        BOOST_JSON_ASSIGN_ERROR_CODE(ec, e, &loc);
+        BOOST_JSON_FAIL(ec, e);
         return result;
     }
 

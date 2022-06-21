@@ -2646,8 +2646,7 @@ fail(error_code ec) noexcept
     {
         // assign an arbitrary
         // error code to prevent UB
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
-        BOOST_JSON_ASSIGN_ERROR_CODE(ec_, error::incomplete, &loc);
+        BOOST_JSON_FAIL(ec_, error::incomplete);
     }
     else
     {
@@ -2674,8 +2673,7 @@ write_some(
         // prevent UB
         if(! ec_)
         {
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
-            BOOST_JSON_ASSIGN_ERROR_CODE(ec_, error::exception, &loc);
+            BOOST_JSON_FAIL(ec_, error::exception);
         }
     }
     if(ec_)
@@ -2720,9 +2718,7 @@ write_some(
         {
             if(! more_)
             {
-                BOOST_STATIC_CONSTEXPR source_location loc
-                    = BOOST_JSON_SOURCE_POS;
-                BOOST_JSON_ASSIGN_ERROR_CODE(ec_, error::incomplete, &loc);
+                BOOST_JSON_FAIL(ec_, error::incomplete);
             }
             else if(! st_.empty())
             {

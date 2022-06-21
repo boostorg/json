@@ -26,6 +26,10 @@ struct source_location{};
 # define BOOST_JSON_ASSIGN_ERROR_CODE(ec, x, loc) (ec).assign(x);
 #endif
 
+#define BOOST_JSON_FAIL(ec, e) \
+    BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS; \
+    BOOST_JSON_ASSIGN_ERROR_CODE(ec, e, &loc);
+
 BOOST_JSON_DECL void BOOST_NORETURN throw_bad_alloc(source_location const& loc);
 BOOST_JSON_DECL void BOOST_NORETURN throw_invalid_argument(char const* what, source_location const& loc);
 BOOST_JSON_DECL void BOOST_NORETURN throw_length_error(char const* what, source_location const& loc);
