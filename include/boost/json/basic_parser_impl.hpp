@@ -1894,6 +1894,7 @@ do_arr1:
         return maybe_suspend(cs.begin(), state::arr1, size);
     if(BOOST_JSON_LIKELY(*cs != ']'))
     {
+loop:
         if(allow_comments && *cs == '/')
         {
 do_arr2:
@@ -1902,7 +1903,6 @@ do_arr2:
                 return suspend_or_fail(state::arr2, size);
             goto do_arr1;
         }
-loop:
         if(BOOST_JSON_UNLIKELY(++size >
             Handler::max_array_size))
         {

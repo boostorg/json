@@ -168,10 +168,22 @@ public:
     }
 
     void
+    testIssue726()
+    {
+        parse_options opt;
+        opt.allow_comments = true;
+        opt.allow_trailing_commas = true;
+        char const* text1 = "[ 123, //\n]";
+        value arr = parse(text1, {}, opt);
+        BOOST_TEST(arr == array{123});
+    }
+
+    void
     run()
     {
         testParse();
         testMemoryUsage();
+        testIssue726();
     }
 };
 
