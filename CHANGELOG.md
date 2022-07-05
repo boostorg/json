@@ -1,3 +1,15 @@
+Boost 1.80.0
+
+* Add non-const `value::at` overloads.
+* Add the ability to manually choose endianness of the platform.
+* Add `string::subview()` overload.
+* Fix segfault in `array::erase(it)`.
+* Fix low performance of `serialize` on libc++.
+* Fix ambigious conversion to `std::string_view` on GCC 8.
+* Fix parsing on big-endian platforms.
+* Fix handling of comment after trailing comma.
+* Minor documentation fixes.
+
 Boost 1.79.0
 
 * Standalone mode of the library is removed. Users who wish to

@@ -11,6 +11,23 @@
 
 [/-----------------------------------------------------------------------------]
 
+[heading Boost 1.80.0]
+
+[*API Changes]
+
+* [issue 703] Add non-const `value::at` overloads.
+* [issue 717] Add the ability to manually choose endianness of the platform.
+* Add `string::subview()` overload.
+
+[*Fixes]
+
+* [issue 692] Fix segfault in `array::erase(it)`.
+* [issue 697] Fix low performance of `serialize` on libc++.
+* [issue 708] Fix ambigious conversion to `std::string_view` on GCC 8.
+* [issue 717] Fix parsing on big-endian platforms.
+* [issue 726] Fix handling of comment after trailing comma.
+* Minor documentation fixes.
+
 [heading Boost 1.79.0]
 
 [*API Changes]
