@@ -110,6 +110,21 @@ else()
     target_compile_definitions(boost_json PUBLIC BOOST_JSON_STATIC_LINK=1)
 endif()
 
+set(GDB_PRINTERS_SCRIPT
+    $<TARGET_FILE_DIR:boost_json>/$<IF:$<BOOL:${BUILD_SHARED_LIBS}>,$<TARGET_FILE_NAME:boost_json>-gdb,boost_json_printers>.py
+)
+
+add_custom_command(
+    OUTPUT boost_json_copy_gdb_printers
+    COMMAND ${CMAKE_COMMAND} -E copy
+        "${CMAKE_CURRENT_SOURCE_DIR}/gdb/boost_json_printers.py"
+        "${GDB_PRINTERS_SCRIPT}"
+    COMMAND ${CMAKE_COMMAND} -E touch boost_json_copy_gdb_printers
+    MAIN_DEPENDENCY gdb/boost_json_printers.py
+    DEPENDS boost_json
+    COMMENT "Copying Boost.JSON GDB pretty printers...")
+add_custom_target(boost_json_gdb_printers ALL
+    DEPENDS boost_json_copy_gdb_printers)
 
 if(BOOST_JSON_INSTALL AND NOT BOOST_SUPERPROJECT_VERSION)
     install(TARGETS boost_json
@@ -119,6 +134,9 @@ if(BOOST_JSON_INSTALL AND NOT BOOST_SUPERPROJECT_VERSION)
     )
 endif()
 
+if(BOOST_JSON_INSTALL)
+    install(FILES "${GDB_PRINTERS_SCRIPT}" DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+endif()
 
 if(BOOST_JSON_BUILD_TESTS)
     add_subdirectory(test)

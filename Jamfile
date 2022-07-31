@@ -7,8 +7,6 @@
 # Official repository: https://github.com/boostorg/json
 #
 
-import feature ;
-
 build-project bench ;
 build-project test ;
 build-project fuzzing ;
