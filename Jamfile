@@ -8,8 +8,48 @@
 #
 
 import feature ;
+import path ;
+import print ;
+import property-set ;
+import stage ;
 
 build-project bench ;
 build-project test ;
 build-project fuzzing ;
 build-project example ;
+
+install install-gdb-printers
+    : [ glob-tree-ex include/boost/json/gdb : *.py ]
+    :
+    : <location>(datarootdir)/boost/gdb
+      <install-source-root>include/boost/json/gdb
+    ;
+
+
+make boost_json_gdbinit.py : : @make-gdb-init ;
+install install-gdb-init
+    : boost_json_gdbinit.py
+    :
+    : <location>(sysconfdir)/gdb/gdbinit.d
+    ;
+
+alias install-gdb-files : install-gdb-printers install-gdb-init ;
+explicit boost_json_gdbinit.py install-gdb-printers install-gdb-init ;
+
+
+rule make-gdb-init ( target : : properties * )
+{
+    local ps = [ property-set.create $(properties) ] ;
+    local dir = [ stage.get-dir datarootdir : $(ps) : boost ] ;
+    dir = [ path.root [ path.join $(dir) boost/gdb ] [ path.pwd ] ] ;
+    dir = [ path.native $(dir) ] ;
+
+    print.output $(target) ;
+    print.text
+          "import sys"
+          "sys.path.append('$(dir)')"
+          "from boost_json.printers import register"
+          "register(None)"
+        : overwrite
+        ;
+}
