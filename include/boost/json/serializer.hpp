@@ -210,7 +210,9 @@ public:
         @ref done will return `true`.
 
         @par Preconditions
-        `this->done() == true`
+        @code
+        this->done() == false
+        @endcode
 
         @par Complexity
         Linear in `size`.
@@ -239,7 +241,9 @@ public:
         character array, with a deduced maximum size.
 
         @par Preconditions
-        `this->done() == true`
+        @code
+        this->done() == false
+        @endcode
 
         @par Effects
         @code
