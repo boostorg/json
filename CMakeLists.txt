@@ -66,16 +66,16 @@ function(boost_json_setup_properties target)
         )
     endif()
 
-  target_link_libraries(${target}
-    PUBLIC
-        Boost::align
-        Boost::assert
-        Boost::config
-        Boost::container
-        Boost::core
-        Boost::mp11
-        Boost::system
-        Boost::throw_exception
+    target_link_libraries(${target}
+        PUBLIC
+            Boost::align
+            Boost::assert
+            Boost::config
+            Boost::container
+            Boost::core
+            Boost::mp11
+            Boost::system
+            Boost::throw_exception
     )
 endfunction()
 
