@@ -26,6 +26,10 @@ template<class T, class U,
     std::is_same<U, value>::value>::type>
 T value_to(U const&);
 
+template<class T>
+typename result_for<T, value>::type
+try_value_to(const value& jv);
+
 namespace detail {
 
 template<class T>
@@ -39,38 +43,40 @@ using reserve_implementation = mp11::mp_cond<
     mp11::mp_true,         mp11::mp_int<0>>;
 
 template<class T>
-void
+error_code
 try_reserve(
     T&,
     std::size_t size,
     mp11::mp_int<2>)
 {
+    error_code ec;
     constexpr std::size_t N = std::tuple_size<remove_cvref<T>>::value;
     if ( N != size )
     {
-        detail::throw_invalid_argument(
-            "target array size does not match source array size",
-            BOOST_CURRENT_LOCATION);
+        BOOST_JSON_FAIL(ec, error::size_mismatch);
     }
+    return ec;
 }
 
 template<typename T>
-void
+error_code
 try_reserve(
     T& cont,
     std::size_t size,
     mp11::mp_int<1>)
 {
     cont.reserve(size);
+    return error_code();
 }
 
 template<typename T>
-void
+error_code
 try_reserve(
     T&,
     std::size_t,
     mp11::mp_int<0>)
 {
+    return error_code();
 }
 
 
@@ -114,6 +120,16 @@ inserter(
 
 // identity conversion
 inline
+result<value>
+value_to_impl(
+    try_value_to_tag<value>,
+    value const& jv,
+    value_conversion_tag)
+{
+    return jv;
+}
+
+inline
 value
 value_to_impl(
     value_to_tag<value>,
@@ -125,86 +141,149 @@ value_to_impl(
 
 // object
 inline
-object
+result<object>
 value_to_impl(
-    value_to_tag<object>,
+    try_value_to_tag<object>,
     value const& jv,
     object_conversion_tag)
 {
-    return jv.as_object();
+    object const* obj = jv.if_object();
+    if( obj )
+        return *obj;
+    error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_object);
+    return ec;
 }
 
 // array
 inline
-array
+result<array>
 value_to_impl(
-    value_to_tag<array>,
+    try_value_to_tag<array>,
     value const& jv,
     array_conversion_tag)
 {
-    return jv.as_array();
+    array const* arr = jv.if_array();
+    if( arr )
+        return *arr;
+    error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_array);
+    return ec;
 }
 
 // string
 inline
-string
+result<string>
 value_to_impl(
-    value_to_tag<string>,
+    try_value_to_tag<string>,
     value const& jv,
     string_conversion_tag)
 {
-    return jv.as_string();
+    string const* str = jv.if_string();
+    if( str )
+        return *str;
+    error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_string);
+    return ec;
 }
 
 // bool
 inline
-bool
+result<bool>
 value_to_impl(
-    value_to_tag<bool>,
+    try_value_to_tag<bool>,
     value const& jv,
     bool_conversion_tag)
 {
-    return jv.as_bool();
+    auto b = jv.if_bool();
+    if( b )
+        return *b;
+    error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_bool);
+    return {boost::system::in_place_error, ec};
 }
 
 // integral and floating point
 template<class T>
-T
+result<T>
 value_to_impl(
-    value_to_tag<T>,
+    try_value_to_tag<T>,
     value const& jv,
     number_conversion_tag)
 {
-    return jv.to_number<T>();
+    error_code ec;
+    auto const n = jv.to_number<T>(ec);
+    if( ec.failed() )
+        return {boost::system::in_place_error, ec};
+    return {boost::system::in_place_value, n};
 }
 
 // null-like conversion
 template<class T>
-T
+result<T>
 value_to_impl(
-    value_to_tag<T>,
+    try_value_to_tag<T>,
     value const& jv,
     null_like_conversion_tag)
 {
     if( jv.is_null() )
-        return T();
-    detail::throw_invalid_argument(
-        "source value is not null", BOOST_CURRENT_LOCATION);
+        return {boost::system::in_place_value, T{}};
+    error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_null);
+    return {boost::system::in_place_error, ec};
 }
 
 // string-like types
 template<class T>
-T
+result<T>
 value_to_impl(
-    value_to_tag<T>,
+    try_value_to_tag<T>,
     value const& jv,
     string_like_conversion_tag)
 {
-    auto& str = jv.as_string();
-    return T(str.subview());
+    auto str = jv.if_string();
+    if( str )
+        return {boost::system::in_place_value, T(str->subview())};
+    error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_string);
+    return {boost::system::in_place_error, ec};
 }
 
 // map-like containers
+template<class T>
+result<T>
+value_to_impl(
+    try_value_to_tag<T>,
+    value const& jv,
+    map_like_conversion_tag)
+{
+    error_code ec;
+
+    object const* obj = jv.if_object();
+    if( !obj )
+    {
+        BOOST_JSON_FAIL(ec, error::not_object);
+        return {boost::system::in_place_error, ec};
+    }
+
+    T res;
+    ec = detail::try_reserve(res, obj->size(), reserve_implementation<T>());
+    if( ec.failed() )
+        return {boost::system::in_place_error, ec};
+
+    auto ins = detail::inserter(res, inserter_implementation<T>());
+    for( key_value_pair const& kv: *obj )
+    {
+        auto elem_res = try_value_to<mapped_type<T>>(kv.value());
+        if( elem_res.has_error() )
+            return {boost::system::in_place_error, elem_res.error()};
+        *ins++ = value_type<T>{
+            key_type<T>(kv.key()),
+            std::move(*elem_res)};
+    }
+    return res;
+}
+
 template<class T>
 T
 value_to_impl(
@@ -212,20 +291,61 @@ value_to_impl(
     value const& jv,
     map_like_conversion_tag)
 {
-    const object& obj = jv.as_object();
+    error_code ec;
+
+    object const* obj = jv.if_object();
+    if( !obj )
+    {
+        BOOST_JSON_FAIL(ec, error::not_object);
+        throw_system_error(ec, BOOST_CURRENT_LOCATION);
+    }
+
     T result;
-    detail::try_reserve(result, obj.size(), reserve_implementation<T>());
-    std::transform(obj.begin(), obj.end(),
-        detail::inserter(result, inserter_implementation<T>()),
-        [](key_value_pair const& val) {
-            return value_type<T>{
-                key_type<T>(val.key()),
-                value_to<mapped_type<T>>(val.value())};
-        });
+    ec = detail::try_reserve(result, obj->size(), reserve_implementation<T>());
+    if( ec.failed() )
+        throw_system_error(ec, BOOST_CURRENT_LOCATION);
+
+    auto ins = detail::inserter(result, inserter_implementation<T>());
+    for( key_value_pair const& kv: *obj )
+        *ins++ = value_type<T>{
+            key_type<T>(kv.key()),
+            value_to<mapped_type<T>>(kv.value())};
     return result;
 }
 
 // all other containers
+template<class T>
+result<T>
+value_to_impl(
+    try_value_to_tag<T>,
+    value const& jv,
+    sequence_conversion_tag)
+{
+    error_code ec;
+
+    array const* arr = jv.if_array();
+    if( !arr )
+    {
+        BOOST_JSON_FAIL(ec, error::not_array);
+        return {boost::system::in_place_error, ec};
+    }
+
+    T result;
+    ec = detail::try_reserve(result, arr->size(), reserve_implementation<T>());
+    if( ec.failed() )
+        return {boost::system::in_place_error, ec};
+
+    auto ins = detail::inserter(result, inserter_implementation<T>());
+    for( value const& val: *arr )
+    {
+        auto elem_res = try_value_to<value_type<T>>(val);
+        if( elem_res.has_error() )
+            return {boost::system::in_place_error, elem_res.error()};
+        *ins++ = std::move(*elem_res);
+    }
+    return result;
+}
+
 template<class T>
 T
 value_to_impl(
@@ -233,54 +353,185 @@ value_to_impl(
     value const& jv,
     sequence_conversion_tag)
 {
-    array const& arr = jv.as_array();
+    error_code ec;
+
+    array const* arr = jv.if_array();
+    if( !arr )
+    {
+        BOOST_JSON_FAIL(ec, error::not_array);
+        throw_system_error(ec, BOOST_CURRENT_LOCATION);
+    }
+
     T result;
-    detail::try_reserve(result, arr.size(), reserve_implementation<T>());
-    using inserter_impl = inserter_implementation<T>;
-    std::transform(arr.begin(), arr.end(),
-        detail::inserter(result, inserter_impl()), [](value const& val) {
-            return value_to<value_type<T>>(val);
-        });
+    ec = detail::try_reserve(result, arr->size(), reserve_implementation<T>());
+    if( ec.failed() )
+        throw_system_error(ec, BOOST_CURRENT_LOCATION);
+
+    auto ins = detail::inserter(result, inserter_implementation<T>());
+    for( value const& val: *arr )
+        *ins++ = value_to<value_type<T>>(val);
+    return result;
+}
+
+// tuple-like types
+template <class T>
+result<T>
+try_make_tuple_elem(value const& jv, error_code& ec)
+{
+    if( ec.failed() )
+        return {boost::system::in_place_error, ec};
+
+    auto result = try_value_to<T>(jv);
+    ec = result.error();
     return result;
 }
 
 template <class T, std::size_t... Is>
-T
-make_tuple_like(const array& arr, boost::mp11::index_sequence<Is...>)
+result<T>
+try_make_tuple_like(array const& arr, boost::mp11::index_sequence<Is...>)
 {
-    return T(value_to<typename std::tuple_element<Is, T>::type>(arr[Is])...);
+    error_code ec;
+    auto items = std::make_tuple(
+        try_make_tuple_elem<tuple_element_t<Is, T>>(
+            arr[Is], ec)
+        ...);
+    if( ec.failed() )
+        return {boost::system::in_place_error, ec};
+
+    return {
+        boost::system::in_place_value, T(std::move(*std::get<Is>(items))...)};
 }
 
-// tuple-like types
-template<class T>
+template <class T, std::size_t... Is>
+T
+make_tuple_like(array const& arr, boost::mp11::index_sequence<Is...>)
+{
+    return T(value_to<tuple_element_t<Is, T>>(arr[Is])...);
+}
+
+template <class T>
+result<T>
+value_to_impl(
+    try_value_to_tag<T>,
+    value const& jv,
+    tuple_conversion_tag)
+{
+    error_code ec;
+
+    array const* arr = jv.if_array();
+    if( !arr )
+    {
+        BOOST_JSON_FAIL(ec, error::not_array);
+        return {boost::system::in_place_error, ec};
+    }
+
+    constexpr std::size_t N = std::tuple_size<remove_cvref<T>>::value;
+    if( N != arr->size() )
+    {
+        BOOST_JSON_FAIL(ec, error::size_mismatch);
+        return {boost::system::in_place_error, ec};
+    }
+
+    return try_make_tuple_like<T>(
+        *arr, boost::mp11::make_index_sequence<N>());
+}
+
+template <class T>
 T
 value_to_impl(
     value_to_tag<T>,
     value const& jv,
     tuple_conversion_tag)
 {
-    auto& arr = jv.as_array();
-    constexpr std::size_t N = std::tuple_size<remove_cvref<T>>::value;
-    if ( N != arr.size() )
+    error_code ec;
+
+    array const* arr = jv.if_array();
+    if( !arr )
     {
-        detail::throw_invalid_argument(
-            "array size does not match tuple size",
-            BOOST_CURRENT_LOCATION);
+        BOOST_JSON_FAIL(ec, error::not_array);
+        throw_system_error(ec, BOOST_CURRENT_LOCATION);
     }
 
-    return make_tuple_like<T>(arr, boost::mp11::make_index_sequence<N>());
+    constexpr std::size_t N = std::tuple_size<remove_cvref<T>>::value;
+    if( N != arr->size() )
+    {
+        BOOST_JSON_FAIL(ec, error::size_mismatch);
+        throw_system_error(ec, BOOST_CURRENT_LOCATION);
+    }
+
+    return make_tuple_like<T>(
+        *arr, boost::mp11::make_index_sequence<N>());
 }
 
 //----------------------------------------------------------
 // User-provided conversion
 template<class T>
-T
+typename std::enable_if<
+    mp11::mp_valid<has_user_conversion_to_impl, T>::value,
+    T>::type
 value_to_impl(
     value_to_tag<T> tag,
     value const& jv,
     user_conversion_tag)
 {
     return tag_invoke(tag, jv);
+}
+
+template<class T>
+typename std::enable_if<
+    !mp11::mp_valid<has_user_conversion_to_impl, T>::value,
+    T>::type
+value_to_impl(
+    value_to_tag<T>,
+    value const& jv,
+    user_conversion_tag)
+{
+    auto res = tag_invoke(try_value_to_tag<T>(), jv);
+    if( res.has_error() )
+        throw_system_error(res.error(), BOOST_CURRENT_LOCATION);
+    return std::move(*res);
+}
+
+template<class T>
+typename std::enable_if<
+    mp11::mp_valid<has_nonthrowing_user_conversion_to_impl, T>::value,
+    result<T>>::type
+value_to_impl(
+    try_value_to_tag<T>,
+    value const& jv,
+    user_conversion_tag)
+{
+    return tag_invoke(try_value_to_tag<T>(), jv);
+}
+
+template<class T>
+typename std::enable_if<
+    !mp11::mp_valid<has_nonthrowing_user_conversion_to_impl, T>::value,
+    result<T>>::type
+value_to_impl(
+    try_value_to_tag<T>,
+    value const& jv,
+    user_conversion_tag)
+{
+    try
+    {
+        return {
+            boost::system::in_place_value, tag_invoke(value_to_tag<T>(), jv)};
+    }
+    catch( std::bad_alloc const&)
+    {
+        throw;
+    }
+    catch( system_error const& e)
+    {
+        return {boost::system::in_place_error, e.code()};
+    }
+    catch( ... )
+    {
+        error_code ec;
+        BOOST_JSON_FAIL(ec, error::exception);
+        return {boost::system::in_place_error, ec};
+    }
 }
 
 // no suitable conversion implementation
@@ -294,6 +545,17 @@ value_to_impl(
     static_assert(
         !std::is_same<T, T>::value,
         "No suitable tag_invoke overload found for the type");
+}
+
+// generic wrapper over non-throwing implementations
+template<class T, class Impl>
+T
+value_to_impl(
+    value_to_tag<T>,
+    value const& jv,
+    Impl impl)
+{
+    return value_to_impl(try_value_to_tag<T>(), jv, impl).value();
 }
 
 template<class T>

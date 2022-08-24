@@ -20,6 +20,9 @@ struct value_from_tag { };
 template<class>
 struct value_to_tag { };
 
+template<class>
+struct try_value_to_tag { };
+
 namespace detail {
 
 #ifdef __cpp_lib_nonmember_container_access
@@ -97,16 +100,18 @@ using has_user_conversion_from_impl
         value_from_tag(), std::declval<value&>(), std::declval<T&&>()));
 template<class T>
 using has_user_conversion_to_impl
+    = decltype(tag_invoke(value_to_tag<T>(), std::declval<value const &>()));
+template<class T>
+using has_nonthrowing_user_conversion_to_impl
     = decltype(tag_invoke(
-        std::declval<value_to_tag<T>&>(), std::declval<value const &>()));
+        try_value_to_tag<T>(), std::declval<value const&>() ));
 template<class T, class Dir>
-using has_user_conversion
-    = mp11::mp_valid_q<
-        mp11::mp_if<
-            std::is_same<Dir, value_from_conversion>,
-            mp11::mp_quote<has_user_conversion_from_impl>,
-            mp11::mp_quote<has_user_conversion_to_impl>>,
-        T>;
+using has_user_conversion = mp11::mp_if<
+    std::is_same<Dir, value_from_conversion>,
+    mp11::mp_valid<has_user_conversion_from_impl, T>,
+    mp11::mp_or<
+        mp11::mp_valid<has_user_conversion_to_impl, T>,
+        mp11::mp_valid<has_nonthrowing_user_conversion_to_impl, T>>>;
 
 template<class T, class Dir>
 using conversion_implementation = mp11::mp_cond<
@@ -151,6 +156,18 @@ template<class T, class Dir>
 using conversion_round_trips  = conversion_round_trips_helper<
     conversion_implementation<T, Dir>,
     conversion_implementation<T, mp11::mp_not<Dir>>>;
+
+inline
+mp11::mp_false check_extra()
+{
+    return {};
+}
+
+inline
+bool check_extra(error_code& ec)
+{
+    return ec.failed();
+}
 
 } // detail
 BOOST_JSON_NS_END

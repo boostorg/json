@@ -57,6 +57,13 @@ case error::value_is_scalar: return "current value is scalar";
 case error::not_found: return "no referenced value";
 case error::token_overflow: return "token overflow";
 case error::past_the_end: return "past-the-end token not supported";
+
+case error::not_null: return "value is not null";
+case error::not_bool: return "value is not boolean";
+case error::not_array: return "value is not an array";
+case error::not_object: return "value is not an object";
+case error::not_string: return "value is not a string";
+case error::size_mismatch: return "array size does not match target size";
             }
         }
 
@@ -99,6 +106,14 @@ case error::not_found:
 case error::token_overflow:
 case error::past_the_end:
     return condition::pointer_use_error;
+
+case error::not_null:
+case error::not_bool:
+case error::not_array:
+case error::not_object:
+case error::not_string:
+case error::size_mismatch:
+    return condition::conversion_error;
             }
         }
     };
@@ -136,6 +151,8 @@ make_error_condition(condition c)
             case condition::pointer_use_error:
                 return "An error occurred when JSON Pointer was used with"
                     " a value";
+            case condition::conversion_error:
+                return "An error occurred during conversion";
             }
         }
     };

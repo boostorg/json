@@ -101,6 +101,28 @@ enum class error
 
     /// past-the-end index is not supported
     past_the_end,
+
+    //
+    // Conversion errors
+    //
+
+    /// JSON null was expected during conversion
+    not_null,
+
+    /// JSON bool was expected during conversion
+    not_bool,
+
+    /// JSON array was expected during conversion
+    not_array,
+
+    /// JSON object was expected during conversion
+    not_object,
+
+    /// JSON string was expected during conversion
+    not_string,
+
+    /// JSON array has size incompatible with target
+    size_mismatch,
 };
 
 /** Error conditions corresponding to JSON errors
@@ -118,6 +140,9 @@ enum class condition
 
     /// An error related to applying JSON pointer string to a value
     pointer_use_error,
+
+    /// A conversion error
+    conversion_error,
 };
 
 BOOST_JSON_NS_END

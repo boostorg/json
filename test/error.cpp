@@ -74,6 +74,13 @@ public:
         check(condition::pointer_use_error, error::token_overflow);
         check(condition::pointer_use_error, error::past_the_end);
 
+        check(condition::conversion_error, error::not_null);
+        check(condition::conversion_error, error::not_bool);
+        check(condition::conversion_error, error::not_array);
+        check(condition::conversion_error, error::not_object);
+        check(condition::conversion_error, error::not_string);
+        check(condition::conversion_error, error::size_mismatch);
+
         check(error::test_failure);
 
         // check std interop

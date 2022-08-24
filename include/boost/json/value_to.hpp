@@ -33,6 +33,21 @@ BOOST_JSON_NS_BEGIN
 template<class T>
 struct value_to_tag;
 
+/** Customization point tag type.
+
+    This tag type is used by the function
+    @ref try_value_to to select overloads
+    of `tag_invoke`.
+
+    @note This type is empty; it has no members.
+
+    @see @ref value_to, @ref value_to_tag
+    <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1895r0.pdf">
+        tag_invoke: A general pattern for supporting customisable functions</a>
+*/
+template<class T>
+struct try_value_to_tag;
+
 /** Convert a @ref value to an object of type `T`.
 
     This function attempts to convert a @ref value
@@ -84,6 +99,61 @@ value_to(const value& jv)
         bare_T, detail::value_to_conversion>::value);
     using impl = detail::value_to_implementation<bare_T>;
     return detail::value_to_impl(value_to_tag<bare_T>(), jv, impl());
+}
+
+/** Convert a @ref value to a @ref result of `T`.
+
+    This function attempts to convert a @ref value
+    to `result<T>` using
+
+    @li one of @ref value's accessors, or
+
+    @li a library-provided generic conversion, or
+
+    @li a user-provided overload of `tag_invoke`.
+
+    In all cases, the conversion is done by calling
+    an overload of `tag_invoke` found by argument-dependent
+    lookup. Its signature should be similar to:
+
+    @code
+    result<T> tag_invoke( try_value_to_tag<T>, value const& );
+    @endcode
+
+    If an error occurs during conversion, the result will store the error code
+    associated with the error. If an exception is thrown, the function will
+    attempt to retrieve the associated error code and return it, otherwise it
+    will return `error::exception`.
+
+    @par Constraints
+    @code
+    ! std::is_reference< T >::value
+    @endcode
+
+    @par Exception Safety
+    Strong guarantee.
+
+    @tparam T The type to convert to.
+
+    @param jv The @ref value to convert.
+
+    @returns `jv` converted to `result<T>`.
+
+    @see @ref value_to_tag, @ref value_to, @ref value_from,
+    <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1895r0.pdf">
+        tag_invoke: A general pattern for supporting customisable functions</a>
+*/
+template<class T>
+typename result_for<T, value>::type
+try_value_to(const value& jv)
+{
+    BOOST_STATIC_ASSERT(! std::is_reference<T>::value);
+    using bare_T = detail::remove_cvref<T>;
+    BOOST_STATIC_ASSERT(detail::conversion_round_trips<
+        bare_T, detail::value_to_conversion>::value);
+    using impl = detail::value_to_implementation<bare_T>;
+    return detail::value_to_impl(
+        try_value_to_tag<bare_T>(), jv, impl());
 }
 
 /** Convert a @ref value to an object of type `T`.

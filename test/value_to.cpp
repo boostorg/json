@@ -24,7 +24,88 @@ namespace value_to_test_ns
 
 struct T1 { };
 
+//----------------------------------------------------------
+struct T2 { };
+
+boost::json::result<T2>
+tag_invoke(
+    boost::json::try_value_to_tag<T2>,
+    boost::json::value const& jv)
+{
+    boost::json::string const* str = jv.if_string();
+    if( str && *str == "T2" )
+        return T2{};
+    return make_error_code(boost::json::error::syntax);
+}
+
+//----------------------------------------------------------
+struct T3 { };
+
+T3
+tag_invoke(
+    boost::json::value_to_tag<T3>,
+    boost::json::value const& jv)
+{
+    boost::json::string const* str = jv.if_string();
+    if( !str )
+        throw boost::json::system_error(
+            make_error_code(boost::json::error::not_string));
+    if ( *str != "T3" )
+        throw std::invalid_argument("");
+    return T3{};
+}
+
+// map-like type with fixed size
+struct T4 {
+    using value_type = std::pair<std::string, int>;
+
+    value_type*
+    begin()
+    {
+        return data;
+    }
+
+    value_type*
+    end()
+    {
+        return data + sizeof(data);
+    }
+
+    std::pair< value_type*, bool >
+    emplace(value_type);
+
+    value_type data[2];
+};
+
+struct T5 { };
+
+T5
+tag_invoke(
+    boost::json::value_to_tag<T5>,
+    boost::json::value const&)
+{
+    throw std::bad_alloc();
+}
+
 } // namespace value_to_test_ns
+
+namespace std
+{
+
+// some versions of libstdc++ forward-declare tuple_size as class
+#if defined(__clang__) || ( defined(__GNUC__) && __GNUC__ >= 10 )
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wmismatched-tags"
+#endif
+template<>
+struct tuple_size<value_to_test_ns::T4>
+    : std::integral_constant<std::size_t, 2>
+{ };
+#if defined(__clang__) || ( defined(__GNUC__) && __GNUC__ >= 10 )
+# pragma GCC diagnostic pop
+#endif
+
+} // namespace std
 
 BOOST_JSON_NS_BEGIN
 
@@ -72,6 +153,12 @@ public:
         check((float)1.5);
         check((double)2.5);
         check(true);
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            value_to<bool>(value()) );
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            value_to<int>(value()) );
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            value_to<double>(value()) );
     }
 
     void
@@ -80,6 +167,13 @@ public:
         value_to<object>(value(object_kind));
         value_to<array>(value(array_kind));
         value_to<string>(value(string_kind));
+
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            value_to<object>(value()) );
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            value_to<array>(value()) );
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            value_to<string>(value()) );
     }
 
     void
@@ -113,19 +207,44 @@ public:
             check(arr);
         }
 
-        BOOST_TEST_THROWS(
-            (value_to<std::tuple<int, int>>(value{1, 2, 3})),
-            std::invalid_argument);
-        BOOST_TEST_THROWS(
-            (value_to<std::tuple<int, int, int, int>>(value{1, 2, 3})),
-            std::invalid_argument);
+        // mismatched type
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            value_to<std::string>(value()) );
 
-        BOOST_TEST_THROWS(
-            (value_to<std::array<int, 4>>(value{1, 2, 3})),
-            std::invalid_argument);
-        BOOST_TEST_THROWS(
-            (value_to<std::array<int, 4>>(value{1, 2, 3, 4, 5})),
-            std::invalid_argument);
+        // mismatched type
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            ( value_to<std::map<std::string, int>>(value()) ));
+        // element fails
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            ( value_to<std::map<std::string, int>>(
+                value{{"1", 1}, {"2", true}, {"3", false}}) ));
+        // reserve fails
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            ( value_to<value_to_test_ns::T4>(
+                value{{"1", 1}, {"2", true}, {"3", false}}) ));
+
+        // mismatched type
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            value_to<std::vector<int>>(value()) );
+        // element fails
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            value_to<std::vector<int>>(value{1, 2, false, 3}) );
+        // reserve fails
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            ( value_to<std::array<int, 4>>(value{1, 2, 3}) ));
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            ( value_to<std::array<int, 4>>(value{1, 2, 3, 4, 5}) ));
+
+        // mismatched type
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            ( value_to<std::tuple<int, int, int, int>>(value()) ));
+        // element fails
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            ( value_to<std::tuple<int, int, int>>(value{1, 2, false}) ));
+        // reserve fails
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            ( value_to<std::tuple<int, int, int, int>>(value{1, 2, 3}) ));
+
     }
 
     void
@@ -157,11 +276,179 @@ public:
     {
         (void)value_to<std::nullptr_t>(value());
         (void)value_to<::value_to_test_ns::T1>(value());
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            ( value_to<std::nullptr_t>(value(1)) ));
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            ( value_to<::value_to_test_ns::T1>(value(1)) ));
+    }
+
+    void
+    testNonThrowing()
+    {
+        // using result
+        {
+            auto res = try_value_to<::value_to_test_ns::T2>(value());
+            BOOST_TEST( res.has_error() );
+            BOOST_TEST( res.error() == error::syntax );
+
+            res = try_value_to<::value_to_test_ns::T2>(value("T2"));
+            BOOST_TEST( res.has_value() );
+        }
+        // throwing overload falls back to nonthrowing customization
+        {
+            BOOST_TEST_THROWS(
+                value_to<::value_to_test_ns::T2>(value()),
+                system_error);
+        }
+        // nonthrowing overload falls back to throwing customization
+        {
+            auto res = try_value_to<::value_to_test_ns::T3>(value());
+            BOOST_TEST( res.has_error() );
+            BOOST_TEST( res.error() == error::not_string );
+
+            res = try_value_to<::value_to_test_ns::T3>(value(""));
+            BOOST_TEST( res.has_error() );
+            BOOST_TEST( res.error() == error::exception );
+
+            res = try_value_to<::value_to_test_ns::T3>(value("T3"));
+            BOOST_TEST( res.has_value() );
+        }
+        // sequence
+        {
+            // wrong input type
+            {
+                auto res = try_value_to< std::vector<::value_to_test_ns::T2> >(
+                    value("not an array"));
+                BOOST_TEST( res.has_error() );
+                BOOST_TEST( res.error().has_location() );
+                BOOST_TEST( res.error() == error::not_array );
+            }
+
+            // wrong input type
+            {
+                auto res = try_value_to< std::array<int, 4> >(
+                    value{1, 2});
+                BOOST_TEST( res.has_error() );
+                BOOST_TEST( res.error().has_location() );
+                BOOST_TEST( res.error() == error::size_mismatch );
+            }
+
+            // element error
+            {
+                auto res = try_value_to< std::vector<::value_to_test_ns::T2> >(
+                    value{"T2", "T2", nullptr});
+                BOOST_TEST( res.error() == error::syntax );
+            }
+
+            // success
+            auto res = try_value_to< std::vector<::value_to_test_ns::T2> >(
+                value{"T2", "T2", "T2"});
+            BOOST_TEST( res.has_value() );
+            BOOST_TEST( res->size() == 3 );
+        }
+        // map
+        {
+            // wrong input type
+            {
+                auto res = try_value_to<
+                        std::map<std::string, ::value_to_test_ns::T2> >(
+                    value("not a map"));
+                BOOST_TEST( res.has_error() );
+                BOOST_TEST( res.error().has_location() );
+                BOOST_TEST( res.error() == error::not_object );
+            }
+
+            // reserve fails
+            {
+                auto res = try_value_to< ::value_to_test_ns::T4 >(
+                    value{{"1", 1}, {"2", 2}, {"3", 3}});
+                BOOST_TEST( res.has_error() );
+                BOOST_TEST( res.error().has_location() );
+                BOOST_TEST( res.error() == error::size_mismatch );
+            }
+
+            // element error
+            {
+                auto res = try_value_to<
+                        std::map<std::string, ::value_to_test_ns::T2> >(
+                    value{{"1", "T2"}, {"2", "T2"}, {"3", nullptr}});
+                BOOST_TEST( res.has_error() );
+                BOOST_TEST( res.error() == error::syntax );
+            }
+
+            // success
+            auto res = try_value_to<
+                    std::map<std::string, ::value_to_test_ns::T2> >(
+                value{{"1", "T2"}, {"2", "T2"}, {"3", "T2"}});
+            BOOST_TEST( res.has_value() );
+            BOOST_TEST( res->size() == 3 );
+        }
+        // tuple
+        {
+            // wrong input type
+            {
+                auto res = try_value_to<std::tuple<
+                        int,
+                        std::string,
+                        bool,
+                        std::nullptr_t,
+                        ::value_to_test_ns::T2>>(
+                    value("not an array"));
+                BOOST_TEST( res.has_error() );
+                BOOST_TEST( res.error().has_location() );
+                BOOST_TEST( res.error() == error::not_array );
+            }
+
+            // size mismatch
+            {
+                auto res = try_value_to<std::tuple<
+                        int,
+                        std::string,
+                        bool,
+                        std::nullptr_t,
+                        ::value_to_test_ns::T2>>(
+                    value{1, 2});
+                BOOST_TEST( res.has_error() );
+                BOOST_TEST( res.error().has_location() );
+                BOOST_TEST( res.error() == error::size_mismatch );
+            }
+
+            // element error
+            {
+                auto res = try_value_to<std::tuple<
+                        int,
+                        std::string,
+                        bool,
+                        std::nullptr_t,
+                        ::value_to_test_ns::T2>>(
+                    value{1, "foobar", false, nullptr, ""});
+                BOOST_TEST( res.has_error() );
+                BOOST_TEST( res.error() == error::syntax );
+            }
+
+            // success
+            auto res = try_value_to<std::tuple<
+                    int,
+                    std::string,
+                    bool,
+                    std::nullptr_t,
+                    ::value_to_test_ns::T2>>(
+                value{1, "foobar", false, nullptr, "T2"});
+            BOOST_TEST( res.has_value() );
+            BOOST_TEST( std::get<0>(*res) == 1 );
+            BOOST_TEST( std::get<1>(*res) == "foobar" );
+            BOOST_TEST_NOT( std::get<2>(*res) );
+        }
+        // rethrowing bad_alloc
         BOOST_TEST_THROWS(
-            (value_to<std::nullptr_t>(value(1))), std::invalid_argument);
-        BOOST_TEST_THROWS(
-            (value_to<::value_to_test_ns::T1>(value(1))),
-            std::invalid_argument);
+            try_value_to<value_to_test_ns::T5>(value()),
+            std::bad_alloc);
+    }
+
+    void
+    testUserConversion()
+    {
+        value_to<value_to_test_ns::T2>(value("T2"));
     }
 
     void
@@ -172,6 +459,8 @@ public:
         testGenerics();
         testContainerHelpers();
         testNullptr();
+        testUserConversion();
+        testNonThrowing();
     }
 };
 

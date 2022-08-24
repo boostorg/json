@@ -46,6 +46,7 @@
           <member><link linkend="json.ref.boost__json__parse">parse</link></member>
           <member><link linkend="json.ref.boost__json__serialize">serialize</link></member>
           <member><link linkend="json.ref.boost__json__to_string">to_string</link></member>
+          <member><link linkend="json.ref.boost__json__try_value_to">try_value_to</link></member>
           <member><link linkend="json.ref.boost__json__value_from">value_from</link></member>
           <member><link linkend="json.ref.boost__json__value_to">value_to</link></member>
           <member><link linkend="json.ref.boost__json__visit">visit</link></member>
@@ -60,6 +61,7 @@
           <member><link linkend="json.ref.boost__json__is_map_like">is_map_like</link></member>
           <member><link linkend="json.ref.boost__json__is_null_like">is_null_like</link></member>
           <member><link linkend="json.ref.boost__json__is_tuple_like">is_tuple_like</link></member>
+          <member><link linkend="json.ref.boost__json__try_value_to_tag">try_value_to_tag</link></member>
           <member><link linkend="json.ref.boost__json__value_from_tag">value_from_tag</link></member>
           <member><link linkend="json.ref.boost__json__value_to_tag">value_to_tag</link></member>
         </simplelist>
@@ -94,6 +96,7 @@
           <member><link linkend="json.ref.boost__json__generic_category">generic_category</link></member>
           <member><link linkend="json.ref.boost__json__memory_resource">memory_resource</link></member>
           <member><link linkend="json.ref.boost__json__polymorphic_allocator">polymorphic_allocator</link></member>
+          <member><link linkend="json.ref.boost__json__result">result</link></member>
           <member><link linkend="json.ref.boost__json__string_view">string_view</link></member>
           <member><link linkend="json.ref.boost__json__system_error">system_error</link></member>
         </simplelist>
