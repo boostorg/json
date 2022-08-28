@@ -1154,6 +1154,12 @@ public:
                 check(a1);
                 BOOST_TEST(a2.size() == 1);
             });
+            fail_loop([&](storage_ptr const& sp)
+            {
+                array a({1, true, str_}, sp);
+                swap(a, a);
+                check(a);
+            });
         }
     }
 

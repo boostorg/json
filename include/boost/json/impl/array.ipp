@@ -593,7 +593,6 @@ void
 array::
 swap(array& other)
 {
-    BOOST_ASSERT(this != &other);
     if(*sp_ == *other.sp_)
     {
         t_ = detail::exchange(
