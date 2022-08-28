@@ -154,6 +154,9 @@ string&
 string::
 assign(string&& other)
 {
+    if( &other == this )
+        return *this;
+
     if(*sp_ == *other.sp_)
     {
         impl_.destroy(sp_);
@@ -372,7 +375,6 @@ void
 string::
 swap(string& other)
 {
-    BOOST_ASSERT(this != &other);
     if(*sp_ == *other.sp_)
     {
         std::swap(impl_, other.impl_);

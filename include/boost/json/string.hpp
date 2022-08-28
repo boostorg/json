@@ -536,6 +536,8 @@ public:
         Replace the contents with those of `other`
         using move semantics.
 
+        @li If `&other == this`, do nothing. Otherwise,
+
         @li If `*other.storage() == *this->storage()`,
         ownership of the underlying memory is transferred
         in constant time, with no possibility
@@ -543,8 +545,7 @@ public:
         string behaves as if newly constructed with its
         current @ref memory_resource. Otherwise,
 
-        @li If `*other.storage() != *this->storage()`,
-        a copy of the characters in `other` is made. In
+        @li a copy of the characters in `other` is made. In
         this case, the moved-from container is not changed.
 
         @par Complexity
@@ -674,6 +675,8 @@ public:
 
         Replace the contents with those of `other`
         using move semantics.
+
+        @li If `&other == this`, do nothing. Otherwise,
 
         @li If `*other.storage() == *this->storage()`,
         ownership of the underlying memory is transferred
@@ -2370,13 +2373,14 @@ public:
         string. Ownership of the respective @ref memory_resource
         objects is not transferred.
 
-        @li If `*other.storage() == *this->storage()`,
+        @li If `&other == this`, do nothing. Otherwise,
+
+        @li if `*other.storage() == *this->storage()`,
         ownership of the underlying memory is swapped in
         constant time, with no possibility of exceptions.
-        All iterators and references remain valid.
+        All iterators and references remain valid. Otherwise,
 
-        @li If `*other.storage() != *this->storage()`,
-        the contents are logically swapped by making copies,
+        @li the contents are logically swapped by making copies,
         which can throw. In this case all iterators and
         references are invalidated.
 
@@ -2385,19 +2389,10 @@ public:
         Constant or linear in @ref size() plus
         `other.size()`.
 
-        @par Precondition
-
-        @code
-        &other != this
-        @endcode
-
         @par Exception Safety
 
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
-
-        @param other The string to swap with
-        If `this == &other`, this function call has no effect.
     */
     BOOST_JSON_DECL
     void
@@ -2409,13 +2404,14 @@ public:
         another string `rhs`. Ownership of the respective
         @ref memory_resource objects is not transferred.
 
-        @li If `*lhs.storage() == *rhs.storage()`,
+        @li If `&lhs == &rhs`, do nothing. Otherwise,
+
+        @li if `*lhs.storage() == *rhs.storage()`,
         ownership of the underlying memory is swapped in
         constant time, with no possibility of exceptions.
-        All iterators and references remain valid.
+        All iterators and references remain valid. Otherwise,
 
-        @li If `*lhs.storage() != *rhs.storage()`,
-        the contents are logically swapped by making a copy,
+        @li the contents are logically swapped by making a copy,
         which can throw. In this case all iterators and
         references are invalidated.
 
@@ -2434,7 +2430,6 @@ public:
         @param lhs The string to exchange.
 
         @param rhs The string to exchange.
-        If `&lhs == &rhs`, this function call has no effect.
 
         @see @ref string::swap
     */

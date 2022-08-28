@@ -539,6 +539,16 @@ public:
                     *s.storage() !=
                     *s2.storage());
             });
+
+            // self
+
+            fail_loop([&](storage_ptr const& sp)
+            {
+                string s1(t.v1, sp);
+                string& s2 = s1;
+                s1 = std::move(s2);
+                BOOST_TEST(s1 == t.v1);
+            });
         }
 
         // operator=(char const*)
@@ -2515,35 +2525,39 @@ public:
     {
         test_vectors const t;
 
-        // swap
+        fail_loop([&](storage_ptr const& sp)
         {
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s1(t.v1, sp);
-                string s2(t.v2, sp);
-                s1.swap(s2);
-                BOOST_TEST(s1 == t.v2);
-                BOOST_TEST(s2 == t.v1);
-            });
+            string s1(t.v1, sp);
+            string s2(t.v2, sp);
+            s1.swap(s2);
+            BOOST_TEST(s1 == t.v2);
+            BOOST_TEST(s2 == t.v1);
+        });
 
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s1(t.v1, sp);
-                string s2(t.v2, sp);
-                swap(s1, s2);
-                BOOST_TEST(s1 == t.v2);
-                BOOST_TEST(s2 == t.v1);
-            });
+        fail_loop([&](storage_ptr const& sp)
+        {
+            string s1(t.v1, sp);
+            string s2(t.v2, sp);
+            swap(s1, s2);
+            BOOST_TEST(s1 == t.v2);
+            BOOST_TEST(s2 == t.v1);
+        });
 
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s1(t.v1);
-                string s2(t.v2, sp);
-                s1.swap(s2);
-                BOOST_TEST(s1 == t.v2);
-                BOOST_TEST(s2 == t.v1);
-            });
-        }
+        fail_loop([&](storage_ptr const& sp)
+        {
+            string s1(t.v1);
+            string s2(t.v2, sp);
+            s1.swap(s2);
+            BOOST_TEST(s1 == t.v2);
+            BOOST_TEST(s2 == t.v1);
+        });
+
+        fail_loop([&](storage_ptr const& sp)
+        {
+            string s(t.v1, sp);
+            swap(s, s);
+            BOOST_TEST(s == t.v1);
+        });
     }
 
     void
