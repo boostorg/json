@@ -556,6 +556,59 @@ erase(string_view key) noexcept ->
     return 1;
 }
 
+auto
+object::
+stable_erase(const_iterator pos) noexcept ->
+    iterator
+{
+    auto p = begin() + (pos - begin());
+    if(t_->is_small())
+    {
+        p->~value_type();
+        --t_->size;
+        if(p != end())
+        {
+            // the casts silence warnings
+            std::memmove(
+                static_cast<void*>(p),
+                static_cast<void const*>(p + 1),
+                sizeof(*p) * (end() - p));
+        }
+        return p;
+    }
+    remove(t_->bucket(p->key()), *p);
+    p->~value_type();
+    --t_->size;
+    auto pret = p;
+    for (; p != end(); ++p)
+    {
+        auto const pb = p + 1;
+        auto& head = t_->bucket(pb->key());
+        remove(head, *pb);
+        // the casts silence warnings
+        std::memcpy(
+            static_cast<void*>(p),
+            static_cast<void const*>(pb),
+            sizeof(*p));
+        access::next(*p) = head;
+        head = static_cast<
+            index_t>(p - begin());
+    }
+    return pret;
+}
+
+auto
+object::
+stable_erase(string_view key) noexcept ->
+    std::size_t
+{
+    auto it = find(key);
+    if(it == end())
+        return 0;
+    stable_erase(it);
+    return 1;
+}
+
 void
 object::
 swap(object& other)

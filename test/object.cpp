@@ -1204,6 +1204,62 @@ public:
             }
         }
 
+        // stable_erase(pos)
+        {
+            // small
+            {
+                object o(i0_);
+                auto it = o.stable_erase(o.find("10"));
+                BOOST_TEST(it->key() == "11");
+                BOOST_TEST(
+                    it->value().as_int64() == 11);
+                BOOST_TEST(serialize(o) ==
+                    R"({"0":0,"1":1,"2":2,"3":3,"4":4,)"
+                    R"("5":5,"6":6,"7":7,"8":8,"9":9,)"
+                    R"("11":11,"12":12,"13":13,"14":14,"15":15})");
+                BOOST_TEST(o.find("11") == it);
+                BOOST_TEST(o.find("14") == o.end() - 2);
+            }
+
+            // large
+            {
+                object o(i1_);
+                auto it = o.stable_erase(o.find("10"));
+                BOOST_TEST(it->key() == "11");
+                BOOST_TEST(
+                    it->value().as_int64() == 11);
+                BOOST_TEST(serialize(o) ==
+                    R"({"0":0,"1":1,"2":2,"3":3,"4":4,)"
+                    R"("5":5,"6":6,"7":7,"8":8,"9":9,)"
+                    R"("11":11,"12":12,"13":13,"14":14,"15":15,)"
+                    R"("16":16,"17":17,"18":18,"19":19})");
+                BOOST_TEST(o.find("11") == it);
+                BOOST_TEST(o.find("18") == o.end() - 2);
+            }
+        }
+
+        // stable_erase(key)
+        {
+            {
+                object o({
+                    {"a", 1},
+                    {"b", true},
+                    {"c", "hello"}});
+                BOOST_TEST(o.stable_erase("b2") == 0);
+                check(o, 3);
+            }
+
+            {
+                object o({
+                    {"a", 1},
+                    {"b", true},
+                    {"b2", 2},
+                    {"c", "hello"}});
+                BOOST_TEST(o.stable_erase("b2") == 1);
+                check(o, 4);
+            }
+        }
+
         // swap(object&)
         {
             {
