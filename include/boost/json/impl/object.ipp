@@ -527,19 +527,9 @@ erase(const_iterator pos) noexcept ->
     remove(t_->bucket(p->key()), *p);
     p->~value_type();
     --t_->size;
-    auto const pb = end();
     if(p != end())
     {
-        auto& head = t_->bucket(pb->key());
-        remove(head, *pb);
-        // the casts silence warnings
-        std::memcpy(
-            static_cast<void*>(p),
-            static_cast<void const*>(pb),
-            sizeof(*p));
-        access::next(*p) = head;
-        head = static_cast<
-            index_t>(p - begin());
+        reindex_relocate(end(), p);
     }
     return p;
 }
@@ -582,17 +572,7 @@ stable_erase(const_iterator pos) noexcept ->
     auto pret = p;
     for (; p != end(); ++p)
     {
-        auto const pb = p + 1;
-        auto& head = t_->bucket(pb->key());
-        remove(head, *pb);
-        // the casts silence warnings
-        std::memcpy(
-            static_cast<void*>(p),
-            static_cast<void const*>(pb),
-            sizeof(*p));
-        access::next(*p) = head;
-        head = static_cast<
-            index_t>(p - begin());
+        reindex_relocate(p + 1, p);
     }
     return pret;
 }
@@ -881,6 +861,25 @@ destroy(
     BOOST_ASSERT(! sp_.is_not_shared_and_deallocate_is_trivial());
     while(last != first)
         (--last)->~key_value_pair();
+}
+
+void
+object::
+reindex_relocate(
+    key_value_pair* src,
+    key_value_pair* dst) noexcept
+{
+    BOOST_ASSERT(! t_->is_small());
+    auto& head = t_->bucket(src->key());
+    remove(head, *src);
+    // the casts silence warnings
+    std::memcpy(
+        static_cast<void*>(dst),
+        static_cast<void const*>(src),
+        sizeof(*dst));
+    access::next(*dst) = head;
+    head = static_cast<
+        index_t>(dst - begin());
 }
 
 BOOST_JSON_NS_END

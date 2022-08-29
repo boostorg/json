@@ -1612,6 +1612,12 @@ private:
     destroy(
         key_value_pair* first,
         key_value_pair* last) noexcept;
+
+    inline
+    void
+    reindex_relocate(
+        key_value_pair* src,
+        key_value_pair* dst) noexcept;
 };
 
 BOOST_JSON_NS_END
