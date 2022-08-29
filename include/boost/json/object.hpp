@@ -1172,7 +1172,9 @@ public:
         be valid and dereferenceable. Thus the @ref end()
         iterator (which is valid but cannot be dereferenced)
         cannot be used as a value for `pos`.
-        All references and iterators are invalidated.
+        References and iterators from `pos` to `end()`, both
+        included, are invalidated. Other iterators and references
+        are not invalidated.
         The relative order of non-erased elements is preserved.
 
         @par Complexity
