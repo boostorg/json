@@ -1122,12 +1122,15 @@ public:
     /** Erase an element
 
         Remove the element pointed to by `pos`, which must
-        be valid and dereferenceable. Thus the @ref end()
-        iterator (which is valid but cannot be dereferenced)
-        cannot be used as a value for `pos`.
+        be valid and dereferenceable.
         References and iterators to the erased element are
         invalidated. Other iterators and references are not
         invalidated.
+
+        @note
+
+        The @ref end() iterator (which is valid but cannot be
+        dereferenced) cannot be used as a value for `pos`.
 
         @par Complexity
         Constant on average, worst case linear in @ref size().
@@ -1135,7 +1138,7 @@ public:
         @par Exception Safety
         No-throw guarantee.
 
-        @return An iterator following the last removed element.
+        @return An iterator following the removed element.
 
         @param pos An iterator pointing to the element to be
         removed.
@@ -1169,13 +1172,16 @@ public:
     /** Erase an element preserving order
 
         Remove the element pointed to by `pos`, which must
-        be valid and dereferenceable. Thus the @ref end()
-        iterator (which is valid but cannot be dereferenced)
-        cannot be used as a value for `pos`.
+        be valid and dereferenceable.
         References and iterators from `pos` to `end()`, both
         included, are invalidated. Other iterators and references
         are not invalidated.
         The relative order of non-erased elements is preserved.
+
+        @note
+
+        The @ref end() iterator (which is valid but cannot be
+        dereferenced) cannot be used as a value for `pos`.
 
         @par Complexity
         Linear in @ref size().
@@ -1183,7 +1189,7 @@ public:
         @par Exception Safety
         No-throw guarantee.
 
-        @return An iterator following the last removed element.
+        @return An iterator following the removed element.
 
         @param pos An iterator pointing to the element to be
         removed.
