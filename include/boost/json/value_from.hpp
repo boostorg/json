@@ -52,7 +52,7 @@ struct value_from_tag {};
     Out of the box the function supports types satisfying
     <a href="https://en.cppreference.com/w/cpp/named_req/SequenceContainer"><em>SequenceContainer</em></a>,
     arrays, arithmetic types, `bool`, `std::tuple`, `std::pair`,
-    `std::optional`, and `std::nullopt_t`.
+    `std::variant`, `std::optional`, `std::monostate`, and `std::nullopt_t`.
 
     Conversion of other types is done by calling an overload of `tag_invoke`
     found by argument-dependent lookup. Its signature should be similar to:
@@ -101,7 +101,7 @@ value_from(
     Out of the box the function supports types satisfying
     <a href="https://en.cppreference.com/w/cpp/named_req/SequenceContainer"><em>SequenceContainer</em></a>,
     arrays, arithmetic types, `bool`, `std::tuple`, `std::pair`,
-    `std::optional`, and `std::nullopt_t`.
+    `std::variant`, `std::optional`, `std::monostate`, and `std::nullopt_t`.
 
     Conversion of other types is done by calling an overload of `tag_invoke`
     found by argument-dependent lookup. Its signature should be similar to:

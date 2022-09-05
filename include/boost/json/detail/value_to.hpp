@@ -594,6 +594,37 @@ tag_invoke(
 }
 #endif
 
+// std::variant
+#ifndef BOOST_NO_CXX17_HDR_VARIANT
+template<class... Ts>
+result< std::variant<Ts...> >
+tag_invoke(
+    try_value_to_tag< std::variant<Ts...> >,
+    value const& jv)
+{
+    error_code ec;
+    BOOST_JSON_FAIL(ec, error::exhausted_variants);
+
+    using Variant = std::variant<Ts...>;
+    result<Variant> res = {system::in_place_error, ec};
+    mp11::mp_for_each< mp11::mp_iota_c<sizeof...(Ts)> >([&](auto I) {
+        if( res )
+            return;
+
+        using T = std::variant_alternative_t<I.value, Variant>;
+        auto attempt = try_value_to<T>(jv);
+        if( attempt )
+            res.emplace(std::in_place_index_t<I>(), std::move(*attempt));
+    });
+
+    if( res.has_error() )
+    {
+        res = {system::in_place_error, ec};
+    }
+    return res;
+}
+#endif // BOOST_NO_CXX17_HDR_VARIANT
+
 BOOST_JSON_NS_END
 
 #endif

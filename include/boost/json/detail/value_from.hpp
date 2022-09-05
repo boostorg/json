@@ -152,6 +152,20 @@ value_from_helper(
         "No suitable tag_invoke overload found for the type");
 }
 
+#ifndef BOOST_NO_CXX17_HDR_VARIANT
+struct value_from_visitor
+{
+    value& jv;
+
+    template<class T>
+    void
+    operator()(T&& t)
+    {
+        value_from(static_cast<T&&>(t), jv);
+    }
+};
+#endif // BOOST_NO_CXX17_HDR_VARIANT
+
 } // detail
 
 #ifndef BOOST_NO_CXX17_HDR_OPTIONAL
@@ -193,6 +207,29 @@ tag_invoke(
     (void)jv;
 }
 #endif
+
+#ifndef BOOST_NO_CXX17_HDR_VARIANT
+// std::variant
+template<class... Ts>
+void
+tag_invoke(
+    value_from_tag,
+    value& jv,
+    std::variant<Ts...>&& from)
+{
+    std::visit(detail::value_from_visitor{jv}, std::move(from));
+}
+
+template<class... Ts>
+void
+tag_invoke(
+    value_from_tag,
+    value& jv,
+    std::variant<Ts...> const& from)
+{
+    std::visit(detail::value_from_visitor{jv}, from);
+}
+#endif // BOOST_NO_CXX17_HDR_VARIANT
 
 BOOST_JSON_NS_END
 

@@ -123,6 +123,9 @@ enum class error
 
     /// JSON array has size incompatible with target
     size_mismatch,
+
+    /// none of the types in a variant converted successfully
+    exhausted_variants,
 };
 
 /** Error conditions corresponding to JSON errors

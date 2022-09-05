@@ -48,12 +48,6 @@ struct value_to_tag;
 template<class T>
 struct try_value_to_tag;
 
-template <class T>
-struct result_for<T, value>
-{
-    using type = result< detail::remove_cvref<T> >;
-};
-
 /** Convert a @ref value to an object of type `T`.
 
     This function attempts to convert a @ref value
@@ -68,7 +62,7 @@ struct result_for<T, value>
     Out of the box the function supports types satisfying
     <a href="https://en.cppreference.com/w/cpp/named_req/SequenceContainer"><em>SequenceContainer</em></a>,
     arrays, arithmetic types, `bool`, `std::tuple`, `std::pair`,
-    `std::optional`, and `std::nullopt_t`.
+    `std::variant`, `std::optional`, `std::monostate`, and `std::nullopt_t`.
 
     Conversion of other types is done by calling an overload of `tag_invoke`
     found by argument-dependent lookup. Its signature should be similar to:
@@ -125,7 +119,7 @@ value_to(const value& jv)
     Out of the box the function supports types satisfying
     <a href="https://en.cppreference.com/w/cpp/named_req/SequenceContainer"><em>SequenceContainer</em></a>,
     arrays, arithmetic types, `bool`, `std::tuple`, `std::pair`,
-    `std::optional`, and `std::nullopt_t`.
+    `std::variant`, `std::optional`, `std::monostate`, and `std::nullopt_t`.
 
     Conversion of other types is done by calling an overload of `tag_invoke`
     found by argument-dependent lookup. Its signature should be similar to:

@@ -395,6 +395,26 @@ public:
     }
 #endif
 
+#ifndef BOOST_NO_CXX17_HDR_VARIANT
+    void
+    testVariant()
+    {
+        std::variant<int, ::value_from_test_ns::T5, double> v = 4;
+        value jv = value_from(v);
+        BOOST_TEST(jv == 4);
+
+        v = 0.5;
+        jv = value_from(v);
+        BOOST_TEST(jv == 0.5);
+
+        v = ::value_from_test_ns::T5{};
+        jv = value_from(v);
+        BOOST_TEST(jv == "T5");
+
+        BOOST_TEST( value() == value_from(std::monostate()) );
+    }
+#endif // BOOST_NO_CXX17_HDR_VARIANT
+
     void
     run()
     {
@@ -409,6 +429,9 @@ public:
 #ifndef BOOST_NO_CXX17_HDR_OPTIONAL
         testOptional();
 #endif
+#ifndef BOOST_NO_CXX17_HDR_VARIANT
+        testVariant();
+#endif // BOOST_NO_CXX17_HDR_VARIANT
     }
 };
 

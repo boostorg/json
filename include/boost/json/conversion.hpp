@@ -16,6 +16,10 @@
 #include <boost/mp11/utility.hpp>
 
 #include <utility>
+#ifndef BOOST_NO_CXX17_HDR_VARIANT
+# include <variant>
+#endif // BOOST_NO_CXX17_HDR_VARIANT
+
 
 BOOST_JSON_NS_BEGIN
 namespace detail {
@@ -68,6 +72,12 @@ template<class T>
 using is_value_type_pair = is_value_type_pair_helper<value_type<T>>;
 
 } // namespace detail
+
+template <class T>
+struct result_for<T, value>
+{
+    using type = result< detail::remove_cvref<T> >;
+};
 
 /** Determine if `T` can be treated like a string during conversions.
 
@@ -288,6 +298,13 @@ template<>
 struct is_null_like<std::nullptr_t>
     : std::true_type
 { };
+
+#ifndef BOOST_NO_CXX17_HDR_VARIANT
+template<>
+struct is_null_like<std::monostate>
+    : std::true_type
+{ };
+#endif // BOOST_NO_CXX17_HDR_VARIANT
 
 BOOST_JSON_NS_END
 

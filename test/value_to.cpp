@@ -295,6 +295,34 @@ public:
     }
 #endif
 
+#ifndef BOOST_NO_CXX17_HDR_VARIANT
+    void
+    testVariant()
+    {
+        using Var = std::variant<int, ::value_to_test_ns::T2, std::string>;
+
+        value jv(4);
+        auto v = value_to<Var>(jv);
+        BOOST_TEST( v.index() == 0 );
+        BOOST_TEST( std::get<0>(v) == 4 );
+
+        jv = "foobar";
+        v = value_to<Var>(jv);
+        BOOST_TEST( v.index() == 2 );
+        BOOST_TEST( std::get<2>(v) == "foobar" );
+
+        jv = "T2";
+        v = value_to<Var>(jv);
+        BOOST_TEST( v.index() == 1 );
+
+        jv = 3.5;
+        BOOST_TEST_THROWS_WITH_LOCATION( value_to<Var>(jv) );
+
+        value_to<std::monostate>( value() );
+        BOOST_TEST_THROWS_WITH_LOCATION( value_to<std::monostate>(jv) );
+    }
+#endif // BOOST_NO_CXX17_HDR_VARIANT
+
     void
     testNonThrowing()
     {
@@ -475,6 +503,9 @@ public:
 #ifndef BOOST_NO_CXX17_HDR_OPTIONAL
         testOptional();
 #endif
+#ifndef BOOST_NO_CXX17_HDR_VARIANT
+        testVariant();
+#endif // BOOST_NO_CXX17_HDR_VARIANT
         testUserConversion();
         testNonThrowing();
     }
