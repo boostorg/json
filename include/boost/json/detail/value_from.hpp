@@ -17,6 +17,10 @@
 #include <boost/json/detail/value_traits.hpp>
 #include <boost/mp11/algorithm.hpp>
 
+#ifndef BOOST_NO_CXX17_HDR_OPTIONAL
+# include <optional>
+#endif
+
 BOOST_JSON_NS_BEGIN
 
 namespace detail {
@@ -149,6 +153,47 @@ value_from_helper(
 }
 
 } // detail
+
+#ifndef BOOST_NO_CXX17_HDR_OPTIONAL
+template<class T>
+void
+tag_invoke(
+    value_from_tag,
+    value& jv,
+    std::optional<T> const& from)
+{
+    if( from )
+        value_from(*from, jv);
+    else
+        jv = nullptr;
+}
+
+template<class T>
+void
+tag_invoke(
+    value_from_tag,
+    value& jv,
+    std::optional<T>&& from)
+{
+    if( from )
+        value_from(std::move(*from), jv);
+    else
+        jv = nullptr;
+}
+
+inline
+void
+tag_invoke(
+    value_from_tag,
+    value& jv,
+    std::nullopt_t)
+{
+    // do nothing
+    BOOST_ASSERT(jv.is_null());
+    (void)jv;
+}
+#endif
+
 BOOST_JSON_NS_END
 
 #endif

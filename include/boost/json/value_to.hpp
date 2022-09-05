@@ -65,9 +65,13 @@ struct result_for<T, value>
 
     @li a user-provided overload of `tag_invoke`.
 
-    In all cases, the conversion is done by calling
-    an overload of `tag_invoke` found by argument-dependent
-    lookup. Its signature should be similar to:
+    Out of the box the function supports types satisfying
+    <a href="https://en.cppreference.com/w/cpp/named_req/SequenceContainer"><em>SequenceContainer</em></a>,
+    arrays, arithmetic types, `bool`, `std::tuple`, `std::pair`,
+    `std::optional`, and `std::nullopt_t`.
+
+    Conversion of other types is done by calling an overload of `tag_invoke`
+    found by argument-dependent lookup. Its signature should be similar to:
 
     @code
     T tag_invoke( value_to_tag<T>, value );
@@ -118,9 +122,13 @@ value_to(const value& jv)
 
     @li a user-provided overload of `tag_invoke`.
 
-    In all cases, the conversion is done by calling
-    an overload of `tag_invoke` found by argument-dependent
-    lookup. Its signature should be similar to:
+    Out of the box the function supports types satisfying
+    <a href="https://en.cppreference.com/w/cpp/named_req/SequenceContainer"><em>SequenceContainer</em></a>,
+    arrays, arithmetic types, `bool`, `std::tuple`, `std::pair`,
+    `std::optional`, and `std::nullopt_t`.
+
+    Conversion of other types is done by calling an overload of `tag_invoke`
+    found by argument-dependent lookup. Its signature should be similar to:
 
     @code
     result<T> tag_invoke( try_value_to_tag<T>, value const& );

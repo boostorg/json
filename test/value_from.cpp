@@ -117,6 +117,51 @@ size(T6 const&)
 
 struct T7 { };
 
+//----------------------------------------------------------
+
+struct T8
+{
+    bool error;
+};
+
+void
+tag_invoke(
+    ::boost::json::value_from_tag,
+    ::boost::json::value& jv,
+    ::boost::json::error_code& ec,
+    T8 const& t8)
+{
+    if( t8.error )
+    {
+        ec = ::boost::json::error::syntax;
+        return;
+    }
+
+    jv = "T8";
+}
+
+//----------------------------------------------------------
+
+struct T9
+{
+    int num;
+};
+
+void
+tag_invoke(
+    ::boost::json::value_from_tag,
+    ::boost::json::value& jv,
+    T9 const& t9)
+{
+    if( t9.num == 0 )
+        throw std::invalid_argument("");
+    if( t9.num < 0 )
+        throw ::boost::json::system_error(
+            make_error_code(::boost::json::error::syntax));
+
+    jv = "T9";
+}
+
 } // namespace value_from_test_ns
 
 template<class T>
@@ -339,6 +384,17 @@ public:
         }
     }
 
+#ifndef BOOST_NO_CXX17_HDR_OPTIONAL
+    void testOptional()
+    {
+        std::vector<std::optional<int>> opts{1, 2, 3, {}, 5};
+        value jv = value_from(opts);
+        BOOST_TEST( jv == (value{1, 2, 3, nullptr, 5}) );
+
+        BOOST_TEST( value_from(std::nullopt).is_null() );
+    }
+#endif
+
     void
     run()
     {
@@ -350,6 +406,9 @@ public:
         testAssociative();
         testPreferUserCustomizations();
         testTrySize();
+#ifndef BOOST_NO_CXX17_HDR_OPTIONAL
+        testOptional();
+#endif
     }
 };
 

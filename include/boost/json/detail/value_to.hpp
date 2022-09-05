@@ -16,7 +16,9 @@
 #include <boost/json/detail/value_traits.hpp>
 #include <boost/mp11/integer_sequence.hpp>
 
-#include <type_traits>
+#ifndef BOOST_NO_CXX17_HDR_OPTIONAL
+# include <optional>
+#endif
 
 BOOST_JSON_NS_BEGIN
 
@@ -563,6 +565,35 @@ using value_to_implementation
     = conversion_implementation<T, value_to_conversion>;
 
 } // detail
+
+// std::optional
+#ifndef BOOST_NO_CXX17_HDR_OPTIONAL
+template<class T>
+result<std::optional<T>>
+tag_invoke(
+    try_value_to_tag<std::optional<T>>,
+    value const& jv)
+{
+    if( jv.is_null() )
+        return std::optional<T>();
+    else
+        return try_value_to<T>(jv);
+}
+
+inline
+result<std::nullopt_t>
+tag_invoke(
+    try_value_to_tag<std::nullopt_t>,
+    value const& jv)
+{
+    if( jv.is_null() )
+        return std::nullopt;
+    error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_null);
+    return ec;
+}
+#endif
+
 BOOST_JSON_NS_END
 
 #endif

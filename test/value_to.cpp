@@ -282,6 +282,19 @@ public:
             ( value_to<::value_to_test_ns::T1>(value(1)) ));
     }
 
+#ifndef BOOST_NO_CXX17_HDR_OPTIONAL
+    void testOptional()
+    {
+        using Opts = std::vector<std::optional<int>>;
+        value jv = value{1, nullptr, 3, nullptr, 5};
+        auto opts = value_to<Opts>(jv);
+        BOOST_TEST( opts == (Opts{1, {}, 3, {}, 5}) );
+
+        value_to< std::nullopt_t >(value());
+        BOOST_TEST_THROWS_WITH_LOCATION( value_to< std::nullopt_t >(jv) );
+    }
+#endif
+
     void
     testNonThrowing()
     {
@@ -459,6 +472,9 @@ public:
         testGenerics();
         testContainerHelpers();
         testNullptr();
+#ifndef BOOST_NO_CXX17_HDR_OPTIONAL
+        testOptional();
+#endif
         testUserConversion();
         testNonThrowing();
     }
