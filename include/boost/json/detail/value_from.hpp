@@ -83,8 +83,8 @@ value_from_helper(
     T&& from,
     string_like_conversion_tag)
 {
-    jv.emplace_string().assign(
-        from.data(), from.size());
+    auto sv = static_cast<string_view>(from);
+    jv.emplace_string().assign(sv);
 }
 
 // map-like types

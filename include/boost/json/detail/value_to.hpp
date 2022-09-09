@@ -202,7 +202,7 @@ value_to_impl(
     string_like_conversion_tag)
 {
     auto& str = jv.as_string();
-    return T(str.data(), str.size());
+    return T(str.subview());
 }
 
 // map-like containers

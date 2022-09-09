@@ -134,14 +134,8 @@ using has_user_conversion
             mp11::mp_quote<has_user_conversion_to_impl>>,
         T>;
 
-template<class T, class U>
-using is_data_convertible
-    = std::is_convertible<decltype(std::declval<T&>().data()), U>;
 template<class T>
-using is_string_like = mp11::mp_all<
-    std::is_constructible<T, char const*, std::size_t>,
-    mp11::mp_valid_and_true<is_data_convertible, T, char const*>,
-    mp11::mp_valid_and_true<has_size_member_helper, T>>;
+using is_string_like = std::is_convertible<T, string_view>;
 
 template<class T>
 using are_begin_and_end_same = std::is_same<
@@ -163,44 +157,32 @@ using has_unique_keys = has_positive_tuple_size<decltype(
 template<class T>
 using is_value_type_pair
     = mp11::mp_bool<std::tuple_size<value_type<T>>::value == 2>;
-template<class T, class Dir>
+template<class T>
 using is_map_like = mp11::mp_all<
     is_sequence_like<T>,
+    is_string_like<key_type<T>>,
     mp11::mp_valid_and_true<has_unique_keys, T>,
-    mp11::mp_valid_and_true<is_value_type_pair, T>,
-    mp11::mp_invoke_q<
-        mp11::mp_if<
-            Dir, // is value_from_conversion
-            mp11::mp_quote<std::is_convertible>,
-            mp11::mp_quote<std::is_constructible>>,
-        key_type<T>,
-        string_view>>;
-
-// matches char const*, but only for value_from
-template<class T, class Dir>
-using is_char_star
-    = mp11::mp_and<Dir, std::is_same<T, char const*>>;
+    mp11::mp_valid_and_true<is_value_type_pair, T>>;
 
 template<class T, class Dir>
 using conversion_implementation = mp11::mp_cond<
     // user conversion (via tag_invoke)
-    has_user_conversion<T, Dir>,       user_conversion_tag,
+    has_user_conversion<T, Dir>,     user_conversion_tag,
     // native conversions (constructors and member functions of value)
-    std::is_same<T, value>,            value_conversion_tag,
-    std::is_same<T, array>,            array_conversion_tag,
-    std::is_same<T, object>,           object_conversion_tag,
-    std::is_same<T, string>,           string_conversion_tag,
-    std::is_same<T, std::nullptr_t>,   nullptr_conversion_tag,
-    std::is_same<T, bool>,             bool_conversion_tag,
-    std::is_arithmetic<T>,             number_conversion_tag,
-    is_char_star<T, Dir>,              native_conversion_tag,
+    std::is_same<T, value>,          value_conversion_tag,
+    std::is_same<T, array>,          array_conversion_tag,
+    std::is_same<T, object>,         object_conversion_tag,
+    std::is_same<T, string>,         string_conversion_tag,
+    std::is_same<T, std::nullptr_t>, nullptr_conversion_tag,
+    std::is_same<T, bool>,           bool_conversion_tag,
+    std::is_arithmetic<T>,           number_conversion_tag,
     // generic conversions
-    is_string_like<T>,                 string_like_conversion_tag,
-    is_map_like<T, Dir>,               map_like_conversion_tag,
-    is_sequence_like<T>,               sequence_conversion_tag,
-    is_tuple_like<T>,                  tuple_conversion_tag,
+    is_string_like<T>,               string_like_conversion_tag,
+    is_map_like<T>,                  map_like_conversion_tag,
+    is_sequence_like<T>,             sequence_conversion_tag,
+    is_tuple_like<T>,                tuple_conversion_tag,
     // failed to find a suitable implementation
-    mp11::mp_true,                     no_conversion_tag>;
+    mp11::mp_true,                   no_conversion_tag>;
 
 template <class T, class Dir>
 using can_convert = mp11::mp_not<
@@ -220,8 +202,7 @@ template<class Main, class Opposite>
 using conversion_round_trips_helper = mp11::mp_or<
     std::is_same<Main, Opposite>,
     std::is_same<user_conversion_tag, Main>,
-    std::is_same<user_conversion_tag, Opposite>,
-    std::is_same<no_conversion_tag, Opposite>>;
+    std::is_same<user_conversion_tag, Opposite>>;
 template<class T, class Dir>
 using conversion_round_trips  = conversion_round_trips_helper<
     conversion_implementation<T, Dir>,
