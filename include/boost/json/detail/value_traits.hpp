@@ -11,13 +11,7 @@
 #ifndef BOOST_JSON_DETAIL_VALUE_TRAITS_HPP
 #define BOOST_JSON_DETAIL_VALUE_TRAITS_HPP
 
-#include <boost/json/detail/config.hpp>
-#include <boost/mp11/algorithm.hpp>
-#include <boost/mp11/bind.hpp>
-#include <boost/mp11/function.hpp>
-#include <boost/mp11/utility.hpp>
-#include <type_traits>
-#include <utility>
+#include <boost/json/conversion.hpp>
 
 BOOST_JSON_NS_BEGIN
 
@@ -28,29 +22,9 @@ struct value_to_tag { };
 
 namespace detail {
 
-using std::begin;
-using std::end;
 #ifdef __cpp_lib_nonmember_container_access
 using std::size;
 #endif
-
-template<std::size_t I, class T>
-using tuple_element_t = typename std::tuple_element<I, T>::type;
-
-template<class T>
-using value_type = remove_cvref< decltype(*begin(std::declval<T&>())) >;
-template<class T>
-using mapped_type = tuple_element_t< 1, value_type<T> >;
-
-// had to make the metafunction always succeeding in order to make it work
-// with msvc 14.0
-template<class T>
-using key_type_helper = tuple_element_t< 0, value_type<T> >;
-template<class T>
-using key_type = mp11::mp_eval_or<
-    void,
-    key_type_helper,
-    T>;
 
 template<class T>
 using has_size_member_helper
@@ -133,36 +107,6 @@ using has_user_conversion
             mp11::mp_quote<has_user_conversion_from_impl>,
             mp11::mp_quote<has_user_conversion_to_impl>>,
         T>;
-
-template<class T>
-using is_string_like = std::is_convertible<T, string_view>;
-
-template<class T>
-using are_begin_and_end_same = std::is_same<
-    decltype(begin(std::declval<T&>())),
-    decltype(end(std::declval<T&>()))>;
-template <class T>
-using is_sequence_like = mp11::mp_valid_and_true<are_begin_and_end_same, T>;
-
-template<class T>
-using has_positive_tuple_size = mp11::mp_bool<
-    (std::tuple_size<T>::value > 0) >;
-template<class T>
-using is_tuple_like = mp11::mp_valid_and_true<has_positive_tuple_size, T>;
-
-template<class T>
-using has_unique_keys = has_positive_tuple_size<decltype(
-    std::declval<T&>().emplace(
-        std::declval<value_type<T>>()))>;
-template<class T>
-using is_value_type_pair
-    = mp11::mp_bool<std::tuple_size<value_type<T>>::value == 2>;
-template<class T>
-using is_map_like = mp11::mp_all<
-    is_sequence_like<T>,
-    is_string_like<key_type<T>>,
-    mp11::mp_valid_and_true<has_unique_keys, T>,
-    mp11::mp_valid_and_true<is_value_type_pair, T>>;
 
 template<class T, class Dir>
 using conversion_implementation = mp11::mp_cond<
