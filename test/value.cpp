@@ -844,6 +844,13 @@ public:
                 BOOST_TEST(jv.is_array());
                 BOOST_TEST(*jv.storage() == *sp);
             }
+            {
+                value jv(sp);
+                array const arr;
+                jv = arr;
+                BOOST_TEST(jv.is_array());
+                BOOST_TEST(*jv.storage() == *sp);
+            }
         }
 
         // operator=(object)
@@ -857,6 +864,13 @@ public:
             {
                 value jv(sp);
                 jv = object();
+                BOOST_TEST(jv.is_object());
+                BOOST_TEST(*jv.storage() == *sp);
+            }
+            {
+                value jv(sp);
+                object const obj;
+                jv = obj;
                 BOOST_TEST(jv.is_object());
                 BOOST_TEST(*jv.storage() == *sp);
             }
