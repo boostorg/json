@@ -508,30 +508,17 @@ object::
 erase(const_iterator pos) noexcept ->
     iterator
 {
-    auto p = begin() + (pos - begin());
-    if(t_->is_small())
-    {
-        p->~value_type();
-        --t_->size;
-        auto const pb = end();
-        if(p != end())
-        {
+    return do_erase(pos,
+        [this](iterator p) {
             // the casts silence warnings
             std::memcpy(
                 static_cast<void*>(p),
-                static_cast<void const*>(pb),
+                static_cast<void const*>(end()),
                 sizeof(*p));
-        }
-        return p;
-    }
-    remove(t_->bucket(p->key()), *p);
-    p->~value_type();
-    --t_->size;
-    if(p != end())
-    {
-        reindex_relocate(end(), p);
-    }
-    return p;
+        },
+        [this](iterator p) {
+            reindex_relocate(end(), p);
+        });
 }
 
 auto
@@ -551,30 +538,20 @@ object::
 stable_erase(const_iterator pos) noexcept ->
     iterator
 {
-    auto p = begin() + (pos - begin());
-    if(t_->is_small())
-    {
-        p->~value_type();
-        --t_->size;
-        if(p != end())
-        {
+    return do_erase(pos,
+        [this](iterator p) {
             // the casts silence warnings
             std::memmove(
                 static_cast<void*>(p),
                 static_cast<void const*>(p + 1),
                 sizeof(*p) * (end() - p));
-        }
-        return p;
-    }
-    remove(t_->bucket(p->key()), *p);
-    p->~value_type();
-    --t_->size;
-    auto pret = p;
-    for (; p != end(); ++p)
-    {
-        reindex_relocate(p + 1, p);
-    }
-    return pret;
+        },
+        [this](iterator p) {
+            for (; p != end(); ++p)
+            {
+                reindex_relocate(p + 1, p);
+            }
+        });
 }
 
 auto
@@ -861,6 +838,36 @@ destroy(
     BOOST_ASSERT(! sp_.is_not_shared_and_deallocate_is_trivial());
     while(last != first)
         (--last)->~key_value_pair();
+}
+
+template<class FS, class FB>
+auto
+object::
+do_erase(
+    const_iterator pos,
+    FS small_reloc,
+    FB big_reloc) noexcept
+    -> iterator
+{
+    auto p = begin() + (pos - begin());
+    if(t_->is_small())
+    {
+        p->~value_type();
+        --t_->size;
+        if(p != end())
+        {
+            small_reloc(p);
+        }
+        return p;
+    }
+    remove(t_->bucket(p->key()), *p);
+    p->~value_type();
+    --t_->size;
+    if(p != end())
+    {
+        big_reloc(p);
+    }
+    return p;
 }
 
 void

@@ -1176,7 +1176,7 @@ public:
         References and iterators from `pos` to `end()`, both
         included, are invalidated. Other iterators and references
         are not invalidated.
-        The relative order of non-erased elements is preserved.
+        The relative order of remaining elements is preserved.
 
         @note
 
@@ -1202,7 +1202,7 @@ public:
 
         Remove the element which matches `key`, if it exists.
         All references and iterators are invalidated.
-        The relative order of non-erased elements is preserved.
+        The relative order of remaining elements is preserved.
 
         @par Complexity
         Linear in @ref size().
@@ -1620,6 +1620,14 @@ private:
     destroy(
         key_value_pair* first,
         key_value_pair* last) noexcept;
+
+    template<class FS, class FB>
+    auto
+    do_erase(
+        const_iterator pos,
+        FS small_reloc,
+        FB big_reloc) noexcept
+        -> iterator;
 
     inline
     void
