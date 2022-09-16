@@ -63,12 +63,13 @@ value_from_helper(
     jv = std::forward<T>(from);
 }
 
+// null-like types
 template<class T>
 void
 value_from_helper(
     value& jv,
     T&&,
-    nullptr_conversion_tag)
+    null_like_conversion_tag)
 {
     // do nothing
     BOOST_ASSERT(jv.is_null());

@@ -254,6 +254,41 @@ struct is_tuple_like
 ;
 #endif
 
+/** Determine if `T` can be treated like null during conversions.
+
+    Primary template instantiations provide the member constant `value` that is
+    equal to `false`. Users can specialize the trait for their own types if
+    they **do** want them to be treated as nulls. For example:
+
+    @code
+    namespace boost {
+    namespace json {
+
+    template <>
+    struct is_null_like<your::null_type> : std::true_type
+    { };
+
+    } // namespace boost
+    } // namespace json
+    @endcode
+
+
+    @par Types satisfying the trait
+
+    <a href="https://en.cppreference.com/w/cpp/types/nullptr_t"><tt>std::nullptr_t</tt></a>.
+
+    @see @ref value_from, @ref value_to
+*/
+template<class T, class Enable = void>
+struct is_null_like
+    : std::false_type
+{ };
+
+template<>
+struct is_null_like<std::nullptr_t>
+    : std::true_type
+{ };
+
 BOOST_JSON_NS_END
 
 #endif // BOOST_JSON_CONVERSION_HPP

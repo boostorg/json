@@ -17,8 +17,17 @@
 #include <unordered_map>
 #include <vector>
 
+namespace value_to_test_ns
+{
+
+struct T1 { };
+
+} // namespace value_to_test_ns
+
 BOOST_JSON_NS_BEGIN
 
+template<>
+struct is_null_like<::value_to_test_ns::T1> : std::true_type { };
 
 template <class T, class = void>
 struct can_apply_value_to
@@ -35,7 +44,6 @@ struct can_apply_value_to<T, detail::void_t<decltype(
 };
 
 BOOST_STATIC_ASSERT(!can_apply_value_to<int>::value);
-
 
 class value_to_test
 {
@@ -146,8 +154,12 @@ public:
     void testNullptr()
     {
         (void)value_to<std::nullptr_t>(value());
+        (void)value_to<::value_to_test_ns::T1>(value());
         BOOST_TEST_THROWS(
             (value_to<std::nullptr_t>(value(1))), std::invalid_argument);
+        BOOST_TEST_THROWS(
+            (value_to<::value_to_test_ns::T1>(value(1))),
+            std::invalid_argument);
     }
 
     void

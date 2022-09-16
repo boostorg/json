@@ -156,21 +156,6 @@ value_to_impl(
     return jv.as_string();
 }
 
-// nullptr conversion
-// this is barely useful, and provided mostly for consistency
-inline
-std::nullptr_t
-value_to_impl(
-    value_to_tag<std::nullptr_t>,
-    value const& jv,
-    nullptr_conversion_tag)
-{
-    if( jv.is_null() )
-        return nullptr;
-    detail::throw_invalid_argument(
-        "source value is not null", BOOST_JSON_SOURCE_POS);
-}
-
 // bool
 inline
 bool
@@ -191,6 +176,20 @@ value_to_impl(
     number_conversion_tag)
 {
     return jv.to_number<T>();
+}
+
+// null-like conversion
+template<class T>
+T
+value_to_impl(
+    value_to_tag<T>,
+    value const& jv,
+    null_like_conversion_tag)
+{
+    if( jv.is_null() )
+        return T();
+    detail::throw_invalid_argument(
+        "source value is not null", BOOST_JSON_SOURCE_POS);
 }
 
 // string-like types

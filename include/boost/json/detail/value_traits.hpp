@@ -84,7 +84,7 @@ struct array_conversion_tag : native_conversion_tag { };
 struct string_conversion_tag : native_conversion_tag { };
 struct bool_conversion_tag : native_conversion_tag { };
 struct number_conversion_tag : native_conversion_tag { };
-struct nullptr_conversion_tag : native_conversion_tag { };
+struct null_like_conversion_tag { };
 struct string_like_conversion_tag { };
 struct map_like_conversion_tag { };
 struct sequence_conversion_tag { };
@@ -111,20 +111,20 @@ using has_user_conversion
 template<class T, class Dir>
 using conversion_implementation = mp11::mp_cond<
     // user conversion (via tag_invoke)
-    has_user_conversion<T, Dir>,     user_conversion_tag,
+    has_user_conversion<T, Dir>, user_conversion_tag,
     // native conversions (constructors and member functions of value)
-    std::is_same<T, value>,          value_conversion_tag,
-    std::is_same<T, array>,          array_conversion_tag,
-    std::is_same<T, object>,         object_conversion_tag,
-    std::is_same<T, string>,         string_conversion_tag,
-    std::is_same<T, std::nullptr_t>, nullptr_conversion_tag,
-    std::is_same<T, bool>,           bool_conversion_tag,
-    std::is_arithmetic<T>,           number_conversion_tag,
+    std::is_same<T, value>,      value_conversion_tag,
+    std::is_same<T, array>,      array_conversion_tag,
+    std::is_same<T, object>,     object_conversion_tag,
+    std::is_same<T, string>,     string_conversion_tag,
+    std::is_same<T, bool>,       bool_conversion_tag,
+    std::is_arithmetic<T>,       number_conversion_tag,
     // generic conversions
-    is_string_like<T>,               string_like_conversion_tag,
-    is_map_like<T>,                  map_like_conversion_tag,
-    is_sequence_like<T>,             sequence_conversion_tag,
-    is_tuple_like<T>,                tuple_conversion_tag,
+    is_null_like<T>,             null_like_conversion_tag,
+    is_string_like<T>,           string_like_conversion_tag,
+    is_map_like<T>,              map_like_conversion_tag,
+    is_sequence_like<T>,         sequence_conversion_tag,
+    is_tuple_like<T>,            tuple_conversion_tag,
     // failed to find a suitable implementation
     mp11::mp_true,                   no_conversion_tag>;
 

@@ -25,7 +25,8 @@
 
 //----------------------------------------------------------
 
-namespace value_from_test_ns {
+namespace value_from_test_ns
+{
 
 //----------------------------------------------------------
 
@@ -114,7 +115,9 @@ size(T6 const&)
     return 3;
 }
 
-} // value_from_test_ns
+struct T7 { };
+
+} // namespace value_from_test_ns
 
 template<class T>
 static
@@ -140,6 +143,11 @@ check(
 }
 
 BOOST_JSON_NS_BEGIN
+
+template<>
+struct is_null_like<::value_from_test_ns::T7>
+    : std::true_type
+{ };
 
 namespace {
 
@@ -248,6 +256,11 @@ public:
             value c = value_from(a);
             BOOST_TEST(c.is_array());
             BOOST_TEST(serialize(c) == serialize(b));
+        }
+        {
+            ::value_from_test_ns::T7 a;
+            value b = value_from(a);
+            BOOST_TEST(b.is_null());
         }
     }
 
