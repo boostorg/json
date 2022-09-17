@@ -55,8 +55,13 @@ using has_unique_keys = has_positive_tuple_size<decltype(
         std::declval<value_type<T>>()))>;
 
 template<class T>
-using is_value_type_pair
-    = mp11::mp_bool<std::tuple_size<value_type<T>>::value == 2>;
+struct is_value_type_pair_helper : std::false_type
+{ };
+template<class T1, class T2>
+struct is_value_type_pair_helper<std::pair<T1, T2>> : std::true_type
+{ };
+template<class T>
+using is_value_type_pair = is_value_type_pair_helper<value_type<T>>;
 
 } // namespace detail
 
@@ -159,12 +164,10 @@ struct is_sequence_like
 
     @li <tt>is_sequence_like<T>::value</tt> is `true`; and
 
-    @li given `V`, the type denoted by
-        `std::remove_cvref_t<decltype(*BEGIN(t))>`,
-        <tt>std::tuple_size<V>::value</tt> is equal to 2; and
+    @li given types `K` and `M`, `std::remove_cvref_t<decltype(*BEGIN(t))>`
+        denotes type `std::pair<K, M>`; and
 
-    @li given `K`, the type denoted by `std::tuple_element_t<0, V>`,
-        <tt>std::is_string_like<K>::value</tt> is `true`; and
+    @li <tt>std::is_string_like<K>::value</tt> is `true`; and
 
     @li given `v`, a glvalue of type `V`, and `E`, the type denoted by
         `decltype(t.emplace(v))`,
@@ -196,6 +199,11 @@ struct is_sequence_like
     @endcode
 
 
+    @note
+
+    The restriction for `t.emplace()` return type ensures that the container
+    does not accept duplicate keys.
+
     @par Types satisfying the trait
 
     <a href="https://en.cppreference.com/w/cpp/container/map"><tt>std::map</tt></a>,
@@ -208,9 +216,9 @@ struct is_map_like
 #ifndef BOOST_JSON_DOCS
     : mp11::mp_all<
         is_sequence_like<T>,
+        mp11::mp_valid_and_true<detail::is_value_type_pair, T>,
         is_string_like<detail::key_type<T>>,
-        mp11::mp_valid_and_true<detail::has_unique_keys, T>,
-        mp11::mp_valid_and_true<detail::is_value_type_pair, T>>
+        mp11::mp_valid_and_true<detail::has_unique_keys, T>>
 { };
 #else
 ;
