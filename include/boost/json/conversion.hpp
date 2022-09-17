@@ -19,14 +19,11 @@
 BOOST_JSON_NS_BEGIN
 namespace detail {
 
-using std::begin;
-using std::end;
-
 template<std::size_t I, class T>
 using tuple_element_t = typename std::tuple_element<I, T>::type;
 
 template<class T>
-using value_type = remove_cvref< decltype(*begin(std::declval<T&>())) >;
+using value_type = remove_cvref< decltype(*std::begin(std::declval<T&>())) >;
 template<class T>
 using mapped_type = tuple_element_t< 1, value_type<T> >;
 
@@ -41,9 +38,15 @@ using key_type = mp11::mp_eval_or<
     T>;
 
 template<class T>
+using iterator_type = decltype(std::begin(std::declval<T&>()));
+template<class T>
 using are_begin_and_end_same = std::is_same<
-    decltype(begin(std::declval<T&>())),
-    decltype(end(std::declval<T&>()))>;
+    iterator_type<T>,
+    decltype(std::end(std::declval<T&>()))>;
+
+template<class T>
+using begin_iterator_category = typename std::iterator_traits<
+    iterator_type<T>>::iterator_category;
 
 template<class T>
 using has_positive_tuple_size = mp11::mp_bool<
@@ -107,23 +110,15 @@ struct is_string_like
 /** Determine if `T` can be treated like a sequence during conversions.
 
     Given `t`, a glvalue of type `T`, if
-    <tt>std::is_same<decltype(BEGIN(t)), decltype(END(t))>::value</tt> is
-    well-formed and `true`, then the trait provides the member constant `value`
-    that is equal to `true`. Otherwise, `value` is equal to `false`.<br>
 
-    Operation `BEGIN(t)` is equivalent to
+    @li given `It`, the type denoted by `decltype(std::begin(t))`,
+        <tt>std::iterator_traits<It>::iterator_category</tt> is well-formed and
+        denotes a type; and
 
-    @code
-    using std::begin;
-    begin(t);
-    @endcode
+    @li `decltype(std::end(t))` also denotes the type `It`;
 
-    Operation `END(t)` is equivalent to
-
-    @code
-    using std::end;
-    end(t);
-    @endcode
+    then the trait provides the member constant `value` that is equal to
+    `true`. Otherwise, `value` is equal to `false`.<br>
 
     Users can specialize the trait for their own types if they don't want them
     to be treated like sequences. For example:
@@ -151,7 +146,9 @@ struct is_string_like
 template<class T, class Enable = void>
 struct is_sequence_like
 #ifndef BOOST_JSON_DOCS
-    : mp11::mp_valid_and_true<detail::are_begin_and_end_same, T>
+    : mp11::mp_all<
+        mp11::mp_valid_and_true<detail::are_begin_and_end_same, T>,
+        mp11::mp_valid<detail::begin_iterator_category, T>>
 { };
 #else
 ;
@@ -164,8 +161,9 @@ struct is_sequence_like
 
     @li <tt>is_sequence_like<T>::value</tt> is `true`; and
 
-    @li given types `K` and `M`, `std::remove_cvref_t<decltype(*BEGIN(t))>`
-        denotes type `std::pair<K, M>`; and
+    @li given types `K` and `M`,
+        `std::remove_cvref_t<decltype(*std::begin(t))>` denotes type
+        `std::pair<K, M>`; and
 
     @li <tt>std::is_string_like<K>::value</tt> is `true`; and
 
@@ -175,13 +173,6 @@ struct is_sequence_like
 
     then the trait provides the member constant `value`
     that is equal to `true`. Otherwise, `value` is equal to `false`.<br>
-
-    Operation `BEGIN(t)` is equivalent to
-
-    @code
-    using std::begin;
-    begin(t);
-    @endcode
 
     Users can specialize the trait for their own types if they don't want them
     to be treated like mappings. For example:
