@@ -9,6 +9,8 @@
 
 project : requirements <library>/boost/json//boost_json ;
 
+exe merge : merge.cpp ;
+
 exe path : path.cpp ;
 
 exe pretty : pretty.cpp ;

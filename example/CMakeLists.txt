@@ -9,11 +9,20 @@
 
 source_group("" FILES
     file.hpp
+    merge.cpp
     path.cpp
     pretty.cpp
     proxy.cpp
     validate.cpp
 )
+
+#
+
+add_executable(merge
+    merge.cpp
+)
+set_property(TARGET merge PROPERTY FOLDER "example")
+target_link_libraries(merge PRIVATE Boost::json)
 
 #
 
