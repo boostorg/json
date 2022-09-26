@@ -21,6 +21,7 @@ from the standard library.
 [include custom.qbk]
 [include nothrow.qbk]
 [include alloc.qbk]
+[include context.qbk]
 [include forward.qbk]
 
 [endsect]

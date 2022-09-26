@@ -20,5 +20,9 @@
 [example_validate]
 [endsect]
 
+[section Allocator-aware conversion]
+[example_use_allocator]
+[endsect]
+
 [endsect]
 

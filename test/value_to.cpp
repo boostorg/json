@@ -11,6 +11,7 @@
 #include <boost/json/value_to.hpp>
 
 #include <boost/json/value_from.hpp>
+#include <boost/core/ignore_unused.hpp>
 #include <boost/describe/class.hpp>
 #include <boost/describe/enum.hpp>
 
@@ -124,6 +125,26 @@ struct T8
 };
 BOOST_DESCRIBE_STRUCT(T8, (), (n, d, opt_s))
 
+//----------------------------------------------------------
+
+struct custom_context
+{ };
+
+struct T9
+{ };
+
+boost::json::result<T9>
+tag_invoke(
+    boost::json::try_value_to_tag<T9>,
+    boost::json::value const& jv,
+    custom_context const&)
+{
+    boost::json::string const* str = jv.if_string();
+    if( str && *str == "T9" )
+        return T9{};
+    return make_error_code(boost::json::error::syntax);
+}
+
 } // namespace value_to_test_ns
 
 namespace std
@@ -173,119 +194,137 @@ class value_to_test
 {
 public:
 
-    template<class T>
+#define BOOST_TEST_CONV(x, ... ) \
+    BOOST_TEST( value_to<decltype(x)>( value_from((x)), __VA_ARGS__ ) == (x) )
+
+    template< class... Context >
+    static
     void
-    check(T t)
+    testNumberCast( Context const& ... ctx )
     {
-        BOOST_TEST(value_to<T>(value_from(t)) == t);
+        BOOST_TEST_CONV( (short)-1, ctx... );
+        BOOST_TEST_CONV( (int)-2, ctx... );
+        BOOST_TEST_CONV( (long)-3, ctx... );
+        BOOST_TEST_CONV( (long long)-4, ctx... );
+        BOOST_TEST_CONV( (unsigned short)1, ctx... );
+        BOOST_TEST_CONV( (unsigned int)2, ctx... );
+        BOOST_TEST_CONV( (unsigned long)3, ctx... );
+        BOOST_TEST_CONV( (unsigned long long)4, ctx... );
+        BOOST_TEST_CONV( (float)1.5, ctx... );
+        BOOST_TEST_CONV( (double)2.5, ctx... );
+        BOOST_TEST_CONV( true, ctx... );
+        BOOST_TEST_THROWS_WITH_LOCATION(value_to<bool>(
+            value(), ctx... ));
+        BOOST_TEST_THROWS_WITH_LOCATION(value_to<int>(
+            value(), ctx... ));
+        BOOST_TEST_THROWS_WITH_LOCATION(value_to<double>(
+            value(), ctx... ));
     }
 
+    template< class... Context >
+    static
     void
-    testNumberCast()
+    testJsonTypes( Context const& ... ctx )
     {
-        check((short)-1);
-        check((int)-2);
-        check((long)-3);
-        check((long long)-4);
-        check((unsigned short)1);
-        check((unsigned int)2);
-        check((unsigned long)3);
-        check((unsigned long long)4);
-        check((float)1.5);
-        check((double)2.5);
-        check(true);
-        BOOST_TEST_THROWS_WITH_LOCATION(
-            value_to<bool>(value()) );
-        BOOST_TEST_THROWS_WITH_LOCATION(
-            value_to<int>(value()) );
-        BOOST_TEST_THROWS_WITH_LOCATION(
-            value_to<double>(value()) );
+        value_to<object>( value(object_kind), ctx... );
+        value_to<array>( value(array_kind), ctx... );
+        value_to<string>( value(string_kind), ctx... );
+
+        BOOST_TEST_THROWS_WITH_LOCATION(value_to<object>(
+            value(), ctx... ));
+        BOOST_TEST_THROWS_WITH_LOCATION(value_to<array>(
+            value(), ctx... ));
+        BOOST_TEST_THROWS_WITH_LOCATION(value_to<string>(
+            value(), ctx... ));
     }
 
+    template< class... Context >
+    static
     void
-    testJsonTypes()
+    testGenerics( Context const& ... ctx )
     {
-        value_to<object>(value(object_kind));
-        value_to<array>(value(array_kind));
-        value_to<string>(value(string_kind));
-
-        BOOST_TEST_THROWS_WITH_LOCATION(
-            value_to<object>(value()) );
-        BOOST_TEST_THROWS_WITH_LOCATION(
-            value_to<array>(value()) );
-        BOOST_TEST_THROWS_WITH_LOCATION(
-            value_to<string>(value()) );
-    }
-
-    void
-    testGenerics()
-    {
-        check(std::string("test"));
-        check(std::map<std::string, int>
-        {
-            {"a", 1}, {"b", 2}, {"c", 3}
-        });
-        check(std::multimap<std::string, int>
-        {
-            {"2", 4}, {"3", 9}, {"5", 25}
-        });
-        check(std::unordered_map<std::string, int>
-        {
-            { "a", 1 }, {"b", 2}, {"c", 3}
-        });
-        check(std::vector<int>{1, 2, 3, 4});
-        check(std::vector<bool>{true, false, false, true});
-        check(std::make_pair(std::string("test"), 5));
-        check(std::make_tuple(std::string("outer"),
-            std::make_pair(std::string("test"), 5)));
-        check(std::map<int, int>
-        {
-            {2, 4}, {3, 9}, {5, 25}
-        });
+        BOOST_TEST_CONV( std::string("test"), ctx... );
+        BOOST_TEST_CONV(
+            (std::map<std::string, int>
+            {
+                {"a", 1}, {"b", 2}, {"c", 3}
+            }),
+            ctx... );
+        BOOST_TEST_CONV(
+            (std::multimap<std::string, int>
+            {
+                {"2", 4}, {"3", 9}, {"5", 25}
+            }),
+            ctx... );
+        BOOST_TEST_CONV(
+            (std::unordered_map<std::string, int>
+            {
+                { "a", 1 }, {"b", 2}, {"c", 3}
+            }),
+            ctx... );
+        BOOST_TEST_CONV( (std::vector<int>{1, 2, 3, 4}), ctx... );
+        BOOST_TEST_CONV(
+            (std::vector<bool>{true, false, false, true}), ctx... );
+        BOOST_TEST_CONV(
+            std::make_pair(std::string("test"), 5), ctx... );
+        BOOST_TEST_CONV(
+            std::make_tuple(
+                std::string("outer"), std::make_pair(std::string("test"), 5) ),
+            ctx... );
+        BOOST_TEST_CONV(
+            (std::map<int, int>
+            {
+                {2, 4}, {3, 9}, {5, 25}
+            }),
+            ctx... );
 
         {
             std::array<int, 1000> arr;
             arr.fill(0);
-            check(arr);
+            BOOST_TEST_CONV( arr, ctx... );
         }
 
         // mismatched type
         BOOST_TEST_THROWS_WITH_LOCATION(
-            value_to<std::string>(value()) );
+            value_to<std::string>( value(), ctx... ));
 
         // mismatched type
         BOOST_TEST_THROWS_WITH_LOCATION(
-            ( value_to<std::map<std::string, int>>(value()) ));
+            (value_to<std::map<std::string, int>>( value(), ctx... )));
         // element fails
         BOOST_TEST_THROWS_WITH_LOCATION(
-            ( value_to<std::map<std::string, int>>(
-                value{{"1", 1}, {"2", true}, {"3", false}}) ));
+            (value_to<std::map<std::string, int>>(
+                value{{"1", 1}, {"2", true}, {"3", false}}, ctx... )));
         // reserve fails
         BOOST_TEST_THROWS_WITH_LOCATION(
-            ( value_to<value_to_test_ns::T4>(
-                value{{"1", 1}, {"2", true}, {"3", false}}) ));
+            (value_to<value_to_test_ns::T4>(
+                value{{"1", 1}, {"2", true}, {"3", false}}, ctx... )));
 
         // mismatched type
         BOOST_TEST_THROWS_WITH_LOCATION(
-            value_to<std::vector<int>>(value()) );
+            value_to<std::vector<int>>( value(), ctx... ));
         // element fails
         BOOST_TEST_THROWS_WITH_LOCATION(
-            value_to<std::vector<int>>(value{1, 2, false, 3}) );
+            value_to<std::vector<int>>( value{1, 2, false, 3}, ctx... ));
         // reserve fails
         BOOST_TEST_THROWS_WITH_LOCATION(
-            ( value_to<std::array<int, 4>>(value{1, 2, 3}) ));
+            (value_to<std::array<int, 4>>( value{1, 2, 3}, ctx... )));
         BOOST_TEST_THROWS_WITH_LOCATION(
-            ( value_to<std::array<int, 4>>(value{1, 2, 3, 4, 5}) ));
+            (value_to<std::array<int, 4>>(
+                value{1, 2, 3, 4, 5}, ctx... )));
 
         // mismatched type
         BOOST_TEST_THROWS_WITH_LOCATION(
-            ( value_to<std::tuple<int, int, int, int>>(value()) ));
+            (value_to<std::tuple<int, int, int, int>>(
+                value(), ctx... )));
         // element fails
         BOOST_TEST_THROWS_WITH_LOCATION(
-            ( value_to<std::tuple<int, int, int>>(value{1, 2, false}) ));
+            (value_to<std::tuple<int, int, int>>(
+                value{1, 2, false}, ctx... )));
         // reserve fails
         BOOST_TEST_THROWS_WITH_LOCATION(
-            ( value_to<std::tuple<int, int, int, int>>(value{1, 2, 3}) ));
+            (value_to<std::tuple<int, int, int, int>>(
+                value{1, 2, 3}, ctx... )));
 
     }
 
@@ -314,22 +353,28 @@ public:
         }
     }
 
-    void testNullptr()
+    template< class... Context >
+    static
+    void testNullptr( Context const& ... ctx )
     {
-        (void)value_to<std::nullptr_t>(value());
-        (void)value_to<::value_to_test_ns::T1>(value());
+        (void)value_to<std::nullptr_t>( value(), ctx... );
+        (void)value_to<::value_to_test_ns::T1>( value(), ctx... );
         BOOST_TEST_THROWS_WITH_LOCATION(
-            ( value_to<std::nullptr_t>(value(1)) ));
+            value_to<std::nullptr_t>( value(1), ctx... ));
         BOOST_TEST_THROWS_WITH_LOCATION(
-            ( value_to<::value_to_test_ns::T1>(value(1)) ));
+            value_to<::value_to_test_ns::T1>( value(1), ctx... ));
     }
 
-    void testDescribed()
+    template< class... Context >
+    static
+    void testDescribed( Context const& ... ctx )
     {
+        ignore_unused( ctx... );
 #ifdef BOOST_DESCRIBE_CXX14
         {
             value jv = {{"n", -78}, {"d", 0.125}};
-            auto res = try_value_to<::value_to_test_ns::T6>(jv);
+            auto res = try_value_to<::value_to_test_ns::T6>(
+                jv, ctx... );
             BOOST_TEST( res );
             BOOST_TEST( res->n == -78 );
             BOOST_TEST( res->d == 0.125 );
@@ -340,7 +385,8 @@ public:
         }
         {
             value jv = {{"n", 1}, {"d", 2}, {"s", "xyz"}};
-            auto res = try_value_to<::value_to_test_ns::T7>(jv);
+            auto res = try_value_to<::value_to_test_ns::T7>(
+                jv, ctx... );
             BOOST_TEST( res );
             BOOST_TEST( res->n == 1 );
             BOOST_TEST( res->d == 2 );
@@ -348,31 +394,33 @@ public:
         }
 
         BOOST_TEST_THROWS_WITH_LOCATION(
-            value_to<::value_to_test_ns::T6>( value(1) ));
+            value_to<::value_to_test_ns::T6>( value(1), ctx... ));
         BOOST_TEST_THROWS_WITH_LOCATION(
-            value_to<::value_to_test_ns::T6>( value{{"x", 0}} ));
+            value_to<::value_to_test_ns::T6>( value{{"x", 0}}, ctx... ));
         BOOST_TEST_THROWS_WITH_LOCATION(
-            value_to<::value_to_test_ns::T6>( (value{{"n", 0}, {"x", 0}}) ));
+            value_to<::value_to_test_ns::T6>(
+                value{{"n", 0}, {"x", 0}}, ctx... ));
 
         {
             value jv = "a";
-            auto e1 = value_to<::value_to_test_ns::E1>(jv);
+            auto e1 = value_to<::value_to_test_ns::E1>( jv, ctx... );
             BOOST_TEST( e1 == ::value_to_test_ns::E1::a );
 
             jv = "b";
-            e1 = value_to<::value_to_test_ns::E1>(jv);
+            e1 = value_to<::value_to_test_ns::E1>( jv, ctx... );
             BOOST_TEST( e1 == ::value_to_test_ns::E1::b );
         }
 
         BOOST_TEST_THROWS_WITH_LOCATION(
-            value_to<::value_to_test_ns::E1>( value(1) ));
+            value_to<::value_to_test_ns::E1>( value(1), ctx... ));
         BOOST_TEST_THROWS_WITH_LOCATION(
-            value_to<::value_to_test_ns::E1>( value("x") ));
+            value_to<::value_to_test_ns::E1>( value("x"), ctx... ));
 
         {
 #ifndef BOOST_NO_CXX17_HDR_OPTIONAL
             value jv = {{"n", -78}, {"d", 0.125}};
-            auto res = try_value_to<::value_to_test_ns::T8>(jv);
+            auto res = try_value_to<::value_to_test_ns::T8>(
+                jv, ctx... );
             BOOST_TEST( res );
             BOOST_TEST( res->n == -78 );
             BOOST_TEST( res->d == 0.125 );
@@ -380,82 +428,109 @@ public:
 
             jv.as_object()["x"] = 0;
             BOOST_TEST_THROWS_WITH_LOCATION(
-                value_to<::value_to_test_ns::T8>( jv ));
+                value_to<::value_to_test_ns::T8>( jv, ctx... ));
 #endif // BOOST_NO_CXX17_HDR_OPTIONAL
         }
 #endif // BOOST_DESCRIBE_CXX14
     }
 
-#ifndef BOOST_NO_CXX17_HDR_OPTIONAL
-    void testOptional()
+    template< class... Context >
+    static
+    void testOptional( Context const& ... ctx )
     {
+        ignore_unused( ctx... );
+#ifndef BOOST_NO_CXX17_HDR_OPTIONAL
         using Opts = std::vector<std::optional<int>>;
         value jv = value{1, nullptr, 3, nullptr, 5};
-        auto opts = value_to<Opts>(jv);
+        auto opts = value_to<Opts>( jv, ctx... );
         BOOST_TEST( opts == (Opts{1, {}, 3, {}, 5}) );
 
         value_to< std::nullopt_t >(value());
-        BOOST_TEST_THROWS_WITH_LOCATION( value_to< std::nullopt_t >(jv) );
-    }
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            value_to< std::nullopt_t >( jv, ctx... ));
 #endif
+    }
 
-#ifndef BOOST_NO_CXX17_HDR_VARIANT
+    template< class... Context >
+    static
     void
-    testVariant()
+    testVariant( Context const& ... ctx )
     {
+        ignore_unused( ctx... );
+#ifndef BOOST_NO_CXX17_HDR_VARIANT
         using Var = std::variant<int, ::value_to_test_ns::T2, std::string>;
 
         value jv(4);
-        auto v = value_to<Var>(jv);
+        auto v = value_to<Var>( jv, ctx... );
         BOOST_TEST( v.index() == 0 );
         BOOST_TEST( std::get<0>(v) == 4 );
 
         jv = "foobar";
-        v = value_to<Var>(jv);
+        v = value_to<Var>( jv, ctx... );
         BOOST_TEST( v.index() == 2 );
         BOOST_TEST( std::get<2>(v) == "foobar" );
 
         jv = "T2";
-        v = value_to<Var>(jv);
+        v = value_to<Var>( jv, ctx... );
         BOOST_TEST( v.index() == 1 );
 
         jv = 3.5;
-        BOOST_TEST_THROWS_WITH_LOCATION( value_to<Var>(jv) );
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            value_to<Var>( jv, ctx... ));
 
-        value_to<std::monostate>( value() );
-        BOOST_TEST_THROWS_WITH_LOCATION( value_to<std::monostate>(jv) );
-    }
+        value_to<std::monostate>( value(), ctx... );
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            value_to<std::monostate>( jv, ctx... ));
 #endif // BOOST_NO_CXX17_HDR_VARIANT
+    }
 
+    template< class... Context >
+    static
     void
-    testNonThrowing()
+    testNonThrowing( Context const& ... ctx )
     {
         // using result
         {
-            auto res = try_value_to<::value_to_test_ns::T2>(value());
+            // clang 3.8 seems to have some bug when dealing with a lot of
+            // template instantiations; this assert magically makes the problem
+            // go away, I assume, by instantiating the needed types beforehand
+            BOOST_STATIC_ASSERT(
+                detail::conversion_round_trips<
+                    mp11::mp_first<
+                        mp11::mp_list<
+                            Context..., int> >,
+                    ::value_to_test_ns::T2,
+                    detail::value_to_conversion>::value );
+
+            auto res = try_value_to<::value_to_test_ns::T2>(
+                value(), ctx... );
             BOOST_TEST( res.has_error() );
             BOOST_TEST( res.error() == error::syntax );
 
-            res = try_value_to<::value_to_test_ns::T2>(value("T2"));
+            res = try_value_to<::value_to_test_ns::T2>(
+                value("T2"), ctx... );
             BOOST_TEST( res.has_value() );
         }
         // throwing overload falls back to nonthrowing customization
         {
             BOOST_TEST_THROWS(
-                value_to<::value_to_test_ns::T2>(value()),
+                value_to<::value_to_test_ns::T2>( value(), ctx... ),
                 system_error);
         }
         // nonthrowing overload falls back to throwing customization
         {
-            auto res = try_value_to<::value_to_test_ns::T3>(value());
+            auto res = try_value_to<::value_to_test_ns::T3>(
+                value(), ctx... );
             BOOST_TEST( res.has_error() );
             BOOST_TEST( res.error() == error::not_string );
 
-            res = try_value_to<::value_to_test_ns::T3>(value(""));
+            res = try_value_to<::value_to_test_ns::T3>(
+                value(""), ctx... );
             BOOST_TEST( res.has_error() );
             BOOST_TEST( res.error() == error::exception );
 
-            res = try_value_to<::value_to_test_ns::T3>(value("T3"));
+            res = try_value_to<::value_to_test_ns::T3>(
+                value("T3"), ctx... );
             BOOST_TEST( res.has_value() );
         }
         // sequence
@@ -463,7 +538,7 @@ public:
             // wrong input type
             {
                 auto res = try_value_to< std::vector<::value_to_test_ns::T2> >(
-                    value("not an array"));
+                    value("not an array"), ctx... );
                 BOOST_TEST( res.has_error() );
                 BOOST_TEST( res.error().has_location() );
                 BOOST_TEST( res.error() == error::not_array );
@@ -472,7 +547,7 @@ public:
             // wrong input type
             {
                 auto res = try_value_to< std::array<int, 4> >(
-                    value{1, 2});
+                    value{1, 2}, ctx... );
                 BOOST_TEST( res.has_error() );
                 BOOST_TEST( res.error().has_location() );
                 BOOST_TEST( res.error() == error::size_mismatch );
@@ -481,13 +556,13 @@ public:
             // element error
             {
                 auto res = try_value_to< std::vector<::value_to_test_ns::T2> >(
-                    value{"T2", "T2", nullptr});
+                    value{"T2", "T2", nullptr}, ctx... );
                 BOOST_TEST( res.error() == error::syntax );
             }
 
             // success
             auto res = try_value_to< std::vector<::value_to_test_ns::T2> >(
-                value{"T2", "T2", "T2"});
+                value{"T2", "T2", "T2"}, ctx... );
             BOOST_TEST( res.has_value() );
             BOOST_TEST( res->size() == 3 );
         }
@@ -496,8 +571,8 @@ public:
             // wrong input type
             {
                 auto res = try_value_to<
-                        std::map<std::string, ::value_to_test_ns::T2> >(
-                    value("not a map"));
+                    std::map<std::string, ::value_to_test_ns::T2> >(
+                        value("not a map"), ctx... );
                 BOOST_TEST( res.has_error() );
                 BOOST_TEST( res.error().has_location() );
                 BOOST_TEST( res.error() == error::not_object );
@@ -506,7 +581,7 @@ public:
             // reserve fails
             {
                 auto res = try_value_to< ::value_to_test_ns::T4 >(
-                    value{{"1", 1}, {"2", 2}, {"3", 3}});
+                    value{{"1", 1}, {"2", 2}, {"3", 3}}, ctx... );
                 BOOST_TEST( res.has_error() );
                 BOOST_TEST( res.error().has_location() );
                 BOOST_TEST( res.error() == error::size_mismatch );
@@ -515,16 +590,17 @@ public:
             // element error
             {
                 auto res = try_value_to<
-                        std::map<std::string, ::value_to_test_ns::T2> >(
-                    value{{"1", "T2"}, {"2", "T2"}, {"3", nullptr}});
+                    std::map<std::string, ::value_to_test_ns::T2> >(
+                        value{{"1", "T2"}, {"2", "T2"}, {"3", nullptr}},
+                        ctx... );
                 BOOST_TEST( res.has_error() );
                 BOOST_TEST( res.error() == error::syntax );
             }
 
             // success
             auto res = try_value_to<
-                    std::map<std::string, ::value_to_test_ns::T2> >(
-                value{{"1", "T2"}, {"2", "T2"}, {"3", "T2"}});
+                std::map<std::string, ::value_to_test_ns::T2> >(
+                    value{{"1", "T2"}, {"2", "T2"}, {"3", "T2"}}, ctx... );
             BOOST_TEST( res.has_value() );
             BOOST_TEST( res->size() == 3 );
         }
@@ -538,7 +614,7 @@ public:
                         bool,
                         std::nullptr_t,
                         ::value_to_test_ns::T2>>(
-                    value("not an array"));
+                    value("not an array"), ctx... );
                 BOOST_TEST( res.has_error() );
                 BOOST_TEST( res.error().has_location() );
                 BOOST_TEST( res.error() == error::not_array );
@@ -552,7 +628,7 @@ public:
                         bool,
                         std::nullptr_t,
                         ::value_to_test_ns::T2>>(
-                    value{1, 2});
+                    value{1, 2}, ctx... );
                 BOOST_TEST( res.has_error() );
                 BOOST_TEST( res.error().has_location() );
                 BOOST_TEST( res.error() == error::size_mismatch );
@@ -566,7 +642,7 @@ public:
                         bool,
                         std::nullptr_t,
                         ::value_to_test_ns::T2>>(
-                    value{1, "foobar", false, nullptr, ""});
+                    value{1, "foobar", false, nullptr, ""}, ctx... );
                 BOOST_TEST( res.has_error() );
                 BOOST_TEST( res.error() == error::syntax );
             }
@@ -578,7 +654,7 @@ public:
                     bool,
                     std::nullptr_t,
                     ::value_to_test_ns::T2>>(
-                value{1, "foobar", false, nullptr, "T2"});
+                value{1, "foobar", false, nullptr, "T2"}, ctx... );
             BOOST_TEST( res.has_value() );
             BOOST_TEST( std::get<0>(*res) == 1 );
             BOOST_TEST( std::get<1>(*res) == "foobar" );
@@ -586,33 +662,69 @@ public:
         }
         // rethrowing bad_alloc
         BOOST_TEST_THROWS(
-            try_value_to<value_to_test_ns::T5>(value()),
+            try_value_to<value_to_test_ns::T5>( value(), ctx... ),
             std::bad_alloc);
     }
 
+    template< class... Context >
+    static
     void
-    testUserConversion()
+    testUserConversion( Context const& ... ctx )
     {
-        value_to<value_to_test_ns::T2>(value("T2"));
+        value_to<value_to_test_ns::T2>( value("T2"), ctx... );
     }
+
+    void
+    testContext()
+    {
+        value_to<value_to_test_ns::T9>(
+            value("T9"), value_to_test_ns::custom_context() );
+
+        BOOST_TEST_THROWS(
+            value_to<value_to_test_ns::T9>(
+                value(), value_to_test_ns::custom_context() ),
+            system_error);
+    }
+
+    struct run_templated_tests
+    {
+        // this overload supports zero or one default constructible contexts
+        // and used with mp_for_each
+        template< class... Context >
+        void operator()( mp11::mp_list< Context... > )
+        {
+            testNumberCast( Context()... );
+            testJsonTypes( Context()... );
+            testGenerics( Context()... );
+            testNullptr( Context()... );
+            testDescribed( Context()... );
+            testOptional( Context()... );
+            testVariant( Context()... );
+            testNonThrowing( Context()... );
+            testUserConversion( Context()... );
+        }
+    };
 
     void
     run()
     {
-        testNumberCast();
-        testJsonTypes();
-        testGenerics();
+        mp11::mp_for_each<
+            mp11::mp_list<
+                mp11::mp_list<>,
+                mp11::mp_list<detail::no_context>,
+                mp11::mp_list<value_to_test_ns::custom_context>,
+                mp11::mp_list<
+                    std::tuple<value_to_test_ns::custom_context>>,
+                mp11::mp_list<
+                    std::tuple<
+                        std::tuple<value_to_test_ns::custom_context>>>,
+                mp11::mp_list<
+                    std::tuple<
+                        detail::no_context, value_to_test_ns::custom_context>>
+             >>( run_templated_tests() );
+
+        testContext();
         testContainerHelpers();
-        testNullptr();
-        testDescribed();
-#ifndef BOOST_NO_CXX17_HDR_OPTIONAL
-        testOptional();
-#endif
-#ifndef BOOST_NO_CXX17_HDR_VARIANT
-        testVariant();
-#endif // BOOST_NO_CXX17_HDR_VARIANT
-        testUserConversion();
-        testNonThrowing();
     }
 };
 

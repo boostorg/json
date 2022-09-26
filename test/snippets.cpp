@@ -14,7 +14,6 @@
 #elif defined(__clang__)
 # pragma clang diagnostic push
 # pragma clang diagnostic ignored "-Wunused"
-# pragma clang diagnostic ignored "-Wmismatched-tags"
 #elif defined(__GNUC__)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wunused"
@@ -110,6 +109,147 @@ tag_invoke( const try_value_to_tag< ip_address >&, value const& jv )
 //]
 
 } // namespace user_ns
+
+//[doc_context_conversion_1
+namespace user_ns
+{
+
+struct as_string
+{ };
+
+void
+tag_invoke(
+    boost::json::value_from_tag, boost::json::value& jv, const ip_address& addr, const as_string& )
+{
+    boost::json::string& js = jv.emplace_string();
+    js.resize( 4 * 3 + 3 + 1 ); // XXX.XXX.XXX.XXX\0
+    auto it = addr.begin();
+    auto n = std::sprintf(
+        js.data(), "%hhu.%hhu.%hhu.%hhu", it[0], it[1], it[2], it[3] );
+    js.resize(n);
+}
+
+ip_address
+tag_invoke(
+    boost::json::value_to_tag<ip_address>, const boost::json::value& jv, const as_string& )
+{
+    const boost::json::string& js = jv.as_string();
+
+    unsigned char octets[4];
+    int result = std::sscanf(
+        js.data(), "%hhu.%hhu.%hhu.%hhu", octets, octets + 1, octets + 2, octets + 3 );
+    if( result != 4 )
+        throw std::invalid_argument("not an IP address");
+
+    return ip_address( octets[0], octets[1], octets[2], octets[3] );
+}
+
+}
+//]
+
+//[doc_context_conversion_4
+namespace user_ns
+{
+
+struct as_iso_8601
+{ };
+
+void
+tag_invoke(
+    boost::json::value_from_tag, boost::json::value& jv, std::chrono::system_clock::time_point tp, const as_iso_8601& )
+{
+    boost::json::string& js = jv.emplace_string();
+    js.resize( 4 + 2 * 5 + 5 + 1 ); // YYYY-mm-ddTHH:MM:ss\0
+
+    std::time_t t = std::chrono::system_clock::to_time_t( tp );
+    std::tm tm = *std::gmtime( &t );
+    std::size_t n = std::strftime(
+        js.data(), js.size(), "%FT%T", &tm );
+    js.resize(n);
+}
+
+}
+//]
+
+//[doc_context_conversion_6
+namespace user_ns
+{
+
+struct date_format
+{
+    std::string format;
+    std::size_t buffer_size;
+};
+
+void
+tag_invoke(
+    boost::json::value_from_tag, boost::json::value& jv, std::chrono::system_clock::time_point tp, const date_format& ctx )
+{
+    boost::json::string& js = jv.emplace_string();
+    js.resize( ctx.buffer_size );
+
+    std::time_t t = std::chrono::system_clock::to_time_t( tp );
+    std::size_t n = std::strftime(
+        js.data(), js.size(), ctx.format.c_str(), std::gmtime( &t ) );
+    js.resize(n);
+}
+
+}
+//]
+
+//[doc_context_conversion_10
+namespace user_ns
+{
+
+struct maps_as_objects
+{ };
+
+template<
+    class Key,
+    class Value,
+    class Ctx >
+void
+tag_invoke(
+    boost::json::value_from_tag,
+    boost::json::value& jv,
+    const std::map<Key, Value>& m,
+    const maps_as_objects&,
+    const Ctx& ctx )
+{
+    boost::json::object& jo = jv.emplace_object();
+
+    for( const auto& item: m )
+    {
+        auto k = boost::json::value_from( item.first, ctx, jo.storage() );
+        auto v = boost::json::value_from( item.second, ctx, jo.storage() );
+        jo[std::move( k.as_string() )] = std::move( v );
+    }
+}
+
+template<
+    class Key,
+    class Value,
+    class Ctx >
+std::map<Key, Value>
+tag_invoke(
+    boost::json::value_to_tag< std::map<Key, Value> >,
+    boost::json::value const& jv,
+    const maps_as_objects&,
+    const Ctx& ctx )
+{
+    const boost::json::object& jo = jv.as_object();
+    std::map< Key, Value > result;
+    for( auto&& item: jo )
+    {
+        Key k = boost::json::value_to< Key >( item.key(), ctx );
+        Value v = boost::json::value_to< Value >( item.value(), ctx );
+        result.emplace( std::move(k), std::move(v) );
+    }
+    return result;
+}
+
+}
+//]
 
 namespace boost {
 namespace json {
@@ -874,6 +1014,114 @@ usingSpecializedTrait()
     assert( jv1 == jv2 );
 }
 
+void
+usingContextualConversions()
+{
+    using namespace user_ns;
+    using namespace boost::json;
+    {
+//[doc_context_conversion_2
+        ip_address addr( 192, 168, 10, 11 );
+
+        value jv = value_from( addr, as_string() );
+        assert( jv == parse(R"( "192.168.10.11" )") );
+
+        ip_address addr2 = value_to< ip_address >( jv, as_string() );
+        assert(std::equal(
+            addr.begin(), addr.end(), addr2.begin() ));
+//]
+        (void)addr2;
+    }
+
+    {
+//[doc_context_conversion_3
+        std::map< std::string, ip_address > computers = {
+            { "Alex", { 192, 168, 1, 1 } },
+            { "Blake", { 192, 168, 1, 2 } },
+            { "Carol", { 192, 168, 1, 3 } },
+        };
+        value jv = value_from( computers, as_string() );
+        assert( jv == parse(
+            "{                               "
+            "    \"Alex\" : \"192.168.1.1\", "
+            "    \"Blake\": \"192.168.1.2\", "
+            "    \"Carol\": \"192.168.1.3\"  "
+            "}                               "
+            ) );
+//]
+        (void)jv;
+    }
+
+    {
+//[doc_context_conversion_5
+        std::chrono::system_clock::time_point tp;
+        value jv = value_from( tp, as_iso_8601() );
+        assert( jv == parse(R"( "1970-01-01T00:00:00" )") );
+//]
+        (void)jv;
+    }
+
+    {
+//[doc_context_conversion_7
+        std::chrono::system_clock::time_point tp;
+
+        value jv = value_from( tp, date_format{ "%T %D", 18 } );
+        assert( jv == parse(R"( "00:00:00 01/01/70" )") );
+
+        jv = value_from( tp, as_iso_8601() );
+        assert( jv == parse(R"( "1970-01-01T00:00:00" )") );
+//]
+        (void)jv;
+    }
+
+    {
+//[doc_context_conversion_8
+        using time_point = std::chrono::system_clock::time_point;
+        time_point start;
+        std::vector< std::pair<time_point, ip_address> > log = {
+            { start += std::chrono::seconds(10), {192, 168, 10, 11} },
+            { start += std::chrono::hours(2),    {192, 168, 10, 13} },
+            { start += std::chrono::minutes(14), {192, 168, 10, 10} },
+        };
+        value jv = value_from(
+            log, std::make_tuple( as_string(), as_iso_8601() ) );
+        assert( jv == parse(
+            " [                                                   "
+            "     [ \"1970-01-01T00:00:10\", \"192.168.10.11\" ], "
+            "     [ \"1970-01-01T02:00:10\", \"192.168.10.13\" ], "
+            "     [ \"1970-01-01T02:14:10\", \"192.168.10.10\" ]  "
+            " ]                                                   "
+            ) );
+//]
+        (void)jv;
+    }
+
+    {
+        using time_point = std::chrono::system_clock::time_point;
+        time_point start;
+//[doc_context_conversion_9
+
+        std::map< time_point, ip_address > log = {
+            { start += std::chrono::seconds(10), {192, 168, 10, 11} },
+            { start += std::chrono::hours(2),    {192, 168, 10, 13} },
+            { start += std::chrono::minutes(14), {192, 168, 10, 10} },
+        };
+
+        value jv = value_from(
+            log,
+            std::make_tuple( maps_as_objects(), as_string(), as_iso_8601() ) );
+        assert( jv == parse(
+            " {                                               "
+            "     \"1970-01-01T00:00:10\": \"192.168.10.11\", "
+            "     \"1970-01-01T02:00:10\": \"192.168.10.13\", "
+            "     \"1970-01-01T02:14:10\": \"192.168.10.10\"  "
+            " }                                               "
+            ) );
+//]
+        (void)jv;
+    }
+}
+
 } // namespace
 
 class snippets_test
@@ -891,6 +1139,7 @@ public:
         usingPointer();
         usingSpecializedTrait();
         usingSetAtPointer();
+        usingContextualConversions();
 
         BOOST_TEST_PASS();
     }

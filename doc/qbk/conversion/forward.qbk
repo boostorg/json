@@ -33,4 +33,9 @@ As discussed previously, we prefer to define a non-throwing overload of
 __value_to__, as the latter can fallback to the former without performance
 degradation.
 
+Forward declarations of contextual conversions are done very similarly:
+
+[doc_forward_conversion_3]
+[doc_forward_conversion_4]
+
 [endsect]

@@ -49,3 +49,11 @@ add_executable(validate
 )
 set_property(TARGET validate PROPERTY FOLDER "example")
 target_link_libraries(validate PRIVATE Boost::json)
+
+#
+
+add_executable(use_allocator
+    use_allocator.cpp
+)
+set_property(TARGET use_allocator PROPERTY FOLDER "example")
+target_link_libraries(use_allocator PRIVATE Boost::json)

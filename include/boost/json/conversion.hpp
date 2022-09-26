@@ -11,11 +11,19 @@
 #define BOOST_JSON_CONVERSION_HPP
 
 #include <boost/json/detail/config.hpp>
+#include <boost/json/fwd.hpp>
 
 #include <type_traits>
 
 namespace boost {
 namespace json {
+
+namespace detail {
+
+template< class Ctx, class T, class Dir >
+struct supported_context;
+
+} // namespace detail
 
 /** Customization point tag.
 

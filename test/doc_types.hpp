@@ -98,6 +98,17 @@ get(ip_address const& addr )
     return *(addr.begin() + N);
 }
 
+inline
+bool
+operator==(ip_address const& l, ip_address const& r) noexcept
+{
+    return
+        get<0>(l) == get<0>(r) &&
+        get<1>(l) == get<1>(r) &&
+        get<2>(l) == get<2>(r) &&
+        get<3>(l) == get<3>(r);
+}
+
 } // namespace user_ns
 
 #endif // BOOST_JSON_DOC_DOC_TYPES_HPP

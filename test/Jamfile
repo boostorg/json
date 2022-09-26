@@ -60,7 +60,10 @@ project : requirements <include>.  ;
 
 for local f in $(SOURCES)
 {
-    run $(f) main.cpp /boost/json//boost_json ;
+    run $(f) main.cpp /boost/json//boost_json
+        : requirements
+          <toolset>msvc:<define>_CRT_SECURE_NO_WARNINGS
+        ;
 }
 
 run limits.cpp main.cpp /boost/json//json_sources
