@@ -12,6 +12,7 @@ import testing ;
 local SOURCES =
     array.cpp
     basic_parser.cpp
+    conversion.cpp
     doc_background.cpp
     doc_forward_conversion.cpp
     doc_parsing.cpp
