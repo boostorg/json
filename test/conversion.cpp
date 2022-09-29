@@ -70,9 +70,17 @@ struct my_null { };
 namespace std
 {
 
+// some versions of libstdc++ forward-declare tuple_size as class
+#if defined(__clang__) || ( defined(__GNUC__) && __GNUC__ >= 10 )
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wmismatched-tags"
+#endif
 template<>
 struct tuple_size<pseudo_tuple1> : std::integral_constant<std::size_t, 2>
 { };
+#if defined(__clang__) || ( defined(__GNUC__) && __GNUC__ >= 10 )
+# pragma GCC diagnostic pop
+#endif
 
 } // namespace std
 
