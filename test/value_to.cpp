@@ -10,6 +10,8 @@
 // Test that header file is self-contained.
 #include <boost/json/value_to.hpp>
 
+#include <boost/json/value_from.hpp>
+
 #include "test_suite.hpp"
 
 #include <array>

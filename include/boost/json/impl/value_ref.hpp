@@ -10,8 +10,6 @@
 #ifndef BOOST_JSON_IMPL_VALUE_REF_HPP
 #define BOOST_JSON_IMPL_VALUE_REF_HPP
 
-#include <boost/json/value_from.hpp>
-
 BOOST_JSON_NS_BEGIN
 
 template<class T>
