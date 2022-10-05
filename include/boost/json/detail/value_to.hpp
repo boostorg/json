@@ -86,7 +86,7 @@ using inserter_implementation = mp11::mp_cond<
     mp11::mp_true,    mp11::mp_int<0>>;
 
 template<class T>
-typename remove_cvref<T>::iterator
+iterator_type<T>
 inserter(
     T& target,
     mp11::mp_int<2>)
