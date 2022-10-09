@@ -70,6 +70,28 @@ find_in_object<string_view>(
     object const& obj,
     string_view key) noexcept;
 
+// caller must ensure no aliasing
+template<class T>
+void trivial_relocate(T* src, T* dst) noexcept
+{
+    // the casts silence warnings
+    std::memcpy(
+        static_cast<void*>(dst),
+        static_cast<void const*>(src),
+        sizeof(T));
+}
+
+// caller must ensure n != 0
+template<class T>
+void trivial_relocate_n(T* src, std::size_t n, T* dst) noexcept
+{
+    // the casts silence warnings
+    std::memmove(
+        static_cast<void*>(dst),
+        static_cast<void const*>(src),
+        sizeof(T) * n);
+}
+
 } // namespace detail
 
 //----------------------------------------------------------
@@ -510,11 +532,7 @@ erase(const_iterator pos) noexcept ->
 {
     return do_erase(pos,
         [this](iterator p) {
-            // the casts silence warnings
-            std::memcpy(
-                static_cast<void*>(p),
-                static_cast<void const*>(end()),
-                sizeof(*p));
+            detail::trivial_relocate(end(), p);
         },
         [this](iterator p) {
             reindex_relocate(end(), p);
@@ -540,11 +558,7 @@ stable_erase(const_iterator pos) noexcept ->
 {
     return do_erase(pos,
         [this](iterator p) {
-            // the casts silence warnings
-            std::memmove(
-                static_cast<void*>(p),
-                static_cast<void const*>(p + 1),
-                sizeof(*p) * (end() - p));
+            detail::trivial_relocate_n(p + 1, end() - p, p);
         },
         [this](iterator p) {
             for (; p != end(); ++p)
@@ -723,6 +737,69 @@ insert_impl(
     return pv;
 }
 
+auto
+object::
+stable_insert_impl(
+    const_iterator pos,
+    pilfered<key_value_pair> pair) ->
+        std::pair<iterator, bool>
+{
+    // caller is responsible
+    // for preventing aliasing.
+    // index required in case of reallocation
+    std::ptrdiff_t const index = pos - begin();
+    if (capacity() == 0)
+    {
+        // we know that the value does not exist
+        // and find_in_object requires non-zero capcaity
+        reserve(size() + 1);
+    }
+    auto const result =
+        detail::find_in_object(*this, pair.get().key());
+    if(result.first)
+        return { result.first, false };
+    reserve(size() + 1);
+    return { this->stable_insert_impl(
+        index, pair, result.second), true };
+}
+
+key_value_pair*
+object::
+stable_insert_impl(
+    std::ptrdiff_t index,
+    pilfered<key_value_pair> pair,
+    std::size_t hash)
+{
+    BOOST_ASSERT(
+        capacity() > size());
+    auto p = begin() + index;
+
+    if(t_->is_small())
+    {
+        if (p != end())
+        {
+            detail::trivial_relocate_n(p, end() - p, p + 1);
+        }
+        auto const pv = ::new(p)
+            key_value_pair(pair);
+        ++t_->size;
+        return pv;
+    }
+    
+    for (auto it = end(); it != p; --it)
+    {
+        reindex_relocate(it - 1, it);
+    }
+    auto& head =
+        t_->bucket(hash);
+    auto const pv = ::new(p)
+        key_value_pair(pair);
+    access::next(*pv) = head;
+    head = static_cast<index_t>(p - begin());
+    ++t_->size;
+    return pv;
+}
+
 // rehash to at least `n` buckets
 void
 object::
@@ -879,11 +956,7 @@ reindex_relocate(
     BOOST_ASSERT(! t_->is_small());
     auto& head = t_->bucket(src->key());
     remove(head, *src);
-    // the casts silence warnings
-    std::memcpy(
-        static_cast<void*>(dst),
-        static_cast<void const*>(src),
-        sizeof(*dst));
+    detail::trivial_relocate(src, dst);
     access::next(*dst) = head;
     head = static_cast<
         index_t>(dst - begin());

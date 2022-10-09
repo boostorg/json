@@ -1152,6 +1152,100 @@ public:
             }
         }
 
+        // stable_insert(pos, P&&)
+        {
+            fail_loop([&](storage_ptr const& sp)
+            {
+                object o(sp);
+                auto result = o.stable_insert(o.begin(),
+                    std::make_pair("x", 1));
+                BOOST_TEST(result.second);
+                BOOST_TEST(result.first->key() == "x");
+                BOOST_TEST(result.first->value().as_int64() == 1);
+            });
+
+            fail_loop([&](storage_ptr const& sp)
+            {
+                object o(sp);
+                auto const p = std::make_pair("x", 1);
+                auto result = o.stable_insert(o.end(), p);
+                BOOST_TEST(result.second);
+                BOOST_TEST(result.first->key() == "x");
+                BOOST_TEST(result.first->value().as_int64() == 1);
+            });
+
+            fail_loop([&](storage_ptr const& sp)
+            {
+                object o({
+                    {"a", 1},
+                    {"b", 2},
+                    {"c", 3}}, sp);
+                auto const result = o.stable_insert(o.begin(),
+                    std::make_pair("b", 4));
+                BOOST_TEST(
+                    result.first->value().as_int64() == 2);
+                BOOST_TEST(! result.second);
+            });
+
+            fail_loop([&](storage_ptr const& sp)
+            {
+                object o({
+                    {"a", 1},
+                    {"b", 2},
+                    {"c", 3}}, sp);
+                auto const result = o.stable_insert(o.end(),
+                    std::make_pair("d", 4));
+                BOOST_TEST(result.second);
+                BOOST_TEST(result.first == o.begin() + 3);
+                BOOST_TEST(
+                    result.first->value().as_int64() == 4);
+            });
+
+            // insert child
+            {
+                object o = {
+                    { "k1", 1 },
+                    { "k2", 2 },
+                    { "k3", 3 } };
+
+                auto& v = o["k2"];
+                o.stable_insert(o.begin() + 1, std::pair<
+                    string_view, value&>(
+                        "k4", v));
+                BOOST_TEST(serialize(o) ==
+                    R"({"k1":1,"k4":2,"k2":2,"k3":3})");
+            }
+            // insert existing key
+            {
+                object o = {
+                    { "k1", 1 },
+                    { "k2", 2 },
+                    { "k3", 3 } };
+                auto b = o.begin();
+                auto const result = o.stable_insert(o.begin(), std::make_pair("k3", 4));
+                BOOST_TEST(!result.second);
+                BOOST_TEST(result.first == o.begin() + 2);
+                BOOST_TEST(
+                    result.first->value().as_int64() == 3);
+                BOOST_TEST(b == o.begin());
+            }
+            // large
+            {
+                object o(i1_);
+                auto const result = o.stable_insert(o.begin(),
+                    std::make_pair("-1", -1));
+                BOOST_TEST(result.second);
+                BOOST_TEST(result.first == o.begin());
+                BOOST_TEST(
+                    result.first->value().as_int64() == -1);
+                BOOST_TEST(serialize(o) ==
+                    R"({"-1":-1,"0":0,"1":1,"2":2,"3":3,"4":4,)"
+                    R"("5":5,"6":6,"7":7,"8":8,"9":9,)"
+                    R"("10":10,"11":11,"12":12,"13":13,"14":14,)"
+                    R"("15":15,"16":16,"17":17,"18":18,"19":19})");
+            }
+        }
+
         // erase(pos)
         {
             // small

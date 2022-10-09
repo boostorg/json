@@ -1119,6 +1119,53 @@ public:
     std::pair<iterator, bool>
     emplace(string_view key, Arg&& arg);
 
+    /** Insert elements.
+
+        Inserts `p` if `this->contains(value_type(p).key())` is `false`.
+        @ref value_type must be constructible from `p`.
+        The relative order of all elements is preserved.
+
+        If the insertion occurs and results in a rehashing
+        of the container, all iterators and references are invalidated.
+        Otherwise, they are not affected.
+        Rehashing occurs only if the new number of elements
+        is greater than @ref capacity().
+
+        @par Constraints
+        @code
+        std::is_constructible_v<value_type, P>
+        @endcode
+
+        @par Complexity
+        Average case linear in @ref size().
+
+        @par Exception Safety
+        Strong guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
+        @param pos Iterator before which the content will be inserted.
+        `pos` may be the end() iterator.
+
+        @param p The value to insert.
+
+        @throw std::length_error key is too long.
+
+        @throw std::length_error @ref size() >= max_size().
+
+        @return A pair where `first` is an iterator
+        to the existing or inserted element, and `second`
+        is `true` if the insertion took place or `false` otherwise.
+    */
+    template<class P
+#ifndef BOOST_JSON_DOCS
+        ,class = typename std::enable_if<
+            std::is_constructible<key_value_pair,
+                P, storage_ptr>::value>::type
+#endif
+    >
+    std::pair<iterator, bool>
+    stable_insert(const_iterator pos, P&& p);
+
     /** Erase an element
 
         Remove the element pointed to by `pos`, which must
@@ -1590,6 +1637,19 @@ private:
     key_value_pair*
     insert_impl(
         pilfered<key_value_pair> p,
+        std::size_t hash);
+
+    BOOST_JSON_DECL
+    std::pair<iterator, bool>
+    stable_insert_impl(
+        const_iterator pos,
+        pilfered<key_value_pair> pair);
+
+    BOOST_JSON_DECL
+    key_value_pair*
+    stable_insert_impl(
+        std::ptrdiff_t index,
+        pilfered<key_value_pair> pair,
         std::size_t hash);
 
     BOOST_JSON_DECL

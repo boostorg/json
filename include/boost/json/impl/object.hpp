@@ -410,6 +410,17 @@ emplace(
         result.second), true };
 }
 
+template<class P, class>
+auto
+object::
+stable_insert(const_iterator pos, P&& p) ->
+    std::pair<iterator, bool>
+{
+    key_value_pair v(
+        std::forward<P>(p), sp_);
+    return stable_insert_impl(pos, pilfer(v));
+}
+
 //----------------------------------------------------------
 //
 // (private)
