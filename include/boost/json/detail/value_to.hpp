@@ -50,7 +50,7 @@ try_reserve(
     {
         detail::throw_invalid_argument(
             "target array size does not match source array size",
-            BOOST_JSON_SOURCE_POS);
+            BOOST_CURRENT_LOCATION);
     }
 }
 
@@ -189,7 +189,7 @@ value_to_impl(
     if( jv.is_null() )
         return T();
     detail::throw_invalid_argument(
-        "source value is not null", BOOST_JSON_SOURCE_POS);
+        "source value is not null", BOOST_CURRENT_LOCATION);
 }
 
 // string-like types
@@ -265,7 +265,7 @@ value_to_impl(
     {
         detail::throw_invalid_argument(
             "array size does not match tuple size",
-            BOOST_JSON_SOURCE_POS);
+            BOOST_CURRENT_LOCATION);
     }
 
     return make_tuple_like<T>(arr, boost::mp11::make_index_sequence<N>());

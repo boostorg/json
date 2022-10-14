@@ -317,7 +317,7 @@ erase(
 {
     if(pos > impl_.size())
         detail::throw_out_of_range(
-            BOOST_JSON_SOURCE_POS);
+            BOOST_CURRENT_LOCATION);
     if( count > impl_.size() - pos)
         count = impl_.size() - pos;
     std::char_traits<char>::move(

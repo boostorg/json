@@ -252,7 +252,7 @@ value::at_pointer(string_view ptr) const
     error_code ec;
     auto const found = find_pointer(ptr, ec);
     if( !found )
-        detail::throw_system_error(ec, BOOST_JSON_SOURCE_POS);
+        detail::throw_system_error(ec, BOOST_CURRENT_LOCATION);
     return *found;
 }
 

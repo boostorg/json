@@ -2440,7 +2440,7 @@ public:
         error_code ec;
         auto result = to_number<T>(ec);
         if(ec)
-            detail::throw_system_error(ec, BOOST_JSON_SOURCE_POS);
+            detail::throw_system_error(ec, BOOST_CURRENT_LOCATION);
         return result;
     }
 
@@ -2507,7 +2507,7 @@ public:
         if(! is_object())
             detail::throw_invalid_argument(
                 "not an object",
-                BOOST_JSON_SOURCE_POS);
+                BOOST_CURRENT_LOCATION);
         return obj_;
     }
 
@@ -2531,7 +2531,7 @@ public:
         if(! is_object())
             detail::throw_invalid_argument(
                 "not an object",
-                BOOST_JSON_SOURCE_POS);
+                BOOST_CURRENT_LOCATION);
         return obj_;
     }
 
@@ -2555,7 +2555,7 @@ public:
         if(! is_array())
             detail::throw_invalid_argument(
                 "array required",
-                BOOST_JSON_SOURCE_POS);
+                BOOST_CURRENT_LOCATION);
         return arr_;
     }
 
@@ -2579,7 +2579,7 @@ public:
         if(! is_array())
             detail::throw_invalid_argument(
                 "array required",
-                BOOST_JSON_SOURCE_POS);
+                BOOST_CURRENT_LOCATION);
         return arr_;
     }
 
@@ -2603,7 +2603,7 @@ public:
         if(! is_string())
             detail::throw_invalid_argument(
                 "not a string",
-                BOOST_JSON_SOURCE_POS);
+                BOOST_CURRENT_LOCATION);
         return str_;
     }
 
@@ -2627,7 +2627,7 @@ public:
         if(! is_string())
             detail::throw_invalid_argument(
                 "not a string",
-                BOOST_JSON_SOURCE_POS);
+                BOOST_CURRENT_LOCATION);
         return str_;
     }
 
@@ -2651,7 +2651,7 @@ public:
         if(! is_int64())
             detail::throw_invalid_argument(
                 "not an int64",
-                BOOST_JSON_SOURCE_POS);
+                BOOST_CURRENT_LOCATION);
         return sca_.i;
     }
 
@@ -2675,7 +2675,7 @@ public:
         if(! is_int64())
             detail::throw_invalid_argument(
                 "not an int64",
-                BOOST_JSON_SOURCE_POS);
+                BOOST_CURRENT_LOCATION);
         return sca_.i;
     }
 
@@ -2699,7 +2699,7 @@ public:
         if(! is_uint64())
             detail::throw_invalid_argument(
                 "not a uint64",
-                BOOST_JSON_SOURCE_POS);
+                BOOST_CURRENT_LOCATION);
         return sca_.u;
     }
 
@@ -2723,7 +2723,7 @@ public:
         if(! is_uint64())
             detail::throw_invalid_argument(
                 "not a uint64",
-                BOOST_JSON_SOURCE_POS);
+                BOOST_CURRENT_LOCATION);
         return sca_.u;
     }
 
@@ -2747,7 +2747,7 @@ public:
         if(! is_double())
             detail::throw_invalid_argument(
                 "not a double",
-                BOOST_JSON_SOURCE_POS);
+                BOOST_CURRENT_LOCATION);
         return sca_.d;
     }
 
@@ -2771,7 +2771,7 @@ public:
         if(! is_double())
             detail::throw_invalid_argument(
                 "not a double",
-                BOOST_JSON_SOURCE_POS);
+                BOOST_CURRENT_LOCATION);
         return sca_.d;
     }
 
@@ -2795,7 +2795,7 @@ public:
         if(! is_bool())
             detail::throw_invalid_argument(
                 "bool required",
-                BOOST_JSON_SOURCE_POS);
+                BOOST_CURRENT_LOCATION);
         return sca_.b;
     }
 
@@ -2819,7 +2819,7 @@ public:
         if(! is_bool())
             detail::throw_invalid_argument(
                 "bool required",
-                BOOST_JSON_SOURCE_POS);
+                BOOST_CURRENT_LOCATION);
         return sca_.b;
     }
 
@@ -3666,7 +3666,7 @@ public:
         if(key.size() > string::max_size())
             detail::throw_length_error(
                 "key too large",
-                BOOST_JSON_SOURCE_POS);
+                BOOST_CURRENT_LOCATION);
         auto s = reinterpret_cast<
             char*>(value_.storage()->
                 allocate(key.size() + 1, alignof(char)));

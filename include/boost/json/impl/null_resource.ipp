@@ -66,7 +66,7 @@ protected:
         std::size_t) override
     {
         detail::throw_bad_alloc(
-            BOOST_JSON_SOURCE_POS);
+            BOOST_CURRENT_LOCATION);
     }
 
     void

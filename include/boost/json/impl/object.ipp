@@ -449,7 +449,7 @@ insert(
     if(init.size() > max_size() - n0)
         detail::throw_length_error(
             "object too large",
-            BOOST_JSON_SOURCE_POS);
+            BOOST_CURRENT_LOCATION);
     reserve(n0 + init.size());
     revert_insert r(*this);
     if(t_->is_small())
@@ -787,7 +787,7 @@ growth(
     if(new_size > max_size())
         detail::throw_length_error(
             "object too large",
-            BOOST_JSON_SOURCE_POS);
+            BOOST_CURRENT_LOCATION);
     std::size_t const old = capacity();
     if(old > max_size() - old / 2)
         return new_size;

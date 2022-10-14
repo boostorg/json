@@ -122,7 +122,7 @@ growth(
     if(new_size > max_size())
         detail::throw_length_error(
             "string too large",
-            BOOST_JSON_SOURCE_POS);
+            BOOST_CURRENT_LOCATION);
     // growth factor 2
     if( capacity >
         max_size() - capacity)
@@ -159,7 +159,7 @@ append(
     if(n > max_size() - size())
         detail::throw_length_error(
             "string too large",
-            BOOST_JSON_SOURCE_POS);
+            BOOST_CURRENT_LOCATION);
     if(n <= capacity() - size())
     {
         term(size() + n);
@@ -186,7 +186,7 @@ insert(
     const auto curr_size = size();
     if(pos > curr_size)
         detail::throw_out_of_range(
-            BOOST_JSON_SOURCE_POS);
+            BOOST_CURRENT_LOCATION);
     const auto curr_data = data();
     if(n <= capacity() - curr_size)
     {
@@ -218,7 +218,7 @@ insert(
         if(n > max_size() - curr_size)
             detail::throw_length_error(
                 "string too large",
-                BOOST_JSON_SOURCE_POS);
+                BOOST_CURRENT_LOCATION);
         string_impl tmp(growth(
             curr_size + n, capacity()), sp);
         tmp.size(curr_size + n);
@@ -249,7 +249,7 @@ insert_unchecked(
     const auto curr_size = size();
     if(pos > curr_size)
         detail::throw_out_of_range(
-            BOOST_JSON_SOURCE_POS);
+            BOOST_CURRENT_LOCATION);
     const auto curr_data = data();
     if(n <= capacity() - size())
     {
@@ -265,7 +265,7 @@ insert_unchecked(
     if(n > max_size() - curr_size)
         detail::throw_length_error(
             "string too large",
-            BOOST_JSON_SOURCE_POS);
+            BOOST_CURRENT_LOCATION);
     string_impl tmp(growth(
         curr_size + n, capacity()), sp);
     tmp.size(curr_size + n);
@@ -294,7 +294,7 @@ replace(
     const auto curr_size = size();
     if (pos > curr_size)
         detail::throw_out_of_range(
-            BOOST_JSON_SOURCE_POS);
+            BOOST_CURRENT_LOCATION);
     const auto curr_data = data();
     n1 = (std::min)(n1, curr_size - pos);
     const auto delta = (std::max)(n1, n2) -
@@ -344,7 +344,7 @@ replace(
         if (delta > max_size() - curr_size)
             detail::throw_length_error(
                 "string too large",
-                BOOST_JSON_SOURCE_POS);
+                BOOST_CURRENT_LOCATION);
         // would exceed capacity, reallocate
         string_impl tmp(growth(
             curr_size + delta, capacity()), sp);
@@ -379,7 +379,7 @@ replace_unchecked(
     const auto curr_size = size();
     if(pos > curr_size)
         detail::throw_out_of_range(
-            BOOST_JSON_SOURCE_POS);
+            BOOST_CURRENT_LOCATION);
     const auto curr_data = data();
     const auto delta = (std::max)(n1, n2) -
         (std::min)(n1, n2);
@@ -402,7 +402,7 @@ replace_unchecked(
     if(delta > max_size() - curr_size)
         detail::throw_length_error(
             "string too large",
-            BOOST_JSON_SOURCE_POS);
+            BOOST_CURRENT_LOCATION);
     // would exceed capacity, reallocate
     string_impl tmp(growth(
         curr_size + delta, capacity()), sp);

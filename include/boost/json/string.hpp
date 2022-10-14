@@ -905,7 +905,7 @@ public:
     {
         if(pos >= size())
             detail::throw_out_of_range(
-                BOOST_JSON_SOURCE_POS);
+                BOOST_CURRENT_LOCATION);
         return impl_.data()[pos];
     }
 
@@ -931,7 +931,7 @@ public:
     {
         if(pos >= size())
             detail::throw_out_of_range(
-                BOOST_JSON_SOURCE_POS);
+                BOOST_CURRENT_LOCATION);
         return impl_.data()[pos];
     }
 
