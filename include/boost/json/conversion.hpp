@@ -69,53 +69,6 @@ using is_value_type_pair = is_value_type_pair_helper<value_type<T>>;
 
 } // namespace detail
 
-/**
-   Helper trait that returns @ref result
-
-   The primary template is an incomplete type. The library provides a partial
-   specialisation `result_for<T1, value>`, that has nested type alias `type`
-   that aliases the type `result<T1>`.
-
-   The purpose of this trait is to let users provide non-throwing conversions
-   for their types without creating a physical dependency on Boost.Json. For
-   example:
-
-   @code
-   namespace boost
-   {
-   namespace json
-   {
-
-   template<class T>
-   struct value_to_tag;
-
-   template<class T1, class T2>
-   struct result_for;
-   }
-   }
-
-   namespace mine
-   {
-       class my_class;
-       ...
-       template<class JsonValue>
-       boost::json::result_for<my_class, JsonValue>
-       tag_invoke(boost::json::try_value_to_tag<my_class>, const JsonValue& jv)
-       { ... }
-   }
-   @endcode
-
-    @see @ref try_value_to, @ref try_value_to_tag
-*/
-template <class T1, class T2>
-struct result_for;
-
-template <class T>
-struct result_for<T, value>
-{
-    using type = result< detail::remove_cvref<T> >;
-};
-
 /** Determine if `T` can be treated like a string during conversions.
 
     Provides the member constant `value` that is equal to `true`, if `T` is

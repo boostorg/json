@@ -11,12 +11,9 @@
 #define BOOST_JSON_DETAIL_EXCEPT_HPP
 
 #include <boost/json/error.hpp>
-#include <boost/assert/source_location.hpp>
 
 BOOST_JSON_NS_BEGIN
 namespace detail {
-
-using source_location = boost::source_location;
 
 #define BOOST_JSON_FAIL(ec, e) \
     BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION; \

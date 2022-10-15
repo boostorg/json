@@ -44,6 +44,7 @@
           <member><link linkend="json.ref.boost__json__get_null_resource">get_null_resource</link></member>
           <member><link linkend="json.ref.boost__json__make_shared_resource">make_shared_resource</link></member>
           <member><link linkend="json.ref.boost__json__parse">parse</link></member>
+          <member><link linkend="json.ref.boost__json__result_from_errno">result_from_errno</link></member>
           <member><link linkend="json.ref.boost__json__serialize">serialize</link></member>
           <member><link linkend="json.ref.boost__json__to_string">to_string</link></member>
           <member><link linkend="json.ref.boost__json__try_value_to">try_value_to</link></member>

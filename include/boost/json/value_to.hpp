@@ -48,6 +48,12 @@ struct value_to_tag;
 template<class T>
 struct try_value_to_tag;
 
+template <class T>
+struct result_for<T, value>
+{
+    using type = result< detail::remove_cvref<T> >;
+};
+
 /** Convert a @ref value to an object of type `T`.
 
     This function attempts to convert a @ref value
