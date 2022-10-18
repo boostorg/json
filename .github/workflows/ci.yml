@@ -238,6 +238,17 @@ jobs:
             toolset: "msvc"
             toolset_version: "14.3"
             b2_cxxstd: "17,20"
+          - name: "macos clang"
+            buildtype: "boost"
+            toolset: "clang"
+            cxxstd: "17"
+            os: "macos-11"
+          - name: "macos gcc-11"
+            buildtype: "boost"
+            toolset: "gcc"
+            toolset_version: "11"
+            cxxstd: "17"
+            os: "macos-11"
 
     runs-on: ${{ matrix.os }}
     container: ${{ matrix.container }}

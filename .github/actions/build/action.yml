@@ -106,3 +106,10 @@ runs:
       shell: cmd
       run: call .drone/drone.bat
       working-directory: ${{ inputs.path }}
+
+    - name: macos
+      if: runner.os == 'MacOS'
+      shell: bash
+      run: . .drone/drone.sh
+      working-directory: ${{ inputs.path }}
+
