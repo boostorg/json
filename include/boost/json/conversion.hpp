@@ -99,7 +99,7 @@ using is_value_type_pair = is_value_type_pair_helper<value_type<T>>;
 
     @see @ref value_from, @ref value_to
 */
-template<class T, class Enable = void>
+template<class T>
 struct is_string_like
 #ifndef BOOST_JSON_DOCS
     : std::is_convertible<T, string_view>
@@ -144,7 +144,7 @@ struct is_string_like
 
     @see @ref value_from, @ref value_to
 */
-template<class T, class Enable = void>
+template<class T>
 struct is_sequence_like
 #ifndef BOOST_JSON_DOCS
     : mp11::mp_all<
@@ -203,7 +203,7 @@ struct is_sequence_like
 
     @see @ref value_from, @ref value_to
 */
-template<class T, class Enable = void>
+template<class T>
 struct is_map_like
 #ifndef BOOST_JSON_DOCS
     : mp11::mp_all<
@@ -245,7 +245,7 @@ struct is_map_like
 
     @see @ref value_from, @ref value_to
 */
-template<class T, class Enable = void>
+template<class T>
 struct is_tuple_like
 #ifndef BOOST_JSON_DOCS
     : mp11::mp_valid_and_true<detail::has_positive_tuple_size, T>
@@ -279,7 +279,7 @@ struct is_tuple_like
 
     @see @ref value_from, @ref value_to
 */
-template<class T, class Enable = void>
+template<class T>
 struct is_null_like
     : std::false_type
 { };
