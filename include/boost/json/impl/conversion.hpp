@@ -13,6 +13,8 @@
 
 #include <boost/json/value.hpp>
 #include <boost/json/string_view.hpp>
+#include <boost/describe/members.hpp>
+#include <boost/describe/bases.hpp>
 #include <boost/mp11/algorithm.hpp>
 #include <boost/mp11/utility.hpp>
 
@@ -149,6 +151,7 @@ struct string_like_conversion_tag { };
 struct map_like_conversion_tag { };
 struct sequence_conversion_tag { };
 struct tuple_conversion_tag { };
+struct described_class_conversion_tag { };
 struct no_conversion_tag { };
 
 template<class T>
@@ -170,6 +173,13 @@ using has_user_conversion = mp11::mp_if<
         mp11::mp_valid<has_user_conversion_to_impl, T>,
         mp11::mp_valid<has_nonthrowing_user_conversion_to_impl, T>>>;
 
+template< class T >
+using described_non_public_members = describe::describe_members<
+    T, describe::mod_private | describe::mod_protected>;
+template< class T >
+using described_bases = describe::describe_bases<
+    T, describe::mod_any_access>;
+
 template<class T, class Dir>
 using conversion_implementation = mp11::mp_cond<
     // user conversion (via tag_invoke)
@@ -187,6 +197,7 @@ using conversion_implementation = mp11::mp_cond<
     is_map_like<T>,              map_like_conversion_tag,
     is_sequence_like<T>,         sequence_conversion_tag,
     is_tuple_like<T>,            tuple_conversion_tag,
+    is_described_class<T>,       described_class_conversion_tag,
     // failed to find a suitable implementation
     mp11::mp_true,                   no_conversion_tag>;
 
@@ -258,6 +269,18 @@ struct is_null_like<std::monostate>
     : std::true_type
 { };
 #endif // BOOST_NO_CXX17_HDR_VARIANT
+
+template<class T>
+struct is_described_class
+    : mp11::mp_and<
+        describe::has_describe_members<T>,
+        mp11::mp_not< std::is_union<T> >,
+        mp11::mp_empty<
+            mp11::mp_eval_or<
+                mp11::mp_list<>, detail::described_non_public_members, T>>,
+        mp11::mp_empty<
+            mp11::mp_eval_or<mp11::mp_list<>, detail::described_bases, T>>>
+{ };
 
 BOOST_JSON_NS_END
 

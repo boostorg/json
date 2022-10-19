@@ -11,6 +11,7 @@
 #include <boost/json/value_to.hpp>
 
 #include <boost/json/value_from.hpp>
+#include <boost/describe/class.hpp>
 
 #include "test_suite.hpp"
 
@@ -87,6 +88,23 @@ tag_invoke(
     throw std::bad_alloc();
 }
 
+//----------------------------------------------------------
+
+struct T6
+{
+    int n;
+    double d;
+};
+BOOST_DESCRIBE_STRUCT(T6, (), (n, d))
+
+//----------------------------------------------------------
+
+struct T7 : T6
+{
+    std::string s;
+};
+BOOST_DESCRIBE_STRUCT(T7, (T6), (s))
+
 } // namespace value_to_test_ns
 
 namespace std
@@ -111,6 +129,9 @@ BOOST_JSON_NS_BEGIN
 
 template<>
 struct is_null_like<::value_to_test_ns::T1> : std::true_type { };
+
+template<>
+struct is_described_class<::value_to_test_ns::T7> : std::true_type { };
 
 template <class T, class = void>
 struct can_apply_value_to
@@ -280,6 +301,34 @@ public:
             ( value_to<std::nullptr_t>(value(1)) ));
         BOOST_TEST_THROWS_WITH_LOCATION(
             ( value_to<::value_to_test_ns::T1>(value(1)) ));
+    }
+
+    void testDescribed()
+    {
+#ifdef BOOST_DESCRIBE_CXX14
+        {
+            value jv = {{"n", -78}, {"d", 0.125}};
+            auto res = try_value_to<::value_to_test_ns::T6>(jv);
+            BOOST_TEST( res );
+            BOOST_TEST( res->n == -78 );
+            BOOST_TEST( res->d == 0.125 );
+        }
+        {
+            value jv = {{"n", 1}, {"d", 2}, {"s", "xyz"}};
+            auto res = try_value_to<::value_to_test_ns::T7>(jv);
+            BOOST_TEST( res );
+            BOOST_TEST( res->n == 1 );
+            BOOST_TEST( res->d == 2 );
+            BOOST_TEST( res->s == "xyz" );
+        }
+
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            value_to<::value_to_test_ns::T6>( value(1) ));
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            value_to<::value_to_test_ns::T6>( value{{"x", 0}} ));
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            value_to<::value_to_test_ns::T6>( (value{{"n", 0}, {"x", 0}}) ));
+#endif
     }
 
 #ifndef BOOST_NO_CXX17_HDR_OPTIONAL
@@ -500,6 +549,7 @@ public:
         testGenerics();
         testContainerHelpers();
         testNullptr();
+        testDescribed();
 #ifndef BOOST_NO_CXX17_HDR_OPTIONAL
         testOptional();
 #endif

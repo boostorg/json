@@ -57,6 +57,7 @@
           <member><link linkend="json.ref.boost__json__has_value_from">has_value_from</link></member>
           <member><link linkend="json.ref.boost__json__has_value_to">has_value_to</link></member>
           <member><link linkend="json.ref.boost__json__is_deallocate_trivial">is_deallocate_trivial</link></member>
+          <member><link linkend="json.ref.boost__json__is_described_class">is_described_class</link></member>
           <member><link linkend="json.ref.boost__json__is_map_like">is_map_like</link></member>
           <member><link linkend="json.ref.boost__json__is_null_like">is_null_like</link></member>
           <member><link linkend="json.ref.boost__json__is_sequence_like">is_sequence_like</link></member>

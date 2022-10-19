@@ -165,6 +165,45 @@ struct value_from_visitor
 };
 #endif // BOOST_NO_CXX17_HDR_VARIANT
 
+template< class T >
+struct from_described_member
+{
+    using Ds = describe::describe_members<
+        remove_cvref<T>, describe::mod_public | describe::mod_inherited>;
+
+    object& obj;
+    T&& from;
+
+    template< class I >
+    void
+    operator()(I) const
+    {
+        using D = mp11::mp_at<Ds, I>;
+        obj.emplace(
+            D::name,
+            value_from(
+                static_cast<T&&>(from).* D::pointer,
+                obj.storage()));
+    }
+};
+
+// described classes
+template<class T>
+void
+value_from_helper(
+    value& jv,
+    T&& from,
+    described_class_conversion_tag)
+{
+    object& obj = jv.emplace_object();
+    from_described_member<T> member_converter{obj, static_cast<T&&>(from)};
+
+    using Ds = typename decltype(member_converter)::Ds;
+    constexpr std::size_t N = mp11::mp_size<Ds>::value;
+    obj.reserve(N);
+    mp11::mp_for_each< mp11::mp_iota_c<N> >(member_converter);
+}
+
 } // detail
 
 #ifndef BOOST_NO_CXX17_HDR_OPTIONAL

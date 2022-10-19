@@ -201,6 +201,52 @@ struct is_null_like
     : std::false_type
 { };
 
+/** Determine if `T` should be treated as a described class
+
+    Described classes are serialised as objects with an element for each
+    described public data member. A described class should not have described
+    bases or non-public members.<br>
+
+    Or more formally, given `L`, a class template
+    of the form `template<class...> struct L {};`, if
+
+    @li <tt>boost::describe::has_members<T, boost::describe::mod_public>::value</tt> is `true`; and
+
+    @li `boost::describe::describe_members<T, boost::describe::mod_private | boost::describe::mod_protected>` denotes `L<>`; and
+
+    @li `boost::describe::describe_bases<T, boost::describe::mod_any_access>` denotes `L<>`; and
+
+    @li <tt>std::is_union<T>::value</tt> is `false`;
+
+    then the trait provides the member constant `value`
+    that is equal to `true`. Otherwise, `value` is equal to `false`.<br>
+
+    Users can specialize the trait for their own types if they don't want them
+    to be treated as described classes. For example:
+
+    @code
+    namespace boost {
+    namespace json {
+
+    template <>
+    struct is_described_class<your::described_class> : std::false_type
+    { };
+
+    } // namespace boost
+    } // namespace json
+    @endcode
+
+    Users can also specialize the trait for their own types _with_ described
+    bases to enable this conversion implementation. In this case the class will
+    be serialized in a flattened way, that is members of bases will be
+    serialized as direct elements of the object, and no nested objects will be
+    created for bases.
+
+    @see <a href="https://www.boost.org/doc/libs/develop/libs/describe/doc/html/describe.html">Boost.Describe</a>.
+*/
+template<class T>
+struct is_described_class;
+
 BOOST_JSON_NS_END
 
 #include <boost/json/impl/conversion.hpp>

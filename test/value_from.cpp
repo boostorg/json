@@ -13,6 +13,7 @@
 
 #include <boost/json/value.hpp> // prevent intellisense bugs
 #include <boost/json/serialize.hpp>
+#include <boost/describe/class.hpp>
 
 #include "test_suite.hpp"
 
@@ -162,6 +163,23 @@ tag_invoke(
     jv = "T9";
 }
 
+//----------------------------------------------------------
+
+struct T10
+{
+    int n;
+    double d;
+};
+BOOST_DESCRIBE_STRUCT(T10, (), (n, d))
+
+//----------------------------------------------------------
+
+struct T11 : T10
+{
+    std::string s;
+};
+BOOST_DESCRIBE_STRUCT(T11, (T10), (s))
+
 } // namespace value_from_test_ns
 
 template<class T>
@@ -191,6 +209,11 @@ BOOST_JSON_NS_BEGIN
 
 template<>
 struct is_null_like<::value_from_test_ns::T7>
+    : std::true_type
+{ };
+
+template<>
+struct is_described_class<::value_from_test_ns::T11>
     : std::true_type
 { };
 
@@ -384,6 +407,23 @@ public:
         }
     }
 
+    void
+    testDescribed()
+    {
+#ifdef BOOST_DESCRIBE_CXX14
+        ::value_from_test_ns::T10 t10{909, -1.45};
+        value jv = value_from(t10);
+        BOOST_TEST(( jv == value{{"n", 909}, {"d", -1.45}} ));
+
+        ::value_from_test_ns::T11 t11;
+        t11.n = 67;
+        t11.d = -.12;
+        t11.s = "qwerty";
+        jv = value_from(t11);
+        BOOST_TEST(( jv == value{{"n", 67}, {"d", -.12}, {"s", "qwerty"}} ));
+#endif
+    }
+
 #ifndef BOOST_NO_CXX17_HDR_OPTIONAL
     void testOptional()
     {
@@ -426,6 +466,7 @@ public:
         testAssociative();
         testPreferUserCustomizations();
         testTrySize();
+        testDescribed();
 #ifndef BOOST_NO_CXX17_HDR_OPTIONAL
         testOptional();
 #endif

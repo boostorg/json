@@ -126,8 +126,11 @@ enum class error
     /// JSON array has size incompatible with target
     size_mismatch,
 
-    /// none of the types in a variant converted successfully
+    /// none of the possible conversions were successful
     exhausted_variants,
+
+    /// the key does not correspond to a known name
+    unknown_name,
 };
 
 /** Error conditions corresponding to JSON errors

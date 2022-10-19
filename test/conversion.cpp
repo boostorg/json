@@ -12,8 +12,15 @@
 // test that header file is header-guarded properly
 #include <boost/json/conversion.hpp>
 
+#include <boost/describe/class.hpp>
+
 #include "test.hpp"
 #include "test_suite.hpp"
+
+#ifdef __clang__
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wunused-private-field"
+#endif
 
 namespace
 {
@@ -64,6 +71,50 @@ struct pseudo_multimap1
 };
 
 struct my_null { };
+
+struct described1 { };
+BOOST_DESCRIBE_STRUCT(described1, (), ());
+
+struct described2 : described1 { };
+BOOST_DESCRIBE_STRUCT(described2, (described1), ());
+
+struct described3
+{
+    int n;
+
+private:
+    int m;
+};
+BOOST_DESCRIBE_STRUCT(described3, (), (n));
+
+struct described4
+{
+    int n;
+
+private:
+    int m;
+    BOOST_DESCRIBE_CLASS(described4, (), (n), (), (m))
+};
+
+struct described5
+{
+    int n;
+
+protected:
+    int m;
+    BOOST_DESCRIBE_CLASS(described5, (), (n), (m), ())
+};
+
+union described6
+{
+    int n;
+};
+BOOST_DESCRIBE_STRUCT(described6, (), (n));
+
+enum class described_enum { e };
+BOOST_DESCRIBE_ENUM(described_enum, e);
+
+enum class undescribed_enum { };
 
 } // namespace
 
@@ -126,6 +177,17 @@ public:
 
         BOOST_STATIC_ASSERT( is_null_like<std::nullptr_t>::value );
         BOOST_STATIC_ASSERT( is_null_like<my_null>::value );
+
+#ifdef BOOST_DESCRIBE_CXX14
+        BOOST_STATIC_ASSERT( is_described_class<described1>::value );
+        BOOST_STATIC_ASSERT( is_described_class<described3>::value );
+
+        BOOST_STATIC_ASSERT( !is_described_class<my_null>::value );
+        BOOST_STATIC_ASSERT( !is_described_class<described2>::value );
+        BOOST_STATIC_ASSERT( !is_described_class<described4>::value );
+        BOOST_STATIC_ASSERT( !is_described_class<described5>::value );
+        BOOST_STATIC_ASSERT( !is_described_class<described6>::value );
+#endif
     }
 };
 

@@ -464,6 +464,80 @@ value_to_impl(
         *arr, boost::mp11::make_index_sequence<N>());
 }
 
+template< class T >
+struct to_described_member
+{
+    using Ds = describe::describe_members<
+        T, describe::mod_public | describe::mod_inherited>;
+
+    template< class D >
+    using described_member_t = remove_cvref<decltype(
+        std::declval<T&>().* D::pointer )>;
+
+    result<T>& res;
+    object const& obj;
+
+    template< class I >
+    void
+    operator()(I) const
+    {
+        if( !res )
+            return;
+
+        using D = mp11::mp_at<Ds, I>;
+        auto const found = obj.find(D::name);
+        if( found == obj.end() )
+        {
+            error_code ec;
+            BOOST_JSON_FAIL(ec, error::unknown_name);
+            res = {boost::system::in_place_error, ec};
+            return;
+        }
+
+        using M = described_member_t<D>;
+        auto member_res = try_value_to<M>(found->value());
+        if( member_res )
+            (*res).* D::pointer = std::move(*member_res);
+        else
+            res = {boost::system::in_place_error, member_res.error()};
+    }
+};
+
+// described classes
+template<class T>
+result<T>
+value_to_impl(
+    try_value_to_tag<T>,
+    value const& jv,
+    described_class_conversion_tag)
+{
+    result<T> res;
+
+    auto* obj = jv.if_object();
+    if( !obj )
+    {
+        error_code ec;
+        BOOST_JSON_FAIL(ec, error::not_object);
+        res = {boost::system::in_place_error, ec};
+        return res;
+    }
+
+    to_described_member<T> member_converter{res, *obj};
+    using Ds = typename decltype(member_converter)::Ds;
+
+    constexpr std::size_t N = mp11::mp_size<Ds>::value;
+    if( obj->size() != N )
+    {
+        error_code ec;
+        BOOST_JSON_FAIL(ec, error::size_mismatch);
+        res = {boost::system::in_place_error, ec};
+        return res;
+    }
+
+    mp11::mp_for_each< mp11::mp_iota_c<N> >(member_converter);
+    return res;
+}
+
 //----------------------------------------------------------
 // User-provided conversion
 template<class T>
