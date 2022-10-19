@@ -13,8 +13,7 @@
 #define BOOST_JSON_DETAIL_VALUE_TO_HPP
 
 #include <boost/json/value.hpp>
-#include <boost/json/detail/value_traits.hpp>
-#include <boost/mp11/integer_sequence.hpp>
+#include <boost/json/conversion.hpp>
 
 #ifndef BOOST_NO_CXX17_HDR_OPTIONAL
 # include <optional>

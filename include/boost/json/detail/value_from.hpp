@@ -12,9 +12,8 @@
 #ifndef BOOST_JSON_DETAIL_VALUE_FROM_HPP
 #define BOOST_JSON_DETAIL_VALUE_FROM_HPP
 
-#include <boost/json/storage_ptr.hpp>
+#include <boost/json/conversion.hpp>
 #include <boost/json/value.hpp>
-#include <boost/json/detail/value_traits.hpp>
 #include <boost/mp11/algorithm.hpp>
 
 #ifndef BOOST_NO_CXX17_HDR_OPTIONAL
