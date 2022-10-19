@@ -14,6 +14,7 @@
 
 #include <boost/json/array.hpp>
 #include <boost/json/basic_parser.hpp>
+#include <boost/json/conversion.hpp>
 #include <boost/json/error.hpp>
 #include <boost/json/fwd.hpp>
 #include <boost/json/kind.hpp>
