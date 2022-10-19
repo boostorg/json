@@ -11,8 +11,7 @@
 #ifndef BOOST_JSON_IMPL_PARSE_INTO_HPP
 #define BOOST_JSON_IMPL_PARSE_INTO_HPP
 
-#include <boost/json/detail/config.hpp>
-#include <boost/json/detail/parse_into.hpp>
+#include <boost/json/basic_parser_impl.hpp>
 #include <boost/json/error.hpp>
 
 namespace boost {

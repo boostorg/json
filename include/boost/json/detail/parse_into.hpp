@@ -14,8 +14,7 @@
 #include <boost/json/detail/config.hpp>
 
 #include <boost/json/error.hpp>
-#include <boost/describe.hpp>
-#include <boost/mp11.hpp>
+#include <boost/json/conversion.hpp>
 
 namespace boost {
 namespace json {
