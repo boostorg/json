@@ -14,6 +14,7 @@
 
 #include <boost/json/value.hpp>
 #include <boost/json/conversion.hpp>
+#include <boost/describe/enum_from_string.hpp>
 
 #ifndef BOOST_NO_CXX17_HDR_OPTIONAL
 # include <optional>
@@ -536,6 +537,36 @@ value_to_impl(
 
     mp11::mp_for_each< mp11::mp_iota_c<N> >(member_converter);
     return res;
+}
+
+// described enums
+template<class T>
+result<T>
+value_to_impl(
+    try_value_to_tag<T>,
+    value const& jv,
+    described_enum_conversion_tag)
+{
+    T val = {};
+    (void)jv;
+#ifdef BOOST_DESCRIBE_CXX14
+    error_code ec;
+
+    auto str = jv.if_string();
+    if( !str )
+    {
+        BOOST_JSON_FAIL(ec, error::not_string);
+        return {system::in_place_error, ec};
+    }
+
+    if( !describe::enum_from_string(str->data(), val) )
+    {
+        BOOST_JSON_FAIL(ec, error::unknown_name);
+        return {system::in_place_error, ec};
+    }
+#endif
+
+    return {system::in_place_value, val};
 }
 
 //----------------------------------------------------------

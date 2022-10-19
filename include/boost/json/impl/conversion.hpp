@@ -13,6 +13,7 @@
 
 #include <boost/json/value.hpp>
 #include <boost/json/string_view.hpp>
+#include <boost/describe/enumerators.hpp>
 #include <boost/describe/members.hpp>
 #include <boost/describe/bases.hpp>
 #include <boost/mp11/algorithm.hpp>
@@ -152,6 +153,7 @@ struct map_like_conversion_tag { };
 struct sequence_conversion_tag { };
 struct tuple_conversion_tag { };
 struct described_class_conversion_tag { };
+struct described_enum_conversion_tag { };
 struct no_conversion_tag { };
 
 template<class T>
@@ -198,6 +200,7 @@ using conversion_implementation = mp11::mp_cond<
     is_sequence_like<T>,         sequence_conversion_tag,
     is_tuple_like<T>,            tuple_conversion_tag,
     is_described_class<T>,       described_class_conversion_tag,
+    is_described_enum<T>,        described_enum_conversion_tag,
     // failed to find a suitable implementation
     mp11::mp_true,                   no_conversion_tag>;
 
@@ -280,6 +283,11 @@ struct is_described_class
                 mp11::mp_list<>, detail::described_non_public_members, T>>,
         mp11::mp_empty<
             mp11::mp_eval_or<mp11::mp_list<>, detail::described_bases, T>>>
+{ };
+
+template<class T>
+struct is_described_enum
+    : describe::has_describe_enumerators<T>
 { };
 
 BOOST_JSON_NS_END

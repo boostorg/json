@@ -12,6 +12,7 @@
 
 #include <boost/json/value_from.hpp>
 #include <boost/describe/class.hpp>
+#include <boost/describe/enum.hpp>
 
 #include "test_suite.hpp"
 
@@ -104,6 +105,10 @@ struct T7 : T6
     std::string s;
 };
 BOOST_DESCRIBE_STRUCT(T7, (T6), (s))
+
+//----------------------------------------------------------
+
+BOOST_DEFINE_ENUM_CLASS(E1, a, b, c)
 
 } // namespace value_to_test_ns
 
@@ -328,6 +333,21 @@ public:
             value_to<::value_to_test_ns::T6>( value{{"x", 0}} ));
         BOOST_TEST_THROWS_WITH_LOCATION(
             value_to<::value_to_test_ns::T6>( (value{{"n", 0}, {"x", 0}}) ));
+
+        {
+            value jv = "a";
+            auto e1 = value_to<::value_to_test_ns::E1>(jv);
+            BOOST_TEST( e1 == ::value_to_test_ns::E1::a );
+
+            jv = "b";
+            e1 = value_to<::value_to_test_ns::E1>(jv);
+            BOOST_TEST( e1 == ::value_to_test_ns::E1::b );
+        }
+
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            value_to<::value_to_test_ns::E1>( value(1) ));
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            value_to<::value_to_test_ns::E1>( value("x") ));
 #endif
     }
 

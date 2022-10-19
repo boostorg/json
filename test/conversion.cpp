@@ -187,6 +187,11 @@ public:
         BOOST_STATIC_ASSERT( !is_described_class<described4>::value );
         BOOST_STATIC_ASSERT( !is_described_class<described5>::value );
         BOOST_STATIC_ASSERT( !is_described_class<described6>::value );
+
+        BOOST_STATIC_ASSERT( is_described_enum<described_enum>::value );
+        BOOST_STATIC_ASSERT( !is_described_enum<my_null>::value );
+        BOOST_STATIC_ASSERT( !is_described_enum<described1>::value );
+        BOOST_STATIC_ASSERT( !is_described_enum<undescribed_enum>::value );
 #endif
     }
 };

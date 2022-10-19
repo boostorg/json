@@ -14,6 +14,7 @@
 
 #include <boost/json/conversion.hpp>
 #include <boost/json/value.hpp>
+#include <boost/describe/enum_to_string.hpp>
 #include <boost/mp11/algorithm.hpp>
 
 #ifndef BOOST_NO_CXX17_HDR_OPTIONAL
@@ -202,6 +203,31 @@ value_from_helper(
     constexpr std::size_t N = mp11::mp_size<Ds>::value;
     obj.reserve(N);
     mp11::mp_for_each< mp11::mp_iota_c<N> >(member_converter);
+}
+
+// described enums
+template<class T>
+void
+value_from_helper(
+    value& jv,
+    T from,
+    described_enum_conversion_tag)
+{
+    (void)jv;
+    (void)from;
+#ifdef BOOST_DESCRIBE_CXX14
+    char const* const name = describe::enum_to_string(from, nullptr);
+    if( name )
+    {
+        string& str = jv.emplace_string();
+        str.assign(name);
+    }
+    else
+    {
+        using Integer = typename std::underlying_type< remove_cvref<T> >::type;
+        jv = static_cast<Integer>(from);
+    }
+#endif
 }
 
 } // detail

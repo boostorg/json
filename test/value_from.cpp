@@ -14,6 +14,7 @@
 #include <boost/json/value.hpp> // prevent intellisense bugs
 #include <boost/json/serialize.hpp>
 #include <boost/describe/class.hpp>
+#include <boost/describe/enum.hpp>
 
 #include "test_suite.hpp"
 
@@ -179,6 +180,10 @@ struct T11 : T10
     std::string s;
 };
 BOOST_DESCRIBE_STRUCT(T11, (T10), (s))
+
+//----------------------------------------------------------
+
+BOOST_DEFINE_ENUM_CLASS(E1, a, b, c)
 
 } // namespace value_from_test_ns
 
@@ -421,6 +426,15 @@ public:
         t11.s = "qwerty";
         jv = value_from(t11);
         BOOST_TEST(( jv == value{{"n", 67}, {"d", -.12}, {"s", "qwerty"}} ));
+
+        ::value_from_test_ns::E1 e1 = ::value_from_test_ns::E1::a;
+        BOOST_TEST( value_from(e1) == "a" );
+
+        e1 = ::value_from_test_ns::E1::b;
+        BOOST_TEST( value_from(e1) == "b" );
+
+        e1 = static_cast<::value_from_test_ns::E1>(1001);
+        BOOST_TEST( value_from(e1) == 1001 );
 #endif
     }
 

@@ -247,6 +247,37 @@ struct is_null_like
 template<class T>
 struct is_described_class;
 
+/** Determine if `T` should be treated as a described enum
+
+    Described enums are serialised as strings when their value equals to a
+    described enumerator, and as integers otherwise. The reverse operation
+    does not convert numbers to enums values, though, and instead produces
+    an error.<br>
+
+    If <tt>boost::describe::has_describe_enumerators<T>::value</tt> is `true`,
+    then the trait provides the member constant `value`
+    that is equal to `true`. Otherwise, `value` is equal to `false`.<br>
+
+    Users can specialize the trait for their own enums if they don't want them
+    to be treated as described enums. For example:
+
+    @code
+    namespace boost {
+    namespace json {
+
+    template <>
+    struct is_described_enum<your::described_enum> : std::false_type
+    { };
+
+    } // namespace boost
+    } // namespace json
+    @endcode
+
+    @see <a href="https://www.boost.org/doc/libs/develop/libs/describe/doc/html/describe.html">Boost.Describe</a>.
+*/
+template<class T>
+struct is_described_enum;
+
 BOOST_JSON_NS_END
 
 #include <boost/json/impl/conversion.hpp>
