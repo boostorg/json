@@ -136,14 +136,6 @@ using result = boost::system::result<T>;
 template <class T1, class T2>
 struct result_for;
 
-#ifdef BOOST_JSON_DOCS
-/// Returns the generic error category used by the library.
-error_category const&
-generic_category();
-#else
-using boost::system::generic_category;
-#endif
-
 class value;
 
 /** Create @ref result storing a portable error code

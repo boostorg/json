@@ -22,7 +22,7 @@ class file
     void
     fail(boost::json::error_code& ec)
     {
-        ec.assign( errno, boost::json::generic_category() );
+        ec.assign( errno, boost::system::generic_category() );
     }
 
 public:
@@ -122,7 +122,7 @@ public:
     {
         auto const nread = std::fread( data, 1, size, f_ );
         if( std::ferror(f_) )
-            ec.assign( errno, boost::json::generic_category() );
+            ec.assign( errno, boost::system::generic_category() );
         return nread;
     }
 
