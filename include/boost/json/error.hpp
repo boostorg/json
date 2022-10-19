@@ -63,10 +63,12 @@ enum class error
     /// A string is too large
     string_too_large,
 
-    /// The parser encountered an exception and must be reset
-    exception,
+    //
+    // generic errors
+    //
 
-    //----------------------------------
+    /// An exception was thrown during operation
+    exception,
 
     /// test failure
     test_failure,
@@ -143,6 +145,9 @@ enum class condition
 
     /// A conversion error
     conversion_error,
+
+    /// A generic error
+    generic_error,
 };
 
 BOOST_JSON_NS_END

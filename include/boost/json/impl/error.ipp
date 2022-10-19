@@ -44,8 +44,8 @@ case error::object_too_large: return "object too large";
 case error::array_too_large: return "array too large";
 case error::key_too_large: return "key too large";
 case error::string_too_large: return "string too large";
-case error::exception: return "got exception";
 
+case error::exception: return "got exception";
 case error::test_failure: return "test failure";
 
 case error::missing_slash: return "missing slash character";
@@ -89,7 +89,6 @@ case error::object_too_large:
 case error::array_too_large:
 case error::key_too_large:
 case error::string_too_large:
-case error::exception:
     return condition::parse_error;
 
 case error::missing_slash:
@@ -112,6 +111,9 @@ case error::not_object:
 case error::not_string:
 case error::size_mismatch:
     return condition::conversion_error;
+
+case error::exception:
+    return condition::generic_error;
             }
         }
     };

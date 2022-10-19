@@ -60,7 +60,6 @@ public:
         check(condition::parse_error, error::array_too_large);
         check(condition::parse_error, error::key_too_large);
         check(condition::parse_error, error::string_too_large);
-        check(condition::parse_error, error::exception);
 
         check(condition::pointer_parse_error, error::missing_slash);
         check(condition::pointer_parse_error, error::invalid_escape);
@@ -80,6 +79,7 @@ public:
         check(condition::conversion_error, error::not_string);
         check(condition::conversion_error, error::size_mismatch);
 
+        check(condition::generic_error, error::exception);
         check(error::test_failure);
 
         // check std interop
