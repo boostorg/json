@@ -11,6 +11,7 @@
 #ifndef BOOST_JSON_IMPL_CONVERSION_HPP
 #define BOOST_JSON_IMPL_CONVERSION_HPP
 
+#include <boost/json/fwd.hpp>
 #include <boost/json/value.hpp>
 #include <boost/json/string_view.hpp>
 #include <boost/describe/enumerators.hpp>
@@ -26,15 +27,6 @@
 #endif // BOOST_NO_CXX17_HDR_VARIANT
 
 BOOST_JSON_NS_BEGIN
-
-struct value_from_tag { };
-
-template<class>
-struct value_to_tag { };
-
-template<class>
-struct try_value_to_tag { };
-
 namespace detail {
 
 #ifdef __cpp_lib_nonmember_container_access

@@ -12,31 +12,9 @@
 #ifndef BOOST_JSON_VALUE_FROM_HPP
 #define BOOST_JSON_VALUE_FROM_HPP
 
-#include <boost/json/detail/config.hpp>
-#include <boost/json/value.hpp>
 #include <boost/json/detail/value_from.hpp>
 
 BOOST_JSON_NS_BEGIN
-
-/** Customization point tag.
-
-    This tag type is used by the function
-    @ref value_from to select overloads
-    of `tag_invoke`.
-
-    @note This type is empty; it has no members.
-
-    @see @ref value_from, @ref value_to, @ref value_to_tag,
-    <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1895r0.pdf">
-        tag_invoke: A general pattern for supporting customisable functions</a>
-*/
-#ifndef BOOST_JSON_DOCS
-struct value_from_tag;
-#else
-// VFALCO Doc toolchain doesn't like
-// forward declared ordinary classes.
-struct value_from_tag {};
-#endif
 
 /** Convert an object of type `T` to @ref value.
 

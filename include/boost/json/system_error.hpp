@@ -1,5 +1,6 @@
 //
 // Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+// Copyright (c) 2022 Dmitry Arkhipov (grisumbras@yandex.ru)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -11,6 +12,7 @@
 #define BOOST_JSON_SYSTEM_ERROR_HPP
 
 #include <boost/json/detail/config.hpp>
+#include <boost/json/fwd.hpp>
 #include <boost/assert/source_location.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/system/result.hpp>
@@ -135,8 +137,6 @@ using result = boost::system::result<T>;
 */
 template <class T1, class T2>
 struct result_for;
-
-class value;
 
 /** Create @ref result storing a portable error code
 

@@ -16,6 +16,50 @@
 
 BOOST_JSON_NS_BEGIN
 
+/** Customization point tag.
+
+    This tag type is used by the function
+    @ref value_from to select overloads
+    of `tag_invoke`.
+
+    @note This type is empty; it has no members.
+
+    @see @ref value_from, @ref value_to, @ref value_to_tag,
+    <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1895r0.pdf">
+        tag_invoke: A general pattern for supporting customisable functions</a>
+*/
+struct value_from_tag { };
+
+/** Customization point tag type.
+
+    This tag type is used by the function
+    @ref value_to to select overloads
+    of `tag_invoke`.
+
+    @note This type is empty; it has no members.
+
+    @see @ref value_from, @ref value_from_tag, @ref value_to,
+    <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1895r0.pdf">
+        tag_invoke: A general pattern for supporting customisable functions</a>
+*/
+template<class T>
+struct value_to_tag { };
+
+/** Customization point tag type.
+
+    This tag type is used by the function
+    @ref try_value_to to select overloads
+    of `tag_invoke`.
+
+    @note This type is empty; it has no members.
+
+    @see @ref value_to, @ref value_to_tag
+    <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1895r0.pdf">
+        tag_invoke: A general pattern for supporting customisable functions</a>
+*/
+template<class T>
+struct try_value_to_tag { };
+
 /** Determine if `T` can be treated like a string during conversions.
 
     Provides the member constant `value` that is equal to `true`, if `T` is
