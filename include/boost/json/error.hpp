@@ -68,12 +68,6 @@ enum class error
 
     //----------------------------------
 
-    /// not a number
-    not_number,
-
-    /// number cast is not exact
-    not_exact,
-
     /// test failure
     test_failure,
 
@@ -106,6 +100,12 @@ enum class error
     // Conversion errors
     //
 
+    /// JSON number was expected during conversion
+    not_number,
+
+    /// number cast is not exact
+    not_exact,
+
     /// JSON null was expected during conversion
     not_null,
 
@@ -134,9 +134,6 @@ enum class condition
 {
     /// A parser-related error
     parse_error = 1,
-
-    /// An error on assignment to or from a JSON value
-    assign_error,
 
     /// An error related to parsing JSON pointer string
     pointer_parse_error,

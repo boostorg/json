@@ -45,8 +45,6 @@ case error::array_too_large: return "array too large";
 case error::key_too_large: return "key too large";
 case error::string_too_large: return "string too large";
 case error::exception: return "got exception";
-case error::not_number: return "not a number";
-case error::not_exact: return "not exact";
 
 case error::test_failure: return "test failure";
 
@@ -58,6 +56,8 @@ case error::not_found: return "no referenced value";
 case error::token_overflow: return "token overflow";
 case error::past_the_end: return "past-the-end token not supported";
 
+case error::not_number: return "not a number";
+case error::not_exact: return "not exact";
 case error::not_null: return "value is not null";
 case error::not_bool: return "value is not boolean";
 case error::not_array: return "value is not an array";
@@ -92,10 +92,6 @@ case error::string_too_large:
 case error::exception:
     return condition::parse_error;
 
-case error::not_number:
-case error::not_exact:
-    return condition::assign_error;
-
 case error::missing_slash:
 case error::invalid_escape:
     return condition::pointer_parse_error;
@@ -107,6 +103,8 @@ case error::token_overflow:
 case error::past_the_end:
     return condition::pointer_use_error;
 
+case error::not_number:
+case error::not_exact:
 case error::not_null:
 case error::not_bool:
 case error::not_array:
@@ -144,8 +142,6 @@ make_error_condition(condition c)
             default:
             case condition::parse_error:
                 return "A JSON parse error occurred";
-            case condition::assign_error:
-                return "An error occurred during assignment";
             case condition::pointer_parse_error:
                 return "A JSON Pointer parse error occurred";
             case condition::pointer_use_error:
