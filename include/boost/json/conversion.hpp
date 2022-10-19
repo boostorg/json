@@ -28,7 +28,8 @@ template<std::size_t I, class T>
 using tuple_element_t = typename std::tuple_element<I, T>::type;
 
 template<class T>
-using value_type = remove_cvref< decltype(*std::begin(std::declval<T&>())) >;
+using value_type = typename std::iterator_traits<decltype(
+    std::begin(std::declval<T&>()) )>::value_type;
 template<class T>
 using mapped_type = tuple_element_t< 1, value_type<T> >;
 
@@ -172,8 +173,8 @@ struct is_sequence_like
 
     @li <tt>is_sequence_like<T>::value</tt> is `true`; and
 
-    @li given types `K` and `M`,
-        `std::remove_cvref_t<decltype(*std::begin(t))>` denotes type
+    @li given type `It` denoting `decltype(std::begin(t))`, and types `K`
+        and `M`,  <tt>std::iterator_traits<It>::value_type</tt> denotes
         `std::pair<K, M>`; and
 
     @li <tt>std::is_string_like<K>::value</tt> is `true`; and
