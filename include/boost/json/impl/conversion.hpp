@@ -145,6 +145,8 @@ struct array_conversion_tag : native_conversion_tag { };
 struct string_conversion_tag : native_conversion_tag { };
 struct bool_conversion_tag : native_conversion_tag { };
 struct number_conversion_tag : native_conversion_tag { };
+struct integral_conversion_tag : number_conversion_tag { };
+struct floating_point_conversion_tag : number_conversion_tag { };
 struct null_like_conversion_tag { };
 struct string_like_conversion_tag { };
 struct map_like_conversion_tag { };
@@ -217,6 +219,9 @@ using described_non_public_members = describe::describe_members<
 template< class T >
 using described_bases = describe::describe_bases<
     T, describe::mod_any_access>;
+template< class T, class D >
+using described_member_t = remove_cvref<decltype(
+    std::declval<T&>().* D::pointer )>;
 
 // user conversion (via tag_invoke)
 template< class Ctx, class T, class Dir >
@@ -236,19 +241,20 @@ using native_conversion_category = mp11::mp_cond<
 // generic conversions
 template< class T >
 using generic_conversion_category = mp11::mp_cond<
-    std::is_same<T, bool>, bool_conversion_tag,
-    std::is_arithmetic<T>, number_conversion_tag,
-    is_null_like<T>,       null_like_conversion_tag,
-    is_string_like<T>,     string_like_conversion_tag,
-    is_map_like<T>,        map_like_conversion_tag,
-    is_sequence_like<T>,   sequence_conversion_tag,
-    is_tuple_like<T>,      tuple_conversion_tag,
-    is_described_class<T>, described_class_conversion_tag,
-    is_described_enum<T>,  described_enum_conversion_tag,
-    is_variant_like<T>,    variant_conversion_tag,
-    is_optional_like<T>,   optional_conversion_tag,
+    std::is_same<T, bool>,     bool_conversion_tag,
+    std::is_integral<T>,       integral_conversion_tag,
+    std::is_floating_point<T>, floating_point_conversion_tag,
+    is_null_like<T>,           null_like_conversion_tag,
+    is_string_like<T>,         string_like_conversion_tag,
+    is_map_like<T>,            map_like_conversion_tag,
+    is_sequence_like<T>,       sequence_conversion_tag,
+    is_tuple_like<T>,          tuple_conversion_tag,
+    is_described_class<T>,     described_class_conversion_tag,
+    is_described_enum<T>,      described_enum_conversion_tag,
+    is_variant_like<T>,        variant_conversion_tag,
+    is_optional_like<T>,       optional_conversion_tag,
     // failed to find a suitable implementation
-    mp11::mp_true,         no_conversion_tag>;
+    mp11::mp_true,             no_conversion_tag>;
 
 template< class T >
 using nested_type = typename T::type;

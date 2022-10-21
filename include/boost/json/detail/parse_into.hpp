@@ -20,6 +20,13 @@ namespace boost {
 namespace json {
 namespace detail {
 
+template< class Impl, class T, class Parent >
+class converting_handler;
+
+// get_handler
+template< class V, class P >
+using get_handler = converting_handler< generic_conversion_category<V>, V, P >;
+
 template<error E> class handler_error_base
 {
 public:
@@ -47,45 +54,173 @@ public:
     bool on_null( error_code& ec ) { BOOST_JSON_FAIL( ec, E ); return false; }
 };
 
-// integral_handler
+template< class P, error E >
+class scalar_handler
+    : public handler_error_base<E>
+{
+protected:
+    P* parent_;
 
+public:
+    scalar_handler(scalar_handler const&) = delete;
+    scalar_handler& operator=(scalar_handler const&) = delete;
+
+    scalar_handler(P* p): parent_( p )
+    {}
+
+    bool on_array_end( std::size_t, error_code& )
+    {
+        parent_->signal_end();
+        return true;
+    }
+};
+
+template< class D, class V, class P, error E >
+class composite_handler
+{
+protected:
+    using inner_handler_type = get_handler<V, D>;
+
+    P* parent_;
+#if defined(__GNUC__) && __GNUC__ < 5 && !defined(__clang__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#endif
+    V next_value_ = {};
+    inner_handler_type inner_;
+    bool inner_active_ = false;
+
+public:
+    composite_handler( composite_handler const& ) = delete;
+    composite_handler& operator=( composite_handler const& ) = delete;
+
+    composite_handler( P* p )
+        : parent_(p), inner_( &next_value_, static_cast<D*>(this) )
+    {}
+#if defined(__GNUC__) && __GNUC__ < 5 && !defined(__clang__)
+# pragma GCC diagnostic pop
+#endif
+
+    void signal_end()
+    {
+        inner_active_ = false;
+        parent_->signal_value();
+    }
+
+#define BOOST_JSON_INVOKE_INNER(f) \
+    if( !inner_active_ ) { \
+        BOOST_JSON_FAIL(ec, E); \
+        return false; \
+    } \
+    else \
+        return inner_.f
+
+    bool on_object_begin( error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_object_begin(ec) );
+    }
+
+    bool on_object_end( std::size_t n, error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_object_end(n, ec) );
+    }
+
+    bool on_array_begin( error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_array_begin(ec) );
+    }
+
+    bool on_array_end( std::size_t n, error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_array_end(n, ec) );
+    }
+
+    bool on_key_part( string_view sv, std::size_t n, error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_key_part(sv, n, ec) );
+    }
+
+    bool on_key( string_view sv, std::size_t n, error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_key(sv, n, ec) );
+    }
+
+    bool on_string_part( string_view sv, std::size_t n, error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_string_part(sv, n, ec) );
+    }
+
+    bool on_string( string_view sv, std::size_t n, error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_string(sv, n, ec) );
+    }
+
+    bool on_number_part( string_view sv, error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_number_part(sv, ec) );
+    }
+
+    bool on_int64( std::int64_t v, string_view sv, error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_int64(v, sv, ec) );
+    }
+
+    bool on_uint64( std::uint64_t v, string_view sv, error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_uint64(v, sv, ec) );
+    }
+
+    bool on_double( double v, string_view sv, error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_double(v, sv, ec) );
+    }
+
+    bool on_bool( bool v, error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_bool(v, ec) );
+    }
+
+    bool on_null( error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_null(ec) );
+    }
+
+#undef BOOST_JSON_INVOKE_INNER
+};
+
+// integral handler
 template<class V,
-    typename std::enable_if<std::is_signed<V>::value, int>::type = 0>
-    bool integral_in_range( std::int64_t v )
+typename std::enable_if<std::is_signed<V>::value, int>::type = 0>
+bool integral_in_range( std::int64_t v )
 {
     return v >= (std::numeric_limits<V>::min)() && v <= (std::numeric_limits<V>::max)();
 }
 
 template<class V,
-    typename std::enable_if<!std::is_signed<V>::value, int>::type = 0>
-    bool integral_in_range( std::int64_t v )
+typename std::enable_if<!std::is_signed<V>::value, int>::type = 0>
+bool integral_in_range( std::int64_t v )
 {
     return v >= 0 && static_cast<std::uint64_t>( v ) <= (std::numeric_limits<V>::max)();
 }
 
 template<class V>
-    bool integral_in_range( std::uint64_t v )
+bool integral_in_range( std::uint64_t v )
 {
     return v <= static_cast<typename std::make_unsigned<V>::type>( (std::numeric_limits<V>::max)() );
 }
 
-template<class V, class P> class integral_handler: public handler_error_base<error::not_integer>
+template< class V, class P >
+class converting_handler<integral_conversion_tag, V, P>
+    : public scalar_handler<P, error::not_integer>
 {
 private:
-
-    V * value_;
-    P * parent_;
+    V* value_;
 
 public:
-
-    integral_handler( integral_handler const& ) = delete;
-    integral_handler& operator=( integral_handler const& ) = delete;
-
-public:
-
-    integral_handler( V* v, P* p ): value_( v ), parent_( p )
-    {
-    }
+    converting_handler( V* v, P* p )
+        : converting_handler::scalar_handler(p)
+        , value_(v)
+    {}
 
     bool on_number_part( string_view, error_code& )
     {
@@ -102,7 +237,7 @@ public:
 
         *value_ = static_cast<V>( v );
 
-        parent_->signal_value();
+        this->parent_->signal_value();
         return true;
     }
 
@@ -116,36 +251,24 @@ public:
 
         *value_ = static_cast<V>( v );
 
-        parent_->signal_value();
-        return true;
-    }
-
-    bool on_array_end( std::size_t, error_code& )
-    {
-        parent_->signal_end();
+        this->parent_->signal_value();
         return true;
     }
 };
 
-// floating_point_handler
-
-template<class V, class P> class floating_point_handler: public handler_error_base<error::not_number>
+// floating point handler
+template< class V, class P>
+class converting_handler<floating_point_conversion_tag, V, P>
+    : public scalar_handler<P, error::not_double>
 {
 private:
-
-    V * value_;
-    P * parent_;
+    V* value_;
 
 public:
-
-    floating_point_handler( floating_point_handler const& ) = delete;
-    floating_point_handler& operator=( floating_point_handler const& ) = delete;
-
-public:
-
-    floating_point_handler( V* v, P* p ): value_( v ), parent_( p )
-    {
-    }
+    converting_handler( V* v, P* p )
+        : converting_handler::scalar_handler(p)
+        , value_(v)
+    {}
 
     bool on_number_part( string_view, error_code& )
     {
@@ -156,7 +279,7 @@ public:
     {
         *value_ = static_cast<V>( v );
 
-        parent_->signal_value();
+        this->parent_->signal_value();
         return true;
     }
 
@@ -164,7 +287,7 @@ public:
     {
         *value_ = static_cast<V>( v );
 
-        parent_->signal_value();
+        this->parent_->signal_value();
         return true;
     }
 
@@ -172,31 +295,24 @@ public:
     {
         *value_ = static_cast<V>( v );
 
-        parent_->signal_value();
-        return true;
-    }
-
-    bool on_array_end( std::size_t, error_code& )
-    {
-        parent_->signal_end();
+        this->parent_->signal_value();
         return true;
     }
 };
 
-// string_handler
-
-template<class V, class P> class string_handler: public handler_error_base<error::not_string>
+// string handler
+template< class V, class P >
+class converting_handler<string_like_conversion_tag, V, P>
+    : public scalar_handler<P, error::not_string>
 {
 private:
-
-    V * value_;
-    P * parent_;
+    V* value_;
 
 public:
-
-    string_handler( V* v, P* p ): value_( v ), parent_( p )
-    {
-    }
+    converting_handler( V* v, P* p )
+        : converting_handler::scalar_handler(p)
+        , value_(v)
+    {}
 
     bool on_string_part( string_view sv, std::size_t, error_code& )
     {
@@ -208,384 +324,171 @@ public:
     {
         value_->append( sv.begin(), sv.end() );
 
-        parent_->signal_value();
-        return true;
-    }
-
-    bool on_array_end( std::size_t, error_code& )
-    {
-        parent_->signal_end();
+        this->parent_->signal_value();
         return true;
     }
 };
 
-// bool_handler
-
-template<class V, class P> class bool_handler: public handler_error_base<error::not_bool>
+// bool handler
+template< class V, class P >
+class converting_handler<bool_conversion_tag, V, P>
+    : public scalar_handler<P, error::not_bool>
 {
 private:
-
-    V * value_;
-    P * parent_;
+    V* value_;
 
 public:
-
-    bool_handler( bool_handler const& ) = delete;
-    bool_handler& operator=( bool_handler const& ) = delete;
-
-public:
-
-    bool_handler( V* v, P* p ): value_( v ), parent_( p )
-    {
-    }
+    converting_handler( V* v, P* p )
+        : converting_handler::scalar_handler(p)
+        , value_(v)
+    {}
 
     bool on_bool( bool v, error_code& )
     {
         *value_ = v;
 
-        parent_->signal_value();
-        return true;
-    }
-
-    bool on_array_end( std::size_t, error_code& )
-    {
-        parent_->signal_end();
+        this->parent_->signal_value();
         return true;
     }
 };
 
-// null_handler
-
-template<class V, class P> class null_handler: public handler_error_base<error::not_null>
+// null handler
+template< class V, class P >
+class converting_handler<null_like_conversion_tag, V, P>
+    : public scalar_handler<P, error::not_null>
 {
 private:
-
-    V * value_;
-    P * parent_;
+    V* value_;
 
 public:
-
-    null_handler( null_handler const& ) = delete;
-    null_handler& operator=( null_handler const& ) = delete;
-
-public:
-
-    null_handler( V* v, P* p ): value_( v ), parent_( p )
-    {
-    }
+    converting_handler( V* v, P* p )
+        : converting_handler::scalar_handler(p)
+        , value_(v)
+    {}
 
     bool on_null( error_code& )
     {
         *value_ = {};
 
-        parent_->signal_value();
-        return true;
-    }
-
-    bool on_array_end( std::size_t, error_code& )
-    {
-        parent_->signal_end();
+        this->parent_->signal_value();
         return true;
     }
 };
 
-// forward declarations
-
-template<class V, class P> class sequence_handler;
-template<class V, class P> class map_handler;
-template<class V, class P> class tuple_handler;
-template<class V, class P> class described_struct_handler;
-
-template<class V> struct unknown_type_handler
+template< class V, class P >
+class converting_handler<no_conversion_tag, V, P>
 {
     static_assert( sizeof(V) == 0, "This type is not supported" );
 };
 
-// is_string
-
-template<class T> struct is_string: std::is_same<T, std::string>
-{
-};
-
-// is_map
-
-template<class T, class E = void> struct is_map: std::false_type
-{
-};
-
-template<class T> struct is_map<T, decltype( std::declval<T&>().emplace( std::declval<std::string>(), std::declval<typename T::mapped_type>() ), (void)0 )>: std::true_type
-{
-};
-
-// is_sequence
-
-template<class T, class E = void> struct is_sequence: std::false_type
-{
-};
-
-template<class T> struct is_sequence<T, decltype( std::declval<T&>().push_back( std::declval<typename T::value_type>() ), (void)0 )>: std::true_type
-{
-};
-
-// is_tuple
-
-template<class T, class E = void> struct is_tuple: std::false_type
-{
-};
-
-template<class T> struct is_tuple<T, decltype( (void)std::tuple_size<T>::value )>: std::true_type
-{
-};
-
-// is_described_struct
-
-template<class T, class E = void> struct is_described_struct: std::false_type
-{
-};
-
-template<class T> struct is_described_struct<T, decltype((void)boost::describe::describe_members<T, boost::describe::mod_any_access>())>: std::true_type
-{
-};
-
-// get_handler
-
-template<class V, class P> using get_handler = boost::mp11::mp_cond<
-
-    std::is_same<V, std::nullptr_t>, null_handler<V, P>,
-    std::is_same<V, bool>, bool_handler<V, P>,
-    std::is_integral<V>, integral_handler<V, P>,
-    std::is_floating_point<V>, floating_point_handler<V, P>,
-    is_string<V>, string_handler<V, P>,
-    is_map<V>, map_handler<V, P>,
-    is_sequence<V>, sequence_handler<V, P>,
-    is_tuple<V>, tuple_handler<V, P>,
-    is_described_struct<V>, described_struct_handler<V, P>,
-    boost::mp11::mp_true, unknown_type_handler<V>
->;
-
-// sequence_handler
-
-template<class V, class P> class sequence_handler
+// sequence handler
+template< class V, class P >
+class converting_handler<sequence_conversion_tag, V, P>
+    : public composite_handler<
+        converting_handler<sequence_conversion_tag, V, P>,
+        detail::value_type<V>,
+        P,
+        error::not_array>
 {
 private:
-
-    V * value_;
-    P * parent_;
-
-    using value_type = typename V::value_type;
-    using inner_handler_type = get_handler<value_type, sequence_handler>;
-
-    value_type next_value_ = {};
-
-    inner_handler_type inner_;
-    bool inner_active_ = false;
+    V* value_;
 
 public:
-
-    sequence_handler( sequence_handler const& ) = delete;
-    sequence_handler& operator=( sequence_handler const& ) = delete;
-
-public:
-
-    sequence_handler( V* v, P* p ): value_( v ), parent_( p ), inner_( &next_value_, this )
-    {
-    }
+    converting_handler( V* v, P* p )
+        : converting_handler::composite_handler(p), value_(v)
+    {}
 
     void signal_value()
     {
-        value_->push_back( std::move( next_value_ ) );
-        next_value_ = {};
-    }
-
-    void signal_end()
-    {
-        inner_active_ = false;
-        parent_->signal_value();
-    }
-
-#define BOOST_JSON_INVOKE_INNER(f) if( !inner_active_ ) { \
-    BOOST_JSON_FAIL( ec, error::not_array ); return false; } else return inner_.f
-
-    bool on_object_begin( error_code& ec )
-    {
-        BOOST_JSON_INVOKE_INNER( on_object_begin( ec ) );
-    }
-
-    bool on_object_end( std::size_t n, error_code& ec )
-    {
-        BOOST_JSON_INVOKE_INNER( on_object_end( n, ec ) );
+        value_->push_back( std::move(this->next_value_) );
+        this->next_value_ = {};
     }
 
     bool on_array_begin( error_code& ec )
     {
-        if( inner_active_ )
+        if( this->inner_active_ )
         {
-            return inner_.on_array_begin( ec );
+            return this->inner_.on_array_begin( ec );
         }
         else
         {
-            inner_active_ = true;
+            this->inner_active_ = true;
             return true;
         }
     }
 
     bool on_array_end( std::size_t n, error_code& ec )
     {
-        if( inner_active_ )
+        if( this->inner_active_ )
         {
-            return inner_.on_array_end( n, ec );
+            return this->inner_.on_array_end( n, ec );
         }
         else
         {
-            parent_->signal_end();
+            this->parent_->signal_end();
             return true;
         }
     }
-
-    bool on_key_part( string_view sv, std::size_t n, error_code& ec )
-    {
-        BOOST_JSON_INVOKE_INNER( on_key_part( sv, n, ec ) );
-    }
-
-    bool on_key( string_view sv, std::size_t n, error_code& ec )
-    {
-        BOOST_JSON_INVOKE_INNER( on_key( sv, n, ec ) );
-    }
-
-    bool on_string_part( string_view sv, std::size_t n, error_code& ec )
-    {
-        BOOST_JSON_INVOKE_INNER( on_string_part( sv, n, ec ) );
-    }
-
-    bool on_string( string_view sv, std::size_t n, error_code& ec )
-    {
-        BOOST_JSON_INVOKE_INNER( on_string( sv, n, ec ) );
-    }
-
-    bool on_number_part( string_view sv, error_code& ec )
-    {
-        BOOST_JSON_INVOKE_INNER( on_number_part( sv, ec ) );
-    }
-
-    bool on_int64( std::int64_t v, string_view sv, error_code& ec )
-    {
-        BOOST_JSON_INVOKE_INNER( on_int64( v, sv, ec ) );
-    }
-
-    bool on_uint64( std::uint64_t v, string_view sv, error_code& ec )
-    {
-        BOOST_JSON_INVOKE_INNER( on_uint64( v, sv, ec ) );
-    }
-
-    bool on_double( double v, string_view sv, error_code& ec )
-    {
-        BOOST_JSON_INVOKE_INNER( on_double( v, sv, ec ) );
-    }
-
-    bool on_bool( bool v, error_code& ec )
-    {
-        BOOST_JSON_INVOKE_INNER( on_bool( v, ec ) );
-    }
-
-    bool on_null( error_code& ec )
-    {
-        BOOST_JSON_INVOKE_INNER( on_null( ec ) );
-    }
-
-#undef BOOST_JSON_INVOKE_INNER
 };
 
-// map_handler
-
-template<class V, class P> class map_handler
+// map handler
+template< class V, class P >
+class converting_handler<map_like_conversion_tag, V, P>
+    : public composite_handler<
+        converting_handler<map_like_conversion_tag, V, P>,
+        detail::mapped_type<V>,
+        P,
+        error::not_object>
 {
 private:
-
-    V * value_;
-    P * parent_;
-
-    using mapped_type = typename V::mapped_type;
-    using inner_handler_type = get_handler<mapped_type, map_handler>;
-
+    V* value_;
     std::string key_;
-    mapped_type next_value_ = {};
-
-    inner_handler_type inner_;
-    bool inner_active_ = false;
 
 public:
-
-    map_handler( map_handler const& ) = delete;
-    map_handler& operator=( map_handler const& ) = delete;
-
-public:
-
-    map_handler( V* v, P* p ): value_( v ), parent_( p ), inner_( &next_value_, this )
-    {
-    }
+    converting_handler( V* v, P* p )
+        : converting_handler::composite_handler(p), value_(v)
+    {}
 
     void signal_value()
     {
-        value_->emplace( std::move( key_ ), std::move( next_value_ ) );
+        value_->emplace( std::move(key_), std::move(this->next_value_) );
 
         key_ = {};
-        next_value_ = {};
+        this->next_value_ = {};
 
-        inner_active_ = false;
+        this->inner_active_ = false;
     }
-
-    void signal_end()
-    {
-        inner_active_ = false;
-        parent_->signal_value();
-    }
-
-#define BOOST_JSON_INVOKE_INNER(f) if( !inner_active_ ) { \
-    BOOST_JSON_FAIL( ec, error::not_object ); return false; } else return inner_.f
 
     bool on_object_begin( error_code& ec )
     {
-        if( inner_active_ )
-        {
-            return inner_.on_object_begin( ec );
-        }
+        if( this->inner_active_ )
+            return this->inner_.on_object_begin(ec);
 
         return true;
     }
 
     bool on_object_end( std::size_t n, error_code& ec )
     {
-        if( inner_active_ )
-        {
-            return inner_.on_object_end( n, ec );
-        }
+        if( this->inner_active_ )
+            return this->inner_.on_object_end(n, ec);
 
-        parent_->signal_value();
+        this->parent_->signal_value();
         return true;
-    }
-
-    bool on_array_begin( error_code& ec )
-    {
-        BOOST_JSON_INVOKE_INNER( on_array_begin( ec ) );
     }
 
     bool on_array_end( std::size_t n, error_code& ec )
     {
-        if( inner_active_ )
-        {
-            return inner_.on_array_end( n, ec );
-        }
+        if( this->inner_active_ )
+            return this->inner_.on_array_end(n, ec);
 
-        parent_->signal_end();
+        this->parent_->signal_end();
         return true;
     }
 
     bool on_key_part( string_view sv, std::size_t n, error_code& ec )
     {
-        if( inner_active_ )
-        {
-            return inner_.on_key_part( sv, n, ec );
-        }
+        if( this->inner_active_ )
+            return this->inner_.on_key_part(sv, n, ec);
 
         key_.append( sv.data(), sv.size() );
         return true;
@@ -593,62 +496,17 @@ public:
 
     bool on_key( string_view sv, std::size_t n, error_code& ec )
     {
-        if( inner_active_ )
-        {
-            return inner_.on_key( sv, n, ec );
-        }
+        if( this->inner_active_ )
+            return this->inner_.on_key(sv, n, ec);
 
         key_.append( sv.data(), sv.size() );
 
-        inner_active_ = true;
+        this->inner_active_ = true;
         return true;
     }
-
-    bool on_string_part( string_view sv, std::size_t n, error_code& ec )
-    {
-        BOOST_JSON_INVOKE_INNER( on_string_part( sv, n, ec ) );
-    }
-
-    bool on_string( string_view sv, std::size_t n, error_code& ec )
-    {
-        BOOST_JSON_INVOKE_INNER( on_string( sv, n, ec ) );
-    }
-
-    bool on_number_part( string_view sv, error_code& ec )
-    {
-        BOOST_JSON_INVOKE_INNER( on_number_part( sv, ec ) );
-    }
-
-    bool on_int64( std::int64_t v, string_view sv, error_code& ec )
-    {
-        BOOST_JSON_INVOKE_INNER( on_int64( v, sv, ec ) );
-    }
-
-    bool on_uint64( std::uint64_t v, string_view sv, error_code& ec )
-    {
-        BOOST_JSON_INVOKE_INNER( on_uint64( v, sv, ec ) );
-    }
-
-    bool on_double( double v, string_view sv, error_code& ec )
-    {
-        BOOST_JSON_INVOKE_INNER( on_double( v, sv, ec ) );
-    }
-
-    bool on_bool( bool v, error_code& ec )
-    {
-        BOOST_JSON_INVOKE_INNER( on_bool( v, ec ) );
-    }
-
-    bool on_null( error_code& ec )
-    {
-        BOOST_JSON_INVOKE_INNER( on_null( ec ) );
-    }
-
-#undef BOOST_JSON_INVOKE_INNER
 };
 
-// into_handler tuple
-
+// tuple handler
 #if defined(BOOST_MSVC) && BOOST_MSVC < 1910
 
 // MSVC 2015 can't handle handler_tuple_impl
@@ -662,44 +520,59 @@ template<std::size_t I, class T> struct handler_tuple_element
 
 template<class S, class... T> struct handler_tuple_impl;
 
-template<std::size_t... I, class... T> struct handler_tuple_impl<boost::mp11::index_sequence<I...>, T...>: handler_tuple_element<I, T>...
+template<std::size_t... I, class... T>
+struct handler_tuple_impl<mp11::index_sequence<I...>, T...>
+    : handler_tuple_element<I, T>...
 {
-    template<class... A> handler_tuple_impl( A... a ): handler_tuple_element<I, T>{{ a.first, a.second }}... {}
+    template<class... A>
+    handler_tuple_impl( A... a )
+        : handler_tuple_element<I, T>{{ a.first, a.second }}...
+    { }
 };
 
-template<class P, class... V> struct handler_tuple: public handler_tuple_impl<boost::mp11::index_sequence_for<V...>, get_handler<V, P>...>
+template<class P, class... V>
+struct handler_tuple
+    : public handler_tuple_impl<
+        mp11::index_sequence_for<V...>, get_handler<V, P>...>
 {
-    using base_type = handler_tuple_impl<boost::mp11::index_sequence_for<V...>, get_handler<V, P>...>;
+    using base_type = handler_tuple_impl<
+        mp11::index_sequence_for<V...>, get_handler<V, P>...>;
 
-    template<class... A> handler_tuple( A... a ): base_type( a... )
-    {
-    }
+    template<class... A>
+    handler_tuple( A... a )
+        : base_type( a... )
+    { }
 
     handler_tuple( handler_tuple const& ) = delete;
     handler_tuple& operator=( handler_tuple const& ) = delete;
 };
 
-template<std::size_t I, class T> T& get( handler_tuple_element<I, T>& e )
+template<std::size_t I, class T>
+T&
+get( handler_tuple_element<I, T>& e )
 {
     return e.t_;
 }
 
-// tuple_handler
+template< class P, class T >
+struct tuple_inner_handlers;
 
-template<class P, class T> struct tuple_inner_handlers;
-
-template<class P, template<class...> class L, class... V> struct tuple_inner_handlers<P, L<V...>>
+template< class P, template<class...> class L, class... V >
+struct tuple_inner_handlers<P, L<V...>>
 {
     handler_tuple<P, V...> handlers_;
 
-    template<std::size_t... I> tuple_inner_handlers( L<V...>* pv, P* pp, boost::mp11::index_sequence<I...> ): handlers_( std::make_pair( &get<I>(*pv), pp )... )
-    {
-    }
+    template<std::size_t... I>
+    tuple_inner_handlers(
+        L<V...>* pv, P* pp, mp11::index_sequence<I...> )
+        : handlers_( std::make_pair( &get<I>(*pv), pp )... )
+    {}
 };
 
 #endif
 
-template<class T, class P> class tuple_handler
+template< class T, class P >
+class converting_handler<tuple_conversion_tag, T, P>
 {
 #if BOOST_CXX_VERSION < 201400L || ( defined(BOOST_MSVC) && BOOST_MSVC < 1910 )
 
@@ -709,23 +582,24 @@ template<class T, class P> class tuple_handler
 #else
 
 private:
+    T* value_;
+    P* parent_;
 
-    T * value_;
-    P * parent_;
-
-    tuple_inner_handlers<tuple_handler, T> inner_;
+    tuple_inner_handlers<converting_handler, T> inner_;
     int inner_active_ = -1;
 
 public:
+    converting_handler( converting_handler const& ) = delete;
+    converting_handler& operator=( converting_handler const& ) = delete;
 
-    tuple_handler( tuple_handler const& ) = delete;
-    tuple_handler& operator=( tuple_handler const& ) = delete;
-
-public:
-
-    tuple_handler( T* v, P* p ): value_( v ), parent_( p ), inner_( v, this, boost::mp11::make_index_sequence< std::tuple_size<T>::value >() )
-    {
-    }
+    converting_handler( T* v, P* p )
+        : value_( v )
+        , parent_( p )
+        , inner_(
+            v,
+            this,
+            mp11::make_index_sequence< std::tuple_size<T>::value >())
+    {}
 
     void signal_value()
     {
@@ -750,20 +624,18 @@ public:
         BOOST_JSON_FAIL( ec, error::size_mismatch ); \
         return false; \
     } \
-    return boost::mp11::mp_with_index<N>( inner_active_, [&](auto I){ \
+    return mp11::mp_with_index<N>( inner_active_, [&](auto I){ \
         return get<I>( inner_.handlers_ ).fn; \
     });
 
-    //---
-
     bool on_object_begin( error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_object_begin( ec ) );
+        BOOST_JSON_INVOKE_INNER( on_object_begin(ec) );
     }
 
     bool on_object_end( std::size_t n, error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_object_end( n, ec ) );
+        BOOST_JSON_INVOKE_INNER( on_object_end(n, ec) );
     }
 
     bool on_array_begin( error_code& ec )
@@ -782,10 +654,8 @@ public:
             return true;
         }
 
-        return boost::mp11::mp_with_index<N>( inner_active_, [&](auto I){
-
-            return get<I>( inner_.handlers_ ).on_array_begin( ec );
-
+        return mp11::mp_with_index<N>( inner_active_, [&](auto I){
+            return get<I>( inner_.handlers_ ).on_array_begin(ec);
         });
     }
 
@@ -807,61 +677,59 @@ public:
             return true;
         }
 
-        return boost::mp11::mp_with_index<N>( inner_active_, [&](auto I){
-
+        return mp11::mp_with_index<N>( inner_active_, [&](auto I){
             return get<I>( inner_.handlers_ ).on_array_end( n, ec );
-
         });
     }
 
     bool on_key_part( string_view sv, std::size_t n, error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_key_part( sv, n, ec ) );
+        BOOST_JSON_INVOKE_INNER( on_key_part(sv, n, ec) );
     }
 
     bool on_key( string_view sv, std::size_t n, error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_key( sv, n, ec ) );
+        BOOST_JSON_INVOKE_INNER( on_key(sv, n, ec) );
     }
 
     bool on_string_part( string_view sv, std::size_t n, error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_string_part( sv, n, ec ) );
+        BOOST_JSON_INVOKE_INNER( on_string_part(sv, n, ec) );
     }
 
     bool on_string( string_view sv, std::size_t n, error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_string( sv, n, ec ) );
+        BOOST_JSON_INVOKE_INNER( on_string(sv, n, ec) );
     }
 
     bool on_number_part( string_view sv, error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_number_part( sv, ec ) );
+        BOOST_JSON_INVOKE_INNER( on_number_part(sv, ec) );
     }
 
     bool on_int64( std::int64_t v, string_view sv, error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_int64( v, sv, ec ) );
+        BOOST_JSON_INVOKE_INNER( on_int64(v, sv, ec) );
     }
 
     bool on_uint64( std::uint64_t v, string_view sv, error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_uint64( v, sv, ec ) );
+        BOOST_JSON_INVOKE_INNER( on_uint64(v, sv, ec) );
     }
 
     bool on_double( double v, string_view sv, error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_double( v, sv, ec ) );
+        BOOST_JSON_INVOKE_INNER( on_double(v, sv, ec) );
     }
 
     bool on_bool( bool v, error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_bool( v, ec ) );
+        BOOST_JSON_INVOKE_INNER( on_bool(v, ec) );
     }
 
     bool on_null( error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_null( ec ) );
+        BOOST_JSON_INVOKE_INNER( on_null(ec) );
     }
 
 #undef BOOST_JSON_INVOKE_INNER
@@ -869,22 +737,22 @@ public:
 #endif // BOOST_CXX_VERSION < 201400L
 };
 
-// described_struct_handler
+// described struct handler
+template<class P, class T, class L>
+struct struct_inner_handlers;
 
-template<class T, class D> using struct_member_type = typename std::remove_reference< decltype( std::declval<T&>().*D::pointer ) >::type;
-
-template<class P, class T, class L> struct struct_inner_handlers;
-
-template<class P, class T, template<class...> class L, class... D> struct struct_inner_handlers<P, T, L<D...>>
+template<class P, class T, template<class...> class L, class... D>
+struct struct_inner_handlers<P, T, L<D...>>
 {
-    handler_tuple<P, struct_member_type<T, D>...> handlers_;
+    handler_tuple<P, described_member_t<T, D>...> handlers_;
 
-    struct_inner_handlers( T* pv, P* pp ): handlers_( std::make_pair( &(pv->*D::pointer), pp )... )
-    {
-    }
+    struct_inner_handlers( T* pv, P* pp )
+        : handlers_( std::make_pair( &(pv->*D::pointer), pp )... )
+    {}
 };
 
-template<class V, class P> class described_struct_handler
+template<class V, class P>
+class converting_handler<described_class_conversion_tag, V, P>
 {
 #if BOOST_CXX_VERSION < 201400L || ( defined(BOOST_MSVC) && BOOST_MSVC < 1910 )
 
@@ -894,27 +762,23 @@ template<class V, class P> class described_struct_handler
 #else
 
 private:
-
-    V * value_;
-    P * parent_;
+    V* value_;
+    P* parent_;
 
     std::string key_;
 
-    using Dm = boost::describe::describe_members<V, boost::describe::mod_public>;
+    using Dm = describe::describe_members<V, describe::mod_public>;
 
-    struct_inner_handlers<described_struct_handler, V, Dm> inner_;
+    struct_inner_handlers<converting_handler, V, Dm> inner_;
     int inner_active_ = -1;
 
 public:
+    converting_handler( converting_handler const& ) = delete;
+    converting_handler& operator=( converting_handler const& ) = delete;
 
-    described_struct_handler( described_struct_handler const& ) = delete;
-    described_struct_handler& operator=( described_struct_handler const& ) = delete;
-
-public:
-
-    described_struct_handler( V* v, P* p ): value_( v ), parent_( p ), inner_( v, this )
-    {
-    }
+    converting_handler( V* v, P* p )
+        : value_(v), parent_(p), inner_(v, this)
+    {}
 
     void signal_value()
     {
@@ -936,20 +800,16 @@ public:
         BOOST_JSON_FAIL( ec, error::not_object ); \
         return false; \
     } \
-    return boost::mp11::mp_with_index<boost::mp11::mp_size<Dm>>( inner_active_, [&](auto I){ \
+    return mp11::mp_with_index<mp11::mp_size<Dm>>( inner_active_, [&](auto I) { \
         return get<I>( inner_.handlers_ ).fn; \
     });
-
-    //---
 
     bool on_object_begin( error_code& ec )
     {
         if( inner_active_ < 0 )
-        {
             return true;
-        }
 
-        BOOST_JSON_INVOKE_INNER( on_object_begin( ec ) );
+        BOOST_JSON_INVOKE_INNER( on_object_begin(ec) );
     }
 
     bool on_object_end( std::size_t n, error_code& ec )
@@ -960,12 +820,12 @@ public:
             return true;
         }
 
-        BOOST_JSON_INVOKE_INNER( on_object_end( n, ec ) );
+        BOOST_JSON_INVOKE_INNER( on_object_end(n, ec) );
     }
 
     bool on_array_begin( error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_array_begin( ec ) );
+        BOOST_JSON_INVOKE_INNER( on_array_begin(ec) );
     }
 
     bool on_array_end( std::size_t n, error_code& ec )
@@ -976,7 +836,7 @@ public:
             return true;
         }
 
-        BOOST_JSON_INVOKE_INNER( on_array_end( n, ec ) );
+        BOOST_JSON_INVOKE_INNER( on_array_end(n, ec) );
     }
 
     bool on_key_part( string_view sv, std::size_t n, error_code& ec )
@@ -987,33 +847,29 @@ public:
             return true;
         }
 
-        BOOST_JSON_INVOKE_INNER( on_key_part( sv, n, ec ) );
+        BOOST_JSON_INVOKE_INNER( on_key_part(sv, n, ec) );
     }
 
     bool on_key( string_view sv, std::size_t n, error_code& ec )
     {
         if( inner_active_ >= 0 )
         {
-            BOOST_JSON_INVOKE_INNER( on_key( sv, n, ec ) );
+            BOOST_JSON_INVOKE_INNER( on_key(sv, n, ec) );
         }
 
         key_.append( sv.data(), sv.size() );
 
         int i = 0;
 
-        boost::mp11::mp_for_each<Dm>([&](auto D){
-
+        mp11::mp_for_each<Dm>([&](auto D) {
             if( key_ == D.name )
-            {
                 inner_active_ = i;
-            }
-
             ++i;
         });
 
         if( inner_active_ < 0 )
         {
-            BOOST_JSON_FAIL( ec, error::unknown_name );
+            BOOST_JSON_FAIL(ec, error::unknown_name);
             return false;
         }
 
@@ -1022,42 +878,42 @@ public:
 
     bool on_string_part( string_view sv, std::size_t n, error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_string_part( sv, n, ec ) );
+        BOOST_JSON_INVOKE_INNER( on_string_part(sv, n, ec) );
     }
 
     bool on_string( string_view sv, std::size_t n, error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_string( sv, n, ec ) );
+        BOOST_JSON_INVOKE_INNER( on_string(sv, n, ec) );
     }
 
     bool on_number_part( string_view sv, error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_number_part( sv, ec ) );
+        BOOST_JSON_INVOKE_INNER( on_number_part(sv, ec) );
     }
 
     bool on_int64( std::int64_t v, string_view sv, error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_int64( v, sv, ec ) );
+        BOOST_JSON_INVOKE_INNER( on_int64(v, sv, ec) );
     }
 
     bool on_uint64( std::uint64_t v, string_view sv, error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_uint64( v, sv, ec ) );
+        BOOST_JSON_INVOKE_INNER( on_uint64(v, sv, ec) );
     }
 
     bool on_double( double v, string_view sv, error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_double( v, sv, ec ) );
+        BOOST_JSON_INVOKE_INNER( on_double(v, sv, ec) );
     }
 
     bool on_bool( bool v, error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_bool( v, ec ) );
+        BOOST_JSON_INVOKE_INNER( on_bool(v, ec) );
     }
 
     bool on_null( error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_null( ec ) );
+        BOOST_JSON_INVOKE_INNER( on_null(ec) );
     }
 
 #undef BOOST_JSON_INVOKE_INNER
@@ -1066,8 +922,8 @@ public:
 };
 
 // into_handler
-
-template<class V> class into_handler
+template< class V >
+class into_handler
 {
 private:
 
@@ -1083,10 +939,10 @@ public:
 
 public:
 
-    constexpr static std::size_t max_object_size = std::size_t(-1);
-    constexpr static std::size_t max_array_size = std::size_t(-1);
-    constexpr static std::size_t max_key_size = std::size_t(-1);
-    constexpr static std::size_t max_string_size = std::size_t(-1);
+    static constexpr std::size_t max_object_size = object::max_size();
+    static constexpr std::size_t max_array_size = array::max_size();
+    static constexpr std::size_t max_key_size = string::max_size();
+    static constexpr std::size_t max_string_size = string::max_size();
 
 public:
 
@@ -1113,7 +969,14 @@ public:
         return true;
     }
 
-#define BOOST_JSON_INVOKE_INNER(f) if( !inner_active_ ) { BOOST_JSON_FAIL( ec, error::extra_data ); return false; } else return inner_.f
+#define BOOST_JSON_INVOKE_INNER(f) \
+    if( !inner_active_ ) \
+    { \
+        BOOST_JSON_FAIL( ec, error::extra_data ); \
+        return false; \
+    } \
+    else \
+        return inner_.f
 
     bool on_object_begin( error_code& ec )
     {

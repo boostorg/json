@@ -382,10 +382,6 @@ struct to_described_member
     using Ds = describe::describe_members<
         T, describe::mod_public | describe::mod_inherited>;
 
-    template< class D >
-    using described_member_t = remove_cvref<decltype(
-        std::declval<T&>().* D::pointer )>;
-
     using result_type = mp11::mp_eval_if_c< !non_throwing, T, result, T >;
 
     result_type& res;
@@ -401,7 +397,7 @@ struct to_described_member
             return;
 
         using D = mp11::mp_at<Ds, I>;
-        using M = described_member_t<D>;
+        using M = described_member_t<T, D>;
 
         auto const found = obj.find(D::name);
         if( found == obj.end() )
