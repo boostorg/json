@@ -78,6 +78,8 @@ public:
         check(condition::conversion_error, error::not_object);
         check(condition::conversion_error, error::not_string);
         check(condition::conversion_error, error::size_mismatch);
+        check(condition::conversion_error, error::exhausted_variants);
+        check(condition::conversion_error, error::unknown_name);
 
         check(condition::generic_error, error::exception);
         check(error::test_failure);

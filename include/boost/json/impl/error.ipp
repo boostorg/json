@@ -64,6 +64,8 @@ case error::not_array: return "value is not an array";
 case error::not_object: return "value is not an object";
 case error::not_string: return "value is not a string";
 case error::size_mismatch: return "array size does not match target size";
+case error::exhausted_variants: return "exhausted all variants";
+case error::unknown_name: return "unknown name";
             }
         }
 
@@ -110,6 +112,8 @@ case error::not_array:
 case error::not_object:
 case error::not_string:
 case error::size_mismatch:
+case error::exhausted_variants:
+case error::unknown_name:
     return condition::conversion_error;
 
 case error::exception:
