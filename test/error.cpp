@@ -83,6 +83,7 @@ public:
         check(condition::conversion_error, error::not_int64);
         check(condition::conversion_error, error::not_uint64);
         check(condition::conversion_error, error::not_double);
+        check(condition::conversion_error, error::not_integer);
         check(condition::conversion_error, error::size_mismatch);
         check(condition::conversion_error, error::exhausted_variants);
         check(condition::conversion_error, error::unknown_name);
