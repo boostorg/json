@@ -424,7 +424,9 @@ operator>>(
     char read_buf[BOOST_JSON_STACK_BUFFER_SIZE / 2];
     std::streambuf& buf = *is.rdbuf();
     std::ios::iostate err = std::ios::goodbit;
+#ifndef BOOST_NO_EXCEPTIONS
     try
+#endif
     {
         while( true )
         {
@@ -480,6 +482,7 @@ operator>>(
                 break;
         }
     }
+#ifndef BOOST_NO_EXCEPTIONS
     catch(...)
     {
         try
@@ -493,6 +496,7 @@ operator>>(
         if( is.exceptions() & std::ios::badbit )
             throw;
     }
+#endif
 
     is.setstate(err | std::ios::failbit);
     return is;

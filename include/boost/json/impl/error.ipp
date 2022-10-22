@@ -56,9 +56,11 @@ case error::object_too_large: return "object too large";
 case error::array_too_large: return "array too large";
 case error::key_too_large: return "key too large";
 case error::string_too_large: return "string too large";
+case error::number_too_large: return "number too large";
 case error::input_error: return "input error";
 
 case error::exception: return "got exception";
+case error::out_of_range: return "out of range";
 case error::test_failure: return "test failure";
 
 case error::missing_slash: return "missing slash character";
@@ -76,6 +78,9 @@ case error::not_bool: return "value is not boolean";
 case error::not_array: return "value is not an array";
 case error::not_object: return "value is not an object";
 case error::not_string: return "value is not a string";
+case error::not_int64: return "value is not a std::int64_t number";
+case error::not_uint64: return "value is not a std::uint64_t number";
+case error::not_double: return "value is not a double";
 case error::size_mismatch: return "array size does not match target size";
 case error::exhausted_variants: return "exhausted all variants";
 case error::unknown_name: return "unknown name";
@@ -109,6 +114,7 @@ case error::object_too_large:
 case error::array_too_large:
 case error::key_too_large:
 case error::string_too_large:
+case error::number_too_large:
 case error::input_error:
     return condition::parse_error;
 
@@ -130,12 +136,16 @@ case error::not_bool:
 case error::not_array:
 case error::not_object:
 case error::not_string:
+case error::not_int64:
+case error::not_uint64:
+case error::not_double:
 case error::size_mismatch:
 case error::exhausted_variants:
 case error::unknown_name:
     return condition::conversion_error;
 
 case error::exception:
+case error::out_of_range:
     return condition::generic_error;
     }
 }

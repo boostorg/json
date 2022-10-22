@@ -448,7 +448,10 @@ insert(
 {
     auto const n0 = size();
     if(init.size() > max_size() - n0)
-        detail::throw_length_error( "object too large" );
+    {
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
+        detail::throw_system_error( error::object_too_large, &loc );
+    }
     reserve(n0 + init.size());
     revert_insert r(*this);
     if(t_->is_small())
@@ -784,7 +787,10 @@ growth(
     std::size_t new_size) const
 {
     if(new_size > max_size())
-        detail::throw_length_error( "object too large" );
+    {
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
+        detail::throw_system_error( error::object_too_large, &loc );
+    }
     std::size_t const old = capacity();
     if(old > max_size() - old / 2)
         return new_size;

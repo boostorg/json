@@ -382,7 +382,7 @@ public:
                 char buf[1];
                 BOOST_TEST_THROWS(
                     sr.read(buf),
-                    std::exception);
+                    std::bad_alloc);
             }
         }
 
@@ -412,7 +412,7 @@ public:
                 char buf[32];
                 BOOST_TEST_THROWS(
                     sr.read(&buf[0], 1),
-                    std::exception);
+                    std::bad_alloc);
             }
         }
 

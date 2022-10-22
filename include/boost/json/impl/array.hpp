@@ -206,9 +206,8 @@ value&
 array::
 at(std::size_t pos) &
 {
-    if(pos >= t_->size)
-        detail::throw_out_of_range();
-    return (*t_)[pos];
+    auto const& self = *this;
+    return const_cast< value& >( self.at(pos) );
 }
 
 value&&
@@ -223,7 +222,10 @@ array::
 at(std::size_t pos) const&
 {
     if(pos >= t_->size)
-        detail::throw_out_of_range();
+    {
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
+        detail::throw_system_error( error::out_of_range, &loc );
+    }
     return (*t_)[pos];
 }
 

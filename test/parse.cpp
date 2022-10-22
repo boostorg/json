@@ -201,7 +201,7 @@ public:
 
         ss.clear();
         ss.setstate(std::ios::failbit);
-        BOOST_TEST_THROWS( parse(ss), system_error );
+        BOOST_TEST_THROWS_WITH_LOCATION( parse(ss) );
     }
 
     void

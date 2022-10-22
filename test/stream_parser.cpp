@@ -185,9 +185,7 @@ public:
             }
             {
                 stream_parser p;
-                BOOST_TEST_THROWS(
-                    p.write_some("[*"),
-                    system_error);
+                BOOST_TEST_THROWS_WITH_LOCATION( p.write_some("[*") );
             }
         }
 
@@ -236,9 +234,7 @@ public:
             }
             {
                 stream_parser p;
-                BOOST_TEST_THROWS(
-                    p.write("[]*"),
-                    system_error);
+                BOOST_TEST_THROWS_WITH_LOCATION( p.write("[]*") );
             }
         }
 
@@ -257,9 +253,7 @@ public:
                 stream_parser p;
                 BOOST_TEST(! p.done());
                 p.write("1.");
-                BOOST_TEST_THROWS(
-                    p.finish(),
-                    system_error);
+                BOOST_TEST_THROWS_WITH_LOCATION( p.finish() );
             }
             {
                 stream_parser p;
@@ -275,9 +269,7 @@ public:
                 p.write("[1,2");
                 error_code ec;
                 p.finish(ec);
-                BOOST_TEST_THROWS(
-                    p.finish(),
-                    system_error);
+                BOOST_TEST_THROWS_WITH_LOCATION( p.finish() );
             }
             {
                 stream_parser p;
@@ -291,9 +283,7 @@ public:
                 p.write("[1,2");
                 std::error_code ec;
                 p.finish(ec);
-                BOOST_TEST_THROWS(
-                    p.finish(),
-                    system_error);
+                BOOST_TEST_THROWS_WITH_LOCATION( p.finish() );
             }
         }
 
@@ -304,9 +294,7 @@ public:
                 BOOST_TEST(
                     p.write_some("[") == 1);
                 BOOST_TEST(! p.done());
-                BOOST_TEST_THROWS(
-                    p.release(),
-                    system_error);
+                BOOST_TEST_THROWS_WITH_LOCATION( p.release() );
             }
             {
                 stream_parser p;
@@ -319,9 +307,7 @@ public:
                 stream_parser p;
                 p.write("[");
                 BOOST_TEST(! p.done());
-                BOOST_TEST_THROWS(
-                    p.release(),
-                    system_error);
+                BOOST_TEST_THROWS_WITH_LOCATION( p.release() );
             }
             {
                 stream_parser p;
@@ -331,9 +317,7 @@ public:
                     ec == error::extra_data);
                 BOOST_TEST(ec.has_location());
                 BOOST_TEST(! p.done());
-                BOOST_TEST_THROWS(
-                    p.release(),
-                    system_error);
+                BOOST_TEST_THROWS_WITH_LOCATION( p.release() );
             }
         }
     }
@@ -1039,9 +1023,7 @@ public:
 
             {
                 value jv;
-                BOOST_TEST_THROWS(
-                    jv = parse("{,"),
-                    system_error);
+                BOOST_TEST_THROWS_WITH_LOCATION( jv = parse("{,") );
             }
         }
 
@@ -1055,9 +1037,7 @@ public:
             {
                 monotonic_resource mr;
                 value jv;
-                BOOST_TEST_THROWS(
-                    jv = parse("xxx", &mr),
-                    system_error);
+                BOOST_TEST_THROWS_WITH_LOCATION( jv = parse("xxx", &mr) );
             }
         }
     }

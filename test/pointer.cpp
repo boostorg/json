@@ -121,15 +121,15 @@ public:
     testErrors()
     {
         value const jv = testValue();
-        BOOST_TEST_THROWS(jv.at_pointer("foo"), system_error);
-        BOOST_TEST_THROWS(jv.at_pointer("/fo"), system_error);
-        BOOST_TEST_THROWS(jv.at_pointer("/m~"), system_error);
-        BOOST_TEST_THROWS(jv.at_pointer("/m~n"), system_error);
-        BOOST_TEST_THROWS(jv.at_pointer("/foo/bar"), system_error);
-        BOOST_TEST_THROWS(jv.at_pointer("/foo/"), system_error);
-        BOOST_TEST_THROWS(jv.at_pointer("/foo/01"), system_error);
-        BOOST_TEST_THROWS(jv.at_pointer("/foo/2b"), system_error);
-        BOOST_TEST_THROWS(jv.at_pointer("/x/y/z"), system_error);
+        BOOST_TEST_THROWS_WITH_LOCATION( jv.at_pointer("foo") );
+        BOOST_TEST_THROWS_WITH_LOCATION( jv.at_pointer("/fo") );
+        BOOST_TEST_THROWS_WITH_LOCATION( jv.at_pointer("/m~") );
+        BOOST_TEST_THROWS_WITH_LOCATION( jv.at_pointer("/m~n") );
+        BOOST_TEST_THROWS_WITH_LOCATION( jv.at_pointer("/foo/bar") );
+        BOOST_TEST_THROWS_WITH_LOCATION( jv.at_pointer("/foo/") );
+        BOOST_TEST_THROWS_WITH_LOCATION( jv.at_pointer("/foo/01") );
+        BOOST_TEST_THROWS_WITH_LOCATION( jv.at_pointer("/foo/2b") );
+        BOOST_TEST_THROWS_WITH_LOCATION( jv.at_pointer("/x/y/z") );
     }
 
     template<class ErrorCode>
@@ -276,7 +276,7 @@ public:
                 array{3} } ));
         BOOST_TEST( *result == 3 );
 
-        BOOST_TEST_THROWS(jv.set_at_pointer("/0/1", 1), system_error);
+        BOOST_TEST_THROWS_WITH_LOCATION( jv.set_at_pointer("/0/1", 1) );
 
         jv = value();
         result = &jv.set_at_pointer("/a/b/c/d/e/f/g/h/i/j/k/l", "m");
@@ -298,7 +298,7 @@ public:
         opts = {};
         opts.max_created_elements = 5;
         jv = array();
-        BOOST_TEST_THROWS( jv.set_at_pointer("/5", 1, opts), system_error );
+        BOOST_TEST_THROWS_WITH_LOCATION( jv.set_at_pointer("/5", 1, opts) );
         result = &jv.set_at_pointer( "/4", 0, opts );
         BOOST_TEST(( jv == array{nullptr, nullptr, nullptr, nullptr, 0} ));
         BOOST_TEST( *result == 0 );

@@ -20,11 +20,19 @@ namespace detail {
     BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION; \
     (ec).assign(e, &loc);
 
-BOOST_JSON_DECL void BOOST_NORETURN throw_bad_alloc(source_location const& loc = BOOST_CURRENT_LOCATION);
-BOOST_JSON_DECL void BOOST_NORETURN throw_invalid_argument(char const* what, source_location const& loc = BOOST_CURRENT_LOCATION);
-BOOST_JSON_DECL void BOOST_NORETURN throw_length_error(char const* what, source_location const& loc = BOOST_CURRENT_LOCATION);
-BOOST_JSON_DECL void BOOST_NORETURN throw_out_of_range(source_location const& loc = BOOST_CURRENT_LOCATION);
-BOOST_JSON_DECL void BOOST_NORETURN throw_system_error(error_code const& ec, source_location const& loc = BOOST_CURRENT_LOCATION);
+BOOST_JSON_DECL
+void
+BOOST_NORETURN
+throw_system_error(
+    error_code const& ec,
+    source_location const& loc = BOOST_CURRENT_LOCATION);
+
+BOOST_JSON_DECL
+void
+BOOST_NORETURN
+throw_system_error(
+    error e,
+    source_location const* loc);
 
 } // detail
 } // namespace json

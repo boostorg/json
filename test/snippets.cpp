@@ -635,7 +635,7 @@ usingArrays()
 
         assert( arr[0].as_string() == "Hello" );
 
-        // The following line throws std::out_of_range, since the index is out of range
+        // The following line throws system_error, since the index is out of range
         arr.at( 3 ) = nullptr;
 
         //]
@@ -687,7 +687,7 @@ usingObjects()
         obj["key2"] = 42;
         obj["key3"] = false;
 
-        // The following line throws std::out_of_range, since the key does not exist
+        // The following line throws system_error, since the key does not exist
         obj.at( "key4" );
 
         //]

@@ -36,40 +36,37 @@ using reserve_implementation = mp11::mp_cond<
     mp11::mp_true,         mp11::mp_int<0>>;
 
 template<class T>
-error_code
+error
 try_reserve(
     T&,
     std::size_t size,
     mp11::mp_int<2>)
 {
-    error_code ec;
     constexpr std::size_t N = std::tuple_size<remove_cvref<T>>::value;
     if ( N != size )
-    {
-        BOOST_JSON_FAIL(ec, error::size_mismatch);
-    }
-    return ec;
+        return error::size_mismatch;
+    return error();
 }
 
 template<typename T>
-error_code
+error
 try_reserve(
     T& cont,
     std::size_t size,
     mp11::mp_int<1>)
 {
     cont.reserve(size);
-    return error_code();
+    return error();
 }
 
 template<typename T>
-error_code
+error
 try_reserve(
     T&,
     std::size_t,
     mp11::mp_int<0>)
 {
-    return error_code();
+    return error();
 }
 
 
@@ -251,19 +248,23 @@ value_to_impl(
     value const& jv,
     Ctx const& ctx )
 {
-    error_code ec;
-
     object const* obj = jv.if_object();
     if( !obj )
     {
+        error_code ec;
         BOOST_JSON_FAIL(ec, error::not_object);
         return {boost::system::in_place_error, ec};
     }
 
     T res;
-    ec = detail::try_reserve(res, obj->size(), reserve_implementation<T>());
-    if( ec.failed() )
+    error const e = detail::try_reserve(
+        res, obj->size(), reserve_implementation<T>());
+    if( e != error() )
+    {
+        error_code ec;
+        BOOST_JSON_FAIL( ec, e );
         return {boost::system::in_place_error, ec};
+    }
 
     auto ins = detail::inserter(res, inserter_implementation<T>());
     for( key_value_pair const& kv: *obj )
@@ -283,19 +284,21 @@ T
 value_to_impl(
     map_like_conversion_tag, value_to_tag<T>, value const& jv, Ctx const& ctx )
 {
-    error_code ec;
-
     object const* obj = jv.if_object();
     if( !obj )
     {
-        BOOST_JSON_FAIL(ec, error::not_object);
-        throw_system_error( ec );
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
+        throw_system_error( error::not_object, &loc );
     }
 
     T result;
-    ec = detail::try_reserve(result, obj->size(), reserve_implementation<T>());
-    if( ec.failed() )
-        throw_system_error( ec );
+    error const e = detail::try_reserve(
+        result, obj->size(), reserve_implementation<T>());
+    if( e != error() )
+    {
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
+        throw_system_error( e, &loc );
+    }
 
     auto ins = detail::inserter(result, inserter_implementation<T>());
     for( key_value_pair const& kv: *obj )
@@ -314,19 +317,24 @@ value_to_impl(
     value const& jv,
     Ctx const& ctx )
 {
-    error_code ec;
 
     array const* arr = jv.if_array();
     if( !arr )
     {
+        error_code ec;
         BOOST_JSON_FAIL(ec, error::not_array);
         return {boost::system::in_place_error, ec};
     }
 
     T result;
-    ec = detail::try_reserve(result, arr->size(), reserve_implementation<T>());
-    if( ec.failed() )
+    error const e = detail::try_reserve(
+        result, arr->size(), reserve_implementation<T>());
+    if( e != error() )
+    {
+        error_code ec;
+        BOOST_JSON_FAIL( ec, e );
         return {boost::system::in_place_error, ec};
+    }
 
     auto ins = detail::inserter(result, inserter_implementation<T>());
     for( value const& val: *arr )
@@ -344,19 +352,21 @@ T
 value_to_impl(
     sequence_conversion_tag, value_to_tag<T>, value const& jv, Ctx const& ctx )
 {
-    error_code ec;
-
     array const* arr = jv.if_array();
     if( !arr )
     {
-        BOOST_JSON_FAIL(ec, error::not_array);
-        throw_system_error( ec );
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
+        throw_system_error( error::not_array, &loc );
     }
 
     T result;
-    ec = detail::try_reserve(result, arr->size(), reserve_implementation<T>());
-    if( ec.failed() )
-        throw_system_error( ec );
+    error const e = detail::try_reserve(
+        result, arr->size(), reserve_implementation<T>());
+    if( e != error() )
+    {
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
+        throw_system_error( e, &loc );
+    }
 
     auto ins = detail::inserter(result, inserter_implementation<T>());
     for( value const& val: *arr )
@@ -435,20 +445,18 @@ T
 value_to_impl(
     tuple_conversion_tag, value_to_tag<T>, value const& jv, Ctx const& ctx )
 {
-    error_code ec;
-
     array const* arr = jv.if_array();
     if( !arr )
     {
-        BOOST_JSON_FAIL(ec, error::not_array);
-        throw_system_error( ec );
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
+        throw_system_error( error::not_array, &loc );
     }
 
     constexpr std::size_t N = std::tuple_size<remove_cvref<T>>::value;
     if( N != arr->size() )
     {
-        BOOST_JSON_FAIL(ec, error::size_mismatch);
-        throw_system_error( ec );
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
+        throw_system_error( error::size_mismatch, &loc );
     }
 
     return make_tuple_like<T>(
@@ -636,10 +644,13 @@ typename std::enable_if<
 value_to_impl(
     user_conversion_tag, try_value_to_tag<T>, value const& jv, Ctx const& )
 {
+#ifndef BOOST_NO_EXCEPTIONS
     try
     {
+#endif
         return {
             boost::system::in_place_value, tag_invoke(value_to_tag<T>(), jv)};
+#ifndef BOOST_NO_EXCEPTIONS
     }
     catch( std::bad_alloc const&)
     {
@@ -655,6 +666,7 @@ value_to_impl(
         BOOST_JSON_FAIL(ec, error::exception);
         return {boost::system::in_place_error, ec};
     }
+#endif
 }
 
 //----------------------------------------------------------

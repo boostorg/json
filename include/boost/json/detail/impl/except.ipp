@@ -21,45 +21,6 @@ namespace json {
 namespace detail {
 
 void
-throw_bad_alloc(
-    source_location const& loc)
-{
-    throw_exception(
-        std::bad_alloc(),
-        loc);
-}
-
-void
-throw_length_error(
-    char const* what,
-    source_location const& loc)
-{
-    throw_exception(
-        std::length_error(what),
-        loc);
-}
-
-void
-throw_invalid_argument(
-    char const* what,
-    source_location const& loc)
-{
-    throw_exception(
-        std::invalid_argument(what),
-        loc);
-}
-
-void
-throw_out_of_range(
-    source_location const& loc)
-{
-    throw_exception(
-        std::out_of_range(
-            "out of range"),
-        loc);
-}
-
-void
 throw_system_error(
     error_code const& ec,
     source_location const& loc)
@@ -67,6 +28,19 @@ throw_system_error(
     throw_exception(
         system_error(ec),
         loc);
+}
+
+void
+throw_system_error(
+    error e,
+    source_location const* loc)
+{
+    error_code ec;
+    ec.assign(e, loc);
+
+    throw_exception(
+        system_error(ec),
+        *loc);
 }
 
 } // detail

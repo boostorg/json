@@ -896,7 +896,7 @@ public:
 
         @param new_capacity The new minimum capacity.
 
-        @throw std::length_error `new_capacity > max_size()`
+        @throw system_error `new_capacity > max_size()`
     */
     void
     reserve(std::size_t new_capacity)
@@ -956,9 +956,9 @@ public:
 
         @param p The value to insert.
 
-        @throw std::length_error key is too long.
+        @throw system_error key is too long.
 
-        @throw std::length_error @ref size() >= max_size().
+        @throw system_error @ref size() >= max_size().
 
         @return A pair where `first` is an iterator
         to the existing or inserted element, and `second`
@@ -1081,7 +1081,7 @@ public:
 
         @param m The value to insert or assign
 
-        @throw std::length_error if key is too long
+        @throw system_error if key is too long
     */
     template<class M>
     std::pair<iterator, bool>
@@ -1116,7 +1116,7 @@ public:
         This will be passed as `std::forward<Arg>(arg)` to
         the @ref value constructor.
 
-        @throw std::length_error if key is too long
+        @throw system_error if key is too long
     */
     template<class Arg>
     std::pair<iterator, bool>
@@ -1315,7 +1315,7 @@ public:
 
         @param key The key of the element to find.
 
-        @throw std::out_of_range if no such element exists.
+        @throw system_error if no such element exists.
     */
     /* @{ */
     inline

@@ -64,6 +64,9 @@ enum class error
     /// A string is too large
     string_too_large,
 
+    /// A number is too large
+    number_too_large,
+
     /// error occured when trying to read input
     input_error,
 
@@ -73,6 +76,9 @@ enum class error
 
     /// An exception was thrown during operation
     exception,
+
+    /// A requested element is outside of container's range
+    out_of_range,
 
     /// test failure
     test_failure,
@@ -127,6 +133,15 @@ enum class error
     /// JSON string was expected during conversion
     not_string,
 
+    /// std::int64_t was expected during conversion
+    not_int64,
+
+    /// std::uint64_t was expected during conversion
+    not_uint64,
+
+    /// `double` was expected during conversion
+    not_double,
+
     /// JSON array has size incompatible with target
     size_mismatch,
 
@@ -135,6 +150,7 @@ enum class error
 
     /// the key does not correspond to a known name
     unknown_name,
+
 };
 
 /** Error conditions corresponding to JSON errors

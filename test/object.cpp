@@ -1311,24 +1311,21 @@ public:
         {
             BOOST_TEST(
                 o1.at("a").is_number());
-            BOOST_TEST_THROWS((o1.at("d")),
-                std::out_of_range);
+            BOOST_TEST_THROWS_WITH_LOCATION( (o1.at("d")) );
         }
 
         // at(key) const&
         {
             BOOST_TEST(
                 co1.at("a").is_number());
-            BOOST_TEST_THROWS((co1.at("d")),
-                std::out_of_range);
+            BOOST_TEST_THROWS_WITH_LOCATION( (co1.at("d")) );
         }
 
         // at(key) &&
         {
             BOOST_TEST(
                 std::move(o1).at("a").is_number());
-            BOOST_TEST_THROWS((std::move(o1).at("d")),
-                std::out_of_range);
+            BOOST_TEST_THROWS_WITH_LOCATION( (std::move(o1).at("d")) );
             value&& rv = std::move(o1).at("a");
             (void)rv;
         }

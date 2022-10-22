@@ -46,7 +46,7 @@ public:
             {"26",26},{"27",27},{"28",28},{"29",29},{"30",30},
             {"31",31}};
             BOOST_TEST(init.size() > object::max_size());
-            BOOST_TEST_THROWS(value{init}, std::length_error);
+            BOOST_TEST_THROWS_WITH_LOCATION( value{init} );
         }
     }
 
@@ -54,11 +54,7 @@ public:
     testObject()
     {
         // max_size()
-        {
-            BOOST_TEST_THROWS(
-                object(object::max_size()+1),
-                std::length_error);
-        }
+        BOOST_TEST_THROWS_WITH_LOCATION( object(object::max_size()+1) );
 
         // object(), max size
         {
@@ -72,25 +68,19 @@ public:
             {"26",26},{"27",27},{"28",28},{"29",29},{"30",30},
             {"31",31}};
             BOOST_TEST(init.size() > object::max_size());
-            BOOST_TEST_THROWS(
-                object(init),
-                std::length_error);
-            BOOST_TEST_THROWS(
-                object(init.begin(), init.end()),
-                std::length_error);
-            BOOST_TEST_THROWS(
+            BOOST_TEST_THROWS_WITH_LOCATION( (object(init)) );
+            BOOST_TEST_THROWS_WITH_LOCATION(
+                object(init.begin(), init.end()) );
+            BOOST_TEST_THROWS_WITH_LOCATION(
                 object(
                     make_input_iterator(init.begin()),
-                    make_input_iterator(init.end())),
-                std::length_error);
+                    make_input_iterator(init.end())) );
         }
 
         // reserve(), max size
         {
             object o;
-            BOOST_TEST_THROWS(
-                o.reserve(o.max_size() + 1),
-                std::length_error);
+            BOOST_TEST_THROWS_WITH_LOCATION( o.reserve(o.max_size() + 1) );
         }
 
         // insert(), max size
@@ -106,72 +96,60 @@ public:
             {"31",31}};
             BOOST_TEST(init.size() > object::max_size());
             object o;
-            BOOST_TEST_THROWS(
-                o.insert(init),
-                std::length_error);
-            BOOST_TEST_THROWS(
-                o.insert(init.begin(), init.end()),
-                std::length_error);
-            BOOST_TEST_THROWS(
+            BOOST_TEST_THROWS_WITH_LOCATION( o.insert(init) );
+            BOOST_TEST_THROWS_WITH_LOCATION(
+                o.insert(init.begin(), init.end()) );
+            BOOST_TEST_THROWS_WITH_LOCATION(
                 o.insert(
                     make_input_iterator(init.begin()),
-                    make_input_iterator(init.end())),
-                std::length_error);
+                    make_input_iterator(init.end())) );
         }
 
         // max key size
         {
             std::string const big(
                 string::max_size() + 1, '*');
-            BOOST_TEST_THROWS(
-                object({ {big, nullptr} }),
-                std::length_error);
+            BOOST_TEST_THROWS_WITH_LOCATION( object({ {big, nullptr} }) );
         }
 
         // reserve
         {
             object obj;
-            BOOST_TEST_THROWS(
-                obj.reserve(object::max_size() + 1),
-                std::length_error);
+            BOOST_TEST_THROWS_WITH_LOCATION(
+                obj.reserve(object::max_size() + 1) );
         }
     }
 
     void
     testArray()
     {
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            array(
+                array::max_size()+1,
+                value(nullptr)) );
+
         {
-            BOOST_TEST_THROWS(
+            std::vector<int> v(
+                array::max_size()+1, 42);
+            BOOST_TEST_THROWS_WITH_LOCATION(
+                array(v.begin(), v.end()) );
+        }
+
+        {
+            std::vector<int> v(
+                array::max_size()+1, 42);
+            BOOST_TEST_THROWS_WITH_LOCATION(
                 array(
-                    array::max_size()+1,
-                    value(nullptr)),
-                std::length_error);
-        }
-
-        {
-            std::vector<int> v(
-                array::max_size()+1, 42);
-            BOOST_TEST_THROWS(
-                array(v.begin(), v.end()),
-                std::length_error);
-        }
-
-        {
-            std::vector<int> v(
-                array::max_size()+1, 42);
-            BOOST_TEST_THROWS(array(
-                make_input_iterator(v.begin()),
-                make_input_iterator(v.end())),
-                std::length_error);
+                    make_input_iterator(v.begin()),
+                    make_input_iterator(v.end())) );
         }
 
         {
             array a;
-            BOOST_TEST_THROWS(
+            BOOST_TEST_THROWS_WITH_LOCATION(
                 a.insert(a.begin(),
                     array::max_size() + 1,
-                    nullptr),
-                std::length_error);
+                    nullptr) );
         }
     }
 
@@ -182,41 +160,36 @@ public:
         {
             {
                 string s;
-                BOOST_TEST_THROWS(
-                    (s.resize(s.max_size() + 1)),
-                    std::length_error);
+                BOOST_TEST_THROWS_WITH_LOCATION(
+                    (s.resize(s.max_size() + 1)) );
             }
 
             {
                 string s;
                 s.resize(100);
-                BOOST_TEST_THROWS(
-                    (s.append(s.max_size() - 1, '*')),
-                    std::length_error);
+                BOOST_TEST_THROWS_WITH_LOCATION(
+                    (s.append(s.max_size() - 1, '*')) );
             }
 
             {
                 string s;
                 s.resize(s.max_size() - 5);
-                BOOST_TEST_THROWS(
-                    (s.replace(0, 1, s.subview(0, 10))),
-                    std::length_error);
+                BOOST_TEST_THROWS_WITH_LOCATION(
+                    (s.replace(0, 1, s.subview(0, 10))) );
             }
 
             {
                 string s;
                 s.resize(s.max_size() - 5);
-                BOOST_TEST_THROWS(
-                    (s.replace(0, 1, 10, 'a')),
-                    std::length_error);
+                BOOST_TEST_THROWS_WITH_LOCATION(
+                    (s.replace(0, 1, 10, 'a')) );
             }
 
             {
                 string s;
                 s.resize(s.max_size() - 5);
-                BOOST_TEST_THROWS(
-                    (s.insert(0, s.subview(0, 10))),
-                    std::length_error);
+                BOOST_TEST_THROWS_WITH_LOCATION(
+                    (s.insert(0, s.subview(0, 10))) );
             }
 
     #if 0
@@ -387,9 +360,8 @@ public:
         error_code ec;
         parse_options precise;
         precise.precise_parsing = true;
-        BOOST_TEST_THROWS(
-            parse( {buffer.data(), buffer.size()}, ec, {}, precise ),
-            std::length_error);
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            parse( {buffer.data(), buffer.size()}, ec, {}, precise ));
         BOOST_TEST( !ec );
 
         // now we make the number one character shorter

@@ -317,7 +317,10 @@ erase(
     size_type count)
 {
     if(pos > impl_.size())
-        detail::throw_out_of_range();
+    {
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
+        detail::throw_system_error( error::out_of_range, &loc );
+    }
     if( count > impl_.size() - pos)
         count = impl_.size() - pos;
     std::char_traits<char>::move(

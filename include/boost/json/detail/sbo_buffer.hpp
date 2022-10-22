@@ -144,7 +144,10 @@ public:
             return;
 
         if( max_size() - size_ < size )
-            detail::throw_length_error( "buffer too large" );
+        {
+            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
+            detail::throw_system_error( error::number_too_large, &loc );
+        }
 
         std::size_t const old_capacity = this->capacity();
         std::size_t new_capacity = size_ + size;

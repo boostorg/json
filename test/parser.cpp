@@ -209,9 +209,7 @@ public:
             // partial json
             {
                 parser p;
-                BOOST_TEST_THROWS(
-                    p.write_some("nul", 3),
-                    system_error);
+                BOOST_TEST_THROWS_WITH_LOCATION( p.write_some("nul", 3) );
             }
         }
 
@@ -228,9 +226,7 @@ public:
             // partial json
             {
                 parser p;
-                BOOST_TEST_THROWS(
-                    p.write_some("nul"),
-                    system_error);
+                BOOST_TEST_THROWS_WITH_LOCATION( p.write_some("nul") );
             }
         }
 
@@ -309,17 +305,13 @@ public:
             // valid json with invalid trailing char
             {
                 parser p;
-                BOOST_TEST_THROWS(
-                    p.write("null*", 5),
-                    system_error);
+                BOOST_TEST_THROWS_WITH_LOCATION( p.write("null*", 5) );
             }
 
             // partial json
             {
                 parser p;
-                BOOST_TEST_THROWS(
-                    p.write("nul", 3),
-                    system_error);
+                BOOST_TEST_THROWS_WITH_LOCATION( p.write("nul", 3) );
             }
         }
 
@@ -336,17 +328,13 @@ public:
             // valid json with invalid trailing char
             {
                 parser p;
-                BOOST_TEST_THROWS(
-                    p.write("null*"),
-                    system_error);
+                BOOST_TEST_THROWS_WITH_LOCATION( p.write("null*") );
             }
 
             // partial json
             {
                 parser p;
-                BOOST_TEST_THROWS(
-                    p.write("nul"),
-                    system_error);
+                BOOST_TEST_THROWS_WITH_LOCATION( p.write("nul") );
             }
         }
 
@@ -363,9 +351,7 @@ public:
             // release with no write
             {
                 parser p;
-                BOOST_TEST_THROWS(
-                    p.release(),
-                    system_error);
+                BOOST_TEST_THROWS_WITH_LOCATION( p.release() );
             }
 
             // release after error
@@ -375,9 +361,7 @@ public:
                 p.write("nul", ec);
                 BOOST_TEST(ec);
                 BOOST_TEST(hasLocation(ec));
-                BOOST_TEST_THROWS(
-                    p.release(),
-                    system_error);
+                BOOST_TEST_THROWS_WITH_LOCATION( p.release() );
             }
         }
     }

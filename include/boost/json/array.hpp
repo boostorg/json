@@ -593,14 +593,14 @@ public:
         Returns a reference to the element specified at
         location `pos`, with bounds checking. If `pos` is
         not within the range of the container, an exception
-        of type `std::out_of_range` is thrown.
+        of type @ref system_error is thrown.
 
         @par Complexity
         Constant.
 
         @param pos A zero-based index.
 
-        @throw std::out_of_range `pos >= size()`
+        @throw system_error `pos >= size()`
     */
     /* @{ */
     inline
@@ -1070,7 +1070,7 @@ public:
 
         @param new_capacity The new capacity of the array.
 
-        @throw std::length_error `new_capacity > max_size()`
+        @throw system_error `new_capacity > max_size()`
     */
     inline
     void
