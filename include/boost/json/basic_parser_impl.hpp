@@ -17,7 +17,7 @@
 #include <boost/json/detail/buffer.hpp>
 #include <boost/json/detail/sse2.hpp>
 #include <cmath>
-#include <climits>
+#include <limits>
 #include <cstring>
 
 #ifdef _MSC_VER
@@ -122,7 +122,7 @@ pow10(int exp) noexcept
 
     if( exp > 308 )
     {
-        return INFINITY;
+        return std::numeric_limits<double>::infinity();
     }
     else if( exp < -308 )
     {

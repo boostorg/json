@@ -22,6 +22,7 @@
 #include <boost/json/detail/ryu/ryu.hpp>
 #include <array>
 #include <cmath>
+#include <limits>
 #include "gtest.hpp"
 
 BOOST_JSON_NS_BEGIN
@@ -53,9 +54,14 @@ TEST(D2sTest, Basic) {
   ASSERT_STREQ("-0E0", d2s_test_helper(buffer.data(), -0.0));
   ASSERT_STREQ("1E0", d2s_test_helper(buffer.data(), 1.0));
   ASSERT_STREQ("-1E0", d2s_test_helper(buffer.data(), -1.0));
-  ASSERT_STREQ("NaN", d2s_test_helper(buffer.data(), NAN));
-  ASSERT_STREQ("Infinity", d2s_test_helper(buffer.data(), INFINITY));
-  ASSERT_STREQ("-Infinity", d2s_test_helper(buffer.data(), -INFINITY));
+  ASSERT_STREQ(
+    "NaN",
+    d2s_test_helper(buffer.data(), std::numeric_limits<float>::quiet_NaN()));
+  using Limits = std::numeric_limits<double>;
+  ASSERT_STREQ(
+    "Infinity", d2s_test_helper(buffer.data(), Limits::infinity()));
+  ASSERT_STREQ(
+    "-Infinity", d2s_test_helper(buffer.data(), -Limits::infinity()));
 }
 
 TEST(D2sTest, SwitchToSubnormal) {
