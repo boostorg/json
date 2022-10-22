@@ -103,6 +103,10 @@ with __parse_options__ is possible:
 
 [doc_parsing_6]
 
+[caution When enabling comment support take extra care not to drop whitespace
+    when reading the input. For example, `std::getline` removes the
+    endline characters from the string it produces.]
+
 [/-----------------------------------------------------------------------------]
 
 [heading Parser]
@@ -176,6 +180,11 @@ In the following example a JSON is parsed from standard input a line
 at a time. Error codes are used instead. The function
 [link json.ref.boost__json__stream_parser.finish `finish`]
 is used to indicate the end of the input:
+
+[caution This example will break, if comments are enabled, because of
+    `std::getline` use (see the warning in
+    [link json.input_output.parsing.non_standard_json Non-Standard JSON]
+    section). ]
 
 [doc_parsing_10]
 
