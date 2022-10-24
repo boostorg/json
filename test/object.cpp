@@ -1306,7 +1306,7 @@ public:
         auto const& co0 = o0;
         auto const& co1 = o1;
 
-        // at(key)
+        // at(key) &
         {
             BOOST_TEST(
                 o1.at("a").is_number());
@@ -1314,12 +1314,22 @@ public:
                 std::out_of_range);
         }
 
-        // at(key) const
+        // at(key) const&
         {
             BOOST_TEST(
                 co1.at("a").is_number());
             BOOST_TEST_THROWS((co1.at("d")),
                 std::out_of_range);
+        }
+
+        // at(key) &&
+        {
+            BOOST_TEST(
+                std::move(o1).at("a").is_number());
+            BOOST_TEST_THROWS((std::move(o1).at("d")),
+                std::out_of_range);
+            value&& rv = std::move(o1).at("a");
+            (void)rv;
         }
 
         // operator[&](key)

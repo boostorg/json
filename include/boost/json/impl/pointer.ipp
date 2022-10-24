@@ -247,20 +247,13 @@ if_contains_token(object const& obj, pointer_token token)
 } // namespace detail
 
 value const&
-value::at_pointer(string_view ptr) const
+value::at_pointer(string_view ptr) const&
 {
     error_code ec;
     auto const found = find_pointer(ptr, ec);
     if( !found )
         detail::throw_system_error(ec, BOOST_CURRENT_LOCATION);
     return *found;
-}
-
-value&
-value::at_pointer(string_view ptr)
-{
-    value const& self = *this;
-    return const_cast<value&>(self.at_pointer(ptr));
 }
 
 value const*

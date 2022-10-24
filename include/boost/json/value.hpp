@@ -2500,8 +2500,9 @@ public:
 
         @throw std::invalid_argument `! this->is_object()`
     */
+    /* @{ */
     object&
-    as_object()
+    as_object() &
     {
         if(! is_object())
             detail::throw_invalid_argument(
@@ -2510,22 +2511,14 @@ public:
         return obj_;
     }
 
-    /** Return a reference to the underlying `object`, or throw an exception.
+    object&&
+    as_object() &&
+    {
+        return std::move( as_object() );
+    }
 
-        If @ref is_object() is `true`, returns
-        a reference to the underlying @ref object,
-        otherwise throws an exception.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        Strong guarantee.
-
-        @throw std::invalid_argument `! this->is_object()`
-    */
     object const&
-    as_object() const
+    as_object() const&
     {
         if(! is_object())
             detail::throw_invalid_argument(
@@ -2533,6 +2526,7 @@ public:
                 BOOST_CURRENT_LOCATION);
         return obj_;
     }
+    /* @} */
 
     /** Return a reference to the underlying @ref array, or throw an exception.
 
@@ -2548,8 +2542,9 @@ public:
 
         @throw std::invalid_argument `! this->is_array()`
     */
+    /* @{ */
     array&
-    as_array()
+    as_array() &
     {
         if(! is_array())
             detail::throw_invalid_argument(
@@ -2558,22 +2553,14 @@ public:
         return arr_;
     }
 
-    /** Return a reference to the underlying `array`, or throw an exception.
+    array&&
+    as_array() &&
+    {
+        return std::move( as_array() );
+    }
 
-        If @ref is_array() is `true`, returns
-        a reference to the underlying @ref array,
-        otherwise throws an exception.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        Strong guarantee.
-
-        @throw std::invalid_argument `! this->is_array()`
-    */
     array const&
-    as_array() const
+    as_array() const&
     {
         if(! is_array())
             detail::throw_invalid_argument(
@@ -2581,6 +2568,7 @@ public:
                 BOOST_CURRENT_LOCATION);
         return arr_;
     }
+    /* @} */
 
     /** Return a reference to the underlying `string`, or throw an exception.
 
@@ -2596,8 +2584,9 @@ public:
 
         @throw std::invalid_argument `! this->is_string()`
     */
+    /* @{ */
     string&
-    as_string()
+    as_string() &
     {
         if(! is_string())
             detail::throw_invalid_argument(
@@ -2606,22 +2595,14 @@ public:
         return str_;
     }
 
-    /** Return a reference to the underlying `string`, or throw an exception.
+    string&&
+    as_string() &&
+    {
+        return std::move( as_string() );
+    }
 
-        If @ref is_string() is `true`, returns
-        a reference to the underlying @ref string,
-        otherwise throws an exception.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        Strong guarantee.
-
-        @throw std::invalid_argument `! this->is_string()`
-    */
     string const&
-    as_string() const
+    as_string() const&
     {
         if(! is_string())
             detail::throw_invalid_argument(
@@ -2629,6 +2610,7 @@ public:
                 BOOST_CURRENT_LOCATION);
         return str_;
     }
+    /* @} */
 
     /** Return a reference to the underlying `std::int64_t`, or throw an exception.
 
@@ -2841,36 +2823,28 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
+    /* @{ */
     object&
-    get_object() noexcept
+    get_object() & noexcept
     {
         BOOST_ASSERT(is_object());
         return obj_;
     }
 
-    /** Return a reference to the underlying `object`, without checking.
+    object&&
+    get_object() && noexcept
+    {
+        BOOST_ASSERT(is_object());
+        return std::move(obj_);
+    }
 
-        This is the fastest way to access the underlying
-        representation when the kind is known in advance.
-
-        @par Preconditions
-
-        @code
-        this->is_object()
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
     object const&
-    get_object() const noexcept
+    get_object() const& noexcept
     {
         BOOST_ASSERT(is_object());
         return obj_;
     }
+    /* @} */
 
     /** Return a reference to the underlying `array`, without checking.
 
@@ -2889,36 +2863,28 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
+    /* @{ */
     array&
-    get_array() noexcept
+    get_array() & noexcept
     {
         BOOST_ASSERT(is_array());
         return arr_;
     }
 
-    /** Return a reference to the underlying `array`, without checking.
+    array&&
+    get_array() && noexcept
+    {
+        BOOST_ASSERT(is_array());
+        return std::move(arr_);
+    }
 
-        This is the fastest way to access the underlying
-        representation when the kind is known in advance.
-
-        @par Preconditions
-
-        @code
-        this->is_array()
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
     array const&
-    get_array() const noexcept
+    get_array() const& noexcept
     {
         BOOST_ASSERT(is_array());
         return arr_;
     }
+    /* @} */
 
     /** Return a reference to the underlying `string`, without checking.
 
@@ -2937,36 +2903,28 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
+    /* @{ */
     string&
-    get_string() noexcept
+    get_string() & noexcept
     {
         BOOST_ASSERT(is_string());
         return str_;
     }
 
-    /** Return a reference to the underlying `string`, without checking.
+    string&&
+    get_string() && noexcept
+    {
+        BOOST_ASSERT(is_string());
+        return std::move(str_);
+    }
 
-        This is the fastest way to access the underlying
-        representation when the kind is known in advance.
-
-        @par Preconditions
-
-        @code
-        this->is_string()
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
     string const&
-    get_string() const noexcept
+    get_string() const& noexcept
     {
         BOOST_ASSERT(is_string());
         return str_;
     }
+    /* @} */
 
     /** Return a reference to the underlying `std::int64_t`, without checking.
 
@@ -3180,13 +3138,19 @@ public:
     */
 /** @{ */
     value&
-    at(string_view key)
+    at(string_view key) &
     {
         return as_object().at(key);
     }
 
+    value&&
+    at(string_view key) &&
+    {
+        return std::move( as_object() ).at(key);
+    }
+
     value const&
-    at(string_view key) const
+    at(string_view key) const&
     {
         return as_object().at(key);
     }
@@ -3210,13 +3174,19 @@ public:
     */
 /** @{ */
     value &
-    at(std::size_t pos)
+    at(std::size_t pos) &
     {
         return as_array().at(pos);
     }
 
+    value&&
+    at(std::size_t pos) &&
+    {
+        return std::move( as_array() ).at(pos);
+    }
+
     value const&
-    at(std::size_t pos) const
+    at(std::size_t pos) const&
     {
         return as_array().at(pos);
     }
@@ -3246,11 +3216,15 @@ public:
 /** @{ */
     BOOST_JSON_DECL
     value const&
-    at_pointer(string_view ptr) const;
+    at_pointer(string_view ptr) const&;
 
-    BOOST_JSON_DECL
+    inline
+    value&&
+    at_pointer(string_view ptr) &&;
+
+    inline
     value&
-    at_pointer(string_view ptr);
+    at_pointer(string_view ptr) &;
 /** @} */
 
     /** Access an element via JSON Pointer.
@@ -3792,25 +3766,25 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
+    /* @{ */
     json::value const&
-    value() const noexcept
+    value() const& noexcept
     {
         return value_;
     }
 
-    /** Return the value of this element.
+    json::value&&
+    value() && noexcept
+    {
+        return std::move( value() );
+    }
 
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
     json::value&
-    value() noexcept
+    value() & noexcept
     {
         return value_;
     }
+    /* @} */
 
 private:
     json::value value_;
@@ -4045,6 +4019,7 @@ struct hash< ::boost::json::value > {
 #include <boost/json/detail/impl/array.hpp>
 #include <boost/json/impl/array.hpp>
 #include <boost/json/impl/object.hpp>
+#include <boost/json/impl/value.hpp>
 
 // These must come after array and object
 #include <boost/json/impl/value_ref.hpp>

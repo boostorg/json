@@ -336,7 +336,7 @@ capacity() const noexcept ->
 
 auto
 object::
-at(string_view key) ->
+at(string_view key) & ->
     value&
 {
     auto it = find(key);
@@ -348,7 +348,15 @@ at(string_view key) ->
 
 auto
 object::
-at(string_view key) const ->
+at(string_view key) && ->
+    value&&
+{
+    return std::move( at(key) );
+}
+
+auto
+object::
+at(string_view key) const& ->
     value const&
 {
     auto it = find(key);

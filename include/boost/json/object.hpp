@@ -1314,30 +1314,19 @@ public:
 
         @throw std::out_of_range if no such element exists.
     */
+    /* @{ */
     inline
     value&
-    at(string_view key);
+    at(string_view key) &;
 
-    /** Access the specified element, with bounds checking.
+    inline
+    value&&
+    at(string_view key) &&;
 
-        Returns a constant reference to the mapped value of
-        the element that matches `key`, otherwise throws.
-
-        @par Complexity
-        Constant on average, worst case linear in @ref size().
-
-        @par Exception Safety
-        Strong guarantee.
-
-        @return A reference to the mapped value.
-
-        @param key The key of the element to find.
-
-        @throw std::out_of_range if no such element exists.
-    */
     inline
     value const&
-    at(string_view key) const;
+    at(string_view key) const&;
+    /* @} */
 
     /** Access or insert the specified element
 
