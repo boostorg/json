@@ -40,6 +40,27 @@ T min_of()
     return (std::numeric_limits<T>::min)();
 }
 
+class throwing_buffer
+    : public std::streambuf
+{
+protected:
+    int_type
+    underflow() override
+    {
+        // make sure we don't throw before the parser had the chance to start
+        if( !gptr()  )
+        {
+            setg(buf_, buf_, buf_ + 1);
+            return *buf_;
+        }
+
+        throw std::invalid_argument("this buffer throws");
+    }
+
+private:
+    char buf_[1] = {'t'};
+};
+
 } // (anon)
 
 class value_test
@@ -2233,6 +2254,56 @@ public:
             value({{"a", "b"}})));
     }
 
+    void
+    testIstream()
+    {
+        std::istringstream ss(
+            R"({ "x": 1
+               , "y": 2
+               , "z": [77, null, true, "qwerty uiop"]
+               } 12)");
+        value jv;
+
+        ss >> jv;
+        BOOST_TEST( !!ss );
+        BOOST_TEST((
+            jv == value{
+                {"x", 1},
+                {"y", 2},
+                {"z", {77, nullptr, true, "qwerty uiop"}}} ));
+
+        // check we didn't consume any extra characters
+        std::string s;
+        std::getline(ss, s);
+        BOOST_TEST( s == " 12" );
+
+        ss.clear();
+        ss.str("23");
+        ss >> jv;
+        BOOST_TEST( jv == 23 );
+
+        ss.clear();
+        ss.str("");
+        ss >> jv;
+        BOOST_TEST( ss.rdstate() == (std::ios::failbit | std::ios::eofbit) );
+
+        ss.clear();
+        ss.str("nu");
+        ss >> jv;
+        BOOST_TEST( ss.rdstate() == (std::ios::failbit | std::ios::eofbit) );
+
+        ss.clear();
+        ss.str("[1,2,3,4,]");
+        ss >> jv;
+        BOOST_TEST( ss.rdstate() == std::ios::failbit );
+
+        {
+            throwing_buffer buf;
+            std::istream is(&buf);
+            BOOST_TEST_THROWS( is >> jv, std::exception );
+        }
+    }
+
     //------------------------------------------------------
 
     void
@@ -2255,6 +2326,7 @@ public:
         testInitList();
         testEquality();
         testHash();
+        testIstream();
     }
 };
 

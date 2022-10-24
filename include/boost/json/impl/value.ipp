@@ -11,8 +11,10 @@
 #define BOOST_JSON_IMPL_VALUE_IPP
 
 #include <boost/json/value.hpp>
+#include <boost/json/parser.hpp>
 #include <boost/json/detail/hash_combine.hpp>
 #include <cstring>
+#include <istream>
 #include <limits>
 #include <new>
 #include <utility>
@@ -341,6 +343,63 @@ swap(value& other)
     ::new(&other) value(pilfer(temp1));
     this->~value();
     ::new(this) value(pilfer(temp2));
+}
+
+std::istream&
+operator>>(
+    std::istream& is,
+    value& jv)
+{
+    using Traits = std::istream::traits_type;
+
+    std::istream::sentry sentry(is);
+    if( !sentry )
+        return is;
+
+    unsigned char parser_buf[BOOST_JSON_STACK_BUFFER_SIZE];
+    stream_parser p({}, {}, parser_buf);
+    p.reset( jv.storage() );
+
+    std::ios::iostate err = std::ios::goodbit;
+    try
+    {
+        std::istream::int_type c = is.rdbuf()->sgetc();
+        while( true )
+        {
+            error_code ec;
+
+            if( Traits::eq_int_type(c, Traits::eof()) )
+            {
+                err |= std::ios::eofbit;
+                p.finish(ec);
+                if( ec.failed() )
+                    break;
+            }
+
+            if( p.done() )
+            {
+                jv = p.release();
+                return is;
+            }
+
+            char read_buf[1];
+            read_buf[0] = Traits::to_char_type(c);
+            c = is.rdbuf()->snextc();
+
+            p.write_some(read_buf, 1, ec);
+            if( ec.failed() )
+                break;
+        }
+    }
+    catch(...)
+    {
+        is.setstate(std::ios::failbit);
+        throw;
+    }
+
+    err |= std::ios::failbit;
+    is.setstate(err);
+    return is;
 }
 
 //----------------------------------------------------------

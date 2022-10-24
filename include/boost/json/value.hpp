@@ -3339,6 +3339,34 @@ public:
         std::ostream& os,
         value const& jv);
 
+    /** Parse @ref value from an input stream.
+
+        This function parses JSON from an input stream into a `value`. If
+        parsing fails, `std::ios_base::failbit` will be set for `is` and
+        `jv` will be left unchanged.
+
+        @return Reference to `is`.
+
+        @par Complexity
+        Linear in the size of JSON data.
+
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
+        The stream may throw as described by
+        [`std::ios::exceptions`](https://en.cppreference.com/w/cpp/io/basic_ios/exceptions).
+
+        @param is The input stream to parse from.
+
+        @param jv The value to parse into.
+    */
+    BOOST_JSON_DECL
+    friend
+    std::istream&
+    operator>>(
+        std::istream& is,
+        value& jv);
+
 private:
     static
     void
