@@ -2738,6 +2738,30 @@ public:
         return subview().find_last_not_of(ch, pos);
     }
 
+    /** Serialize @ref string to an output stream.
+
+        This function serializes a `string` as JSON into the output stream.
+
+        @return Reference to `os`.
+
+        @par Complexity
+        Constant or linear in the size of `str`.
+
+        @par Exception Safety
+        Strong guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
+        @param os The output stream to serialize to.
+
+        @param str The value to serialize.
+    */
+    BOOST_JSON_DECL
+    friend
+    std::ostream&
+    operator<<(
+        std::ostream& os,
+        string const& str);
+
 private:
     class undo;
 

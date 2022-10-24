@@ -1659,6 +1659,30 @@ public:
         return ! (lhs == rhs);
     }
 
+    /** Serialize @ref array to an output stream.
+
+        This function serializes an `array` as JSON into the output stream.
+
+        @return Reference to `os`.
+
+        @par Complexity
+        Constant or linear in the size of `arr`.
+
+        @par Exception Safety
+        Strong guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
+        @param os The output stream to serialize to.
+
+        @param arr The value to serialize.
+    */
+    BOOST_JSON_DECL
+    friend
+    std::ostream&
+    operator<<(
+        std::ostream& os,
+        array const& arr);
+
 private:
     template<class It>
     using iter_cat = typename

@@ -3315,6 +3315,30 @@ public:
         return ! (lhs == rhs);
     }
 
+    /** Serialize @ref value to an output stream.
+
+        This function serializes a `value` as JSON into the output stream.
+
+        @return Reference to `os`.
+
+        @par Complexity
+        Constant or linear in the size of `jv`.
+
+        @par Exception Safety
+        Strong guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
+        @param os The output stream to serialize to.
+
+        @param jv The value to serialize.
+    */
+    BOOST_JSON_DECL
+    friend
+    std::ostream&
+    operator<<(
+        std::ostream& os,
+        value const& jv);
+
 private:
     static
     void

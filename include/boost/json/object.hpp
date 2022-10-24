@@ -1529,6 +1529,29 @@ public:
         return ! (lhs == rhs);
     }
 
+    /** Serialize @ref object to an output stream.
+
+        This function serializes an `object` as JSON into the output stream.
+
+        @return Reference to `os`.
+
+        @par Complexity
+        Constant or linear in the size of `obj`.
+
+        @par Exception Safety
+        Strong guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
+        @param os The output stream to serialize to.
+
+        @param obj The value to serialize.
+    */
+    BOOST_JSON_DECL
+    friend
+    std::ostream&
+    operator<<(
+        std::ostream& os,
+        object const& obj);
 private:
 #ifndef BOOST_JSON_DOCS
     // VFALCO friending a detail function makes it public
