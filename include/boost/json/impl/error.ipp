@@ -44,6 +44,7 @@ case error::object_too_large: return "object too large";
 case error::array_too_large: return "array too large";
 case error::key_too_large: return "key too large";
 case error::string_too_large: return "string too large";
+case error::input_error: return "input error";
 
 case error::exception: return "got exception";
 case error::test_failure: return "test failure";
@@ -91,6 +92,7 @@ case error::object_too_large:
 case error::array_too_large:
 case error::key_too_large:
 case error::string_too_large:
+case error::input_error:
     return condition::parse_error;
 
 case error::missing_slash:

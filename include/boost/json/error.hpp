@@ -63,6 +63,9 @@ enum class error
     /// A string is too large
     string_too_large,
 
+    /// error occured when trying to read input
+    input_error,
+
     //
     // generic errors
     //

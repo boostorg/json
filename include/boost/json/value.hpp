@@ -3343,7 +3343,12 @@ public:
 
         This function parses JSON from an input stream into a `value`. If
         parsing fails, `std::ios_base::failbit` will be set for `is` and
-        `jv` will be left unchanged.
+        `jv` will be left unchanged.<br>
+
+        Note: this operator cannot assume that the stream only contains a
+        single JSON document, which results in **very underwhelming
+        performance**. If you know that your input consists of a single
+        JSON document, consider using @ref parse function instead.
 
         @return Reference to `is`.
 
@@ -3359,6 +3364,8 @@ public:
         @param is The input stream to parse from.
 
         @param jv The value to parse into.
+
+        @see @ref parse.
     */
     BOOST_JSON_DECL
     friend
