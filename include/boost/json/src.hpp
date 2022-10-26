@@ -51,8 +51,10 @@ in a translation unit of the program.
 #include <boost/json/detail/impl/except.ipp>
 #include <boost/json/detail/impl/format.ipp>
 #include <boost/json/detail/impl/handler.ipp>
+#include <boost/json/detail/impl/serialize.ipp>
 #include <boost/json/detail/impl/stack.ipp>
 #include <boost/json/detail/impl/string_impl.ipp>
+#include <boost/json/detail/impl/writer.ipp>
 
 #include <boost/json/detail/ryu/impl/d2s.ipp>
 

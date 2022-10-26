@@ -10,32 +10,36 @@
 #ifndef BOOST_JSON_DETAIL_FORMAT_HPP
 #define BOOST_JSON_DETAIL_FORMAT_HPP
 
+#include <boost/json/string_view.hpp>
+
 namespace boost {
 namespace json {
 namespace detail {
 
 int constexpr max_number_chars =
      1 +    // '-'
-    19 +    // unsigned 64-bit mantissa
+    20 +    // unsigned 64-bit mantissa
      1 +    // 'e'
      1 +    // '-'
      5;     // unsigned 16-bit exponent
 
-BOOST_JSON_DECL
-unsigned
-format_uint64(
-    char* dest,
-    std::uint64_t value) noexcept;
+string_view
+write_int64(
+    char* temp,
+    std::size_t size,
+    std::int64_t v) noexcept;
 
-BOOST_JSON_DECL
-unsigned
-format_int64(
-    char* dest, int64_t i) noexcept;
+string_view
+write_uint64(
+    char* temp,
+    std::size_t size,
+    std::uint64_t v) noexcept;
 
-BOOST_JSON_DECL
-unsigned
-format_double(
-    char* dest, double d) noexcept;
+string_view
+write_double(
+    char* temp,
+    std::size_t size,
+    double v) noexcept;
 
 } // detail
 } // namespace json

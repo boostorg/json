@@ -118,6 +118,8 @@ push(
             return &t_;
         }
     };
+    BOOST_STATIC_ASSERT(
+        ! std::is_trivial<T>::value);
     BOOST_ASSERT(
         alignof(U) <= alignof(
             core::max_align_t));

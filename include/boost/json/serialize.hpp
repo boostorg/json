@@ -54,9 +54,15 @@ serialize(string const& t);
 BOOST_JSON_DECL
 std::string
 serialize(string_view t);
+
+template<class T>
+std::string
+serialize(T const& t);
 /** @} */
 
 } // namespace json
 } // namespace boost
+
+#include <boost/json/impl/serialize.hpp>
 
 #endif

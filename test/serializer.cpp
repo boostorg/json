@@ -15,6 +15,7 @@
 #include <boost/json/parse.hpp>
 #include <boost/json/parse.hpp>
 #include <iostream>
+#include <vector>
 
 #include "parse-vectors.hpp"
 #include "test.hpp"
@@ -591,6 +592,48 @@ public:
         BOOST_TEST(parse("0.0").as_double() == 0);
         BOOST_TEST(serialize(parse("-0.0")) == "-0E0");
     }
+    
+    //--------------------------------------------
+
+    template<class T>
+    void
+    grind(
+        T const& t,
+        string_view s0)
+    {
+        std::string buf;
+        std::size_t i = 1;
+        while(i <= s0.size())
+        {
+            buf.resize(i);
+            serializer sr;
+            sr.reset(&t);
+            while(! sr.done())
+            {
+                string_view s = sr.read(
+                    &buf[0] + buf.size() - i, i);
+                if(sr.done())
+                {
+                    buf.resize(buf.size() - i + s.size());
+                    break;
+                }
+                BOOST_ASSERT(s.size() == i);
+                buf.resize(buf.size() + i);
+            }
+            BOOST_TEST(buf == s0);
+            ++i;
+        }
+    }
+
+    void
+    testUDTs()
+    {
+        std::vector<std::uint64_t> v = {
+            1, 2, 3, 4 };
+        grind(v, "[1,2,3,4]");
+    }
+
+    //--------------------------------------------
 
     void
     run()
@@ -606,6 +649,8 @@ public:
         testVectors();
         testOstream();
         testNumberRoundTrips();
+
+        testUDTs();
     }
 };
 

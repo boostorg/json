@@ -12,54 +12,11 @@
 
 #include <boost/json/serialize.hpp>
 #include <boost/json/serializer.hpp>
+#include <boost/json/detail/serialize.hpp>
 #include <ostream>
 
 namespace boost {
 namespace json {
-
-static
-void
-serialize_impl(
-    std::string& s,
-    serializer& sr)
-{
-    // serialize to a small buffer to avoid
-    // the first few allocations in std::string
-    char buf[BOOST_JSON_STACK_BUFFER_SIZE];
-    string_view sv;
-    sv = sr.read(buf);
-    if(sr.done())
-    {
-        // fast path
-        s.append(
-            sv.data(), sv.size());
-        return;
-    }
-    std::size_t len = sv.size();
-    s.reserve(len * 2);
-    s.resize(s.capacity());
-    BOOST_ASSERT(
-        s.size() >= len * 2);
-    std::memcpy(&s[0],
-        sv.data(), sv.size());
-    auto const lim =
-        s.max_size() / 2;
-    for(;;)
-    {
-        sv = sr.read(
-            &s[0] + len,
-            s.size() - len);
-        len += sv.size();
-        if(sr.done())
-            break;
-        // growth factor 2x
-        if(s.size() < lim)
-            s.resize(s.size() * 2);
-        else
-            s.resize(2 * lim);
-    }
-    s.resize(len);
-}
 
 std::string
 serialize(
@@ -72,7 +29,7 @@ serialize(
         sizeof(buf));
     sr.reset(&jv);
     std::string s;
-    serialize_impl(s, sr);
+    detail::serialize_impl(s, sr);
     return s;
 }
 
@@ -87,7 +44,7 @@ serialize(
         sizeof(buf));
     std::string s;
     sr.reset(&arr);
-    serialize_impl(s, sr);
+    detail::serialize_impl(s, sr);
     return s;
 }
 
@@ -102,7 +59,7 @@ serialize(
         sizeof(buf));
     std::string s;
     sr.reset(&obj);
-    serialize_impl(s, sr);
+    detail::serialize_impl(s, sr);
     return s;
 }
 
@@ -117,7 +74,7 @@ serialize(
         sizeof(buf));
     std::string s;
     sr.reset(&str);
-    serialize_impl(s, sr);
+    detail::serialize_impl(s, sr);
     return s;
 }
 
@@ -133,7 +90,7 @@ serialize(
         sizeof(buf));
     std::string s;
     sr.reset(sv);
-    serialize_impl(s, sr);
+    detail::serialize_impl(s, sr);
     return s;
 }
 

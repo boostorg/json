@@ -78,19 +78,23 @@ reserve_impl(
         // copy non-trivials
         if(head_)
         {
-            auto head = reinterpret_cast<
+            non_trivial* head = nullptr;
+            auto dest = reinterpret_cast<
                 non_trivial*>(base);
             auto next = head_->next;
-            head = head_->copy(head);
-            head->next = nullptr;
+            auto prev = dest;
+            dest = head_->copy(dest);
+            prev->next = head;
+            head = prev;
             head_->~non_trivial();
             head_ = next;
             while(head_)
             {
                 next = head_->next;
-                auto prev = head;
-                head = head_->copy(head);
-                head->next = prev;
+                prev = dest;
+                dest = head_->copy(dest);
+                prev->next = head;
+                head = prev;
                 head_->~non_trivial();
                 head_ = next;
             }
