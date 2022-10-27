@@ -987,30 +987,38 @@ public:
     void
     testConversion()
     {
-        test_vectors const t;
+        {
+            test_vectors const t;
 
-        string s(t.s1);
-        auto const& cs(s);
+            string s(t.s1);
+            auto const& cs(s);
 
-        char const* chars = cs.c_str();
-        BOOST_TEST(chars == t.s1);
-        json::string_view sv = cs;
-        BOOST_TEST(sv == t.s1);
-#if ! defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
-        std::string_view std_sv = cs;
-        BOOST_TEST(std_sv == t.s1);
-#endif
+            char const* chars = cs.c_str();
+            BOOST_TEST(chars == t.s1);
+            json::string_view sv = cs;
+            BOOST_TEST(sv == t.s1);
+        #if ! defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
+            std::string_view std_sv = cs;
+            BOOST_TEST(std_sv == t.s1);
+        #endif
 
-        s = t.s2;
+            s = t.s2;
 
-        chars = cs.c_str();
-        BOOST_TEST(chars == t.s2);
-        sv = cs;
-        BOOST_TEST(sv == t.s2);
-#if ! defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
-        std_sv = cs;
-        BOOST_TEST(std_sv == t.s2);
-#endif
+            chars = cs.c_str();
+            BOOST_TEST(chars == t.s2);
+            sv = cs;
+            BOOST_TEST(sv == t.s2);
+        #if ! defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
+            std_sv = cs;
+            BOOST_TEST(std_sv == t.s2);
+        #endif
+        }
+
+        {
+            string js;
+            json::string_view s =
+                static_cast<json::string_view>(js);
+        }
     }
 
     void
