@@ -1132,10 +1132,22 @@ public:
 
         Constant.
     */
-    operator string_view() const noexcept
+    operator string_view() const& noexcept
     {
         return {data(), size()};
     }
+
+// #if ( !defined(BOOST_JSON_DOCS) && defined(__GNUC__) && BOOST_GCC_VERSION >= 80300 && BOOST_GCC_VERSION < 90000 )
+    operator string_view() && noexcept
+    {
+        return {data(), size()};
+    }
+
+    operator string_view() & noexcept
+    {
+        return {data(), size()};
+    }
+// #endif
 
 #if ! defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
     /** Convert to a `std::string_view` referring to the string.
@@ -2796,20 +2808,6 @@ private:
 
 //----------------------------------------------------------
 
-namespace detail
-{
-
-template <>
-inline
-string_view
-to_string_view<string>(string const& s) noexcept
-{
-    return s.subview();
-}
-
-} // namespace detail
-
-
 /** Return true if lhs equals rhs.
 
     A lexicographical comparison is used.
@@ -2823,7 +2821,7 @@ detail::string_comp_op_requirement<T, U>
 operator==(T const& lhs, U const& rhs) noexcept
 #endif
 {
-    return detail::to_string_view(lhs) == detail::to_string_view(rhs);
+    return string_view(lhs) == string_view(rhs);
 }
 
 /** Return true if lhs does not equal rhs.
@@ -2839,7 +2837,7 @@ detail::string_comp_op_requirement<T, U>
 operator!=(T const& lhs, U const& rhs) noexcept
 #endif
 {
-    return detail::to_string_view(lhs) != detail::to_string_view(rhs);
+    return string_view(lhs) != string_view(rhs);
 }
 
 /** Return true if lhs is less than rhs.
@@ -2855,7 +2853,7 @@ detail::string_comp_op_requirement<T, U>
 operator<(T const& lhs, U const& rhs) noexcept
 #endif
 {
-    return detail::to_string_view(lhs) < detail::to_string_view(rhs);
+    return string_view(lhs) < string_view(rhs);
 }
 
 /** Return true if lhs is less than or equal to rhs.
@@ -2871,7 +2869,7 @@ detail::string_comp_op_requirement<T, U>
 operator<=(T const& lhs, U const& rhs) noexcept
 #endif
 {
-    return detail::to_string_view(lhs) <= detail::to_string_view(rhs);
+    return string_view(lhs) <= string_view(rhs);
 }
 
 #ifdef BOOST_JSON_DOCS
@@ -2883,7 +2881,7 @@ detail::string_comp_op_requirement<T, U>
 operator>=(T const& lhs, U const& rhs) noexcept
 #endif
 {
-    return detail::to_string_view(lhs) >= detail::to_string_view(rhs);
+    return string_view(lhs) >= string_view(rhs);
 }
 
 /** Return true if lhs is greater than rhs.
@@ -2899,7 +2897,7 @@ detail::string_comp_op_requirement<T, U>
 operator>(T const& lhs, U const& rhs) noexcept
 #endif
 {
-    return detail::to_string_view(lhs) > detail::to_string_view(rhs);
+    return string_view(lhs) > string_view(rhs);
 }
 
 BOOST_JSON_NS_END
