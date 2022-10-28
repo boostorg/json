@@ -12,6 +12,7 @@
 // test that header file is header-guarded properly
 #include <boost/json/conversion.hpp>
 
+#include <boost/describe/enum.hpp>
 #include <boost/describe/class.hpp>
 
 #include "test.hpp"
