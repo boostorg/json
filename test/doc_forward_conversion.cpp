@@ -16,55 +16,69 @@ class value;
 struct value_from_tag;
 
 template< class T >
-struct value_to_tag;
+struct try_value_to_tag;
+
+template< class T1, class T2 >
+struct result_for;
 
 template< class T >
-T value_to( const value& v );
-
-template<class T>
 void value_from( T&& t, value& jv );
+
+template< class T >
+typename result_for< T, value >::type
+try_value_to( const value& jv );
 
 }
 }
 //]
 
-#include <string>
+#include "doc_types.hpp"
 
-namespace thirdparty {
-
-struct customer
-{
-    std::uint64_t id;
-    std::string name;
-    bool late;
-
-    customer() = default;
-
-    customer( std::uint64_t i, const std::string& n, bool l )
-        : id( i ), name( n ), late( l ) { }
-};
-
-} // namespace thirdparty
+#include <system_error>
 
 //[doc_forward_conversion_2
-namespace thirdparty {
+namespace user_ns
+{
 
 template< class JsonValue >
-customer tag_invoke( const boost::json::value_to_tag<customer>&, const JsonValue& jv )
+void tag_invoke( const boost::json::value_from_tag&, JsonValue& jv, const ip_address& addr )
 {
-    std::uint64_t id = boost::json::value_to<std::uint64_t>( jv.at( "id" ) );
-    std::string name = boost::json::value_to< std::string >( jv.at( "name" ) );
-    bool late = boost::json::value_to<bool>( jv.at( "late" ) );
-    return customer(id, std::move(name), late);
+    const unsigned char* b = addr.begin();
+    jv = { b[0], b[1], b[2], b[3] };
 }
 
 template< class JsonValue >
-void tag_invoke( const boost::json::value_from_tag&, JsonValue& jv, const customer& c)
+typename boost::json::result_for< ip_address, JsonValue >::type
+tag_invoke(
+    const boost::json::try_value_to_tag< ip_address >&,
+    const JsonValue& jv )
 {
-    auto& obj = jv.emplace_object();
-    boost::json::value_from(c.id, obj["id"]);
-    boost::json::value_from(c.name, obj["name"]);
-    boost::json::value_from(c.late, obj["late"]);
+    using namespace boost::json;
+
+    if( !jv.is_array() )
+        return make_error_code( std::errc::invalid_argument );
+
+    auto const& arr = jv.get_array();
+    if( arr.size() != 4 )
+        return make_error_code( std::errc::invalid_argument );
+
+    auto oct1 = try_value_to< unsigned char >( arr[0] );
+    if( !oct1 )
+        return make_error_code( std::errc::invalid_argument );
+
+    auto oct2 = try_value_to< unsigned char >( arr[1] );
+    if( !oct2 )
+        return make_error_code( std::errc::invalid_argument );
+
+    auto oct3 = try_value_to< unsigned char >( arr[2] );
+    if( !oct3 )
+        return make_error_code( std::errc::invalid_argument );
+
+    auto oct4 = try_value_to< unsigned char >( arr[3] );
+    if( !oct4 )
+        return make_error_code( std::errc::invalid_argument );
+
+    return ip_address{ *oct1, *oct2, *oct3, *oct4 };
 }
 
 }
@@ -85,13 +99,14 @@ public:
     void
     run()
     {
-        value const jv{ { "id", 1 }, { "name", "Carl" }, { "late", true } };
-        auto const c = value_to<thirdparty::customer>( jv );
-        BOOST_TEST( c.id == 1 );
-        BOOST_TEST( c.name == "Carl" );
-        BOOST_TEST( c.late );
+        value const jv{ 212, 115, 81, 22 };
+        auto const addr = value_to< user_ns::ip_address >( jv );
+        BOOST_TEST( get<0>(addr) == 212 );
+        BOOST_TEST( get<1>(addr) == 115 );
+        BOOST_TEST( get<2>(addr) == 81 );
+        BOOST_TEST( get<3>(addr) == 22 );
 
-        value const jv2 = value_from( c );
+        value const jv2 = value_from( addr );
         BOOST_TEST( jv == jv2 );
     }
 };

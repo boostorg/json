@@ -15,7 +15,6 @@ local SOURCES =
     conversion.cpp
     doc_background.cpp
     doc_forward_conversion.cpp
-    doc_forward_conversion2.cpp
     doc_parsing.cpp
     doc_quick_look.cpp
     doc_serializing.cpp
