@@ -1,5 +1,6 @@
 [/
     Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+    Copyright (c) 2020 Krystian Stasiowski (sdkrystian@gmail.com)
 
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -16,9 +17,10 @@ C++ standard, followed by an explanation of the model used in
 this library and its benefits. Finally we discuss how the library
 interoperates with existing code that uses polymorphic allocators.
 
-[include 04_01_background.qbk]
-[include 04_02_storage_ptr.qbk]
-[include 04_03_pmr.qbk]
+[include background.qbk]
+[include storage_ptr.qbk]
+[include pmr.qbk]
+
+[/-----------------------------------------------------------------------------]
 
 [endsect]
-
