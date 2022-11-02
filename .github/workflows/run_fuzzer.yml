@@ -14,10 +14,10 @@ jobs:
 
     steps:
     - name: Fetch head
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         path: 'head'
-    - uses: actions/cache@v2
+    - uses: actions/cache@v3
       id: cache-corpus
       with:
         path: head/fuzzing/corpus.tar
@@ -34,13 +34,13 @@ jobs:
       run: |
         tar cf - cmin > corpus.tar.tmp && mv corpus.tar.tmp "${GITHUB_WORKSPACE}"/head/fuzzing
     - name: Save the corpus as a github artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: success()
       with:
         name: corpus
         path: head/fuzzing/corpus.tar
     - name: Archive any crashes as an artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: always()
       with:
         name: crashes
