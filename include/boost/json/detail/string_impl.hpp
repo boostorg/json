@@ -141,7 +141,13 @@ public:
         std::random_access_iterator_tag)
         : string_impl(last - first, sp)
     {
-        std::copy(first, last, data());
+        char* out = data();
+#if defined(_MSC_VER) && _MSC_VER <= 1900
+        while( first != last )
+            *out++ = *first++;
+#else
+        std::copy(first, last, out);
+#endif
     }
 
     template<class InputIt>
