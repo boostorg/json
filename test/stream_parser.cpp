@@ -23,7 +23,8 @@
 #include "test.hpp"
 #include "test_suite.hpp"
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 BOOST_STATIC_ASSERT( std::is_nothrow_destructible<stream_parser>::value );
 
@@ -1296,4 +1297,5 @@ R"xx({
 
 TEST_SUITE(stream_parser_test, "boost.json.stream_parser");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

@@ -19,7 +19,8 @@
 
 #include "test_suite.hpp"
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 BOOST_STATIC_ASSERT( std::is_nothrow_destructible<monotonic_resource>::value );
 
@@ -308,4 +309,5 @@ R"xx({
 
 TEST_SUITE(monotonic_resource_test, "boost.json.monotonic_resource");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

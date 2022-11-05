@@ -16,7 +16,8 @@
 
 #include "test_suite.hpp"
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 class serialize_test
 {
@@ -65,4 +66,5 @@ public:
 
 TEST_SUITE(serialize_test, "boost.json.serialize");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

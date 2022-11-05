@@ -25,7 +25,8 @@
 #include <limits>
 #include "gtest.hpp"
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 namespace detail {
 
 namespace ryu {
@@ -280,4 +281,5 @@ TEST(D2sTest, SmallIntegers) {
 } // ryu
 
 } // detail
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

@@ -19,7 +19,8 @@
 #include "test_suite.hpp"
 #include "test.hpp"
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 /*
     This translation unit exercises code paths
@@ -397,4 +398,5 @@ public:
 
 TEST_SUITE(limits_test, "boost.json.limits");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

@@ -16,7 +16,8 @@
 #include <type_traits>
 #include <utility>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 namespace detail {
 
@@ -533,6 +534,7 @@ unchecked_object::
 
 } // detail
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

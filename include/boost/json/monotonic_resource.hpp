@@ -17,7 +17,8 @@
 #include <cstddef>
 #include <utility>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -345,6 +346,7 @@ struct is_deallocate_trivial<
     static constexpr bool value = true;
 };
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

@@ -19,7 +19,8 @@
 
 #include "test_suite.hpp"
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 //----------------------------------------------------------
 
@@ -251,4 +252,5 @@ public:
 
 TEST_SUITE(doc_parsing_test, "boost.json.doc_parsing");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

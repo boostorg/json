@@ -20,7 +20,8 @@
 # include <optional>
 #endif
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 template<class T, class U,
     typename std::enable_if<
@@ -761,6 +762,7 @@ tag_invoke(
 }
 #endif // BOOST_NO_CXX17_HDR_VARIANT
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

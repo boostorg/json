@@ -136,7 +136,8 @@ struct tuple_size<pseudo_tuple1> : std::integral_constant<std::size_t, 2>
 
 } // namespace std
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 template <>
 struct is_string_like<pseudo_string2> : std::false_type
@@ -216,4 +217,5 @@ public:
 
 TEST_SUITE(conversion_test, "boost.json.conversion");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

@@ -12,7 +12,8 @@
 
 #include <boost/json/detail/config.hpp>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 /** Options for @ref value::set_at_pointer
  *
@@ -59,7 +60,7 @@ struct set_pointer_options
     std::size_t max_created_elements = 1;
 };
 
-
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif // BOOST_JSON_SET_POINTER_OPTIONS_HPP

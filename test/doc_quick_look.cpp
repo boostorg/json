@@ -13,7 +13,8 @@
 
 #include "test_suite.hpp"
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 static void set1() {
 
@@ -330,4 +331,5 @@ public:
 
 TEST_SUITE(doc_quick_look_test, "boost.json.doc_quick_look");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

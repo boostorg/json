@@ -14,7 +14,8 @@
 
 #include <type_traits>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 /** Customization point tag.
 
@@ -322,7 +323,8 @@ struct is_described_class;
 template<class T>
 struct is_described_enum;
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #include <boost/json/impl/conversion.hpp>
 

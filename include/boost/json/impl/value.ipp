@@ -19,7 +19,8 @@
 #include <new>
 #include <utility>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 namespace
 {
@@ -620,7 +621,8 @@ hash_value_impl( value const& jv ) noexcept
 }
 
 } // namespace detail
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 //----------------------------------------------------------
 //

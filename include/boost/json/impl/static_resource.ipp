@@ -15,7 +15,8 @@
 #include <boost/json/detail/except.hpp>
 #include <memory>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 static_resource::
 ~static_resource() noexcept = default;
@@ -73,6 +74,7 @@ do_is_equal(
     return this == &mr;
 }
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

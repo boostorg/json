@@ -22,7 +22,8 @@
 #include <stdexcept>
 #include <type_traits>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 namespace detail {
 
 template<class CharRange>
@@ -889,7 +890,8 @@ reindex_relocate(
         index_t>(dst - begin());
 }
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 //----------------------------------------------------------
 //

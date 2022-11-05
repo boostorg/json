@@ -16,7 +16,8 @@
 
 #include "test_suite.hpp"
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 class memory_resource_test
 {
@@ -106,4 +107,5 @@ public:
 
 TEST_SUITE(memory_resource_test, "boost.json.memory_resource");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

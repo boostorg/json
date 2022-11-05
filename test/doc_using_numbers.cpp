@@ -27,7 +27,8 @@
 # pragma GCC diagnostic ignored "-Wunused-variable"
 #endif
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 //----------------------------------------------------------
 
@@ -183,4 +184,5 @@ public:
 
 TEST_SUITE(doc_using_numbers_test, "boost.json.doc_using_numbers");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

@@ -22,7 +22,8 @@
 
 #include "test_suite.hpp"
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 class unhygenic_macros_test
 {
@@ -35,4 +36,5 @@ public:
 
 TEST_SUITE(unhygenic_macros_test, "boost.json.unhygenic_macros");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

@@ -14,7 +14,8 @@
 
 #include "test_suite.hpp"
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 //----------------------------------------------------------
 
@@ -74,4 +75,5 @@ public:
 
 TEST_SUITE(doc_uses_allocator_test, "boost.json.doc_uses_allocator");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

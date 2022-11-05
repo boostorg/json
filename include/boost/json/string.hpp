@@ -29,7 +29,8 @@
 #include <type_traits>
 #include <utility>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 class value;
 
@@ -2902,7 +2903,8 @@ operator>(T const& lhs, U const& rhs) noexcept
     return detail::to_string_view(lhs) > detail::to_string_view(rhs);
 }
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 // std::hash specialization
 #ifndef BOOST_JSON_DOCS

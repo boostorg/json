@@ -19,7 +19,8 @@
 #include <new>
 #include <utility>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 //----------------------------------------------------------
 
@@ -751,7 +752,8 @@ equal(
     return true;
 }
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 //----------------------------------------------------------
 //

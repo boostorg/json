@@ -32,7 +32,8 @@
 #include <type_traits>
 #include <utility>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 //----------------------------------------------------------
 
@@ -4191,7 +4192,8 @@ get<1>(key_value_pair&& kvp) noexcept
 
 #endif
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #ifdef __clang__
 # pragma clang diagnostic push

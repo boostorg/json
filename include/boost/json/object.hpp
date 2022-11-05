@@ -23,7 +23,8 @@
 #include <type_traits>
 #include <utility>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 class value;
 class value_ref;
@@ -1648,7 +1649,8 @@ private:
         key_value_pair* dst) noexcept;
 };
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #ifndef BOOST_JSON_DOCS
 // boost::hash trait

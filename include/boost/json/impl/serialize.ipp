@@ -14,7 +14,8 @@
 #include <boost/json/serializer.hpp>
 #include <ostream>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 static
 void
@@ -191,6 +192,7 @@ operator<<(
     return os;
 }
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

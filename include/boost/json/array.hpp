@@ -19,7 +19,8 @@
 #include <initializer_list>
 #include <iterator>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 #ifndef BOOST_JSON_DOCS
 class value;
@@ -1739,7 +1740,8 @@ private:
     equal(array const& other) const noexcept;
 };
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 // std::hash specialization
 #ifndef BOOST_JSON_DOCS

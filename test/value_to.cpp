@@ -144,7 +144,8 @@ struct tuple_size<value_to_test_ns::T4>
 
 } // namespace std
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 template<>
 struct is_null_like<::value_to_test_ns::T1> : std::true_type { };
@@ -617,4 +618,5 @@ public:
 
 TEST_SUITE(value_to_test, "boost.json.value_to");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

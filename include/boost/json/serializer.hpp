@@ -16,7 +16,8 @@
 #include <boost/json/detail/stack.hpp>
 #include <boost/json/detail/stream.hpp>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 /** A serializer for JSON.
 
@@ -285,6 +286,7 @@ public:
 #endif
 };
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

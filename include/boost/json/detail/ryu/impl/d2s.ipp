@@ -55,7 +55,8 @@
 #include <boost/json/detail/ryu/detail/d2s.hpp>
 #include <boost/json/detail/ryu/detail/d2s_intrinsics.hpp>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 namespace detail {
 
 namespace ryu {
@@ -719,6 +720,7 @@ d2s_buffered_n(
 } // ryu
 
 } // detail
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

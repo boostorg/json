@@ -18,7 +18,8 @@
 #include <boost/json/string_view.hpp>
 #include <boost/json/value.hpp>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 /** Return parsed JSON as a @ref value.
 
@@ -199,6 +200,7 @@ parse(
     storage_ptr sp = {},
     parse_options const& opt = {});
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

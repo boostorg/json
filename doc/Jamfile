@@ -35,9 +35,7 @@ docca.reference reference.qbk
             BOOST_JSON_PUBLIC \\
             BOOST_SYMBOL_VISIBLE \\
             \"BOOST_JSON_INLINE_VARIABLE(v, t)=constexpr t v;\" \\
-            \"BOOST_JSON_NODISCARD=[[nodiscard]]\" \\
-            \"BOOST_JSON_NS_BEGIN=namespace boost { namespace json {\" \\
-            \"BOOST_JSON_NS_END=}}\""
+            \"BOOST_JSON_NODISCARD=[[nodiscard]]\""
         <doxygen:param>ABBREVIATE_BRIEF=
         <doxygen:param>INLINE_INHERITED_MEMB=YES
         <doxygen:param>JAVADOC_AUTOBRIEF=YES

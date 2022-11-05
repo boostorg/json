@@ -11,7 +11,8 @@
 
 #include "test_suite.hpp"
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 class pointer_test
 {
@@ -363,4 +364,5 @@ public:
 
 TEST_SUITE(pointer_test, "boost.json.pointer");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

@@ -14,7 +14,8 @@
 
 #include <boost/json/detail/value_from.hpp>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 /** Convert an object of type `T` to @ref value.
 
@@ -140,6 +141,7 @@ using has_value_from = detail::can_convert<
     detail::remove_cvref<T>, detail::value_from_conversion>;
 #endif
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

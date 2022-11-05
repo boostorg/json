@@ -12,7 +12,8 @@
 
 #include <boost/align/align.hpp>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 namespace detail {
 
 using boost::alignment::align;
@@ -59,6 +60,7 @@ struct max_align_t
 };
 
 } // detail
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

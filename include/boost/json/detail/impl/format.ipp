@@ -14,7 +14,8 @@
 #include <boost/json/detail/ryu/ryu.hpp>
 #include <cstring>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 namespace detail {
 
 /*  Reference work:
@@ -118,6 +119,7 @@ format_double(
 }
 
 } // detail
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

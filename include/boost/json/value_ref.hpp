@@ -17,7 +17,8 @@
 #include <type_traits>
 #include <utility>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 #ifndef BOOST_JSON_DOCS
 class value;
@@ -464,7 +465,8 @@ private:
         storage_ptr const& sp);
 };
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 // Must be included here for this file to stand alone
 #include <boost/json/value.hpp>

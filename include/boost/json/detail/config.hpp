@@ -134,13 +134,6 @@
 #define BOOST_SYMBOL_VISIBLE
 #endif
 
-#if ! defined(BOOST_JSON_DOCS)
-# define BOOST_JSON_NS_BEGIN \
-    namespace boost { \
-    namespace json {
-# define BOOST_JSON_NS_END } }
-#endif
-
 #if defined(BOOST_JSON_DOCS)
 # define BOOST_JSON_DECL
 #else
@@ -269,7 +262,8 @@
 # endif
 #endif
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 namespace detail {
 
 template<class...>
@@ -320,6 +314,7 @@ constexpr T static_const<T>::value;
     } struct _unused_ ## name ## _semicolon_bait_
 
 } // detail
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

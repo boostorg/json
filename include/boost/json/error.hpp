@@ -13,7 +13,8 @@
 #include <boost/json/detail/config.hpp>
 #include <boost/json/system_error.hpp>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 /** Error codes returned by JSON operations
 
@@ -156,7 +157,8 @@ enum class condition
     generic_error,
 };
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #include <boost/json/impl/error.hpp>
 

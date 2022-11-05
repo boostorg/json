@@ -18,7 +18,8 @@
 #include <type_traits>
 #include <cstddef>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 //----------------------------------------------------------
 
@@ -822,6 +823,7 @@ public:
     release();
 };
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

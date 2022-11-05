@@ -16,7 +16,8 @@
 #include <stdexcept>
 #include <type_traits>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 //----------------------------------------------------------
 
@@ -583,6 +584,7 @@ insert(
     return r.commit();
 }
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

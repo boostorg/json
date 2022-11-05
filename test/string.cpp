@@ -22,7 +22,8 @@
 #include "test.hpp"
 #include "test_suite.hpp"
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 BOOST_STATIC_ASSERT( std::is_nothrow_destructible<string>::value );
 BOOST_STATIC_ASSERT( std::is_nothrow_move_constructible<string>::value );
@@ -2823,4 +2824,5 @@ public:
 
 TEST_SUITE(string_test, "boost.json.string");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

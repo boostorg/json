@@ -210,7 +210,8 @@ check(
     }
 }
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 template<>
 struct is_null_like<::value_from_test_ns::T7>
@@ -492,4 +493,5 @@ public:
 
 TEST_SUITE(value_from_test, "boost.json.value_from");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

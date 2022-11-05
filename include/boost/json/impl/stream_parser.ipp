@@ -17,7 +17,8 @@
 #include <stdexcept>
 #include <utility>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 stream_parser::
 stream_parser(
@@ -178,6 +179,7 @@ release()
     return p_.handler().st.release();
 }
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

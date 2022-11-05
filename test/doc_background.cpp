@@ -20,7 +20,8 @@
 #endif
 #define assert BOOST_TEST
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 namespace doc_background {
 
@@ -202,4 +203,5 @@ public:
 
 TEST_SUITE(doc_background_test, "boost.json.doc_background");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

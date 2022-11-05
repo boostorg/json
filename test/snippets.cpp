@@ -111,7 +111,8 @@ tag_invoke( const try_value_to_tag< ip_address >&, value const& jv )
 
 } // namespace user_ns
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 namespace {
 
@@ -871,4 +872,5 @@ public:
 
 TEST_SUITE(snippets_test, "boost.json.snippets");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

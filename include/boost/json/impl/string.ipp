@@ -18,7 +18,8 @@
 #include <string>
 #include <utility>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 //----------------------------------------------------------
 //
@@ -413,7 +414,8 @@ reserve_impl(size_type new_cap)
     }
 }
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 //----------------------------------------------------------
 

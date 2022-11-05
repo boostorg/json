@@ -12,7 +12,8 @@
 
 #include <boost/json/detail/config.hpp>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 /** Parser options
 
@@ -78,6 +79,7 @@ struct parse_options
     bool allow_invalid_utf8 = false;
 };
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

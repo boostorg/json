@@ -12,7 +12,8 @@
 
 #include "test_suite.hpp"
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 struct json_test
 {
@@ -37,4 +38,5 @@ struct json_test
 
 TEST_SUITE(json_test, "boost.json.zsizes");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

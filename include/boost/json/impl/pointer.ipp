@@ -12,7 +12,8 @@
 
 #include <boost/json/value.hpp>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 namespace detail {
 
@@ -494,6 +495,7 @@ value::set_at_pointer(
     return *result;
 }
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif // BOOST_JSON_IMPL_POINTER_IPP

@@ -12,7 +12,8 @@
 
 #include <boost/json/error.hpp>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 namespace detail {
 
 #define BOOST_JSON_FAIL(ec, e) \
@@ -26,6 +27,7 @@ BOOST_JSON_DECL void BOOST_NORETURN throw_out_of_range(source_location const& lo
 BOOST_JSON_DECL void BOOST_NORETURN throw_system_error(error_code const& ec, source_location const& loc);
 
 } // detail
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

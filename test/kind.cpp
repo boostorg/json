@@ -16,7 +16,8 @@
 
 #include "test_suite.hpp"
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 class kind_test
 {
@@ -50,4 +51,5 @@ public:
 
 TEST_SUITE(kind_test, "boost.json.kind");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

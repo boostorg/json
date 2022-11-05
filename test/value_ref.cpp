@@ -15,7 +15,8 @@
 
 #include "test_suite.hpp"
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 //----------------------------------------------------------
 
@@ -401,4 +402,5 @@ public:
 
 TEST_SUITE(value_ref_test, "boost.json.value_ref");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

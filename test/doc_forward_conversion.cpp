@@ -91,7 +91,8 @@ tag_invoke(
 #include "test_suite.hpp"
 
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 class doc_forward_conversion
 {
@@ -113,4 +114,5 @@ public:
 
 TEST_SUITE(doc_forward_conversion, "boost.json.doc_forward_conversion");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

@@ -19,7 +19,8 @@
 #include "test.hpp"
 #include "test_suite.hpp"
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 BOOST_STATIC_ASSERT( std::is_nothrow_destructible<basic_parser<int>>::value );
 
@@ -1606,4 +1607,5 @@ public:
 
 TEST_SUITE(basic_parser_test, "boost.json.basic_parser");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

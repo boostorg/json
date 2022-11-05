@@ -40,7 +40,8 @@ struct is_error_condition_enum< ::boost::json::condition >
 };
 } // std
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 BOOST_JSON_DECL
 error_code
@@ -50,6 +51,7 @@ BOOST_JSON_DECL
 error_condition
 make_error_condition(condition c);
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

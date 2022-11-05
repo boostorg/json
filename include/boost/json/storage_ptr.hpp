@@ -19,7 +19,8 @@
 #include <type_traits>
 #include <utility>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 /** A smart pointer to a @ref memory_resource
 
@@ -533,6 +534,7 @@ operator!=(
     return lhs.get() != rhs.get();
 }
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

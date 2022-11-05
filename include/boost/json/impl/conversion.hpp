@@ -26,7 +26,8 @@
 # include <variant>
 #endif // BOOST_NO_CXX17_HDR_VARIANT
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 namespace detail {
 
 #ifdef __cpp_lib_nonmember_container_access
@@ -321,6 +322,7 @@ struct is_described_enum
     : describe::has_describe_enumerators<T>
 { };
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif // BOOST_JSON_IMPL_CONVERSION_HPP

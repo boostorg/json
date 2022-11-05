@@ -13,7 +13,8 @@
 #include <boost/json/null_resource.hpp>
 #include <boost/json/detail/except.hpp>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 namespace detail {
 
@@ -96,6 +97,7 @@ get_null_resource() noexcept
     return &mr;
 }
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

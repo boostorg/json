@@ -12,7 +12,8 @@
 
 #include "test_suite.hpp"
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 class utf8_test
 {
@@ -174,4 +175,5 @@ public:
 
 TEST_SUITE(utf8_test, "boost.json.utf8");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

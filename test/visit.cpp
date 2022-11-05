@@ -12,7 +12,8 @@
 
 #include "test_suite.hpp"
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 class visit_test
 {
@@ -89,4 +90,5 @@ public:
 
 TEST_SUITE(visit_test, "boost.json.visit");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

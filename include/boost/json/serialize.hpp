@@ -15,7 +15,8 @@
 #include <iosfwd>
 #include <string>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 /** Return a string representing a serialized element.
 
@@ -55,6 +56,7 @@ std::string
 serialize(string_view t);
 /** @} */
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

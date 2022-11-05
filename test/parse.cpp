@@ -18,7 +18,8 @@
 #include "test.hpp"
 #include "test_suite.hpp"
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 class parse_test
 {
@@ -215,4 +216,5 @@ public:
 
 TEST_SUITE(parse_test, "boost.json.parse");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

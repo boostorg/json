@@ -17,7 +17,8 @@
 
 #include <memory>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 struct alignas(detail::max_align_t)
     monotonic_resource::block : block_base
@@ -166,6 +167,7 @@ do_is_equal(
     return this == &mr;
 }
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

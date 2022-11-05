@@ -15,7 +15,8 @@
 #include <cstdlib>
 #include <type_traits>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 struct parse_vectors
 {
@@ -1465,6 +1466,7 @@ parse_vectors() noexcept
         decltype(list)>::value - 1];
 }
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

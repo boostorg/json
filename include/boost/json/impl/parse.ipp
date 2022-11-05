@@ -17,7 +17,8 @@
 
 #include <istream>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 value
 parse(
@@ -131,6 +132,7 @@ parse(
     return jv;
 }
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif
