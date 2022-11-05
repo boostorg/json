@@ -3343,12 +3343,16 @@ public:
 
         This function parses JSON from an input stream into a `value`. If
         parsing fails, `std::ios_base::failbit` will be set for `is` and
-        `jv` will be left unchanged.<br>
+        `jv` will be left unchanged. Regardless of whether `skipws` flag is set
+        on `is`, consumes whitespace before and after JSON, because whitespace
+        is considered a part of JSON. Behaves as [_FormattedInputFunction_]
+        (https://en.cppreference.com/w/cpp/named_req/FormattedInputFunction).<br>
 
         Note: this operator cannot assume that the stream only contains a
-        single JSON document, which results in **very underwhelming
-        performance**. If you know that your input consists of a single
-        JSON document, consider using @ref parse function instead.
+        single JSON document, which may result in **very underwhelming
+        performance**, if the stream isn't cooperative. If you know that your
+        input consists of a single JSON document, consider using @ref parse
+        function instead.
 
         @return Reference to `is`.
 
@@ -3358,7 +3362,7 @@ public:
         @par Exception Safety
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
-        The stream may throw as described by
+        The stream may throw as configured by
         [`std::ios::exceptions`](https://en.cppreference.com/w/cpp/io/basic_ios/exceptions).
 
         @param is The input stream to parse from.
