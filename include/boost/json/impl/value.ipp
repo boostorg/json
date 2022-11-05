@@ -352,22 +352,30 @@ operator>>(
 {
     using Traits = std::istream::traits_type;
 
+    // sentry prepares the stream for reading and finalizes it in destructor
     std::istream::sentry sentry(is);
     if( !sentry )
         return is;
 
-    unsigned char parser_buf[BOOST_JSON_STACK_BUFFER_SIZE];
+    unsigned char parser_buf[BOOST_JSON_STACK_BUFFER_SIZE / 2];
     stream_parser p({}, {}, parser_buf);
     p.reset( jv.storage() );
 
+    char read_buf[BOOST_JSON_STACK_BUFFER_SIZE / 2];
+    std::streambuf& buf = *is.rdbuf();
     std::ios::iostate err = std::ios::goodbit;
     try
     {
-        std::istream::int_type c = is.rdbuf()->sgetc();
         while( true )
         {
             error_code ec;
 
+            // we peek the buffer; this either makes sure that there's no
+            // more input, or makes sure there's something in the internal
+            // buffer (so in_avail will return a positive number)
+            std::istream::int_type c = is.rdbuf()->sgetc();
+            // if we indeed reached EOF, we check if we parsed a full JSON
+            // document; if not, we error out
             if( Traits::eq_int_type(c, Traits::eof()) )
             {
                 err |= std::ios::eofbit;
@@ -376,29 +384,56 @@ operator>>(
                     break;
             }
 
+            // regardless of reaching EOF, we might have parsed a full JSON
+            // document; if so, we successfully finish
             if( p.done() )
             {
                 jv = p.release();
                 return is;
             }
 
-            char read_buf[1];
-            read_buf[0] = Traits::to_char_type(c);
-            c = is.rdbuf()->snextc();
+            // at this point we definitely have more input, specifically in
+            // buf's internal buffer; we also definitely haven't parsed a whole
+            // document
+            std::streamsize available = buf.in_avail();
+            // if this assert fails, the streambuf is buggy
+            BOOST_ASSERT( available > 0 );
 
-            p.write_some(read_buf, 1, ec);
+            available = std::min(
+                static_cast<std::size_t>(available), sizeof(read_buf) );
+            // we read from the internal buffer of buf into our buffer
+            available = buf.sgetn( read_buf, available );
+
+            std::size_t consumed = p.write_some( read_buf, available, ec );
+            // if the parser hasn't consumed the entire input we've took from
+            // buf, we put the remaining data back; this should succeed,
+            // because we only read data from buf's internal buffer
+            while( consumed++ < static_cast<std::size_t>(available) )
+            {
+                std::istream::int_type const status = buf.sungetc();
+                BOOST_ASSERT( status != Traits::eof() );
+                (void)status;
+            }
+
             if( ec.failed() )
                 break;
         }
     }
     catch(...)
     {
-        is.setstate(std::ios::failbit);
-        throw;
+        try
+        {
+            is.setstate(std::ios::badbit);
+        }
+        // we ignore the exception, because we need to throw the original
+        // exception instead
+        catch( std::ios::failure const& ) { }
+
+        if( is.exceptions() & std::ios::badbit )
+            throw;
     }
 
-    err |= std::ios::failbit;
-    is.setstate(err);
+    is.setstate(err | std::ios::failbit);
     return is;
 }
 

@@ -2261,7 +2261,7 @@ public:
             R"({ "x": 1
                , "y": 2
                , "z": [77, null, true, "qwerty uiop"]
-               } 12)");
+               }_12)");
         value jv;
 
         ss >> jv;
@@ -2275,7 +2275,7 @@ public:
         // check we didn't consume any extra characters
         std::string s;
         std::getline(ss, s);
-        BOOST_TEST( s == " 12" );
+        BOOST_TEST( s == "_12" );
 
         ss.clear();
         ss.str("23");
@@ -2285,22 +2285,35 @@ public:
         ss.clear();
         ss.str("");
         ss >> jv;
+        BOOST_TEST( jv == 23 );
         BOOST_TEST( ss.rdstate() == (std::ios::failbit | std::ios::eofbit) );
 
         ss.clear();
         ss.str("nu");
         ss >> jv;
+        BOOST_TEST( jv == 23 );
         BOOST_TEST( ss.rdstate() == (std::ios::failbit | std::ios::eofbit) );
 
         ss.clear();
         ss.str("[1,2,3,4,]");
         ss >> jv;
+        BOOST_TEST( jv == 23 );
         BOOST_TEST( ss.rdstate() == std::ios::failbit );
 
         {
             throwing_buffer buf;
             std::istream is(&buf);
-            BOOST_TEST_THROWS( is >> jv, std::exception );
+            is >> jv;
+            BOOST_TEST( jv == 23 );
+            BOOST_TEST( is.rdstate() & std::ios::badbit );
+        }
+        {
+            throwing_buffer buf;
+            std::istream is(&buf);
+            is.exceptions(std::ios::badbit);
+            BOOST_TEST_THROWS( is >> jv, std::invalid_argument );
+            BOOST_TEST( jv == 23 );
+            BOOST_TEST( is.rdstate() & std::ios::badbit );
         }
     }
 
