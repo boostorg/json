@@ -76,29 +76,29 @@ parse(
     p.reset(std::move(sp));
 
     char read_buffer[BOOST_JSON_STACK_BUFFER_SIZE / 2];
-    while( true )
+    do
     {
-        if( is.rdstate() & std::ios::eofbit )
+        if( is.eof() )
         {
             p.finish(ec);
-            if( ec.failed() )
-                return nullptr;
             break;
         }
 
-        if( is.rdstate() != std::ios::goodbit )
+        if( !is )
         {
             BOOST_JSON_FAIL( ec, error::input_error );
-            return nullptr;
+            break;
         }
 
         is.read(read_buffer, sizeof(read_buffer));
         auto const consumed = is.gcount();
 
         p.write(read_buffer, consumed, ec);
-        if( ec.failed() )
-            return nullptr;
     }
+    while( !ec.failed() );
+
+    if( ec.failed() )
+        return nullptr;
 
     return p.release();
 }
