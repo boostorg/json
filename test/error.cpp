@@ -61,6 +61,7 @@ public:
         check(condition::parse_error, error::key_too_large);
         check(condition::parse_error, error::string_too_large);
         check(condition::parse_error, error::input_error);
+        check(condition::parse_error, error::duplicate_key);
 
         check(condition::pointer_parse_error, error::missing_slash);
         check(condition::pointer_parse_error, error::invalid_escape);

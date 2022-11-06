@@ -51,8 +51,13 @@ bool
 handler::
 on_object_end(
     std::size_t n,
-    error_code&)
+    error_code& ec)
 {
+    if( !ignore_duplicate_keys )
+        ec = st.check_duplicates(n);
+    if( ec.failed() )
+        return false;
+
     st.push_object(n);
     return true;
 }

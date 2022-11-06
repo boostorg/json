@@ -204,12 +204,27 @@ public:
     }
 
     void
+    testDuplicates()
+    {
+        value jv = parse( R"( {"a": 1, "a": 2} )" );
+        BOOST_TEST( jv.as_object().size() == 1 );
+
+        parse_options opt;
+
+        error_code ec;
+        opt.ignore_duplicate_keys = false;
+        jv = parse( R"( {"a": 1, "a": 2} )", ec, {}, opt );
+        BOOST_TEST( ec == error::duplicate_key );
+    }
+
+    void
     run()
     {
         testParse();
         testMemoryUsage();
         testIssue726();
         testIstream();
+        testDuplicates();
     }
 };
 

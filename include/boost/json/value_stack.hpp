@@ -140,6 +140,7 @@ class value_stack
         inline void run_dtors(bool b) noexcept;
         inline std::size_t size() const noexcept;
         inline bool has_chars();
+        inline error_code check_duplicates(std::size_t n);
 
         inline void clear() noexcept;
         inline void maybe_grow();
@@ -501,6 +502,10 @@ public:
     BOOST_JSON_DECL
     void
     push_null();
+
+    BOOST_JSON_DECL
+    error_code
+    check_duplicates(std::size_t n);
 };
 
 BOOST_JSON_NS_END
