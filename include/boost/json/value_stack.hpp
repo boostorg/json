@@ -13,6 +13,7 @@
 #include <boost/json/detail/config.hpp>
 #include <boost/json/error.hpp>
 #include <boost/json/storage_ptr.hpp>
+#include <boost/json/system_error.hpp>
 #include <boost/json/value.hpp>
 #include <stddef.h>
 
@@ -140,7 +141,6 @@ class value_stack
         inline void run_dtors(bool b) noexcept;
         inline std::size_t size() const noexcept;
         inline bool has_chars();
-        inline error_code check_duplicates(std::size_t n);
 
         inline void clear() noexcept;
         inline void maybe_grow();
@@ -356,8 +356,8 @@ public:
         top of the stack to form the array.
     */
     BOOST_JSON_DECL
-    void
-    push_object(std::size_t n);
+    error_code
+    push_object(std::size_t n, bool ignore_duplicates = true);
 
     /** Push part of a key or string onto the stack.
 
@@ -502,10 +502,6 @@ public:
     BOOST_JSON_DECL
     void
     push_null();
-
-    BOOST_JSON_DECL
-    error_code
-    check_duplicates(std::size_t n);
 };
 
 BOOST_JSON_NS_END

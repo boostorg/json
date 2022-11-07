@@ -197,7 +197,7 @@ destroy() noexcept
 //----------------------------------------------------------
 
 object::
-object(detail::unchecked_object&& uo)
+object(detail::unchecked_object& uo)
     : sp_(uo.storage())
 {
     if(uo.size() == 0)
@@ -210,20 +210,18 @@ object(detail::unchecked_object&& uo)
         uo.size() <= max_size());
     t_ = table::allocate(
         uo.size(), 0, sp_);
+    t_->size = 0;
 
     // insert all elements, keeping
-    // the last of any duplicate keys.
+    // the last of any duplicate keys, unless uo.ignore_duplicates is false.
     auto dest = begin();
-    auto src = uo.release();
-    auto const end = src + 2 * uo.size();
     if(t_->is_small())
     {
-        t_->size = 0;
-        while(src != end)
+        for( ; uo.size(); uo.pop_front() )
         {
+            auto src = uo.front();
             access::construct_key_value_pair(
                 dest, pilfer(src[0]), pilfer(src[1]));
-            src += 2;
             auto result = detail::find_in_object(*this, dest->key());
             if(! result.first)
             {
@@ -232,6 +230,11 @@ object(detail::unchecked_object&& uo)
                 continue;
             }
             // handle duplicate
+            if( !uo.ignore_duplicate_keys() )
+            {
+                dest->~key_value_pair();
+                return;
+            }
             auto& v = *result.first;
             // don't bother to check if
             // storage deallocate is trivial
@@ -243,11 +246,11 @@ object(detail::unchecked_object&& uo)
         }
         return;
     }
-    while(src != end)
+    for( ; uo.size() ; uo.pop_front() )
     {
+        auto src = uo.front();
         access::construct_key_value_pair(
             dest, pilfer(src[0]), pilfer(src[1]));
-        src += 2;
         auto& head = t_->bucket(dest->key());
         auto i = head;
         for(;;)
@@ -260,6 +263,7 @@ object(detail::unchecked_object&& uo)
                 head = static_cast<index_t>(
                     dest - begin());
                 ++dest;
+                ++t_->size;
                 break;
             }
             auto& v = (*t_)[i];
@@ -270,6 +274,11 @@ object(detail::unchecked_object&& uo)
             }
 
             // handle duplicate
+            if( !uo.ignore_duplicate_keys() )
+            {
+                dest->~key_value_pair();
+                return;
+            }
             access::next(*dest) =
                 access::next(v);
             // don't bother to check if
@@ -282,8 +291,6 @@ object(detail::unchecked_object&& uo)
             break;
         }
     }
-    t_->size = static_cast<
-        index_t>(dest - begin());
 }
 
 object::

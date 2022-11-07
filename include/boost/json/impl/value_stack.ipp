@@ -82,37 +82,6 @@ has_chars()
     return chars_ != 0;
 }
 
-error_code
-value_stack::
-stack::
-check_duplicates(std::size_t n)
-{
-    error_code ec;
-
-    for( value* first = top_ - 2 * n; first != top_; first += 2 )
-    {
-        BOOST_ASSERT( first->is_string() );
-        value* other = first + 2;
-        while( true )
-        {
-            BOOST_ASSERT( other->is_string() );
-            if( first->get_string() == other->get_string() )
-            {
-                BOOST_JSON_FAIL( ec, error::duplicate_key );
-                goto before_return;
-            }
-
-            if( other == top_ )
-                break;
-
-            other += 2;
-        }
-    }
-
-before_return:
-    return ec;
-}
-
 //--------------------------------------
 
 // destroy the values but
@@ -320,7 +289,7 @@ exchange(Unchecked&& u)
     // which belongs to `u`.
     detail::access::
         construct_value(
-            &jv.v, std::move(u));
+            &jv.v, static_cast<Unchecked&&>(u));
     std::memcpy(
         reinterpret_cast<
             char*>(top_),
@@ -395,16 +364,25 @@ push_array(std::size_t n)
     st_.exchange(std::move(ua));
 }
 
-void
+error_code
 value_stack::
-push_object(std::size_t n)
+push_object(std::size_t n, bool ignore_duplicates)
 {
     // we already have room if n > 0
     if(BOOST_JSON_UNLIKELY(n == 0))
         st_.maybe_grow();
+
     detail::unchecked_object uo(
-        st_.release(n * 2), n, sp_);
-    st_.exchange(std::move(uo));
+        st_.release(n * 2), n, sp_, ignore_duplicates);
+    st_.exchange(uo);
+
+    error_code ec;
+    // constructed object should have consumed all of uo's data
+    if( uo.size() )
+    {
+        BOOST_JSON_FAIL( ec, error::duplicate_key );
+    }
+    return ec;
 }
 
 void
@@ -496,13 +474,6 @@ value_stack::
 push_null()
 {
     st_.push(nullptr, sp_);
-}
-
-error_code
-value_stack::
-check_duplicates(std::size_t n)
-{
-    return st_.check_duplicates(n);
 }
 
 BOOST_JSON_NS_END

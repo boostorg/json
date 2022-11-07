@@ -28,30 +28,29 @@ class unchecked_object
     // first one is a string key,
     // second one is the value.
     value* data_;
-    std::size_t size_;
+    value* end_;
     storage_ptr const& sp_;
+    bool ignore_duplicates_;
 
 public:
     inline
     ~unchecked_object();
 
+    inline
     unchecked_object(
         value* data,
         std::size_t size, // # of kv-pairs
-        storage_ptr const& sp) noexcept
-        : data_(data)
-        , size_(size)
-        , sp_(sp)
-    {
-    }
+        storage_ptr const& sp,
+        bool ignore_duplicates) noexcept;
 
     unchecked_object(
         unchecked_object&& other) noexcept
         : data_(other.data_)
-        , size_(other.size_)
+        , end_(other.end_)
         , sp_(other.sp_)
+        , ignore_duplicates_(other.ignore_duplicates_)
     {
-        other.data_ = nullptr;
+        other.data_ = other.end_ = nullptr;
     }
 
     storage_ptr const&
@@ -60,19 +59,25 @@ public:
         return sp_;
     }
 
+    inline
     std::size_t
-    size() const noexcept
+    size() const noexcept;
+
+    bool
+    ignore_duplicate_keys() const noexcept
     {
-        return size_;
+        return ignore_duplicates_;
     }
 
     value*
-    release() noexcept
+    front() noexcept
     {
-        auto const data = data_;
-        data_ = nullptr;
-        return data;
+        return data_;
     }
+
+    inline
+    void
+    pop_front() noexcept;
 };
 
 template<class CharRange>

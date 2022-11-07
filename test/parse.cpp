@@ -210,10 +210,22 @@ public:
         BOOST_TEST( jv.as_object().size() == 1 );
 
         parse_options opt;
+        opt.ignore_duplicate_keys = false;
 
         error_code ec;
-        opt.ignore_duplicate_keys = false;
         jv = parse( R"( {"a": 1, "a": 2} )", ec, {}, opt );
+        BOOST_TEST( ec == error::duplicate_key );
+
+        ec.clear();
+        std::string s;
+        s = "{\"999\":null";
+        for(int i = 1; i < 1000; ++i)
+            s +=
+                ",\"" +
+                std::to_string(i) +
+                "\":null";
+        s.append("}");
+        jv = parse( s, ec, {}, opt );
         BOOST_TEST( ec == error::duplicate_key );
     }
 
