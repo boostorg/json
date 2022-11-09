@@ -93,6 +93,9 @@ find_in_object<string_view>(
     object const&,
     string_view key) noexcept;
 
+template< bool SmallTable, bool IgnoreDuplicates >
+void init_from_unchecked( object& obj, unchecked_object& uo );
+
 } // detail
 BOOST_JSON_NS_END
 

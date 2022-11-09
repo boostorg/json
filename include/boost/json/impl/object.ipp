@@ -70,6 +70,75 @@ find_in_object<string_view>(
     object const& obj,
     string_view key) noexcept;
 
+template< bool SmallTable, bool IgnoreDuplicates >
+void init_from_unchecked( object& obj, unchecked_object& uo )
+{
+    // insert all elements, keeping
+    // the last of any duplicate keys, unless IgnoreDuplicates is false.
+    auto const begin = obj.begin();
+    auto dest = begin;
+    for( ; uo.size(); uo.pop_front() )
+    {
+        auto src = uo.front();
+        access::construct_key_value_pair(
+            dest, pilfer(src[0]), pilfer(src[1]));
+
+        string_view const key = dest->key();
+        key_value_pair* duplicate = nullptr;
+        BOOST_IF_CONSTEXPR ( SmallTable )
+            duplicate = find_in_object( obj, key ).first;
+        else
+        {
+            auto& head = obj.t_->bucket( key );
+            auto i = head;
+            while( true )
+            {
+                if( i == object::null_index_ )
+                {
+                    // end of bucket
+                    access::next(*dest) = head;
+                    head = static_cast<object::index_t>( dest - begin );
+                    break;
+                }
+                auto& v = begin[i];
+                if( v.key() != key )
+                {
+                    i = access::next(v);
+                    continue;
+                }
+
+                // handle duplicate
+                access::next(*dest) = access::next(v);
+                duplicate = &v;
+                break;
+            }
+        }
+
+        if( !duplicate )
+        {
+            ++dest;
+            ++obj.t_->size;
+            continue;
+        }
+
+        // handle duplicate
+        BOOST_IF_CONSTEXPR ( IgnoreDuplicates )
+        {
+            // don't bother to check if
+            // storage deallocate is trivial
+            duplicate->~key_value_pair();
+            // trivial relocate
+            std::memcpy(
+                static_cast<void*>(duplicate), dest, sizeof(key_value_pair) );
+        }
+        else
+        {
+            dest->~key_value_pair();
+            return;
+        }
+    }
+}
+
 } // namespace detail
 
 //----------------------------------------------------------
@@ -212,85 +281,16 @@ object(detail::unchecked_object& uo)
         uo.size(), 0, sp_);
     t_->size = 0;
 
-    // insert all elements, keeping
-    // the last of any duplicate keys, unless uo.ignore_duplicates is false.
-    auto dest = begin();
     if(t_->is_small())
-    {
-        for( ; uo.size(); uo.pop_front() )
-        {
-            auto src = uo.front();
-            access::construct_key_value_pair(
-                dest, pilfer(src[0]), pilfer(src[1]));
-            auto result = detail::find_in_object(*this, dest->key());
-            if(! result.first)
-            {
-                ++dest;
-                ++t_->size;
-                continue;
-            }
-            // handle duplicate
-            if( !uo.ignore_duplicate_keys() )
-            {
-                dest->~key_value_pair();
-                return;
-            }
-            auto& v = *result.first;
-            // don't bother to check if
-            // storage deallocate is trivial
-            v.~key_value_pair();
-            // trivial relocate
-            std::memcpy(
-                static_cast<void*>(&v),
-                    dest, sizeof(v));
-        }
-        return;
-    }
-    for( ; uo.size() ; uo.pop_front() )
-    {
-        auto src = uo.front();
-        access::construct_key_value_pair(
-            dest, pilfer(src[0]), pilfer(src[1]));
-        auto& head = t_->bucket(dest->key());
-        auto i = head;
-        for(;;)
-        {
-            if(i == null_index_)
-            {
-                // end of bucket
-                access::next(
-                    *dest) = head;
-                head = static_cast<index_t>(
-                    dest - begin());
-                ++dest;
-                ++t_->size;
-                break;
-            }
-            auto& v = (*t_)[i];
-            if(v.key() != dest->key())
-            {
-                i = access::next(v);
-                continue;
-            }
-
-            // handle duplicate
-            if( !uo.ignore_duplicate_keys() )
-            {
-                dest->~key_value_pair();
-                return;
-            }
-            access::next(*dest) =
-                access::next(v);
-            // don't bother to check if
-            // storage deallocate is trivial
-            v.~key_value_pair();
-            // trivial relocate
-            std::memcpy(
-                static_cast<void*>(&v),
-                    dest, sizeof(v));
-            break;
-        }
-    }
+        if( uo.ignore_duplicate_keys() )
+            detail::init_from_unchecked< true, true >( *this, uo );
+        else
+            detail::init_from_unchecked< true, false >( *this, uo );
+    else
+        if( uo.ignore_duplicate_keys() )
+            detail::init_from_unchecked< false, true >( *this, uo );
+        else
+            detail::init_from_unchecked< false, false >( *this, uo );
 }
 
 object::

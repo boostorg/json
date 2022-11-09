@@ -1646,6 +1646,11 @@ private:
     reindex_relocate(
         key_value_pair* src,
         key_value_pair* dst) noexcept;
+
+    template< bool SmallTable, bool IgnoreDuplicates >
+    friend
+    void
+    detail::init_from_unchecked( object& obj, detail::unchecked_object& uo );
 };
 
 BOOST_JSON_NS_END
