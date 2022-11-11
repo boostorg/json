@@ -404,7 +404,8 @@ operator>>(
             // we read from the internal buffer of buf into our buffer
             available = buf.sgetn( read_buf, available );
 
-            std::size_t consumed = p.write_some( read_buf, available, ec );
+            std::size_t consumed = p.write_some(
+                read_buf, static_cast<std::size_t>(available), ec );
             // if the parser hasn't consumed the entire input we've took from
             // buf, we put the remaining data back; this should succeed,
             // because we only read data from buf's internal buffer
