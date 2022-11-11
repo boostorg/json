@@ -40,6 +40,12 @@ private:
 class pointer_token::iterator
 {
 public:
+    using value_type = char;
+    using reference = char;
+    using pointer = value_type*;
+    using difference_type = std::ptrdiff_t;
+    using iterator_category = std::forward_iterator_tag;
+
     explicit iterator(char const* base) noexcept
         : base_(base)
     {
@@ -67,6 +73,13 @@ public:
         else
             ++base_;
         return *this;
+    }
+
+    iterator operator++(int) noexcept
+    {
+        iterator result = *this;
+        ++(*this);
+        return result;
     }
 
     char const* base() const noexcept
