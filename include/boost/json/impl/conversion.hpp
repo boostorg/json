@@ -210,11 +210,11 @@ template<class T>
 using value_to_implementation
     = conversion_implementation<T, value_to_conversion>;
 
-template<class Main, class Opposite>
+template<class Impl1, class Impl2>
 using conversion_round_trips_helper = mp11::mp_or<
-    std::is_same<Main, Opposite>,
-    std::is_same<user_conversion_tag, Main>,
-    std::is_same<user_conversion_tag, Opposite>>;
+    std::is_same<Impl1, Impl2>,
+    std::is_same<user_conversion_tag, Impl1>,
+    std::is_same<user_conversion_tag, Impl2>>;
 template<class T, class Dir>
 using conversion_round_trips  = conversion_round_trips_helper<
     conversion_implementation<T, Dir>,
