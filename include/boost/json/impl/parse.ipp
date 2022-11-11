@@ -93,7 +93,7 @@ parse(
         is.read(read_buffer, sizeof(read_buffer));
         auto const consumed = is.gcount();
 
-        p.write(read_buffer, consumed, ec);
+        p.write( read_buffer, static_cast<std::size_t>(consumed), ec );
     }
     while( !ec.failed() );
 
