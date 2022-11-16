@@ -85,14 +85,14 @@ template<class T>
 using has_size_member_helper
     = std::is_convertible<decltype(std::declval<T&>().size()), std::size_t>;
 template<class T>
-using has_size_member = mp11::mp_valid_and_true<has_size_member_helper, T>;;
+using has_size_member = mp11::mp_valid_and_true<has_size_member_helper, T>;
 template<class T>
 using has_free_size_helper
     = std::is_convertible<
         decltype(size(std::declval<T const&>())),
         std::size_t>;
 template<class T>
-using has_free_size = mp11::mp_valid_and_true<has_free_size_helper, T>;;
+using has_free_size = mp11::mp_valid_and_true<has_free_size_helper, T>;
 template<class T>
 using size_implementation = mp11::mp_cond<
     has_size_member<T>, mp11::mp_int<3>,
