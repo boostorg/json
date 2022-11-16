@@ -194,6 +194,23 @@ public:
         BOOST_STATIC_ASSERT( !is_described_enum<described1>::value );
         BOOST_STATIC_ASSERT( !is_described_enum<undescribed_enum>::value );
 #endif
+
+        BOOST_STATIC_ASSERT(
+            std::is_same<
+                detail::forwarded_value< std::vector<int>& >,
+                int& >::value );
+        BOOST_STATIC_ASSERT(
+            std::is_same<
+                detail::forwarded_value< std::vector<int> const& >,
+                int const& >::value );
+        BOOST_STATIC_ASSERT(
+            std::is_same<
+                detail::forwarded_value< std::vector<int>&& >,
+                int >::value );
+        BOOST_STATIC_ASSERT(
+            std::is_same<
+                detail::forwarded_value< std::vector<bool>& >,
+                bool >::value );
     }
 };
 

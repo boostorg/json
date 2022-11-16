@@ -37,8 +37,12 @@ template<std::size_t I, class T>
 using tuple_element_t = typename std::tuple_element<I, T>::type;
 
 template<class T>
-using value_type = typename std::iterator_traits<decltype(
-    std::begin(std::declval<T&>()) )>::value_type;
+using iterator_type = decltype(std::begin(std::declval<T&>()));
+template<class T>
+using iterator_traits = std::iterator_traits< iterator_type<T> >;
+
+template<class T>
+using value_type = typename iterator_traits<T>::value_type;
 template<class T>
 using mapped_type = tuple_element_t< 1, value_type<T> >;
 
@@ -52,8 +56,6 @@ using key_type = mp11::mp_eval_or<
     key_type_helper,
     T>;
 
-template<class T>
-using iterator_type = decltype(std::begin(std::declval<T&>()));
 template<class T>
 using are_begin_and_end_same = std::is_same<
     iterator_type<T>,
@@ -219,6 +221,43 @@ template<class T, class Dir>
 using conversion_round_trips  = conversion_round_trips_helper<
     conversion_implementation<T, Dir>,
     conversion_implementation<T, mp11::mp_not<Dir>>>;
+
+template< class T1, class T2 >
+struct copy_cref_helper
+{
+    using type = remove_cvref<T2>;
+};
+template< class T1, class T2 >
+using copy_cref = typename copy_cref_helper< T1, T2 >::type;
+
+template< class T1, class T2 >
+struct copy_cref_helper<T1 const, T2>
+{
+    using type = remove_cvref<T2> const;
+};
+template< class T1, class T2 >
+struct copy_cref_helper<T1&, T2>
+{
+    using type = copy_cref<T1, T2>&;
+};
+template< class T1, class T2 >
+struct copy_cref_helper<T1&&, T2>
+{
+    using type = copy_cref<T1, T2>&&;
+};
+
+template< class Rng, class Traits >
+using forwarded_value_helper = mp11::mp_if<
+    std::is_convertible<
+        typename Traits::reference,
+        copy_cref<Rng, typename Traits::value_type> >,
+    copy_cref<Rng, typename Traits::value_type>,
+    typename Traits::value_type >;
+
+template< class Rng >
+using forwarded_value = forwarded_value_helper<
+    Rng, iterator_traits< Rng > >;
+
 } // namespace detail
 
 template <class T>
