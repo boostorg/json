@@ -119,7 +119,9 @@ value_from_helper(
     result.reserve(detail::try_size(from, size_implementation<T>()));
     for (auto&& elem : from)
         result.emplace_back(
-            value_from(elem, result.storage()));
+            value_from(
+                static_cast< forwarded_value<T&&> >(elem),
+                result.storage() ));
 }
 
 // tuple-like types

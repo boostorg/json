@@ -219,6 +219,7 @@ public:
             { "a", 1 }, {"b", 2}, {"c", 3}
         });
         check(std::vector<int>{1, 2, 3, 4});
+        check(std::vector<bool>{true, false, false, true});
         check(std::make_pair(std::string("test"), 5));
         check(std::make_tuple(std::string("outer"),
             std::make_pair(std::string("test"), 5)));
