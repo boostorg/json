@@ -465,6 +465,18 @@ value_to_impl(
         *arr, boost::mp11::make_index_sequence<N>());
 }
 
+template< class T>
+struct is_optional
+    : std::false_type
+{ };
+
+#ifndef BOOST_NO_CXX17_HDR_OPTIONAL
+template< class T>
+struct is_optional< std::optional<T> >
+    : std::true_type
+{ };
+#endif // BOOST_NO_CXX17_HDR_OPTIONAL
+
 template< class T >
 struct to_described_member
 {
@@ -477,28 +489,44 @@ struct to_described_member
 
     result<T>& res;
     object const& obj;
+    std::size_t count;
 
     template< class I >
     void
-    operator()(I) const
+    operator()(I)
     {
         if( !res )
             return;
 
         using D = mp11::mp_at<Ds, I>;
+        using M = described_member_t<D>;
+
         auto const found = obj.find(D::name);
         if( found == obj.end() )
         {
-            error_code ec;
-            BOOST_JSON_FAIL(ec, error::unknown_name);
-            res = {boost::system::in_place_error, ec};
+            BOOST_IF_CONSTEXPR( !is_optional<M>::value )
+            {
+                error_code ec;
+                BOOST_JSON_FAIL(ec, error::unknown_name);
+                res = {boost::system::in_place_error, ec};
+            }
             return;
         }
 
-        using M = described_member_t<D>;
+#if defined(__GNUC__) && BOOST_GCC_VERSION >= 80000 && BOOST_GCC_VERSION < 11000
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wunused"
+# pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
         auto member_res = try_value_to<M>(found->value());
+#if defined(__GNUC__) && BOOST_GCC_VERSION >= 80000 && BOOST_GCC_VERSION < 11000
+# pragma GCC diagnostic pop
+#endif
         if( member_res )
+        {
             (*res).* D::pointer = std::move(*member_res);
+            ++count;
+        }
         else
             res = {boost::system::in_place_error, member_res.error()};
     }
@@ -523,11 +551,16 @@ value_to_impl(
         return res;
     }
 
-    to_described_member<T> member_converter{res, *obj};
-    using Ds = typename decltype(member_converter)::Ds;
+    to_described_member<T> member_converter{res, *obj, 0u};
 
+    using Ds = typename decltype(member_converter)::Ds;
     constexpr std::size_t N = mp11::mp_size<Ds>::value;
-    if( obj->size() != N )
+    mp11::mp_for_each< mp11::mp_iota_c<N> >(member_converter);
+
+    if( !res )
+        return res;
+
+    if( member_converter.count != obj->size() )
     {
         error_code ec;
         BOOST_JSON_FAIL(ec, error::size_mismatch);
@@ -535,7 +568,6 @@ value_to_impl(
         return res;
     }
 
-    mp11::mp_for_each< mp11::mp_iota_c<N> >(member_converter);
     return res;
 }
 
