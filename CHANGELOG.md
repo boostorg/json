@@ -1,3 +1,23 @@
+Boost 1.81.0
+
+* Conversion traits were redesigned.
+* Removed `condition::assign_error`.
+* Removed `generic_category` alias.
+* `object::stable_erase`.
+* Added error condition for generic library errors.
+* Added `parse` overload for `std::istream`.
+* `operator>>` for `value`.
+* Null-like type conversion support (including `std::nullptr_t`).
+* Non-throwing conversion from `value` to user types.
+* `value_to/from` supports `std::optional` and `std::nullopt_t`.
+* `value_to/from` supports `std::variant` and `std::monotype`.
+* `value_to/from` supports supports described classes and enums.
+* Rvalue ref-qualified accessors for `value`.
+* Support for self-swap and self-move in `string`.
+* Support for self-swap and self-move in `array`.
+* Replaced C floating point constants with C++ equivalents.
+* Documentation improvements.
+
 Boost 1.80.0
 
 * Add non-const `value::at` overloads.

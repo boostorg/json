@@ -11,6 +11,37 @@
 
 [/-----------------------------------------------------------------------------]
 
+[heading Boost 1.81.0]
+
+[*API Changes]
+
+* [ issue 686 ] Conversion traits were redesigned.
+* [ issue 756 ] Removed `condition::assign_error`.
+* [ issue 758 ] Removed `generic_category` alias.
+
+[*New Features]
+
+* [ issue 749 ] `object::stable_erase`.
+* [ issue 778 ] Added error condition for generic library errors.
+* [ issue 619 ] Added `parse` overload for `std::istream`.
+* [ issue 619 ] `operator>>` for `value`.
+
+[*Improvements]
+
+* [ issue 686 ] Null-like type conversion support (including `std::nullptr_t`).
+* [ issue 736 ] Non-throwing conversion from `value` to user types.
+* [ issue 677 ] `value_to/from` supports `std::optional` and `std::nullopt_t`.
+* [ issue 517 ] `value_to/from` supports `std::variant` and `std::monotype`.
+* [ issue 626 ] `value_to/from` supports supports described classes and enums.
+* [ issue 757 ] Rvalue ref-qualified accessors for `value`.
+
+[*Fixes]
+
+* [ issue 745 ] Support for self-swap and self-move in `string`.
+* [ issue 747 ] Support for self-swap and self-move in `array`.
+* [ issue 735 ] Replaced C floating point constants with C++ equivalents.
+* Documentation improvements.
+
 [heading Boost 1.80.0]
 
 [*API Changes]
