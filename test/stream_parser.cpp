@@ -17,6 +17,7 @@
 
 #include <sstream>
 #include <iostream>
+#include <cstring>
 
 #include "parse-vectors.hpp"
 #include "test.hpp"
@@ -1253,6 +1254,19 @@ R"xx({
         BOOST_TEST(serialize(t.jv) == "[]");
     }
 
+    // https://github.com/boostorg/json/pull/814
+    void
+    testSentinelOverlap()
+    {
+        struct {
+            char buffer[8];
+            boost::json::stream_parser p;
+        } s;
+        memcpy(s.buffer, "{\"12345\"", 8);
+        s.p.write(s.buffer, sizeof(s.buffer));
+        s.p.write(":0}", 3);
+    }
+
     //------------------------------------------------------
 
     void
@@ -1276,6 +1290,7 @@ R"xx({
         testDupeKeys();
         testIssue15();
         testIssue45();
+        testSentinelOverlap();
     }
 };
 

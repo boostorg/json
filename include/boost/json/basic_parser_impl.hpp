@@ -217,8 +217,11 @@ const char*
 basic_parser<Handler>::
 sentinel()
 {
+    // the "+1" ensures that the returned pointer is unique even if
+    // the given input buffer borders on this object
     return reinterpret_cast<
-        const char*>(this);
+        const char*>(this) + 1;
+    return nullptr;
 }
 
 template<class Handler>
