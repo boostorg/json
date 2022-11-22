@@ -25,7 +25,7 @@ Boost 1.80.0
 * Add `string::subview()` overload.
 * Fix segfault in `array::erase(it)`.
 * Fix low performance of `serialize` on libc++.
-* Fix ambigious conversion to `std::string_view` on GCC 8.
+* Fix ambiguous conversion to `std::string_view` on GCC 8.
 * Fix parsing on big-endian platforms.
 * Fix handling of comment after trailing comma.
 * Minor documentation fixes.
