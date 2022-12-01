@@ -415,4 +415,13 @@ reserve_impl(size_type new_cap)
 
 BOOST_JSON_NS_END
 
+//----------------------------------------------------------
+
+std::size_t
+std::hash< ::boost::json::string >::operator()(
+    ::boost::json::string const& js ) const noexcept
+{
+    return ::boost::hash< ::boost::json::string >()( js );
+}
+
 #endif

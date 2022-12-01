@@ -2770,13 +2770,13 @@ public:
         {
             std::unordered_set<string>(
                 0,
-                std::hash<string>(32));
+                std::hash<string>());
         }
 #endif
         {
-            std::hash<string> h1(32);
+            std::hash<string> h1;
             std::hash<string> h2(h1);
-            std::hash<string> h3(59);
+            std::hash<string> h3;
             h1 = h3;
             h2 = h3;
             (void)h2;

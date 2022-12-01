@@ -1054,32 +1054,32 @@ equal(
     return false;
 }
 
-inline
+template<typename T>
 bool
 check_hash_equal(
-    value const& lhs,
-    value const& rhs)
+    T const& lhs,
+    T const& rhs)
 {
     if( lhs != rhs )
         return false;
 
-    if( std::hash<value>()(lhs) != std::hash<value>()(rhs) )
+    if( std::hash<T>()(lhs) != std::hash<T>()(rhs) )
         return false;
 
-    return boost::hash<value>()(lhs) == boost::hash<value>()(rhs);
+    return boost::hash<T>()(lhs) == boost::hash<T>()(rhs);
 }
 
-
+template<typename T>
 inline
 bool
 expect_hash_not_equal(
-    value const& lhs,
-    value const& rhs)
+    T const& lhs,
+    T const& rhs)
 {
-    if( std::hash<value>()(lhs) == std::hash<value>()(rhs) )
+    if( std::hash<T>()(lhs) == std::hash<T>()(rhs) )
         return true; // pass if hash values collide
 
-    if( boost::hash<value>()(lhs) == boost::hash<value>()(rhs) )
+    if( boost::hash<T>()(lhs) == boost::hash<T>()(rhs) )
         return true; // pass if hash values collide
 
     return lhs != rhs;

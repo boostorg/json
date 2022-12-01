@@ -2910,25 +2910,9 @@ namespace std {
 template<>
 struct hash< ::boost::json::string >
 {
-    hash() = default;
-    hash(hash const&) = default;
-    hash& operator=(hash const&) = default;
-
-    explicit
-    hash(std::size_t salt) noexcept
-        : salt_(salt)
-    {
-    }
-
+    BOOST_JSON_DECL
     std::size_t
-    operator()(::boost::json::string const& js) const noexcept
-    {
-        return ::boost::json::detail::digest(
-            js.begin(), js.end(), salt_);
-    }
-
-private:
-    std::size_t salt_ = 0;
+    operator()( ::boost::json::string const& js ) const noexcept;
 };
 } // std
 #endif
