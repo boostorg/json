@@ -1650,8 +1650,24 @@ private:
 
 BOOST_JSON_NS_END
 
-// std::hash specialization
 #ifndef BOOST_JSON_DOCS
+// boost::hash trait
+namespace boost
+{
+namespace container_hash
+{
+
+template< class T > struct is_unordered_range;
+
+template<>
+struct is_unordered_range< json::object >
+    : std::true_type
+{};
+
+} // namespace container_hash
+} // namespace boost
+
+// std::hash specialization
 namespace std {
 template <>
 struct hash< ::boost::json::object > {

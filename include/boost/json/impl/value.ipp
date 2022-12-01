@@ -10,6 +10,7 @@
 #ifndef BOOST_JSON_IMPL_VALUE_IPP
 #define BOOST_JSON_IMPL_VALUE_IPP
 
+#include <boost/container_hash/hash.hpp>
 #include <boost/json/value.hpp>
 #include <boost/json/parser.hpp>
 #include <boost/json/detail/hash_combine.hpp>
@@ -20,6 +21,22 @@
 #include <utility>
 
 BOOST_JSON_NS_BEGIN
+
+namespace
+{
+
+struct value_hasher
+{
+    std::size_t& seed;
+
+    template< class T >
+    void operator()( T&& t ) const noexcept
+    {
+        boost::hash_combine( seed, t );
+    }
+};
+
+} // namespace
 
 value::
 ~value() noexcept
@@ -588,6 +605,22 @@ key_value_pair(
 
 //----------------------------------------------------------
 
+namespace detail
+{
+
+std::size_t
+hash_value_impl( value const& jv ) noexcept
+{
+    std::size_t seed = 0;
+
+    kind const k = jv.kind();
+    boost::hash_combine( seed, k != kind::int64 ? k : kind::uint64 );
+
+    visit( value_hasher{seed}, jv );
+    return seed;
+}
+
+} // namespace detail
 BOOST_JSON_NS_END
 
 //----------------------------------------------------------

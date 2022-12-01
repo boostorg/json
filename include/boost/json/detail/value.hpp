@@ -271,6 +271,10 @@ struct access
     }
 };
 
+BOOST_JSON_DECL
+std::size_t
+hash_value_impl( value const& jv ) noexcept;
+
 } // detail
 BOOST_JSON_NS_END
 

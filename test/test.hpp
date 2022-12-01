@@ -10,6 +10,7 @@
 #ifndef BOOST_JSON_TEST_HPP
 #define BOOST_JSON_TEST_HPP
 
+#include <boost/container_hash/hash.hpp>
 #include <boost/json/basic_parser.hpp>
 #include <boost/json/value.hpp>
 #include <boost/json/serializer.hpp>
@@ -1053,57 +1054,37 @@ equal(
     return false;
 }
 
-template<typename T>
 inline
 bool
 check_hash_equal(
-    T const& lhs,
-    T const& rhs)
+    value const& lhs,
+    value const& rhs)
 {
-    if(lhs == rhs){
-        return (std::hash<T>{}(lhs) == std::hash<T>{}(rhs));
-    }
-    return false; // ensure lhs == rhs intention
+    if( lhs != rhs )
+        return false;
+
+    if( std::hash<value>()(lhs) != std::hash<value>()(rhs) )
+        return false;
+
+    return boost::hash<value>()(lhs) == boost::hash<value>()(rhs);
 }
 
-template<typename T, typename U>
-inline
-bool
-check_hash_equal(
-    T const& lhs,
-    U const& rhs)
-{
-    if(lhs == rhs){
-        return (std::hash<value>{}(lhs) == std::hash<value>{}(rhs));
-    }
-    return false; // ensure lhs == rhs intention
-}
 
-template<typename T>
 inline
 bool
 expect_hash_not_equal(
-    T const& lhs,
-    T const& rhs)
+    value const& lhs,
+    value const& rhs)
 {
-    if(std::hash<T>{}(lhs) != std::hash<T>{}(rhs)){
-        return lhs != rhs;
-    }
-    return true; // pass if hash values collide
+    if( std::hash<value>()(lhs) == std::hash<value>()(rhs) )
+        return true; // pass if hash values collide
+
+    if( boost::hash<value>()(lhs) == boost::hash<value>()(rhs) )
+        return true; // pass if hash values collide
+
+    return lhs != rhs;
 }
 
-template<typename T, typename U>
-inline
-bool
-expect_hash_not_equal(
-    T const& lhs,
-    U const& rhs)
-{
-    if(std::hash<value>{}(lhs) != std::hash<value>{}(rhs)){
-        return lhs != rhs;
-    }
-    return true; // pass if hash values collide
-}
 //----------------------------------------------------------
 
 namespace detail {

@@ -3378,6 +3378,38 @@ public:
         std::istream& is,
         value& jv);
 
+    /** Helper for `boost::hash` support
+
+        Computes a hash value for `jv`. This function is used by
+        `boost::hash<value>`. Similar overloads for @ref array, @ref object,
+        and @ref string do not exist, because those types are supported by
+        `boost::hash` out of the box.
+
+        @return hash value for `jv`.
+
+        @param jv `value` for which a hash is to be computed.
+
+        @see [Boost.ContainerHash](https://boost.org/libs/container_hash).
+     */
+#ifndef BOOST_JSON_DOCS
+    template<
+        class T,
+        typename std::enable_if<
+            std::is_same< detail::remove_cvref<T>, value >::value >::type*
+                = nullptr>
+    friend
+    std::size_t
+    hash_value( T const& jv ) noexcept
+#else
+    friend
+    inline
+    std::size_t
+    hash_value( value const& jv ) noexcept
+#endif
+    {
+        return detail::hash_value_impl(jv);
+    }
+
 private:
     static
     void
