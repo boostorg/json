@@ -2236,16 +2236,10 @@ public:
             value({{"b",2}, {"c",3}, {"a",1}})));
         BOOST_TEST(expect_hash_not_equal(
             value({{"a",1}, {"b",2}, {"c",3}}),
-            object({{"b",2}, {"c",3}, {"a",1}})));
-        BOOST_TEST(expect_hash_not_equal(
-            value({{"a",1}, {"b",2}, {"c",3}}),
             value({{"b",2}, {"c",3}})));
         BOOST_TEST(check_hash_equal(
             value({"a", "b", 17}),
             value({"a", "b", 17U})));
-        BOOST_TEST(expect_hash_not_equal(
-            value({"a", "b", 17}),
-            array({"a", "b", 17})));
         BOOST_TEST(expect_hash_not_equal(
             value({"a", "b", 17}),
             value({17, "a", "b"})));
