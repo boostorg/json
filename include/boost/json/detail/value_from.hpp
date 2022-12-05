@@ -45,10 +45,7 @@ struct append_tuple_element {
 
 template<class T>
 void
-value_from_helper(
-    value& jv,
-    T&& from,
-    user_conversion_tag)
+value_from_impl( user_conversion_tag, value& jv, T&& from )
 {
     tag_invoke(value_from_tag(), jv, std::forward<T>(from));
 }
@@ -59,10 +56,7 @@ value_from_helper(
 
 template<class T>
 void
-value_from_helper(
-    value& jv,
-    T&& from,
-    native_conversion_tag)
+value_from_impl( native_conversion_tag, value& jv, T&& from )
 {
     jv = std::forward<T>(from);
 }
@@ -70,10 +64,7 @@ value_from_helper(
 // null-like types
 template<class T>
 void
-value_from_helper(
-    value& jv,
-    T&&,
-    null_like_conversion_tag)
+value_from_impl( null_like_conversion_tag, value& jv, T&& )
 {
     // do nothing
     BOOST_ASSERT(jv.is_null());
@@ -83,10 +74,7 @@ value_from_helper(
 // string-like types
 template<class T>
 void
-value_from_helper(
-    value& jv,
-    T&& from,
-    string_like_conversion_tag)
+value_from_impl( string_like_conversion_tag, value& jv, T&& from )
 {
     auto sv = static_cast<string_view>(from);
     jv.emplace_string().assign(sv);
@@ -95,10 +83,7 @@ value_from_helper(
 // map-like types
 template<class T>
 void
-value_from_helper(
-    value& jv,
-    T&& from,
-    map_like_conversion_tag)
+value_from_impl( map_like_conversion_tag, value& jv, T&& from )
 {
     using std::get;
     object& obj = jv.emplace_object();
@@ -111,10 +96,7 @@ value_from_helper(
 // ranges
 template<class T>
 void
-value_from_helper(
-    value& jv,
-    T&& from,
-    sequence_conversion_tag)
+value_from_impl( sequence_conversion_tag, value& jv, T&& from )
 {
     array& result = jv.emplace_array();
     result.reserve(detail::try_size(from, size_implementation<T>()));
@@ -128,10 +110,7 @@ value_from_helper(
 // tuple-like types
 template<class T>
 void
-value_from_helper(
-    value& jv,
-    T&& from,
-    tuple_conversion_tag)
+value_from_impl( tuple_conversion_tag, value& jv, T&& from )
 {
     constexpr std::size_t n =
         std::tuple_size<remove_cvref<T>>::value;
@@ -144,10 +123,7 @@ value_from_helper(
 // no suitable conversion implementation
 template<class T>
 void
-value_from_helper(
-    value&,
-    T&&,
-    no_conversion_tag)
+value_from_impl( no_conversion_tag, value&, T&& )
 {
     static_assert(
         !std::is_same<T, T>::value,
@@ -193,10 +169,7 @@ struct from_described_member
 // described classes
 template<class T>
 void
-value_from_helper(
-    value& jv,
-    T&& from,
-    described_class_conversion_tag)
+value_from_impl( described_class_conversion_tag, value& jv, T&& from )
 {
     object& obj = jv.emplace_object();
     from_described_member<T> member_converter{obj, static_cast<T&&>(from)};
@@ -210,10 +183,7 @@ value_from_helper(
 // described enums
 template<class T>
 void
-value_from_helper(
-    value& jv,
-    T from,
-    described_enum_conversion_tag)
+value_from_impl( described_enum_conversion_tag, value& jv, T from )
 {
     (void)jv;
     (void)from;
@@ -231,6 +201,9 @@ value_from_helper(
     }
 #endif
 }
+
+template<class T>
+using value_from_category = conversion_category<T, value_from_conversion>;
 
 } // detail
 

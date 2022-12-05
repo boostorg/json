@@ -178,7 +178,7 @@ using described_bases = describe::describe_bases<
     T, describe::mod_any_access>;
 
 template<class T, class Dir>
-using conversion_implementation = mp11::mp_cond<
+using conversion_category = mp11::mp_cond<
     // user conversion (via tag_invoke)
     has_user_conversion<T, Dir>, user_conversion_tag,
     // native conversions (constructors and member functions of value)
@@ -197,21 +197,13 @@ using conversion_implementation = mp11::mp_cond<
     is_described_class<T>,       described_class_conversion_tag,
     is_described_enum<T>,        described_enum_conversion_tag,
     // failed to find a suitable implementation
-    mp11::mp_true,                   no_conversion_tag>;
+    mp11::mp_true,               no_conversion_tag>;
 
 template <class T, class Dir>
 using can_convert = mp11::mp_not<
     std::is_same<
-        detail::conversion_implementation<T, Dir>,
+        detail::conversion_category<T, Dir>,
         detail::no_conversion_tag>>;
-
-template<class T>
-using value_from_implementation
-    = conversion_implementation<T, value_from_conversion>;
-
-template<class T>
-using value_to_implementation
-    = conversion_implementation<T, value_to_conversion>;
 
 template<class Impl1, class Impl2>
 using conversion_round_trips_helper = mp11::mp_or<
@@ -220,8 +212,8 @@ using conversion_round_trips_helper = mp11::mp_or<
     std::is_same<user_conversion_tag, Impl2>>;
 template<class T, class Dir>
 using conversion_round_trips  = conversion_round_trips_helper<
-    conversion_implementation<T, Dir>,
-    conversion_implementation<T, mp11::mp_not<Dir>>>;
+    conversion_category<T, Dir>,
+    conversion_category<T, mp11::mp_not<Dir>>>;
 
 template< class T1, class T2 >
 struct copy_cref_helper

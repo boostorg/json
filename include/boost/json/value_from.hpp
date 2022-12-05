@@ -62,8 +62,8 @@ value_from(
     using bare_T = detail::remove_cvref<T>;
     BOOST_STATIC_ASSERT(detail::conversion_round_trips<
         bare_T, detail::value_from_conversion>::value);
-    using impl = detail::value_from_implementation<bare_T>;
-    detail::value_from_helper(jv, std::forward<T>(t), impl());
+    using cat = detail::value_from_category<bare_T>;
+    detail::value_from_impl( cat(), jv, std::forward<T>(t) );
 }
 
 /** Convert an object of type `T` to @ref value.

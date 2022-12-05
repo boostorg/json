@@ -70,8 +70,8 @@ value_to(const value& jv)
     using bare_T = detail::remove_cvref<T>;
     BOOST_STATIC_ASSERT(detail::conversion_round_trips<
         bare_T, detail::value_to_conversion>::value);
-    using impl = detail::value_to_implementation<bare_T>;
-    return detail::value_to_impl(value_to_tag<bare_T>(), jv, impl());
+    using cat = detail::value_to_category<bare_T>;
+    return detail::value_to_impl( cat(), value_to_tag<bare_T>(), jv );
 }
 
 /** Convert a @ref value to a @ref result of `T`.
@@ -128,9 +128,9 @@ try_value_to(const value& jv)
     using bare_T = detail::remove_cvref<T>;
     BOOST_STATIC_ASSERT(detail::conversion_round_trips<
         bare_T, detail::value_to_conversion>::value);
-    using impl = detail::value_to_implementation<bare_T>;
+    using cat = detail::value_to_category<bare_T>;
     return detail::value_to_impl(
-        try_value_to_tag<bare_T>(), jv, impl());
+        cat(), try_value_to_tag<bare_T>(), jv );
 }
 
 /** Convert a @ref value to an object of type `T`.

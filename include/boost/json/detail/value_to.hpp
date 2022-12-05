@@ -124,20 +124,14 @@ inserter(
 // identity conversion
 inline
 result<value>
-value_to_impl(
-    try_value_to_tag<value>,
-    value const& jv,
-    value_conversion_tag)
+value_to_impl( value_conversion_tag, try_value_to_tag<value>, value const& jv )
 {
     return jv;
 }
 
 inline
 value
-value_to_impl(
-    value_to_tag<value>,
-    value const& jv,
-    value_conversion_tag)
+value_to_impl( value_conversion_tag, value_to_tag<value>, value const& jv )
 {
     return jv;
 }
@@ -146,9 +140,7 @@ value_to_impl(
 inline
 result<object>
 value_to_impl(
-    try_value_to_tag<object>,
-    value const& jv,
-    object_conversion_tag)
+    object_conversion_tag, try_value_to_tag<object>, value const& jv )
 {
     object const* obj = jv.if_object();
     if( obj )
@@ -162,9 +154,7 @@ value_to_impl(
 inline
 result<array>
 value_to_impl(
-    try_value_to_tag<array>,
-    value const& jv,
-    array_conversion_tag)
+    array_conversion_tag, try_value_to_tag<array>, value const& jv )
 {
     array const* arr = jv.if_array();
     if( arr )
@@ -178,9 +168,7 @@ value_to_impl(
 inline
 result<string>
 value_to_impl(
-    try_value_to_tag<string>,
-    value const& jv,
-    string_conversion_tag)
+    string_conversion_tag, try_value_to_tag<string>, value const& jv )
 {
     string const* str = jv.if_string();
     if( str )
@@ -193,10 +181,7 @@ value_to_impl(
 // bool
 inline
 result<bool>
-value_to_impl(
-    try_value_to_tag<bool>,
-    value const& jv,
-    bool_conversion_tag)
+value_to_impl( bool_conversion_tag, try_value_to_tag<bool>, value const& jv )
 {
     auto b = jv.if_bool();
     if( b )
@@ -209,10 +194,7 @@ value_to_impl(
 // integral and floating point
 template<class T>
 result<T>
-value_to_impl(
-    try_value_to_tag<T>,
-    value const& jv,
-    number_conversion_tag)
+value_to_impl( number_conversion_tag, try_value_to_tag<T>, value const& jv )
 {
     error_code ec;
     auto const n = jv.to_number<T>(ec);
@@ -224,10 +206,7 @@ value_to_impl(
 // null-like conversion
 template<class T>
 result<T>
-value_to_impl(
-    try_value_to_tag<T>,
-    value const& jv,
-    null_like_conversion_tag)
+value_to_impl( null_like_conversion_tag, try_value_to_tag<T>, value const& jv )
 {
     if( jv.is_null() )
         return {boost::system::in_place_value, T{}};
@@ -240,9 +219,7 @@ value_to_impl(
 template<class T>
 result<T>
 value_to_impl(
-    try_value_to_tag<T>,
-    value const& jv,
-    string_like_conversion_tag)
+    string_like_conversion_tag, try_value_to_tag<T>, value const& jv )
 {
     auto str = jv.if_string();
     if( str )
@@ -255,10 +232,7 @@ value_to_impl(
 // map-like containers
 template<class T>
 result<T>
-value_to_impl(
-    try_value_to_tag<T>,
-    value const& jv,
-    map_like_conversion_tag)
+value_to_impl( map_like_conversion_tag, try_value_to_tag<T>, value const& jv )
 {
     error_code ec;
 
@@ -289,10 +263,7 @@ value_to_impl(
 
 template<class T>
 T
-value_to_impl(
-    value_to_tag<T>,
-    value const& jv,
-    map_like_conversion_tag)
+value_to_impl( map_like_conversion_tag, value_to_tag<T>, value const& jv )
 {
     error_code ec;
 
@@ -319,10 +290,7 @@ value_to_impl(
 // all other containers
 template<class T>
 result<T>
-value_to_impl(
-    try_value_to_tag<T>,
-    value const& jv,
-    sequence_conversion_tag)
+value_to_impl( sequence_conversion_tag, try_value_to_tag<T>, value const& jv )
 {
     error_code ec;
 
@@ -351,10 +319,7 @@ value_to_impl(
 
 template<class T>
 T
-value_to_impl(
-    value_to_tag<T>,
-    value const& jv,
-    sequence_conversion_tag)
+value_to_impl( sequence_conversion_tag, value_to_tag<T>, value const& jv )
 {
     error_code ec;
 
@@ -414,10 +379,7 @@ make_tuple_like(array const& arr, boost::mp11::index_sequence<Is...>)
 
 template <class T>
 result<T>
-value_to_impl(
-    try_value_to_tag<T>,
-    value const& jv,
-    tuple_conversion_tag)
+value_to_impl( tuple_conversion_tag, try_value_to_tag<T>, value const& jv )
 {
     error_code ec;
 
@@ -441,10 +403,7 @@ value_to_impl(
 
 template <class T>
 T
-value_to_impl(
-    value_to_tag<T>,
-    value const& jv,
-    tuple_conversion_tag)
+value_to_impl( tuple_conversion_tag, value_to_tag<T>, value const& jv )
 {
     error_code ec;
 
@@ -537,9 +496,7 @@ struct to_described_member
 template<class T>
 result<T>
 value_to_impl(
-    try_value_to_tag<T>,
-    value const& jv,
-    described_class_conversion_tag)
+    described_class_conversion_tag, try_value_to_tag<T>, value const& jv )
 {
     result<T> res;
 
@@ -576,9 +533,7 @@ value_to_impl(
 template<class T>
 result<T>
 value_to_impl(
-    try_value_to_tag<T>,
-    value const& jv,
-    described_enum_conversion_tag)
+    described_enum_conversion_tag, try_value_to_tag<T>, value const& jv )
 {
     T val = {};
     (void)jv;
@@ -608,10 +563,7 @@ template<class T>
 typename std::enable_if<
     mp11::mp_valid<has_user_conversion_to_impl, T>::value,
     T>::type
-value_to_impl(
-    value_to_tag<T> tag,
-    value const& jv,
-    user_conversion_tag)
+value_to_impl( user_conversion_tag, value_to_tag<T> tag, value const& jv )
 {
     return tag_invoke(tag, jv);
 }
@@ -620,10 +572,7 @@ template<class T>
 typename std::enable_if<
     !mp11::mp_valid<has_user_conversion_to_impl, T>::value,
     T>::type
-value_to_impl(
-    value_to_tag<T>,
-    value const& jv,
-    user_conversion_tag)
+value_to_impl( user_conversion_tag, value_to_tag<T>, value const& jv )
 {
     auto res = tag_invoke(try_value_to_tag<T>(), jv);
     if( res.has_error() )
@@ -635,10 +584,7 @@ template<class T>
 typename std::enable_if<
     mp11::mp_valid<has_nonthrowing_user_conversion_to_impl, T>::value,
     result<T>>::type
-value_to_impl(
-    try_value_to_tag<T>,
-    value const& jv,
-    user_conversion_tag)
+value_to_impl( user_conversion_tag, try_value_to_tag<T>, value const& jv )
 {
     return tag_invoke(try_value_to_tag<T>(), jv);
 }
@@ -647,10 +593,7 @@ template<class T>
 typename std::enable_if<
     !mp11::mp_valid<has_nonthrowing_user_conversion_to_impl, T>::value,
     result<T>>::type
-value_to_impl(
-    try_value_to_tag<T>,
-    value const& jv,
-    user_conversion_tag)
+value_to_impl( user_conversion_tag, try_value_to_tag<T>, value const& jv )
 {
     try
     {
@@ -676,10 +619,7 @@ value_to_impl(
 // no suitable conversion implementation
 template<class T>
 T
-value_to_impl(
-    value_to_tag<T>,
-    value const&,
-    no_conversion_tag)
+value_to_impl( no_conversion_tag, value_to_tag<T>, value const& )
 {
     static_assert(
         !std::is_same<T, T>::value,
@@ -689,17 +629,13 @@ value_to_impl(
 // generic wrapper over non-throwing implementations
 template<class T, class Impl>
 T
-value_to_impl(
-    value_to_tag<T>,
-    value const& jv,
-    Impl impl)
+value_to_impl( Impl impl, value_to_tag<T>, value const& jv )
 {
-    return value_to_impl(try_value_to_tag<T>(), jv, impl).value();
+    return value_to_impl( impl, try_value_to_tag<T>(), jv ).value();
 }
 
 template<class T>
-using value_to_implementation
-    = conversion_implementation<T, value_to_conversion>;
+using value_to_category = conversion_category<T, value_to_conversion>;
 
 } // detail
 
