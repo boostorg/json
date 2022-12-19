@@ -75,13 +75,18 @@ project boost/json
     : source-location ../src
     ;
 
+alias json_deps
+   : usage-requirements
+     <library>/boost//container/<warnings-as-errors>off
+   ;
+
 alias json_sources
    : src.cpp
    : usage-requirements
      <library>/boost//container/<warnings-as-errors>off
    ;
 
-explicit json_sources ;
+explicit json_deps json_sources ;
 
 lib boost_json
    : json_sources

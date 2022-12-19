@@ -70,3 +70,5 @@ run limits.cpp main.cpp /boost/json//json_sources
     <define>BOOST_JSON_MAX_STRUCTURED_SIZE=20
     <define>BOOST_JSON_STACK_BUFFER_SIZE=256
     ;
+
+run unhygenic_macros.cpp main.cpp /boost/json//json_deps ;

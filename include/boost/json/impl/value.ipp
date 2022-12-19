@@ -399,7 +399,7 @@ operator>>(
             // if this assert fails, the streambuf is buggy
             BOOST_ASSERT( available > 0 );
 
-            available = std::min(
+            available = ( std::min )(
                 static_cast<std::size_t>(available), sizeof(read_buf) );
             // we read from the internal buffer of buf into our buffer
             available = buf.sgetn( read_buf, available );
