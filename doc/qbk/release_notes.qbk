@@ -27,6 +27,7 @@
 * [ issue 619 ] `operator>>` for `value`.
 
 [*Improvements]
+
 * [ issue 686 ] Null-like type conversion support (including `std::nullptr_t`).
 * [ issue 736 ] Non-throwing conversion from `value` to user types.
 * [ issue 677 ] `value_to/from` supports `std::optional` and `std::nullopt_t`.
