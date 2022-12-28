@@ -10,8 +10,10 @@
 // Test that header file is self-contained.
 #include <boost/json/serializer.hpp>
 
-#include <boost/json/parse.hpp>
 #include <boost/json/serialize.hpp>
+#include <boost/json/null_resource.hpp>
+#include <boost/json/parse.hpp>
+#include <boost/json/parse.hpp>
 #include <iostream>
 
 #include "parse-vectors.hpp"
@@ -366,6 +368,52 @@ public:
 
             char buf[32];
             BOOST_TEST(sr.read(buf) == "null");
+        }
+
+        // serializer(storage_ptr)
+        {
+            {
+                serializer sr((storage_ptr()));
+                char buf[32];
+                BOOST_TEST(sr.read(buf) == "null");
+            }
+            {
+                serializer sr(get_null_resource());
+                char buf[1];
+                BOOST_TEST_THROWS(
+                    sr.read(buf),
+                    std::exception);
+            }
+        }
+
+        // serializer(storage_ptr, unsigned char*, size_t)
+        {
+            {
+                unsigned char temp[256];
+                serializer sr(
+                    get_null_resource(),
+                    temp,
+                    sizeof(temp));
+                char buf[32];
+                BOOST_TEST(sr.read(&buf[0], 1) == "n");
+                BOOST_TEST(sr.read(&buf[1], 2) == "ul");
+                BOOST_TEST(sr.read(&buf[3], 1) == "l");
+                BOOST_TEST(
+                    std::memcmp(buf, "null", 4) == 0);
+            }
+            {
+                unsigned char temp[1];
+                serializer sr(
+                    get_null_resource(),
+                    temp,
+                    sizeof(temp));
+                array ar({1, 2, 3});
+                sr.reset(&ar);
+                char buf[32];
+                BOOST_TEST_THROWS(
+                    sr.read(&buf[0], 1),
+                    std::exception);
+            }
         }
 
         // done()
