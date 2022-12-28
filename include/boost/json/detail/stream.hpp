@@ -10,6 +10,8 @@
 #ifndef BOOST_JSON_DETAIL_STREAM_HPP
 #define BOOST_JSON_DETAIL_STREAM_HPP
 
+#include <boost/json/string_view.hpp>
+
 namespace boost {
 namespace json {
 namespace detail {
@@ -29,6 +31,12 @@ public:
         std::size_t size) noexcept
         : p_(data)
         , end_(data + size)
+    {
+    }
+
+    const_stream(
+        string_view sv) noexcept
+        : const_stream( sv.data(), sv.size() )
     {
     }
 
@@ -302,6 +310,14 @@ public:
         BOOST_ASSERT(remain() >= n);
         std::memcpy(p_, src, n);
         p_ += n;
+    }
+
+    // unchecked
+    void
+    append(
+        string_view sv) noexcept
+    {
+        append( sv.data(), sv.size() );
     }
 
     // unchecked

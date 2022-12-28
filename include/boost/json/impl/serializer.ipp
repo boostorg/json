@@ -411,12 +411,12 @@ write_number(stream& ss0)
                 ss.remain() >=
                     detail::max_number_chars))
             {
-                ss.advance(detail::format_int64(
-                    ss.data(), jv_->get_int64()));
+                ss.append(detail::write_int64(
+                    ss.data(), ss.remain(), jv_->get_int64()));
                 return true;
             }
-            cs0_ = { buf_, detail::format_int64(
-                buf_, jv_->get_int64()) };
+            cs0_ = detail::write_int64(
+                buf_, sizeof(buf_), jv_->get_int64());
             break;
 
         case kind::uint64:
@@ -424,12 +424,12 @@ write_number(stream& ss0)
                 ss.remain() >=
                     detail::max_number_chars))
             {
-                ss.advance(detail::format_uint64(
-                    ss.data(), jv_->get_uint64()));
+                ss.append(detail::write_uint64(
+                    ss.data(), ss.remain(), jv_->get_uint64()));
                 return true;
             }
-            cs0_ = { buf_, detail::format_uint64(
-                buf_, jv_->get_uint64()) };
+            cs0_ = detail::write_uint64(
+                buf_, sizeof(buf_), jv_->get_uint64());
             break;
 
         case kind::double_:
@@ -437,12 +437,12 @@ write_number(stream& ss0)
                 ss.remain() >=
                     detail::max_number_chars))
             {
-                ss.advance(detail::format_double(
-                    ss.data(), jv_->get_double()));
+                ss.append(detail::write_double(
+                    ss.data(), ss.remain(), jv_->get_double()));
                 return true;
             }
-            cs0_ = { buf_, detail::format_double(
-                buf_, jv_->get_double()) };
+            cs0_ = detail::write_double(
+                buf_, sizeof(buf_), jv_->get_double());
             break;
         }
     }
