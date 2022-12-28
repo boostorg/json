@@ -65,9 +65,13 @@ std::string
 serialize(
     value const& jv)
 {
-    std::string s;
-    serializer sr;
+    unsigned char buf[256];
+    serializer sr(
+        storage_ptr(),
+        buf,
+        sizeof(buf));
     sr.reset(&jv);
+    std::string s;
     serialize_impl(s, sr);
     return s;
 }
@@ -76,8 +80,12 @@ std::string
 serialize(
     array const& arr)
 {
+    unsigned char buf[256];
+    serializer sr(
+        storage_ptr(),
+        buf,
+        sizeof(buf));
     std::string s;
-    serializer sr;
     sr.reset(&arr);
     serialize_impl(s, sr);
     return s;
@@ -87,8 +95,12 @@ std::string
 serialize(
     object const& obj)
 {
+    unsigned char buf[256];
+    serializer sr(
+        storage_ptr(),
+        buf,
+        sizeof(buf));
     std::string s;
-    serializer sr;
     sr.reset(&obj);
     serialize_impl(s, sr);
     return s;
@@ -98,8 +110,12 @@ std::string
 serialize(
     string const& str)
 {
+    unsigned char buf[256];
+    serializer sr(
+        storage_ptr(),
+        buf,
+        sizeof(buf));
     std::string s;
-    serializer sr;
     sr.reset(&str);
     serialize_impl(s, sr);
     return s;
@@ -110,8 +126,12 @@ std::string
 serialize(
     string_view sv)
 {
+    unsigned char buf[256];
+    serializer sr(
+        storage_ptr(),
+        buf,
+        sizeof(buf));
     std::string s;
-    serializer sr;
     sr.reset(sv);
     serialize_impl(s, sr);
     return s;

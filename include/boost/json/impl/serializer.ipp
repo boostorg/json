@@ -40,6 +40,18 @@ enum class serializer::state : char
 serializer::
 ~serializer() noexcept = default;
 
+serializer::
+serializer(
+    storage_ptr sp,
+    unsigned char* buf,
+    std::size_t buf_size) noexcept
+    : st_(
+        std::move(sp),
+        buf,
+        buf_size)
+{
+}
+
 bool
 serializer::
 suspend(state st)
