@@ -25,7 +25,7 @@
 namespace boost {
 namespace json {
 
-class unhygenic_macros_test
+class intrusive_macros_test
 {
 public:
     void run()
@@ -34,7 +34,7 @@ public:
     }
 };
 
-TEST_SUITE(unhygenic_macros_test, "boost.json.unhygenic_macros");
+TEST_SUITE(intrusive_macros_test, "boost.json.intrusive_macros");
 
 } // namespace json
 } // namespace boost
