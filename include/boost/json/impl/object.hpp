@@ -342,8 +342,7 @@ at(string_view key) & ->
 {
     auto it = find(key);
     if(it == end())
-        detail::throw_out_of_range(
-            BOOST_CURRENT_LOCATION);
+        detail::throw_out_of_range();
     return it->value();
 }
 
@@ -362,8 +361,7 @@ at(string_view key) const& ->
 {
     auto it = find(key);
     if(it == end())
-        detail::throw_out_of_range(
-            BOOST_CURRENT_LOCATION);
+        detail::throw_out_of_range();
     return it->value();
 }
 
@@ -499,9 +497,7 @@ insert(
             std::distance(first, last));
     auto const n0 = size();
     if(n > max_size() - n0)
-        detail::throw_length_error(
-            "object too large",
-            BOOST_CURRENT_LOCATION);
+        detail::throw_length_error( "object too large" );
     reserve(n0 + n);
     revert_insert r(*this);
     while(first != last)

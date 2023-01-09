@@ -207,8 +207,7 @@ array::
 at(std::size_t pos) &
 {
     if(pos >= t_->size)
-        detail::throw_out_of_range(
-            BOOST_CURRENT_LOCATION);
+        detail::throw_out_of_range();
     return (*t_)[pos];
 }
 
@@ -224,8 +223,7 @@ array::
 at(std::size_t pos) const&
 {
     if(pos >= t_->size)
-        detail::throw_out_of_range(
-            BOOST_CURRENT_LOCATION);
+        detail::throw_out_of_range();
     return (*t_)[pos];
 }
 

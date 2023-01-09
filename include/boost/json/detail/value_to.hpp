@@ -300,13 +300,13 @@ value_to_impl(
     if( !obj )
     {
         BOOST_JSON_FAIL(ec, error::not_object);
-        throw_system_error(ec, BOOST_CURRENT_LOCATION);
+        throw_system_error( ec );
     }
 
     T result;
     ec = detail::try_reserve(result, obj->size(), reserve_implementation<T>());
     if( ec.failed() )
-        throw_system_error(ec, BOOST_CURRENT_LOCATION);
+        throw_system_error( ec );
 
     auto ins = detail::inserter(result, inserter_implementation<T>());
     for( key_value_pair const& kv: *obj )
@@ -362,13 +362,13 @@ value_to_impl(
     if( !arr )
     {
         BOOST_JSON_FAIL(ec, error::not_array);
-        throw_system_error(ec, BOOST_CURRENT_LOCATION);
+        throw_system_error( ec );
     }
 
     T result;
     ec = detail::try_reserve(result, arr->size(), reserve_implementation<T>());
     if( ec.failed() )
-        throw_system_error(ec, BOOST_CURRENT_LOCATION);
+        throw_system_error( ec );
 
     auto ins = detail::inserter(result, inserter_implementation<T>());
     for( value const& val: *arr )
@@ -452,14 +452,14 @@ value_to_impl(
     if( !arr )
     {
         BOOST_JSON_FAIL(ec, error::not_array);
-        throw_system_error(ec, BOOST_CURRENT_LOCATION);
+        throw_system_error( ec );
     }
 
     constexpr std::size_t N = std::tuple_size<remove_cvref<T>>::value;
     if( N != arr->size() )
     {
         BOOST_JSON_FAIL(ec, error::size_mismatch);
-        throw_system_error(ec, BOOST_CURRENT_LOCATION);
+        throw_system_error( ec );
     }
 
     return make_tuple_like<T>(
@@ -627,7 +627,7 @@ value_to_impl(
 {
     auto res = tag_invoke(try_value_to_tag<T>(), jv);
     if( res.has_error() )
-        throw_system_error(res.error(), BOOST_CURRENT_LOCATION);
+        throw_system_error( res.error() );
     return std::move(*res);
 }
 

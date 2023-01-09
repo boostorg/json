@@ -905,8 +905,7 @@ public:
     at(std::size_t pos)
     {
         if(pos >= size())
-            detail::throw_out_of_range(
-                BOOST_CURRENT_LOCATION);
+            detail::throw_out_of_range();
         return impl_.data()[pos];
     }
 
@@ -931,8 +930,7 @@ public:
     at(std::size_t pos) const
     {
         if(pos >= size())
-            detail::throw_out_of_range(
-                BOOST_CURRENT_LOCATION);
+            detail::throw_out_of_range();
         return impl_.data()[pos];
     }
 

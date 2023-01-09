@@ -66,8 +66,7 @@ protected:
         std::size_t,
         std::size_t) override
     {
-        detail::throw_bad_alloc(
-            BOOST_CURRENT_LOCATION);
+        detail::throw_bad_alloc();
     }
 
     void

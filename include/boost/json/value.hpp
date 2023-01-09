@@ -2441,7 +2441,7 @@ public:
         error_code ec;
         auto result = to_number<T>(ec);
         if(ec)
-            detail::throw_system_error(ec, BOOST_CURRENT_LOCATION);
+            detail::throw_system_error( ec );
         return result;
     }
 
@@ -2507,9 +2507,7 @@ public:
     as_object() &
     {
         if(! is_object())
-            detail::throw_invalid_argument(
-                "not an object",
-                BOOST_CURRENT_LOCATION);
+            detail::throw_invalid_argument( "not an object" );
         return obj_;
     }
 
@@ -2523,9 +2521,7 @@ public:
     as_object() const&
     {
         if(! is_object())
-            detail::throw_invalid_argument(
-                "not an object",
-                BOOST_CURRENT_LOCATION);
+            detail::throw_invalid_argument( "not an object" );
         return obj_;
     }
     /* @} */
@@ -2549,9 +2545,7 @@ public:
     as_array() &
     {
         if(! is_array())
-            detail::throw_invalid_argument(
-                "array required",
-                BOOST_CURRENT_LOCATION);
+            detail::throw_invalid_argument( "array required" );
         return arr_;
     }
 
@@ -2565,9 +2559,7 @@ public:
     as_array() const&
     {
         if(! is_array())
-            detail::throw_invalid_argument(
-                "array required",
-                BOOST_CURRENT_LOCATION);
+            detail::throw_invalid_argument( "array required" );
         return arr_;
     }
     /* @} */
@@ -2591,9 +2583,7 @@ public:
     as_string() &
     {
         if(! is_string())
-            detail::throw_invalid_argument(
-                "not a string",
-                BOOST_CURRENT_LOCATION);
+            detail::throw_invalid_argument( "not a string" );
         return str_;
     }
 
@@ -2607,9 +2597,7 @@ public:
     as_string() const&
     {
         if(! is_string())
-            detail::throw_invalid_argument(
-                "not a string",
-                BOOST_CURRENT_LOCATION);
+            detail::throw_invalid_argument( "not a string" );
         return str_;
     }
     /* @} */
@@ -2632,9 +2620,7 @@ public:
     as_int64()
     {
         if(! is_int64())
-            detail::throw_invalid_argument(
-                "not an int64",
-                BOOST_CURRENT_LOCATION);
+            detail::throw_invalid_argument( "not an int64" );
         return sca_.i;
     }
 
@@ -2656,9 +2642,7 @@ public:
     as_int64() const
     {
         if(! is_int64())
-            detail::throw_invalid_argument(
-                "not an int64",
-                BOOST_CURRENT_LOCATION);
+            detail::throw_invalid_argument( "not an int64" );
         return sca_.i;
     }
 
@@ -2680,9 +2664,7 @@ public:
     as_uint64()
     {
         if(! is_uint64())
-            detail::throw_invalid_argument(
-                "not a uint64",
-                BOOST_CURRENT_LOCATION);
+            detail::throw_invalid_argument( "not a uint64" );
         return sca_.u;
     }
 
@@ -2704,9 +2686,7 @@ public:
     as_uint64() const
     {
         if(! is_uint64())
-            detail::throw_invalid_argument(
-                "not a uint64",
-                BOOST_CURRENT_LOCATION);
+            detail::throw_invalid_argument( "not a uint64" );
         return sca_.u;
     }
 
@@ -2728,9 +2708,7 @@ public:
     as_double()
     {
         if(! is_double())
-            detail::throw_invalid_argument(
-                "not a double",
-                BOOST_CURRENT_LOCATION);
+            detail::throw_invalid_argument( "not a double" );
         return sca_.d;
     }
 
@@ -2752,9 +2730,7 @@ public:
     as_double() const
     {
         if(! is_double())
-            detail::throw_invalid_argument(
-                "not a double",
-                BOOST_CURRENT_LOCATION);
+            detail::throw_invalid_argument( "not a double" );
         return sca_.d;
     }
 
@@ -2776,9 +2752,7 @@ public:
     as_bool()
     {
         if(! is_bool())
-            detail::throw_invalid_argument(
-                "bool required",
-                BOOST_CURRENT_LOCATION);
+            detail::throw_invalid_argument( "bool required" );
         return sca_.b;
     }
 
@@ -2800,9 +2774,7 @@ public:
     as_bool() const
     {
         if(! is_bool())
-            detail::throw_invalid_argument(
-                "bool required",
-                BOOST_CURRENT_LOCATION);
+            detail::throw_invalid_argument( "bool required" );
         return sca_.b;
     }
 
@@ -3880,9 +3852,7 @@ public:
         : value_(std::forward<Args>(args)...)
     {
         if(key.size() > string::max_size())
-            detail::throw_length_error(
-                "key too large",
-                BOOST_CURRENT_LOCATION);
+            detail::throw_length_error( "key too large" );
         auto s = reinterpret_cast<
             char*>(value_.storage()->
                 allocate(key.size() + 1, alignof(char)));

@@ -92,8 +92,7 @@ write_some(
     auto const n = write_some(
         data, size, ec);
     if(ec)
-        detail::throw_system_error(ec,
-            BOOST_CURRENT_LOCATION);
+        detail::throw_system_error( ec );
     return n;
 }
 
@@ -137,8 +136,7 @@ write(
     auto const n = write(
         data, size, ec);
     if(ec)
-        detail::throw_system_error(ec,
-            BOOST_CURRENT_LOCATION);
+        detail::throw_system_error( ec );
     return n;
 }
 
@@ -156,8 +154,7 @@ release()
             p_.fail(ec);
         }
         detail::throw_system_error(
-            p_.last_error(),
-            BOOST_CURRENT_LOCATION);
+            p_.last_error());
     }
     return p_.handler().st.release();
 }

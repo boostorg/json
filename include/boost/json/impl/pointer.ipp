@@ -347,7 +347,7 @@ value::at_pointer(string_view ptr) const&
     error_code ec;
     auto const found = find_pointer(ptr, ec);
     if( !found )
-        detail::throw_system_error(ec, BOOST_CURRENT_LOCATION);
+        detail::throw_system_error( ec );
     return *found;
 }
 
@@ -491,7 +491,7 @@ value::set_at_pointer(
     error_code ec;
     value* result = set_at_pointer( sv, ref, ec, opts );
     if( !result )
-        detail::throw_system_error(ec, BOOST_CURRENT_LOCATION);
+        detail::throw_system_error( ec );
     return *result;
 }
 
