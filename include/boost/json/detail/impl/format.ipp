@@ -12,6 +12,8 @@
 #define BOOST_JSON_DETAIL_IMPL_FORMAT_IPP
 
 #include <boost/json/detail/ryu/ryu.hpp>
+#include <boost/core/ignore_unused.hpp>
+
 #include <cstring>
 
 namespace boost {
@@ -56,6 +58,7 @@ inline void format_digit( char * dest, unsigned v )
     *dest = static_cast<char>( v + '0' );
 }
 
+static
 unsigned
 format_uint64(
     char* dest,
@@ -97,6 +100,7 @@ format_uint64(
     return n;
 }
 
+static
 unsigned
 format_int64(
     char* dest, int64_t i) noexcept
@@ -110,12 +114,51 @@ format_int64(
     return 1 + format_uint64(dest, ui);
 }
 
+static
 unsigned
 format_double(
     char* dest, double d) noexcept
 {
     return static_cast<int>(
         ryu::d2s_buffered_n(d, dest));
+}
+
+//------------------------------------------------
+
+string_view
+write_int64(
+    char* temp,
+    std::size_t size,
+    std::int64_t v) noexcept
+{
+    boost::ignore_unused(size);
+    auto const n =
+        format_int64(temp, v);
+    return { temp, n };
+}
+
+string_view
+write_uint64(
+    char* temp,
+    std::size_t size,
+    std::uint64_t v) noexcept
+{
+    boost::ignore_unused(size);
+    auto const n =
+        format_uint64(temp, v);
+    return { temp, n };
+}
+
+string_view
+write_double(
+    char* temp,
+    std::size_t size,
+    double v) noexcept
+{
+    boost::ignore_unused(size);
+    auto const n =
+        format_double(temp, v);
+    return { temp, n };
 }
 
 } // detail

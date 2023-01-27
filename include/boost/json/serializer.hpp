@@ -15,6 +15,8 @@
 #include <boost/json/detail/format.hpp>
 #include <boost/json/detail/stack.hpp>
 #include <boost/json/detail/stream.hpp>
+#include <boost/json/detail/writer.hpp>
+#include <cstddef>
 
 namespace boost {
 namespace json {
@@ -56,46 +58,18 @@ namespace json {
 */
 class serializer
 {
-    enum class state : char;
-    // VFALCO Too many streams
-    using stream = detail::stream;
-    using const_stream = detail::const_stream;
-    using local_stream = detail::local_stream;
-    using local_const_stream =
-        detail::local_const_stream;
+    using init_fn = bool(serializer::*)();
+    using resume_fn =
+        bool(*)(detail::writer&);
 
-    using fn_t = bool (serializer::*)(stream&);
-
-#ifndef BOOST_JSON_DOCS
-    union
-    {
-        value const* pv_;
-        array const* pa_;
-        object const* po_;
-    };
-#endif
-    fn_t fn0_ = &serializer::write_null<true>;
-    fn_t fn1_ = &serializer::write_null<false>;
-    value const* jv_ = nullptr;
-    detail::stack st_;
-    const_stream cs0_;
-    char buf_[detail::max_number_chars + 1];
+    void const* pt_ = nullptr;  // top-level thing
+    std::size_t pn_ = 0;        // for string_view
+    detail::writer w_;
+    init_fn init_ = nullptr;
     bool done_ = false;
 
-    inline bool suspend(state st);
-    inline bool suspend(
-        state st, array::const_iterator it, array const* pa);
-    inline bool suspend(
-        state st, object::const_iterator it, object const* po);
-    template<bool StackEmpty> bool write_null   (stream& ss);
-    template<bool StackEmpty> bool write_true   (stream& ss);
-    template<bool StackEmpty> bool write_false  (stream& ss);
-    template<bool StackEmpty> bool write_string (stream& ss);
-    template<bool StackEmpty> bool write_number (stream& ss);
-    template<bool StackEmpty> bool write_array  (stream& ss);
-    template<bool StackEmpty> bool write_object (stream& ss);
-    template<bool StackEmpty> bool write_value  (stream& ss);
-    inline string_view read_some(char* dest, std::size_t size);
+    string_view read_some(
+        char* dest, std::size_t size);
 
 public:
     /// Move constructor (deleted)
@@ -114,7 +88,7 @@ public:
     BOOST_JSON_DECL
     ~serializer() noexcept;
 
-    /** Default constructor
+    /** Constructor
 
         This constructs a serializer with no value.
         The value may be set later by calling @ref reset.
@@ -129,6 +103,38 @@ public:
     */
     BOOST_JSON_DECL
     serializer() noexcept;
+
+    /** Constructor
+
+        This constructs a serializer with no value.
+        The value may be set later by calling @ref reset.
+        If serialization is attempted with no value,
+        the output is as if a null value is serialized.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param sp A pointer to the @ref memory_resource
+        to use when producing partial output.
+        Shared ownership of the memory resource
+        is retained until the serializer is
+        destroyed.
+
+        @param buf An optional static buffer to
+        use for temporary storage when producing
+        partial output.
+
+        @param buf_size The number of bytes of
+        valid memory pointed to by `buf`.
+    */
+    BOOST_JSON_DECL
+    serializer(
+        storage_ptr sp,
+        unsigned char* buf = nullptr,
+        std::size_t buf_size = 0) noexcept;
 
     /** Returns `true` if the serialization is complete
 
@@ -195,6 +201,10 @@ public:
     void
     reset(string_view sv) noexcept;
 
+    template<class T>
+    void
+    reset(T const* t);
+
     /** Read the next buffer of serialized JSON
 
         This function attempts to fill the caller
@@ -260,7 +270,7 @@ public:
 
         @return A @ref string_view containing the
         characters written, which may be less than
-        `size`.
+        `N`.
 
         @param dest The character array to write to.
     */
@@ -284,9 +294,46 @@ public:
         return read(dest, n);
     }
 #endif
+
+private:
+    template<class T>
+    bool init();
+
+    template<class T>
+    static bool write(detail::writer& w, T const& t);
+
+    bool init_value();
+    bool init_object();
+    bool init_array();
+    bool init_string();
+    bool init_string_view();
+    bool init_null();
+
+    static BOOST_JSON_DECL bool write(
+        detail::writer& w, value const& jv);
+    static BOOST_JSON_DECL bool write(
+        detail::writer& w, object const& obj);
+    static BOOST_JSON_DECL bool write(
+        detail::writer& w, array const& arr);
+    static BOOST_JSON_DECL bool write(
+        detail::writer& w, string_view s);
+    static BOOST_JSON_DECL bool write(
+        detail::writer& w, char const* s, std::size_t n);
+    static BOOST_JSON_DECL bool write(
+        detail::writer& w, double v);
+    static BOOST_JSON_DECL bool write(
+        detail::writer& w, std::uint64_t v);
+    static BOOST_JSON_DECL bool write(
+        detail::writer& w, std::int64_t v);
+    static BOOST_JSON_DECL bool write(
+        detail::writer& w, bool b);
+    static BOOST_JSON_DECL bool write(
+        detail::writer& w, std::nullptr_t);
 };
 
-} // namespace json
-} // namespace boost
+} // json
+} // boost
+
+#include <boost/json/impl/serializer.hpp>
 
 #endif

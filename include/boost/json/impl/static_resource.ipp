@@ -11,8 +11,8 @@
 #define BOOST_JSON_IMPL_STATIC_RESOURCE_IPP
 
 #include <boost/json/static_resource.hpp>
-#include <boost/json/detail/align.hpp>
 #include <boost/json/detail/except.hpp>
+#include <boost/align/align.hpp>
 #include <memory>
 
 namespace boost {
@@ -46,7 +46,7 @@ do_allocate(
     std::size_t n,
     std::size_t align)
 {
-    auto p = detail::align(
+    auto p = alignment::align(
         align, n, p_, n_);
     if(! p)
         detail::throw_bad_alloc();

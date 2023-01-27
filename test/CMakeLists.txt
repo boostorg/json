@@ -41,10 +41,10 @@ target_compile_definitions(boost_json-limits PRIVATE
 add_test(NAME boost_json-limits COMMAND boost_json-limits)
 add_dependencies(tests boost_json-limits)
 
-add_executable(boost_json-unhygenic_macros unhygenic_macros.cpp main.cpp Jamfile)
-boost_json_setup_properties(boost_json-unhygenic_macros)
-target_compile_definitions(boost_json-unhygenic_macros PRIVATE
+add_executable(boost_json-macro-tests unhygenic_macros.cpp main.cpp Jamfile)
+boost_json_setup_properties(boost_json-macro-tests)
+target_compile_definitions(boost_json-macro-tests PRIVATE
     BOOST_JSON_NO_LIB=1
 )
-add_test(NAME boost_json-unhygenic_macros COMMAND boost_json-unhygenic_macros)
-add_dependencies(tests boost_json-unhygenic_macros)
+add_test(NAME boost_json-macro-tests COMMAND boost_json-macro-tests)
+add_dependencies(tests boost_json-macro-tests)

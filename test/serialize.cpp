@@ -58,9 +58,19 @@ public:
     }
 
     void
+    testUDT()
+    {
+        {
+            std::vector<std::uint64_t> v = { 1, 2, 3 };
+            BOOST_TEST(serialize(v) == "[1,2,3]");
+        }
+    }
+
+    void
     run()
     {
         testSerialize();
+        testUDT();
     }
 };
 
