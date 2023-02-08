@@ -7,9 +7,13 @@
 # Official repository: https://github.com/boostorg/json
 #
 
-exe bench :
-    bench.cpp
-    /boost/json//boost_json
-    :
-    <include>../test
-    ;
+if [ glob lib/nlohmann/single_include/nlohmann/json.hpp ]
+{
+    exe bench :
+        bench.cpp
+        /boost/json//boost_json
+        :
+        <include>../test
+        <include>.
+        ;
+}
