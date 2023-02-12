@@ -19,3 +19,11 @@ add_executable(bench
 
 target_include_directories(bench PRIVATE ../test)
 target_link_libraries(bench PRIVATE Boost::json)
+
+if(EXISTS lib/nlohmann/single_include/nlohmann/json.hpp)
+    target_compile_definitions(bench PRIVATE BOOST_JSON_HAS_NLOHMANN_JSON)
+endif()
+
+if(EXISTS lib/rapidjson/include/rapidjson/rapidjson.h)
+    target_compile_definitions(bench PRIVATE BOOST_JSON_HAS_RAPIDJSON)
+endif()
