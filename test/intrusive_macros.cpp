@@ -17,6 +17,7 @@
 
 // X11 macros
 #define Opposite
+#define Bool
 
 #include <boost/json/src.hpp>
 

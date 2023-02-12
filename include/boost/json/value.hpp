@@ -353,12 +353,12 @@ public:
         bool b,
         storage_ptr sp = {}) noexcept;
 #else
-    template<class Bool
+    template<class T
         ,class = typename std::enable_if<
-            std::is_same<Bool, bool>::value>::type
+            std::is_same<T, bool>::value>::type
     >
     value(
-        Bool b,
+        T b,
         storage_ptr sp = {}) noexcept
         : sca_(b, std::move(sp))
     {
@@ -1155,11 +1155,11 @@ public:
 #ifdef BOOST_JSON_DOCS
     value& operator=(bool b) noexcept;
 #else
-    template<class Bool
+    template<class T
         ,class = typename std::enable_if<
-            std::is_same<Bool, bool>::value>::type
+            std::is_same<T, bool>::value>::type
     >
-    value& operator=(Bool b) noexcept
+    value& operator=(T b) noexcept
     {
         if(is_scalar())
         {

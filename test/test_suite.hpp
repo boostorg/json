@@ -241,15 +241,15 @@ public:
     virtual void pass(char const* expr, char const* file, int line, char const* func) = 0;
     virtual void fail(char const* expr, char const* file, int line, char const* func) = 0;
 
-    template<class Bool
+    template<class T
 #if 0
         ,class = typename std::enable_if<
-            std::is_convertible<bool, Bool>::Value>::type
+            std::is_convertible<bool, T>::Value>::type
 #endif
     >
     bool
     maybe_fail(
-        Bool cond,
+        T cond,
         char const* expr,
         char const* file,
         int line,

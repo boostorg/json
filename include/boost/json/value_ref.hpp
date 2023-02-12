@@ -234,12 +234,12 @@ public:
     value_ref(bool b) noexcept;
 #else
     template<
-        class Bool
+        class T
         ,class = typename std::enable_if<
-            std::is_same<Bool, bool>::value>::type
+            std::is_same<T, bool>::value>::type
     >
     value_ref(
-        Bool b) noexcept
+        T b) noexcept
         : arg_(b)
         , cf_{&from_builtin<bool>, &arg_.bool_}
         , what_(what::cfunc)
