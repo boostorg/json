@@ -79,6 +79,9 @@ file in your project.
 #include <boost/json/src.hpp>
 ```
 
+MSVC users must also define the macro `BOOST_JSON_NO_LIB` to disable
+auto-linking.
+
 ### Embedded
 
 Boost.JSON works great on embedded devices. The library uses local
