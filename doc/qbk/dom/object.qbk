@@ -27,7 +27,7 @@ standard maps with these properties:
 * All inserted values will use the same __memory_resource__ as the container itself.
 
 An empty object may be constructed without incurring any memory allocations
-using the default memory resource. A __storage_ptr__ can also be explicitly
+using the __default_memory_resource__. A __storage_ptr__ can also be explicitly
 specified:
 
 [snippet_objects_1]

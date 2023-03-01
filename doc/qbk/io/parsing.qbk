@@ -78,8 +78,8 @@ __memory_resource__ are still possible:
 
 [doc_parsing_3]
 
-The __value__ returned in the preceding examples use the default
-memory resource. The following code uses a __monotonic_resource__,
+The __value__ returned in the preceding examples use the
+__default_memory_resource__. The following code uses a __monotonic_resource__,
 which results in faster parsing. `jv` is marked `const` to prevent
 subsequent modification, because containers using a monotonic
 resource waste memory when mutated.

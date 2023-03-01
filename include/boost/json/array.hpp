@@ -185,13 +185,15 @@ public:
     /** Constructor.
 
         The constructed array is empty with zero
-        capacity, using the default memory resource.
+        capacity, using the [default memory resource].
 
         @par Complexity
         Constant.
 
         @par Exception Safety
         No-throw guarantee.
+
+        [default memory resource]: json/allocators/storage_ptr.html#json.allocators.storage_ptr.default_memory_resource
     */
     array() noexcept
         : t_(&empty_)

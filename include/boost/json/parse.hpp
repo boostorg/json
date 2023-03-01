@@ -28,7 +28,7 @@ namespace json {
     as a @ref value. If the buffer does not contain a
     complete serialized JSON, an error occurs. In this
     case the returned value will be null, using the
-    default memory resource.
+    [default memory resource].
 
     @par Complexity
     Linear in `s.size()`.
@@ -46,7 +46,7 @@ namespace json {
 
     @param sp The memory resource that the new value and all
     of its elements will use. If this parameter is omitted,
-    the default memory resource is used.
+    the [default memory resource] is used.
 
     @param opt The options for the parser. If this parameter
     is omitted, the parser will accept only standard JSON.
@@ -54,6 +54,8 @@ namespace json {
     @see
         @ref parse_options,
         @ref stream_parser.
+
+    [default memory resource]: json/allocators/storage_ptr.html#json.allocators.storage_ptr.default_memory_resource
 */
 /** @{ */
 BOOST_JSON_DECL
@@ -94,7 +96,7 @@ parse(
 
     @param sp The memory resource that the new value and all
     of its elements will use. If this parameter is omitted,
-    the default memory resource is used.
+    the [default memory resource] is used.
 
     @param opt The options for the parser. If this parameter
     is omitted, the parser will accept only standard JSON.
@@ -104,6 +106,8 @@ parse(
     @see
         @ref parse_options,
         @ref stream_parser.
+
+    [default memory resource]: json/allocators/storage_ptr.html#json.allocators.storage_ptr.default_memory_resource
 */
 BOOST_JSON_DECL
 value
@@ -118,7 +122,7 @@ parse(
     complete JSON entity, returned as a @ref value. If the stream does not
     contain a complete serialized JSON, or contains extra non-whitespace data,
     an error occurs. In this case the returned value will be `null`, using the
-    default memory resource.
+    [default memory resource].
 
     @par Complexity
     Linear in the size of consumed input.
@@ -137,13 +141,15 @@ parse(
     @param ec Set to the error, if any occurred.
 
     @param sp The memory resource that the new value and all of its elements
-    will use. If this parameter is omitted, the default memory resource
+    will use. If this parameter is omitted, the [default memory resource]
     is used.
 
     @param opt The options for the parser. If this parameter is omitted, the
     parser will accept only standard JSON.
 
     @see @ref parse_options, @ref stream_parser, @ref value::operator>>.
+
+    [default memory resource]: json/allocators/storage_ptr.html#json.allocators.storage_ptr.default_memory_resource
 */
 /** @{ */
 BOOST_JSON_DECL
@@ -185,13 +191,15 @@ parse(
     @param is The stream to read from.
 
     @param sp The memory resource that the new value and all of its elements
-    will use. If this parameter is omitted, the default memory resource
+    will use. If this parameter is omitted, the [default memory resource]
     is used.
 
     @param opt The options for the parser. If this parameter is omitted, the
     parser will accept only standard JSON.
 
     @see @ref parse_options, @ref stream_parser, @ref value::operator>>.
+
+    [default memory resource]: json/allocators/storage_ptr.html#json.allocators.storage_ptr.default_memory_resource
 */
 BOOST_JSON_DECL
 value

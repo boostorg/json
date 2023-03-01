@@ -24,13 +24,9 @@ namespace json {
 
 /** A smart pointer to a @ref memory_resource
 
-    This container is used to hold a pointer to a
-    memory resource. The pointed-to resource is
-    always valid; default-constructed pointers
-    use the default memory resource, which calls
-    into the standard global system heap.
-    Depending on the means of construction, the
-    ownership will be either:
+    This container is used to hold a pointer to a memory resource. The
+    pointed-to resource is always valid. Depending on the means of
+    construction, the ownership will be either:
 
     @li Non-owning, when constructing from a raw
     pointer to @ref memory_resource or from a
@@ -155,15 +151,15 @@ public:
     /** Constructor
 
         This constructs a non-owning pointer that refers
-        to the default memory resource, which uses the
-        standard global system heap to allocate and
-        free memory.
+        to the [default memory resource].
 
         @par Complexity
         Constant.
 
         @par Exception Safety
         No-throw guarantee.
+
+        [default memory resource]: json/allocators/storage_ptr.html#json.allocators.storage_ptr.default_memory_resource
     */
     storage_ptr() noexcept
         : i_(0)
@@ -248,7 +244,7 @@ public:
         ownership will be transferred to `*this`.
 
         After construction, `other` will point
-        to the default memory resource.
+        to the [default memory resource].
 
         @par Complexity
         Constant.
@@ -257,6 +253,8 @@ public:
         No-throw guarantee.
 
         @param other The pointer to construct from.
+
+        [default memory resource]: json/allocators/storage_ptr.html#json.allocators.storage_ptr.default_memory_resource
     */
     storage_ptr(
         storage_ptr&& other) noexcept
@@ -304,7 +302,7 @@ public:
         ownership will be transferred to `*this`.
 
         After assignment, `other` will point
-        to the default memory resource.
+        to the [default memory resource].
         If `*this` previously had shared ownership,
         it is released before the function returns.
 
@@ -315,6 +313,8 @@ public:
         No-throw guarantee.
 
         @param other The storage pointer to move.
+
+        [default memory resource]: json/allocators/storage_ptr.html#json.allocators.storage_ptr.default_memory_resource
     */
     storage_ptr&
     operator=(

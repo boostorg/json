@@ -168,11 +168,13 @@ public:
     /** Default constructor.
 
         The string will have a zero size and a non-zero,
-        unspecified capacity, using the default memory resource.
+        unspecified capacity, using the [default memory resource].
 
         @par Complexity
 
         Constant.
+
+        [default memory resource]: json/allocators/storage_ptr.html#json.allocators.storage_ptr.default_memory_resource
     */
     string() = default;
 

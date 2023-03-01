@@ -140,13 +140,15 @@ public:
     /** Default constructor.
 
         The constructed value is null,
-        using the default memory resource.
+        using the [default memory resource].
 
         @par Complexity
         Constant.
 
         @par Exception Safety
         No-throw guarantee.
+
+        [default memory resource]: json/allocators/storage_ptr.html#json.allocators.storage_ptr.default_memory_resource
     */
     value() noexcept
         : sca_()

@@ -36,7 +36,7 @@ workloads. These implementations are evaluated:
 ][
     [[*boost]]
     [
-        Parses the input using the default memory resource,
+        Parses the input using the __default_memory_resource__,
         which uses the standard C++ allocator, and is designed
         for general use including mutation of the document
         after it is parsed.

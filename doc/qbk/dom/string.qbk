@@ -69,8 +69,9 @@ With the removal of overloads that specify parameters for a substring, a member 
 
 [snippet_strings_2]
 
-A __string__ may be constructed using the default memory resource without incurring any
-memory allocations. Alternatively, a __storage_ptr__ can be provided explicitly:
+A __string__ may be constructed using the __default_memory_resource__ without
+incurring any memory allocations. Alternatively, a __storage_ptr__ can be
+provided explicitly:
 
 [snippet_strings_1]
 
