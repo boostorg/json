@@ -26,7 +26,7 @@ namespace detail {
 // A simple memory resource that uses operator new and delete.
 class
     BOOST_SYMBOL_VISIBLE
-    BOOST_JSON_CLASS_DECL
+    BOOST_JSON_DECL
     default_resource final
     : public memory_resource
 {

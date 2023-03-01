@@ -29,7 +29,6 @@ docca.reference reference.qbk
         <doxygen:param>EXPAND_ONLY_PREDEF=YES
         <doxygen:param>"PREDEFINED=\\
             BOOST_FORCEINLINE \\
-            BOOST_JSON_CLASS_DECL \\
             BOOST_JSON_DECL \\
             BOOST_JSON_DOCS \\
             BOOST_JSON_PUBLIC \\

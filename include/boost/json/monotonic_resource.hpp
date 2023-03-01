@@ -83,7 +83,7 @@ namespace json {
     @see
         https://en.wikipedia.org/wiki/Region-based_memory_management
 */
-class BOOST_JSON_CLASS_DECL
+class BOOST_JSON_DECL
     monotonic_resource final
     : public memory_resource
 {
