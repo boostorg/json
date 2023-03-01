@@ -313,7 +313,7 @@ usingInitLists()
 
         assert( jv.as_array().size() == 4 );
 
-        assert( serialize(jv) == "[true,2,\"hello\",null]" );
+        assert( serialize(jv) == R"([true,2,"hello",null])" );
 
         //]
     }
@@ -327,7 +327,7 @@ usingInitLists()
 
         assert( jv.as_array().back().is_array() );
 
-        assert( serialize(jv) == "[true,2,\"hello\",[\"bye\",null,false]]" );
+        assert( serialize(jv) == R"([true,2,"hello",["bye",null,false]])" );
 
         //]
     }
@@ -390,11 +390,11 @@ usingInitLists()
 
         assert( jv.is_object() );
 
-        assert( serialize(jv) == "{\"mercury\":36,\"venus\":67,\"earth\":93}" );
+        assert( serialize(jv) == R"({"mercury":36,"venus":67,"earth":93})" );
 
         array ja = { { "mercury", 36 }, { "venus", 67 }, { "earth", 93 } };
 
-        assert( serialize(ja) == "[[\"mercury\",36],[\"venus\",67],[\"earth\",93]]" );
+        assert( serialize(ja) == R"([["mercury",36],["venus",67],["earth",93]])" );
 
         //]
 

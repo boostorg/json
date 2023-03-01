@@ -20,7 +20,8 @@ algorithms that implement
 a lightweight data-interchange format. This format is easy for humans to
 read and write, and easy for machines to parse and generate. It is based
 on a subset of the JavaScript Programming Language
-([Standard ECMA-262](https://www.ecma-international.org/ecma-262/10.0/index.html)).
+([Standard ECMA-262](https://www.ecma-international.org/ecma-262/10.0/index.html)),
+and is currently standardised in [RFC 8259](https://datatracker.ietf.org/doc/html/rfc8259).
 JSON is a text format that is language-independent but uses conventions
 that are familiar to programmers of the C-family of languages, including
 C, C++, C#, Java, JavaScript, Perl, Python, and many others. These
