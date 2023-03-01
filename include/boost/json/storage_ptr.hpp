@@ -474,20 +474,20 @@ public:
 
     @par Mandates
     @code
-    std::is_base_of< memory_resource, T >::value == true
+    std::is_base_of< memory_resource, U >::value == true
     @endcode
 
     @par Complexity
-    Same as `new T( std::forward<Args>(args)... )`.
+    Same as `new U( std::forward<Args>(args)... )`.
 
     @par Exception Safety
     Strong guarantee.
 
-    @tparam T The type of memory resource to create.
+    @tparam U The type of memory resource to create.
 
-    @param args Parameters forwarded to the constructor of `T`.
+    @param args Parameters forwarded to the constructor of `U`.
 */
-template<class T, class... Args>
+template<class U, class... Args>
 storage_ptr
 make_shared_resource(Args&&... args)
 {
@@ -495,9 +495,9 @@ make_shared_resource(Args&&... args)
     // `T` is not a memory resource.
     BOOST_STATIC_ASSERT(
         std::is_base_of<
-            memory_resource, T>::value);
+            memory_resource, U>::value);
     return storage_ptr(new
-        detail::shared_resource_impl<T>(
+        detail::shared_resource_impl<U>(
             std::forward<Args>(args)...));
 }
 #if defined(_MSC_VER)
