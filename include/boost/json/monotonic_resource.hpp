@@ -56,7 +56,7 @@ namespace json {
 
     @par Example
 
-    This parses a JSON into a value which uses a local
+    This parses a JSON text into a value which uses a local
     stack buffer, then prints the result.
 
     @code

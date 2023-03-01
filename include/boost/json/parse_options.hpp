@@ -33,7 +33,7 @@ struct parse_options
     /** Maximum nesting level of arrays and objects.
 
         This specifies the maximum number of nested
-        structures allowed while parsing a JSON. If
+        structures allowed while parsing a JSON text. If
         this limit is exceeded during a parse, an
         error is returned.
 
