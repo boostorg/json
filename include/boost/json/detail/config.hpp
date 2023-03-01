@@ -262,6 +262,19 @@
 # endif
 #endif
 
+#if defined(__cpp_constinit) && __cpp_constinit >= 201907L
+# define BOOST_JSON_CONSTINIT constinit
+#elif defined(__has_cpp_attribute) && defined(__clang__)
+# if __has_cpp_attribute(clang::require_constant_initialization)
+#  define BOOST_JSON_CONSTINIT [[clang::require_constant_initialization]]
+# endif
+#elif defined(__GNUC__) && (__GNUC__ >= 10)
+# define BOOST_JSON_CONSTINIT __constinit
+#endif
+#ifndef BOOST_JSON_CONSTINIT
+# define BOOST_JSON_CONSTINIT
+#endif
+
 namespace boost {
 namespace json {
 namespace detail {
