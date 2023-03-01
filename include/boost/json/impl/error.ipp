@@ -26,8 +26,8 @@ make_error_code(error e)
             return "boost.json";
         }
 
-        std::string
-        message(int ev) const override
+        char const* message( int ev, char*, std::size_t ) const noexcept
+            override
         {
             switch(static_cast<error>(ev))
             {
@@ -69,6 +69,12 @@ case error::size_mismatch: return "array size does not match target size";
 case error::exhausted_variants: return "exhausted all variants";
 case error::unknown_name: return "unknown name";
             }
+        }
+
+        std::string
+        message( int ev ) const override
+        {
+            return message( ev, nullptr, 0 );
         }
 
         error_condition
@@ -143,8 +149,8 @@ make_error_condition(condition c)
             return "boost.json";
         }
 
-        std::string
-        message(int cv) const override
+        char const* message( int cv, char*, std::size_t ) const noexcept
+            override
         {
             switch(static_cast<condition>(cv))
             {
@@ -160,6 +166,13 @@ make_error_condition(condition c)
                 return "An error occurred during conversion";
             }
         }
+
+        std::string
+        message( int cv ) const override
+        {
+            return message( cv, nullptr, 0 );
+        }
+
     };
     // on some versions of msvc-14.2 the category is put in RO memory
     // erroneusly, if the category object is const,
