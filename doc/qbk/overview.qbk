@@ -60,7 +60,12 @@ Boost.JSON offers these features:
 [section Requirements]
 
 * Requires only C++11
-* Link to a built static or dynamic Boost library, or use header-only (see below)
+* Link to a built static or dynamic Boost library (build instructions can be
+  found [@https://www.boost.org/doc/libs/release/more/getting_started/index.html
+  here]), or use header-only (see below)
+* Additional link to Boost.Container may be required
+  (as described in its [@https://www.boost.org/doc/libs/release/doc/html/container.html#container.intro.introduction_building_container
+  documentation])
 * Supports -fno-exceptions, detected automatically
 
 The library relies heavily on these well known C++ types in
