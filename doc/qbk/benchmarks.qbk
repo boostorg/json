@@ -103,87 +103,87 @@ The input files, available in the bench/data directory, are laid out thusly:
     [Size]
     [Description]
 ][
-    [[link json.benchmarks.parse_apache_builds_json [*apache_builds.json]]]
+    [[link parse_apache_builds_json [*apache_builds.json]]]
     [125KB]
     [
         Data from the Apache Jenkins installation.
     ]
 ][
-    [[link json.benchmarks.parse_canada_json [*canada.json]]]
+    [[link parse_canada_json [*canada.json]]]
     [2.2MB]
     [
         The largest file, containing a large number of 2-element
         arrays holding floating-point coordinate pairs.
     ]
 ][
-    [[link json.benchmarks.parse_citm_catalog_json [*citm_catalog.json]]]
+    [[link parse_citm_catalog_json [*citm_catalog.json]]]
     [1.69MB]
     [
         A large JSON with a variety of nesting, types, and lengths.
     ]
 ][
-    [[link json.benchmarks.parse_github_events_json [*github_events.json]]]
+    [[link parse_github_events_json [*github_events.json]]]
     [64KB]
     [
         An export of data from the Github Events API.
     ]
 ][
-    [[link json.benchmarks.parse_gsoc_2018_json [*gsoc-2018.json]]]
+    [[link parse_gsoc-2018_json [*gsoc-2018.json]]]
     [3.25MB]
     [
         Google Summer of Code 2018 data.
     ]
 ][
-    [[link json.benchmarks.parse_instruments_json [*instruments.json]]]
+    [[link parse_instruments_json [*instruments.json]]]
     [216KB]
     [
         An array of large objects.
     ]
 ][
-    [[link json.benchmarks.parse_marine_ik_json [*marine_ik.json]]]
+    [[link parse_marine_ik_json [*marine_ik.json]]]
     [2.91MB]
     [
         A three.js example model serialized to JSON.
     ]
 ][
-    [[link json.benchmarks.parse_mesh_json [*mesh.json]]]
+    [[link parse_mesh_json [*mesh.json]]]
     [707KB]
     [
         A JSON representing a 3D mesh. Contains many floating-point numbers.
     ]
 ][
-    [[link json.benchmarks.parse_mesh_pretty_json [*mesh.pretty.json]]]
+    [[link parse_mesh_pretty_json [*mesh.pretty.json]]]
     [1.54MB]
     [
         mesh.json with whitespace added.
     ]
 ][
-    [[link json.benchmarks.parse_numbers_json [*numbers.json]]]
+    [[link parse_numbers_json [*numbers.json]]]
     [147KB]
     [
         A array containing only floating-point numbers.
     ]
 ][
-    [[link json.benchmarks.parse_random_json [*random.json]]]
+    [[link parse_random_json [*random.json]]]
     [499KB]
     [
         A JSON with lots of Cyrillic characters.
     ]
 ][
-    [[link json.benchmarks.parse_twitter_json [*twitter.json]]]
+    [[link parse_twitter_json [*twitter.json]]]
     [617KB]
     [
         An export of data from Twitter's API.
     ]
 ][
-    [[link json.benchmarks.parse_twitterescaped_json [*twitterescaped.json]]]
+    [[link parse_twitterescaped_json [*twitterescaped.json]]]
     [550KB]
     [
         twitter.json with whitespace removed and non-ASCII
         characters replaced with Unicode escapes.
     ]
 ][
-    [[link json.benchmarks.parse_update_center_json [*update-center.json]]]
+    [[link parse_update-center_json [*update-center.json]]]
     [521KB]
     [
         An export of data from Twitter's API.
@@ -198,91 +198,72 @@ Compilers and optimization flags: gcc 8.1 (-O3), clang 12.0 (-O3), and msvc 19.2
 
 [/-----------------------------------------------------------------------------]
 
-[heading Parse apache_builds.json]
-[$json/images/parse_apache_builds.png [width 668px] [height 712px]]
+[block'''<simplesect>''']
 
-[heading Parse canada.json]
-[$json/images/parse_canada.png [width 668px] [height 712px]]
+To see benchmarks results you need a browser that supports HTML Canvas and
+JavaScript.
 
-[heading Parse citm_catalog.json]
-[$json/images/parse_citm_catalog.png [width 668px] [height 712px]]
+[#parse_apache_builds_json]
 
-[heading Parse github_events.json]
-[$json/images/parse_github_events.png [width 668px] [height 712px]]
+[#parse_canada_json]
 
-[heading Parse gsoc-2018.json]
-[$json/images/parse_gsoc_2018.png [width 668px] [height 712px]]
+[#parse_citm_catalog_json]
 
-[heading Parse instruments.json]
-[$json/images/parse_instruments.png [width 668px] [height 712px]]
+[#parse_github_events_json]
 
-[heading Parse marine_ik.json]
-[$json/images/parse_marine_ik.png [width 668px] [height 712px]]
+[#parse_gsoc-2018_json]
 
-[heading Parse mesh.json]
-[$json/images/parse_mesh.png [width 668px] [height 712px]]
+[#parse_instruments_json]
 
-[heading Parse mesh.pretty.json]
-[$json/images/parse_mesh_pretty.png [width 668px] [height 712px]]
+[#parse_marine_ik_json]
 
-[heading Parse numbers.json]
-[$json/images/parse_numbers.png [width 668px] [height 712px]]
+[#parse_mesh_json]
 
-[heading Parse random.json]
-[$json/images/parse_random.png [width 668px] [height 712px]]
+[#parse_mesh_pretty_json]
 
-[heading Parse twitter.json]
-[$json/images/parse_twitter.png [width 668px] [height 712px]]
+[#parse_numbers_json]
 
-[heading Parse twitterescaped.json]
-[$json/images/parse_twitterescaped.png [width 668px] [height 712px]]
+[#parse_random_json]
 
-[heading Parse update-center.json]
-[$json/images/parse_update_center.png [width 668px] [height 712px]]
+[#parse_twitter_json]
 
-[heading Parse apache_builds.json]
-[$json/images/parse_apache_builds.png [width 668px] [height 712px]]
+[#parse_twitterescaped_json]
+
+[#parse_update-center_json]
+
+[#parse_apache_builds_json]
+
+[#serialize_canada_json]
+
+[#serialize_citm_catalog_json]
+
+[#serialize_github_events_json]
+
+[#serialize_gsoc-2018_json]
+
+[#serialize_instruments_json]
+
+[#serialize_marine_ik_json]
+
+[#serialize_mesh_json]
+
+[#serialize_mesh.pretty_json]
+
+[#serialize_numbers_json]
+
+[#serialize_random_json]
+
+[#serialize_twitter_json]
+
+[#serialize_twitterescaped_json]
+
+[#serialize_update-center_json]
+
+[block'''</simplesect>''']
 
 [/-----------------------------------------------------------------------------]
 
-[heading Serialize canada.json]
-[$json/images/serialize_canada.png [width 668px] [height 712px]]
-
-[heading Serialize citm_catalog.json]
-[$json/images/serialize_citm_catalog.png [width 668px] [height 712px]]
-
-[heading Serialize github_events.json]
-[$json/images/serialize_github_events.png [width 668px] [height 712px]]
-
-[heading Serialize gsoc-2018.json]
-[$json/images/serialize_gsoc_2018.png [width 668px] [height 712px]]
-
-[heading Serialize instruments.json]
-[$json/images/serialize_instruments.png [width 668px] [height 712px]]
-
-[heading Serialize marine_ik.json]
-[$json/images/serialize_marine_ik.png [width 668px] [height 712px]]
-
-[heading Serialize mesh.json]
-[$json/images/serialize_mesh.png [width 668px] [height 712px]]
-
-[heading Serialize mesh.pretty.json]
-[$json/images/serialize_mesh_pretty.png [width 668px] [height 712px]]
-
-[heading Serialize numbers.json]
-[$json/images/serialize_numbers.png [width 668px] [height 712px]]
-
-[heading Serialize random.json]
-[$json/images/serialize_random.png [width 668px] [height 712px]]
-
-[heading Serialize twitter.json]
-[$json/images/serialize_twitter.png [width 668px] [height 712px]]
-
-[heading Serialize twitterescaped.json]
-[$json/images/serialize_twitterescaped.png [width 668px] [height 712px]]
-
-[heading Serialize update-center.json]
-[$json/images/serialize_update_center.png [width 668px] [height 712px]]
+[block'''<?dbhtml-include href="file://bench.html"?>''']
 
 [/-----------------------------------------------------------------------------]
 
