@@ -101,11 +101,7 @@ building the library or including the function definitions:
 #include <boost/json/src.hpp>
 ```
 
-[endsect]
-
-[/-----------------------------------------------------------------------------]
-
-[section Supported Compilers]
+[heading Supported Compilers]
 
 Boost.JSON has been tested with the following compilers:
 
@@ -113,7 +109,11 @@ Boost.JSON has been tested with the following compilers:
 * gcc: 4.8, 4.9, 5, 6, 7, 8, 9, 10, 11, 12
 * msvc: 14.0, 14.1, 14.2, 14.3
 
-[h3 Quality Assurance]
+[endsect]
+
+[/-----------------------------------------------------------------------------]
+
+[section Quality Assurance]
 
 The development infrastructure for the library includes
 these per-commit analyses:
@@ -123,11 +123,7 @@ these per-commit analyses:
 * Compilation and tests on Drone.io, Azure Pipelines, Appveyor
 * Fuzzing using clang-llvm and machine learning
 
-[endsect]
-
-[/-----------------------------------------------------------------------------]
-
-[section Security Review (Bishop Fox)]
+[heading Security Review (Bishop Fox)]
 
 As part of our commitment to producing the very finest C++ libraries that
 application developers can trust, the C++ Alliance has commissioned Bishop
@@ -145,7 +141,5 @@ is linked here:
 This library wouldn't be where it is today without the help of
 [@https://github.com/pdimov Peter Dimov]
 for design advice and optimization assistance.
-
-[/-----------------------------------------------------------------------------]
 
 [endsect]

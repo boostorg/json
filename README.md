@@ -104,7 +104,12 @@ Boost.JSON has been tested with the following compilers:
 * gcc: 4.8, 4.9, 5, 6, 7, 8, 9, 10, 11, 12
 * msvc: 14.0, 14.1, 14.2, 14.3
 
-### Quality Assurance
+### Visual Studio Solution
+
+    cmake -G "Visual Studio 16 2019" -A Win32 -B bin -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/msvc.cmake
+    cmake -G "Visual Studio 16 2019" -A x64 -B bin64 -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/msvc.cmake
+
+## Quality Assurance
 
 The development infrastructure for the library includes
 these per-commit analyses:
@@ -113,11 +118,6 @@ these per-commit analyses:
 * Benchmark performance comparisons
 * Compilation and tests on Drone.io, Azure Pipelines, Appveyor
 * Fuzzing using clang-llvm and machine learning
-
-## Visual Studio Solution
-
-    cmake -G "Visual Studio 16 2019" -A Win32 -B bin -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/msvc.cmake
-    cmake -G "Visual Studio 16 2019" -A x64 -B bin64 -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/msvc.cmake
 
 ## License
 
