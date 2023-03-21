@@ -11,8 +11,15 @@
 #ifndef BOOST_JSON_DETAIL_IMPL_FORMAT_IPP
 #define BOOST_JSON_DETAIL_IMPL_FORMAT_IPP
 
+#include <boost/json/detail/config.hpp>
 #include <boost/json/detail/ryu/ryu.hpp>
 #include <cstring>
+#include <cstdint>
+
+#ifndef BOOST_NO_CXX17_HDR_CHARCONV
+#  include <charconv>
+#  define BOOST_JSON_USE_CHARCONV
+#endif 
 
 namespace boost {
 namespace json {
@@ -97,6 +104,21 @@ format_uint64(
     return n;
 }
 
+#ifdef BOOST_JSON_USE_CHARCONV
+unsigned
+format_int64(
+    char* dest, int64_t i) noexcept
+{    
+    char buffer[21] {};
+    const auto r = std::to_chars(buffer, buffer + sizeof(buffer) - 1, i);
+    const std::ptrdiff_t n = r.ptr - buffer;
+
+    std::memcpy(dest, buffer, n);
+
+    return static_cast<unsigned>(n);
+}
+#else
+
 unsigned
 format_int64(
     char* dest, int64_t i) noexcept
@@ -109,6 +131,8 @@ format_int64(
     ui = ~ui + 1;
     return 1 + format_uint64(dest, ui);
 }
+
+#endif // Use charconv
 
 unsigned
 format_double(
