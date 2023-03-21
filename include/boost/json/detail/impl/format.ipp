@@ -114,7 +114,7 @@ unsigned
 format_double(
     char* dest, double d) noexcept
 {
-    return static_cast<int>(
+    return static_cast<unsigned>(
         ryu::d2s_buffered_n(d, dest));
 }
 
