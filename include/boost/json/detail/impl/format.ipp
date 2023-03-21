@@ -21,6 +21,40 @@
 #  define BOOST_JSON_USE_CHARCONV
 #endif 
 
+// Narrowed down based on compiler support for integers vs floating point
+// See: https://en.cppreference.com/w/cpp/compiler_support/17#C.2B.2B17_library_features
+// P0067R5 - Elementary string conversions
+#ifdef BOOST_JSON_USE_CHARCONV
+
+#  if __GNUC__ >= 11
+#    define BOOST_JSON_USE_INTEGER_CHARCONV
+#    define BOOST_JSON_USE_FP_CHARCONV
+#  elif __GNUC__ >= 8
+#    define BOOST_JSON_USE_INTEGER_CHARCONV
+#  endif // GCC
+
+#  if __clang_major__ >= 14 && !defined(__APPLE_CC__)
+#    define BOOST_JSON_USE_INTEGER_CHARCONV
+#    define BOOST_JSON_USE_FP_CHARCONV
+#  elif ( __clang_major__ >= 7 && !defined(__APPLE_CC__)) || __clang_major__ >= 10
+#    define BOOST_JSON_USE_INTEGER_CHARCONV
+#  endif // Clang
+
+#  if _MSC_VER >= 1924
+#    define BOOST_JSON_USE_INTEGER_CHARCONV
+#    define BOOST_JSON_USE_FP_CHARCONV
+#  elif _MSC_VER >= 1914
+#    define BOOST_JSON_USE_INTEGER_CHARCONV
+#  endif // MSVC
+
+// If we don't know much about the compiler but it does provide the header <charconv>
+// we will assume that it only provides the integer overloads until proven otherwise
+#if !defined(BOOST_JSON_USE_INTEGER_CHARCONV) && !defined(BOOST_JSON_USE_FP_CHARCONV)
+#  define BOOST_JSON_USE_INTEGER_CHARCONV
+#endif
+
+#endif
+
 namespace boost {
 namespace json {
 namespace detail {
@@ -32,7 +66,7 @@ namespace detail {
     https://kkimdev.github.io/posts/2018/06/15/IEEE-754-Floating-Point-Type-in-C++.html
 */
 
-#ifdef BOOST_JSON_USE_CHARCONV
+#ifdef BOOST_JSON_USE_INTEGER_CHARCONV
 
 unsigned
 format_uint64(
@@ -124,7 +158,7 @@ format_uint64(
 
 #endif // Use charconv
 
-#ifdef BOOST_JSON_USE_CHARCONV
+#ifdef BOOST_JSON_USE_INTEGER_CHARCONV
 unsigned
 format_int64(
     char* dest, int64_t i) noexcept
