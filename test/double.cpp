@@ -32,7 +32,7 @@ sprintf(char (&buf)[N],
     sprintf_s(buf, format,
         std::forward<Args>(args)...);
 #else
-    std::sprintf(buf, format,
+    std::snprintf(buf, N, format,
         std::forward<Args>(args)...);
 #endif
 }
