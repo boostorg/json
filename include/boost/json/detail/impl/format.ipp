@@ -15,6 +15,7 @@
 #include <boost/json/detail/ryu/ryu.hpp>
 #include <cstring>
 #include <cstdint>
+#include <cmath>
 
 #ifndef BOOST_NO_CXX17_HDR_CHARCONV
 #  include <charconv>
@@ -188,6 +189,39 @@ format_int64(
 
 #endif // Use charconv
 
+#ifdef BOOST_JSON_USE_FP_CHARCONV
+
+unsigned
+format_double(
+    char* dest, double d) noexcept
+{
+    // Special handling of 0 to maintain consistency across C++ versions
+    // to_chars would return 0e+0 or -0e+0
+    if (d == 0.0)
+    {
+        if (std::signbit(d))
+        {
+            std::memcpy(dest, "-0E0", 4);
+            return 4U;
+        }
+        else
+        {
+            std::memcpy(dest, "0E0", 3);
+            return 3U;
+        }
+    }
+
+    char buffer[max_number_chars] {};
+    const auto r = std::to_chars(buffer, buffer + sizeof(buffer) - 1, d, std::chars_format::scientific);
+    const std::ptrdiff_t n = r.ptr - buffer;
+
+    std::memcpy(dest, buffer, n);
+
+    return static_cast<unsigned>(n);
+}
+
+#else
+
 unsigned
 format_double(
     char* dest, double d) noexcept
@@ -195,6 +229,8 @@ format_double(
     return static_cast<unsigned>(
         ryu::d2s_buffered_n(d, dest));
 }
+
+#endif // Use charconv
 
 } // detail
 } // namespace json
