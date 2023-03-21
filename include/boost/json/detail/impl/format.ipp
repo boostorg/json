@@ -32,6 +32,24 @@ namespace detail {
     https://kkimdev.github.io/posts/2018/06/15/IEEE-754-Floating-Point-Type-in-C++.html
 */
 
+#ifdef BOOST_JSON_USE_CHARCONV
+
+unsigned
+format_uint64(
+    char* dest,
+    uint64_t i) noexcept
+{    
+    char buffer[21] {};
+    const auto r = std::to_chars(buffer, buffer + sizeof(buffer) - 1, i);
+    const std::ptrdiff_t n = r.ptr - buffer;
+
+    std::memcpy(dest, buffer, n);
+
+    return static_cast<unsigned>(n);
+}
+
+#else
+
 inline char const* digits_lut() noexcept
 {
     return
@@ -103,6 +121,8 @@ format_uint64(
 
     return n;
 }
+
+#endif // Use charconv
 
 #ifdef BOOST_JSON_USE_CHARCONV
 unsigned
