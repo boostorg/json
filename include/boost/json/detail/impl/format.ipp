@@ -13,6 +13,7 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/detail/ryu/ryu.hpp>
+#include <limits>
 #include <cstring>
 #include <cstdint>
 #include <cmath>
@@ -74,13 +75,9 @@ format_uint64(
     char* dest,
     uint64_t i) noexcept
 {    
-    char buffer[21] {};
-    const auto r = std::to_chars(buffer, buffer + sizeof(buffer) - 1, i);
-    const std::ptrdiff_t n = r.ptr - buffer;
-
-    std::memcpy(dest, buffer, n);
-
-    return static_cast<unsigned>(n);
+    static constexpr auto u64_max_chars = std::numeric_limits<uint64_t>::digits10 + 1;
+    const auto r = std::to_chars(dest, dest + u64_max_chars, i);
+    return static_cast<unsigned>(r.ptr - dest);
 }
 
 #else
@@ -164,13 +161,9 @@ unsigned
 format_int64(
     char* dest, int64_t i) noexcept
 {    
-    char buffer[21] {};
-    const auto r = std::to_chars(buffer, buffer + sizeof(buffer) - 1, i);
-    const std::ptrdiff_t n = r.ptr - buffer;
-
-    std::memcpy(dest, buffer, n);
-
-    return static_cast<unsigned>(n);
+    static constexpr auto i64_max_chars = std::numeric_limits<int64_t>::digits10 + 2;
+    const auto r = std::to_chars(dest, dest + i64_max_chars, i);
+    return static_cast<unsigned>(r.ptr - dest);
 }
 #else
 
@@ -211,13 +204,8 @@ format_double(
         }
     }
 
-    char buffer[max_number_chars] {};
-    const auto r = std::to_chars(buffer, buffer + sizeof(buffer) - 1, d, std::chars_format::scientific);
-    const std::ptrdiff_t n = r.ptr - buffer;
-
-    std::memcpy(dest, buffer, n);
-
-    return static_cast<unsigned>(n);
+    const auto r = std::to_chars(dest, dest + max_number_chars, d, std::chars_format::scientific);
+    return static_cast<unsigned>(r.ptr - dest);
 }
 
 #else
