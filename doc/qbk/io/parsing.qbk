@@ -188,6 +188,11 @@ is used to indicate the end of the input:
 
 [doc_parsing_10]
 
+We can complicate the example further by excracting ['several] JSON values from
+the sequence of lines.
+
+[doc_parsing_14]
+
 [/-----------------------------------------------------------------------------]
 
 [heading Controlling Memory]
