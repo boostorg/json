@@ -1255,6 +1255,20 @@ R"xx({
         BOOST_TEST(serialize(t.jv) == "[]");
     }
 
+    void
+    testIssue876()
+    {
+        stream_parser p;
+        p.write_some( R"("\u20")", 5 );
+
+        std::string s = "19";
+        for( std::size_t i = 0; i < BOOST_JSON_STACK_BUFFER_SIZE; ++i )
+            s += " ";
+        s += "\"";
+        p.write_some( s.data(), s.size() ); // this asserted because of a bug
+        BOOST_TEST( p.release().is_string() );
+    }
+
     // https://github.com/boostorg/json/pull/814
     void
     testSentinelOverlap()
@@ -1291,6 +1305,7 @@ R"xx({
         testDupeKeys();
         testIssue15();
         testIssue45();
+        testIssue876();
         testSentinelOverlap();
     }
 };
