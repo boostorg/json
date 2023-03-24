@@ -116,6 +116,26 @@ namespace json {
 
 namespace {
 
+//[snippet_strings_5
+string greeting( string_view first_name, string_view last_name )
+{
+    const char hello[] = "Hello, ";
+    const std::size_t sz = first_name.size() + last_name.size() + sizeof(hello) + 1;
+
+    string js;
+    js.reserve(sz);
+
+    char* p = std::copy( hello, hello + sizeof(hello) - 1, js.data() );
+    p = std::copy( first_name.begin(), first_name.end(), p );
+    *p++ = ' ';
+    p = std::copy( last_name.begin(), last_name.end(), p );
+    *p++ = '!';
+
+    js.grow( sz );
+    return js;
+}
+//]
+
 void
 usingStrings()
 {
@@ -177,6 +197,12 @@ usingStrings()
         str.compare("Boost");
 
         //]
+    }
+
+    {
+        auto str = greeting( "John", "Smith" );
+        (void)str;
+        assert( str == "Hello, John Smith!");
     }
 }
 
