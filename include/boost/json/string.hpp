@@ -41,7 +41,9 @@ class value;
     a string are stored contiguously. A pointer to any
     character in a string may be passed to functions
     that expect a pointer to the first element of a
-    null-terminated `char` array.
+    null-terminated `char` array. The type uses small
+    buffer optimisation to avoid allocations for small
+    strings.
 
     String iterators are regular `char` pointers.
 

@@ -23,9 +23,12 @@ the same as `std::basic_string` except that:
 * redundant overloads for string operations have been replaced
 with a __string_view__ based interface,
 
-* access to characters in the range `[size(), capacity())` is permitted, and
+* access to characters in the range `[size(), capacity())` is permitted,
 
-* __storage_ptr__ is used instead of __Allocator__.
+* __storage_ptr__ is used instead of __Allocator__, and
+
+* guaranteed small buffer optimisation that avoids allocating memory for
+small strings.
 
 With augmented interface, operations requiring an input string
 are implemented as a single overload with a parameter of type
