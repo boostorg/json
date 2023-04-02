@@ -1,3 +1,13 @@
+Boost 1.82.0
+
+* `set_at_pointer`.
+* `boost::hash` support.
+* Caller-provided serializer storage.
+* `value_to` supports missing elements for `std::optional`.
+* Fix parser suspend inside an escape character.
+* Make sentinel() return a unique pointer.
+* Documentation improvements.
+
 Boost 1.81.0
 
 * Conversion traits were redesigned.

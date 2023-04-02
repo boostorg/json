@@ -11,6 +11,24 @@
 
 [/-----------------------------------------------------------------------------]
 
+[heading Boost 1.82.0]
+
+[*New Features]
+
+* [ issue 800 ] [link json.ref.boost__json__value.set_at_pointer `set_at_pointer`].
+* [ issue 570 ] [link json.ref.boost__json__value.hash_value `boost::hash` support].
+
+[*Improvements]
+
+* [ issue 848 ] [link json.ref.boost__json__serializer.serializer.overload3 Caller-provided serializer storage].
+* [ issue 807 ] `value_to` supports missing elements for `std::optional`.
+* Documentation improvements.
+
+[*Fixes]
+
+* [ issue 876 ] Fix parser suspend inside an escape character.
+* [ issue 814 ] Make sentinel() return a unique pointer.
+
 [heading Boost 1.81.0]
 
 [*API Changes]
