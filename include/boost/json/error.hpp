@@ -11,146 +11,10 @@
 #define BOOST_JSON_ERROR_HPP
 
 #include <boost/json/detail/config.hpp>
-#ifndef BOOST_JSON_STANDALONE
-# include <boost/system/error_code.hpp>
-# include <boost/system/system_error.hpp>
-#else
-# include <system_error>
-#endif
+#include <boost/json/system_error.hpp>
 
-BOOST_JSON_NS_BEGIN
-
-#ifdef BOOST_JSON_DOCS
-
-/** The type of error code used by the library.
-
-    This type alias is set depending
-    on how the library is configured:
-
-    @par Use with Boost
-
-    If the macro `BOOST_JSON_STANDALONE` is
-    not defined, this type will be an alias
-    for `boost::system::error_code`.
-    Compiling a program using the library will
-    require Boost, and a compiler conforming
-    to C++11 or later.
-
-    @par Use without Boost
-
-    If the macro `BOOST_JSON_STANDALONE` is
-    defined, this type will be an alias
-    for `std::error_code`.
-    Compiling a program using the library will
-    require only a compiler conforming to C++17
-    or later.
-
-    @see https://en.cppreference.com/w/cpp/error/error_code
-*/
-using error_code = __see_below__;
-
-/** The type of error category used by the library.
-
-    This type alias is set depending
-    on how the library is configured:
-
-    @par Use with Boost
-
-    If the macro `BOOST_JSON_STANDALONE` is
-    not defined, this type will be an alias
-    for `boost::system::error_category`.
-    Compiling a program using the library will
-    require Boost, and a compiler conforming
-    to C++11 or later.
-
-    @par Use without Boost
-
-    If the macro `BOOST_JSON_STANDALONE` is
-    defined, this type will be an alias
-    for `std::error_category`.
-    Compiling a program using the library will
-    require only a compiler conforming to C++17
-    or later.
-
-    @see https://en.cppreference.com/w/cpp/error/error_category
-*/
-using error_category = __see_below__;
-
-/** The type of error condition used by the library.
-
-    This type alias is set depending
-    on how the library is configured:
-
-    @par Use with Boost
-
-    If the macro `BOOST_JSON_STANDALONE` is
-    not defined, this type will be an alias
-    for `boost::system::error_condition`.
-    Compiling a program using the library will
-    require Boost, and a compiler conforming
-    to C++11 or later.
-
-    @par Use without Boost
-
-    If the macro `BOOST_JSON_STANDALONE` is
-    defined, this type will be an alias
-    for `std::error_condition`.
-    Compiling a program using the library will
-    require only a compiler conforming to C++17
-    or later.
-
-    @see https://en.cppreference.com/w/cpp/error/error_condition
-*/
-using error_condition = __see_below__;
-
-/** The type of system error thrown by the library.
-
-    This type alias is set depending
-    on how the library is configured:
-
-    @par Use with Boost
-
-    If the macro `BOOST_JSON_STANDALONE` is
-    not defined, this type will be an alias
-    for `boost::system::system_error`.
-    Compiling a program using the library will
-    require Boost, and a compiler conforming
-    to C++11 or later.
-
-    @par Use without Boost
-
-    If the macro `BOOST_JSON_STANDALONE` is
-    defined, this type will be an alias
-    for `std::system_error`.
-    Compiling a program using the library will
-    require only a compiler conforming to C++17
-    or later.
-
-    @see https://en.cppreference.com/w/cpp/error/system_error
-*/
-using system_error = __see_below__;
-
-/// Returns the generic error category used by the library.
-error_category const&
-generic_category();
-
-#elif ! defined(BOOST_JSON_STANDALONE)
-
-using error_code = boost::system::error_code;
-using error_category = boost::system::error_category;
-using error_condition = boost::system::error_condition;
-using system_error = boost::system::system_error;
-using boost::system::generic_category;
-
-#else
-
-using error_code = std::error_code;
-using error_category = std::error_category;
-using error_condition = std::error_condition;
-using system_error = std::system_error;
-using std::generic_category;
-
-#endif
+namespace boost {
+namespace json {
 
 /** Error codes returned by JSON operations
 
@@ -200,19 +64,77 @@ enum class error
     /// A string is too large
     string_too_large,
 
-    /// The parser encountered an exception and must be reset
+    /// error occured when trying to read input
+    input_error,
+
+    //
+    // generic errors
+    //
+
+    /// An exception was thrown during operation
     exception,
 
-    //----------------------------------
+    /// test failure
+    test_failure,
 
-    /// not a number
+    //
+    // JSON Pointer errors
+    //
+
+    /// missing slash character before token reference
+    missing_slash,
+
+    /// invalid escape sequence
+    invalid_escape,
+
+    /// token should be a number but cannot be parsed as such
+    token_not_number,
+
+    /// current value is neither an object nor an array
+    value_is_scalar,
+
+    /// current value does not contain referenced value
+    not_found,
+
+    /// token cannot be represented by std::size_t
+    token_overflow,
+
+    /// past-the-end index is not supported
+    past_the_end,
+
+    //
+    // Conversion errors
+    //
+
+    /// JSON number was expected during conversion
     not_number,
 
     /// number cast is not exact
     not_exact,
 
-    /// test failure
-    test_failure,
+    /// JSON null was expected during conversion
+    not_null,
+
+    /// JSON bool was expected during conversion
+    not_bool,
+
+    /// JSON array was expected during conversion
+    not_array,
+
+    /// JSON object was expected during conversion
+    not_object,
+
+    /// JSON string was expected during conversion
+    not_string,
+
+    /// JSON array has size incompatible with target
+    size_mismatch,
+
+    /// none of the possible conversions were successful
+    exhausted_variants,
+
+    /// the key does not correspond to a known name
+    unknown_name,
 };
 
 /** Error conditions corresponding to JSON errors
@@ -222,11 +144,21 @@ enum class condition
     /// A parser-related error
     parse_error = 1,
 
-    /// An error on assignment to or from a JSON value
-    assign_error
+    /// An error related to parsing JSON pointer string
+    pointer_parse_error,
+
+    /// An error related to applying JSON pointer string to a value
+    pointer_use_error,
+
+    /// A conversion error
+    conversion_error,
+
+    /// A generic error
+    generic_error,
 };
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #include <boost/json/impl/error.hpp>
 

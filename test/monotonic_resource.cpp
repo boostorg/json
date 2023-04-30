@@ -14,12 +14,13 @@
 #include <boost/json/null_resource.hpp>
 #include <boost/json/parse.hpp>
 #include <boost/json/serialize.hpp>
-#include <boost/json/detail/align.hpp>
+#include <boost/core/max_align.hpp>
 #include <iostream>
 
 #include "test_suite.hpp"
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 BOOST_STATIC_ASSERT( std::is_nothrow_destructible<monotonic_resource>::value );
 
@@ -205,7 +206,7 @@ public:
             {
                 const auto size = ((i * 3) % 32) + 1;
                 std::size_t next = 1;
-                for (auto mod = i % alignof(detail::max_align_t);
+                for (auto mod = i % alignof(core::max_align_t);
                     mod; mod >>= 1, next <<= 1);
                 const auto align = (std::max)(next,
                     std::size_t(1));
@@ -308,4 +309,5 @@ R"xx({
 
 TEST_SUITE(monotonic_resource_test, "boost.json.monotonic_resource");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

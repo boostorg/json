@@ -12,6 +12,7 @@
 #define BOOST_JSON_BASIC_PARSER_HPP
 
 #include <boost/json/detail/config.hpp>
+#include <boost/json/detail/except.hpp>
 #include <boost/json/error.hpp>
 #include <boost/json/kind.hpp>
 #include <boost/json/parse_options.hpp>
@@ -30,7 +31,8 @@
     times down.
 */
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 /** An incremental SAX parser for serialized JSON.
 
@@ -263,7 +265,8 @@ BOOST_JSON_NS_BEGIN
 
     @see
         @ref parse,
-        @ref stream_parser.
+        @ref stream_parser,
+        [Validating parser example](../../doc/html/json/examples.html#json.examples.validate).
 
     @headerfile <boost/json/basic_parser.hpp>
 */
@@ -353,7 +356,8 @@ class basic_parser
     const char*
     fail(
         const char* p,
-        error ev) noexcept;
+        error ev,
+        source_location const* loc) noexcept;
 
     BOOST_NOINLINE
     inline
@@ -714,14 +718,24 @@ public:
 
         @param ec Set to the error, if any occurred.
     */
+/** @{ */
     std::size_t
     write_some(
         bool more,
         char const* data,
         std::size_t size,
         error_code& ec);
+
+    std::size_t
+    write_some(
+        bool more,
+        char const* data,
+        std::size_t size,
+        std::error_code& ec);
+/** @} */
 };
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

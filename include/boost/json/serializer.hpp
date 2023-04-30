@@ -16,7 +16,8 @@
 #include <boost/json/detail/stack.hpp>
 #include <boost/json/detail/stream.hpp>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 /** A serializer for JSON.
 
@@ -113,7 +114,7 @@ public:
     BOOST_JSON_DECL
     ~serializer() noexcept;
 
-    /** Default constructor
+    /** Constructor
 
         This constructs a serializer with no value.
         The value may be set later by calling @ref reset.
@@ -128,6 +129,38 @@ public:
     */
     BOOST_JSON_DECL
     serializer() noexcept;
+
+    /** Constructor
+
+        This constructs a serializer with no value.
+        The value may be set later by calling @ref reset.
+        If serialization is attempted with no value,
+        the output is as if a null value is serialized.
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param sp A pointer to the @ref memory_resource
+        to use when producing partial output.
+        Shared ownership of the memory resource
+        is retained until the serializer is
+        destroyed.
+
+        @param buf An optional static buffer to
+        use for temporary storage when producing
+        partial output.
+
+        @param buf_size The number of bytes of
+        valid memory pointed to by `buf`.
+    */
+    BOOST_JSON_DECL
+    serializer(
+        storage_ptr sp,
+        unsigned char* buf = nullptr,
+        std::size_t buf_size = 0) noexcept;
 
     /** Returns `true` if the serialization is complete
 
@@ -210,7 +243,9 @@ public:
         @ref done will return `true`.
 
         @par Preconditions
-        `this->done() == true`
+        @code
+        this->done() == false
+        @endcode
 
         @par Complexity
         Linear in `size`.
@@ -239,7 +274,9 @@ public:
         character array, with a deduced maximum size.
 
         @par Preconditions
-        `this->done() == true`
+        @code
+        this->done() == false
+        @endcode
 
         @par Effects
         @code
@@ -281,6 +318,7 @@ public:
 #endif
 };
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

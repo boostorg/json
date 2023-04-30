@@ -29,7 +29,8 @@
 #include <type_traits>
 #include <utility>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 class value;
 
@@ -40,7 +41,9 @@ class value;
     a string are stored contiguously. A pointer to any
     character in a string may be passed to functions
     that expect a pointer to the first element of a
-    null-terminated `char` array.
+    null-terminated `char` array. The type uses small
+    buffer optimisation to avoid allocations for small
+    strings.
 
     String iterators are regular `char` pointers.
 
@@ -153,7 +156,7 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    ~string()
+    ~string() noexcept
     {
         impl_.destroy(sp_);
     }
@@ -167,11 +170,13 @@ public:
     /** Default constructor.
 
         The string will have a zero size and a non-zero,
-        unspecified capacity, using the default memory resource.
+        unspecified capacity, using the [default memory resource].
 
         @par Complexity
 
         Constant.
+
+        [default memory resource]: json/allocators/storage_ptr.html#json.allocators.storage_ptr.default_memory_resource
     */
     string() = default;
 
@@ -536,6 +541,8 @@ public:
         Replace the contents with those of `other`
         using move semantics.
 
+        @li If `&other == this`, do nothing. Otherwise,
+
         @li If `*other.storage() == *this->storage()`,
         ownership of the underlying memory is transferred
         in constant time, with no possibility
@@ -543,8 +550,7 @@ public:
         string behaves as if newly constructed with its
         current @ref memory_resource. Otherwise,
 
-        @li If `*other.storage() != *this->storage()`,
-        a copy of the characters in `other` is made. In
+        @li a copy of the characters in `other` is made. In
         this case, the moved-from container is not changed.
 
         @par Complexity
@@ -674,6 +680,8 @@ public:
 
         Replace the contents with those of `other`
         using move semantics.
+
+        @li If `&other == this`, do nothing. Otherwise,
 
         @li If `*other.storage() == *this->storage()`,
         ownership of the underlying memory is transferred
@@ -901,8 +909,7 @@ public:
     at(std::size_t pos)
     {
         if(pos >= size())
-            detail::throw_out_of_range(
-                BOOST_JSON_SOURCE_POS);
+            detail::throw_out_of_range();
         return impl_.data()[pos];
     }
 
@@ -927,8 +934,7 @@ public:
     at(std::size_t pos) const
     {
         if(pos >= size())
-            detail::throw_out_of_range(
-                BOOST_JSON_SOURCE_POS);
+            detail::throw_out_of_range();
         return impl_.data()[pos];
     }
 
@@ -1134,15 +1140,14 @@ public:
         return {data(), size()};
     }
 
-#if ! defined(BOOST_JSON_STANDALONE) && \
-    ! defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
+#if ! defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
     /** Convert to a `std::string_view` referring to the string.
 
         Returns a string view to the underlying character string. The size of
         the view does not include the null terminator.
 
-        This overload is not defined when either `BOOST_JSON_STANDALONE` or
-        `BOOST_NO_CXX17_HDR_STRING_VIEW` is defined.
+        This overload is not defined when `BOOST_NO_CXX17_HDR_STRING_VIEW`
+        is defined.
 
         @par Complexity
 
@@ -1946,7 +1951,7 @@ public:
     int
     compare(string_view sv) const noexcept
     {
-        return string_view(*this).compare(sv);
+        return subview().compare(sv);
     }
 
     //------------------------------------------------------
@@ -2227,7 +2232,7 @@ public:
 
     //------------------------------------------------------
 
-    /** Return a substring.
+    /** Return a view.
 
         Returns a view of a substring.
 
@@ -2235,8 +2240,7 @@ public:
 
         Strong guarantee.
 
-        @return A `string_view` object referring
-        to `{data() + pos, std::min(count, size() - pos))`.
+        @return `this->subview().substr(pos, count)`
 
         @param pos The index to being the substring at.
         The default argument for this parameter is `0`.
@@ -2249,10 +2253,26 @@ public:
     */
     string_view
     subview(
-        std::size_t pos = 0,
-        std::size_t count = npos) const
+        std::size_t pos
+        ,std::size_t count = npos) const
     {
-        return string_view(*this).substr(pos, count);
+        return subview().substr(pos, count);
+    }
+
+    /** Return a view.
+
+        Returns a view of the whole string.
+
+        @par Exception Safety
+
+        `noexcept`
+
+        @return `string_view(this->data(), this->size())`.
+    */
+    string_view
+    subview() const noexcept
+    {
+        return string_view( data(), size() );
     }
 
     //------------------------------------------------------
@@ -2282,7 +2302,7 @@ public:
         std::size_t count,
         std::size_t pos = 0) const
     {
-        return string_view(*this).copy(dest, count, pos);
+        return subview().copy(dest, count, pos);
     }
 
     //------------------------------------------------------
@@ -2356,13 +2376,14 @@ public:
         string. Ownership of the respective @ref memory_resource
         objects is not transferred.
 
-        @li If `*other.storage() == *this->storage()`,
+        @li If `&other == this`, do nothing. Otherwise,
+
+        @li if `*other.storage() == *this->storage()`,
         ownership of the underlying memory is swapped in
         constant time, with no possibility of exceptions.
-        All iterators and references remain valid.
+        All iterators and references remain valid. Otherwise,
 
-        @li If `*other.storage() != *this->storage()`,
-        the contents are logically swapped by making copies,
+        @li the contents are logically swapped by making copies,
         which can throw. In this case all iterators and
         references are invalidated.
 
@@ -2371,19 +2392,10 @@ public:
         Constant or linear in @ref size() plus
         `other.size()`.
 
-        @par Precondition
-
-        @code
-        &other != this
-        @endcode
-
         @par Exception Safety
 
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
-
-        @param other The string to swap with
-        If `this == &other`, this function call has no effect.
     */
     BOOST_JSON_DECL
     void
@@ -2395,13 +2407,14 @@ public:
         another string `rhs`. Ownership of the respective
         @ref memory_resource objects is not transferred.
 
-        @li If `*lhs.storage() == *rhs.storage()`,
+        @li If `&lhs == &rhs`, do nothing. Otherwise,
+
+        @li if `*lhs.storage() == *rhs.storage()`,
         ownership of the underlying memory is swapped in
         constant time, with no possibility of exceptions.
-        All iterators and references remain valid.
+        All iterators and references remain valid. Otherwise,
 
-        @li If `*lhs.storage() != *rhs.storage()`,
-        the contents are logically swapped by making a copy,
+        @li the contents are logically swapped by making a copy,
         which can throw. In this case all iterators and
         references are invalidated.
 
@@ -2420,7 +2433,6 @@ public:
         @param lhs The string to exchange.
 
         @param rhs The string to exchange.
-        If `&lhs == &rhs`, this function call has no effect.
 
         @see @ref string::swap
     */
@@ -2461,7 +2473,7 @@ public:
         string_view sv,
         std::size_t pos = 0) const noexcept
     {
-        return string_view(*this).find(sv, pos);
+        return subview().find(sv, pos);
     }
 
     /** Find the first occurrence of a character within the string.
@@ -2488,7 +2500,7 @@ public:
         char ch,
         std::size_t pos = 0) const noexcept
     {
-        return string_view(*this).find(ch, pos);
+        return subview().find(ch, pos);
     }
 
     //------------------------------------------------------
@@ -2519,7 +2531,7 @@ public:
         string_view sv,
         std::size_t pos = npos) const noexcept
     {
-        return string_view(*this).rfind(sv, pos);
+        return subview().rfind(sv, pos);
     }
 
     /** Find the last occurrence of a character within the string.
@@ -2547,7 +2559,7 @@ public:
         char ch,
         std::size_t pos = npos) const noexcept
     {
-        return string_view(*this).rfind(ch, pos);
+        return subview().rfind(ch, pos);
     }
 
     //------------------------------------------------------
@@ -2578,7 +2590,7 @@ public:
         string_view sv,
         std::size_t pos = 0) const noexcept
     {
-        return string_view(*this).find_first_of(sv, pos);
+        return subview().find_first_of(sv, pos);
     }
 
     //------------------------------------------------------
@@ -2608,7 +2620,7 @@ public:
         string_view sv,
         std::size_t pos = 0) const noexcept
     {
-        return string_view(*this).find_first_not_of(sv, pos);
+        return subview().find_first_not_of(sv, pos);
     }
 
     /** Find the first occurrence of a character not equal to `ch`.
@@ -2635,7 +2647,7 @@ public:
         char ch,
         std::size_t pos = 0) const noexcept
     {
-        return string_view(*this).find_first_not_of(ch, pos);
+        return subview().find_first_not_of(ch, pos);
     }
 
     //------------------------------------------------------
@@ -2667,7 +2679,7 @@ public:
         string_view sv,
         std::size_t pos = npos) const noexcept
     {
-        return string_view(*this).find_last_of(sv, pos);
+        return subview().find_last_of(sv, pos);
     }
 
     //------------------------------------------------------
@@ -2697,7 +2709,7 @@ public:
         string_view sv,
         std::size_t pos = npos) const noexcept
     {
-        return string_view(*this).find_last_not_of(sv, pos);
+        return subview().find_last_not_of(sv, pos);
     }
 
     /** Find the last occurrence of a character not equal to `ch`.
@@ -2726,8 +2738,32 @@ public:
         char ch,
         std::size_t pos = npos) const noexcept
     {
-        return string_view(*this).find_last_not_of(ch, pos);
+        return subview().find_last_not_of(ch, pos);
     }
+
+    /** Serialize @ref string to an output stream.
+
+        This function serializes a `string` as JSON into the output stream.
+
+        @return Reference to `os`.
+
+        @par Complexity
+        Constant or linear in the size of `str`.
+
+        @par Exception Safety
+        Strong guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
+        @param os The output stream to serialize to.
+
+        @param str The value to serialize.
+    */
+    BOOST_JSON_DECL
+    friend
+    std::ostream&
+    operator<<(
+        std::ostream& os,
+        string const& str);
 
 private:
     class undo;
@@ -2763,6 +2799,20 @@ private:
 
 //----------------------------------------------------------
 
+namespace detail
+{
+
+template <>
+inline
+string_view
+to_string_view<string>(string const& s) noexcept
+{
+    return s.subview();
+}
+
+} // namespace detail
+
+
 /** Return true if lhs equals rhs.
 
     A lexicographical comparison is used.
@@ -2772,18 +2822,11 @@ bool
 operator==(string const& lhs, string const& rhs) noexcept
 #else
 template<class T, class U>
-typename std::enable_if<
-    (std::is_same<T, string>::value &&
-     std::is_convertible<
-        U const&, string_view>::value) ||
-    (std::is_same<U, string>::value &&
-     std::is_convertible<
-        T const&, string_view>::value),
-    bool>::type
+detail::string_comp_op_requirement<T, U>
 operator==(T const& lhs, U const& rhs) noexcept
 #endif
 {
-    return string_view(lhs) == string_view(rhs);
+    return detail::to_string_view(lhs) == detail::to_string_view(rhs);
 }
 
 /** Return true if lhs does not equal rhs.
@@ -2795,18 +2838,11 @@ bool
 operator!=(string const& lhs, string const& rhs) noexcept
 #else
 template<class T, class U>
-typename std::enable_if<
-    (std::is_same<T, string>::value &&
-     std::is_convertible<
-        U const&, string_view>::value) ||
-    (std::is_same<U, string>::value &&
-     std::is_convertible<
-        T const&, string_view>::value),
-    bool>::type
+detail::string_comp_op_requirement<T, U>
 operator!=(T const& lhs, U const& rhs) noexcept
 #endif
 {
-    return string_view(lhs) != string_view(rhs);
+    return detail::to_string_view(lhs) != detail::to_string_view(rhs);
 }
 
 /** Return true if lhs is less than rhs.
@@ -2818,18 +2854,11 @@ bool
 operator<(string const& lhs, string const& rhs) noexcept
 #else
 template<class T, class U>
-typename std::enable_if<
-    (std::is_same<T, string>::value &&
-     std::is_convertible<
-        U const&, string_view>::value) ||
-    (std::is_same<U, string>::value &&
-     std::is_convertible<
-        T const&, string_view>::value),
-    bool>::type
+detail::string_comp_op_requirement<T, U>
 operator<(T const& lhs, U const& rhs) noexcept
 #endif
 {
-    return string_view(lhs) < string_view(rhs);
+    return detail::to_string_view(lhs) < detail::to_string_view(rhs);
 }
 
 /** Return true if lhs is less than or equal to rhs.
@@ -2841,18 +2870,11 @@ bool
 operator<=(string const& lhs, string const& rhs) noexcept
 #else
 template<class T, class U>
-typename std::enable_if<
-    (std::is_same<T, string>::value &&
-     std::is_convertible<
-        U const&, string_view>::value) ||
-    (std::is_same<U, string>::value &&
-     std::is_convertible<
-        T const&, string_view>::value),
-    bool>::type
+detail::string_comp_op_requirement<T, U>
 operator<=(T const& lhs, U const& rhs) noexcept
 #endif
 {
-    return string_view(lhs) <= string_view(rhs);
+    return detail::to_string_view(lhs) <= detail::to_string_view(rhs);
 }
 
 #ifdef BOOST_JSON_DOCS
@@ -2860,18 +2882,11 @@ bool
 operator>=(string const& lhs, string const& rhs) noexcept
 #else
 template<class T, class U>
-typename std::enable_if<
-    (std::is_same<T, string>::value &&
-     std::is_convertible<
-        U const&, string_view>::value) ||
-    (std::is_same<U, string>::value &&
-     std::is_convertible<
-        T const&, string_view>::value),
-    bool>::type
+detail::string_comp_op_requirement<T, U>
 operator>=(T const& lhs, U const& rhs) noexcept
 #endif
 {
-    return string_view(lhs) >= string_view(rhs);
+    return detail::to_string_view(lhs) >= detail::to_string_view(rhs);
 }
 
 /** Return true if lhs is greater than rhs.
@@ -2883,21 +2898,15 @@ bool
 operator>(string const& lhs, string const& rhs) noexcept
 #else
 template<class T, class U>
-typename std::enable_if<
-    (std::is_same<T, string>::value &&
-     std::is_convertible<
-        U const&, string_view>::value) ||
-    (std::is_same<U, string>::value &&
-     std::is_convertible<
-        T const&, string_view>::value),
-    bool>::type
+detail::string_comp_op_requirement<T, U>
 operator>(T const& lhs, U const& rhs) noexcept
 #endif
 {
-    return string_view(lhs) > string_view(rhs);
+    return detail::to_string_view(lhs) > detail::to_string_view(rhs);
 }
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 // std::hash specialization
 #ifndef BOOST_JSON_DOCS
@@ -2905,25 +2914,9 @@ namespace std {
 template<>
 struct hash< ::boost::json::string >
 {
-    hash() = default;
-    hash(hash const&) = default;
-    hash& operator=(hash const&) = default;
-
-    explicit
-    hash(std::size_t salt) noexcept
-        : salt_(salt)
-    {
-    }
-
+    BOOST_JSON_DECL
     std::size_t
-    operator()(::boost::json::string const& js) const noexcept
-    {
-        return ::boost::json::detail::digest(
-            js.data(), js.size(), salt_);
-    }
-
-private:
-    std::size_t salt_ = 0;
+    operator()( ::boost::json::string const& js ) const noexcept;
 };
 } // std
 #endif

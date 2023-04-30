@@ -15,7 +15,8 @@
 
 #include "test_suite.hpp"
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 BOOST_STATIC_ASSERT( std::is_nothrow_destructible<value_stack>::value );
 
@@ -124,4 +125,5 @@ public:
 
 TEST_SUITE(value_stack_test, "boost.json.value_stack");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

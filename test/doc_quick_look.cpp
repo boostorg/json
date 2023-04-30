@@ -8,14 +8,13 @@
 //
 
 #include <boost/json.hpp>
-#ifndef BOOST_JSON_STANDALONE
 #include <boost/container/pmr/vector.hpp>
-#endif
 #include <iostream>
 
 #include "test_suite.hpp"
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 static void set1() {
 
@@ -87,7 +86,6 @@ arr = { nullptr, true, "boost" };                   // fill in the array again
 }
 //----------------------------------------------------------
 {
-#ifndef BOOST_JSON_STANDALONE
 //[doc_quick_look_6
 {
     monotonic_resource mr;
@@ -100,7 +98,6 @@ arr = { nullptr, true, "boost" };                   // fill in the array again
     assert( *vv.get_allocator().resource() == *vv[2].storage() );
 }
 //]
-#endif
 }
 //----------------------------------------------------------
 
@@ -334,4 +331,5 @@ public:
 
 TEST_SUITE(doc_quick_look_test, "boost.json.doc_quick_look");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

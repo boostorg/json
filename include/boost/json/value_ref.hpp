@@ -17,7 +17,8 @@
 #include <type_traits>
 #include <utility>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 #ifndef BOOST_JSON_DOCS
 class value;
@@ -152,23 +153,6 @@ class value_ref
         explicit arg_type(std::nullptr_t) noexcept : nullptr_() {}
     };
 
-    template<class T>
-    using is_builtin =
-        std::integral_constant<bool,
-            std::is_same<T, signed char>::value ||
-            std::is_same<T, short>::value ||
-            std::is_same<T, int>::value ||
-            std::is_same<T, long>::value ||
-            std::is_same<T, long long>::value ||
-            std::is_same<T, unsigned char>::value ||
-            std::is_same<T, unsigned short>::value ||
-            std::is_same<T, unsigned int>::value ||
-            std::is_same<T, unsigned long>::value ||
-            std::is_same<T, unsigned long long>::value ||
-            std::is_same<T, float>::value ||
-            std::is_same<T, double>::value ||
-            std::is_same<T, std::nullptr_t>::value>;
-
     arg_type arg_;
 #ifndef BOOST_JSON_DOCS
     // VFALCO doc toolchain erroneously
@@ -250,12 +234,12 @@ public:
     value_ref(bool b) noexcept;
 #else
     template<
-        class Bool
+        class T
         ,class = typename std::enable_if<
-            std::is_same<Bool, bool>::value>::type
+            std::is_same<T, bool>::value>::type
     >
     value_ref(
-        Bool b) noexcept
+        T b) noexcept
         : arg_(b)
         , cf_{&from_builtin<bool>, &arg_.bool_}
         , what_(what::cfunc)
@@ -481,7 +465,8 @@ private:
         storage_ptr const& sp);
 };
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 // Must be included here for this file to stand alone
 #include <boost/json/value.hpp>

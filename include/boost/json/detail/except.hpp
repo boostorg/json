@@ -12,30 +12,22 @@
 
 #include <boost/json/error.hpp>
 
-#ifndef BOOST_JSON_STANDALONE
-#include <boost/assert/source_location.hpp>
-#include <boost/exception/diagnostic_information.hpp>
-#endif
-
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 namespace detail {
 
-#if ! defined(BOOST_JSON_STANDALONE) && defined(BOOST_CURRENT_LOCATION)
-# define BOOST_JSON_SOURCE_POS BOOST_CURRENT_LOCATION
-using source_location = boost::source_location;
-#else
-# define BOOST_JSON_SOURCE_POS {}
-struct source_location{};
-#endif
+#define BOOST_JSON_FAIL(ec, e) \
+    BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION; \
+    (ec).assign(e, &loc);
 
-BOOST_JSON_DECL void BOOST_NORETURN throw_bad_alloc(source_location const& loc);
-BOOST_JSON_DECL void BOOST_NORETURN throw_invalid_argument(char const* what, source_location const& loc);
-BOOST_JSON_DECL void BOOST_NORETURN throw_length_error(char const* what, source_location const& loc);
-BOOST_JSON_DECL void BOOST_NORETURN throw_out_of_range(source_location const& loc);
-BOOST_JSON_DECL void BOOST_NORETURN throw_system_error(error_code const& ec, source_location const& loc);
-BOOST_JSON_DECL void BOOST_NORETURN throw_system_error(error e, source_location const& loc);
+BOOST_JSON_DECL void BOOST_NORETURN throw_bad_alloc(source_location const& loc = BOOST_CURRENT_LOCATION);
+BOOST_JSON_DECL void BOOST_NORETURN throw_invalid_argument(char const* what, source_location const& loc = BOOST_CURRENT_LOCATION);
+BOOST_JSON_DECL void BOOST_NORETURN throw_length_error(char const* what, source_location const& loc = BOOST_CURRENT_LOCATION);
+BOOST_JSON_DECL void BOOST_NORETURN throw_out_of_range(source_location const& loc = BOOST_CURRENT_LOCATION);
+BOOST_JSON_DECL void BOOST_NORETURN throw_system_error(error_code const& ec, source_location const& loc = BOOST_CURRENT_LOCATION);
 
 } // detail
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

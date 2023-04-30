@@ -16,7 +16,8 @@
 #include <type_traits>
 #include <utility>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 namespace detail {
 
@@ -336,25 +337,31 @@ capacity() const noexcept ->
 
 auto
 object::
-at(string_view key) ->
+at(string_view key) & ->
     value&
 {
     auto it = find(key);
     if(it == end())
-        detail::throw_out_of_range(
-            BOOST_JSON_SOURCE_POS);
+        detail::throw_out_of_range();
     return it->value();
 }
 
 auto
 object::
-at(string_view key) const ->
+at(string_view key) && ->
+    value&&
+{
+    return std::move( at(key) );
+}
+
+auto
+object::
+at(string_view key) const& ->
     value const&
 {
     auto it = find(key);
     if(it == end())
-        detail::throw_out_of_range(
-            BOOST_JSON_SOURCE_POS);
+        detail::throw_out_of_range();
     return it->value();
 }
 
@@ -379,7 +386,7 @@ insert_or_assign(
         std::pair<iterator, bool>
 {
     reserve(size() + 1);
-    auto const result = find_impl(key);
+    auto const result = detail::find_in_object(*this, key);
     if(result.first)
     {
         value(std::forward<M>(m),
@@ -401,7 +408,7 @@ emplace(
         std::pair<iterator, bool>
 {
     reserve(size() + 1);
-    auto const result = find_impl(key);
+    auto const result = detail::find_in_object(*this, key);
     if(result.first)
         return { result.first, false };
     key_value_pair kv(key,
@@ -490,9 +497,7 @@ insert(
             std::distance(first, last));
     auto const n0 = size();
     if(n > max_size() - n0)
-        detail::throw_length_error(
-            "object too large",
-            BOOST_JSON_SOURCE_POS);
+        detail::throw_length_error( "object too large" );
     reserve(n0 + n);
     revert_insert r(*this);
     while(first != last)
@@ -525,6 +530,7 @@ unchecked_object::
 
 } // detail
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

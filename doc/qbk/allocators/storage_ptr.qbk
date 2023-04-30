@@ -102,10 +102,10 @@ available when using the library:
 
 [heading Default Memory Resource]
 
-The ['default memory resource] wraps calls to the global heap allocation
-functions. This resource is not reference counted and has a non-trivial
-deallocate function. All default-constructed __storage_ptr__ reference
-the same default memory resource:
+The ['default memory resource] uses the global `operator new` and `operator
+delete` to allocate memory. This resource is not reference counted and has a
+non-trivial deallocate function. All default-constructed __storage_ptr__
+objects reference the same memory resource:
 
 [doc_storage_ptr_1]
 
@@ -116,6 +116,11 @@ Default-constructed library containers use the default memory resource:
 The default memory resource is well suited for general usage. It offers
 reasonable performance for parsing, and conservative memory usage for
 modification of the contents of containers.
+
+[note This memory resource is not guaranteed to be the same as the result of
+`boost::container::pmr::get_default_resource`. It also cannot be changed with
+`boost::container::pmr::set_default_resource`.
+]
 
 [/-----------------------------------------------------------------------------]
 

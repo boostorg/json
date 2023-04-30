@@ -10,15 +10,16 @@
 #ifndef BOOST_JSON_DETAIL_DIGEST_HPP
 #define BOOST_JSON_DETAIL_DIGEST_HPP
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 namespace detail {
 
 // Calculate salted digest of string
-inline
+template<class ForwardIterator>
 std::size_t
 digest(
-    char const* s,
-    std::size_t n,
+    ForwardIterator b,
+    ForwardIterator e,
     std::size_t salt) noexcept
 {
 #if BOOST_JSON_ARCH == 64
@@ -29,12 +30,13 @@ digest(
     std::uint32_t hash  = 0x811C9DC5UL;
 #endif
     hash += salt;
-    for(;n--;++s)
-        hash = (*s ^ hash) * prime;
+    for(; b != e; ++b)
+        hash = (*b ^ hash) * prime;
     return hash;
 }
 
 } // detail
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

@@ -20,7 +20,8 @@
 #include "test.hpp"
 #include "test_suite.hpp"
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 template<std::size_t N, class... Args>
 void
@@ -31,7 +32,7 @@ sprintf(char (&buf)[N],
     sprintf_s(buf, format,
         std::forward<Args>(args)...);
 #else
-    std::sprintf(buf, format,
+    std::snprintf(buf, N, format,
         std::forward<Args>(args)...);
 #endif
 }
@@ -431,4 +432,5 @@ public:
 
 TEST_SUITE(double_test, "boost.json.double");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

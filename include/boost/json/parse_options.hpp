@@ -12,7 +12,8 @@
 
 #include <boost/json/detail/config.hpp>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 /** Parser options
 
@@ -32,7 +33,7 @@ struct parse_options
     /** Maximum nesting level of arrays and objects.
 
         This specifies the maximum number of nested
-        structures allowed while parsing a JSON. If
+        structures allowed while parsing a JSON text. If
         this limit is exceeded during a parse, an
         error is returned.
 
@@ -78,6 +79,7 @@ struct parse_options
     bool allow_invalid_utf8 = false;
 };
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

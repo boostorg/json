@@ -22,7 +22,8 @@
 #pragma warning(disable: 4702) // unreachable code
 #endif
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 BOOST_STATIC_ASSERT(
     std::is_nothrow_move_constructible<storage_ptr>::value);
@@ -207,7 +208,8 @@ value storage_ptr_test::jv2 = {1, 2, 3};
 
 TEST_SUITE(storage_ptr_test, "boost.json.storage_ptr");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #ifdef _MSC_VER
 #pragma warning(pop)

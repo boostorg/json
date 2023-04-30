@@ -28,7 +28,7 @@ and calling `get_double` will result in undefined behavior:
 [doc_using_numbers_2]
 
 In cases where you know that a __value__ contains a number
-but don't know its __kind__, __value_to__ can be used to convert
+but don't know its __kind__, `value::to_number` can be used to convert
 the __value__ to an arithmetic type:
 
 [doc_using_numbers_3]
@@ -40,8 +40,7 @@ converted to `T` as-if by `static_cast`:
 
 [doc_using_numbers_4]
 
-Arithmetic conversions done by __value_to__ delegate to
-`value::to_number`. In settings where exceptions cannot be used,
+In settings where exceptions cannot be used,
 an overload of `value::to_number` accepting __error_code__
 can be used instead with identical semantics to its
 throwing counterpart:

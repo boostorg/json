@@ -10,10 +10,7 @@
 #include <boost/json/monotonic_resource.hpp>
 #include <boost/json/static_resource.hpp>
 #include <boost/json/value.hpp>
-
-#ifndef BOOST_JSON_STANDALONE
 #include <boost/container/pmr/vector.hpp>
-#endif
 #include <vector>
 
 #include "test_suite.hpp"
@@ -23,18 +20,14 @@
 #endif
 #define assert BOOST_TEST
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 namespace doc_background {
 
 namespace background {
-#ifdef BOOST_JSON_STANDALONE
-template<class T>
-using vector = std::pmr::vector<T>;
-#else
 template<class T>
 using vector = boost::container::pmr::vector<T>;
-#endif
 } // background
 
 //----------------------------------------------------------
@@ -210,4 +203,5 @@ public:
 
 TEST_SUITE(doc_background_test, "boost.json.doc_background");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

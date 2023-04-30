@@ -7,25 +7,10 @@
 // Official repository: https://github.com/boostorg/json
 //
 
-#include <boost/json.hpp>
-
-#ifndef BOOST_JSON_STANDALONE
-
-#include <algorithm>
-#include <cmath>
-#include <complex>
-#include <iostream>
-#include <map>
-#include <numeric>
-#include <string>
-#include <unordered_map>
-#include <vector>
-
-#include "test_suite.hpp"
-
 #ifdef _MSC_VER
 # pragma warning(push)
 # pragma warning(disable: 4101)
+# pragma warning(disable: 4996)
 #elif defined(__clang__)
 # pragma clang diagnostic push
 # pragma clang diagnostic ignored "-Wunused"
@@ -35,54 +20,121 @@
 # pragma GCC diagnostic ignored "-Wunused"
 #endif
 
-//[snippet_conv_3
+#include <boost/json.hpp>
 
-template< std::size_t N >
-struct static_string { };
+#include <algorithm>
+#include <cmath>
+#include <map>
+#include <numeric>
+#include <string>
+#include <vector>
 
-namespace std
+#include "test_suite.hpp"
+#include "doc_types.hpp"
+
+//[snippet_conv_spec_trait2
+namespace boost
+{
+namespace json
 {
 
-template< std::size_t N >
-class hash< static_string< N > >
+template<>
+struct is_sequence_like< user_ns::ip_address >
+    : std::false_type
+{ };
+
+} // namespace json
+} // namespace boost
+//]
+
+namespace user_ns2 {
+
+class ip_address : public user_ns::ip_address
 {
 public:
-    std::size_t
-    operator()(const static_string< N >& str ) const noexcept
-    {
-        return std::hash< std::string >()( str );
-    }
+    using user_ns::ip_address::ip_address;
 };
 
-} // std
+using namespace boost::json;
 
-//]
-
-BOOST_JSON_NS_BEGIN
-
-//[snippet_conv_4
-
-template< class T >
+//[snippet_tag_invoke_1
 void
-tag_invoke( const value_from_tag&, value& jv, std::complex< T > const& t)
+tag_invoke( const value_from_tag&, value& jv, ip_address const& addr )
 {
-    // Store a complex number as a 2-element array
-    // with the real part followed by the imaginary part
-    jv = { t.real(), t.imag() };
+    // Store the IP address as a 4-element array of octets
+    const unsigned char* b = addr.begin();
+    jv = { b[0], b[1], b[2], b[3] };
 }
 
-template< class T >
-std::complex< T >
-tag_invoke( const value_to_tag< std::complex< T > >&, value const& jv )
+ip_address
+tag_invoke( const value_to_tag< ip_address >&, value const& jv )
 {
-    return std::complex< T >(
-        jv.as_array().at(0).to_number< T >(),
-        jv.as_array().at(1).to_number< T >());
+    array const& arr = jv.as_array();
+    return ip_address(
+        arr.at(0).to_number< unsigned char >(),
+        arr.at(1).to_number< unsigned char >(),
+        arr.at(2).to_number< unsigned char >(),
+        arr.at(3).to_number< unsigned char >() );
 }
-
 //]
+
+//[snippet_nothrow_1
+result_for< ip_address, value >::type
+tag_invoke( const try_value_to_tag< ip_address >&, value const& jv )
+{
+    if( !jv.is_array() )
+        return make_error_code( std::errc::invalid_argument );
+
+    array const& arr = jv.get_array();
+    if( arr.size() != 4 )
+        return make_error_code( std::errc::invalid_argument );
+
+    result< unsigned char > oct1 = try_value_to< unsigned char >( arr[0] );
+    if( !oct1 )
+        return make_error_code( std::errc::invalid_argument );
+
+    result< unsigned char > oct2 = try_value_to< unsigned char >( arr[1] );
+    if( !oct2 )
+        return make_error_code( std::errc::invalid_argument );
+
+    result< unsigned char > oct3 = try_value_to< unsigned char >( arr[2] );
+    if( !oct3 )
+        return make_error_code( std::errc::invalid_argument );
+
+    result< unsigned char > oct4 = try_value_to< unsigned char >( arr[3] );
+    if( !oct4 )
+        return make_error_code( std::errc::invalid_argument );
+
+    return ip_address{ *oct1, *oct2, *oct3, *oct4 };
+}
+//]
+
+} // namespace user_ns
+
+namespace boost {
+namespace json {
 
 namespace {
+
+//[snippet_strings_5
+string greeting( string_view first_name, string_view last_name )
+{
+    const char hello[] = "Hello, ";
+    const std::size_t sz = first_name.size() + last_name.size() + sizeof(hello) + 1;
+
+    string js;
+    js.reserve(sz);
+
+    char* p = std::copy( hello, hello + sizeof(hello) - 1, js.data() );
+    p = std::copy( first_name.begin(), first_name.end(), p );
+    *p++ = ' ';
+    p = std::copy( last_name.begin(), last_name.end(), p );
+    *p++ = '!';
+
+    js.grow( sz );
+    return js;
+}
+//]
 
 void
 usingStrings()
@@ -145,6 +197,12 @@ usingStrings()
         str.compare("Boost");
 
         //]
+    }
+
+    {
+        auto str = greeting( "John", "Smith" );
+        (void)str;
+        assert( str == "Hello, John Smith!");
     }
 }
 
@@ -281,7 +339,7 @@ usingInitLists()
 
         assert( jv.as_array().size() == 4 );
 
-        assert( serialize(jv) == "[true,2,\"hello\",null]" );
+        assert( serialize(jv) == R"([true,2,"hello",null])" );
 
         //]
     }
@@ -295,7 +353,7 @@ usingInitLists()
 
         assert( jv.as_array().back().is_array() );
 
-        assert( serialize(jv) == "[true,2,\"hello\",[\"bye\",null,false]]" );
+        assert( serialize(jv) == R"([true,2,"hello",["bye",null,false]])" );
 
         //]
     }
@@ -358,11 +416,11 @@ usingInitLists()
 
         assert( jv.is_object() );
 
-        assert( serialize(jv) == "{\"mercury\":36,\"venus\":67,\"earth\":93}" );
+        assert( serialize(jv) == R"({"mercury":36,"venus":67,"earth":93})" );
 
         array ja = { { "mercury", 36 }, { "venus", 67 }, { "earth", 93 } };
 
-        assert( serialize(ja) == "[[\"mercury\",36],[\"venus\",67],[\"earth\",93]]" );
+        assert( serialize(ja) == R"([["mercury",36],["venus",67],["earth",93]])" );
 
         //]
 
@@ -497,28 +555,18 @@ usingObjects()
     catch (...)
     {
     }
+    {
+        //[snippet_objects_5
+
+        object obj{{"arr", {1, 11}}};
+        value& arr = obj.at("arr");
+        obj.emplace("added", "value"); // invalidates arr
+
+        //]
+
+        (void)arr;
+    }
 }
-
-//----------------------------------------------------------
-
-//[snippet_conv_2
-
-template< class T >
-void identity_swap( T& a, T& b )
-{
-    // introduces the declaration of
-    // std::swap into this scope
-    using std::swap;
-    if( &a == &b )
-        return;
-    // the overload set will contain std::swap,
-    // any declarations of swap within the enclosing
-    // namespace, and any declarations of swap within
-    // the namespaces associated with T
-    swap( a, b );
-}
-
-//]
 
 //[snippet_conv_5
 
@@ -540,19 +588,6 @@ void tag_invoke( const value_from_tag&, value& jv, const vec3<T>& vec )
 
 //]
 
-#ifdef BOOST_JSON_DOCS
-//[snippet_conv_7
-
-template< class T, typename std::enable_if<
-    std::is_floating_point< T >::value>::type* = nullptr >
-void tag_invoke( const value_from_tag&, value& jv, T t )
-{
-    jv = std::llround( t );
-}
-
-//]
-#endif
-
 //[snippet_conv_10
 
 struct customer
@@ -565,8 +600,6 @@ struct customer
 
     customer( std::uint64_t i, const std::string& n, bool l )
         : id( i ), name( n ), late( l ) { }
-
-    explicit customer( value const& );
 };
 
 void tag_invoke( const value_from_tag&, value& jv, customer const& c )
@@ -616,185 +649,187 @@ usingExchange()
 
         // Convert the vector to a JSON array
         value jv = value_from( v1 );
-
-        assert( jv.is_array() );
-
-        array& ja = jv.as_array();
-
-        assert( ja.size() == 4 );
-
-        for ( std::size_t i = 0; i < v1.size(); ++i )
-            assert( v1[i] == ja[i].as_int64() );
+        assert( serialize( jv ) == R"([1,2,3,4])" );
 
         // Convert back to vector< int >
         std::vector< int > v2 = value_to< std::vector< int > >( jv );
-
         assert( v1 == v2 );
 
         //]
 
-        (void)ja;
+        (void)v2;
     }
     {
-        //[snippet_conv_6
+        using namespace user_ns2;
 
-        vec3< int > pos = { 4, 1, 4 };
-
-        value jv = value_from( pos );
-
-        assert( serialize( jv ) == "{\"x\":4,\"y\":1,\"z\":4}" );
-
-        //]
-    }
-    {
-        //[snippet_conv_8
-
-       value jv = value_from( 1.5 ); // error
-
-        //]
-    }
-    {
-        //[snippet_conv_9
-
-        std::map< std::string, vec3< int > > positions = {
-            { "Alex", { 42, -60, 18 } },
-            { "Blake", { 300, -60, -240} },
-            { "Carol", { -60, 30, 30 } }
+        //[snippet_tag_invoke_3
+        std::map< std::string, ip_address > computers = {
+            { "Alex", { 192, 168, 1, 1 } },
+            { "Blake", { 192, 168, 1, 2 } },
+            { "Carol", { 192, 168, 1, 3 } },
         };
 
         // conversions are applied recursively;
         // the key type and value type will be converted
         // using value_from as well
-        value jv = value_from( positions );
-
+        value jv = value_from( computers );
         assert( jv.is_object() );
 
-        object& jo = jv.as_object();
-
-        assert( jo.size() == 3 );
-
-        // The sum of the coordinates is 0
-        assert( std::accumulate( jo.begin(), jo.end(), std::int64_t(0),
-            []( std::int64_t total, const key_value_pair& jp )
+        value serialized = parse(R"(
             {
-                assert ( jp.value().is_object() );
-
-                const object& pos = jp.value().as_object();
-
-                return total + pos.at( "x" ).as_int64() +
-                    pos.at( "y" ).as_int64() +
-                    pos.at( "z" ).as_int64();
-
-            } ) == 0 );
-
+                "Alex":  [ 192, 168, 1, 1 ],
+                "Blake": [ 192, 168, 1, 2 ],
+                "Carol": [ 192, 168, 1, 3 ]
+            }
+            )");
+        assert( jv == serialized );
         //]
 
-        (void)jo;
+        (void)jv;
     }
     {
-        //[snippet_conv_11
+        using namespace user_ns2;
 
-        std::vector< customer > customers = {
-            customer( 0, "Alison", false ),
-            customer( 1, "Bill", false ),
-            customer( 3, "Catherine", true ),
-            customer( 4, "Doug", false )
-         };
+        //[snippet_tag_invoke_2
+        ip_address addr = { 127, 0, 0, 12 };
+        value jv = value_from( addr );
+        assert( serialize( jv ) == R"([127,0,0,12])" );
 
-        storage_ptr sp = make_shared_resource< monotonic_resource >();
-
-        value jv = value_from( customers, sp );
-
-        assert( jv.storage() == sp );
-
-        assert( jv.is_array() );
-
+        // Convert back to IP address
+        ip_address addr2 = value_to< ip_address >( jv );
+        assert(std::equal(
+            addr.begin(), addr.end(), addr2.begin() ));
         //]
+
+        (void)addr2;
     }
-
     {
-        //[snippet_conv_12
+        using namespace user_ns2;
 
-        // Satisfies both FromMapLike and FromContainerLike
-        std::unordered_map< std::string, bool > available_tools = {
-            { "Crowbar", true },
-            { "Hammer", true },
-            { "Drill", true },
-            { "Saw", false },
+        //[snippet_nothrow_2
+        value jv = parse( R"([127,0,0,12])" );
+
+        result< ip_address > addr = try_value_to< ip_address >( jv );
+        assert( addr.has_value() );
+
+        ip_address addr2{ 127, 0, 0, 12 };
+        assert(std::equal(
+            addr->begin(), addr->end(), addr2.begin() ));
+
+        // this fails without exception
+        addr = try_value_to< ip_address >( value() );
+        assert( addr.has_error() );
+        //]
+
+        (void)addr;
+        (void)addr2;
+    }
+    {
+        //[snippet_conv_recursive
+        std::map< std::string, std::pair<int, bool> > m = {
+            {"a", {1, false}},
+            {"b", {4, true}},
+            {"c", {5, false}},
         };
 
-        value jv = value_from( available_tools );
+        value jv = value_from( m );
 
-        assert( jv.is_object() );
-
+        assert(( jv == object{
+            {"a", array{1, false}},
+            {"b", array{4, true}},
+            {"c", array{5, false}},
+        }));
         //]
     }
+}
+
+void
+usingPointer()
+{
+    //[snippet_pointer_1
+    value jv = { {"one", 1}, {"two", 2} };
+    assert( jv.at("one") == jv.at_pointer("/one") );
+
+    jv.at_pointer("/one") = {{"foo", "bar"}};
+    assert( jv.at("one").at("foo") == jv.at_pointer("/one/foo") );
+
+    jv.at_pointer("/one/foo") = {true, 4, "qwerty"};
+    assert( jv.at("one").at("foo").at(1) == jv.at_pointer("/one/foo/1") );
+    //]
+
+    value* elem1 = [&]() -> value*
     {
-        //[snippet_conv_13
+        //[snippet_pointer_2
+        object* obj = jv.if_object();
+        if( !obj )
+            return nullptr;
 
-        std::complex< double > c1 = { 3.14159, 2.71828 };
+        value* val = obj->if_contains("one");
+        if( !val )
+            return nullptr;
 
-        // Convert a complex number to JSON
-        value jv = value_from( c1 );
+        obj = val->if_object();
+        if( !obj )
+            return nullptr;
 
-        assert ( jv.is_array() );
+        val = obj->if_contains("foo");
+        if( !val )
+            return nullptr;
 
-        // Convert back to a complex number
+        array* arr = val->if_array();
+        if( !arr )
+            return nullptr;
 
-        std::complex< double > c2 = value_to< std::complex< double > >( jv );
-
+        return arr->if_contains(1);
         //]
+    }();
 
-        (void)c2;
-    }
+    value* elem2 = [&]() -> value*
     {
-        //[snippet_conv_15
-
-        customer c1( 5, "Ed", false );
-
-        // Convert customer to value
-        value jv = value_from( c1 );
-
-        // Convert the result back to customer
-        customer c2 = value_to< customer >( jv );
-
-        // The resulting customer is unchanged
-        assert( c1.name == c2.name );
-
+        //[snippet_pointer_3
+        error_code ec;
+        return jv.find_pointer("/one/foo/1", ec);
         //]
-    }
-    {
-        //[snippet_conv_16
+    }();
 
-        value available_tools = {
-            { "Crowbar", true },
-            { "Hammer", true },
-            { "Drill", true },
-            { "Saw", false }
-        };
+    (void)elem1;
+    (void)elem2;
+    assert( elem1 == elem2 );
+}
 
-        assert( available_tools.is_object() );
 
-        auto as_map = value_to< std::map< std::string, bool > >( available_tools );
+void
+usingSetAtPointer()
+{
+    //[snippet_pointer_4
+    value jv;
+    jv.set_at_pointer("/two/bar/0", 12);
+    assert( jv.is_object() );
+    assert( jv.at_pointer("/two").is_object() );
+    assert( jv.at_pointer("/two/bar").is_array() );
+    assert( jv.at_pointer("/two/bar/0") == 12 );
+    //]
 
-        assert( available_tools.as_object().size() == as_map.size() );
+    jv = nullptr;
+    //[snippet_pointer_5
+    set_pointer_options opts;
+    opts.create_arrays = false;
 
-        //]
-    }
+    jv.set_at_pointer("/two/bar/0", 12, opts);
+    assert( jv.is_object() );
+    assert( jv.at_pointer("/two").is_object() );
+    assert( jv.at_pointer("/two/bar").is_object() ); // object, not array
+    assert( jv.at_pointer("/two/bar/0") == 12 );
+    //]
 }
 
 BOOST_STATIC_ASSERT(
     has_value_from<customer>::value);
 
 BOOST_STATIC_ASSERT(
-    has_value_from<std::complex<float>>::value);
+    has_value_from<user_ns2::ip_address>::value);
 BOOST_STATIC_ASSERT(
-    has_value_from<std::complex<double>>::value);
-
-BOOST_STATIC_ASSERT(
-    has_value_to<std::complex<float>>::value);
-BOOST_STATIC_ASSERT(
-    has_value_to<std::complex<double>>::value);
+    has_value_to<user_ns2::ip_address>::value);
 
 } // (anon)
 
@@ -824,9 +859,22 @@ struct is_deallocate_trivial< my_non_deallocating_resource >
 } // boost
 
 //]
-
 namespace boost {
 namespace json {
+
+namespace
+{
+
+void
+usingSpecializedTrait()
+{
+    value jv1{127, 0, 0, 1};
+    auto const addr = value_to< user_ns::ip_address >( jv1 );
+    auto const jv2 = value_from(addr);
+    assert( jv1 == jv2 );
+}
+
+} // namespace
 
 class snippets_test
 {
@@ -840,6 +888,9 @@ public:
         usingArrays();
         usingObjects();
         usingStrings();
+        usingPointer();
+        usingSpecializedTrait();
+        usingSetAtPointer();
 
         BOOST_TEST_PASS();
     }
@@ -847,6 +898,5 @@ public:
 
 TEST_SUITE(snippets_test, "boost.json.snippets");
 
-BOOST_JSON_NS_END
-
-#endif
+} // namespace json
+} // namespace boost

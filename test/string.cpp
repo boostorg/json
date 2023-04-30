@@ -22,7 +22,8 @@
 #include "test.hpp"
 #include "test_suite.hpp"
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 BOOST_STATIC_ASSERT( std::is_nothrow_destructible<string>::value );
 BOOST_STATIC_ASSERT( std::is_nothrow_move_constructible<string>::value );
@@ -538,6 +539,16 @@ public:
                 BOOST_TEST(
                     *s.storage() !=
                     *s2.storage());
+            });
+
+            // self
+
+            fail_loop([&](storage_ptr const& sp)
+            {
+                string s1(t.v1, sp);
+                string& s2 = s1;
+                s1 = std::move(s2);
+                BOOST_TEST(s1 == t.v1);
             });
         }
 
@@ -1134,10 +1145,8 @@ public:
 
         // operator string_view()
         {
-            BOOST_TEST(
-                string_view(cs1) == t.v1);
-            BOOST_TEST(
-                string_view(cs2) == t.v2);
+            BOOST_TEST(cs1.subview() == t.v1);
+            BOOST_TEST(cs2.subview() == t.v2);
         }
     }
 
@@ -2517,35 +2526,39 @@ public:
     {
         test_vectors const t;
 
-        // swap
+        fail_loop([&](storage_ptr const& sp)
         {
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s1(t.v1, sp);
-                string s2(t.v2, sp);
-                s1.swap(s2);
-                BOOST_TEST(s1 == t.v2);
-                BOOST_TEST(s2 == t.v1);
-            });
+            string s1(t.v1, sp);
+            string s2(t.v2, sp);
+            s1.swap(s2);
+            BOOST_TEST(s1 == t.v2);
+            BOOST_TEST(s2 == t.v1);
+        });
 
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s1(t.v1, sp);
-                string s2(t.v2, sp);
-                swap(s1, s2);
-                BOOST_TEST(s1 == t.v2);
-                BOOST_TEST(s2 == t.v1);
-            });
+        fail_loop([&](storage_ptr const& sp)
+        {
+            string s1(t.v1, sp);
+            string s2(t.v2, sp);
+            swap(s1, s2);
+            BOOST_TEST(s1 == t.v2);
+            BOOST_TEST(s2 == t.v1);
+        });
 
-            fail_loop([&](storage_ptr const& sp)
-            {
-                string s1(t.v1);
-                string s2(t.v2, sp);
-                s1.swap(s2);
-                BOOST_TEST(s1 == t.v2);
-                BOOST_TEST(s2 == t.v1);
-            });
-        }
+        fail_loop([&](storage_ptr const& sp)
+        {
+            string s1(t.v1);
+            string s2(t.v2, sp);
+            s1.swap(s2);
+            BOOST_TEST(s1 == t.v2);
+            BOOST_TEST(s2 == t.v1);
+        });
+
+        fail_loop([&](storage_ptr const& sp)
+        {
+            string s(t.v1, sp);
+            swap(s, s);
+            BOOST_TEST(s == t.v1);
+        });
     }
 
     void
@@ -2758,13 +2771,13 @@ public:
         {
             std::unordered_set<string>(
                 0,
-                std::hash<string>(32));
+                std::hash<string>());
         }
 #endif
         {
-            std::hash<string> h1(32);
+            std::hash<string> h1;
             std::hash<string> h2(h1);
-            std::hash<string> h3(59);
+            std::hash<string> h3;
             h1 = h3;
             h2 = h3;
             (void)h2;
@@ -2811,4 +2824,5 @@ public:
 
 TEST_SUITE(string_test, "boost.json.string");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

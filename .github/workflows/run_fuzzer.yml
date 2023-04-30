@@ -11,36 +11,41 @@ jobs:
   fuzz:
 
     runs-on: ubuntu-latest
-    
-    steps:       
-    - uses: actions/checkout@v2
-    - uses: actions/cache@v2
+
+    steps:
+    - name: Fetch head
+      uses: actions/checkout@v3
+      with:
+        path: 'head'
+    - uses: actions/cache@v3
       id: cache-corpus
       with:
-        path: fuzzing/corpus.tar
+        path: head/fuzzing/corpus.tar
         key: corpus-${{ github.run_id }}
         restore-keys: corpus-
-    - name: build and run
-      run: ./fuzz.sh
-      working-directory: fuzzing/
+    - uses: ./head/.github/actions/build
+      with:
+        buildtype: 'boost'
+        path: 'head'
+        toolset: clang
+        targets: libs/json/fuzzing//run
     - name: Pack the corpus
-      working-directory: fuzzing/
+      working-directory: boost-root/libs/json/fuzzing/
       run: |
-        tar cf - cmin > corpus.tar.tmp && mv corpus.tar.tmp corpus.tar
+        tar cf - cmin > corpus.tar.tmp && mv corpus.tar.tmp "${GITHUB_WORKSPACE}"/head/fuzzing
     - name: Save the corpus as a github artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: success()
       with:
         name: corpus
-        path: fuzzing/corpus.tar
+        path: head/fuzzing/corpus.tar
     - name: Archive any crashes as an artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: always()
       with:
         name: crashes
         path: |
-          fuzzing/crash-*
-          fuzzing/leak-*
-          fuzzing/timeout-*
+          boost-root/crash-*
+          boost-root/leak-*
+          boost-root/timeout-*
         if-no-files-found: ignore
-

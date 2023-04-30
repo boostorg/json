@@ -241,15 +241,15 @@ public:
     virtual void pass(char const* expr, char const* file, int line, char const* func) = 0;
     virtual void fail(char const* expr, char const* file, int line, char const* func) = 0;
 
-    template<class Bool
+    template<class T
 #if 0
         ,class = typename std::enable_if<
-            std::is_convertible<bool, Bool>::Value>::type
+            std::is_convertible<bool, T>::Value>::type
 #endif
     >
     bool
     maybe_fail(
-        Bool cond,
+        T cond,
         char const* expr,
         char const* file,
         int line,
@@ -626,9 +626,13 @@ current_function_helper()
 */
 using log_type = detail::log_ostream<char>;
 
+#define BOOST_JSON_PP_DO_CONCAT(x, y) x ## y
+
+#define BOOST_JSON_PP_CONCAT(x, y) BOOST_JSON_PP_DO_CONCAT(x, y)
+
 #define BOOST_TEST_CHECKPOINT(...) \
     ::test_suite::detail::checkpoint \
-        _BOOST_TEST_CHECKPOINT ## __LINE__ ( \
+        BOOST_JSON_PP_CONCAT(_BOOST_TEST_CHECKPOINT, __LINE__) ( \
             __FILE__, __LINE__, __VA_ARGS__ + 0)
 
 #define BOOST_TEST(expr) \
@@ -668,8 +672,29 @@ using log_type = detail::log_ostream<char>;
             TEST_SUITE_FUNCTION); \
     }
 
+# define BOOST_TEST_THROWS_WITH_LOCATION( expr ) \
+    try \
+    { \
+        expr; \
+        ::test_suite::detail::current()->fail( \
+            "system_error", __FILE__, __LINE__, \
+            TEST_SUITE_FUNCTION); \
+    } \
+    catch (::boost::json::system_error const& exc) \
+    { \
+        ::test_suite::detail::current()->maybe_fail( \
+            exc.code().has_location(), "has_location()", __FILE__, __LINE__, \
+            TEST_SUITE_FUNCTION); \
+    } \
+    catch(...) { \
+        ::test_suite::detail::current()->fail( \
+            "system_error", __FILE__, __LINE__, \
+            TEST_SUITE_FUNCTION); \
+    }
+
 #else
    #define BOOST_TEST_THROWS( expr, except )
+   #define BOOST_TEST_THROWS_WITH_LOCATION(expr)
 #endif
 
 #define TEST_SUITE(type, name) \

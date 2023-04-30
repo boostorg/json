@@ -19,7 +19,8 @@ a __std_vector__ of __value__. Additionally:
   as the container itself.
 
 An empty array may be constructed without incurring any memory allocations
-using the default memory resource. A __storage_ptr__ can also be explicitly specified:
+using the __default_memory_resource__. A __storage_ptr__ can also be explicitly
+specified:
 
 [snippet_arrays_1]
 

@@ -19,7 +19,8 @@
 
 #include "test_suite.hpp"
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 //----------------------------------------------------------
 
@@ -162,6 +163,42 @@ value read_json( std::istream& is, error_code& ec )
 }
 //]
 
+//[doc_parsing_14
+std::vector<value> read_jsons( std::istream& is, error_code& ec )
+{
+    std::vector< value > jvs;
+    stream_parser p;
+    std::string line;
+    std::size_t n = 0;
+    while( true )
+    {
+        if( n == line.size() )
+        {
+            if( !std::getline( is, line ) )
+                break;
+            n = 0;
+        }
+
+        n += p.write_some( line.data() + n, line.size() - n, ec );
+
+        if( p.done() )
+        {
+            jvs.push_back( p.release() );
+            p.reset();
+        }
+    }
+    if( !p.done() )   // this part handles the cases when the last JSON text in
+    {                 // the input is either incomplete or doesn't have a marker
+        p.finish(ec); // for end of the value (e.g. it is a number)
+        if( ec.failed() )
+            return jvs;
+        jvs.push_back( p.release() );
+    }
+
+    return jvs;
+}
+//]
+
 //----------------------------------------------------------
 
 static void set3() {
@@ -246,9 +283,27 @@ public:
         (void)&set1;
         (void)&set2;
         (void)&set3;
+        {
+            std::stringstream ss( "[1,2,3\n"
+                                  ",4]nul\n"
+                                  "l12345\n"
+                                  "6\"!\n"
+                                  "\"[2]3" );
+            error_code ec;
+            auto jvs = read_jsons( ss, ec );
+            assert( !ec.failed() );
+            assert( jvs.size() == 6 );
+            assert(( jvs[0] == array{ 1, 2, 3, 4} ));
+            assert(( jvs[1] == value() ));
+            assert(( jvs[2] == 123456 ));
+            assert(( jvs[3] == "!" ));
+            assert(( jvs[4] == array{2} ));
+            assert(( jvs[5] == 3 ));
+        }
     }
 };
 
 TEST_SUITE(doc_parsing_test, "boost.json.doc_parsing");
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost

@@ -23,9 +23,12 @@ the same as `std::basic_string` except that:
 * redundant overloads for string operations have been replaced
 with a __string_view__ based interface,
 
-* access to characters in the range `[size(), capacity())` is permitted, and
+* access to characters in the range `[size(), capacity())` is permitted,
 
-* __storage_ptr__ is used instead of __Allocator__.
+* __storage_ptr__ is used instead of __Allocator__, and
+
+* guaranteed small buffer optimisation that avoids allocating memory for
+small strings.
 
 With augmented interface, operations requiring an input string
 are implemented as a single overload with a parameter of type
@@ -69,8 +72,9 @@ With the removal of overloads that specify parameters for a substring, a member 
 
 [snippet_strings_2]
 
-A __string__ may be constructed using the default memory resource without incurring any
-memory allocations. Alternatively, a __storage_ptr__ can be provided explicitly:
+A __string__ may be constructed using the __default_memory_resource__ without
+incurring any memory allocations. Alternatively, a __storage_ptr__ can be
+provided explicitly:
 
 [snippet_strings_1]
 
@@ -79,5 +83,15 @@ memory allocations. Alternatively, a __storage_ptr__ can be provided explicitly:
 When a __string__ is formatted to a __std_ostream__, the result is a valid
 JSON. That is, the result will be double quoted and the contents properly
 escaped per the JSON specification.
+
+[heading Accessing storage beyond `size()`]
+
+__string__ directly supports access to its storage in the range
+`[size(), capacity())`. This can be used for efficient assembly of a string
+from several parts. After the string is assembled, use the member function
+[link json.ref.boost__json__string.grow `grow()`] to update the string's size
+and insert the null terminator. For example:
+
+[snippet_strings_5]
 
 [endsect]

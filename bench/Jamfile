@@ -7,27 +7,25 @@
 # Official repository: https://github.com/boostorg/json
 #
 
-import os ;
-
-STANDALONE = [ os.environ STANDALONE ] ;
-if $(STANDALONE)
+local has_nlohmann_json = [
+    glob lib/nlohmann/single_include/nlohmann/json.hpp ] ;
+if $(has_nlohmann_json)
 {
-    LIB =
-        <define>BOOST_JSON_STANDALONE=1
-        <source>../src/src.cpp
-        ;
-}
-else
-{
-    LIB = <library>/boost/json//boost_json ;
+    has_nlohmann_json = "" ;
 }
 
-project : requirements $(c11-requires) ;
+local has_rapidjson = [
+    glob lib/rapidjson/include/rapidjson/rapidjson.h ] ;
+if $(has_rapidjson)
+{
+    has_rapidjson = "" ;
+}
 
 exe bench :
     bench.cpp
+    /boost/json//boost_json
     :
     <include>../test
-    :
-    $(LIB)
+    $(has_nlohmann_json)<define>BOOST_JSON_HAS_NLOHMANN_JSON
+    $(has_rapidjson)<define>BOOST_JSON_HAS_RAPIDJSON
     ;

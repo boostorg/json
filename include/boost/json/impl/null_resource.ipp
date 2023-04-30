@@ -13,7 +13,8 @@
 #include <boost/json/null_resource.hpp>
 #include <boost/json/detail/except.hpp>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 
 namespace detail {
 
@@ -65,8 +66,7 @@ protected:
         std::size_t,
         std::size_t) override
     {
-        detail::throw_bad_alloc(
-            BOOST_JSON_SOURCE_POS);
+        detail::throw_bad_alloc();
     }
 
     void
@@ -96,6 +96,7 @@ get_null_resource() noexcept
     return &mr;
 }
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #endif

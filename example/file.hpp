@@ -22,7 +22,7 @@ class file
     void
     fail(boost::json::error_code& ec)
     {
-        ec.assign( errno, boost::json::generic_category() );
+        ec.assign( errno, boost::system::generic_category() );
     }
 
 public:
@@ -72,7 +72,14 @@ public:
         boost::json::error_code& ec)
     {
         close();
+#if defined(_MSC_VER)
+# pragma warning( push )
+# pragma warning( disable : 4996 )
+#endif
         f_ = std::fopen( path, mode );
+#if defined(_MSC_VER)
+# pragma warning( pop )
+#endif
         if( ! f_ )
             return fail(ec);
         if( std::fseek( f_, 0, SEEK_END ) != 0)
@@ -115,7 +122,7 @@ public:
     {
         auto const nread = std::fread( data, 1, size, f_ );
         if( std::ferror(f_) )
-            ec.assign( errno, boost::json::generic_category() );
+            ec.assign( errno, boost::system::generic_category() );
         return nread;
     }
 

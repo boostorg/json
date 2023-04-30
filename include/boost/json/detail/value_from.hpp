@@ -1,6 +1,7 @@
 //
 // Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
 // Copyright (c) 2020 Krystian Stasiowski (sdkrystian@gmail.com)
+// Copyright (c) 2022 Dmitry Arkhipov (grisumbras@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -11,56 +12,43 @@
 #ifndef BOOST_JSON_DETAIL_VALUE_FROM_HPP
 #define BOOST_JSON_DETAIL_VALUE_FROM_HPP
 
-#include <boost/json/storage_ptr.hpp>
-#include <boost/json/value.hpp>
-#include <boost/json/detail/value_traits.hpp>
+#include <boost/json/conversion.hpp>
+#include <boost/describe/enum_to_string.hpp>
+#include <boost/mp11/algorithm.hpp>
 
-BOOST_JSON_NS_BEGIN
+#ifndef BOOST_NO_CXX17_HDR_OPTIONAL
+# include <optional>
+#endif
 
-struct value_from_tag { };
-
-template<class T, class = void>
-struct has_value_from;
+namespace boost {
+namespace json {
 
 namespace detail {
 
-// The integral_constant parameter here is an
-// rvalue reference to make the standard conversion
-// sequence to that parameter better, see
-// http://eel.is/c++draft/over.ics.rank#3.2.6
-template<std::size_t N, class T>
-void
-tuple_to_array(
-    T&&,
-    array&,
-    std::integral_constant<std::size_t, N>&&)
-{
-}
+template <class T>
+struct append_tuple_element {
+    array& arr;
+    T&& t;
 
-template<std::size_t N, std::size_t I, class T>
-void
-tuple_to_array(
-    T&& t,
-    array& arr,
-    const std::integral_constant<std::size_t, I>&)
-{
-    using std::get;
-    arr.emplace_back(value_from(
-        get<I>(std::forward<T>(t)), arr.storage()));
-    return detail::tuple_to_array<N>(std::forward<T>(t),
-        arr, std::integral_constant<std::size_t, I + 1>());
-}
+    template<std::size_t I>
+    void
+    operator()(mp11::mp_size_t<I>) const
+    {
+        using std::get;
+        arr.emplace_back(value_from(
+            get<I>(std::forward<T>(t)), arr.storage()));
+    }
+};
 
 //----------------------------------------------------------
 // User-provided conversion
 
-template<class T, void_t<decltype(tag_invoke(value_from_tag(),
-    std::declval<value&>(), std::declval<T&&>()))>* = nullptr>
+template<class T>
 void
 value_from_helper(
     value& jv,
     T&& from,
-    priority_tag<5>)
+    user_conversion_tag)
 {
     tag_invoke(value_from_tag(), jv, std::forward<T>(from));
 }
@@ -69,127 +57,247 @@ value_from_helper(
 //----------------------------------------------------------
 // Native conversion
 
-template<class T, typename std::enable_if<
-    detail::value_constructible<T>::value>::type* = nullptr>
+template<class T>
 void
 value_from_helper(
     value& jv,
     T&& from,
-    priority_tag<4>)
+    native_conversion_tag)
 {
     jv = std::forward<T>(from);
 }
 
-template<class T, typename std::enable_if<
-    std::is_same<detail::remove_cvref<T>,
-        std::nullptr_t>::value>::type* = nullptr>
+// null-like types
+template<class T>
 void
 value_from_helper(
     value& jv,
     T&&,
-    priority_tag<4>)
+    null_like_conversion_tag)
 {
     // do nothing
     BOOST_ASSERT(jv.is_null());
     (void)jv;
 }
 
-//----------------------------------------------------------
-// Generic conversions
-
 // string-like types
-// NOTE: original check for size used is_convertible but
-// MSVC-140 selects wrong specialisation if used
-template<class T, typename std::enable_if<
-    std::is_constructible<remove_cvref<T>, const char*, std::size_t>::value &&
-    std::is_convertible<decltype(std::declval<T&>().data()), const char*>::value &&
-    std::is_integral<decltype(std::declval<T&>().size())>::value
->::type* = nullptr>
+template<class T>
 void
 value_from_helper(
     value& jv,
     T&& from,
-    priority_tag<3>)
+    string_like_conversion_tag)
 {
-    jv.emplace_string().assign(
-        from.data(), from.size());
+    auto sv = static_cast<string_view>(from);
+    jv.emplace_string().assign(sv);
 }
 
-// map-like types; should go before ranges, so that we can differentiate
-// map-like and other ranges
-template<class T, typename std::enable_if<
-    map_traits<T>::has_unique_keys &&
-        has_value_from<typename map_traits<T>::pair_value_type>::value &&
-    std::is_convertible<typename map_traits<T>::pair_key_type,
-        string_view>::value>::type* = nullptr>
+// map-like types
+template<class T>
 void
 value_from_helper(
     value& jv,
     T&& from,
-    priority_tag<2>)
+    map_like_conversion_tag)
 {
     using std::get;
     object& obj = jv.emplace_object();
-    obj.reserve(container_traits<T>::try_size(from));
+    obj.reserve(detail::try_size(from, size_implementation<T>()));
     for (auto&& elem : from)
         obj.emplace(get<0>(elem), value_from(
             get<1>(elem), obj.storage()));
 }
 
-// ranges; should go before tuple-like in order for std::array being handled
-// by this overload
-template<class T, typename std::enable_if<
-    has_value_from<typename container_traits<T>::
-        value_type>::value>::type* = nullptr>
+// ranges
+template<class T>
 void
 value_from_helper(
     value& jv,
     T&& from,
-    priority_tag<1>)
+    sequence_conversion_tag)
 {
     array& result = jv.emplace_array();
-    result.reserve(container_traits<T>::try_size(from));
+    result.reserve(detail::try_size(from, size_implementation<T>()));
     for (auto&& elem : from)
         result.emplace_back(
-            value_from(elem, result.storage()));
+            value_from(
+                static_cast< forwarded_value<T&&> >(elem),
+                result.storage() ));
 }
 
 // tuple-like types
-template<class T, typename std::enable_if<
-    (std::tuple_size<remove_cvref<T>>::value > 0)>::type* = nullptr>
+template<class T>
 void
 value_from_helper(
     value& jv,
     T&& from,
-    priority_tag<0>)
+    tuple_conversion_tag)
 {
     constexpr std::size_t n =
         std::tuple_size<remove_cvref<T>>::value;
     array& arr = jv.emplace_array();
     arr.reserve(n);
-    detail::tuple_to_array<n>(std::forward<T>(from),
-        arr, std::integral_constant<std::size_t, 0>());
+    mp11::mp_for_each<mp11::mp_iota_c<n>>(
+        append_tuple_element<T>{arr, std::forward<T>(from)});
 }
 
-//----------------------------------------------------------
-
-// Calls to value_from are forwarded to this function
-// so we can use ADL and hide the built-in tag_invoke
-// overloads in the detail namespace
-template<class T, class = void_t<
-    decltype(detail::value_from_helper(std::declval<value&>(),
-        std::declval<T&&>(), priority_tag<5>()))>>
-value
-value_from_impl(
-    T&& from,
-    storage_ptr sp)
+// no suitable conversion implementation
+template<class T>
+void
+value_from_helper(
+    value&,
+    T&&,
+    no_conversion_tag)
 {
-    value jv(std::move(sp));
-    detail::value_from_helper(jv, std::forward<T>(from), priority_tag<5>());
-    return jv;
+    static_assert(
+        !std::is_same<T, T>::value,
+        "No suitable tag_invoke overload found for the type");
+}
+
+#ifndef BOOST_NO_CXX17_HDR_VARIANT
+struct value_from_visitor
+{
+    value& jv;
+
+    template<class T>
+    void
+    operator()(T&& t)
+    {
+        value_from(static_cast<T&&>(t), jv);
+    }
+};
+#endif // BOOST_NO_CXX17_HDR_VARIANT
+
+template< class T >
+struct from_described_member
+{
+    using Ds = describe::describe_members<
+        remove_cvref<T>, describe::mod_public | describe::mod_inherited>;
+
+    object& obj;
+    T&& from;
+
+    template< class I >
+    void
+    operator()(I) const
+    {
+        using D = mp11::mp_at<Ds, I>;
+        obj.emplace(
+            D::name,
+            value_from(
+                static_cast<T&&>(from).* D::pointer,
+                obj.storage()));
+    }
+};
+
+// described classes
+template<class T>
+void
+value_from_helper(
+    value& jv,
+    T&& from,
+    described_class_conversion_tag)
+{
+    object& obj = jv.emplace_object();
+    from_described_member<T> member_converter{obj, static_cast<T&&>(from)};
+
+    using Ds = typename decltype(member_converter)::Ds;
+    constexpr std::size_t N = mp11::mp_size<Ds>::value;
+    obj.reserve(N);
+    mp11::mp_for_each< mp11::mp_iota_c<N> >(member_converter);
+}
+
+// described enums
+template<class T>
+void
+value_from_helper(
+    value& jv,
+    T from,
+    described_enum_conversion_tag)
+{
+    (void)jv;
+    (void)from;
+#ifdef BOOST_DESCRIBE_CXX14
+    char const* const name = describe::enum_to_string(from, nullptr);
+    if( name )
+    {
+        string& str = jv.emplace_string();
+        str.assign(name);
+    }
+    else
+    {
+        using Integer = typename std::underlying_type< remove_cvref<T> >::type;
+        jv = static_cast<Integer>(from);
+    }
+#endif
 }
 
 } // detail
-BOOST_JSON_NS_END
+
+#ifndef BOOST_NO_CXX17_HDR_OPTIONAL
+template<class T>
+void
+tag_invoke(
+    value_from_tag,
+    value& jv,
+    std::optional<T> const& from)
+{
+    if( from )
+        value_from(*from, jv);
+    else
+        jv = nullptr;
+}
+
+template<class T>
+void
+tag_invoke(
+    value_from_tag,
+    value& jv,
+    std::optional<T>&& from)
+{
+    if( from )
+        value_from(std::move(*from), jv);
+    else
+        jv = nullptr;
+}
+
+inline
+void
+tag_invoke(
+    value_from_tag,
+    value& jv,
+    std::nullopt_t)
+{
+    // do nothing
+    BOOST_ASSERT(jv.is_null());
+    (void)jv;
+}
+#endif
+
+#ifndef BOOST_NO_CXX17_HDR_VARIANT
+// std::variant
+template<class... Ts>
+void
+tag_invoke(
+    value_from_tag,
+    value& jv,
+    std::variant<Ts...>&& from)
+{
+    std::visit(detail::value_from_visitor{jv}, std::move(from));
+}
+
+template<class... Ts>
+void
+tag_invoke(
+    value_from_tag,
+    value& jv,
+    std::variant<Ts...> const& from)
+{
+    std::visit(detail::value_from_visitor{jv}, from);
+}
+#endif // BOOST_NO_CXX17_HDR_VARIANT
+
+} // namespace json
+} // namespace boost
 
 #endif

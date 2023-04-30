@@ -11,7 +11,7 @@
 
 [section Parsing]
 
-Parsing is the process where a serialized JSON is validated
+Parsing is the process where a serialized JSON text is validated
 and decomposed into elements. The library provides these
 functions and types to assist with parsing:
 
@@ -21,7 +21,7 @@ functions and types to assist with parsing:
     [__basic_parser__]
     [
         A SAX push parser implementation which converts a
-        serialized JSON into a series of member function calls
+        serialized JSON text into a series of member function calls
         to a user provided handler. This allows custom behaviors
         to be implemented for representing the document in memory.
 
@@ -35,14 +35,14 @@ functions and types to assist with parsing:
 ][
     [__parse__]
     [
-        Parse a string containing a complete serialized JSON, and
+        Parse a string containing a complete serialized JSON text, and
         return a __value__.
     ]
 ][
     [__parser__]
     [
         A stateful DOM parser object which may be used
-        to efficiently parse a series of JSONs each
+        to efficiently parse a series of JSON texts each
         contained in a single contiguous character buffer,
         returning each result as a __value__.
     ]
@@ -50,7 +50,7 @@ functions and types to assist with parsing:
     [__stream_parser__]
     [
         A stateful DOM parser object which may be used to
-        efficiently parse a series of JSONs incrementally,
+        efficiently parse a series of JSON texts incrementally,
         returning each result as a __value__.
     ]
 ][
@@ -78,8 +78,8 @@ __memory_resource__ are still possible:
 
 [doc_parsing_3]
 
-The __value__ returned in the preceding examples use the default
-memory resource. The following code uses a __monotonic_resource__,
+The __value__ returned in the preceding examples use the
+__default_memory_resource__. The following code uses a __monotonic_resource__,
 which results in faster parsing. `jv` is marked `const` to prevent
 subsequent modification, because containers using a monotonic
 resource waste memory when mutated.
@@ -103,6 +103,10 @@ with __parse_options__ is possible:
 
 [doc_parsing_6]
 
+[caution When enabling comment support take extra care not to drop whitespace
+    when reading the input. For example, `std::getline` removes the
+    endline characters from the string it produces.]
+
 [/-----------------------------------------------------------------------------]
 
 [heading Parser]
@@ -112,14 +116,14 @@ what is available when using the __parse__ free functions:
 
 * More control over memory
 * Streaming API, parse input JSON incrementally
-* Improved performance when parsing multiple JSONs
-* Ignore non-JSON content after the end of a JSON
+* Improved performance when parsing multiple JSON texts
+* Ignore non-JSON content after the end of a JSON text
 
 The parser implementation uses temporary storage space to accumulate
 values during parsing. When using the __parse__ free functions, this
 storage is allocated and freed in each call. However, by declaring
 an instance of __parser__ or __stream_parser__, this temporary storage
-can be reused when parsing more than one JSON, reducing the total
+can be reused when parsing more than one JSON text, reducing the total
 number of dynamic memory allocations.
 
 To use the __parser__, declare an instance. Then call
@@ -172,12 +176,22 @@ The function
 returns `true` after a successful call to `write` or `finish`
 if parsing is complete.
 
-In the following example a JSON is parsed from standard input a line
+In the following example a JSON text is parsed from standard input a line
 at a time. Error codes are used instead. The function
 [link json.ref.boost__json__stream_parser.finish `finish`]
 is used to indicate the end of the input:
 
+[caution This example will break, if comments are enabled, because of
+    `std::getline` use (see the warning in
+    [link json.input_output.parsing.non_standard_json Non-Standard JSON]
+    section). ]
+
 [doc_parsing_10]
+
+We can complicate the example further by excracting ['several] JSON values from
+the sequence of lines.
+
+[doc_parsing_14]
 
 [/-----------------------------------------------------------------------------]
 
@@ -195,7 +209,7 @@ subsequent modification:
 
 To achieve performance and memory efficiency, the parser uses a
 temporary storage area to hold intermediate results. This storage
-is reused when parsing more than one JSON, reducing the total
+is reused when parsing more than one JSON text, reducing the total
 number of calls to allocate memory and thus improving performance.
 Upon construction, the memory resource used to perform allocations
 for this temporary storage area may be specified. Otherwise, the
@@ -211,7 +225,7 @@ the parser, and falls back to the default memory resource if needed:
 
 Through careful specification of buffers and memory resources,
 it is possible to eliminate all dynamic allocation completely when
-parsing JSON, for the case where the entire JSON is available in
+parsing JSON, for the case where the entire JSON text is available in
 a single character buffer, as shown here:
 
 [doc_parsing_13]
