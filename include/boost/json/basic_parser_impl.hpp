@@ -829,7 +829,8 @@ template<bool StackEmpty_>
 const char *
 basic_parser<Handler>::
 parse_nan(const char *p,
-          std::integral_constant<bool, StackEmpty_> stack_empty) {
+    std::integral_constant<bool, StackEmpty_> stack_empty)
+{
     detail::const_stream_wrapper cs(p, end_);
     if (stack_empty || st_.empty())
     {
@@ -837,7 +838,10 @@ parse_nan(const char *p,
         {
             if (BOOST_JSON_UNLIKELY(
                     std::memcmp(cs.begin(), "NaN", 3) != 0))
-                return fail(cs.begin(), error::syntax);
+            {
+                BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
+                return fail(cs.begin(), error::syntax, &loc);
+            }
             if (BOOST_JSON_UNLIKELY(
                     !h_.on_double(std::numeric_limits<double>::quiet_NaN(), {}, ec_)))
                 return fail(cs.begin());
@@ -864,13 +868,19 @@ parse_nan(const char *p,
     if (BOOST_JSON_UNLIKELY(!cs))
         return maybe_suspend(cs.begin(), state::nan1);
     if (BOOST_JSON_UNLIKELY(*cs != 'a'))
-        return fail(cs.begin(), error::syntax);
+    {
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
+        return fail(cs.begin(), error::syntax, &loc);
+    }
     ++cs;
     do_nan2:
     if (BOOST_JSON_UNLIKELY(!cs))
         return maybe_suspend(cs.begin(), state::nan2);
     if (BOOST_JSON_UNLIKELY(*cs != 'N'))
-        return fail(cs.begin(), error::syntax);
+    {
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
+        return fail(cs.begin(), error::syntax, &loc);
+    }
     if (BOOST_JSON_UNLIKELY(
             !h_.on_double(std::numeric_limits<double>::quiet_NaN(), {}, ec_)))
         return fail(cs.begin());
@@ -883,8 +893,9 @@ template<bool StackEmpty_, bool IsNegative_>
 const char *
 basic_parser<Handler>::
 parse_infinity(const char *p,
-          std::integral_constant<bool, StackEmpty_> stack_empty,
-          std::integral_constant<bool, IsNegative_> is_negative) {
+    std::integral_constant<bool, StackEmpty_> stack_empty,
+    std::integral_constant<bool, IsNegative_> is_negative)
+{
     detail::const_stream_wrapper cs(p, end_);
     if (stack_empty || st_.empty())
     {
@@ -892,7 +903,10 @@ parse_infinity(const char *p,
         {
             if (BOOST_JSON_UNLIKELY(
                     std::memcmp(cs.begin(), "Infinity", 8) != 0))
-                return fail(cs.begin(), error::syntax);
+            {
+                BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
+                return fail(cs.begin(), error::syntax, &loc);
+            }
             if (BOOST_JSON_UNLIKELY(
                     !h_.on_double(is_negative ? -std::numeric_limits<double>::infinity() : std::numeric_limits<double>::infinity(), {}, ec_)))
                 return fail(cs.begin());
@@ -930,43 +944,64 @@ parse_infinity(const char *p,
     if (BOOST_JSON_UNLIKELY(!cs))
         return maybe_suspend(cs.begin(), state::inf1);
     if (BOOST_JSON_UNLIKELY(*cs != 'n'))
-        return fail(cs.begin(), error::syntax);
+    {
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
+        return fail(cs.begin(), error::syntax, &loc);
+    }
     ++cs;
     do_inf2:
     if (BOOST_JSON_UNLIKELY(!cs))
         return maybe_suspend(cs.begin(), state::inf2);
     if (BOOST_JSON_UNLIKELY(*cs != 'f'))
-        return fail(cs.begin(), error::syntax);
+    {
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
+        return fail(cs.begin(), error::syntax, &loc);
+    }
     ++cs;
     do_inf3:
     if (BOOST_JSON_UNLIKELY(!cs))
         return maybe_suspend(cs.begin(), state::inf3);
     if (BOOST_JSON_UNLIKELY(*cs != 'i'))
-        return fail(cs.begin(), error::syntax);
+    {
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
+        return fail(cs.begin(), error::syntax, &loc);
+    }
     ++cs;
     do_inf4:
     if (BOOST_JSON_UNLIKELY(!cs))
         return maybe_suspend(cs.begin(), state::inf4);
     if (BOOST_JSON_UNLIKELY(*cs != 'n'))
-        return fail(cs.begin(), error::syntax);
+    {
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
+        return fail(cs.begin(), error::syntax, &loc);
+    }
     ++cs;
     do_inf5:
     if (BOOST_JSON_UNLIKELY(!cs))
         return maybe_suspend(cs.begin(), state::inf5);
     if (BOOST_JSON_UNLIKELY(*cs != 'i'))
-        return fail(cs.begin(), error::syntax);
+    {
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
+        return fail(cs.begin(), error::syntax, &loc);
+    }
     ++cs;
     do_inf6:
     if (BOOST_JSON_UNLIKELY(!cs))
         return maybe_suspend(cs.begin(), state::inf6);
     if (BOOST_JSON_UNLIKELY(*cs != 't'))
-        return fail(cs.begin(), error::syntax);
+    {
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
+        return fail(cs.begin(), error::syntax, &loc);
+    }
     ++cs;
     do_inf7:
     if (BOOST_JSON_UNLIKELY(!cs))
         return maybe_suspend(cs.begin(), state::inf7);
     if (BOOST_JSON_UNLIKELY(*cs != 'y'))
-        return fail(cs.begin(), error::syntax);
+    {
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
+        return fail(cs.begin(), error::syntax, &loc);
+    }
     if (BOOST_JSON_UNLIKELY(
             !h_.on_double(num_.neg ? -std::numeric_limits<double>::infinity() : std::numeric_limits<double>::infinity(), {}, ec_)))
         return fail(cs.begin());
