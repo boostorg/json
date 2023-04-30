@@ -478,7 +478,8 @@ public:
 
     static
     void
-    grind_double(string_view s, double v)
+    grind_double(string_view s, double v,
+        const parse_options& po = parse_options())
     {
         grind(s,
             [v](value const& jv, const parse_options&)
@@ -490,7 +491,8 @@ public:
                 } else {
                     BOOST_TEST(jv.get_double() == v);
                 }
-            });
+            },
+            po);
     }
 
     //------------------------------------------------------
@@ -749,9 +751,6 @@ public:
         grind_double( "1.11111", 1.11111);
         grind_double( "11.1111", 11.1111);
         grind_double( "111.111", 111.111);
-        grind_double( "NaN", std::numeric_limits<double>::quiet_NaN());
-        grind_double( "Infinity", std::numeric_limits<double>::infinity());
-        grind_double("-Infinity", -std::numeric_limits<double>::infinity());
 
         fc("-999999999999999999999");
         fc("-100000000000000000009");
@@ -1230,6 +1229,17 @@ R"xx({
         }
     }
 
+    void
+    testInfNan()
+    {
+        parse_options enabled;
+        enabled.allow_infinity_and_nan = true;
+
+        grind_double( "NaN", std::numeric_limits<double>::quiet_NaN(), enabled);
+        grind_double( "Infinity", std::numeric_limits<double>::infinity(), enabled);
+        grind_double("-Infinity", -std::numeric_limits<double>::infinity(), enabled);
+    }
+
     //------------------------------------------------------
 
     // https://github.com/boostorg/json/issues/15
@@ -1310,6 +1320,7 @@ R"xx({
         testTrailingCommas();
         testComments();
         testDupeKeys();
+        testInfNan();
         testIssue15();
         testIssue45();
         testIssue876();

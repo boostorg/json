@@ -517,39 +517,72 @@ do_doc1:
 do_doc2:
     switch(+opt_.allow_comments |
         (opt_.allow_trailing_commas << 1) |
-        (opt_.allow_invalid_utf8 << 2))
+        (opt_.allow_invalid_utf8 << 2) |
+        (opt_.allow_infinity_and_nan << 3))
     {
     // no extensions
     default:
-        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::false_type(), std::false_type());
+        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::false_type(), std::false_type(), std::false_type());
         break;
     // comments
     case 1:
-        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::false_type(), std::false_type());
+        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::false_type(), std::false_type(), std::false_type());
         break;
     // trailing
     case 2:
-        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::true_type(), std::false_type());
+        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::true_type(), std::false_type(), std::false_type());
         break;
     // comments & trailing
     case 3:
-        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::true_type(), std::false_type());
+        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::true_type(), std::false_type(), std::false_type());
         break;
     // skip validation
     case 4:
-        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::false_type(), std::true_type());
+        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::false_type(), std::true_type(), std::false_type());
         break;
     // comments & skip validation
     case 5:
-        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::false_type(), std::true_type());
+        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::false_type(), std::true_type(), std::false_type());
         break;
     // trailing & skip validation
     case 6:
-        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::true_type(), std::true_type());
+        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::true_type(), std::true_type(), std::false_type());
         break;
     // comments & trailing & skip validation
     case 7:
-        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::true_type(), std::true_type());
+        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::true_type(), std::true_type(), std::false_type());
+        break;
+    // inf/nan
+    case 8:
+        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::false_type(), std::false_type(), std::true_type());
+        break;
+    // comments & inf/nan
+    case 9:
+        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::false_type(), std::false_type(), std::true_type());
+        break;
+    // trailing & inf/nan
+    case 10:
+        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::true_type(), std::false_type(), std::true_type());
+        break;
+    // comments & trailing & inf/nan
+    case 11:
+        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::true_type(), std::false_type(), std::true_type());
+        break;
+    // skip validation & inf/nan
+    case 12:
+        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::false_type(), std::true_type(), std::true_type());
+        break;
+    // comments & skip validation & inf/nan
+    case 13:
+        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::false_type(), std::true_type(), std::true_type());
+        break;
+    // trailing & skip validation & inf/nan
+    case 14:
+        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::true_type(), std::true_type(), std::true_type());
+        break;
+    // comments & trailing & skip validation & inf/nan
+    case 15:
+        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::true_type(), std::true_type(), std::true_type());
         break;
     }
     if(BOOST_JSON_UNLIKELY(incomplete(cs)))
@@ -577,14 +610,16 @@ template<
     bool StackEmpty_,
     bool AllowComments_/*,
     bool AllowTrailing_,
-    bool AllowBadUTF8_*/>
+    bool AllowBadUTF8_*/,
+    bool AllowInfNan_>
 const char*
 basic_parser<Handler>::
 parse_value(const char* p,
     std::integral_constant<bool, StackEmpty_> stack_empty,
     std::integral_constant<bool, AllowComments_> allow_comments,
     /*std::integral_constant<bool, AllowTrailing_>*/ bool allow_trailing,
-    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8)
+    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8,
+    std::integral_constant<bool, AllowInfNan_> allow_inf_nan)
 {
     if(stack_empty || st_.empty())
     {
@@ -592,13 +627,13 @@ loop:
         switch(*p)
         {
         case '0':
-            return parse_number(p, std::true_type(), std::integral_constant<char, '0'>());
+            return parse_number(p, std::true_type(), std::integral_constant<char, '0'>(), std::false_type());
         case '-':
-            return parse_number(p, std::true_type(), std::integral_constant<char, '-'>());
+            return parse_number(p, std::true_type(), std::integral_constant<char, '-'>(), allow_inf_nan);
         case '1': case '2': case '3':
         case '4': case '5': case '6':
         case '7': case '8': case '9':
-            return parse_number(p, std::true_type(), std::integral_constant<char, '+'>());
+            return parse_number(p, std::true_type(), std::integral_constant<char, '+'>(), std::false_type());
         case 't':
             return parse_true(p, std::true_type());
         case 'f':
@@ -606,15 +641,27 @@ loop:
         case 'n':
             return parse_null(p, std::true_type());
         case 'N':
+            if(! allow_inf_nan)
+            {
+                BOOST_STATIC_CONSTEXPR source_location loc
+                    = BOOST_CURRENT_LOCATION;
+                return fail(p, error::syntax, &loc);
+            }
             return parse_nan(p, std::true_type());
         case 'I':
+            if(! allow_inf_nan)
+            {
+                BOOST_STATIC_CONSTEXPR source_location loc
+                    = BOOST_CURRENT_LOCATION;
+                return fail(p, error::syntax, &loc);
+            }
             return parse_infinity(p, std::true_type(), std::false_type());
         case '"':
             return parse_unescaped(p, std::true_type(), std::false_type(), allow_bad_utf8);
         case '[':
-            return parse_array(p, std::true_type(), allow_comments, allow_trailing, allow_bad_utf8);
+            return parse_array(p, std::true_type(), allow_comments, allow_trailing, allow_bad_utf8, allow_inf_nan);
         case '{':
-            return parse_object(p, std::true_type(), allow_comments, allow_trailing, allow_bad_utf8);
+            return parse_object(p, std::true_type(), allow_comments, allow_trailing, allow_bad_utf8, allow_inf_nan);
         case '/':
             if(! allow_comments)
             {
@@ -645,7 +692,7 @@ loop:
             }
         }
     }
-    return resume_value(p, stack_empty, allow_comments, allow_trailing, allow_bad_utf8);
+    return resume_value(p, stack_empty, allow_comments, allow_trailing, allow_bad_utf8, allow_inf_nan);
 }
 
 template<class Handler>
@@ -653,14 +700,16 @@ template<
     bool StackEmpty_,
     bool AllowComments_/*,
     bool AllowTrailing_,
-    bool AllowBadUTF8_*/>
+    bool AllowBadUTF8_*/,
+    bool AllowInfNan_>
 const char*
 basic_parser<Handler>::
 resume_value(const char* p,
     std::integral_constant<bool, StackEmpty_> stack_empty,
     std::integral_constant<bool, AllowComments_> allow_comments,
     /*std::integral_constant<bool, AllowTrailing_>*/ bool allow_trailing,
-    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8)
+    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8,
+    std::integral_constant<bool, AllowInfNan_> allow_inf_nan)
 {
     state st;
     st_.peek(st);
@@ -707,7 +756,7 @@ resume_value(const char* p,
     case state::arr1: case state::arr2:
     case state::arr3: case state::arr4:
     case state::arr5: case state::arr6:
-        return parse_array(p, stack_empty, allow_comments, allow_trailing, allow_bad_utf8);
+        return parse_array(p, stack_empty, allow_comments, allow_trailing, allow_bad_utf8, allow_inf_nan);
 
     case state::obj1: case state::obj2:
     case state::obj3: case state::obj4:
@@ -715,15 +764,15 @@ resume_value(const char* p,
     case state::obj7: case state::obj8:
     case state::obj9: case state::obj10:
     case state::obj11:
-        return parse_object(p, stack_empty, allow_comments, allow_trailing, allow_bad_utf8);
+        return parse_object(p, stack_empty, allow_comments, allow_trailing, allow_bad_utf8, allow_inf_nan);
 
-    case state::num1: case state::num2:
+    case state::num1: case state::num2: // TODO is it worth it to special-case num1 fot allow_inf_nan
     case state::num3: case state::num4:
     case state::num5: case state::num6:
     case state::num7: case state::num8:
     case state::exp1: case state::exp2:
     case state::exp3:
-        return parse_number(p, stack_empty, std::integral_constant<char, 0>());
+        return parse_number(p, stack_empty, std::integral_constant<char, 0>(), allow_inf_nan);
 
     case state::com1: case state::com2:
     case state::com3: case state::com4:
@@ -737,7 +786,7 @@ resume_value(const char* p,
         p = detail::count_whitespace(p, end_);
         if(BOOST_JSON_UNLIKELY(p == end_))
             return maybe_suspend(p, state::val1);
-        return parse_value(p, std::true_type(), allow_comments, allow_trailing, allow_bad_utf8);
+        return parse_value(p, std::true_type(), allow_comments, allow_trailing, allow_bad_utf8, allow_inf_nan);
     }
 
     case state::val2:
@@ -747,7 +796,7 @@ resume_value(const char* p,
         if(BOOST_JSON_UNLIKELY(p == sentinel()))
             return maybe_suspend(p, state::val2);
         BOOST_ASSERT(st_.empty());
-        return parse_value(p, std::true_type(), std::true_type(), allow_trailing, allow_bad_utf8);
+        return parse_value(p, std::true_type(), std::true_type(), allow_trailing, allow_bad_utf8, allow_inf_nan);
     }
     }
 }
@@ -832,18 +881,19 @@ parse_nan(const char *p,
     std::integral_constant<bool, StackEmpty_> stack_empty)
 {
     detail::const_stream_wrapper cs(p, end_);
-    if (stack_empty || st_.empty())
+    if(stack_empty || st_.empty())
     {
-        if (BOOST_JSON_LIKELY(cs.remain() >= 3))
+        if(BOOST_JSON_LIKELY(cs.remain() >= 3))
         {
-            if (BOOST_JSON_UNLIKELY(
-                    std::memcmp(cs.begin(), "NaN", 3) != 0))
+            if(BOOST_JSON_UNLIKELY(
+                std::memcmp(cs.begin(), "NaN", 3) != 0))
             {
-                BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
+                BOOST_STATIC_CONSTEXPR source_location loc
+                    = BOOST_CURRENT_LOCATION;
                 return fail(cs.begin(), error::syntax, &loc);
             }
-            if (BOOST_JSON_UNLIKELY(
-                    !h_.on_double(std::numeric_limits<double>::quiet_NaN(), {}, ec_)))
+            if(BOOST_JSON_UNLIKELY(
+                ! h_.on_double(std::numeric_limits<double>::quiet_NaN(), {}, ec_)))
                 return fail(cs.begin());
             cs += 3;
             return cs.begin();
@@ -853,28 +903,25 @@ parse_nan(const char *p,
     {
         state st;
         st_.pop(st);
-        switch (st)
+        switch(st)
         {
-            default:
-                BOOST_JSON_UNREACHABLE();
-            case state::nan1:
-                goto do_nan1;
-            case state::nan2:
-                goto do_nan2;
+        default: BOOST_JSON_UNREACHABLE();
+        case state::nan1: goto do_nan1;
+        case state::nan2: goto do_nan2;
         }
     }
     ++cs;
-    do_nan1:
-    if (BOOST_JSON_UNLIKELY(!cs))
+do_nan1:
+    if(BOOST_JSON_UNLIKELY(! cs))
         return maybe_suspend(cs.begin(), state::nan1);
-    if (BOOST_JSON_UNLIKELY(*cs != 'a'))
+    if(BOOST_JSON_UNLIKELY(*cs != 'a'))
     {
         BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         return fail(cs.begin(), error::syntax, &loc);
     }
     ++cs;
-    do_nan2:
-    if (BOOST_JSON_UNLIKELY(!cs))
+do_nan2:
+    if(BOOST_JSON_UNLIKELY(! cs))
         return maybe_suspend(cs.begin(), state::nan2);
     if (BOOST_JSON_UNLIKELY(*cs != 'N'))
     {
@@ -882,33 +929,37 @@ parse_nan(const char *p,
         return fail(cs.begin(), error::syntax, &loc);
     }
     if (BOOST_JSON_UNLIKELY(
-            !h_.on_double(std::numeric_limits<double>::quiet_NaN(), {}, ec_)))
+            ! h_.on_double(std::numeric_limits<double>::quiet_NaN(), {}, ec_)))
         return fail(cs.begin());
     ++cs;
     return cs.begin();
 }
 
 template<class Handler>
-template<bool StackEmpty_, bool IsNegative_>
+template<bool StackEmpty_/*, bool IsNegative_*/>
 const char *
 basic_parser<Handler>::
 parse_infinity(const char *p,
     std::integral_constant<bool, StackEmpty_> stack_empty,
-    std::integral_constant<bool, IsNegative_> is_negative)
+    /*std::integral_constant<bool, IsNegative_>*/ bool is_negative)
 {
     detail::const_stream_wrapper cs(p, end_);
-    if (stack_empty || st_.empty())
+    if(stack_empty || st_.empty())
     {
-        if (BOOST_JSON_LIKELY(cs.remain() >= 8))
+        if(BOOST_JSON_LIKELY(cs.remain() >= 8))
         {
-            if (BOOST_JSON_UNLIKELY(
-                    std::memcmp(cs.begin(), "Infinity", 8) != 0))
+            if(BOOST_JSON_UNLIKELY(
+                std::memcmp(cs.begin(), "Infinity", 8) != 0))
             {
-                BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
+                BOOST_STATIC_CONSTEXPR source_location loc
+                    = BOOST_CURRENT_LOCATION;
                 return fail(cs.begin(), error::syntax, &loc);
             }
-            if (BOOST_JSON_UNLIKELY(
-                    !h_.on_double(is_negative ? -std::numeric_limits<double>::infinity() : std::numeric_limits<double>::infinity(), {}, ec_)))
+            const double value = is_negative?
+                -std::numeric_limits<double>::infinity():
+                std::numeric_limits<double>::infinity();
+            if(BOOST_JSON_UNLIKELY(
+                ! h_.on_double(value, {}, ec_)))
                 return fail(cs.begin());
             cs += 8;
             return cs.begin();
@@ -919,91 +970,86 @@ parse_infinity(const char *p,
     {
         state st;
         st_.pop(st);
-        switch (st)
+        switch(st)
         {
-            default:
-                BOOST_JSON_UNREACHABLE();
-            case state::inf1:
-                goto do_inf1;
-            case state::inf2:
-                goto do_inf2;
-            case state::inf3:
-                goto do_inf3;
-            case state::inf4:
-                goto do_inf4;
-            case state::inf5:
-                goto do_inf5;
-            case state::inf6:
-                goto do_inf6;
-            case state::inf7:
-                goto do_inf7;
+        default: BOOST_JSON_UNREACHABLE();
+        case state::inf1: goto do_inf1;
+        case state::inf2: goto do_inf2;
+        case state::inf3: goto do_inf3;
+        case state::inf4: goto do_inf4;
+        case state::inf5: goto do_inf5;
+        case state::inf6: goto do_inf6;
+        case state::inf7: goto do_inf7;
         }
     }
     ++cs;
-    do_inf1:
-    if (BOOST_JSON_UNLIKELY(!cs))
+do_inf1:
+    if(BOOST_JSON_UNLIKELY(! cs))
         return maybe_suspend(cs.begin(), state::inf1);
-    if (BOOST_JSON_UNLIKELY(*cs != 'n'))
+    if(BOOST_JSON_UNLIKELY(*cs != 'n'))
     {
         BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         return fail(cs.begin(), error::syntax, &loc);
     }
     ++cs;
-    do_inf2:
-    if (BOOST_JSON_UNLIKELY(!cs))
+do_inf2:
+    if(BOOST_JSON_UNLIKELY(! cs))
         return maybe_suspend(cs.begin(), state::inf2);
-    if (BOOST_JSON_UNLIKELY(*cs != 'f'))
+    if(BOOST_JSON_UNLIKELY(*cs != 'f'))
     {
         BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         return fail(cs.begin(), error::syntax, &loc);
     }
     ++cs;
-    do_inf3:
-    if (BOOST_JSON_UNLIKELY(!cs))
+do_inf3:
+    if(BOOST_JSON_UNLIKELY(! cs))
         return maybe_suspend(cs.begin(), state::inf3);
-    if (BOOST_JSON_UNLIKELY(*cs != 'i'))
+    if(BOOST_JSON_UNLIKELY(*cs != 'i'))
     {
         BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         return fail(cs.begin(), error::syntax, &loc);
     }
     ++cs;
-    do_inf4:
-    if (BOOST_JSON_UNLIKELY(!cs))
+do_inf4:
+    if(BOOST_JSON_UNLIKELY(! cs))
         return maybe_suspend(cs.begin(), state::inf4);
-    if (BOOST_JSON_UNLIKELY(*cs != 'n'))
+    if(BOOST_JSON_UNLIKELY(*cs != 'n'))
     {
         BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         return fail(cs.begin(), error::syntax, &loc);
     }
     ++cs;
-    do_inf5:
-    if (BOOST_JSON_UNLIKELY(!cs))
+do_inf5:
+    if(BOOST_JSON_UNLIKELY(! cs))
         return maybe_suspend(cs.begin(), state::inf5);
-    if (BOOST_JSON_UNLIKELY(*cs != 'i'))
+    if(BOOST_JSON_UNLIKELY(*cs != 'i'))
     {
         BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         return fail(cs.begin(), error::syntax, &loc);
     }
     ++cs;
-    do_inf6:
-    if (BOOST_JSON_UNLIKELY(!cs))
+do_inf6:
+    if(BOOST_JSON_UNLIKELY(! cs))
         return maybe_suspend(cs.begin(), state::inf6);
-    if (BOOST_JSON_UNLIKELY(*cs != 't'))
+    if(BOOST_JSON_UNLIKELY(*cs != 't'))
     {
         BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         return fail(cs.begin(), error::syntax, &loc);
     }
     ++cs;
-    do_inf7:
-    if (BOOST_JSON_UNLIKELY(!cs))
+do_inf7:
+    if(BOOST_JSON_UNLIKELY(! cs))
         return maybe_suspend(cs.begin(), state::inf7);
-    if (BOOST_JSON_UNLIKELY(*cs != 'y'))
+    if(BOOST_JSON_UNLIKELY(*cs != 'y'))
     {
         BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         return fail(cs.begin(), error::syntax, &loc);
     }
-    if (BOOST_JSON_UNLIKELY(
-            !h_.on_double(num_.neg ? -std::numeric_limits<double>::infinity() : std::numeric_limits<double>::infinity(), {}, ec_)))
+    const double value = num_.neg?
+        -std::numeric_limits<double>::infinity():
+        std::numeric_limits<double>::infinity();
+    if(BOOST_JSON_UNLIKELY(
+        ! h_.on_double(value, {}, ec_)))
         return fail(cs.begin());
     ++cs;
     return cs.begin();
@@ -1904,14 +1950,16 @@ template<
     bool StackEmpty_,
     bool AllowComments_/*,
     bool AllowTrailing_,
-    bool AllowBadUTF8_*/>
+    bool AllowBadUTF8_*/,
+    bool AllowInfNan_>
 const char*
 basic_parser<Handler>::
 parse_object(const char* p,
     std::integral_constant<bool, StackEmpty_> stack_empty,
     std::integral_constant<bool, AllowComments_> allow_comments,
     /*std::integral_constant<bool, AllowTrailing_>*/ bool allow_trailing,
-    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8)
+    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8,
+    std::integral_constant<bool, AllowInfNan_> allow_inf_nan)
 {
     detail::const_stream_wrapper cs(p, end_);
     std::size_t size;
@@ -2008,7 +2056,7 @@ do_obj6:
         if(BOOST_JSON_UNLIKELY(! cs))
             return maybe_suspend(cs.begin(), state::obj6, size);
 do_obj7:
-        cs = parse_value(cs.begin(), stack_empty, allow_comments, allow_trailing, allow_bad_utf8);
+        cs = parse_value(cs.begin(), stack_empty, allow_comments, allow_trailing, allow_bad_utf8, allow_inf_nan);
         if(BOOST_JSON_UNLIKELY(incomplete(cs)))
             return suspend_or_fail(state::obj7, size);
 do_obj8:
@@ -2072,14 +2120,16 @@ template<
     bool StackEmpty_,
     bool AllowComments_/*,
     bool AllowTrailing_,
-    bool AllowBadUTF8_*/>
+    bool AllowBadUTF8_*/,
+    bool AllowInfNan_>
 const char*
 basic_parser<Handler>::
 parse_array(const char* p,
     std::integral_constant<bool, StackEmpty_> stack_empty,
     std::integral_constant<bool, AllowComments_> allow_comments,
     /*std::integral_constant<bool, AllowTrailing_>*/ bool allow_trailing,
-    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8)
+    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8,
+    std::integral_constant<bool, AllowInfNan_> allow_inf_nan)
 {
     detail::const_stream_wrapper cs(p, end_);
     std::size_t size;
@@ -2139,7 +2189,7 @@ do_arr2:
         }
 do_arr3:
         // array is not empty, value required
-        cs = parse_value(cs.begin(), stack_empty, allow_comments, allow_trailing, allow_bad_utf8);
+        cs = parse_value(cs.begin(), stack_empty, allow_comments, allow_trailing, allow_bad_utf8, allow_inf_nan);
         if(BOOST_JSON_UNLIKELY(incomplete(cs)))
             return suspend_or_fail(state::arr3, size);
 do_arr4:
@@ -2184,12 +2234,13 @@ do_arr6:
 //----------------------------------------------------------
 
 template<class Handler>
-template<bool StackEmpty_, char First_>
+template<bool StackEmpty_, char First_, bool AllowInfNan_>
 const char*
 basic_parser<Handler>::
 parse_number(const char* p,
     std::integral_constant<bool, StackEmpty_> stack_empty,
-    std::integral_constant<char, First_> first)
+    std::integral_constant<char, First_> first,
+    std::integral_constant<bool, AllowInfNan_> allow_inf_nan)
 {
     // only one of these will be true if we are not resuming
     // if negative then !zero_first && !nonzero_first
@@ -2216,7 +2267,7 @@ parse_number(const char* p,
         if(negative)
         {
             ++cs;
-            if (/* allow_nan_infinity */ cs && *cs == 'I')
+            if(allow_inf_nan && cs && *cs == 'I')
             {
                 return parse_infinity(cs.begin(), std::true_type(), std::true_type());
             }
@@ -2375,17 +2426,10 @@ do_num1:
             num.mant = 0;
             goto do_num6;
         }
-        else if (BOOST_JSON_UNLIKELY(
-                c == 'I'))
+        else if(allow_inf_nan && BOOST_JSON_UNLIKELY(
+            c == 'I'))
         {
-            if (num.neg)
-            {
-                return parse_infinity(cs.begin(), std::true_type(), std::true_type());
-            }
-            else
-            {
-                return parse_infinity(cs.begin(), std::true_type(), std::false_type());
-            }
+            return parse_infinity(cs.begin(), std::true_type(), num.neg);
         }
         else
         {

@@ -102,6 +102,7 @@ LLVMFuzzerTestOneInput(
 
     // select memory strategy to use
     const int strategy=data[1] & 0x3;
+    fh.opt.allow_infinity_and_nan=!!(data[1]&0x4); // TODO Maybe get max_depth from `data[1]>>3` and inf/nan from `data[0]&0x8` instead?
 
     // memory limits
     fh.memlimit1=data[2]*256+data[3];

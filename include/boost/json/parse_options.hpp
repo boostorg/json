@@ -77,6 +77,17 @@ struct parse_options
             @ref stream_parser.
     */
     bool allow_invalid_utf8 = false;
+
+    /** Non-standard extension option
+
+        Allow Infinity, -Infinity and NaN to appear
+        in numbers.
+
+        @see
+            @ref basic_parser,
+            @ref stream_parser.
+    */
+    bool allow_infinity_and_nan = false;
 };
 
 } // namespace json

@@ -122,12 +122,14 @@ parse_options
 make_options(
     bool comments,
     bool commas,
-    bool utf8)
+    bool utf8,
+    bool inf_nan)
 {
     parse_options opt;
     opt.allow_comments = comments;
     opt.allow_trailing_commas = commas;
     opt.allow_invalid_utf8 = utf8;
+    opt.allow_infinity_and_nan = inf_nan;
     return opt;
 }
 
@@ -690,14 +692,22 @@ public:
     {
         std::vector<parse_options> all_configs =
         {
-            make_options(false, false, true),
-            make_options(true, false, true),
-            make_options(false, true, true),
-            make_options(true, true, true),
-            make_options(false, false, false),
-            make_options(true, false, false),
-            make_options(false, true, false),
-            make_options(true, true, false)
+            make_options(false, false, true, false),
+            make_options(true, false, true, false),
+            make_options(false, true, true, false),
+            make_options(true, true, true, false),
+            make_options(false, false, false, false),
+            make_options(true, false, false, false),
+            make_options(false, true, false, false),
+            make_options(true, true, false, false),
+            make_options(false, false, true, true),
+            make_options(true, false, true, true),
+            make_options(false, true, true, true),
+            make_options(true, true, true, true),
+            make_options(false, false, false, true),
+            make_options(true, false, false, true),
+            make_options(false, true, false, true),
+            make_options(true, true, false, true)
         };
         parse_vectors pv;
         for(auto const& v : pv)
@@ -867,7 +877,7 @@ public:
 
     public:
         comment_parser()
-            : p_(make_options(true, false, false))
+            : p_(make_options(true, false, false, false))
         {
         }
 
@@ -1384,7 +1394,7 @@ public:
 
     public:
         literal_parser()
-            : p_(make_options(true, false, false))
+            : p_(make_options(true, false, false, false))
         {
         }
 
