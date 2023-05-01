@@ -690,25 +690,14 @@ public:
     void
     testParseVectors()
     {
-        std::vector<parse_options> all_configs =
+        std::vector<parse_options> all_configs;
+        constexpr std::size_t config_count = 16; // needs to be updated when adding parse options
+        for(std::size_t bits = 0; bits != config_count; ++bits)
         {
-            make_options(false, false, true, false),
-            make_options(true, false, true, false),
-            make_options(false, true, true, false),
-            make_options(true, true, true, false),
-            make_options(false, false, false, false),
-            make_options(true, false, false, false),
-            make_options(false, true, false, false),
-            make_options(true, true, false, false),
-            make_options(false, false, true, true),
-            make_options(true, false, true, true),
-            make_options(false, true, true, true),
-            make_options(true, true, true, true),
-            make_options(false, false, false, true),
-            make_options(true, false, false, true),
-            make_options(false, true, false, true),
-            make_options(true, true, false, true)
-        };
+            all_configs.push_back(make_options(
+                !!(bits & 0x1), !!(bits & 0x2), !!(bits & 0x4), !!(bits & 0x8)));
+        }
+
         parse_vectors pv;
         for(auto const& v : pv)
         {
