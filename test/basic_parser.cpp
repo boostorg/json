@@ -1284,6 +1284,57 @@ public:
     }
 
     void
+    testInfNan() {
+        parse_options disabled;
+        parse_options enabled;
+        enabled.allow_infinity_and_nan = true;
+
+        TEST_BAD_EXT("Infinity",   disabled); TEST_GOOD_EXT("Infinity",   enabled);
+        TEST_BAD_EXT("-Infinity",  disabled); TEST_GOOD_EXT("-Infinity",  enabled);
+        TEST_BAD_EXT(" Infinity",  disabled); TEST_GOOD_EXT(" Infinity",  enabled);
+        TEST_BAD_EXT(" -Infinity", disabled); TEST_GOOD_EXT(" -Infinity", enabled);
+        TEST_BAD_EXT("Infinity ",  disabled); TEST_GOOD_EXT("Infinity ",  enabled);
+        TEST_BAD_EXT("-Infinity ", disabled); TEST_GOOD_EXT("-Infinity ", enabled);
+
+        TEST_BAD_EXT("+Infinity",  disabled); TEST_BAD_EXT("+Infinity",  enabled);
+        TEST_BAD_EXT("infinity",   disabled); TEST_BAD_EXT("infinity",   enabled);
+        TEST_BAD_EXT("-infinity",  disabled); TEST_BAD_EXT("-infinity",  enabled);
+        TEST_BAD_EXT("INFINITY",   disabled); TEST_BAD_EXT("INFINITY",   enabled);
+        TEST_BAD_EXT("-INFINITY",  disabled); TEST_BAD_EXT("-INFINITY",  enabled);
+        TEST_BAD_EXT("inf",        disabled); TEST_BAD_EXT("inf",        enabled);
+        TEST_BAD_EXT("-inf",       disabled); TEST_BAD_EXT("-inf",       enabled);
+        TEST_BAD_EXT("I       ",   disabled); TEST_BAD_EXT("I       ",   enabled);
+        TEST_BAD_EXT("In      ",   disabled); TEST_BAD_EXT("In      ",   enabled);
+        TEST_BAD_EXT("Inf     ",   disabled); TEST_BAD_EXT("Inf     ",   enabled);
+        TEST_BAD_EXT("Infi    ",   disabled); TEST_BAD_EXT("Infi    ",   enabled);
+        TEST_BAD_EXT("Infin   ",   disabled); TEST_BAD_EXT("Infin   ",   enabled);
+        TEST_BAD_EXT("Infini  ",   disabled); TEST_BAD_EXT("Infini  ",   enabled);
+        TEST_BAD_EXT("Infinit ",   disabled); TEST_BAD_EXT("Infinit ",   enabled);
+        TEST_BAD_EXT("-I       ",  disabled); TEST_BAD_EXT("-I       ",  enabled);
+        TEST_BAD_EXT("-In      ",  disabled); TEST_BAD_EXT("-In      ",  enabled);
+        TEST_BAD_EXT("-Inf     ",  disabled); TEST_BAD_EXT("-Inf     ",  enabled);
+        TEST_BAD_EXT("-Infi    ",  disabled); TEST_BAD_EXT("-Infi    ",  enabled);
+        TEST_BAD_EXT("-Infin   ",  disabled); TEST_BAD_EXT("-Infin   ",  enabled);
+        TEST_BAD_EXT("-Infini  ",  disabled); TEST_BAD_EXT("-Infini  ",  enabled);
+        TEST_BAD_EXT("-Infinit ",  disabled); TEST_BAD_EXT("-Infinit ",  enabled);
+        TEST_BAD_EXT("- Infinity", disabled); TEST_BAD_EXT("- Infinity", enabled);
+        TEST_BAD_EXT("InfinityX",  disabled); TEST_BAD_EXT("InfinityX",  enabled);
+        TEST_BAD_EXT("-Infinity1", disabled); TEST_BAD_EXT("-Infinity1", enabled);
+
+        TEST_BAD_EXT("NaN",  disabled); TEST_GOOD_EXT("NaN",  enabled);
+        TEST_BAD_EXT(" NaN", disabled); TEST_GOOD_EXT(" NaN", enabled);
+        TEST_BAD_EXT("NaN ", disabled); TEST_GOOD_EXT("NaN ", enabled);
+
+        TEST_BAD_EXT("+NaN", disabled); TEST_BAD_EXT("+NaN", enabled);
+        TEST_BAD_EXT("-NaN", disabled); TEST_BAD_EXT("-NaN", enabled);
+        TEST_BAD_EXT("nan",  disabled); TEST_BAD_EXT("nan",  enabled);
+        TEST_BAD_EXT("NAN",  disabled); TEST_BAD_EXT("NAN",  enabled);
+        TEST_BAD_EXT("NaNx", disabled); TEST_BAD_EXT("NaNx", enabled);
+        TEST_BAD_EXT("N  ",  disabled); TEST_BAD_EXT("N  ",  enabled);
+        TEST_BAD_EXT("Na ",  disabled); TEST_BAD_EXT("Na ",  enabled);
+    }
+
+    void
     testMaxDepth()
     {
         {
@@ -1597,6 +1648,7 @@ public:
         testAllowTrailing();
         testComments();
         testUTF8Validation();
+        testInfNan();
         testMaxDepth();
         testNumberLiteral();
         testStickyErrors();

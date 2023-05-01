@@ -2267,7 +2267,7 @@ parse_number(const char* p,
         if(negative)
         {
             ++cs;
-            if(allow_inf_nan && cs && *cs == 'I')
+            if(allow_inf_nan && cs && BOOST_JSON_UNLIKELY(*cs == 'I'))
             {
                 return parse_infinity(cs.begin(), std::true_type(), std::true_type());
             }

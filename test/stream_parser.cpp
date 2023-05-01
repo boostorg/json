@@ -17,6 +17,7 @@
 
 #include <sstream>
 #include <iostream>
+#include <cmath>
 #include <cstring>
 
 #include "parse-vectors.hpp"
@@ -486,11 +487,10 @@ public:
             {
                 if(! BOOST_TEST(jv.is_double()))
                     return;
-                if (std::isnan(v)) {
+                if(std::isnan(v))
                     BOOST_TEST(std::isnan(jv.get_double()));
-                } else {
+                else
                     BOOST_TEST(jv.get_double() == v);
-                }
             },
             po);
     }
@@ -1232,12 +1232,29 @@ R"xx({
     void
     testInfNan()
     {
+        constexpr double pos_inf = std::numeric_limits<double>::infinity();
+        constexpr double neg_inf = -std::numeric_limits<double>::infinity();
+        constexpr double nan = std::numeric_limits<double>::quiet_NaN();
+
         parse_options enabled;
         enabled.allow_infinity_and_nan = true;
 
-        grind_double( "NaN", std::numeric_limits<double>::quiet_NaN(), enabled);
-        grind_double( "Infinity", std::numeric_limits<double>::infinity(), enabled);
-        grind_double("-Infinity", -std::numeric_limits<double>::infinity(), enabled);
+        grind_double( "Infinity", pos_inf, enabled);
+        grind_double( " Infinity", pos_inf, enabled);
+        grind_double( "\n\r\t Infinity", pos_inf, enabled);
+        grind_double( "Infinity\n\r\t", pos_inf, enabled);
+        grind_double( " \t  Infinity\t ", pos_inf, enabled);
+        grind_double("-Infinity", neg_inf, enabled);
+        grind_double("\n -Infinity", neg_inf, enabled);
+        grind_double("-Infinity\r\n ", neg_inf, enabled);
+        grind_double("\r\n -Infinity \t\n", neg_inf, enabled);
+
+        grind_double( "NaN", nan, enabled);
+        grind_double( " NaN", nan, enabled);
+        grind_double( "NaN ", nan, enabled);
+        grind_double( "\r\n NaN", nan, enabled);
+        grind_double( "NaN\t\t \n", nan, enabled);
+        grind_double( "\t\n NaN\t \r\n", nan, enabled);
     }
 
     //------------------------------------------------------
