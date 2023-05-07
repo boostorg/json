@@ -109,6 +109,24 @@ with __parse_options__ is possible:
 
 [/-----------------------------------------------------------------------------]
 
+[heading Full precision number parsing]
+
+The default algorithm that the library uses to parse numbers is fast, but may
+result in slight precision loss. This may not be suitable for some
+applications, so there is an option to enable an alternative algorithm that
+doesn't have that flaw, but is somewhat slower. To do this, you also need to
+use __parse_options__ structure.
+
+[doc_parsing_precise]
+
+Note that full precision number parsing requires the algorithm to see the full
+number. This means, that when used with __stream_parser__, additional memory
+allocations may be necessary to store the number parts which were so far
+accepted by the parser. The library does try its best to avoid such
+allocations.
+
+[/-----------------------------------------------------------------------------]
+
 [heading Parser]
 
 Instances of __parser__ and __stream_parser__ offer functionality beyond

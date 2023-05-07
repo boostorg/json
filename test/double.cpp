@@ -50,11 +50,11 @@ public:
         }
 
         double
-        operator()(string_view s) const
+        operator()(string_view s, parse_options const& po = {}) const
         {
             BOOST_TEST_CHECKPOINT();
             error_code ec;
-            stream_parser p;
+            stream_parser p({}, po);
             p.write(s.data(), s.size(), ec);
             if(BOOST_TEST(! ec))
                 p.finish(ec);
@@ -62,7 +62,7 @@ public:
                 return 0;
             auto const jv = p.release();
             double const d = jv.as_double();
-            grind_double(s, d);
+            grind_double(s, d, po);
             return d;
         }
     };
@@ -199,7 +199,7 @@ public:
 
     static
     void
-    grind_double(string_view s, double v)
+    grind_double(string_view s, double v, parse_options const& po = {})
     {
         grind(s,
             [v](value const& jv, const parse_options&)
@@ -207,7 +207,8 @@ public:
                 if(! BOOST_TEST(jv.is_double()))
                     return;
                 BOOST_TEST(jv.get_double() == v);
-            });
+            },
+            po);
     }
 
     // Verify that f converts to the
@@ -221,14 +222,21 @@ public:
         double const need =
             std::strtod(s.c_str(), &str_end);
         // BOOST_TEST(str_end == &s.back() + 1);
-        double const got = f(s);
-        auto same = got == need;
-        auto close = same ?
-            true : within_1ulp(got, need);
-
-        if( !BOOST_TEST(close) )
+        for (bool is_precise: {false, true})
         {
-            std::cerr << "Failure on '" << s << "': " << got << " != " << need << "\n";
+            parse_options po;
+            po.precise_parsing = is_precise;
+            double const got = f(s, po);
+            auto same = got == need;
+            auto close = same ?
+                true : within_1ulp(got, need);
+
+            if( !BOOST_TEST(close) )
+            {
+                std::cerr << "Failure on '" << s << "' ("
+                    << (is_precise? "precise" : "imprecise") << "): "
+                    << got << " != " << need << "\n";
+            }
         }
     }
 
@@ -378,10 +386,11 @@ public:
         );
     }
 
-    void checkAccuracy(const char* nm, int max_ulp)
+    void checkAccuracy(
+        const char* nm, int max_ulp, parse_options const& opts = {})
     {
         double x = std::strtod( nm, 0 );
-        double y = boost::json::parse( nm ).as_double();
+        double y = boost::json::parse( nm, {}, opts ).as_double();
         std::uint64_t bx, by;
         std::memcpy( &bx, &x, sizeof(x) );
         std::memcpy( &by, &y, sizeof(y) );
@@ -410,7 +419,10 @@ public:
             char buffer[ 128 ];
             sprintf( buffer, "%llu.%llue%d", x1, x2, x3 );
 
+            parse_options precise;
+            precise.precise_parsing = true;
             checkAccuracy( buffer, 2 );
+            checkAccuracy( buffer, 0, precise );
         }
 
         for( int i = -326; i <= +309; ++i )
@@ -420,13 +432,124 @@ public:
 
             checkAccuracy( buffer, 0 );
         }
-    };
+    }
+
+    void
+    testExtraPrecision()
+    {
+        parse_options opts;
+        opts.precise_parsing = true;
+        BOOST_TEST(
+            parse("1002.9111801605201", {}, opts) == 1002.9111801605201 );
+        BOOST_TEST(
+            parse("-1.0346132515963697", {}, opts) == -1.0346132515963697 );
+        BOOST_TEST(
+            parse("-1207.1290929173115", {}, opts) == -1207.1290929173115 );
+        BOOST_TEST(
+            parse("-0.90521880279912548", {}, opts) == -0.90521880279912548 );
+        BOOST_TEST(
+            parse("370.91535570754445", {}, opts) == 370.91535570754445 );
+        BOOST_TEST(
+            parse("-2578.5523049665962", {}, opts) == -2578.5523049665962 );
+
+        // test cases from https://www.icir.org/vern/papers/testbase-report.pdf
+        // (A Program for Testing IEEE Decimal–Binary Conversion by Vern Paxson)
+        BOOST_TEST(
+            parse("5e125", {}, opts) == 5e125 );
+        BOOST_TEST(
+            parse("69e267", {}, opts) == 69e267 );
+        BOOST_TEST(
+            parse("999e-026", {}, opts) == 999e-026 );
+        BOOST_TEST(
+            parse("7861e-034", {}, opts) == 7861e-034 );
+        BOOST_TEST(
+            parse("75569e-254", {}, opts) == 75569e-254 );
+        BOOST_TEST(
+            parse("928609e-261", {}, opts) == 928609e-261 );
+        BOOST_TEST(
+            parse("9210917e080", {}, opts) == 9210917e080 );
+        BOOST_TEST(
+            parse("84863171e114", {}, opts) == 84863171e114 );
+        BOOST_TEST(
+            parse("653777767e273", {}, opts) == 653777767e273 );
+        BOOST_TEST(
+            parse("5232604057e-298", {}, opts) == 5232604057e-298 );
+        BOOST_TEST(
+            parse("27235667517e-109", {}, opts) == 27235667517e-109 );
+        BOOST_TEST(
+            parse("653532977297e-123", {}, opts) == 653532977297e-123 );
+        BOOST_TEST(
+            parse("3142213164987e-294", {}, opts) == 3142213164987e-294 );
+        BOOST_TEST(
+            parse("46202199371337e-072", {}, opts) == 46202199371337e-072 );
+        BOOST_TEST(
+            parse("231010996856685e-073", {}, opts) == 231010996856685e-073 );
+        BOOST_TEST(
+            parse("9324754620109615e212", {}, opts) == 9324754620109615e212 );
+        BOOST_TEST(
+            parse("78459735791271921e049", {}, opts) == 78459735791271921e049 );
+        BOOST_TEST(
+            parse("272104041512242479e200", {}, opts) == 272104041512242479e200 );
+        BOOST_TEST(
+            parse("6802601037806061975e198", {}, opts) == 6802601037806061975e198 );
+        BOOST_TEST(
+            parse("20505426358836677347e-221", {}, opts) == 20505426358836677347e-221 );
+        BOOST_TEST(
+            parse("836168422905420598437e-234", {}, opts) == 836168422905420598437e-234 );
+        BOOST_TEST(
+            parse("4891559871276714924261e222", {}, opts) == 4891559871276714924261e222 );
+        BOOST_TEST(
+            parse("9e-265", {}, opts) == 9e-265 );
+        BOOST_TEST(
+            parse("85e-037", {}, opts) == 85e-037 );
+        BOOST_TEST(
+            parse("623e100", {}, opts) == 623e100 );
+        BOOST_TEST(
+            parse("3571e263", {}, opts) == 3571e263 );
+        BOOST_TEST(
+            parse("81661e153", {}, opts) == 81661e153 );
+        BOOST_TEST(
+            parse("920657e-023", {}, opts) == 920657e-023 );
+        BOOST_TEST(
+            parse("4603285e-024", {}, opts) == 4603285e-024 );
+        BOOST_TEST(
+            parse("87575437e-309", {}, opts) == 87575437e-309 );
+        BOOST_TEST(
+            parse("245540327e122", {}, opts) == 245540327e122 );
+        BOOST_TEST(
+            parse("6138508175e120", {}, opts) == 6138508175e120 );
+        BOOST_TEST(
+            parse("83356057653e193", {}, opts) == 83356057653e193 );
+        BOOST_TEST(
+            parse("619534293513e124", {}, opts) == 619534293513e124 );
+        BOOST_TEST(
+            parse("2335141086879e218", {}, opts) == 2335141086879e218 );
+        BOOST_TEST(
+            parse("36167929443327e-159", {}, opts) == 36167929443327e-159 );
+        BOOST_TEST(
+            parse("609610927149051e-255", {}, opts) == 609610927149051e-255 );
+        BOOST_TEST(
+            parse("3743626360493413e-165", {}, opts) == 3743626360493413e-165 );
+        BOOST_TEST(
+            parse("94080055902682397e-242", {}, opts) == 94080055902682397e-242 );
+        BOOST_TEST(
+            parse("899810892172646163e283", {}, opts) == 899810892172646163e283 );
+        BOOST_TEST(
+            parse("7120190517612959703e120", {}, opts) == 7120190517612959703e120 );
+        BOOST_TEST(
+            parse("25188282901709339043e-252", {}, opts) == 25188282901709339043e-252 );
+        BOOST_TEST(
+            parse("308984926168550152811e-052", {}, opts) == 308984926168550152811e-052 );
+        BOOST_TEST(
+            parse("6372891218502368041059e064", {}, opts) == 6372891218502368041059e064 );
+    }
 
     void
     run()
     {
         testDouble();
         testWithinULP();
+        testExtraPrecision();
     }
 };
 

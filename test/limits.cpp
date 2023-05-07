@@ -377,6 +377,28 @@ public:
     }
 
     void
+    testNumber()
+    {
+        // very long floating point number
+        std::array<char, string::max_size()> buffer;
+        buffer.fill('0');
+        buffer.data()[1] = '.';
+
+        error_code ec;
+        parse_options precise;
+        precise.precise_parsing = true;
+        BOOST_TEST_THROWS(
+            parse( {buffer.data(), buffer.size()}, ec, {}, precise ),
+            std::length_error);
+        BOOST_TEST( !ec );
+
+        // now we make the number one character shorter
+        auto jv = parse( {buffer.data(), buffer.size() - 1}, ec, {}, precise );
+        BOOST_TEST( !ec );
+        BOOST_TEST( jv.as_double() == 0 );
+    }
+
+    void
     run()
     {
     #if ! defined(BOOST_JSON_NO_MAX_STRUCTURED_SIZE) && \
@@ -389,6 +411,7 @@ public:
         testArray();
         testString();
         testParser();
+        testNumber();
 
     #else
         BOOST_TEST_PASS();

@@ -274,6 +274,20 @@ void do_rpc( string_view s, Handler&& handler )
 
 //----------------------------------------------------------
 
+void
+testPrecise()
+{
+    //[doc_parsing_precise
+    parse_options opt;
+    opt.precise_parsing = true;
+    value jv = parse( "1002.9111801605201", storage_ptr(), opt );
+    //]
+    (void)jv;
+    assert( jv == 1002.9111801605201 );
+}
+
+//----------------------------------------------------------
+
 class doc_parsing_test
 {
 public:
@@ -300,6 +314,8 @@ public:
             assert(( jvs[4] == array{2} ));
             assert(( jvs[5] == 3 ));
         }
+
+        testPrecise();
     }
 };
 
