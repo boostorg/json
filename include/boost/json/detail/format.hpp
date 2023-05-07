@@ -35,7 +35,7 @@ format_int64(
 BOOST_JSON_DECL
 unsigned
 format_double(
-    char* dest, double d) noexcept;
+    char* dest, double d, bool allow_infinity_and_nan = false) noexcept;
 
 } // detail
 } // namespace json

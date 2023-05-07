@@ -112,10 +112,10 @@ format_int64(
 
 unsigned
 format_double(
-    char* dest, double d) noexcept
+    char* dest, double d, bool allow_infinity_and_nan) noexcept
 {
     return static_cast<int>(
-        ryu::d2s_buffered_n(d, dest));
+        ryu::d2s_buffered_n(d, dest, allow_infinity_and_nan));
 }
 
 } // detail

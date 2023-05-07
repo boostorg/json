@@ -12,6 +12,7 @@
 
 #include <boost/json/parse.hpp>
 #include <boost/json/static_resource.hpp>
+#include <limits>
 #include <sstream>
 
 #include "test_suite.hpp"
@@ -58,9 +59,23 @@ public:
     }
 
     void
+    testSpecialNumbers()
+    {
+        using Lims = std::numeric_limits<double>;
+        value const jv = {
+            Lims::quiet_NaN(), Lims::infinity(), -Lims::infinity() };
+        BOOST_TEST( serialize(jv) == "[null,1e99999,-1e99999]" );
+
+        serialize_options opts;
+        opts.allow_infinity_and_nan = true;
+        BOOST_TEST( serialize(jv, opts) == "[NaN,Infinity,-Infinity]" );
+    }
+
+    void
     run()
     {
         testSerialize();
+        testSpecialNumbers();
     }
 };
 

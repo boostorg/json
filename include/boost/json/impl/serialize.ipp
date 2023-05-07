@@ -63,13 +63,15 @@ serialize_impl(
 
 std::string
 serialize(
-    value const& jv)
+    value const& jv,
+    serialize_options const& opts)
 {
     unsigned char buf[256];
     serializer sr(
         storage_ptr(),
         buf,
-        sizeof(buf));
+        sizeof(buf),
+        opts);
     sr.reset(&jv);
     std::string s;
     serialize_impl(s, sr);
@@ -78,13 +80,15 @@ serialize(
 
 std::string
 serialize(
-    array const& arr)
+    array const& arr,
+    serialize_options const& opts)
 {
     unsigned char buf[256];
     serializer sr(
         storage_ptr(),
         buf,
-        sizeof(buf));
+        sizeof(buf),
+        opts);
     std::string s;
     sr.reset(&arr);
     serialize_impl(s, sr);
@@ -93,13 +97,15 @@ serialize(
 
 std::string
 serialize(
-    object const& obj)
+    object const& obj,
+    serialize_options const& opts)
 {
     unsigned char buf[256];
     serializer sr(
         storage_ptr(),
         buf,
-        sizeof(buf));
+        sizeof(buf),
+        opts);
     std::string s;
     sr.reset(&obj);
     serialize_impl(s, sr);
@@ -108,21 +114,24 @@ serialize(
 
 std::string
 serialize(
-    string const& str)
+    string const& str,
+    serialize_options const& opts)
 {
-    return serialize( str.subview() );
+    return serialize( str.subview(), opts );
 }
 
 // this is here for key_value_pair::key()
 std::string
 serialize(
-    string_view sv)
+    string_view sv,
+    serialize_options const& opts)
 {
     unsigned char buf[256];
     serializer sr(
         storage_ptr(),
         buf,
-        sizeof(buf));
+        sizeof(buf),
+        opts);
     std::string s;
     sr.reset(sv);
     serialize_impl(s, sr);
