@@ -2004,6 +2004,7 @@ parse_number(const char* p,
         num.bias = 0;
         num.exp = 0;
         num.frac = false;
+        num_buf_.clear();
 
         //----------------------------------
         //
@@ -2180,6 +2181,8 @@ do_num1:
             ! h_.on_number_part(
                 {begin, cs.used(begin)}, ec_)))
             return fail(cs.begin());
+
+        num_buf_.append( begin, cs.used(begin) );
         return maybe_suspend(
             cs.begin(), state::num1, num);
     }
@@ -2202,6 +2205,8 @@ do_num2:
                         ! h_.on_number_part(
                             {begin, cs.used(begin)}, ec_)))
                         return fail(cs.begin());
+
+                    num_buf_.append( begin, cs.used(begin) );
                     return suspend(cs.begin(), state::num2, num);
                 }
                 goto finish_int;
@@ -2233,6 +2238,8 @@ do_num2:
                         ! h_.on_number_part(
                             {begin, cs.used(begin)}, ec_)))
                         return fail(cs.begin());
+
+                    num_buf_.append( begin, cs.used(begin) );
                     return suspend(cs.begin(), state::num2, num);
                 }
                 goto finish_int;
@@ -2272,6 +2279,8 @@ do_num3:
                     ! h_.on_number_part(
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
+
+                num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num3, num);
             }
             goto finish_dub;
@@ -2315,6 +2324,8 @@ do_num4:
                 ! h_.on_number_part(
                     {begin, cs.used(begin)}, ec_)))
                 return fail(cs.begin());
+
+            num_buf_.append( begin, cs.used(begin) );
             return maybe_suspend(
                 cs.begin(), state::num4, num);
         }
@@ -2351,6 +2362,8 @@ do_num5:
                     ! h_.on_number_part(
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
+
+                num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num5, num);
             }
             goto finish_dub;
@@ -2386,6 +2399,8 @@ do_num6:
                     ! h_.on_number_part(
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
+
+                num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num6, num);
             }
             goto finish_int;
@@ -2423,6 +2438,8 @@ do_num7:
                     ! h_.on_number_part(
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
+
+                num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num7, num);
             }
             // digit required
@@ -2458,6 +2475,8 @@ do_num8:
                     ! h_.on_number_part(
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
+
+                num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num8, num);
             }
             goto finish_dub;
@@ -2500,6 +2519,8 @@ do_exp1:
             ! h_.on_number_part(
                 {begin, cs.used(begin)}, ec_)))
             return fail(cs.begin());
+
+        num_buf_.append( begin, cs.used(begin) );
         return maybe_suspend(
             cs.begin(), state::exp1, num);
     }
@@ -2528,6 +2549,8 @@ do_exp2:
                     ! h_.on_number_part(
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
+
+                num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::exp2, num);
             }
             // digit required
@@ -2564,6 +2587,8 @@ do_exp3:
                     ! h_.on_number_part(
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
+
+                num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::exp3, num);
             }
         }
@@ -2632,11 +2657,21 @@ finish_signed:
         return fail(cs.begin());
     return cs.begin();
 finish_dub:
-    double const d = detail::dec_to_float(
-        num.mant,
-        num.bias + (num.frac ?
-            -num.exp : num.exp),
-        num.neg);
+    double d;
+    std::size_t const last_sz = cs.used(begin);
+    if( num_buf_.size() + last_sz > std::numeric_limits<double>::digits10 )
+    {
+        num_buf_.append( begin, last_sz );
+        char const* zero = "\0";
+        char* data = num_buf_.append( zero, 1 );
+        d = std::strtod( data, nullptr );
+    }
+    else
+        d = detail::dec_to_float(
+            num.mant,
+            num.bias + (num.frac ?
+                -num.exp : num.exp),
+            num.neg);
     if(BOOST_JSON_UNLIKELY(
         ! h_.on_double(d, {begin, cs.used(begin)}, ec_)))
         return fail(cs.begin());
@@ -2668,6 +2703,7 @@ reset() noexcept
     more_ = true;
     done_ = false;
     clean_ = true;
+    num_buf_.clear();
 }
 
 template<class Handler>

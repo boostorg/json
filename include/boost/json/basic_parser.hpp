@@ -19,6 +19,7 @@
 #include <boost/json/detail/stack.hpp>
 #include <boost/json/detail/stream.hpp>
 #include <boost/json/detail/utf8.hpp>
+#include <boost/json/detail/sbo_buffer.hpp>
 
 /*  VFALCO NOTE
 
@@ -317,6 +318,7 @@ class basic_parser
     bool done_ = false; // true on complete parse
     bool clean_ = true; // write_some exited cleanly
     const char* end_;
+    detail::sbo_buffer<16 + 16 + 1 + 1> num_buf_;
     parse_options opt_;
     // how many levels deeper the parser can go
     std::size_t depth_ = opt_.max_depth;

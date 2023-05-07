@@ -423,10 +423,22 @@ public:
     };
 
     void
+    testExtraPrecision()
+    {
+        BOOST_TEST( parse("1002.9111801605201") == 1002.9111801605201 );
+        BOOST_TEST( parse("-1.0346132515963697") == -1.0346132515963697 );
+        BOOST_TEST( parse("-1207.1290929173115") == -1207.1290929173115 );
+        BOOST_TEST( parse("-0.90521880279912548") == -0.90521880279912548 );
+        BOOST_TEST( parse("370.91535570754445") == 370.91535570754445 );
+        BOOST_TEST( parse("-2578.5523049665962") == -2578.5523049665962 );
+    }
+
+    void
     run()
     {
         testDouble();
         testWithinULP();
+        testExtraPrecision();
     }
 };
 
