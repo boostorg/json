@@ -17,6 +17,39 @@
 namespace boost {
 namespace json {
 
+namespace {
+
+int serialize_xalloc = std::ios::xalloc();
+
+enum class serialize_stream_flags : long
+{
+    allow_infinity_and_nan = 1,
+};
+
+std::underlying_type<serialize_stream_flags>::type
+to_bitmask( serialize_options const& opts )
+{
+    using E = serialize_stream_flags;
+    using I = std::underlying_type<E>::type;
+    return (opts.allow_infinity_and_nan
+        ? static_cast<I>(E::allow_infinity_and_nan) : 0);
+}
+
+serialize_options
+get_stream_flags( std::ostream& os )
+{
+    auto const flags = os.iword(serialize_xalloc);
+
+    serialize_options opts;
+    using E = serialize_stream_flags;
+    using I = std::underlying_type<E>::type;
+    opts.allow_infinity_and_nan =
+        flags & static_cast<I>(E::allow_infinity_and_nan);
+    return opts;
+}
+
+} // namespace
+
 static
 void
 serialize_impl(
@@ -147,7 +180,7 @@ std::ostream&
 operator<<( std::ostream& os, value const& jv )
 {
     // Create a serializer
-    serializer sr;
+    serializer sr( get_stream_flags(os) );
 
     // Set the serializer up for our value
     sr.reset( &jv );
@@ -185,7 +218,7 @@ operator<<(
     std::ostream& os,
     array const& arr)
 {
-    serializer sr;
+    serializer sr( get_stream_flags(os) );
     sr.reset(&arr);
     to_ostream(os, sr);
     return os;
@@ -196,7 +229,7 @@ operator<<(
     std::ostream& os,
     object const& obj)
 {
-    serializer sr;
+    serializer sr( get_stream_flags(os) );
     sr.reset(&obj);
     to_ostream(os, sr);
     return os;
@@ -207,9 +240,16 @@ operator<<(
     std::ostream& os,
     string const& str)
 {
-    serializer sr;
+    serializer sr( get_stream_flags(os) );
     sr.reset(&str);
     to_ostream(os, sr);
+    return os;
+}
+
+std::ostream&
+operator<<( std::ostream& os, serialize_options const& opts )
+{
+    os.iword(serialize_xalloc) = to_bitmask(opts);
     return os;
 }
 

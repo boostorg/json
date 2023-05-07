@@ -129,7 +129,7 @@ public:
         @par Exception Safety
         No-throw guarantee.
 
-        @param opt The options for the serializer. If this parameter
+        @param opts The options for the serializer. If this parameter
         is omitted, the serializer will output only standard JSON.
     */
     BOOST_JSON_DECL
@@ -161,7 +161,7 @@ public:
         @param buf_size The number of bytes of
         valid memory pointed to by `buf`.
 
-        @param opt The options for the serializer. If this parameter
+        @param opts The options for the serializer. If this parameter
         is omitted, the serializer will output only standard JSON.
     */
     BOOST_JSON_DECL

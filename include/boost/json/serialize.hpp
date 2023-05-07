@@ -35,7 +35,7 @@ namespace json {
 
     @param t The value to serialize
 
-    @param opt The options for the serializer. If this parameter
+    @param opts The options for the serializer. If this parameter
     is omitted, the serializer will output only standard JSON.
 */
 /** @{ */

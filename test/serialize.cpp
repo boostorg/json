@@ -65,10 +65,20 @@ public:
         value const jv = {
             Lims::quiet_NaN(), Lims::infinity(), -Lims::infinity() };
         BOOST_TEST( serialize(jv) == "[null,1e99999,-1e99999]" );
+        BOOST_TEST( print(jv) == "[null,1e99999,-1e99999]" );
 
         serialize_options opts;
         opts.allow_infinity_and_nan = true;
         BOOST_TEST( serialize(jv, opts) == "[NaN,Infinity,-Infinity]" );
+
+        std::stringstream ss;
+        ss << opts << jv;
+        BOOST_TEST( ss.str() == "[NaN,Infinity,-Infinity]" );
+
+        opts.allow_infinity_and_nan = false;
+        ss.str("");
+        ss << opts << jv;
+        BOOST_TEST( ss.str() == "[null,1e99999,-1e99999]" );
     }
 
     void

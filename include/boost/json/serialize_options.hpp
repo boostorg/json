@@ -11,6 +11,7 @@
 #define BOOST_JSON_SERIALIZE_OPTIONS_HPP
 
 #include <boost/json/detail/config.hpp>
+#include <iosfwd>
 
 namespace boost {
 namespace json {
@@ -37,6 +38,30 @@ struct serialize_options
             @ref serializer.
     */
     bool allow_infinity_and_nan = false;
+
+    /** Set JSON serialization options on input stream.
+        The function stores serialization options in the private storage of the
+        stream. If the stream fails to allocate necessary private storage,
+        `badbit` will be set on it.
+
+        @return Reference to `os`.
+
+        @par Complexity
+        Amortized constant (due to potential memory allocation by the stream).
+
+        @par Exception Safety
+        Strong guarantee.
+        The stream may throw as configured by
+        [`std::ios::exceptions`](https://en.cppreference.com/w/cpp/io/basic_ios/exceptions).
+
+        @param os The output stream.
+
+        @param opts The options to store.
+    */
+    BOOST_JSON_DECL
+    friend
+    std::ostream&
+    operator<<( std::ostream& os, serialize_options const& opts );
 };
 
 } // namespace json
