@@ -9,6 +9,7 @@
 
 // Test that header file is self-contained.
 #include <boost/json/value.hpp>
+#include <iostream>
 
 #include <boost/json/monotonic_resource.hpp>
 
@@ -2310,6 +2311,29 @@ public:
             BOOST_TEST( jv == 23 );
             BOOST_TEST( is.rdstate() & std::ios::badbit );
         }
+
+        s = "[1,2,3,4, // here goes EOL\n"
+            "  [5,6,7, // and another one\n"
+            "    [8,9]]]";
+
+        parse_options opts;
+        opts.max_depth = 2;
+        opts.allow_comments = true;
+        ss.clear();
+        ss.str(s);
+        ss >> opts >> jv;
+        BOOST_TEST( ss.rdstate() == std::ios::failbit );
+
+        ss.clear();
+        ss.str(s);
+        opts.max_depth = 3;
+        ss >> opts >> jv;
+        BOOST_TEST(( jv == value{1,2,3,4,{5,6,7,{8,9}}} ));
+
+        ss.clear();
+        ss.str( "[1,2,3,4,]" ); // trailing comma should fail
+        ss >> opts >> jv;
+        BOOST_TEST( ss.rdstate() == std::ios::failbit );
     }
 
     //------------------------------------------------------

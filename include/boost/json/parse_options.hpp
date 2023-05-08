@@ -11,6 +11,7 @@
 #define BOOST_JSON_PARSE_OPTIONS_HPP
 
 #include <boost/json/detail/config.hpp>
+#include <iosfwd>
 
 namespace boost {
 namespace json {
@@ -87,7 +88,33 @@ struct parse_options
             @ref stream_parser.
     */
     bool allow_invalid_utf8 = false;
+
+    /** Set JSON parse options on input stream.
+
+        The function stores parse options in the private storage of the stream. If
+        the stream fails to allocate necessary private storage, `badbit` will be
+        set on it.
+
+        @return Reference to `is`.
+
+        @par Complexity
+        Amortized constant (due to potential memory allocation by the stream).
+
+        @par Exception Safety
+        Strong guarantee.
+        The stream may throw as configured by
+        [`std::ios::exceptions`](https://en.cppreference.com/w/cpp/io/basic_ios/exceptions).
+
+        @param is The input stream.
+
+        @param opts The options to store.
+    */
+    BOOST_JSON_DECL
+    friend
+    std::istream&
+    operator>>( std::istream& is, parse_options const& opts );
 };
+
 
 } // namespace json
 } // namespace boost

@@ -25,6 +25,9 @@ namespace json {
 namespace
 {
 
+int parse_depth_xalloc = std::ios::xalloc();
+int parse_flags_xalloc = std::ios::xalloc();
+
 struct value_hasher
 {
     std::size_t& seed;
@@ -35,6 +38,42 @@ struct value_hasher
         boost::hash_combine( seed, t );
     }
 };
+
+enum class stream_parse_flags
+{
+    allow_comments = 1 << 0,
+    allow_trailing_commas = 1 << 1,
+    allow_invalid_utf8 = 1 << 2,
+};
+
+long
+to_bitmask( parse_options const& opts )
+{
+    using E = stream_parse_flags;
+    return
+        (opts.allow_comments ?
+            static_cast<long>(E::allow_comments) : 0) |
+        (opts.allow_trailing_commas ?
+            static_cast<long>(E::allow_trailing_commas) : 0) |
+        (opts.allow_invalid_utf8 ?
+            static_cast<long>(E::allow_invalid_utf8) : 0);
+}
+
+parse_options
+get_parse_options( std::istream& is )
+{
+    long const flags = is.iword(parse_flags_xalloc);
+
+    using E = stream_parse_flags;
+    parse_options opts;
+    opts.allow_comments =
+        flags & static_cast<long>(E::allow_comments) ? true : false;
+    opts.allow_trailing_commas =
+        flags & static_cast<long>(E::allow_trailing_commas) ? true : false;
+    opts.allow_invalid_utf8 =
+        flags & static_cast<long>(E::allow_invalid_utf8) ? true : false;
+    return opts;
+}
 
 } // namespace
 
@@ -374,8 +413,12 @@ operator>>(
     if( !sentry )
         return is;
 
+    parse_options opts = get_parse_options( is );
+    if( auto depth = static_cast<std::size_t>( is.iword(parse_depth_xalloc) ) )
+        opts.max_depth = depth;
+
     unsigned char parser_buf[BOOST_JSON_STACK_BUFFER_SIZE / 2];
-    stream_parser p({}, {}, parser_buf);
+    stream_parser p( {}, opts, parser_buf );
     p.reset( jv.storage() );
 
     char read_buf[BOOST_JSON_STACK_BUFFER_SIZE / 2];
@@ -452,6 +495,16 @@ operator>>(
     }
 
     is.setstate(err | std::ios::failbit);
+    return is;
+}
+
+std::istream&
+operator>>(
+    std::istream& is,
+    parse_options const& opts)
+{
+    is.iword(parse_flags_xalloc) = to_bitmask(opts);
+    is.iword(parse_depth_xalloc) = static_cast<long>(opts.max_depth);
     return is;
 }
 
