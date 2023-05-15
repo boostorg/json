@@ -43,6 +43,16 @@ struct parse_options
     */
     std::size_t max_depth = 32;
 
+    /** Number prasing mode
+
+        This selects enables precise parsing at the cost of performance.
+
+        @see
+            @ref basic_parser,
+            @ref stream_parser.
+    */
+    bool precise_parsing = false;
+
     /** Non-standard extension option
 
         Allow C and C++ style comments to appear

@@ -1996,6 +1996,7 @@ parse_number(const char* p,
     bool const negative = first == '-';
     bool const zero_first = first == '0';
     bool const nonzero_first = first == '+';
+    bool const precise_parsing = opt_.precise_parsing;
     detail::const_stream_wrapper cs(p, end_);
     number num;
     const char* begin = cs.begin();
@@ -2182,7 +2183,8 @@ do_num1:
                 {begin, cs.used(begin)}, ec_)))
             return fail(cs.begin());
 
-        num_buf_.append( begin, cs.used(begin) );
+        if( precise_parsing )
+            num_buf_.append( begin, cs.used(begin) );
         return maybe_suspend(
             cs.begin(), state::num1, num);
     }
@@ -2206,7 +2208,8 @@ do_num2:
                             {begin, cs.used(begin)}, ec_)))
                         return fail(cs.begin());
 
-                    num_buf_.append( begin, cs.used(begin) );
+                    if( precise_parsing )
+                        num_buf_.append( begin, cs.used(begin) );
                     return suspend(cs.begin(), state::num2, num);
                 }
                 goto finish_int;
@@ -2239,7 +2242,8 @@ do_num2:
                             {begin, cs.used(begin)}, ec_)))
                         return fail(cs.begin());
 
-                    num_buf_.append( begin, cs.used(begin) );
+                    if( precise_parsing )
+                        num_buf_.append( begin, cs.used(begin) );
                     return suspend(cs.begin(), state::num2, num);
                 }
                 goto finish_int;
@@ -2280,7 +2284,8 @@ do_num3:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                num_buf_.append( begin, cs.used(begin) );
+                if( precise_parsing )
+                    num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num3, num);
             }
             goto finish_dub;
@@ -2325,7 +2330,8 @@ do_num4:
                     {begin, cs.used(begin)}, ec_)))
                 return fail(cs.begin());
 
-            num_buf_.append( begin, cs.used(begin) );
+            if( precise_parsing )
+                num_buf_.append( begin, cs.used(begin) );
             return maybe_suspend(
                 cs.begin(), state::num4, num);
         }
@@ -2363,7 +2369,8 @@ do_num5:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                num_buf_.append( begin, cs.used(begin) );
+                if( precise_parsing )
+                    num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num5, num);
             }
             goto finish_dub;
@@ -2400,7 +2407,8 @@ do_num6:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                num_buf_.append( begin, cs.used(begin) );
+                if( precise_parsing )
+                    num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num6, num);
             }
             goto finish_int;
@@ -2439,7 +2447,8 @@ do_num7:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                num_buf_.append( begin, cs.used(begin) );
+                if( precise_parsing )
+                    num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num7, num);
             }
             // digit required
@@ -2476,7 +2485,8 @@ do_num8:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                num_buf_.append( begin, cs.used(begin) );
+                if( precise_parsing )
+                    num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num8, num);
             }
             goto finish_dub;
@@ -2520,7 +2530,8 @@ do_exp1:
                 {begin, cs.used(begin)}, ec_)))
             return fail(cs.begin());
 
-        num_buf_.append( begin, cs.used(begin) );
+        if( precise_parsing )
+            num_buf_.append( begin, cs.used(begin) );
         return maybe_suspend(
             cs.begin(), state::exp1, num);
     }
@@ -2550,7 +2561,8 @@ do_exp2:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                num_buf_.append( begin, cs.used(begin) );
+                if( precise_parsing )
+                    num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::exp2, num);
             }
             // digit required
@@ -2588,7 +2600,8 @@ do_exp3:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                num_buf_.append( begin, cs.used(begin) );
+                if( precise_parsing )
+                    num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::exp3, num);
             }
         }
@@ -2658,10 +2671,12 @@ finish_signed:
     return cs.begin();
 finish_dub:
     double d;
-    std::size_t const last_sz = cs.used(begin);
-    if( num_buf_.size() + last_sz > std::numeric_limits<double>::digits10 )
+    std::size_t const size = cs.used(begin);
+    BOOST_ASSERT( !num_buf_.size() || precise_parsing );
+    if( precise_parsing &&
+        (num_buf_.size() + size > std::numeric_limits<double>::digits10) )
     {
-        num_buf_.append( begin, last_sz );
+        num_buf_.append( begin, size );
         char const* zero = "\0";
         char* data = num_buf_.append( zero, 1 );
         d = std::strtod( data, nullptr );
@@ -2673,7 +2688,7 @@ finish_dub:
                 -num.exp : num.exp),
             num.neg);
     if(BOOST_JSON_UNLIKELY(
-        ! h_.on_double(d, {begin, cs.used(begin)}, ec_)))
+        ! h_.on_double(d, {begin, size}, ec_)))
         return fail(cs.begin());
     return cs.begin();
 }
