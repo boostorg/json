@@ -16,10 +16,10 @@
 #include <boost/json/error.hpp>
 #include <boost/json/detail/buffer.hpp>
 #include <boost/json/detail/sse2.hpp>
-#include <boost/charconv/from_chars.hpp>
 #include <cmath>
 #include <limits>
 #include <cstring>
+#include <fast_float/fast_float.h>
 
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -2677,9 +2677,9 @@ finish_dub:
     if( precise_parsing &&
         (num_buf_.size() + size > std::numeric_limits<double>::digits10) )
     {
-        char* data = num_buf_.append( begin, size );
-        auto err =  charconv::from_chars( data, data + num_buf_.size(), d );
-        BOOST_ASSERT( err.ec != EINVAL );
+        char const* data = num_buf_.append( begin, size );
+        auto err = fast_float::from_chars( data, data + num_buf_.size(), d );
+        BOOST_ASSERT( err.ec != std::errc::invalid_argument );
         (void)err;
     }
     else
