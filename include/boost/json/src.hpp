@@ -21,6 +21,10 @@ in a translation unit of the program.
 #define BOOST_JSON_SOURCE
 #endif
 
+#ifndef BOOST_CHARCONV_SOURCE
+#define BOOST_CHARCONV_SOURCE
+#endif
+
 // We include this in case someone is using
 // src.hpp as their main JSON header file
 // https://github.com/boostorg/json/issues/223#issuecomment-689264149
@@ -55,5 +59,8 @@ in a translation unit of the program.
 #include <boost/json/detail/impl/string_impl.ipp>
 
 #include <boost/json/detail/ryu/impl/d2s.ipp>
+
+#include <boost/json/detail/impl/from_chars.cpp>
+#include <boost/json/detail/impl/to_chars.cpp>
 
 #endif

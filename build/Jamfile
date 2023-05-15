@@ -68,10 +68,17 @@ project boost/json
       ]
       <link>shared:<define>BOOST_JSON_DYN_LINK=1
       <link>static:<define>BOOST_JSON_STATIC_LINK=1
+      <link>shared:<define>BOOST_CHARCONV_DYN_LINK=1
+      <link>static:<define>BOOST_CHARCONV_STATIC_LINK=1
       <define>BOOST_JSON_SOURCE
+      <define>BOOST_CHARCONV_SOURCE
+      <include>../include
     : usage-requirements
       <link>shared:<define>BOOST_JSON_DYN_LINK=1
       <link>static:<define>BOOST_JSON_STATIC_LINK=1
+      <link>shared:<define>BOOST_CHARCONV_DYN_LINK=1
+      <link>static:<define>BOOST_CHARCONV_STATIC_LINK=1
+      <include>../include
     : source-location ../src
     ;
 

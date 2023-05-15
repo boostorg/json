@@ -49,7 +49,7 @@ class sbo_buffer
             return;
 
         delete[] data_;
-        buffer_ = {};
+        buffer_ = decltype(buffer_){};
         data_ = buffer_.data();
     }
 
@@ -133,7 +133,7 @@ public:
         std::size_t size = size_;
         if( size + sz > capacity )
         {
-            capacity = std::max(capacity + sz, capacity * 2);
+            capacity = (std::max)(capacity + sz, capacity * 2);
             char* new_data = new char[capacity];
             std::memcpy(new_data, data_, size);
 
@@ -148,6 +148,11 @@ public:
         return data_;
     }
 
+    char*
+    data() noexcept
+    {
+        return data_;
+    }
 
     std::size_t
     size() noexcept

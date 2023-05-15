@@ -16,6 +16,7 @@
 #include <boost/json/error.hpp>
 #include <boost/json/detail/buffer.hpp>
 #include <boost/json/detail/sse2.hpp>
+#include <boost/charconv/from_chars.hpp>
 #include <cmath>
 #include <limits>
 #include <cstring>
@@ -2676,10 +2677,10 @@ finish_dub:
     if( precise_parsing &&
         (num_buf_.size() + size > std::numeric_limits<double>::digits10) )
     {
-        num_buf_.append( begin, size );
-        char const* zero = "\0";
-        char* data = num_buf_.append( zero, 1 );
-        d = std::strtod( data, nullptr );
+        char* data = num_buf_.append( begin, size );
+        auto err =  charconv::from_chars( data, data + num_buf_.size(), d );
+        BOOST_ASSERT( err.ec != EINVAL );
+        (void)err;
     }
     else
         d = detail::dec_to_float(
