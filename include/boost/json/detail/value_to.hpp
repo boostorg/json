@@ -118,7 +118,7 @@ inserter(
     T& target,
     mp11::mp_int<0>)
 {
-    return std::inserter(target, end(target));
+    return std::inserter( target, target.end() );
 }
 
 // identity conversion
