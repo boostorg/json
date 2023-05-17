@@ -23,7 +23,7 @@ namespace detail {
 template <typename T, typename UC>
 from_chars_result_t<UC> FASTFLOAT_CONSTEXPR14
 parse_infnan(UC const * first, UC const * last, T &value)  noexcept  {
-  from_chars_result_t<UC> answer{};
+  from_chars_result_t<UC> answer;
   answer.ptr = first;
   answer.ec = std::errc(); // be optimistic
   bool minusSign = false;
@@ -93,7 +93,7 @@ fastfloat_really_inline bool rounds_to_nearest() noexcept {
   // The value does not need to be std::numeric_limits<float>::min(), any small
   // value so that 1 + x should round to 1 would do (after accounting for excess
   // precision, as in 387 instructions).
-  static volatile float fmin = std::numeric_limits<float>::min();
+  static volatile float fmin = (std::numeric_limits<float>::min)();
   float fmini = fmin; // we copy it so that it gets loaded at most once.
   //
   // Explanation:

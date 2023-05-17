@@ -1,6 +1,11 @@
 #ifndef FASTFLOAT_BIGINT_H
 #define FASTFLOAT_BIGINT_H
 
+#ifdef _MSC_VER
+# pragma warning(push)
+# pragma warning(disable: 4996)
+#endif
+
 #include <algorithm>
 #include <cstdint>
 #include <climits>
@@ -613,5 +618,9 @@ struct bigint : pow5_tables<> {
 };
 
 } // namespace fast_float
+
+#ifdef _MSC_VER
+# pragma warning(pop)
+#endif
 
 #endif
