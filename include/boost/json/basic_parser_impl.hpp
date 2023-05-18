@@ -599,12 +599,12 @@ loop:
         case '4': case '5': case '6':
         case '7': case '8': case '9':
             return parse_number(p, std::true_type(), std::integral_constant<char, '+'>());
-        case 't':
-            return parse_true(p, std::true_type());
-        case 'f':
-            return parse_false(p, std::true_type());
         case 'n':
-            return parse_null(p, std::true_type());
+            return parse_literal( p, std::integral_constant<int, 0>() );
+        case 't':
+            return parse_literal( p, std::integral_constant<int, 1>() );
+        case 'f':
+            return parse_literal( p, std::integral_constant<int, 2>() );
         case '"':
             return parse_unescaped(p, std::true_type(), std::false_type(), allow_bad_utf8);
         case '[':
@@ -663,17 +663,9 @@ resume_value(const char* p,
     switch(st)
     {
     default: BOOST_JSON_UNREACHABLE();
-    case state::nul1: case state::nul2:
-    case state::nul3:
-        return parse_null(p, stack_empty);
 
-    case state::tru1: case state::tru2:
-    case state::tru3:
-        return parse_true(p, stack_empty);
-
-    case state::fal1: case state::fal2:
-    case state::fal3: case state::fal4:
-        return parse_false(p, stack_empty);
+    case state::lit1:
+        return parse_literal(p,  std::integral_constant<int, -1>() );
 
     case state::str1:
         return parse_unescaped(p, stack_empty, std::false_type(), allow_bad_utf8);
@@ -736,228 +728,121 @@ resume_value(const char* p,
 }
 
 template<class Handler>
-template<bool StackEmpty_>
+template<int Literal>
 const char*
 basic_parser<Handler>::
-parse_null(const char* p,
-    std::integral_constant<bool, StackEmpty_> stack_empty)
+parse_literal(const char* p,
+    std::integral_constant<int, Literal> literal)
 {
-    detail::const_stream_wrapper cs(p, end_);
-    if(stack_empty || st_.empty())
-    {
-        if(BOOST_JSON_LIKELY(cs.remain() >= 4))
-        {
-            if(BOOST_JSON_UNLIKELY(
-                std::memcmp(cs.begin(), "null", 4) != 0))
-            {
-                BOOST_STATIC_CONSTEXPR source_location loc
-                    = BOOST_CURRENT_LOCATION;
-                return fail(cs.begin(), error::syntax, &loc);
-            }
-            if(BOOST_JSON_UNLIKELY(
-                ! h_.on_null(ec_)))
-                return fail(cs.begin());
-            cs += 4;
-            return cs.begin();
-        }
-    }
-    else
-    {
-        state st;
-        st_.pop(st);
-        switch(st)
-        {
-        default: BOOST_JSON_UNREACHABLE();
-        case state::nul1: goto do_nul1;
-        case state::nul2: goto do_nul2;
-        case state::nul3: goto do_nul3;
-        }
-    }
-    ++cs;
-do_nul1:
-    if(BOOST_JSON_UNLIKELY(! cs))
-        return maybe_suspend(cs.begin(), state::nul1);
-    if(BOOST_JSON_UNLIKELY(*cs != 'u'))
-    {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        return fail(cs.begin(), error::syntax, &loc);
-    }
-    ++cs;
-do_nul2:
-    if(BOOST_JSON_UNLIKELY(! cs))
-        return maybe_suspend(cs.begin(), state::nul2);
-    if(BOOST_JSON_UNLIKELY(*cs != 'l'))
-    {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        return fail(cs.begin(), error::syntax, &loc);
-    }
-    ++cs;
-do_nul3:
-    if(BOOST_JSON_UNLIKELY(! cs))
-        return maybe_suspend(cs.begin(), state::nul3);
-    if(BOOST_JSON_UNLIKELY(*cs != 'l'))
-    {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        return fail(cs.begin(), error::syntax, &loc);
-    }
-    if(BOOST_JSON_UNLIKELY(
-        ! h_.on_null(ec_)))
-        return fail(cs.begin());
-    ++cs;
-    return cs.begin();
-}
+    constexpr char const* literals[] = {
+        "null",
+        "true",
+        "false",
+    };
 
-template<class Handler>
-template<bool StackEmpty_>
-const char*
-basic_parser<Handler>::
-parse_true(const char* p,
-    std::integral_constant<bool, StackEmpty_> stack_empty)
-{
-    detail::const_stream_wrapper cs(p, end_);
-    if(stack_empty || st_.empty())
-    {
-        if(BOOST_JSON_LIKELY(cs.remain() >= 4))
-        {
-            if(BOOST_JSON_UNLIKELY(
-                std::memcmp(cs.begin(), "true", 4) != 0))
-            {
-                BOOST_STATIC_CONSTEXPR source_location loc
-                    = BOOST_CURRENT_LOCATION;
-                return fail(cs.begin(), error::syntax, &loc);
-            }
-            if(BOOST_JSON_UNLIKELY(
-                ! h_.on_bool(true, ec_)))
-                return fail(cs.begin());
-            cs += 4;
-            return cs.begin();
-        }
-    }
-    else
-    {
-        state st;
-        st_.pop(st);
-        switch(st)
-        {
-        default: BOOST_JSON_UNREACHABLE();
-        case state::tru1: goto do_tru1;
-        case state::tru2: goto do_tru2;
-        case state::tru3: goto do_tru3;
-        }
-    }
-    ++cs;
-do_tru1:
-    if(BOOST_JSON_UNLIKELY(! cs))
-        return maybe_suspend(cs.begin(), state::tru1);
-    if(BOOST_JSON_UNLIKELY(*cs != 'r'))
-    {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        return fail(cs.begin(), error::syntax, &loc);
-    }
-    ++cs;
-do_tru2:
-    if(BOOST_JSON_UNLIKELY(! cs))
-        return maybe_suspend(cs.begin(), state::tru2);
-    if(BOOST_JSON_UNLIKELY(*cs != 'u'))
-    {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        return fail(cs.begin(), error::syntax, &loc);
-    }
-    ++cs;
-do_tru3:
-    if(BOOST_JSON_UNLIKELY(! cs))
-        return maybe_suspend(cs.begin(), state::tru3);
-    if(BOOST_JSON_UNLIKELY(*cs != 'e'))
-    {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        return fail(cs.begin(), error::syntax, &loc);
-    }
-    if(BOOST_JSON_UNLIKELY(
-        ! h_.on_bool(true, ec_)))
-        return fail(cs.begin());
-    ++cs;
-    return cs.begin();
-}
+    constexpr std::size_t literal_sizes[] = {
+        4,
+        4,
+        5,
+    };
 
-template<class Handler>
-template<bool StackEmpty_>
-const char*
-basic_parser<Handler>::
-parse_false(const char* p,
-    std::integral_constant<bool, StackEmpty_> stack_empty)
-{
+    std::size_t cur_lit;
+    std::size_t offset;
+
     detail::const_stream_wrapper cs(p, end_);
-    if(stack_empty || st_.empty())
+    BOOST_IF_CONSTEXPR( literal != -1 ) // not resuming
     {
-        if(BOOST_JSON_LIKELY(cs.remain() >= 5))
+        BOOST_ASSERT( literal >= 0 );
+        if( BOOST_JSON_LIKELY(cs.remain() >= literal_sizes[literal]) )
         {
-            if(BOOST_JSON_UNLIKELY(
-                std::memcmp(cs.begin() + 1, "alse", 4) != 0))
+            int const cmp = std::memcmp(
+                cs.begin(), literals[literal], literal_sizes[literal] );
+            if(BOOST_JSON_UNLIKELY( cmp != 0 ))
             {
                 BOOST_STATIC_CONSTEXPR source_location loc
                     = BOOST_CURRENT_LOCATION;
                 return fail(cs.begin(), error::syntax, &loc);
             }
-            if(BOOST_JSON_UNLIKELY(
-                ! h_.on_bool(false, ec_)))
-                return fail(cs.begin());
-            cs += 5;
-            return cs.begin();
+
+            BOOST_IF_CONSTEXPR( literal == 0 )
+            {
+                if(BOOST_JSON_UNLIKELY(
+                    ! h_.on_null(ec_)))
+                    return fail(cs.begin());
+            }
+            else BOOST_IF_CONSTEXPR( literal == 1 )
+            {
+                if(BOOST_JSON_UNLIKELY(
+                    ! h_.on_bool(true, ec_)))
+                    return fail(cs.begin());
+            }
+            else BOOST_IF_CONSTEXPR( literal == 2 )
+            {
+                if(BOOST_JSON_UNLIKELY(
+                    ! h_.on_bool(false, ec_)))
+                    return fail(cs.begin());
+            }
+            else
+            {
+                BOOST_JSON_UNREACHABLE();
+            }
+
+            return cs.begin() + literal_sizes[literal];
         }
+        offset = 0;
+        cur_lit = literal;
     }
     else
     {
         state st;
         st_.pop(st);
-        switch(st)
-        {
-        default: BOOST_JSON_UNREACHABLE();
-        case state::fal1: goto do_fal1;
-        case state::fal2: goto do_fal2;
-        case state::fal3: goto do_fal3;
-        case state::fal4: goto do_fal4;
-        }
+        BOOST_ASSERT( st == state::lit1 );
+
+        cur_lit = cur_lit_;
+        offset = lit_offset_;
     }
-    ++cs;
-do_fal1:
-    if(BOOST_JSON_UNLIKELY(! cs))
-        return maybe_suspend(cs.begin(), state::fal1);
-    if(BOOST_JSON_UNLIKELY(*cs != 'a'))
+
+    std::size_t const size = (std::min)(
+        literal_sizes[cur_lit] - offset, cs.remain() );
+    int cmp = 0;
+    if(BOOST_JSON_LIKELY( cs.begin() ))
+        cmp = std::memcmp( cs.begin(), literals[cur_lit] + offset, size );
+    if( cmp != 0 )
     {
         BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         return fail(cs.begin(), error::syntax, &loc);
     }
-    ++cs;
-do_fal2:
-    if(BOOST_JSON_UNLIKELY(! cs))
-        return maybe_suspend(cs.begin(), state::fal2);
-    if(BOOST_JSON_UNLIKELY(*cs != 'l'))
+
+    if(BOOST_JSON_UNLIKELY( offset + size < literal_sizes[cur_lit] ))
     {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        return fail(cs.begin(), error::syntax, &loc);
+        BOOST_ASSERT( cur_lit < 256 );
+        cur_lit_ = static_cast<unsigned char>( cur_lit );
+        BOOST_ASSERT( offset + size < 256 );
+        lit_offset_ = static_cast<unsigned char>( offset + size );
+        return maybe_suspend(cs.begin() + size, state::lit1);
     }
-    ++cs;
-do_fal3:
-    if(BOOST_JSON_UNLIKELY(! cs))
-        return maybe_suspend(cs.begin(), state::fal3);
-    if(BOOST_JSON_UNLIKELY(*cs != 's'))
+
+    switch( cur_lit )
     {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        return fail(cs.begin(), error::syntax, &loc);
+    case 0:
+        if(BOOST_JSON_UNLIKELY(
+            ! h_.on_null(ec_)))
+            return fail(cs.begin());
+        break;
+    case 1:
+        if(BOOST_JSON_UNLIKELY(
+            ! h_.on_bool(true, ec_)))
+            return fail(cs.begin());
+        break;
+    case 2:
+        if(BOOST_JSON_UNLIKELY(
+            ! h_.on_bool(false, ec_)))
+            return fail(cs.begin());
+        break;
+    default: BOOST_JSON_UNREACHABLE();
     }
-    ++cs;
-do_fal4:
-    if(BOOST_JSON_UNLIKELY(! cs))
-        return maybe_suspend(cs.begin(), state::fal4);
-    if(BOOST_JSON_UNLIKELY(*cs != 'e'))
-    {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        return fail(cs.begin(), error::syntax, &loc);
-    }
-    if(BOOST_JSON_UNLIKELY(
-        ! h_.on_bool(false, ec_)))
-        return fail(cs.begin());
-    ++cs;
+
+    cs += size;
     return cs.begin();
 }
 
