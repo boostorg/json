@@ -266,9 +266,7 @@ class basic_parser
     {
         doc1,  doc3,
         com1,  com2,  com3, com4,
-        nul1,  nul2,  nul3,
-        tru1,  tru2,  tru3,
-        fal1,  fal2,  fal3,  fal4,
+        lit1,
         str1,  str2,  str3,  str4,
         str5,  str6,  str7,  str8,
         sur1,  sur2,  sur3,
@@ -309,6 +307,8 @@ class basic_parser
     parse_options opt_;
     // how many levels deeper the parser can go
     std::size_t depth_ = opt_.max_depth;
+    unsigned char cur_lit_ = 0;
+    unsigned char lit_offset_ = 0;
 
     inline void reserve();
     inline const char* sentinel();
@@ -427,13 +427,9 @@ class basic_parser
         /*std::integral_constant<bool, AllowTrailing_>*/ bool allow_trailing,
         /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8);
 
-    template<bool StackEmpty_>
-    const char* parse_null(const char* p,
-        std::integral_constant<bool, StackEmpty_> stack_empty);
-
-    template<bool StackEmpty_>
-    const char* parse_true(const char* p,
-        std::integral_constant<bool, StackEmpty_> stack_empty);
+    template<int Literal>
+    const char* parse_literal(const char* p,
+        std::integral_constant<int, Literal> literal);
 
     template<bool StackEmpty_, bool IsKey_/*,
         bool AllowBadUTF8_*/>
