@@ -500,14 +500,19 @@ parse_document(const char* p,
     if(! stack_empty && ! st_.empty())
     {
         state st;
-        st_.pop(st);
+        st_.peek(st);
         switch(st)
         {
-        default: BOOST_JSON_UNREACHABLE();
-        case state::doc1: goto do_doc1;
-        case state::doc2: goto do_doc2;
-        case state::doc3: goto do_doc3;
-        case state::doc4: goto do_doc4;
+        default: goto do_doc2;
+        case state::doc1:
+                 st_.pop(st);
+                 goto do_doc1;
+        case state::doc3:
+                 st_.pop(st);
+                 goto do_doc3;
+        case state::com1: case state::com2:
+        case state::com3: case state::com4:
+                 goto do_doc4;
         }
     }
 do_doc1:
@@ -553,7 +558,8 @@ do_doc2:
         break;
     }
     if(BOOST_JSON_UNLIKELY(incomplete(cs)))
-        return suspend_or_fail(state::doc2);
+        // the appropriate state has already been pushed into stack
+        return sentinel();
 do_doc3:
     cs = detail::count_whitespace(cs.begin(), cs.end());
     if(BOOST_JSON_UNLIKELY(! cs))
@@ -566,7 +572,7 @@ do_doc3:
 do_doc4:
         cs = parse_comment(cs.begin(), stack_empty, std::true_type());
         if(BOOST_JSON_UNLIKELY(incomplete(cs)))
-            return suspend_or_fail(state::doc4);
+            return sentinel();
         goto do_doc3;
     }
     return cs.begin();

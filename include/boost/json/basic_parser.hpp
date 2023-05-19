@@ -275,7 +275,7 @@ class basic_parser
 {
     enum class state : char
     {
-        doc1,  doc2,  doc3, doc4,
+        doc1,  doc3,
         com1,  com2,  com3, com4,
         nul1,  nul2,  nul3,
         tru1,  tru2,  tru3,
@@ -445,10 +445,6 @@ class basic_parser
 
     template<bool StackEmpty_>
     const char* parse_true(const char* p,
-        std::integral_constant<bool, StackEmpty_> stack_empty);
-
-    template<bool StackEmpty_>
-    const char* parse_false(const char* p,
         std::integral_constant<bool, StackEmpty_> stack_empty);
 
     template<bool StackEmpty_, bool IsKey_/*,
