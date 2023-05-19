@@ -404,10 +404,9 @@ class basic_parser
         /*std::integral_constant<bool, AllowTrailing_>*/ bool allow_trailing,
         /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8);
 
-    template<bool StackEmpty_, bool AllowComments_/*,
+    template<bool AllowComments_/*,
         bool AllowTrailing_, bool AllowBadUTF8_*/>
     const char* resume_value(const char* p,
-        std::integral_constant<bool, StackEmpty_> stack_empty,
         std::integral_constant<bool, AllowComments_> allow_comments,
         /*std::integral_constant<bool, AllowTrailing_>*/ bool allow_trailing,
         /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8);
