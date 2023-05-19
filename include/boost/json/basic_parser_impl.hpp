@@ -641,19 +641,17 @@ loop:
             }
         }
     }
-    return resume_value(p, stack_empty, allow_comments, allow_trailing, allow_bad_utf8);
+    return resume_value(p, allow_comments, allow_trailing, allow_bad_utf8);
 }
 
 template<class Handler>
 template<
-    bool StackEmpty_,
     bool AllowComments_/*,
     bool AllowTrailing_,
     bool AllowBadUTF8_*/>
 const char*
 basic_parser<Handler>::
 resume_value(const char* p,
-    std::integral_constant<bool, StackEmpty_> stack_empty,
     std::integral_constant<bool, AllowComments_> allow_comments,
     /*std::integral_constant<bool, AllowTrailing_>*/ bool allow_trailing,
     /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8)
@@ -665,18 +663,18 @@ resume_value(const char* p,
     default: BOOST_JSON_UNREACHABLE();
     case state::nul1: case state::nul2:
     case state::nul3:
-        return parse_null(p, stack_empty);
+        return parse_null(p, std::false_type());
 
     case state::tru1: case state::tru2:
     case state::tru3:
-        return parse_true(p, stack_empty);
+        return parse_true(p, std::false_type());
 
     case state::fal1: case state::fal2:
     case state::fal3: case state::fal4:
-        return parse_false(p, stack_empty);
+        return parse_false(p, std::false_type());
 
     case state::str1:
-        return parse_unescaped(p, stack_empty, std::false_type(), allow_bad_utf8);
+        return parse_unescaped(p, std::false_type(), std::false_type(), allow_bad_utf8);
 
     case state::str2: case state::str3:
     case state::str4: case state::str5:
@@ -685,12 +683,12 @@ resume_value(const char* p,
     case state::sur1: case state::sur2:
     case state::sur3: case state::sur4:
     case state::sur5: case state::sur6:
-        return parse_escaped(p, 0, stack_empty, std::false_type(), allow_bad_utf8);
+        return parse_escaped(p, 0, std::false_type(), std::false_type(), allow_bad_utf8);
 
     case state::arr1: case state::arr2:
     case state::arr3: case state::arr4:
     case state::arr5: case state::arr6:
-        return parse_array(p, stack_empty, allow_comments, allow_trailing, allow_bad_utf8);
+        return parse_array(p, std::false_type(), allow_comments, allow_trailing, allow_bad_utf8);
 
     case state::obj1: case state::obj2:
     case state::obj3: case state::obj4:
@@ -698,7 +696,7 @@ resume_value(const char* p,
     case state::obj7: case state::obj8:
     case state::obj9: case state::obj10:
     case state::obj11:
-        return parse_object(p, stack_empty, allow_comments, allow_trailing, allow_bad_utf8);
+        return parse_object(p, std::false_type(), allow_comments, allow_trailing, allow_bad_utf8);
 
     case state::num1: case state::num2:
     case state::num3: case state::num4:
@@ -706,11 +704,11 @@ resume_value(const char* p,
     case state::num7: case state::num8:
     case state::exp1: case state::exp2:
     case state::exp3:
-        return parse_number(p, stack_empty, std::integral_constant<char, 0>());
+        return parse_number(p, std::false_type(), std::integral_constant<char, 0>());
 
     case state::com1: case state::com2:
     case state::com3: case state::com4:
-        return parse_comment(p, stack_empty, std::false_type());
+        return parse_comment(p, std::false_type(), std::false_type());
 
     // KRYSTIAN NOTE: these are special cases
     case state::val1:
@@ -726,7 +724,7 @@ resume_value(const char* p,
     case state::val2:
     {
         st_.pop(st);
-        p = parse_comment(p, stack_empty, std::false_type());
+        p = parse_comment(p, std::false_type(), std::false_type());
         if(BOOST_JSON_UNLIKELY(p == sentinel()))
             return maybe_suspend(p, state::val2);
         BOOST_ASSERT(st_.empty());
