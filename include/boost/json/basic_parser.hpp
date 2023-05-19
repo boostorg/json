@@ -20,17 +20,6 @@
 #include <boost/json/detail/stream.hpp>
 #include <boost/json/detail/utf8.hpp>
 
-/*  VFALCO NOTE
-
-    This file is in the detail namespace because it
-    is not allowed to be included directly by users,
-    who should be including <boost/json/basic_parser.hpp>
-    instead, which provides the member function definitions.
-
-    The source code is arranged this way to keep compile
-    times down.
-*/
-
 namespace boost {
 namespace json {
 
