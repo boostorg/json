@@ -580,6 +580,9 @@ public:
         TEST_GOOD("10000000000000000000000000");
 
         TEST_GOOD("0.900719925474099178             ");
+        TEST_GOOD("0.0e2147483648");
+        TEST_GOOD("10.0e2147483648");
+        TEST_GOOD("0.01e-2147483648");
 
         // non-significant digits
         TEST_GOOD("1000000000000000000000000        ");
@@ -616,7 +619,6 @@ public:
         TEST_BAD("1000000000000000000000000.e       ");
         TEST_BAD("0.");
         TEST_BAD("0.0e+");
-        TEST_BAD("0.0e2147483648");
     }
 
     void

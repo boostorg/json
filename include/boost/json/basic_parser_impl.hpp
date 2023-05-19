@@ -2650,21 +2650,18 @@ do_exp3:
         else
         {
             char const c = *cs;
-            if(BOOST_JSON_LIKELY(
-                c >= '0' && c <= '9'))
+            if(BOOST_JSON_LIKELY( c >= '0' && c <= '9' ))
             {
-                if(BOOST_JSON_UNLIKELY
+                if(BOOST_JSON_UNLIKELY(
                 //              2147483647 INT_MAX
-                    (num.exp  > 214748364 || (
-                        num.exp == 214748364 && c > '7')))
-                {
-                    BOOST_STATIC_CONSTEXPR source_location loc
-                        = BOOST_CURRENT_LOCATION;
-                    return fail(cs.begin(), error::exponent_overflow, &loc);
-                }
-                ++cs;
-                BOOST_IF_CONSTEXPR( !no_parsing )
+                    num.exp  >  214748364 ||
+                    (num.exp == 214748364 && c > '7')
+                ))
+                    num.exp = INT_MAX;
+                else BOOST_IF_CONSTEXPR( !no_parsing )
                     num.exp = 10 * num.exp + ( c - '0' );
+
+                ++cs;
                 continue;
             }
         }
@@ -2673,19 +2670,14 @@ do_exp3:
         {
             if (BOOST_JSON_UNLIKELY( num.bias  < (INT_MIN + num.exp) ))
             {
-                BOOST_STATIC_CONSTEXPR source_location loc
-                    = BOOST_CURRENT_LOCATION;
-                return fail(cs.begin(), error::exponent_overflow, &loc);
+                num.bias = 0;
+                num.exp = INT_MAX;
             }
         }
-        else
+        else if (BOOST_JSON_UNLIKELY( num.bias > (INT_MAX - num.exp) ))
         {
-            if (BOOST_JSON_UNLIKELY( num.bias > (INT_MAX - num.exp) ))
-            {
-                BOOST_STATIC_CONSTEXPR source_location loc
-                    = BOOST_CURRENT_LOCATION;
-                return fail(cs.begin(), error::exponent_overflow, &loc);
-            }
+            num.bias = 0;
+            num.exp = INT_MAX;
         }
         goto finish_dub;
     }
