@@ -714,10 +714,6 @@ resume_value(const char* p,
     case state::exp3:
         return parse_number(p, stack_empty, std::integral_constant<char, 0>());
 
-    case state::com1: case state::com2:
-    case state::com3: case state::com4:
-        return parse_comment(p, stack_empty, std::false_type());
-
     // KRYSTIAN NOTE: these are special cases
     case state::val1:
     {
