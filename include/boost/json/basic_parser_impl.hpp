@@ -230,7 +230,6 @@ sentinel()
     // the given input buffer borders on this object
     return reinterpret_cast<
         const char*>(this) + 1;
-    return nullptr;
 }
 
 template<class Handler>
