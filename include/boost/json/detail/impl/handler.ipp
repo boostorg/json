@@ -52,10 +52,10 @@ bool
 handler::
 on_object_end(
     std::size_t n,
-    error_code&)
+    error_code& ec)
 {
-    st.push_object(n);
-    return true;
+    ec = st.push_object(n, ignore_duplicate_keys);
+    return !ec.failed();
 }
 
 bool
@@ -86,7 +86,7 @@ on_key_part(
     st.push_chars(s);
     return true;
 }
-        
+
 bool
 handler::
 on_key(
@@ -97,12 +97,12 @@ on_key(
     st.push_key(s);
     return true;
 }
-        
+
 bool
 handler::
 on_string_part(
     string_view s,
-    std::size_t, 
+    std::size_t,
     error_code&)
 {
     st.push_chars(s);
@@ -113,7 +113,7 @@ bool
 handler::
 on_string(
     string_view s,
-    std::size_t, 
+    std::size_t,
     error_code&)
 {
     st.push_string(s);
@@ -139,7 +139,7 @@ on_int64(
     st.push_int64(i);
     return true;
 }
-        
+
 bool
 handler::
 on_uint64(
@@ -161,7 +161,7 @@ on_double(
     st.push_double(d);
     return true;
 }
-        
+
 bool
 handler::
 on_bool(
@@ -188,7 +188,7 @@ on_comment_part(
 {
     return true;
 }
-        
+
 bool
 handler::
 on_comment(

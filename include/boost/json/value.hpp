@@ -83,8 +83,8 @@ class value
 
     explicit
     value(
-        detail::unchecked_object&& uo)
-        : obj_(std::move(uo))
+        detail::unchecked_object& uo)
+        : obj_(uo)
     {
     }
 

@@ -13,6 +13,7 @@
 #include <boost/json/detail/config.hpp>
 #include <boost/json/error.hpp>
 #include <boost/json/storage_ptr.hpp>
+#include <boost/json/system_error.hpp>
 #include <boost/json/value.hpp>
 #include <stddef.h>
 
@@ -356,8 +357,8 @@ public:
         top of the stack to form the array.
     */
     BOOST_JSON_DECL
-    void
-    push_object(std::size_t n);
+    error_code
+    push_object(std::size_t n, bool ignore_duplicates = true);
 
     /** Push part of a key or string onto the stack.
 

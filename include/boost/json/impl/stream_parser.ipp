@@ -33,20 +33,19 @@ stream_parser(
         size)
 {
     reset();
+    p_.handler().ignore_duplicate_keys = opt.ignore_duplicate_keys;
 }
 
 stream_parser::
 stream_parser(
     storage_ptr sp,
     parse_options const& opt) noexcept
-    : p_(
-        opt,
+    : stream_parser(
         std::move(sp),
-        nullptr,
+        opt,
+        static_cast<unsigned char*>(nullptr),
         0)
-{
-    reset();
-}
+{ }
 
 void
 stream_parser::

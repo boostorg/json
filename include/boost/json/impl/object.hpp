@@ -515,17 +515,41 @@ namespace detail {
 unchecked_object::
 ~unchecked_object()
 {
-    if(! data_)
-        return;
     if(sp_.is_not_shared_and_deallocate_is_trivial())
         return;
-    value* p = data_;
-    while(size_--)
+
+    for( value* p = data_; p != end_; p += 2 )
     {
         p[0].~value();
         p[1].~value();
-        p += 2;
     }
+}
+
+unchecked_object::
+unchecked_object(
+    value* data,
+    std::size_t size,
+    storage_ptr const& sp,
+    bool ignore_duplicates) noexcept
+    : data_(data)
+    , end_(data + 2 * size)
+    , sp_(sp)
+    , ignore_duplicates_(ignore_duplicates)
+{
+}
+
+std::size_t
+unchecked_object::
+size() const noexcept
+{
+    return std::size_t(end_ - data_) / 2;
+}
+
+void
+unchecked_object::
+pop_front() noexcept
+{
+    data_ += 2;
 }
 
 } // detail

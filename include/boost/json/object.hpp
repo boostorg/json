@@ -91,7 +91,7 @@ class object
 
     BOOST_JSON_DECL
     explicit
-    object(detail::unchecked_object&& uo);
+    object(detail::unchecked_object& uo);
 
 public:
     /** The type of _Allocator_ returned by @ref get_allocator
@@ -1649,6 +1649,11 @@ private:
     reindex_relocate(
         key_value_pair* src,
         key_value_pair* dst) noexcept;
+
+    template< bool SmallTable, bool IgnoreDuplicates >
+    friend
+    void
+    detail::init_from_unchecked( object& obj, detail::unchecked_object& uo );
 };
 
 } // namespace json

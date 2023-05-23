@@ -87,6 +87,20 @@ struct parse_options
             @ref stream_parser.
     */
     bool allow_invalid_utf8 = false;
+
+
+    /** Unique keys restriction setting
+
+        Forbid duplicate keys to appear in objects.
+
+        @note Since @ref basic_parser doesn't store parsed elements directly,
+        this option has to be taken account by implementers of handlers.
+
+        @see
+            @ref basic_parser,
+            @ref stream_parser.
+    */
+    bool ignore_duplicate_keys = true;
 };
 
 } // namespace json

@@ -67,6 +67,9 @@ enum class error
     /// error occured when trying to read input
     input_error,
 
+    /// duplicate object key
+    duplicate_key,
+
     //
     // generic errors
     //

@@ -36,6 +36,7 @@ struct handler
         max_string_size = string::max_size();
 
     value_stack st;
+    bool ignore_duplicate_keys = true;
 
     template<class... Args>
     explicit
