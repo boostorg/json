@@ -12,11 +12,14 @@
 #define BOOST_JSON_DETAIL_IMPL_FORMAT_IPP
 
 #include <boost/json/detail/ryu/ryu.hpp>
+
 #include <cstring>
 
 namespace boost {
 namespace json {
 namespace detail {
+
+namespace {
 
 /*  Reference work:
 
@@ -97,25 +100,62 @@ format_uint64(
     return n;
 }
 
-unsigned
-format_int64(
-    char* dest, int64_t i) noexcept
+} // namespace
+
+//------------------------------------------------
+
+string_view
+write_int64(
+    char* temp,
+    std::size_t size,
+    std::int64_t v) noexcept
 {
+    BOOST_ASSERT( size >= max_number_chars );
+    (void)size;
+
     std::uint64_t ui = static_cast<
-        std::uint64_t>(i);
-    if(i >= 0)
-        return format_uint64(dest, ui);
-    *dest++ = '-';
-    ui = ~ui + 1;
-    return 1 + format_uint64(dest, ui);
+        std::uint64_t>(v);
+    unsigned n;
+    if(v >= 0)
+    {
+        n = format_uint64(temp, ui);
+    }
+    else
+    {
+        *temp = '-';
+        ui = ~ui + 1;
+        n = 1 + format_uint64(temp + 1, ui);
+    }
+
+    return { temp, n };
 }
 
-unsigned
-format_double(
-    char* dest, double d) noexcept
+string_view
+write_uint64(
+    char* temp,
+    std::size_t size,
+    std::uint64_t v) noexcept
 {
-    return static_cast<int>(
-        ryu::d2s_buffered_n(d, dest));
+    BOOST_ASSERT( size >= max_number_chars );
+    (void)size;
+
+    auto const n =
+        format_uint64(temp, v);
+    return { temp, n };
+}
+
+string_view
+write_double(
+    char* temp,
+    std::size_t size,
+    double v) noexcept
+{
+    BOOST_ASSERT( size >= max_number_chars );
+    (void)size;
+
+    unsigned const n =
+        ryu::d2s_buffered_n(v, temp);
+    return { temp, n };
 }
 
 } // detail

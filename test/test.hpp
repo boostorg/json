@@ -910,30 +910,24 @@ to_string_test(
     case kind::int64:
     {
         char buf[detail::max_number_chars];
-        auto const n =
-            detail::format_int64(
-                buf, jv.as_int64());
-        dest.append(string_view(buf).substr(0, n));
+        dest.append(detail::write_int64(
+            buf, sizeof(buf), jv.as_int64()));
         break;
     }
 
     case kind::uint64:
     {
         char buf[detail::max_number_chars];
-        auto const n =
-            detail::format_uint64(
-                buf, jv.as_uint64());
-        dest.append(string_view(buf).substr(0, n));
+        dest.append(detail::write_uint64(
+            buf, sizeof(buf), jv.as_uint64()));
         break;
     }
 
     case kind::double_:
     {
         char buf[detail::max_number_chars];
-        auto const n =
-            detail::format_double(
-                buf, jv.as_double());
-        dest.append(string_view(buf).substr(0, n));
+        dest.append(detail::write_double(
+            buf, sizeof(buf), jv.as_double()));
         break;
     }
 
