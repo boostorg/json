@@ -759,6 +759,43 @@ parse_literal(const char* p,
     BOOST_IF_CONSTEXPR( literal != detail::resume_literal )
     {
         BOOST_ASSERT( literal >= 0 );
+        if(BOOST_JSON_LIKELY( cs.remain() >= literal_sizes[literal] ))
+        {
+            int const cmp = std::memcmp(
+                cs.begin(), literals[literal], literal_sizes[literal] );
+            if( cmp != 0 )
+            {
+                BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
+                return fail(cs.begin(), error::syntax, &loc);
+            }
+
+            BOOST_IF_CONSTEXPR( literal == detail::null_literal )
+            {
+                if(BOOST_JSON_UNLIKELY(
+                    ! h_.on_null(ec_)))
+                    return fail(cs.begin());
+            }
+            else BOOST_IF_CONSTEXPR( literal == detail::true_literal )
+            {
+                if(BOOST_JSON_UNLIKELY(
+                    ! h_.on_bool(true, ec_)))
+                    return fail(cs.begin());
+            }
+            else BOOST_IF_CONSTEXPR( literal == detail::false_literal )
+            {
+                if(BOOST_JSON_UNLIKELY(
+                    ! h_.on_bool(false, ec_)))
+                    return fail(cs.begin());
+            }
+            else
+            {
+                BOOST_JSON_UNREACHABLE();
+            }
+
+            cs += literal_sizes[literal];
+            return cs.begin();
+        }
+
         offset = 0;
         cur_lit = literal;
     }
