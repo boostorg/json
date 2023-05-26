@@ -24,59 +24,59 @@ handler(Args&&... args)
 {
 }
 
-bool
+std::true_type
 handler::
 on_document_begin(
-    error_code&)
+    error_code&) const
 {
-    return true;
+    return {};
 }
 
-bool
+std::true_type
 handler::
 on_document_end(
-    error_code&)
+    error_code&) const
 {
-    return true;
+    return {};
 }
 
-bool
+std::true_type
 handler::
 on_object_begin(
-    error_code&)
+    error_code&) const
 {
-    return true;
+    return {};
 }
 
-bool
+std::true_type
 handler::
 on_object_end(
     std::size_t n,
     error_code&)
 {
     st.push_object(n);
-    return true;
+    return {};
 }
 
-bool
+std::true_type
 handler::
 on_array_begin(
-    error_code&)
+    error_code&) const
 {
-    return true;
+    return {};
 }
 
-bool
+std::true_type
 handler::
 on_array_end(
     std::size_t n,
     error_code&)
 {
     st.push_array(n);
-    return true;
+    return {};
 }
 
-bool
+std::true_type
 handler::
 on_key_part(
     string_view s,
@@ -84,10 +84,10 @@ on_key_part(
     error_code&)
 {
     st.push_chars(s);
-    return true;
+    return {};
 }
-        
-bool
+
+std::true_type
 handler::
 on_key(
     string_view s,
@@ -95,41 +95,41 @@ on_key(
     error_code&)
 {
     st.push_key(s);
-    return true;
+    return {};
 }
-        
-bool
+
+std::true_type
 handler::
 on_string_part(
     string_view s,
-    std::size_t, 
+    std::size_t,
     error_code&)
 {
     st.push_chars(s);
-    return true;
+    return {};
 }
 
-bool
+std::true_type
 handler::
 on_string(
     string_view s,
-    std::size_t, 
+    std::size_t,
     error_code&)
 {
     st.push_string(s);
-    return true;
+    return {};
 }
 
-bool
+std::true_type
 handler::
 on_number_part(
     string_view,
-    error_code&)
+    error_code&) const
 {
-    return true;
+    return {};
 }
 
-bool
+std::true_type
 handler::
 on_int64(
     std::int64_t i,
@@ -137,10 +137,10 @@ on_int64(
     error_code&)
 {
     st.push_int64(i);
-    return true;
+    return {};
 }
-        
-bool
+
+std::true_type
 handler::
 on_uint64(
     std::uint64_t u,
@@ -148,10 +148,10 @@ on_uint64(
     error_code&)
 {
     st.push_uint64(u);
-    return true;
+    return {};
 }
 
-bool
+std::true_type
 handler::
 on_double(
     double d,
@@ -159,42 +159,42 @@ on_double(
     error_code&)
 {
     st.push_double(d);
-    return true;
+    return {};
 }
-        
-bool
+
+std::true_type
 handler::
 on_bool(
     bool b,
     error_code&)
 {
     st.push_bool(b);
-    return true;
+    return {};
 }
 
-bool
+std::true_type
 handler::
 on_null(error_code&)
 {
     st.push_null();
-    return true;
+    return {};
 }
 
-bool
+std::true_type
 handler::
 on_comment_part(
     string_view,
-    error_code&)
+    error_code&) const
 {
-    return true;
+    return {};
 }
-        
-bool
+
+std::true_type
 handler::
 on_comment(
-    string_view, error_code&)
+    string_view, error_code&) const
 {
-    return true;
+    return {};
 }
 
 } // detail

@@ -41,24 +41,24 @@ struct handler
     explicit
     handler(Args&&... args);
 
-    inline bool on_document_begin(error_code& ec);
-    inline bool on_document_end(error_code& ec);
-    inline bool on_object_begin(error_code& ec);
-    inline bool on_object_end(std::size_t n, error_code& ec);
-    inline bool on_array_begin(error_code& ec);
-    inline bool on_array_end(std::size_t n, error_code& ec);
-    inline bool on_key_part(string_view s, std::size_t n, error_code& ec);
-    inline bool on_key(string_view s, std::size_t n, error_code& ec);
-    inline bool on_string_part(string_view s, std::size_t n, error_code& ec);
-    inline bool on_string(string_view s, std::size_t n, error_code& ec);
-    inline bool on_number_part(string_view, error_code&);
-    inline bool on_int64(std::int64_t i, string_view, error_code& ec);
-    inline bool on_uint64(std::uint64_t u, string_view, error_code& ec);
-    inline bool on_double(double d, string_view, error_code& ec);
-    inline bool on_bool(bool b, error_code& ec);
-    inline bool on_null(error_code& ec);
-    inline bool on_comment_part(string_view, error_code&);
-    inline bool on_comment(string_view, error_code&);
+    inline std::true_type on_document_begin(error_code&) const;
+    inline std::true_type on_document_end(error_code&) const;
+    inline std::true_type on_object_begin(error_code&) const;
+    inline std::true_type on_object_end(std::size_t n, error_code& ec);
+    inline std::true_type on_array_begin(error_code&) const;
+    inline std::true_type on_array_end(std::size_t n, error_code& ec);
+    inline std::true_type on_key_part(string_view s, std::size_t n, error_code& ec);
+    inline std::true_type on_key(string_view s, std::size_t n, error_code& ec);
+    inline std::true_type on_string_part(string_view s, std::size_t n, error_code& ec);
+    inline std::true_type on_string(string_view s, std::size_t n, error_code& ec);
+    inline std::true_type on_number_part(string_view, error_code&) const;
+    inline std::true_type on_int64(std::int64_t i, string_view, error_code& ec);
+    inline std::true_type on_uint64(std::uint64_t u, string_view, error_code& ec);
+    inline std::true_type on_double(double d, string_view, error_code& ec);
+    inline std::true_type on_bool(bool b, error_code& ec);
+    inline std::true_type on_null(error_code& ec);
+    inline std::true_type on_comment_part(string_view, error_code&) const;
+    inline std::true_type on_comment(string_view, error_code&) const;
 };
 
 } // detail
