@@ -206,7 +206,10 @@ public:
             {
                 if(! BOOST_TEST(jv.is_double()))
                     return;
-                BOOST_TEST(jv.get_double() == v);
+                if( std::isnan(v) )
+                    BOOST_TEST( std::isnan( jv.get_double() ) );
+                else
+                    BOOST_TEST( jv.get_double() == v );
             },
             po);
     }
@@ -545,11 +548,34 @@ public:
     }
 
     void
+    testSpecialNumbers()
+    {
+        parse_options with_special_numbers;
+        with_special_numbers.allow_infinity_and_nan = true;
+
+        grind_double(
+            "Infinity",
+            std::numeric_limits<double>::infinity(),
+            with_special_numbers);
+
+        grind_double(
+            "-Infinity",
+            -std::numeric_limits<double>::infinity(),
+            with_special_numbers);
+
+        grind_double(
+            "NaN",
+            std::numeric_limits<double>::quiet_NaN(),
+            with_special_numbers);
+    }
+
+    void
     run()
     {
         testDouble();
         testWithinULP();
         testExtraPrecision();
+        testSpecialNumbers();
     }
 };
 

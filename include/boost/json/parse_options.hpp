@@ -89,6 +89,18 @@ struct parse_options
     */
     bool allow_invalid_utf8 = false;
 
+    /** Non-standard extension option
+
+        Allow `Infinity`, `-Infinity`, and `NaN` JSON literals. These values
+        are produced by some popular JSON implementations for positive
+        infinity, negative infinity and NaN special numbers respectively.
+
+        @see
+            @ref basic_parser,
+            @ref stream_parser.
+    */
+    bool allow_infinity_and_nan = false;
+
     /** Set JSON parse options on input stream.
 
         The function stores parse options in the private storage of the stream. If
@@ -114,7 +126,6 @@ struct parse_options
     std::istream&
     operator>>( std::istream& is, parse_options const& opts );
 };
-
 
 } // namespace json
 } // namespace boost

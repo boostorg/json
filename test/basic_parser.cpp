@@ -11,6 +11,9 @@
 // Test that header file is self-contained.
 #include <boost/json/basic_parser_impl.hpp>
 
+#include <boost/mp11/algorithm.hpp>
+#include <boost/mp11/bind.hpp>
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -21,6 +24,30 @@
 
 namespace boost {
 namespace json {
+namespace {
+
+template <std::size_t N, std::size_t I>
+struct to_bits
+{
+    using type = mp11::mp_push_back<
+        typename to_bits<N-1, I/2>::type, mp11::mp_bool<I % 2> >;
+};
+
+template <std::size_t I>
+struct to_bits<0, I>
+{
+    using type = mp11::mp_list<>;
+};
+
+template <class N, class I>
+using to_bits_t = typename to_bits<N::value, I::value>::type;
+
+template< std::size_t N >
+using enumerate_bit_vectors = mp11::mp_transform_q<
+    mp11::mp_bind_front< to_bits_t, mp11::mp_int<N> >,
+    mp11::mp_iota_c< (1 << N) - 1 > >;
+
+} // namespace
 
 BOOST_STATIC_ASSERT( std::is_nothrow_destructible<basic_parser<int>>::value );
 
@@ -122,14 +149,40 @@ parse_options
 make_options(
     bool comments,
     bool commas,
-    bool utf8)
+    bool utf8,
+    bool allow_special_numbers)
 {
     parse_options opt;
     opt.allow_comments = comments;
     opt.allow_trailing_commas = commas;
     opt.allow_invalid_utf8 = utf8;
+    opt.allow_infinity_and_nan = allow_special_numbers;
     return opt;
 }
+
+template< template< class... > class L, class... Bools >
+parse_options
+make_options( L<Bools...> )
+{
+    return make_options( Bools::value... );
+}
+
+class options_maker
+{
+private:
+    std::vector<parse_options>& result_;
+
+public:
+    options_maker(std::vector<parse_options>& result)
+        : result_(result)
+    {}
+
+    template< class Bools >
+    void operator()(Bools b) const
+    {
+        result_.push_back( make_options(b) );
+    }
+};
 
 } // (anon)
 
@@ -312,6 +365,85 @@ public:
         TEST_BAD ("FALSE");
         TEST_BAD ("False");
         TEST_BAD ("falser");
+    }
+
+    void
+    testSpecialNumbers()
+    {
+        parse_options with_special_numbers;
+        with_special_numbers.allow_infinity_and_nan = true;
+
+        TEST_GOOD_EXT("Infinity", with_special_numbers);
+        TEST_GOOD_EXT(" Infinity", with_special_numbers);
+        TEST_GOOD_EXT("Infinity ", with_special_numbers);
+        TEST_GOOD_EXT("\tInfinity", with_special_numbers);
+        TEST_GOOD_EXT("Infinity\t", with_special_numbers);
+        TEST_GOOD_EXT("\r\n\t Infinity\r\n\t ", with_special_numbers);
+
+        TEST_BAD_EXT("I       ", with_special_numbers);
+        TEST_BAD_EXT("In      ", with_special_numbers);
+        TEST_BAD_EXT("Inf     ", with_special_numbers);
+        TEST_BAD_EXT("Infi    ", with_special_numbers);
+        TEST_BAD_EXT("Infin   ", with_special_numbers);
+        TEST_BAD_EXT("Infini  ", with_special_numbers);
+        TEST_BAD_EXT("Infinit ", with_special_numbers);
+
+        TEST_BAD_EXT("I------- ", with_special_numbers);
+        TEST_BAD_EXT("In------ ", with_special_numbers);
+        TEST_BAD_EXT("Inf----- ", with_special_numbers);
+        TEST_BAD_EXT("Infi---- ", with_special_numbers);
+        TEST_BAD_EXT("Infin--- ", with_special_numbers);
+        TEST_BAD_EXT("Infini-- ", with_special_numbers);
+        TEST_BAD_EXT("Infinit- ", with_special_numbers);
+
+        TEST_BAD_EXT("INFINITY", with_special_numbers);
+        TEST_BAD_EXT("infinity", with_special_numbers);
+        TEST_BAD_EXT("Infinitys", with_special_numbers);
+
+        TEST_GOOD_EXT("-Infinity", with_special_numbers);
+        TEST_GOOD_EXT(" -Infinity", with_special_numbers);
+        TEST_GOOD_EXT("-Infinity ", with_special_numbers);
+        TEST_GOOD_EXT("\t-Infinity", with_special_numbers);
+        TEST_GOOD_EXT("-Infinity\t", with_special_numbers);
+        TEST_GOOD_EXT("\r\n\t -Infinity\r\n\t ", with_special_numbers);
+        // trigger fast path
+        TEST_GOOD_EXT("-Infinity                          ", with_special_numbers);
+
+        TEST_BAD_EXT("-I       ", with_special_numbers);
+        TEST_BAD_EXT("-In      ", with_special_numbers);
+        TEST_BAD_EXT("-Inf     ", with_special_numbers);
+        TEST_BAD_EXT("-Infi    ", with_special_numbers);
+        TEST_BAD_EXT("-Infin   ", with_special_numbers);
+        TEST_BAD_EXT("-Infini  ", with_special_numbers);
+        TEST_BAD_EXT("-Infinit ", with_special_numbers);
+
+        TEST_BAD_EXT("-I------- ", with_special_numbers);
+        TEST_BAD_EXT("-In------ ", with_special_numbers);
+        TEST_BAD_EXT("-Inf----- ", with_special_numbers);
+        TEST_BAD_EXT("-Infi---- ", with_special_numbers);
+        TEST_BAD_EXT("-Infin--- ", with_special_numbers);
+        TEST_BAD_EXT("-Infini-- ", with_special_numbers);
+        TEST_BAD_EXT("-Infinit- ", with_special_numbers);
+
+        TEST_BAD_EXT("-INFINITY", with_special_numbers);
+        TEST_BAD_EXT("-infinity", with_special_numbers);
+        TEST_BAD_EXT("-Infinitys", with_special_numbers);
+
+        TEST_GOOD_EXT("NaN", with_special_numbers);
+        TEST_GOOD_EXT(" NaN", with_special_numbers);
+        TEST_GOOD_EXT("NaN ", with_special_numbers);
+        TEST_GOOD_EXT("\tNaN", with_special_numbers);
+        TEST_GOOD_EXT("NaN\t", with_special_numbers);
+        TEST_GOOD_EXT("\r\n\t NaN\r\n\t ", with_special_numbers);
+
+        TEST_BAD_EXT("N  ", with_special_numbers);
+        TEST_BAD_EXT("Na ", with_special_numbers);
+
+        TEST_BAD_EXT("N-- ", with_special_numbers);
+        TEST_BAD_EXT("Na- ", with_special_numbers);
+
+        TEST_BAD_EXT("NAN", with_special_numbers);
+        TEST_BAD_EXT("nan", with_special_numbers);
     }
 
     void
@@ -688,17 +820,10 @@ public:
     void
     testParseVectors()
     {
-        std::vector<parse_options> all_configs =
-        {
-            make_options(false, false, true),
-            make_options(true, false, true),
-            make_options(false, true, true),
-            make_options(true, true, true),
-            make_options(false, false, false),
-            make_options(true, false, false),
-            make_options(false, true, false),
-            make_options(true, true, false)
-        };
+        using all_param_combinations = enumerate_bit_vectors<4>;
+        std::vector<parse_options> all_configs ;
+        mp11::mp_for_each<all_param_combinations>(
+            options_maker(all_configs));
         parse_vectors pv;
         for(auto const& v : pv)
         {
@@ -867,7 +992,7 @@ public:
 
     public:
         comment_parser()
-            : p_(make_options(true, false, false))
+            : p_(make_options(true, false, false, false))
         {
         }
 
@@ -1384,7 +1509,7 @@ public:
 
     public:
         literal_parser()
-            : p_(make_options(true, false, false))
+            : p_(make_options(true, false, false, false))
         {
         }
 
@@ -1585,6 +1710,7 @@ public:
     {
         testNull();
         testBoolean();
+        testSpecialNumbers();
         testString();
         testNumber();
         testArray();
