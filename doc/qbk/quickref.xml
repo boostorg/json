@@ -11,10 +11,10 @@
 -->
 
 <informaltable frame="all">
-  <tgroup cols="4">
-    <colspec colname="a"/><colspec colname="b"/><colspec colname="c"/><colspec colname="d"/>
+  <tgroup cols="5">
+    <colspec colname="a"/><colspec colname="b"/><colspec colname="c"/><colspec colname="d"/><colspec colname="e"/>
     <thead><row>
-      <entry valign="center" namest="a" nameend="d"><bridgehead renderas="sect2">JSON</bridgehead></entry>
+      <entry valign="center" namest="a" nameend="e"><bridgehead renderas="sect2">JSON</bridgehead></entry>
     </row></thead>
     <tbody><row>
       <entry valign="top">
@@ -53,6 +53,8 @@
           <member><link linkend="json.ref.boost__json__value_to">value_to</link></member>
           <member><link linkend="json.ref.boost__json__visit">visit</link></member>
         </simplelist>
+      </entry>
+      <entry valign="top">
         <bridgehead renderas="sect3">Type Traits</bridgehead>
         <simplelist type="vert" columns="1">
           <member><link linkend="json.ref.boost__json__has_value_from">has_value_from</link></member>
