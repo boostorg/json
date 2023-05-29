@@ -69,9 +69,11 @@ project boost/json
       <link>shared:<define>BOOST_JSON_DYN_LINK=1
       <link>static:<define>BOOST_JSON_STATIC_LINK=1
       <define>BOOST_JSON_SOURCE
+      <toolset>msvc:<define>_SCL_SECURE_NO_WARNINGS
     : usage-requirements
       <link>shared:<define>BOOST_JSON_DYN_LINK=1
       <link>static:<define>BOOST_JSON_STATIC_LINK=1
+      <toolset>msvc:<define>_SCL_SECURE_NO_WARNINGS
     : source-location ../src
     ;
 

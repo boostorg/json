@@ -56,7 +56,11 @@ local SOURCES =
     ryu/d2s_test.cpp
     ;
 
-project : requirements <include>.  ;
+project
+    : requirements
+      <include>.
+      <toolset>msvc:<define>_SCL_SECURE_NO_WARNINGS
+    ;
 
 for local f in $(SOURCES)
 {

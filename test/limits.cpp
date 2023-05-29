@@ -353,20 +353,29 @@ public:
     testNumber()
     {
         // very long floating point number
-        std::array<char, string::max_size()> buffer;
+        std::array<char, string::max_size() + 1> buffer;
         buffer.fill('0');
         buffer.data()[1] = '.';
 
-        error_code ec;
         parse_options precise;
         precise.precise_parsing = true;
+
+        stream_parser p( {}, precise );
+        error_code ec;
+        p.write( buffer.data(), 1, ec );
         BOOST_TEST_THROWS_WITH_LOCATION(
-            parse( {buffer.data(), buffer.size()}, ec, {}, precise ));
+            p.write( buffer.data() + 1, buffer.size() - 1, ec ));
         BOOST_TEST( !ec );
 
         // now we make the number one character shorter
-        auto jv = parse( {buffer.data(), buffer.size() - 1}, ec, {}, precise );
+        p.reset();
+        p.write( buffer.data(), 1, ec );
         BOOST_TEST( !ec );
+
+        p.write( buffer.data() + 1, buffer.size() - 2, ec );
+        BOOST_TEST( !ec );
+
+        auto jv = p.release();
         BOOST_TEST( jv.as_double() == 0 );
     }
 

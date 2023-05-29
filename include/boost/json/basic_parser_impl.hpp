@@ -15,6 +15,7 @@
 #include <boost/json/basic_parser.hpp>
 #include <boost/json/error.hpp>
 #include <boost/json/detail/buffer.hpp>
+#include <boost/json/detail/charconv/from_chars.hpp>
 #include <boost/json/detail/sse2.hpp>
 #include <cmath>
 #include <limits>
@@ -2677,16 +2678,20 @@ finish_dub:
     if( precise_parsing )
     {
         char const* data = begin;
+        std::size_t full_size = size;
          // if we previously suspended or if the current input ends with the
          // number, we need to copy the current part of the number to the
          // temporary buffer
-        if(BOOST_JSON_UNLIKELY( num_buf_.size() || !cs ))
+        if(BOOST_JSON_UNLIKELY( num_buf_.size() ))
         {
-            num_buf_.grow( size + 1 );
-            num_buf_.append( begin, size );
-            data = num_buf_.append( "\0", 1 );
+            data = num_buf_.append( begin, size );
+            full_size = num_buf_.size();
         }
-        d = std::strtod( data, nullptr );
+        auto const err = detail::charconv::from_chars(
+            data, data + full_size, d );
+        BOOST_ASSERT( err.ec != std::errc::invalid_argument );
+        BOOST_ASSERT( err.ptr == data + full_size );
+        (void)err;
     }
     else
         d = detail::dec_to_float(
