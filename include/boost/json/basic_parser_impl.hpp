@@ -199,6 +199,29 @@ enum json_literal
 
 //----------------------------------------------------------
 
+template< class Handler >
+template< bool StackEmpty_, char First_ >
+struct basic_parser<Handler>::
+parse_number_helper
+{
+    basic_parser* parser;
+    char const* p;
+
+    template< std::size_t N >
+    char const*
+    operator()( mp11::mp_size_t<N> ) const
+    {
+        return parser->parse_number(
+            p,
+            std::integral_constant<bool, StackEmpty_>(),
+            std::integral_constant<char, First_>(),
+            std::integral_constant<
+                number_precision, static_cast<number_precision>(N)>() );
+    }
+};
+
+//----------------------------------------------------------
+
 template<class Handler>
 void
 basic_parser<Handler>::
@@ -616,13 +639,19 @@ loop:
         switch(*p)
         {
         case '0':
-            return parse_number(p, std::true_type(), std::integral_constant<char, '0'>());
+            return mp11::mp_with_index<3>(
+                static_cast<unsigned char>(opt_.numbers),
+                parse_number_helper<true, '0'>{ this, p });
         case '-':
-            return parse_number(p, std::true_type(), std::integral_constant<char, '-'>());
+            return mp11::mp_with_index<3>(
+                static_cast<unsigned char>(opt_.numbers),
+                parse_number_helper<true, '-'>{ this, p });
         case '1': case '2': case '3':
         case '4': case '5': case '6':
         case '7': case '8': case '9':
-            return parse_number(p, std::true_type(), std::integral_constant<char, '+'>());
+            return mp11::mp_with_index<3>(
+                static_cast<unsigned char>(opt_.numbers),
+                parse_number_helper<true, '+'>{ this, p });
         case 'n':
             return parse_literal( p, mp11::mp_int<detail::null_literal>() );
         case 't':
@@ -735,7 +764,9 @@ resume_value(const char* p,
     case state::num7: case state::num8:
     case state::exp1: case state::exp2:
     case state::exp3:
-        return parse_number(p, std::false_type(), std::integral_constant<char, 0>());
+        return mp11::mp_with_index<3>(
+            static_cast<unsigned char>(opt_.numbers),
+            parse_number_helper<false, 0>{ this, p });
 
     // KRYSTIAN NOTE: these are special cases
     case state::val1:
@@ -1970,15 +2001,16 @@ do_arr6:
 //----------------------------------------------------------
 
 template<class Handler>
-template<bool StackEmpty_, char First_>
+template<bool StackEmpty_, char First_, number_precision Numbers_>
 const char*
 basic_parser<Handler>::
 parse_number(const char* p,
     std::integral_constant<bool, StackEmpty_> stack_empty,
-    std::integral_constant<char, First_> first)
+    std::integral_constant<char, First_> first,
+    std::integral_constant<number_precision, Numbers_> mode)
 {
-    bool const precise_parsing = opt_.numbers == number_precision::precise;
-    bool const no_parsing = opt_.numbers  == number_precision::none;
+    constexpr bool precise_parsing = mode == number_precision::precise;
+    constexpr bool no_parsing = mode == number_precision::none;
 
     // only one of these will be true if we are not resuming
     // if negative then !zero_first && !nonzero_first
@@ -2036,7 +2068,7 @@ parse_number(const char* p,
                     return fail(cs.begin(), error::syntax, &loc);
                 }
 
-                if( !no_parsing )
+                BOOST_IF_CONSTEXPR( !no_parsing )
                     num.mant = detail::parse_unsigned( 0, cs.begin(), n1 );
                 else
                     num.mant = 0;
@@ -2067,7 +2099,7 @@ parse_number(const char* p,
                         ++cs;
                         goto do_exp1;
                     }
-                    if( negative && !no_parsing )
+                    BOOST_IF_CONSTEXPR( negative && !no_parsing )
                         num.mant = ~num.mant + 1;
                     goto finish_signed;
                 }
@@ -2094,7 +2126,7 @@ parse_number(const char* p,
                 goto do_num7;
             }
 
-            if( !no_parsing )
+            BOOST_IF_CONSTEXPR( !no_parsing )
                 num.mant = detail::parse_unsigned( num.mant, cs.begin(), n2 );
 
             BOOST_ASSERT(num.bias == 0);
@@ -2191,7 +2223,7 @@ do_num1:
                 {begin, cs.used(begin)}, ec_)))
             return fail(cs.begin());
 
-        if( precise_parsing )
+        BOOST_IF_CONSTEXPR( precise_parsing )
             num_buf_.append( begin, cs.used(begin) );
         return maybe_suspend(
             cs.begin(), state::num1, num);
@@ -2216,7 +2248,7 @@ do_num2:
                             {begin, cs.used(begin)}, ec_)))
                         return fail(cs.begin());
 
-                    if( precise_parsing )
+                    BOOST_IF_CONSTEXPR( precise_parsing )
                         num_buf_.append( begin, cs.used(begin) );
                     return suspend(cs.begin(), state::num2, num);
                 }
@@ -2231,7 +2263,7 @@ do_num2:
                 if( num.mant  > 922337203685477580 || (
                     num.mant == 922337203685477580 && c > '8'))
                     break;
-                else if( !no_parsing )
+                BOOST_IF_CONSTEXPR( !no_parsing )
                     num.mant = 10 * num.mant + ( c - '0' );
                 continue;
             }
@@ -2251,7 +2283,7 @@ do_num2:
                             {begin, cs.used(begin)}, ec_)))
                         return fail(cs.begin());
 
-                    if( precise_parsing )
+                    BOOST_IF_CONSTEXPR( precise_parsing )
                         num_buf_.append( begin, cs.used(begin) );
                     return suspend(cs.begin(), state::num2, num);
                 }
@@ -2266,7 +2298,7 @@ do_num2:
                 if( num.mant  > 1844674407370955161 || (
                     num.mant == 1844674407370955161 && c > '5'))
                     break;
-                else if( !no_parsing )
+                BOOST_IF_CONSTEXPR( !no_parsing )
                     num.mant = 10 * num.mant + ( c - '0' );
             }
             else
@@ -2294,7 +2326,7 @@ do_num3:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                if( precise_parsing )
+                BOOST_IF_CONSTEXPR( precise_parsing )
                     num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num3, num);
             }
@@ -2340,7 +2372,7 @@ do_num4:
                     {begin, cs.used(begin)}, ec_)))
                 return fail(cs.begin());
 
-            if( precise_parsing )
+            BOOST_IF_CONSTEXPR( precise_parsing )
                 num_buf_.append( begin, cs.used(begin) );
             return maybe_suspend(
                 cs.begin(), state::num4, num);
@@ -2379,7 +2411,7 @@ do_num5:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                if( precise_parsing )
+                BOOST_IF_CONSTEXPR( precise_parsing )
                     num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num5, num);
             }
@@ -2417,7 +2449,7 @@ do_num6:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                if( precise_parsing )
+                BOOST_IF_CONSTEXPR( precise_parsing )
                     num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num6, num);
             }
@@ -2457,7 +2489,7 @@ do_num7:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                if( precise_parsing )
+                BOOST_IF_CONSTEXPR( precise_parsing )
                     num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num7, num);
             }
@@ -2495,7 +2527,7 @@ do_num8:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                if( precise_parsing )
+                BOOST_IF_CONSTEXPR( precise_parsing )
                     num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num8, num);
             }
@@ -2540,7 +2572,7 @@ do_exp1:
                 {begin, cs.used(begin)}, ec_)))
             return fail(cs.begin());
 
-        if( precise_parsing )
+        BOOST_IF_CONSTEXPR( precise_parsing )
             num_buf_.append( begin, cs.used(begin) );
         return maybe_suspend(
             cs.begin(), state::exp1, num);
@@ -2571,7 +2603,7 @@ do_exp2:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                if( precise_parsing )
+                BOOST_IF_CONSTEXPR( precise_parsing )
                     num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::exp2, num);
             }
@@ -2610,7 +2642,7 @@ do_exp3:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                if( precise_parsing )
+                BOOST_IF_CONSTEXPR( precise_parsing )
                     num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::exp3, num);
             }
@@ -2631,7 +2663,7 @@ do_exp3:
                     return fail(cs.begin(), error::exponent_overflow, &loc);
                 }
                 ++cs;
-                if( !no_parsing )
+                BOOST_IF_CONSTEXPR( !no_parsing )
                     num.exp = 10 * num.exp + ( c - '0' );
                 continue;
             }
@@ -2684,7 +2716,7 @@ finish_dub:
     double d;
     std::size_t const size = cs.used(begin);
     BOOST_ASSERT( !num_buf_.size() || precise_parsing );
-    if( precise_parsing )
+    BOOST_IF_CONSTEXPR( precise_parsing )
     {
         char const* data = begin;
         std::size_t full_size = size;
@@ -2702,7 +2734,7 @@ finish_dub:
         BOOST_ASSERT( err.ptr == data + full_size );
         (void)err;
     }
-    else if ( no_parsing )
+    else BOOST_IF_CONSTEXPR( no_parsing )
         d = 0;
     else
         d = detail::dec_to_float(

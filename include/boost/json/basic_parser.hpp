@@ -292,6 +292,9 @@ class basic_parser
         bool neg;
     };
 
+    template< bool StackEmpty_, char First_ >
+    struct parse_number_helper;
+
     // optimization: must come first
     Handler h_;
 
@@ -440,10 +443,11 @@ class basic_parser
         std::integral_constant<bool, IsKey_> is_key,
         /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8);
 
-    template<bool StackEmpty_, char First_>
+    template<bool StackEmpty_, char First_, number_precision Numbers_>
     const char* parse_number(const char* p,
         std::integral_constant<bool, StackEmpty_> stack_empty,
-        std::integral_constant<char, First_> first);
+        std::integral_constant<char, First_> first,
+        std::integral_constant<number_precision, Numbers_> numbers);
 
     template<bool StackEmpty_, bool IsKey_/*,
         bool AllowBadUTF8_*/>
