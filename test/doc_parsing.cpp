@@ -279,7 +279,7 @@ testPrecise()
 {
     //[doc_parsing_precise
     parse_options opt;
-    opt.precise_parsing = true;
+    opt.numbers = number_precision::precise;
     value jv = parse( "1002.9111801605201", storage_ptr(), opt );
     //]
     (void)jv;

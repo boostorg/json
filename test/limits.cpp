@@ -358,7 +358,7 @@ public:
         buffer.data()[1] = '.';
 
         parse_options precise;
-        precise.precise_parsing = true;
+        precise.numbers = number_precision::precise;
 
         stream_parser p( {}, precise );
         error_code ec;

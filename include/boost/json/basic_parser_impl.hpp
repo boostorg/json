@@ -1977,6 +1977,9 @@ parse_number(const char* p,
     std::integral_constant<bool, StackEmpty_> stack_empty,
     std::integral_constant<char, First_> first)
 {
+    bool const precise_parsing = opt_.numbers == number_precision::precise;
+    bool const no_parsing = opt_.numbers  == number_precision::none;
+
     // only one of these will be true if we are not resuming
     // if negative then !zero_first && !nonzero_first
     // if zero_first then !nonzero_first && !negative
@@ -1984,7 +1987,6 @@ parse_number(const char* p,
     bool const negative = first == '-';
     bool const zero_first = first == '0';
     bool const nonzero_first = first == '+';
-    bool const precise_parsing = opt_.precise_parsing;
     detail::const_stream_wrapper cs(p, end_);
     number num;
     const char* begin = cs.begin();
@@ -2034,7 +2036,10 @@ parse_number(const char* p,
                     return fail(cs.begin(), error::syntax, &loc);
                 }
 
-                num.mant = detail::parse_unsigned( 0, cs.begin(), n1 );
+                if( !no_parsing )
+                    num.mant = detail::parse_unsigned( 0, cs.begin(), n1 );
+                else
+                    num.mant = 0;
 
                 cs += n1;
 
@@ -2062,7 +2067,7 @@ parse_number(const char* p,
                         ++cs;
                         goto do_exp1;
                     }
-                    if(negative)
+                    if( negative && !no_parsing )
                         num.mant = ~num.mant + 1;
                     goto finish_signed;
                 }
@@ -2089,7 +2094,8 @@ parse_number(const char* p,
                 goto do_num7;
             }
 
-            num.mant = detail::parse_unsigned( num.mant, cs.begin(), n2 );
+            if( !no_parsing )
+                num.mant = detail::parse_unsigned( num.mant, cs.begin(), n2 );
 
             BOOST_ASSERT(num.bias == 0);
 
@@ -2225,7 +2231,8 @@ do_num2:
                 if( num.mant  > 922337203685477580 || (
                     num.mant == 922337203685477580 && c > '8'))
                     break;
-                num.mant = 10 * num.mant + ( c - '0' );
+                else if( !no_parsing )
+                    num.mant = 10 * num.mant + ( c - '0' );
                 continue;
             }
             goto do_num6; // [.eE]
@@ -2259,7 +2266,8 @@ do_num2:
                 if( num.mant  > 1844674407370955161 || (
                     num.mant == 1844674407370955161 && c > '5'))
                     break;
-                num.mant = 10 * num.mant + ( c - '0' );
+                else if( !no_parsing )
+                    num.mant = 10 * num.mant + ( c - '0' );
             }
             else
             {
@@ -2498,7 +2506,7 @@ do_num8:
             c >= '0' && c <= '9'))
         {
             ++cs;
-            if(BOOST_JSON_LIKELY(
+            if(!no_parsing && BOOST_JSON_LIKELY(
                 num.mant <= 9007199254740991)) // 2^53-1
             {
                 --num.bias;
@@ -2623,7 +2631,8 @@ do_exp3:
                     return fail(cs.begin(), error::exponent_overflow, &loc);
                 }
                 ++cs;
-                num.exp = 10 * num.exp + ( c - '0' );
+                if( !no_parsing )
+                    num.exp = 10 * num.exp + ( c - '0' );
                 continue;
             }
         }
@@ -2693,6 +2702,8 @@ finish_dub:
         BOOST_ASSERT( err.ptr == data + full_size );
         (void)err;
     }
+    else if ( no_parsing )
+        d = 0;
     else
         d = detail::dec_to_float(
             num.mant,

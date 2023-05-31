@@ -24,6 +24,8 @@
           <member><link linkend="json.ref.boost__json__basic_parser">basic_parser</link></member>
           <member><link linkend="json.ref.boost__json__key_value_pair">key_value_pair</link></member>
           <member><link linkend="json.ref.boost__json__monotonic_resource">monotonic_resource</link></member>
+          <member><link linkend="json.ref.boost__json__monotonic_resource">monotonic_resource</link></member>
+          <member><link linkend="json.ref.boost__json__number_precision">number_precision</link></member>
           <member><link linkend="json.ref.boost__json__object">object</link></member>
           <member><link linkend="json.ref.boost__json__parser">parser</link></member>
           <member><link linkend="json.ref.boost__json__parse_options">parse_options</link></member>

@@ -16,6 +16,28 @@
 namespace boost {
 namespace json {
 
+/** Enumeration of number parsing modes
+
+    These values are used to select the way to parse numbers.
+
+    @see
+        @ref parse_options,
+        @ref basic_parser,
+        @ref parser.
+*/
+enum class number_precision : unsigned char
+{
+    /// Fast, but potentially less precise mode.
+    imprecise,
+
+    /// Slower, but precise mode.
+    precise,
+
+    /// The fastest mode, that only validates encountered numbers without
+    /// parsing them.
+    none,
+};
+
 /** Parser options
 
     This structure is used for specifying
@@ -44,15 +66,20 @@ struct parse_options
     */
     std::size_t max_depth = 32;
 
-    /** Number prasing mode
+    /** Number pasing mode
 
-        This selects enables precise parsing at the cost of performance.
+        This selects the way to parse numbers. The default is to parse them
+        fast, but with possible slight imprecision for floating point numbers
+        with larger mantissas. Users can also choose to parse numbers slower
+        but with full precision. Or to not parse them at all, and only validate
+        numbers. The latter mode is useful for @ref basic_parser instantiations
+        that wish to treat numbers in a custom way.
 
         @see
             @ref basic_parser,
             @ref stream_parser.
     */
-    bool precise_parsing = false;
+    number_precision numbers = number_precision::imprecise;
 
     /** Non-standard extension option
 

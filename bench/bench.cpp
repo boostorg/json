@@ -668,12 +668,6 @@ static bool parse_option( char const * s )
 
     char opt = *s++;
 
-    if( opt == 'p' )
-    {
-        popts.precise_parsing = true;
-        return *s == 0;
-    }
-
     if( *s++ != ':' )
     {
         return false;
@@ -710,6 +704,22 @@ static bool parse_option( char const * s )
 
     case 'b':
         s_branch = s;
+        break;
+    case 'm':
+        switch( *s )
+        {
+        case 'i':
+            popts.numbers = number_precision::imprecise;
+            break;
+        case 'p':
+            popts.numbers = number_precision::precise;
+            break;
+        case 'n':
+            popts.numbers = number_precision::none;
+            break;
+        default:
+            return false;
+        }
         break;
     }
 
@@ -817,7 +827,11 @@ main(
 			"                                 (default all)\n"
             "          -n:<number>          Number of trials (default 6)\n"
             "          -b:<branch>          Branch label for boost implementations\n"
-            "          -p                   Enable precise parsing\n"
+            "          -m:(i|p|n)           Number parsing mode\n"
+            "                                 (i: imprecise)\n"
+            "                                 (p: precise)\n"
+            "                                 (n: none)\n"
+            "                                 (default imprecise)\n"
         ;
 
         return 4;

@@ -228,7 +228,8 @@ public:
         for (bool is_precise: {false, true})
         {
             parse_options po;
-            po.precise_parsing = is_precise;
+            po.numbers = is_precise ?
+                number_precision::precise : number_precision::imprecise;
             double const got = f(s, po);
             auto same = got == need;
             auto close = same ?
@@ -241,6 +242,12 @@ public:
                     << got << " != " << need << "\n";
             }
         }
+
+        // test that number_precision::none works
+        parse_options po;
+        po.numbers = number_precision::none;
+        double const got = f(s, po);
+        (void)got;
     }
 
     void
@@ -423,7 +430,7 @@ public:
             sprintf( buffer, "%llu.%llue%d", x1, x2, x3 );
 
             parse_options precise;
-            precise.precise_parsing = true;
+            precise.numbers = number_precision::precise;
             checkAccuracy( buffer, 2 );
             checkAccuracy( buffer, 0, precise );
         }
@@ -441,7 +448,7 @@ public:
     testExtraPrecision()
     {
         parse_options opts;
-        opts.precise_parsing = true;
+        opts.numbers = number_precision::precise;
         BOOST_TEST(
             parse("1002.9111801605201", {}, opts) == 1002.9111801605201 );
         BOOST_TEST(
