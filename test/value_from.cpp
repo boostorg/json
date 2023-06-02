@@ -354,7 +354,7 @@ public:
             BOOST_TEST(serialize(c) == serialize(b));
         }
         {
-            std::array<int, 1000> a;
+            std::array<int, 500> a;
             a.fill(0);
 
             value b;

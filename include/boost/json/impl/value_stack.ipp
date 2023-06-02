@@ -129,6 +129,7 @@ grow_one()
         reinterpret_cast<value*>(
             sp_->allocate(
                 new_cap * sizeof(value)));
+    std::size_t const cur_size = top_ - begin_;
     if(begin_)
     {
         std::memcpy(
@@ -140,7 +141,7 @@ grow_one()
                 capacity * sizeof(value));
     }
     // book-keeping
-    top_ = begin + (top_ - begin_);
+    top_ = begin + cur_size;
     end_ = begin + new_cap;
     begin_ = begin;
 }
@@ -170,6 +171,7 @@ grow(std::size_t nchars)
         reinterpret_cast<value*>(
             sp_->allocate(
                 new_cap * sizeof(value)));
+    std::size_t const cur_size = top_ - begin_;
     if(begin_)
     {
         std::size_t amount =
@@ -185,7 +187,7 @@ grow(std::size_t nchars)
                 capacity * sizeof(value));
     }
     // book-keeping
-    top_ = begin + (top_ - begin_);
+    top_ = begin + cur_size;
     end_ = begin + new_cap;
     begin_ = begin;
 }

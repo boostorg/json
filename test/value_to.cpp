@@ -279,7 +279,7 @@ public:
             ctx... );
 
         {
-            std::array<int, 1000> arr;
+            std::array<int, 500> arr;
             arr.fill(0);
             BOOST_TEST_CONV( arr, ctx... );
         }

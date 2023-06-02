@@ -290,6 +290,7 @@ const char*
 basic_parser<Handler>::
 fail(const char* p) noexcept
 {
+    BOOST_ASSERT( p != sentinel() );
     end_ = p;
     return sentinel();
 }
@@ -302,6 +303,7 @@ fail(
     error ev,
     source_location const* loc) noexcept
 {
+    BOOST_ASSERT( p != sentinel() );
     end_ = p;
     ec_.assign(ev, loc);
     return sentinel();
@@ -314,7 +316,8 @@ maybe_suspend(
     const char* p,
     state st)
 {
-    end_ = p;
+    if( p != sentinel() )
+        end_ = p;
     if(BOOST_JSON_LIKELY(more_))
     {
         // suspend
@@ -332,6 +335,7 @@ maybe_suspend(
     state st,
     std::size_t n)
 {
+    BOOST_ASSERT( p != sentinel() );
     end_ = p;
     if(BOOST_JSON_LIKELY(more_))
     {
@@ -351,6 +355,7 @@ maybe_suspend(
     state st,
     const number& num)
 {
+    BOOST_ASSERT( p != sentinel() );
     end_ = p;
     if(BOOST_JSON_LIKELY(more_))
     {
@@ -369,6 +374,7 @@ suspend(
     const char* p,
     state st)
 {
+    BOOST_ASSERT( p != sentinel() );
     end_ = p;
     // suspend
     reserve();
@@ -384,6 +390,7 @@ suspend(
     state st,
     const number& num)
 {
+    BOOST_ASSERT( p != sentinel() );
     end_ = p;
     // suspend
     num_ = num;
