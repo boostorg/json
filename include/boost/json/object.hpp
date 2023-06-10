@@ -1596,10 +1596,9 @@ private:
         InputIt last,
         std::forward_iterator_tag);
 
-    BOOST_JSON_DECL
+    template< class... Args >
     std::pair<iterator, bool>
-    insert_impl(
-        pilfered<key_value_pair> p);
+    emplace_impl(string_view key, Args&& ... args );
 
     BOOST_JSON_DECL
     key_value_pair*

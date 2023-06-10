@@ -683,23 +683,6 @@ if_contains(
 //
 //----------------------------------------------------------
 
-auto
-object::
-insert_impl(
-    pilfered<key_value_pair> p) ->
-        std::pair<iterator, bool>
-{
-    // caller is responsible
-    // for preventing aliasing.
-    reserve(size() + 1);
-    auto const result =
-        detail::find_in_object(*this, p.get().key());
-    if(result.first)
-        return { result.first, false };
-    return { insert_impl(
-        p, result.second), true };
-}
-
 key_value_pair*
 object::
 insert_impl(

@@ -1596,6 +1596,33 @@ public:
     }
 
     void
+    testStrongGurantee()
+    {
+        // We used to preemptively reserve storage even if we don't add a new
+        // element. That violated strong guarantee requirement. This test
+        // checks we don't do that any more.
+
+        object o;
+        o.reserve(100);
+        std::size_t const capacity = o.capacity();
+        for( std::size_t i = 0; i < o.capacity() ; ++i )
+            o.emplace( std::to_string(i), i );
+        BOOST_ASSERT( capacity == o.capacity() );
+
+        BOOST_TEST( !o.emplace("0", 0).second );
+        BOOST_TEST( capacity == o.capacity() );
+
+        BOOST_TEST( !o.insert_or_assign("0", 0).second );
+        BOOST_TEST( capacity == o.capacity() );
+
+        o["0"] = 0;
+        BOOST_TEST( capacity == o.capacity() );
+
+        o.insert( key_value_pair("0", nullptr) );
+        BOOST_TEST( capacity == o.capacity() );
+    }
+
+    void
     run()
     {
         testDtor();
@@ -1610,6 +1637,7 @@ public:
         testEquality();
         testAllocation();
         testHash();
+        testStrongGurantee();
     }
 };
 
