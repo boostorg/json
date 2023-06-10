@@ -452,8 +452,7 @@ insert(
         BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         detail::throw_system_error( error::object_too_large, &loc );
     }
-    reserve(n0 + init.size());
-    revert_insert r(*this);
+    revert_insert r( *this, n0 + init.size() );
     if(t_->is_small())
     {
         for(auto& iv : init)
@@ -708,10 +707,10 @@ insert_impl(
     return pv;
 }
 
-// rehash to at least `n` buckets
-void
+// allocate new table, copy elements there, and rehash them
+object::table*
 object::
-rehash(std::size_t new_capacity)
+reserve_impl(std::size_t new_capacity)
 {
     BOOST_ASSERT(
         new_capacity > t_->capacity);
@@ -726,8 +725,7 @@ rehash(std::size_t new_capacity)
             size() * sizeof(
                 key_value_pair));
     t->size = t_->size;
-    table::deallocate(t_, sp_);
-    t_ = t;
+    std::swap(t_, t);
 
     if(! t_->is_small())
     {
@@ -744,6 +742,8 @@ rehash(std::size_t new_capacity)
             head = i;
         }
     }
+
+    return t;
 }
 
 bool

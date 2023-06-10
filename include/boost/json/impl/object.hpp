@@ -154,6 +154,7 @@ public:
 class object::revert_insert
 {
     object* obj_;
+    table* t_ = nullptr;
     std::size_t size_;
 
     BOOST_JSON_DECL
@@ -163,24 +164,38 @@ class object::revert_insert
 public:
     explicit
     revert_insert(
-        object& obj) noexcept
+        object& obj,
+        std::size_t capacity)
         : obj_(&obj)
         , size_(obj_->size())
     {
+        if( capacity > obj_->capacity() )
+            t_ = obj_->reserve_impl(capacity);
     }
 
     ~revert_insert()
     {
         if(! obj_)
             return;
+
         destroy();
-        obj_->t_->size = static_cast<
-            index_t>(size_);
+        if( t_ )
+        {
+            table::deallocate( obj_->t_, obj_->sp_ );
+            obj_->t_ = t_;
+        }
+        else
+        {
+            obj_->t_->size = static_cast<index_t>(size_);
+        }
     }
 
     void
     commit() noexcept
     {
+        BOOST_ASSERT(obj_);
+        if( t_ )
+            table::deallocate( t_, obj_->sp_ );
         obj_ = nullptr;
     }
 };
@@ -327,6 +342,16 @@ capacity() const noexcept ->
     std::size_t
 {
     return t_->capacity;
+}
+
+void
+object::
+reserve(std::size_t new_capacity)
+{
+    if( new_capacity <= capacity() )
+        return;
+    table* const old_table = reserve_impl(new_capacity);
+    table::deallocate( old_table, sp_ );
 }
 
 //----------------------------------------------------------
@@ -491,8 +516,7 @@ insert(
         BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         detail::throw_system_error( error::object_too_large, &loc );
     }
-    reserve(n0 + n);
-    revert_insert r(*this);
+    revert_insert r( *this, n0 + n );
     while(first != last)
     {
         insert(*first);

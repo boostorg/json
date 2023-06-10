@@ -898,13 +898,9 @@ public:
 
         @throw system_error `new_capacity > max_size()`
     */
+    inline
     void
-    reserve(std::size_t new_capacity)
-    {
-        if(new_capacity <= capacity())
-            return;
-        rehash(new_capacity);
-    }
+    reserve(std::size_t new_capacity);
 
     //------------------------------------------------------
     //
@@ -982,9 +978,9 @@ public:
         are two keys within the range that are equal to each other, only the
         first will be inserted.
 
-        If the size necessary to accomodate elements from the range exceeds
-        @ref capacity(), a rehashing can occur. In that case all iterators and
-        references are invalidated. Otherwise, they are not affected.
+        Insertion may result in rehashing of the container. In that case all
+        iterators and references are invalidated. Otherwise, they are not
+        affected.
 
         @par Precondition
         `first` and `last` are not iterators into `*this`.
@@ -999,7 +995,8 @@ public:
         Linear in `std::distance(first, last)`.
 
         @par Exception Safety
-        Basic guarantee.
+        Strong guarantee for forward iterators, basic guarantee for input
+        iterators.
         Calls to `memory_resource::allocate` may throw.
 
         @param first An input iterator pointing to the first
@@ -1033,8 +1030,7 @@ public:
         are two keys within the initializer list that are equal to each other,
         only the first will be inserted.
 
-        If the size necessary to accomodate elements from the initializer list
-        exceeds @ref capacity(), a rehashing can occur. In that case all
+        Insertion may result in rehashing of the container. In that case all
         iterators and references are invalidated. Otherwise, they are not
         affected.
 
@@ -1607,8 +1603,8 @@ private:
         std::size_t hash);
 
     BOOST_JSON_DECL
-    void
-    rehash(std::size_t new_capacity);
+    table*
+    reserve_impl(std::size_t new_capacity);
 
     BOOST_JSON_DECL
     bool

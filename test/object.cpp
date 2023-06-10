@@ -28,6 +28,28 @@
 namespace boost {
 namespace json {
 
+namespace {
+
+struct throws_on_convert
+{
+    // this member only exists due to MSVC code analysis bug that marks lines
+    // in callers of the type's operator key_value_pair() as unreachable (due
+    // to exception thrown), even if that caller is a function template, and
+    // the line is reachable in other instantiations
+    bool should_throw = true;
+
+    throws_on_convert() = default;
+
+    operator key_value_pair()
+    {
+        if( should_throw )
+            throw std::invalid_argument("");
+        return key_value_pair( "", nullptr);
+    }
+};
+
+} // namespace
+
 BOOST_STATIC_ASSERT( std::is_nothrow_destructible<object>::value );
 BOOST_STATIC_ASSERT( std::is_nothrow_move_constructible<object>::value );
 
@@ -1619,6 +1641,19 @@ public:
         BOOST_TEST( capacity == o.capacity() );
 
         o.insert( key_value_pair("0", nullptr) );
+        BOOST_TEST( capacity == o.capacity() );
+
+        // Check that insertion rolls back reserve when cannot insert all
+        // elements.
+        std::array<throws_on_convert, 10> input;
+        try
+        {
+            o.insert( input.begin(), input.end() );
+        }
+        catch( ... )
+        {
+            // ignore
+        }
         BOOST_TEST( capacity == o.capacity() );
     }
 
