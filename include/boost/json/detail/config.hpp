@@ -183,16 +183,20 @@
 #endif
 
 #ifndef BOOST_JSON_UNREACHABLE
-# ifdef _MSC_VER
-#  define BOOST_JSON_UNREACHABLE() __assume(0)
-# elif defined(__GNUC__) || defined(__clang__)
-#  define BOOST_JSON_UNREACHABLE() __builtin_unreachable()
-# elif defined(__has_builtin)
-#  if __has_builtin(__builtin_unreachable)
-#   define BOOST_JSON_UNREACHABLE() __builtin_unreachable()
-#  endif
+# ifdef BOOST_JSON_DISABLE_UNREACHABLE
+#  define BOOST_JSON_UNREACHABLE()
 # else
-#  define BOOST_JSON_UNREACHABLE() static_cast<void>(0)
+#  ifdef _MSC_VER
+#   define BOOST_JSON_UNREACHABLE() __assume(0)
+#  elif defined(__GNUC__) || defined(__clang__)
+#   define BOOST_JSON_UNREACHABLE() __builtin_unreachable()
+#  elif defined(__has_builtin)
+#   if __has_builtin(__builtin_unreachable)
+#    define BOOST_JSON_UNREACHABLE() __builtin_unreachable()
+#   endif
+#  else
+#   define BOOST_JSON_UNREACHABLE() static_cast<void>(0)
+#  endif
 # endif
 #endif
 
