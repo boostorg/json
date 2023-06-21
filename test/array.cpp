@@ -11,6 +11,7 @@
 #include <boost/json/array.hpp>
 
 #include <boost/json/monotonic_resource.hpp>
+#include <boost/optional/optional.hpp>
 
 #include <forward_list>
 #include <list>
@@ -551,13 +552,13 @@ public:
         {
             {
                 array a({1, true, str_});
-                BOOST_TEST(a.if_contains(1)->is_bool());
-                BOOST_TEST(a.if_contains(3) == nullptr);
+                BOOST_TEST( a.if_contains(1)->is_bool() );
+                BOOST_TEST( !a.if_contains(3) );
             }
             {
                 array const a({1, true, str_});
-                BOOST_TEST(a.if_contains(1)->is_bool());
-                BOOST_TEST(a.if_contains(3) == nullptr);
+                BOOST_TEST( a.if_contains(1)->is_bool() );
+                BOOST_TEST( !a.if_contains(3) );
             }
         }
 

@@ -20,6 +20,7 @@
 #endif
 
 #include <boost/json.hpp>
+#include <boost/optional/optional.hpp>
 
 #include <algorithm>
 #include <cmath>
@@ -434,7 +435,7 @@ usingValues()
         //[snippet_value_7
 
         value jv( string_kind );
-        if( string* str = jv.if_string() )
+        if( auto str = jv.if_string() )
             *str = "Hello, world!";
 
         //]
@@ -444,8 +445,8 @@ usingValues()
 
         value jv( string_kind );
 
-        // The compiler's static analysis can see that
-        // a null pointer is never dereferenced.
+        // The compiler's static analysis can see that a result
+        // storing an error_code is never dereferenced.
         *jv.if_string() = "Hello, world!";
 
         //]
@@ -900,11 +901,11 @@ usingPointer()
     value* elem1 = [&]() -> value*
     {
         //[snippet_pointer_2
-        object* obj = jv.if_object();
+        auto obj = jv.if_object();
         if( !obj )
             return nullptr;
 
-        value* val = obj->if_contains("one");
+        auto val = obj->if_contains("one");
         if( !val )
             return nullptr;
 
@@ -916,11 +917,15 @@ usingPointer()
         if( !val )
             return nullptr;
 
-        array* arr = val->if_array();
+        auto arr = val->if_array();
         if( !arr )
             return nullptr;
 
-        return arr->if_contains(1);
+        val = arr->if_contains(1);
+        if( !val )
+            return nullptr;
+
+        return &*val;
         //]
     }();
 

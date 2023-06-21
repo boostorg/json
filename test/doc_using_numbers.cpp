@@ -67,8 +67,8 @@ std::uint64_t r1 = jv.as_uint64();
 // jv.kind() != kind::uint64; the behavior is undefined
 std::uint64_t r2 = jv.get_uint64();
 
-// if_double will always return nullptr, branch is not taken
-if(double* d = jv.if_double())
+// if_double will always return result with an error_code, branch is not taken
+if(auto d = jv.if_double())
     assert( false );
 
 //]

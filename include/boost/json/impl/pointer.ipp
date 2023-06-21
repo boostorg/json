@@ -368,7 +368,11 @@ value::find_pointer( string_view sv, error_code& ec ) const noexcept
             if( ec )
                 return nullptr;
 
-            return arr.if_contains(index);
+            auto const rjv = arr.if_contains(index);
+            if( rjv.has_error() )
+                return nullptr;
+
+            return &*rjv;
         },
         []( value const&, string_view)
         {

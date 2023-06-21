@@ -1951,10 +1951,11 @@ public:
 
     //------------------------------------------------------
 
-    /** Return an @ref array pointer if this is an array, else return `nullptr`
+    /** Return a @ref result with an @ref array reference if this is an array.
 
-        If `this->kind() == kind::array`, returns a pointer
-        to the underlying array. Otherwise, returns `nullptr`.
+        If `this->kind() == kind::array`, returns a @ref result storing a
+        reference to the underlying array. Otherwise, returns a @ref result
+        storing an @ref error_code.
 
         @par Example
         The return value is used in both a boolean context and
@@ -1969,46 +1970,39 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @return @ref result storing an @ref array reference
+        or an @ref error_code.
     */
-    array const*
+    /** @{ */
+    result<array const&>
     if_array() const noexcept
     {
-        if(kind() == json::kind::array)
-            return &arr_;
-        return nullptr;
+        if( is_array() )
+            return arr_;
+
+        error_code ec;
+        BOOST_JSON_FAIL(ec, error::not_array);
+        return ec;
     }
 
-    /** Return an @ref array pointer if this is an array, else return `nullptr`
-
-        If `this->kind() == kind::array`, returns a pointer
-        to the underlying array. Otherwise, returns `nullptr`.
-
-        @par Example
-        The return value is used in both a boolean context and
-        to assign a variable:
-        @code
-        if( auto p = jv.if_array() )
-            return *p;
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
-    array*
+    result<array&>
     if_array() noexcept
     {
-        if(kind() == json::kind::array)
-            return &arr_;
-        return nullptr;
+        if( is_array() )
+            return arr_;
+
+        error_code ec;
+        BOOST_JSON_FAIL(ec, error::not_array);
+        return ec;
     }
+    /** @} */
 
-    /** Return an @ref object pointer if this is an object, else return `nullptr`
+    /** Return a @ref result with an @ref object reference if this is an object.
 
-        If `this->kind() == kind::object`, returns a pointer
-        to the underlying object. Otherwise, returns `nullptr`.
+        If `this->kind() == kind::object`, returns a @ref result storing a
+        reference to the underlying object. Otherwise, returns a @ref result
+        storing an @ref error_code.
 
         @par Example
         The return value is used in both a boolean context and
@@ -2023,46 +2017,39 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @return @ref result storing an @ref object reference
+        or an @ref error_code.
     */
-    object const*
+    /** @{ */
+    result<object const&>
     if_object() const noexcept
     {
-        if(kind() == json::kind::object)
-            return &obj_;
-        return nullptr;
+        if( is_object() )
+            return obj_;
+
+        error_code ec;
+        BOOST_JSON_FAIL(ec, error::not_object);
+        return ec;
     }
 
-    /** Return an @ref object pointer if this is an object, else return `nullptr`
-
-        If `this->kind() == kind::object`, returns a pointer
-        to the underlying object. Otherwise, returns `nullptr`.
-
-        @par Example
-        The return value is used in both a boolean context and
-        to assign a variable:
-        @code
-        if( auto p = jv.if_object() )
-            return *p;
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
-    object*
+    result<object&>
     if_object() noexcept
     {
-        if(kind() == json::kind::object)
-            return &obj_;
-        return nullptr;
+        if( is_object() )
+            return obj_;
+
+        error_code ec;
+        BOOST_JSON_FAIL(ec, error::not_object);
+        return ec;
     }
+    /** @} */
 
-    /** Return a @ref string pointer if this is a string, else return `nullptr`
+    /** Return a @ref result with a @ref string reference if this is a string.
 
-        If `this->kind() == kind::string`, returns a pointer
-        to the underlying object. Otherwise, returns `nullptr`.
+        If `this->kind() == kind::string`, returns a @ref result storing a
+        reference to the underlying string. Otherwise, returns a @ref result
+        storing an @ref error_code.
 
         @par Example
         The return value is used in both a boolean context and
@@ -2077,46 +2064,39 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @return @ref result storing a @ref string reference
+        or an @ref error_code.
     */
-    string const*
+    /** @{ */
+    result<string const&>
     if_string() const noexcept
     {
-        if(kind() == json::kind::string)
-            return &str_;
-        return nullptr;
+        if( is_string() )
+            return str_;
+
+        error_code ec;
+        BOOST_JSON_FAIL(ec, error::not_string);
+        return ec;
     }
 
-    /** Return a @ref string pointer if this is a string, else return `nullptr`
-
-        If `this->kind() == kind::string`, returns a pointer
-        to the underlying object. Otherwise, returns `nullptr`.
-
-        @par Example
-        The return value is used in both a boolean context and
-        to assign a variable:
-        @code
-        if( auto p = jv.if_string() )
-            return *p;
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
-    string*
+    result<string&>
     if_string() noexcept
     {
-        if(kind() == json::kind::string)
-            return &str_;
-        return nullptr;
+        if( is_string() )
+            return str_;
+
+        error_code ec;
+        BOOST_JSON_FAIL(ec, error::not_string);
+        return ec;
     }
+    /** @} */
 
-    /** Return an `int64_t` pointer if this is a signed integer, else return `nullptr`
+    /** Return a @ref result with a `std::int64_t` reference if this is a signed integer.
 
-        If `this->kind() == kind::int64`, returns a pointer
-        to the underlying integer. Otherwise, returns `nullptr`.
+        If `this->kind() == kind::int64`, returns a @ref result storing a
+        reference to the underlying integer. Otherwise, returns a @ref result
+        storing an @ref error_code.
 
         @par Example
         The return value is used in both a boolean context and
@@ -2131,47 +2111,39 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @return @ref result storing a `std::int64_t` reference
+        or an @ref error_code.
     */
-    std::int64_t const*
+    /** @{ */
+    result<std::int64_t const&>
     if_int64() const noexcept
     {
-        if(kind() == json::kind::int64)
-            return &sca_.i;
-        return nullptr;
+        if( is_int64() )
+            return sca_.i;
+
+        error_code ec;
+        BOOST_JSON_FAIL(ec, error::not_int64);
+        return ec;
     }
 
-    /** Return an `int64_t` pointer if this is a signed integer, else return `nullptr`
-
-        If `this->kind() == kind::int64`, returns a pointer
-        to the underlying integer. Otherwise, returns `nullptr`.
-
-        @par Example
-        The return value is used in both a boolean context and
-        to assign a variable:
-        @code
-        if( auto p = jv.if_int64() )
-            return *p;
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
-    std::int64_t*
+    result<std::int64_t&>
     if_int64() noexcept
     {
-        if(kind() == json::kind::int64)
-            return &sca_.i;
-        return nullptr;
+        if( is_int64() )
+            return sca_.i;
+
+        error_code ec;
+        BOOST_JSON_FAIL(ec, error::not_int64);
+        return ec;
     }
+    /** @} */
 
-    /** Return a `uint64_t` pointer if this is an unsigned integer, else return `nullptr`
+    /** Return a @ref result with a `std::uint64_t` reference if this is an unsigned integer.
 
-        If `this->kind() == kind::uint64`, returns a pointer
-        to the underlying unsigned integer. Otherwise, returns
-        `nullptr`.
+        If `this->kind() == kind::uint64`, returns a @ref result storing a
+        reference to the underlying unsigned integer. Otherwise, returns a @ref result
+        storing an @ref error_code.
 
         @par Example
         The return value is used in both a boolean context and
@@ -2186,48 +2158,39 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @return @ref result storing a `std::uint64_t` reference
+        or an @ref error_code.
     */
-    std::uint64_t const*
+    /** @{ */
+    result<std::uint64_t const&>
     if_uint64() const noexcept
     {
-        if(kind() == json::kind::uint64)
-            return &sca_.u;
-        return nullptr;
+        if( is_uint64() )
+            return sca_.u;
+
+        error_code ec;
+        BOOST_JSON_FAIL(ec, error::not_uint64);
+        return ec;
     }
 
-    /** Return a `uint64_t` pointer if this is an unsigned integer, else return `nullptr`
-
-        If `this->kind() == kind::uint64`, returns a pointer
-        to the underlying unsigned integer. Otherwise, returns
-        `nullptr`.
-
-        @par Example
-        The return value is used in both a boolean context and
-        to assign a variable:
-        @code
-        if( auto p = jv.if_uint64() )
-            return *p;
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
-    std::uint64_t*
+    result<std::uint64_t&>
     if_uint64() noexcept
     {
-        if(kind() == json::kind::uint64)
-            return &sca_.u;
-        return nullptr;
+        if( is_uint64() )
+            return sca_.u;
+
+        error_code ec;
+        BOOST_JSON_FAIL(ec, error::not_uint64);
+        return ec;
     }
+    /** @} */
 
-    /** Return a `double` pointer if this is a double, else return `nullptr`
+    /** Return a @ref result with a `double` reference if this is an unsigned integer.
 
-        If `this->kind() == kind::double_`, returns a pointer
-        to the underlying double. Otherwise, returns
-        `nullptr`.
+        If `this->kind() == kind::double_`, returns a @ref result storing a
+        reference to the `double`. Otherwise, returns a @ref result
+        storing an @ref error_code.
 
         @par Example
         The return value is used in both a boolean context and
@@ -2242,48 +2205,38 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @return @ref result storing a `double` reference or an @ref error_code.
     */
-    double const*
+    /** @{ */
+    result<double const&>
     if_double() const noexcept
     {
-        if(kind() == json::kind::double_)
-            return &sca_.d;
-        return nullptr;
+        if( is_double() )
+            return sca_.d;
+
+        error_code ec;
+        BOOST_JSON_FAIL(ec, error::not_double);
+        return ec;
     }
 
-    /** Return a `double` pointer if this is a double, else return `nullptr`
-
-        If `this->kind() == kind::double_`, returns a pointer
-        to the underlying double. Otherwise, returns
-        `nullptr`.
-
-        @par Example
-        The return value is used in both a boolean context and
-        to assign a variable:
-        @code
-        if( auto p = jv.if_double() )
-            return *p;
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
-    double*
+    result<double&>
     if_double() noexcept
     {
-        if(kind() == json::kind::double_)
-            return &sca_.d;
-        return nullptr;
+        if( is_double() )
+            return sca_.d;
+
+        error_code ec;
+        BOOST_JSON_FAIL(ec, error::not_double);
+        return ec;
     }
+    /** @} */
 
-    /** Return a `bool` pointer if this is a boolean, else return `nullptr`
+    /** Return a @ref result with a `bool` reference if this is a boolean.
 
-        If `this->kind() == kind::bool_`, returns a pointer
-        to the underlying boolean. Otherwise, returns
-        `nullptr`.
+        If `this->kind() == kind::bool_`, returns a @ref result storing a
+        reference to the `bool`. Otherwise, returns a @ref result
+        storing an @ref error_code.
 
         @par Example
         The return value is used in both a boolean context and
@@ -2298,42 +2251,32 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @return @ref result storing a `bool` reference or an @ref error_code.
     */
-    bool const*
+    /** @{ */
+    result<bool const&>
     if_bool() const noexcept
     {
-        if(kind() == json::kind::bool_)
-            return &sca_.b;
-        return nullptr;
+        if( is_bool() )
+            return sca_.b;
+
+        error_code ec;
+        BOOST_JSON_FAIL(ec, error::not_bool);
+        return ec;
     }
 
-    /** Return a `bool` pointer if this is a boolean, else return `nullptr`
-
-        If `this->kind() == kind::bool_`, returns a pointer
-        to the underlying boolean. Otherwise, returns
-        `nullptr`.
-
-        @par Example
-        The return value is used in both a boolean context and
-        to assign a variable:
-        @code
-        if( auto p = jv.if_bool() )
-            return *p;
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
-    bool*
+    result<bool&>
     if_bool() noexcept
     {
-        if(kind() == json::kind::bool_)
-            return &sca_.b;
-        return nullptr;
+        if( is_bool() )
+            return sca_.b;
+
+        error_code ec;
+        BOOST_JSON_FAIL(ec, error::not_bool);
+        return ec;
     }
+    /** @} */
 
     //------------------------------------------------------
 
@@ -2543,10 +2486,7 @@ public:
     object const&
     as_object() const&
     {
-        if( is_object() )
-            return obj_;
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        detail::throw_system_error( error::not_object, &loc );
+        return if_object().value();
     }
     /* @} */
 
@@ -2581,10 +2521,7 @@ public:
     array const&
     as_array() const&
     {
-        if( is_array() )
-            return arr_;
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        detail::throw_system_error( error::not_array, &loc );
+        return if_array().value();
     }
     /* @} */
 
@@ -2619,10 +2556,7 @@ public:
     string const&
     as_string() const&
     {
-        if( is_string() )
-            return str_;
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        detail::throw_system_error( error::not_string, &loc );
+        return if_string().value();
     }
     /* @} */
 
@@ -2643,10 +2577,7 @@ public:
     std::int64_t&
     as_int64()
     {
-        if( is_int64() )
-            return sca_.i;
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        detail::throw_system_error( error::not_int64, &loc );
+        return if_int64().value();
     }
 
     /** Return the underlying `std::int64_t`, or throw an exception.
@@ -2666,10 +2597,7 @@ public:
     std::int64_t
     as_int64() const
     {
-        if( is_int64() )
-            return sca_.i;
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        detail::throw_system_error( error::not_int64, &loc );
+        return if_int64().value();
     }
 
     /** Return a reference to the underlying `std::uint64_t`, or throw an exception.
@@ -2689,10 +2617,7 @@ public:
     std::uint64_t&
     as_uint64()
     {
-        if( is_uint64() )
-            return sca_.u;
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        detail::throw_system_error( error::not_uint64, &loc );
+        return if_uint64().value();
     }
 
     /** Return the underlying `std::uint64_t`, or throw an exception.
@@ -2712,10 +2637,7 @@ public:
     std::uint64_t
     as_uint64() const
     {
-        if( is_uint64() )
-            return sca_.u;
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        detail::throw_system_error( error::not_uint64, &loc );
+        return if_uint64().value();
     }
 
     /** Return a reference to the underlying `double`, or throw an exception.
@@ -2735,10 +2657,7 @@ public:
     double&
     as_double()
     {
-        if( is_double() )
-            return sca_.d;
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        detail::throw_system_error( error::not_double, &loc );
+        return if_double().value();
     }
 
     /** Return the underlying `double`, or throw an exception.
@@ -2758,10 +2677,7 @@ public:
     double
     as_double() const
     {
-        if( is_double() )
-            return sca_.d;
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        detail::throw_system_error( error::not_double, &loc );
+        return if_double().value();
     }
 
     /** Return a reference to the underlying `bool`, or throw an exception.
@@ -2781,10 +2697,7 @@ public:
     bool&
     as_bool()
     {
-        if( is_bool() )
-            return sca_.b;
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        detail::throw_system_error( error::not_bool, &loc );
+        return if_bool().value();
     }
 
     /** Return the underlying `bool`, or throw an exception.
@@ -2804,10 +2717,7 @@ public:
     bool
     as_bool() const
     {
-        if( is_bool() )
-            return sca_.b;
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        detail::throw_system_error( error::not_bool, &loc );
+        return if_bool().value();
     }
 
     //------------------------------------------------------

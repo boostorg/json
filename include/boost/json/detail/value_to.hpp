@@ -137,12 +137,7 @@ value_to_impl(
     value const& jv,
     Ctx const& )
 {
-    object const* obj = jv.if_object();
-    if( obj )
-        return *obj;
-    error_code ec;
-    BOOST_JSON_FAIL(ec, error::not_object);
-    return ec;
+    return jv.if_object();
 }
 
 // array
@@ -154,12 +149,7 @@ value_to_impl(
     value const& jv,
     Ctx const& )
 {
-    array const* arr = jv.if_array();
-    if( arr )
-        return *arr;
-    error_code ec;
-    BOOST_JSON_FAIL(ec, error::not_array);
-    return ec;
+    return jv.if_array();
 }
 
 // string
@@ -171,12 +161,7 @@ value_to_impl(
     value const& jv,
     Ctx const& )
 {
-    string const* str = jv.if_string();
-    if( str )
-        return *str;
-    error_code ec;
-    BOOST_JSON_FAIL(ec, error::not_string);
-    return ec;
+    return jv.if_string();
 }
 
 // bool
@@ -185,12 +170,7 @@ result<bool>
 value_to_impl(
     bool_conversion_tag, try_value_to_tag<bool>, value const& jv, Ctx const& )
 {
-    auto b = jv.if_bool();
-    if( b )
-        return *b;
-    error_code ec;
-    BOOST_JSON_FAIL(ec, error::not_bool);
-    return {boost::system::in_place_error, ec};
+    return jv.if_bool();
 }
 
 // integral and floating point
@@ -232,11 +212,9 @@ value_to_impl(
     Ctx const& )
 {
     auto str = jv.if_string();
-    if( str )
-        return {boost::system::in_place_value, T(str->subview())};
-    error_code ec;
-    BOOST_JSON_FAIL(ec, error::not_string);
-    return {boost::system::in_place_error, ec};
+    if( str.has_error() )
+        return {boost::system::in_place_error, str.error()};
+    return {boost::system::in_place_value, T(str->subview())};
 }
 
 // map-like containers
@@ -248,13 +226,9 @@ value_to_impl(
     value const& jv,
     Ctx const& ctx )
 {
-    object const* obj = jv.if_object();
-    if( !obj )
-    {
-        error_code ec;
-        BOOST_JSON_FAIL(ec, error::not_object);
-        return {boost::system::in_place_error, ec};
-    }
+    auto obj = jv.if_object();
+    if( obj.has_error() )
+        return {boost::system::in_place_error, obj.error()};
 
     T res;
     error const e = detail::try_reserve(
@@ -288,13 +262,9 @@ value_to_impl(
     value const& jv,
     Ctx const& ctx )
 {
-    array const* arr = jv.if_array();
-    if( !arr )
-    {
-        error_code ec;
-        BOOST_JSON_FAIL(ec, error::not_array);
-        return {boost::system::in_place_error, ec};
-    }
+    auto arr = jv.if_array();
+    if( arr.has_error() )
+        return {boost::system::in_place_error, arr.error()};
 
     T result;
     error const e = detail::try_reserve(
@@ -358,12 +328,9 @@ value_to_impl(
 {
     error_code ec;
 
-    array const* arr = jv.if_array();
-    if( !arr )
-    {
-        BOOST_JSON_FAIL(ec, error::not_array);
-        return {boost::system::in_place_error, ec};
-    }
+    auto arr = jv.if_array();
+    if( arr.has_error() )
+        return {boost::system::in_place_error, arr.error()};
 
     constexpr std::size_t N = std::tuple_size<remove_cvref<T>>::value;
     if( N != arr->size() )
@@ -445,14 +412,9 @@ value_to_impl(
 {
     result<T> res;
 
-    auto* obj = jv.if_object();
-    if( !obj )
-    {
-        error_code ec;
-        BOOST_JSON_FAIL(ec, error::not_object);
-        res = {boost::system::in_place_error, ec};
-        return res;
-    }
+    auto obj = jv.if_object();
+    if( obj.has_error() )
+        return {boost::system::in_place_error, obj.error()};
 
     to_described_member< Ctx, T > member_converter{ res, *obj, 0u, ctx };
 
@@ -486,17 +448,14 @@ value_to_impl(
     T val = {};
     (void)jv;
 #ifdef BOOST_DESCRIBE_CXX14
-    error_code ec;
 
     auto str = jv.if_string();
-    if( !str )
-    {
-        BOOST_JSON_FAIL(ec, error::not_string);
-        return {system::in_place_error, ec};
-    }
+    if( str.has_error() )
+        return {system::in_place_error, str.error()};
 
     if( !describe::enum_from_string(str->data(), val) )
     {
+        error_code ec;
         BOOST_JSON_FAIL(ec, error::unknown_name);
         return {system::in_place_error, ec};
     }

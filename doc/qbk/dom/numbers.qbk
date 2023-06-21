@@ -21,9 +21,10 @@ constructed from a floating-point type:
 
 When accessing a number contained within a __value__, the function
 used must match the value's __kind__ exactly; no conversions will be performed.
-For example if `as_double` is called on a __value__ that contains a `std::uint64_t`,
-an exception is thrown. Similarly, the function `if_double` will return `nullptr`
-and calling `get_double` will result in undefined behavior:
+For example if `as_double` is called on a __value__ that contains a
+`std::uint64_t`, an exception is thrown. Similarly, the function `if_double`
+will return a __result__ with an __error_code__, and calling `get_double` will
+result in undefined behavior:
 
 [doc_using_numbers_2]
 

@@ -14,6 +14,7 @@
 #include <boost/json/kind.hpp>
 #include <boost/json/pilfer.hpp>
 #include <boost/json/storage_ptr.hpp>
+#include <boost/json/system_error.hpp>
 #include <boost/json/detail/array.hpp>
 #include <cstdlib>
 #include <initializer_list>
@@ -735,11 +736,11 @@ public:
     value const*
     data() const noexcept;
 
-    /** Return a pointer to an element, or nullptr if the index is invalid
+    /** Return a @ref result with a reference to an element if the index is within the bounds.
 
-        This function returns a pointer to the element
-        at index `pos` when the index is less then the size
-        of the container. Otherwise it returns null.
+        This function returns a @ref result storing a reference to the element
+        at index `pos` when the index is less then the size of the container.
+        Otherwise it returns a @ref result storing an @ref error_code.
 
         @par Example
         @code
@@ -753,35 +754,20 @@ public:
         @par Exception Safety
         No-throw guarantee.
 
+        @return @ref result storing a @ref value reference
+        or an @ref error_code.
+
         @param pos The index of the element to return.
     */
+    /** @{ */
     inline
-    value const*
+    result<value const&>
     if_contains(std::size_t pos) const noexcept;
 
-    /** Return a pointer to an element, or nullptr if the index is invalid
-
-        This function returns a pointer to the element
-        at index `pos` when the index is less then the size
-        of the container. Otherwise it returns null.
-
-        @par Example
-        @code
-        if( auto p = arr.if_contains( 1 ) )
-            std::cout << *p;
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param pos The index of the element to return.
-    */
     inline
-    value*
+    result<value&>
     if_contains(std::size_t pos) noexcept;
+    /** @} */
 
     //------------------------------------------------------
     //
