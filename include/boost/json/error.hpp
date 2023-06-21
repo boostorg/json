@@ -142,7 +142,7 @@ enum class error
     /// `double` was expected during conversion
     not_double,
 
-    /// JSON array has size incompatible with target
+    /// source composite has size incompatible with target
     size_mismatch,
 
     /// none of the possible conversions were successful

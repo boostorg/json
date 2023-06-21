@@ -81,7 +81,7 @@ case error::not_string: return "value is not a string";
 case error::not_int64: return "value is not a std::int64_t number";
 case error::not_uint64: return "value is not a std::uint64_t number";
 case error::not_double: return "value is not a double";
-case error::size_mismatch: return "array size does not match target size";
+case error::size_mismatch: return "source composite size does not match target size";
 case error::exhausted_variants: return "exhausted all variants";
 case error::unknown_name: return "unknown name";
     }
