@@ -279,35 +279,6 @@ value_to_impl(
     return res;
 }
 
-template< class T, class Ctx >
-T
-value_to_impl(
-    map_like_conversion_tag, value_to_tag<T>, value const& jv, Ctx const& ctx )
-{
-    object const* obj = jv.if_object();
-    if( !obj )
-    {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        throw_system_error( error::not_object, &loc );
-    }
-
-    T result;
-    error const e = detail::try_reserve(
-        result, obj->size(), reserve_implementation<T>());
-    if( e != error() )
-    {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        throw_system_error( e, &loc );
-    }
-
-    auto ins = detail::inserter(result, inserter_implementation<T>());
-    for( key_value_pair const& kv: *obj )
-        *ins++ = value_type<T>{
-            key_type<T>(kv.key()),
-            value_to<mapped_type<T>>( kv.value(), ctx )};
-    return result;
-}
-
 // all other containers
 template< class T, class Ctx >
 result<T>
@@ -317,7 +288,6 @@ value_to_impl(
     value const& jv,
     Ctx const& ctx )
 {
-
     array const* arr = jv.if_array();
     if( !arr )
     {
@@ -344,33 +314,6 @@ value_to_impl(
             return {boost::system::in_place_error, elem_res.error()};
         *ins++ = std::move(*elem_res);
     }
-    return result;
-}
-
-template< class T, class Ctx >
-T
-value_to_impl(
-    sequence_conversion_tag, value_to_tag<T>, value const& jv, Ctx const& ctx )
-{
-    array const* arr = jv.if_array();
-    if( !arr )
-    {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        throw_system_error( error::not_array, &loc );
-    }
-
-    T result;
-    error const e = detail::try_reserve(
-        result, arr->size(), reserve_implementation<T>());
-    if( e != error() )
-    {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        throw_system_error( e, &loc );
-    }
-
-    auto ins = detail::inserter(result, inserter_implementation<T>());
-    for( value const& val: *arr )
-        *ins++ = value_to<value_type<T>>( val, ctx );
     return result;
 }
 
@@ -405,14 +348,6 @@ try_make_tuple_like(
         boost::system::in_place_value, T(std::move(*std::get<Is>(items))...)};
 }
 
-template <class T, class Ctx, std::size_t... Is>
-T
-make_tuple_like(
-    array const& arr, Ctx const& ctx, boost::mp11::index_sequence<Is...>)
-{
-    return T( value_to<tuple_element_t<Is, T>>( arr[Is], ctx )... );
-}
-
 template< class T, class Ctx >
 result<T>
 value_to_impl(
@@ -441,29 +376,6 @@ value_to_impl(
         *arr, ctx, boost::mp11::make_index_sequence<N>());
 }
 
-template< class T, class Ctx >
-T
-value_to_impl(
-    tuple_conversion_tag, value_to_tag<T>, value const& jv, Ctx const& ctx )
-{
-    array const* arr = jv.if_array();
-    if( !arr )
-    {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        throw_system_error( error::not_array, &loc );
-    }
-
-    constexpr std::size_t N = std::tuple_size<remove_cvref<T>>::value;
-    if( N != arr->size() )
-    {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        throw_system_error( error::size_mismatch, &loc );
-    }
-
-    return make_tuple_like<T>(
-        *arr, ctx, boost::mp11::make_index_sequence<N>());
-}
-
 template< class T>
 struct is_optional
     : std::false_type
@@ -476,7 +388,7 @@ struct is_optional< std::optional<T> >
 { };
 #endif // BOOST_NO_CXX17_HDR_OPTIONAL
 
-template< class Ctx, class T >
+template< class Ctx, class T, bool non_throwing = true >
 struct to_described_member
 {
     using Ds = describe::describe_members<
@@ -486,7 +398,9 @@ struct to_described_member
     using described_member_t = remove_cvref<decltype(
         std::declval<T&>().* D::pointer )>;
 
-    result<T>& res;
+    using result_type = mp11::mp_eval_if_c< !non_throwing, T, result, T >;
+
+    result_type& res;
     object const& obj;
     std::size_t count;
     Ctx const& ctx;
@@ -604,21 +518,53 @@ value_to_impl(
 }
 
 //----------------------------------------------------------
-// User-provided conversion
+// User-provided conversions; throwing -> throwing
 template< class T, class Ctx >
-typename std::enable_if<
-    mp11::mp_valid<has_user_conversion_to_impl, T>::value,
-    T>::type
+mp11::mp_if< mp11::mp_valid<has_user_conversion_to_impl, T>, T >
 value_to_impl(
     user_conversion_tag, value_to_tag<T> tag, value const& jv, Ctx const&)
 {
     return tag_invoke(tag, jv);
 }
 
+template<
+    class T,
+    class Ctx,
+    class Sup = supported_context<Ctx, T, value_to_conversion>
+>
+mp11::mp_if<
+    mp11::mp_valid< has_context_conversion_to_impl, typename Sup::type, T>, T >
+value_to_impl(
+    context_conversion_tag,
+    value_to_tag<T> tag,
+    value const& jv,
+    Ctx const& ctx )
+{
+    return tag_invoke( tag, jv, Sup::get(ctx) );
+}
+
+template<
+    class T,
+    class Ctx,
+    class Sup = supported_context<Ctx, T, value_to_conversion>
+>
+mp11::mp_if<
+    mp11::mp_valid<
+        has_full_context_conversion_to_impl, typename Sup::type, T>,
+    T>
+value_to_impl(
+    full_context_conversion_tag,
+    value_to_tag<T> tag,
+    value const& jv,
+    Ctx const& ctx )
+{
+    return tag_invoke( tag, jv, Sup::get(ctx), ctx );
+}
+
+//----------------------------------------------------------
+// User-provided conversions; throwing -> nonthrowing
 template< class T, class Ctx >
-typename std::enable_if<
-    !mp11::mp_valid<has_user_conversion_to_impl, T>::value,
-    T>::type
+mp11::mp_if_c< !mp11::mp_valid<has_user_conversion_to_impl, T>::value, T>
 value_to_impl(
     user_conversion_tag, value_to_tag<T>, value const& jv, Ctx const& )
 {
@@ -628,82 +574,15 @@ value_to_impl(
     return std::move(*res);
 }
 
-template< class T, class Ctx >
-typename std::enable_if<
-    mp11::mp_valid<has_nonthrowing_user_conversion_to_impl, T>::value,
-    result<T>>::type
-value_to_impl(
-    user_conversion_tag, try_value_to_tag<T>, value const& jv, Ctx const& )
-{
-    return tag_invoke(try_value_to_tag<T>(), jv);
-}
-
-template< class T, class Ctx >
-typename std::enable_if<
-    !mp11::mp_valid<has_nonthrowing_user_conversion_to_impl, T>::value,
-    result<T>>::type
-value_to_impl(
-    user_conversion_tag, try_value_to_tag<T>, value const& jv, Ctx const& )
-{
-#ifndef BOOST_NO_EXCEPTIONS
-    try
-    {
-#endif
-        return {
-            boost::system::in_place_value, tag_invoke(value_to_tag<T>(), jv)};
-#ifndef BOOST_NO_EXCEPTIONS
-    }
-    catch( std::bad_alloc const&)
-    {
-        throw;
-    }
-    catch( system_error const& e)
-    {
-        return {boost::system::in_place_error, e.code()};
-    }
-    catch( ... )
-    {
-        error_code ec;
-        BOOST_JSON_FAIL(ec, error::exception);
-        return {boost::system::in_place_error, ec};
-    }
-#endif
-}
-
-//----------------------------------------------------------
-// User-provided context conversion
-
 template<
     class T,
     class Ctx,
     class Sup = supported_context<Ctx, T, value_to_conversion>
 >
-typename std::enable_if<
-    mp11::mp_valid<
-        has_context_conversion_to_impl,
-        typename Sup::type,
-        T>::value,
-    T>::type
-value_to_impl(
-    context_conversion_tag,
-    value_to_tag<T> tag,
-    value const& jv,
-    Ctx const& ctx )
-{
-    return tag_invoke( tag, jv, Sup::get(ctx) );
-}
-
-template<
-    class T,
-    class Ctx,
-    class Sup = supported_context<Ctx, T, value_to_conversion>
->
-typename std::enable_if<
+mp11::mp_if_c<
     !mp11::mp_valid<
-        has_context_conversion_to_impl,
-        typename Sup::type,
-        T>::value,
-    T>::type
+        has_context_conversion_to_impl, typename Sup::type, T>::value,
+    T>
 value_to_impl(
     context_conversion_tag, value_to_tag<T>, value const& jv, Ctx const& ctx )
 {
@@ -713,17 +592,73 @@ value_to_impl(
     return std::move(*res);
 }
 
+template< class Ctx >
+std::tuple<allow_exceptions, Ctx>
+make_throwing_context(Ctx const& ctx)
+{
+    return std::tuple<allow_exceptions, Ctx>(allow_exceptions(), ctx);
+}
+
+template< class... Ctxes >
+std::tuple<allow_exceptions, Ctxes...>
+make_throwing_context(std::tuple<Ctxes...> const& ctx)
+{
+    return std::tuple_cat(std::make_tuple( allow_exceptions() ), ctx);
+}
+
+template< class... Ctxes >
+std::tuple<allow_exceptions, Ctxes...> const&
+make_throwing_context(std::tuple<allow_exceptions, Ctxes...> const& ctx)
+    noexcept
+{
+    return ctx;
+}
+
 template<
     class T,
     class Ctx,
     class Sup = supported_context<Ctx, T, value_to_conversion>
 >
-typename std::enable_if<
+mp11::mp_if_c<
+    !mp11::mp_valid<
+        has_full_context_conversion_to_impl, typename Sup::type, T>::value,
+    T>
+value_to_impl(
+    full_context_conversion_tag,
+    value_to_tag<T>,
+    value const& jv,
+    Ctx const& ctx )
+{
+    auto res = tag_invoke(
+        try_value_to_tag<T>(),
+        jv,
+        Sup::get(ctx),
+        make_throwing_context(ctx));
+    if( res.has_error() )
+        throw_system_error( res.error() );
+    return std::move(*res);
+}
+
+//----------------------------------------------------------
+// User-provided conversions; nonthrowing -> nonthrowing
+template< class T, class Ctx >
+mp11::mp_if<
+    mp11::mp_valid<has_nonthrowing_user_conversion_to_impl, T>, result<T> >
+value_to_impl(
+    user_conversion_tag, try_value_to_tag<T>, value const& jv, Ctx const& )
+{
+    return tag_invoke(try_value_to_tag<T>(), jv);
+}
+
+template<
+    class T,
+    class Ctx,
+    class Sup = supported_context<Ctx, T, value_to_conversion>
+>
+mp11::mp_if<
     mp11::mp_valid<
-        has_nonthrowing_context_conversion_to_impl,
-        typename Sup::type,
-        T>::value,
-    result<T>>::type
+        has_nonthrowing_context_conversion_to_impl, typename Sup::type, T>,
+    result<T> >
 value_to_impl(
     context_conversion_tag,
     try_value_to_tag<T> tag,
@@ -738,97 +673,12 @@ template<
     class Ctx,
     class Sup = supported_context<Ctx, T, value_to_conversion>
 >
-typename std::enable_if<
-    !mp11::mp_valid<
-        has_nonthrowing_context_conversion_to_impl,
-        typename Sup::type,
-        T>::value,
-    result<T>>::type
-value_to_impl(
-    context_conversion_tag,
-    try_value_to_tag<T>,
-    value const& jv,
-    Ctx const& ctx )
-{
-    try
-    {
-        return {
-            boost::system::in_place_value,
-            tag_invoke( value_to_tag<T>(), jv, Sup::get(ctx) )};
-    }
-    catch( std::bad_alloc const&)
-    {
-        throw;
-    }
-    catch( system_error const& e)
-    {
-        return {boost::system::in_place_error, e.code()};
-    }
-    catch( ... )
-    {
-        error_code ec;
-        BOOST_JSON_FAIL(ec, error::exception);
-        return {boost::system::in_place_error, ec};
-    }
-}
-
-//----------------------------------------------------------
-// User-provided full context conversion
-
-template<
-    class T,
-    class Ctx,
-    class Sup = supported_context<Ctx, T, value_to_conversion>
->
-typename std::enable_if<
-    mp11::mp_valid<
-        has_full_context_conversion_to_impl,
-        typename Sup::type,
-        T>::value,
-    T>::type
-value_to_impl(
-    full_context_conversion_tag,
-    value_to_tag<T> tag,
-    value const& jv,
-    Ctx const& ctx )
-{
-    return tag_invoke( tag, jv, Sup::get(ctx), ctx );
-}
-
-template<
-    class T,
-    class Ctx,
-    class Sup = supported_context<Ctx, T, value_to_conversion>
->
-typename std::enable_if<
-    !mp11::mp_valid<
-        has_full_context_conversion_to_impl,
-        typename Sup::type,
-        T>::value,
-    T>::type
-value_to_impl(
-    full_context_conversion_tag,
-    value_to_tag<T>,
-    value const& jv,
-    Ctx const& ctx )
-{
-    auto res = tag_invoke( try_value_to_tag<T>(), jv, Sup::get(ctx), ctx );
-    if( res.has_error() )
-        throw_system_error( res.error() );
-    return std::move(*res);
-}
-
-template<
-    class T,
-    class Ctx,
-    class Sup = supported_context<Ctx, T, value_to_conversion>
->
-typename std::enable_if<
+mp11::mp_if<
     mp11::mp_valid<
         has_nonthrowing_full_context_conversion_to_impl,
         typename Sup::type,
-        T>::value,
-    result<T>>::type
+        T>,
+    result<T> >
 value_to_impl(
     full_context_conversion_tag,
     try_value_to_tag<T> tag,
@@ -838,28 +688,40 @@ value_to_impl(
     return tag_invoke( tag, jv, Sup::get(ctx), ctx );
 }
 
-template<
-    class T,
-    class Ctx,
-    class Sup = supported_context<Ctx, T, value_to_conversion>
->
-typename std::enable_if<
-    !mp11::mp_valid<
-        has_nonthrowing_full_context_conversion_to_impl,
-        typename Sup::type,
-        T>::value,
-    result<T>>::type
-value_to_impl(
-    full_context_conversion_tag,
-    try_value_to_tag<T>,
-    value const& jv,
-    Ctx const& ctx )
+//----------------------------------------------------------
+// User-provided conversions; nonthrowing -> throwing
+
+template< class Ctx >
+struct does_allow_exceptions : std::false_type
+{ };
+
+template< class... Ctxes >
+struct does_allow_exceptions< std::tuple<allow_exceptions, Ctxes...> >
+    : std::true_type
+{ };
+
+template< class T, class... Args >
+result<T>
+wrap_conversion_exceptions( std::true_type, value_to_tag<T>, Args&& ... args )
 {
+    return {
+        boost::system::in_place_value,
+        tag_invoke( value_to_tag<T>(), static_cast<Args&&>(args)... )};
+}
+
+template< class T, class... Args >
+result<T>
+wrap_conversion_exceptions( std::false_type, value_to_tag<T>, Args&& ... args )
+{
+#ifndef BOOST_NO_EXCEPTIONS
     try
     {
-        return {
-            boost::system::in_place_value,
-            tag_invoke( value_to_tag<T>(), jv, Sup::get(ctx), ctx )};
+#endif
+        return wrap_conversion_exceptions(
+            std::true_type(),
+            value_to_tag<T>(),
+            static_cast<Args&&>(args)... );
+#ifndef BOOST_NO_EXCEPTIONS
     }
     catch( std::bad_alloc const&)
     {
@@ -875,6 +737,64 @@ value_to_impl(
         BOOST_JSON_FAIL(ec, error::exception);
         return {boost::system::in_place_error, ec};
     }
+#endif
+}
+
+template< class T, class Ctx >
+mp11::mp_if_c<
+    !mp11::mp_valid<has_nonthrowing_user_conversion_to_impl, T>::value,
+    result<T> >
+value_to_impl(
+    user_conversion_tag, try_value_to_tag<T>, value const& jv, Ctx const& )
+{
+    return wrap_conversion_exceptions(
+        does_allow_exceptions<Ctx>(), value_to_tag<T>(), jv);
+}
+
+template<
+    class T,
+    class Ctx,
+    class Sup = supported_context<Ctx, T, value_to_conversion>
+>
+mp11::mp_if_c<
+    !mp11::mp_valid<
+        has_nonthrowing_context_conversion_to_impl,
+        typename Sup::type,
+        T>::value,
+    result<T> >
+value_to_impl(
+    context_conversion_tag,
+    try_value_to_tag<T>,
+    value const& jv,
+    Ctx const& ctx )
+{
+    return wrap_conversion_exceptions(
+        does_allow_exceptions<Ctx>(), value_to_tag<T>(), jv, Sup::get(ctx) );
+}
+
+template<
+    class T,
+    class Ctx,
+    class Sup = supported_context<Ctx, T, value_to_conversion>
+>
+mp11::mp_if_c<
+    !mp11::mp_valid<
+        has_nonthrowing_full_context_conversion_to_impl,
+        typename Sup::type,
+        T>::value,
+    result<T> >
+value_to_impl(
+    full_context_conversion_tag,
+    try_value_to_tag<T>,
+    value const& jv,
+    Ctx const& ctx )
+{
+    return wrap_conversion_exceptions(
+        does_allow_exceptions<Ctx>(),
+        value_to_tag<T>(),
+        jv,
+        Sup::get(ctx),
+        ctx);
 }
 
 // no suitable conversion implementation
@@ -892,7 +812,8 @@ template< class Impl, class T, class Ctx >
 T
 value_to_impl( Impl impl, value_to_tag<T>, value const& jv, Ctx const& ctx )
 {
-    return value_to_impl( impl, try_value_to_tag<T>(), jv, ctx ).value();
+    return value_to_impl(
+        impl, try_value_to_tag<T>(), jv, make_throwing_context(ctx) ).value();
 }
 
 template< class Ctx, class T >

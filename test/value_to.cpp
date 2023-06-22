@@ -85,8 +85,13 @@ struct T5 { };
 T5
 tag_invoke(
     boost::json::value_to_tag<T5>,
-    boost::json::value const&)
+    boost::json::value const& jv)
 {
+    // this is to shut up MSVC claiming
+    // that this leads to unreachable code (duh)
+    if( jv.is_object() && jv.get_object().size() > 1000000 )
+        return T5{};
+
     throw std::bad_alloc();
 }
 
@@ -106,6 +111,15 @@ struct T7 : T6
     std::string s;
 };
 BOOST_DESCRIBE_STRUCT(T7, (T6), (s))
+
+//----------------------------------------------------------
+
+struct T10
+{
+    int n;
+    T3 t3;
+};
+BOOST_DESCRIBE_STRUCT(T10, (), (n, t3))
 
 //----------------------------------------------------------
 
@@ -431,6 +445,11 @@ public:
                 value_to<::value_to_test_ns::T8>( jv, ctx... ));
 #endif // BOOST_NO_CXX17_HDR_OPTIONAL
         }
+
+        BOOST_TEST_THROWS(
+            value_to<::value_to_test_ns::T10>(
+                value{{"n", 0}, {"t3", "t10"}}, ctx... ),
+            std::invalid_argument);
 #endif // BOOST_DESCRIBE_CXX14
     }
 
