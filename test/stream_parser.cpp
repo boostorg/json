@@ -1296,6 +1296,86 @@ R"xx({
     //------------------------------------------------------
 
     void
+    testLongNumberOverlfow()
+    {
+#ifdef BOOST_JSON_EXPENSIVE_TESTS
+        std::array<char, 1000> zeroes;
+        zeroes.fill('0');
+
+        stream_parser p;
+        {
+            p.write("1", 1);
+
+            std::size_t count = 0;
+            while( static_cast<std::size_t>( INT_MAX - zeroes.size() ) > count )
+                count += p.write( zeroes.data(), zeroes.size() );
+
+            error_code ec;
+            p.write(zeroes.data(), zeroes.size(), ec);
+            BOOST_TEST( ec == error::exponent_overflow );
+        }
+
+        p.reset();
+        {
+            p.write("0.", 2);
+
+            std::size_t count = 0;
+            while( static_cast<std::size_t>( INT_MAX - zeroes.size() ) > count )
+                count += p.write( zeroes.data(), zeroes.size() );
+
+            error_code ec;
+            p.write(zeroes.data(), zeroes.size(), ec);
+            BOOST_TEST( ec == error::exponent_overflow );
+        }
+
+        p.reset();
+        {
+            p.write("0.", 2);
+
+            int count = INT_MIN;
+            while( static_cast<int>( count + zeroes.size() ) < 0 )
+                count += static_cast<int>(
+                    p.write( zeroes.data(), zeroes.size() ));
+
+            p.write(zeroes.data(), -2 - count);
+            p.write("1e", 2);
+            // at this point we've filled bias to the brim
+
+            std::string const int_min = std::to_string(INT_MIN);
+            p.write( int_min.data(), int_min.size() );
+
+            error_code ec;
+            p.finish(ec);
+            BOOST_TEST( ec == error::exponent_overflow );
+        }
+
+        p.reset();
+        {
+            std::string const uint64_max
+                = std::to_string(18446744073709551615U);
+            p.write( uint64_max.data(), uint64_max.size() );
+
+            std::size_t count = INT_MAX;
+            while( static_cast<int>( count - zeroes.size() ) > 0 )
+                count -= p.write( zeroes.data(), zeroes.size() );
+
+            p.write(zeroes.data(), count - 1);
+            // at this point we've filled bias to the brim
+
+            p.write("e", 1);
+            std::string const int_max = std::to_string(INT_MAX);
+            p.write( int_max.data(), int_max.size() );
+
+            error_code ec;
+            p.finish(ec);
+            BOOST_TEST( ec == error::exponent_overflow );
+        }
+#endif
+    }
+
+    //------------------------------------------------------
+
+    void
     run()
     {
         testCtors();
@@ -1319,6 +1399,7 @@ R"xx({
         testIssue876();
         testSentinelOverlap();
         testSpecialNumbers();
+        testLongNumberOverlfow();
     }
 };
 

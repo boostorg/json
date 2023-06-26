@@ -2336,8 +2336,13 @@ do_num3:
         if(BOOST_JSON_UNLIKELY(
             c >= '0' && c <= '9'))
         {
+            if(BOOST_JSON_UNLIKELY( num.bias + 1 == INT_MAX ))
+            {
+                BOOST_STATIC_CONSTEXPR source_location loc
+                    = BOOST_CURRENT_LOCATION;
+                return fail(cs.begin(), error::exponent_overflow, &loc);
+            }
             ++cs;
-            // VFALCO check overflow
             ++num.bias;
         }
         else if(BOOST_JSON_LIKELY(
@@ -2541,6 +2546,12 @@ do_num8:
             if(!no_parsing && BOOST_JSON_LIKELY(
                 num.mant <= 9007199254740991)) // 2^53-1
             {
+                if(BOOST_JSON_UNLIKELY( num.bias - 1 == INT_MIN ))
+                {
+                    BOOST_STATIC_CONSTEXPR source_location loc
+                        = BOOST_CURRENT_LOCATION;
+                    return fail(cs.begin(), error::exponent_overflow, &loc);
+                }
                 --num.bias;
                 num.mant = 10 * num.mant + ( c - '0' );
             }
@@ -2668,14 +2679,42 @@ do_exp3:
         BOOST_ASSERT(num.exp >= 0);
         if ( num.frac )
         {
-            if (BOOST_JSON_UNLIKELY( num.bias  < (INT_MIN + num.exp) ))
+            if(BOOST_JSON_UNLIKELY( num.bias < (INT_MIN + num.exp) ))
             {
+                // if exponent overflowed, bias is a very large negative
+                // number, and mantissa isn't zero, then we cannot parse the
+                // number correctly
+                if(BOOST_JSON_UNLIKELY(
+                    (num.exp == INT_MAX) &&
+                    (num.bias < 0) &&
+                    (num.exp + num.bias < 308) &&
+                    num.mant ))
+                {
+                    BOOST_STATIC_CONSTEXPR source_location loc
+                        = BOOST_CURRENT_LOCATION;
+                    return fail(cs.begin(), error::exponent_overflow, &loc);
+                }
+
                 num.bias = 0;
                 num.exp = INT_MAX;
             }
         }
         else if (BOOST_JSON_UNLIKELY( num.bias > (INT_MAX - num.exp) ))
         {
+            // if exponent overflowed, bias is a very large positive number,
+            // and mantissa isn't zero, then we cannot parse the
+            // number correctly
+            if(BOOST_JSON_UNLIKELY(
+                (num.exp == INT_MAX) &&
+                (num.bias > 0) &&
+                (num.exp - num.bias < 308) &&
+                num.mant ))
+            {
+                BOOST_STATIC_CONSTEXPR source_location loc
+                    = BOOST_CURRENT_LOCATION;
+                return fail(cs.begin(), error::exponent_overflow, &loc);
+            }
+
             num.bias = 0;
             num.exp = INT_MAX;
         }
