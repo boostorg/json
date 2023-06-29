@@ -208,7 +208,9 @@ value128 full_multiplication(uint64_t a, uint64_t b) {
   answer.high = __umulh(a, b);
   answer.low = a * b;
 #elif defined(BOOST_JSON_FASTFLOAT_32BIT) || (defined(_WIN64) && !defined(__clang__))
-  answer.low = _umul128(a, b, &answer.high); // _umul128 not available on ARM64
+  unsigned long long high;
+  answer.low = _umul128(a, b, &high); // _umul128 not available on ARM64
+  answer.high = static_cast<uint64_t>(high);
 #elif defined(BOOST_JSON_FASTFLOAT_64BIT)
   __uint128_t r = ((__uint128_t)a) * b;
   answer.low = uint64_t(r);
