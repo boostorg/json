@@ -394,9 +394,10 @@ try_make_tuple_like(
 {
     error_code ec;
     auto items = std::make_tuple(
-        try_make_tuple_elem<tuple_element_t<Is, T>>(
-            arr[Is], ctx, ec)
-        ...);
+        try_make_tuple_elem<
+            typename std::decay<tuple_element_t<Is, T>>::type >(
+                arr[Is], ctx, ec)
+            ...);
     if( ec.failed() )
         return {boost::system::in_place_error, ec};
 
