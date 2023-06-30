@@ -873,14 +873,10 @@ tag_invoke(
 
         using T = std::variant_alternative_t<I.value, Variant>;
         auto attempt = try_value_to<T>(jv, ctx);
-        if( attempt )
+        if( attempt)
             res.emplace(std::in_place_index_t<I>(), std::move(*attempt));
     });
 
-    if( res.has_error() )
-    {
-        res = {system::in_place_error, ec};
-    }
     return res;
 }
 #endif // BOOST_NO_CXX17_HDR_VARIANT
