@@ -824,16 +824,18 @@ using value_to_category = conversion_category<
 
 // std::optional
 #ifndef BOOST_NO_CXX17_HDR_OPTIONAL
-template<class T>
-result<std::optional<T>>
+template< class T, class Ctx1, class Ctx2 >
+result< std::optional<T> >
 tag_invoke(
-    try_value_to_tag<std::optional<T>>,
-    value const& jv)
+    try_value_to_tag< std::optional<T> >,
+    value const& jv,
+    Ctx1 const&,
+    Ctx2 const& ctx)
 {
     if( jv.is_null() )
         return std::optional<T>();
     else
-        return try_value_to<T>(jv);
+        return try_value_to<T>(jv, ctx);
 }
 
 inline
@@ -852,11 +854,13 @@ tag_invoke(
 
 // std::variant
 #ifndef BOOST_NO_CXX17_HDR_VARIANT
-template<class... Ts>
+template< class... Ts, class Ctx1, class Ctx2 >
 result< std::variant<Ts...> >
 tag_invoke(
     try_value_to_tag< std::variant<Ts...> >,
-    value const& jv)
+    value const& jv,
+    Ctx1 const&,
+    Ctx2 const& ctx)
 {
     error_code ec;
     BOOST_JSON_FAIL(ec, error::exhausted_variants);
@@ -868,7 +872,7 @@ tag_invoke(
             return;
 
         using T = std::variant_alternative_t<I.value, Variant>;
-        auto attempt = try_value_to<T>(jv);
+        auto attempt = try_value_to<T>(jv, ctx);
         if( attempt )
             res.emplace(std::in_place_index_t<I>(), std::move(*attempt));
     });
