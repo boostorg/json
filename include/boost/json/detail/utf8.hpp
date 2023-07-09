@@ -21,6 +21,30 @@ namespace boost {
 namespace json {
 namespace detail {
 
+template<endian::order = endian::order::little>
+constexpr
+std::uint32_t
+make_u32_impl(std::uint8_t b4, std::uint8_t b3, std::uint8_t b2, std::uint8_t b1)
+{
+    return (b4 << 24) | (b3 << 16) | (b2 << 8) | b1;
+}
+
+template<>
+constexpr
+std::uint32_t
+make_u32_impl<endian::order::big>(
+    std::uint8_t b4, std::uint8_t b3, std::uint8_t b2, std::uint8_t b1)
+{
+    return (b1 << 24) | (b2 << 16) | (b3 << 8) | b4;
+}
+
+constexpr
+std::uint32_t
+make_u32(std::uint8_t b4, std::uint8_t b3, std::uint8_t b2, std::uint8_t b1)
+{
+    return make_u32_impl<endian::order::native>(b4, b3, b2, b1);
+}
+
 template<int N>
 std::uint32_t
 load_little_endian(void const* p)
@@ -70,7 +94,7 @@ inline
 bool
 is_valid_utf8(const char* p, uint16_t first)
 {
-    uint32_t v;
+    std::uint32_t v;
     switch(first >> 8)
     {
     default:
@@ -78,38 +102,47 @@ is_valid_utf8(const char* p, uint16_t first)
 
     // 2 bytes, second byte [80, BF]
     case 1:
-        v = load_little_endian<2>(p);
-        return (v & 0xC000) == 0x8000;
+        std::memcpy(&v, p, 2);
+        return ( v & make_u32(0x00,0x00,0xC0,0x00) )
+            == make_u32(0x00,0x00,0x80,0x00);
 
     // 3 bytes, second byte [A0, BF]
     case 2:
-        v = load_little_endian<3>(p);
-        return (v & 0xC0E000) == 0x80A000;
+        std::memcpy(&v, p, 3);
+        return ( v & make_u32(0x00,0xC0,0xE0,0x00) )
+            == make_u32(0x00,0x80,0xA0,0x00);
 
     // 3 bytes, second byte [80, BF]
     case 3:
-        v = load_little_endian<3>(p);
-        return (v & 0xC0C000) == 0x808000;
+        std::memcpy(&v, p, 3);
+        return ( v & make_u32(0x00,0xC0,0xC0,0x00) )
+            == make_u32(0x00,0x80,0x80,0x00);
 
     // 3 bytes, second byte [80, 9F]
     case 4:
-        v = load_little_endian<3>(p);
-        return (v & 0xC0E000) == 0x808000;
+        std::memcpy(&v, p, 3);
+        return ( v & make_u32(0x00,0xC0,0xE0,0x00) )
+            == make_u32(0x00,0x80,0x80,0x00);
 
     // 4 bytes, second byte [90, BF]
     case 5:
-        v = load_little_endian<4>(p);
-        return (v & 0xC0C0FF00) + 0x7F7F7000 <= 0x2F00;
+        std::memcpy(&v, p, 4);
+        return ( ( ( v & make_u32(0xC0,0xC0,0xF0,0x00) )
+            + make_u32(0x7F,0x7F,0x70,0xFF) )
+            | make_u32(0x00,0x00,0x30,0xFF) )
+            == make_u32(0x00,0x00,0x30,0xFF);
 
     // 4 bytes, second byte [80, BF]
     case 6:
-        v = load_little_endian<4>(p);
-        return (v & 0xC0C0C000) == 0x80808000;
+        std::memcpy(&v, p, 4);
+        return ( v & make_u32(0xC0,0xC0,0xC0,0x00) )
+            == make_u32(0x80,0x80,0x80,0x00);
 
     // 4 bytes, second byte [80, 8F]
     case 7:
-        v = load_little_endian<4>(p);
-        return (v & 0xC0C0F000) == 0x80808000;
+        std::memcpy(&v, p, 4);
+        return ( v & make_u32(0xC0,0xC0,0xF0,0x00) )
+            == make_u32(0x80,0x80,0x80,0x00);
     }
 }
 
