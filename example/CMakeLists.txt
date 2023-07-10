@@ -80,3 +80,11 @@ add_executable(use_allocator
 )
 set_property(TARGET use_allocator PROPERTY FOLDER "example")
 target_link_libraries(use_allocator PRIVATE Boost::json)
+
+#
+
+add_executable(cbor
+    cbor.cpp
+)
+set_property(TARGET cbor PROPERTY FOLDER "example")
+target_link_libraries(cbor PRIVATE Boost::json)

@@ -122,6 +122,7 @@
 [import ../../example/pretty.cpp]
 [import ../../example/validate.cpp]
 [import ../../example/use_allocator.cpp]
+[import ../../example/cbor.cpp]
 [import ../../include/boost/json/impl/serialize.ipp]
 [import ../../test/doc_background.cpp]
 [import ../../test/doc_parsing.cpp]

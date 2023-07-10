@@ -24,5 +24,9 @@
 [example_use_allocator]
 [endsect]
 
+[section CBOR]
+[example_cbor]
+[endsect]
+
 [endsect]
 
