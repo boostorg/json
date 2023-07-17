@@ -4,7 +4,7 @@
     Distributed under the Boost Software License, Version 1.0. (See accompanying
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-    Official repository: https://github.com/cppalliance/json
+    Official repository: https://github.com/boostorg/json
 ]
 
 [library Boost.JSON
@@ -28,8 +28,8 @@
 [template indexterm1[term1] '''<indexterm><primary>'''[term1]'''</primary></indexterm>''']
 [template indexterm2[term1 term2] '''<indexterm><primary>'''[term1]'''</primary><secondary>'''[term2]'''</secondary></indexterm>''']
 
-[template include_file[path][^<'''<ulink url="https://github.com/cppalliance/json/blob/master/include/'''[path]'''">'''[path]'''</ulink>'''>]]
-[template issue[n] '''<ulink url="https://github.com/cppalliance/json/issues/'''[n]'''">#'''[n]'''</ulink>''']
+[template include_file[path][^<'''<ulink url="https://github.com/boostorg/json/blob/master/include/'''[path]'''">'''[path]'''</ulink>'''>]]
+[template issue[n] '''<ulink url="https://github.com/boostorg/json/issues/'''[n]'''">#'''[n]'''</ulink>''']
 
 [/ Named Requirements ]
 

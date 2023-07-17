@@ -152,7 +152,7 @@ rule fuzzer-props ( props * )
           <linkflags>-fsanitize=fuzzer
           # explicitly set BOOST_JSON_STACK_BUFFER_SIZE small so interesting
           # code paths are taken also for small inputs
-          # (see https://github.com/CPPAlliance/json/issues/333)
+          # (see https://github.com/boostorg/json/issues/333)
           <define>BOOST_JSON_STACK_BUFFER_SIZE=64
           ;
     }

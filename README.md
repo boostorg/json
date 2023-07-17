@@ -1,6 +1,6 @@
-[![Boost.JSON](https://raw.githubusercontent.com/CPPAlliance/json/master/doc/images/repo-logo-3.png)](http://master.json.cpp.al/)
+[![Boost.JSON](https://raw.githubusercontent.com/CPPAlliance/json/master/doc/images/repo-logo-3.png)](https://www.boost.org/doc/libs/release/libs/json)
 
-Branch          | [`master`](https://github.com/CPPAlliance/json/tree/master) | [`develop`](https://github.com/CPPAlliance/json/tree/develop) |
+Branch          | [`master`](https://github.com/boostorg/json/tree/master) | [`develop`](https://github.com/boostorg/json/tree/develop) |
 --------------- | ----------------------------------------------------------- | ------------------------------------------------------------- |
 [Azure](https://azure.microsoft.com/en-us/services/devops/pipelines/) | [![Build Status](https://img.shields.io/azure-devops/build/vinniefalco/2571d415-8cc8-4120-a762-c03a8eda0659/8/master)](https://vinniefalco.visualstudio.com/json/_build/latest?definitionId=5&branchName=master) | [![Build Status](https://img.shields.io/azure-devops/build/vinniefalco/2571d415-8cc8-4120-a762-c03a8eda0659/8/develop)](https://vinniefalco.visualstudio.com/json/_build/latest?definitionId=8&branchName=develop)
 Docs            | [![Documentation](https://img.shields.io/badge/docs-master-brightgreen.svg)](https://www.boost.org/doc/libs/master/libs/json/) | [![Documentation](https://img.shields.io/badge/docs-develop-brightgreen.svg)](https://www.boost.org/doc/libs/develop/libs/json/)

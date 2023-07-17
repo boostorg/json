@@ -53,7 +53,7 @@ fuzzer=./fuzzer_$variant
 
 if [ ! -e $fuzzer -o $srcfile -nt $fuzzer ] ; then
     # explicitly set BOOST_JSON_STACK_BUFFER_SIZE small so interesting
-    # code paths are taken also for small inputs (see https://github.com/CPPAlliance/json/issues/333)
+    # code paths are taken also for small inputs (see https://github.com/boostorg/json/issues/333)
     $CLANG \
         -std=c++17 \
         -O3 \
