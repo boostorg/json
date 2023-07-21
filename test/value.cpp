@@ -2131,6 +2131,17 @@ public:
     void
     testInitList()
     {
+        {
+            value jv{};
+            BOOST_TEST( jv.is_null() );
+        }
+#ifndef BOOST_JSON_LEGACY_INIT_LIST_BEHAVIOR
+        {
+            value jv{0};
+            BOOST_TEST( jv == 0 );
+        }
+#endif
+
         check_array(value{0,0,0},               0, 0, 0);
         check_array(value{false,false,false},   false, false, false);
         check_array(value{false,2,false},       false, 2, false);
