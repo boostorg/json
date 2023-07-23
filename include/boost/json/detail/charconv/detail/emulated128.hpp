@@ -80,7 +80,7 @@ BOOST_JSON_SAFEBUFFERS inline uint128 umul128(std::uint64_t x, std::uint64_t y) 
     return {high, low};
 
     // https://developer.arm.com/documentation/dui0802/a/A64-General-Instructions/UMULH
-    #elif defined(__arm__)
+    #elif defined(_M_ARM64) && !defined(__MINGW32__)
 
     std::uint64_t high = __umulh(x, y);
     std::uint64_t low = x * y;
