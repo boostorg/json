@@ -18,7 +18,7 @@
     </row></thead>
     <tbody><row>
       <entry valign="top">
-        <bridgehead renderas="sect3">Classes</bridgehead>
+      <bridgehead renderas="sect3">Classes (1/2)</bridgehead>
         <simplelist type="vert" columns="1">
           <member><link linkend="json.ref.boost__json__array">array</link></member>
           <member><link linkend="json.ref.boost__json__basic_parser">basic_parser</link></member>
@@ -36,12 +36,15 @@
           <member><link linkend="json.ref.boost__json__storage_ptr">storage_ptr</link></member>
           <member><link linkend="json.ref.boost__json__stream_parser">stream_parser</link></member>
           <member><link linkend="json.ref.boost__json__string">string</link></member>
+        </simplelist>
+      </entry>
+      <entry valign="top">
+        <bridgehead renderas="sect3">Classes (2/2)</bridgehead>
+        <simplelist type="vert" columns="1">
           <member><link linkend="json.ref.boost__json__value">value</link></member>
           <member><link linkend="json.ref.boost__json__value_ref">value_ref</link></member>
           <member><link linkend="json.ref.boost__json__value_stack">value_stack</link></member>
         </simplelist>
-      </entry>
-      <entry valign="top">
         <bridgehead renderas="sect3">Functions</bridgehead>
         <simplelist type="vert" columns="1">
           <member><link linkend="json.ref.boost__json__get">get</link></member>
