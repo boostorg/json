@@ -11,6 +11,38 @@
 
 [/-----------------------------------------------------------------------------]
 
+[heading Boost 1.83.0]
+
+[*API Changes]
+
+* [ issue 859 ] The library now only throws __system_error__, except for when
+  allocation failed, in which case `std::bad_alloc` is thrown.
+* [ issue 884 ] Serialization behavior can now be changed by
+  [link json.ref.boost__json__serialize_options `serialize_options`].
+
+[*New Features]
+
+* [ issue 819 ] [link json.conversion.contextual_conversions Contextual conversions].
+* [ issue 599 ] [link json.ref.boost__json__number_precision Parser option]
+  for more precise number parsing.
+* [ issue 885 ] Support [link json.ref.boost__json__parse_options `parse_options`]
+  in stream `operator<<`.
+* [ issue 397 ] [link json.ref.boost__json__parse_options Parser option] to
+  allow `Infinity` and `NaN` JSON literals.
+* [ issue 901 ] [link json.ref.boost__json__number_precision Parser mode]
+  that only validates numbers rather than parsing them.
+* [ issue 892 ] Numbers with exponent larger than `INT_MAX` are accepted
+  by the parser and treated as infinity.
+
+[*Fixes]
+
+* [ issue 901 ] Fix `object` member functions that should provide strong
+  guarantee.
+* [ issue 887 ] Fix ambiguity of `end` call when `boost/range.hpp` is included.
+* [ issue 902 ] Fix ASan failures.
+* [ issue 904 ] Fix error message for `error::size_mismatch`.
+* Fix conversion into tuple with const elements.
+
 [heading Boost 1.82.0]
 
 [*New Features]
