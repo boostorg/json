@@ -25,7 +25,6 @@
           <member><link linkend="json.ref.boost__json__key_value_pair">key_value_pair</link></member>
           <member><link linkend="json.ref.boost__json__monotonic_resource">monotonic_resource</link></member>
           <member><link linkend="json.ref.boost__json__monotonic_resource">monotonic_resource</link></member>
-          <member><link linkend="json.ref.boost__json__number_precision">number_precision</link></member>
           <member><link linkend="json.ref.boost__json__object">object</link></member>
           <member><link linkend="json.ref.boost__json__parser">parser</link></member>
           <member><link linkend="json.ref.boost__json__parse_options">parse_options</link></member>
@@ -36,12 +35,12 @@
           <member><link linkend="json.ref.boost__json__storage_ptr">storage_ptr</link></member>
           <member><link linkend="json.ref.boost__json__stream_parser">stream_parser</link></member>
           <member><link linkend="json.ref.boost__json__string">string</link></member>
+          <member><link linkend="json.ref.boost__json__value">value</link></member>
         </simplelist>
       </entry>
       <entry valign="top">
         <bridgehead renderas="sect3">Classes (2/2)</bridgehead>
         <simplelist type="vert" columns="1">
-          <member><link linkend="json.ref.boost__json__value">value</link></member>
           <member><link linkend="json.ref.boost__json__value_ref">value_ref</link></member>
           <member><link linkend="json.ref.boost__json__value_stack">value_stack</link></member>
         </simplelist>
@@ -96,6 +95,7 @@
           <member><link linkend="json.ref.boost__json__condition">condition</link></member>
           <member><link linkend="json.ref.boost__json__error">error</link></member>
           <member><link linkend="json.ref.boost__json__kind">kind</link></member>
+          <member><link linkend="json.ref.boost__json__number_precision">number_precision</link></member>
           <member><link linkend="json.ref.boost__json__object_kind">object_kind</link></member>
           <member><link linkend="json.ref.boost__json__string_kind">string_kind</link></member>
         </simplelist>
