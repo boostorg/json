@@ -231,6 +231,18 @@ value_from_impl(
 #endif
 }
 
+// optionals
+template< class T, class Ctx >
+void
+value_from_impl(
+    optional_conversion_tag, value& jv, T&& from, Ctx const& ctx )
+{
+    if( from )
+        value_from( *from, ctx, jv );
+    else
+        jv = nullptr;
+}
+
 //----------------------------------------------------------
 // Contextual conversions
 
@@ -241,28 +253,6 @@ using value_from_category = conversion_category<
 } // detail
 
 #ifndef BOOST_NO_CXX17_HDR_OPTIONAL
-template< class T, class Ctx >
-void
-tag_invoke(
-    value_from_tag, value& jv, std::optional<T> const& from, Ctx const& ctx )
-{
-    if( from )
-        value_from( *from, ctx, jv );
-    else
-        jv = nullptr;
-}
-
-template< class T, class Ctx >
-void
-tag_invoke(
-    value_from_tag, value& jv, std::optional<T>&& from, Ctx const& ctx )
-{
-    if( from )
-        value_from( std::move(*from), ctx, jv );
-    else
-        jv = nullptr;
-}
-
 inline
 void
 tag_invoke(

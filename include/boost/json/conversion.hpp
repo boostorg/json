@@ -331,6 +331,38 @@ struct is_described_class;
 template<class T>
 struct is_described_enum;
 
+/** Determine if `T` should be treated as an optional
+
+    Optionals are serialised as `null` if empty, or as the stored type
+    otherwise.<br>
+
+    Given `t`, a glvalue of type `T`, if
+
+    @li <tt>decltype( t.value() )</tt> is well-formed and isn't a void type; and
+
+    @li <tt>t.reset()</tt> is well-formed;
+
+    then the trait provides the member constant `value`
+    that is equal to `true`. Otherwise, `value` is equal to `false`.<br>
+
+    Users can specialize the trait for their own types if they don't want them
+    to be treated as optionals. For example:
+
+    @code
+    namespace boost {
+    namespace json {
+
+    template <>
+    struct is_optional_like<your::optional> : std::false_type
+    { };
+
+    } // namespace boost
+    } // namespace json
+    @endcode
+*/
+template<class T>
+struct is_optional_like;
+
 } // namespace json
 } // namespace boost
 

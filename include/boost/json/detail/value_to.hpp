@@ -376,18 +376,6 @@ value_to_impl(
         *arr, ctx, boost::mp11::make_index_sequence<N>());
 }
 
-template< class T>
-struct is_optional
-    : std::false_type
-{ };
-
-#ifndef BOOST_NO_CXX17_HDR_OPTIONAL
-template< class T>
-struct is_optional< std::optional<T> >
-    : std::true_type
-{ };
-#endif // BOOST_NO_CXX17_HDR_OPTIONAL
-
 template< class Ctx, class T, bool non_throwing = true >
 struct to_described_member
 {
@@ -418,7 +406,7 @@ struct to_described_member
         auto const found = obj.find(D::name);
         if( found == obj.end() )
         {
-            BOOST_IF_CONSTEXPR( !is_optional<M>::value )
+            BOOST_IF_CONSTEXPR( !is_optional_like<M>::value )
             {
                 error_code ec;
                 BOOST_JSON_FAIL(ec, error::unknown_name);
@@ -515,6 +503,22 @@ value_to_impl(
 #endif
 
     return {system::in_place_value, val};
+}
+
+// optionals
+template< class T, class Ctx >
+result<T>
+value_to_impl(
+    optional_conversion_tag,
+    try_value_to_tag<T>,
+    value const& jv,
+    Ctx const& ctx)
+{
+    using Inner = value_result_type<T>;
+    if( jv.is_null() )
+        return {};
+    else
+        return try_value_to<Inner>(jv, ctx);
 }
 
 //----------------------------------------------------------
@@ -822,22 +826,7 @@ using value_to_category = conversion_category<
 
 } // detail
 
-// std::optional
 #ifndef BOOST_NO_CXX17_HDR_OPTIONAL
-template< class T, class Ctx1, class Ctx2 >
-result< std::optional<T> >
-tag_invoke(
-    try_value_to_tag< std::optional<T> >,
-    value const& jv,
-    Ctx1 const&,
-    Ctx2 const& ctx)
-{
-    if( jv.is_null() )
-        return std::optional<T>();
-    else
-        return try_value_to<T>(jv, ctx);
-}
-
 inline
 result<std::nullopt_t>
 tag_invoke(

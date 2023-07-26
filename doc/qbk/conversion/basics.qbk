@@ -95,6 +95,14 @@ following list of categories. The first matching category is selected.
         to the input value converted to its underlying type.]
     [The result is the described enumerator, corresponding to the input
         __string__.]
+][
+    [Type satisfying __is_optional_like__]
+    []
+    [If the input value is empty, the result is a `null`. Otherwise it is
+        equivalent to conversion of the object stored inside of optional.]
+    [The result is default constructed if the input value is `null`. Otherwise
+        the result is constructed from the result of conversion of the input to
+        the type stored in optional.]
 ]]
 
 For composite types (sequences, tuples, described classes, etc.) conversion of

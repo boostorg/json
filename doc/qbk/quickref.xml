@@ -69,6 +69,7 @@
           <member><link linkend="json.ref.boost__json__is_described_enum">is_described_enum</link></member>
           <member><link linkend="json.ref.boost__json__is_map_like">is_map_like</link></member>
           <member><link linkend="json.ref.boost__json__is_null_like">is_null_like</link></member>
+          <member><link linkend="json.ref.boost__json__is_optional_like">is_optional_like</link></member>
           <member><link linkend="json.ref.boost__json__is_sequence_like">is_sequence_like</link></member>
           <member><link linkend="json.ref.boost__json__is_string_like">is_string_like</link></member>
           <member><link linkend="json.ref.boost__json__is_tuple_like">is_tuple_like</link></member>

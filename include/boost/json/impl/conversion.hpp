@@ -152,6 +152,7 @@ struct sequence_conversion_tag { };
 struct tuple_conversion_tag { };
 struct described_class_conversion_tag { };
 struct described_enum_conversion_tag { };
+struct optional_conversion_tag { };
 struct no_conversion_tag { };
 
 template<class... Args>
@@ -216,31 +217,40 @@ template< class T >
 using described_bases = describe::describe_bases<
     T, describe::mod_any_access>;
 
+template< class T >
+using library_conversion_category = mp11::mp_cond<
+    // native conversions (constructors and member functions of value)
+    std::is_same<T, value>,   value_conversion_tag,
+    std::is_same<T, array>,   array_conversion_tag,
+    std::is_same<T, object>,  object_conversion_tag,
+    std::is_same<T, string>,  string_conversion_tag,
+    std::is_same<T, bool>,    bool_conversion_tag,
+    std::is_arithmetic<T>,    number_conversion_tag,
+    // generic conversions
+    is_null_like<T>,          null_like_conversion_tag,
+    is_string_like<T>,        string_like_conversion_tag,
+    is_map_like<T>,           map_like_conversion_tag,
+    is_sequence_like<T>,      sequence_conversion_tag,
+    is_tuple_like<T>,         tuple_conversion_tag,
+    is_described_class<T>,    described_class_conversion_tag,
+    is_described_enum<T>,     described_enum_conversion_tag,
+    is_optional_like<T>,      optional_conversion_tag,
+    // failed to find a suitable implementation
+    mp11::mp_true,            no_conversion_tag>;
+
+template< class Ctx, class T, class Dir >
+using user_conversion_category = mp11::mp_cond<
+    // user conversion (via tag_invoke)
+    has_user_conversion3<Ctx, T, Dir>, full_context_conversion_tag,
+    has_user_conversion2<Ctx, T, Dir>, context_conversion_tag,
+    has_user_conversion1<T, Dir>,      user_conversion_tag>;
+
 template< class Ctx, class T, class Dir >
 struct conversion_category_impl
 {
-    using type = mp11::mp_cond<
-        // user conversion (via tag_invoke)
-        has_user_conversion3<Ctx, T, Dir>, full_context_conversion_tag,
-        has_user_conversion2<Ctx, T, Dir>, context_conversion_tag,
-        has_user_conversion1<T, Dir>,      user_conversion_tag,
-        // native conversions (constructors and member functions of value)
-        std::is_same<T, value>,            value_conversion_tag,
-        std::is_same<T, array>,            array_conversion_tag,
-        std::is_same<T, object>,           object_conversion_tag,
-        std::is_same<T, string>,           string_conversion_tag,
-        std::is_same<T, bool>,             bool_conversion_tag,
-        std::is_arithmetic<T>,             number_conversion_tag,
-        // generic conversions
-        is_null_like<T>,                   null_like_conversion_tag,
-        is_string_like<T>,                 string_like_conversion_tag,
-        is_map_like<T>,                    map_like_conversion_tag,
-        is_sequence_like<T>,               sequence_conversion_tag,
-        is_tuple_like<T>,                  tuple_conversion_tag,
-        is_described_class<T>,             described_class_conversion_tag,
-        is_described_enum<T>,              described_enum_conversion_tag,
-        // failed to find a suitable implementation
-        mp11::mp_true,                     no_conversion_tag>;
+    using type = mp11::mp_eval_or<
+        library_conversion_category<T>,
+        user_conversion_category, Ctx, T, Dir>;
 };
 template< class Ctx, class T, class Dir >
 using conversion_category =
@@ -362,6 +372,13 @@ struct supported_context< std::tuple<Ctxs...>, T, Dir >
     }
 };
 
+template< class T >
+using value_result_type = typename std::decay<
+    decltype( std::declval<T&>().value() )>::type;
+
+template< class T >
+using can_reset = decltype( std::declval<T&>().reset() );
+
 } // namespace detail
 
 template <class T>
@@ -423,6 +440,14 @@ struct is_described_class
 template<class T>
 struct is_described_enum
     : describe::has_describe_enumerators<T>
+{ };
+
+template<class T>
+struct is_optional_like
+    : mp11::mp_and<
+        mp11::mp_not<std::is_void<
+            mp11::mp_eval_or<void, detail::value_result_type, T>>>,
+        mp11::mp_valid<detail::can_reset, T>>
 { };
 
 } // namespace json

@@ -61,6 +61,7 @@
 [def __is_described_enum__      [link json.ref.boost__json__is_described_enum `is_described_enum`]]
 [def __is_map_like__            [link json.ref.boost__json__is_map_like `is_map_like`]]
 [def __is_null_like__           [link json.ref.boost__json__is_null_like `is_null_like`]]
+[def __is_optional_like__       [link json.ref.boost__json__is_optional_like `is_optional_like`]]
 [def __is_sequence_like__       [link json.ref.boost__json__is_sequence_like `is_sequence_like`]]
 [def __is_string_like__         [link json.ref.boost__json__is_string_like `is_string_like`]]
 [def __is_tuple_like__          [link json.ref.boost__json__is_tuple_like `is_tuple_like`]]
