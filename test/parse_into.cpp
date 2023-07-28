@@ -48,6 +48,8 @@ bool operator==( Y const& y1, Y const& y2 )
     return y1.v == y2.v && y1.m == y2.m;
 }
 
+BOOST_DEFINE_ENUM_CLASS(E, x, y, z)
+
 namespace boost {
 namespace json {
 
@@ -181,6 +183,15 @@ public:
 #endif
     }
 
+    void testEnum()
+    {
+#ifdef BOOST_DESCRIBE_CXX14
+        testParseInto<E>( E::x );
+        testParseInto<E>( E::y );
+        testParseInto<E>( E::z );
+#endif // BOOST_DESCRIBE_CXX14
+    }
+
     void run()
     {
         testNull();
@@ -192,6 +203,7 @@ public:
         testMap();
         testTuple();
         testStruct();
+        testEnum();
     }
 };
 

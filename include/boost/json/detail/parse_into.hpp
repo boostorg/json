@@ -15,6 +15,7 @@
 
 #include <boost/json/error.hpp>
 #include <boost/json/conversion.hpp>
+#include <boost/describe/enum_from_string.hpp>
 
 namespace boost {
 namespace json {
@@ -373,6 +374,51 @@ public:
         this->parent_->signal_value();
         return true;
     }
+};
+
+// described enum handler
+template< class V, class P >
+class converting_handler<described_enum_conversion_tag, V, P>
+    : public scalar_handler<P, error::not_string>
+{
+#ifndef BOOST_DESCRIBE_CXX14
+
+    static_assert(
+        sizeof(V) == 0, "Enum support for parse_into requires C++14" );
+
+#else
+
+private:
+    V* value_;
+    std::string name_;
+
+public:
+    converting_handler( V* v, P* p )
+        : converting_handler::scalar_handler(p)
+        , value_(v)
+    {}
+
+    bool on_string_part( string_view sv, std::size_t, error_code& )
+    {
+        name_.append( sv.begin(), sv.end() );
+        return true;
+    }
+
+    bool on_string( string_view sv, std::size_t, error_code& ec )
+    {
+        name_.append( sv.begin(), sv.end() );
+
+        if( !describe::enum_from_string(name_.data(), *value_) )
+        {
+            BOOST_JSON_FAIL(ec, error::unknown_name);
+            return false;
+        }
+
+        this->parent_->signal_value();
+        return true;
+    }
+
+#endif // BOOST_DESCRIBE_CXX14
 };
 
 template< class V, class P >
