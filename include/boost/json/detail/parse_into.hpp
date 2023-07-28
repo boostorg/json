@@ -967,6 +967,136 @@ public:
 #endif// BOOST_CXX_VERSION < 201400L
 };
 
+// optional handler
+template<class V, class P>
+class converting_handler<optional_conversion_tag, V, P>
+{
+private:
+    using inner_type = value_result_type<V>;
+    using inner_handler_type = get_handler<inner_type, converting_handler>;
+
+    V* value_;
+    P* parent_;
+
+    inner_type inner_value_ = {};
+    inner_handler_type inner_;
+    bool inner_active_ = false;
+
+public:
+    converting_handler( converting_handler const& ) = delete;
+    converting_handler& operator=( converting_handler const& ) = delete;
+
+    converting_handler( V* v, P* p )
+        : value_(v), parent_(p), inner_(&inner_value_, this)
+    {}
+
+    void signal_value()
+    {
+        *value_ = std::move(inner_value_);
+
+        inner_active_ = false;
+        parent_->signal_value();
+    }
+
+    void signal_end()
+    {
+        parent_->signal_end();
+    }
+
+#define BOOST_JSON_INVOKE_INNER(fn) \
+    if( !inner_active_ ) \
+        inner_active_ = true; \
+    return inner_.fn;
+
+    bool on_object_begin( error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_object_begin(ec) );
+    }
+
+    bool on_object_end( std::size_t n, error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_object_end(n, ec) );
+    }
+
+    bool on_array_begin( error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_array_begin(ec) );
+    }
+
+    bool on_array_end( std::size_t n, error_code& ec )
+    {
+        if( !inner_active_ )
+        {
+            signal_end();
+            return true;
+        }
+
+        BOOST_JSON_INVOKE_INNER( on_array_end(n, ec) );
+    }
+
+    bool on_key_part( string_view sv, std::size_t n, error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_key_part(sv, n, ec) );
+    }
+
+    bool on_key( string_view sv, std::size_t n, error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_key(sv, n, ec) );
+    }
+
+    bool on_string_part( string_view sv, std::size_t n, error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_string_part(sv, n, ec) );
+    }
+
+    bool on_string( string_view sv, std::size_t n, error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_string(sv, n, ec) );
+    }
+
+    bool on_number_part( string_view sv, error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_number_part(sv, ec) );
+    }
+
+    bool on_int64( std::int64_t v, string_view sv, error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_int64(v, sv, ec) );
+    }
+
+    bool on_uint64( std::uint64_t v, string_view sv, error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_uint64(v, sv, ec) );
+    }
+
+    bool on_double( double v, string_view sv, error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_double(v, sv, ec) );
+    }
+
+    bool on_bool( bool v, error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( on_bool(v, ec) );
+    }
+
+    bool on_null( error_code& ec )
+    {
+        if( !inner_active_ )
+        {
+            *value_ = {};
+
+            this->parent_->signal_value();
+            return true;
+        }
+        else
+        {
+            return inner_.on_null(ec);
+        }
+    }
+
+#undef BOOST_JSON_INVOKE_INNER
+};
+
 // into_handler
 template< class V >
 class into_handler

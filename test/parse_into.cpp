@@ -192,6 +192,27 @@ public:
 #endif // BOOST_DESCRIBE_CXX14
     }
 
+    void testOptional()
+    {
+#ifndef BOOST_NO_CXX17_HDR_OPTIONAL
+        testParseInto< std::optional<int> >( std::nullopt );
+        testParseInto< std::optional<int> >( 1 );
+
+        testParseInto< std::optional<std::vector<std::nullptr_t>> >(
+            std::nullopt );
+        testParseInto< std::optional<std::vector<std::nullptr_t>> >(
+           std::vector<std::nullptr_t>{} );
+        testParseInto< std::optional<std::vector<std::nullptr_t>> >(
+           std::vector<std::nullptr_t>{nullptr, nullptr} );
+
+        testParseInto< std::optional<std::vector<std::string>> >(
+           std::vector<std::string>{"1", "2", "3"} );
+
+        testParseInto< std::vector< std::optional<int> > >(
+            {1, 2, 3, std::nullopt, 5, std::nullopt, std::nullopt, 8});
+#endif
+    }
+
     void run()
     {
         testNull();
@@ -204,6 +225,7 @@ public:
         testTuple();
         testStruct();
         testEnum();
+        testOptional();
     }
 };
 
