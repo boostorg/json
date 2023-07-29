@@ -60,15 +60,40 @@ public:
     template<class T> void testParseInto( T const& t )
     {
         T t1( t );
-
         std::string json = serialize( value_from( t1 ) );
 
         T t2{};
+        error_code jec;
+        parse_into(t2, json, jec);
+        BOOST_TEST( !jec.failed() ) && BOOST_TEST( t1 == t2 );
 
-        error_code ec;
-        parse_into( t2, json, ec );
+        T t3{};
+        std::error_code ec;
+        parse_into(t3, json, ec);
+        BOOST_TEST( !ec ) && BOOST_TEST( t1 == t3 );
 
-        BOOST_TEST( !ec.failed() ) && BOOST_TEST( t1 == t2 );
+        T t4{};
+        parse_into(t4, json);
+        BOOST_TEST( t1 == t4 );
+
+        std::istringstream is(json);
+        T t5{};
+        jec = {};
+        parse_into(t5, is, jec);
+        BOOST_TEST( !jec.failed() ) && BOOST_TEST( t1 == t5 );
+
+        is.clear();
+        is.seekg(0);
+        T t6{};
+        ec = {};
+        parse_into(t6, is, ec);
+        BOOST_TEST( !ec ) && BOOST_TEST( t1 == t6 );
+
+        is.clear();
+        is.seekg(0);
+        T t7{};
+        parse_into(t7, is);
+        BOOST_TEST( t1 == t7 );
     }
 
     void testNull()

@@ -50,6 +50,7 @@
           <member><link linkend="json.ref.boost__json__get_null_resource">get_null_resource</link></member>
           <member><link linkend="json.ref.boost__json__make_shared_resource">make_shared_resource</link></member>
           <member><link linkend="json.ref.boost__json__parse">parse</link></member>
+          <member><link linkend="json.ref.boost__json__parse_into">parse_into</link></member>
           <member><link linkend="json.ref.boost__json__result_from_errno">result_from_errno</link></member>
           <member><link linkend="json.ref.boost__json__serialize">serialize</link></member>
           <member><link linkend="json.ref.boost__json__to_string">to_string</link></member>
@@ -109,6 +110,7 @@
           <member><link linkend="json.ref.boost__json__error_code">error_code</link></member>
           <member><link linkend="json.ref.boost__json__error_condition">error_condition</link></member>
           <member><link linkend="json.ref.boost__json__memory_resource">memory_resource</link></member>
+          <member><link linkend="json.ref.boost__json__parser_for">parser_for</link></member>
           <member><link linkend="json.ref.boost__json__polymorphic_allocator">polymorphic_allocator</link></member>
           <member><link linkend="json.ref.boost__json__result">result</link></member>
           <member><link linkend="json.ref.boost__json__string_view">string_view</link></member>
