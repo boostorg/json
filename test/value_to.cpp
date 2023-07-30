@@ -165,6 +165,23 @@ tag_invoke(
     return make_error_code(boost::json::error::syntax);
 }
 
+// not default-constructible
+struct T11
+{
+    int n;
+
+    explicit T11( int v )
+        : n(v)
+    {}
+};
+T11
+tag_invoke(
+    boost::json::value_to_tag<T11>,
+    boost::json::value const& jv)
+{
+    return T11( jv.to_number<int>() );
+}
+
 } // namespace value_to_test_ns
 
 namespace std
@@ -506,6 +523,12 @@ public:
         value_to<Monostate>( value(), ctx... );
         BOOST_TEST_THROWS_WITH_LOCATION(
             value_to<Monostate>( jv, ctx... ));
+
+        jv = 1024;
+        using VT11 = Variant< value_to_test_ns::T11 >;
+        VT11 v11 = value_to< VT11 >( jv, ctx... );
+        BOOST_TEST( v11.index() == 0 );
+        BOOST_TEST( get<0>(v11).n == 1024 );
     }
 
     template< class... Context >

@@ -521,6 +521,84 @@ value_to_impl(
         return try_value_to<Inner>(jv, ctx);
 }
 
+// variants
+template< class T, class V, class I >
+using variant_construction_category = mp11::mp_cond<
+    std::is_constructible< T, variant2::in_place_index_t<I::value>, V >,
+        mp11::mp_int<2>,
+#ifndef BOOST_NO_CXX17_HDR_VARIANT
+    std::is_constructible< T, std::in_place_index_t<I::value>, V >,
+        mp11::mp_int<1>,
+#endif // BOOST_NO_CXX17_HDR_VARIANT
+    mp11::mp_true,
+        mp11::mp_int<0> >;
+
+template< class T, class I, class V >
+T
+initialize_variant( V&& v, mp11::mp_int<0> )
+{
+    T t;
+    t.template emplace<I::value>( std::move(v) );
+    return t;
+}
+
+template< class T, class I, class V >
+T
+initialize_variant( V&& v, mp11::mp_int<2> )
+{
+    return T( variant2::in_place_index_t<I::value>(), std::move(v) );
+}
+
+#ifndef BOOST_NO_CXX17_HDR_VARIANT
+template< class T, class I, class V >
+T
+initialize_variant( V&& v, mp11::mp_int<1> )
+{
+    return T( std::in_place_index_t<I::value>(), std::move(v) );
+}
+#endif // BOOST_NO_CXX17_HDR_VARIANT
+
+template< class T, class Ctx >
+struct alternative_converter
+{
+    result<T>& res;
+    value const& jv;
+    Ctx const& ctx;
+
+    template< class I >
+    void operator()( I ) const
+    {
+        if( res )
+            return;
+
+        using V = mp11::mp_at<T, I>;
+        auto attempt = try_value_to<V>(jv, ctx);
+        if( attempt )
+        {
+            using cat = variant_construction_category<T, V, I>;
+            res = initialize_variant<T, I>( std::move(*attempt), cat() );
+        }
+    }
+};
+
+template< class T, class Ctx >
+result<T>
+value_to_impl(
+    variant_conversion_tag,
+    try_value_to_tag<T>,
+    value const& jv,
+    Ctx const& ctx)
+{
+    error_code ec;
+    BOOST_JSON_FAIL(ec, error::exhausted_variants);
+
+    using Is = mp11::mp_iota< mp11::mp_size<T> >;
+
+    result<T> res = {system::in_place_error, ec};
+    mp11::mp_for_each<Is>( alternative_converter<T, Ctx>{res, jv, ctx} );
+    return res;
+}
+
 //----------------------------------------------------------
 // User-provided conversions; throwing -> throwing
 template< class T, class Ctx >
@@ -840,35 +918,6 @@ tag_invoke(
     return ec;
 }
 #endif
-
-// std::variant
-#ifndef BOOST_NO_CXX17_HDR_VARIANT
-template< class... Ts, class Ctx1, class Ctx2 >
-result< std::variant<Ts...> >
-tag_invoke(
-    try_value_to_tag< std::variant<Ts...> >,
-    value const& jv,
-    Ctx1 const&,
-    Ctx2 const& ctx)
-{
-    error_code ec;
-    BOOST_JSON_FAIL(ec, error::exhausted_variants);
-
-    using Variant = std::variant<Ts...>;
-    result<Variant> res = {system::in_place_error, ec};
-    mp11::mp_for_each< mp11::mp_iota_c<sizeof...(Ts)> >([&](auto I) {
-        if( res )
-            return;
-
-        using T = std::variant_alternative_t<I.value, Variant>;
-        auto attempt = try_value_to<T>(jv, ctx);
-        if( attempt)
-            res.emplace(std::in_place_index_t<I>(), std::move(*attempt));
-    });
-
-    return res;
-}
-#endif // BOOST_NO_CXX17_HDR_VARIANT
 
 } // namespace json
 } // namespace boost

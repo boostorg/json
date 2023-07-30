@@ -152,22 +152,6 @@ value_from_impl( no_conversion_tag, value&, T&&, Ctx const& )
         "No suitable tag_invoke overload found for the type");
 }
 
-#ifndef BOOST_NO_CXX17_HDR_VARIANT
-template< class Ctx >
-struct value_from_visitor
-{
-    value& jv;
-    Ctx const& ctx;
-
-    template<class T>
-    void
-    operator()(T&& t)
-    {
-        value_from( static_cast<T&&>(t), ctx, jv );
-    }
-};
-#endif // BOOST_NO_CXX17_HDR_VARIANT
-
 template< class Ctx, class T >
 struct from_described_member
 {
@@ -243,6 +227,28 @@ value_from_impl(
         jv = nullptr;
 }
 
+// variants
+template< class Ctx >
+struct value_from_visitor
+{
+    value& jv;
+    Ctx const& ctx;
+
+    template<class T>
+    void
+    operator()(T&& t)
+    {
+        value_from( static_cast<T&&>(t), ctx, jv );
+    }
+};
+
+template< class Ctx, class T >
+void
+value_from_impl( variant_conversion_tag, value& jv, T&& from, Ctx const& ctx )
+{
+    visit( value_from_visitor<Ctx>{ jv, ctx }, static_cast<T&&>(from) );
+}
+
 //----------------------------------------------------------
 // Contextual conversions
 
@@ -265,28 +271,6 @@ tag_invoke(
     (void)jv;
 }
 #endif
-
-#ifndef BOOST_NO_CXX17_HDR_VARIANT
-// std::variant
-template< class Ctx, class... Ts >
-void
-tag_invoke(
-    value_from_tag, value& jv, std::variant<Ts...>&& from, Ctx const& ctx )
-{
-    std::visit( detail::value_from_visitor<Ctx>{ jv, ctx }, std::move(from) );
-}
-
-template< class Ctx, class... Ts >
-void
-tag_invoke(
-    value_from_tag,
-    value& jv,
-    std::variant<Ts...> const& from,
-    Ctx const& ctx )
-{
-    std::visit( detail::value_from_visitor<Ctx>{ jv, ctx }, from );
-}
-#endif // BOOST_NO_CXX17_HDR_VARIANT
 
 } // namespace json
 } // namespace boost

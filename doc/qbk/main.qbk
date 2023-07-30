@@ -65,6 +65,7 @@
 [def __is_sequence_like__       [link json.ref.boost__json__is_sequence_like `is_sequence_like`]]
 [def __is_string_like__         [link json.ref.boost__json__is_string_like `is_string_like`]]
 [def __is_tuple_like__          [link json.ref.boost__json__is_tuple_like `is_tuple_like`]]
+[def __is_variant_like__        [link json.ref.boost__json__is_variant_like `is_variant_like`]]
 [def __key_value_pair__         [link json.ref.boost__json__key_value_pair `key_value_pair`]]
 [def __kind__                   [link json.ref.boost__json__kind `kind`]]
 [def __make_shared_resource__   [link json.ref.boost__json__make_shared_resource `make_shared_resource`]]

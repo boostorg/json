@@ -152,6 +152,7 @@ struct sequence_conversion_tag { };
 struct tuple_conversion_tag { };
 struct described_class_conversion_tag { };
 struct described_enum_conversion_tag { };
+struct variant_conversion_tag { };
 struct optional_conversion_tag { };
 struct no_conversion_tag { };
 
@@ -217,40 +218,55 @@ template< class T >
 using described_bases = describe::describe_bases<
     T, describe::mod_any_access>;
 
-template< class T >
-using library_conversion_category = mp11::mp_cond<
-    // native conversions (constructors and member functions of value)
-    std::is_same<T, value>,   value_conversion_tag,
-    std::is_same<T, array>,   array_conversion_tag,
-    std::is_same<T, object>,  object_conversion_tag,
-    std::is_same<T, string>,  string_conversion_tag,
-    std::is_same<T, bool>,    bool_conversion_tag,
-    std::is_arithmetic<T>,    number_conversion_tag,
-    // generic conversions
-    is_null_like<T>,          null_like_conversion_tag,
-    is_string_like<T>,        string_like_conversion_tag,
-    is_map_like<T>,           map_like_conversion_tag,
-    is_sequence_like<T>,      sequence_conversion_tag,
-    is_tuple_like<T>,         tuple_conversion_tag,
-    is_described_class<T>,    described_class_conversion_tag,
-    is_described_enum<T>,     described_enum_conversion_tag,
-    is_optional_like<T>,      optional_conversion_tag,
-    // failed to find a suitable implementation
-    mp11::mp_true,            no_conversion_tag>;
-
+// user conversion (via tag_invoke)
 template< class Ctx, class T, class Dir >
 using user_conversion_category = mp11::mp_cond<
-    // user conversion (via tag_invoke)
     has_user_conversion3<Ctx, T, Dir>, full_context_conversion_tag,
     has_user_conversion2<Ctx, T, Dir>, context_conversion_tag,
     has_user_conversion1<T, Dir>,      user_conversion_tag>;
 
+// native conversions (constructors and member functions of value)
+template< class T >
+using native_conversion_category = mp11::mp_cond<
+    std::is_same<T, value>,  value_conversion_tag,
+    std::is_same<T, array>,  array_conversion_tag,
+    std::is_same<T, object>, object_conversion_tag,
+    std::is_same<T, string>, string_conversion_tag>;
+
+// generic conversions
+template< class T >
+using generic_conversion_category = mp11::mp_cond<
+    std::is_same<T, bool>, bool_conversion_tag,
+    std::is_arithmetic<T>, number_conversion_tag,
+    is_null_like<T>,       null_like_conversion_tag,
+    is_string_like<T>,     string_like_conversion_tag,
+    is_map_like<T>,        map_like_conversion_tag,
+    is_sequence_like<T>,   sequence_conversion_tag,
+    is_tuple_like<T>,      tuple_conversion_tag,
+    is_described_class<T>, described_class_conversion_tag,
+    is_described_enum<T>,  described_enum_conversion_tag,
+    is_variant_like<T>,    variant_conversion_tag,
+    is_optional_like<T>,   optional_conversion_tag,
+    // failed to find a suitable implementation
+    mp11::mp_true,         no_conversion_tag>;
+
+template< class T >
+using nested_type = typename T::type;
+template< class T1, class T2 >
+using conversion_category_impl_helper = mp11::mp_eval_if_not<
+    std::is_same<detail::no_conversion_tag, T1>,
+    T1,
+    mp11::mp_eval_or_q, T1, mp11::mp_quote<nested_type>, T2>;
 template< class Ctx, class T, class Dir >
 struct conversion_category_impl
 {
-    using type = mp11::mp_eval_or<
-        library_conversion_category<T>,
-        user_conversion_category, Ctx, T, Dir>;
+    using type = mp11::mp_fold<
+        mp11::mp_list<
+            mp11::mp_defer<user_conversion_category, Ctx, T, Dir>,
+            mp11::mp_defer<native_conversion_category, T>,
+            mp11::mp_defer<generic_conversion_category, T>>,
+        no_conversion_tag,
+        conversion_category_impl_helper>;
 };
 template< class Ctx, class T, class Dir >
 using conversion_category =
@@ -379,6 +395,10 @@ using value_result_type = typename std::decay<
 template< class T >
 using can_reset = decltype( std::declval<T&>().reset() );
 
+template< class T >
+using has_valueless_by_exception =
+    decltype( std::declval<T const&>().valueless_by_exception() );
+
 } // namespace detail
 
 template <class T>
@@ -440,6 +460,10 @@ struct is_described_class
 template<class T>
 struct is_described_enum
     : describe::has_describe_enumerators<T>
+{ };
+
+template<class T>
+struct is_variant_like : mp11::mp_valid<detail::has_valueless_by_exception, T>
 { };
 
 template<class T>

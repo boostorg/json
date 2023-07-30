@@ -96,6 +96,12 @@ following list of categories. The first matching category is selected.
     [The result is the described enumerator, corresponding to the input
         __string__.]
 ][
+    [Type satisfying __is_variant_like__]
+    [`std::variant` and similar types, e.g. `boost::variant2::variant`.]
+    [The result is equal to the result of conversion of the active variant
+        alternative.]
+    [The result holds the first alternative for which a conversion succeeds.]
+][
     [Type satisfying __is_optional_like__]
     []
     [If the input value is empty, the result is a `null`. Otherwise it is
