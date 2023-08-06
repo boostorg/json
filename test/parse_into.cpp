@@ -215,6 +215,35 @@ public:
 #endif // BOOST_DESCRIBE_CXX14
     }
 
+    template< template<class...> class Variant, class Monostate >
+    void testVariant()
+    {
+        testParseInto< Variant<int> >( 1 );
+        testParseInto< Variant<int, std::string> >( 1 );
+        testParseInto< Variant<int, std::string> >( "qwerty" );
+        testParseInto< Variant<Monostate, int, std::string> >( {} );
+        testParseInto< Variant<Monostate, int, std::string> >( 1 );
+        testParseInto< Variant<Monostate, int, std::string> >( "qwerty" );
+
+        testParseInto< Variant< std::vector<int> > >(
+            std::vector<int>{1, 2, 3, 4, 5} );
+        testParseInto< Variant< Monostate, std::vector<int> > >(
+            std::vector<int>{1, 2, 3, 4, 5} );
+
+        testParseInto< std::vector< Variant<int, std::string> > >(
+            {1, 2, 3, "four", 5, "six", "seven", 8});
+
+        using V = Variant<
+            std::vector< int >,
+            std::tuple< int, std::string, std::map<std::string, int> >,
+            std::tuple< int, std::string, std::map<std::string, double> > >;
+        testParseInto< V >(
+            std::make_tuple(
+                5,
+                "five",
+                std::map<std::string, double>{ {"one", 1}, {"pi", 3.14} }));
+    }
+
     void testOptional()
     {
 #ifndef BOOST_NO_CXX17_HDR_OPTIONAL
@@ -249,6 +278,10 @@ public:
         testStruct();
         testEnum();
         testOptional();
+        testVariant<variant2::variant, variant2::monostate>();
+#ifndef BOOST_NO_CXX17_HDR_VARIANT
+        testVariant<std::variant, std::monostate>();
+#endif
     }
 };
 

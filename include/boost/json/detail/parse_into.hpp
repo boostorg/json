@@ -17,6 +17,8 @@
 #include <boost/json/conversion.hpp>
 #include <boost/describe/enum_from_string.hpp>
 
+#include <vector>
+
 /*
  * This file contains the majority of parse_into functionality, specifically
  * the implementation of dedicated handlers for different generic categories of
@@ -1086,6 +1088,345 @@ public:
 #undef BOOST_JSON_INVOKE_INNER
 
 #endif
+};
+
+// variant handler
+struct object_begin_handler_event
+{ };
+
+struct object_end_handler_event
+{ };
+
+struct array_begin_handler_event
+{ };
+
+struct array_end_handler_event
+{ };
+
+struct key_handler_event
+{
+    std::string value;
+};
+
+struct string_handler_event
+{
+    std::string value;
+};
+
+struct int64_handler_event
+{
+    std::int64_t value;
+};
+
+struct uint64_handler_event
+{
+    std::uint64_t value;
+};
+
+struct double_handler_event
+{
+    double value;
+};
+
+struct bool_handler_event
+{
+    bool value;
+};
+
+struct null_handler_event
+{ };
+
+using parse_event = variant2::variant<
+    object_begin_handler_event,
+    object_end_handler_event,
+    array_begin_handler_event,
+    array_end_handler_event,
+    key_handler_event,
+    string_handler_event,
+    int64_handler_event,
+    uint64_handler_event,
+    double_handler_event,
+    bool_handler_event,
+    null_handler_event>;
+
+template< class H >
+struct event_visitor
+{
+    H& handler;
+    error_code& ec;
+
+    bool
+    operator()(object_begin_handler_event&) const
+    {
+        return handler.on_object_begin(ec);
+    }
+
+    bool
+    operator()(object_end_handler_event&) const
+    {
+        return handler.on_object_end(ec, 0);
+    }
+
+    bool
+    operator()(array_begin_handler_event&) const
+    {
+        return handler.on_array_begin(ec);
+    }
+
+    bool
+    operator()(array_end_handler_event&) const
+    {
+        return handler.on_array_end(ec, 0);
+    }
+
+    bool
+    operator()(key_handler_event& ev) const
+    {
+        return handler.on_key(ec, ev.value, 0);
+    }
+
+    bool
+    operator()(string_handler_event& ev) const
+    {
+        return handler.on_string(ec, ev.value, 0);
+    }
+
+    bool
+    operator()(int64_handler_event& ev) const
+    {
+        return handler.on_int64(ec, ev.value, string_view());
+    }
+
+    bool
+    operator()(uint64_handler_event& ev) const
+    {
+        return handler.on_uint64(ec, ev.value, string_view());
+    }
+
+    bool
+    operator()(double_handler_event& ev) const
+    {
+        return handler.on_double(ec, ev.value, string_view());
+    }
+
+    bool
+    operator()(bool_handler_event& ev) const
+    {
+        return handler.on_bool(ec, ev.value);
+    }
+
+    bool
+    operator()(null_handler_event&) const
+    {
+        return handler.on_null(ec);
+    }
+};
+
+// L<T...> -> variant< monostate, get_handler<T, P>... >
+template< class P, class L >
+using inner_handler_variant = mp11::mp_push_front<
+    mp11::mp_transform_q<
+        mp11::mp_bind_back<get_handler, P>,
+        mp11::mp_apply<variant2::variant, L>>,
+    variant2::monostate>;
+
+template< class T, class P >
+class converting_handler<variant_conversion_tag, T, P>
+{
+private:
+    using variant_size = mp11::mp_size<T>;
+
+    T* value_;
+    P* parent_;
+
+    std::string string_;
+    std::vector< parse_event > events_;
+    inner_handler_variant<converting_handler, T> inner_;
+    int inner_active_ = -1;
+
+public:
+    converting_handler( converting_handler const& ) = delete;
+    converting_handler& operator=( converting_handler const& ) = delete;
+
+    converting_handler( T* v, P* p )
+        : value_( v )
+        , parent_( p )
+    {}
+
+    void signal_value()
+    {
+        inner_.template emplace<0>();
+        inner_active_ = -1;
+        events_.clear();
+        parent_->signal_value();
+    }
+
+    void signal_end()
+    {
+        parent_->signal_end();
+    }
+
+    struct alternative_selector
+    {
+        converting_handler* self;
+
+        template< class I >
+        void
+        operator()( I ) const
+        {
+            using V = mp11::mp_at<T, I>;
+            auto& v = self->value_->template emplace<I::value>( V{} );
+            self->inner_.template emplace<I::value + 1>(&v, self);
+        }
+    };
+    void
+    next_alternative()
+    {
+        if( ++inner_active_ >= static_cast<int>(variant_size::value) )
+            return;
+
+        mp11::mp_with_index< variant_size::value >(
+            inner_active_, alternative_selector{this} );
+    }
+
+    struct event_processor
+    {
+        converting_handler* self;
+        error_code& ec;
+        parse_event& event;
+
+        template< class I >
+        bool operator()( I ) const
+        {
+            auto& handler = variant2::get<I::value + 1>(self->inner_);
+            using Handler = remove_cvref<decltype(handler)>;
+            return variant2::visit(
+                event_visitor<Handler>{handler, ec}, event );
+        }
+    };
+    bool process_events(error_code& ec)
+    {
+        constexpr std::size_t N = variant_size::value;
+
+        // should be pointers not iterators, otherwise MSVC crashes
+        auto const last = events_.data() + events_.size();
+        auto first = last - 1;
+        bool ok = false;
+
+        if( inner_active_ < 0 )
+            next_alternative();
+        do
+        {
+            if( static_cast<std::size_t>(inner_active_) >= N )
+            {
+                BOOST_JSON_FAIL( ec, error::exhausted_variants );
+                return false;
+            }
+
+            for ( ; first != last; ++first )
+            {
+                ok = mp11::mp_with_index< N >(
+                    inner_active_, event_processor{this, ec, *first} );
+                if( !ok )
+                {
+                    first = events_.data();
+                    next_alternative();
+                    ec.clear();
+                    break;
+                }
+            }
+        }
+        while( !ok );
+
+        return true;
+    }
+
+#define BOOST_JSON_INVOKE_INNER(ev, ec) \
+    events_.emplace_back( ev ); \
+    return process_events(ec);
+
+    bool on_object_begin( error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( object_begin_handler_event{}, ec );
+    }
+
+    bool on_object_end( error_code& ec, std::size_t )
+    {
+        BOOST_JSON_INVOKE_INNER( object_end_handler_event{}, ec );
+    }
+
+    bool on_array_begin( error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( array_begin_handler_event{}, ec );
+    }
+
+    bool on_array_end( error_code& ec, std::size_t )
+    {
+        if( !inner_active_ )
+        {
+            signal_end();
+            return true;
+        }
+
+        BOOST_JSON_INVOKE_INNER( array_end_handler_event{}, ec );
+    }
+
+    bool on_key_part( error_code&, string_view sv, std::size_t )
+    {
+        string_.append(sv);
+        return true;
+    }
+
+    bool on_key( error_code& ec, string_view sv, std::size_t )
+    {
+        string_.append(sv);
+        BOOST_JSON_INVOKE_INNER( key_handler_event{ std::move(string_) }, ec );
+    }
+
+    bool on_string_part( error_code&, string_view sv, std::size_t )
+    {
+        string_.append(sv);
+        return true;
+    }
+
+    bool on_string( error_code& ec, string_view sv, std::size_t )
+    {
+        string_.append(sv);
+        BOOST_JSON_INVOKE_INNER(
+            string_handler_event{ std::move(string_) }, ec );
+    }
+
+    bool on_number_part( error_code&, string_view )
+    {
+        return true;
+    }
+
+    bool on_int64( error_code& ec, std::int64_t v, string_view )
+    {
+        BOOST_JSON_INVOKE_INNER( int64_handler_event{v}, ec );
+    }
+
+    bool on_uint64( error_code& ec, std::uint64_t v, string_view )
+    {
+        BOOST_JSON_INVOKE_INNER( uint64_handler_event{v}, ec );
+    }
+
+    bool on_double( error_code& ec, double v, string_view )
+    {
+        BOOST_JSON_INVOKE_INNER( double_handler_event{v}, ec );
+    }
+
+    bool on_bool( error_code& ec, bool v )
+    {
+        BOOST_JSON_INVOKE_INNER( bool_handler_event{v}, ec );
+    }
+
+    bool on_null( error_code& ec )
+    {
+        BOOST_JSON_INVOKE_INNER( null_handler_event{}, ec );
+    }
+
+#undef BOOST_JSON_INVOKE_INNER
 };
 
 // optional handler
