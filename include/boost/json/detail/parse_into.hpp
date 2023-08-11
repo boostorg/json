@@ -17,6 +17,55 @@
 #include <boost/json/conversion.hpp>
 #include <boost/describe/enum_from_string.hpp>
 
+/*
+ * This file contains the majority of parse_into functionality, specifically
+ * the implementation of dedicated handlers for different generic categories of
+ * types.
+ *
+ * At the core of parse_into is the specialisation basic_parser<
+ * detail::into_handler<T> >. detail::into_handler<T> is a handler for
+ * basic_parser. It directly handles events on_comment_part and on_comment (by
+ * ignoring them), on_document_begin (by enabling the nested dedicated
+ * handler), and on_document_end (by disabling the nested handler).
+ *
+ * Every other event is handled by the nested handler, which has the type
+ * get_handler< T, into_handler<T> >. The second parameter is the parent
+ * handler (in this case, it's the top handler, into_handler<T>). The type is
+ * actually an alias to class template converting_handler, which has a separate
+ * specialisation for every conversion category from the list of generic
+ * conversion categories (e.g. sequence_conversion_tag, tuple_conversion_tag,
+ * etc.) Instantiations of the template store a pointer to the parent handler
+ * and a pointer to the value T.
+ *
+ * The nested handler handles specific parser events by setting error_code to
+ * an appropriate value, if it receives an event it isn't supposed to handle
+ * (e.g. a number handler getting an on_string event), and also updates the
+ * value when appropriate. Note that they never need to handle on_comment_part,
+ * on_comment, on_document_begin, and on_document_end events, as those are
+ * always handled by the top handler into_handler<T>.
+ *
+ * When the nested handler receives an event that completes the current value,
+ * it is supposed to call its parent's signal_value member function. This is
+ * necessary for correct handling of composite types (e.g. sequences).
+ *
+ * Finally, nested handlers should always call parent's signal_end member
+ * function if they don't handle on_array_end themselves. This is necessary
+ * to correctly handle nested composites (e.g. sequences inside sequences).
+ *
+ * converting_handler instantiations for composite categories of types have
+ * their own nested handlers, to which they themselves delegate events. For
+ * complex types you will get a tree of handlers with into_handler<T> as the
+ * root and handlers for scalars as leaves.
+ *
+ * To reiterate, only into_handler has to handle on_comment_part, on_comment,
+ * on_document_begin, and on_document_end; only handlers for composites and
+ * into_handler has to provide signal_value and signal_end; all handlers
+ * except for into_handler have to call their parent's signal_end from
+ * their on_array_begin, if they don't handle it themselves; once a handler
+ * receives an event that finishes its current value, it should call its
+ * parent's signal_value.
+ */
+
 namespace boost {
 namespace json {
 namespace detail {
