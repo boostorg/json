@@ -219,9 +219,30 @@ using described_non_public_members = describe::describe_members<
 template< class T >
 using described_bases = describe::describe_bases<
     T, describe::mod_any_access>;
+
+#if defined(BOOST_MSVC) && BOOST_MSVC < 1920
+
+template< class T >
+struct described_member_t_impl;
+
+template< class T, class C >
+struct described_member_t_impl<T C::*>
+{
+    using type = T;
+};
+
+template< class T, class D >
+using described_member_t = remove_cvref<
+    typename described_member_t_impl<
+        remove_cvref<decltype(D::pointer)> >::type>;
+
+#else
+
 template< class T, class D >
 using described_member_t = remove_cvref<decltype(
     std::declval<T&>().* D::pointer )>;
+
+#endif
 
 // user conversion (via tag_invoke)
 template< class Ctx, class T, class Dir >

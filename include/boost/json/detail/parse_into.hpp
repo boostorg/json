@@ -602,44 +602,15 @@ public:
 };
 
 // tuple handler
-#if defined(BOOST_MSVC) && BOOST_MSVC < 1910
-
-// MSVC 2015 can't handle handler_tuple_impl
-
-#else
-
-template<std::size_t I, class T> struct handler_tuple_element
+template<std::size_t I, class T>
+struct handler_tuple_element
 {
+    template< class... Args >
+    handler_tuple_element( Args&& ... args )
+        : t_( static_cast<Args&&>(args)... )
+    {}
+
     T t_;
-};
-
-template<class S, class... T> struct handler_tuple_impl;
-
-template<std::size_t... I, class... T>
-struct handler_tuple_impl<mp11::index_sequence<I...>, T...>
-    : handler_tuple_element<I, T>...
-{
-    template<class... A>
-    handler_tuple_impl( A... a )
-        : handler_tuple_element<I, T>{{ a.first, a.second }}...
-    { }
-};
-
-template<class P, class... V>
-struct handler_tuple
-    : public handler_tuple_impl<
-        mp11::index_sequence_for<V...>, get_handler<V, P>...>
-{
-    using base_type = handler_tuple_impl<
-        mp11::index_sequence_for<V...>, get_handler<V, P>...>;
-
-    template<class... A>
-    handler_tuple( A... a )
-        : base_type( a... )
-    { }
-
-    handler_tuple( handler_tuple const& ) = delete;
-    handler_tuple& operator=( handler_tuple const& ) = delete;
 };
 
 template<std::size_t I, class T>
@@ -649,22 +620,63 @@ get( handler_tuple_element<I, T>& e )
     return e.t_;
 }
 
-template< class P, class T >
-struct tuple_inner_handlers;
+template<
+    class P,
+    class LV,
+    class S = mp11::make_index_sequence<mp11::mp_size<LV>::value> >
+struct handler_tuple;
 
-template< class P, template<class...> class L, class... V >
-struct tuple_inner_handlers<P, L<V...>>
+template< class P, template<class...> class L, class... V, std::size_t... I >
+struct handler_tuple< P, L<V...>, mp11::index_sequence<I...> >
+    : handler_tuple_element< I, get_handler<V, P> >
+    ...
 {
-    handler_tuple<P, V...> handlers_;
+    handler_tuple( handler_tuple const& ) = delete;
+    handler_tuple& operator=( handler_tuple const& ) = delete;
 
-    template<std::size_t... I>
-    tuple_inner_handlers(
-        L<V...>* pv, P* pp, mp11::index_sequence<I...> )
-        : handlers_( std::make_pair( &get<I>(*pv), pp )... )
-    {}
+    template< class Access, class T >
+    handler_tuple( Access access, T* pv, P* pp )
+        : handler_tuple_element< I, get_handler<V, P> >(
+            access( pv, mp11::mp_int<I>() ), pp )
+        ...
+    { }
 };
 
+#if defined(BOOST_MSVC) && BOOST_MSVC < 1910
+
+template< class T >
+struct tuple_element_list_impl
+{
+    template< class I >
+    using tuple_element_helper = tuple_element_t<I::value, T>;
+
+    using type = mp11::mp_transform<
+        tuple_element_helper,
+        mp11::mp_iota< std::tuple_size<T> > >;
+};
+template< class T >
+using tuple_element_list = typename tuple_element_list_impl<T>::type;
+
+#else
+
+template< class I, class T >
+using tuple_element_helper = tuple_element_t<I::value, T>;
+template< class T >
+using tuple_element_list = mp11::mp_transform_q<
+    mp11::mp_bind_back< tuple_element_helper, T>,
+    mp11::mp_iota< std::tuple_size<T> > >;
+
 #endif
+
+struct tuple_accessor
+{
+    template< class T, class I >
+    auto operator()( T* t, I ) const -> tuple_element_t<I::value, T>*
+    {
+        using std::get;
+        return &get<I::value>(*t);
+    }
+};
 
 template< class T, class P >
 class converting_handler<tuple_conversion_tag, T, P>
@@ -680,7 +692,7 @@ private:
     T* value_;
     P* parent_;
 
-    tuple_inner_handlers<converting_handler, T> inner_;
+    handler_tuple< converting_handler, tuple_element_list<T> > handlers_;
     int inner_active_ = -1;
 
 public:
@@ -688,12 +700,7 @@ public:
     converting_handler& operator=( converting_handler const& ) = delete;
 
     converting_handler( T* v, P* p )
-        : value_( v )
-        , parent_( p )
-        , inner_(
-            v,
-            this,
-            mp11::make_index_sequence< std::tuple_size<T>::value >())
+        : value_(v) , parent_(p) , handlers_(tuple_accessor(), v, this)
     {}
 
     void signal_value()
@@ -720,7 +727,7 @@ public:
         return false; \
     } \
     return mp11::mp_with_index<N>( inner_active_, [&](auto I){ \
-        return get<I>( inner_.handlers_ ).fn; \
+        return get<I.value>( handlers_ ).fn; \
     });
 
     bool on_object_begin( error_code& ec )
@@ -750,7 +757,7 @@ public:
         }
 
         return mp11::mp_with_index<N>( inner_active_, [&](auto I){
-            return get<I>( inner_.handlers_ ).on_array_begin(ec);
+            return get<I.value>( handlers_ ).on_array_begin(ec);
         });
     }
 
@@ -773,7 +780,7 @@ public:
         }
 
         return mp11::mp_with_index<N>( inner_active_, [&](auto I){
-            return get<I>( inner_.handlers_ ).on_array_end( n, ec );
+            return get<I.value>( handlers_ ).on_array_end( n, ec );
         });
     }
 
@@ -829,21 +836,46 @@ public:
 
 #undef BOOST_JSON_INVOKE_INNER
 
-#endif // BOOST_CXX_VERSION < 201400L
+#endif
 };
 
 // described struct handler
-template<class P, class T, class L>
-struct struct_inner_handlers;
+#if defined(BOOST_MSVC) && BOOST_MSVC < 1910
 
-template<class P, class T, template<class...> class L, class... D>
-struct struct_inner_handlers<P, T, L<D...>>
+template< class T >
+struct struct_element_list_impl
 {
-    handler_tuple<P, described_member_t<T, D>...> handlers_;
+    template< class D >
+    using helper = described_member_t<T, D>;
 
-    struct_inner_handlers( T* pv, P* pp )
-        : handlers_( std::make_pair( &(pv->*D::pointer), pp )... )
-    {}
+    using type = mp11::mp_transform<
+        helper,
+        describe::describe_members<T, describe::mod_public> >;
+};
+template< class T >
+using struct_element_list = typename struct_element_list_impl<T>::type;
+
+#else
+
+template< class T >
+using struct_element_list = mp11::mp_transform_q<
+    mp11::mp_bind_front< described_member_t, T >,
+    describe::describe_members<T, describe::mod_public> >;
+
+#endif
+
+struct struct_accessor
+{
+    template< class T, class I >
+    auto operator()( T* t, I ) const
+        -> described_member_t<T,
+             mp11::mp_at<
+                 describe::describe_members<T, describe::mod_public>, I> >*
+    {
+        using Ds = describe::describe_members<T, describe::mod_public>;
+        using D = mp11::mp_at<Ds, I>;
+        return &(t->*D::pointer);
+    }
 };
 
 template<class V, class P>
@@ -864,7 +896,7 @@ private:
 
     using Dm = describe::describe_members<V, describe::mod_public>;
 
-    struct_inner_handlers<converting_handler, V, Dm> inner_;
+    handler_tuple< converting_handler, struct_element_list<V> > handlers_;
     int inner_active_ = -1;
 
 public:
@@ -872,7 +904,7 @@ public:
     converting_handler& operator=( converting_handler const& ) = delete;
 
     converting_handler( V* v, P* p )
-        : value_(v), parent_(p), inner_(v, this)
+        : value_(v), parent_(p), handlers_(struct_accessor(), v, this)
     {}
 
     void signal_value()
@@ -896,7 +928,7 @@ public:
         return false; \
     } \
     return mp11::mp_with_index<mp11::mp_size<Dm>>( inner_active_, [&](auto I) { \
-        return get<I>( inner_.handlers_ ).fn; \
+        return get<I.value>( handlers_ ).fn; \
     });
 
     bool on_object_begin( error_code& ec )
@@ -1013,7 +1045,7 @@ public:
 
 #undef BOOST_JSON_INVOKE_INNER
 
-#endif// BOOST_CXX_VERSION < 201400L
+#endif
 };
 
 // optional handler
