@@ -668,6 +668,42 @@ using tuple_element_list = mp11::mp_transform_q<
 
 #endif
 
+template< class Op, class... Args>
+struct handler_op_invoker
+{
+public:
+    std::tuple<Args&...> args;
+
+    template< class Handler >
+    bool
+    operator()( Handler& handler ) const
+    {
+        return (*this)( handler, mp11::index_sequence_for<Args...>() );
+    }
+
+private:
+    template< class Handler, std::size_t... I >
+    bool
+    operator()( Handler& handler, mp11::index_sequence<I...> ) const
+    {
+        return Op()( handler, std::get<I>(args)... );
+    }
+};
+
+template< class Handlers, class F >
+struct tuple_handler_op_invoker
+{
+    Handlers& handlers;
+    F fn;
+
+    template< class I >
+    bool
+    operator()( I ) const
+    {
+        return fn( get<I::value>(handlers) );
+    }
+};
+
 struct tuple_accessor
 {
     template< class T, class I >
@@ -681,12 +717,6 @@ struct tuple_accessor
 template< class T, class P >
 class converting_handler<tuple_conversion_tag, T, P>
 {
-#if BOOST_CXX_VERSION < 201400L || ( defined(BOOST_MSVC) && BOOST_MSVC < 1910 )
-
-    static_assert(
-        sizeof(T) == 0, "Tuple support for parse_into requires C++14 or MSVC 2017 or later" );
-
-#else
 
 private:
     T* value_;
@@ -714,32 +744,53 @@ public:
         parent_->signal_value();
     }
 
-#define BOOST_JSON_INVOKE_INNER(fn) \
-    if( inner_active_ < 0 ) \
+#define BOOST_JSON_HANDLE_EVENT(fn) \
+    struct do_ ## fn \
     { \
-        BOOST_JSON_FAIL( ec, error::not_array ); \
-        return false; \
-    } \
-    constexpr int N = std::tuple_size<T>::value; \
-    if( inner_active_ >= N ) \
+        template< class H, class... Args > \
+        bool operator()( H& h, Args& ... args ) const \
+        { \
+            return h. fn (args...); \
+        } \
+    }; \
+       \
+    template< class... Args > \
+    bool fn( error_code& ec, Args&& ... args ) \
     { \
-        BOOST_JSON_FAIL( ec, error::size_mismatch ); \
-        return false; \
-    } \
-    return mp11::mp_with_index<N>( inner_active_, [&](auto I){ \
-        return get<I.value>( handlers_ ).fn; \
-    });
-
-    bool on_object_begin( error_code& ec )
-    {
-        BOOST_JSON_INVOKE_INNER( on_object_begin(ec) );
+        if( inner_active_ < 0 ) \
+        { \
+            BOOST_JSON_FAIL( ec, error::not_array ); \
+            return false; \
+        } \
+        constexpr int N = std::tuple_size<T>::value; \
+        if( inner_active_ >= N ) \
+        { \
+            BOOST_JSON_FAIL( ec, error::size_mismatch ); \
+            return false; \
+        } \
+        using F = handler_op_invoker< do_ ## fn, error_code, Args...>; \
+        using H = decltype(handlers_); \
+        return mp11::mp_with_index<N>( \
+            inner_active_, \
+            tuple_handler_op_invoker<H, F>{ \
+                handlers_, \
+                F{ std::forward_as_tuple(ec, args...) } } ); \
     }
 
-    bool on_object_end( error_code& ec, std::size_t n )
-    {
-        BOOST_JSON_INVOKE_INNER( on_object_end(ec, n) );
-    }
+    BOOST_JSON_HANDLE_EVENT( on_object_begin );
+    BOOST_JSON_HANDLE_EVENT( on_object_end );
 
+    struct do_on_array_begin
+    {
+        handler_tuple< converting_handler, tuple_element_list<T> >& handlers;
+        error_code& ec;
+
+        template< class I >
+        bool operator()( I ) const
+        {
+            return get<I::value>(handlers).on_array_begin(ec);
+        };
+    };
     bool on_array_begin( error_code& ec )
     {
         if( inner_active_ < 0 )
@@ -756,11 +807,22 @@ public:
             return true;
         }
 
-        return mp11::mp_with_index<N>( inner_active_, [&](auto I){
-            return get<I.value>( handlers_ ).on_array_begin(ec);
-        });
+        return mp11::mp_with_index<N>(
+            inner_active_, do_on_array_begin{handlers_, ec} );
     }
 
+    struct do_on_array_end
+    {
+        handler_tuple< converting_handler, tuple_element_list<T> >& handlers;
+        error_code& ec;
+        std::size_t n;
+
+        template< class I >
+        bool operator()( I ) const
+        {
+            return get<I::value>(handlers).on_array_end(ec, n);
+        };
+    };
     bool on_array_end( error_code& ec, std::size_t n )
     {
         if( inner_active_ < 0 )
@@ -779,64 +841,22 @@ public:
             return true;
         }
 
-        return mp11::mp_with_index<N>( inner_active_, [&](auto I){
-            return get<I.value>( handlers_ ).on_array_end( ec, n );
-        });
+        return mp11::mp_with_index<N>(
+            inner_active_, do_on_array_end{handlers_, ec, n} );
     }
 
-    bool on_key_part( error_code& ec, string_view sv, std::size_t n )
-    {
-        BOOST_JSON_INVOKE_INNER( on_key_part(ec, sv, n) );
-    }
+    BOOST_JSON_HANDLE_EVENT( on_key_part );
+    BOOST_JSON_HANDLE_EVENT( on_key );
+    BOOST_JSON_HANDLE_EVENT( on_string_part );
+    BOOST_JSON_HANDLE_EVENT( on_string );
+    BOOST_JSON_HANDLE_EVENT( on_number_part );
+    BOOST_JSON_HANDLE_EVENT( on_int64 );
+    BOOST_JSON_HANDLE_EVENT( on_uint64 );
+    BOOST_JSON_HANDLE_EVENT( on_double );
+    BOOST_JSON_HANDLE_EVENT( on_bool );
+    BOOST_JSON_HANDLE_EVENT( on_null );
 
-    bool on_key( error_code& ec, string_view sv, std::size_t n )
-    {
-        BOOST_JSON_INVOKE_INNER( on_key(ec, sv, n) );
-    }
-
-    bool on_string_part( error_code& ec, string_view sv, std::size_t n )
-    {
-        BOOST_JSON_INVOKE_INNER( on_string_part(ec, sv, n) );
-    }
-
-    bool on_string( error_code& ec, string_view sv, std::size_t n )
-    {
-        BOOST_JSON_INVOKE_INNER( on_string(ec, sv, n) );
-    }
-
-    bool on_number_part( error_code& ec, string_view sv )
-    {
-        BOOST_JSON_INVOKE_INNER( on_number_part(ec, sv) );
-    }
-
-    bool on_int64( error_code& ec, std::int64_t v, string_view sv )
-    {
-        BOOST_JSON_INVOKE_INNER( on_int64(ec, v, sv) );
-    }
-
-    bool on_uint64( error_code& ec, std::uint64_t v, string_view sv )
-    {
-        BOOST_JSON_INVOKE_INNER( on_uint64(ec, v, sv) );
-    }
-
-    bool on_double( error_code& ec, double v, string_view sv )
-    {
-        BOOST_JSON_INVOKE_INNER( on_double(ec, v, sv) );
-    }
-
-    bool on_bool( error_code& ec, bool v )
-    {
-        BOOST_JSON_INVOKE_INNER( on_bool(ec, v) );
-    }
-
-    bool on_null( error_code& ec )
-    {
-        BOOST_JSON_INVOKE_INNER( on_null(ec) );
-    }
-
-#undef BOOST_JSON_INVOKE_INNER
-
-#endif
+#undef BOOST_JSON_HANDLE_EVENT
 };
 
 // described struct handler
@@ -878,13 +898,26 @@ struct struct_accessor
     }
 };
 
+template< class F >
+struct struct_key_searcher
+{
+    F fn;
+
+    template< class D >
+    void
+    operator()( D ) const
+    {
+        fn( D::name ) ;
+    }
+};
+
 template<class V, class P>
 class converting_handler<described_class_conversion_tag, V, P>
 {
-#if BOOST_CXX_VERSION < 201400L || ( defined(BOOST_MSVC) && BOOST_MSVC < 1910 )
+#if !defined(BOOST_DESCRIBE_CXX14)
 
     static_assert(
-        sizeof(V) == 0, "Struct support for parse_into requires C++14 or MSVC 2017 or later" );
+        sizeof(V) == 0, "Struct support for parse_into requires C++14" );
 
 #else
 
@@ -927,9 +960,12 @@ public:
         BOOST_JSON_FAIL( ec, error::not_object ); \
         return false; \
     } \
-    return mp11::mp_with_index<mp11::mp_size<Dm>>( inner_active_, [&](auto I) { \
-        return get<I.value>( handlers_ ).fn; \
-    });
+    auto f = [&](auto& handler) { return handler.fn ; }; \
+    using F = decltype(f); \
+    using H = decltype(handlers_); \
+    return mp11::mp_with_index< mp11::mp_size<Dm> >( \
+            inner_active_, \
+            tuple_handler_op_invoker<H, F>{handlers_, f} );
 
     bool on_object_begin( error_code& ec )
     {
@@ -988,11 +1024,15 @@ public:
 
         int i = 0;
 
-        mp11::mp_for_each<Dm>([&](auto D) {
-            if( key_ == D.name )
+        auto f = [&](char const* name)
+        {
+            if( key_ == name )
                 inner_active_ = i;
             ++i;
-        });
+        };
+
+        mp11::mp_for_each<Dm>(
+            struct_key_searcher<decltype(f)>{f} );
 
         if( inner_active_ < 0 )
         {

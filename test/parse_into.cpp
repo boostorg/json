@@ -174,7 +174,6 @@ public:
 
     void testTuple()
     {
-#if BOOST_CXX_VERSION >= 201402L && ( !defined(BOOST_MSVC) || BOOST_MSVC >= 1910 )
         testParseInto<std::pair<int, float>>( {} );
         testParseInto<std::pair<int, float>>( { 1, 3.14f } );
 
@@ -194,12 +193,11 @@ public:
 
         testParseInto<std::pair<std::vector<int>, std::map<std::string, std::pair<int, bool>>>>( {} );
         testParseInto<std::pair<std::vector<int>, std::map<std::string, std::pair<int, bool>>>>( { { 1, 2, 3 }, { { "one", { 7, true } } } } );
-#endif
     }
 
     void testStruct()
     {
-#if BOOST_CXX_VERSION >= 201402L && ( !defined(BOOST_MSVC) || BOOST_MSVC >= 1910 )
+#if defined(BOOST_DESCRIBE_CXX14)
         testParseInto<X>( {} );
         testParseInto<X>( { 1, 3.14f, "hello" } );
 

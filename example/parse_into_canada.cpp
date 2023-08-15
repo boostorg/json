@@ -14,11 +14,11 @@
 
 #include <boost/json.hpp>
 
-#if BOOST_CXX_VERSION < 201400L || ( defined(BOOST_MSVC) && BOOST_MSVC < 1910 )
+#if !defined(BOOST_DESCRIBE_CXX14)
 
 #include <boost/config/pragma_message.hpp>
 
-BOOST_PRAGMA_MESSAGE( "This example requires C++14 or VS2017 or later" )
+BOOST_PRAGMA_MESSAGE( "This example requires C++14" )
 
 int main() {}
 

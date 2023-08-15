@@ -25,11 +25,11 @@
 #include <boost/json.hpp>
 #include <iostream>
 
-#if BOOST_CXX_VERSION < 201400L || ( defined(BOOST_MSVC) && BOOST_MSVC < 1910 )
+#if !defined(BOOST_DESCRIBE_CXX14)
 
 #include <boost/config/pragma_message.hpp>
 
-BOOST_PRAGMA_MESSAGE( "This example requires C++14 or VS2017 or later" )
+BOOST_PRAGMA_MESSAGE( "This example requires C++14" )
 
 int main() {}
 
@@ -76,13 +76,13 @@ struct coordinate
 
 BOOST_DESCRIBE_STRUCT(coordinate, (), (x, y, z, name, opts))
 
-struct coordinates
+struct coordinates1
 {
     std::vector<coordinate> coordinates;
     std::string info;
 };
 
-BOOST_DESCRIBE_STRUCT(coordinates, (), (coordinates, info))
+BOOST_DESCRIBE_STRUCT(coordinates1, (), (coordinates, info))
 
 // std::vector<coordinate> replacement that just
 // keeps a running sum
@@ -165,7 +165,7 @@ int main()
     {
         auto tp1 = std::chrono::steady_clock::now();
 
-        coordinates w;
+        coordinates1 w;
 
         boost::json::error_code ec;
         boost::json::parse_into( w, json, ec );
