@@ -65,9 +65,16 @@ project
 
 for local f in $(SOURCES)
 {
+    local extra-reqs ;
+    if $(f) = parse_into.cpp
+    {
+        extra-reqs += <toolset>msvc:<cxxflags>/bigobj ;
+    }
+
     run $(f) main.cpp /boost/json//boost_json
         : requirements
           <toolset>msvc:<define>_CRT_SECURE_NO_WARNINGS
+          $(extra-reqs)
         ;
 }
 
