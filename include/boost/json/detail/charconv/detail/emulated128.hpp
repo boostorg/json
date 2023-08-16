@@ -58,7 +58,7 @@ struct uint128
 
 static inline std::uint64_t umul64(std::uint32_t x, std::uint32_t y) noexcept
 {
-    #if defined(BOOST_JSON_HAS_MSVC_32BIT_INTRINSICS) && !defined(_M_ARM64)
+    #if defined(BOOST_JSON_HAS_MSVC_32BIT_INTRINSICS) && !defined(_M_ARM)
 
     return __emulu(x, y);
 
