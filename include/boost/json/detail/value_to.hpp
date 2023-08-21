@@ -70,44 +70,6 @@ try_reserve(
 }
 
 
-template<class T>
-using has_push_back_helper
-    = decltype(std::declval<T&>().push_back(std::declval<value_type<T>>()));
-template<class T>
-using has_push_back = mp11::mp_valid<has_push_back_helper, T>;
-template<class T>
-using inserter_implementation = mp11::mp_cond<
-    is_tuple_like<T>, mp11::mp_int<2>,
-    has_push_back<T>, mp11::mp_int<1>,
-    mp11::mp_true,    mp11::mp_int<0>>;
-
-template<class T>
-iterator_type<T>
-inserter(
-    T& target,
-    mp11::mp_int<2>)
-{
-    return target.begin();
-}
-
-template<class T>
-std::back_insert_iterator<T>
-inserter(
-    T& target,
-    mp11::mp_int<1>)
-{
-    return std::back_inserter(target);
-}
-
-template<class T>
-std::insert_iterator<T>
-inserter(
-    T& target,
-    mp11::mp_int<0>)
-{
-    return std::inserter( target, target.end() );
-}
-
 // identity conversion
 template< class Ctx >
 result<value>

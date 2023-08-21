@@ -490,14 +490,20 @@ class converting_handler<sequence_conversion_tag, V, P>
 private:
     V* value_;
 
+    using Inserter = decltype(
+        detail::inserter(*value_, inserter_implementation<V>()) );
+    Inserter inserter;
+
 public:
     converting_handler( V* v, P* p )
-        : converting_handler::composite_handler(p), value_(v)
+        : converting_handler::composite_handler(p)
+        , value_(v)
+        , inserter( detail::inserter(*value_, inserter_implementation<V>()) )
     {}
 
     void signal_value()
     {
-        value_->push_back( std::move(this->next_value_) );
+        *inserter++ = std::move(this->next_value_);
         this->next_value_ = {};
     }
 

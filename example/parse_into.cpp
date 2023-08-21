@@ -89,6 +89,7 @@ BOOST_DESCRIBE_STRUCT(coordinates1, (), (coordinates, info))
 
 struct accumulator
 {
+    using value_type = coordinate;
     using iterator = coordinate*;
 
     std::size_t len = 0;

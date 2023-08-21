@@ -59,6 +59,10 @@ public:
 
     template<class T> void testParseInto( T const& t )
     {
+#if defined(__GNUC__) && __GNUC__ < 5
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#endif
         T t1( t );
         std::string json = serialize( value_from( t1 ) );
 
@@ -94,6 +98,9 @@ public:
         T t7{};
         parse_into(t7, is);
         BOOST_TEST( t1 == t7 );
+#if defined(__GNUC__) && __GNUC__ < 5
+# pragma GCC diagnostic pop
+#endif
     }
 
     void testNull()
@@ -155,6 +162,11 @@ public:
 
         testParseInto< std::vector<std::vector<int>> >( {} );
         testParseInto< std::vector<std::vector<int>> >( { {}, { 1 }, { 2, 3 }, { 4, 5, 6 } } );
+
+        // clang <= 5 doesn't like when std::array is created from init-list
+        std::array<int, 4> arr;
+        arr.fill(17);
+        testParseInto< std::array<int, 4> >( arr );
     }
 
     void testMap()
