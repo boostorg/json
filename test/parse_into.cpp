@@ -103,15 +103,38 @@ public:
 #endif
     }
 
+    template<class T>
+    void
+    testParseIntoErrors( error e, value const& sample )
+    {
+#if defined(__GNUC__) && __GNUC__ < 5
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#endif
+        error_code ec;
+        T t{};
+        std::string json = serialize(sample);
+        parse_into(t, json, ec);
+
+        BOOST_TEST( ec.failed() );
+        BOOST_TEST( ec.has_location() );
+        BOOST_TEST( ec == e );
+#if defined(__GNUC__) && __GNUC__ < 5
+# pragma GCC diagnostic pop
+#endif
+    }
+
     void testNull()
     {
         testParseInto( nullptr );
+        testParseIntoErrors< std::nullptr_t >( error::not_null, 1 );
     }
 
     void testBoolean()
     {
         testParseInto( false );
         testParseInto( true );
+        testParseIntoErrors< bool >( error::not_bool, 1 );
     }
 
     void testIntegral()
@@ -127,6 +150,11 @@ public:
         testParseInto<unsigned long>( ULONG_MAX );
         testParseInto<long long>( LLONG_MIN );
         testParseInto<unsigned long long>( ULLONG_MAX );
+
+        testParseIntoErrors< int >( error::not_integer, "1" );
+        testParseIntoErrors< int >( error::not_integer, true );
+        testParseIntoErrors< int >( error::not_exact, LLONG_MIN );
+        testParseIntoErrors< int >( error::not_exact, ULONG_MAX );
     }
 
     void testFloatingPoint()
@@ -136,12 +164,16 @@ public:
 
         // value_from doesn't support long double
         // testParseInto( 2.25L );
+
+        testParseIntoErrors< double >( error::not_double, "1" );
     }
 
     void testString()
     {
         testParseInto<std::string>( "" );
         testParseInto<std::string>( "12345" );
+
+        testParseIntoErrors< string >( error::not_string, 1 );
     }
 
     void testSequence()
@@ -167,6 +199,11 @@ public:
         std::array<int, 4> arr;
         arr.fill(17);
         testParseInto< std::array<int, 4> >( arr );
+
+        testParseIntoErrors< std::vector<int> >( error::not_array, 1 );
+        testParseIntoErrors< std::vector<char> >( error::not_array, "abcd" );
+        testParseIntoErrors< std::vector<std::vector<int>> >(
+            error::not_array, { 1, 2, 3} );
     }
 
     void testMap()
@@ -182,6 +219,11 @@ public:
 
         testParseInto< std::map<std::string, std::map<std::string, int>> >( {} );
         testParseInto< std::map<std::string, std::map<std::string, int>> >( { { "one", {} }, { "two", { { "1", 1 }, { "2", 2 } } } } );
+
+        testParseIntoErrors< std::map<std::string, int> >(
+            error::not_object, { "1", 1, "2", 2} );
+        testParseIntoErrors< std::map<std::string, std::map<std::string, int>> >(
+            error::not_object, { {"1", {}}, {"2", {"3", 4}} } );
     }
 
     void testTuple()
@@ -205,6 +247,13 @@ public:
 
         testParseInto<std::pair<std::vector<int>, std::map<std::string, std::pair<int, bool>>>>( {} );
         testParseInto<std::pair<std::vector<int>, std::map<std::string, std::pair<int, bool>>>>( { { 1, 2, 3 }, { { "one", { 7, true } } } } );
+
+        testParseIntoErrors< std::pair<int, int> >( error::not_array, 1 );
+        // these two should be errors too
+        // testParseIntoErrors< std::pair<int, int> >(
+        //     error::size_mismatch, {1, 2, 3} );
+        // testParseIntoErrors< std::tuple<int, int, int> >(
+        //     error::size_mismatch, {1, 2} );
     }
 
     void testStruct()
@@ -215,6 +264,13 @@ public:
 
         testParseInto<Y>( {} );
         testParseInto<Y>( { { { 1, 1.0f, "one" }, { 2, 2.0f, "two" } }, { { "one", { 1, 1.1f, "1" } }, { "two", { 2, 2.2f, "2" } } } } );
+
+        testParseIntoErrors<X>( error::not_object, 1 );
+        testParseIntoErrors<X>(
+            error::unknown_name,
+            { {"a", 1}, {"b", 3.14f}, {"c", "hello"}, {"d", 0} } );
+        // this two should be an error too
+        // testParseIntoErrors<X>( error::size_mismatch, { {"a", 1} } );
 #endif
     }
 
@@ -224,6 +280,8 @@ public:
         testParseInto<E>( E::x );
         testParseInto<E>( E::y );
         testParseInto<E>( E::z );
+
+        testParseIntoErrors< E >( error::not_string, (int)(E::y) );
 #endif // BOOST_DESCRIBE_CXX14
     }
 
@@ -254,6 +312,13 @@ public:
                 5,
                 "five",
                 std::map<std::string, double>{ {"one", 1}, {"pi", 3.14} }));
+
+        testParseIntoErrors< Variant<Monostate> >(
+            error::exhausted_variants, "a" );
+        testParseIntoErrors< Variant<int> >(
+            error::exhausted_variants, "a" );
+        testParseIntoErrors< Variant<Monostate, int, bool> >(
+            error::exhausted_variants, "a" );
     }
 
     void testOptional()
