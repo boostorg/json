@@ -1109,6 +1109,20 @@ public:
 
         // no newline at EOF
         TEST_GOOD_EXT("1//", enabled);
+
+        {
+            parse_options po;
+            po.allow_comments = true;
+            fail_parser p(po);
+            error_code ec;
+            p.write(true, "//", 2, ec); // suspend while inside comment
+            BOOST_TEST( !ec.failed() );
+            p.write(true, " \n1", 2, ec); // input ends comment,
+                                          // number starts after current input
+            BOOST_TEST( !ec.failed() );
+            p.write(false, "1", 1, ec);
+            BOOST_TEST( !ec.failed() );
+        }
     }
 
     void
