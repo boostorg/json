@@ -93,11 +93,27 @@ public:
         parse_into(t6, is, ec);
         BOOST_TEST( !ec ) && BOOST_TEST( t1 == t6 );
 
+        is.str(json);
         is.clear();
-        is.seekg(0);
         T t7{};
         parse_into(t7, is);
         BOOST_TEST( t1 == t7 );
+
+        parse_options opt;
+        opt.allow_comments = true;
+        json = "// this is a comment\n" + json;
+
+        T t8{};
+        parser_for<T> p( opt, &t8 );
+        for( auto& c: json )
+        {
+            std::size_t const n = p.write_some( true, &c, 1, jec );
+            BOOST_TEST( !jec.failed() );
+            BOOST_TEST( n == 1 );
+        }
+        p.write_some(false, nullptr, 0, jec);
+        BOOST_TEST( !jec.failed() );
+        BOOST_TEST( t1 == t8 );
 #if defined(__GNUC__) && __GNUC__ < 5
 # pragma GCC diagnostic pop
 #endif
@@ -114,7 +130,16 @@ public:
         error_code ec;
         T t{};
         std::string json = serialize(sample);
-        parse_into(t, json, ec);
+        parser_for<T> p( parse_options{}, &t );
+        for( auto& c: json )
+        {
+            std::size_t const n = p.write_some( true, &c, 1, ec );
+            if( ec.failed() )
+                break;
+            BOOST_TEST( n == 1 );
+        }
+        if( !ec.failed() )
+            p.write_some(false, nullptr, 0, ec);
 
         BOOST_TEST( ec.failed() );
         BOOST_TEST( ec.has_location() );
@@ -127,14 +152,14 @@ public:
     void testNull()
     {
         testParseInto( nullptr );
-        testParseIntoErrors< std::nullptr_t >( error::not_null, 1 );
+        testParseIntoErrors< std::nullptr_t >( error::not_null, 100 );
     }
 
     void testBoolean()
     {
         testParseInto( false );
         testParseInto( true );
-        testParseIntoErrors< bool >( error::not_bool, 1 );
+        testParseIntoErrors< bool >( error::not_bool, nullptr );
     }
 
     void testIntegral()
@@ -151,7 +176,7 @@ public:
         testParseInto<long long>( LLONG_MIN );
         testParseInto<unsigned long long>( ULLONG_MAX );
 
-        testParseIntoErrors< int >( error::not_integer, "1" );
+        testParseIntoErrors< int >( error::not_integer, "123" );
         testParseIntoErrors< int >( error::not_integer, true );
         testParseIntoErrors< int >( error::not_exact, LLONG_MIN );
         testParseIntoErrors< int >( error::not_exact, ULONG_MAX );
@@ -161,11 +186,26 @@ public:
     {
         testParseInto( 0.25f );
         testParseInto( 1.125 );
-
         // value_from doesn't support long double
         // testParseInto( 2.25L );
+        {
+            double d1 = 12;
+            std::string json = serialize( value_from( 12 ) );
 
-        testParseIntoErrors< double >( error::not_double, "1" );
+            error_code ec;
+            double d2;
+            parse_into(d2, json, ec);
+            BOOST_TEST( !ec.failed() );
+            BOOST_TEST( d1 == d2 );
+
+            d1 = double(UINT64_MAX);
+            json = serialize( value_from( UINT64_MAX ) );
+            parse_into(d2, json, ec);
+            BOOST_TEST( !ec.failed() );
+            BOOST_TEST( d1 == d2 );
+        }
+
+        testParseIntoErrors< double >( error::not_double, { {"value", 12.1 } } );
     }
 
     void testString()
@@ -173,7 +213,7 @@ public:
         testParseInto<std::string>( "" );
         testParseInto<std::string>( "12345" );
 
-        testParseIntoErrors< string >( error::not_string, 1 );
+        testParseIntoErrors< string >( error::not_string, UINT64_MAX );
     }
 
     void testSequence()
@@ -185,6 +225,7 @@ public:
 
         testParseInto< std::vector<int> >( {} );
         testParseInto< std::vector<int> >( { 1, 2, 3 } );
+        testParseInto< std::vector<std::uint64_t> >( { 1, 2, UINT64_MAX } );
 
         testParseInto< std::vector<float> >( {} );
         testParseInto< std::vector<float> >( { 1.02f, 2.11f, 3.14f } );
@@ -194,6 +235,9 @@ public:
 
         testParseInto< std::vector<std::vector<int>> >( {} );
         testParseInto< std::vector<std::vector<int>> >( { {}, { 1 }, { 2, 3 }, { 4, 5, 6 } } );
+
+        testParseInto< std::vector<std::map<std::string, int>> >(
+            { {}, { {"1", 2}, {"3", 4} }, { { "5", 6 } } } );
 
         // clang <= 5 doesn't like when std::array is created from init-list
         std::array<int, 4> arr;
@@ -235,6 +279,9 @@ public:
         testParseInto<std::pair<int, float>>( {} );
         testParseInto<std::pair<int, float>>( { 1, 3.14f } );
 
+        testParseInto<std::pair<std::nullptr_t, std::uint64_t>>(
+            {nullptr, UINT64_MAX} );
+
         testParseInto<std::tuple<int, float, std::string>>( {} );
         testParseInto<std::tuple<int, float, std::string>>( std::make_tuple(1, 3.14f, "hello") );
 
@@ -253,11 +300,10 @@ public:
         testParseInto<std::pair<std::vector<int>, std::map<std::string, std::pair<int, bool>>>>( { { 1, 2, 3 }, { { "one", { 7, true } } } } );
 
         testParseIntoErrors< std::pair<int, int> >( error::not_array, 1 );
-        // these two should be errors too
-        // testParseIntoErrors< std::pair<int, int> >(
-        //     error::size_mismatch, {1, 2, 3} );
-        // testParseIntoErrors< std::tuple<int, int, int> >(
-        //     error::size_mismatch, {1, 2} );
+        testParseIntoErrors< std::pair<int, int> >(
+            error::size_mismatch, {1, 2, 3} );
+        testParseIntoErrors< std::tuple<int, int, int> >(
+            error::size_mismatch, {1, 2} );
     }
 
     void testStruct()
@@ -273,8 +319,7 @@ public:
         testParseIntoErrors<X>(
             error::unknown_name,
             { {"a", 1}, {"b", 3.14f}, {"c", "hello"}, {"d", 0} } );
-        // this two should be an error too
-        // testParseIntoErrors<X>( error::size_mismatch, { {"a", 1} } );
+        testParseIntoErrors<X>( error::size_mismatch, { {"a", 1} } );
 #endif
     }
 
@@ -298,6 +343,8 @@ public:
         testParseInto< Variant<Monostate, int, std::string> >( {} );
         testParseInto< Variant<Monostate, int, std::string> >( 1 );
         testParseInto< Variant<Monostate, int, std::string> >( "qwerty" );
+        testParseInto< Variant<bool, std::uint64_t> >( true );
+        testParseInto< Variant<bool, std::uint64_t> >( UINT64_MAX );
 
         testParseInto< Variant< std::vector<int> > >(
             std::vector<int>{1, 2, 3, 4, 5} );
@@ -363,6 +410,40 @@ public:
 #ifndef BOOST_NO_CXX17_HDR_VARIANT
         testVariant<std::variant, std::monostate>();
 #endif
+        {
+            int n;
+            BOOST_TEST_THROWS_WITH_LOCATION( parse_into( n, "null" ) );
+
+            std::stringstream is("null");
+            BOOST_TEST_THROWS_WITH_LOCATION( parse_into( n, is ) );
+        }
+
+        {
+            int n;
+            error_code ec;
+            parse_into( n, "12 1", ec);
+            BOOST_TEST( ec == error::extra_data );
+            BOOST_TEST( ec.has_location() );
+        }
+
+        {
+            std::stringstream is("12 1");
+            int n;
+            error_code ec;
+            parse_into( n, is, ec);
+            BOOST_TEST( ec == error::extra_data );
+            BOOST_TEST( ec.has_location() );
+        }
+
+        {
+            int n;
+            std::stringstream is("1");
+            is.setstate( std::ios::failbit );
+            error_code ec;
+            parse_into(n, is, ec);
+            BOOST_TEST( ec == error::input_error );
+            BOOST_TEST( ec.has_location() );
+        }
     }
 };
 

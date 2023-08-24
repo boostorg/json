@@ -93,11 +93,8 @@ public:
 public:
 
     bool on_object_begin( error_code& ec ) { BOOST_JSON_FAIL( ec, E ); return false; }
-    bool on_object_end( error_code& ec, std::size_t ) { BOOST_JSON_FAIL( ec, E ); return false; }
     bool on_array_begin( error_code& ec ) { BOOST_JSON_FAIL( ec, E ); return false; }
     bool on_array_end( error_code& ec, std::size_t ) { BOOST_JSON_FAIL( ec, E ); return false; }
-    bool on_key_part( error_code& ec, string_view, std::size_t ) { BOOST_JSON_FAIL( ec, E ); return false; }
-    bool on_key( error_code& ec, string_view, std::size_t ) { BOOST_JSON_FAIL( ec, E ); return false; }
     bool on_string_part( error_code& ec, string_view, std::size_t ) { BOOST_JSON_FAIL( ec, E ); return false; }
     bool on_string( error_code& ec, string_view, std::size_t ) { BOOST_JSON_FAIL( ec, E ); return false; }
     bool on_number_part( error_code& ec, string_view ) { BOOST_JSON_FAIL( ec, E ); return false; }
@@ -106,6 +103,13 @@ public:
     bool on_double( error_code& ec, double, string_view ) { BOOST_JSON_FAIL( ec, E ); return false; }
     bool on_bool( error_code& ec, bool ) { BOOST_JSON_FAIL( ec, E ); return false; }
     bool on_null( error_code& ec ) { BOOST_JSON_FAIL( ec, E ); return false; }
+
+    // LCOV_EXCL_START
+    // parses that can't handle this would fail at on_object_begin
+    bool on_object_end( error_code&, std::size_t ) { BOOST_ASSERT( false ); return false; }
+    bool on_key_part( error_code& ec, string_view, std::size_t ) { BOOST_JSON_FAIL( ec, E ); return false; }
+    bool on_key( error_code& ec, string_view, std::size_t ) { BOOST_JSON_FAIL( ec, E ); return false; }
+    // LCOV_EXCL_START
 };
 
 template< class P, error E >
@@ -673,7 +677,8 @@ struct handler_tuple< P, L<V...>, mp11::index_sequence<I...> >
     template< class Access, class T >
     handler_tuple( Access access, T* pv, P* pp )
         : handler_tuple_element< I, get_handler<V, P> >(
-            access( pv, mp11::mp_int<I>() ), pp )
+            access( pv, mp11::mp_int<I>() ),
+            pp )
         ...
     { }
 };
@@ -875,12 +880,7 @@ public:
         constexpr int N = std::tuple_size<T>::value;
 
         if( inner_active_ >= N )
-        {
-            parent_->signal_value();
-
-            inner_active_ = -1;
-            return true;
-        }
+            return signal_end(ec);
 
         return mp11::mp_with_index<N>(
             inner_active_, do_on_array_end{handlers_, ec, n} );
