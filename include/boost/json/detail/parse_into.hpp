@@ -481,6 +481,18 @@ class converting_handler<no_conversion_tag, V, P>
 };
 
 // sequence handler
+template< class It >
+bool check_inserter( It l, It r )
+{
+    return l == r;
+}
+
+template< class It1, class It2 >
+std::true_type check_inserter( It1, It2 )
+{
+    return {};
+}
+
 template< class V, class P >
 class converting_handler<sequence_conversion_tag, V, P>
     : public composite_handler<
@@ -506,7 +518,27 @@ public:
     void signal_value()
     {
         *inserter++ = std::move(this->next_value_);
+#if defined(__GNUC__) && __GNUC__ < 5 && !defined(__clang__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#endif
         this->next_value_ = {};
+#if defined(__GNUC__) && __GNUC__ < 5 && !defined(__clang__)
+# pragma GCC diagnostic pop
+#endif
+    }
+
+    bool signal_end(error_code& ec)
+    {
+        if( !check_inserter( inserter, value_->end() ) )
+        {
+            BOOST_JSON_FAIL( ec, error::size_mismatch );
+            return false;
+        }
+
+        inserter = detail::inserter(*value_, inserter_implementation<V>());
+
+        return converting_handler::composite_handler::signal_end(ec);
     }
 
     bool on_array_begin( error_code& ec )

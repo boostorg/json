@@ -108,10 +108,10 @@ struct accumulator
     }
 
     iterator
-    begin();
+    begin() { return nullptr; }
 
     iterator
-    end();
+    end() { return nullptr; }
 };
 
 struct coordinates2

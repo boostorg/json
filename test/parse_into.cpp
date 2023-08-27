@@ -203,7 +203,11 @@ public:
         testParseIntoErrors< std::vector<int> >( error::not_array, 1 );
         testParseIntoErrors< std::vector<char> >( error::not_array, "abcd" );
         testParseIntoErrors< std::vector<std::vector<int>> >(
-            error::not_array, { 1, 2, 3} );
+            error::not_array, {1, 2, 3} );
+        testParseIntoErrors< std::array<int, 4> >(
+            error::size_mismatch, {1, 2, 3} );
+
+        testParseInto< std::vector<std::array<int, 4>> >( {arr,arr,arr} );
     }
 
     void testMap()
