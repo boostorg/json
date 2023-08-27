@@ -972,6 +972,7 @@ private:
 
     handler_tuple< converting_handler, struct_element_list<V> > handlers_;
     int inner_active_ = -1;
+    std::size_t activated_ = 0;
 
 public:
     converting_handler( converting_handler const& ) = delete;
@@ -981,8 +982,25 @@ public:
         : value_(v), parent_(p), handlers_(struct_accessor(), v, this)
     {}
 
+    struct is_optional_checker
+    {
+        template< class I >
+        bool operator()( I ) const noexcept
+        {
+            using L = struct_element_list<V>;
+            using T = mp11::mp_at<L, I>;
+            return !is_optional_like<T>::value;
+        }
+    };
     void signal_value()
     {
+        BOOST_ASSERT( inner_active_ >= 0 );
+        bool required_member = mp11::mp_with_index< mp11::mp_size<Dm> >(
+            inner_active_,
+            is_optional_checker{});
+        if( required_member )
+            ++activated_;
+
         key_ = {};
         inner_active_ = -1;
     }
@@ -1020,6 +1038,15 @@ public:
     {
         if( inner_active_ < 0 )
         {
+            using L = struct_element_list<V>;
+            using C = mp11::mp_count_if<L, is_optional_like>;
+            constexpr int N = mp11::mp_size<L>::value - C::value;
+            if( activated_ < N )
+            {
+                BOOST_JSON_FAIL( ec, error::size_mismatch );
+                return false;
+            }
+
             parent_->signal_value();
             return true;
         }
