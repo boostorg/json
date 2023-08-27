@@ -53,6 +53,8 @@
  * Finally, nested handlers should always call parent's signal_end member
  * function if they don't handle on_array_end themselves. This is necessary
  * to correctly handle nested composites (e.g. sequences inside sequences).
+ * signal_end can return false and set error state when the containing parser
+ * requires more elements.
  *
  * converting_handler instantiations for composite categories of types have
  * their own nested handlers, to which they themselves delegate events. For
@@ -120,10 +122,9 @@ public:
     scalar_handler(P* p): parent_( p )
     {}
 
-    bool on_array_end( error_code&, std::size_t )
+    bool on_array_end( error_code& ec, std::size_t )
     {
-        parent_->signal_end();
-        return true;
+        return parent_->signal_end(ec);
     }
 };
 
@@ -153,10 +154,11 @@ public:
 # pragma GCC diagnostic pop
 #endif
 
-    void signal_end()
+    bool signal_end(error_code&)
     {
         inner_active_ = false;
         parent_->signal_value();
+        return true;
     }
 
 #define BOOST_JSON_INVOKE_INNER(f) \
@@ -523,14 +525,9 @@ public:
     bool on_array_end( error_code& ec, std::size_t n )
     {
         if( this->inner_active_ )
-        {
             return this->inner_.on_array_end( ec, n );
-        }
-        else
-        {
-            this->parent_->signal_end();
-            return true;
-        }
+
+        return this->parent_->signal_end(ec);
     }
 };
 
@@ -584,8 +581,7 @@ public:
         if( this->inner_active_ )
             return this->inner_.on_array_end(ec, n);
 
-        this->parent_->signal_end();
-        return true;
+        return this->parent_->signal_end(ec);
     }
 
     bool on_key_part( error_code& ec, string_view sv, std::size_t n )
@@ -746,10 +742,18 @@ public:
         ++inner_active_;
     }
 
-    void signal_end()
+    bool signal_end(error_code& ec)
     {
+        constexpr int N = std::tuple_size<T>::value;
+        if( inner_active_ < N )
+        {
+            BOOST_JSON_FAIL( ec, error::size_mismatch );
+            return true;
+        }
+
         inner_active_ = -1;
         parent_->signal_value();
+        return true;
     }
 
 #define BOOST_JSON_HANDLE_EVENT(fn) \
@@ -834,10 +838,7 @@ public:
     bool on_array_end( error_code& ec, std::size_t n )
     {
         if( inner_active_ < 0 )
-        {
-            parent_->signal_end();
-            return true;
-        }
+            return parent_->signal_end(ec);
 
         constexpr int N = std::tuple_size<T>::value;
 
@@ -954,12 +955,12 @@ public:
         inner_active_ = -1;
     }
 
-    void signal_end()
+    bool signal_end(error_code&)
     {
         key_ = {};
         inner_active_ = -1;
-
         parent_->signal_value();
+        return true;
     }
 
 #define BOOST_JSON_INVOKE_INNER(fn) \
@@ -1002,10 +1003,7 @@ public:
     bool on_array_end( error_code& ec, std::size_t n )
     {
         if( inner_active_ < 0 )
-        {
-            parent_->signal_end();
-            return true;
-        }
+            return parent_->signal_end(ec);
 
         BOOST_JSON_INVOKE_INNER( on_array_end(ec, n) );
     }
@@ -1267,9 +1265,9 @@ public:
         parent_->signal_value();
     }
 
-    void signal_end()
+    bool signal_end(error_code& ec)
     {
-        parent_->signal_end();
+        return parent_->signal_end(ec);
     }
 
     struct alternative_selector
@@ -1369,10 +1367,7 @@ public:
     bool on_array_end( error_code& ec, std::size_t )
     {
         if( !inner_active_ )
-        {
-            signal_end();
-            return true;
-        }
+            return signal_end(ec);
 
         BOOST_JSON_INVOKE_INNER( array_end_handler_event{}, ec );
     }
@@ -1466,9 +1461,9 @@ public:
         parent_->signal_value();
     }
 
-    void signal_end()
+    bool signal_end(error_code& ec)
     {
-        parent_->signal_end();
+        return parent_->signal_end(ec);
     }
 
 #define BOOST_JSON_INVOKE_INNER(fn) \
@@ -1494,10 +1489,7 @@ public:
     bool on_array_end( error_code& ec, std::size_t n )
     {
         if( !inner_active_ )
-        {
-            signal_end();
-            return true;
-        }
+            return signal_end(ec);
 
         BOOST_JSON_INVOKE_INNER( on_array_end(ec, n) );
     }
@@ -1598,8 +1590,9 @@ public:
     {
     }
 
-    void signal_end()
+    bool signal_end(error_code&)
     {
+        return true;
     }
 
     bool on_document_begin( error_code& )
