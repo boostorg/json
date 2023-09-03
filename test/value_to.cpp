@@ -14,6 +14,8 @@
 #include <boost/core/ignore_unused.hpp>
 #include <boost/describe/class.hpp>
 #include <boost/describe/enum.hpp>
+#include <boost/variant2/variant.hpp>
+#include <boost/config.hpp>
 
 #include "test_suite.hpp"
 
@@ -21,6 +23,10 @@
 #include <map>
 #include <unordered_map>
 #include <vector>
+
+#ifndef BOOST_NO_CXX17_HDR_VARIANT
+# include <variant>
+#endif
 
 namespace value_to_test_ns
 {
@@ -470,24 +476,24 @@ public:
 #endif
     }
 
-    template< class... Context >
+    template<
+        template <class...> class Variant, class Monostate, class... Context >
     static
     void
     testVariant( Context const& ... ctx )
     {
-        ignore_unused( ctx... );
-#ifndef BOOST_NO_CXX17_HDR_VARIANT
-        using Var = std::variant<int, ::value_to_test_ns::T2, std::string>;
+        using std::get;
+        using Var = Variant<int, ::value_to_test_ns::T2, std::string>;
 
         value jv(4);
         auto v = value_to<Var>( jv, ctx... );
         BOOST_TEST( v.index() == 0 );
-        BOOST_TEST( std::get<0>(v) == 4 );
+        BOOST_TEST( get<0>(v) == 4 );
 
         jv = "foobar";
         v = value_to<Var>( jv, ctx... );
         BOOST_TEST( v.index() == 2 );
-        BOOST_TEST( std::get<2>(v) == "foobar" );
+        BOOST_TEST( get<2>(v) == "foobar" );
 
         jv = "T2";
         v = value_to<Var>( jv, ctx... );
@@ -497,10 +503,9 @@ public:
         BOOST_TEST_THROWS_WITH_LOCATION(
             value_to<Var>( jv, ctx... ));
 
-        value_to<std::monostate>( value(), ctx... );
+        value_to<Monostate>( value(), ctx... );
         BOOST_TEST_THROWS_WITH_LOCATION(
-            value_to<std::monostate>( jv, ctx... ));
-#endif // BOOST_NO_CXX17_HDR_VARIANT
+            value_to<Monostate>( jv, ctx... ));
     }
 
     template< class... Context >
@@ -718,7 +723,10 @@ public:
             testNullptr( Context()... );
             testDescribed( Context()... );
             testOptional( Context()... );
-            testVariant( Context()... );
+            testVariant< variant2::variant, variant2::monostate > ( Context()... );
+#ifndef BOOST_NO_CXX17_HDR_VARIANT
+            testVariant< std::variant, std::monostate > ( Context()... );
+#endif // BOOST_NO_CXX17_HDR_VARIANT
             testNonThrowing( Context()... );
             testUserConversion( Context()... );
         }
