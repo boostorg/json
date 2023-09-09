@@ -21,6 +21,10 @@ then providing a custom one, unless the resulting format is undesirable. If
 the library deduces the wrong conversion category, you can opt out by
 specialising the relevant trait to inherit from `std::false_type`.
 
+If library-provided conversions are suitable for you, you have the option to
+use direct conversions. This also puts the requirement of being default
+constructible on many of your types.
+
 The next thing to consider is whether your conversions are intended for
 internal use, or whether your users are not members of your team. If your users
 are external, then they will ultimately determine the conditions in which these
@@ -37,6 +41,6 @@ of exceptions from conversion of elements.
 Finally, it is worth mentioning that due to the ability to provide conversions
 to JSON containers without a binary dependency on the library, you don't have
 to push such dependency on your users. This is particularly relevant for
-libraries for which interoperation with Boost.JSON is only extra functionality.
+libraries for which interoperation with Boost.JSON is only ancillary.
 
 [endsect]

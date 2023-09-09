@@ -23,6 +23,7 @@ from the standard library.
 [include alloc.qbk]
 [include context.qbk]
 [include forward.qbk]
+[include direct.qbk]
 [include guidelines.qbk]
 
 [endsect]

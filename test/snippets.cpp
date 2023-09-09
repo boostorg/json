@@ -1122,6 +1122,16 @@ usingContextualConversions()
     }
 }
 
+void
+usingParseInto()
+{
+//[doc_parse_into_1
+    std::map< std::string, std::vector<int> > vectors;
+    string_view input = R"( { "even": [2,4,6], "odd": [1,3,5] } )";
+    parse_into(vectors, input);
+//]
+}
+
 } // namespace
 
 class snippets_test
@@ -1140,6 +1150,7 @@ public:
         usingSpecializedTrait();
         usingSetAtPointer();
         usingContextualConversions();
+        usingParseInto();
 
         BOOST_TEST_PASS();
     }
