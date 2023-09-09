@@ -94,21 +94,21 @@ public:
 
     bool on_object_begin( error_code& ec ) { BOOST_JSON_FAIL( ec, E ); return false; }
     bool on_array_begin( error_code& ec ) { BOOST_JSON_FAIL( ec, E ); return false; }
-    bool on_array_end( error_code& ec, std::size_t ) { BOOST_JSON_FAIL( ec, E ); return false; }
-    bool on_string_part( error_code& ec, string_view, std::size_t ) { BOOST_JSON_FAIL( ec, E ); return false; }
-    bool on_string( error_code& ec, string_view, std::size_t ) { BOOST_JSON_FAIL( ec, E ); return false; }
-    bool on_number_part( error_code& ec, string_view ) { BOOST_JSON_FAIL( ec, E ); return false; }
-    bool on_int64( error_code& ec, std::int64_t, string_view ) { BOOST_JSON_FAIL( ec, E ); return false; }
-    bool on_uint64( error_code& ec, std::uint64_t, string_view ) { BOOST_JSON_FAIL( ec, E ); return false; }
-    bool on_double( error_code& ec, double, string_view ) { BOOST_JSON_FAIL( ec, E ); return false; }
+    bool on_array_end( error_code& ec ) { BOOST_JSON_FAIL( ec, E ); return false; }
+    bool on_string_part( error_code& ec, string_view ) { BOOST_JSON_FAIL( ec, E ); return false; }
+    bool on_string( error_code& ec, string_view ) { BOOST_JSON_FAIL( ec, E ); return false; }
+    bool on_number_part( error_code& ec ) { BOOST_JSON_FAIL( ec, E ); return false; }
+    bool on_int64( error_code& ec, std::int64_t ) { BOOST_JSON_FAIL( ec, E ); return false; }
+    bool on_uint64( error_code& ec, std::uint64_t ) { BOOST_JSON_FAIL( ec, E ); return false; }
+    bool on_double( error_code& ec, double ) { BOOST_JSON_FAIL( ec, E ); return false; }
     bool on_bool( error_code& ec, bool ) { BOOST_JSON_FAIL( ec, E ); return false; }
     bool on_null( error_code& ec ) { BOOST_JSON_FAIL( ec, E ); return false; }
 
     // LCOV_EXCL_START
     // parses that can't handle this would fail at on_object_begin
-    bool on_object_end( error_code&, std::size_t ) { BOOST_ASSERT( false ); return false; }
-    bool on_key_part( error_code& ec, string_view, std::size_t ) { BOOST_JSON_FAIL( ec, E ); return false; }
-    bool on_key( error_code& ec, string_view, std::size_t ) { BOOST_JSON_FAIL( ec, E ); return false; }
+    bool on_object_end( error_code& ) { BOOST_ASSERT( false ); return false; }
+    bool on_key_part( error_code& ec, string_view ) { BOOST_JSON_FAIL( ec, E ); return false; }
+    bool on_key( error_code& ec, string_view ) { BOOST_JSON_FAIL( ec, E ); return false; }
     // LCOV_EXCL_START
 };
 
@@ -126,7 +126,7 @@ public:
     scalar_handler(P* p): parent_( p )
     {}
 
-    bool on_array_end( error_code& ec, std::size_t )
+    bool on_array_end( error_code& ec )
     {
         return parent_->signal_end(ec);
     }
@@ -178,9 +178,9 @@ public:
         BOOST_JSON_INVOKE_INNER( on_object_begin(ec) );
     }
 
-    bool on_object_end( error_code& ec, std::size_t n )
+    bool on_object_end( error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_object_end(ec, n) );
+        BOOST_JSON_INVOKE_INNER( on_object_end(ec) );
     }
 
     bool on_array_begin( error_code& ec )
@@ -188,49 +188,49 @@ public:
         BOOST_JSON_INVOKE_INNER( on_array_begin(ec) );
     }
 
-    bool on_array_end( error_code& ec, std::size_t n )
+    bool on_array_end( error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_array_end(ec, n) );
+        BOOST_JSON_INVOKE_INNER( on_array_end(ec) );
     }
 
-    bool on_key_part( error_code& ec, string_view sv, std::size_t n )
+    bool on_key_part( error_code& ec, string_view sv )
     {
-        BOOST_JSON_INVOKE_INNER( on_key_part(ec, sv, n) );
+        BOOST_JSON_INVOKE_INNER( on_key_part(ec, sv) );
     }
 
-    bool on_key( error_code& ec, string_view sv, std::size_t n )
+    bool on_key( error_code& ec, string_view sv )
     {
-        BOOST_JSON_INVOKE_INNER( on_key(ec, sv, n) );
+        BOOST_JSON_INVOKE_INNER( on_key(ec, sv) );
     }
 
-    bool on_string_part( error_code& ec, string_view sv, std::size_t n )
+    bool on_string_part( error_code& ec, string_view sv )
     {
-        BOOST_JSON_INVOKE_INNER( on_string_part(ec, sv, n) );
+        BOOST_JSON_INVOKE_INNER( on_string_part(ec, sv) );
     }
 
-    bool on_string( error_code& ec, string_view sv, std::size_t n )
+    bool on_string( error_code& ec, string_view sv )
     {
-        BOOST_JSON_INVOKE_INNER( on_string(ec, sv, n) );
+        BOOST_JSON_INVOKE_INNER( on_string(ec, sv) );
     }
 
-    bool on_number_part( error_code& ec, string_view sv )
+    bool on_number_part( error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_number_part(ec, sv) );
+        BOOST_JSON_INVOKE_INNER( on_number_part(ec) );
     }
 
-    bool on_int64( error_code& ec, std::int64_t v, string_view sv )
+    bool on_int64( error_code& ec, std::int64_t v )
     {
-        BOOST_JSON_INVOKE_INNER( on_int64(ec, v, sv) );
+        BOOST_JSON_INVOKE_INNER( on_int64(ec, v) );
     }
 
-    bool on_uint64( error_code& ec, std::uint64_t v, string_view sv )
+    bool on_uint64( error_code& ec, std::uint64_t v )
     {
-        BOOST_JSON_INVOKE_INNER( on_uint64(ec, v, sv) );
+        BOOST_JSON_INVOKE_INNER( on_uint64(ec, v) );
     }
 
-    bool on_double( error_code& ec, double v, string_view sv )
+    bool on_double( error_code& ec, double v )
     {
-        BOOST_JSON_INVOKE_INNER( on_double(ec, v, sv) );
+        BOOST_JSON_INVOKE_INNER( on_double(ec, v) );
     }
 
     bool on_bool( error_code& ec, bool v )
@@ -280,12 +280,12 @@ public:
         , value_(v)
     {}
 
-    bool on_number_part( error_code&, string_view )
+    bool on_number_part( error_code& )
     {
         return true;
     }
 
-    bool on_int64( error_code& ec, std::int64_t v, string_view )
+    bool on_int64( error_code& ec, std::int64_t v )
     {
         if( !integral_in_range<V>( v ) )
         {
@@ -299,7 +299,7 @@ public:
         return true;
     }
 
-    bool on_uint64( error_code& ec, std::uint64_t v, string_view )
+    bool on_uint64( error_code& ec, std::uint64_t v )
     {
         if( !integral_in_range<V>( v ) )
         {
@@ -328,20 +328,12 @@ public:
         , value_(v)
     {}
 
-    bool on_number_part( error_code&, string_view )
+    bool on_number_part( error_code& )
     {
         return true;
     }
 
-    bool on_int64( error_code&, std::int64_t v, string_view )
-    {
-        *value_ = static_cast<V>( v );
-
-        this->parent_->signal_value();
-        return true;
-    }
-
-    bool on_uint64( error_code&, std::uint64_t v, string_view )
+    bool on_int64( error_code&, std::int64_t v )
     {
         *value_ = static_cast<V>( v );
 
@@ -349,7 +341,15 @@ public:
         return true;
     }
 
-    bool on_double( error_code&, double v, string_view )
+    bool on_uint64( error_code&, std::uint64_t v )
+    {
+        *value_ = static_cast<V>( v );
+
+        this->parent_->signal_value();
+        return true;
+    }
+
+    bool on_double( error_code&, double v )
     {
         *value_ = static_cast<V>( v );
 
@@ -372,13 +372,13 @@ public:
         , value_(v)
     {}
 
-    bool on_string_part( error_code&, string_view sv, std::size_t )
+    bool on_string_part( error_code&, string_view sv )
     {
         value_->append( sv.begin(), sv.end() );
         return true;
     }
 
-    bool on_string( error_code&, string_view sv, std::size_t )
+    bool on_string( error_code&, string_view sv )
     {
         value_->append( sv.begin(), sv.end() );
 
@@ -455,13 +455,13 @@ public:
         , value_(v)
     {}
 
-    bool on_string_part( error_code&, string_view sv, std::size_t )
+    bool on_string_part( error_code&, string_view sv )
     {
         name_.append( sv.begin(), sv.end() );
         return true;
     }
 
-    bool on_string( error_code& ec, string_view sv, std::size_t )
+    bool on_string( error_code& ec, string_view sv )
     {
         name_.append( sv.begin(), sv.end() );
 
@@ -558,10 +558,10 @@ public:
         }
     }
 
-    bool on_array_end( error_code& ec, std::size_t n )
+    bool on_array_end( error_code& ec )
     {
         if( this->inner_active_ )
-            return this->inner_.on_array_end( ec, n );
+            return this->inner_.on_array_end( ec );
 
         return this->parent_->signal_end(ec);
     }
@@ -603,36 +603,36 @@ public:
         return true;
     }
 
-    bool on_object_end( error_code& ec, std::size_t n )
+    bool on_object_end( error_code& ec )
     {
         if( this->inner_active_ )
-            return this->inner_.on_object_end(ec, n);
+            return this->inner_.on_object_end(ec);
 
         this->parent_->signal_value();
         return true;
     }
 
-    bool on_array_end( error_code& ec, std::size_t n )
+    bool on_array_end( error_code& ec )
     {
         if( this->inner_active_ )
-            return this->inner_.on_array_end(ec, n);
+            return this->inner_.on_array_end(ec);
 
         return this->parent_->signal_end(ec);
     }
 
-    bool on_key_part( error_code& ec, string_view sv, std::size_t n )
+    bool on_key_part( error_code& ec, string_view sv )
     {
         if( this->inner_active_ )
-            return this->inner_.on_key_part(ec, sv, n);
+            return this->inner_.on_key_part(ec, sv);
 
         key_.append( sv.data(), sv.size() );
         return true;
     }
 
-    bool on_key( error_code& ec, string_view sv, std::size_t n )
+    bool on_key( error_code& ec, string_view sv )
     {
         if( this->inner_active_ )
-            return this->inner_.on_key(ec, sv, n);
+            return this->inner_.on_key(ec, sv);
 
         key_.append( sv.data(), sv.size() );
 
@@ -864,15 +864,14 @@ public:
     {
         handler_tuple< converting_handler, tuple_element_list<T> >& handlers;
         error_code& ec;
-        std::size_t n;
 
         template< class I >
         bool operator()( I ) const
         {
-            return get<I::value>(handlers).on_array_end(ec, n);
+            return get<I::value>(handlers).on_array_end(ec);
         };
     };
-    bool on_array_end( error_code& ec, std::size_t n )
+    bool on_array_end( error_code& ec )
     {
         if( inner_active_ < 0 )
             return parent_->signal_end(ec);
@@ -883,7 +882,7 @@ public:
             return signal_end(ec);
 
         return mp11::mp_with_index<N>(
-            inner_active_, do_on_array_end{handlers_, ec, n} );
+            inner_active_, do_on_array_end{handlers_, ec} );
     }
 
     BOOST_JSON_HANDLE_EVENT( on_key_part );
@@ -1034,7 +1033,7 @@ public:
         BOOST_JSON_INVOKE_INNER( on_object_begin(ec) );
     }
 
-    bool on_object_end( error_code& ec, std::size_t n )
+    bool on_object_end( error_code& ec )
     {
         if( inner_active_ < 0 )
         {
@@ -1051,7 +1050,7 @@ public:
             return true;
         }
 
-        BOOST_JSON_INVOKE_INNER( on_object_end(ec, n) );
+        BOOST_JSON_INVOKE_INNER( on_object_end(ec) );
     }
 
     bool on_array_begin( error_code& ec )
@@ -1059,15 +1058,15 @@ public:
         BOOST_JSON_INVOKE_INNER( on_array_begin(ec) );
     }
 
-    bool on_array_end( error_code& ec, std::size_t n )
+    bool on_array_end( error_code& ec )
     {
         if( inner_active_ < 0 )
             return parent_->signal_end(ec);
 
-        BOOST_JSON_INVOKE_INNER( on_array_end(ec, n) );
+        BOOST_JSON_INVOKE_INNER( on_array_end(ec) );
     }
 
-    bool on_key_part( error_code& ec, string_view sv, std::size_t n )
+    bool on_key_part( error_code& ec, string_view sv )
     {
         if( inner_active_ < 0 )
         {
@@ -1075,14 +1074,14 @@ public:
             return true;
         }
 
-        BOOST_JSON_INVOKE_INNER( on_key_part(ec, sv, n) );
+        BOOST_JSON_INVOKE_INNER( on_key_part(ec, sv) );
     }
 
-    bool on_key( error_code& ec, string_view sv, std::size_t n )
+    bool on_key( error_code& ec, string_view sv )
     {
         if( inner_active_ >= 0 )
         {
-            BOOST_JSON_INVOKE_INNER( on_key(ec, sv, n) );
+            BOOST_JSON_INVOKE_INNER( on_key(ec, sv) );
         }
 
         key_.append( sv.data(), sv.size() );
@@ -1108,34 +1107,34 @@ public:
         return true;
     }
 
-    bool on_string_part( error_code& ec, string_view sv, std::size_t n )
+    bool on_string_part( error_code& ec, string_view sv )
     {
-        BOOST_JSON_INVOKE_INNER( on_string_part(ec, sv, n) );
+        BOOST_JSON_INVOKE_INNER( on_string_part(ec, sv) );
     }
 
-    bool on_string( error_code& ec, string_view sv, std::size_t n )
+    bool on_string( error_code& ec, string_view sv )
     {
-        BOOST_JSON_INVOKE_INNER( on_string(ec, sv, n) );
+        BOOST_JSON_INVOKE_INNER( on_string(ec, sv) );
     }
 
-    bool on_number_part( error_code& ec, string_view sv )
+    bool on_number_part( error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_number_part(ec, sv) );
+        BOOST_JSON_INVOKE_INNER( on_number_part(ec) );
     }
 
-    bool on_int64( error_code& ec, std::int64_t v, string_view sv )
+    bool on_int64( error_code& ec, std::int64_t v )
     {
-        BOOST_JSON_INVOKE_INNER( on_int64(ec, v, sv) );
+        BOOST_JSON_INVOKE_INNER( on_int64(ec, v) );
     }
 
-    bool on_uint64( error_code& ec, std::uint64_t v, string_view sv )
+    bool on_uint64( error_code& ec, std::uint64_t v )
     {
-        BOOST_JSON_INVOKE_INNER( on_uint64(ec, v, sv) );
+        BOOST_JSON_INVOKE_INNER( on_uint64(ec, v) );
     }
 
-    bool on_double( error_code& ec, double v, string_view sv )
+    bool on_double( error_code& ec, double v )
     {
-        BOOST_JSON_INVOKE_INNER( on_double(ec, v, sv) );
+        BOOST_JSON_INVOKE_INNER( on_double(ec, v) );
     }
 
     bool on_bool( error_code& ec, bool v )
@@ -1227,7 +1226,7 @@ struct event_visitor
     bool
     operator()(object_end_handler_event&) const
     {
-        return handler.on_object_end(ec, 0);
+        return handler.on_object_end(ec);
     }
 
     bool
@@ -1239,37 +1238,37 @@ struct event_visitor
     bool
     operator()(array_end_handler_event&) const
     {
-        return handler.on_array_end(ec, 0);
+        return handler.on_array_end(ec);
     }
 
     bool
     operator()(key_handler_event& ev) const
     {
-        return handler.on_key(ec, ev.value, 0);
+        return handler.on_key(ec, ev.value);
     }
 
     bool
     operator()(string_handler_event& ev) const
     {
-        return handler.on_string(ec, ev.value, 0);
+        return handler.on_string(ec, ev.value);
     }
 
     bool
     operator()(int64_handler_event& ev) const
     {
-        return handler.on_int64(ec, ev.value, string_view());
+        return handler.on_int64(ec, ev.value);
     }
 
     bool
     operator()(uint64_handler_event& ev) const
     {
-        return handler.on_uint64(ec, ev.value, string_view());
+        return handler.on_uint64(ec, ev.value);
     }
 
     bool
     operator()(double_handler_event& ev) const
     {
-        return handler.on_double(ec, ev.value, string_view());
+        return handler.on_double(ec, ev.value);
     }
 
     bool
@@ -1413,7 +1412,7 @@ public:
         BOOST_JSON_INVOKE_INNER( object_begin_handler_event{}, ec );
     }
 
-    bool on_object_end( error_code& ec, std::size_t )
+    bool on_object_end( error_code& ec )
     {
         BOOST_JSON_INVOKE_INNER( object_end_handler_event{}, ec );
     }
@@ -1423,7 +1422,7 @@ public:
         BOOST_JSON_INVOKE_INNER( array_begin_handler_event{}, ec );
     }
 
-    bool on_array_end( error_code& ec, std::size_t )
+    bool on_array_end( error_code& ec )
     {
         if( !inner_active_ )
             return signal_end(ec);
@@ -1431,47 +1430,47 @@ public:
         BOOST_JSON_INVOKE_INNER( array_end_handler_event{}, ec );
     }
 
-    bool on_key_part( error_code&, string_view sv, std::size_t )
+    bool on_key_part( error_code&, string_view sv )
     {
         string_.append(sv);
         return true;
     }
 
-    bool on_key( error_code& ec, string_view sv, std::size_t )
+    bool on_key( error_code& ec, string_view sv )
     {
         string_.append(sv);
         BOOST_JSON_INVOKE_INNER( key_handler_event{ std::move(string_) }, ec );
     }
 
-    bool on_string_part( error_code&, string_view sv, std::size_t )
+    bool on_string_part( error_code&, string_view sv )
     {
         string_.append(sv);
         return true;
     }
 
-    bool on_string( error_code& ec, string_view sv, std::size_t )
+    bool on_string( error_code& ec, string_view sv )
     {
         string_.append(sv);
         BOOST_JSON_INVOKE_INNER(
             string_handler_event{ std::move(string_) }, ec );
     }
 
-    bool on_number_part( error_code&, string_view )
+    bool on_number_part( error_code& )
     {
         return true;
     }
 
-    bool on_int64( error_code& ec, std::int64_t v, string_view )
+    bool on_int64( error_code& ec, std::int64_t v )
     {
         BOOST_JSON_INVOKE_INNER( int64_handler_event{v}, ec );
     }
 
-    bool on_uint64( error_code& ec, std::uint64_t v, string_view )
+    bool on_uint64( error_code& ec, std::uint64_t v )
     {
         BOOST_JSON_INVOKE_INNER( uint64_handler_event{v}, ec );
     }
 
-    bool on_double( error_code& ec, double v, string_view )
+    bool on_double( error_code& ec, double v )
     {
         BOOST_JSON_INVOKE_INNER( double_handler_event{v}, ec );
     }
@@ -1535,9 +1534,9 @@ public:
         BOOST_JSON_INVOKE_INNER( on_object_begin(ec) );
     }
 
-    bool on_object_end( error_code& ec, std::size_t n )
+    bool on_object_end( error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_object_end(ec, n) );
+        BOOST_JSON_INVOKE_INNER( on_object_end(ec) );
     }
 
     bool on_array_begin( error_code& ec )
@@ -1545,52 +1544,52 @@ public:
         BOOST_JSON_INVOKE_INNER( on_array_begin(ec) );
     }
 
-    bool on_array_end( error_code& ec, std::size_t n )
+    bool on_array_end( error_code& ec )
     {
         if( !inner_active_ )
             return signal_end(ec);
 
-        BOOST_JSON_INVOKE_INNER( on_array_end(ec, n) );
+        BOOST_JSON_INVOKE_INNER( on_array_end(ec) );
     }
 
-    bool on_key_part( error_code& ec, string_view sv, std::size_t n )
+    bool on_key_part( error_code& ec, string_view sv )
     {
-        BOOST_JSON_INVOKE_INNER( on_key_part(ec, sv, n) );
+        BOOST_JSON_INVOKE_INNER( on_key_part(ec, sv) );
     }
 
-    bool on_key( error_code& ec, string_view sv, std::size_t n )
+    bool on_key( error_code& ec, string_view sv )
     {
-        BOOST_JSON_INVOKE_INNER( on_key(ec, sv, n) );
+        BOOST_JSON_INVOKE_INNER( on_key(ec, sv) );
     }
 
-    bool on_string_part( error_code& ec, string_view sv, std::size_t n )
+    bool on_string_part( error_code& ec, string_view sv )
     {
-        BOOST_JSON_INVOKE_INNER( on_string_part(ec, sv, n) );
+        BOOST_JSON_INVOKE_INNER( on_string_part(ec, sv) );
     }
 
-    bool on_string( error_code& ec, string_view sv, std::size_t n )
+    bool on_string( error_code& ec, string_view sv )
     {
-        BOOST_JSON_INVOKE_INNER( on_string(ec, sv, n) );
+        BOOST_JSON_INVOKE_INNER( on_string(ec, sv) );
     }
 
-    bool on_number_part( error_code& ec, string_view sv )
+    bool on_number_part( error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_number_part(ec, sv) );
+        BOOST_JSON_INVOKE_INNER( on_number_part(ec) );
     }
 
-    bool on_int64( error_code& ec, std::int64_t v, string_view sv )
+    bool on_int64( error_code& ec, std::int64_t v )
     {
-        BOOST_JSON_INVOKE_INNER( on_int64(ec, v, sv) );
+        BOOST_JSON_INVOKE_INNER( on_int64(ec, v) );
     }
 
-    bool on_uint64( error_code& ec, std::uint64_t v, string_view sv )
+    bool on_uint64( error_code& ec, std::uint64_t v )
     {
-        BOOST_JSON_INVOKE_INNER( on_uint64(ec, v, sv) );
+        BOOST_JSON_INVOKE_INNER( on_uint64(ec, v) );
     }
 
-    bool on_double( error_code& ec, double v, string_view sv )
+    bool on_double( error_code& ec, double v )
     {
-        BOOST_JSON_INVOKE_INNER( on_double(ec, v, sv) );
+        BOOST_JSON_INVOKE_INNER( on_double(ec, v) );
     }
 
     bool on_bool( error_code& ec, bool v )
@@ -1679,9 +1678,9 @@ public:
         BOOST_JSON_INVOKE_INNER( on_object_begin(ec) );
     }
 
-    bool on_object_end( std::size_t n, error_code& ec )
+    bool on_object_end( std::size_t, error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_object_end(ec, n) );
+        BOOST_JSON_INVOKE_INNER( on_object_end(ec) );
     }
 
     bool on_array_begin( error_code& ec )
@@ -1689,49 +1688,49 @@ public:
         BOOST_JSON_INVOKE_INNER( on_array_begin(ec) );
     }
 
-    bool on_array_end( std::size_t n, error_code& ec )
+    bool on_array_end( std::size_t, error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_array_end(ec, n) );
+        BOOST_JSON_INVOKE_INNER( on_array_end(ec) );
     }
 
-    bool on_key_part( string_view sv, std::size_t n, error_code& ec )
+    bool on_key_part( string_view sv, std::size_t, error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_key_part(ec, sv, n) );
+        BOOST_JSON_INVOKE_INNER( on_key_part(ec, sv) );
     }
 
-    bool on_key( string_view sv, std::size_t n, error_code& ec )
+    bool on_key( string_view sv, std::size_t, error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_key(ec, sv, n) );
+        BOOST_JSON_INVOKE_INNER( on_key(ec, sv) );
     }
 
-    bool on_string_part( string_view sv, std::size_t n, error_code& ec )
+    bool on_string_part( string_view sv, std::size_t, error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_string_part(ec, sv, n) );
+        BOOST_JSON_INVOKE_INNER( on_string_part(ec, sv) );
     }
 
-    bool on_string( string_view sv, std::size_t n, error_code& ec )
+    bool on_string( string_view sv, std::size_t, error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_string(ec, sv, n) );
+        BOOST_JSON_INVOKE_INNER( on_string(ec, sv) );
     }
 
-    bool on_number_part( string_view sv, error_code& ec )
+    bool on_number_part( string_view, error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_number_part(ec, sv) );
+        BOOST_JSON_INVOKE_INNER( on_number_part(ec) );
     }
 
-    bool on_int64( std::int64_t v, string_view sv, error_code& ec )
+    bool on_int64( std::int64_t v, string_view, error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_int64(ec, v, sv) );
+        BOOST_JSON_INVOKE_INNER( on_int64(ec, v) );
     }
 
-    bool on_uint64( std::uint64_t v, string_view sv, error_code& ec )
+    bool on_uint64( std::uint64_t v, string_view, error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_uint64(ec, v, sv) );
+        BOOST_JSON_INVOKE_INNER( on_uint64(ec, v) );
     }
 
-    bool on_double( double v, string_view sv, error_code& ec )
+    bool on_double( double v, string_view, error_code& ec )
     {
-        BOOST_JSON_INVOKE_INNER( on_double(ec, v, sv) );
+        BOOST_JSON_INVOKE_INNER( on_double(ec, v) );
     }
 
     bool on_bool( bool v, error_code& ec )
