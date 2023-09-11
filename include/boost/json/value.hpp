@@ -2639,6 +2639,14 @@ public:
         Strong guarantee.
 
         @throw system_error `! this->is_int64()`
+
+        @par Note
+        This function is intended for direct access to the underlying object,
+        __if__ it has the type `std::int64_t`. It does not convert the
+        underlying object to type `std::int64_t` even if a lossless conversion
+        is possible. If you are not sure which kind your `value` has, and you
+        only care about getting a `std::int64_t` number, consider using
+        @ref to_number instead.
     */
     std::int64_t&
     as_int64()
@@ -2662,6 +2670,14 @@ public:
         Strong guarantee.
 
         @throw system_error `! this->is_int64()`
+
+        @par Note
+        This function is the const-qualified overload of @ref as_int64, which
+        is intended for direct access to the underlying object, __if__ it has
+        the type `std::int64_t`. It does not convert the underlying object to
+        type `std::int64_t` even if a lossless conversion is possible. If you
+        are not sure which kind your `value` has, and you only care about
+        getting a `std::int64_t` number, consider using @ref to_number instead.
     */
     std::int64_t
     as_int64() const
@@ -2685,6 +2701,14 @@ public:
         Strong guarantee.
 
         @throw system_error `! this->is_uint64()`
+
+        @par Note
+        This function is intended for direct access to the underlying object,
+        __if__ it has the type `std::uint64_t`. It does not convert the
+        underlying object to type `std::uint64_t` even if a lossless conversion
+        is possible. If you are not sure which kind your `value` has, and you
+        only care about getting a `std::uint64_t` number, consider using
+        @ref to_number instead.
     */
     std::uint64_t&
     as_uint64()
@@ -2708,6 +2732,15 @@ public:
         Strong guarantee.
 
         @throw system_error `! this->is_uint64()`
+
+        @par Note
+        This function is the const-qualified overload of @ref as_uint64, which
+        is intended for direct access to the underlying object, __if__ it has
+        the type `std::uint64_t`. It does not convert the underlying object to
+        type `std::uint64_t` even if a lossless conversion is possible. If you
+        are not sure which kind your `value` has, and you only care about
+        getting a `std::uint64_t` number, consider using
+        @ref to_number instead.
     */
     std::uint64_t
     as_uint64() const
@@ -2731,6 +2764,13 @@ public:
         Strong guarantee.
 
         @throw system_error `! this->is_double()`
+
+        @par Note
+        This function is intended for direct access to the underlying object,
+        __if__ it has the type `double`. It does not convert the underlying
+        object to type `double` even if a lossless conversion is possible. If
+        you are not sure which kind your `value` has, and you only care about
+        getting a `double` number, consider using @ref to_number instead.
     */
     double&
     as_double()
@@ -2754,6 +2794,14 @@ public:
         Strong guarantee.
 
         @throw system_error `! this->is_double()`
+
+        @par Note
+        This function is the const-qualified overload of @ref as_double, which
+        is intended for direct access to the underlying object, __if__ it has
+        the type `double`. It does not convert the underlying object to type
+        `double` even if a lossless conversion is possible. If you are not sure
+        which kind your `value` has, and you only care about getting a `double`
+        number, consider using @ref to_number instead.
     */
     double
     as_double() const
