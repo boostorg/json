@@ -463,9 +463,14 @@ public:
 
     bool on_string( error_code& ec, string_view sv )
     {
-        name_.append( sv.begin(), sv.end() );
+        string_view name = sv;
+        if( !name_.empty() )
+        {
+            name_.append( sv.begin(), sv.end() );
+            name = name_;
+        }
 
-        if( !describe::enum_from_string(name_.data(), *value_) )
+        if( !describe::enum_from_string(name, *value_) )
         {
             BOOST_JSON_FAIL(ec, error::unknown_name);
             return false;
@@ -1084,13 +1089,18 @@ public:
             BOOST_JSON_INVOKE_INNER( on_key(ec, sv) );
         }
 
-        key_.append( sv.data(), sv.size() );
+        string_view key = sv;
+        if( !key_.empty() )
+        {
+            key_.append( sv.data(), sv.size() );
+            key = key_;
+        }
 
         int i = 0;
 
         auto f = [&](char const* name)
         {
-            if( key_ == name )
+            if( key == name )
                 inner_active_ = i;
             ++i;
         };
