@@ -2132,15 +2132,55 @@ public:
     testInitList()
     {
         {
-            value jv{};
-            BOOST_TEST( jv.is_null() );
+            value jv1{};
+            BOOST_TEST( jv1.is_null() );
+
+            value jv2 = {};
+            BOOST_TEST( jv2.is_null() );
+
+            value jv3 = value{};
+            BOOST_TEST( jv3.is_null() );
         }
-#ifndef BOOST_JSON_LEGACY_INIT_LIST_BEHAVIOR
         {
-            value jv{0};
-            BOOST_TEST( jv == 0 );
+            value jv1{1, 2};
+            BOOST_TEST(( jv1 == array{1,2} ));
+
+            value jv2 = {1, 2};
+            BOOST_TEST(( jv2 == array{1,2} ));
+
+            value jv3 = value{1, 2};
+            BOOST_TEST(( jv3 == array{1,2} ));
+
+            value jv4{{1, 2}};
+            BOOST_TEST(( jv4 == array{1,2} ));
+
+            value jv5 = {{1, 2}};
+            BOOST_TEST(( jv5 == array{1,2} ));
+
+            value jv6 = value{{1, 2}};
+            BOOST_TEST(( jv6 == array{1,2} ));
         }
+        {
+#ifndef BOOST_JSON_LEGACY_INIT_LIST_BEHAVIOR
+            value jv1{0};
+            BOOST_TEST( jv1 == 0 );
+
+            value jv2 = {0};
+            BOOST_TEST( jv2 == 0 );
+
+            value jv3 = value{0};
+            BOOST_TEST( jv3 == 0 );
+
 #endif
+            value jv4{{0}};
+            BOOST_TEST( jv4 == array{0} );
+
+            value jv5 = {{0}};
+            BOOST_TEST( jv5 == array{0} );
+
+            value jv6 = value{{0}};
+            BOOST_TEST( jv6 == array{0} );
+        }
 
         check_array(value{0,0,0},               0, 0, 0);
         check_array(value{false,false,false},   false, false, false);
@@ -2151,6 +2191,16 @@ public:
         check_array(value{false,2,"3",nullptr}, false, 2, "3", nullptr);
         check_array(value{2,false,"3"},         2, false, "3");
         check_array(value{true,2,"3"},          true, 2, "3");
+
+        check_array({0,0,0},               0, 0, 0);
+        check_array({false,false,false},   false, false, false);
+        check_array({false,2,false},       false, 2, false);
+        check_array({false,2,"3"},         false, 2, "3");
+        check_array({false,false},         false, false);
+        check_array({false,2},             false, 2);
+        check_array({false,2,"3",nullptr}, false, 2, "3", nullptr);
+        check_array({2,false,"3"},         2, false, "3");
+        check_array({true,2,"3"},          true, 2, "3");
     }
 
     //------------------------------------------------------
