@@ -78,4 +78,11 @@ run limits.cpp main.cpp /boost/json//json_sources
     <define>BOOST_JSON_STACK_BUFFER_SIZE=256
     ;
 
+run no_exceptions.cpp main.cpp /boost/json//json_sources
+    : requirements
+    <exception-handling>off
+    <toolset>msvc:<cxxflags>"/wd4530" # C++ exception handler used
+    <toolset>msvc:<cxxflags>"/wd4577" # noexcept used without /EHsc
+    ;
+
 run intrusive_macros.cpp main.cpp /boost/json//json_deps ;

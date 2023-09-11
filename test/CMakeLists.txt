@@ -41,6 +41,21 @@ target_compile_definitions(boost_json-limits PRIVATE
 add_test(NAME boost_json-limits COMMAND boost_json-limits)
 add_dependencies(tests boost_json-limits)
 
+add_executable(boost_json-no_exceptions no_exceptions.cpp main.cpp ../src/src.cpp Jamfile)
+boost_json_setup_properties(boost_json-no_exceptions)
+
+target_compile_definitions(boost_json-no_exceptions PRIVATE
+    BOOST_JSON_NO_LIB=1
+)
+target_compile_options(boost_json-no_exceptions PRIVATE
+    $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-fno-exceptions>
+    $<$<CXX_COMPILER_ID:MSVC>:/wd4530>
+    $<$<CXX_COMPILER_ID:MSVC>:/wd4577>
+)
+
+add_test(NAME boost_json-no_exceptions COMMAND boost_json-no_exceptions)
+add_dependencies(tests boost_json-no_exceptions)
+
 add_executable(boost_json-intrusive-macro-tests intrusive_macros.cpp main.cpp Jamfile)
 boost_json_setup_properties(boost_json-intrusive-macro-tests)
 target_compile_definitions(boost_json-intrusive-macro-tests PRIVATE

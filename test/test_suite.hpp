@@ -10,6 +10,8 @@
 #ifndef TEST_SUITE_HPP
 #define TEST_SUITE_HPP
 
+#include <boost/throw_exception.hpp>
+
 #include <algorithm>
 #include <atomic>
 #include <chrono>

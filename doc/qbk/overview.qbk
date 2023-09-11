@@ -64,9 +64,10 @@ Boost.JSON offers these features:
   found [@https://www.boost.org/doc/libs/release/more/getting_started/index.html
   here]), or use header-only (see below)
 * Additional link to Boost.Container may be required
-  (as described in its [@https://www.boost.org/doc/libs/release/doc/html/container.html#container.intro.introduction_building_container
-  documentation])
-* Supports -fno-exceptions, detected automatically
+  (as described in its [@https://www.boost.org/doc/libs/release/doc/html/container.html#container.intro.introduction_building_container documentation])
+* Supports `-fno-exceptions`, detected automatically (but read
+  [link json.overview.requirements.disabling_exceptions the relevant section]
+  on this page).
 
 The library relies heavily on these well known C++ types in
 its interfaces (henceforth termed ['standard types]):
@@ -87,6 +88,24 @@ file in your project.
 
 MSVC users must also define the macro `BOOST_JSON_NO_LIB` to disable
 auto-linking.
+
+[heading Disabling Exceptions]
+
+In order to support building with exceptions disabled this library uses another
+Boost library,
+[@https://www.boost.org/doc/libs/release/libs/throw_exception
+Boost.ThrowException]. This allows to automatically discover whether exception
+support is available. On the other hand, as explained in Boost.ThrowException's
+documentation, if exceptions are disabled, the users need to provide their own
+implementation for `boost::throw_exception`, in order to link their binaries
+successfully. Here's a very simple example of such implementation:
+```
+void throw_exception( const std::exception&, const boost::source_location& )
+{
+    std::printf("Exceptions are not supported!");
+    std::abort();
+}
+```
 
 [heading Embedded]
 
