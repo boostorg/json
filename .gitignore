@@ -1,4 +1,5 @@
 /bin
+/bin.v2
 /bin64
 /_build*
 temp
@@ -15,3 +16,6 @@ temp
 
 # Visual Studio Code
 /.vscode
+
+# Python
+__pycache__
