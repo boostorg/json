@@ -11,7 +11,6 @@
 #include <boost/json/array.hpp>
 
 #include <boost/json/monotonic_resource.hpp>
-#include <boost/optional/optional.hpp>
 
 #include <forward_list>
 #include <list>

@@ -20,7 +20,6 @@
 #endif
 
 #include <boost/json.hpp>
-#include <boost/optional/optional.hpp>
 
 #include <algorithm>
 #include <cmath>

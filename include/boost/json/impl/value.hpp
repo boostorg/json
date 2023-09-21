@@ -13,6 +13,12 @@
 namespace boost {
 namespace json {
 
+value const&
+value::at_pointer(string_view ptr) const&
+{
+    return try_at_pointer(ptr).value();
+}
+
 value&
 value::at_pointer(string_view ptr) &
 {
@@ -24,6 +30,20 @@ value&&
 value::at_pointer(string_view ptr) &&
 {
     return std::move( this->at_pointer(ptr) );
+}
+
+value*
+value::find_pointer(string_view ptr, error_code& ec) noexcept
+{
+    value const& self = *this;
+    return const_cast<value*>(self.find_pointer(ptr, ec));
+}
+
+value*
+value::find_pointer(string_view ptr, std::error_code& ec) noexcept
+{
+    value const& self = *this;
+    return const_cast<value*>(self.find_pointer(ptr, ec));
 }
 
 } // namespace json

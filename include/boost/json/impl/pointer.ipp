@@ -341,13 +341,23 @@ walk_pointer(
 
 } // namespace detail
 
-value const&
-value::at_pointer(string_view ptr) const&
+result<value const&>
+value::try_at_pointer(string_view ptr) const noexcept
 {
     error_code ec;
-    auto const found = find_pointer(ptr, ec);
+    value const* found = find_pointer(ptr, ec);
     if( !found )
-        detail::throw_system_error( ec );
+        return ec;
+    return *found;
+}
+
+result<value&>
+value::try_at_pointer(string_view ptr) noexcept
+{
+    error_code ec;
+    value* found = find_pointer(ptr, ec);
+    if( !found )
+        return ec;
     return *found;
 }
 
@@ -380,13 +390,6 @@ value::find_pointer( string_view sv, error_code& ec ) const noexcept
         });
 }
 
-value*
-value::find_pointer(string_view ptr, error_code& ec) noexcept
-{
-    value const& self = *this;
-    return const_cast<value*>(self.find_pointer(ptr, ec));
-}
-
 value const*
 value::find_pointer(string_view ptr, std::error_code& ec) const noexcept
 {
@@ -394,13 +397,6 @@ value::find_pointer(string_view ptr, std::error_code& ec) const noexcept
     value const* result = find_pointer(ptr, jec);
     ec = jec;
     return result;
-}
-
-value*
-value::find_pointer(string_view ptr, std::error_code& ec) noexcept
-{
-    value const& self = *this;
-    return const_cast<value*>(self.find_pointer(ptr, ec));
 }
 
 value*
@@ -488,14 +484,16 @@ value::set_at_pointer(
     return result;
 }
 
-value&
-value::set_at_pointer(
-    string_view sv, value_ref ref, set_pointer_options const& opts )
+result<value&>
+value::try_set_at_pointer(
+    string_view sv,
+    value_ref ref,
+    set_pointer_options const& opts)
 {
     error_code ec;
     value* result = set_at_pointer( sv, ref, ec, opts );
     if( !result )
-        detail::throw_system_error( ec );
+        return ec;
     return *result;
 }
 
