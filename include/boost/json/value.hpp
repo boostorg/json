@@ -1975,27 +1975,13 @@ public:
         or an @ref error_code.
     */
     /** @{ */
+    BOOST_JSON_DECL
     result<array const&>
-    if_array() const noexcept
-    {
-        if( is_array() )
-            return arr_;
+    if_array() const noexcept;
 
-        error_code ec;
-        BOOST_JSON_FAIL(ec, error::not_array);
-        return ec;
-    }
-
+    BOOST_JSON_DECL
     result<array&>
-    if_array() noexcept
-    {
-        if( is_array() )
-            return arr_;
-
-        error_code ec;
-        BOOST_JSON_FAIL(ec, error::not_array);
-        return ec;
-    }
+    if_array() noexcept;
     /** @} */
 
     /** Return a @ref result with an @ref object reference if this is an object.
@@ -2022,27 +2008,13 @@ public:
         or an @ref error_code.
     */
     /** @{ */
+    BOOST_JSON_DECL
     result<object const&>
-    if_object() const noexcept
-    {
-        if( is_object() )
-            return obj_;
+    if_object() const noexcept;
 
-        error_code ec;
-        BOOST_JSON_FAIL(ec, error::not_object);
-        return ec;
-    }
-
+    BOOST_JSON_DECL
     result<object&>
-    if_object() noexcept
-    {
-        if( is_object() )
-            return obj_;
-
-        error_code ec;
-        BOOST_JSON_FAIL(ec, error::not_object);
-        return ec;
-    }
+    if_object() noexcept;
     /** @} */
 
     /** Return a @ref result with a @ref string reference if this is a string.
@@ -2069,27 +2041,13 @@ public:
         or an @ref error_code.
     */
     /** @{ */
+    BOOST_JSON_DECL
     result<string const&>
-    if_string() const noexcept
-    {
-        if( is_string() )
-            return str_;
+    if_string() const noexcept;
 
-        error_code ec;
-        BOOST_JSON_FAIL(ec, error::not_string);
-        return ec;
-    }
-
+    BOOST_JSON_DECL
     result<string&>
-    if_string() noexcept
-    {
-        if( is_string() )
-            return str_;
-
-        error_code ec;
-        BOOST_JSON_FAIL(ec, error::not_string);
-        return ec;
-    }
+    if_string() noexcept;
     /** @} */
 
     /** Return a @ref result with a `std::int64_t` reference if this is a signed integer.
@@ -2116,27 +2074,13 @@ public:
         or an @ref error_code.
     */
     /** @{ */
+    BOOST_JSON_DECL
     result<std::int64_t const&>
-    if_int64() const noexcept
-    {
-        if( is_int64() )
-            return sca_.i;
+    if_int64() const noexcept;
 
-        error_code ec;
-        BOOST_JSON_FAIL(ec, error::not_int64);
-        return ec;
-    }
-
+    BOOST_JSON_DECL
     result<std::int64_t&>
-    if_int64() noexcept
-    {
-        if( is_int64() )
-            return sca_.i;
-
-        error_code ec;
-        BOOST_JSON_FAIL(ec, error::not_int64);
-        return ec;
-    }
+    if_int64() noexcept;
     /** @} */
 
     /** Return a @ref result with a `std::uint64_t` reference if this is an unsigned integer.
@@ -2163,27 +2107,13 @@ public:
         or an @ref error_code.
     */
     /** @{ */
+    BOOST_JSON_DECL
     result<std::uint64_t const&>
-    if_uint64() const noexcept
-    {
-        if( is_uint64() )
-            return sca_.u;
+    if_uint64() const noexcept;
 
-        error_code ec;
-        BOOST_JSON_FAIL(ec, error::not_uint64);
-        return ec;
-    }
-
+    BOOST_JSON_DECL
     result<std::uint64_t&>
-    if_uint64() noexcept
-    {
-        if( is_uint64() )
-            return sca_.u;
-
-        error_code ec;
-        BOOST_JSON_FAIL(ec, error::not_uint64);
-        return ec;
-    }
+    if_uint64() noexcept;
     /** @} */
 
     /** Return a @ref result with a `double` reference if this is an unsigned integer.
@@ -2209,27 +2139,13 @@ public:
         @return @ref result storing a `double` reference or an @ref error_code.
     */
     /** @{ */
+    BOOST_JSON_DECL
     result<double const&>
-    if_double() const noexcept
-    {
-        if( is_double() )
-            return sca_.d;
+    if_double() const noexcept;
 
-        error_code ec;
-        BOOST_JSON_FAIL(ec, error::not_double);
-        return ec;
-    }
-
+    BOOST_JSON_DECL
     result<double&>
-    if_double() noexcept
-    {
-        if( is_double() )
-            return sca_.d;
-
-        error_code ec;
-        BOOST_JSON_FAIL(ec, error::not_double);
-        return ec;
-    }
+    if_double() noexcept;
     /** @} */
 
     /** Return a @ref result with a `bool` reference if this is a boolean.
@@ -2255,27 +2171,13 @@ public:
         @return @ref result storing a `bool` reference or an @ref error_code.
     */
     /** @{ */
+    BOOST_JSON_DECL
     result<bool const&>
-    if_bool() const noexcept
-    {
-        if( is_bool() )
-            return sca_.b;
+    if_bool() const noexcept;
 
-        error_code ec;
-        BOOST_JSON_FAIL(ec, error::not_bool);
-        return ec;
-    }
-
+    BOOST_JSON_DECL
     result<bool&>
-    if_bool() noexcept
-    {
-        if( is_bool() )
-            return sca_.b;
-
-        error_code ec;
-        BOOST_JSON_FAIL(ec, error::not_bool);
-        return ec;
-    }
+    if_bool() noexcept;
     /** @} */
 
     //------------------------------------------------------

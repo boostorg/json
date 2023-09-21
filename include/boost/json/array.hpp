@@ -760,11 +760,11 @@ public:
         @param pos The index of the element to return.
     */
     /** @{ */
-    inline
+    BOOST_JSON_DECL
     result<value const&>
     if_contains(std::size_t pos) const noexcept;
 
-    inline
+    BOOST_JSON_DECL
     result<value&>
     if_contains(std::size_t pos) noexcept;
     /** @} */

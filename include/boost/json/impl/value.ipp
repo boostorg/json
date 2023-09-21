@@ -416,6 +416,178 @@ swap(value& other)
     ::new(this) value(pilfer(temp2));
 }
 
+//------------------------------------------------------
+
+result<array const&>
+value::
+if_array() const noexcept
+{
+    if( is_array() )
+        return arr_;
+
+    error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_array);
+    return ec;
+}
+
+result<array&>
+value::
+if_array() noexcept
+{
+    if( is_array() )
+        return arr_;
+
+    error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_array);
+    return ec;
+}
+
+result<object const&>
+value::
+if_object() const noexcept
+{
+    if( is_object() )
+        return obj_;
+
+    error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_object);
+    return ec;
+}
+
+result<object&>
+value::
+if_object() noexcept
+{
+    if( is_object() )
+        return obj_;
+
+    error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_object);
+    return ec;
+}
+
+result<string const&>
+value::
+if_string() const noexcept
+{
+    if( is_string() )
+        return str_;
+
+    error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_string);
+    return ec;
+}
+
+result<string&>
+value::
+if_string() noexcept
+{
+    if( is_string() )
+        return str_;
+
+    error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_string);
+    return ec;
+}
+
+result<std::int64_t const&>
+value::
+if_int64() const noexcept
+{
+    if( is_int64() )
+        return sca_.i;
+
+    error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_int64);
+    return ec;
+}
+
+result<std::int64_t&>
+value::
+if_int64() noexcept
+{
+    if( is_int64() )
+        return sca_.i;
+
+    error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_int64);
+    return ec;
+}
+
+result<std::uint64_t const&>
+value::
+if_uint64() const noexcept
+{
+    if( is_uint64() )
+        return sca_.u;
+
+    error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_uint64);
+    return ec;
+}
+
+result<std::uint64_t&>
+value::
+if_uint64() noexcept
+{
+    if( is_uint64() )
+        return sca_.u;
+
+    error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_uint64);
+    return ec;
+}
+
+result<double const&>
+value::
+if_double() const noexcept
+{
+    if( is_double() )
+        return sca_.d;
+
+    error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_double);
+    return ec;
+}
+
+result<double&>
+value::
+if_double() noexcept
+{
+    if( is_double() )
+        return sca_.d;
+
+    error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_double);
+    return ec;
+}
+
+result<bool const&>
+value::
+if_bool() const noexcept
+{
+    if( is_bool() )
+        return sca_.b;
+
+    error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_bool);
+    return ec;
+}
+
+result<bool&>
+value::
+if_bool() noexcept
+{
+    if( is_bool() )
+        return sca_.b;
+
+    error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_bool);
+    return ec;
+}
+
+//------------------------------------------------------
+
 std::istream&
 operator>>(
     std::istream& is,

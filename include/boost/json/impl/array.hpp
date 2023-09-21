@@ -309,34 +309,6 @@ data() const noexcept
     return &(*t_)[0];
 }
 
-result<value const&>
-array::
-if_contains(
-    std::size_t pos) const noexcept
-{
-    if( pos >= t_->size )
-    {
-        error_code ec;
-        BOOST_JSON_FAIL(ec, error::out_of_range);
-        return ec;
-    }
-    return (*t_)[pos];
-}
-
-result<value&>
-array::
-if_contains(
-    std::size_t pos) noexcept
-{
-    if( pos >= t_->size )
-    {
-        error_code ec;
-        BOOST_JSON_FAIL(ec, error::out_of_range);
-        return ec;
-    }
-    return (*t_)[pos];
-}
-
 //----------------------------------------------------------
 //
 // Iterators
