@@ -2304,13 +2304,61 @@ public:
 #endif
     to_number() const
     {
-        error e;
-        auto result = to_number<T>(e);
-        if( e != error() )
-        {
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-            detail::throw_system_error( e, &loc );
-        }
+        return try_number<T>().value();
+    }
+
+    /** Return a @ref result with the stored number cast to an arithmetic type.
+
+        This function attempts to return the stored value
+        converted to the arithmetic type `T` which may not
+        be `bool`:
+
+        @li If `T` is an integral type and the stored
+        value is a number which can be losslessly converted,
+        the conversion is performed without error and a @ref result storing
+        the converted number is returned.
+
+        @li If `T` is an integral type and the stored value
+        is a number which cannot be losslessly converted,
+        then a @ref result storing an @ref error_code is returned.
+
+        @li If `T` is a floating point type and the stored
+        value is a number, the conversion is performed
+        without error. A @ref result storing the converted number is returned,
+        with a possible loss of precision.
+
+        @li Otherwise, if the stored value is not a number;
+        that is, if `this->is_number()` returns `false`, then
+        a @ref result storing an @ref error_code is returned.
+
+        @par Constraints
+        @code
+        std::is_arithmetic< T >::value && ! std::is_same< T, bool >::value
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @return @ref result storing the converted number or an @ref error_code.
+    */
+    template<class T>
+#ifdef BOOST_JSON_DOCS
+    result<T>
+#else
+    typename std::enable_if<
+        std::is_arithmetic<T>::value &&
+        ! std::is_same<T, bool>::value,
+            result<T> >::type
+#endif
+    try_number() const noexcept
+    {
+        error_code ec;
+        auto result = to_number<T>(ec);
+        if( ec.failed() )
+            return ec;
         return result;
     }
 

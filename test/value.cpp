@@ -1697,6 +1697,32 @@ public:
             value(nullptr).to_number<double>(ec);
             BOOST_TEST(error::not_number == ec);
         }
+
+        {
+            value jv(-15);
+            value const& cjv = jv;
+            BOOST_TEST(  jv.try_number<int>().value()    == -15 );
+            BOOST_TEST( cjv.try_number<int>().value()    == -15 );
+            BOOST_TEST(  jv.try_number<double>().value() == -15 );
+            BOOST_TEST( cjv.try_number<double>().value() == -15 );
+
+            error_code ec = jv.try_number<unsigned>().error();
+            BOOST_TEST( error::not_exact == ec );
+            BOOST_TEST( ec.has_location() );
+
+            ec = cjv.try_number<unsigned>().error();
+            BOOST_TEST( error::not_exact == ec );
+            BOOST_TEST( ec.has_location() );
+
+            jv = "1";
+            ec = jv.try_number<double>().error();
+            BOOST_TEST( error::not_number == ec );
+            BOOST_TEST( ec.has_location() );
+
+            ec = cjv.try_number<double>().error();
+            BOOST_TEST( error::not_number == ec );
+            BOOST_TEST( ec.has_location() );
+        }
     }
 
     void
