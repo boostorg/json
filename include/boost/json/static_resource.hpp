@@ -80,16 +80,6 @@ public:
     static_resource& operator=(
         static_resource const&) = delete;
 
-    /** Destructor
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
-    ~static_resource() noexcept;
-
     /** Constructor
 
         This constructs the resource to use the specified
