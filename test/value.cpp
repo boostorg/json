@@ -166,6 +166,12 @@ public:
                 BOOST_TEST(v1.storage().get() ==
                     storage_ptr().get());
             }
+            //check trivial deallocate
+            {
+                monotonic_resource mr;
+                key_value_pair kv("a", 1, &mr);
+                (void)kv;
+            }
         }
 
         // value(value const&)
@@ -2142,6 +2148,12 @@ public:
         BOOST_TEST(ckr == "const key");
         BOOST_TEST(&cvr == &v4.value());
 #endif
+
+        const kvp v5("const key", "const value");
+        std::pair<string_view, value> p( v5.key(), v5.value() );
+        kvp const v6(p);
+        BOOST_TEST( v5.key() == v6.key() );
+        BOOST_TEST( v5.value() == v6.value() );
     }
 
     //------------------------------------------------------
