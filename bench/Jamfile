@@ -7,6 +7,21 @@
 # Official repository: https://github.com/boostorg/json
 #
 
+import common ;
+import os ;
+import path ;
+import property ;
+
+import feature ;
+
+path-constant HERE : . ;
+
+feature.feature bench.option : : free optional ;
+feature.feature bench.launcher : : free optional ;
+feature.feature bench.file : : free optional ;
+
+.BENCH_FILES = [ os.environ BENCH_FILES ] ;
+
 local has_nlohmann_json = [
     glob lib/nlohmann/single_include/nlohmann/json.hpp ] ;
 if $(has_nlohmann_json)
@@ -29,3 +44,44 @@ exe bench :
     $(has_nlohmann_json)<define>BOOST_JSON_HAS_NLOHMANN_JSON
     $(has_rapidjson)<define>BOOST_JSON_HAS_RAPIDJSON
     ;
+
+
+local bench-files = [ glob $(HERE)/data/*.json ] ;
+notfile run : @run-bench : bench : : <bench.file>$(bench-files) ;
+explicit run ;
+
+rule run-bench ( target : sources * : props * )
+{
+    local flags = [ property.select flags : $(props) ] ;
+    flags += [ property.select bench.option : $(props) ] ;
+    FLAGS on $(target) = $(flags:G=) ;
+
+    local launcher = [ property.select bench.launcher : $(props) ] ;
+    if $(launcher)
+    {
+        launcher = "$(launcher:G=) " ;
+        launcher = "$(launcher:J=) " ;
+    }
+    else
+    {
+        launcher = "" ;
+    }
+    LAUNCHER on $(target) = $(launcher) ;
+
+    local files = [ property.select bench.file : $(props) ] ;
+    FILES on $(target) = $(files:G=) ;
+
+    local dir = [ on $(target) return $(LOCATE) ] ;
+    if $(dir)
+    {
+        dir = [ path.make $(dir) ] ;
+        dir = $(dir)/$(target:G=) ;
+        common.MkDir $(dir) ;
+        DEPENDS $(target) : $(dir) ;
+    }
+}
+
+actions run-bench
+{
+    $(LAUNCHER)$(>) $(FLAGS) $(FILES)
+}
