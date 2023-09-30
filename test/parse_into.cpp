@@ -252,6 +252,13 @@ public:
             error::size_mismatch, {1, 2, 3} );
 
         testParseInto< std::vector<std::array<int, 4>> >( {arr,arr,arr} );
+
+        std::vector<int> v;
+        parse_into(v, "[1,2,3,4]");
+        BOOST_TEST( v.size() == 4 );
+
+        parse_into(v, "[5,6,7]");
+        BOOST_TEST( v.size() == 3 );
     }
 
     void testMap()
@@ -272,6 +279,13 @@ public:
             error::not_object, { "1", 1, "2", 2} );
         testParseIntoErrors< std::map<std::string, std::map<std::string, int>> >(
             error::not_object, { {"1", {}}, {"2", {"3", 4}} } );
+
+        std::map<std::string, int> m;
+        parse_into(m, R"( {"1": 1, "2": 2, "3": 3} )");
+        BOOST_TEST( m.size() == 3 );
+
+        parse_into(m, R"( {"4": 4, "5": 5} )");
+        BOOST_TEST( m.size() == 2 );
     }
 
     void testTuple()

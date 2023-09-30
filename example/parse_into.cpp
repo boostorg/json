@@ -65,6 +65,10 @@ struct options
 
     iterator
     end();
+
+    void
+    clear()
+    { }
 };
 
 struct coordinate
@@ -112,6 +116,10 @@ struct accumulator
 
     iterator
     end() { return nullptr; }
+
+    void
+    clear()
+    { }
 };
 
 struct coordinates2

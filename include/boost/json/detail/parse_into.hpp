@@ -502,6 +502,32 @@ std::true_type check_inserter( It1, It2 )
     return {};
 }
 
+template<class T>
+void
+clear_container(
+    T&,
+    mp11::mp_int<2>)
+{
+}
+
+template<class T>
+void
+clear_container(
+    T& target,
+    mp11::mp_int<1>)
+{
+    target.clear();
+}
+
+template<class T>
+void
+clear_container(
+    T& target,
+    mp11::mp_int<0>)
+{
+    target.clear();
+}
+
 template< class V, class P >
 class converting_handler<sequence_conversion_tag, V, P>
     : public composite_handler<
@@ -553,14 +579,11 @@ public:
     bool on_array_begin( error_code& ec )
     {
         if( this->inner_active_ )
-        {
             return this->inner_.on_array_begin( ec );
-        }
-        else
-        {
-            this->inner_active_ = true;
-            return true;
-        }
+
+        this->inner_active_ = true;
+        clear_container( *value_, inserter_implementation<V>() );
+        return true;
     }
 
     bool on_array_end( error_code& ec )
@@ -605,6 +628,7 @@ public:
         if( this->inner_active_ )
             return this->inner_.on_object_begin(ec);
 
+        clear_container( *value_, inserter_implementation<V>() );
         return true;
     }
 
