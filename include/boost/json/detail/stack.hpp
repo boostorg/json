@@ -12,7 +12,9 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/storage_ptr.hpp>
+#include <boost/static_assert.hpp>
 #include <cstring>
+#include <type_traits>
 
 namespace boost {
 namespace json {
@@ -20,9 +22,13 @@ namespace detail {
 
 class stack
 {
+    struct non_trivial;
+
     storage_ptr sp_;
     std::size_t cap_ = 0;
-    std::size_t size_ = 0;
+    std::size_t size0_ = 0; // lo stack
+    std::size_t size1_ = 0; // hi stack
+    non_trivial* head_ = nullptr;
     unsigned char* base_ = nullptr;
     unsigned char* buf_ = nullptr;
 
@@ -40,70 +46,63 @@ public:
     bool
     empty() const noexcept
     {
-        return size_ == 0;
-    }
-
-    void
-    clear() noexcept
-    {
-        size_ = 0;
+        return size0_ + size1_ == 0;
     }
 
     BOOST_JSON_DECL
     void
-    reserve(std::size_t n);
+    clear() noexcept;
+
+    void
+    reserve(std::size_t n)
+    {
+        if(n > cap_)
+            reserve_impl(n);
+    }
 
     template<class T>
     void
     push(T const& t)
     {
-        auto const n = sizeof(T);
-        // If this assert goes off, it
-        // means the calling code did not
-        // reserve enough to prevent a
-        // reallocation.
-        //BOOST_ASSERT(cap_ >= size_ + n);
-        reserve(size_ + n);
-        std::memcpy(
-            base_ + size_, &t, n);
-        size_ += n;
+        push(t, std::is_trivial<T>{});
     }
 
     template<class T>
     void
-    push_unchecked(T const& t)
-    {
-        auto const n = sizeof(T);
-        BOOST_ASSERT(size_ + n <= cap_);
-        std::memcpy(
-            base_ + size_, &t, n);
-        size_ += n;
-    }
+    push_unchecked(
+        T const& t);
 
     template<class T>
     void
-    peek(T& t)
-    {
-        auto const n = sizeof(T);
-        BOOST_ASSERT(size_ >= n);
-        std::memcpy(&t,
-            base_ + size_ - n, n);
-    }
+    peek(T& t);
 
     template<class T>
     void
     pop(T& t)
     {
-        auto const n = sizeof(T);
-        BOOST_ASSERT(size_ >= n);
-        size_ -= n;
-        std::memcpy(
-            &t, base_ + size_, n);
+        pop(t, std::is_trivial<T>{});
     }
+
+private:
+    template<class T> void push(
+        T const& t, std::true_type);
+    template<class T> void push(
+        T const& t, std::false_type);
+    template<class T> void pop(
+        T& t, std::true_type);
+    template<class T> void pop(
+        T& t, std::false_type);
+
+    BOOST_JSON_DECL
+    void
+    reserve_impl(
+        std::size_t n);
 };
 
 } // detail
 } // namespace json
 } // namespace boost
+
+#include <boost/json/detail/impl/stack.hpp>
 
 #endif
