@@ -365,6 +365,7 @@ class converting_handler<string_like_conversion_tag, V, P>
 {
 private:
     V* value_;
+    bool cleared_ = false;
 
 public:
     converting_handler( V* v, P* p )
@@ -374,12 +375,23 @@ public:
 
     bool on_string_part( error_code&, string_view sv )
     {
+        if( !cleared_ )
+        {
+            cleared_ = true;
+            value_->clear();
+        }
+
         value_->append( sv.begin(), sv.end() );
         return true;
     }
 
     bool on_string( error_code&, string_view sv )
     {
+        if( !cleared_ )
+            value_->clear();
+        else
+            cleared_ = false;
+
         value_->append( sv.begin(), sv.end() );
 
         this->parent_->signal_value();

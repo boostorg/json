@@ -214,6 +214,13 @@ public:
         testParseInto<std::string>( "12345" );
 
         testParseIntoErrors< string >( error::not_string, UINT64_MAX );
+
+        std::string s;
+        parse_into(s, R"( "foobar" )");
+        BOOST_TEST( s.size() == 6 );
+
+        parse_into(s, R"( "qwertyuiop" )");
+        BOOST_TEST( s.size() == 10 );
     }
 
     void testSequence()
