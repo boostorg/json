@@ -17,8 +17,13 @@ namespace json {
 namespace detail {
 
 stack::
+non_trivial::
+~non_trivial() = default;
+
+stack::
 ~stack()
 {
+    clear();
     if(base_ != buf_)
         sp_->deallocate(
             base_, cap_);
@@ -38,16 +43,63 @@ stack(
 
 void
 stack::
-reserve(std::size_t n)
+clear() noexcept
 {
-    if(cap_ >= n)
-        return;
+    while(head_)
+    {
+        auto const next = head_->next;
+        head_->~non_trivial();
+        head_ = next;
+    }
+    size0_ = 0;
+    size1_ = 0;
+}
+
+void
+stack::
+reserve_impl(
+    std::size_t n)
+{
+    // caller checks this
+    BOOST_ASSERT(n > cap_);
+
     auto const base = static_cast<
         unsigned char*>(sp_->allocate(n));
     if(base_)
     {
-        if(size_ > 0)
-            std::memcpy(base, base_, size_);
+        // copy trivials
+        if(size1_ > 0)
+            std::memcpy(
+                base + n - size1_,
+                base_ + cap_ - size1_,
+                size1_);
+
+        // copy non-trivials
+        if(head_)
+        {
+            non_trivial* head = nullptr;
+            auto dest = reinterpret_cast<
+                non_trivial*>(base);
+            auto next = head_->next;
+            auto prev = dest;
+            dest = head_->copy(dest);
+            prev->next = head;
+            head = prev;
+            head_->~non_trivial();
+            head_ = next;
+            while(head_)
+            {
+                next = head_->next;
+                prev = dest;
+                dest = head_->copy(dest);
+                prev->next = head;
+                head = prev;
+                head_->~non_trivial();
+                head_ = next;
+            }
+            head_ = head;
+        }
+
         if(base_ != buf_)
             sp_->deallocate(base_, cap_);
     }
