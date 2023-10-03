@@ -10,9 +10,9 @@
 // Test that header file is self-contained.
 #include <boost/json/serializer.hpp>
 
+#include <boost/json/detail/stack.hpp>
 #include <boost/json/serialize.hpp>
 #include <boost/json/null_resource.hpp>
-#include <boost/json/parse.hpp>
 #include <boost/json/parse.hpp>
 #include <iostream>
 
@@ -593,6 +593,77 @@ public:
     }
 
     void
+    testStack()
+    {
+        char const* sample = "sample string";
+
+        detail::stack st;
+        BOOST_TEST( st.empty() );
+
+        st.push( 1 );
+        BOOST_TEST( !st.empty() );
+        st.push( sample );
+        st.push( 3.4 );
+
+        std::vector<int> v{1, 2, 3, 4, 5};
+        st.push(v);
+
+        v.pop_back();
+        st.push(v);
+
+        {
+            std::vector<int> v1;
+            st.pop( v1 );
+
+            BOOST_TEST( v == v1 );
+        }
+        v.push_back(5);
+        {
+            std::vector<int> v1;
+            st.pop( v1 );
+
+            BOOST_TEST( v == v1 );
+        }
+        {
+            double d1;
+            st.peek( d1 );
+            BOOST_TEST( d1 == 3.4 );
+
+            double d2;
+            st.pop( d2 );
+            BOOST_TEST( d2 == d1 );
+            BOOST_TEST( !st.empty() );
+        }
+        {
+            char const* s1;
+            st.peek( s1 );
+            BOOST_TEST( s1 == sample );
+
+            char const* s2;
+            st.pop( s2 );
+            BOOST_TEST( s2 == s1 );
+            BOOST_TEST( !st.empty() );
+        }
+        {
+            int n1;
+            st.peek( n1 );
+            BOOST_TEST( n1 == 1 );
+
+            int n2;
+            st.pop( n2 );
+            BOOST_TEST( n2 == n1 );
+            BOOST_TEST( st.empty() );
+        }
+
+        st.clear();
+        BOOST_TEST( st.empty() );
+
+        st.push( 1 );
+        st.clear();
+        BOOST_TEST( st.empty() );
+    }
+
+    void
     run()
     {
         testNull();
@@ -606,6 +677,7 @@ public:
         testVectors();
         testOstream();
         testNumberRoundTrips();
+        testStack();
     }
 };
 
