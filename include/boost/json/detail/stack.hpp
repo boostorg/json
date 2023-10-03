@@ -48,11 +48,13 @@ class stack
     unsigned char* buf_ = nullptr;
 
 public:
-    BOOST_JSON_DECL
+    // BOOST_JSON_DECL
+    inline
     ~stack();
 
     stack() = default;
 
+    inline
     stack(
         storage_ptr sp,
         unsigned char* buf,
@@ -64,7 +66,8 @@ public:
         return size0_ + size1_ == 0;
     }
 
-    BOOST_JSON_DECL
+    // BOOST_JSON_DECL
+    inline
     void
     clear() noexcept;
 
@@ -109,6 +112,7 @@ private:
         T& t, std::false_type);
 
     BOOST_JSON_DECL
+    inline
     void
     reserve_impl(
         std::size_t n);
