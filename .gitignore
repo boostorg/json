@@ -15,3 +15,7 @@ temp
 
 # Visual Studio Code
 /.vscode
+
+# local copy of bench
+/bench/bench
+/bench/bench.exe

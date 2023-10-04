@@ -35,5 +35,14 @@ nice -n -20 taskset -c 1 path/to/gcc/version/of/bench -t:p -n:10 -i:b mydata.jso
 nice -n -20 taskset -c 1 path/to/clang/version/of/bench -t:p -n:10 -i:b mydata.json
 ```
 
+Alternatively, you can copy the version of bench that you want into the bench
+directory by requesting the target `bench//bench-local` and then run it
+manually:
+
+```sh
+b2 variant=release toolset=gcc bench//bench-local
+nice -n -20 taskset -c 1 bench/bench-local -t:p -n:10 -i:b mydata.json
+```
+
 The benchmarked files were sourced from the
 [simdjson](https://github.com/simdjson/simdjson) repository.

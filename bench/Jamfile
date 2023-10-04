@@ -45,6 +45,9 @@ exe bench :
     $(has_rapidjson)<define>BOOST_JSON_HAS_RAPIDJSON
     ;
 
+install bench-local : bench : <location>. <hardcode-dll-paths>true ;
+explicit bench-local ;
+always bench-local ;
 
 local bench-files = [ glob $(HERE)/data/*.json ] ;
 notfile run : @run-bench : bench : : <bench.file>$(bench-files) ;
