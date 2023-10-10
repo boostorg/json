@@ -600,10 +600,14 @@ public:
         detail::stack st;
         BOOST_TEST( st.empty() );
 
-        st.push( 1 );
+        st.clear();
+        BOOST_TEST( st.empty() );
+
+        st.push(1);
         BOOST_TEST( !st.empty() );
-        st.push( sample );
-        st.push( 3.4 );
+
+        st.push(sample);
+        st.push(3.4);
 
         std::vector<int> v{1, 2, 3, 4, 5};
         st.push(v);
@@ -611,6 +615,16 @@ public:
         v.pop_back();
         st.push(v);
 
+        v.pop_back();
+        st.push(v);
+
+        {
+            std::vector<int> v1;
+            st.pop( v1 );
+
+            BOOST_TEST( v == v1 );
+        }
+        v.push_back(4);
         {
             std::vector<int> v1;
             st.pop( v1 );
@@ -654,11 +668,10 @@ public:
             BOOST_TEST( n2 == n1 );
             BOOST_TEST( st.empty() );
         }
-
-        st.clear();
         BOOST_TEST( st.empty() );
 
-        st.push( 1 );
+        st.push(1);
+        st.push(v);
         st.clear();
         BOOST_TEST( st.empty() );
     }
