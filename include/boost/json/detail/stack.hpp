@@ -41,14 +41,12 @@ class stack
 
     storage_ptr sp_;
     std::size_t cap_ = 0;
-    std::size_t size0_ = 0; // lo stack
-    std::size_t size1_ = 0; // hi stack
+    std::size_t size_ = 0;
     non_trivial* head_ = nullptr;
     unsigned char* base_ = nullptr;
     unsigned char* buf_ = nullptr;
 
 public:
-    // BOOST_JSON_DECL
     inline
     ~stack();
 
@@ -63,10 +61,9 @@ public:
     bool
     empty() const noexcept
     {
-        return size0_ + size1_ == 0;
+        return size_ == 0;
     }
 
-    // BOOST_JSON_DECL
     inline
     void
     clear() noexcept;
@@ -111,7 +108,6 @@ private:
     template<class T> void pop(
         T& t, std::false_type);
 
-    BOOST_JSON_DECL
     inline
     void
     reserve_impl(
