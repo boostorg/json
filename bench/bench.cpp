@@ -31,6 +31,7 @@
 #include <boost/json/basic_parser_impl.hpp>
 #include <algorithm>
 #include <chrono>
+#include <fstream>
 #include <iostream>
 #include <memory>
 #include <numeric>
@@ -54,6 +55,7 @@ using clock_type = std::chrono::steady_clock;
 ::test_suite::debug_stream dout(std::cerr);
 std::stringstream strout;
 parse_options popts;
+bool with_file_io = false;
 
 #if defined(__clang__)
 string_view toolset = "clang";
@@ -92,6 +94,10 @@ public:
     virtual
     clock_type::duration
     parse(string_view s, std::size_t repeat) const = 0;
+
+    virtual
+    clock_type::duration
+    parse(file_item const& fi, std::size_t repeat) const = 0;
 
     virtual
     clock_type::duration
@@ -182,10 +188,12 @@ bench(
             std::size_t repeat = 1;
             auto const f = [&]
             {
-                if(verb == "Parse")
-                    return vi[j]->parse(vf[i].text, repeat);
-                else if(verb == "Serialize")
+                if(verb == "Serialize")
                     return vi[j]->serialize(vf[i].text, repeat);
+                else if( with_file_io )
+                    return vi[j]->parse(vf[i], repeat);
+                else
+                    return vi[j]->parse(vf[i].text, repeat);
 
                 return clock_type::duration();
             };
@@ -301,6 +309,47 @@ public:
     }
 
     clock_type::duration
+    parse(file_item const& fi, std::size_t repeat) const override
+    {
+        auto const start = clock_type::now();
+        stream_parser p({}, popts);
+        char s[ BOOST_JSON_STACK_BUFFER_SIZE];
+        while(repeat--)
+        {
+            p.reset();
+
+            FILE* f = fopen(fi.name.data(), "rb");
+
+            error_code ec;
+            while( true )
+            {
+                std::size_t const sz = fread(s, 1, sizeof(s), f);
+                if( ferror(f) )
+                {
+                    ec = std::io_errc::stream;
+                    break;
+                }
+
+                p.write( s, sz, ec );
+                if( ec.failed() )
+                    break;
+
+                if( feof(f) )
+                    break;
+            }
+
+            if(! ec)
+                p.finish(ec);
+
+            if(! ec)
+                auto jv = p.release();
+
+            fclose(f);
+        }
+        return clock_type::now() - start;
+    }
+
+    clock_type::duration
     serialize(
         string_view s,
         std::size_t repeat) const override
@@ -369,6 +418,48 @@ public:
                 p.finish(ec);
             if(! ec)
                 auto jv = p.release();
+        }
+        return clock_type::now() - start;
+    }
+
+    clock_type::duration
+    parse(file_item const& fi, std::size_t repeat) const override
+    {
+        auto const start = clock_type::now();
+        stream_parser p({}, popts);
+        char s[ BOOST_JSON_STACK_BUFFER_SIZE];
+        while(repeat--)
+        {
+            monotonic_resource mr;
+            p.reset(&mr);
+
+            FILE* f = fopen(fi.name.data(), "rb");
+
+            error_code ec;
+            while( true )
+            {
+                std::size_t const sz = fread(s, 1, sizeof(s), f);
+                if( ferror(f) )
+                {
+                    ec = std::io_errc::stream;
+                    break;
+                }
+
+                p.write( s, sz, ec );
+                if( ec.failed() )
+                    break;
+
+                if( feof(f) )
+                    break;
+            }
+
+            if(! ec)
+                p.finish(ec);
+
+            if(! ec)
+                auto jv = p.release();
+
+            fclose(f);
         }
         return clock_type::now() - start;
     }
@@ -463,6 +554,22 @@ class boost_null_impl : public any_impl
                 ec = error::extra_data;
             return n;
         }
+
+        std::size_t
+        write_some(
+            char const* data,
+            std::size_t size,
+            error_code& ec)
+        {
+            return p_.write_some(
+                true, data, size, ec);
+        }
+
+        void
+        finish(error_code& ec)
+        {
+            p_.write_some(false, nullptr, 0, ec);
+        }
     };
 
     std::string name_;
@@ -495,6 +602,42 @@ public:
             error_code ec;
             p.write(s.data(), s.size(), ec);
             BOOST_ASSERT(! ec);
+        }
+        return clock_type::now() - start;
+    }
+
+    clock_type::duration
+    parse(file_item const& fi, std::size_t repeat) const override
+    {
+        auto const start = clock_type::now();
+        null_parser p;
+        char s[ BOOST_JSON_STACK_BUFFER_SIZE];
+        while(repeat--)
+        {
+            p.reset();
+
+            FILE* f = fopen(fi.name.data(), "rb");
+
+            error_code ec;
+            while( true )
+            {
+                std::size_t const sz = fread(s, 1, sizeof(s), f);
+                if( ferror(f) )
+                {
+                    ec = std::io_errc::stream;
+                    break;
+                }
+
+                p.write_some( s, sz, ec );
+                if( ec.failed() )
+                    break;
+
+                if( feof(f) )
+                    break;
+            }
+
+            BOOST_ASSERT(! ec);
+            fclose(f);
         }
         return clock_type::now() - start;
     }
@@ -538,6 +681,20 @@ public:
         {
             error_code ec;
             auto jv = json::parse(s, ec, {}, popts);
+            (void)jv;
+        }
+        return clock_type::now() - start;
+    }
+
+    clock_type::duration
+    parse(file_item const& fi, std::size_t repeat) const override
+    {
+        auto const start = clock_type::now();
+        while(repeat--)
+        {
+            error_code ec;
+            std::ifstream is( fi.name, std::ios::in | std::ios::binary );
+            auto jv = json::parse(is, ec, {}, popts);
             (void)jv;
         }
         return clock_type::now() - start;
@@ -588,6 +745,30 @@ struct rapidjson_crt_impl : public any_impl
     }
 
     clock_type::duration
+    parse(file_item const& fi, std::size_t repeat) const override
+    {
+        using namespace rapidjson;
+
+        auto const start = clock_type::now();
+        char* s = new char[ fi.text.size() ];
+        std::unique_ptr<char[]> holder(s);
+
+        while(repeat--)
+        {
+            FILE* f = fopen(fi.name.data(), "rb");
+            std::size_t const sz = fread(s, 1, fi.text.size(), f);
+
+            CrtAllocator alloc;
+            GenericDocument<
+                UTF8<>, CrtAllocator> d(&alloc);
+            d.Parse(s, sz);
+
+            fclose(f);
+        }
+        return clock_type::now() - start;
+    }
+
+    clock_type::duration
     serialize(string_view s, std::size_t repeat) const override
     {
         using namespace rapidjson;
@@ -626,6 +807,28 @@ struct rapidjson_memory_impl : public any_impl
         {
             rapidjson::Document d;
             d.Parse(s.data(), s.size());
+        }
+        return clock_type::now() - start;
+    }
+
+    clock_type::duration
+    parse(file_item const& fi, std::size_t repeat) const override
+    {
+        using namespace rapidjson;
+
+        auto const start = clock_type::now();
+        char* s = new char[ fi.text.size() ];
+        std::unique_ptr<char[]> holder(s);
+
+        while(repeat--)
+        {
+            FILE* f = fopen(fi.name.data(), "rb");
+            std::size_t const sz = fread(s, 1, fi.text.size(), f);
+
+            rapidjson::Document d;
+            d.Parse(s, sz);
+
+            fclose(f);
         }
         return clock_type::now() - start;
     }
@@ -674,6 +877,25 @@ struct nlohmann_impl : public any_impl
     }
 
     clock_type::duration
+    parse(file_item const& fi, std::size_t repeat) const override
+    {
+        auto const start = clock_type::now();
+        char* s = new char[ fi.text.size() ];
+        std::unique_ptr<char[]> holder(s);
+
+        while(repeat--)
+        {
+            FILE* f = fopen(fi.name.data(), "rb");
+            std::size_t const sz = fread(s, 1, fi.text.size(), f);
+
+            auto jv = nlohmann::json::parse(s, s + sz);
+
+            fclose(f);
+        }
+        return clock_type::now() - start;
+    }
+
+    clock_type::duration
     serialize(string_view s, std::size_t repeat) const override
     {
         auto jv = nlohmann::json::parse(
@@ -705,6 +927,12 @@ static bool parse_option( char const* s )
         return false;
 
     char opt = *s++;
+
+    if( opt == 'f' )
+    {
+        with_file_io = true;
+        return *s == 0;
+    }
 
     if( *s++ != ':' )
         return false;
@@ -851,6 +1079,7 @@ main(
             "                                 (p: precise)\n"
             "                                 (n: none)\n"
             "                                 (default imprecise)\n"
+            "          -f                   Include file IO into consideration when testing parsers\n"
         ;
 
         return 4;
