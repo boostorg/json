@@ -680,7 +680,8 @@ public:
         while(repeat--)
         {
             error_code ec;
-            auto jv = json::parse(s, ec, {}, popts);
+            monotonic_resource mr;
+            auto jv = json::parse(s, ec, &mr, popts);
             (void)jv;
         }
         return clock_type::now() - start;
@@ -694,7 +695,8 @@ public:
         {
             error_code ec;
             std::ifstream is( fi.name, std::ios::in | std::ios::binary );
-            auto jv = json::parse(is, ec, {}, popts);
+            monotonic_resource mr;
+            auto jv = json::parse(is, ec, &mr, popts);
             (void)jv;
         }
         return clock_type::now() - start;
@@ -743,7 +745,8 @@ public:
         auto const start = clock_type::now();
         while(repeat--)
         {
-            value jv;
+            monotonic_resource mr;
+            value jv(&mr);
             is.seekg(0);
             is >> popts >> jv;
         }
@@ -756,7 +759,8 @@ public:
         auto const start = clock_type::now();
         while(repeat--)
         {
-            value jv;
+            monotonic_resource mr;
+            value jv(&mr);
             std::ifstream is( fi.name, std::ios::in | std::ios::binary );
             is >> popts >> jv;
         }
