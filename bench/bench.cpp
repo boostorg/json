@@ -717,6 +717,71 @@ public:
     }
 };
 
+class boost_operator_impl : public any_impl
+{
+    std::string name_;
+
+public:
+    boost_operator_impl(
+        std::string const& branch)
+    {
+        name_ = "boost (operators)";
+        if(! branch.empty())
+            name_ += " " + branch;
+    }
+
+    string_view
+    name() const noexcept override
+    {
+        return name_;
+    }
+
+    clock_type::duration
+    parse(string_view s, std::size_t repeat) const override
+    {
+        std::istringstream is(s);
+        auto const start = clock_type::now();
+        while(repeat--)
+        {
+            value jv;
+            is.seekg(0);
+            is >> popts >> jv;
+        }
+        return clock_type::now() - start;
+    }
+
+    clock_type::duration
+    parse(file_item const& fi, std::size_t repeat) const override
+    {
+        auto const start = clock_type::now();
+        while(repeat--)
+        {
+            value jv;
+            std::ifstream is( fi.name, std::ios::in | std::ios::binary );
+            is >> popts >> jv;
+        }
+        return clock_type::now() - start;
+    }
+
+    clock_type::duration
+    serialize(
+        string_view s,
+        std::size_t repeat) const override
+    {
+        auto jv = json::parse(s);
+
+        auto const start = clock_type::now();
+        std::string out;
+        while(repeat--)
+        {
+            std::ostringstream os;
+            os << jv;
+            out = os.str();
+        }
+        return clock_type::now() - start;
+    }
+};
+
 //----------------------------------------------------------
 
 #ifdef BOOST_JSON_HAS_RAPIDJSON
@@ -1003,6 +1068,10 @@ static bool add_impl( impl_list & vi, char impl )
         vi.emplace_back(new boost_simple_impl(s_branch));
         break;
 
+    case 'o':
+        vi.emplace_back(new boost_operator_impl(s_branch));
+        break;
+
 #ifdef BOOST_JSON_HAS_RAPIDJSON
     case 'r':
         vi.emplace_back(new rapidjson_memory_impl);
@@ -1064,6 +1133,7 @@ main(
             "                                 (d: Boost.JSON, default storage)\n"
             "                                 (u: Boost.JSON, null parser)\n"
             "                                 (s: Boost.JSON, convenient functions)\n"
+            "                                 (o: Boost.JSON, stream operators)\n"
 #ifdef BOOST_JSON_HAS_RAPIDJSON
             "                                 (r: RapidJSON, memory storage)\n"
             "                                 (c: RapidJSON, CRT storage)\n"
