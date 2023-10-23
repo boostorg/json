@@ -12,7 +12,7 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/storage_ptr.hpp>
-#include <boost/static_assert.hpp>
+#include <boost/mp11/integral.hpp>
 #include <cstring>
 #include <type_traits>
 
@@ -20,15 +20,30 @@ namespace boost {
 namespace json {
 namespace detail {
 
+#if defined( BOOST_LIBSTDCXX_VERSION ) && BOOST_LIBSTDCXX_VERSION < 50000
+
+template<class T>
+struct is_trivially_copy_assignable
+    : mp11::mp_bool<
+        std::is_copy_assignable<T>::value &&
+          std::has_trivial_copy_assign<T>::value >
+{};
+
+#else
+
+using std::is_trivially_copy_assignable;
+
+#endif
+
 class stack
 {
+    template< class T = void >
     struct non_trivial;
 
     storage_ptr sp_;
     std::size_t cap_ = 0;
-    std::size_t size0_ = 0; // lo stack
-    std::size_t size1_ = 0; // hi stack
-    non_trivial* head_ = nullptr;
+    std::size_t size_ = 0;
+    non_trivial<>* head_ = nullptr;
     unsigned char* base_ = nullptr;
     unsigned char* buf_ = nullptr;
 
@@ -46,7 +61,7 @@ public:
     bool
     empty() const noexcept
     {
-        return size0_ + size1_ == 0;
+        return size_ == 0;
     }
 
     BOOST_JSON_DECL
@@ -62,9 +77,10 @@ public:
 
     template<class T>
     void
-    push(T const& t)
+    push(T&& t)
     {
-        push(t, std::is_trivial<T>{});
+        using U = remove_cvref<T>;
+        push( static_cast<T&&>(t), is_trivially_copy_assignable<U>() );
     }
 
     template<class T>
@@ -80,14 +96,15 @@ public:
     void
     pop(T& t)
     {
-        pop(t, std::is_trivial<T>{});
+        using U = remove_cvref<T>;
+        pop( t, is_trivially_copy_assignable<U>() );
     }
 
 private:
     template<class T> void push(
         T const& t, std::true_type);
     template<class T> void push(
-        T const& t, std::false_type);
+        T&& t, std::false_type);
     template<class T> void pop(
         T& t, std::true_type);
     template<class T> void pop(

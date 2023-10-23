@@ -10,32 +10,56 @@
 #ifndef BOOST_JSON_DETAIL_IMPL_STACK_HPP
 #define BOOST_JSON_DETAIL_IMPL_STACK_HPP
 
-#include <boost/core/max_align.hpp>
-#include <new>
+#include <boost/align/align.hpp>
+#include <boost/static_assert.hpp>
 
 namespace boost {
 namespace json {
 namespace detail {
 
-//--------------------------------------
-/*
-    We put the non-trivial objects at
-    the lo end of the buffer and the
-    trivial objects at the hi end:
-
-  base_        {free}     base_+cap_
-    |<------>|<------>|<------>|
-      size0_            size1_
-*/
-//--------------------------------------
-
-struct stack::non_trivial
+template<>
+struct stack::non_trivial<void>
 {
-    non_trivial* next;
+    using relocate_t = non_trivial* (*) (non_trivial*, void*);
 
-    virtual BOOST_JSON_DECL ~non_trivial() = 0;
-    virtual non_trivial* copy(void*) noexcept = 0;
-    virtual void* get() = 0;
+    relocate_t rel;
+    non_trivial* next;
+    std::size_t offset;
+
+    BOOST_JSON_DECL
+    non_trivial<>*
+    destroy() noexcept;
+
+    BOOST_JSON_DECL
+    non_trivial*
+    relocate(void* dst) noexcept;
+
+protected:
+    ~non_trivial() = default;
+};
+
+template< class T >
+struct stack::non_trivial
+    : stack::non_trivial<void>
+{
+    T obj;
+
+    explicit
+    non_trivial(T t, non_trivial<>* next, std::size_t offset)
+        : non_trivial<void>{relocate, next, offset}, obj( std::move(t) )
+    {}
+
+    static
+    non_trivial<>*
+    relocate(non_trivial<>* src, void* dest) noexcept
+    {
+        non_trivial* self = static_cast<non_trivial*>(src);
+        non_trivial<>* result = nullptr;
+        if( dest )
+            result = ::new(dest) non_trivial( std::move(*self) );
+        self->~non_trivial();
+        return result;
+    }
 };
 
 template<class T>
@@ -43,16 +67,11 @@ void
 stack::
 push_unchecked(T const& t)
 {
-    BOOST_STATIC_ASSERT(
-        std::is_trivial<T>::value);
-    BOOST_ASSERT(
-        sizeof(T) <= cap_ - (
-            size0_ + size1_));
-    size1_ += sizeof(T);
-    std::memcpy(
-        base_ + cap_ - size1_,
-        &t,
-        sizeof(T));
+    constexpr std::size_t n = sizeof(T);
+    BOOST_STATIC_ASSERT( is_trivially_copy_assignable<T>::value );
+    BOOST_ASSERT( n <= cap_ - size_ );
+    std::memcpy( base_ + size_, &t, n );
+    size_ += n;
 }
 
 template<class T>
@@ -60,14 +79,10 @@ void
 stack::
 peek(T& t)
 {
-    BOOST_STATIC_ASSERT(
-        std::is_trivial<T>::value);
-    BOOST_ASSERT(
-        size1_ >= sizeof(T));
-    std::memcpy(
-        &t,
-        base_ + cap_ - size1_,
-        sizeof(T));
+    constexpr std::size_t n = sizeof(T);
+    BOOST_STATIC_ASSERT( is_trivially_copy_assignable<T>::value );
+    BOOST_ASSERT( size_ >= n );
+    std::memcpy( &t, base_ + size_ - n, n );
 }
 
 //--------------------------------------
@@ -78,12 +93,8 @@ void
 stack::
 push(T const& t, std::true_type)
 {
-    if(sizeof(T) > cap_ - (
-            size0_ + size1_))
-        reserve_impl(
-            size0_ +
-            sizeof(T) +
-            size1_);
+    if( sizeof(T) > cap_ - size_ )
+        reserve_impl( sizeof(T) + size_ );
     push_unchecked(t);
 }
 
@@ -91,51 +102,36 @@ push(T const& t, std::true_type)
 template<class T>
 void
 stack::
-push(
-    T const& t,
-    std::false_type)
+push(T&& t, std::false_type)
 {
-    struct alignas(core::max_align_t)
-        U : non_trivial
+    BOOST_STATIC_ASSERT( ! is_trivially_copy_assignable<T>::value );
+
+    using Holder = non_trivial< remove_cvref<T> >;
+    constexpr std::size_t size = sizeof(Holder);
+    constexpr std::size_t alignment = alignof(Holder);
+
+    void* ptr;
+    std::size_t offset;
+    do
     {
-        T t_;
-
-        explicit U(T const& t)
-            : t_(t)
+        std::size_t space = cap_ - size_;
+        unsigned char* buf = base_ + size_;
+        ptr = buf;
+        if( alignment::align(alignment, size, ptr, space) )
         {
+            offset = (reinterpret_cast<unsigned char*>(ptr) - buf) + size;
+            break;
         }
 
-        non_trivial*
-        copy(void* dest) noexcept override
-        {
-            return (::new(dest)
-                U(t_)) + 1;
-        }
-
-        void*
-        get() override
-        {
-            return &t_;
-        }
-    };
-    BOOST_STATIC_ASSERT(
-        ! std::is_trivial<T>::value);
+        reserve_impl(size_ + size + alignment - 1);
+    }
+    while(true);
     BOOST_ASSERT(
-        alignof(U) <= alignof(
-            core::max_align_t));
-    BOOST_ASSERT((sizeof(U) % alignof(
-        core::max_align_t)) == 0);
-    if(sizeof(U) > cap_ - (
-            size0_ + size1_))
-        reserve_impl(
-            size0_ +
-            sizeof(U) +
-            size1_);
-    auto nt = ::new(
-        base_ + size0_) U(t);
-    nt->next = head_;
-    head_ = nt;
-    size0_ += sizeof(U);
+        (reinterpret_cast<unsigned char*>(ptr) + size - offset) ==
+        (base_ + size_) );
+
+    head_ = ::new(ptr) Holder( static_cast<T&&>(t), head_, offset );
+    size_ += offset;
 }
 
 // trivial
@@ -144,10 +140,9 @@ void
 stack::
 pop(T& t, std::true_type)
 {
-    BOOST_ASSERT(
-        size1_ >= sizeof(T));
+    BOOST_ASSERT( size_ >= sizeof(T) );
     peek(t);
-    size1_ -= sizeof(T);
+    size_ -= sizeof(T);
 }
 
 // non-trivial
@@ -156,17 +151,18 @@ void
 stack::
 pop(T& t, std::false_type)
 {
-    t = std::move(*reinterpret_cast<
-        T*>(head_->get()));
     auto next = head_->next;
-    head_->~non_trivial();
+    auto offset = head_->offset;
+
+    using U = remove_cvref<T>;
+    using Holder = non_trivial<U>;
+    auto const head = static_cast<Holder*>(head_);
+
+    t = std::move( head->obj );
+    head->~Holder();
+
     head_ = next;
-    if(head_)
-        size0_ = reinterpret_cast<
-            unsigned char const*>(head_) -
-                base_;
-    else
-        size0_ = 0;
+    size_ -= offset;
 }
 
 } // detail
