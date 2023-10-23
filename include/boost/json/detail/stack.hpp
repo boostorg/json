@@ -12,13 +12,28 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/storage_ptr.hpp>
-#include <boost/static_assert.hpp>
+#include <boost/mp11/integral.hpp>
 #include <cstring>
 #include <type_traits>
 
 namespace boost {
 namespace json {
 namespace detail {
+
+#if defined( BOOST_LIBSTDCXX_VERSION ) && BOOST_LIBSTDCXX_VERSION < 50000
+
+template<class T>
+struct is_trivially_copy_assignable
+    : mp11::mp_bool<
+        std::is_copy_assignable<T>::value &&
+          std::has_trivial_copy_assign<T>::value >
+{};
+
+#else
+
+using std::is_trivially_copy_assignable;
+
+#endif
 
 class stack
 {
@@ -64,7 +79,7 @@ public:
     void
     push(T const& t)
     {
-        push(t, std::is_trivial<T>{});
+        push( t, is_trivially_copy_assignable<T>() );
     }
 
     template<class T>
@@ -80,7 +95,7 @@ public:
     void
     pop(T& t)
     {
-        pop(t, std::is_trivial<T>{});
+        pop( t, is_trivially_copy_assignable<T>() );
     }
 
 private:

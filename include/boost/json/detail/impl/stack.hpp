@@ -11,6 +11,7 @@
 #define BOOST_JSON_DETAIL_IMPL_STACK_HPP
 
 #include <boost/core/max_align.hpp>
+#include <boost/static_assert.hpp>
 #include <new>
 
 namespace boost {
@@ -43,8 +44,7 @@ void
 stack::
 push_unchecked(T const& t)
 {
-    BOOST_STATIC_ASSERT(
-        std::is_trivial<T>::value);
+    BOOST_STATIC_ASSERT( is_trivially_copy_assignable<T>::value );
     BOOST_ASSERT(
         sizeof(T) <= cap_ - (
             size0_ + size1_));
@@ -60,8 +60,7 @@ void
 stack::
 peek(T& t)
 {
-    BOOST_STATIC_ASSERT(
-        std::is_trivial<T>::value);
+    BOOST_STATIC_ASSERT( is_trivially_copy_assignable<T>::value );
     BOOST_ASSERT(
         size1_ >= sizeof(T));
     std::memcpy(
@@ -118,8 +117,7 @@ push(
             return &t_;
         }
     };
-    BOOST_STATIC_ASSERT(
-        ! std::is_trivial<T>::value);
+    BOOST_STATIC_ASSERT( ! is_trivially_copy_assignable<T>::value );
     BOOST_ASSERT(
         alignof(U) <= alignof(
             core::max_align_t));
