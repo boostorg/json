@@ -4,6 +4,7 @@ on: [push, pull_request]
 
 env:
     CMAKE_SHARED_LIBS: '0'
+    CMAKE_NO_TESTS: ignore
     CMAKE_OPTIONS: >
       -DBOOST_JSON_BUILD_TESTS=OFF
       -DBOOST_JSON_BUILD_FUZZERS=OFF

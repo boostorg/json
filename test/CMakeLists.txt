@@ -17,6 +17,9 @@ endif()
 
 file(GLOB_RECURSE BOOST_JSON_TESTS_FILES CONFIGURE_DEPENDS Jamfile *.cpp *.hpp)
 list(FILTER BOOST_JSON_TESTS_FILES EXCLUDE REGEX cmake_install_test/.*$)
+list(FILTER BOOST_JSON_TESTS_FILES EXCLUDE REGEX intrusive_macros\.cpp$)
+list(FILTER BOOST_JSON_TESTS_FILES EXCLUDE REGEX limits\.cpp$)
+list(FILTER BOOST_JSON_TESTS_FILES EXCLUDE REGEX no_exceptions\.cpp$)
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX "" FILES ${BOOST_JSON_TESTS_FILES})
 add_executable(boost_json-tests ${BOOST_JSON_TESTS_FILES})
@@ -29,7 +32,7 @@ add_test(NAME boost_json-tests COMMAND boost_json-tests)
 add_dependencies(tests boost_json-tests)
 
 
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX "" FILES limits.cpp main.cpp unhygenic_macros.cpp)
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX "" FILES limits.cpp main.cpp intrusive_macros.cpp)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/../src PREFIX "" FILES ../src/src.cpp)
 add_executable(boost_json-limits limits.cpp main.cpp ../src/src.cpp Jamfile)
 boost_json_setup_properties(boost_json-limits)

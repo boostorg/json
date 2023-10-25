@@ -60,6 +60,7 @@ def main(ctx):
   windows_cxx("msvc-14.1", "", image="cppalliance/dronevs2017", buildtype="boost", buildscript="drone", environment={"B2_TOOLSET": "msvc-14.1", "B2_CXXSTD": "11,14,17"}, globalenv=globalenv),
   windows_cxx("msvc-14.2", "", image="cppalliance/dronevs2019:2", buildtype="boost", buildscript="drone", environment={"B2_TOOLSET": "msvc-14.2", "B2_CXXSTD": "17,latest"}, globalenv=globalenv),
   windows_cxx("msvc-14.3", "", image="cppalliance/dronevs2022:1", buildtype="boost", buildscript="drone", environment={"B2_TOOLSET": "msvc-14.3", "B2_CXXSTD": "17,20"}, globalenv=globalenv),
+  windows_cxx("msvc-14.3 cmake-superproject", "", image="cppalliance/dronevs2022:1", buildtype="cmake-superproject", buildscript="drone", environment={"B2_TOOLSET": "msvc-14.3", "B2_CXXSTD": "17,20"}, globalenv=globalenv),
   osx_cxx("macOS: Clang", "clang++", packages="", buildscript="drone", buildtype="boost", xcode_version="13.4.1", environment={'B2_TOOLSET': 'clang', 'B2_CXXSTD': '17'}, globalenv=globalenv)
   # osx_cxx("macOS: gcc-12", "g++-12", packages="", buildscript="drone", buildtype="boost", xcode_version="13.4.1", environment={'B2_TOOLSET': 'gcc-12', 'B2_CXXSTD': '17'}, globalenv=globalenv)
   ]
