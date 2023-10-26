@@ -63,8 +63,10 @@ namespace json {
     @see
         https://en.wikipedia.org/wiki/Region-based_memory_management
 */
-class BOOST_JSON_DECL
-    static_resource final
+class
+    BOOST_JSON_DECL
+    BOOST_SYMBOL_VISIBLE
+static_resource final
     : public memory_resource
 {
     void* p_;

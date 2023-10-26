@@ -27,7 +27,7 @@ namespace detail {
 class
     BOOST_SYMBOL_VISIBLE
     BOOST_JSON_DECL
-    default_resource final
+default_resource final
     : public memory_resource
 {
     union holder;
