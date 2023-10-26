@@ -17,7 +17,7 @@ namespace json {
 namespace detail {
 
 stack::
-non_trivial::
+non_trivial<>::
 ~non_trivial() = default;
 
 } // detail

@@ -37,12 +37,13 @@ using std::is_trivially_copy_assignable;
 
 class stack
 {
+    template< class T = void >
     struct non_trivial;
 
     storage_ptr sp_;
     std::size_t cap_ = 0;
     std::size_t size_ = 0;
-    non_trivial* head_ = nullptr;
+    non_trivial<>* head_ = nullptr;
     unsigned char* base_ = nullptr;
     unsigned char* buf_ = nullptr;
 
@@ -77,9 +78,10 @@ public:
 
     template<class T>
     void
-    push(T const& t)
+    push(T&& t)
     {
-        push( t, is_trivially_copy_assignable<T>() );
+        using U = remove_cvref<T>;
+        push( static_cast<T&&>(t), is_trivially_copy_assignable<U>() );
     }
 
     template<class T>
@@ -95,14 +97,15 @@ public:
     void
     pop(T& t)
     {
-        pop( t, is_trivially_copy_assignable<T>() );
+        using U = remove_cvref<T>;
+        pop( t, is_trivially_copy_assignable<U>() );
     }
 
 private:
     template<class T> void push(
         T const& t, std::true_type);
     template<class T> void push(
-        T const& t, std::false_type);
+        T&& t, std::false_type);
     template<class T> void pop(
         T& t, std::true_type);
     template<class T> void pop(
