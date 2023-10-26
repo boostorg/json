@@ -19,14 +19,34 @@ namespace boost {
 namespace json {
 namespace detail {
 
-struct stack::non_trivial
+template<>
+struct stack::non_trivial<void>
 {
     non_trivial* next;
     std::size_t offset;
 
     virtual BOOST_JSON_DECL ~non_trivial() = 0;
     virtual non_trivial* relocate(void*) noexcept = 0;
-    virtual void* get() = 0;
+};
+
+template< class T >
+struct stack::non_trivial
+    : stack::non_trivial<void>
+{
+    T obj;
+
+    explicit
+    non_trivial(T t)
+        : obj( std::move(t) )
+    {}
+
+    non_trivial<>*
+    relocate(void* dest) noexcept override
+    {
+        auto result = ::new(dest) non_trivial( std::move(obj) );
+        this->~non_trivial();
+        return result;
+    }
 };
 
 void
@@ -43,9 +63,9 @@ reserve_impl(std::size_t n)
         std::memcpy(base, base_, size_);
 
         // copy non-trivials
-        non_trivial* src = head_;
-        non_trivial* prev = nullptr;
-        non_trivial* head = nullptr;
+        non_trivial<>* src = head_;
+        non_trivial<>* prev = nullptr;
+        non_trivial<>* head = nullptr;
         while(src)
         {
             auto const next = src->next;
@@ -53,8 +73,7 @@ reserve_impl(std::size_t n)
 
             std::size_t const buf_offset =
                 reinterpret_cast<unsigned char*>(src) - base_;
-            auto dest = reinterpret_cast<non_trivial*>(
-                src->relocate(base + buf_offset) );
+            non_trivial<>* dest = src->relocate(base + buf_offset);
             dest->offset = offset;
             dest->next = nullptr;
 
@@ -116,36 +135,13 @@ push(T const& t, std::true_type)
 template<class T>
 void
 stack::
-push(T const& t, std::false_type)
+push(T&& t, std::false_type)
 {
-    struct U
-        : non_trivial
-    {
-        T t_;
-
-        explicit U(T const& t)
-            : t_(t)
-        {
-        }
-
-        non_trivial*
-        relocate(void* dest) noexcept override
-        {
-            auto result = ::new(dest) U(t_);
-            this->~U();
-            return result;
-        }
-
-        void*
-        get() override
-        {
-            return &t_;
-        }
-    };
-
     BOOST_STATIC_ASSERT( ! is_trivially_copy_assignable<T>::value );
 
-    constexpr std::size_t n = sizeof(U);
+    using Holder = non_trivial< remove_cvref<T> >;
+    constexpr std::size_t size = sizeof(Holder);
+    constexpr std::size_t alignment = alignof(Holder);
 
     void* ptr;
     std::size_t offset;
@@ -154,20 +150,20 @@ push(T const& t, std::false_type)
         std::size_t space = cap_ - size_;
         unsigned char* buf = base_ + size_;
         ptr = buf;
-        if( alignment::align(alignof(U), n, ptr, space) )
+        if( alignment::align(alignment, size, ptr, space) )
         {
-            offset = (reinterpret_cast<unsigned char*>(ptr) - buf) + n;
+            offset = (reinterpret_cast<unsigned char*>(ptr) - buf) + size;
             break;
         }
 
-        reserve_impl(size_ + n + alignof(U) - 1);
+        reserve_impl(size_ + size + alignment - 1);
     }
     while(true);
     BOOST_ASSERT(
-        (reinterpret_cast<unsigned char*>(ptr) + n - offset) ==
+        (reinterpret_cast<unsigned char*>(ptr) + size - offset) ==
         (base_ + size_) );
 
-    auto nt = ::new(ptr) U(t);
+    auto nt = ::new(ptr) Holder( static_cast<T&&>(t) );
     nt->next = head_;
     nt->offset = offset;
 
@@ -195,8 +191,12 @@ pop(T& t, std::false_type)
     auto next = head_->next;
     auto offset = head_->offset;
 
-    t = std::move( *reinterpret_cast<T*>( head_->get() ) );
-    head_->~non_trivial();
+    using U = remove_cvref<T>;
+    using Holder = non_trivial<U>;
+    auto const head = static_cast<Holder*>(head_);
+
+    t = std::move( head->obj );
+    head->~Holder();
 
     head_ = next;
     size_ -= offset;
@@ -209,7 +209,7 @@ clear() noexcept
     while(head_)
     {
         auto const next = head_->next;
-        head_->~non_trivial();
+        head_->~non_trivial<>();
         head_ = next;
     }
     size_ = 0;
