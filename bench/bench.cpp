@@ -127,7 +127,7 @@ run_for(
         Rep, Period> interval,
     F&& f)
 {
-    using clock_type = std::chrono::high_resolution_clock;
+    using clock_type = std::chrono::steady_clock;
     auto const when = clock_type::now();
     auto elapsed = clock_type::now() - when;
     std::size_t n = 0;
