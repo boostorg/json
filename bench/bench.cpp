@@ -49,8 +49,6 @@
 namespace boost {
 namespace json {
 
-using clock_type = std::chrono::steady_clock;
-
 ::test_suite::debug_stream dout(std::cerr);
 std::stringstream strout;
 parse_options popts;
@@ -129,8 +127,7 @@ run_for(
         Rep, Period> interval,
     F&& f)
 {
-    using clock_type =
-        std::chrono::high_resolution_clock;
+    using clock_type = std::chrono::high_resolution_clock;
     auto const when = clock_type::now();
     auto elapsed = clock_type::now() - when;
     std::size_t n = 0;
@@ -145,6 +142,27 @@ run_for(
         std::chrono::duration_cast<
             std::chrono::milliseconds>(
                 elapsed).count()), 0 };
+}
+
+std::size_t
+megabytes_per_second(
+    file_item const& file, std::size_t calls, std::size_t millis)
+{
+    double result = file.text.size();
+    result /= 1024 * 1024; // size in megabytes
+    result *= calls;
+    result /= millis; // mb per ms
+    result *= 1000; // mb per s
+    return static_cast<std::size_t>(0.5 + result); // round up
+}
+
+std::ostream&
+print_prefix(
+    std::ostream& os, file_item const& file, any_impl const& impl,
+    string_view verb)
+{
+    return os << verb << " " << file.name << "," << toolset << " " <<
+        arch << "," << impl.name();
 }
 
 void
@@ -176,19 +194,13 @@ bench(
                                 repeat);
                     });
                 result.calls *= repeat;
-                result.mbs = static_cast<
-                    std::size_t>(( 0.5 + 1000.0 *
-                        result.calls *
-                        vf[i].text.size() /
-                        result.millis / 1024 / 1024));
-                dout <<
-                    verb << " " << vf[i].name << "," <<
-                    toolset << " " << arch << "," <<
-                    vi[j]->name() << "," <<
-                    result.calls << "," <<
-                    result.millis << "," <<
-                    result.mbs <<
-                    "\n";
+                result.mbs = megabytes_per_second(
+                    vf[i], result.calls, result.millis);
+                print_prefix(dout, vf[i], *vi[j], verb )
+                    << "," << result.calls
+                    << "," << result.millis
+                    << "," << result.mbs
+                    << "\n";
                 trial.push_back(result);
                 // adjust repeat to avoid overlong tests
                 repeat = 250 * result.calls / result.millis;
@@ -237,16 +249,8 @@ bench(
                 {
                     return lhs + rhs.millis;
                 });
-            auto const mbs = static_cast<
-                std::size_t>(( 0.5 + 1000.0 *
-                calls * vf[i].text.size() /
-                    millis / 1024 / 1024));
-            strout <<
-                verb << " " << vf[i].name << "," <<
-                toolset << " " << arch << "," <<
-                vi[j]->name() << "," <<
-                mbs <<
-                "\n";
+            auto const mbs = megabytes_per_second(vf[i], calls, millis);
+            print_prefix(strout, vf[i], *vi[j], verb) << "," << mbs << "\n";
         }
     }
 }
@@ -659,52 +663,41 @@ std::string s_impls = "bdrcn";
 std::size_t s_trials = 6;
 std::string s_branch = "";
 
-static bool parse_option( char const * s )
+static bool parse_option( char const* s )
 {
     if( *s == 0 )
-    {
         return false;
-    }
 
     char opt = *s++;
 
     if( *s++ != ':' )
-    {
         return false;
-    }
 
     switch( opt )
     {
     case 't':
-
         s_tests = s;
         break;
 
     case 'i':
-
         s_impls = s;
         break;
 
     case 'n':
-
         {
             int k = std::atoi( s );
 
             if( k > 0 )
-            {
                 s_trials = k;
-            }
             else
-            {
                 return false;
-            }
         }
-
         break;
 
     case 'b':
         s_branch = s;
         break;
+
     case 'm':
         switch( *s )
         {
@@ -731,17 +724,14 @@ static bool add_impl( impl_list & vi, char impl )
     switch( impl )
     {
     case 'b':
-
         vi.emplace_back(new boost_pool_impl(s_branch));
         break;
 
     case 'd':
-
         vi.emplace_back(new boost_default_impl(s_branch));
         break;
 
     case 'u':
-
         vi.emplace_back(new boost_null_impl(s_branch));
         break;
 
@@ -751,25 +741,21 @@ static bool add_impl( impl_list & vi, char impl )
 
 #ifdef BOOST_JSON_HAS_RAPIDJSON
     case 'r':
-
         vi.emplace_back(new rapidjson_memory_impl);
         break;
 
     case 'c':
-
         vi.emplace_back(new rapidjson_crt_impl);
         break;
 #endif // BOOST_JSON_HAS_RAPIDJSON
 
 #ifdef BOOST_JSON_HAS_NLOHMANN_JSON
     case 'n':
-
         vi.emplace_back(new nlohmann_impl);
         break;
 #endif // BOOST_JSON_HAS_NLOHMANN_JSON
 
     default:
-
         std::cerr << "Unknown implementation: '" << impl << "'\n";
         return false;
     }
@@ -782,17 +768,14 @@ static bool do_test( file_list const & vf, impl_list const & vi, char test )
     switch( test )
     {
     case 'p':
-
         bench("Parse", vf, vi, s_trials);
         break;
 
     case 's':
-
         bench("Serialize", vf, vi, s_trials);
         break;
 
     default:
-
         std::cerr << "Unknown test type: '" << test << "'\n";
         return false;
     }
@@ -811,7 +794,7 @@ main(
             "Usage: bench [options...] <file>...\n"
             "\n"
             "Options:  -t:[p][s]            Test parsing, serialization or both\n"
-			"                                 (default both)\n"
+            "                                 (default both)\n"
             "          -i:[b][d][r][c][n]   Test the specified implementations\n"
             "                                 (b: Boost.JSON, pool storage)\n"
             "                                 (d: Boost.JSON, default storage)\n"
@@ -824,7 +807,7 @@ main(
 #ifdef BOOST_JSON_HAS_NLOHMANN_JSON
             "                                 (n: nlohmann/json)\n"
 #endif // BOOST_JSON_HAS_NLOHMANN_JSON
-			"                                 (default all)\n"
+            "                                 (default all)\n"
             "          -n:<number>          Number of trials (default 6)\n"
             "          -b:<branch>          Branch label for boost implementations\n"
             "          -m:(i|p|n)           Number parsing mode\n"
@@ -841,14 +824,12 @@ main(
 
     for( int i = 1; i < argc; ++i )
     {
-        char const * s = argv[ i ];
+        char const* s = argv[ i ];
 
         if( *s == '-' )
         {
             if( !parse_option( s+1 ) )
-            {
                 std::cerr << "Unrecognized or incorrect option: '" << s << "'\n";
-            }
         }
         else
         {
@@ -858,20 +839,13 @@ main(
 
     try
     {
-/*
-        strings.json integers-32.json integers-64.json twitter.json small.json array.json random.json citm_catalog.json canada.json
-*/
         impl_list vi;
 
         for( char ch: s_impls )
-        {
             add_impl( vi, ch );
-        }
 
         for( char ch: s_tests )
-        {
             do_test( vf, vi, ch );
-        }
 
         dout << "\n" << strout.str();
     }
