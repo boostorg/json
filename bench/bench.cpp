@@ -222,7 +222,8 @@ bench(
                     trial.begin(),
                     trial.begin() + 2);
                 // discard best 1
-                trial.resize(3);
+                trial.resize( trial.size() - 1 );
+
             }
             else if(Trials > 3)
             {
