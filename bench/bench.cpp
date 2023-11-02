@@ -49,6 +49,8 @@
 namespace boost {
 namespace json {
 
+using clock_type = std::chrono::steady_clock;
+
 ::test_suite::debug_stream dout(std::cerr);
 std::stringstream strout;
 parse_options popts;
@@ -86,8 +88,14 @@ class any_impl
 public:
     virtual ~any_impl() = default;
     virtual string_view name() const noexcept = 0;
-    virtual void parse(string_view s, std::size_t repeat) const = 0;
-    virtual void serialize(string_view s, std::size_t repeat) const = 0;
+
+    virtual
+    clock_type::duration
+    parse(string_view s, std::size_t repeat) const = 0;
+
+    virtual
+    clock_type::duration
+    serialize(string_view s, std::size_t repeat) const = 0;
 };
 
 using impl_list = std::vector<
@@ -122,19 +130,13 @@ template<
     class Period,
     class F>
 sample
-run_for(
-    std::chrono::duration<
-        Rep, Period> interval,
-    F&& f)
+run_for(std::chrono::duration<Rep, Period> interval, F&& f)
 {
-    using clock_type = std::chrono::steady_clock;
-    auto const when = clock_type::now();
-    auto elapsed = clock_type::now() - when;
+    clock_type::duration elapsed(0);
     std::size_t n = 0;
     do
     {
-        f();
-        elapsed = clock_type::now() - when;
+        elapsed += f();
         ++n;
     }
     while(elapsed < interval);
@@ -185,13 +187,11 @@ bench(
                     [&]
                     {
                         if(verb == "Parse")
-                            vi[j]->parse(
-                                vf[i].text,
-                                repeat);
+                            return vi[j]->parse(vf[i].text, repeat);
                         else if(verb == "Serialize")
-                            vi[j]->serialize(
-                                vf[i].text,
-                                repeat);
+                            return vi[j]->serialize(vf[i].text, repeat);
+
+                        return clock_type::duration();
                     });
                 result.calls *= repeat;
                 result.mbs = megabytes_per_second(
@@ -277,11 +277,12 @@ public:
         return name_;
     }
 
-    void
+    clock_type::duration
     parse(
         string_view s,
         std::size_t repeat) const override
     {
+        auto const start = clock_type::now();
         stream_parser p({}, popts);
         while(repeat--)
         {
@@ -293,14 +294,17 @@ public:
             if(! ec)
                 auto jv = p.release();
         }
+        return clock_type::now() - start;
     }
 
-    void
+    clock_type::duration
     serialize(
         string_view s,
         std::size_t repeat) const override
     {
         auto jv = json::parse(s);
+
+        auto const start = clock_type::now();
         serializer sr;
         string out;
         out.reserve(512);
@@ -320,6 +324,7 @@ public:
                     out.capacity() + 1);
             }
         }
+        return clock_type::now() - start;
     }
 };
 
@@ -344,11 +349,12 @@ public:
         return name_;
     }
 
-    void
+    clock_type::duration
     parse(
         string_view s,
         std::size_t repeat) const override
     {
+        auto const start = clock_type::now();
         stream_parser p({}, popts);
         while(repeat--)
         {
@@ -361,15 +367,18 @@ public:
             if(! ec)
                 auto jv = p.release();
         }
+        return clock_type::now() - start;
     }
 
-    void
+    clock_type::duration
     serialize(
         string_view s,
         std::size_t repeat) const override
     {
         monotonic_resource mr;
         auto jv = json::parse(s, &mr);
+
+        auto const start = clock_type::now();
         serializer sr;
         string out;
         out.reserve(512);
@@ -389,6 +398,7 @@ public:
                     out.capacity() + 1);
             }
         }
+        return clock_type::now() - start;
     }
 };
 
@@ -469,11 +479,12 @@ public:
         return name_;
     }
 
-    void
+    clock_type::duration
     parse(
         string_view s,
         std::size_t repeat) const override
     {
+        auto const start = clock_type::now();
         null_parser p;
         while(repeat--)
         {
@@ -482,12 +493,14 @@ public:
             p.write(s.data(), s.size(), ec);
             BOOST_ASSERT(! ec);
         }
+        return clock_type::now() - start;
     }
 
-    void
+    clock_type::duration
     serialize(
         string_view, std::size_t) const override
     {
+        return clock_type::duration(0);
     }
 };
 
@@ -512,30 +525,35 @@ public:
         return name_;
     }
 
-    void
+    clock_type::duration
     parse(
         string_view s,
         std::size_t repeat) const override
     {
+        auto const start = clock_type::now();
         while(repeat--)
         {
             error_code ec;
             auto jv = json::parse(s, ec, {}, popts);
             (void)jv;
         }
+        return clock_type::now() - start;
     }
 
-    void
+    clock_type::duration
     serialize(
         string_view s,
         std::size_t repeat) const override
     {
         auto jv = json::parse(s);
+
+        auto const start = clock_type::now();
         std::string out;
         while(repeat--)
         {
             out = json::serialize(jv);
         }
+        return clock_type::now() - start;
     }
 };
 
@@ -550,11 +568,12 @@ struct rapidjson_crt_impl : public any_impl
         return "rapidjson";
     }
 
-    void
+    clock_type::duration
     parse(
         string_view s, std::size_t repeat) const override
     {
         using namespace rapidjson;
+        auto const start = clock_type::now();
         while(repeat--)
         {
             CrtAllocator alloc;
@@ -562,9 +581,10 @@ struct rapidjson_crt_impl : public any_impl
                 UTF8<>, CrtAllocator> d(&alloc);
             d.Parse(s.data(), s.size());
         }
+        return clock_type::now() - start;
     }
 
-    void
+    clock_type::duration
     serialize(string_view s, std::size_t repeat) const override
     {
         using namespace rapidjson;
@@ -572,6 +592,8 @@ struct rapidjson_crt_impl : public any_impl
         GenericDocument<
             UTF8<>, CrtAllocator> d(&alloc);
         d.Parse(s.data(), s.size());
+
+        auto const start = clock_type::now();
         rapidjson::StringBuffer st;
         while(repeat--)
         {
@@ -580,6 +602,7 @@ struct rapidjson_crt_impl : public any_impl
                 rapidjson::StringBuffer> wr(st);
             d.Accept(wr);
         }
+        return clock_type::now() - start;
     }
 };
 
@@ -591,22 +614,26 @@ struct rapidjson_memory_impl : public any_impl
         return "rapidjson (pool)";
     }
 
-    void
+    clock_type::duration
     parse(
         string_view s, std::size_t repeat) const override
     {
+        auto const start = clock_type::now();
         while(repeat--)
         {
             rapidjson::Document d;
             d.Parse(s.data(), s.size());
         }
+        return clock_type::now() - start;
     }
 
-    void
+    clock_type::duration
     serialize(string_view s, std::size_t repeat) const override
     {
         rapidjson::Document d;
         d.Parse(s.data(), s.size());
+
+        auto const start = clock_type::now();
         rapidjson::StringBuffer st;
         while(repeat--)
         {
@@ -615,6 +642,7 @@ struct rapidjson_memory_impl : public any_impl
                 rapidjson::StringBuffer> wr(st);
             d.Accept(wr);
         }
+        return clock_type::now() - start;
     }
 };
 #endif // BOOST_JSON_HAS_RAPIDJSON
@@ -630,24 +658,28 @@ struct nlohmann_impl : public any_impl
         return "nlohmann";
     }
 
-    void
+    clock_type::duration
     parse(string_view s, std::size_t repeat) const override
     {
+        auto const start = clock_type::now();
         while(repeat--)
         {
             auto jv = nlohmann::json::parse(
                 s.begin(), s.end());
         }
+        return clock_type::now() - start;
     }
 
-    void
+    clock_type::duration
     serialize(string_view s, std::size_t repeat) const override
     {
         auto jv = nlohmann::json::parse(
             s.begin(), s.end());
+
+        auto const start = clock_type::now();
         while(repeat--)
             auto st = jv.dump();
-
+        return clock_type::now() - start;
     }
 };
 #endif // BOOST_JSON_HAS_NLOHMANN_JSON
