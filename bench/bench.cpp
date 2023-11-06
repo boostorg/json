@@ -179,20 +179,23 @@ bench(
         for(unsigned j = 0; j < vi.size(); ++j)
         {
             trial.clear();
-            std::size_t repeat = 1000;
+            std::size_t repeat = 1;
+            auto const f = [&]
+            {
+                if(verb == "Parse")
+                    return vi[j]->parse(vf[i].text, repeat);
+                else if(verb == "Serialize")
+                    return vi[j]->serialize(vf[i].text, repeat);
+
+                return clock_type::duration();
+            };
+            // helps with the caching, which reduces noise
+            f();
+
+            repeat = 1000;
             for(unsigned k = 0; k < Trials; ++k)
             {
-                auto result = run_for(
-                    std::chrono::seconds(5),
-                    [&]
-                    {
-                        if(verb == "Parse")
-                            return vi[j]->parse(vf[i].text, repeat);
-                        else if(verb == "Serialize")
-                            return vi[j]->serialize(vf[i].text, repeat);
-
-                        return clock_type::duration();
-                    });
+                auto result = run_for(std::chrono::seconds(5), f);
                 result.calls *= repeat;
                 result.mbs = megabytes_per_second(
                     vf[i], result.calls, result.millis);
