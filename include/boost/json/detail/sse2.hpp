@@ -317,27 +317,14 @@ inline uint64_t parse_unsigned( uint64_t r, char const * p, std::size_t n ) noex
 {
     while( n >= 4 )
     {
-        // faster on on clang for x86,
-        // slower on gcc
-#ifdef __clang__
-        r = r * 10 + p[0] - '0';
-        r = r * 10 + p[1] - '0';
-        r = r * 10 + p[2] - '0';
-        r = r * 10 + p[3] - '0';
-#else
         uint32_t v;
         std::memcpy( &v, p, 4 );
         endian::native_to_little_inplace(v);
+        v = (v & 0x0F0F0F0F) * 2561 >> 8;
+        v = (v & 0x00FF00FF) * 6553601 >> 16;
 
-        v -= 0x30303030;
+        r = r * 10000 + v;
 
-        unsigned w0 = v & 0xFF;
-        unsigned w1 = (v >> 8) & 0xFF;
-        unsigned w2 = (v >> 16) & 0xFF;
-        unsigned w3 = (v >> 24);
-
-        r = (((r * 10 + w0) * 10 + w1) * 10 + w2) * 10 + w3;
-#endif
         p += 4;
         n -= 4;
     }
@@ -359,6 +346,7 @@ inline uint64_t parse_unsigned( uint64_t r, char const * p, std::size_t n ) noex
         r = r * 10 + p[2] - '0';
         break;
     }
+
     return r;
 }
 
