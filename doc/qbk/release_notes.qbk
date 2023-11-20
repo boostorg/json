@@ -34,81 +34,81 @@
 
 [*API Changes]
 
-* [ issue 859 ] The library now only throws __system_error__, except for when
+* [issue 859] The library now only throws __system_error__, except for when
   allocation failed, in which case `std::bad_alloc` is thrown.
-* [ issue 884 ] Serialization behavior can now be changed by
+* [issue 884] Serialization behavior can now be changed by
   [link json.ref.boost__json__serialize_options `serialize_options`].
 
 [*New Features]
 
-* [ issue 819 ] [link json.conversion.contextual_conversions Contextual conversions].
-* [ issue 599 ] [link json.ref.boost__json__number_precision Parser option]
+* [issue 819] [link json.conversion.contextual_conversions Contextual conversions].
+* [issue 599] [link json.ref.boost__json__number_precision Parser option]
   for more precise number parsing.
-* [ issue 885 ] Support [link json.ref.boost__json__parse_options `parse_options`]
+* [issue 885] Support [link json.ref.boost__json__parse_options `parse_options`]
   in stream `operator<<`.
-* [ issue 397 ] [link json.ref.boost__json__parse_options Parser option] to
+* [issue 397] [link json.ref.boost__json__parse_options Parser option] to
   allow `Infinity` and `NaN` JSON literals.
-* [ issue 901 ] [link json.ref.boost__json__number_precision Parser mode]
+* [issue 901] [link json.ref.boost__json__number_precision Parser mode]
   that only validates numbers rather than parsing them.
-* [ issue 892 ] Numbers with exponent larger than `INT_MAX` are accepted
+* [issue 892] Numbers with exponent larger than `INT_MAX` are accepted
   by the parser and treated as infinity.
 
 [*Fixes]
 
-* [ issue 901 ] Fix `object` member functions that should provide strong
+* [issue 901] Fix `object` member functions that should provide strong
   guarantee.
-* [ issue 887 ] Fix ambiguity of `end` call when `boost/range.hpp` is included.
-* [ issue 902 ] Fix ASan failures.
-* [ issue 904 ] Fix error message for `error::size_mismatch`.
+* [issue 887] Fix ambiguity of `end` call when `boost/range.hpp` is included.
+* [issue 902] Fix ASan failures.
+* [issue 904] Fix error message for `error::size_mismatch`.
 * Fix conversion into tuple with const elements.
 
 [heading Boost 1.82.0]
 
 [*New Features]
 
-* [ issue 800 ] [link json.ref.boost__json__value.set_at_pointer `set_at_pointer`].
-* [ issue 570 ] [link json.ref.boost__json__value.hash_value `boost::hash` support].
+* [issue 800] [link json.ref.boost__json__value.set_at_pointer `set_at_pointer`].
+* [issue 570] [link json.ref.boost__json__value.hash_value `boost::hash` support].
 
 [*Improvements]
 
-* [ issue 848 ] [link json.ref.boost__json__serializer.serializer.overload3 Caller-provided serializer storage].
-* [ issue 807 ] `value_to` supports missing elements for `std::optional`.
+* [issue 848] [link json.ref.boost__json__serializer.serializer.overload3 Caller-provided serializer storage].
+* [issue 807] `value_to` supports missing elements for `std::optional`.
 * Documentation improvements.
 
 [*Fixes]
 
-* [ issue 876 ] Fix parser suspend inside an escape character.
-* [ issue 814 ] Make sentinel() return a unique pointer.
+* [issue 876] Fix parser suspend inside an escape character.
+* [issue 814] Make sentinel() return a unique pointer.
 
 [heading Boost 1.81.0]
 
 [*API Changes]
 
-* [ issue 686 ] Conversion traits were redesigned.
-* [ issue 756 ] Removed `condition::assign_error`.
-* [ issue 758 ] Removed `generic_category` alias.
+* [issue 686] Conversion traits were redesigned.
+* [issue 756] Removed `condition::assign_error`.
+* [issue 758] Removed `generic_category` alias.
 
 [*New Features]
 
-* [ issue 749 ] `object::stable_erase`.
-* [ issue 778 ] Added error condition for generic library errors.
-* [ issue 619 ] Added `parse` overload for `std::istream`.
-* [ issue 619 ] `operator>>` for `value`.
+* [issue 749] `object::stable_erase`.
+* [issue 778] Added error condition for generic library errors.
+* [issue 619] Added `parse` overload for `std::istream`.
+* [issue 619] `operator>>` for `value`.
 
 [*Improvements]
 
-* [ issue 686 ] Null-like type conversion support (including `std::nullptr_t`).
-* [ issue 736 ] Non-throwing conversion from `value` to user types.
-* [ issue 677 ] `value_to/from` supports `std::optional` and `std::nullopt_t`.
-* [ issue 517 ] `value_to/from` supports `std::variant` and `std::monotype`.
-* [ issue 626 ] `value_to/from` supports supports described classes and enums.
-* [ issue 757 ] Rvalue ref-qualified accessors for `value`.
+* [issue 686] Null-like type conversion support (including `std::nullptr_t`).
+* [issue 736] Non-throwing conversion from `value` to user types.
+* [issue 677] `value_to/from` supports `std::optional` and `std::nullopt_t`.
+* [issue 517] `value_to/from` supports `std::variant` and `std::monotype`.
+* [issue 626] `value_to/from` supports supports described classes and enums.
+* [issue 757] Rvalue ref-qualified accessors for `value`.
 
 [*Fixes]
 
-* [ issue 745 ] Support for self-swap and self-move in `string`.
-* [ issue 747 ] Support for self-swap and self-move in `array`.
-* [ issue 735 ] Replaced C floating point constants with C++ equivalents.
+* [issue 745] Support for self-swap and self-move in `string`.
+* [issue 747] Support for self-swap and self-move in `array`.
+* [issue 735] Replaced C floating point constants with C++ equivalents.
 * Documentation improvements.
 
 [heading Boost 1.80.0]
