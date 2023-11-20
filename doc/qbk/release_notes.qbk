@@ -11,6 +11,25 @@
 
 [/-----------------------------------------------------------------------------]
 
+[heading Boost 1.84.0]
+
+[*API Changes]
+
+* [issue 925] Add a conversion category for variants.
+* [issue 833] Add a conversion category for optionals.
+* [issue 840] Relax iterator requirements for constructors from iterator pairs.
+
+[*New Features]
+
+* [issue 627] Parsing directly into user types.
+  See [link json.conversion.direct_parsing Direct Parsing].
+
+[*Fixes]
+
+* [issue 933] Fix reading beyond input buffer.
+* [issue 920] Fix inconsistent choice of init list constructor.
+* Documentation improvements.
+
 [heading Boost 1.83.0]
 
 [*API Changes]
