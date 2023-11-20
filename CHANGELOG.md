@@ -1,3 +1,12 @@
+Boost 1.84.0
+
+* Add a conversion category for variants.
+* Add a conversion category for optionals.
+* Relax iterator requirements for constructors from iterator pairs.
+* Parsing directly into user types.
+* Fix reading beyond input buffer.
+* Fix inconsistent choice of init list constructor.
+
 Boost 1.83.0
 
 * The library now only throws `system_error`, except for when allocation
