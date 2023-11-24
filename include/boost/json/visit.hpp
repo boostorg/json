@@ -32,14 +32,14 @@ auto
 visit(
     Visitor&& v,
     value& jv) -> decltype(
-        std::declval<Visitor>()(nullptr));
+        static_cast<Visitor&&>(v)( std::declval<std::nullptr_t&>() ) );
 
 template<class Visitor>
 auto
 visit(
     Visitor &&v,
     value const &jv) -> decltype(
-        std::declval<Visitor>()(nullptr));
+        static_cast<Visitor&&>(v)( std::declval<std::nullptr_t const&>() ) );
 /** @} */
 
 } // namespace json
