@@ -68,8 +68,8 @@ class serializer
     using fn_t = bool (serializer::*)(stream&);
 
     void const* p_ = nullptr;
-    fn_t fn0_ = &serializer::write_null<true>;
-    fn_t fn1_ = &serializer::write_null<false>;
+    fn_t fn0_ = nullptr;
+    fn_t fn1_ = nullptr;
     detail::stack st_;
     const_stream cs0_;
     serialize_options opts_;

@@ -799,10 +799,10 @@ string_view
 serializer::
 read(char* dest, std::size_t size)
 {
-    if(! p_)
+    if(! fn0_)
     {
         static value const null;
-        p_ = &null;
+        reset(&null);
     }
 
     // If this goes off it means you forgot
@@ -819,6 +819,7 @@ read(char* dest, std::size_t size)
     if(st_.empty())
     {
         done_ = true;
+        fn0_ = nullptr;
         p_ = nullptr;
     }
     return string_view(
