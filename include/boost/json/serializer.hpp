@@ -89,7 +89,6 @@ class serializer
     template<bool StackEmpty> bool write_array  (stream& ss);
     template<bool StackEmpty> bool write_object (stream& ss);
     template<bool StackEmpty> bool write_value  (stream& ss);
-    inline string_view read_some(char* dest, std::size_t size);
 
 public:
     /// Move constructor (deleted)
