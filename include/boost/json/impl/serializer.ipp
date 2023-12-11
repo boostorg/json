@@ -399,10 +399,12 @@ bool
 serializer::
 write_number(stream& ss0)
 {
+    BOOST_ASSERT( p_ );
+    auto const pv = reinterpret_cast<value const*>(p_);
     local_stream ss(ss0);
     if(StackEmpty || st_.empty())
     {
-        switch(jv_->kind())
+        switch(pv->kind())
         {
         default:
         case kind::int64:
@@ -411,11 +413,11 @@ write_number(stream& ss0)
                     detail::max_number_chars))
             {
                 ss.advance(detail::format_int64(
-                    ss.data(), jv_->get_int64()));
+                    ss.data(), pv->get_int64()));
                 return true;
             }
             cs0_ = { buf_, detail::format_int64(
-                buf_, jv_->get_int64()) };
+                buf_, pv->get_int64()) };
             break;
 
         case kind::uint64:
@@ -424,11 +426,11 @@ write_number(stream& ss0)
                     detail::max_number_chars))
             {
                 ss.advance(detail::format_uint64(
-                    ss.data(), jv_->get_uint64()));
+                    ss.data(), pv->get_uint64()));
                 return true;
             }
             cs0_ = { buf_, detail::format_uint64(
-                buf_, jv_->get_uint64()) };
+                buf_, pv->get_uint64()) };
             break;
 
         case kind::double_:
@@ -439,12 +441,12 @@ write_number(stream& ss0)
                 ss.advance(
                     detail::format_double(
                         ss.data(),
-                        jv_->get_double(),
+                        pv->get_double(),
                         opts_.allow_infinity_and_nan));
                 return true;
             }
             cs0_ = { buf_, detail::format_double(
-                buf_, jv_->get_double(), opts_.allow_infinity_and_nan) };
+                buf_, pv->get_double(), opts_.allow_infinity_and_nan) };
             break;
         }
     }
@@ -478,7 +480,8 @@ write_array(stream& ss0)
     array::const_iterator end;
     if(StackEmpty || st_.empty())
     {
-        pa = pa_;
+        BOOST_ASSERT( p_ );
+        pa = reinterpret_cast<array const*>(p_);
         it = pa->begin();
         end = pa->end();
     }
@@ -510,7 +513,7 @@ do_arr1:
     for(;;)
     {
 do_arr2:
-        jv_ = &*it;
+        p_ = &*it;
         if(! write_value<StackEmpty>(ss))
             return suspend(
                 state::arr2, it, pa);
@@ -544,7 +547,8 @@ write_object(stream& ss0)
     object::const_iterator end;
     if(StackEmpty || st_.empty())
     {
-        po = po_;
+        BOOST_ASSERT( p_ );
+        po = reinterpret_cast<object const*>(p_);
         it = po->begin();
         end = po->end();
     }
@@ -593,7 +597,7 @@ do_obj3:
             return suspend(
                 state::obj3, it, po);
 do_obj4:
-        jv_ = &it->value();
+        p_ = &it->value();
         if(BOOST_JSON_UNLIKELY(
             ! write_value<StackEmpty>(ss)))
             return suspend(
@@ -625,21 +629,22 @@ write_value(stream& ss)
 {
     if(StackEmpty || st_.empty())
     {
-        auto const& jv(*jv_);
-        switch(jv.kind())
+        BOOST_ASSERT( p_ );
+        auto const pv = reinterpret_cast<value const*>(p_);
+        switch(pv->kind())
         {
         default:
         case kind::object:
-            po_ = &jv.get_object();
+            p_ = &pv->get_object();
             return write_object<true>(ss);
 
         case kind::array:
-            pa_ = &jv.get_array();
+            p_ = &pv->get_array();
             return write_array<true>(ss);
 
         case kind::string:
         {
-            auto const& js = jv.get_string();
+            auto const& js = pv->get_string();
             cs0_ = { js.data(), js.size() };
             return write_string<true>(ss);
         }
@@ -650,7 +655,7 @@ write_value(stream& ss)
             return write_number<true>(ss);
 
         case kind::bool_:
-            if(jv.get_bool())
+            if(pv->get_bool())
             {
                 if(BOOST_JSON_LIKELY(
                     ss.remain() >= 4))
@@ -743,7 +748,7 @@ read_some(
     if(st_.empty())
     {
         done_ = true;
-        jv_ = nullptr;
+        p_ = nullptr;
     }
     return string_view(
         dest, ss.used(dest));
@@ -764,11 +769,9 @@ void
 serializer::
 reset(value const* p) noexcept
 {
-    pv_ = p;
+    p_ = p;
     fn0_ = &serializer::write_value<true>;
     fn1_ = &serializer::write_value<false>;
-
-    jv_ = p;
     st_.clear();
     done_ = false;
 }
@@ -777,7 +780,7 @@ void
 serializer::
 reset(array const* p) noexcept
 {
-    pa_ = p;
+    p_ = p;
     fn0_ = &serializer::write_array<true>;
     fn1_ = &serializer::write_array<false>;
     st_.clear();
@@ -788,7 +791,7 @@ void
 serializer::
 reset(object const* p) noexcept
 {
-    po_ = p;
+    p_ = p;
     fn0_ = &serializer::write_object<true>;
     fn1_ = &serializer::write_object<false>;
     st_.clear();
@@ -821,10 +824,10 @@ string_view
 serializer::
 read(char* dest, std::size_t size)
 {
-    if(! jv_)
+    if(! p_)
     {
         static value const null;
-        jv_ = &null;
+        p_ = &null;
     }
     return read_some(dest, size);
 }
