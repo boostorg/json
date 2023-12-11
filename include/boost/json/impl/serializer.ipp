@@ -801,7 +801,9 @@ read(char* dest, std::size_t size)
 {
     if(! fn0_)
     {
-        static value const null;
+        // the object is not going to be used if suspended, so we don't need
+        // it to outlive the call
+        value const null;
         reset(&null);
     }
 
