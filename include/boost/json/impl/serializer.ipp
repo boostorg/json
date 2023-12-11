@@ -729,31 +729,6 @@ write_value(stream& ss)
     }
 }
 
-string_view
-serializer::
-read_some(
-    char* dest, std::size_t size)
-{
-    // If this goes off it means you forgot
-    // to call reset() before seriailzing a
-    // new value, or you never checked done()
-    // to see if you should stop.
-    BOOST_ASSERT(! done_);
-
-    stream ss(dest, size);
-    if(st_.empty())
-        (this->*fn0_)(ss);
-    else
-        (this->*fn1_)(ss);
-    if(st_.empty())
-    {
-        done_ = true;
-        p_ = nullptr;
-    }
-    return string_view(
-        dest, ss.used(dest));
-}
-
 //----------------------------------------------------------
 
 serializer::
@@ -829,7 +804,25 @@ read(char* dest, std::size_t size)
         static value const null;
         p_ = &null;
     }
-    return read_some(dest, size);
+
+    // If this goes off it means you forgot
+    // to call reset() before seriailzing a
+    // new value, or you never checked done()
+    // to see if you should stop.
+    BOOST_ASSERT(! done_);
+
+    stream ss(dest, size);
+    if(st_.empty())
+        (this->*fn0_)(ss);
+    else
+        (this->*fn1_)(ss);
+    if(st_.empty())
+    {
+        done_ = true;
+        p_ = nullptr;
+    }
+    return string_view(
+        dest, ss.used(dest));
 }
 
 } // namespace json
