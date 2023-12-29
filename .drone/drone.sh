@@ -31,8 +31,37 @@ common_install () {
   export SELF=`basename $REPO_NAME`
   export BOOST_CI_TARGET_BRANCH="$TRAVIS_BRANCH"
   export BOOST_CI_SRC_FOLDER=$(pwd)
+  : ${B2_DONT_BOOTSTRAP:=$B2_SEPARATE_BOOTSTRAP}
 
   . ./ci/common_install.sh
+
+  if [ "x$B2_TOOLSET" = "xgcc-4.9" ]; then
+      # this is ridiculously hacky, but the alternative is building gcc-4.9
+      # for Ubuntu 18.04 manually
+      pushd /etc/apt
+
+      # temporally pretend we are Ubuntu 16.04
+      sed 's/bionic/xenial/g' < sources.list > sources.list-xenial
+      mv sources.list sources.list-bionic
+      ln -sT sources.list-xenial sources.list
+      sudo -E apt-get -o Acquire::Retries=3 update
+      sudo -E DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=3 -y \
+          --no-install-suggests --no-install-recommends install g++-4.9
+
+      # put everything back
+      rm sources.list sources.list-xenial
+      mv sources.list-bionic sources.list
+      sudo -E apt-get -o Acquire::Retries=3 update
+
+      popd
+  fi
+
+  if [ "$B2_SEPARATE_BOOTSTRAP" = 1 ]; then
+    pushd tools/build
+    B2_TOOLSET= ./bootstrap.sh
+    popd
+    cp tools/build/b2 .
+  fi
 }
 
 common_cmake () {
