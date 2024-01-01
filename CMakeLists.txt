@@ -75,6 +75,7 @@ function(boost_json_setup_properties target)
             Boost::assert
             Boost::config
             Boost::container
+            Boost::container_hash
             Boost::core
             Boost::describe
             Boost::mp11

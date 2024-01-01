@@ -35,6 +35,16 @@ common_install () {
   . ./ci/common_install.sh
 }
 
+common_cmake () {
+    export CXXFLAGS="-Wall -Wextra -Werror"
+    export CMAKE_SHARED_LIBS=${CMAKE_SHARED_LIBS:-1}
+    export CMAKE_NO_TESTS=${CMAKE_NO_TESTS:-error}
+    if [ $CMAKE_NO_TESTS = "error" ]; then
+        CMAKE_BUILD_TESTING="-DBUILD_TESTING=ON"
+    fi
+}
+
+
 if [ "$DRONE_JOB_BUILDTYPE" == "boost" ]; then
 
 echo '==================================> INSTALL'
@@ -128,12 +138,7 @@ common_install
 
 echo '==================================> COMPILE'
 
-export CXXFLAGS="-Wall -Wextra -Werror"
-export CMAKE_SHARED_LIBS=${CMAKE_SHARED_LIBS:-1}
-export CMAKE_NO_TESTS=${CMAKE_NO_TESTS:-error}
-if [ $CMAKE_NO_TESTS = "error" ]; then
-    CMAKE_BUILD_TESTING="-DBUILD_TESTING=ON"
-fi
+common_cmake
 
 mkdir __build_static
 cd __build_static
@@ -151,6 +156,61 @@ cmake -DBoost_VERBOSE=1 ${CMAKE_BUILD_TESTING} -DCMAKE_INSTALL_PREFIX=iprefix \
     -DBOOST_INCLUDE_LIBRARIES=$SELF -DBUILD_SHARED_LIBS=ON ${CMAKE_OPTIONS} ..
 cmake --build . --target install
 ctest --output-on-failure --no-tests=$CMAKE_NO_TESTS -R boost_$SELF
+
+fi
+
+elif [ "$DRONE_JOB_BUILDTYPE" == "cmake-mainproject" ]; then
+
+echo '==================================> INSTALL'
+
+common_install
+
+echo '==================================> COMPILE'
+
+common_cmake
+
+mkdir __build_static
+cd __build_static
+cmake -DBoost_VERBOSE=1 ${CMAKE_BUILD_TESTING} -DCMAKE_INSTALL_PREFIX=iprefix \
+    ${CMAKE_OPTIONS} ../libs/json
+cmake --build . --target install
+ctest --output-on-failure --no-tests=$CMAKE_NO_TESTS
+cd ..
+
+if [ "$CMAKE_SHARED_LIBS" = 1 ]; then
+
+mkdir __build_shared
+cd __build_shared
+cmake -DBoost_VERBOSE=1 ${CMAKE_BUILD_TESTING} -DCMAKE_INSTALL_PREFIX=iprefix \
+    -DBUILD_SHARED_LIBS=ON ${CMAKE_OPTIONS} ../libs/json
+cmake --build . --target install
+ctest --output-on-failure --no-tests=$CMAKE_NO_TESTS
+
+fi
+
+elif [ "$DRONE_JOB_BUILDTYPE" == "cmake-subdirectory" ]; then
+
+echo '==================================> INSTALL'
+
+common_install
+
+echo '==================================> COMPILE'
+
+common_cmake
+
+mkdir __build_static
+cd __build_static
+cmake ${CMAKE_BUILD_TESTING} ${CMAKE_OPTIONS} ../libs/json/test/cmake-subdir
+cmake --build . --target check
+cd ..
+
+if [ "$CMAKE_SHARED_LIBS" = 1 ]; then
+
+mkdir __build_shared
+cd __build_shared
+cmake ${CMAKE_BUILD_TESTING} -DBUILD_SHARED_LIBS=ON ${CMAKE_OPTIONS} \
+    ../libs/json/test/cmake-subdir
+cmake --build . --target check
 
 fi
 
