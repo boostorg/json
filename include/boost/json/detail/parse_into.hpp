@@ -867,8 +867,8 @@ public:
                 F{ std::forward_as_tuple(ec, args...) } } ); \
     }
 
-    BOOST_JSON_HANDLE_EVENT( on_object_begin );
-    BOOST_JSON_HANDLE_EVENT( on_object_end );
+    BOOST_JSON_HANDLE_EVENT( on_object_begin )
+    BOOST_JSON_HANDLE_EVENT( on_object_end )
 
     struct do_on_array_begin
     {
@@ -879,7 +879,7 @@ public:
         bool operator()( I ) const
         {
             return get<I::value>(handlers).on_array_begin(ec);
-        };
+        }
     };
     bool on_array_begin( error_code& ec )
     {
@@ -910,7 +910,7 @@ public:
         bool operator()( I ) const
         {
             return get<I::value>(handlers).on_array_end(ec);
-        };
+        }
     };
     bool on_array_end( error_code& ec )
     {
@@ -926,16 +926,16 @@ public:
             inner_active_, do_on_array_end{handlers_, ec} );
     }
 
-    BOOST_JSON_HANDLE_EVENT( on_key_part );
-    BOOST_JSON_HANDLE_EVENT( on_key );
-    BOOST_JSON_HANDLE_EVENT( on_string_part );
-    BOOST_JSON_HANDLE_EVENT( on_string );
-    BOOST_JSON_HANDLE_EVENT( on_number_part );
-    BOOST_JSON_HANDLE_EVENT( on_int64 );
-    BOOST_JSON_HANDLE_EVENT( on_uint64 );
-    BOOST_JSON_HANDLE_EVENT( on_double );
-    BOOST_JSON_HANDLE_EVENT( on_bool );
-    BOOST_JSON_HANDLE_EVENT( on_null );
+    BOOST_JSON_HANDLE_EVENT( on_key_part )
+    BOOST_JSON_HANDLE_EVENT( on_key )
+    BOOST_JSON_HANDLE_EVENT( on_string_part )
+    BOOST_JSON_HANDLE_EVENT( on_string )
+    BOOST_JSON_HANDLE_EVENT( on_number_part )
+    BOOST_JSON_HANDLE_EVENT( on_int64 )
+    BOOST_JSON_HANDLE_EVENT( on_uint64 )
+    BOOST_JSON_HANDLE_EVENT( on_double )
+    BOOST_JSON_HANDLE_EVENT( on_bool )
+    BOOST_JSON_HANDLE_EVENT( on_null )
 
 #undef BOOST_JSON_HANDLE_EVENT
 };
