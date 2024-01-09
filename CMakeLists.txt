@@ -79,6 +79,7 @@ function(boost_json_setup_properties target)
             Boost::core
             Boost::describe
             Boost::mp11
+            Boost::optional
             Boost::system
             Boost::throw_exception
     )

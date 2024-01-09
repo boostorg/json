@@ -29,14 +29,17 @@ in a translation unit of the program.
 #include <boost/json/detail/config.hpp>
 
 #include <boost/json/impl/array.ipp>
+#include <boost/json/impl/array_view.ipp>
 #include <boost/json/impl/error.ipp>
 #include <boost/json/impl/kind.ipp>
 #include <boost/json/impl/monotonic_resource.ipp>
 #include <boost/json/impl/null_resource.ipp>
 #include <boost/json/impl/object.ipp>
+#include <boost/json/impl/object_view.ipp>
 #include <boost/json/impl/parse.ipp>
 #include <boost/json/impl/parser.ipp>
 #include <boost/json/impl/pointer.ipp>
+#include <boost/json/impl/pointer_view.ipp>
 #include <boost/json/impl/serialize.ipp>
 #include <boost/json/impl/serializer.ipp>
 #include <boost/json/impl/static_resource.ipp>
@@ -44,6 +47,7 @@ in a translation unit of the program.
 #include <boost/json/impl/string.ipp>
 #include <boost/json/impl/value.ipp>
 #include <boost/json/impl/value_stack.ipp>
+#include <boost/json/impl/value_view.ipp>
 #include <boost/json/impl/value_ref.ipp>
 
 #include <boost/json/detail/impl/shared_resource.ipp>

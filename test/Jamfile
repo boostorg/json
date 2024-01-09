@@ -11,6 +11,7 @@ import testing ;
 
 local SOURCES =
     array.cpp
+    array_view.cpp
     basic_parser.cpp
     conversion.cpp
     doc_background.cpp
@@ -31,6 +32,7 @@ local SOURCES =
     natvis.cpp
     null_resource.cpp
     object.cpp
+    object_view.cpp
     parse.cpp
     parser.cpp
     parse_into.cpp
@@ -50,6 +52,7 @@ local SOURCES =
     value_stack.cpp
     value_to.cpp
     value_ref.cpp
+    value_view.cpp
     utf8.cpp
     visit.cpp
     ryu/d2s_intrinsics_test.cpp

@@ -12,6 +12,7 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/value.hpp>
+#include <boost/json/value_view.hpp>
 #include <type_traits>
 #include <utility>
 
@@ -39,6 +40,20 @@ auto
 visit(
     Visitor &&v,
     value const &jv) -> decltype(
+        std::declval<Visitor>()(nullptr));
+
+template<class Visitor>
+auto
+visit(
+    Visitor&& v,
+    value_view& jv) -> decltype(
+        std::declval<Visitor>()(nullptr));
+
+template<class Visitor>
+auto
+visit(
+    Visitor &&v,
+    value_view const &jv) -> decltype(
         std::declval<Visitor>()(nullptr));
 /** @} */
 
