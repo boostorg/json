@@ -37,7 +37,7 @@ Similar to its standard library counterpart, elements may be accessed directly
 by their 0-based index with bounds checking using
 [link json.ref.boost__json__array.at.overload1 `at`],
 or without bounds checking using
-[link json.ref.boost__json__array.operator_lb__rb_ `operator[]`]:
+[link json.ref.boost__json__array.operator__lb__rb_ `operator[]`]:
 
 [snippet_arrays_4]
 

@@ -95,7 +95,7 @@
 [def __value_stack__            [link json.ref.boost__json__value_stack `value_stack`]]
 [def __value_to__               [link json.ref.boost__json__value_to `value_to`]]
 
-[def __default_memory_resource__ [link json.allocator.default_memory_resource default memory resource]]
+[def __default_memory_resource__ [link json.allocators.storage_ptr.default_memory_resource default memory resource]]
 
 [def __std_array__              [@https://en.cppreference.com/w/cpp/container/array `std::array`]]
 [def __initializer_list__       [@https://en.cppreference.com/w/cpp/utility/initializer_list `std::initializer_list`]]

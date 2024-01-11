@@ -46,7 +46,7 @@ Similar to the `std` counterpart, elements may be accessed directly
 by their key with bounds checking using
 [link json.ref.boost__json__object.at.overload1 `at`],
 or without bounds checking using
-[link json.ref.boost__json__object.operator_lb__rb_ `operator[]`]
+[link json.ref.boost__json__object.operator__lb__rb_ `operator[]`]
 which creates a null element if the key does not already exist:
 
 [snippet_objects_4]
