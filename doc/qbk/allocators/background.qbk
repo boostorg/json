@@ -39,12 +39,12 @@ definitions must be visible at all call sites.
 [heading Polymorphic Allocators]
 
 C++17 improves the allocator model by representing the low-level
-allocation operation with an abstract interface called __memory_resource__,
+allocation operation with an abstract interface called `memory_resource`,
 which is not parameterized on the element type, and has no traits:
 
 [doc_background_3]
 
-The class template __polymorphic_allocator__ wraps a __memory_resource__
+The class template `polymorphic_allocator` wraps a `memory_resource`
 pointer and meets the requirements of __Allocator__, allowing it to be
 used where an allocator is expected. The standard provides type aliases
 using the polymorphic allocator for standard containers:
@@ -71,20 +71,20 @@ instance of the library's custom memory resource as shown below:
 
 [doc_background_7]
 
-This can be worked around by declaring the container to use a custom
-allocator (perhaps using a `std::shared_ptr< memory_resource >` as a
-data member). This hinders library composition; every library now
-exports unique, incompatible container types. A raw memory resource
-pointer is also easy to misuse:
+This can be worked around by declaring the container to use a custom allocator
+(perhaps using a `std::shared_ptr< std::pmr::memory_resource >` as
+a data member). This hinders library composition; every library now exports
+unique, incompatible container types. A raw memory resource pointer is also
+easy to misuse:
 
 [doc_background_8]
 
 Workarounds for this problem are worse than the problem itself. The library
-could return a pair with the vector and `unique_ptr<memory_resource>`
-which the caller must manage. Or the library could change its function
-signatures to accept a `memory_resource*` provided by the caller, where
-the library also makes public the desired memory resources
-(`my_resource` above).
+could return a pair with the vector and
+`std::unique_ptr<std::pmr::memory_resource>` which the caller must
+manage. Or the library could change its function signatures to accept a
+`memory_resource*` provided by the caller, where the library also makes public
+the desired memory resources (`my_resource` above).
 
 [heading Problem Statement]
 
@@ -92,7 +92,7 @@ We would like an allocator model using a single type `T` with the
 following properties:
 
 * `T` is not a class template
-* `T` references a __memory_resource__
+* `T` references a `memory_resource`
 * `T` supports both reference semantics or shared ownership
 * `T` interoperates with code already using `std::pmr`
 

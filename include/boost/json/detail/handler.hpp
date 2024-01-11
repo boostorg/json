@@ -41,24 +41,24 @@ struct handler
     explicit
     handler(Args&&... args);
 
-    inline bool on_document_begin(error_code& ec);
-    inline bool on_document_end(error_code& ec);
-    inline bool on_object_begin(error_code& ec);
-    inline bool on_object_end(std::size_t n, error_code& ec);
-    inline bool on_array_begin(error_code& ec);
-    inline bool on_array_end(std::size_t n, error_code& ec);
-    inline bool on_key_part(string_view s, std::size_t n, error_code& ec);
-    inline bool on_key(string_view s, std::size_t n, error_code& ec);
-    inline bool on_string_part(string_view s, std::size_t n, error_code& ec);
-    inline bool on_string(string_view s, std::size_t n, error_code& ec);
-    inline bool on_number_part(string_view, error_code&);
-    inline bool on_int64(std::int64_t i, string_view, error_code& ec);
-    inline bool on_uint64(std::uint64_t u, string_view, error_code& ec);
-    inline bool on_double(double d, string_view, error_code& ec);
-    inline bool on_bool(bool b, error_code& ec);
-    inline bool on_null(error_code& ec);
-    inline bool on_comment_part(string_view, error_code&);
-    inline bool on_comment(string_view, error_code&);
+    inline bool on_document_begin(system::error_code& ec);
+    inline bool on_document_end(system::error_code& ec);
+    inline bool on_object_begin(system::error_code& ec);
+    inline bool on_object_end(std::size_t n, system::error_code& ec);
+    inline bool on_array_begin(system::error_code& ec);
+    inline bool on_array_end(std::size_t n, system::error_code& ec);
+    inline bool on_key_part(string_view s, std::size_t n, system::error_code& ec);
+    inline bool on_key(string_view s, std::size_t n, system::error_code& ec);
+    inline bool on_string_part(string_view s, std::size_t n, system::error_code& ec);
+    inline bool on_string(string_view s, std::size_t n, system::error_code& ec);
+    inline bool on_number_part(string_view, system::error_code&);
+    inline bool on_int64(std::int64_t i, string_view, system::error_code& ec);
+    inline bool on_uint64(std::uint64_t u, string_view, system::error_code& ec);
+    inline bool on_double(double d, string_view, system::error_code& ec);
+    inline bool on_bool(bool b, system::error_code& ec);
+    inline bool on_null(system::error_code& ec);
+    inline bool on_comment_part(string_view, system::error_code&);
+    inline bool on_comment(string_view, system::error_code&);
 };
 
 } // detail

@@ -117,15 +117,15 @@ class array
     array(detail::unchecked_array&& ua);
 
 public:
-    /** The type of <em>Allocator</em> returned by @ref get_allocator
+    /** Associated [Allocator](https://en.cppreference.com/w/cpp/named_req/Allocator)
 
-        This type is a @ref polymorphic_allocator.
-    */
+        This type is `boost::container::pmr::polymorphic_allocator<value>`.
+     */
 #ifdef BOOST_JSON_DOCS
-    // VFALCO doc toolchain renders this incorrectly
     using allocator_type = __see_below__;
 #else
-    using allocator_type = polymorphic_allocator<value>;
+    // VFALCO doc toolchain renders this incorrectly
+    using allocator_type = container::pmr::polymorphic_allocator<value>;
 #endif
 
     /// The type used to represent unsigned integers
@@ -169,7 +169,7 @@ public:
 
         The destructor for each element is called if needed,
         any used memory is deallocated, and shared ownership
-        of the @ref memory_resource is released.
+        of the `boost::container::pmr::memory_resource` is released.
 
         @par Complexity
         Constant, or linear in @ref size().
@@ -211,7 +211,7 @@ public:
         @par Exception Safety
         No-throw guarantee.
 
-        @param sp A pointer to the @ref memory_resource
+        @param sp A pointer to the `boost::container::pmr::memory_resource`
         to use. The container will acquire shared
         ownership of the memory resource.
     */
@@ -240,7 +240,7 @@ public:
 
         @param v The value to be inserted.
 
-        @param sp A pointer to the @ref memory_resource
+        @param sp A pointer to the `boost::container::pmr::memory_resource`
         to use. The container will acquire shared
         ownership of the memory resource.
     */
@@ -264,7 +264,7 @@ public:
 
         @param count The number of nulls to insert.
 
-        @param sp A pointer to the @ref memory_resource
+        @param sp A pointer to the `boost::container::pmr::memory_resource`
         to use. The container will acquire shared
         ownership of the memory resource.
     */
@@ -299,7 +299,7 @@ public:
         @param last An input iterator pointing to the end
         of the range.
 
-        @param sp A pointer to the @ref memory_resource
+        @param sp A pointer to the `boost::container::pmr::memory_resource`
         to use. The container will acquire shared
         ownership of the memory resource.
 
@@ -350,7 +350,7 @@ public:
 
         @param other The array to copy
 
-        @param sp A pointer to the @ref memory_resource
+        @param sp A pointer to the `boost::container::pmr::memory_resource`
         to use. The container will acquire shared
         ownership of the memory resource.
     */
@@ -442,7 +442,7 @@ public:
 
         @param other The container to move
 
-        @param sp A pointer to the @ref memory_resource
+        @param sp A pointer to the `boost::container::pmr::memory_resource`
         to use. The container will acquire shared
         ownership of the memory resource.
     */
@@ -466,7 +466,7 @@ public:
 
         @param init The initializer list to insert
 
-        @param sp A pointer to the @ref memory_resource
+        @param sp A pointer to the `boost::container::pmr::memory_resource`
         to use. The container will acquire shared
         ownership of the memory resource.
     */
@@ -547,10 +547,10 @@ public:
 
     //------------------------------------------------------
 
-    /** Return the associated @ref memory_resource
+    /** Return the associated memory resource.
 
-        This returns the @ref memory_resource used by
-        the container.
+        This function returns the `boost::container::pmr::memory_resource` used
+        by the container.
 
         @par Complexity
         Constant.
@@ -564,11 +564,10 @@ public:
         return sp_;
     }
 
-    /** Return the associated @ref memory_resource
+    /** Return the associated allocator.
 
-        This function returns an instance of
-        @ref polymorphic_allocator constructed from the
-        associated @ref memory_resource.
+        This function returns an instance of @ref allocator_type constructed
+        from the associated `boost::container::pmr::memory_resource`.
 
         @par Complexity
         Constant.
@@ -593,14 +592,14 @@ public:
         Returns a reference to the element specified at
         location `pos`, with bounds checking. If `pos` is
         not within the range of the container, an exception
-        of type @ref system_error is thrown.
+        of type `boost::system::system_error` is thrown.
 
         @par Complexity
         Constant.
 
         @param pos A zero-based index.
 
-        @throw system_error `pos >= size()`
+        @throw `boost::system::system_error` `pos >= size()`.
     */
     /* @{ */
     inline
@@ -1070,7 +1069,7 @@ public:
 
         @param new_capacity The new capacity of the array.
 
-        @throw system_error `new_capacity > max_size()`
+        @throw `boost::system::system_error` `new_capacity > max_size()`.
     */
     inline
     void
@@ -1141,7 +1140,7 @@ public:
         be inserted. This may be the @ref end() iterator.
 
         @param v The value to insert. A copy will be made
-        using container's associated @ref memory_resource.
+        using container's associated `boost::container::pmr::memory_resource`.
 
         @return An iterator to the inserted value
     */
@@ -1173,7 +1172,8 @@ public:
 
         @param v The value to insert. Ownership of the
         value will be transferred via move construction,
-        using the container's associated @ref memory_resource.
+        using the container's
+        associated `boost::container::pmr::memory_resource`.
 
         @return An iterator to the inserted value
     */
@@ -1206,7 +1206,8 @@ public:
         @param count The number of copies to insert.
 
         @param v The value to insert. Copies will be made
-        using container's associated @ref memory_resource.
+        using the container's
+        associated `boost::container::pmr::memory_resource`.
 
         @return An iterator to the first inserted value,
         or `pos` if `count == 0`.
@@ -1406,8 +1407,8 @@ public:
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
-        @param v The value to insert. A copy will be made
-        using container's associated @ref memory_resource.
+        @param v The value to insert. A copy will be made using the container's
+        associated `boost::container::pmr::memory_resource`.
     */
     BOOST_JSON_DECL
     void
@@ -1429,9 +1430,9 @@ public:
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
-        @param v The value to insert. Ownership of the
-        value will be transferred via move construction,
-        using the container's associated @ref memory_resource.
+        @param v The value to insert. Ownership of the value will be
+        transferred via move construction, using the container's
+        associated `boost::container::pmr::memory_resource`.
     */
     BOOST_JSON_DECL
     void
@@ -1543,8 +1544,8 @@ public:
     /** Swap the contents.
 
         Exchanges the contents of this array with another
-        array. Ownership of the respective @ref memory_resource
-        objects is not transferred.
+        array. Ownership of the respective
+        `boost::container::pmr::memory_resource` objects is not transferred.
 
         @li If `*other.storage() == *this->storage()`,
         ownership of the underlying memory is swapped in
@@ -1572,9 +1573,9 @@ public:
 
     /** Exchange the given values.
 
-        Exchanges the contents of the array `lhs` with
-        another array `rhs`. Ownership of the respective
-        @ref memory_resource objects is not transferred.
+        Exchanges the contents of the array `lhs` with another array `rhs`.
+        Ownership of the respective `boost::container::pmr::memory_resource`
+        objects is not transferred.
 
         @li If `*lhs.storage() == *rhs.storage()`,
         ownership of the underlying memory is swapped in

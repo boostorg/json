@@ -19,6 +19,7 @@
 #include <boost/describe/bases.hpp>
 #include <boost/mp11/algorithm.hpp>
 #include <boost/mp11/utility.hpp>
+#include <boost/system/result.hpp>
 
 #include <iterator>
 #include <tuple>
@@ -484,7 +485,7 @@ using has_valueless_by_exception =
 template <class T>
 struct result_for<T, value>
 {
-    using type = result< detail::remove_cvref<T> >;
+    using type = system::result< detail::remove_cvref<T> >;
 };
 
 template<class T>

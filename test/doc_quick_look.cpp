@@ -134,7 +134,7 @@ value jv = parse( "[1, 2, 3]" );
 //----------------------------------------------------------
 {
 //[doc_quick_look_9
-error_code ec;
+boost::system::error_code ec;
 value jv = parse( R"( "Hello, world!" )", ec );
 //]
 }
@@ -153,7 +153,7 @@ value jv = parse( "[1, 2, 3, ] // array ", &mr, opt );
 {
 //[doc_quick_look_11
 stream_parser p;
-error_code ec;
+boost::system::error_code ec;
 p.reset();
 p.write( "[1, 2 ", ec );
 if( ! ec )

@@ -135,7 +135,7 @@ void
 tag_invoke(
     ::boost::json::value_from_tag,
     ::boost::json::value& jv,
-    ::boost::json::error_code& ec,
+    ::boost::system::error_code& ec,
     T8 const& t8)
 {
     if( t8.error )
@@ -163,7 +163,7 @@ tag_invoke(
     if( t9.num == 0 )
         throw std::invalid_argument("");
     if( t9.num < 0 )
-        throw ::boost::json::system_error(
+        throw ::boost::system::system_error(
             make_error_code(::boost::json::error::syntax));
 
     jv = "T9";

@@ -35,7 +35,7 @@ value jv = parse( "[1,2,3,4,5]" );
 //----------------------------------------------------------
 {
 //[doc_parsing_2
-error_code ec;
+boost::system::error_code ec;
 value jv = parse( "[1,2,3,4,5]", ec );
 if( ec )
     std::cout << "Parsing failed: " << ec.message() << "\n";
@@ -46,7 +46,7 @@ if( ec )
 //[doc_parsing_3
 try
 {
-    error_code ec;
+    boost::system::error_code ec;
     value jv = parse( "[1,2,3,4,5]", ec );
     if( ec )
         std::cout << "Parsing failed: " << ec.message() << "\n";
@@ -121,7 +121,7 @@ static void set2() {
 {
 //[doc_parsing_8
 stream_parser p;
-error_code ec;
+boost::system::error_code ec;
 string_view s = "[1,2,3] %HOME%";
 std::size_t n = p.write_some( s, ec );
 assert( ! ec && p.done() && n == 8 );
@@ -146,7 +146,7 @@ stream_parser p( storage_ptr(), opt );              // The stream_parser will us
 
 //----------------------------------------------------------
 //[doc_parsing_10
-value read_json( std::istream& is, error_code& ec )
+value read_json( std::istream& is, boost::system::error_code& ec )
 {
     stream_parser p;
     std::string line;
@@ -164,7 +164,7 @@ value read_json( std::istream& is, error_code& ec )
 //]
 
 //[doc_parsing_14
-std::vector<value> read_jsons( std::istream& is, error_code& ec )
+std::vector<value> read_jsons( std::istream& is, boost::system::error_code& ec )
 {
     std::vector< value > jvs;
     stream_parser p;
@@ -303,7 +303,7 @@ public:
                                   "l12345\n"
                                   "6\"!\n"
                                   "\"[2]3" );
-            error_code ec;
+            system::error_code ec;
             auto jvs = read_jsons( ss, ec );
             assert( !ec.failed() );
             assert( jvs.size() == 6 );

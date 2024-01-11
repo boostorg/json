@@ -136,7 +136,7 @@ validate( string_view s )
 {
     // Parse with the null parser and return false on error
     null_parser p;
-    error_code ec;
+    system::error_code ec;
     p.write( s.data(), s.size(), ec );
     if( ec )
         return false;
@@ -199,7 +199,7 @@ public:
 #define TEST_GRIND_ONE(s, good, po) \
     do { \
         string_view _test_gr1_s = s; \
-        error_code ec; \
+        system::error_code ec; \
         fail_parser p((po)); \
         auto sz = p.write(false, _test_gr1_s.data(), _test_gr1_s.size(), ec); \
         if(good) \
@@ -224,7 +224,7 @@ public:
             { \
                 for(std::size_t j = 1;;++j) \
                 { \
-                    error_code ec; \
+                    system::error_code ec; \
                     fail_parser p(j, (po)); \
                     auto sz = p.write(true, _test_gr_s.data(), i, ec); \
                     if(ec == error::test_failure) \
@@ -258,7 +258,7 @@ public:
             { \
                 for(std::size_t j = 1;;++j) \
                 { \
-                    error_code ec; \
+                    system::error_code ec; \
                     throw_parser p(j, (po)); \
                     try \
                     { \
@@ -705,7 +705,7 @@ public:
             bool done)
         {
             fail_parser p;
-            error_code ec;
+            system::error_code ec;
             p.write_some(
                 true,
                 s.data(), s.size(),
@@ -788,7 +788,7 @@ public:
 
         // no input
         {
-            error_code ec;
+            system::error_code ec;
             fail_parser p;
             p.write(false, nullptr, 0, ec);
             BOOST_TEST(ec);
@@ -800,7 +800,7 @@ public:
     {
         fail_parser p;
         std::size_t n;
-        error_code ec;
+        system::error_code ec;
         n = p.write_some(true, "null", 4, ec );
         if(BOOST_TEST(! ec))
         {
@@ -840,7 +840,7 @@ public:
             {
                 if(v.result == 'i')
                 {
-                    error_code ec;
+                    system::error_code ec;
                     fail_parser p(po);
                     p.write(
                         false,
@@ -962,28 +962,28 @@ public:
             constexpr static std::size_t max_string_size = std::size_t(-1);
 
             std::string captured = "";
-            bool on_document_begin( error_code& ) { return true; }
-            bool on_document_end( error_code& ) { return true; }
-            bool on_object_begin( error_code& ) { return true; }
-            bool on_object_end( std::size_t, error_code& ) { return true; }
-            bool on_array_begin( error_code& ) { return true; }
-            bool on_array_end( std::size_t, error_code& ) { return true; }
-            bool on_key_part( string_view, std::size_t, error_code& ) { return true; }
-            bool on_key( string_view, std::size_t, error_code& ) { return true; }
-            bool on_string_part( string_view, std::size_t, error_code& ) { return true; }
-            bool on_string( string_view, std::size_t, error_code& ) { return true; }
-            bool on_number_part( string_view, error_code&) { return true; }
-            bool on_int64( std::int64_t, string_view, error_code& ) { return true; }
-            bool on_uint64( std::uint64_t, string_view, error_code& ) { return true; }
-            bool on_double( double, string_view, error_code& ) { return true; }
-            bool on_bool( bool, error_code& ) { return true; }
-            bool on_null( error_code& ) { return true; }
-            bool on_comment_part( string_view s, error_code& )
+            bool on_document_begin( system::error_code& ) { return true; }
+            bool on_document_end( system::error_code& ) { return true; }
+            bool on_object_begin( system::error_code& ) { return true; }
+            bool on_object_end( std::size_t, system::error_code& ) { return true; }
+            bool on_array_begin( system::error_code& ) { return true; }
+            bool on_array_end( std::size_t, system::error_code& ) { return true; }
+            bool on_key_part( string_view, std::size_t, system::error_code& ) { return true; }
+            bool on_key( string_view, std::size_t, system::error_code& ) { return true; }
+            bool on_string_part( string_view, std::size_t, system::error_code& ) { return true; }
+            bool on_string( string_view, std::size_t, system::error_code& ) { return true; }
+            bool on_number_part( string_view, system::error_code&) { return true; }
+            bool on_int64( std::int64_t, string_view, system::error_code& ) { return true; }
+            bool on_uint64( std::uint64_t, string_view, system::error_code& ) { return true; }
+            bool on_double( double, string_view, system::error_code& ) { return true; }
+            bool on_bool( bool, system::error_code& ) { return true; }
+            bool on_null( system::error_code& ) { return true; }
+            bool on_comment_part( string_view s, system::error_code& )
             {
                 captured.append(s.data(), s.size());
                 return true;
             }
-            bool on_comment( string_view s, error_code& )
+            bool on_comment( string_view s, system::error_code& )
             {
                 captured.append(s.data(), s.size());
                 return true;
@@ -1002,7 +1002,7 @@ public:
         write(
             char const* data,
             std::size_t size,
-            error_code& ec)
+            system::error_code& ec)
         {
             auto const n = p_.write_some(
                 false, data, size, ec);
@@ -1070,7 +1070,7 @@ public:
             {
                 // test the handler
                 comment_parser p;
-                error_code ec;
+                system::error_code ec;
                 p.write( formatted.data(), formatted.size(), ec );
                 BOOST_TEST(! ec);
                 BOOST_TEST(p.captured() == just_comments);
@@ -1114,7 +1114,7 @@ public:
             parse_options po;
             po.allow_comments = true;
             fail_parser p(po);
-            error_code ec;
+            system::error_code ec;
             p.write(true, "//", 2, ec); // suspend while inside comment
             BOOST_TEST( !ec.failed() );
             p.write(true, " \n1", 2, ec); // input ends comment,
@@ -1177,32 +1177,32 @@ public:
             constexpr static std::size_t max_string_size = std::size_t(-1);
 
             std::string captured = "";
-            bool on_document_begin( error_code& ) { return true; }
-            bool on_document_end( error_code& ) { return true; }
-            bool on_object_begin( error_code& ) { return true; }
-            bool on_object_end( std::size_t, error_code& ) { return true; }
-            bool on_array_begin( error_code& ) { return true; }
-            bool on_array_end( std::size_t, error_code& ) { return true; }
-            bool on_key_part( string_view, std::size_t, error_code& ) { return true; }
-            bool on_key( string_view, std::size_t, error_code& ) { return true; }
-            bool on_string_part( string_view sv, std::size_t, error_code& )
+            bool on_document_begin( system::error_code& ) { return true; }
+            bool on_document_end( system::error_code& ) { return true; }
+            bool on_object_begin( system::error_code& ) { return true; }
+            bool on_object_end( std::size_t, system::error_code& ) { return true; }
+            bool on_array_begin( system::error_code& ) { return true; }
+            bool on_array_end( std::size_t, system::error_code& ) { return true; }
+            bool on_key_part( string_view, std::size_t, system::error_code& ) { return true; }
+            bool on_key( string_view, std::size_t, system::error_code& ) { return true; }
+            bool on_string_part( string_view sv, std::size_t, system::error_code& )
             {
                 captured.append(sv.data(), sv.size());
                 return true;
             }
-            bool on_string( string_view sv, std::size_t, error_code& )
+            bool on_string( string_view sv, std::size_t, system::error_code& )
             {
                 captured.append(sv.data(), sv.size());
                 return true;
             }
-            bool on_number_part( string_view, error_code&) { return true; }
-            bool on_int64( std::int64_t, string_view, error_code& ) { return true; }
-            bool on_uint64( std::uint64_t, string_view, error_code& ) { return true; }
-            bool on_double( double, string_view, error_code& ) { return true; }
-            bool on_bool( bool, error_code& ) { return true; }
-            bool on_null( error_code& ) { return true; }
-            bool on_comment_part( string_view, error_code& ) { return true; }
-            bool on_comment( string_view, error_code& ) { return true; }
+            bool on_number_part( string_view, system::error_code&) { return true; }
+            bool on_int64( std::int64_t, string_view, system::error_code& ) { return true; }
+            bool on_uint64( std::uint64_t, string_view, system::error_code& ) { return true; }
+            bool on_double( double, string_view, system::error_code& ) { return true; }
+            bool on_bool( bool, system::error_code& ) { return true; }
+            bool on_null( system::error_code& ) { return true; }
+            bool on_comment_part( string_view, system::error_code& ) { return true; }
+            bool on_comment( string_view, system::error_code& ) { return true; }
         };
 
         basic_parser<handler> p_;
@@ -1218,7 +1218,7 @@ public:
             bool more,
             char const* data,
             std::size_t size,
-            error_code& ec)
+            system::error_code& ec)
         {
             auto const n = p_.write_some(
                 more, data, size, ec);
@@ -1407,7 +1407,7 @@ public:
                 utf8_parser p;
                 for(std::size_t i = 0; i < expected.size(); i += write_size)
                 {
-                    error_code ec;
+                    system::error_code ec;
                     write_size = (std::min)(write_size, expected.size() - i);
                     auto more = (i < expected.size() - write_size);
                     auto written = p.write(more,
@@ -1433,7 +1433,7 @@ public:
             parse_options opt;
             opt.max_depth = 4;
             null_parser p(opt);
-            error_code ec;
+            system::error_code ec;
             p.write(s.data(), s.size(), ec);
             BOOST_TEST(ec == error::too_deep);
             BOOST_TEST(ec.has_location());
@@ -1443,7 +1443,7 @@ public:
             parse_options opt;
             opt.max_depth = 4;
             null_parser p(opt);
-            error_code ec;
+            system::error_code ec;
             p.write(s.data(), s.size(), ec);
             BOOST_TEST(ec == error::too_deep);
             BOOST_TEST(ec.has_location());
@@ -1454,7 +1454,7 @@ public:
             parse_options opt;
             opt.max_depth = 4;
             null_parser p(opt);
-            error_code ec;
+            system::error_code ec;
             p.write(s.data(), s.size(), ec);
             BOOST_TEST(ec == error::too_deep);
             BOOST_TEST(ec.has_location());
@@ -1465,7 +1465,7 @@ public:
             parse_options opt;
             opt.max_depth = 4;
             null_parser p(opt);
-            error_code ec;
+            system::error_code ec;
             p.write(s.data(), s.size(), ec);
             BOOST_TEST(ec == error::too_deep);
             BOOST_TEST(ec.has_location());
@@ -1482,43 +1482,43 @@ public:
             constexpr static std::size_t max_string_size = std::size_t(-1);
 
             std::string captured = "";
-            bool on_document_begin( error_code& ) { return true; }
-            bool on_document_end( error_code& ) { return true; }
-            bool on_object_begin( error_code& ) { return true; }
-            bool on_object_end( std::size_t, error_code& ) { return true; }
-            bool on_array_begin( error_code& ) { return true; }
-            bool on_array_end( std::size_t, error_code& ) { return true; }
-            bool on_key_part( string_view, std::size_t, error_code& ) { return true; }
-            bool on_key( string_view, std::size_t, error_code& ) { return true; }
-            bool on_string_part( string_view, std::size_t, error_code& ) { return true; }
-            bool on_string( string_view, std::size_t, error_code& ) { return true; }
-            bool on_number_part( string_view sv, error_code&)
+            bool on_document_begin( system::error_code& ) { return true; }
+            bool on_document_end( system::error_code& ) { return true; }
+            bool on_object_begin( system::error_code& ) { return true; }
+            bool on_object_end( std::size_t, system::error_code& ) { return true; }
+            bool on_array_begin( system::error_code& ) { return true; }
+            bool on_array_end( std::size_t, system::error_code& ) { return true; }
+            bool on_key_part( string_view, std::size_t, system::error_code& ) { return true; }
+            bool on_key( string_view, std::size_t, system::error_code& ) { return true; }
+            bool on_string_part( string_view, std::size_t, system::error_code& ) { return true; }
+            bool on_string( string_view, std::size_t, system::error_code& ) { return true; }
+            bool on_number_part( string_view sv, system::error_code&)
             {
                 captured.append(sv.data(), sv.size());
                 return true;
             }
-            bool on_int64( std::int64_t, string_view sv, error_code& )
+            bool on_int64( std::int64_t, string_view sv, system::error_code& )
             {
                 captured.append(sv.data(), sv.size());
                 captured += 's';
                 return true;
             }
-            bool on_uint64( std::uint64_t, string_view sv, error_code& )
+            bool on_uint64( std::uint64_t, string_view sv, system::error_code& )
             {
                 captured.append(sv.data(), sv.size());
                 captured += 'u';
                 return true;
             }
-            bool on_double( double, string_view sv, error_code& )
+            bool on_double( double, string_view sv, system::error_code& )
             {
                 captured.append(sv.data(), sv.size());
                 captured += 'd';
                 return true;
             }
-            bool on_bool( bool, error_code& ) { return true; }
-            bool on_null( error_code& ) { return true; }
-            bool on_comment_part( string_view, error_code& ) { return true; }
-            bool on_comment( string_view, error_code& ) { return true; }
+            bool on_bool( bool, system::error_code& ) { return true; }
+            bool on_null( system::error_code& ) { return true; }
+            bool on_comment_part( string_view, system::error_code& ) { return true; }
+            bool on_comment( string_view, system::error_code& ) { return true; }
         };
 
         basic_parser<handler> p_;
@@ -1534,7 +1534,7 @@ public:
             bool more,
             char const* data,
             std::size_t size,
-            error_code& ec)
+            system::error_code& ec)
         {
             auto const n = p_.write_some(
                 more, data, size, ec);
@@ -1562,7 +1562,7 @@ public:
                 i < sv.size(); ++i)
             {
                 literal_parser p;
-                error_code ec;
+                system::error_code ec;
                 if(i != 0)
                 {
                     p.write(true,
@@ -1606,10 +1606,10 @@ public:
     {
         {
             null_parser p;
-            error_code ec;
+            system::error_code ec;
             p.write("*", 1, ec);
             BOOST_TEST(ec);
-            error_code ec2;
+            system::error_code ec2;
             p.write("[]", 2, ec2);
             BOOST_TEST(ec2 == ec);
             p.reset();
@@ -1622,13 +1622,13 @@ public:
             throw_parser p(1);
             try
             {
-                error_code ec;
+                system::error_code ec;
                 p.write(false, "null", 4, ec);
                 BOOST_TEST_FAIL();
             }
             catch(std::exception const&)
             {
-                error_code ec;
+                system::error_code ec;
                 p.write(false, "null", 4, ec);
                 BOOST_TEST(ec == error::exception);
                 BOOST_TEST(ec.has_location());

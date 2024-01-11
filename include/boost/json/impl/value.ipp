@@ -445,7 +445,7 @@ operator>>(
     {
         while( true )
         {
-            error_code ec;
+            system::error_code ec;
 
             // we peek the buffer; this either makes sure that there's no
             // more input, or makes sure there's something in the internal

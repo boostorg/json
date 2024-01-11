@@ -23,7 +23,7 @@ namespace json {
 value
 parse(
     string_view s,
-    error_code& ec,
+    system::error_code& ec,
     storage_ptr sp,
     const parse_options& opt)
 {
@@ -44,7 +44,7 @@ parse(
     storage_ptr sp,
     parse_options const& opt)
 {
-    error_code jec;
+    system::error_code jec;
     value result = parse(s, jec, std::move(sp), opt);
     ec = jec;
     return result;
@@ -56,7 +56,7 @@ parse(
     storage_ptr sp,
     const parse_options& opt)
 {
-    error_code ec;
+    system::error_code ec;
     auto jv = parse(
         s, ec, std::move(sp), opt);
     if(ec)
@@ -67,7 +67,7 @@ parse(
 value
 parse(
     std::istream& is,
-    error_code& ec,
+    system::error_code& ec,
     storage_ptr sp,
     parse_options const& opt)
 {
@@ -110,7 +110,7 @@ parse(
     storage_ptr sp,
     parse_options const& opt)
 {
-    error_code jec;
+    system::error_code jec;
     value result = parse(is, jec, std::move(sp), opt);
     ec = jec;
     return result;
@@ -122,7 +122,7 @@ parse(
     storage_ptr sp,
     parse_options const& opt)
 {
-    error_code ec;
+    system::error_code ec;
     auto jv = parse(
         is, ec, std::move(sp), opt);
     if(ec)

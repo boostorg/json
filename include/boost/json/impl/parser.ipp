@@ -61,7 +61,7 @@ parser::
 write_some(
     char const* data,
     std::size_t size,
-    error_code& ec)
+    system::error_code& ec)
 {
     auto const n = p_.write_some(
         false, data, size, ec);
@@ -76,7 +76,7 @@ write_some(
     std::size_t size,
     std::error_code& ec)
 {
-    error_code jec;
+    system::error_code jec;
     std::size_t const result = write_some(data, size, jec);
     ec = jec;
     return result;
@@ -88,7 +88,7 @@ write_some(
     char const* data,
     std::size_t size)
 {
-    error_code ec;
+    system::error_code ec;
     auto const n = write_some(
         data, size, ec);
     if(ec)
@@ -101,7 +101,7 @@ parser::
 write(
     char const* data,
     std::size_t size,
-    error_code& ec)
+    system::error_code& ec)
 {
     auto const n = write_some(
         data, size, ec);
@@ -120,7 +120,7 @@ write(
     std::size_t size,
     std::error_code& ec)
 {
-    error_code jec;
+    system::error_code jec;
     std::size_t const result = write(data, size, jec);
     ec = jec;
     return result;
@@ -132,7 +132,7 @@ write(
     char const* data,
     std::size_t size)
 {
-    error_code ec;
+    system::error_code ec;
     auto const n = write(
         data, size, ec);
     if(ec)
@@ -149,7 +149,7 @@ release()
         // prevent undefined behavior
         if(! p_.last_error())
         {
-            error_code ec;
+            system::error_code ec;
             BOOST_JSON_FAIL(ec, error::incomplete);
             p_.fail(ec);
         }

@@ -23,33 +23,27 @@ namespace json {
 
 /** A stack of @ref value elements, for building a document.
 
-    This stack of @ref value allows iterative
-    construction of a JSON document in memory.
-    The implementation uses temporary internal
-    storage to buffer elements so that arrays, objects,
-    and strings in the document are constructed using a
-    single memory allocation. This improves performance
-    and makes efficient use of the @ref memory_resource
+    This stack of @ref value allows iterative construction of a JSON document
+    in memory. The implementation uses temporary internal storage to buffer
+    elements so that arrays, objects, and strings in the document are
+    constructed using a single memory allocation. This improves performance
+    and makes efficient use of the `boost::container::pmr::memory_resource`
     used to create the resulting @ref value.
 
-    Temporary storage used by the implementation
-    initially comes from an optional memory buffer
-    owned by the caller. If that storage is exhausted,
+    Temporary storage used by the implementation initially comes from an
+    optional memory buffer owned by the caller. If that storage is exhausted,
     then memory is obtained dynamically from the
-    @ref memory_resource provided on construction.
+    `boost::container::pmr::memory_resource` provided on construction.
 
     @par Usage
 
-    Construct the stack with an optional initial
-    temporary buffer, and a @ref storage_ptr to use for
-    more storage when the initial buffer is exhausted.
-    Then to build a @ref value, first call @ref reset
-    and optionally specify the @ref memory_resource
-    which will be used for the value. Then push elements
-    onto the stack by calling the corresponding functions.
-    After the document has been fully created, call
-    @ref release to acquire ownership of the top-level
-    @ref value.
+    Construct the stack with an optional initial temporary buffer, and a
+    @ref storage_ptr to use for more storage when the initial buffer is
+    exhausted. Then to build a @ref value, first call @ref reset and
+    optionally specify the `boost::container::pmr::memory_resource` which will
+    be used for the value. Then push elements onto the stack by calling the
+    corresponding functions. After the document has been fully created, call
+    @ref release to acquire ownership of the top-level @ref value.
 
     @par Performance
 
@@ -190,10 +184,9 @@ public:
         intermediate storage; it will not be used
         for the @ref value returned by @ref release.
 
-        @param sp A pointer to the @ref memory_resource
-        to use for intermediate storage allocations. If
-        this argument is omitted, the default memory
-        resource is used.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use for intermediate storage allocations. If this argument is omitted,
+        the default memory resource is used.
 
         @param temp_buffer A pointer to a caller-owned
         buffer which will be used to store temporary
@@ -222,12 +215,10 @@ public:
 
         No-throw guarantee.
 
-        @param sp A pointer to the @ref memory_resource
-        to use for top-level @ref value and all child
-        values. The stack will acquire shared ownership
-        of the memory resource until @ref release or
-        @ref reset is called, or when the stack is
-        destroyed.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use for top-level @ref value and all child values. The stack will
+        acquire shared ownership of the memory resource until @ref release or
+        @ref reset is called, or when the stack is destroyed.
     */
     BOOST_JSON_DECL
     void

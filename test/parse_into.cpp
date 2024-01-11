@@ -71,7 +71,7 @@ public:
         std::string json = serialize( value_from( t1 ) );
 
         T t2{};
-        error_code jec;
+        system::error_code jec;
         parse_into(t2, json, jec);
         BOOST_TEST( !jec.failed() ) && BOOST_TEST( t1 == t2 );
 
@@ -131,7 +131,7 @@ public:
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #endif
-        error_code ec;
+        system::error_code ec;
         T t{};
         std::string json = serialize(sample);
         parser_for<T> p( parse_options{}, &t );
@@ -196,7 +196,7 @@ public:
             double d1 = 12;
             std::string json = serialize( value_from( 12 ) );
 
-            error_code ec;
+            system::error_code ec;
             double d2;
             parse_into(d2, json, ec);
             BOOST_TEST( !ec.failed() );
@@ -456,7 +456,7 @@ public:
 
         {
             int n;
-            error_code ec;
+            system::error_code ec;
             parse_into( n, "12 1", ec);
             BOOST_TEST( ec == error::extra_data );
             BOOST_TEST( ec.has_location() );
@@ -465,7 +465,7 @@ public:
         {
             std::stringstream is("12 1");
             int n;
-            error_code ec;
+            system::error_code ec;
             parse_into( n, is, ec);
             BOOST_TEST( ec == error::extra_data );
             BOOST_TEST( ec.has_location() );
@@ -475,7 +475,7 @@ public:
             int n;
             std::stringstream is("1");
             is.setstate( std::ios::failbit );
-            error_code ec;
+            system::error_code ec;
             parse_into(n, is, ec);
             BOOST_TEST( ec == error::input_error );
             BOOST_TEST( ec.has_location() );

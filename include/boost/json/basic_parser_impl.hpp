@@ -17,6 +17,8 @@
 #include <boost/json/detail/buffer.hpp>
 #include <boost/json/detail/charconv/from_chars.hpp>
 #include <boost/json/detail/sse2.hpp>
+#include <boost/mp11/algorithm.hpp>
+#include <boost/mp11/integral.hpp>
 #include <cmath>
 #include <limits>
 #include <cstring>
@@ -2818,7 +2820,7 @@ reset() noexcept
 template<class Handler>
 void
 basic_parser<Handler>::
-fail(error_code ec) noexcept
+fail(system::error_code ec) noexcept
 {
     if(! ec)
     {
@@ -2842,7 +2844,7 @@ write_some(
     bool more,
     char const* data,
     std::size_t size,
-    error_code& ec)
+    system::error_code& ec)
 {
     // see if we exited via exception
     // on the last call to write_some
@@ -2929,7 +2931,7 @@ write_some(
     std::size_t size,
     std::error_code& ec)
 {
-    error_code jec;
+    system::error_code jec;
     std::size_t const result = write_some(more, data, size, jec);
     ec = jec;
     return result;

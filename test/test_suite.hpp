@@ -11,6 +11,7 @@
 #define TEST_SUITE_HPP
 
 #include <boost/throw_exception.hpp>
+#include <boost/system/system_error.hpp>
 
 #include <algorithm>
 #include <atomic>
@@ -682,7 +683,7 @@ using log_type = detail::log_ostream<char>;
             "system_error", __FILE__, __LINE__, \
             TEST_SUITE_FUNCTION); \
     } \
-    catch (::boost::json::system_error const& exc) \
+    catch (::boost::system::system_error const& exc) \
     { \
         ::test_suite::detail::current()->maybe_fail( \
             exc.code().has_location(), "has_location()", __FILE__, __LINE__, \
