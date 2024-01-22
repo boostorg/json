@@ -205,6 +205,17 @@ public:
     void
     reset(string_view sv) noexcept;
 
+    /** Reset the serializer for std::nullptr_t
+
+        This function prepares the serializer to emit
+        a new serialized JSON representing null.
+        Any internally allocated memory is
+        preserved and re-used for the new output.
+    */
+    BOOST_JSON_DECL
+    void
+    reset(std::nullptr_t) noexcept;
+
     /** Read the next buffer of serialized JSON
 
         This function attempts to fill the caller
