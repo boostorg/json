@@ -748,6 +748,19 @@ public:
     testUDT()
     {
         {
+            check_udt(nullptr, "null");
+
+            auto np = nullptr;
+            check_udt(np, "null");
+        }
+        {
+            bool b = true;
+            check_udt(b, "true");
+
+            b = false;
+            check_udt(b, "false");
+        }
+        {
             std::uint64_t u = 1;
             check_udt(u, "1");
 

@@ -436,9 +436,8 @@ class basic_parser
         /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8,
         bool allow_bad_utf16);
 
-    template<int Literal>
-    const char* parse_literal(const char* p,
-        std::integral_constant<int, Literal> literal);
+    template<class Literal>
+    const char* parse_literal(const char* p, Literal literal);
 
     template<bool StackEmpty_, bool IsKey_>
     const char* parse_string(const char* p,
