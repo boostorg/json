@@ -15,6 +15,9 @@
 #include <boost/json/null_resource.hpp>
 #include <boost/json/parse.hpp>
 #include <iostream>
+#include <map>
+#include <vector>
+#include <limits.h>
 
 #include "parse-vectors.hpp"
 #include "test.hpp"
@@ -88,20 +91,56 @@ public:
         }
     }
 
+    template<class T>
+    void
+    grind_one(string_view s, T const& t, string_view name = {})
+    {
+        {
+            auto const s1 = serialize(t);
+            if( !BOOST_TEST(s == s1) )
+            {
+                if(name.empty())
+                    log <<
+                        " " << s << "\n"
+                        " " << s1 <<
+                        std::endl;
+                else
+                    log << name << ":\n"
+                        " " << s << "\n"
+                        " " << s1 <<
+                        std::endl;
+            }
+        }
+
+        // large buffer
+        {
+            serializer sr;
+            sr.reset(&t);
+            string js;
+            js.reserve(4096);
+            js.grow(sr.read(
+                js.data(), js.capacity()).size());
+
+            auto const s1 = serialize(t);
+            BOOST_TEST( s == s1 );
+        }
+    }
+
+    template<class T>
     void
     grind(
         string_view s0,
-        value const& jv,
+        T const& t,
         string_view name = {})
     {
-        grind_one(s0, jv, name);
+        grind_one(s0, t, name);
 
-        auto const s1 = serialize(jv);
+        auto const s1 = serialize(t);
         for(std::size_t i = 1;
             i < s1.size(); ++i)
         {
             serializer sr;
-            sr.reset(&jv);
+            sr.reset(&t);
             string s2;
             s2.reserve(s1.size());
             s2.grow(sr.read(
@@ -140,6 +179,18 @@ public:
                 dump();
                 break;
             }
+        }
+        {
+            string s2;
+            s2.reserve( s1.size() );
+            serializer sr;
+            sr.reset(&t);
+            for(std::size_t i = 0; i < s1.size(); ++i)
+            {
+                BOOST_TEST( sr.read(s2.data() + i, 1).size() == 1 );
+                s2.grow(1);
+            }
+            BOOST_TEST(s2 == s1);
         }
     }
 
@@ -498,6 +549,23 @@ public:
         }
     }
 
+    template<class T>
+    void
+    check_udt(
+        T const& t,
+        string_view s,
+        string_view name = {})
+    {
+        try
+        {
+            grind(s, t, name);
+        }
+        catch(std::exception const&)
+        {
+            BOOST_TEST_FAIL();
+        }
+    }
+
     void
     testVectors()
     {
@@ -677,6 +745,38 @@ public:
     }
 
     void
+    testUDT()
+    {
+        {
+            std::uint64_t u = 1;
+            check_udt(u, "1");
+
+            u = (std::numeric_limits<std::int64_t>::max)();
+            u += 1;
+            check_udt(u, "9223372036854775808");
+
+            std::int64_t i = -1;
+            check_udt(i, "-1");
+
+            double d = 3.12;
+            check_udt(d, "3.12E0");
+
+#if defined(BOOST_HAS_INT128) && defined(__GLIBCXX_TYPE_INT_N_0)
+            boost::int128_type ii =
+                (std::numeric_limits<std::uint64_t>::max)();
+            ii += 1;
+            d = ii;
+            check_udt( ii, serialize(value(d)) );
+
+            ii = (std::numeric_limits<std::int64_t>::min)();
+            ii -= 1;
+            d = ii;
+            check_udt( ii, serialize(value(d)) );
+#endif
+        }
+    }
+
+    void
     run()
     {
         testNull();
@@ -691,6 +791,7 @@ public:
         testOstream();
         testNumberRoundTrips();
         testStack();
+        testUDT();
     }
 };
 

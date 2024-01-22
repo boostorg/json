@@ -48,6 +48,22 @@ struct writer
     suspend(state st, object::const_iterator it, object const* po);
 };
 
+bool
+BOOST_JSON_DECL
+write_int64(writer&, stream& ss);
+
+bool
+BOOST_JSON_DECL
+write_uint64(writer&, stream& ss);
+
+bool
+BOOST_JSON_DECL
+write_double(writer&, stream& ss);
+
+bool
+BOOST_JSON_DECL
+resume_buffer(writer&, stream& ss);
+
 } // namespace detail
 } // namespace json
 } // namespace boost

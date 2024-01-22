@@ -51,6 +51,90 @@ writer(
     BOOST_STATIC_ASSERT(sizeof(buf_) >= 7);
 }
 
+inline
+bool
+write_buffer(writer& w, stream& ss0)
+{
+    local_stream ss(ss0);
+    auto const n = ss.remain();
+    if( n < w.cs0_.remain() )
+    {
+        ss.append(w.cs0_.data(), n);
+        w.cs0_.skip(n);
+        return w.suspend(writer::state::num);
+    }
+    ss.append( w.cs0_.data(), w.cs0_.remain() );
+    return true;
+}
+
+bool
+write_int64(writer& w, stream& ss0)
+{
+    BOOST_ASSERT( w.st_.empty() );
+    BOOST_ASSERT( w.p_ );
+    auto const pi = reinterpret_cast<std::int64_t const*>(w.p_);
+
+    local_stream ss(ss0);
+    if(BOOST_JSON_LIKELY( ss.remain() >= detail::max_number_chars ))
+    {
+        ss.advance( format_int64(ss.data(), *pi) );
+        return true;
+    }
+
+    w.cs0_ = { w.buf_, format_int64(w.buf_, *pi) };
+    return write_buffer(w, ss);
+}
+
+bool
+write_uint64(writer& w, stream& ss0)
+{
+    BOOST_ASSERT( w.st_.empty() );
+    BOOST_ASSERT( w.p_ );
+    auto const pu = reinterpret_cast<std::uint64_t const*>(w.p_);
+
+    local_stream ss(ss0);
+    if(BOOST_JSON_LIKELY( ss.remain() >= detail::max_number_chars ))
+    {
+        ss.advance( format_uint64(ss.data(), *pu) );
+        return true;
+    }
+
+    w.cs0_ = { w.buf_, format_uint64(w.buf_, *pu) };
+    return write_buffer(w, ss);
+}
+
+bool
+write_double(writer& w, stream& ss0)
+{
+    BOOST_ASSERT( w.st_.empty() );
+    BOOST_ASSERT( w.p_ );
+    auto const pd = reinterpret_cast<double const*>(w.p_);
+
+    local_stream ss(ss0);
+    if(BOOST_JSON_LIKELY( ss.remain() >= detail::max_number_chars ))
+    {
+        ss.advance(
+            format_double(ss.data(), *pd, w.opts_.allow_infinity_and_nan));
+        return true;
+    }
+
+    w.cs0_ = {
+        w.buf_,
+        format_double(w.buf_, *pd, w.opts_.allow_infinity_and_nan) };
+    return write_buffer(w, ss);
+}
+
+bool
+resume_buffer(writer& w, stream& ss0)
+{
+    BOOST_ASSERT( !w.st_.empty() );
+    writer::state st;
+    w.st_.pop(st);
+    BOOST_ASSERT(st == writer::state::num);
+
+    return write_buffer(w, ss0);
+}
+
 bool
 writer::
 suspend(state st)
