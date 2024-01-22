@@ -50,7 +50,8 @@ get_stream_flags( std::ostream& os )
 
 } // namespace
 
-static
+namespace detail {
+
 void
 serialize_impl(
     std::string& s,
@@ -93,6 +94,8 @@ serialize_impl(
     }
     s.resize(len);
 }
+
+} // namespace detail
 
 std::string
 serialize(
