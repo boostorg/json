@@ -18,6 +18,47 @@ namespace detail {
 
 template<class T, bool StackEmpty>
 bool
+write_impl(null_like_conversion_tag, writer& w, stream& ss)
+{
+#if defined(_MSC_VER)
+# pragma warning( push )
+# pragma warning( disable : 4127 )
+#endif
+    if( StackEmpty || w.st_.empty() )
+        return write_null(w, ss);
+#if defined(_MSC_VER)
+# pragma warning( pop )
+#endif
+    return resume_buffer(w, ss);
+}
+
+template<class T, bool StackEmpty>
+bool
+write_impl(bool_conversion_tag, writer& w, stream& ss)
+{
+    BOOST_ASSERT( w.p_ );
+    auto const t = *reinterpret_cast<T const*>(w.p_);
+
+#if defined(_MSC_VER)
+# pragma warning( push )
+# pragma warning( disable : 4127 )
+#endif
+    if( StackEmpty || w.st_.empty() )
+#if defined(_MSC_VER)
+# pragma warning( pop )
+#endif
+    {
+        if( t )
+            return write_true(w, ss);
+        else
+            return write_false(w, ss);
+    }
+
+    return resume_buffer(w, ss);
+}
+
+template<class T, bool StackEmpty>
+bool
 write_impl(integral_conversion_tag, writer& w, stream& ss0)
 {
 #if defined(_MSC_VER)

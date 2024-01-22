@@ -10,6 +10,7 @@
 #ifndef BOOST_JSON_DETAIL_WRITER_HPP
 #define BOOST_JSON_DETAIL_WRITER_HPP
 
+#include <boost/json/detail/literals.hpp>
 #include <boost/json/detail/stack.hpp>
 #include <boost/json/detail/stream.hpp>
 #include <boost/json/serialize_options.hpp>
@@ -47,6 +48,18 @@ struct writer
     bool
     suspend(state st, object::const_iterator it, object const* po);
 };
+
+bool
+BOOST_JSON_DECL
+write_true(writer& w, stream& ss);
+
+bool
+BOOST_JSON_DECL
+write_false(writer& w, stream& ss);
+
+bool
+BOOST_JSON_DECL
+write_null(writer& w, stream& ss);
 
 bool
 BOOST_JSON_DECL
