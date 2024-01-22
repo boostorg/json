@@ -57,10 +57,10 @@ may be used to check whether or not the value is a particular kind:
 
 Functions like
 [link json.ref.boost__json__value.if_object `value::if_object`]
-actually return a pointer to the object if the value is an object,
-otherwise they return null. This allows them to be used both in
-boolean contexts as above, and in assignments or conditional
-expressions to capture the value of the pointer:
+actually return a __result__ that stores a reference to the object if the value
+is an object, and otherwise it stores an __error_code__. This allows such
+functions to be used both in boolean contexts as above, and in assignments or
+conditional expressions to capture the reference inside the __resultr_.
 
 [snippet_value_3]
 
@@ -84,7 +84,7 @@ the contents of a __value__:
         [Representation]
         [Emplacement]
         [Kind Test]
-        [Pointer Access]
+        [__result__ Access]
         [Checked Access]
         [Unchecked Access]
     ]
@@ -260,17 +260,17 @@ they were the right type, but handle the resulting exception indicating
 if the schema of the JSON is not valid.
 
 We can query a value for its underlying representation of a particular
-kind in a way that does not throw exceptions by requesting a pointer
-which may be null, instead of a reference. Here we use
+kind in a way that does not throw exceptions by requesting a __result__
+which stores either a reference or an __error_code__. Here we use
 [link json.ref.boost__json__value.if_string.overload1 `value::if_string`]
 to conditionally perform an assignment without using exceptions:
 
 [snippet_value_7]
 
 [tip
-    If the value's kind is known statically, a reference to the underlying
-    representation may be obtained by dereferencing the pointer without
-    checking. This avoids the code overhead of the possible exception
+    If the value's kind is already known statically, a reference to the
+    underlying representation may be obtained by dereferencing the __result__
+    without checking. This avoids the code overhead of the possible exception
     when using, for example
     [link json.ref.boost__json__value.as_string `value::as_string`]:
 

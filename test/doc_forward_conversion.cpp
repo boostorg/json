@@ -139,9 +139,9 @@ tag_invoke(
     const JsonValue& jv,
     const as_string& )
 {
-    const auto* js = jv.if_string();
+    auto js = jv.if_string();
     if( ! js )
-        return make_error_code( std::errc::invalid_argument );
+        return js.error();
 
     unsigned char octets[4];
     int result = std::sscanf(

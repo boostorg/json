@@ -551,13 +551,13 @@ public:
         {
             {
                 array a({1, true, str_});
-                BOOST_TEST(a.if_contains(1)->is_bool());
-                BOOST_TEST(a.if_contains(3) == nullptr);
+                BOOST_TEST( a.if_contains(1)->is_bool() );
+                BOOST_TEST( !a.if_contains(3) );
             }
             {
                 array const a({1, true, str_});
-                BOOST_TEST(a.if_contains(1)->is_bool());
-                BOOST_TEST(a.if_contains(3) == nullptr);
+                BOOST_TEST( a.if_contains(1)->is_bool() );
+                BOOST_TEST( !a.if_contains(3) );
             }
         }
 

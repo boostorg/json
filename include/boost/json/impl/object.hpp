@@ -382,13 +382,7 @@ object::
 at(string_view key) const& ->
     value const&
 {
-    auto it = find(key);
-    if(it == end())
-    {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        detail::throw_system_error( error::out_of_range, &loc );
-    }
-    return it->value();
+    return if_contains(key).value();
 }
 
 //----------------------------------------------------------

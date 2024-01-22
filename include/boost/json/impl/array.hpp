@@ -221,12 +221,7 @@ value const&
 array::
 at(std::size_t pos) const&
 {
-    if(pos >= t_->size)
-    {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        detail::throw_system_error( error::out_of_range, &loc );
-    }
-    return (*t_)[pos];
+    return if_contains(pos).value();
 }
 
 value&
@@ -312,26 +307,6 @@ array::
 data() const noexcept
 {
     return &(*t_)[0];
-}
-
-value const*
-array::
-if_contains(
-    std::size_t pos) const noexcept
-{
-    if( pos < t_->size )
-        return &(*t_)[pos];
-    return nullptr;
-}
-
-value*
-array::
-if_contains(
-    std::size_t pos) noexcept
-{
-    if( pos < t_->size )
-        return &(*t_)[pos];
-    return nullptr;
 }
 
 //----------------------------------------------------------

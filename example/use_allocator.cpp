@@ -46,11 +46,9 @@ result<T>
 tag_invoke( try_value_to_tag<T>, const value& jv, const use_allocator_t<Alloc>& ctx, const FullContext& full_ctx )
 {
 
-    array const* arr = jv.if_array();
+    auto arr = jv.if_array();
     if( !arr )
-        return {
-            boost::system::in_place_error,
-            make_error_code(boost::system::errc::invalid_argument) };
+        return {boost::system::in_place_error, arr.error()};
 
     T result(ctx.allocator);
     auto ins = std::inserter(result, result.end());

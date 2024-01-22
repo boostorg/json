@@ -15,6 +15,7 @@
 #include <boost/json/pilfer.hpp>
 #include <boost/json/storage_ptr.hpp>
 #include <boost/json/string_view.hpp>
+#include <boost/json/system_error.hpp>
 #include <boost/json/detail/object.hpp>
 #include <boost/json/detail/value.hpp>
 #include <cstdlib>
@@ -1432,11 +1433,11 @@ public:
     bool
     contains(string_view key) const noexcept;
 
-    /** Return a pointer to the value if the key is found, or null
+    /** Return a @ref result with a reference to the value if the key is found.
 
         This function searches for a value with the given
-        key, and returns a pointer to it if found. Otherwise
-        it returns null.
+        key, and returns a @ref result storing a reference to it if found.
+        Otherwise it returns a @ref result storing an @ref error_code.
 
         @par Example
         @code
@@ -1452,37 +1453,20 @@ public:
 
         @param key The key of the element to find.
 
+        @return @ref result storing a @ref value reference
+        or an @ref error_code.
+
         @see @ref find
     */
+    /** @{ */
     BOOST_JSON_DECL
-    value const*
+    result<value const&>
     if_contains(string_view key) const noexcept;
 
-    /** Return a pointer to the value if the key is found, or null
-
-        This function searches for a value with the given
-        key, and returns a pointer to it if found. Otherwise
-        it returns null.
-
-        @par Example
-        @code
-        if( auto p = obj.if_contains( "key" ) )
-            std::cout << *p;
-        @endcode
-
-        @par Complexity
-        Constant on average, worst case linear in @ref size().
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param key The key of the element to find.
-
-        @see @ref find
-    */
     BOOST_JSON_DECL
-    value*
+    result<value&>
     if_contains(string_view key) noexcept;
+    /** @} */
 
     /** Return `true` if two objects are equal.
 

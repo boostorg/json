@@ -132,86 +132,87 @@ public:
         BOOST_TEST_THROWS_WITH_LOCATION( jv.at_pointer("/x/y/z") );
     }
 
-    template<class ErrorCode>
     void
-    testNonThrowing()
+    testTry()
     {
-        ErrorCode ec;
-        BOOST_TEST( !value().find_pointer("/x", ec) );
+        error_code ec;
+
+        ec = value().try_at_pointer("/x").error();
         BOOST_TEST( ec == error::value_is_scalar );
+        BOOST_TEST( ec.has_location() );
 
         value jv = testValue();
-        BOOST_TEST(jv.find_pointer("/foo/0", ec) == &jv.at("foo").at(0));
-        BOOST_TEST(!ec);
-
         auto const& cjv = jv;
-        ec = error::syntax;
-        BOOST_TEST(cjv.find_pointer("/foo/1", ec) == &jv.at("foo").at(1));
-        BOOST_TEST(!ec);
 
-        jv.find_pointer("foo", ec);
-        BOOST_TEST(ec == error::missing_slash);
-        BOOST_TEST(hasLocation(ec));
+        BOOST_TEST(
+            &jv.try_at_pointer("/foo/0").value() == &jv.at("foo").at(0));
 
-        jv.find_pointer("/fo", ec);
-        BOOST_TEST(ec == error::not_found);
-        BOOST_TEST(hasLocation(ec));
+        BOOST_TEST(
+            &cjv.try_at_pointer("/foo/1").value() == &jv.at("foo").at(1));
 
-        jv.find_pointer("/foo/25", ec);
-        BOOST_TEST(ec == error::not_found);
-        BOOST_TEST(hasLocation(ec));
+        ec = jv.try_at_pointer("foo").error();
+        BOOST_TEST( ec == error::missing_slash );
+        BOOST_TEST( ec.has_location() );
 
-        value(object()).find_pointer("/foo", ec);
-        BOOST_TEST(ec == error::not_found);
-        BOOST_TEST(hasLocation(ec));
+        ec = jv.try_at_pointer("/fo").error();
+        BOOST_TEST( ec == error::not_found );
+        BOOST_TEST( ec.has_location() );
 
-        bigObject().find_pointer("/foo", ec);
-        BOOST_TEST(ec == error::not_found);
-        BOOST_TEST(hasLocation(ec));
+        ec = jv.try_at_pointer("/foo/25").error();
+        BOOST_TEST( ec == error::not_found );
+        BOOST_TEST( ec.has_location() );
 
-        jv.find_pointer("/m~", ec);
-        BOOST_TEST(ec == error::invalid_escape);
-        BOOST_TEST(hasLocation(ec));
+        ec = value( object() ).try_at_pointer("/foo").error();
+        BOOST_TEST( ec == error::not_found );
+        BOOST_TEST( ec.has_location() );
 
-        jv.find_pointer("/m~n", ec);
-        BOOST_TEST(ec == error::invalid_escape);
-        BOOST_TEST(hasLocation(ec));
+        ec = bigObject().try_at_pointer("/foo").error();
+        BOOST_TEST( ec == error::not_found );
+        BOOST_TEST( ec.has_location() );
 
-        jv.find_pointer("/foo/bar", ec);
-        BOOST_TEST(ec == error::token_not_number);
-        BOOST_TEST(hasLocation(ec));
+        ec = jv.try_at_pointer("/m~").error();
+        BOOST_TEST( ec == error::invalid_escape );
+        BOOST_TEST( ec.has_location() );
 
-        jv.find_pointer("/foo/", ec);
-        BOOST_TEST(ec == error::token_not_number);
-        BOOST_TEST(hasLocation(ec));
+        ec = jv.try_at_pointer("/m~n").error();
+        BOOST_TEST( ec == error::invalid_escape );
+        BOOST_TEST( ec.has_location() );
 
-        jv.find_pointer("/foo/01", ec);
-        BOOST_TEST(ec == error::token_not_number);
-        BOOST_TEST(hasLocation(ec));
+        ec = jv.try_at_pointer("/foo/bar").error();
+        BOOST_TEST( ec == error::token_not_number );
+        BOOST_TEST( ec.has_location() );
 
-        jv.find_pointer("/foo/2b", ec);
-        BOOST_TEST(ec == error::token_not_number);
-        BOOST_TEST(hasLocation(ec));
+        ec = jv.try_at_pointer("/foo/").error();
+        BOOST_TEST( ec == error::token_not_number );
+        BOOST_TEST( ec.has_location() );
 
-        jv.find_pointer("/foo/2.", ec);
-        BOOST_TEST(ec == error::token_not_number);
-        BOOST_TEST(hasLocation(ec));
+        ec = jv.try_at_pointer("/foo/01").error();
+        BOOST_TEST( ec == error::token_not_number );
+        BOOST_TEST( ec.has_location() );
 
-        jv.find_pointer("/foo/-", ec);
-        BOOST_TEST(ec == error::past_the_end);
-        BOOST_TEST(hasLocation(ec));
+        ec = jv.try_at_pointer("/foo/2b").error();
+        BOOST_TEST( ec == error::token_not_number );
+        BOOST_TEST( ec.has_location() );
 
-        jv.find_pointer("/foo/-/x", ec);
-        BOOST_TEST(ec == error::past_the_end);
-        BOOST_TEST(hasLocation(ec));
+        ec = jv.try_at_pointer("/foo/2.").error();
+        BOOST_TEST( ec == error::token_not_number );
+        BOOST_TEST( ec.has_location() );
 
-        jv.find_pointer("/foo/-1", ec);
-        BOOST_TEST(ec == error::token_not_number);
-        BOOST_TEST(hasLocation(ec));
+        ec = jv.try_at_pointer("/foo/-").error();
+        BOOST_TEST( ec == error::past_the_end );
+        BOOST_TEST( ec.has_location() );
 
-        jv.find_pointer("/x/y/z", ec);
-        BOOST_TEST(ec == error::value_is_scalar);
-        BOOST_TEST(hasLocation(ec));
+        ec = jv.try_at_pointer("/foo/-/x").error();
+        BOOST_TEST( ec == error::past_the_end );
+        BOOST_TEST( ec.has_location() );
+
+        ec = jv.try_at_pointer("/foo/-1").error();
+        BOOST_TEST( ec == error::token_not_number );
+        BOOST_TEST( ec.has_location() );
+
+        ec = jv.try_at_pointer("/x/y/z").error();
+        BOOST_TEST( ec == error::value_is_scalar );
+        BOOST_TEST( ec.has_location() );
 
         string s = "/foo/";
         s += std::to_string((std::numeric_limits<std::size_t>::max)());
@@ -228,9 +229,39 @@ public:
         {
             ++s[s.size() - 1];
         }
-        jv.find_pointer(s, ec);
-        BOOST_TEST(ec == error::token_overflow);
-        BOOST_TEST(hasLocation(ec));
+        ec = jv.try_at_pointer(s).error();
+        BOOST_TEST( ec == error::token_overflow );
+        BOOST_TEST( ec.has_location() );
+    }
+
+    void
+    testNonThrowing()
+    {
+        error_code jec;
+        BOOST_TEST( !value().find_pointer("/x", jec) );
+        BOOST_TEST( jec == error::value_is_scalar );
+        BOOST_TEST( jec.has_location() );
+
+        value jv = testValue();
+        BOOST_TEST( jv.find_pointer("/foo/0", jec) == &jv.at("foo").at(0) );
+        BOOST_TEST( !jec.failed() );
+
+        auto const& cjv = jv;
+        jec = error::syntax;
+        BOOST_TEST( cjv.find_pointer("/foo/1", jec) == &jv.at("foo").at(1) );
+        BOOST_TEST( !jec.failed() );
+
+        std::error_code ec;
+        BOOST_TEST( !value().find_pointer("/x", ec) );
+        BOOST_TEST( ec == error::value_is_scalar );
+
+        jv = testValue();
+        BOOST_TEST(jv.find_pointer("/foo/0", ec) == &jv.at("foo").at(0));
+        BOOST_TEST( !ec );
+
+        ec = error::syntax;
+        BOOST_TEST( cjv.find_pointer("/foo/1", ec) == &jv.at("foo").at(1) );
+        BOOST_TEST( !ec );
     }
 
     void
@@ -314,36 +345,64 @@ public:
         BOOST_TEST( result == &jv.at_pointer("/x") );
     }
 
-    template<class ErrorCode>
+
+    void
+    testTrySet()
+    {
+        error_code ec;
+        value jv;
+
+        BOOST_TEST( jv.try_set_at_pointer( "", array() ).value().is_array() );
+
+        ec = jv.try_set_at_pointer("/1", 0).error();
+        BOOST_TEST( ec == error::not_found );
+        BOOST_TEST( ec.has_location() );
+
+        ec = jv.try_set_at_pointer("/x", 0).error();
+        BOOST_TEST( ec == error::token_not_number );
+        BOOST_TEST( ec.has_location() );
+
+        BOOST_TEST( jv.try_set_at_pointer("/-", "").value().is_string() );
+
+        ec = jv.try_set_at_pointer("/0/x", 1).error();
+        BOOST_TEST( ec == error::value_is_scalar );
+        BOOST_TEST( ec.has_location() );
+    }
+
     void
     testSetNonThrowing()
     {
-        ErrorCode ec;
-
-        value* result;
+        error_code jec;
         value jv;
 
-        result = jv.set_at_pointer( "", array(), ec );
-        BOOST_TEST( result );
+        value* p = jv.set_at_pointer("", array(), jec);
+        BOOST_TEST( p && p->is_array() );
+        BOOST_TEST( !jec.failed() );
+
+        BOOST_TEST( !jv.set_at_pointer("/1", 0, jec) );
+        BOOST_TEST( jec == error::not_found );
+        BOOST_TEST( jec.has_location() );
+
+        jec = {};
+
+        BOOST_TEST( !jv.set_at_pointer("/x", 0, jec) );
+        BOOST_TEST( jec == error::token_not_number );
+        BOOST_TEST( jec.has_location() );
+
+        std::error_code ec;
+        jv = {};
+
+        p = jv.set_at_pointer("", array(), ec);
+        BOOST_TEST( p && p->is_array() );
         BOOST_TEST( !ec );
 
-        result = jv.set_at_pointer( "/1", 0, ec );
-        BOOST_TEST( !result );
+        BOOST_TEST( !jv.set_at_pointer("/1", 0, ec) );
         BOOST_TEST( ec == error::not_found );
-        BOOST_TEST( hasLocation(ec) );
 
-        result = jv.set_at_pointer( "/x", 0, ec );
-        BOOST_TEST( !result );
+        ec = {};
+
+        BOOST_TEST( !jv.set_at_pointer("/x", 0, ec) );
         BOOST_TEST( ec == error::token_not_number );
-        BOOST_TEST( hasLocation(ec) );
-
-        result = jv.set_at_pointer( "/-", "", ec );
-        BOOST_TEST( result );
-        BOOST_TEST( !ec );
-
-        result = jv.set_at_pointer( "/0/x", 1, ec );
-        BOOST_TEST( ec == error::value_is_scalar );
-        BOOST_TEST( hasLocation(ec) );
     }
 
     void
@@ -354,11 +413,11 @@ public:
         testEscaped();
         testNested();
         testErrors();
-        testNonThrowing<error_code>();
-        testNonThrowing<std::error_code>();
+        testTry();
+        testNonThrowing();
         testSet();
-        testSetNonThrowing<error_code>();
-        testSetNonThrowing<std::error_code>();
+        testTrySet();
+        testSetNonThrowing();
     }
 };
 

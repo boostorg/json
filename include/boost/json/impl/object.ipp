@@ -654,26 +654,34 @@ contains(
         != nullptr;
 }
 
-value const*
+result<value const&>
 object::
 if_contains(
     string_view key) const noexcept
 {
     auto const it = find(key);
-    if(it != end())
-        return &it->value();
-    return nullptr;
+    if( it == end() )
+    {
+        error_code ec;
+        BOOST_JSON_FAIL(ec, error::out_of_range);
+        return ec;
+    }
+    return it->value();
 }
 
-value*
+result<value&>
 object::
 if_contains(
     string_view key) noexcept
 {
     auto const it = find(key);
-    if(it != end())
-        return &it->value();
-    return nullptr;
+    if( it == end() )
+    {
+        error_code ec;
+        BOOST_JSON_FAIL(ec, error::out_of_range);
+        return ec;
+    }
+    return it->value();
 }
 
 //----------------------------------------------------------

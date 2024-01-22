@@ -41,7 +41,7 @@ tag_invoke(
     boost::json::try_value_to_tag<T2>,
     boost::json::value const& jv)
 {
-    boost::json::string const* str = jv.if_string();
+    auto str = jv.if_string();
     if( str && *str == "T2" )
         return T2{};
     return make_error_code(boost::json::error::syntax);
@@ -55,11 +55,8 @@ tag_invoke(
     boost::json::value_to_tag<T3>,
     boost::json::value const& jv)
 {
-    boost::json::string const* str = jv.if_string();
-    if( !str )
-        throw boost::json::system_error(
-            make_error_code(boost::json::error::not_string));
-    if ( *str != "T3" )
+    auto& str = jv.if_string().value();
+    if ( str != "T3" )
         throw std::invalid_argument("");
     return T3{};
 }
@@ -159,7 +156,7 @@ tag_invoke(
     boost::json::value const& jv,
     custom_context const&)
 {
-    boost::json::string const* str = jv.if_string();
+    auto str = jv.if_string();
     if( str && *str == "T9" )
         return T9{};
     return make_error_code(boost::json::error::syntax);
