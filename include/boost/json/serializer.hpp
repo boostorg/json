@@ -190,6 +190,17 @@ public:
     reset(T const* p) noexcept;
     /** @} */
 
+    /** Reset the serializer for std::nullptr_t
+
+        This function prepares the serializer to emit
+        a new serialized JSON representing null.
+        Any internally allocated memory is
+        preserved and re-used for the new output.
+    */
+    inline
+    void
+    reset(std::nullptr_t) noexcept;
+
     /** Reset the serializer for a new string
 
         This function prepares the serializer to emit

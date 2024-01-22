@@ -50,6 +50,10 @@ struct writer
 
 bool
 BOOST_JSON_DECL
+write_literal(writer&, stream& ss, char const* s, std::size_t n);
+
+bool
+BOOST_JSON_DECL
 write_int64(writer&, stream& ss, std::int64_t i);
 
 bool

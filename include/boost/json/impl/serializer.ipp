@@ -23,18 +23,6 @@ namespace boost {
 namespace json {
 namespace detail {
 
-enum class writer::state : char
-{
-    nul1, nul2, nul3, nul4,
-    tru1, tru2, tru3, tru4,
-    fal1, fal2, fal3, fal4, fal5,
-    str1, str2, str3, esc1, utf1,
-    utf2, utf3, utf4, utf5,
-    num,
-    arr1, arr2, arr3, arr4,
-    obj1, obj2, obj3, obj4, obj5, obj6
-};
-
 writer::
 writer(
     storage_ptr sp,
@@ -57,11 +45,11 @@ write_buffer(writer& w, stream& ss0)
 {
     local_stream ss(ss0);
     auto const n = ss.remain();
-    if( n < w.cs0_.remain() )
+    if(BOOST_JSON_UNLIKELY( n < w.cs0_.remain() ))
     {
         ss.append(w.cs0_.data(), n);
         w.cs0_.skip(n);
-        return w.suspend(writer::state::num);
+        return w.suspend(writer::state::lit);
     }
     ss.append( w.cs0_.data(), w.cs0_.remain() );
     return true;
@@ -141,17 +129,9 @@ resume_buffer(writer& w, stream& ss0)
     BOOST_ASSERT( !w.st_.empty() );
     writer::state st;
     w.st_.pop(st);
-    BOOST_ASSERT(st == writer::state::num);
+    BOOST_ASSERT(st == writer::state::lit);
 
     return write_buffer(w, ss0);
-}
-
-bool
-writer::
-suspend(state st)
-{
-    st_.push(st);
-    return false;
 }
 
 bool
@@ -178,135 +158,6 @@ suspend(
     st_.push(it);
     st_.push(st);
     return false;
-}
-
-template<bool StackEmpty>
-bool
-write_null(writer& w, stream& ss0)
-{
-    local_stream ss(ss0);
-    if(! StackEmpty && ! w.st_.empty())
-    {
-        writer::state st;
-        w.st_.pop(st);
-        switch(st)
-        {
-        default:
-        case writer::state::nul1: goto do_nul1;
-        case writer::state::nul2: goto do_nul2;
-        case writer::state::nul3: goto do_nul3;
-        case writer::state::nul4: goto do_nul4;
-        }
-    }
-do_nul1:
-    if(BOOST_JSON_LIKELY(ss))
-        ss.append('n');
-    else
-        return w.suspend(writer::state::nul1);
-do_nul2:
-    if(BOOST_JSON_LIKELY(ss))
-        ss.append('u');
-    else
-        return w.suspend(writer::state::nul2);
-do_nul3:
-    if(BOOST_JSON_LIKELY(ss))
-        ss.append('l');
-    else
-        return w.suspend(writer::state::nul3);
-do_nul4:
-    if(BOOST_JSON_LIKELY(ss))
-        ss.append('l');
-    else
-        return w.suspend(writer::state::nul4);
-    return true;
-}
-
-template<bool StackEmpty>
-bool
-write_true(writer& w, stream& ss0)
-{
-    local_stream ss(ss0);
-    if(! StackEmpty && ! w.st_.empty())
-    {
-        writer::state st;
-        w.st_.pop(st);
-        switch(st)
-        {
-        default:
-        case writer::state::tru1: goto do_tru1;
-        case writer::state::tru2: goto do_tru2;
-        case writer::state::tru3: goto do_tru3;
-        case writer::state::tru4: goto do_tru4;
-        }
-    }
-do_tru1:
-    if(BOOST_JSON_LIKELY(ss))
-        ss.append('t');
-    else
-        return w.suspend(writer::state::tru1);
-do_tru2:
-    if(BOOST_JSON_LIKELY(ss))
-        ss.append('r');
-    else
-        return w.suspend(writer::state::tru2);
-do_tru3:
-    if(BOOST_JSON_LIKELY(ss))
-        ss.append('u');
-    else
-        return w.suspend(writer::state::tru3);
-do_tru4:
-    if(BOOST_JSON_LIKELY(ss))
-        ss.append('e');
-    else
-        return w.suspend(writer::state::tru4);
-    return true;
-}
-
-template<bool StackEmpty>
-bool
-write_false(writer& w, stream& ss0)
-{
-    local_stream ss(ss0);
-    if(! StackEmpty && ! w.st_.empty())
-    {
-        writer::state st;
-        w.st_.pop(st);
-        switch(st)
-        {
-        default:
-        case writer::state::fal1: goto do_fal1;
-        case writer::state::fal2: goto do_fal2;
-        case writer::state::fal3: goto do_fal3;
-        case writer::state::fal4: goto do_fal4;
-        case writer::state::fal5: goto do_fal5;
-        }
-    }
-do_fal1:
-    if(BOOST_JSON_LIKELY(ss))
-        ss.append('f');
-    else
-        return w.suspend(writer::state::fal1);
-do_fal2:
-    if(BOOST_JSON_LIKELY(ss))
-        ss.append('a');
-    else
-        return w.suspend(writer::state::fal2);
-do_fal3:
-    if(BOOST_JSON_LIKELY(ss))
-        ss.append('l');
-    else
-        return w.suspend(writer::state::fal3);
-do_fal4:
-    if(BOOST_JSON_LIKELY(ss))
-        ss.append('s');
-    else
-        return w.suspend(writer::state::fal4);
-do_fal5:
-    if(BOOST_JSON_LIKELY(ss))
-        ss.append('e');
-    else
-        return w.suspend(writer::state::fal5);
-    return true;
 }
 
 template<bool StackEmpty>
@@ -663,35 +514,13 @@ write_value(writer& w, stream& ss)
             return write_number(w, ss, *pv);
 
         case kind::bool_:
-            if(pv->get_bool())
-            {
-                if(BOOST_JSON_LIKELY(
-                    ss.remain() >= 4))
-                {
-                    ss.append("true", 4);
-                    return true;
-                }
-                return write_true<true>(w, ss);
-            }
+            if( pv->get_bool() )
+                return write_literal<writer::state::tru1>(w, ss);
             else
-            {
-                if(BOOST_JSON_LIKELY(
-                    ss.remain() >= 5))
-                {
-                    ss.append("false", 5);
-                    return true;
-                }
-                return write_false<true>(w, ss);
-            }
+                return write_literal<writer::state::fal1>(w, ss);
 
         case kind::null:
-            if(BOOST_JSON_LIKELY(
-                ss.remain() >= 4))
-            {
-                ss.append("null", 4);
-                return true;
-            }
-            return write_null<true>(w, ss);
+            return write_literal<writer::state::nul1>(w, ss);
         }
     }
     else
@@ -703,16 +532,12 @@ write_value(writer& w, stream& ss)
         default:
         case writer::state::nul1: case writer::state::nul2:
         case writer::state::nul3: case writer::state::nul4:
-            return write_null<StackEmpty>(w, ss);
-
         case writer::state::tru1: case writer::state::tru2:
         case writer::state::tru3: case writer::state::tru4:
-            return write_true<StackEmpty>(w, ss);
-
         case writer::state::fal1: case writer::state::fal2:
         case writer::state::fal3: case writer::state::fal4:
-        case writer::state::fal5:
-            return write_false<StackEmpty>(w, ss);
+        case writer::state::fal5: case writer::state::lit:
+            return resume_buffer(w, ss);
 
         case writer::state::str1: case writer::state::str2:
         case writer::state::str3: case writer::state::esc1:
@@ -720,9 +545,6 @@ write_value(writer& w, stream& ss)
         case writer::state::utf3: case writer::state::utf4:
         case writer::state::utf5:
             return write_string<StackEmpty>(w, ss);
-
-        case writer::state::num:
-            return resume_buffer(w, ss);
 
         case writer::state::arr1: case writer::state::arr2:
         case writer::state::arr3: case writer::state::arr4:
