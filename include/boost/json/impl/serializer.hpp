@@ -37,20 +37,16 @@ write_impl(integral_conversion_tag, writer& w, stream& ss0)
         if( t < 0 )
         {
             // T is obviously signed, so this comparison is safe
-            if( t < (std::numeric_limits<std::int64_t>::min)() )
-                goto do_double;
-            else
-                goto do_int64;
+            if( t >= (std::numeric_limits<std::int64_t>::min)() )
+            {
+                std::int64_t i = t;
+                return write_int64(w, ss0, i);
+            }
         }
-
-        if( t > (std::numeric_limits<std::int64_t>::max)() )
+        else if( t <= (std::numeric_limits<std::uint64_t>::max)() )
         {
-            // T is potentially signed, but definitely not negative, so this
-            // comparison is safe
-            if( t > (std::numeric_limits<std::uint64_t>::max)() )
-                goto do_double;
-            else
-                goto do_uint64;
+            std::uint64_t u = t;
+            return write_uint64(w, ss0, u);
         }
 #if defined(__clang__)
 # pragma clang diagnostic pop
@@ -60,33 +56,15 @@ write_impl(integral_conversion_tag, writer& w, stream& ss0)
 # pragma warning( pop )
 #endif
 
-do_int64:
-        {
-            std::int64_t i = t;
-            w.p_ = &i;
-            return write_int64(w, ss0);
-        }
-
-do_uint64:
-        {
-            std::uint64_t u = t;
-            w.p_ = &u;
-            return write_uint64(w, ss0);
-        }
-
-do_double:
-        {
 #if defined(_MSC_VER)
 # pragma warning( push )
 # pragma warning( disable : 4244 )
 #endif
-            double d = t;
-            w.p_ = &d;
-            return write_double(w, ss0);
+        double d = t;
+        return write_double(w, ss0, d);
 #if defined(_MSC_VER)
 # pragma warning( pop )
 #endif
-        }
     }
 
     return resume_buffer(w, ss0);
@@ -99,8 +77,7 @@ write_impl(floating_point_conversion_tag, writer& w, stream& ss0)
     if( StackEmpty || w.st_.empty() )
     {
         double d = *reinterpret_cast<T const*>(w.p_);
-        w.p_ = &d;
-        return write_double(w, ss0);
+        return write_double(w, ss0, d);
     }
 
     return resume_buffer(w, ss0);

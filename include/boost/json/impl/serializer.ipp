@@ -68,59 +68,52 @@ write_buffer(writer& w, stream& ss0)
 }
 
 bool
-write_int64(writer& w, stream& ss0)
+write_int64(writer& w, stream& ss0, std::int64_t i)
 {
     BOOST_ASSERT( w.st_.empty() );
-    BOOST_ASSERT( w.p_ );
-    auto const pi = reinterpret_cast<std::int64_t const*>(w.p_);
 
     local_stream ss(ss0);
     if(BOOST_JSON_LIKELY( ss.remain() >= detail::max_number_chars ))
     {
-        ss.advance( format_int64(ss.data(), *pi) );
+        ss.advance( format_int64(ss.data(), i) );
         return true;
     }
 
-    w.cs0_ = { w.buf_, format_int64(w.buf_, *pi) };
+    w.cs0_ = { w.buf_, format_int64(w.buf_, i) };
     return write_buffer(w, ss);
 }
 
 bool
-write_uint64(writer& w, stream& ss0)
+write_uint64(writer& w, stream& ss0, std::uint64_t u)
 {
     BOOST_ASSERT( w.st_.empty() );
-    BOOST_ASSERT( w.p_ );
-    auto const pu = reinterpret_cast<std::uint64_t const*>(w.p_);
 
     local_stream ss(ss0);
     if(BOOST_JSON_LIKELY( ss.remain() >= detail::max_number_chars ))
     {
-        ss.advance( format_uint64(ss.data(), *pu) );
+        ss.advance( format_uint64(ss.data(), u) );
         return true;
     }
 
-    w.cs0_ = { w.buf_, format_uint64(w.buf_, *pu) };
+    w.cs0_ = { w.buf_, format_uint64(w.buf_, u) };
     return write_buffer(w, ss);
 }
 
 bool
-write_double(writer& w, stream& ss0)
+write_double(writer& w, stream& ss0, double d)
 {
     BOOST_ASSERT( w.st_.empty() );
-    BOOST_ASSERT( w.p_ );
-    auto const pd = reinterpret_cast<double const*>(w.p_);
 
     local_stream ss(ss0);
     if(BOOST_JSON_LIKELY( ss.remain() >= detail::max_number_chars ))
     {
         ss.advance(
-            format_double(ss.data(), *pd, w.opts_.allow_infinity_and_nan));
+            format_double(ss.data(), d, w.opts_.allow_infinity_and_nan));
         return true;
     }
 
     w.cs0_ = {
-        w.buf_,
-        format_double(w.buf_, *pd, w.opts_.allow_infinity_and_nan) };
+        w.buf_, format_double(w.buf_, d, w.opts_.allow_infinity_and_nan) };
     return write_buffer(w, ss);
 }
 
@@ -469,80 +462,6 @@ do_utf5:
 
 template<bool StackEmpty>
 bool
-write_number(writer& w, stream& ss0)
-{
-    BOOST_ASSERT( w.p_ );
-    auto const pv = reinterpret_cast<value const*>(w.p_);
-    local_stream ss(ss0);
-    if(StackEmpty || w.st_.empty())
-    {
-        switch(pv->kind())
-        {
-        default:
-        case kind::int64:
-            if(BOOST_JSON_LIKELY(
-                ss.remain() >=
-                    detail::max_number_chars))
-            {
-                ss.advance(detail::format_int64(
-                    ss.data(), pv->get_int64()));
-                return true;
-            }
-            w.cs0_ = { w.buf_, detail::format_int64(
-                w.buf_, pv->get_int64()) };
-            break;
-
-        case kind::uint64:
-            if(BOOST_JSON_LIKELY(
-                ss.remain() >=
-                    detail::max_number_chars))
-            {
-                ss.advance(detail::format_uint64(
-                    ss.data(), pv->get_uint64()));
-                return true;
-            }
-            w.cs0_ = { w.buf_, detail::format_uint64(
-                w.buf_, pv->get_uint64()) };
-            break;
-
-        case kind::double_:
-            if(BOOST_JSON_LIKELY(
-                ss.remain() >=
-                    detail::max_number_chars))
-            {
-                ss.advance(
-                    detail::format_double(
-                        ss.data(),
-                        pv->get_double(),
-                        w.opts_.allow_infinity_and_nan));
-                return true;
-            }
-            w.cs0_ = { w.buf_, detail::format_double(
-                w.buf_, pv->get_double(), w.opts_.allow_infinity_and_nan) };
-            break;
-        }
-    }
-    else
-    {
-        writer::state st;
-        w.st_.pop(st);
-        BOOST_ASSERT(
-            st == writer::state::num);
-    }
-    auto const n = ss.remain();
-    if(n < w.cs0_.remain())
-    {
-        ss.append(w.cs0_.data(), n);
-        w.cs0_.skip(n);
-        return w.suspend(writer::state::num);
-    }
-    ss.append(
-        w.cs0_.data(), w.cs0_.remain());
-    return true;
-}
-
-template<bool StackEmpty>
-bool
 write_value(writer& w, stream& ss);
 
 template<bool StackEmpty>
@@ -721,9 +640,13 @@ write_value(writer& w, stream& ss)
         }
 
         case kind::int64:
+            return write_int64( w, ss, pv->get_int64() );
+
         case kind::uint64:
+            return write_uint64( w, ss, pv->get_uint64() );
+
         case kind::double_:
-            return write_number<true>(w, ss);
+            return write_double( w, ss, pv->get_double() );
 
         case kind::bool_:
             if(pv->get_bool())
@@ -785,7 +708,7 @@ write_value(writer& w, stream& ss)
             return write_string<StackEmpty>(w, ss);
 
         case writer::state::num:
-            return write_number<StackEmpty>(w, ss);
+            return resume_buffer(w, ss);
 
         case writer::state::arr1: case writer::state::arr2:
         case writer::state::arr3: case writer::state::arr4:
