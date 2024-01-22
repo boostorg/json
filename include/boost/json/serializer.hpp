@@ -182,6 +182,10 @@ public:
     BOOST_JSON_DECL
     void
     reset(string const* p) noexcept;
+
+    template<class T>
+    void
+    reset(T const* p) noexcept;
     /** @} */
 
     /** Reset the serializer for a new string
@@ -294,5 +298,7 @@ public:
 
 } // namespace json
 } // namespace boost
+
+#include <boost/json/impl/serializer.hpp>
 
 #endif
