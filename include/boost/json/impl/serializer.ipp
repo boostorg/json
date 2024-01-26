@@ -118,6 +118,24 @@ write_double(writer& w, stream& ss0, double d)
 }
 
 bool
+write_number(writer& w, stream& ss, value const& jv)
+{
+    switch( jv.kind() )
+    {
+    case kind::int64:
+        return write_int64( w, ss, jv.get_int64() );
+    case kind::uint64:
+        return write_uint64( w, ss, jv.get_uint64() );
+    case kind::double_:
+        return write_double( w, ss, jv.get_double() );
+    default:
+        break;
+    }
+
+    BOOST_JSON_UNREACHABLE();
+}
+
+bool
 resume_buffer(writer& w, stream& ss0)
 {
     BOOST_ASSERT( !w.st_.empty() );
@@ -640,13 +658,9 @@ write_value(writer& w, stream& ss)
         }
 
         case kind::int64:
-            return write_int64( w, ss, pv->get_int64() );
-
         case kind::uint64:
-            return write_uint64( w, ss, pv->get_uint64() );
-
         case kind::double_:
-            return write_double( w, ss, pv->get_double() );
+            return write_number(w, ss, *pv);
 
         case kind::bool_:
             if(pv->get_bool())
