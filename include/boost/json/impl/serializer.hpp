@@ -142,6 +142,27 @@ write_impl(floating_point_conversion_tag, writer& w, stream& ss0)
 
 template<class T, bool StackEmpty>
 bool
+write_impl(string_like_conversion_tag, writer& w, stream& ss0)
+{
+#if defined(_MSC_VER)
+# pragma warning( push )
+# pragma warning( disable : 4127 )
+#endif
+    if( StackEmpty || w.st_.empty() )
+#if defined(_MSC_VER)
+# pragma warning( pop )
+#endif
+    {
+        string_view const sv = *reinterpret_cast<T const*>(w.p_);
+        w.cs0_ = { sv.data(), sv.size() };
+        return write_string(w, ss0);
+    }
+
+    return resume_string(w, ss0);
+}
+
+template<class T, bool StackEmpty>
+bool
 write_impl(writer& w, stream& ss)
 {
     using cat = detail::generic_conversion_category<T>;

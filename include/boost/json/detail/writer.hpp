@@ -77,6 +77,14 @@ bool
 BOOST_JSON_DECL
 resume_buffer(writer&, stream& ss);
 
+bool
+BOOST_JSON_DECL
+write_string(writer& w, stream& ss);
+
+bool
+BOOST_JSON_DECL
+resume_string(writer& w, stream& ss);
+
 } // namespace detail
 } // namespace json
 } // namespace boost
