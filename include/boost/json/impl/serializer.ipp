@@ -220,7 +220,7 @@ resume_buffer(writer& w, stream& ss0)
 
 template<bool StackEmpty>
 bool
-write_string(writer& w, stream& ss0)
+do_write_string(writer& w, stream& ss0)
 {
     local_stream ss(ss0);
     local_const_stream cs(w.cs0_);
@@ -387,6 +387,18 @@ do_utf5:
     goto do_str3;
 }
 
+bool
+write_string(writer& w, stream& ss0)
+{
+    return do_write_string<true>(w, ss0);
+}
+
+bool
+resume_string(writer& w, stream& ss0)
+{
+    return do_write_string<false>(w, ss0);
+}
+
 template<bool StackEmpty>
 bool
 write_value(writer& w, stream& ss);
@@ -506,7 +518,7 @@ do_obj1:
             it->key().data(),
             it->key().size() };
 do_obj2:
-        if(BOOST_JSON_UNLIKELY( !write_string<StackEmpty>(w, ss) ))
+        if(BOOST_JSON_UNLIKELY( !do_write_string<StackEmpty>(w, ss) ))
             return w.suspend(
                 writer::state::obj2, it, po);
 do_obj3:
@@ -563,7 +575,7 @@ write_value(writer& w, stream& ss)
         {
             auto const& js = pv->get_string();
             w.cs0_ = { js.data(), js.size() };
-            return write_string<true>(w, ss);
+            return do_write_string<true>(w, ss);
         }
 
         case kind::int64:
@@ -598,7 +610,7 @@ write_value(writer& w, stream& ss)
         case writer::state::utf1: case writer::state::utf2:
         case writer::state::utf3: case writer::state::utf4:
         case writer::state::utf5:
-            return write_string<StackEmpty>(w, ss);
+            return do_write_string<false>(w, ss);
 
         case writer::state::arr1: case writer::state::arr2:
         case writer::state::arr3: case writer::state::arr4:
@@ -666,8 +678,8 @@ serializer::
 reset(string const* p) noexcept
 {
     cs0_ = { p->data(), p->size() };
-    fn0_ = &detail::write_string<true>;
-    fn1_ = &detail::write_string<false>;
+    fn0_ = &detail::do_write_string<true>;
+    fn1_ = &detail::do_write_string<false>;
     st_.clear();
     done_ = false;
 }
@@ -677,8 +689,8 @@ serializer::
 reset(string_view sv) noexcept
 {
     cs0_ = { sv.data(), sv.size() };
-    fn0_ = &detail::write_string<true>;
-    fn1_ = &detail::write_string<false>;
+    fn0_ = &detail::do_write_string<true>;
+    fn1_ = &detail::do_write_string<false>;
     st_.clear();
     done_ = false;
 }

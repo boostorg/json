@@ -787,6 +787,10 @@ public:
             check_udt( ii, serialize(value(d)) );
 #endif
         }
+        {
+            std::string s = "fairly long string which avoids SBO";
+            check_udt(s, "\"fairly long string which avoids SBO\"");
+        }
     }
 
     void
