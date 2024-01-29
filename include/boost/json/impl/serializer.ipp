@@ -23,6 +23,15 @@ namespace boost {
 namespace json {
 namespace detail {
 
+enum class writer::state : char
+{
+    str1, str2, str3, esc1, utf1,
+    utf2, utf3, utf4, utf5,
+    lit,
+    arr1, arr2, arr3, arr4,
+    obj1, obj2, obj3, obj4, obj5, obj6
+};
+
 writer::
 writer(
     storage_ptr sp,
@@ -39,6 +48,40 @@ writer(
     BOOST_STATIC_ASSERT(sizeof(buf_) >= 7);
 }
 
+bool
+writer::
+suspend(state st)
+{
+    st_.push(st);
+    return false;
+}
+
+bool
+writer::
+suspend(
+    state st,
+    array::const_iterator it,
+    array const* pa)
+{
+    st_.push(pa);
+    st_.push(it);
+    st_.push(st);
+    return false;
+}
+
+bool
+writer::
+suspend(
+    state st,
+    object::const_iterator it,
+    object const* po)
+{
+    st_.push(po);
+    st_.push(it);
+    st_.push(st);
+    return false;
+}
+
 inline
 bool
 write_buffer(writer& w, stream& ss0)
@@ -53,6 +96,33 @@ write_buffer(writer& w, stream& ss0)
     }
     ss.append( w.cs0_.data(), w.cs0_.remain() );
     return true;
+}
+
+inline
+bool
+do_write_literal(writer& w, stream& ss, literals l)
+{
+    std::size_t const index = literal_index(l);
+    char const* const literal = literal_strings[index];
+    std::size_t const sz = literal_sizes[index];
+
+    std::size_t const n = ss.remain();
+    if(BOOST_JSON_LIKELY( n >= sz ))
+    {
+        ss.append( literal, sz );
+        return true;
+    }
+
+    ss.append(literal, n);
+
+    w.cs0_ = {literal + n, sz - n};
+    return w.suspend(writer::state::lit);
+}
+
+bool
+write_literal(writer& w, stream& ss, literals l)
+{
+    return do_write_literal(w, ss, l);
 }
 
 bool
@@ -132,32 +202,6 @@ resume_buffer(writer& w, stream& ss0)
     BOOST_ASSERT(st == writer::state::lit);
 
     return write_buffer(w, ss0);
-}
-
-bool
-writer::
-suspend(
-    state st,
-    array::const_iterator it,
-    array const* pa)
-{
-    st_.push(pa);
-    st_.push(it);
-    st_.push(st);
-    return false;
-}
-
-bool
-writer::
-suspend(
-    state st,
-    object::const_iterator it,
-    object const* po)
-{
-    st_.push(po);
-    st_.push(it);
-    st_.push(st);
-    return false;
 }
 
 template<bool StackEmpty>
@@ -514,13 +558,11 @@ write_value(writer& w, stream& ss)
             return write_number(w, ss, *pv);
 
         case kind::bool_:
-            if( pv->get_bool() )
-                return write_literal<writer::state::tru1>(w, ss);
-            else
-                return write_literal<writer::state::fal1>(w, ss);
+            return do_write_literal(
+                w, ss, pv->get_bool() ? literals::true_ : literals::false_);
 
         case kind::null:
-            return write_literal<writer::state::nul1>(w, ss);
+            return do_write_literal(w, ss, literals::null);
         }
     }
     else
@@ -530,13 +572,7 @@ write_value(writer& w, stream& ss)
         switch(st)
         {
         default:
-        case writer::state::nul1: case writer::state::nul2:
-        case writer::state::nul3: case writer::state::nul4:
-        case writer::state::tru1: case writer::state::tru2:
-        case writer::state::tru3: case writer::state::tru4:
-        case writer::state::fal1: case writer::state::fal2:
-        case writer::state::fal3: case writer::state::fal4:
-        case writer::state::fal5: case writer::state::lit:
+        case writer::state::lit:
             return resume_buffer(w, ss);
 
         case writer::state::str1: case writer::state::str2:
@@ -625,6 +661,16 @@ reset(string_view sv) noexcept
     cs0_ = { sv.data(), sv.size() };
     fn0_ = &detail::write_string<true>;
     fn1_ = &detail::write_string<false>;
+    st_.clear();
+    done_ = false;
+}
+
+void
+serializer::reset(std::nullptr_t) noexcept
+{
+    p_ = nullptr;
+    fn0_ = &detail::write_impl<std::nullptr_t, true>;
+    fn1_ = &detail::write_impl<std::nullptr_t, false>;
     st_.clear();
     done_ = false;
 }

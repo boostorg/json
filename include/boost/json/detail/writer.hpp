@@ -10,6 +10,7 @@
 #ifndef BOOST_JSON_DETAIL_WRITER_HPP
 #define BOOST_JSON_DETAIL_WRITER_HPP
 
+#include <boost/json/detail/literals.hpp>
 #include <boost/json/detail/stack.hpp>
 #include <boost/json/detail/stream.hpp>
 #include <boost/json/serialize_options.hpp>
@@ -50,7 +51,7 @@ struct writer
 
 bool
 BOOST_JSON_DECL
-write_literal(writer&, stream& ss, char const* s, std::size_t n);
+write_literal(writer& w, stream& ss, literals l);
 
 bool
 BOOST_JSON_DECL
