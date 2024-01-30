@@ -1426,6 +1426,35 @@ public:
     }
 
     void
+    testUTF16Validation()
+    {
+        // Invalid surrogate pair cases
+        TEST_BAD("{\"command\":\"\\uDF3E\\uDEC2\"}");     // Illegal leading surrogate
+        TEST_BAD("{\"command\":\"\\uD83D\\uD83D\"}");     // Illegal trailing surrogate
+        TEST_BAD("{\"command\":\"\\uDF3E\\uD83D\"}");     // Illegal leading & trailing surrogate
+        TEST_BAD("{\"command\":\"\\uD83D\"}");            // Half a surrogate (Valid leading surrogate)
+        TEST_BAD("{\"command\":\"\\uDF3E\"}");            // Half a surrogate (Illegal leading surrogate)
+
+        // Allow invalid UTF-16
+        parse_options opt;
+        opt.allow_invalid_utf16 = true;
+
+        TEST_GOOD_EXT("{\"command\":\"\\uDF3E\\uDEC2\"}", opt);  // Illegal leading surrogate
+        TEST_GOOD_EXT("{\"command\":\"\\uD83D\\uD83D\"}", opt);  // Illegal trailing surrogate
+        TEST_GOOD_EXT("{\"command\":\"\\uDF3E\\uD83D\"}", opt);  // Illegal leading & trailing surrogate
+        TEST_GOOD_EXT("{\"command\":\"\\uD83D\"}", opt);         // Half a surrogate (Valid leading surrogate)
+        TEST_GOOD_EXT("{\"command\":\"\\uDF3E\"}", opt);         // Half a surrogate (Illegal leading surrogate)
+        TEST_GOOD_EXT("{\"command\":\"\\uD800uDC00\"}", opt);    // Unseparated surrogates
+        TEST_GOOD_EXT("{\"command\":\"\\uD800\\n\"}", opt);             // Half a surrogate (Valid leading surrogate), followed by a newline character
+        TEST_GOOD_EXT("{\"command\":\"\\uD800\\n\\uDC00\"}", opt);      // Half a surrogate (Valid leading surrogate), followed by a newline character, followed by a half surrogate
+        TEST_GOOD_EXT("{\"command\":\"\\uD800\\uD800\\uDC00\"}", opt);  // Half a surrogate (Valid leading surrogate), followed by a valid surrogate pair
+        TEST_GOOD_EXT("{\"command\":\"\\uDC00\\uD800\\uDC00\"}", opt);  // Half a surrogate (Illegal leading surrogate), followed by a valid surrogate pair
+        TEST_GOOD_EXT("{\"command\":\"\\uD800\\uE000\\uDC00\"}", opt);  // Half a surrogate (Valid leading surrogate), followed by a valid utf-8, followed by a half surrogate
+        TEST_GOOD_EXT("{\"command\":\"\\uD800\\uDC00\\uD800\\uE000\"}", opt);    // Valid surrogate pair, followed by a half surrogate, followed by a valid utf-8
+        TEST_GOOD_EXT("{\"command\":\"\\uD800\\uDC00\\uD800\\uD800\\uDC00\"}", opt);    // Valid surrogate pair, followed by a half surrogate, followed by a valid surrogate pair
+    }
+
+    void
     testMaxDepth()
     {
         {
@@ -1740,6 +1769,7 @@ public:
         testAllowTrailing();
         testComments();
         testUTF8Validation();
+        testUTF16Validation();
         testMaxDepth();
         testNumberLiteral();
         testStickyErrors();
