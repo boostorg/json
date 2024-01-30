@@ -563,39 +563,72 @@ do_doc1:
 do_doc2:
     switch(+opt_.allow_comments |
         (opt_.allow_trailing_commas << 1) |
-        (opt_.allow_invalid_utf8 << 2))
+        (opt_.allow_invalid_utf8 << 2) |
+        (opt_.allow_invalid_utf16 << 3))
     {
     // no extensions
     default:
-        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::false_type(), std::false_type());
+        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::false_type(), std::false_type(), std::false_type());
         break;
     // comments
     case 1:
-        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::false_type(), std::false_type());
+        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::false_type(), std::false_type(), std::false_type());
         break;
     // trailing
     case 2:
-        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::true_type(), std::false_type());
+        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::true_type(), std::false_type(), std::false_type());
         break;
     // comments & trailing
     case 3:
-        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::true_type(), std::false_type());
+        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::true_type(), std::false_type(), std::false_type());
         break;
     // skip validation
     case 4:
-        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::false_type(), std::true_type());
+        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::false_type(), std::true_type(), std::false_type());
         break;
     // comments & skip validation
     case 5:
-        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::false_type(), std::true_type());
+        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::false_type(), std::true_type(), std::false_type());
         break;
     // trailing & skip validation
     case 6:
-        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::true_type(), std::true_type());
+        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::true_type(), std::true_type(), std::false_type());
         break;
     // comments & trailing & skip validation
     case 7:
-        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::true_type(), std::true_type());
+        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::true_type(), std::true_type(), std::false_type());
+        break;
+    // allow_invalid_utf16
+    case 8:
+        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::false_type(), std::false_type(), std::true_type());
+        break;
+    // comments & allow_invalid_utf16
+    case 9:
+        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::false_type(), std::false_type(), std::true_type());
+        break;
+    // trailing & allow_invalid_utf16
+    case 10:
+        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::true_type(), std::false_type(), std::true_type());
+        break;
+    // skip validation & allow_invalid_utf16
+    case 11:
+        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::false_type(), std::true_type(), std::true_type());
+        break;
+    // comments & trailing & allow_invalid_utf16
+    case 12:
+        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::true_type(), std::false_type(), std::true_type());
+        break;
+    // comments & skip validation & allow_invalid_utf16
+    case 13:
+        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::false_type(), std::true_type(), std::true_type());
+        break;
+    // trailing & skip validation & allow_invalid_utf16
+    case 14:
+        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::true_type(), std::true_type(), std::true_type());
+        break;
+    // comments & trailing & skip validation & allow_invalid_utf16
+    case 15:
+        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::true_type(), std::true_type(), std::true_type());
         break;
     }
     if(BOOST_JSON_UNLIKELY(incomplete(cs)))
@@ -631,7 +664,8 @@ parse_value(const char* p,
     std::integral_constant<bool, StackEmpty_> stack_empty,
     std::integral_constant<bool, AllowComments_> allow_comments,
     /*std::integral_constant<bool, AllowTrailing_>*/ bool allow_trailing,
-    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8)
+    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8,
+    bool allow_bad_utf16)
 {
     if(stack_empty || st_.empty())
     {
@@ -675,11 +709,11 @@ loop:
             }
             return parse_literal( p, mp11::mp_int<detail::nan_literal>() );
         case '"':
-            return parse_unescaped(p, std::true_type(), std::false_type(), allow_bad_utf8);
+            return parse_unescaped(p, std::true_type(), std::false_type(), allow_bad_utf8, allow_bad_utf16);
         case '[':
-            return parse_array(p, std::true_type(), allow_comments, allow_trailing, allow_bad_utf8);
+            return parse_array(p, std::true_type(), allow_comments, allow_trailing, allow_bad_utf8, allow_bad_utf16);
         case '{':
-            return parse_object(p, std::true_type(), allow_comments, allow_trailing, allow_bad_utf8);
+            return parse_object(p, std::true_type(), allow_comments, allow_trailing, allow_bad_utf8, allow_bad_utf16);
         case '/':
             if(! allow_comments)
             {
@@ -710,7 +744,7 @@ loop:
             }
         }
     }
-    return resume_value(p, allow_comments, allow_trailing, allow_bad_utf8);
+    return resume_value(p, allow_comments, allow_trailing, allow_bad_utf8, allow_bad_utf16);
 }
 
 template<class Handler>
@@ -723,7 +757,8 @@ basic_parser<Handler>::
 resume_value(const char* p,
     std::integral_constant<bool, AllowComments_> allow_comments,
     /*std::integral_constant<bool, AllowTrailing_>*/ bool allow_trailing,
-    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8)
+    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8,
+    bool allow_bad_utf16)
 {
     state st;
     st_.peek(st);
@@ -734,7 +769,7 @@ resume_value(const char* p,
         return parse_literal(p,  mp11::mp_int<detail::resume_literal>() );
 
     case state::str1:
-        return parse_unescaped(p, std::false_type(), std::false_type(), allow_bad_utf8);
+        return parse_unescaped(p, std::false_type(), std::false_type(), allow_bad_utf8, allow_bad_utf16);
 
     case state::str2: case state::str3:
     case state::str4: case state::str5:
@@ -743,12 +778,12 @@ resume_value(const char* p,
     case state::sur1: case state::sur2:
     case state::sur3: case state::sur4:
     case state::sur5: case state::sur6:
-        return parse_escaped(p, 0, std::false_type(), std::false_type(), allow_bad_utf8);
+        return parse_escaped(p, 0, std::false_type(), std::false_type(), allow_bad_utf8, allow_bad_utf16);
 
     case state::arr1: case state::arr2:
     case state::arr3: case state::arr4:
     case state::arr5: case state::arr6:
-        return parse_array(p, std::false_type(), allow_comments, allow_trailing, allow_bad_utf8);
+        return parse_array(p, std::false_type(), allow_comments, allow_trailing, allow_bad_utf8, allow_bad_utf16);
 
     case state::obj1: case state::obj2:
     case state::obj3: case state::obj4:
@@ -756,7 +791,7 @@ resume_value(const char* p,
     case state::obj7: case state::obj8:
     case state::obj9: case state::obj10:
     case state::obj11:
-        return parse_object(p, std::false_type(), allow_comments, allow_trailing, allow_bad_utf8);
+        return parse_object(p, std::false_type(), allow_comments, allow_trailing, allow_bad_utf8, allow_bad_utf16);
 
     case state::num1: case state::num2:
     case state::num3: case state::num4:
@@ -776,7 +811,7 @@ resume_value(const char* p,
         p = detail::count_whitespace(p, end_);
         if(BOOST_JSON_UNLIKELY(p == end_))
             return maybe_suspend(p, state::val1);
-        return parse_value(p, std::true_type(), allow_comments, allow_trailing, allow_bad_utf8);
+        return parse_value(p, std::true_type(), allow_comments, allow_trailing, allow_bad_utf8, allow_bad_utf16);
     }
 
     case state::val2:
@@ -788,13 +823,13 @@ resume_value(const char* p,
         if(BOOST_JSON_UNLIKELY( p == end_ ))
             return maybe_suspend(p, state::val3);
         BOOST_ASSERT(st_.empty());
-        return parse_value(p, std::true_type(), std::true_type(), allow_trailing, allow_bad_utf8);
+        return parse_value(p, std::true_type(), std::true_type(), allow_trailing, allow_bad_utf8, allow_bad_utf16);
     }
 
     case state::val3:
     {
         st_.pop(st);
-        return parse_value(p, std::true_type(), std::true_type(), allow_trailing, allow_bad_utf8);
+        return parse_value(p, std::true_type(), std::true_type(), allow_trailing, allow_bad_utf8, allow_bad_utf16);
     }
     }
 }
@@ -1000,7 +1035,8 @@ basic_parser<Handler>::
 parse_string(const char* p,
     std::integral_constant<bool, StackEmpty_> stack_empty,
     std::integral_constant<bool, IsKey_> is_key,
-    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8)
+    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8,
+    bool allow_bad_utf16)
 {
     if(! stack_empty && ! st_.empty())
     {
@@ -1010,7 +1046,7 @@ parse_string(const char* p,
         {
         default: BOOST_JSON_UNREACHABLE();
         case state::str1:
-            return parse_unescaped(p, stack_empty, is_key, allow_bad_utf8);
+            return parse_unescaped(p, stack_empty, is_key, allow_bad_utf8, allow_bad_utf16);
 
         case state::str2: case state::str3:
         case state::str4: case state::str5:
@@ -1019,11 +1055,11 @@ parse_string(const char* p,
         case state::sur1: case state::sur2:
         case state::sur3: case state::sur4:
         case state::sur5: case state::sur6:
-            return parse_escaped(p, 0, stack_empty, is_key, allow_bad_utf8);
+            return parse_escaped(p, 0, stack_empty, is_key, allow_bad_utf8, allow_bad_utf16);
         }
     }
 
-    return parse_unescaped(p, std::true_type(), is_key, allow_bad_utf8);
+    return parse_unescaped(p, std::true_type(), is_key, allow_bad_utf8, allow_bad_utf16);
 }
 
 template<class Handler>
@@ -1036,7 +1072,8 @@ basic_parser<Handler>::
 parse_unescaped(const char* p,
     std::integral_constant<bool, StackEmpty_> stack_empty,
     std::integral_constant<bool, IsKey_> is_key,
-    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8)
+    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8,
+    bool allow_bad_utf16)
 {
     detail::const_stream_wrapper cs(p, end_);
     std::size_t total;
@@ -1144,7 +1181,7 @@ parse_unescaped(const char* p,
                     }
                 }
             }
-            return parse_escaped(cs.begin(), total, stack_empty, is_key, allow_bad_utf8);
+            return parse_escaped(cs.begin(), total, stack_empty, is_key, allow_bad_utf8, allow_bad_utf16);
         }
         // illegal control
         BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
@@ -1178,7 +1215,8 @@ parse_escaped(
     std::size_t total,
     std::integral_constant<bool, StackEmpty_> stack_empty,
     /*std::integral_constant<bool, IsKey_>*/ bool is_key,
-    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8)
+    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8,
+    bool allow_bad_utf16)
 {
     //---------------------------------------------------------------
     //
@@ -1202,6 +1240,7 @@ parse_escaped(
     int digit;
     char c;
     cs.clip(temp.max_size());
+    bool replaced_bad_utf16 = false;
     if(! stack_empty && ! st_.empty())
     {
         state st;
@@ -1351,10 +1390,23 @@ do_str3:
             }
             if(BOOST_JSON_UNLIKELY(u1 > 0xdbff))
             {
-                BOOST_STATIC_CONSTEXPR source_location loc
-                    = BOOST_CURRENT_LOCATION;
-                return fail(cs.begin(), error::illegal_leading_surrogate,
-                    &loc);
+                // If it's an illegal leading surrogate and
+                // the parser does not allow it, return an error.
+                if(!allow_bad_utf16)
+                {
+                    BOOST_STATIC_CONSTEXPR source_location loc
+                        = BOOST_CURRENT_LOCATION;
+                    return fail(cs.begin(), error::illegal_leading_surrogate,
+                        &loc);
+                }
+                // Otherwise, append the Unicode replacement character and
+                // mark the surrogate as replaced.
+                else
+                {
+                    unsigned cp = 0xFFFD; // Unicode replacement character
+                    temp.append_utf8(cp);
+                    replaced_bad_utf16 = true;
+                }
             }
             cs += 5;
             // KRYSTIAN TODO: this can be a two byte load
@@ -1362,9 +1414,26 @@ do_str3:
             // but it's faster.
             if(BOOST_JSON_UNLIKELY(*cs != '\\'))
             {
-                BOOST_STATIC_CONSTEXPR source_location loc
-                    = BOOST_CURRENT_LOCATION;
-                return fail(cs.begin(), error::syntax, &loc);
+                // If the next character is not a backslash and
+                // the parser does not allow it, return a syntax error.
+                if(!allow_bad_utf16)
+                {
+                    BOOST_STATIC_CONSTEXPR source_location loc
+                        = BOOST_CURRENT_LOCATION;
+                    return fail(cs.begin(), error::syntax, &loc);
+                }
+                // Otherwise, append the Unicode replacement character if
+                // the first code point is a valid leading surrogate.
+                else
+                {
+                    if(replaced_bad_utf16 == false)
+                    {
+                        unsigned cp = 0xFFFD; // Unicode replacement character
+                        temp.append_utf8(cp);
+                        replaced_bad_utf16 = true;
+                    }
+                    break;
+                }
             }
             ++cs;
             if(BOOST_JSON_UNLIKELY(*cs != 'u'))
@@ -1399,16 +1468,45 @@ do_str3:
             unsigned const u2 =
                 (d1 << 12) + (d2 << 8) +
                 (d3 << 4) + d4;
-            // valid trailing surrogates are [DC00, DFFF]
-            if(BOOST_JSON_UNLIKELY(
-                u2 < 0xdc00 || u2 > 0xdfff))
+            // Append the second Unicode replacement character if
+            // the first code point is an illegal leading surrogate
+            if(replaced_bad_utf16 == true)
             {
-                BOOST_STATIC_CONSTEXPR source_location loc
-                    = BOOST_CURRENT_LOCATION;
-                return fail(cs.begin(), error::illegal_trailing_surrogate,
-                    &loc);
+                unsigned cp = 0xFFFD; // Unicode replacement character
+                temp.append_utf8(cp);
+            }
+            // Check if the second code point is a valid trailing surrogate.
+            // Valid trailing surrogates are [DC00, DFFF]
+            else if(BOOST_JSON_UNLIKELY(
+                        u2 < 0xdc00 || u2 > 0xdfff))
+            {
+                // If not valid and the parser does not allow it, return an error.
+                if(!allow_bad_utf16)
+                {
+                    BOOST_STATIC_CONSTEXPR source_location loc
+                        = BOOST_CURRENT_LOCATION;
+                    return fail(cs.begin(), error::illegal_trailing_surrogate,
+                        &loc);
+                }
+                // Otherwise, append the replacement character twice and
+                // mark the surrogate as replaced.
+                else
+                {
+                    unsigned cp = 0xFFFD; // Unicode replacement character
+                    temp.append_utf8(cp);
+                    temp.append_utf8(cp);
+                    replaced_bad_utf16 = true;
+                }
             }
             cs += 4;
+            // If the invalid surrogate pair has been replaced with
+            // Unicode replacement characters, break out of the switch.
+            if(replaced_bad_utf16)
+            {
+                break;
+            }
+            // Calculate the Unicode code point from the surrogate pair and
+            // append the UTF-8 representation.
             unsigned cp =
                 ((u1 - 0xd800) << 10) +
                 ((u2 - 0xdc00)) +
@@ -1502,18 +1600,48 @@ do_str7:
         }
         if(BOOST_JSON_UNLIKELY(u1_ > 0xdbff))
         {
-            BOOST_STATIC_CONSTEXPR source_location loc
-                = BOOST_CURRENT_LOCATION;
-            return fail(cs.begin(), error::illegal_trailing_surrogate, &loc);
+            // If it's an illegal leading surrogate and
+            // the parser does not allow it, return an error.
+            if(!allow_bad_utf16)
+            {
+                BOOST_STATIC_CONSTEXPR source_location loc
+                    = BOOST_CURRENT_LOCATION;
+                return fail(cs.begin(), error::illegal_leading_surrogate, &loc);
+            }
+            // Otherwise, append the Unicode replacement character and
+            // mark the surrogate as replaced.
+            else
+            {
+                unsigned cp = 0xFFFD; // Unicode replacement character
+                temp.append_utf8(cp);
+                replaced_bad_utf16 = true;                
+            }
         }
 do_sur1:
         if(BOOST_JSON_UNLIKELY(! cs))
             return maybe_suspend(cs.begin(), state::sur1, total);
         if(BOOST_JSON_UNLIKELY(*cs != '\\'))
         {
-            BOOST_STATIC_CONSTEXPR source_location loc
-                = BOOST_CURRENT_LOCATION;
-            return fail(cs.begin(), error::syntax, &loc);
+            // If the next character is not a backslash and
+            // the parser does not allow it, return a syntax error.
+            if(!allow_bad_utf16)
+            {
+                BOOST_STATIC_CONSTEXPR source_location loc
+                    = BOOST_CURRENT_LOCATION;
+                return fail(cs.begin(), error::syntax, &loc);
+            }
+            // Otherwise, append the Unicode replacement character if
+            // the first code point is a valid leading surrogate.
+            else
+            {
+                if(replaced_bad_utf16 == false)
+                {
+                    unsigned cp = 0xFFFD; // Unicode replacement character
+                    temp.append_utf8(cp);
+                    replaced_bad_utf16 = true;
+                }
+                break;
+            }
         }
         ++cs;
 do_sur2:
@@ -1574,13 +1702,43 @@ do_sur6:
         }
         ++cs;
         u2_ += digit;
-        if(BOOST_JSON_UNLIKELY(
-            u2_ < 0xdc00 || u2_ > 0xdfff))
+        // Append the second Unicode replacement character if
+        // the first code point is an illegal leading surrogate
+        if(replaced_bad_utf16 == true)
         {
-            BOOST_STATIC_CONSTEXPR source_location loc
-                = BOOST_CURRENT_LOCATION;
-            return fail(cs.begin(), error::expected_hex_digit, &loc);
+            unsigned cp = 0xFFFD; // Unicode replacement character
+            temp.append_utf8(cp);
         }
+        // Check if the second code point is a valid trailing surrogate.
+        // Valid trailing surrogates are [DC00, DFFF]
+        else if(BOOST_JSON_UNLIKELY(
+                    u2_ < 0xdc00 || u2_ > 0xdfff))
+        {
+            // If not valid and the parser does not allow it, return an error.
+            if(!allow_bad_utf16)
+            {
+                BOOST_STATIC_CONSTEXPR source_location loc
+                    = BOOST_CURRENT_LOCATION;
+                return fail(cs.begin(), error::illegal_trailing_surrogate, &loc);
+            }
+            // Otherwise, append the replacement character twice and
+            // mark the surrogate as replaced.
+            else
+            {
+                unsigned cp = 0xFFFD; // Unicode replacement character
+                temp.append_utf8(cp);
+                temp.append_utf8(cp);
+                replaced_bad_utf16 = true;                
+            }
+        }
+        // If the invalid surrogate pair has been replaced with
+        // Unicode replacement characters, break out of the switch.
+        if(replaced_bad_utf16)
+        {
+            break;
+        }
+        // Calculate the Unicode code point from the surrogate pair and
+        // append the UTF-8 representation.
         unsigned cp =
             ((u1_ - 0xd800) << 10) +
             ((u2_ - 0xdc00)) +
@@ -1594,7 +1752,7 @@ do_str2:
     // all at once instead of one at a time
     for(;;)
     {
-        if(BOOST_JSON_UNLIKELY(! cs || temp.capacity() == 0 ))
+        if(BOOST_JSON_UNLIKELY(! cs))
         {
             // flush
             if(BOOST_JSON_LIKELY(! temp.empty()))
@@ -1736,7 +1894,8 @@ parse_object(const char* p,
     std::integral_constant<bool, StackEmpty_> stack_empty,
     std::integral_constant<bool, AllowComments_> allow_comments,
     /*std::integral_constant<bool, AllowTrailing_>*/ bool allow_trailing,
-    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8)
+    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8,
+    bool allow_bad_utf16)
 {
     detail::const_stream_wrapper cs(p, end_);
     std::size_t size;
@@ -1806,7 +1965,7 @@ loop:
             return fail(cs.begin(), error::object_too_large, &loc);
         }
 do_obj3:
-        cs = parse_string(cs.begin(), stack_empty, std::true_type(), allow_bad_utf8);
+        cs = parse_string(cs.begin(), stack_empty, std::true_type(), allow_bad_utf8, allow_bad_utf16);
         if(BOOST_JSON_UNLIKELY(incomplete(cs)))
             return suspend_or_fail(state::obj3, size);
 do_obj4:
@@ -1833,7 +1992,7 @@ do_obj6:
         if(BOOST_JSON_UNLIKELY(! cs))
             return maybe_suspend(cs.begin(), state::obj6, size);
 do_obj7:
-        cs = parse_value(cs.begin(), stack_empty, allow_comments, allow_trailing, allow_bad_utf8);
+        cs = parse_value(cs.begin(), stack_empty, allow_comments, allow_trailing, allow_bad_utf8, allow_bad_utf16);
         if(BOOST_JSON_UNLIKELY(incomplete(cs)))
             return suspend_or_fail(state::obj7, size);
 do_obj8:
@@ -1904,7 +2063,8 @@ parse_array(const char* p,
     std::integral_constant<bool, StackEmpty_> stack_empty,
     std::integral_constant<bool, AllowComments_> allow_comments,
     /*std::integral_constant<bool, AllowTrailing_>*/ bool allow_trailing,
-    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8)
+    /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8,
+    bool allow_bad_utf16)
 {
     detail::const_stream_wrapper cs(p, end_);
     std::size_t size;
@@ -1964,7 +2124,7 @@ do_arr2:
         }
 do_arr3:
         // array is not empty, value required
-        cs = parse_value(cs.begin(), stack_empty, allow_comments, allow_trailing, allow_bad_utf8);
+        cs = parse_value(cs.begin(), stack_empty, allow_comments, allow_trailing, allow_bad_utf8, allow_bad_utf16);
         if(BOOST_JSON_UNLIKELY(incomplete(cs)))
             return suspend_or_fail(state::arr3, size);
 do_arr4:

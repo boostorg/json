@@ -118,6 +118,22 @@ struct parse_options
 
     /** Non-standard extension option
 
+        Allow invalid UTF-16 surrogate pairs to appear
+        in strings. When enabled, the parser will not
+        strictly validate the correctness of UTF-16
+        encoding, allowing for the presence of illegal
+        leading or trailing surrogates. In case of
+        invalid sequences, the parser will replace them
+        with the Unicode replacement character.
+
+        @note Enabling this option may result in the
+        parsing of invalid UTF-16 sequences without
+        error, potentially leading to the loss of information.
+    */
+    bool allow_invalid_utf16 = false;
+
+    /** Non-standard extension option
+
         Allow `Infinity`, `-Infinity`, and `NaN` JSON literals. These values
         are produced by some popular JSON implementations for positive
         infinity, negative infinity and NaN special numbers respectively.

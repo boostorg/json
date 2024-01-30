@@ -107,6 +107,11 @@ with __parse_options__ is possible:
     when reading the input. For example, `std::getline` removes the
     endline characters from the string it produces.]
 
+[caution Enabling the `allow_invalid_utf16` option relaxes strict UTF-16 validation.
+    When enabled, the parser will not throw in case of of illegal leading, trailing or
+    half a surrogate. It will replace UTF-16 code point(s) with the
+    Unicode replacement character.]
+
 [/-----------------------------------------------------------------------------]
 
 [heading Full precision number parsing]
