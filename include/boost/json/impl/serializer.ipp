@@ -57,15 +57,6 @@ struct double_formatter
     }
 };
 
-enum class writer::state : char
-{
-    str1, str2, str3, esc1, utf1,
-    utf2, utf3, utf4, utf5,
-    lit,
-    arr1, arr2, arr3, arr4,
-    obj1, obj2, obj3, obj4, obj5, obj6
-};
-
 writer::
 writer(
     storage_ptr sp,
@@ -80,40 +71,6 @@ writer(
 {
     // ensure room for \uXXXX escape plus one
     BOOST_STATIC_ASSERT(sizeof(buf_) >= 7);
-}
-
-bool
-writer::
-suspend(state st)
-{
-    st_.push(st);
-    return false;
-}
-
-bool
-writer::
-suspend(
-    state st,
-    array::const_iterator it,
-    array const* pa)
-{
-    st_.push(pa);
-    st_.push(it);
-    st_.push(st);
-    return false;
-}
-
-bool
-writer::
-suspend(
-    state st,
-    object::const_iterator it,
-    object const* po)
-{
-    st_.push(po);
-    st_.push(it);
-    st_.push(st);
-    return false;
 }
 
 bool
@@ -403,70 +360,19 @@ template<bool StackEmpty>
 bool
 write_value(writer& w, stream& ss);
 
+template< class T, bool StackEmpty >
+BOOST_FORCEINLINE
+bool
+write_impl(no_conversion_tag, writer& w, stream& ss)
+{
+    return write_value<StackEmpty>(w, ss);
+}
+
 template<bool StackEmpty>
 bool
-write_array(writer& w, stream& ss0)
+write_array(writer& w, stream& ss)
 {
-    array const* pa;
-    local_stream ss(ss0);
-    array::const_iterator it;
-    array::const_iterator end;
-    if(StackEmpty || w.st_.empty())
-    {
-        BOOST_ASSERT( w.p_ );
-        pa = reinterpret_cast<array const*>(w.p_);
-        it = pa->begin();
-        end = pa->end();
-    }
-    else
-    {
-        writer::state st;
-        w.st_.pop(st);
-        w.st_.pop(it);
-        w.st_.pop(pa);
-        end = pa->end();
-        switch(st)
-        {
-        default:
-        case writer::state::arr1: goto do_arr1;
-        case writer::state::arr2: goto do_arr2;
-        case writer::state::arr3: goto do_arr3;
-        case writer::state::arr4: goto do_arr4;
-            break;
-        }
-    }
-do_arr1:
-    if(BOOST_JSON_LIKELY(ss))
-        ss.append('[');
-    else
-        return w.suspend(
-            writer::state::arr1, it, pa);
-    if(it == end)
-        goto do_arr4;
-    for(;;)
-    {
-do_arr2:
-        w.p_ = &*it;
-        if( !write_value<StackEmpty>(w, ss) )
-            return w.suspend(
-                writer::state::arr2, it, pa);
-        if(BOOST_JSON_UNLIKELY(
-            ++it == end))
-            break;
-do_arr3:
-        if(BOOST_JSON_LIKELY(ss))
-            ss.append(',');
-        else
-            return w.suspend(
-                writer::state::arr3, it, pa);
-    }
-do_arr4:
-    if(BOOST_JSON_LIKELY(ss))
-        ss.append(']');
-    else
-        return w.suspend(
-            writer::state::arr4, it, pa);
-    return true;
+    return write_impl<array, StackEmpty>(sequence_conversion_tag(), w, ss);
 }
 
 template<bool StackEmpty>

@@ -16,7 +16,36 @@ namespace boost {
 namespace json {
 namespace detail {
 
+enum class writer::state : char
+{
+    str1, str2, str3, esc1, utf1,
+    utf2, utf3, utf4, utf5,
+    lit,
+    arr1, arr2, arr3, arr4,
+    obj1, obj2, obj3, obj4, obj5, obj6
+};
+
+bool
+writer::
+suspend(state st)
+{
+    st_.push(st);
+    return false;
+}
+
+template<class T>
+bool
+writer::
+suspend(state st, iterator_type<T const> it, T const* pt)
+{
+    st_.push(pt);
+    st_.push(it);
+    st_.push(st);
+    return false;
+}
+
 template<class T, bool StackEmpty>
+BOOST_FORCEINLINE
 bool
 write_impl(null_like_conversion_tag, writer& w, stream& ss)
 {
@@ -33,6 +62,7 @@ write_impl(null_like_conversion_tag, writer& w, stream& ss)
 }
 
 template<class T, bool StackEmpty>
+BOOST_FORCEINLINE
 bool
 write_impl(bool_conversion_tag, writer& w, stream& ss)
 {
@@ -58,6 +88,7 @@ write_impl(bool_conversion_tag, writer& w, stream& ss)
 }
 
 template<class T, bool StackEmpty>
+BOOST_FORCEINLINE
 bool
 write_impl(integral_conversion_tag, writer& w, stream& ss0)
 {
@@ -121,6 +152,7 @@ write_impl(integral_conversion_tag, writer& w, stream& ss0)
 }
 
 template<class T, bool StackEmpty>
+BOOST_FORCEINLINE
 bool
 write_impl(floating_point_conversion_tag, writer& w, stream& ss0)
 {
@@ -141,6 +173,7 @@ write_impl(floating_point_conversion_tag, writer& w, stream& ss0)
 }
 
 template<class T, bool StackEmpty>
+BOOST_FORCEINLINE
 bool
 write_impl(string_like_conversion_tag, writer& w, stream& ss0)
 {
@@ -159,6 +192,78 @@ write_impl(string_like_conversion_tag, writer& w, stream& ss0)
     }
 
     return resume_string(w, ss0);
+}
+
+template<class T, bool StackEmpty>
+BOOST_FORCEINLINE
+bool
+write_impl(sequence_conversion_tag, writer& w, stream& ss0)
+{
+    using It = iterator_type<T const>;
+    using Elem = value_type<T>;
+
+    T const* pt;
+    local_stream ss(ss0);
+    It it;
+    It end;
+#if defined(_MSC_VER)
+# pragma warning( push )
+# pragma warning( disable : 4127 )
+#endif
+    if(StackEmpty || w.st_.empty())
+    {
+#if defined(_MSC_VER)
+# pragma warning( pop )
+#endif
+        BOOST_ASSERT( w.p_ );
+        pt = reinterpret_cast<T const*>(w.p_);
+        it = std::begin(*pt);
+        end = std::end(*pt);
+    }
+    else
+    {
+        writer::state st;
+        w.st_.pop(st);
+        w.st_.pop(it);
+        w.st_.pop(pt);
+        end = std::end(*pt);
+        switch(st)
+        {
+        default:
+        case writer::state::arr1: goto do_arr1;
+        case writer::state::arr2: goto do_arr2;
+        case writer::state::arr3: goto do_arr3;
+        case writer::state::arr4: goto do_arr4;
+            break;
+        }
+    }
+do_arr1:
+    if(BOOST_JSON_LIKELY(ss))
+        ss.append('[');
+    else
+        return w.suspend(writer::state::arr1, it, pt);
+    if(it == end)
+        goto do_arr4;
+    for(;;)
+    {
+        w.p_ = std::addressof(*it);
+do_arr2:
+        if( !write_impl<Elem, StackEmpty>(w, ss) )
+            return w.suspend(writer::state::arr2, it, pt);
+        if(BOOST_JSON_UNLIKELY( ++it == end ))
+            break;
+do_arr3:
+        if(BOOST_JSON_LIKELY(ss))
+            ss.append(',');
+        else
+            return w.suspend(writer::state::arr3, it, pt);
+    }
+do_arr4:
+    if(BOOST_JSON_LIKELY(ss))
+        ss.append(']');
+    else
+        return w.suspend(writer::state::arr4, it, pt);
+    return true;
 }
 
 template<class T, bool StackEmpty>

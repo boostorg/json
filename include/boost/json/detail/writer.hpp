@@ -13,6 +13,7 @@
 #include <boost/json/detail/literals.hpp>
 #include <boost/json/detail/stack.hpp>
 #include <boost/json/detail/stream.hpp>
+#include <boost/json/conversion.hpp>
 #include <boost/json/serialize_options.hpp>
 #include <boost/json/value.hpp>
 
@@ -40,13 +41,9 @@ struct writer
     bool
     suspend(state st);
 
-    inline
+    template<class T>
     bool
-    suspend(state st, array::const_iterator it, array const* pa);
-
-    inline
-    bool
-    suspend(state st, object::const_iterator it, object const* po);
+    suspend(state st, iterator_type<T const> it, T const* po);
 };
 
 bool
