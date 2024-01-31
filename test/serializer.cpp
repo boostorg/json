@@ -791,6 +791,10 @@ public:
             std::string s = "fairly long string which avoids SBO";
             check_udt(s, "\"fairly long string which avoids SBO\"");
         }
+        {
+            std::vector<int> v = {1,2,3,4,5};
+            check_udt(v, "[1,2,3,4,5]");
+        }
     }
 
     void
