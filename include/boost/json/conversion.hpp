@@ -102,6 +102,49 @@ struct try_value_to_tag { };
 template<class T>
 struct is_string_like;
 
+/** Determine if `T` can be treated like `std::filesystem::path` during conversions.
+
+    Given `t`, a glvalue of type `T`, if
+
+    @li given `It`, the type denoted by `decltype(std::begin(t))`,
+        <tt>std::iterator_traits<It>::iterator_category</tt> is well-formed and
+        denotes a type; and
+
+    @li <tt>std::iterator_traits<It>::value_type</tt> is `T`; and
+
+    @li `T::value_type` is well-formed and denotes a type; and
+
+    @li `T::string_type` is well-formed, denotes a type, and is an alias for
+    `std::basic_string< T::value_type >`;
+
+    then the trait provides the member constant `value` that is equal to
+    `true`. Otherwise, `value` is equal to `false`.<br>
+
+    Users can specialize the trait for their own types if they don't want them
+    to be treated like filesystem paths. For example:
+
+    @code
+    namespace boost {
+    namespace json {
+
+    template <>
+    struct is_path_like<your::path> : std::false_type
+    { };
+
+    } // namespace boost
+    } // namespace json
+    @endcode
+
+
+    @par Types satisfying the trait
+
+    `std::filesystem::path`, `boost::filesystem::path`.
+
+    @see @ref value_from, @ref value_to
+*/
+template<class T>
+struct is_path_like;
+
 /** Determine if `T` can be treated like a sequence during conversions.
 
     Given `t`, a glvalue of type `T`, if

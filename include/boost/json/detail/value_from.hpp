@@ -249,6 +249,15 @@ value_from_impl( variant_conversion_tag, value& jv, T&& from, Ctx const& ctx )
     visit( value_from_visitor<Ctx>{ jv, ctx }, static_cast<T&&>(from) );
 }
 
+template< class Ctx, class T >
+void
+value_from_impl( path_conversion_tag, value& jv, T&& from, Ctx const& )
+{
+    std::string s = from.generic_string();
+    string_view sv = s;
+    jv.emplace_string().assign(sv);
+}
+
 //----------------------------------------------------------
 // Contextual conversions
 

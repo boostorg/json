@@ -28,6 +28,10 @@
 # include <variant>
 #endif
 
+#ifndef BOOST_NO_CXX17_HDR_FILESYSTEM
+# include <filesystem>
+#endif // BOOST_NO_CXX17_HDR_FILESYSTEM
+
 namespace value_to_test_ns
 {
 
@@ -533,6 +537,21 @@ public:
 
     template< class... Context >
     static
+    void testPath( Context const& ... ctx )
+    {
+        ignore_unused( ctx... );
+#ifndef BOOST_NO_CXX17_HDR_FILESYSTEM
+        using Paths = std::vector<std::filesystem::path>;
+        value jv = value{"from/here", "to/there", "", "c:/" , "..", "../"};
+        auto paths = value_to<Paths>( jv, ctx... );
+        BOOST_TEST(
+            paths == (Paths{
+                "from/here", "to/there", "", "c:/" , "..", "../"}) );
+#endif // BOOST_NO_CXX17_HDR_FILESYSTEM
+    }
+
+    template< class... Context >
+    static
     void
     testNonThrowing( Context const& ... ctx )
     {
@@ -750,6 +769,7 @@ public:
 #ifndef BOOST_NO_CXX17_HDR_VARIANT
             testVariant< std::variant, std::monostate > ( Context()... );
 #endif // BOOST_NO_CXX17_HDR_VARIANT
+            testPath( Context()... );
             testNonThrowing( Context()... );
             testUserConversion( Context()... );
         }

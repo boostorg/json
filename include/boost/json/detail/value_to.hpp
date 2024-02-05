@@ -557,6 +557,23 @@ value_to_impl(
     return res;
 }
 
+template< class T, class Ctx >
+result<T>
+value_to_impl(
+    path_conversion_tag, try_value_to_tag<T>, value const& jv, Ctx const& )
+{
+    auto str = jv.if_string();
+    if( !str )
+    {
+        error_code ec;
+        BOOST_JSON_FAIL(ec, error::not_string);
+        return {boost::system::in_place_error, ec};
+    }
+
+    string_view sv = str->subview();
+    return {boost::system::in_place_value, T( sv.begin(), sv.end() )};
+}
+
 //----------------------------------------------------------
 // User-provided conversions; throwing -> throwing
 template< class T, class Ctx >

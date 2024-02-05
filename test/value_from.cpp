@@ -322,10 +322,6 @@ BOOST_STATIC_ASSERT(has_value_from<key_value_pair&&>::value);
 // object-like
 BOOST_STATIC_ASSERT(has_value_from<std::map<string_view, int>>::value);
 
-#ifndef BOOST_NO_CXX17_HDR_FILESYSTEM
-BOOST_STATIC_ASSERT( !is_sequence_like<std::filesystem::path>::value );
-#endif // BOOST_NO_CXX17_HDR_FILESYSTEM
-
 class value_from_test
 {
 public:
@@ -543,6 +539,20 @@ public:
 #endif // BOOST_NO_CXX17_HDR_VARIANT
     }
 
+    template< class... Context >
+    static
+    void testPath( Context const& ... ctx )
+    {
+        ignore_unused( ctx... );
+#ifndef BOOST_NO_CXX17_HDR_FILESYSTEM
+        std::vector<std::filesystem::path> paths{
+            "from/here", "to/there", "", "c:/" , "..", "../"};
+        value jv = value_from( paths, ctx... );
+        BOOST_TEST(
+            jv == (value{"from/here", "to/there", "", "c:/" , "..", "../"}) );
+#endif // BOOST_NO_CXX17_HDR_FILESYSTEM
+    }
+
     void
     testContext()
     {
@@ -606,6 +616,7 @@ public:
             testDescribed( Context()... );
             testOptional( Context()... );
             testVariant( Context()... );
+            testPath( Context()... );
         }
     };
 

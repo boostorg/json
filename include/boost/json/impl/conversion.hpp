@@ -63,9 +63,14 @@ using are_begin_and_end_same = std::is_same<
     iterator_type<T>,
     decltype(std::end(std::declval<T&>()))>;
 
+// msvc 14.0 gets confused when std::is_same is used directly
+template<class A, class B>
+using is_same_msvc_140 = std::is_same<A, B>;
 template<class T>
-using not_its_own_value = mp11::mp_not<
-    std::is_same< value_type<T>, T >>;
+using is_its_own_value = is_same_msvc_140<value_type<T>, T>;
+
+template<class T>
+using not_its_own_value = mp11::mp_not< is_its_own_value<T> >;
 
 template<class T>
 using begin_iterator_category = typename std::iterator_traits<
@@ -79,6 +84,10 @@ template<class T>
 using has_unique_keys = has_positive_tuple_size<decltype(
     std::declval<T&>().emplace(
         std::declval<value_type<T>>()))>;
+
+template<class T>
+using has_string_type = std::is_same<
+    typename T::string_type, std::basic_string<typename T::value_type> >;
 
 template<class T>
 struct is_value_type_pair_helper : std::false_type
@@ -192,6 +201,7 @@ struct floating_point_conversion_tag : number_conversion_tag { };
 struct null_like_conversion_tag { };
 struct string_like_conversion_tag { };
 struct map_like_conversion_tag { };
+struct path_conversion_tag { };
 struct sequence_conversion_tag { };
 struct tuple_conversion_tag { };
 struct described_class_conversion_tag { };
@@ -316,6 +326,7 @@ using generic_conversion_category = mp11::mp_cond<
     is_described_enum<T>,      described_enum_conversion_tag,
     is_variant_like<T>,        variant_conversion_tag,
     is_optional_like<T>,       optional_conversion_tag,
+    is_path_like<T>,           path_conversion_tag,
     // failed to find a suitable implementation
     mp11::mp_true,             no_conversion_tag>;
 
@@ -481,6 +492,12 @@ struct is_string_like
     : std::is_convertible<T, string_view>
 { };
 
+template<class T>
+struct is_path_like
+    : mp11::mp_all<
+        mp11::mp_valid_and_true<detail::is_its_own_value, T>,
+        mp11::mp_valid_and_true<detail::has_string_type, T>>
+{ };
 template<class T>
 struct is_sequence_like
     : mp11::mp_all<
