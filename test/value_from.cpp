@@ -26,6 +26,10 @@
 #include <map>
 #include <unordered_map>
 
+#ifndef BOOST_NO_CXX17_HDR_FILESYSTEM
+# include <filesystem>
+#endif // BOOST_NO_CXX17_HDR_FILESYSTEM
+
 //----------------------------------------------------------
 
 namespace value_from_test_ns
@@ -317,6 +321,10 @@ BOOST_STATIC_ASSERT(has_value_from<key_value_pair&&>::value);
 
 // object-like
 BOOST_STATIC_ASSERT(has_value_from<std::map<string_view, int>>::value);
+
+#ifndef BOOST_NO_CXX17_HDR_FILESYSTEM
+BOOST_STATIC_ASSERT( !is_sequence_like<std::filesystem::path>::value );
+#endif // BOOST_NO_CXX17_HDR_FILESYSTEM
 
 class value_from_test
 {

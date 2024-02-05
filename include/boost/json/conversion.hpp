@@ -110,7 +110,9 @@ struct is_string_like;
         <tt>std::iterator_traits<It>::iterator_category</tt> is well-formed and
         denotes a type; and
 
-    @li `decltype(std::end(t))` also denotes the type `It`;
+    @li `decltype(std::end(t))` also denotes the type `It`; and
+
+    @li <tt>std::iterator_traits<It>::value_type</tt> is not `T`; and
 
     then the trait provides the member constant `value` that is equal to
     `true`. Otherwise, `value` is equal to `false`.<br>

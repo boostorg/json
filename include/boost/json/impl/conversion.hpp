@@ -64,6 +64,10 @@ using are_begin_and_end_same = std::is_same<
     decltype(std::end(std::declval<T&>()))>;
 
 template<class T>
+using not_its_own_value = mp11::mp_not<
+    std::is_same< value_type<T>, T >>;
+
+template<class T>
 using begin_iterator_category = typename std::iterator_traits<
     iterator_type<T>>::iterator_category;
 
@@ -481,6 +485,7 @@ template<class T>
 struct is_sequence_like
     : mp11::mp_all<
         mp11::mp_valid_and_true<detail::are_begin_and_end_same, T>,
+        mp11::mp_valid_and_true<detail::not_its_own_value, T>,
         mp11::mp_valid<detail::begin_iterator_category, T>>
 { };
 
