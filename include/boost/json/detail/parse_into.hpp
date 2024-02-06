@@ -1661,6 +1661,47 @@ public:
 #undef BOOST_JSON_INVOKE_INNER
 };
 
+// path handler
+template< class V, class P >
+class converting_handler<path_conversion_tag, V, P>
+    : public scalar_handler<P, error::not_string>
+{
+private:
+    V* value_;
+    bool cleared_ = false;
+
+public:
+    converting_handler( V* v, P* p )
+        : converting_handler::scalar_handler(p)
+        , value_(v)
+    {}
+
+    bool on_string_part( error_code&, string_view sv )
+    {
+        if( !cleared_ )
+        {
+            cleared_ = true;
+            value_->clear();
+        }
+
+        value_->concat( sv.begin(), sv.end() );
+        return true;
+    }
+
+    bool on_string( error_code&, string_view sv )
+    {
+        if( !cleared_ )
+            value_->clear();
+        else
+            cleared_ = false;
+
+        value_->concat( sv.begin(), sv.end() );
+
+        this->parent_->signal_value();
+        return true;
+    }
+};
+
 // into_handler
 template< class V >
 class into_handler

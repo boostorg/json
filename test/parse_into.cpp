@@ -18,6 +18,10 @@
 #include <climits>
 #include <map>
 
+#ifndef BOOST_NO_CXX17_HDR_FILESYSTEM
+#include <filesystem>
+#endif // BOOST_NO_CXX17_HDR_FILESYSTEM
+
 #include "test.hpp"
 #include "test_suite.hpp"
 
@@ -414,6 +418,15 @@ public:
 #endif
     }
 
+    void testPath()
+    {
+#ifndef BOOST_NO_CXX17_HDR_FILESYSTEM
+        testParseInto< std::filesystem::path >( "c:/" );
+        testParseInto< std::filesystem::path >( ".." );
+        testParseInto< std::filesystem::path >( "../" );
+#endif // BOOST_NO_CXX17_HDR_FILESYSTEM
+    }
+
     void run()
     {
         testNull();
@@ -427,10 +440,12 @@ public:
         testStruct();
         testEnum();
         testOptional();
+        testPath();
         testVariant<variant2::variant, variant2::monostate>();
 #ifndef BOOST_NO_CXX17_HDR_VARIANT
         testVariant<std::variant, std::monostate>();
 #endif
+
         {
             int n;
             BOOST_TEST_THROWS_WITH_LOCATION( parse_into( n, "null" ) );
