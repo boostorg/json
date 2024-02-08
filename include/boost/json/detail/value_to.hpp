@@ -401,6 +401,7 @@ value_to_impl(
     value const& jv,
     Ctx const& ctx )
 {
+    BOOST_STATIC_ASSERT( std::is_default_constructible<T>::value );
     result<T> res;
 
     auto* obj = jv.if_object();
