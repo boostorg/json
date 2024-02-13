@@ -56,10 +56,6 @@
 # endif
 #endif
 
-#ifndef BOOST_SYMBOL_VISIBLE
-#define BOOST_SYMBOL_VISIBLE
-#endif
-
 #if defined(BOOST_JSON_DOCS)
 # define BOOST_JSON_DECL
 #else
