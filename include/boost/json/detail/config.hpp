@@ -12,6 +12,7 @@
 
 #include <boost/config.hpp>
 #include <boost/assert.hpp>
+#include <boost/static_assert.hpp>
 #include <boost/throw_exception.hpp>
 #include <cstdint>
 #include <type_traits>
@@ -45,10 +46,6 @@
 #   define BOOST_JSON_NO_DESTROY [[clang::no_destroy]]
 #  endif
 # endif
-#endif
-
-#ifndef BOOST_STATIC_ASSERT
-#define BOOST_STATIC_ASSERT( ... ) static_assert(__VA_ARGS__, #__VA_ARGS__)
 #endif
 
 #ifndef BOOST_FALLTHROUGH
