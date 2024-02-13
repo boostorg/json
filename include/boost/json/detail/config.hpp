@@ -47,10 +47,6 @@
 # endif
 #endif
 
-#ifndef BOOST_ASSERT
-#define BOOST_ASSERT assert
-#endif
-
 #ifndef BOOST_STATIC_ASSERT
 #define BOOST_STATIC_ASSERT( ... ) static_assert(__VA_ARGS__, #__VA_ARGS__)
 #endif
