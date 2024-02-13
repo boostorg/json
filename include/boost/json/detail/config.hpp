@@ -48,16 +48,6 @@
 # endif
 #endif
 
-#ifndef BOOST_FORCEINLINE
-# ifdef _MSC_VER
-#  define BOOST_FORCEINLINE __forceinline
-# elif defined(__GNUC__) || defined(__clang__)
-#  define BOOST_FORCEINLINE inline __attribute__((always_inline))
-# else
-#  define BOOST_FORCEINLINE inline
-# endif
-#endif
-
 #ifndef BOOST_NOINLINE
 # ifdef _MSC_VER
 #  define BOOST_NOINLINE __declspec(noinline)
