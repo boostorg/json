@@ -79,19 +79,11 @@
 #endif
 
 #ifndef BOOST_JSON_LIKELY
-# if defined(__GNUC__) || defined(__clang__)
-#  define BOOST_JSON_LIKELY(x) __builtin_expect(!!(x), 1)
-# else
-#  define BOOST_JSON_LIKELY(x) x
-# endif
+# define BOOST_JSON_LIKELY(x) BOOST_LIKELY( !!(x) )
 #endif
 
 #ifndef BOOST_JSON_UNLIKELY
-# if defined(__GNUC__) || defined(__clang__)
-#  define BOOST_JSON_UNLIKELY(x) __builtin_expect(!!(x), 0)
-# else
-#  define BOOST_JSON_UNLIKELY(x) x
-# endif
+# define BOOST_JSON_UNLIKELY(x) BOOST_UNLIKELY( !!(x) )
 #endif
 
 #ifndef BOOST_JSON_UNREACHABLE
