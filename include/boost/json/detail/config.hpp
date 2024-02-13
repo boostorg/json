@@ -48,10 +48,6 @@
 # endif
 #endif
 
-#ifndef BOOST_FALLTHROUGH
-#define BOOST_FALLTHROUGH [[fallthrough]]
-#endif
-
 #ifndef BOOST_FORCEINLINE
 # ifdef _MSC_VER
 #  define BOOST_FORCEINLINE __forceinline
