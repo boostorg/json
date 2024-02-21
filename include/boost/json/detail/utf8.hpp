@@ -45,6 +45,22 @@ make_u32(std::uint8_t b4, std::uint8_t b3, std::uint8_t b2, std::uint8_t b1)
     return make_u32_impl<endian::order::native>(b4, b3, b2, b1);
 }
 
+template<endian::order = endian::order::little>
+constexpr
+std::uint32_t
+utf8_case5_special_number()
+{
+        return make_u32(0x00,0x00,0x30,0xFF);
+}
+
+template<>
+constexpr
+std::uint32_t
+utf8_case5_special_number<endian::order::big>()
+{
+        return make_u32(0xFF,0xFF,0x30,0x00);
+}
+
 template<int N>
 std::uint32_t
 load_little_endian(void const* p)
@@ -129,8 +145,8 @@ is_valid_utf8(const char* p, uint16_t first)
         std::memcpy(&v, p, 4);
         return ( ( ( v & make_u32(0xC0,0xC0,0xF0,0x00) )
             + make_u32(0x7F,0x7F,0x70,0xFF) )
-            | make_u32(0x00,0x00,0x30,0xFF) )
-            == make_u32(0x00,0x00,0x30,0xFF);
+            | make_u32(0x00,0x00,0x30,0x00) )
+            == utf8_case5_special_number<endian::order::native>();
 
     // 4 bytes, second byte [80, BF]
     case 6:
