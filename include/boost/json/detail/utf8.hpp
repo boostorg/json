@@ -47,18 +47,22 @@ make_u32(std::uint8_t b4, std::uint8_t b3, std::uint8_t b2, std::uint8_t b1)
 
 template<endian::order = endian::order::little>
 constexpr
-std::uint32_t
-utf8_case5_special_number()
+bool
+utf8_case5(std::uint32_t v)
 {
-        return make_u32(0x00,0x00,0x30,0xFF);
+    return ( ( ( v & make_u32(0xC0,0xC0,0xF0,0x00) )
+        + make_u32(0x7F,0x7F,0x70,0x00) ) | make_u32(0x00,0x00,0x30,0x00) )
+        == make_u32(0x00,0x00,0x30,0x00);
 }
 
 template<>
 constexpr
-std::uint32_t
-utf8_case5_special_number<endian::order::big>()
+bool
+utf8_case5<endian::order::big>(std::uint32_t v)
 {
-        return make_u32(0xFF,0xFF,0x30,0x00);
+    return ( ( ( v & make_u32(0xC0,0xC0,0xF0,0x00) )
+        + make_u32(0x00,0x00,0x70,0xFF) ) | make_u32(0x00,0x00,0x30,0x00) )
+        == make_u32(0x80,0x80,0x30,0x00);
 }
 
 template<int N>
@@ -143,10 +147,7 @@ is_valid_utf8(const char* p, uint16_t first)
     // 4 bytes, second byte [90, BF]
     case 5:
         std::memcpy(&v, p, 4);
-        return ( ( ( v & make_u32(0xC0,0xC0,0xF0,0x00) )
-            + make_u32(0x7F,0x7F,0x70,0xFF) )
-            | make_u32(0x00,0x00,0x30,0x00) )
-            == utf8_case5_special_number<endian::order::native>();
+        return utf8_case5<endian::order::native>(v);
 
     // 4 bytes, second byte [80, BF]
     case 6:
