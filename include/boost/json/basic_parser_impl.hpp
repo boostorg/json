@@ -563,72 +563,39 @@ do_doc1:
 do_doc2:
     switch(+opt_.allow_comments |
         (opt_.allow_trailing_commas << 1) |
-        (opt_.allow_invalid_utf8 << 2) |
-        (opt_.allow_invalid_utf16 << 3))
+        (opt_.allow_invalid_utf8 << 2))
     {
     // no extensions
     default:
-        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::false_type(), std::false_type(), std::false_type());
+        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::false_type(), std::false_type(), opt_.allow_invalid_utf16);
         break;
     // comments
     case 1:
-        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::false_type(), std::false_type(), std::false_type());
+        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::false_type(), std::false_type(), opt_.allow_invalid_utf16);
         break;
     // trailing
     case 2:
-        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::true_type(), std::false_type(), std::false_type());
+        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::true_type(), std::false_type(), opt_.allow_invalid_utf16);
         break;
     // comments & trailing
     case 3:
-        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::true_type(), std::false_type(), std::false_type());
+        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::true_type(), std::false_type(), opt_.allow_invalid_utf16);
         break;
     // skip validation
     case 4:
-        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::false_type(), std::true_type(), std::false_type());
+        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::false_type(), std::true_type(), opt_.allow_invalid_utf16);
         break;
     // comments & skip validation
     case 5:
-        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::false_type(), std::true_type(), std::false_type());
+        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::false_type(), std::true_type(), opt_.allow_invalid_utf16);
         break;
     // trailing & skip validation
     case 6:
-        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::true_type(), std::true_type(), std::false_type());
+        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::true_type(), std::true_type(), opt_.allow_invalid_utf16);
         break;
     // comments & trailing & skip validation
     case 7:
-        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::true_type(), std::true_type(), std::false_type());
-        break;
-    // allow_invalid_utf16
-    case 8:
-        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::false_type(), std::false_type(), std::true_type());
-        break;
-    // comments & allow_invalid_utf16
-    case 9:
-        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::false_type(), std::false_type(), std::true_type());
-        break;
-    // trailing & allow_invalid_utf16
-    case 10:
-        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::true_type(), std::false_type(), std::true_type());
-        break;
-    // skip validation & allow_invalid_utf16
-    case 11:
-        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::false_type(), std::true_type(), std::true_type());
-        break;
-    // comments & trailing & allow_invalid_utf16
-    case 12:
-        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::true_type(), std::false_type(), std::true_type());
-        break;
-    // comments & skip validation & allow_invalid_utf16
-    case 13:
-        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::false_type(), std::true_type(), std::true_type());
-        break;
-    // trailing & skip validation & allow_invalid_utf16
-    case 14:
-        cs = parse_value(cs.begin(), stack_empty, std::false_type(), std::true_type(), std::true_type(), std::true_type());
-        break;
-    // comments & trailing & skip validation & allow_invalid_utf16
-    case 15:
-        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::true_type(), std::true_type(), std::true_type());
+        cs = parse_value(cs.begin(), stack_empty, std::true_type(), std::true_type(), std::true_type(), opt_.allow_invalid_utf16);
         break;
     }
     if(BOOST_JSON_UNLIKELY(incomplete(cs)))
@@ -1240,7 +1207,6 @@ parse_escaped(
     int digit;
     char c;
     cs.clip(temp.max_size());
-    bool replaced_bad_utf16 = false;
     if(! stack_empty && ! st_.empty())
     {
         state st;
@@ -1430,7 +1396,10 @@ do_str3:
                     {
                         unsigned cp = 0xFFFD; // Unicode replacement character
                         temp.append_utf8(cp);
-                        replaced_bad_utf16 = true;
+                    }
+                    else
+                    {
+                        replaced_bad_utf16 = false;
                     }
                     break;
                 }
@@ -1503,6 +1472,7 @@ do_str3:
             // Unicode replacement characters, break out of the switch.
             if(replaced_bad_utf16)
             {
+                replaced_bad_utf16 = false;
                 break;
             }
             // Calculate the Unicode code point from the surrogate pair and
@@ -1638,7 +1608,10 @@ do_sur1:
                 {
                     unsigned cp = 0xFFFD; // Unicode replacement character
                     temp.append_utf8(cp);
-                    replaced_bad_utf16 = true;
+                }
+                else
+                {
+                    replaced_bad_utf16 = false;
                 }
                 break;
             }
@@ -1735,6 +1708,7 @@ do_sur6:
         // Unicode replacement characters, break out of the switch.
         if(replaced_bad_utf16)
         {
+            replaced_bad_utf16 = false;
             break;
         }
         // Calculate the Unicode code point from the surrogate pair and

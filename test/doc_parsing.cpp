@@ -1,4 +1,4 @@
-﻿//
+//
 // Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -89,7 +89,9 @@ value jv = parse( "[1,2,3,] // comment ", storage_ptr(),
         .allow_trailing_commas = true,      // allow a trailing comma in object and array lists
         .allow_invalid_utf8 = true          // skip utf-8 validation of keys and strings
     });
+//]
 
+//[doc_parsing_15
 value jv = parse( "{\"command\":\"\\uDF3E\\uDEC2\"}", storage_ptr(),
     {
         .allow_invalid_utf16 = true;        // replace illegal leading surrogate pair with ��

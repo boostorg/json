@@ -314,6 +314,8 @@ class basic_parser
     std::size_t depth_ = opt_.max_depth;
     unsigned char cur_lit_ = 0;
     unsigned char lit_offset_ = 0;
+    // true on the replacement of invalid surrogate pair UTF-16 code point with '0xFFFD'
+    bool replaced_bad_utf16 = false;
 
     inline void reserve();
     inline const char* sentinel();
