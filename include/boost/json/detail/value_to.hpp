@@ -342,8 +342,7 @@ value_to_impl(
 template< class Ctx, class T, bool non_throwing = true >
 struct to_described_member
 {
-    using Ds = describe::describe_members<
-        T, describe::mod_public | describe::mod_inherited>;
+    using Ds = described_members<T>;
 
     using result_type = mp11::mp_eval_if_c<
         !non_throwing, T, system::result, T>;

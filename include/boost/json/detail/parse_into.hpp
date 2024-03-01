@@ -949,9 +949,7 @@ struct struct_element_list_impl
     template< class D >
     using helper = described_member_t<T, D>;
 
-    using type = mp11::mp_transform<
-        helper,
-        describe::describe_members<T, describe::mod_public> >;
+    using type = mp11::mp_transform< helper, described_members<T> >;
 };
 template< class T >
 using struct_element_list = typename struct_element_list_impl<T>::type;
@@ -960,8 +958,7 @@ using struct_element_list = typename struct_element_list_impl<T>::type;
 
 template< class T >
 using struct_element_list = mp11::mp_transform_q<
-    mp11::mp_bind_front< described_member_t, T >,
-    describe::describe_members<T, describe::mod_public> >;
+    mp11::mp_bind_front< described_member_t, T >, described_members<T> >;
 
 #endif
 
@@ -969,11 +966,9 @@ struct struct_accessor
 {
     template< class T, class I >
     auto operator()( T* t, I ) const
-        -> described_member_t<T,
-             mp11::mp_at<
-                 describe::describe_members<T, describe::mod_public>, I> >*
+        -> described_member_t<T, mp11::mp_at< described_members<T>, I> >*
     {
-        using Ds = describe::describe_members<T, describe::mod_public>;
+        using Ds = described_members<T>;
         using D = mp11::mp_at<Ds, I>;
         return &(t->*D::pointer);
     }
@@ -1008,7 +1003,7 @@ private:
 
     std::string key_;
 
-    using Dm = describe::describe_members<V, describe::mod_public>;
+    using Dm = described_members<V>;
 
     handler_tuple< converting_handler, struct_element_list<V> > handlers_;
     int inner_active_ = -1;

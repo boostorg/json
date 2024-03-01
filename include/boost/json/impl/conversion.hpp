@@ -297,6 +297,10 @@ using described_member_t = remove_cvref<decltype(
 
 #endif
 
+template< class T >
+using described_members = describe::describe_members<
+    T, describe::mod_any_access | describe::mod_inherited>;
+
 // user conversion (via tag_invoke)
 template< class Ctx, class T, class Dir >
 using user_conversion_category = mp11::mp_cond<

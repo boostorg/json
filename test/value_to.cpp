@@ -119,8 +119,18 @@ BOOST_DESCRIBE_STRUCT(T6, (), (n, d))
 struct T7 : T6
 {
     std::string s;
+
+    bool
+    get_b() const
+    {
+        return b;
+    }
+
+private:
+    bool b = false;
+
+    BOOST_DESCRIBE_CLASS(T7, (T6), (s), (), (b))
 };
-BOOST_DESCRIBE_STRUCT(T7, (T6), (s))
 
 //----------------------------------------------------------
 
@@ -425,13 +435,14 @@ public:
                 value_to<::value_to_test_ns::T6>( jv ));
         }
         {
-            value jv = {{"n", 1}, {"d", 2}, {"s", "xyz"}};
+            value jv = {{"n", 1}, {"d", 2}, {"s", "xyz"}, {"b", true}};
             auto res = try_value_to<::value_to_test_ns::T7>(
                 jv, ctx... );
             BOOST_TEST( res );
             BOOST_TEST( res->n == 1 );
             BOOST_TEST( res->d == 2 );
             BOOST_TEST( res->s == "xyz" );
+            BOOST_TEST( res->get_b() == true );
         }
 
         BOOST_TEST_THROWS_WITH_LOCATION(

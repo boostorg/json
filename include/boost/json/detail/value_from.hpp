@@ -155,8 +155,7 @@ value_from_impl( no_conversion_tag, value&, T&&, Ctx const& )
 template< class Ctx, class T >
 struct from_described_member
 {
-    using Ds = describe::describe_members<
-        remove_cvref<T>, describe::mod_public | describe::mod_inherited>;
+    using Ds = described_members< remove_cvref<T> >;
 
     object& obj;
     Ctx const& ctx;

@@ -302,7 +302,7 @@ struct is_null_like
 /** Determine if `T` should be treated as a described class
 
     Described classes are serialised as objects with an element for each
-    described public data member. A described class should not have described
+    described data member. A described class should not have described
     bases or non-public members.<br>
 
     Or more formally, given `L`, a class template
@@ -335,10 +335,10 @@ struct is_null_like
     @endcode
 
     Users can also specialize the trait for their own types _with_ described
-    bases to enable this conversion implementation. In this case the class will
-    be serialized in a flattened way, that is members of bases will be
-    serialized as direct elements of the object, and no nested objects will be
-    created for bases.
+    bases or described non-public data members to enable this conversion
+    implementation. In this case the class will be serialized in a flattened
+    way, that is members of bases will be serialized as direct elements of the
+    object, and no nested objects will be created for bases.
 
     @see <a href="https://www.boost.org/doc/libs/develop/libs/describe/doc/html/describe.html">Boost.Describe</a>.
 */

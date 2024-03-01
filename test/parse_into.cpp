@@ -52,10 +52,36 @@ bool operator==( Y const& y1, Y const& y2 )
     return y1.v == y2.v && y1.m == y2.m;
 }
 
+struct Z : X
+{
+    Z() = default;
+    Z(X x, bool b) : X(x), d(b)
+    {}
+
+private:
+    bool d = false;
+
+    friend
+    bool operator==( Z const& z1, Z const& z2 )
+    {
+        X const& x1 = z1;
+        X const& x2 = z2;
+        return (x1 == x2) && z1.d == z2.d;
+    }
+
+    BOOST_DESCRIBE_CLASS(Z, (X), (), (), (d))
+};
+
+
 BOOST_DEFINE_ENUM_CLASS(E, x, y, z)
 
 namespace boost {
 namespace json {
+
+template<>
+struct is_described_class<Z>
+    : std::true_type
+{ };
 
 class parse_into_test
 {
@@ -339,6 +365,9 @@ public:
 
         testParseInto<Y>( {} );
         testParseInto<Y>( { { { 1, 1.0f, "one" }, { 2, 2.0f, "two" } }, { { "one", { 1, 1.1f, "1" } }, { "two", { 2, 2.2f, "2" } } } } );
+
+        testParseInto<Z>( {} );
+        testParseInto<Z>( { {1, 3.14f, "hello"}, true } );
 
         testParseIntoErrors<X>( error::not_object, 1 );
         testParseIntoErrors<X>(
