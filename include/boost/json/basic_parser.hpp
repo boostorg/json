@@ -283,6 +283,8 @@ class basic_parser
         val1,  val2, val3
     };
 
+    using no_state = std::integral_constant< state, state(CHAR_MAX) >;
+
     struct number
     {
         uint64_t mant;
@@ -292,7 +294,7 @@ class basic_parser
         bool neg;
     };
 
-    template< bool StackEmpty_, char First_ >
+    template< class PrevState, char First_ >
     struct parse_number_helper;
 
     // optimization: must come first
@@ -392,42 +394,47 @@ class basic_parser
 #pragma warning pop
 #endif
 
-    template<bool StackEmpty_/*, bool Terminal_*/>
+    template<class PrevState/*, bool Terminal_*/>
     const char* parse_comment(const char* p,
-        std::integral_constant<bool, StackEmpty_> stack_empty,
+        PrevState st,
         /*std::integral_constant<bool, Terminal_>*/ bool terminal);
 
-    template<bool StackEmpty_>
-    const char* parse_document(const char* p,
-        std::integral_constant<bool, StackEmpty_> stack_empty);
+    template<class PrevState>
+    const char* parse_document(const char* p, PrevState st);
 
-    template<bool StackEmpty_, bool AllowComments_/*,
+    template<class PrevState, bool AllowComments_/*,
         bool AllowTrailing_, bool AllowBadUTF8_*/>
-    const char* parse_value(const char* p,
-        std::integral_constant<bool, StackEmpty_> stack_empty,
+    const char* parse_value(
+        const char* p,
+        PrevState st,
         std::integral_constant<bool, AllowComments_> allow_comments,
         /*std::integral_constant<bool, AllowTrailing_>*/ bool allow_trailing,
         /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8);
 
     template<bool AllowComments_/*,
         bool AllowTrailing_, bool AllowBadUTF8_*/>
-    const char* resume_value(const char* p,
+    const char* resume_value(
+        const char* p,
+        state st,
         std::integral_constant<bool, AllowComments_> allow_comments,
         /*std::integral_constant<bool, AllowTrailing_>*/ bool allow_trailing,
         /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8);
 
-    template<bool StackEmpty_, bool AllowComments_/*,
+    template<class PrevState, bool AllowComments_/*,
         bool AllowTrailing_, bool AllowBadUTF8_*/>
-    const char* parse_object(const char* p,
-        std::integral_constant<bool, StackEmpty_> stack_empty,
+    const char* parse_object(
+        const char* p,
+        PrevState st,
+        std::size_t size,
         std::integral_constant<bool, AllowComments_> allow_comments,
         /*std::integral_constant<bool, AllowTrailing_>*/ bool allow_trailing,
         /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8);
 
-    template<bool StackEmpty_, bool AllowComments_/*,
+    template<class PrevState, bool AllowComments_/*,
         bool AllowTrailing_, bool AllowBadUTF8_*/>
     const char* parse_array(const char* p,
-        std::integral_constant<bool, StackEmpty_> stack_empty,
+        PrevState st,
+        std::size_t size,
         std::integral_constant<bool, AllowComments_> allow_comments,
         /*std::integral_constant<bool, AllowTrailing_>*/ bool allow_trailing,
         /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8);
@@ -436,32 +443,36 @@ class basic_parser
     const char* parse_literal(const char* p,
         std::integral_constant<int, Literal> literal);
 
-    template<bool StackEmpty_, bool IsKey_/*,
+    template<class PrevState, bool IsKey_/*,
         bool AllowBadUTF8_*/>
-    const char* parse_string(const char* p,
-        std::integral_constant<bool, StackEmpty_> stack_empty,
+    const char* parse_string(
+        const char* p,
+        PrevState st,
+        std::size_t total,
         std::integral_constant<bool, IsKey_> is_key,
         /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8);
 
-    template<bool StackEmpty_, char First_, number_precision Numbers_>
+    template<class PrevState, char First_, number_precision Numbers_>
     const char* parse_number(const char* p,
-        std::integral_constant<bool, StackEmpty_> stack_empty,
+        PrevState st,
         std::integral_constant<char, First_> first,
         std::integral_constant<number_precision, Numbers_> numbers);
 
-    template<bool StackEmpty_, bool IsKey_/*,
+    template<class PrevState, bool IsKey_/*,
         bool AllowBadUTF8_*/>
-    const char* parse_unescaped(const char* p,
-        std::integral_constant<bool, StackEmpty_> stack_empty,
+    const char* parse_unescaped(
+        const char* p,
+        PrevState st,
+        std::size_t total,
         std::integral_constant<bool, IsKey_> is_key,
         /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8);
 
-    template<bool StackEmpty_/*, bool IsKey_,
+    template<class PrevState/*, bool IsKey_,
         bool AllowBadUTF8_*/>
     const char* parse_escaped(
         const char* p,
+        PrevState st,
         std::size_t total,
-        std::integral_constant<bool, StackEmpty_> stack_empty,
         /*std::integral_constant<bool, IsKey_>*/ bool is_key,
         /*std::integral_constant<bool, AllowBadUTF8_>*/ bool allow_bad_utf8);
 
