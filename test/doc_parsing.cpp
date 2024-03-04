@@ -82,6 +82,7 @@ value jv = parse( "[1,2,3,] // comment ", storage_ptr(), opt );
 //----------------------------------------------------------
 {
 #if __cpp_designated_initializers >= 201707L
+{
 //[doc_parsing_6
 value jv = parse( "[1,2,3,] // comment ", storage_ptr(),
     {
@@ -90,13 +91,15 @@ value jv = parse( "[1,2,3,] // comment ", storage_ptr(),
         .allow_invalid_utf8 = true          // skip utf-8 validation of keys and strings
     });
 //]
-
+}
+{
 //[doc_parsing_15
 value jv = parse( "{\"command\":\"\\uDF3E\\uDEC2\"}", storage_ptr(),
     {
         .allow_invalid_utf16 = true;        // replace illegal leading surrogate pair with ��
     });
 //]
+}
 #endif
 }
 //----------------------------------------------------------
