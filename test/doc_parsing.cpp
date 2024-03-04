@@ -96,7 +96,7 @@ value jv = parse( "[1,2,3,] // comment ", storage_ptr(),
 //[doc_parsing_15
 value jv = parse( "{\"command\":\"\\uDF3E\\uDEC2\"}", storage_ptr(),
     {
-        .allow_invalid_utf16 = true;        // replace illegal leading surrogate pair with ��
+        .allow_invalid_utf16 = true       // replace illegal leading surrogate pair with ��
     });
 //]
 }
