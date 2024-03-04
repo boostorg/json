@@ -1726,7 +1726,7 @@ do_str2:
     // all at once instead of one at a time
     for(;;)
     {
-        if(BOOST_JSON_UNLIKELY(! cs))
+        if(BOOST_JSON_UNLIKELY(! cs || temp.capacity() == 0))
         {
             // flush
             if(BOOST_JSON_LIKELY(! temp.empty()))
