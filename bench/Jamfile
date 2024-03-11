@@ -11,14 +11,11 @@ import common ;
 import os ;
 import path ;
 import property ;
+import bench.jam ;
 
 import feature ;
 
 path-constant HERE : . ;
-
-feature.feature bench.option : : free optional ;
-feature.feature bench.launcher : : free optional ;
-feature.feature bench.file : : free optional ;
 
 .BENCH_FILES = [ os.environ BENCH_FILES ] ;
 
