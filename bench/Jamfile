@@ -7,13 +7,13 @@
 # Official repository: https://github.com/boostorg/json
 #
 
+import bench ;
 import common ;
+import feature ;
+import notfile ;
 import os ;
 import path ;
 import property ;
-import bench.jam ;
-
-import feature ;
 
 path-constant HERE : . ;
 

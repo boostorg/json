@@ -9,7 +9,8 @@
 #
 
 import modules ;
-import ../../config/checks/config ;
+import-search /boost/config/checks ;
+import config ;
 
 # These make sure we only build on compatible C++11 or later toolchains.
 obj cxx11_basic_alignas : ../check/basic_alignas.cpp ;
@@ -54,7 +55,8 @@ rule warn-if-requested ( properties * )
     }
 }
 
-project boost/json
+project
+    : common-requirements <use>$(boost_dependencies)/<warnings-as-errors>off
     : requirements
       [ requires
         config/cxx11_constexpr
@@ -74,18 +76,19 @@ project boost/json
       <link>shared:<define>BOOST_JSON_DYN_LINK=1
       <link>static:<define>BOOST_JSON_STATIC_LINK=1
       <toolset>msvc:<define>_SCL_SECURE_NO_WARNINGS
+      <define>BOOST_JSON_NO_LIB=1
     : source-location ../src
     ;
 
 alias json_deps
    : usage-requirements
-     <library>/boost//container/<warnings-as-errors>off
+     <library>/boost/container//boost_container/<warnings-as-errors>off
    ;
 
 alias json_sources
    : src.cpp
    : usage-requirements
-     <library>/boost//container/<warnings-as-errors>off
+     <library>/boost/container//boost_container/<warnings-as-errors>off
    ;
 
 explicit json_deps json_sources ;
@@ -93,7 +96,5 @@ explicit json_deps json_sources ;
 lib boost_json
    : json_sources
    : usage-requirements
-     <library>/boost//container/<warnings-as-errors>off
+     <library>/boost/container//boost_container/<warnings-as-errors>off
    ;
-
-boost-install boost_json ;
