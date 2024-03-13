@@ -315,7 +315,20 @@ inline int count_digits( char const* p ) noexcept
 
 inline uint64_t parse_unsigned( uint64_t r, char const * p, std::size_t n ) noexcept
 {
-    while( n >= 4 )
+    char const* e = p + n;
+
+    if( n & 1 )
+    {
+        r = r * 10 + p[0] - '0';
+        ++p;
+    }
+    if( n & 2 )
+    {
+        r = r * 10 + p[0] - '0';
+        r = r * 10 + p[1] - '0';
+        p += 2;
+    }
+    if( n & 4 )
     {
         uint32_t v;
         std::memcpy( &v, p, 4 );
@@ -324,27 +337,20 @@ inline uint64_t parse_unsigned( uint64_t r, char const * p, std::size_t n ) noex
         v = (v & 0x00FF00FF) * 6553601 >> 16;
 
         r = r * 10000 + v;
-
         p += 4;
-        n -= 4;
     }
 
-    switch( n )
+    while( p != e )
     {
-    case 0:
-        break;
-    case 1:
-        r = r * 10 + p[0] - '0';
-        break;
-    case 2:
-        r = r * 10 + p[0] - '0';
-        r = r * 10 + p[1] - '0';
-        break;
-    case 3:
-        r = r * 10 + p[0] - '0';
-        r = r * 10 + p[1] - '0';
-        r = r * 10 + p[2] - '0';
-        break;
+        uint64_t v;
+        std::memcpy( &v, p, 8 );
+        endian::native_to_little_inplace(v);
+        v = (v & 0x0F0F0F0F0F0F0F0F) * 2561 >> 8;
+        v = (v & 0x00FF00FF00FF00FF) * 6553601 >> 16;
+        v = (v & 0x0000FFFF0000FFFF) * 42949672960001 >> 32;
+
+        r = r * 100000000 + v;
+        p += 8;
     }
 
     return r;
