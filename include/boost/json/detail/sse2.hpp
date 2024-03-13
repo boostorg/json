@@ -328,7 +328,11 @@ inline uint64_t parse_unsigned( uint64_t r, char const * p, std::size_t n ) noex
         r = r * 10 + p[1] - '0';
         p += 2;
     }
+#if BOOST_JSON_ARCH == 64
     if( n & 4 )
+#else
+    while( p != e )
+#endif
     {
         uint32_t v;
         std::memcpy( &v, p, 4 );
@@ -340,6 +344,7 @@ inline uint64_t parse_unsigned( uint64_t r, char const * p, std::size_t n ) noex
         p += 4;
     }
 
+#if BOOST_JSON_ARCH == 64
     while( p != e )
     {
         uint64_t v;
@@ -352,6 +357,7 @@ inline uint64_t parse_unsigned( uint64_t r, char const * p, std::size_t n ) noex
         r = r * 100000000 + v;
         p += 8;
     }
+#endif
 
     return r;
 }
