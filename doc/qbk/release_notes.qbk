@@ -11,6 +11,34 @@
 
 [/-----------------------------------------------------------------------------]
 
+[heading Boost 1.85.0]
+
+[*New Dependencies]
+
+* [issue 915] Boost.Endian is now used to deal with endianness.
+
+[*API Changes]
+
+* [issue 881] Aliases to Boost.System and Boost.Container components are
+  deprecated and [*will be completely removed in 1.87.0].
+
+[*New Features]
+
+* [issue 979] Conversion of described classes supports private members
+
+* [issue 979] Rvalue reference overload for `visit`.
+
+* [issue 977] Add conversion support for path-like types.
+
+[*Fixes]
+
+* [issue 988] Parsing into described classes correctly considers inherited
+  members.
+
+* [issue 975] Conversion of self-referential sequences is disabled.
+
+* [issue 952] Fixed reference handling in visit.
+
 [heading Boost 1.84.0]
 
 [*API Changes]
