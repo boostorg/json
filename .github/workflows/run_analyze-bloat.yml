@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Fetch head
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: 'head_ref/root'
       - name: Compile static lib for head ref
@@ -34,7 +34,7 @@ jobs:
           rows: 0 # 0 indicates unlimited number of rows
       - name: Fetch base
         if: ${{ github.event_name == 'pull_request' }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.base_ref }}
           path: 'base_ref/root'
