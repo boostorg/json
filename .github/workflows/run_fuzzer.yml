@@ -11,36 +11,60 @@ jobs:
   fuzz:
 
     runs-on: ubuntu-latest
+    container:
+      image: "cppalliance/droneubuntu2204:1"
 
     steps:
     - name: Fetch head
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         path: 'head'
-    - uses: actions/cache@v3
+    - uses: actions/cache@v4
       id: cache-corpus
       with:
         path: head/fuzzing/corpus.tar
         key: corpus-${{ github.run_id }}
         restore-keys: corpus-
+    - name: Install packages
+      shell: bash
+      run: |
+          set -e
+
+          function add_repository {
+            for i in {1..3}; do
+              sudo -E apt-add-repository -y "$1" && return 0 || sleep 10;
+            done
+            return 1
+          }
+
+          curl -sSL --retry 5 https://apt.llvm.org/llvm-snapshot.gpg.key | \
+            sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/llvm-snapshot.gpg
+          add_repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-18 main"
+
+          sudo -E apt-get -o Acquire::Retries=3 update
+          sudo -E DEBIAN_FRONTEND=noninteractive \
+            apt-get -o Acquire::Retries=3 -y --no-install-suggests \
+              --no-install-recommends install \
+              clang-18 \
+              libclang-rt-18-dev
     - uses: ./head/.github/actions/build
       with:
         buildtype: 'boost'
         path: 'head'
-        toolset: clang
+        toolset: clang-18
         targets: libs/json/fuzzing//run
     - name: Pack the corpus
       working-directory: boost-root/libs/json/fuzzing/
       run: |
         tar cf - cmin > corpus.tar.tmp && mv corpus.tar.tmp "${GITHUB_WORKSPACE}"/head/fuzzing
     - name: Save the corpus as a github artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: success()
       with:
         name: corpus
         path: head/fuzzing/corpus.tar
     - name: Archive any crashes as an artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: crashes
