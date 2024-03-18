@@ -52,9 +52,6 @@ local SOURCES =
     value_ref.cpp
     utf8.cpp
     visit.cpp
-    ryu/d2s_intrinsics_test.cpp
-    ryu/d2s_table_test.cpp
-    ryu/d2s_test.cpp
     ;
 
 project

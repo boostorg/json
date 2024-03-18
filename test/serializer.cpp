@@ -681,9 +681,9 @@ public:
         BOOST_TEST(parse("-0").as_int64() == 0);
         BOOST_TEST(serialize(parse("-0")) == "0");
         BOOST_TEST(parse("-0.0").as_double() == -0);
-        BOOST_TEST(serialize(parse("0.0")) == "0E0");
+        BOOST_TEST(serialize(parse("0.0")) == "0e+00");
         BOOST_TEST(parse("0.0").as_double() == 0);
-        BOOST_TEST(serialize(parse("-0.0")) == "-0E0");
+        BOOST_TEST(serialize(parse("-0.0")) == "-0e+00");
     }
 
     void
@@ -798,7 +798,7 @@ public:
             check_udt(i, "-1");
 
             double d = 3.12;
-            check_udt(d, "3.12E0");
+            check_udt(d, "3.12e+00");
 
 #if defined(BOOST_HAS_INT128) && defined(__GLIBCXX_TYPE_INT_N_0)
             boost::int128_type ii =
@@ -838,7 +838,7 @@ public:
 #ifdef BOOST_DESCRIBE_CXX14
         {
             serializer_test_ns::my_struct s{"some string", 1424, 12.4};
-            check_udt(s, R"({"s":"some string","n":1424,"d":1.24E1})");
+            check_udt(s, R"({"s":"some string","n":1424,"d":1.24e+01})");
         }
         {
             check_udt(
@@ -853,7 +853,7 @@ public:
             check_udt( v, "112" );
 
             v = 0.5;
-            check_udt( v, "5E-1" );
+            check_udt( v, "5e-01" );
 
             v = "this is a string";
             check_udt(v, R"("this is a string")");
