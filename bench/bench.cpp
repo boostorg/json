@@ -344,112 +344,14 @@ bench(
 
 //----------------------------------------------------------
 
-class boost_default_impl : public any_impl
+class boost_impl : public any_impl
 {
+    bool is_pool_;
+
 public:
-    boost_default_impl(bool with_file_io, parse_options const& popts)
-        : any_impl("boost", true, false, with_file_io, popts)
-    {}
-
-    clock_type::duration
-    parse(
-        string_view s,
-        std::size_t repeat) const override
-    {
-        auto const start = clock_type::now();
-        stream_parser p( {}, get_parse_options() );
-        while(repeat--)
-        {
-            p.reset();
-            system::error_code ec;
-            p.write(s.data(), s.size(), ec);
-            if(! ec)
-                p.finish(ec);
-            if(! ec)
-                auto jv = p.release();
-        }
-        return clock_type::now() - start;
-    }
-
-    clock_type::duration
-    parse(file_item const& fi, std::size_t repeat) const override
-    {
-        auto const start = clock_type::now();
-        stream_parser p( {}, get_parse_options() );
-        char s[ BOOST_JSON_STACK_BUFFER_SIZE];
-        while(repeat--)
-        {
-            p.reset();
-
-            FILE* f = fopen(fi.name.data(), "rb");
-
-            system::error_code ec;
-            while( true )
-            {
-                std::size_t const sz = fread(s, 1, sizeof(s), f);
-                if( ferror(f) )
-                {
-                    ec = std::io_errc::stream;
-                    break;
-                }
-
-                p.write( s, sz, ec );
-                if( ec.failed() )
-                    break;
-
-                if( feof(f) )
-                    break;
-            }
-
-            if(! ec)
-                p.finish(ec);
-
-            if(! ec)
-                auto jv = p.release();
-
-            fclose(f);
-        }
-        return clock_type::now() - start;
-    }
-
-    clock_type::duration
-    serialize(
-        string_view s,
-        std::size_t repeat) const override
-    {
-        auto jv = json::parse(s);
-
-        auto const start = clock_type::now();
-        serializer sr;
-        string out;
-        out.reserve(512);
-        while(repeat--)
-        {
-            sr.reset(&jv);
-            out.clear();
-            for(;;)
-            {
-                out.grow(sr.read(
-                    out.end(),
-                    out.capacity() -
-                        out.size()).size());
-                if(sr.done())
-                    break;
-                out.reserve(
-                    out.capacity() + 1);
-            }
-        }
-        return clock_type::now() - start;
-    }
-};
-
-//----------------------------------------------------------
-
-class boost_pool_impl : public any_impl
-{
-public:
-    boost_pool_impl(bool with_file_io, parse_options const& popts)
-        : any_impl("boost", true, true, with_file_io, popts)
+    boost_impl(bool is_pool, bool with_file_io, parse_options const& popts)
+        : any_impl("boost", true, is_pool, with_file_io, popts)
+        , is_pool_(is_pool)
     {}
 
     clock_type::duration
@@ -462,7 +364,11 @@ public:
         while(repeat--)
         {
             monotonic_resource mr;
-            p.reset(&mr);
+            storage_ptr sp;
+            if( is_pool_ )
+                sp = &mr;
+            p.reset( std::move(sp) );
+
             system::error_code ec;
             p.write(s.data(), s.size(), ec);
             if(! ec)
@@ -482,7 +388,10 @@ public:
         while(repeat--)
         {
             monotonic_resource mr;
-            p.reset(&mr);
+            storage_ptr sp;
+            if( is_pool_ )
+                sp = &mr;
+            p.reset( std::move(sp) );
 
             FILE* f = fopen(fi.name.data(), "rb");
 
@@ -521,7 +430,10 @@ public:
         std::size_t repeat) const override
     {
         monotonic_resource mr;
-        auto jv = json::parse(s, &mr);
+        storage_ptr sp;
+        if( is_pool_ )
+            sp = &mr;
+        auto jv = json::parse( s, std::move(sp) );
 
         auto const start = clock_type::now();
         serializer sr;
@@ -693,9 +605,13 @@ public:
 
 class boost_simple_impl : public any_impl
 {
+    bool is_pool_;
+
 public:
-    boost_simple_impl(bool with_file_io, parse_options const& popts)
-        : any_impl("boost (convenient)", true, true, with_file_io, popts)
+    boost_simple_impl(
+        bool is_pool, bool with_file_io, parse_options const& popts)
+        : any_impl("boost (convenient)", true, is_pool, with_file_io, popts)
+        , is_pool_(is_pool)
     {}
 
     clock_type::duration
@@ -706,9 +622,13 @@ public:
         auto const start = clock_type::now();
         while(repeat--)
         {
-            system::error_code ec;
             monotonic_resource mr;
-            auto jv = json::parse( s, ec, &mr, get_parse_options() );
+            storage_ptr sp;
+            if( is_pool_ )
+                sp = &mr;
+
+            system::error_code ec;
+            auto jv = json::parse( s, ec, std::move(sp), get_parse_options() );
             (void)jv;
         }
         return clock_type::now() - start;
@@ -720,10 +640,15 @@ public:
         auto const start = clock_type::now();
         while(repeat--)
         {
-            system::error_code ec;
             std::ifstream is( fi.name, std::ios::in | std::ios::binary );
+
             monotonic_resource mr;
-            auto jv = json::parse( is, ec, &mr, get_parse_options() );
+            storage_ptr sp;
+            if( is_pool_ )
+                sp = &mr;
+
+            system::error_code ec;
+            auto jv = json::parse( is, ec, std::move(sp), get_parse_options() );
             (void)jv;
         }
         return clock_type::now() - start;
@@ -734,7 +659,11 @@ public:
         string_view s,
         std::size_t repeat) const override
     {
-        auto jv = json::parse(s);
+        monotonic_resource mr;
+        storage_ptr sp;
+        if( is_pool_ )
+            sp = &mr;
+        auto jv = json::parse( s, std::move(sp) );
 
         auto const start = clock_type::now();
         std::string out;
@@ -748,9 +677,13 @@ public:
 
 class boost_operator_impl : public any_impl
 {
+    bool is_pool_;
+
 public:
-    boost_operator_impl(bool with_file_io, parse_options const& popts)
-        : any_impl("boost (operators)", true, true, with_file_io, popts)
+    boost_operator_impl(
+        bool is_pool, bool with_file_io, parse_options const& popts)
+        : any_impl("boost (operators)", true, is_pool, with_file_io, popts)
+        , is_pool_(is_pool)
     {}
 
     clock_type::duration
@@ -761,7 +694,11 @@ public:
         while(repeat--)
         {
             monotonic_resource mr;
-            value jv(&mr);
+            storage_ptr sp;
+            if( is_pool_ )
+                sp = &mr;
+
+            value jv( std::move(sp) );
             is.seekg(0);
             is >> get_parse_options() >> jv;
         }
@@ -775,7 +712,11 @@ public:
         while(repeat--)
         {
             monotonic_resource mr;
-            value jv(&mr);
+            storage_ptr sp;
+            if( is_pool_ )
+                sp = &mr;
+
+            value jv( std::move(sp) );
             std::ifstream is( fi.name, std::ios::in | std::ios::binary );
             is >> get_parse_options() >> jv;
         }
@@ -787,7 +728,12 @@ public:
         string_view s,
         std::size_t repeat) const override
     {
-        auto jv = json::parse(s);
+        monotonic_resource mr;
+        storage_ptr sp;
+        if( is_pool_ )
+            sp = &mr;
+
+        auto jv = json::parse( s, std::move(sp) );
 
         auto const start = clock_type::now();
         std::string out;
@@ -1063,22 +1009,14 @@ bool add_impl(impl_list & vi, char kind, char alloc, char io, char num)
     default:
         return false;
     }
-    bool with_file_io = io == 'y';
+    bool const with_file_io = io == 'y';
+    bool const is_pool = alloc == 'p';
 
     std::unique_ptr<any_impl const> impl;
     switch( kind )
     {
     case 'b':
-        switch(alloc)
-        {
-            case 'p':
-                impl = std::make_unique<boost_pool_impl>(with_file_io, popts);
-                break;
-            case 'd':
-                impl = std::make_unique<boost_default_impl>(
-                    with_file_io, popts);
-                break;
-        }
+        impl = std::make_unique<boost_impl>(is_pool, with_file_io, popts);
         break;
 
     case 'u':
@@ -1086,24 +1024,21 @@ bool add_impl(impl_list & vi, char kind, char alloc, char io, char num)
         break;
 
     case 's':
-        impl = std::make_unique<boost_simple_impl>(with_file_io, popts);
+        impl = std::make_unique<boost_simple_impl>(
+            is_pool, with_file_io, popts);
         break;
 
     case 'o':
-        impl = std::make_unique<boost_operator_impl>(with_file_io, popts);
+        impl = std::make_unique<boost_operator_impl>(
+            is_pool, with_file_io, popts);
         break;
 
 #ifdef BOOST_JSON_HAS_RAPIDJSON
     case 'r':
-        switch(alloc)
-        {
-            case 'p':
-                impl = std::make_unique<rapidjson_memory_impl>(with_file_io);
-                break;
-            case 'd':
-                impl = std::make_unique<rapidjson_crt_impl>(with_file_io);
-                break;
-        }
+        if(is_pool)
+            impl = std::make_unique<rapidjson_memory_impl>(with_file_io);
+        else
+            impl = std::make_unique<rapidjson_crt_impl>(with_file_io);
         break;
 #endif // BOOST_JSON_HAS_RAPIDJSON
 
