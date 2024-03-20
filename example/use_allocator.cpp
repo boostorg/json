@@ -42,7 +42,7 @@ template<
         is_sequence_like<T>::value &&
         std::uses_allocator<T, Alloc>::value
         >::type >
-result<T>
+boost::system::result<T>
 tag_invoke( try_value_to_tag<T>, const value& jv, const use_allocator_t<Alloc>& ctx, const FullContext& full_ctx )
 {
 

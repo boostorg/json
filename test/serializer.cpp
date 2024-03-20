@@ -54,7 +54,7 @@ public:
         string_view name = {})
     {
         {
-            error_code ec;
+            system::error_code ec;
             auto const s1 = serialize(jv);
             auto const jv2 = parse(s1, ec);
             if(! BOOST_TEST(equal(jv, jv2)))
@@ -74,7 +74,7 @@ public:
 
         // large buffer
         {
-            error_code ec;
+            system::error_code ec;
             serializer sr;
             sr.reset(&jv);
             string js;
@@ -563,7 +563,7 @@ public:
             "[1,2,3,4,5]"
             })
         {
-            error_code ec;
+            system::error_code ec;
             auto const jv1 = parse(js, ec);
             if(! BOOST_TEST(! ec))
                 return;

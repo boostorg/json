@@ -14,6 +14,7 @@
 #include <boost/json/detail/config.hpp>
 #include <boost/json/fwd.hpp>
 #include <boost/assert/source_location.hpp>
+#include <boost/json/result_for.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/system/result.hpp>
 #include <boost/system/system_error.hpp>
@@ -21,17 +22,46 @@
 namespace boost {
 namespace json {
 
-/// The type of error code used by the library.
-using error_code = boost::system::error_code;
+/** The type of error code used by the library.
 
-/// The type of error category used by the library.
-using error_category = boost::system::error_category;
+    @note This alias is deprecated in favor of `boost::system::error_code`.
+    It is included for backwards compatibility and shouldn't be used in new
+    code. It will be removed completely in version 1.87.0.
+*/
+typedef boost::system::error_code
+    BOOST_DEPRECATED("Use boost::system::error_code instead")
+    error_code;
 
-/// The type of error condition used by the library.
-using error_condition = boost::system::error_condition;
+/** The type of error category used by the library.
 
-/// The type of system error thrown by the library.
-using system_error = boost::system::system_error;
+    @note This alias is deprecated in favor of `boost::system::error_category`.
+    It is included for backwards compatibility and shouldn't be used in new
+    code. It will be removed completely in version 1.87.0.
+*/
+typedef boost::system::error_category
+    BOOST_DEPRECATED("Use boost::system::error_category instead")
+    error_category;
+
+/** The type of error condition used by the library.
+
+    @note This alias is deprecated in favor of
+    `boost::system::error_condition`. It is included for backwards
+    compatibility and shouldn't be used in new code. It will be removed
+    completely in version 1.87.0.
+*/
+typedef boost::system::error_condition
+    BOOST_DEPRECATED("Use boost::system::error_condition instead")
+    error_condition;
+
+/** The type of system error thrown by the library.
+
+    @note This alias is deprecated in favor of `boost::system::system_error`.
+    It is included for backwards compatibility and shouldn't be used in new
+    code. It will be removed completely in version 1.87.0.
+*/
+typedef boost::system::system_error
+    BOOST_DEPRECATED("Use boost::system::system_error instead")
+    system_error;
 
 /** The type of result returned by library functions
 
@@ -90,134 +120,19 @@ using system_error = boost::system::system_error;
         std::cout << r.error();
     @endcode
 
-    @note For a full synopsis of the type, please see the corresponding
-    documentation in Boost.System.
+    @note This alias is deprecated in favor of `boost::system::result`. It is
+    included for backwards compatibility and shouldn't be used in new code. It
+    will be removed completely in version 1.87.0.
 
     @tparam T The type of value held by the result.
 */
 template< class T >
-using result = boost::system::result<T>;
-
-/**
-   Helper trait that returns @ref result
-
-   The primary template is an incomplete type. The library provides a partial
-   specialisation `result_for<T1, value>`, that has nested type alias `type`
-   that aliases the type `result<T1>`.
-
-   The purpose of this trait is to let users provide non-throwing conversions
-   for their types without creating a physical dependency on Boost.Json. For
-   example:
-
-   @code
-   namespace boost
-   {
-   namespace json
-   {
-
-   template<class T>
-   struct value_to_tag;
-
-   template<class T1, class T2>
-   struct result_for;
-   }
-   }
-
-   namespace mine
-   {
-       class my_class;
-       ...
-       template<class JsonValue>
-       boost::json::result_for<my_class, JsonValue>
-       tag_invoke(boost::json::try_value_to_tag<my_class>, const JsonValue& jv)
-       { ... }
-   }
-   @endcode
-
-    @see @ref try_value_to, @ref try_value_to_tag
-*/
-template <class T1, class T2>
-struct result_for;
-
-/** Create @ref result storing a portable error code
-
-    This function constructs a `result<T>` that stores @ref error_code with
-    `value()` equal to `e` and `category()` equal to
-    `boost::system::generic_category()`. <br>
-
-    The main use for this function is in implementation of functions returning
-    @ref result, without including `boost/json/system_error.hpp` or even
-    `<system_error>`. In particular, it may be useful for customizations of
-    @ref try_value_to without creating a physical dependency on Boost.JSON.
-    For example:
-
-    @code
-    #include <cerrno>
-    #include <boost/assert/source_location.hpp>
-
-    namespace boost
-    {
-    namespace json
-    {
-
-    class value;
-
-    template<class T>
-    struct try_value_to_tag;
-
-    template<class T1, class T2>
-    struct result_for;
-
-    template <class T>
-    typename result_for<T, value>::type
-    result_from_errno(int e, boost::source_location const* loc) noexcept
-
-    }
-    }
-
-    namespace mine
-    {
-
-    class my_class;
-    ...
-    template<class JsonValue>
-    boost::json::result_for<my_class, JsonValue>
-    tag_invoke(boost::json::try_value_to_tag<my_class>, const JsonValue& jv)
-    {
-        BOOST_STATIC_CONSTEXPR boost::source_location loc = BOOST_CURRENT_LOCATION;
-        if( !jv.is_null() )
-            return boost::json::result_from_errno<my_class>(EINVAL, &loc);
-        return my_class();
-    }
-
-    }
-    @endcode
-
-    @par Exception Safety
-    Does not throw exceptions.
-
-    @tparam T The value type of returned `result`.
-
-    @param e The error value.
-
-    @param loc The error location.
-
-    @returns @ref error_code with `value()` equal to `e` and `category()` equal
-    to `boost::system::generic_category()`.
-
-    @see @ref try_value_to_tag, @ref try_value_to, @ref result_for,
-    <a href="https://www.boost.org/doc/libs/develop/libs/system/doc/html/system.html#ref_generic_category">
-        `boost::system::generic_category`</a>,
-    <a href="https://www.boost.org/doc/libs/master/libs/assert/doc/html/assert.html#source_location_support">
-        `boost::source_location`</a>.
-*/
-template <class T>
-typename result_for<T, value>::type
-result_from_errno(int e, boost::source_location const* loc) noexcept
-{
-    error_code ec(e, system::generic_category(), loc);
-    return {system::in_place_error, ec};
-}
+using
+    result
+#ifndef BOOST_MSVC
+    BOOST_DEPRECATED("Use boost::system::result instead")
+#endif
+    = boost::system::result<T>;
 
 } // namespace json
 } // namespace boost

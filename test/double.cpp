@@ -53,7 +53,7 @@ public:
         operator()(string_view s, parse_options const& po = {}) const
         {
             BOOST_TEST_CHECKPOINT();
-            error_code ec;
+            system::error_code ec;
             stream_parser p({}, po);
             p.write(s.data(), s.size(), ec);
             if(BOOST_TEST(! ec))
@@ -95,7 +95,7 @@ public:
         const parse_options& po = parse_options())
     {
         stream_parser p(storage_ptr(), po);
-        error_code ec;
+        system::error_code ec;
         p.reset(std::move(sp));
         p.write(s.data(), s.size(), ec);
         if(BOOST_TEST(! ec))
@@ -165,7 +165,7 @@ public:
                     fail_resource mr;
                     mr.fail_max = 0;
                     stream_parser p(storage_ptr(), po);
-                    error_code ec;
+                    system::error_code ec;
                     p.reset(&mr);
                     p.write(s.data(), i, ec);
                     if(BOOST_TEST(! ec))

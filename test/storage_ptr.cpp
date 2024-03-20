@@ -35,7 +35,7 @@ public:
     static value jv2;
 
     struct throwing
-        : memory_resource
+        : container::pmr::memory_resource
     {
         throwing()
         {
@@ -154,7 +154,7 @@ public:
 
         struct my_resource
             : other
-            , memory_resource
+            , container::pmr::memory_resource
         {
             void*
             do_allocate(

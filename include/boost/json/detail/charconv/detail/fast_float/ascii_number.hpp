@@ -8,6 +8,7 @@
 #ifndef BOOST_JSON_DETAIL_CHARCONV_DETAIL_FASTFLOAT_ASCII_NUMBER_HPP
 #define BOOST_JSON_DETAIL_CHARCONV_DETAIL_FASTFLOAT_ASCII_NUMBER_HPP
 
+#include <boost/endian/conversion.hpp>
 #include <boost/json/detail/charconv/detail/fast_float/float_common.hpp>
 #include <cctype>
 #include <cstdint>
@@ -46,10 +47,7 @@ uint64_t read_u64(const char *chars) {
   }
   uint64_t val;
   ::memcpy(&val, chars, sizeof(uint64_t));
-#ifdef BOOST_JSON_BIG_ENDIAN
-  // Need to read as-if the number was in little-endian order.
-  val = byteswap(val);
-#endif
+  endian::little_to_native_inplace(val);
   return val;
 }
 
@@ -63,10 +61,7 @@ void write_u64(uint8_t *chars, uint64_t val) {
     }
     return;
   }
-#ifdef BOOST_JSON_BIG_ENDIAN
-  // Need to read as-if the number was in little-endian order.
-  val = byteswap(val);
-#endif
+  endian::native_to_little_inplace(val);
   ::memcpy(chars, &val, sizeof(uint64_t));
 }
 

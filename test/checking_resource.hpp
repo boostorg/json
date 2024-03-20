@@ -19,7 +19,7 @@ namespace boost {
 namespace json {
 
 class checking_resource
-    : public memory_resource
+    : public container::pmr::memory_resource
 {
     storage_ptr upstream_;
     std::map<void const*, std::pair<std::size_t, std::size_t>> allocs_;

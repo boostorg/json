@@ -129,7 +129,7 @@ int main()
 
         citm_catalog w;
 
-        boost::json::error_code ec;
+        boost::system::error_code ec;
         boost::json::parse_into( w, json, ec );
 
         if( ec.failed() )

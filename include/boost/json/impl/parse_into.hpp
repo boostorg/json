@@ -23,7 +23,7 @@ void
 parse_into(
     V& v,
     string_view sv,
-    error_code& ec,
+    system::error_code& ec,
     parse_options const& opt )
 {
     parser_for<V> p( opt, &v );
@@ -44,7 +44,7 @@ parse_into(
     std::error_code& ec,
     parse_options const& opt )
 {
-    error_code jec;
+    system::error_code jec;
     parse_into(v, sv, jec, opt);
     ec = jec;
 }
@@ -56,7 +56,7 @@ parse_into(
     string_view sv,
     parse_options const& opt )
 {
-    error_code ec;
+    system::error_code ec;
     parse_into(v, sv, ec, opt);
     if( ec.failed() )
         detail::throw_system_error( ec );
@@ -67,7 +67,7 @@ void
 parse_into(
     V& v,
     std::istream& is,
-    error_code& ec,
+    system::error_code& ec,
     parse_options const& opt )
 {
     parser_for<V> p( opt, &v );
@@ -107,7 +107,7 @@ parse_into(
     std::error_code& ec,
     parse_options const& opt )
 {
-    error_code jec;
+    system::error_code jec;
     parse_into(v, is, jec, opt);
     ec = jec;
 }
@@ -119,7 +119,7 @@ parse_into(
     std::istream& is,
     parse_options const& opt )
 {
-    error_code ec;
+    system::error_code ec;
     parse_into(v, is, ec, opt);
     if( ec.failed() )
         detail::throw_system_error( ec );

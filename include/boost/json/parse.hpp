@@ -62,7 +62,7 @@ BOOST_JSON_DECL
 value
 parse(
     string_view s,
-    error_code& ec,
+    system::error_code& ec,
     storage_ptr sp = {},
     parse_options const& opt = {});
 
@@ -101,7 +101,7 @@ parse(
     @param opt The options for the parser. If this parameter
     is omitted, the parser will accept only standard JSON.
 
-    @throw system_error Thrown on failure.
+    @throw boost::system::system_error Thrown on failure.
 
     @see
         @ref parse_options,
@@ -156,7 +156,7 @@ BOOST_JSON_DECL
 value
 parse(
     std::istream& is,
-    error_code& ec,
+    system::error_code& ec,
     storage_ptr sp = {},
     parse_options const& opt = {});
 
@@ -181,7 +181,7 @@ parse(
 
     @par Exception Safety
     Basic guarantee.
-    Throws @ref system_error on failed parse.
+    Throws `boost::system::system_error` on failed parse.
     Calls to `memory_resource::allocate` may throw.
     The stream may throw as described by
     [`std::ios::exceptions`](https://en.cppreference.com/w/cpp/io/basic_ios/exceptions).

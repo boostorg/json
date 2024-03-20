@@ -7,6 +7,7 @@
 // Official repository: https://github.com/boostorg/json
 //
 
+#include <boost/container/pmr/memory_resource.hpp>
 #include <boost/json/memory_resource.hpp>
 #include <boost/json/monotonic_resource.hpp>
 #include <boost/json/value.hpp>
@@ -28,7 +29,7 @@ static void set1() {
 monotonic_resource mr;
 
 // Declare a vector of JSON values
-std::vector< value, polymorphic_allocator< value > > v( &mr );
+std::vector< value, boost::container::pmr::polymorphic_allocator< value > > v( &mr );
 
 // The polymorphic allocator will use our resource
 assert( v.get_allocator().resource() == &mr );
@@ -44,7 +45,7 @@ assert( v[0].storage().get() == &mr );
 {
 //[doc_uses_allocator_2
 // This vector will use the default memory resource
-std::vector< value, polymorphic_allocator < value > > v;
+std::vector< value, boost::container::pmr::polymorphic_allocator < value > > v;
 
 // This value will same memory resource as the vector
 value jv( v.get_allocator() );

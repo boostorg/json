@@ -298,7 +298,7 @@ public:
         while(repeat--)
         {
             p.reset();
-            error_code ec;
+            system::error_code ec;
             p.write(s.data(), s.size(), ec);
             if(! ec)
                 p.finish(ec);
@@ -320,7 +320,7 @@ public:
 
             FILE* f = fopen(fi.name.data(), "rb");
 
-            error_code ec;
+            system::error_code ec;
             while( true )
             {
                 std::size_t const sz = fread(s, 1, sizeof(s), f);
@@ -412,7 +412,7 @@ public:
         {
             monotonic_resource mr;
             p.reset(&mr);
-            error_code ec;
+            system::error_code ec;
             p.write(s.data(), s.size(), ec);
             if(! ec)
                 p.finish(ec);
@@ -435,7 +435,7 @@ public:
 
             FILE* f = fopen(fi.name.data(), "rb");
 
-            error_code ec;
+            system::error_code ec;
             while( true )
             {
                 std::size_t const sz = fread(s, 1, sizeof(s), f);
@@ -509,24 +509,24 @@ class boost_null_impl : public any_impl
             constexpr static std::size_t max_key_size = std::size_t(-1);
             constexpr static std::size_t max_string_size = std::size_t(-1);
 
-            bool on_document_begin(error_code&) { return true; }
-            bool on_document_end(error_code&) { return true; }
-            bool on_object_begin(error_code&) { return true; }
-            bool on_object_end(std::size_t, error_code&) { return true; }
-            bool on_array_begin(error_code&) { return true; }
-            bool on_array_end(std::size_t, error_code&) { return true; }
-            bool on_key_part(string_view, std::size_t, error_code&) { return true; }
-            bool on_key( string_view, std::size_t, error_code&) { return true; }
-            bool on_string_part(string_view, std::size_t, error_code&) { return true; }
-            bool on_string(string_view, std::size_t, error_code&) { return true; }
-            bool on_number_part(string_view, error_code&) { return true; }
-            bool on_int64(std::int64_t, string_view, error_code&) { return true; }
-            bool on_uint64(std::uint64_t, string_view, error_code&) { return true; }
-            bool on_double(double, string_view, error_code&) { return true; }
-            bool on_bool(bool, error_code&) { return true; }
-            bool on_null(error_code&) { return true; }
-            bool on_comment_part(string_view, error_code&) { return true; }
-            bool on_comment(string_view, error_code&) { return true; }
+            bool on_document_begin(system::error_code&) { return true; }
+            bool on_document_end(system::error_code&) { return true; }
+            bool on_object_begin(system::error_code&) { return true; }
+            bool on_object_end(std::size_t, system::error_code&) { return true; }
+            bool on_array_begin(system::error_code&) { return true; }
+            bool on_array_end(std::size_t, system::error_code&) { return true; }
+            bool on_key_part(string_view, std::size_t, system::error_code&) { return true; }
+            bool on_key( string_view, std::size_t, system::error_code&) { return true; }
+            bool on_string_part(string_view, std::size_t, system::error_code&) { return true; }
+            bool on_string(string_view, std::size_t, system::error_code&) { return true; }
+            bool on_number_part(string_view, system::error_code&) { return true; }
+            bool on_int64(std::int64_t, string_view, system::error_code&) { return true; }
+            bool on_uint64(std::uint64_t, string_view, system::error_code&) { return true; }
+            bool on_double(double, string_view, system::error_code&) { return true; }
+            bool on_bool(bool, system::error_code&) { return true; }
+            bool on_null(system::error_code&) { return true; }
+            bool on_comment_part(string_view, system::error_code&) { return true; }
+            bool on_comment(string_view, system::error_code&) { return true; }
         };
 
         basic_parser<handler> p_;
@@ -546,7 +546,7 @@ class boost_null_impl : public any_impl
         write(
             char const* data,
             std::size_t size,
-            error_code& ec)
+            system::error_code& ec)
         {
             auto const n = p_.write_some(
                 false, data, size, ec);
@@ -559,14 +559,14 @@ class boost_null_impl : public any_impl
         write_some(
             char const* data,
             std::size_t size,
-            error_code& ec)
+            system::error_code& ec)
         {
             return p_.write_some(
                 true, data, size, ec);
         }
 
         void
-        finish(error_code& ec)
+        finish(system::error_code& ec)
         {
             p_.write_some(false, nullptr, 0, ec);
         }
@@ -599,7 +599,7 @@ public:
         while(repeat--)
         {
             p.reset();
-            error_code ec;
+            system::error_code ec;
             p.write(s.data(), s.size(), ec);
             BOOST_ASSERT(! ec);
         }
@@ -618,7 +618,7 @@ public:
 
             FILE* f = fopen(fi.name.data(), "rb");
 
-            error_code ec;
+            system::error_code ec;
             while( true )
             {
                 std::size_t const sz = fread(s, 1, sizeof(s), f);
@@ -679,7 +679,7 @@ public:
         auto const start = clock_type::now();
         while(repeat--)
         {
-            error_code ec;
+            system::error_code ec;
             monotonic_resource mr;
             auto jv = json::parse(s, ec, &mr, popts);
             (void)jv;
@@ -693,7 +693,7 @@ public:
         auto const start = clock_type::now();
         while(repeat--)
         {
-            error_code ec;
+            system::error_code ec;
             std::ifstream is( fi.name, std::ios::in | std::ios::binary );
             monotonic_resource mr;
             auto jv = json::parse(is, ec, &mr, popts);
@@ -1188,7 +1188,7 @@ main(
 
         dout << "\n" << strout.str();
     }
-    catch(system_error const& se)
+    catch(boost::system::system_error const& se)
     {
         dout << se.what() << std::endl;
     }

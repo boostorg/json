@@ -31,10 +31,8 @@ docca.reference reference.qbk
             BOOST_FORCEINLINE \\
             BOOST_JSON_DECL \\
             BOOST_JSON_DOCS \\
-            BOOST_JSON_PUBLIC \\
             BOOST_SYMBOL_VISIBLE \\
-            \"BOOST_JSON_INLINE_VARIABLE(v, t)=constexpr t v;\" \\
-            \"BOOST_JSON_NODISCARD=[[nodiscard]]\""
+            \"BOOST_JSON_INLINE_VARIABLE(v, t)=constexpr t v;\""
         <doxygen:param>ABBREVIATE_BRIEF=
         <doxygen:param>INLINE_INHERITED_MEMB=YES
         <doxygen:param>JAVADOC_AUTOBRIEF=YES

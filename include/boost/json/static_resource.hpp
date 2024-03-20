@@ -10,7 +10,9 @@
 #ifndef BOOST_JSON_STATIC_RESOURCE_HPP
 #define BOOST_JSON_STATIC_RESOURCE_HPP
 
+#include <boost/container/pmr/memory_resource.hpp>
 #include <boost/json/detail/config.hpp>
+#include <boost/json/is_deallocate_trivial.hpp>
 #include <boost/json/memory_resource.hpp>
 #include <cstddef>
 
@@ -67,7 +69,7 @@ class
     BOOST_JSON_DECL
     BOOST_SYMBOL_VISIBLE
 static_resource final
-    : public memory_resource
+    : public container::pmr::memory_resource
 {
     void* p_;
     std::size_t n_;

@@ -17,7 +17,7 @@ namespace json {
 class pointer_test
 {
     bool
-    hasLocation(error_code const& ec)
+    hasLocation(system::error_code const& ec)
     {
         return ec.has_location();
     }
@@ -354,10 +354,10 @@ public:
         testEscaped();
         testNested();
         testErrors();
-        testNonThrowing<error_code>();
+        testNonThrowing<system::error_code>();
         testNonThrowing<std::error_code>();
         testSet();
-        testSetNonThrowing<error_code>();
+        testSetNonThrowing<system::error_code>();
         testSetNonThrowing<std::error_code>();
     }
 };

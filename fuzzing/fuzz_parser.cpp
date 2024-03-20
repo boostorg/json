@@ -24,7 +24,7 @@ struct FuzzHelper {
     std::size_t memlimit2;
     bool res;
     void run(stream_parser& p) {
-        error_code ec;
+        boost::system::error_code ec;
 
         // Write the first part of the buffer
         p.write( jsontext, ec);

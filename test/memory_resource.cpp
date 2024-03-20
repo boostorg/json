@@ -7,8 +7,6 @@
 // Official repository: https://github.com/boostorg/json
 //
 
-// Test that header file is self-contained.
-#include <boost/json/memory_resource.hpp>
 #include <boost/json/monotonic_resource.hpp>
 #include <boost/json/value.hpp>
 #include <boost/container/pmr/vector.hpp>
@@ -25,8 +23,7 @@ public:
     void
     testBoostPmr()
     {
-        using allocator_type =
-            polymorphic_allocator<value>;
+        using allocator_type = container::pmr::polymorphic_allocator<value>;
 
         // pass polymorphic_allocator
         // where storage_ptr is expected

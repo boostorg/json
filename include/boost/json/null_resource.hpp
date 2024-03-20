@@ -10,6 +10,7 @@
 #ifndef BOOST_JSON_NULL_RESOURCE_HPP
 #define BOOST_JSON_NULL_RESOURCE_HPP
 
+#include <boost/container/pmr/memory_resource.hpp>
 #include <boost/json/detail/config.hpp>
 #include <boost/json/memory_resource.hpp>
 
@@ -28,7 +29,7 @@ namespace json {
     No-throw guarantee.
 */
 BOOST_JSON_DECL
-memory_resource*
+boost::container::pmr::memory_resource*
 get_null_resource() noexcept;
 
 } // namespace json

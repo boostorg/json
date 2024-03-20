@@ -98,7 +98,7 @@ namespace std {
 namespace pmr {
 
 template< class T >
-using vector = std::vector< T, polymorphic_allocator< T > >;
+using vector = std::vector< T, boost::container::pmr::polymorphic_allocator< T > >;
 
 } // namespace pmr
 } // namespace std
@@ -118,7 +118,7 @@ struct T {};
 monotonic_resource mr;
 
 // Construct a vector using the monotonic buffer resource
-vector< T > v1(( polymorphic_allocator< T >(&mr) ));
+vector< T > v1(( boost::container::pmr::polymorphic_allocator< T >(&mr) ));
 
 // Or this way, since construction from memory_resource* is implicit:
 vector< T > v2( &mr );
@@ -145,7 +145,7 @@ vector< T > v2( &mr );
 
 //----------------------------------------------------------
 
-struct my_resource : memory_resource
+struct my_resource : container::pmr::memory_resource
 {
     void* do_allocate  ( size_t, size_t ) override { return 0; }
     void  do_deallocate( void*, size_t, size_t ) override {}

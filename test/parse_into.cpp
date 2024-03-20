@@ -18,6 +18,10 @@
 #include <climits>
 #include <map>
 
+#ifndef BOOST_NO_CXX17_HDR_FILESYSTEM
+#include <filesystem>
+#endif // BOOST_NO_CXX17_HDR_FILESYSTEM
+
 #include "test.hpp"
 #include "test_suite.hpp"
 
@@ -48,10 +52,36 @@ bool operator==( Y const& y1, Y const& y2 )
     return y1.v == y2.v && y1.m == y2.m;
 }
 
+struct Z : X
+{
+    Z() = default;
+    Z(X x, bool b) : X(x), d(b)
+    {}
+
+private:
+    bool d = false;
+
+    friend
+    bool operator==( Z const& z1, Z const& z2 )
+    {
+        X const& x1 = z1;
+        X const& x2 = z2;
+        return (x1 == x2) && z1.d == z2.d;
+    }
+
+    BOOST_DESCRIBE_CLASS(Z, (X), (), (), (d))
+};
+
+
 BOOST_DEFINE_ENUM_CLASS(E, x, y, z)
 
 namespace boost {
 namespace json {
+
+template<>
+struct is_described_class<Z>
+    : std::true_type
+{ };
 
 class parse_into_test
 {
@@ -67,7 +97,7 @@ public:
         std::string json = serialize( value_from( t1 ) );
 
         T t2{};
-        error_code jec;
+        system::error_code jec;
         parse_into(t2, json, jec);
         BOOST_TEST( !jec.failed() ) && BOOST_TEST( t1 == t2 );
 
@@ -127,7 +157,7 @@ public:
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #endif
-        error_code ec;
+        system::error_code ec;
         T t{};
         std::string json = serialize(sample);
         parser_for<T> p( parse_options{}, &t );
@@ -192,7 +222,7 @@ public:
             double d1 = 12;
             std::string json = serialize( value_from( 12 ) );
 
-            error_code ec;
+            system::error_code ec;
             double d2;
             parse_into(d2, json, ec);
             BOOST_TEST( !ec.failed() );
@@ -336,6 +366,9 @@ public:
         testParseInto<Y>( {} );
         testParseInto<Y>( { { { 1, 1.0f, "one" }, { 2, 2.0f, "two" } }, { { "one", { 1, 1.1f, "1" } }, { "two", { 2, 2.2f, "2" } } } } );
 
+        testParseInto<Z>( {} );
+        testParseInto<Z>( { {1, 3.14f, "hello"}, true } );
+
         testParseIntoErrors<X>( error::not_object, 1 );
         testParseIntoErrors<X>(
             error::unknown_name,
@@ -414,6 +447,15 @@ public:
 #endif
     }
 
+    void testPath()
+    {
+#ifndef BOOST_NO_CXX17_HDR_FILESYSTEM
+        testParseInto< std::filesystem::path >( "c:/" );
+        testParseInto< std::filesystem::path >( ".." );
+        testParseInto< std::filesystem::path >( "../" );
+#endif // BOOST_NO_CXX17_HDR_FILESYSTEM
+    }
+
     void run()
     {
         testNull();
@@ -427,10 +469,12 @@ public:
         testStruct();
         testEnum();
         testOptional();
+        testPath();
         testVariant<variant2::variant, variant2::monostate>();
 #ifndef BOOST_NO_CXX17_HDR_VARIANT
         testVariant<std::variant, std::monostate>();
 #endif
+
         {
             int n;
             BOOST_TEST_THROWS_WITH_LOCATION( parse_into( n, "null" ) );
@@ -441,7 +485,7 @@ public:
 
         {
             int n;
-            error_code ec;
+            system::error_code ec;
             parse_into( n, "12 1", ec);
             BOOST_TEST( ec == error::extra_data );
             BOOST_TEST( ec.has_location() );
@@ -450,7 +494,7 @@ public:
         {
             std::stringstream is("12 1");
             int n;
-            error_code ec;
+            system::error_code ec;
             parse_into( n, is, ec);
             BOOST_TEST( ec == error::extra_data );
             BOOST_TEST( ec.has_location() );
@@ -460,7 +504,7 @@ public:
             int n;
             std::stringstream is("1");
             is.setstate( std::ios::failbit );
-            error_code ec;
+            system::error_code ec;
             parse_into(n, is, ec);
             BOOST_TEST( ec == error::input_error );
             BOOST_TEST( ec.has_location() );

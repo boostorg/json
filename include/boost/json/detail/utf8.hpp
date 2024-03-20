@@ -10,6 +10,7 @@
 #ifndef BOOST_JSON_DETAIL_UTF8_HPP
 #define BOOST_JSON_DETAIL_UTF8_HPP
 
+#include <boost/endian/conversion.hpp>
 #include <boost/json/detail/config.hpp>
 
 #include <cstddef>
@@ -26,12 +27,7 @@ load_little_endian(void const* p)
 {
     std::uint32_t v = 0;
     std::memcpy(&v, p, N);
-#ifdef BOOST_JSON_BIG_ENDIAN
-    v = ((v & 0xFF000000) >> 24) |
-        ((v & 0x00FF0000) >>  8) |
-        ((v & 0x0000FF00) <<  8) |
-        ((v & 0x000000FF) << 24);
-#endif
+    endian::little_to_native_inplace(v);
     return v;
 }
 

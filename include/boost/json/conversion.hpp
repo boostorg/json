@@ -102,6 +102,49 @@ struct try_value_to_tag { };
 template<class T>
 struct is_string_like;
 
+/** Determine if `T` can be treated like `std::filesystem::path` during conversions.
+
+    Given `t`, a glvalue of type `T`, if
+
+    @li given `It`, the type denoted by `decltype(std::begin(t))`,
+        <tt>std::iterator_traits<It>::iterator_category</tt> is well-formed and
+        denotes a type; and
+
+    @li <tt>std::iterator_traits<It>::value_type</tt> is `T`; and
+
+    @li `T::value_type` is well-formed and denotes a type; and
+
+    @li `T::string_type` is well-formed, denotes a type, and is an alias for
+    `std::basic_string< T::value_type >`;
+
+    then the trait provides the member constant `value` that is equal to
+    `true`. Otherwise, `value` is equal to `false`.<br>
+
+    Users can specialize the trait for their own types if they don't want them
+    to be treated like filesystem paths. For example:
+
+    @code
+    namespace boost {
+    namespace json {
+
+    template <>
+    struct is_path_like<your::path> : std::false_type
+    { };
+
+    } // namespace boost
+    } // namespace json
+    @endcode
+
+
+    @par Types satisfying the trait
+
+    `std::filesystem::path`, `boost::filesystem::path`.
+
+    @see @ref value_from, @ref value_to
+*/
+template<class T>
+struct is_path_like;
+
 /** Determine if `T` can be treated like a sequence during conversions.
 
     Given `t`, a glvalue of type `T`, if
@@ -110,7 +153,9 @@ struct is_string_like;
         <tt>std::iterator_traits<It>::iterator_category</tt> is well-formed and
         denotes a type; and
 
-    @li `decltype(std::end(t))` also denotes the type `It`;
+    @li `decltype(std::end(t))` also denotes the type `It`; and
+
+    @li <tt>std::iterator_traits<It>::value_type</tt> is not `T`; and
 
     then the trait provides the member constant `value` that is equal to
     `true`. Otherwise, `value` is equal to `false`.<br>
@@ -257,7 +302,7 @@ struct is_null_like
 /** Determine if `T` should be treated as a described class
 
     Described classes are serialised as objects with an element for each
-    described public data member. A described class should not have described
+    described data member. A described class should not have described
     bases or non-public members.<br>
 
     Or more formally, given `L`, a class template
@@ -290,10 +335,10 @@ struct is_null_like
     @endcode
 
     Users can also specialize the trait for their own types _with_ described
-    bases to enable this conversion implementation. In this case the class will
-    be serialized in a flattened way, that is members of bases will be
-    serialized as direct elements of the object, and no nested objects will be
-    created for bases.
+    bases or described non-public data members to enable this conversion
+    implementation. In this case the class will be serialized in a flattened
+    way, that is members of bases will be serialized as direct elements of the
+    object, and no nested objects will be created for bases.
 
     @see <a href="https://www.boost.org/doc/libs/develop/libs/describe/doc/html/describe.html">Boost.Describe</a>.
 */

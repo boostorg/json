@@ -30,7 +30,7 @@ public:
     void
     run()
     {
-        error_code ec;
+        system::error_code ec;
         value jv = parse(" 1 ", ec);
         BOOST_TEST( !ec.failed() );
         BOOST_TEST( jv == 1 );

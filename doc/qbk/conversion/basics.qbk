@@ -109,6 +109,12 @@ following list of categories. The first matching category is selected.
     [The result is default constructed if the input value is `null`. Otherwise
         the result is constructed from the result of conversion of the input to
         the type stored in optional.]
+][
+    [Type satisfying __is_path_like__]
+    [`std::filesystem::path` and similar types, e.g.
+        `boost::filesystem::path`.]
+    [The result is equal to the result of `path::generic_string`.]
+    [The result is constructed from two pointers to `const char`.]
 ]]
 
 For composite types (sequences, tuples, described classes, etc.) conversion of

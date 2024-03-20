@@ -1686,7 +1686,7 @@ public:
         }
 
         {
-            error_code ec;
+            system::error_code ec;
             value(nullptr).to_number<double>(ec);
             BOOST_TEST(ec == error::not_number);
             BOOST_TEST(ec.has_location());

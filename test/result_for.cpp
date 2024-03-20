@@ -8,9 +8,9 @@
 //
 
 // Test that header file is self-contained.
-#include <boost/json/system_error.hpp>
+#include <boost/json/result_for.hpp>
 // Test that header file is properly guarder
-#include <boost/json/system_error.hpp>
+#include <boost/json/result_for.hpp>
 
 #include <boost/json/value_to.hpp>
 
@@ -19,7 +19,7 @@
 namespace boost {
 namespace json {
 
-class system_error_test
+class result_for_test
 {
 public:
     void
@@ -37,7 +37,7 @@ public:
     }
 };
 
-TEST_SUITE(system_error_test, "boost.json.system_error");
+TEST_SUITE(result_for_test, "boost.json.result_for");
 
 } // namespace json
 } // namespace boost

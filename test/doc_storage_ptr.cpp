@@ -131,7 +131,7 @@ assert( str.storage().is_shared() );                    // shared ownership
 
 //----------------------------------------------------------
 //[doc_storage_ptr_10
-class logging_resource : public memory_resource
+class logging_resource : public boost::container::pmr::memory_resource
 {
 private:
     void* do_allocate( std::size_t bytes, std::size_t align ) override

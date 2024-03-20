@@ -88,19 +88,23 @@ tag_invoke( const try_value_to_tag< ip_address >&, value const& jv )
     if( arr.size() != 4 )
         return make_error_code( std::errc::invalid_argument );
 
-    result< unsigned char > oct1 = try_value_to< unsigned char >( arr[0] );
+    boost::system::result< unsigned char > oct1
+        = try_value_to< unsigned char >( arr[0] );
     if( !oct1 )
         return make_error_code( std::errc::invalid_argument );
 
-    result< unsigned char > oct2 = try_value_to< unsigned char >( arr[1] );
+    boost::system::result< unsigned char > oct2
+        = try_value_to< unsigned char >( arr[1] );
     if( !oct2 )
         return make_error_code( std::errc::invalid_argument );
 
-    result< unsigned char > oct3 = try_value_to< unsigned char >( arr[2] );
+    boost::system::result< unsigned char > oct3
+        = try_value_to< unsigned char >( arr[2] );
     if( !oct3 )
         return make_error_code( std::errc::invalid_argument );
 
-    result< unsigned char > oct4 = try_value_to< unsigned char >( arr[3] );
+    boost::system::result< unsigned char > oct4
+        = try_value_to< unsigned char >( arr[3] );
     if( !oct4 )
         return make_error_code( std::errc::invalid_argument );
 
@@ -849,7 +853,8 @@ usingExchange()
         //[snippet_nothrow_2
         value jv = parse( R"([127,0,0,12])" );
 
-        result< ip_address > addr = try_value_to< ip_address >( jv );
+        boost::system::result< ip_address > addr
+            = try_value_to< ip_address >( jv );
         assert( addr.has_value() );
 
         ip_address addr2{ 127, 0, 0, 12 };
@@ -927,7 +932,7 @@ usingPointer()
     value* elem2 = [&]() -> value*
     {
         //[snippet_pointer_3
-        error_code ec;
+        boost::system::error_code ec;
         return jv.find_pointer("/one/foo/1", ec);
         //]
     }();

@@ -94,7 +94,7 @@ error_code_category_t::message( int ev ) const
     return message( ev, nullptr, 0 );
 }
 
-error_condition
+system::error_condition
 error_code_category_t::default_error_condition( int ev) const noexcept
 {
     switch(static_cast<error>(ev))

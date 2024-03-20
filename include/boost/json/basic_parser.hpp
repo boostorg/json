@@ -299,7 +299,7 @@ class basic_parser
     Handler h_;
 
     number num_;
-    error_code ec_;
+    system::error_code ec_;
     detail::stack st_;
     detail::utf8_sequence seq_;
     unsigned u1_;
@@ -580,7 +580,7 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    error_code
+    system::error_code
     last_error() const noexcept
     {
         return ec_;
@@ -649,7 +649,7 @@ public:
         instead.
     */
     void
-    fail(error_code ec) noexcept;
+    fail(system::error_code ec) noexcept;
 
     /** Parse some of an input string as JSON, incrementally.
 
@@ -707,7 +707,7 @@ public:
         bool more,
         char const* data,
         std::size_t size,
-        error_code& ec);
+        system::error_code& ec);
 
     std::size_t
     write_some(

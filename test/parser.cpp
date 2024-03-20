@@ -25,7 +25,7 @@ public:
     }
 
     bool
-    hasLocation(error_code const& ec)
+    hasLocation(system::error_code const& ec)
     {
         return ec.has_location();
     }
@@ -370,7 +370,7 @@ public:
     run()
     {
         testCtors();
-        testMembers<error_code>();
+        testMembers<system::error_code>();
         testMembers<std::error_code>();
     }
 };

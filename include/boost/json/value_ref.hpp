@@ -44,12 +44,11 @@ class string;
     @li `std::initializer_list< std::pair< string_view, value_ref > >`
     for constructing or assigning an @ref object.
 
-    A `value_ref` uses reference semantics. Creation
-    of the actual container from the initializer
-    list is lazily deferred until the list is used.
-    This means that the @ref memory_resource used to
-    construct a container can be specified after the
-    point where the initializer list is specified.
+    A `value_ref` uses reference semantics. Creation of the actual container
+    from the initializer list is lazily deferred until the list is used. This
+    means that the `boost::container::pmr::memory_resource` used to construct a
+    container can be specified after the point where the initializer list is
+    specified.
 
     @par Example
 

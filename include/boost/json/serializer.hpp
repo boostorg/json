@@ -150,11 +150,9 @@ public:
         @par Exception Safety
         No-throw guarantee.
 
-        @param sp A pointer to the @ref memory_resource
-        to use when producing partial output.
-        Shared ownership of the memory resource
-        is retained until the serializer is
-        destroyed.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use when producing partial output. Shared ownership of the memory
+        resource is retained until the serializer is destroyed.
 
         @param buf An optional static buffer to
         use for temporary storage when producing

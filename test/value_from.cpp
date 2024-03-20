@@ -26,6 +26,10 @@
 #include <map>
 #include <unordered_map>
 
+#ifndef BOOST_NO_CXX17_HDR_FILESYSTEM
+# include <filesystem>
+#endif // BOOST_NO_CXX17_HDR_FILESYSTEM
+
 //----------------------------------------------------------
 
 namespace value_from_test_ns
@@ -131,7 +135,7 @@ void
 tag_invoke(
     ::boost::json::value_from_tag,
     ::boost::json::value& jv,
-    ::boost::json::error_code& ec,
+    ::boost::system::error_code& ec,
     T8 const& t8)
 {
     if( t8.error )
@@ -159,7 +163,7 @@ tag_invoke(
     if( t9.num == 0 )
         throw std::invalid_argument("");
     if( t9.num < 0 )
-        throw ::boost::json::system_error(
+        throw ::boost::system::system_error(
             make_error_code(::boost::json::error::syntax));
 
     jv = "T9";
@@ -179,8 +183,18 @@ BOOST_DESCRIBE_STRUCT(T10, (), (n, d))
 struct T11 : T10
 {
     std::string s;
+
+    void
+    set_b(bool v)
+    {
+        b = v;
+    }
+
+private:
+    bool b;
+
+    BOOST_DESCRIBE_CLASS(T11, (T10), (s), (), (b))
 };
-BOOST_DESCRIBE_STRUCT(T11, (T10), (s))
 
 //----------------------------------------------------------
 
@@ -484,8 +498,9 @@ public:
         t11.n = 67;
         t11.d = -.12;
         t11.s = "qwerty";
+        t11.set_b(true);
         jv = value_from( t11, ctx... );
-        BOOST_TEST(( jv == value{{"n", 67}, {"d", -.12}, {"s", "qwerty"}} ));
+        BOOST_TEST(( jv == value{{"n", 67}, {"d", -.12}, {"s", "qwerty"}, {"b", true}} ));
 
         ::value_from_test_ns::E1 e1 = ::value_from_test_ns::E1::a;
         BOOST_TEST( value_from( e1, ctx... ) == "a" );
@@ -533,6 +548,20 @@ public:
 
         BOOST_TEST( value() == value_from( std::monostate(), ctx... ) );
 #endif // BOOST_NO_CXX17_HDR_VARIANT
+    }
+
+    template< class... Context >
+    static
+    void testPath( Context const& ... ctx )
+    {
+        ignore_unused( ctx... );
+#ifndef BOOST_NO_CXX17_HDR_FILESYSTEM
+        std::vector<std::filesystem::path> paths{
+            "from/here", "to/there", "", "c:/" , "..", "../"};
+        value jv = value_from( paths, ctx... );
+        BOOST_TEST(
+            jv == (value{"from/here", "to/there", "", "c:/" , "..", "../"}) );
+#endif // BOOST_NO_CXX17_HDR_FILESYSTEM
     }
 
     void
@@ -598,6 +627,7 @@ public:
             testDescribed( Context()... );
             testOptional( Context()... );
             testVariant( Context()... );
+            testPath( Context()... );
         }
     };
 

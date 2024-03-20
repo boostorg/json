@@ -155,8 +155,7 @@ value_from_impl( no_conversion_tag, value&, T&&, Ctx const& )
 template< class Ctx, class T >
 struct from_described_member
 {
-    using Ds = describe::describe_members<
-        remove_cvref<T>, describe::mod_public | describe::mod_inherited>;
+    using Ds = described_members< remove_cvref<T> >;
 
     object& obj;
     Ctx const& ctx;
@@ -247,6 +246,15 @@ void
 value_from_impl( variant_conversion_tag, value& jv, T&& from, Ctx const& ctx )
 {
     visit( value_from_visitor<Ctx>{ jv, ctx }, static_cast<T&&>(from) );
+}
+
+template< class Ctx, class T >
+void
+value_from_impl( path_conversion_tag, value& jv, T&& from, Ctx const& )
+{
+    std::string s = from.generic_string();
+    string_view sv = s;
+    jv.emplace_string().assign(sv);
 }
 
 //----------------------------------------------------------

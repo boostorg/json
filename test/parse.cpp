@@ -29,7 +29,7 @@ public:
         return true;
     }
 
-    bool hasLocation(error_code const& ec)
+    bool hasLocation(system::error_code const& ec)
     {
         return ec.has_location();
     }
@@ -71,14 +71,14 @@ public:
     void
     good(string_view s)
     {
-        good_impl<error_code>(s);
+        good_impl<system::error_code>(s);
         good_impl<std::error_code>(s);
     }
 
     void
     bad(string_view s)
     {
-        bad_impl<error_code>(s);
+        bad_impl<system::error_code>(s);
         bad_impl<std::error_code>(s);
     }
 

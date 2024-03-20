@@ -214,7 +214,7 @@ public:
                 string::max_size() + 1, '*');
             auto const js =
                 "\"" + big + "\":null";
-            error_code ec;
+            system::error_code ec;
             auto jv = parse(js, ec);
             BOOST_TEST(ec == error::string_too_large);
             BOOST_TEST(ec.has_location());
@@ -227,7 +227,7 @@ public:
                 string::max_size() + 1, '*');
             auto const js =
                 "{\"" + big + "\":null}";
-            error_code ec;
+            system::error_code ec;
             auto jv = parse(js, ec);
             BOOST_TEST(ec == error::key_too_large);
             BOOST_TEST(ec.has_location());
@@ -260,13 +260,13 @@ public:
                 "\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n"
                 "\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n"
                 "\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\"";
-            error_code ec;
+            system::error_code ec;
             auto jv = parse(s, ec);
             BOOST_TEST(! ec);
         }
         // overflow in on_key_part
         {
-            error_code ec;
+            system::error_code ec;
             std::string big;
             big = "\\b";
             big += std::string(
@@ -280,7 +280,7 @@ public:
 
         // overflow in on_key
         {
-            error_code ec;
+            system::error_code ec;
             std::string big;
             big = "\\b";
             big += std::string(
@@ -294,7 +294,7 @@ public:
 
         // overflow in on_string_part
         {
-            error_code ec;
+            system::error_code ec;
             std::string big;
             big = "\\b";
             big += std::string(
@@ -308,7 +308,7 @@ public:
 
         // overflow in on_string
         {
-            error_code ec;
+            system::error_code ec;
             std::string big;
             big = "\\b";
             big += std::string(
@@ -323,7 +323,7 @@ public:
 
         // object overflow
         {
-            error_code ec;
+            system::error_code ec;
             string_view s = R"({
                 "00":0,"01":0,"02":0,"03":0,"04":0,"05":0,"06":0,"07":0,"08":0,"09":0,
                 "10":0,"11":0,"12":0,"13":0,"14":0,"15":0,"16":0,"17":0,"18":0,"19":0,
@@ -337,7 +337,7 @@ public:
 
         // array overflow
         {
-            error_code ec;
+            system::error_code ec;
             string_view s = "["
                 "0,0,0,0,0,0,0,0,0,0,"
                 "0,0,0,0,0,0,0,0,0,0,"
@@ -361,7 +361,7 @@ public:
         precise.numbers = number_precision::precise;
 
         stream_parser p( {}, precise );
-        error_code ec;
+        system::error_code ec;
         p.write( buffer.data(), 1, ec );
         BOOST_TEST_THROWS_WITH_LOCATION(
             p.write( buffer.data() + 1, buffer.size() - 1, ec ));

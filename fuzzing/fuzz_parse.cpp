@@ -15,7 +15,7 @@ using namespace boost::json;
 bool
 fuzz_parse(string_view sv)
 {
-    error_code ec;
+    boost::system::error_code ec;
     value jv = parse( sv, ec );
     if(ec)
         return false;

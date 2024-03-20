@@ -27,7 +27,7 @@ parse_file( char const* filename )
 {
     file f( filename, "r" );
     json::stream_parser p;
-    json::error_code ec;
+    boost::system::error_code ec;
     do
     {
         char buf[4096];

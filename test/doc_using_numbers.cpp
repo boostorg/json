@@ -124,7 +124,7 @@ catch(...)
 
 value jv = 10.5;
 
-error_code ec;
+boost::system::error_code ec;
 
 // ok, conversion is exact
 float r1 = jv.to_number< float >( ec );
