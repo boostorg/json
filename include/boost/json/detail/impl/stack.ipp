@@ -17,43 +17,8 @@ namespace json {
 namespace detail {
 
 stack::
-~stack()
-{
-    if(base_ != buf_)
-        sp_->deallocate(
-            base_, cap_);
-}
-
-stack::
-stack(
-    storage_ptr sp,
-    unsigned char* buf,
-    std::size_t buf_size) noexcept
-    : sp_(std::move(sp))
-    , cap_(buf_size)
-    , base_(buf)
-    , buf_(buf)
-{
-}
-
-void
-stack::
-reserve(std::size_t n)
-{
-    if(cap_ >= n)
-        return;
-    auto const base = static_cast<
-        unsigned char*>(sp_->allocate(n));
-    if(base_)
-    {
-        if(size_ > 0)
-            std::memcpy(base, base_, size_);
-        if(base_ != buf_)
-            sp_->deallocate(base_, cap_);
-    }
-    base_ = base;
-    cap_ = n;
-}
+non_trivial<>::
+~non_trivial() = default;
 
 } // detail
 } // namespace json

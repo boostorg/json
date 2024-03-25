@@ -12,8 +12,8 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/detail/format.hpp>
-#include <boost/json/detail/stack.hpp>
 #include <boost/json/detail/stream.hpp>
+#include <boost/json/detail/writer.hpp>
 #include <boost/json/serialize_options.hpp>
 #include <boost/json/value.hpp>
 
@@ -56,48 +56,13 @@ namespace json {
     The same instance may not be accessed concurrently.
 */
 class serializer
+    : detail::writer
 {
-    enum class state : char;
-    // VFALCO Too many streams
-    using stream = detail::stream;
-    using const_stream = detail::const_stream;
-    using local_stream = detail::local_stream;
-    using local_const_stream =
-        detail::local_const_stream;
+    using fn_t = bool (*)(writer&, detail::stream&);
 
-    using fn_t = bool (serializer::*)(stream&);
-
-#ifndef BOOST_JSON_DOCS
-    union
-    {
-        value const* pv_;
-        array const* pa_;
-        object const* po_;
-    };
-#endif
-    fn_t fn0_ = &serializer::write_null<true>;
-    fn_t fn1_ = &serializer::write_null<false>;
-    value const* jv_ = nullptr;
-    detail::stack st_;
-    const_stream cs0_;
-    serialize_options opts_;
-    char buf_[detail::max_number_chars + 1];
+    fn_t fn0_ = nullptr;
+    fn_t fn1_ = nullptr;
     bool done_ = false;
-
-    inline bool suspend(state st);
-    inline bool suspend(
-        state st, array::const_iterator it, array const* pa);
-    inline bool suspend(
-        state st, object::const_iterator it, object const* po);
-    template<bool StackEmpty> bool write_null   (stream& ss);
-    template<bool StackEmpty> bool write_true   (stream& ss);
-    template<bool StackEmpty> bool write_false  (stream& ss);
-    template<bool StackEmpty> bool write_string (stream& ss);
-    template<bool StackEmpty> bool write_number (stream& ss);
-    template<bool StackEmpty> bool write_array  (stream& ss);
-    template<bool StackEmpty> bool write_object (stream& ss);
-    template<bool StackEmpty> bool write_value  (stream& ss);
-    inline string_view read_some(char* dest, std::size_t size);
 
 public:
     /// Move constructor (deleted)
@@ -217,6 +182,10 @@ public:
     BOOST_JSON_DECL
     void
     reset(string const* p) noexcept;
+
+    template<class T>
+    void
+    reset(T const* p) noexcept;
     /** @} */
 
     /** Reset the serializer for a new string
@@ -235,6 +204,17 @@ public:
     BOOST_JSON_DECL
     void
     reset(string_view sv) noexcept;
+
+    /** Reset the serializer for std::nullptr_t
+
+        This function prepares the serializer to emit
+        a new serialized JSON representing null.
+        Any internally allocated memory is
+        preserved and re-used for the new output.
+    */
+    BOOST_JSON_DECL
+    void
+    reset(std::nullptr_t) noexcept;
 
     /** Read the next buffer of serialized JSON
 
@@ -329,5 +309,7 @@ public:
 
 } // namespace json
 } // namespace boost
+
+#include <boost/json/impl/serializer.hpp>
 
 #endif
