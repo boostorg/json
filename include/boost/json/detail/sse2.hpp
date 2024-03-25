@@ -318,6 +318,17 @@ uint64_t
 parse_four_digits(void const* p) noexcept
 {
 #ifdef BOOST_JSON_USE_SSE2
+# if defined(__GNUC__) && (__GNUC__ >= 11 )
+#  define BOOST_JSON_USE_INTRINSICS
+# elif defined(__clang__) && (BOOST_CLANG_VERSION >= 80000 )
+#  define BOOST_JSON_USE_INTRINSICS
+# elif defined(_MSC_VER)
+#  define BOOST_JSON_USE_INTRINSICS
+# endif
+#endif
+
+#ifdef BOOST_JSON_USE_INTRINSICS
+# undef BOOST_JSON_USE_INTRINSICS
     auto const c0 = _mm_cvtsi32_si128(0x0F0F0F0F);
     auto v0 = _mm_and_si128(_mm_loadu_si32(p), c0);
 
@@ -329,14 +340,14 @@ parse_four_digits(void const* p) noexcept
     auto v3 = _mm_srli_epi64(v2, 32);
     auto v4 = _mm_add_epi32(v2, v3);
     return static_cast<uint32_t>( _mm_cvtsi128_si32(v4) );
-#else // BOOST_JSON_USE_SSE2
+#else // BOOST_JSON_USE_INTRINSICS
     uint32_t v;
     std::memcpy( &v, p, 4 );
     endian::native_to_little_inplace(v);
     v = (v & 0x0F0F0F0F) * 2561 >> 8;
     v = (v & 0x00FF00FF) * 6553601 >> 16;
     return v;
-#endif // BOOST_JSON_USE_SSE2
+#endif // BOOST_JSON_USE_INTRINSICS
 }
 
 inline uint64_t parse_unsigned( uint64_t r, char const * p, std::size_t n ) noexcept
