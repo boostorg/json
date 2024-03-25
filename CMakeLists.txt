@@ -74,6 +74,7 @@ function(boost_json_setup_properties target)
             Boost::align
             Boost::assert
             Boost::config
+            Boost::charconv
             Boost::container
             Boost::container_hash
             Boost::core

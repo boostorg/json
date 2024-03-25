@@ -15,7 +15,7 @@
 #include <boost/json/basic_parser.hpp>
 #include <boost/json/error.hpp>
 #include <boost/json/detail/buffer.hpp>
-#include <boost/json/detail/charconv/from_chars.hpp>
+#include <boost/charconv/from_chars.hpp>
 #include <boost/json/detail/sse2.hpp>
 #include <boost/mp11/algorithm.hpp>
 #include <boost/mp11/integral.hpp>
@@ -2769,11 +2769,11 @@ finish_dub:
             data = num_buf_.append( begin, size );
             full_size = num_buf_.size();
         }
-        auto const err = detail::charconv::from_chars(
+        auto const result = charconv::from_chars_erange(
             data, data + full_size, d );
-        BOOST_ASSERT( err.ec != std::errc::invalid_argument );
-        BOOST_ASSERT( err.ptr == data + full_size );
-        (void)err;
+        BOOST_ASSERT( result.ec != std::errc::invalid_argument );
+        BOOST_ASSERT( result.ptr == data + full_size );
+        (void)result;
     }
     else BOOST_IF_CONSTEXPR( no_parsing )
         d = 0;
