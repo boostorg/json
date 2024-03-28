@@ -1434,7 +1434,7 @@ do_str9:
             // Check if the second code point is a valid trailing surrogate.
             // Valid trailing surrogates are [DC00, DFFF]
             if(BOOST_JSON_UNLIKELY(
-                        u2 < 0xdc00 || u2 > 0xdfff))
+                    u2 < 0xdc00 || u2 > 0xdfff))
             {
                 // If not valid and the parser does not allow it, return an error.
                 if(!allow_bad_utf16)
@@ -1591,7 +1591,6 @@ do_sur1:
             // the first code point is a valid leading surrogate
             else
             {
-                BOOST_ASSERT(temp.empty());
                 temp.append_utf8(urc);
                 break;
             }
@@ -1658,7 +1657,7 @@ do_sur6:
         // Check if the second code point is a valid trailing surrogate.
         // Valid trailing surrogates are [DC00, DFFF]
         if(BOOST_JSON_UNLIKELY(
-                    u2_ < 0xdc00 || u2_ > 0xdfff))
+                u2_ < 0xdc00 || u2_ > 0xdfff))
         {
             // If not valid and the parser does not allow it, return an error.
             if(!allow_bad_utf16)
@@ -1700,7 +1699,7 @@ do_str2:
     // all at once instead of one at a time
     for(;;)
     {
-        if(BOOST_JSON_UNLIKELY(! cs || temp.capacity() == 0))
+        if(BOOST_JSON_UNLIKELY(! cs || temp.capacity() == 0 ))
         {
             // flush
             if(BOOST_JSON_LIKELY(! temp.empty()))
