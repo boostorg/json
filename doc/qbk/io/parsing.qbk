@@ -103,6 +103,12 @@ with __parse_options__ is possible:
 
 [doc_parsing_6]
 
+When 'allow_invalid_utf16' is enabled, the parser will not throw an error in the case of
+illegal leading, trailing, or half a surrogate. Instead, it will replace the
+invalid UTF-16 code point(s) with the Unicode replacement character.
+
+[doc_parsing_15]
+
 [caution When enabling comment support take extra care not to drop whitespace
     when reading the input. For example, `std::getline` removes the
     endline characters from the string it produces.]
