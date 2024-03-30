@@ -7,17 +7,17 @@ import project ;
 
 project /boost/json
     : common-requirements
-        <source>/boost/align//boost_align
-        <source>/boost/assert//boost_assert
-        <source>/boost/config//boost_config
-        <source>/boost/container//boost_container
-        <source>/boost/container_hash//boost_container_hash
-        <source>/boost/core//boost_core
-        <source>/boost/describe//boost_describe
-        <source>/boost/endian//boost_endian
-        <source>/boost/mp11//boost_mp11
-        <source>/boost/system//boost_system
-        <source>/boost/throw_exception//boost_throw_exception
+        <library>/boost/align//boost_align
+        <library>/boost/assert//boost_assert
+        <library>/boost/config//boost_config
+        <library>/boost/container//boost_container
+        <library>/boost/container_hash//boost_container_hash
+        <library>/boost/core//boost_core
+        <library>/boost/describe//boost_describe
+        <library>/boost/endian//boost_endian
+        <library>/boost/mp11//boost_mp11
+        <library>/boost/system//boost_system
+        <library>/boost/throw_exception//boost_throw_exception
         <include>include
     ;
 
