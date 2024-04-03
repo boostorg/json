@@ -518,6 +518,56 @@ initialize_variant( V&& v, mp11::mp_int<1> )
 }
 #endif // BOOST_NO_CXX17_HDR_VARIANT
 
+struct locally_prohibit_exceptions
+{};
+
+template< class Ctx >
+Ctx const&
+make_locally_nonthrowing_context(Ctx const& ctx) noexcept
+{
+    return ctx;
+}
+
+template< class... Ctxes >
+std::tuple<Ctxes...> const&
+make_locally_nonthrowing_context(std::tuple<Ctxes...> const& ctx) noexcept
+{
+    return ctx;
+}
+
+template< class... Ctxes >
+std::tuple<locally_prohibit_exceptions, allow_exceptions, Ctxes...>
+make_locally_nonthrowing_context(std::tuple<allow_exceptions, Ctxes...> const& ctx)
+    noexcept
+{
+    return std::tuple_cat(std::make_tuple( locally_prohibit_exceptions() ), ctx);
+}
+
+template< class Ctx >
+Ctx const&
+remove_local_exception_prohibition(Ctx const& ctx) noexcept
+{
+    return ctx;
+}
+
+template< class T, class... Ts, std::size_t... Is>
+std::tuple<Ts...>
+remove_local_exception_prohibition_helper(
+    std::tuple<T, Ts...> const& tup,
+    mp11::index_sequence<Is...>) noexcept
+{
+    return std::tuple<Ts...>( std::get<Is + 1>(tup)... );
+}
+
+template< class... Ctxes >
+std::tuple<Ctxes...>
+remove_local_exception_prohibition(
+    std::tuple<locally_prohibit_exceptions, Ctxes...> const& ctx) noexcept
+{
+    return remove_local_exception_prohibition_helper(
+        ctx, mp11::index_sequence_for<Ctxes...>() );
+}
+
 template< class T, class Ctx >
 struct alternative_converter
 {
@@ -531,8 +581,9 @@ struct alternative_converter
         if( res )
             return;
 
+        auto&& local_ctx = make_locally_nonthrowing_context(ctx);
         using V = mp11::mp_at<T, I>;
-        auto attempt = try_value_to<V>(jv, ctx);
+        auto attempt = try_value_to<V>(jv, local_ctx);
         if( attempt )
         {
             using cat = variant_construction_category<T, V, I>;
@@ -854,7 +905,7 @@ value_to_impl(
         value_to_tag<T>(),
         jv,
         Sup::get(ctx),
-        ctx);
+        remove_local_exception_prohibition(ctx) );
 }
 
 // no suitable conversion implementation

@@ -23,6 +23,7 @@
 #include <map>
 #include <unordered_map>
 #include <vector>
+#include <iostream>
 
 #ifndef BOOST_NO_CXX17_HDR_VARIANT
 # include <variant>
@@ -544,6 +545,11 @@ public:
         VT11 v11 = value_to< VT11 >( jv, ctx... );
         BOOST_TEST( v11.index() == 0 );
         BOOST_TEST( get<0>(v11).n == 1024 );
+
+        jv = nullptr;
+        using V_T3_T1 = Variant<value_to_test_ns::T3, value_to_test_ns::T1>;
+        auto v_t3_t1 = value_to<V_T3_T1>( jv, ctx... );
+        BOOST_TEST( v_t3_t1.index() == 1 );
     }
 
     template< class... Context >
