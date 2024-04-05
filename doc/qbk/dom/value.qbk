@@ -85,6 +85,7 @@ the contents of a __value__:
         [Emplacement]
         [Kind Test]
         [Pointer Access]
+        [`result` Access]
         [Checked Access]
         [Unchecked Access]
     ]
@@ -94,6 +95,7 @@ the contents of a __value__:
         [[link json.ref.boost__json__value.emplace_array `emplace_array`]]
         [[link json.ref.boost__json__value.is_array `is_array`]]
         [[link json.ref.boost__json__value.if_array `if_array`]]
+        [[link json.ref.boost__json__value.try_as_array `try_as_array`]]
         [[link json.ref.boost__json__value.as_array `as_array`]]
         [[link json.ref.boost__json__value.get_array `get_array`]]
     ]
@@ -103,6 +105,7 @@ the contents of a __value__:
         [[link json.ref.boost__json__value.emplace_object `emplace_object`]]
         [[link json.ref.boost__json__value.is_object `is_object`]]
         [[link json.ref.boost__json__value.if_object `if_object`]]
+        [[link json.ref.boost__json__value.try_as_object `try_as_object`]]
         [[link json.ref.boost__json__value.as_object `as_object`]]
         [[link json.ref.boost__json__value.get_object `get_object`]]
     ]
@@ -112,6 +115,7 @@ the contents of a __value__:
         [[link json.ref.boost__json__value.emplace_string `emplace_string`]]
         [[link json.ref.boost__json__value.is_string `is_string`]]
         [[link json.ref.boost__json__value.if_string `if_string`]]
+        [[link json.ref.boost__json__value.try_as_string `try_as_string`]]
         [[link json.ref.boost__json__value.as_string `as_string`]]
         [[link json.ref.boost__json__value.get_string `get_string`]]
     ]
@@ -121,6 +125,7 @@ the contents of a __value__:
         [[link json.ref.boost__json__value.emplace_int64 `emplace_int64`]]
         [[link json.ref.boost__json__value.is_int64 `is_int64`]]
         [[link json.ref.boost__json__value.if_int64 `if_int64`]]
+        [[link json.ref.boost__json__value.try_as_int64 `try_as_int64`]]
         [[link json.ref.boost__json__value.as_int64 `as_int64`]]
         [[link json.ref.boost__json__value.get_int64 `get_int64`]]
     ]
@@ -130,6 +135,7 @@ the contents of a __value__:
         [[link json.ref.boost__json__value.emplace_uint64 `emplace_uint64`]]
         [[link json.ref.boost__json__value.is_uint64 `is_uint64`]]
         [[link json.ref.boost__json__value.if_uint64 `if_uint64`]]
+        [[link json.ref.boost__json__value.try_as_uint64 `try_as_uint64`]]
         [[link json.ref.boost__json__value.as_uint64 `as_uint64`]]
         [[link json.ref.boost__json__value.get_uint64 `get_uint64`]]
     ]
@@ -139,6 +145,7 @@ the contents of a __value__:
         [[link json.ref.boost__json__value.emplace_double `emplace_double`]]
         [[link json.ref.boost__json__value.is_double `is_double`]]
         [[link json.ref.boost__json__value.if_double `if_double`]]
+        [[link json.ref.boost__json__value.try_as_double `try_as_double`]]
         [[link json.ref.boost__json__value.as_double `as_double`]]
         [[link json.ref.boost__json__value.get_double `get_double`]]
     ]
@@ -148,6 +155,7 @@ the contents of a __value__:
         [[link json.ref.boost__json__value.emplace_bool `emplace_bool`]]
         [[link json.ref.boost__json__value.is_bool `is_bool`]]
         [[link json.ref.boost__json__value.if_bool `if_bool`]]
+        [[link json.ref.boost__json__value.try_as_bool `try_as_bool`]]
         [[link json.ref.boost__json__value.as_bool `as_bool`]]
         [[link json.ref.boost__json__value.get_bool `get_bool`]]
     ]
@@ -157,6 +165,7 @@ the contents of a __value__:
         [[link json.ref.boost__json__value.emplace_null `emplace_null`]]
         [[link json.ref.boost__json__value.is_null `is_null`]]
         [['---]]
+        [[link json.ref.boost__json__value.try_as_null `try_as_null`]]
         [['---]]
         [['---]]
     ]
@@ -276,6 +285,10 @@ to conditionally perform an assignment without using exceptions:
 
     [snippet_value_8]
 ]
+
+Functions returning `boost::system::result` allow you to use both approaches:
+
+[snippet_value_9]
 
 [heading Formatted Output]
 

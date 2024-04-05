@@ -2550,6 +2550,362 @@ public:
 
     //------------------------------------------------------
 
+    /** Return `result` with a reference to the underlying @ref array
+
+        If @ref is_array() is `true`, the result contains a reference to the
+        underlying @ref array, otherwise it contains an `error_code`.
+
+        @par Example
+        The return value can be used in both a boolean context and
+        to assign a variable:
+        @code
+        if( auto r = jv.try_as_array() )
+            return *r;
+        @endcode
+
+        But can also be used to throw an exception on error:
+        @code
+        return jv.try_as_array().value();
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    /** @{ */
+    BOOST_JSON_DECL
+    system::result<array&>
+    try_as_array() noexcept;
+
+    BOOST_JSON_DECL
+    system::result<array const&>
+    try_as_array() const noexcept;
+    /** @} */
+
+    /** Return `result` with a reference to the underlying @ref object
+
+        If @ref is_object() is `true`, the result contains a reference to the
+        underlying @ref object, otherwise it contains an `error_code`.
+
+        @par Example
+        The return value can be used in both a boolean context and
+        to assign a variable:
+        @code
+        if( auto r = jv.try_as_object() )
+            return *r;
+        @endcode
+
+        But can also be used to throw an exception on error:
+        @code
+        return jv.try_as_object().value();
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    /** @{ */
+    BOOST_JSON_DECL
+    system::result<object&>
+    try_as_object() noexcept;
+
+    BOOST_JSON_DECL
+    system::result<object const&>
+    try_as_object() const noexcept;
+    /** @} */
+
+    /** Return `result` with a reference to the underlying @ref string
+
+        If @ref is_string() is `true`, the result contains a reference to the
+        underlying @ref string, otherwise it contains an `error_code`.
+
+        @par Example
+        The return value can be used in both a boolean context and
+        to assign a variable:
+        @code
+        if( auto r = jv.try_as_string() )
+            return *r;
+        @endcode
+
+        But can also be used to throw an exception on error:
+        @code
+        return jv.try_as_string().value();
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    /** @{ */
+    BOOST_JSON_DECL
+    system::result<string&>
+    try_as_string() noexcept;
+
+    BOOST_JSON_DECL
+    system::result<string const&>
+    try_as_string() const noexcept;
+    /** @} */
+
+    /** Return `result` with a reference to the underlying `std::int64_t`
+
+        If @ref is_int64() is `true`, the result contains a reference to the
+        underlying `std::int64_t`, otherwise it contains an `error_code`.
+
+        @par Example
+        The return value can be used in both a boolean context and
+        to assign a variable:
+        @code
+        if( auto r = jv.try_as_int64() )
+            return *r;
+        @endcode
+
+        But can also be used to throw an exception on error:
+        @code
+        return jv.try_as_int64().value();
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    BOOST_JSON_DECL
+    system::result<std::int64_t&>
+    try_as_int64() noexcept;
+
+    /** Return `result` with the underlying `std::int64_t`
+
+        If @ref is_int64() is `true`, the result contains a copy of the
+        underlying `std::int64_t`, otherwise it contains an `error_code`.
+
+        @par Example
+        The return value can be used in both a boolean context and
+        to assign a variable:
+        @code
+        if( auto r = jv.try_as_int64() )
+            return *r;
+        @endcode
+
+        But can also be used to throw an exception on error:
+        @code
+        return jv.try_as_int64().value();
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    BOOST_JSON_DECL
+    system::result<std::int64_t>
+    try_as_int64() const noexcept;
+
+    /** Return `result` with a reference to the underlying `std::uint64_t`
+
+        If @ref is_uint64() is `true`, the result contains a reference to the
+        underlying `std::uint64_t`, otherwise it contains an `error_code`.
+
+        @par Example
+        The return value can be used in both a boolean context and
+        to assign a variable:
+        @code
+        if( auto r = jv.try_as_uint64() )
+            return *r;
+        @endcode
+
+        But can also be used to throw an exception on error:
+        @code
+        return jv.try_as_uint64().value();
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    BOOST_JSON_DECL
+    system::result<std::uint64_t&>
+    try_as_uint64() noexcept;
+
+    /** Return `result` with the underlying `std::uint64_t`
+
+        If @ref is_uint64() is `true`, the result contains a copy of the
+        underlying `std::uint64_t`, otherwise it contains an `error_code`.
+
+        @par Example
+        The return value can be used in both a boolean context and
+        to assign a variable:
+        @code
+        if( auto r = jv.try_as_uint64() )
+            return *r;
+        @endcode
+
+        But can also be used to throw an exception on error:
+        @code
+        return jv.try_as_uint64().value();
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    BOOST_JSON_DECL
+    system::result<std::uint64_t>
+    try_as_uint64() const noexcept;
+
+    /** Return `result` with a reference to the underlying `double`
+
+        If @ref is_double() is `true`, the result contains a reference to the
+        underlying `double`, otherwise it contains an `error_code`.
+
+        @par Example
+        The return value can be used in both a boolean context and
+        to assign a variable:
+        @code
+        if( auto r = jv.try_as_double() )
+            return *r;
+        @endcode
+
+        But can also be used to throw an exception on error:
+        @code
+        return jv.try_as_double().value();
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    BOOST_JSON_DECL
+    system::result<double&>
+    try_as_double() noexcept;
+
+    /** Return `result` with the underlying `double`
+
+        If @ref is_double() is `true`, the result contains a copy of the
+        underlying `double`, otherwise it contains an `error_code`.
+
+        @par Example
+        The return value can be used in both a boolean context and
+        to assign a variable:
+        @code
+        if( auto r = jv.try_as_double() )
+            return *r;
+        @endcode
+
+        But can also be used to throw an exception on error:
+        @code
+        return jv.try_as_double().value();
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    BOOST_JSON_DECL
+    system::result<double>
+    try_as_double() const noexcept;
+
+    /** Return `result` with a reference to the underlying `bool`
+
+        If @ref is_bool() is `true`, the result contains a reference to the
+        underlying `bool`, otherwise it contains an `error_code`.
+
+        @par Example
+        The return value can be used in both a boolean context and
+        to assign a variable:
+        @code
+        if( auto r = jv.try_as_bool() )
+            return *r;
+        @endcode
+
+        But can also be used to throw an exception on error:
+        @code
+        return jv.try_as_bool().value();
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    BOOST_JSON_DECL
+    system::result<bool&>
+    try_as_bool() noexcept;
+
+    /** Return `result` with the underlying `bool`
+
+        If @ref is_bool() is `true`, the result contains a copy of the
+        underlying `bool`, otherwise it contains an `error_code`.
+
+        @par Example
+        The return value can be used in both a boolean context and
+        to assign a variable:
+        @code
+        if( auto r = jv.try_as_bool() )
+            return *r;
+        @endcode
+
+        But can also be used to throw an exception on error:
+        @code
+        return jv.try_as_bool().value();
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    BOOST_JSON_DECL
+    system::result<bool>
+    try_as_bool() const noexcept;
+
+    /** Return engaged `result` if the `value` is null
+
+        If @ref is_null() is `true`, the result is engaged, otherwise it
+        contains an `error_code`.
+
+        @par Example
+        The return value can be used in both a boolean context and
+        to assign a variable:
+        @code
+        if( auto r = jv.try_as_null() )
+            return *r;
+        @endcode
+
+        But can also be used to throw an exception on error:
+        @code
+        return jv.try_as_null().value();
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+    */
+    BOOST_JSON_DECL
+    system::result<std::nullptr_t>
+    try_as_null() const noexcept;
+
+    //------------------------------------------------------
+
     /** Return a reference to the underlying `object`, or throw an exception.
 
         If @ref is_object() is `true`, returns
@@ -2568,23 +2924,19 @@ public:
     object&
     as_object() &
     {
-        auto const& self = *this;
-        return const_cast<object&>( self.as_object() );
+        return try_as_object().value();
     }
 
     object&&
     as_object() &&
     {
-        return std::move( as_object() );
+        return std::move( try_as_object().value() );
     }
 
     object const&
     as_object() const&
     {
-        if( is_object() )
-            return obj_;
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        detail::throw_system_error( error::not_object, &loc );
+        return try_as_object().value();
     }
     /** @} */
 
@@ -2606,23 +2958,19 @@ public:
     array&
     as_array() &
     {
-        auto const& self = *this;
-        return const_cast<array&>( self.as_array() );
+        return try_as_array().value();
     }
 
     array&&
     as_array() &&
     {
-        return std::move( as_array() );
+        return std::move( try_as_array().value() );
     }
 
     array const&
     as_array() const&
     {
-        if( is_array() )
-            return arr_;
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        detail::throw_system_error( error::not_array, &loc );
+        return try_as_array().value();
     }
     /** @} */
 
@@ -2644,23 +2992,19 @@ public:
     string&
     as_string() &
     {
-        auto const& self = *this;
-        return const_cast<string&>( self.as_string() );
+        return try_as_string().value();
     }
 
     string&&
     as_string() &&
     {
-        return std::move( as_string() );
+        return std::move( try_as_string().value() );
     }
 
     string const&
     as_string() const&
     {
-        if( is_string() )
-            return str_;
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        detail::throw_system_error( error::not_string, &loc );
+        return try_as_string().value();
     }
     /** @} */
 
@@ -2689,10 +3033,7 @@ public:
     std::int64_t&
     as_int64()
     {
-        if( is_int64() )
-            return sca_.i;
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        detail::throw_system_error( error::not_int64, &loc );
+        return try_as_int64().value();
     }
 
     /** Return the underlying `std::int64_t`, or throw an exception.
@@ -2720,10 +3061,7 @@ public:
     std::int64_t
     as_int64() const
     {
-        if( is_int64() )
-            return sca_.i;
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        detail::throw_system_error( error::not_int64, &loc );
+        return try_as_int64().value();
     }
 
     /** Return a reference to the underlying `std::uint64_t`, or throw an exception.
@@ -2751,10 +3089,7 @@ public:
     std::uint64_t&
     as_uint64()
     {
-        if( is_uint64() )
-            return sca_.u;
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        detail::throw_system_error( error::not_uint64, &loc );
+        return try_as_uint64().value();
     }
 
     /** Return the underlying `std::uint64_t`, or throw an exception.
@@ -2783,10 +3118,7 @@ public:
     std::uint64_t
     as_uint64() const
     {
-        if( is_uint64() )
-            return sca_.u;
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        detail::throw_system_error( error::not_uint64, &loc );
+        return try_as_uint64().value();
     }
 
     /** Return a reference to the underlying `double`, or throw an exception.
@@ -2813,10 +3145,7 @@ public:
     double&
     as_double()
     {
-        if( is_double() )
-            return sca_.d;
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        detail::throw_system_error( error::not_double, &loc );
+        return try_as_double().value();
     }
 
     /** Return the underlying `double`, or throw an exception.
@@ -2844,10 +3173,7 @@ public:
     double
     as_double() const
     {
-        if( is_double() )
-            return sca_.d;
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        detail::throw_system_error( error::not_double, &loc );
+        return try_as_double().value();
     }
 
     /** Return a reference to the underlying `bool`, or throw an exception.
@@ -2867,10 +3193,7 @@ public:
     bool&
     as_bool()
     {
-        if( is_bool() )
-            return sca_.b;
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        detail::throw_system_error( error::not_bool, &loc );
+        return try_as_bool().value();
     }
 
     /** Return the underlying `bool`, or throw an exception.
@@ -2890,10 +3213,7 @@ public:
     bool
     as_bool() const
     {
-        if( is_bool() )
-            return sca_.b;
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        detail::throw_system_error( error::not_bool, &loc );
+        return try_as_bool().value();
     }
 
     //------------------------------------------------------

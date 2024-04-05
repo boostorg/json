@@ -358,6 +358,177 @@ operator=(object&& obj)
 
 //----------------------------------------------------------
 //
+// Accessors
+//
+//----------------------------------------------------------
+
+system::result<array&>
+value::try_as_array() noexcept
+{
+    if( is_array() )
+        return arr_;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_array);
+    return ec;
+}
+
+system::result<array const&>
+value::try_as_array() const noexcept
+{
+    if( is_array() )
+        return arr_;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_array);
+    return ec;
+}
+
+system::result<object&>
+value::try_as_object() noexcept
+{
+    if( is_object() )
+        return obj_;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_object);
+    return ec;
+}
+
+system::result<object const&>
+value::try_as_object() const noexcept
+{
+    if( is_object() )
+        return obj_;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_object);
+    return ec;
+}
+
+system::result<string&>
+value::try_as_string() noexcept
+{
+    if( is_string() )
+        return str_;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_string);
+    return ec;
+}
+
+system::result<string const&>
+value::try_as_string() const noexcept
+{
+    if( is_string() )
+        return str_;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_string);
+    return ec;
+}
+
+system::result<std::int64_t&>
+value::try_as_int64() noexcept
+{
+    if( is_int64() )
+        return sca_.i;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_int64);
+    return ec;
+}
+
+system::result<std::int64_t>
+value::try_as_int64() const noexcept
+{
+    if( is_int64() )
+        return sca_.i;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_int64);
+    return ec;
+}
+
+system::result<std::uint64_t&>
+value::try_as_uint64() noexcept
+{
+    if( is_uint64() )
+        return sca_.u;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_uint64);
+    return ec;
+}
+
+system::result<std::uint64_t>
+value::try_as_uint64() const noexcept
+{
+    if( is_uint64() )
+        return sca_.u;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_uint64);
+    return ec;
+}
+
+system::result<double&>
+value::try_as_double() noexcept
+{
+    if( is_double() )
+        return sca_.d;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_double);
+    return ec;
+}
+
+system::result<double>
+value::try_as_double() const noexcept
+{
+    if( is_double() )
+        return sca_.d;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_double);
+    return ec;
+}
+
+system::result<bool&>
+value::try_as_bool() noexcept
+{
+    if( is_bool() )
+        return sca_.b;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_bool);
+    return ec;
+}
+
+system::result<bool>
+value::try_as_bool() const noexcept
+{
+    if( is_bool() )
+        return sca_.b;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_bool);
+    return ec;
+}
+
+system::result<std::nullptr_t>
+value::try_as_null() const noexcept
+{
+    if( is_null() )
+        return nullptr;
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::not_null);
+    return ec;
+}
+
+//----------------------------------------------------------
+//
 // Modifiers
 //
 //----------------------------------------------------------
