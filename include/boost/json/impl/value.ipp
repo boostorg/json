@@ -563,6 +563,72 @@ value::try_at(std::size_t pos) const noexcept
     return r->try_at(pos);
 }
 
+object const&
+value::as_object(source_location const& loc) const&
+{
+    return try_as_object().value(loc);
+}
+
+array const&
+value::as_array(source_location const& loc) const&
+{
+    return try_as_array().value(loc);
+}
+
+string const&
+value::as_string(source_location const& loc) const&
+{
+    return try_as_string().value(loc);
+}
+
+std::int64_t&
+value::as_int64(source_location const& loc)
+{
+    return try_as_int64().value(loc);
+}
+
+std::int64_t
+value::as_int64(source_location const& loc) const
+{
+    return try_as_int64().value(loc);
+}
+
+std::uint64_t&
+value::as_uint64(source_location const& loc)
+{
+    return try_as_uint64().value(loc);
+}
+
+std::uint64_t
+value::as_uint64(source_location const& loc) const
+{
+    return try_as_uint64().value(loc);
+}
+
+double&
+value::as_double(source_location const& loc)
+{
+    return try_as_double().value(loc);
+}
+
+double
+value::as_double(source_location const& loc) const
+{
+    return try_as_double().value(loc);
+}
+
+bool&
+value::as_bool(source_location const& loc)
+{
+    return try_as_bool().value(loc);
+}
+
+bool
+value::as_bool(source_location const& loc) const
+{
+    return try_as_bool().value(loc);
+}
+
 //----------------------------------------------------------
 //
 // Modifiers

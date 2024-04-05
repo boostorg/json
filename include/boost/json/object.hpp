@@ -1323,20 +1323,29 @@ public:
 
         @param key The key of the element to find.
 
+        @param loc `source_location` to use in thrown exception; the source
+            location of the call site by default.
+
         @throw `boost::system::system_error` if no such element exists.
     */
     /** @{ */
     inline
     value&
-    at(string_view key) &;
+    at(
+        string_view key,
+        source_location const& loc = BOOST_CURRENT_LOCATION) &;
 
     inline
     value&&
-    at(string_view key) &&;
+    at(
+        string_view key,
+        source_location const& loc = BOOST_CURRENT_LOCATION) &&;
 
     BOOST_JSON_DECL
     value const&
-    at(string_view key) const&;
+    at(
+        string_view key,
+        source_location const& loc = BOOST_CURRENT_LOCATION) const&;
     /** @} */
 
     /** Access or insert the specified element

@@ -2912,32 +2912,34 @@ public:
         a reference to the underlying @ref object,
         otherwise throws an exception.
 
-        @par Complexity
-        Constant.
-
         @par Exception Safety
         Strong guarantee.
 
         @throw `boost::system::system_error` `! this->is_object()`.
+
+        @param loc `source_location` to use in thrown exception; the source
+            location of the call site by default.
+
+        @par Complexity
+        Constant.
     */
     /** @{ */
     object&
-    as_object() &
+    as_object(source_location const& loc = BOOST_CURRENT_LOCATION) &
     {
-        return try_as_object().value();
+        auto& self = const_cast<value const&>(*this);
+        return const_cast<object&>( self.as_object(loc) );
     }
 
     object&&
-    as_object() &&
+    as_object(source_location const& loc = BOOST_CURRENT_LOCATION) &&
     {
-        return std::move( try_as_object().value() );
+        return std::move( as_object(loc) );
     }
 
+    BOOST_JSON_DECL
     object const&
-    as_object() const&
-    {
-        return try_as_object().value();
-    }
+    as_object(source_location const& loc = BOOST_CURRENT_LOCATION) const&;
     /** @} */
 
     /** Return a reference to the underlying @ref array, or throw an exception.
@@ -2946,32 +2948,34 @@ public:
         a reference to the underlying @ref array,
         otherwise throws an exception.
 
-        @par Complexity
-        Constant.
-
         @par Exception Safety
         Strong guarantee.
 
         @throw `boost::system::system_error` `! this->is_array()`.
+
+        @param loc `source_location` to use in thrown exception; the source
+            location of the call site by default.
+
+        @par Complexity
+        Constant.
     */
     /** @{ */
     array&
-    as_array() &
+    as_array(source_location const& loc = BOOST_CURRENT_LOCATION) &
     {
-        return try_as_array().value();
+        auto& self = const_cast<value const&>(*this);
+        return const_cast<array&>( self.as_array(loc) );
     }
 
     array&&
-    as_array() &&
+    as_array(source_location const& loc = BOOST_CURRENT_LOCATION) &&
     {
-        return std::move( try_as_array().value() );
+        return std::move( as_array(loc) );
     }
 
+    BOOST_JSON_DECL
     array const&
-    as_array() const&
-    {
-        return try_as_array().value();
-    }
+    as_array(source_location const& loc = BOOST_CURRENT_LOCATION) const&;
     /** @} */
 
     /** Return a reference to the underlying `string`, or throw an exception.
@@ -2980,61 +2984,56 @@ public:
         a reference to the underlying @ref string,
         otherwise throws an exception.
 
+        @par Exception Safety
+        Strong guarantee.
+
+        @throw `boost::system::system_error` `! this->is_string()`.
+
+        @param loc `source_location` to use in thrown exception; the source
+            location of the call site by default.
+
         @par Complexity
         Constant.
+    */
+    string&
+    as_string(source_location const& loc = BOOST_CURRENT_LOCATION) &
+    {
+        auto& self = const_cast<value const&>(*this);
+        return const_cast<string&>( self.as_string(loc) );
+    }
+
+    /** Return a reference to the underlying `string`, or throw an exception.
+
+        If @ref is_string() is `true`, returns
+        a reference to the underlying @ref string,
+        otherwise throws an exception.
 
         @par Exception Safety
         Strong guarantee.
 
         @throw `boost::system::system_error` `! this->is_string()`.
-    */
-    /** @{ */
-    string&
-    as_string() &
-    {
-        return try_as_string().value();
-    }
 
-    string&&
-    as_string() &&
-    {
-        return std::move( try_as_string().value() );
-    }
-
-    string const&
-    as_string() const&
-    {
-        return try_as_string().value();
-    }
-    /** @} */
-
-    /** Return a reference to the underlying `std::int64_t`, or throw an exception.
-
-        If @ref is_int64() is `true`, returns
-        a reference to the underlying `std::int64_t`,
-        otherwise throws an exception.
+        @param loc `source_location` to use in thrown exception; the source
+            location of the call site by default.
 
         @par Complexity
         Constant.
-
-        @par Exception Safety
-        Strong guarantee.
-
-        @throw `boost::system::system_error` `! this->is_int64()`.
-
-        @par Note
-        This function is intended for direct access to the underlying object,
-        __if__ it has the type `std::int64_t`. It does not convert the
-        underlying object to type `std::int64_t` even if a lossless conversion
-        is possible. If you are not sure which kind your `value` has, and you
-        only care about getting a `std::int64_t` number, consider using
-        @ref to_number instead.
     */
-    std::int64_t&
-    as_int64()
+    /** @{ */
+    string&&
+    as_string(source_location const& loc = BOOST_CURRENT_LOCATION) &&
     {
-        return try_as_int64().value();
+        return std::move( as_string(loc) );
     }
+
+    BOOST_JSON_DECL
+    string const&
+    as_string(source_location const& loc = BOOST_CURRENT_LOCATION) const&;
+
+    BOOST_JSON_DECL
+    std::int64_t&
+    as_int64(source_location const& loc = BOOST_CURRENT_LOCATION);
+    /** @} */
 
     /** Return the underlying `std::int64_t`, or throw an exception.
 
@@ -3042,13 +3041,16 @@ public:
         the underlying `std::int64_t`,
         otherwise throws an exception.
 
-        @par Complexity
-        Constant.
-
         @par Exception Safety
         Strong guarantee.
 
         @throw `boost::system::system_error` `! this->is_int64()`.
+
+        @param loc `source_location` to use in thrown exception; the source
+            location of the call site by default.
+
+        @par Complexity
+        Constant.
 
         @par Note
         This function is the const-qualified overload of @ref as_int64, which
@@ -3058,11 +3060,9 @@ public:
         are not sure which kind your `value` has, and you only care about
         getting a `std::int64_t` number, consider using @ref to_number instead.
     */
+    BOOST_JSON_DECL
     std::int64_t
-    as_int64() const
-    {
-        return try_as_int64().value();
-    }
+    as_int64(source_location const& loc = BOOST_CURRENT_LOCATION) const;
 
     /** Return a reference to the underlying `std::uint64_t`, or throw an exception.
 
@@ -3070,13 +3070,16 @@ public:
         a reference to the underlying `std::uint64_t`,
         otherwise throws an exception.
 
-        @par Complexity
-        Constant.
-
         @par Exception Safety
         Strong guarantee.
 
         @throw `boost::system::system_error` `! this->is_uint64()`.
+
+        @param loc `source_location` to use in thrown exception; the source
+            location of the call site by default.
+
+        @par Complexity
+        Constant.
 
         @par Note
         This function is intended for direct access to the underlying object,
@@ -3086,11 +3089,9 @@ public:
         only care about getting a `std::uint64_t` number, consider using
         @ref to_number instead.
     */
+    BOOST_JSON_DECL
     std::uint64_t&
-    as_uint64()
-    {
-        return try_as_uint64().value();
-    }
+    as_uint64(source_location const& loc = BOOST_CURRENT_LOCATION);
 
     /** Return the underlying `std::uint64_t`, or throw an exception.
 
@@ -3098,13 +3099,16 @@ public:
         the underlying `std::uint64_t`,
         otherwise throws an exception.
 
-        @par Complexity
-        Constant.
-
         @par Exception Safety
         Strong guarantee.
 
         @throw `boost::system::system_error` `! this->is_uint64()`.
+
+        @param loc `source_location` to use in thrown exception; the source
+            location of the call site by default.
+
+        @par Complexity
+        Constant.
 
         @par Note
         This function is the const-qualified overload of @ref as_uint64, which
@@ -3115,11 +3119,9 @@ public:
         getting a `std::uint64_t` number, consider using
         @ref to_number instead.
     */
+    BOOST_JSON_DECL
     std::uint64_t
-    as_uint64() const
-    {
-        return try_as_uint64().value();
-    }
+    as_uint64(source_location const& loc = BOOST_CURRENT_LOCATION) const;
 
     /** Return a reference to the underlying `double`, or throw an exception.
 
@@ -3127,13 +3129,16 @@ public:
         a reference to the underlying `double`,
         otherwise throws an exception.
 
-        @par Complexity
-        Constant.
-
         @par Exception Safety
         Strong guarantee.
 
         @throw `boost::system::system_error` `! this->is_double()`.
+
+        @param loc `source_location` to use in thrown exception; the source
+            location of the call site by default.
+
+        @par Complexity
+        Constant.
 
         @par Note
         This function is intended for direct access to the underlying object,
@@ -3142,11 +3147,9 @@ public:
         you are not sure which kind your `value` has, and you only care about
         getting a `double` number, consider using @ref to_number instead.
     */
+    BOOST_JSON_DECL
     double&
-    as_double()
-    {
-        return try_as_double().value();
-    }
+    as_double(source_location const& loc = BOOST_CURRENT_LOCATION);
 
     /** Return the underlying `double`, or throw an exception.
 
@@ -3154,13 +3157,16 @@ public:
         the underlying `double`,
         otherwise throws an exception.
 
-        @par Complexity
-        Constant.
-
         @par Exception Safety
         Strong guarantee.
 
         @throw `boost::system::system_error` `! this->is_double()`.
+
+        @param loc `source_location` to use in thrown exception; the source
+            location of the call site by default.
+
+        @par Complexity
+        Constant.
 
         @par Note
         This function is the const-qualified overload of @ref as_double, which
@@ -3170,11 +3176,9 @@ public:
         which kind your `value` has, and you only care about getting a `double`
         number, consider using @ref to_number instead.
     */
+    BOOST_JSON_DECL
     double
-    as_double() const
-    {
-        return try_as_double().value();
-    }
+    as_double(source_location const& loc = BOOST_CURRENT_LOCATION) const;
 
     /** Return a reference to the underlying `bool`, or throw an exception.
 
@@ -3182,19 +3186,20 @@ public:
         a reference to the underlying `bool`,
         otherwise throws an exception.
 
-        @par Complexity
-        Constant.
-
         @par Exception Safety
         Strong guarantee.
 
         @throw `boost::system::system_error` `! this->is_bool()`.
+
+        @param loc `source_location` to use in thrown exception; the source
+            location of the call site by default.
+
+        @par Complexity
+        Constant.
     */
+    BOOST_JSON_DECL
     bool&
-    as_bool()
-    {
-        return try_as_bool().value();
-    }
+    as_bool(source_location const& loc = BOOST_CURRENT_LOCATION);
 
     /** Return the underlying `bool`, or throw an exception.
 
@@ -3202,19 +3207,20 @@ public:
         the underlying `bool`,
         otherwise throws an exception.
 
-        @par Complexity
-        Constant.
-
         @par Exception Safety
         Strong guarantee.
 
         @throw `boost::system::system_error` `! this->is_bool()`.
+
+        @param loc `source_location` to use in thrown exception; the source
+            location of the call site by default.
+
+        @par Complexity
+        Constant.
     */
+    BOOST_JSON_DECL
     bool
-    as_bool() const
-    {
-        return try_as_bool().value();
-    }
+    as_bool(source_location const& loc = BOOST_CURRENT_LOCATION) const;
 
     //------------------------------------------------------
 
@@ -3571,25 +3577,30 @@ public:
 
         @param key The key of the element to find.
 
-        @return `this->as_object().at( key )`.
+        @param loc `source_location` to use in thrown exception; the source
+            location of the call site by default.
+
+        @return `this->as_object(loc).at( key, loc )`.
     */
     /** @{ */
     value&
-    at(string_view key) &
+    at(string_view key, source_location const& loc = BOOST_CURRENT_LOCATION) &
     {
-        return as_object().at(key);
+        return as_object(loc).at(key, loc);
     }
 
     value&&
-    at(string_view key) &&
+    at(string_view key, source_location const& loc = BOOST_CURRENT_LOCATION) &&
     {
-        return std::move( as_object() ).at(key);
+        return std::move( as_object(loc) ).at(key, loc);
     }
 
     value const&
-    at(string_view key) const&
+    at(
+        string_view key,
+        source_location const& loc = BOOST_CURRENT_LOCATION) const&
     {
-        return as_object().at(key);
+        return as_object(loc).at(key, loc);
     }
     /** @} */
 
@@ -3632,25 +3643,30 @@ public:
 
         @param pos A zero-based array index.
 
-        @return `this->as_array().at( pos )`.
+        @param loc `source_location` to use in thrown exception; the source
+            location of the call site by default.
+
+        @return `this->as_array(loc).at( pos, loc )`.
     */
     /** @{ */
     value &
-    at(std::size_t pos) &
+    at(std::size_t pos, source_location const& loc = BOOST_CURRENT_LOCATION) &
     {
-        return as_array().at(pos);
+        return as_array(loc).at(pos, loc);
     }
 
     value&&
-    at(std::size_t pos) &&
+    at(std::size_t pos, source_location const& loc = BOOST_CURRENT_LOCATION) &&
     {
-        return std::move( as_array() ).at(pos);
+        return std::move( as_array(loc) ).at(pos, loc);
     }
 
     value const&
-    at(std::size_t pos) const&
+    at(
+        std::size_t pos,
+        source_location const& loc = BOOST_CURRENT_LOCATION) const&
     {
-        return as_array().at(pos);
+        return as_array(loc).at(pos, loc);
     }
     /** @} */
 
@@ -3714,6 +3730,9 @@ public:
 
         @param ptr JSON Pointer string.
 
+        @param loc `source_location` to use in thrown exception; the source
+            location of the call site by default.
+
         @return reference to the element identified by `ptr`.
 
         @throw `boost::system::system_error` if an error occurs.
@@ -3723,17 +3742,23 @@ public:
             RFC 6901 - JavaScript Object Notation (JSON) Pointer</a>
     */
     /** @{ */
-    inline
+    BOOST_JSON_DECL
     value const&
-    at_pointer(string_view ptr) const&;
+    at_pointer(
+        string_view ptr,
+        source_location const& loc = BOOST_CURRENT_LOCATION) const&;
 
     inline
     value&&
-    at_pointer(string_view ptr) &&;
+    at_pointer(
+        string_view ptr,
+        source_location const& loc = BOOST_CURRENT_LOCATION) &&;
 
     inline
     value&
-    at_pointer(string_view ptr) &;
+    at_pointer(
+        string_view ptr,
+        source_location const& loc = BOOST_CURRENT_LOCATION) &;
     /** @} */
 
     /** Access an element via JSON Pointer.

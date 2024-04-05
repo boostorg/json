@@ -400,9 +400,9 @@ array::try_at(std::size_t pos) const noexcept
 
 value const&
 array::
-array::at(std::size_t pos) const&
+array::at(std::size_t pos, source_location const& loc) const&
 {
-    return try_at(pos).value();
+    return try_at(pos).value(loc);
 }
 
 //----------------------------------------------------------

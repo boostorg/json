@@ -362,17 +362,17 @@ reserve(std::size_t new_capacity)
 
 value&
 object::
-at(string_view key) &
+at(string_view key, source_location const& loc) &
 {
     auto const& self = *this;
-    return const_cast< value& >( self.at(key) );
+    return const_cast< value& >( self.at(key, loc) );
 }
 
 value&&
 object::
-at(string_view key) &&
+at(string_view key, source_location const& loc) &&
 {
-    return std::move( at(key) );
+    return std::move( at(key, loc) );
 }
 
 //----------------------------------------------------------

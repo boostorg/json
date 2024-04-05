@@ -455,9 +455,9 @@ try_at(string_view key) const noexcept
 
 value const&
 object::
-at(string_view key) const&
+at(string_view key, source_location const& loc) const&
 {
-    return try_at(key).value();
+    return try_at(key).value(loc);
 }
 
 //----------------------------------------------------------

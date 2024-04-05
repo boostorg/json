@@ -913,16 +913,23 @@ public:
 
         @param pos A zero-based index to access.
 
+        @param loc `source_location` to use in thrown exception; the source
+            location of the call site by default.
+
         @throw `boost::system::system_error` `pos >= size()`.
     */
     /** @{ */
     inline
     char&
-    at(std::size_t pos);
+    at(
+        std::size_t pos,
+        source_location const& loc = BOOST_CURRENT_LOCATION);
 
     BOOST_JSON_DECL
     char const&
-    at(std::size_t pos) const;
+    at(
+        std::size_t pos,
+        source_location const& loc = BOOST_CURRENT_LOCATION) const;
     /** @} */
 
     /** Return a character without bounds checking.

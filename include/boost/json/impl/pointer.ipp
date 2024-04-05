@@ -341,6 +341,12 @@ walk_pointer(
 
 } // namespace detail
 
+value const&
+value::at_pointer(string_view ptr, source_location const& loc) const&
+{
+    return try_at_pointer(ptr).value(loc);
+}
+
 system::result<value const&>
 value::try_at_pointer(string_view ptr) const noexcept
 {

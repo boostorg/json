@@ -13,22 +13,17 @@
 namespace boost {
 namespace json {
 
-value const&
-value::at_pointer(string_view ptr) const&
-{
-    return try_at_pointer(ptr).value();
-}
-
 value&
-value::at_pointer(string_view ptr) &
+value::at_pointer(string_view ptr, source_location const& loc) &
 {
-    return try_at_pointer(ptr).value();
+    auto const& self = *this;
+    return const_cast<value&>( self.at_pointer(ptr, loc) );
 }
 
 value&&
-value::at_pointer(string_view ptr) &&
+value::at_pointer(string_view ptr, source_location const& loc) &&
 {
-    return std::move( try_at_pointer(ptr).value() );
+    return std::move( at_pointer(ptr, loc) );
 }
 
 } // namespace json

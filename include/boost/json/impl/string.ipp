@@ -233,9 +233,9 @@ string::try_at(std::size_t pos) const noexcept
 }
 
 char const&
-string::at(std::size_t pos) const
+string::at(std::size_t pos, source_location const& loc) const
 {
-    return try_at(pos).value();
+    return try_at(pos).value(loc);
 }
 
 //----------------------------------------------------------
