@@ -2403,6 +2403,61 @@ public:
     }
 /** @} */
 
+    /** Return the stored number as `boost::system::result<T>`.
+
+        This function attempts to return the stored value converted to the
+        arithmetic type `T` which may not be `bool`:
+
+        @li If `T` is an integral type and the stored value is a number which
+            can be losslessly converted, the conversion is performed without
+            error and `result<T>` containing the converted number is returned.
+
+        @li If `T` is an integral type and the stored value is a number which
+            cannot be losslessly converted, then `result<T>` containing the
+            corresponding `error_code` is returned.
+
+        @li If `T` is a floating point type and the stored value is a number,
+            the conversion is performed without error. `result<T>` containing
+            the converted number, with a possible loss of precision, is
+            returned.
+
+        @li Otherwise, if the stored value is not a number; that is, if
+            `this->is_number()` returns `false`, then `result<T>` containing
+            the corresponding `error_code` is returned.
+
+        @par Constraints
+        @code
+        std::is_arithmetic< T >::value && ! std::is_same< T, bool >::value
+        @endcode
+
+        @par Complexity
+        Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @return `boost::system::result<T>` with either the converted number or
+            an `error_code`.
+    */
+    template<class T>
+#ifdef BOOST_JSON_DOCS
+    system::result<T>
+#else
+    typename std::enable_if<
+        std::is_arithmetic<T>::value && ! std::is_same<T, bool>::value,
+        system::result<T>
+    >::type
+#endif
+    try_to_number() const noexcept
+    {
+        system::error_code ec;
+        T result = to_number<T>(ec);
+        if( ec )
+            return {system::in_place_error, ec};
+
+        return {system::in_place_value, result};
+    }
+
     /** Return the stored number cast to an arithmetic type.
 
         This function attempts to return the stored value
@@ -2450,14 +2505,7 @@ public:
 #endif
     to_number() const
     {
-        error e;
-        auto result = to_number<T>(e);
-        if( e != error() )
-        {
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-            detail::throw_system_error( e, &loc );
-        }
-        return result;
+        return try_to_number<T>().value();
     }
 
     //------------------------------------------------------

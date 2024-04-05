@@ -1697,6 +1697,12 @@ public:
             value(nullptr).to_number<double>(ec);
             BOOST_TEST(error::not_number == ec);
         }
+
+        system::result<int> res = value(1).try_to_number<int>();
+        BOOST_TEST( res.value() == 1 );
+
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            value(object_kind).try_to_number<double>().value());
     }
 
     void
