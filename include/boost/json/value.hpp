@@ -3286,6 +3286,53 @@ public:
 
     /** Access an element via JSON Pointer.
 
+        This function is used to access a (potentially nested) element of the
+        value using a JSON Pointer string.
+
+        @par Complexity
+        Linear in the sizes of `ptr` and underlying array, object, or string.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param ptr JSON Pointer string.
+
+        @return `boost::system::result<value&>` containing either a reference
+            to the element identified by `ptr` or a corresponding `error_code`.
+
+        @see
+            [RFC 6901 - JavaScript Object Notation (JSON) Pointer](https://datatracker.ietf.org/doc/html/rfc6901).
+    */
+    BOOST_JSON_DECL
+    system::result<value const&>
+    try_at_pointer(string_view ptr) const noexcept;
+
+    /** Access an element via JSON Pointer.
+
+        This function is used to access a (potentially nested) element of the
+        value using a JSON Pointer string.
+
+        @par Complexity
+        Linear in the sizes of `ptr` and underlying array, object, or string.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param ptr JSON Pointer string.
+
+        @return `boost::system::result<value const&>` containing either a
+            reference to the element identified by `ptr` or a corresponding
+            `error_code`.
+
+        @see
+            [RFC 6901 - JavaScript Object Notation (JSON) Pointer](https://datatracker.ietf.org/doc/html/rfc6901).
+    */
+    BOOST_JSON_DECL
+    system::result<value&>
+    try_at_pointer(string_view ptr) noexcept;
+
+    /** Access an element via JSON Pointer.
+
         This function is used to access a (potentially nested)
         element of the value using a JSON Pointer string.
 
@@ -3306,7 +3353,7 @@ public:
             RFC 6901 - JavaScript Object Notation (JSON) Pointer</a>
     */
     /** @{ */
-    BOOST_JSON_DECL
+    inline
     value const&
     at_pointer(string_view ptr) const&;
 
@@ -3359,6 +3406,72 @@ public:
     /** @} */
 
     //------------------------------------------------------
+
+    /** Set an element via JSON Pointer.
+
+        This function is used to insert or assign to a potentially nested
+        element of the value using a JSON Pointer string. The function may
+        create intermediate elements corresponding to pointer segments.
+        <br/>
+
+        The particular conditions when and what kind of intermediate element
+        is created is governed by the `ptr` parameter.
+
+        Each pointer token is considered in sequence. For each token
+
+        - if the containing value is an @ref object, then a new `null`
+          element is created with key equal to unescaped token string;
+          otherwise
+
+        - if the containing value is an @ref array, and the token represents a
+          past-the-end marker, then a `null` element is appended to the array;
+          otherwise
+
+        - if the containing value is an @ref array, and the token represents a
+          number, then if the difference between the number and array's size
+          is smaller than `opts.max_created_elements`, then the size of the
+          array is increased, so that the number can reference an element in the
+          array; otherwise
+
+        - if the containing value is of different @ref kind and
+          `opts.replace_any_scalar` is `true`, or the value is `null`, then
+
+           - if `opts.create_arrays` is `true` and the token either represents
+             past-the-end marker or a number, then the value is replaced with
+             an empty array and the token is considered again; otherwise
+
+           - if `opts.create_objects` is `true`, then the value is replaced
+             with an empty object and the token is considered again; otherwise
+
+        - an error is produced.
+
+        @par Complexity
+        Linear in the sum of size of `ptr`, size of underlying array, object,
+        or string and `opts.max_created_elements`.
+
+        @par Exception Safety
+        Basic guarantee.
+        Calls to `memory_resource::allocate` may throw.
+
+        @param sv JSON Pointer string.
+
+        @param ref The value to assign to pointed element.
+
+        @param opts The options for the algorithm.
+
+        @return `boost::json::result<value&>` containing either a reference to
+            the element identified by `ptr` or a corresponding `error_code`.
+
+        @see
+            @ref set_pointer_options,
+            [RFC 6901 - JavaScript Object Notation (JSON) Pointer](https://datatracker.ietf.org/doc/html/rfc6901).
+    */
+    BOOST_JSON_DECL
+    system::result<value&>
+    try_set_at_pointer(
+        string_view sv,
+        value_ref ref,
+        set_pointer_options const& opts = {} );
 
     /** Set an element via JSON Pointer.
 

@@ -347,6 +347,22 @@ public:
     }
 
     void
+    testTry()
+    {
+        value jv = testValue();
+        BOOST_TEST( &jv.try_at_pointer("/foo").value() == &jv.at("foo") );
+        BOOST_TEST_THROWS_WITH_LOCATION( jv.try_at_pointer("foo").value() );
+
+        value const& cjv = jv;
+        BOOST_TEST( &cjv.try_at_pointer("/foo").value() == &cjv.at("foo") );
+        BOOST_TEST_THROWS_WITH_LOCATION( cjv.try_at_pointer("foo").value() );
+
+        auto result = jv.try_set_at_pointer("", array());
+        BOOST_TEST(( jv == array() ));
+        BOOST_TEST( &*result == &jv );
+    }
+
+    void
     run()
     {
         testRootPointer();
@@ -359,6 +375,7 @@ public:
         testSet();
         testSetNonThrowing<system::error_code>();
         testSetNonThrowing<std::error_code>();
+        testTry();
     }
 };
 
