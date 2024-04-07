@@ -480,6 +480,30 @@ public:
             BOOST_TEST_THROWS_WITH_LOCATION( a.at(3) );
         }
 
+        // try_at(pos)
+        {
+            array a({ 1, true, str_ });
+            BOOST_TEST( a.try_at(0)->is_number() );
+            BOOST_TEST( a.try_at(1)->is_bool() );
+            BOOST_TEST( a.try_at(2)->is_string() );
+
+            system::error_code const ec = a.try_at(3).error();
+            BOOST_TEST( ec == error::out_of_range );
+            BOOST_TEST( ec.has_location() );
+        }
+
+        // try_at(pos) const
+        {
+            array const a({1, true, str_});
+            BOOST_TEST(a.try_at(0)->is_number());
+            BOOST_TEST(a.try_at(1)->is_bool());
+            BOOST_TEST(a.try_at(2)->is_string());
+
+            system::error_code const ec = a.try_at(3).error();
+            BOOST_TEST( ec == error::out_of_range );
+            BOOST_TEST( ec.has_location() );
+        }
+
         // operator[&](size_type) &
         {
             array a({1, true, str_});

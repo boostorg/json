@@ -217,18 +217,6 @@ at(std::size_t pos) &&
     return std::move( at(pos) );
 }
 
-value const&
-array::
-at(std::size_t pos) const&
-{
-    if(pos >= t_->size)
-    {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        detail::throw_system_error( error::out_of_range, &loc );
-    }
-    return (*t_)[pos];
-}
-
 value&
 array::
 operator[](std::size_t pos) & noexcept

@@ -2228,25 +2228,32 @@ public:
         value jvo{{"k1", "value"}, {"k2", nullptr}};
         value const& cjvo = jvo;
         BOOST_TEST( cjvo.at("k1").as_string() == "value" );
+        BOOST_TEST( cjvo.try_at("k1")->as_string() == "value" );
 
         jvo.at("k1") = {1, 2, 3};
         BOOST_TEST( cjvo.at("k1") == array({1, 2, 3}) );
+        BOOST_TEST( *cjvo.try_at("k1") == array({1, 2, 3}) );
 
         auto&& elem1 = std::move(jvo).at("k1");
         BOOST_TEST( &elem1 == &jvo.at("k1") );
+        BOOST_TEST( &elem1 == &*jvo.try_at("k1") );
 
         BOOST_TEST_THROWS_WITH_LOCATION( cjvo.at("null") );
+        BOOST_TEST( cjvo.try_at("null").error() == error::out_of_range );
 
         // array
         value jva{true,2,"3"};
         value const& cjva = jva;
         BOOST_TEST( cjva.at(1).as_int64() == 2 );
+        BOOST_TEST( cjva.try_at(1)->as_int64() == 2 );
 
         jva.at(1) = "item";
         BOOST_TEST( cjva.at(1) == "item" );
+        BOOST_TEST( *cjva.try_at(1) == "item" );
 
         auto&& elem2 = std::move(jva).at(1);
         BOOST_TEST( &elem2 == &jva.at(1) );
+        BOOST_TEST( &elem2 == &*jva.try_at(1) );
 
         BOOST_TEST_THROWS_WITH_LOCATION( value({false,2,false}).at(4) );
         BOOST_TEST_THROWS_WITH_LOCATION( value({false,2,"3"}).at(4) );
@@ -2255,6 +2262,21 @@ public:
         BOOST_TEST_THROWS_WITH_LOCATION( value({false,2,"3",nullptr}).at(4) );
         BOOST_TEST_THROWS_WITH_LOCATION( value({2,false,"3"}).at(4) );
         BOOST_TEST_THROWS_WITH_LOCATION( value({true,2,"3"}).at(4) );
+
+        BOOST_TEST(
+            value({false,2,false}).try_at(4) == error::out_of_range );
+        BOOST_TEST(
+            value({false,2,"3"}).try_at(4) == error::out_of_range );
+        BOOST_TEST(
+            value({false,false}).try_at(4) == error::out_of_range );
+        BOOST_TEST(
+            value({false,2}).try_at(4) == error::out_of_range );
+        BOOST_TEST(
+            value({false,2,"3",nullptr}).try_at(4) == error::out_of_range );
+        BOOST_TEST(
+            value({2,false,"3"}).try_at(4) == error::out_of_range );
+        BOOST_TEST(
+            value({true,2,"3"}).try_at(4) == error::out_of_range );
     }
 
     //------------------------------------------------------

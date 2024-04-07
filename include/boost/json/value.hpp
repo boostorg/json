@@ -3534,6 +3534,31 @@ public:
 
     /** Access an element, with bounds checking.
 
+        Returns `boost::system::result` containing a reference to the element
+        of the underlying object, if `pos` is within its range. If `pos` is
+        outside of that range, or the underlying value is not an object the
+        result contains an `error_code`.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param key The key of the element to find.
+
+        @par Complexity
+        Constant.
+    */
+    /** @{ */
+    BOOST_JSON_DECL
+    boost::system::result<value&>
+    try_at(string_view key) noexcept;
+
+    BOOST_JSON_DECL
+    boost::system::result<value const&>
+    try_at(string_view key) const noexcept;
+    /** @} */
+
+    /** Access an element, with bounds checking.
+
         This function is used to access elements of
         the underlying object, or throw an exception
         if the value is not an object.
@@ -3566,6 +3591,31 @@ public:
     {
         return as_object().at(key);
     }
+    /** @} */
+
+    /** Access an element, with bounds checking.
+
+        Returns `boost::system::result` containing a reference to the element
+        of the underlying array, if `pos` is within its range. If `pos` is
+        outside of that range, or the underlying value is not an array the
+        result contains an `error_code`.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param pos A zero-based array index.
+
+        @par Complexity
+        Constant.
+    */
+    /** @{ */
+    BOOST_JSON_DECL
+    boost::system::result<value&>
+    try_at(std::size_t pos) noexcept;
+
+    BOOST_JSON_DECL
+    boost::system::result<value const&>
+    try_at(std::size_t pos) const noexcept;
     /** @} */
 
     /** Access an element, with bounds checking.
