@@ -95,6 +95,10 @@ building the library or including the function definitions:
 #define BOOST_JSON_STACK_BUFFER_SIZE 1024
 #include <boost/json/src.hpp>
 ```
+### Endianness
+
+Boost.JSON uses [Boost.Endian](https://www.boost.org/doc/libs/release/libs/endian/doc/html/endian.html)
+in order to support both little endian and big endian platforms.
 
 ### Supported Compilers
 
