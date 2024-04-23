@@ -12,18 +12,15 @@ project json/doc ;
 
 import boostbook ;
 import ../../../tools/docca/docca.jam ;
+import path ;
 
-
-docca.reference reference.qbk
+local include-prefix = [ path.root $(__file__:D) [ path.pwd ] ] ;
+include-prefix = [ path.native $(include-prefix:D)/include ] ;
+docca.pyreference reference.qbk
     :
-        xsl/custom-overrides.xsl
         [ glob-tree-ex ../include/boost/json : *.hpp *.ipp : detail impl ]
     :
-        <doxygen:param>PROJECT_NAME=JSON
-        <doxygen:param>PROJECT_BRIEF="JSON Library"
         <doxygen:param>ALIASES="esafe=\"@par Exception Safety\""
-        <doxygen:param>FILE_PATTERNS=
-        <doxygen:param>EXAMPLE_PATTERNS=
         <doxygen:param>DISTRIBUTE_GROUP_DOC=YES
         <doxygen:param>MACRO_EXPANSION=YES
         <doxygen:param>EXPAND_ONLY_PREDEF=YES
@@ -38,23 +35,11 @@ docca.reference reference.qbk
         <doxygen:param>JAVADOC_AUTOBRIEF=YES
         <doxygen:param>AUTOLINK_SUPPORT=NO
         <doxygen:param>EXTRACT_ALL=YES
-        <doxygen:param>EXTRACT_PRIVATE=YES
         <doxygen:param>EXTRACT_LOCAL_CLASSES=NO
-        <doxygen:param>SHOW_INCLUDE_FILES=NO
-        <doxygen:param>INLINE_INFO=NO
-        <doxygen:param>SORT_MEMBER_DOCS=NO
-        <doxygen:param>SORT_MEMBERS_CTORS_1ST=YES
-        <doxygen:param>SHOW_USED_FILES=NO
-        <doxygen:param>SHOW_FILES=NO
-        <doxygen:param>SHOW_NAMESPACES=NO
-        <doxygen:param>CLASS_DIAGRAMS=NO
+        <doxygen:param>STRIP_FROM_PATH=$(include-prefix)
 
-        # <doxygen:param>ALLOW_UNICODE_NAMES=NO
-        # <doxygen:param>GROUP_NESTED_COMPOUNDS=NO
-        # <doxygen:param>HIDE_COMPOUND_REFERENCE=NO
-        # <doxygen:param>WARN_AS_ERROR=NO
+        <docca:config>config.json
     ;
-
 
 #-------------------------------------------------------------------------------
 #

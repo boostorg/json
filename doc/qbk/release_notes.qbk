@@ -95,7 +95,7 @@
 [*New Features]
 
 * [issue 800] [link json.ref.boost__json__value.set_at_pointer `set_at_pointer`].
-* [issue 570] [link json.ref.boost__json__value.hash_value `boost::hash` support].
+* [issue 570] [link json.ref.boost__json__value.hash_value_fr `boost::hash` support].
 
 [*Improvements]
 

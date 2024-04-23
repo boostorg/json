@@ -144,14 +144,14 @@
 [include benchmarks.qbk]
 [include comparison.qbk]
 
-[section:quickref Reference]
+[section:ref Reference]
 [xinclude quickref.xml]
-[endsect]
-[block'''<reference id="json_hidden"><title>This Page Intentionally Left Blank 1/2</title>''']
-[section:ref This Page Intentionally Left Blank 2/2]
+
+[block'''<reference id="json_hidden"><title>This Page Intentionally Left Blank</title>''']
 [include reference.qbk]
-[endsect]
 [block'''</reference>''']
+
+[endsect]
 
 [include release_notes.qbk]
 

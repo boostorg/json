@@ -3543,8 +3543,8 @@ public:
         parsing fails, `std::ios_base::failbit` will be set for `is` and
         `jv` will be left unchanged. Regardless of whether `skipws` flag is set
         on `is`, consumes whitespace before and after JSON, because whitespace
-        is considered a part of JSON. Behaves as [_FormattedInputFunction_]
-        (https://en.cppreference.com/w/cpp/named_req/FormattedInputFunction).<br>
+        is considered a part of JSON. Behaves as
+        [_FormattedInputFunction_](https://en.cppreference.com/w/cpp/named_req/FormattedInputFunction).
 
         Note: this operator cannot assume that the stream only contains a
         single JSON document, which may result in **very underwhelming
