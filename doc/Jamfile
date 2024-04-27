@@ -11,7 +11,8 @@
 project json/doc ;
 
 import boostbook ;
-import ../../../tools/docca/docca.jam ;
+import-search /boost/docca ;
+import docca ;
 
 
 docca.reference reference.qbk
