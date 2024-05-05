@@ -9,6 +9,7 @@
 #
 
 import modules ;
+import-search /boost/config/checks ;
 import config ;
 
 # These make sure we only build on compatible C++11 or later toolchains.
