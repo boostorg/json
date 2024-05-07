@@ -74,6 +74,7 @@ parse_options opt;                                  // all extensions default to
 opt.allow_comments = true;                          // permit C and C++ style comments to appear in whitespace
 opt.allow_trailing_commas = true;                   // allow an additional trailing comma in object and array element lists
 opt.allow_invalid_utf8 = true;                      // skip utf-8 validation of keys and strings
+opt.allow_invalid_utf16 = true;                     // replace invalid surrogate pair UTF-16 code point(s) with the Unicode replacement character
 
 value jv = parse( "[1,2,3,] // comment ", storage_ptr(), opt );
 //]
@@ -81,6 +82,7 @@ value jv = parse( "[1,2,3,] // comment ", storage_ptr(), opt );
 //----------------------------------------------------------
 {
 #if __cpp_designated_initializers >= 201707L
+{
 //[doc_parsing_6
 value jv = parse( "[1,2,3,] // comment ", storage_ptr(),
     {
@@ -89,6 +91,15 @@ value jv = parse( "[1,2,3,] // comment ", storage_ptr(),
         .allow_invalid_utf8 = true          // skip utf-8 validation of keys and strings
     });
 //]
+}
+{
+//[doc_parsing_15
+value jv = parse( "{\"command\":\"\\uDF3E\\uDEC2\"}", storage_ptr(),
+    {
+        .allow_invalid_utf16 = true       // replace illegal leading surrogate pair with ��
+    });
+//]
+}
 #endif
 }
 //----------------------------------------------------------
