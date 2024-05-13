@@ -893,8 +893,8 @@ public:
 
         if( inner_active_ >= N )
         {
-            inner_active_ = 0;
-            return true;
+            BOOST_JSON_FAIL( ec, error::size_mismatch );
+            return false;
         }
 
         return mp11::mp_with_index<N>(

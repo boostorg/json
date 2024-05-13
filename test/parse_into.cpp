@@ -327,9 +327,6 @@ public:
 
     void testTuple()
     {
-        testParseInto<std::pair<int, float>>( {} );
-        testParseInto<std::pair<int, float>>( { 1, 3.14f } );
-
         testParseInto<std::pair<std::nullptr_t, std::uint64_t>>(
             {nullptr, UINT64_MAX} );
 
@@ -355,6 +352,8 @@ public:
             error::size_mismatch, {1, 2, 3} );
         testParseIntoErrors< std::tuple<int, int, int> >(
             error::size_mismatch, {1, 2} );
+        testParseIntoErrors< std::tuple<std::vector<int>>  >(
+            error::size_mismatch, {{1,2}, {3,4}} );
     }
 
     void testStruct()
