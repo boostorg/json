@@ -70,10 +70,17 @@ cd ../../
 mkdir __build_static && cd __build_static
 cmake -DBoost_VERBOSE=1 !CMAKE_BUILD_TESTING! -DCMAKE_INSTALL_PREFIX=iprefix ^
 -DBOOST_INCLUDE_LIBRARIES=!SELF! !CMAKE_OPTIONS! ..
+
 cmake --build . --target install --config Debug
+if NOT "!CMAKE_BUILD_TESTING!" == "" (
+    cmake --build . --target tests --config Debug
+)
 ctest --output-on-failure --no-tests=error -R boost_!SELF! -C Debug
 
 cmake --build . --target install --config Release
+if NOT "!CMAKE_BUILD_TESTING!" == "" (
+    cmake --build . --target tests --config Release
+)
 ctest --output-on-failure --no-tests=error -R boost_!SELF! -C Release
 cd ..
 
@@ -86,12 +93,19 @@ if "!CMAKE_SHARED_LIBS!" == "1" (
 mkdir __build_shared && cd __build_shared
 cmake -DBoost_VERBOSE=1 !CMAKE_BUILD_TESTING! -DCMAKE_INSTALL_PREFIX=iprefix ^
 -DBOOST_INCLUDE_LIBRARIES=!SELF! -DBUILD_SHARED_LIBS=ON !CMAKE_OPTIONS! ..
+
 cmake --build . --config Debug
 cmake --build . --target install --config Debug
+if NOT "!CMAKE_BUILD_TESTING!" == "" (
+    cmake --build . --target tests --config Debug
+)
 ctest --output-on-failure --no-tests=error -R boost_!SELF! -C Debug
 
 cmake --build . --config Release
 cmake --build . --target install --config Release
+if NOT "!CMAKE_BUILD_TESTING!" == "" (
+    cmake --build . --target tests --config Release
+)
 ctest --output-on-failure --no-tests=error -R boost_!SELF! -C Release
 
 )

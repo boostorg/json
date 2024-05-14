@@ -173,6 +173,9 @@ mkdir __build_static
 cd __build_static
 cmake -DBoost_VERBOSE=1 ${CMAKE_BUILD_TESTING} -DCMAKE_INSTALL_PREFIX=iprefix \
     -DBOOST_INCLUDE_LIBRARIES=$SELF ${CMAKE_OPTIONS} ..
+if [ -n "${CMAKE_BUILD_TESTING}" ]; then
+    cmake --build . --target tests
+fi
 cmake --build . --target install
 ctest --output-on-failure --no-tests=$CMAKE_NO_TESTS -R boost_$SELF
 cd ..
@@ -183,6 +186,9 @@ mkdir __build_shared
 cd __build_shared
 cmake -DBoost_VERBOSE=1 ${CMAKE_BUILD_TESTING} -DCMAKE_INSTALL_PREFIX=iprefix \
     -DBOOST_INCLUDE_LIBRARIES=$SELF -DBUILD_SHARED_LIBS=ON ${CMAKE_OPTIONS} ..
+if [ -n "${CMAKE_BUILD_TESTING}" ]; then
+    cmake --build . --target tests
+fi
 cmake --build . --target install
 ctest --output-on-failure --no-tests=$CMAKE_NO_TESTS -R boost_$SELF
 
