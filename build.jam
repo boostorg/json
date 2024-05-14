@@ -18,6 +18,7 @@ project /boost/json
         <library>/boost/describe//boost_describe
         <library>/boost/endian//boost_endian
         <library>/boost/mp11//boost_mp11
+        <library>/boost/static_assert//boost_static_assert
         <library>/boost/system//boost_system
         <library>/boost/throw_exception//boost_throw_exception
         <include>include
