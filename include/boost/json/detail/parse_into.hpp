@@ -109,7 +109,7 @@ public:
     bool on_object_end( system::error_code& ) { BOOST_ASSERT( false ); return false; }
     bool on_key_part( system::error_code& ec, string_view ) { BOOST_JSON_FAIL( ec, E ); return false; }
     bool on_key( system::error_code& ec, string_view ) { BOOST_JSON_FAIL( ec, E ); return false; }
-    // LCOV_EXCL_START
+    // LCOV_EXCL_STOP
 };
 
 template< class P, error E >
@@ -893,8 +893,8 @@ public:
 
         if( inner_active_ >= N )
         {
-            inner_active_ = 0;
-            return true;
+            BOOST_JSON_FAIL( ec, error::size_mismatch );
+            return false;
         }
 
         return mp11::mp_with_index<N>(
