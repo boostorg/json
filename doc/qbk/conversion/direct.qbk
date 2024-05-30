@@ -13,7 +13,7 @@
 [section Direct parsing]
 
 For large inputs parsing into the library's containers followed by conversion
-via __value_to__ might be prohibitively expensive. For this cases the library
+via __value_to__ might be prohibitively expensive. For these cases the library
 provides components that allow parsing directly into user-provided objects.
 
 The drawback of this approach is that fully custom type representations are
