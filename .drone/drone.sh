@@ -82,6 +82,8 @@ common_install
 
 echo '==================================> SCRIPT'
 
+printf "set debuginfod enabled off\nadd-auto-load-safe-path $PWD/bin.v2\n" > ~/.gdbinit
+
 export B2_TARGETS=${B2_TARGETS:-"libs/$SELF/test libs/$SELF/example"}
 $BOOST_ROOT/libs/$SELF/ci/travis/build.sh
 
