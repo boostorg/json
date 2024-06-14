@@ -224,7 +224,7 @@ public:
     */
     template<class T>
     storage_ptr(
-        container::pmr::polymorphic_allocator<T> const& alloc) noexcept
+        boost::container::pmr::polymorphic_allocator<T> const& alloc) noexcept
         : i_(reinterpret_cast<std::uintptr_t>(
             alloc.resource()))
     {
@@ -407,7 +407,7 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    container::pmr::memory_resource*
+    boost::container::pmr::memory_resource*
     get() const noexcept
     {
         if(i_ != 0)
@@ -427,7 +427,7 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    container::pmr::memory_resource*
+    boost::container::pmr::memory_resource*
     operator->() const noexcept
     {
         return get();
@@ -446,7 +446,7 @@ public:
 
         No-throw guarantee.
     */
-    container::pmr::memory_resource&
+    boost::container::pmr::memory_resource&
     operator*() const noexcept
     {
         return *get();

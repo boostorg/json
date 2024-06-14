@@ -62,7 +62,7 @@ BOOST_JSON_DECL
 value
 parse(
     string_view s,
-    system::error_code& ec,
+    boost::system::error_code& ec,
     storage_ptr sp = {},
     parse_options const& opt = {});
 
@@ -156,7 +156,7 @@ BOOST_JSON_DECL
 value
 parse(
     std::istream& is,
-    system::error_code& ec,
+    boost::system::error_code& ec,
     storage_ptr sp = {},
     parse_options const& opt = {});
 

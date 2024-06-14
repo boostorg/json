@@ -512,8 +512,6 @@ public:
 
         @param args Optional additional arguments
         forwarded to the handler's constructor.
-
-        @see parse_options
     */
     template<class... Args>
     explicit
@@ -567,7 +565,7 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    system::error_code
+    boost::system::error_code
     last_error() const noexcept
     {
         return ec_;
@@ -636,7 +634,7 @@ public:
         instead.
     */
     void
-    fail(system::error_code ec) noexcept;
+    fail(boost::system::error_code ec) noexcept;
 
     /** Parse some of an input string as JSON, incrementally.
 
@@ -688,13 +686,13 @@ public:
 
         @param ec Set to the error, if any occurred.
     */
-/** @{ */
+    /** @{ */
     std::size_t
     write_some(
         bool more,
         char const* data,
         std::size_t size,
-        system::error_code& ec);
+        boost::system::error_code& ec);
 
     std::size_t
     write_some(
@@ -702,7 +700,7 @@ public:
         char const* data,
         std::size_t size,
         std::error_code& ec);
-/** @} */
+    /** @} */
 };
 
 } // namespace json

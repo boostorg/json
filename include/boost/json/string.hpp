@@ -84,16 +84,9 @@ class string
         storage_ptr sp);
 
 public:
-    /** Associated [Allocator](https://en.cppreference.com/w/cpp/named_req/Allocator)
-
-        This type is a `boost::container::pmr::polymorphic_allocator<value>`.
-    */
-#ifdef BOOST_JSON_DOCS
-    using allocator_type = __see_below__;
-#else
-    // VFALCO doc toolchain renders this incorrectly
-    using allocator_type = container::pmr::polymorphic_allocator<value>;
-#endif
+    /// Associated [Allocator](https://en.cppreference.com/w/cpp/named_req/Allocator)
+    using allocator_type
+        = boost::container::pmr::polymorphic_allocator<value>;
 
     /// The type of a character
     using value_type        = char;
@@ -1107,7 +1100,7 @@ public:
         return impl_.data();
     }
 
-    /** Convert to a `string_view` referring to the string.
+    /** Convert to a @ref string_view referring to the string.
 
         Returns a string view to the
         underlying character string. The size of the view
@@ -2240,8 +2233,7 @@ public:
         Returns a view of the whole string.
 
         @par Exception Safety
-
-        `noexcept`
+        No-throw guarantee.
 
         @return `string_view(this->data(), this->size())`.
     */
