@@ -565,7 +565,7 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    boost::system::error_code
+    system::error_code
     last_error() const noexcept
     {
         return ec_;
@@ -634,7 +634,7 @@ public:
         instead.
     */
     void
-    fail(boost::system::error_code ec) noexcept;
+    fail(system::error_code ec) noexcept;
 
     /** Parse some of an input string as JSON, incrementally.
 
@@ -692,7 +692,7 @@ public:
         bool more,
         char const* data,
         std::size_t size,
-        boost::system::error_code& ec);
+        system::error_code& ec);
 
     std::size_t
     write_some(

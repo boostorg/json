@@ -17,28 +17,27 @@ import path ;
 local include-prefix = [ path.root $(__file__:D) [ path.pwd ] ] ;
 include-prefix = [ path.native $(include-prefix:D)/include ] ;
 docca.pyreference reference.qbk
-    :
-        [ glob-tree-ex ../include/boost/json : *.hpp *.ipp : detail impl ]
-    :
-        <doxygen:param>ALIASES="esafe=\"@par Exception Safety\""
-        <doxygen:param>DISTRIBUTE_GROUP_DOC=YES
-        <doxygen:param>MACRO_EXPANSION=YES
-        <doxygen:param>EXPAND_ONLY_PREDEF=YES
-        <doxygen:param>"PREDEFINED=\\
-            BOOST_FORCEINLINE \\
-            BOOST_JSON_DECL \\
-            BOOST_JSON_DOCS \\
-            BOOST_SYMBOL_VISIBLE \\
-            \"BOOST_JSON_INLINE_VARIABLE(v, t)=constexpr t v;\""
-        <doxygen:param>ABBREVIATE_BRIEF=
-        <doxygen:param>INLINE_INHERITED_MEMB=YES
-        <doxygen:param>JAVADOC_AUTOBRIEF=YES
-        <doxygen:param>AUTOLINK_SUPPORT=NO
-        <doxygen:param>EXTRACT_ALL=YES
-        <doxygen:param>EXTRACT_LOCAL_CLASSES=NO
-        <doxygen:param>STRIP_FROM_PATH=$(include-prefix)
+    : [ glob-tree-ex ../include/boost/json : *.hpp *.ipp : detail impl ]
+      externals.hpp
+    : <doxygen:param>ALIASES="esafe=\"@par Exception Safety\""
+      <doxygen:param>DISTRIBUTE_GROUP_DOC=YES
+      <doxygen:param>MACRO_EXPANSION=YES
+      <doxygen:param>EXPAND_ONLY_PREDEF=YES
+      <doxygen:param>"PREDEFINED=\\
+          BOOST_FORCEINLINE \\
+          BOOST_JSON_DECL \\
+          BOOST_JSON_DOCS \\
+          BOOST_SYMBOL_VISIBLE \\
+          \"BOOST_JSON_INLINE_VARIABLE(v, t)=constexpr t v;\""
+      <doxygen:param>ABBREVIATE_BRIEF=
+      <doxygen:param>INLINE_INHERITED_MEMB=YES
+      <doxygen:param>JAVADOC_AUTOBRIEF=YES
+      <doxygen:param>AUTOLINK_SUPPORT=NO
+      <doxygen:param>EXTRACT_ALL=YES
+      <doxygen:param>EXTRACT_LOCAL_CLASSES=NO
+      <doxygen:param>STRIP_FROM_PATH=$(include-prefix)
 
-        <docca:config>config.json
+      <docca:config>config.json
     ;
 
 #-------------------------------------------------------------------------------

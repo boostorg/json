@@ -76,7 +76,7 @@ void
 parse_into(
     V& v,
     string_view sv,
-    boost::system::error_code& ec,
+    system::error_code& ec,
     parse_options const& opt = {} );
 
 template<class V>
@@ -161,7 +161,7 @@ void
 parse_into(
     V& v,
     std::istream& is,
-    boost::system::error_code& ec,
+    system::error_code& ec,
     parse_options const& opt = {} );
 
 template<class V>

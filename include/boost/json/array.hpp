@@ -118,7 +118,7 @@ class array
 
 public:
     /// Associated [Allocator](https://en.cppreference.com/w/cpp/named_req/Allocator)
-    using allocator_type = boost::container::pmr::polymorphic_allocator<value>;
+    using allocator_type = container::pmr::polymorphic_allocator<value>;
 
     /// The type used to represent unsigned integers
     using size_type = std::size_t;
