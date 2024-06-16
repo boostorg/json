@@ -47,6 +47,14 @@ jobs:
               --no-install-recommends install \
               clang-18 \
               libclang-rt-18-dev
+          if [ ! -d /usr/lib/llvm-18/lib/clang/18/lib/linux ]; then
+              mkdir -p /usr/lib/llvm-18/lib/clang/18/lib/linux
+              for f in ls /usr/lib/llvm-18/lib/clang/18/lib/x86_64-pc-linux-gnu/libclang_rt.*.a; do
+                ln -sfT "$f" \
+                  "/usr/lib/llvm-18/lib/clang/18/lib/linux/$(basename ${f%.*})-x86_64.a"
+                ls -al /usr/lib/llvm-18/lib/clang/18/lib/linux/"$(basename ${f%.*})"-x86_64.a
+              done
+          fi
     - uses: ./head/.github/actions/build
       with:
         buildtype: 'boost'
