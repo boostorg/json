@@ -111,16 +111,8 @@ class value
     }
 
 public:
-    /** Associated [Allocator](https://en.cppreference.com/w/cpp/named_req/Allocator)
-
-        This type is a `boost::container::pmr::polymorphic_allocator<value>`.
-    */
-#ifdef BOOST_JSON_DOCS
-    using allocator_type = __see_below__;
-#else
-    // VFALCO doc toolchain renders this incorrectly
-    using allocator_type = container::pmr::polymorphic_allocator<value>;
-#endif
+    /// Associated [Allocator](https://en.cppreference.com/w/cpp/named_req/Allocator)
+    using allocator_type = boost::container::pmr::polymorphic_allocator<value>;
 
     /** Destructor.
 
@@ -2385,7 +2377,7 @@ public:
         ! std::is_same<T, bool>::value,
             T>::type
 #endif
-    to_number(system::error_code& ec) const noexcept
+    to_number(boost::system::error_code& ec) const noexcept
     {
         error e;
         auto result = to_number<T>(e);
@@ -2524,7 +2516,7 @@ public:
 
         @throw `boost::system::system_error` `! this->is_object()`.
     */
-    /* @{ */
+    /** @{ */
     object&
     as_object() &
     {
@@ -2546,7 +2538,7 @@ public:
         BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         detail::throw_system_error( error::not_object, &loc );
     }
-    /* @} */
+    /** @} */
 
     /** Return a reference to the underlying @ref array, or throw an exception.
 
@@ -2562,7 +2554,7 @@ public:
 
         @throw `boost::system::system_error` `! this->is_array()`.
     */
-    /* @{ */
+    /** @{ */
     array&
     as_array() &
     {
@@ -2584,7 +2576,7 @@ public:
         BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         detail::throw_system_error( error::not_array, &loc );
     }
-    /* @} */
+    /** @} */
 
     /** Return a reference to the underlying `string`, or throw an exception.
 
@@ -2600,7 +2592,7 @@ public:
 
         @throw `boost::system::system_error` `! this->is_string()`.
     */
-    /* @{ */
+    /** @{ */
     string&
     as_string() &
     {
@@ -2622,7 +2614,7 @@ public:
         BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         detail::throw_system_error( error::not_string, &loc );
     }
-    /* @} */
+    /** @} */
 
     /** Return a reference to the underlying `std::int64_t`, or throw an exception.
 
@@ -2875,7 +2867,7 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    /* @{ */
+    /** @{ */
     object&
     get_object() & noexcept
     {
@@ -2896,7 +2888,7 @@ public:
         BOOST_ASSERT(is_object());
         return obj_;
     }
-    /* @} */
+    /** @} */
 
     /** Return a reference to the underlying `array`, without checking.
 
@@ -2915,7 +2907,7 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    /* @{ */
+    /** @{ */
     array&
     get_array() & noexcept
     {
@@ -2936,7 +2928,7 @@ public:
         BOOST_ASSERT(is_array());
         return arr_;
     }
-    /* @} */
+    /** @} */
 
     /** Return a reference to the underlying `string`, without checking.
 
@@ -2955,7 +2947,7 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    /* @{ */
+    /** @{ */
     string&
     get_string() & noexcept
     {
@@ -2976,7 +2968,7 @@ public:
         BOOST_ASSERT(is_string());
         return str_;
     }
-    /* @} */
+    /** @} */
 
     /** Return a reference to the underlying `std::int64_t`, without checking.
 
@@ -3188,7 +3180,7 @@ public:
 
         @return `this->as_object().at( key )`.
     */
-/** @{ */
+    /** @{ */
     value&
     at(string_view key) &
     {
@@ -3206,7 +3198,7 @@ public:
     {
         return as_object().at(key);
     }
-/** @} */
+    /** @} */
 
     /** Access an element, with bounds checking.
 
@@ -3224,7 +3216,7 @@ public:
 
         @return `this->as_array().at( pos )`.
     */
-/** @{ */
+    /** @{ */
     value &
     at(std::size_t pos) &
     {
@@ -3242,7 +3234,7 @@ public:
     {
         return as_array().at(pos);
     }
-/** @} */
+    /** @} */
 
     /** Access an element via JSON Pointer.
 
@@ -3265,7 +3257,7 @@ public:
         <a href="https://datatracker.ietf.org/doc/html/rfc6901">
             RFC 6901 - JavaScript Object Notation (JSON) Pointer</a>
     */
-/** @{ */
+    /** @{ */
     BOOST_JSON_DECL
     value const&
     at_pointer(string_view ptr) const&;
@@ -3277,7 +3269,7 @@ public:
     inline
     value&
     at_pointer(string_view ptr) &;
-/** @} */
+    /** @} */
 
     /** Access an element via JSON Pointer.
 
@@ -3300,14 +3292,15 @@ public:
         <a href="https://datatracker.ietf.org/doc/html/rfc6901">
             RFC 6901 - JavaScript Object Notation (JSON) Pointer</a>
     */
-/** @{ */
+    /** @{ */
     BOOST_JSON_DECL
     value const*
-    find_pointer(string_view ptr, system::error_code& ec) const noexcept;
+    find_pointer(
+        string_view ptr, boost::system::error_code& ec) const noexcept;
 
     BOOST_JSON_DECL
     value*
-    find_pointer(string_view ptr, system::error_code& ec) noexcept;
+    find_pointer(string_view ptr, boost::system::error_code& ec) noexcept;
 
     BOOST_JSON_DECL
     value const*
@@ -3316,7 +3309,7 @@ public:
     BOOST_JSON_DECL
     value*
     find_pointer(string_view ptr, std::error_code& ec) noexcept;
-/** @} */
+    /** @} */
 
     //------------------------------------------------------
 
@@ -3444,7 +3437,7 @@ public:
         <a href="https://datatracker.ietf.org/doc/html/rfc6901">
             RFC 6901 - JavaScript Object Notation (JSON) Pointer</a>.
     */
-/** @{ */
+    /** @{ */
     BOOST_JSON_DECL
     value*
     set_at_pointer(
@@ -3460,7 +3453,7 @@ public:
         value_ref ref,
         std::error_code& ec,
         set_pointer_options const& opts = {} );
-/** @} */
+    /** @} */
 
     //------------------------------------------------------
 
@@ -3543,8 +3536,8 @@ public:
         parsing fails, `std::ios_base::failbit` will be set for `is` and
         `jv` will be left unchanged. Regardless of whether `skipws` flag is set
         on `is`, consumes whitespace before and after JSON, because whitespace
-        is considered a part of JSON. Behaves as [_FormattedInputFunction_]
-        (https://en.cppreference.com/w/cpp/named_req/FormattedInputFunction).<br>
+        is considered a part of JSON. Behaves as
+        [_FormattedInputFunction_](https://en.cppreference.com/w/cpp/named_req/FormattedInputFunction).
 
         Note: this operator cannot assume that the stream only contains a
         single JSON document, which may result in **very underwhelming
@@ -4057,7 +4050,7 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    /* @{ */
+    /** @{ */
     json::value const&
     value() const& noexcept
     {
@@ -4075,7 +4068,7 @@ public:
     {
         return value_;
     }
-    /* @} */
+    /** @} */
 
 private:
     json::value value_;

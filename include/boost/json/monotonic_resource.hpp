@@ -88,7 +88,7 @@ class
     BOOST_JSON_DECL
     BOOST_SYMBOL_VISIBLE
 monotonic_resource final
-    : public container::pmr::memory_resource
+    : public boost::container::pmr::memory_resource
 {
     struct block;
     struct block_base

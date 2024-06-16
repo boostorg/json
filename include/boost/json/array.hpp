@@ -117,16 +117,8 @@ class array
     array(detail::unchecked_array&& ua);
 
 public:
-    /** Associated [Allocator](https://en.cppreference.com/w/cpp/named_req/Allocator)
-
-        This type is `boost::container::pmr::polymorphic_allocator<value>`.
-     */
-#ifdef BOOST_JSON_DOCS
-    using allocator_type = __see_below__;
-#else
-    // VFALCO doc toolchain renders this incorrectly
-    using allocator_type = container::pmr::polymorphic_allocator<value>;
-#endif
+    /// Associated [Allocator](https://en.cppreference.com/w/cpp/named_req/Allocator)
+    using allocator_type = boost::container::pmr::polymorphic_allocator<value>;
 
     /// The type used to represent unsigned integers
     using size_type = std::size_t;
@@ -601,7 +593,7 @@ public:
 
         @throw `boost::system::system_error` `pos >= size()`.
     */
-    /* @{ */
+    /** @{ */
     inline
     value&
     at(std::size_t pos) &;
@@ -613,7 +605,7 @@ public:
     inline
     value const&
     at(std::size_t pos) const&;
-    /* @} */
+    /** @} */
 
     /** Access an element.
 
@@ -628,7 +620,7 @@ public:
 
         @param pos A zero-based index
     */
-    /* @{ */
+    /** @{ */
     inline
     value&
     operator[](std::size_t pos) & noexcept;
@@ -640,7 +632,7 @@ public:
     inline
     value const&
     operator[](std::size_t pos) const& noexcept;
-    /* @} */
+    /** @} */
 
     /** Access the first element.
 
@@ -652,7 +644,7 @@ public:
         @par Complexity
         Constant.
     */
-    /* @{ */
+    /** @{ */
     inline
     value&
     front() & noexcept;
@@ -664,7 +656,7 @@ public:
     inline
     value const&
     front() const& noexcept;
-    /* @} */
+    /** @} */
 
     /** Access the last element.
 
@@ -676,7 +668,7 @@ public:
         @par Complexity
         Constant.
     */
-    /* @{ */
+    /** @{ */
     inline
     value&
     back() & noexcept;
@@ -688,7 +680,7 @@ public:
     inline
     value const&
     back() const& noexcept;
-    /* @} */
+    /** @} */
 
     /** Access the underlying array directly.
 

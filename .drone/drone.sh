@@ -100,10 +100,6 @@ cmake -H. -Bbuild -DCMAKE_BUILD_TYPE=Release
 cd build
 sudo make install
 cd ../..
-if [ ! -f saxonhe.zip ]; then wget -O saxonhe.zip https://sourceforge.net/projects/saxon/files/Saxon-HE/9.9/SaxonHE9-9-1-4J.zip/download && echo "not-cached" ; else echo "cached" ; fi
-unzip -o saxonhe.zip
-sudo rm /usr/share/java/Saxon-HE.jar
-sudo cp saxon9he.jar /usr/share/java/Saxon-HE.jar
 cd ..
 BOOST_BRANCH=develop && [ "$TRAVIS_BRANCH" == "master" ] && BOOST_BRANCH=master || true
 git clone -b $BOOST_BRANCH https://github.com/boostorg/boost.git boost-root --depth 1
@@ -121,7 +117,7 @@ python tools/boostdep/depinst/depinst.py ../tools/quickbook
 
 echo '==================================> SCRIPT'
 
-echo "using doxygen ; using boostbook ; using saxonhe ;" > tools/build/src/user-config.jam
+echo "using doxygen ; using boostbook ; using python : : python3 ;" > tools/build/src/user-config.jam
 ./b2 -j3 libs/$SELF/doc//boostrelease
 
 elif [ "$DRONE_JOB_BUILDTYPE" == "codecov" ]; then

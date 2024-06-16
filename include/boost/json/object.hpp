@@ -94,16 +94,8 @@ class object
     object(detail::unchecked_object&& uo);
 
 public:
-    /** Associated [Allocator](https://en.cppreference.com/w/cpp/named_req/Allocator)
-
-        This type is a `boost::container::pmr::polymorphic_allocator`.
-    */
-#ifdef BOOST_JSON_DOCS
-    using allocator_type = __see_below__;
-#else
-    // VFALCO doc toolchain renders this incorrectly
-    using allocator_type = container::pmr::polymorphic_allocator<value>;
-#endif
+    /// Associated [Allocator](https://en.cppreference.com/w/cpp/named_req/Allocator)
+    using allocator_type = boost::container::pmr::polymorphic_allocator<value>;
 
     /** The type of keys.
 
@@ -1168,17 +1160,14 @@ public:
 
     /** Erase an element preserving order
 
-        Remove the element pointed to by `pos`, which must
-        be valid and dereferenceable.
-        References and iterators from `pos` to `end()`, both
-        included, are invalidated. Other iterators and references
-        are not invalidated.
-        The relative order of remaining elements is preserved.
+        Remove the element pointed to by `pos`, which must be valid and
+        dereferenceable. References and iterators from `pos` to @ref end(),
+        both included, are invalidated. Other iterators and references are not
+        invalidated. The relative order of remaining elements is preserved.
 
         @note
-
-        The @ref end() iterator (which is valid but cannot be
-        dereferenced) cannot be used as a value for `pos`.
+        The @ref end() iterator (which is valid but cannot be dereferenced)
+        cannot be used as a value for `pos`.
 
         @par Complexity
         Linear in @ref size().
@@ -1311,7 +1300,7 @@ public:
 
         @throw `boost::system::system_error` if no such element exists.
     */
-    /* @{ */
+    /** @{ */
     inline
     value&
     at(string_view key) &;
@@ -1323,7 +1312,7 @@ public:
     inline
     value const&
     at(string_view key) const&;
-    /* @} */
+    /** @} */
 
     /** Access or insert the specified element
 
