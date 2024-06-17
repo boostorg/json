@@ -11,8 +11,10 @@
 #ifndef BOOST_JSON_DETAIL_IMPL_FORMAT_IPP
 #define BOOST_JSON_DETAIL_IMPL_FORMAT_IPP
 
-#include <boost/json/detail/ryu/ryu.hpp>
+#include <boost/charconv/to_chars.hpp>
+#include <cmath>
 #include <cstring>
+#include <limits>
 
 namespace boost {
 namespace json {
@@ -56,7 +58,7 @@ inline void format_digit( char * dest, unsigned v )
     *dest = static_cast<char>( v + '0' );
 }
 
-unsigned
+std::size_t
 format_uint64(
     char* dest,
     std::uint64_t v) noexcept
@@ -91,13 +93,13 @@ format_uint64(
         format_digit( p, static_cast<unsigned>(v) );
     }
 
-    unsigned const n = static_cast<unsigned>( buffer + 24 - p );
+    std::size_t const n = static_cast<std::size_t>( buffer + 24 - p );
     std::memcpy( dest, p, n );
 
     return n;
 }
 
-unsigned
+std::size_t
 format_int64(
     char* dest, int64_t i) noexcept
 {
@@ -110,12 +112,64 @@ format_int64(
     return 1 + format_uint64(dest, ui);
 }
 
-unsigned
+std::size_t
 format_double(
     char* dest, double d, bool allow_infinity_and_nan) noexcept
 {
-    return static_cast<int>(
-        ryu::d2s_buffered_n(d, dest, allow_infinity_and_nan));
+    charconv::to_chars_result result;
+
+    using Limits = std::numeric_limits<double>;
+
+    if(BOOST_JSON_UNLIKELY( std::isnan(d) ))
+    {
+        if( allow_infinity_and_nan )
+        {
+            std::memcpy(dest, "NaN", 3);
+            result.ptr = dest + 3;
+        }
+        else
+        {
+            std::memcpy(dest, "null", 4);
+            result.ptr = dest + 4;
+        }
+    }
+    else if(BOOST_JSON_UNLIKELY( d == Limits::infinity() ))
+    {
+        if( allow_infinity_and_nan )
+        {
+            std::memcpy(dest, "Infinity", 8);
+            result.ptr = dest + 8;
+        }
+        else
+        {
+            std::memcpy(dest, "1e99999", 7);
+            result.ptr = dest + 7;
+        }
+    }
+    else if(BOOST_JSON_UNLIKELY( d == -Limits::infinity() ))
+    {
+        if( allow_infinity_and_nan )
+        {
+            std::memcpy(dest, "-Infinity", 9);
+            result.ptr = dest + 9;
+        }
+        else
+        {
+            std::memcpy(dest, "-1e99999", 8);
+            result.ptr = dest + 8;
+        }
+    }
+    else
+    {
+        result = charconv::to_chars(
+            dest,
+            dest + detail::max_number_chars,
+            d,
+            charconv::chars_format::scientific);
+        BOOST_ASSERT( result.ec == std::errc() );
+    }
+
+    return result.ptr - dest;
 }
 
 } // detail

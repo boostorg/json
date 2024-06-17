@@ -77,15 +77,18 @@ project boost/json
     : source-location ../src
     ;
 
+local dependencies = container charconv ;
+dependencies = <library>/boost//$(dependencies)/<warnings-as-errors>off ;
+
 alias json_deps
    : usage-requirements
-     <library>/boost//container/<warnings-as-errors>off
+     $(dependencies)
    ;
 
 alias json_sources
    : src.cpp
    : usage-requirements
-     <library>/boost//container/<warnings-as-errors>off
+     $(dependencies)
    ;
 
 explicit json_deps json_sources ;
@@ -93,7 +96,7 @@ explicit json_deps json_sources ;
 lib boost_json
    : json_sources
    : usage-requirements
-     <library>/boost//container/<warnings-as-errors>off
+     $(dependencies)
    ;
 
 boost-install boost_json ;

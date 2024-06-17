@@ -587,9 +587,9 @@ public:
         BOOST_TEST(parse("-0").as_int64() == 0);
         BOOST_TEST(serialize(parse("-0")) == "0");
         BOOST_TEST(parse("-0.0").as_double() == -0);
-        BOOST_TEST(serialize(parse("0.0")) == "0E0");
+        BOOST_TEST(serialize(parse("0.0")) == "0e+00");
         BOOST_TEST(parse("0.0").as_double() == 0);
-        BOOST_TEST(serialize(parse("-0.0")) == "-0E0");
+        BOOST_TEST(serialize(parse("-0.0")) == "-0e+00");
     }
 
     void
