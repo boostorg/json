@@ -25,10 +25,8 @@ template<int N>
 std::uint32_t
 load_little_endian(void const* p)
 {
-    std::uint32_t v = 0;
-    std::memcpy(&v, p, N);
-    endian::little_to_native_inplace(v);
-    return v;
+    auto const up = reinterpret_cast<unsigned char const*>(p);
+    return endian::endian_load<std::uint32_t, N, endian::order::little>(up);
 }
 
 inline
@@ -70,7 +68,7 @@ inline
 bool
 is_valid_utf8(const char* p, uint16_t first)
 {
-    uint32_t v;
+    std::uint32_t v;
     switch(first >> 8)
     {
     default:
@@ -81,36 +79,44 @@ is_valid_utf8(const char* p, uint16_t first)
         v = load_little_endian<2>(p);
         return (v & 0xC000) == 0x8000;
 
-    // 3 bytes, second byte [A0, BF]
-    case 2:
+     // 3 bytes, second byte [A0, BF]
+     case 2:
         v = load_little_endian<3>(p);
         return (v & 0xC0E000) == 0x80A000;
 
-    // 3 bytes, second byte [80, BF]
-    case 3:
+     // 3 bytes, second byte [80, BF]
+     case 3:
         v = load_little_endian<3>(p);
         return (v & 0xC0C000) == 0x808000;
 
-    // 3 bytes, second byte [80, 9F]
-    case 4:
+     // 3 bytes, second byte [80, 9F]
+     case 4:
         v = load_little_endian<3>(p);
         return (v & 0xC0E000) == 0x808000;
 
-    // 4 bytes, second byte [90, BF]
-    case 5:
+     // 4 bytes, second byte [90, BF]
+     case 5:
         v = load_little_endian<4>(p);
         return (v & 0xC0C0FF00) + 0x7F7F7000 <= 0x2F00;
 
-    // 4 bytes, second byte [80, BF]
-    case 6:
+     // 4 bytes, second byte [80, BF]
+     case 6:
         v = load_little_endian<4>(p);
         return (v & 0xC0C0C000) == 0x80808000;
 
-    // 4 bytes, second byte [80, 8F]
-    case 7:
+     // 4 bytes, second byte [80, 8F]
+     case 7:
         v = load_little_endian<4>(p);
         return (v & 0xC0C0F000) == 0x80808000;
     }
+}
+
+BOOST_NOINLINE
+inline
+bool
+is_valid_utf8_no_inline(const char* p, uint16_t first)
+{
+    return is_valid_utf8(p, first);
 }
 
 class utf8_sequence
