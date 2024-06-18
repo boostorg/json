@@ -463,7 +463,7 @@ public:
     write_some(
         char const* data,
         std::size_t size,
-        boost::system::error_code& ec);
+        system::error_code& ec);
 
     BOOST_JSON_DECL
     std::size_t
@@ -557,7 +557,7 @@ public:
     std::size_t
     write_some(
         string_view s,
-        boost::system::error_code& ec)
+        system::error_code& ec)
     {
         return write_some(
             s.data(), s.size(), ec);
@@ -658,7 +658,7 @@ public:
     write(
         char const* data,
         std::size_t size,
-        boost::system::error_code& ec);
+        system::error_code& ec);
 
     BOOST_JSON_DECL
     std::size_t
@@ -746,7 +746,7 @@ public:
     std::size_t
     write(
         string_view s,
-        boost::system::error_code& ec)
+        system::error_code& ec)
     {
         return write(
             s.data(), s.size(), ec);

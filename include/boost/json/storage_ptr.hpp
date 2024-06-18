@@ -74,8 +74,8 @@ namespace json {
 
     @see
         @ref make_shared_resource,
-       [`boost::container::pmr::polymorphic_allocator`](https://www.boost.org/doc/libs/release/doc/html/boost/container/pmr/polymorphic_allocator.html).
-       [`boost::container::pmr::memory_resource`](https://www.boost.org/doc/libs/release/doc/html/boost/container/pmr/memory_resource.html).
+        @ref boost::container::pmr::polymorphic_allocator,
+        @ref boost::container::pmr::memory_resource.
 
 */
 class storage_ptr
@@ -224,7 +224,7 @@ public:
     */
     template<class T>
     storage_ptr(
-        boost::container::pmr::polymorphic_allocator<T> const& alloc) noexcept
+        container::pmr::polymorphic_allocator<T> const& alloc) noexcept
         : i_(reinterpret_cast<std::uintptr_t>(
             alloc.resource()))
     {
@@ -407,7 +407,7 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    boost::container::pmr::memory_resource*
+    container::pmr::memory_resource*
     get() const noexcept
     {
         if(i_ != 0)
@@ -427,7 +427,7 @@ public:
         @par Exception Safety
         No-throw guarantee.
     */
-    boost::container::pmr::memory_resource*
+    container::pmr::memory_resource*
     operator->() const noexcept
     {
         return get();
@@ -446,7 +446,7 @@ public:
 
         No-throw guarantee.
     */
-    boost::container::pmr::memory_resource&
+    container::pmr::memory_resource&
     operator*() const noexcept
     {
         return *get();

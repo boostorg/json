@@ -746,7 +746,7 @@ public:
     write(
         char const* data,
         std::size_t size,
-        boost::system::error_code& ec);
+        system::error_code& ec);
 
     BOOST_JSON_DECL
     std::size_t
@@ -953,7 +953,7 @@ public:
     /** @{ */
     BOOST_JSON_DECL
     void
-    finish(boost::system::error_code& ec);
+    finish(system::error_code& ec);
 
     BOOST_JSON_DECL
     void

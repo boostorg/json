@@ -112,7 +112,7 @@ class value
 
 public:
     /// Associated [Allocator](https://en.cppreference.com/w/cpp/named_req/Allocator)
-    using allocator_type = boost::container::pmr::polymorphic_allocator<value>;
+    using allocator_type = container::pmr::polymorphic_allocator<value>;
 
     /** Destructor.
 
@@ -2377,7 +2377,7 @@ public:
         ! std::is_same<T, bool>::value,
             T>::type
 #endif
-    to_number(boost::system::error_code& ec) const noexcept
+    to_number(system::error_code& ec) const noexcept
     {
         error e;
         auto result = to_number<T>(e);
@@ -3295,12 +3295,11 @@ public:
     /** @{ */
     BOOST_JSON_DECL
     value const*
-    find_pointer(
-        string_view ptr, boost::system::error_code& ec) const noexcept;
+    find_pointer(string_view ptr, system::error_code& ec) const noexcept;
 
     BOOST_JSON_DECL
     value*
-    find_pointer(string_view ptr, boost::system::error_code& ec) noexcept;
+    find_pointer(string_view ptr, system::error_code& ec) noexcept;
 
     BOOST_JSON_DECL
     value const*

@@ -1,5 +1,6 @@
 { "include_private": false
 , "legacy_behavior": false
+, "external_marker": "!EXTERNAL!"
 , "link_prefix": "json.ref."
 , "default_namespace": "boost::json"
 , "convenience_header": "boost/json.hpp"

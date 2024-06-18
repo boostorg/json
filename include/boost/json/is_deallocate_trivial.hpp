@@ -56,7 +56,7 @@ namespace json {
 
     @see
         @ref storage_ptr,
-       [`boost::container::pmr::memory_resource`](https://www.boost.org/doc/libs/release/doc/html/boost/container/pmr/memory_resource.html).
+        @ref boost::container::pmr::memory_resource
 */
 template<class T>
 struct is_deallocate_trivial

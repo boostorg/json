@@ -95,7 +95,7 @@ class object
 
 public:
     /// Associated [Allocator](https://en.cppreference.com/w/cpp/named_req/Allocator)
-    using allocator_type = boost::container::pmr::polymorphic_allocator<value>;
+    using allocator_type = container::pmr::polymorphic_allocator<value>;
 
     /** The type of keys.
 
