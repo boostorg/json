@@ -67,17 +67,9 @@ class serializer
 
     using fn_t = bool (serializer::*)(stream&);
 
-#ifndef BOOST_JSON_DOCS
-    union
-    {
-        value const* pv_;
-        array const* pa_;
-        object const* po_;
-    };
-#endif
-    fn_t fn0_ = &serializer::write_null<true>;
-    fn_t fn1_ = &serializer::write_null<false>;
-    value const* jv_ = nullptr;
+    void const* p_ = nullptr;
+    fn_t fn0_ = nullptr;
+    fn_t fn1_ = nullptr;
     detail::stack st_;
     const_stream cs0_;
     serialize_options opts_;
@@ -97,7 +89,6 @@ class serializer
     template<bool StackEmpty> bool write_array  (stream& ss);
     template<bool StackEmpty> bool write_object (stream& ss);
     template<bool StackEmpty> bool write_value  (stream& ss);
-    inline string_view read_some(char* dest, std::size_t size);
 
 public:
     /// Move constructor (deleted)
