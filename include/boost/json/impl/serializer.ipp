@@ -697,17 +697,8 @@ string_view
 serializer::
 read(char* dest, std::size_t size)
 {
-    if(! fn0_)
-    {
-        static value const null;
-        reset(&null);
-    }
-
-    // If this goes off it means you forgot
-    // to call reset() before seriailzing a
-    // new value, or you never checked done()
-    // to see if you should stop.
-    BOOST_ASSERT(! done_);
+    if( !fn0_ )
+        reset(nullptr);
 
     detail::stream ss(dest, size);
     if(st_.empty())
