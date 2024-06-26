@@ -377,85 +377,9 @@ write_array(writer& w, stream& ss)
 
 template<bool StackEmpty>
 bool
-write_object(writer& w, stream& ss0)
+write_object(writer& w, stream& ss)
 {
-    object const* po;
-    local_stream ss(ss0);
-    object::const_iterator it;
-    object::const_iterator end;
-    if(StackEmpty || w.st_.empty())
-    {
-        BOOST_ASSERT( w.p_ );
-        po = reinterpret_cast<object const*>(w.p_);
-        it = po->begin();
-        end = po->end();
-    }
-    else
-    {
-        writer::state st;
-        w.st_.pop(st);
-        w.st_.pop(it);
-        w.st_.pop(po);
-        end = po->end();
-        switch(st)
-        {
-        default:
-        case writer::state::obj1: goto do_obj1;
-        case writer::state::obj2: goto do_obj2;
-        case writer::state::obj3: goto do_obj3;
-        case writer::state::obj4: goto do_obj4;
-        case writer::state::obj5: goto do_obj5;
-        case writer::state::obj6: goto do_obj6;
-            break;
-        }
-    }
-do_obj1:
-    if(BOOST_JSON_LIKELY(ss))
-        ss.append('{');
-    else
-        return w.suspend(
-            writer::state::obj1, it, po);
-    if(BOOST_JSON_UNLIKELY(
-        it == end))
-        goto do_obj6;
-    for(;;)
-    {
-        w.cs0_ = {
-            it->key().data(),
-            it->key().size() };
-do_obj2:
-        if(BOOST_JSON_UNLIKELY( !do_write_string<StackEmpty>(w, ss) ))
-            return w.suspend(
-                writer::state::obj2, it, po);
-do_obj3:
-        if(BOOST_JSON_LIKELY(ss))
-            ss.append(':');
-        else
-            return w.suspend(
-                writer::state::obj3, it, po);
-do_obj4:
-        w.p_ = &it->value();
-        if(BOOST_JSON_UNLIKELY( !write_value<StackEmpty>(w, ss) ))
-            return w.suspend(
-                writer::state::obj4, it, po);
-        ++it;
-        if(BOOST_JSON_UNLIKELY(it == end))
-            break;
-do_obj5:
-        if(BOOST_JSON_LIKELY(ss))
-            ss.append(',');
-        else
-            return w.suspend(
-                writer::state::obj5, it, po);
-    }
-do_obj6:
-    if(BOOST_JSON_LIKELY(ss))
-    {
-        ss.append('}');
-        return true;
-    }
-    return w.suspend(
-        writer::state::obj6, it, po);
+    return write_impl<object, StackEmpty>(map_like_conversion_tag(), w, ss);
 }
 
 template<bool StackEmpty>
