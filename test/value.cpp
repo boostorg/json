@@ -1780,7 +1780,14 @@ public:
 
         // try_as_object() const
         {
+#if defined(BOOST_GCC) && BOOST_GCC >= 130000
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdangling-reference"
+#endif
             object const& x = cobj.try_as_object().value();
+#if defined(BOOST_GCC)
+# pragma GCC diagnostic pop
+#endif
             BOOST_TEST( carr.try_as_object().has_error() );
             BOOST_TEST( cstr.try_as_object().has_error() );
             BOOST_TEST( ci64.try_as_object().has_error() );
@@ -1845,7 +1852,14 @@ public:
 
         // try_as_array() const
         {
+#if defined(BOOST_GCC) && BOOST_GCC >= 130000
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdangling-reference"
+#endif
             array const& x = carr.try_as_array().value();
+#if defined(BOOST_GCC)
+# pragma GCC diagnostic pop
+#endif
             BOOST_TEST( cobj.try_as_array().has_error() );
             BOOST_TEST( cstr.try_as_array().has_error() );
             BOOST_TEST( ci64.try_as_array().has_error() );
@@ -1910,7 +1924,14 @@ public:
 
         // try_as_string() const
         {
+#if defined(BOOST_GCC) && BOOST_GCC >= 130000
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdangling-reference"
+#endif
             string const& x = cstr.try_as_string().value();
+#if defined(BOOST_GCC)
+# pragma GCC diagnostic pop
+#endif
             BOOST_TEST( cobj.try_as_string().has_error() );
             BOOST_TEST( carr.try_as_string().has_error() );
             BOOST_TEST( ci64.try_as_string().has_error() );
