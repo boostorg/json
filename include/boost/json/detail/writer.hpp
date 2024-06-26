@@ -41,9 +41,9 @@ struct writer
     bool
     suspend(state st);
 
-    template<class T>
+    template<class U, class T>
     bool
-    suspend(state st, iterator_type<T const> it, T const* po);
+    suspend(state st, U u, T const* po);
 };
 
 bool

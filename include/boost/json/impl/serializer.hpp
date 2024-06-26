@@ -11,6 +11,7 @@
 #define BOOST_JSON_IMPL_SERIALIZER_HPP
 
 #include <boost/json/conversion.hpp>
+#include <cstddef>
 
 namespace boost {
 namespace json {
@@ -33,13 +34,13 @@ suspend(state st)
     return false;
 }
 
-template<class T>
+template<class U, class T>
 bool
 writer::
-suspend(state st, iterator_type<T const> it, T const* pt)
+suspend(state st, U u, T const* pt)
 {
     st_.push(pt);
-    st_.push(it);
+    st_.push(u);
     st_.push(st);
     return false;
 }
@@ -364,6 +365,94 @@ do_obj6:
         return true;
     }
     return w.suspend(writer::state::obj6, it, pt);
+}
+
+template< class T, bool StackEmpty >
+struct serialize_tuple_elem_helper
+{
+    writer& w;
+    stream& ss;
+    T const* pt;
+
+    template< std::size_t I >
+    bool
+    operator()( std::integral_constant<std::size_t, I> ) const
+    {
+        using std::get;
+        w.p_ = std::addressof( get<I>(*pt) );
+
+        using Elem = tuple_element_t<I, T>;
+        return write_impl<Elem, StackEmpty>(w, ss);
+    }
+};
+
+template<class T, bool StackEmpty>
+BOOST_FORCEINLINE
+bool
+write_impl(tuple_conversion_tag, writer& w, stream& ss0)
+{
+    T const* pt;
+    local_stream ss(ss0);
+    std::size_t cur;
+    constexpr std::size_t N = std::tuple_size<T>::value;
+#if defined(_MSC_VER)
+# pragma warning( push )
+# pragma warning( disable : 4127 )
+#endif
+    if(StackEmpty || w.st_.empty())
+    {
+#if defined(_MSC_VER)
+# pragma warning( pop )
+#endif
+        BOOST_ASSERT( w.p_ );
+        pt = reinterpret_cast<T const*>(w.p_);
+        cur = 0;
+    }
+    else
+    {
+        writer::state st;
+        w.st_.pop(st);
+        w.st_.pop(cur);
+        w.st_.pop(pt);
+        switch(st)
+        {
+        default:
+        case writer::state::arr1: goto do_arr1;
+        case writer::state::arr2: goto do_arr2;
+        case writer::state::arr3: goto do_arr3;
+        case writer::state::arr4: goto do_arr4;
+            break;
+        }
+    }
+do_arr1:
+    if(BOOST_JSON_LIKELY(ss))
+        ss.append('[');
+    else
+        return w.suspend(writer::state::arr1, cur, pt);
+    for(;;)
+    {
+do_arr2:
+        {
+            bool const stop = !mp11::mp_with_index<N>(
+                cur,
+                serialize_tuple_elem_helper<T, StackEmpty>{w, ss, pt});
+            if(BOOST_JSON_UNLIKELY( stop ))
+                return w.suspend(writer::state::arr2, cur, pt);
+        }
+        if(BOOST_JSON_UNLIKELY( ++cur == N ))
+            break;
+do_arr3:
+        if(BOOST_JSON_LIKELY(ss))
+            ss.append(',');
+        else
+            return w.suspend(writer::state::arr3, cur, pt);
+    }
+do_arr4:
+    if(BOOST_JSON_LIKELY(ss))
+        ss.append(']');
+    else
+        return w.suspend(writer::state::arr4, cur, pt);
+    return true;
 }
 
 template<class T, bool StackEmpty>
