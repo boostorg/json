@@ -800,6 +800,15 @@ public:
                 {"a", 1}, {"b", 2}, {"c", 3}, {"d", 4}, {"e", 5}};
             check_udt(v, R"({"a":1,"b":2,"c":3,"d":4,"e":5})");
         }
+        {
+            check_udt(
+                std::tuple<std::string, int, bool>("a string", 12, true),
+                R"(["a string",12,true])");
+            check_udt(
+                std::tuple<std::string, std::pair<int, bool>>(
+                    "a string", {12, true}),
+                R"(["a string",[12,true]])");
+        }
     }
 
     void
