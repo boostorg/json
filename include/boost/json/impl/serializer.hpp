@@ -267,6 +267,106 @@ do_arr4:
 }
 
 template<class T, bool StackEmpty>
+BOOST_FORCEINLINE
+bool
+write_impl(map_like_conversion_tag, writer& w, stream& ss0)
+{
+    using It = iterator_type<T const>;
+    using Mapped = mapped_type<T>;
+
+    T const* pt;
+    local_stream ss(ss0);
+    It it;
+    It end;
+#if defined(_MSC_VER)
+# pragma warning( push )
+# pragma warning( disable : 4127 )
+#endif
+    if(StackEmpty || w.st_.empty())
+#if defined(_MSC_VER)
+# pragma warning( pop )
+#endif
+    {
+        BOOST_ASSERT( w.p_ );
+        pt = reinterpret_cast<T const*>(w.p_);
+        it = std::begin(*pt);
+        end = std::end(*pt);
+    }
+    else
+    {
+        writer::state st;
+        w.st_.pop(st);
+        w.st_.pop(it);
+        w.st_.pop(pt);
+        end = std::end(*pt);
+        switch(st)
+        {
+        default:
+        case writer::state::obj1: goto do_obj1;
+        case writer::state::obj2: goto do_obj2;
+        case writer::state::obj3: goto do_obj3;
+        case writer::state::obj4: goto do_obj4;
+        case writer::state::obj5: goto do_obj5;
+        case writer::state::obj6: goto do_obj6;
+            break;
+        }
+    }
+do_obj1:
+    if(BOOST_JSON_LIKELY( ss ))
+        ss.append('{');
+    else
+        return w.suspend(writer::state::obj1, it, pt);
+    if(BOOST_JSON_UNLIKELY( it == end ))
+        goto do_obj6;
+    for(;;)
+    {
+        {
+            using std::get;
+            string_view const sv = get<0>(*it);
+            w.cs0_ = { sv.data(), sv.size() };
+        }
+        if( true )
+        {
+            if(BOOST_JSON_UNLIKELY( !write_string(w, ss) ))
+                return w.suspend(writer::state::obj2, it, pt);
+        }
+        else
+        {
+do_obj2:
+            if(BOOST_JSON_UNLIKELY( !resume_string(w, ss) ))
+                return w.suspend(writer::state::obj2, it, pt);
+        }
+do_obj3:
+        if(BOOST_JSON_LIKELY(ss))
+            ss.append(':');
+        else
+            return w.suspend(writer::state::obj3, it, pt);
+do_obj4:
+        {
+            using std::get;
+            w.p_ = std::addressof( get<1>(*it) );
+        }
+        if(BOOST_JSON_UNLIKELY(( !write_impl<Mapped, StackEmpty>(w, ss) )))
+            return w.suspend(writer::state::obj4, it, pt);
+        ++it;
+        if(BOOST_JSON_UNLIKELY(it == end))
+            break;
+do_obj5:
+        if(BOOST_JSON_LIKELY(ss))
+            ss.append(',');
+        else
+            return w.suspend(writer::state::obj5, it, pt);
+    }
+do_obj6:
+    if(BOOST_JSON_LIKELY( ss ))
+    {
+        ss.append('}');
+        return true;
+    }
+    return w.suspend(writer::state::obj6, it, pt);
+}
+
+template<class T, bool StackEmpty>
 bool
 write_impl(writer& w, stream& ss)
 {

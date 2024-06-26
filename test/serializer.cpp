@@ -795,6 +795,11 @@ public:
             std::vector<int> v = {1,2,3,4,5};
             check_udt(v, "[1,2,3,4,5]");
         }
+        {
+            std::map<std::string, int> v = {
+                {"a", 1}, {"b", 2}, {"c", 3}, {"d", 4}, {"e", 5}};
+            check_udt(v, R"({"a":1,"b":2,"c":3,"d":4,"e":5})");
+        }
     }
 
     void
