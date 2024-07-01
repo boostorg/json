@@ -1,0 +1,78 @@
+import common ;
+import modules ;
+import path ;
+import property-set ;
+import stage ;
+import type ;
+import virtual-target ;
+import "class" : new ;
+
+
+generate printers
+    : boost_json_printers.py
+      /boost/json//boost_json
+    : requirements
+      <generating-rule>@copy-printers
+    ;
+
+install install : printers : <location>(libdir) ;
+explicit install ;
+
+
+rule copy-printers ( project name : ps : script lib )
+{
+    if [ $(ps).get <link> ] != static
+    {
+        local lib-name = [ $(lib).name ] ;
+        name = $(lib-name)-gdb.py ;
+    }
+
+    local lib-path  = [ $(lib).path ] ;
+    ps = [ $(ps).add-raw <location>$(lib-path) ] ;
+
+    local action = [ new action
+          $(script)
+        : common.copy
+        : $(ps)
+        ] ;
+    local target = [ new file-target
+        $(name) exact : [ type.type $(name) ] : $(project) : $(action) ] ;
+    return [ property-set.empty ] [ virtual-target.register $(target) ] ;
+}
+
+
+exe use-printers : use-printers.cpp /boost/json//boost_json/<link>shared ;
+make test-printers
+    : test_printers.py
+      use-printers/<runtime-debugging>on
+    : @test-gdb-printers
+    : <dependency>boost_json_printers.py
+      <dependency>printers
+    ;
+explicit use-printers test-printers ;
+
+.STATUS       = [ modules.peek testing : .STATUS ] ;
+.SET_STATUS   = [ modules.peek testing : .SET_STATUS ] ;
+.THEN         = [ modules.peek testing : .THEN ] ;
+.STATUS_0     = [ modules.peek testing : .STATUS_0 ] ;
+.STATUS_NOT_0 = [ modules.peek testing : .STATUS_NOT_0 ] ;
+.ENDIF        = [ modules.peek testing : .ENDIF ] ;
+.CATENATE     = [ modules.peek testing : .CATENATE ] ;
+.NULL_OUT     = [ modules.peek common  : NULL_OUT ] ;
+.CP           = [ common.copy-command ] ;
+
+actions test-gdb-printers
+{
+    $(PYTHONPATH)
+    gdb -x "$(>[1]:W)" "$(>[2]:W)" >"$(<:W).tmp" 2>&1
+    $(.SET_STATUS)
+    if $(.STATUS_0)
+        $(.CP) "$(<:W).tmp"  "$(<)" $(.NULL_OUT)
+    $(.ENDIF)
+    if $(.STATUS_NOT_0)
+        echo ====== BEGIN OUTPUT ======
+        $(.CATENATE) "$(<:W).tmp"
+        echo ====== END OUTPUT ======
+    $(.ENDIF)
+    exit $(.STATUS)
+}
