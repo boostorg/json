@@ -455,6 +455,136 @@ do_arr4:
     return true;
 }
 
+template< class T, bool StackEmpty >
+struct serialize_struct_elem_helper
+{
+    writer& w;
+    local_stream& ss;
+    T const* pt;
+    writer::state st;
+
+    template< std::size_t I >
+    writer::state
+    operator()( std::integral_constant<std::size_t, I> ) const
+    {
+        using Ds = described_members<T>;
+        using D = mp11::mp_at_c<Ds, I>;
+        using M = described_member_t<T, D>;
+
+        switch(st)
+        {
+        case writer::state::obj2: goto do_obj2;
+        case writer::state::obj3: goto do_obj3;
+        case writer::state::obj4: goto do_obj4;
+        default: break;
+        }
+
+        {
+            string_view const sv = D::name;
+            w.cs0_ = { sv.data(), sv.size() };
+        }
+        if( true )
+        {
+            if(BOOST_JSON_UNLIKELY( !write_string(w, ss) ))
+                return writer::state::obj2;
+        }
+        else
+        {
+do_obj2:
+            if(BOOST_JSON_UNLIKELY( !resume_string(w, ss) ))
+                return writer::state::obj2;
+        }
+do_obj3:
+        if(BOOST_JSON_LIKELY(ss))
+            ss.append(':');
+        else
+            return writer::state::obj3;
+do_obj4:
+        w.p_ = std::addressof( pt->* D::pointer );
+        if(BOOST_JSON_UNLIKELY((
+                !write_impl<M, StackEmpty>(w, ss) )))
+            return writer::state::obj4;
+
+        return writer::state{};
+    }
+};
+
+template<class T, bool StackEmpty>
+BOOST_FORCEINLINE
+bool
+write_impl(described_class_conversion_tag, writer& w, stream& ss0)
+{
+    using Ds = described_members<T>;
+
+    T const* pt;
+    local_stream ss(ss0);
+    std::size_t cur;
+    constexpr std::size_t N = mp11::mp_size<Ds>::value;
+    writer::state st;
+#if defined(_MSC_VER)
+# pragma warning( push )
+# pragma warning( disable : 4127 )
+#endif
+    if(StackEmpty || w.st_.empty())
+#if defined(_MSC_VER)
+# pragma warning( pop )
+#endif
+    {
+        BOOST_ASSERT( w.p_ );
+        pt = reinterpret_cast<T const*>(w.p_);
+        cur = 0;
+    }
+    else
+    {
+        w.st_.pop(st);
+        w.st_.pop(cur);
+        w.st_.pop(pt);
+        switch(st)
+        {
+        default:
+        case writer::state::obj1: goto do_obj1;
+        case writer::state::obj2: // fall through
+        case writer::state::obj3: // fall through
+        case writer::state::obj4: goto do_obj2;
+        case writer::state::obj5: goto do_obj5;
+        case writer::state::obj6: goto do_obj6;
+            break;
+        }
+    }
+do_obj1:
+    if(BOOST_JSON_LIKELY( ss ))
+        ss.append('{');
+    else
+        return w.suspend(writer::state::obj1, cur, pt);
+    if(BOOST_JSON_UNLIKELY( cur == N ))
+        goto do_obj6;
+    for(;;)
+    {
+        st = {};
+do_obj2:
+        st = mp11::mp_with_index<N>(
+            cur,
+            serialize_struct_elem_helper<T, StackEmpty>{w, ss, pt, st});
+        if(BOOST_JSON_UNLIKELY( st != writer::state{} ))
+            return w.suspend(st, cur, pt);
+        ++cur;
+        if(BOOST_JSON_UNLIKELY(cur == N))
+            break;
+do_obj5:
+        if(BOOST_JSON_LIKELY(ss))
+            ss.append(',');
+        else
+            return w.suspend(writer::state::obj5, cur, pt);
+    }
+do_obj6:
+    if(BOOST_JSON_LIKELY( ss ))
+    {
+        ss.append('}');
+        return true;
+    }
+    return w.suspend(writer::state::obj6, cur, pt);
+}
+
 template<class T, bool StackEmpty>
 bool
 write_impl(writer& w, stream& ss)
