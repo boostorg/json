@@ -768,6 +768,53 @@ write_impl(optional_conversion_tag, writer& w, stream& ss)
 }
 
 template<class T, bool StackEmpty>
+BOOST_FORCEINLINE
+bool
+write_impl(path_conversion_tag, writer& w, stream& ss)
+{
+#if defined(_MSC_VER)
+# pragma warning( push )
+# pragma warning( disable : 4127 )
+#endif
+    if(StackEmpty || w.st_.empty())
+#if defined(_MSC_VER)
+# pragma warning( pop )
+#endif
+    {
+        BOOST_ASSERT( w.p_ );
+        T const* pt = reinterpret_cast<T const*>(w.p_);
+
+        std::string const s = pt->generic_string();
+        w.cs0_ = { s.data(), s.size() };
+        if(BOOST_JSON_LIKELY( write_string(w, ss) ))
+            return true;
+
+        std::size_t const used = w.cs0_.used( s.data() );
+        w.st_.push( used );
+        w.st_.push( std::move(s) );
+        return false;
+    }
+    else
+    {
+        std::string s;
+        std::size_t used;
+        w.st_.pop( s );
+        w.st_.pop( used );
+
+        w.cs0_ = { s.data(), s.size() };
+        w.cs0_.skip(used);
+
+        if(BOOST_JSON_LIKELY( resume_string(w, ss) ))
+            return true;
+
+        used = w.cs0_.used( s.data() );
+        w.st_.push( used );
+        w.st_.push( std::move(s) );
+        return false;
+    }
+}
+
+template<class T, bool StackEmpty>
 bool
 write_impl(writer& w, stream& ss)
 {
