@@ -21,6 +21,10 @@
 #include <vector>
 #include <limits.h>
 
+#ifndef BOOST_NO_CXX17_HDR_FILESYSTEM
+#include <filesystem>
+#endif // BOOST_NO_CXX17_HDR_FILESYSTEM
+
 #include "parse-vectors.hpp"
 #include "test.hpp"
 #include "test_suite.hpp"
@@ -866,6 +870,27 @@ public:
             check_udt( o, "2315" );
         }
 #endif // BOOST_NO_CXX17_HDR_OPTIONAL
+#ifndef BOOST_NO_CXX17_HDR_FILESYSTEM
+        {
+            std::filesystem::path p = "from/here";
+            check_udt(p, R"("from/here")");
+
+            p = "to/there";
+            check_udt(p, R"("to/there")");
+
+            p = "";
+            check_udt(p, R"("")");
+
+            p = "c:/";
+            check_udt(p, R"("c:/")");
+
+            p = "..";
+            check_udt(p, R"("..")");
+
+            p = "../";
+            check_udt(p, R"("../")");
+        }
+#endif // BOOST_NO_CXX17_HDR_FILESYSTEM
     }
 
     void
