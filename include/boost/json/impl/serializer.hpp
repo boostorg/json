@@ -47,6 +47,10 @@ suspend(state st, U u, T const* pt)
 }
 
 template<class T, bool StackEmpty>
+bool
+write_impl(writer& w, stream& ss);
+
+template<class T, bool StackEmpty>
 BOOST_FORCEINLINE
 bool
 write_impl(null_like_conversion_tag, writer& w, stream& ss)
@@ -712,6 +716,55 @@ write_impl(variant_conversion_tag, writer& w, stream& ss)
         w.st_.push(ix);
         return false;
     }
+}
+
+template<class T, bool StackEmpty>
+BOOST_FORCEINLINE
+bool
+write_impl(optional_conversion_tag, writer& w, stream& ss)
+{
+    using Elem = value_result_type<T>;
+
+    bool done;
+    bool has_value;
+
+#if defined(_MSC_VER)
+# pragma warning( push )
+# pragma warning( disable : 4127 )
+#endif
+    if(StackEmpty || w.st_.empty())
+#if defined(_MSC_VER)
+# pragma warning( pop )
+#endif
+    {
+        BOOST_ASSERT( w.p_ );
+        T const* pt = reinterpret_cast<T const*>(w.p_);
+        has_value = static_cast<bool>(*pt);
+        if( has_value )
+        {
+            w.p_ = std::addressof( *(*pt) );
+            done = write_impl<Elem, true>(w, ss);
+        }
+        else
+        {
+            w.p_ = nullptr;
+            done = write_impl<std::nullptr_t, true>(w, ss);;
+        }
+    }
+    else
+    {
+        w.st_.pop(has_value);
+
+        if( has_value )
+            done = write_impl<Elem, false>(w, ss);
+        else
+            done = write_impl<std::nullptr_t, false>(w, ss);
+    }
+
+    if(BOOST_JSON_UNLIKELY( !done ))
+        w.st_.push(has_value);
+
+    return done;
 }
 
 template<class T, bool StackEmpty>
