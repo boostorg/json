@@ -638,6 +638,82 @@ write_impl(described_enum_conversion_tag, writer& w, stream& ss)
 #endif // BOOST_DESCRIBE_CXX14
 }
 
+template< class T, bool StackEmpty >
+struct serialize_variant_elem_helper
+{
+    writer& w;
+    stream& ss;
+
+    template<class Elem>
+    bool
+    operator()(Elem const& x) const
+    {
+        w.p_ = std::addressof(x);
+        return write_impl<Elem, true>(w, ss);
+    }
+};
+
+template< class T >
+struct serialize_variant_elem_helper<T, false>
+{
+    writer& w;
+    stream& ss;
+
+    template< std::size_t I >
+    bool
+    operator()( std::integral_constant<std::size_t, I> ) const
+    {
+        using std::get;
+        using Elem = remove_cvref<decltype(get<I>(
+            std::declval<T const&>() ))>;
+        return write_impl<Elem, false>(w, ss);
+    }
+};
+
+template<class T, bool StackEmpty>
+BOOST_FORCEINLINE
+bool
+write_impl(variant_conversion_tag, writer& w, stream& ss)
+{
+    T const* pt;
+
+    using Index = remove_cvref<decltype( pt->index() )>;
+
+#if defined(_MSC_VER)
+# pragma warning( push )
+# pragma warning( disable : 4127 )
+#endif
+    if(StackEmpty || w.st_.empty())
+#if defined(_MSC_VER)
+# pragma warning( pop )
+#endif
+    {
+        BOOST_ASSERT( w.p_ );
+        pt = reinterpret_cast<T const*>(w.p_);
+        if(BOOST_JSON_LIKELY((
+                visit(serialize_variant_elem_helper<T, true>{w, ss}, *pt))))
+            return true;
+
+        Index const ix = pt->index();
+        w.st_.push(ix);
+        return false;
+    }
+    else
+    {
+        Index ix;
+        w.st_.pop(ix);
+
+        constexpr std::size_t N = mp11::mp_size<T>::value;
+        if(BOOST_JSON_LIKELY(( mp11::mp_with_index<N>(
+                ix,
+                serialize_variant_elem_helper<T, false>{w, ss}))))
+            return true;
+
+        w.st_.push(ix);
+        return false;
+    }
+}
+
 template<class T, bool StackEmpty>
 bool
 write_impl(writer& w, stream& ss)
