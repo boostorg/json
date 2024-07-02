@@ -843,6 +843,20 @@ public:
             check_udt( serializer_test_ns::my_enum(100), "100" );
         }
 #endif // BOOST_DESCRIBE_CXX14
+#ifndef BOOST_NO_CXX17_HDR_VARIANT
+        {
+            std::variant<int, std::string, double> v = 112;
+            check_udt( v, "112" );
+
+            v = 0.5;
+            check_udt( v, "5E-1" );
+
+            v = "this is a string";
+            check_udt(v, R"("this is a string")");
+
+            check_udt(std::monostate(), "null");
+        }
+#endif // BOOST_NO_CXX17_HDR_VARIANT
     }
 
     void
