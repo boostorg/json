@@ -11,6 +11,7 @@
 #include <boost/json/serializer.hpp>
 
 #include <boost/describe/class.hpp>
+#include <boost/describe/enum.hpp>
 #include <boost/json/detail/stack.hpp>
 #include <boost/json/serialize.hpp>
 #include <boost/json/null_resource.hpp>
@@ -35,6 +36,15 @@ struct my_struct
     double d;
 };
 BOOST_DESCRIBE_STRUCT(my_struct, (), (s, n, d));
+
+enum class my_enum
+{
+    option_one,
+    option_two,
+    option_three,
+    option_four,
+};
+BOOST_DESCRIBE_ENUM(my_enum, option_one, option_two, option_three);
 
 } // namespace serializer_test_ns
 
@@ -816,12 +826,18 @@ public:
             auto v = std::tuple<std::string, int, bool>("a string", 12, true);
             check_udt(v, R"(["a string",12,true])");
         }
-        {
 #ifdef BOOST_DESCRIBE_CXX14
+        {
             serializer_test_ns::my_struct s{"some string", 1424, 12.4};
             check_udt(s, R"({"s":"some string","n":1424,"d":1.24E1})");
-#endif // BOOST_DESCRIBE_CXX14
         }
+        {
+            check_udt(
+                serializer_test_ns::my_enum::option_three,
+                R"("option_three")");
+            check_udt( serializer_test_ns::my_enum(100), "100" );
+        }
+#endif // BOOST_DESCRIBE_CXX14
     }
 
     void
