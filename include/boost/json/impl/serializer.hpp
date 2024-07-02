@@ -10,6 +10,7 @@
 #ifndef BOOST_JSON_IMPL_SERIALIZER_HPP
 #define BOOST_JSON_IMPL_SERIALIZER_HPP
 
+#include <boost/describe/enum_to_string.hpp>
 #include <boost/json/conversion.hpp>
 #include <cstddef>
 
@@ -583,6 +584,58 @@ do_obj6:
         return true;
     }
     return w.suspend(writer::state::obj6, cur, pt);
+}
+
+template<class T, bool StackEmpty>
+BOOST_FORCEINLINE
+bool
+write_impl(described_enum_conversion_tag, writer& w, stream& ss)
+{
+#ifdef BOOST_DESCRIBE_CXX14
+    using Integer = typename std::underlying_type<T>::type;
+
+#if defined(_MSC_VER)
+# pragma warning( push )
+# pragma warning( disable : 4127 )
+#endif
+    if(StackEmpty || w.st_.empty())
+#if defined(_MSC_VER)
+# pragma warning( pop )
+#endif
+    {
+        BOOST_ASSERT( w.p_ );
+        T const* pt = reinterpret_cast<T const*>(w.p_);
+        char const* const name = describe::enum_to_string(*pt, nullptr);
+        if( name )
+        {
+            string_view const sv = name;
+            w.cs0_ = { sv.data(), sv.size() };
+            return write_string(w, ss);
+        }
+        else
+        {
+            Integer n = static_cast<Integer>(*pt);
+            w.p_ = &n;
+            return write_impl<Integer, true>(w, ss);
+        }
+    }
+    else
+    {
+        writer::state st;
+        w.st_.peek(st);
+        if( st == writer::state::lit )
+            return write_impl<Integer, false>(w, ss);
+        else
+            return resume_string(w, ss);
+    }
+#else // BOOST_DESCRIBE_CXX14
+    (void)w;
+    (void)ss;
+    static_assert(
+        !std::is_same<T, T>::value,
+        "described enums require C++14 support");
+    return false;
+#endif // BOOST_DESCRIBE_CXX14
 }
 
 template<class T, bool StackEmpty>
