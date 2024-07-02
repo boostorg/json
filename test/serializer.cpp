@@ -10,6 +10,7 @@
 // Test that header file is self-contained.
 #include <boost/json/serializer.hpp>
 
+#include <boost/describe/class.hpp>
 #include <boost/json/detail/stack.hpp>
 #include <boost/json/serialize.hpp>
 #include <boost/json/null_resource.hpp>
@@ -25,6 +26,17 @@
 
 namespace boost {
 namespace json {
+namespace serializer_test_ns {
+
+struct my_struct
+{
+    std::string s;
+    int n;
+    double d;
+};
+BOOST_DESCRIBE_STRUCT(my_struct, (), (s, n, d));
+
+} // namespace serializer_test_ns
 
 BOOST_STATIC_ASSERT( std::is_nothrow_destructible<serializer>::value );
 
@@ -808,6 +820,12 @@ public:
                 std::tuple<std::string, std::pair<int, bool>>(
                     "a string", {12, true}),
                 R"(["a string",[12,true]])");
+        }
+        {
+#ifdef BOOST_DESCRIBE_CXX14
+            serializer_test_ns::my_struct s{"some string", 1424, 12.4};
+            check_udt(s, R"({"s":"some string","n":1424,"d":1.24E1})");
+#endif // BOOST_DESCRIBE_CXX14
         }
     }
 
