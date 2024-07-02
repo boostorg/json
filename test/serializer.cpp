@@ -857,6 +857,15 @@ public:
             check_udt(std::monostate(), "null");
         }
 #endif // BOOST_NO_CXX17_HDR_VARIANT
+#ifndef BOOST_NO_CXX17_HDR_OPTIONAL
+        {
+            std::optional<int> o;
+            check_udt( o, "null" );
+
+            o = 2315;
+            check_udt( o, "2315" );
+        }
+#endif // BOOST_NO_CXX17_HDR_OPTIONAL
     }
 
     void
