@@ -10,11 +10,16 @@
 // Test that header file is self-contained.
 #include <boost/json/serializer.hpp>
 
+#include <boost/describe/class.hpp>
+#include <boost/describe/enum.hpp>
+#include <boost/json/detail/stack.hpp>
 #include <boost/json/serialize.hpp>
 #include <boost/json/null_resource.hpp>
 #include <boost/json/parse.hpp>
-#include <boost/json/parse.hpp>
 #include <iostream>
+#include <map>
+#include <vector>
+#include <limits.h>
 
 #include "parse-vectors.hpp"
 #include "test.hpp"
@@ -22,6 +27,26 @@
 
 namespace boost {
 namespace json {
+namespace serializer_test_ns {
+
+struct my_struct
+{
+    std::string s;
+    int n;
+    double d;
+};
+BOOST_DESCRIBE_STRUCT(my_struct, (), (s, n, d));
+
+enum class my_enum
+{
+    option_one,
+    option_two,
+    option_three,
+    option_four,
+};
+BOOST_DESCRIBE_ENUM(my_enum, option_one, option_two, option_three);
+
+} // namespace serializer_test_ns
 
 BOOST_STATIC_ASSERT( std::is_nothrow_destructible<serializer>::value );
 
@@ -88,20 +113,56 @@ public:
         }
     }
 
+    template<class T>
+    void
+    grind_one(string_view s, T const& t, string_view name = {})
+    {
+        {
+            auto const s1 = serialize(t);
+            if( !BOOST_TEST(s == s1) )
+            {
+                if(name.empty())
+                    log <<
+                        " " << s << "\n"
+                        " " << s1 <<
+                        std::endl;
+                else
+                    log << name << ":\n"
+                        " " << s << "\n"
+                        " " << s1 <<
+                        std::endl;
+            }
+        }
+
+        // large buffer
+        {
+            serializer sr;
+            sr.reset(&t);
+            string js;
+            js.reserve(4096);
+            js.grow(sr.read(
+                js.data(), js.capacity()).size());
+
+            auto const s1 = serialize(t);
+            BOOST_TEST( s == s1 );
+        }
+    }
+
+    template<class T>
     void
     grind(
         string_view s0,
-        value const& jv,
+        T const& t,
         string_view name = {})
     {
-        grind_one(s0, jv, name);
+        grind_one(s0, t, name);
 
-        auto const s1 = serialize(jv);
+        auto const s1 = serialize(t);
         for(std::size_t i = 1;
             i < s1.size(); ++i)
         {
             serializer sr;
-            sr.reset(&jv);
+            sr.reset(&t);
             string s2;
             s2.reserve(s1.size());
             s2.grow(sr.read(
@@ -140,6 +201,18 @@ public:
                 dump();
                 break;
             }
+        }
+        {
+            string s2;
+            s2.reserve( s1.size() );
+            serializer sr;
+            sr.reset(&t);
+            for(std::size_t i = 0; i < s1.size(); ++i)
+            {
+                BOOST_TEST( sr.read(s2.data() + i, 1).size() == 1 );
+                s2.grow(1);
+            }
+            BOOST_TEST(s2 == s1);
         }
     }
 
@@ -498,6 +571,23 @@ public:
         }
     }
 
+    template<class T>
+    void
+    check_udt(
+        T const& t,
+        string_view s,
+        string_view name = {})
+    {
+        try
+        {
+            grind(s, t, name);
+        }
+        catch(std::exception const&)
+        {
+            BOOST_TEST_FAIL();
+        }
+    }
+
     void
     testVectors()
     {
@@ -593,6 +683,187 @@ public:
     }
 
     void
+    testStack()
+    {
+        char const* sample = "sample string";
+
+        detail::stack st;
+        BOOST_TEST( st.empty() );
+
+        st.clear();
+        BOOST_TEST( st.empty() );
+
+        st.push(1);
+        BOOST_TEST( !st.empty() );
+
+        st.push(sample);
+        st.push(3.4);
+
+        std::vector<int> v{1, 2, 3, 4, 5};
+        st.push(v);
+
+        v.pop_back();
+        st.push(v);
+
+        v.pop_back();
+        st.push(v);
+
+        {
+            std::vector<int> v1;
+            st.pop( v1 );
+
+            BOOST_TEST( v == v1 );
+        }
+        v.push_back(4);
+        {
+            std::vector<int> v1;
+            st.pop( v1 );
+
+            BOOST_TEST( v == v1 );
+        }
+        v.push_back(5);
+        {
+            std::vector<int> v1;
+            st.pop( v1 );
+
+            BOOST_TEST( v == v1 );
+        }
+        {
+            double d1;
+            st.peek( d1 );
+            BOOST_TEST( d1 == 3.4 );
+
+            double d2;
+            st.pop( d2 );
+            BOOST_TEST( d2 == d1 );
+            BOOST_TEST( !st.empty() );
+        }
+        {
+            char const* s1;
+            st.peek( s1 );
+            BOOST_TEST( s1 == sample );
+
+            char const* s2;
+            st.pop( s2 );
+            BOOST_TEST( s2 == s1 );
+            BOOST_TEST( !st.empty() );
+        }
+        {
+            int n1;
+            st.peek( n1 );
+            BOOST_TEST( n1 == 1 );
+
+            int n2;
+            st.pop( n2 );
+            BOOST_TEST( n2 == n1 );
+            BOOST_TEST( st.empty() );
+        }
+        BOOST_TEST( st.empty() );
+
+        st.push(1);
+        st.push(v);
+        st.clear();
+        BOOST_TEST( st.empty() );
+    }
+
+    void
+    testUDT()
+    {
+        {
+            check_udt(nullptr, "null");
+
+            auto np = nullptr;
+            check_udt(np, "null");
+        }
+        {
+            bool b = true;
+            check_udt(b, "true");
+
+            b = false;
+            check_udt(b, "false");
+        }
+        {
+            std::uint64_t u = 1;
+            check_udt(u, "1");
+
+            u = (std::numeric_limits<std::int64_t>::max)();
+            u += 1;
+            check_udt(u, "9223372036854775808");
+
+            std::int64_t i = -1;
+            check_udt(i, "-1");
+
+            double d = 3.12;
+            check_udt(d, "3.12E0");
+
+#if defined(BOOST_HAS_INT128) && defined(__GLIBCXX_TYPE_INT_N_0)
+            boost::int128_type ii =
+                (std::numeric_limits<std::uint64_t>::max)();
+            ii += 1;
+            d = ii;
+            check_udt( ii, serialize(value(d)) );
+
+            ii = (std::numeric_limits<std::int64_t>::min)();
+            ii -= 1;
+            d = ii;
+            check_udt( ii, serialize(value(d)) );
+#endif
+        }
+        {
+            std::string s = "fairly long string which avoids SBO";
+            check_udt(s, "\"fairly long string which avoids SBO\"");
+        }
+        {
+            std::vector<int> v = {1,2,3,4,5};
+            check_udt(v, "[1,2,3,4,5]");
+        }
+        {
+            std::map<std::string, int> v = {
+                {"a", 1}, {"b", 2}, {"c", 3}, {"d", 4}, {"e", 5}};
+            check_udt(v, R"({"a":1,"b":2,"c":3,"d":4,"e":5})");
+        }
+        {
+            auto v = std::tuple<std::string, int, bool>("a string", 12, true);
+            check_udt(v, R"(["a string",12,true])");
+        }
+#ifdef BOOST_DESCRIBE_CXX14
+        {
+            serializer_test_ns::my_struct s{"some string", 1424, 12.4};
+            check_udt(s, R"({"s":"some string","n":1424,"d":1.24E1})");
+        }
+        {
+            check_udt(
+                serializer_test_ns::my_enum::option_three,
+                R"("option_three")");
+            check_udt( serializer_test_ns::my_enum(100), "100" );
+        }
+#endif // BOOST_DESCRIBE_CXX14
+#ifndef BOOST_NO_CXX17_HDR_VARIANT
+        {
+            std::variant<int, std::string, double> v = 112;
+            check_udt( v, "112" );
+
+            v = 0.5;
+            check_udt( v, "5E-1" );
+
+            v = "this is a string";
+            check_udt(v, R"("this is a string")");
+
+            check_udt(std::monostate(), "null");
+        }
+#endif // BOOST_NO_CXX17_HDR_VARIANT
+#ifndef BOOST_NO_CXX17_HDR_OPTIONAL
+        {
+            std::optional<int> o;
+            check_udt( o, "null" );
+
+            o = 2315;
+            check_udt( o, "2315" );
+        }
+#endif // BOOST_NO_CXX17_HDR_OPTIONAL
+    }
+
+    void
     run()
     {
         testNull();
@@ -606,6 +877,8 @@ public:
         testVectors();
         testOstream();
         testNumberRoundTrips();
+        testStack();
+        testUDT();
     }
 };
 
