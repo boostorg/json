@@ -595,6 +595,10 @@ public:
     void
     run()
     {
+        {
+            serializer sr;
+            BOOST_ASSERT( sr.read(nullptr, 0).empty() );
+        }
         testNull();
         testBoolean();
         testString();
