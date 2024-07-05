@@ -27,11 +27,22 @@ enum class writer::state : char
     obj1, obj2, obj3, obj4, obj5, obj6
 };
 
+template<class T>
 bool
 writer::
-suspend(state st)
+suspend(T t)
 {
-    st_.push(st);
+    st_.push( std::move(t) );
+    return false;
+}
+
+template<class T, class U>
+bool
+writer::
+suspend(T t, U u)
+{
+    st_.push( std::move(t) );
+    st_.push( std::move(u) );
     return false;
 }
 
@@ -41,7 +52,7 @@ writer::
 suspend(state st, U u, T const* pt)
 {
     st_.push(pt);
-    st_.push(u);
+    st_.push( std::move(u) );
     st_.push(st);
     return false;
 }
@@ -698,9 +709,7 @@ write_impl(variant_conversion_tag, writer& w, stream& ss)
                 visit(serialize_variant_elem_helper<T, true>{w, ss}, *pt))))
             return true;
 
-        Index const ix = pt->index();
-        w.st_.push(ix);
-        return false;
+        return w.suspend( pt->index() );
     }
     else
     {
@@ -713,8 +722,7 @@ write_impl(variant_conversion_tag, writer& w, stream& ss)
                 serialize_variant_elem_helper<T, false>{w, ss}))))
             return true;
 
-        w.st_.push(ix);
-        return false;
+        return w.suspend(ix);
     }
 }
 
@@ -761,10 +769,10 @@ write_impl(optional_conversion_tag, writer& w, stream& ss)
             done = write_impl<std::nullptr_t, false>(w, ss);
     }
 
-    if(BOOST_JSON_UNLIKELY( !done ))
-        w.st_.push(has_value);
+    if(BOOST_JSON_LIKELY( done ))
+        return true;
 
-    return done;
+    return w.suspend(has_value);
 }
 
 template<class T, bool StackEmpty>
@@ -790,9 +798,7 @@ write_impl(path_conversion_tag, writer& w, stream& ss)
             return true;
 
         std::size_t const used = w.cs0_.used( s.data() );
-        w.st_.push( used );
-        w.st_.push( std::move(s) );
-        return false;
+        return w.suspend( used, std::move(s) );
     }
     else
     {
@@ -808,9 +814,7 @@ write_impl(path_conversion_tag, writer& w, stream& ss)
             return true;
 
         used = w.cs0_.used( s.data() );
-        w.st_.push( used );
-        w.st_.push( std::move(s) );
-        return false;
+        return w.suspend( used, std::move(s) );
     }
 }
 

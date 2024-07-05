@@ -37,11 +37,18 @@ struct writer
         std::size_t buf_size,
         serialize_options const& opts) noexcept;
 
-    inline
+    template<class T>
+    BOOST_NOINLINE
     bool
-    suspend(state st);
+    suspend(T t);
+
+    template<class T, class U>
+    BOOST_NOINLINE
+    bool
+    suspend(T t, U u);
 
     template<class U, class T>
+    BOOST_NOINLINE
     bool
     suspend(state st, U u, T const* po);
 };
