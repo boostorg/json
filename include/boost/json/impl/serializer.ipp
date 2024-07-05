@@ -542,6 +542,9 @@ read(char* dest, std::size_t size)
     if( !fn0_ )
         reset(nullptr);
 
+    if(BOOST_JSON_UNLIKELY(size == 0))
+        return {dest, 0};
+
     detail::stream ss(dest, size);
     if(st_.empty())
         fn0_(*this, ss);
