@@ -11,6 +11,28 @@
 
 [/-----------------------------------------------------------------------------]
 
+[heading Boost 1.86.0]
+
+[*Deprecation]
+
+* Support for GCC versions older than version 5.0 is deprecated and [*will stop
+  in Boost 1.88.0].
+
+[*API Changes]
+
+* [issue 941] `source_location` parameter was added to throwing
+  accessor functions.
+
+[*New Features]
+
+* [issue 940] Parse option to tolerate invalid UTF-16 surrogate pairs, and
+  produce [@https://simonsapin.github.io/wtf-8/ WTF-8].
+* [issue 941] Added accessor functions that return `system::result`.
+
+[*Fixes]
+
+* Handle missing error case in direct parsing.
+
 [heading Boost 1.85.0]
 
 [*New Dependencies]
