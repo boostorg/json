@@ -11,6 +11,7 @@
 #define BOOST_JSON_DETAIL_CONFIG_HPP
 
 #include <boost/config.hpp>
+#include <boost/config/pragma_message.hpp>
 #include <boost/assert.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/throw_exception.hpp>
@@ -215,5 +216,9 @@ constexpr T static_const<T>::value;
 } // detail
 } // namespace json
 } // namespace boost
+
+#if defined(BOOST_GCC) && BOOST_GCC < 50000 && !defined(BOOST_ALLOW_DEPRECATED)
+# pragma GCC warning "Support for GCC versions below 5.0 is deprecated and will stop in Boost 1.88.0. To suppress this message define macro BOOST_ALLOW_DEPRECATED."
+#endif
 
 #endif

@@ -134,6 +134,9 @@ Boost.JSON has been tested with the following compilers:
 * gcc: 4.8, 4.9, 5, 6, 7, 8, 9, 10, 11, 12
 * msvc: 14.0, 14.1, 14.2, 14.3
 
+[important Support for GCC 4.8 and 4.9 is deprecated and will stop in
+Boost 1.88.0.]
+
 [heading Supported JSON Text]
 
 The library expects input text to be encoded using UTF-8, which is a
