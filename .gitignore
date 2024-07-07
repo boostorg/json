@@ -1,4 +1,5 @@
 /bin
+/bin.v2
 /bin64
 /_build*
 temp
@@ -19,3 +20,6 @@ temp
 # local copy of bench
 /bench/bench
 /bench/bench.exe
+
+# Python
+__pycache__
