@@ -507,11 +507,7 @@ void
 serializer::
 reset(string const* p) noexcept
 {
-    cs0_ = { p->data(), p->size() };
-    fn0_ = &detail::do_write_string<true>;
-    fn1_ = &detail::do_write_string<false>;
-    st_.clear();
-    done_ = false;
+    reset( p->subview() );
 }
 
 void
