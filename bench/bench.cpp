@@ -294,16 +294,13 @@ public:
         std::size_t repeat) const override
     {
         auto const start = clock_type::now();
-        stream_parser p({}, popts);
+        parser p({}, popts);
         while(repeat--)
         {
             p.reset();
-            system::error_code ec;
-            p.write(s.data(), s.size(), ec);
-            if(! ec)
-                p.finish(ec);
-            if(! ec)
-                auto jv = p.release();
+            p.write( s.data(), s.size() );
+            auto jv = p.release();
+            (void)jv;
         }
         return clock_type::now() - start;
     }
@@ -320,29 +317,21 @@ public:
 
             FILE* f = fopen(fi.name.data(), "rb");
 
-            system::error_code ec;
             while( true )
             {
                 std::size_t const sz = fread(s, 1, sizeof(s), f);
                 if( ferror(f) )
-                {
-                    ec = std::io_errc::stream;
                     break;
-                }
 
-                p.write( s, sz, ec );
-                if( ec.failed() )
-                    break;
+                p.write(s, sz);
 
                 if( feof(f) )
                     break;
             }
 
-            if(! ec)
-                p.finish(ec);
-
-            if(! ec)
-                auto jv = p.release();
+            p.finish();
+            auto jv = p.release();
+            (void)jv;
 
             fclose(f);
         }
@@ -407,17 +396,14 @@ public:
         std::size_t repeat) const override
     {
         auto const start = clock_type::now();
-        stream_parser p({}, popts);
+        parser p({}, popts);
         while(repeat--)
         {
             monotonic_resource mr;
             p.reset(&mr);
-            system::error_code ec;
-            p.write(s.data(), s.size(), ec);
-            if(! ec)
-                p.finish(ec);
-            if(! ec)
-                auto jv = p.release();
+            p.write( s.data(), s.size() );
+            auto jv = p.release();
+            (void)jv;
         }
         return clock_type::now() - start;
     }
@@ -435,29 +421,21 @@ public:
 
             FILE* f = fopen(fi.name.data(), "rb");
 
-            system::error_code ec;
             while( true )
             {
                 std::size_t const sz = fread(s, 1, sizeof(s), f);
                 if( ferror(f) )
-                {
-                    ec = std::io_errc::stream;
                     break;
-                }
 
-                p.write( s, sz, ec );
-                if( ec.failed() )
-                    break;
+                p.write(s, sz);
 
                 if( feof(f) )
                     break;
             }
 
-            if(! ec)
-                p.finish(ec);
-
-            if(! ec)
-                auto jv = p.release();
+            p.finish();
+            auto jv = p.release();
+            (void)jv;
 
             fclose(f);
         }
@@ -601,7 +579,8 @@ public:
             p.reset();
             system::error_code ec;
             p.write(s.data(), s.size(), ec);
-            BOOST_ASSERT(! ec);
+            if( ec.failed() )
+                throw system::system_error( ec );
         }
         return clock_type::now() - start;
     }
@@ -636,8 +615,10 @@ public:
                     break;
             }
 
-            BOOST_ASSERT(! ec);
             fclose(f);
+
+            if( ec.failed() )
+                throw system::system_error( ec );
         }
         return clock_type::now() - start;
     }
@@ -679,9 +660,8 @@ public:
         auto const start = clock_type::now();
         while(repeat--)
         {
-            system::error_code ec;
             monotonic_resource mr;
-            auto jv = json::parse(s, ec, &mr, popts);
+            auto jv = json::parse(s, &mr, popts);
             (void)jv;
         }
         return clock_type::now() - start;
@@ -693,10 +673,9 @@ public:
         auto const start = clock_type::now();
         while(repeat--)
         {
-            system::error_code ec;
             std::ifstream is( fi.name, std::ios::in | std::ios::binary );
             monotonic_resource mr;
-            auto jv = json::parse(is, ec, &mr, popts);
+            auto jv = json::parse(is, &mr, popts);
             (void)jv;
         }
         return clock_type::now() - start;
@@ -749,6 +728,8 @@ public:
             value jv(&mr);
             is.seekg(0);
             is >> popts >> jv;
+            if( is.fail() )
+                throw system::system_error( std::io_errc::stream );
         }
         return clock_type::now() - start;
     }
@@ -762,6 +743,7 @@ public:
             monotonic_resource mr;
             value jv(&mr);
             std::ifstream is( fi.name, std::ios::in | std::ios::binary );
+            is.exceptions(std::ios::failbit);
             is >> popts >> jv;
         }
         return clock_type::now() - start;
@@ -779,6 +761,7 @@ public:
         while(repeat--)
         {
             std::ostringstream os;
+            os.exceptions(std::ios::failbit);
             os << jv;
             out = os.str();
         }
