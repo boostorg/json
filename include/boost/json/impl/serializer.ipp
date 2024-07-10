@@ -352,10 +352,8 @@ do_str3:
     return suspend(state::str3);
 
 do_esc1:
-    if(BOOST_JSON_LIKELY(ss))
-        ss.append(buf_[0]);
-    else
-        return suspend(state::esc1);
+    BOOST_ASSERT(ss);
+    ss.append(buf_[0]);
     goto do_str3;
 
 do_utf1:
