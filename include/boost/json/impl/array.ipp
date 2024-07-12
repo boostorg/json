@@ -370,6 +370,43 @@ operator=(
 
 //----------------------------------------------------------
 //
+// Element access
+//
+//----------------------------------------------------------
+
+system::result<value&>
+array::try_at(std::size_t pos) noexcept
+{
+    if(pos >= t_->size)
+    {
+        system::error_code ec;
+        BOOST_JSON_FAIL(ec, error::out_of_range);
+        return ec;
+    }
+    return (*t_)[pos];
+}
+
+system::result<value const&>
+array::try_at(std::size_t pos) const noexcept
+{
+    if(pos >= t_->size)
+    {
+        system::error_code ec;
+        BOOST_JSON_FAIL(ec, error::out_of_range);
+        return ec;
+    }
+    return (*t_)[pos];
+}
+
+value const&
+array::
+array::at(std::size_t pos, source_location const& loc) const&
+{
+    return try_at(pos).value(loc);
+}
+
+//----------------------------------------------------------
+//
 // Capacity
 //
 //----------------------------------------------------------

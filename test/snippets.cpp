@@ -454,6 +454,23 @@ usingValues()
 
         //]
     }
+    {
+        //[snippet_value_9
+
+        value jv( string_kind );
+        if( boost::system::result<string&> str = jv.try_as_string() )
+            *str = "Hello, world!";
+
+        try
+        {
+            jv.try_as_bool().value() = true;
+        }
+        catch(...)
+        {
+        }
+
+        //]
+    }
 }
 
 //----------------------------------------------------------

@@ -11,12 +11,13 @@
 #define BOOST_JSON_OBJECT_HPP
 
 #include <boost/json/detail/config.hpp>
-#include <boost/json/kind.hpp>
-#include <boost/json/pilfer.hpp>
-#include <boost/json/storage_ptr.hpp>
-#include <boost/json/string_view.hpp>
 #include <boost/json/detail/object.hpp>
 #include <boost/json/detail/value.hpp>
+#include <boost/json/kind.hpp>
+#include <boost/json/pilfer.hpp>
+#include <boost/system/result.hpp>
+#include <boost/json/storage_ptr.hpp>
+#include <boost/json/string_view.hpp>
 #include <cstdlib>
 #include <initializer_list>
 #include <iterator>
@@ -1285,6 +1286,30 @@ public:
 
     /** Access the specified element, with bounds checking.
 
+        Returns `boost::system::result` containing a reference to the
+        mapped value of the element that matches `key`. Otherwise the result
+        contains an `error_code`.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @param key The key of the element to find.
+
+        @par Complexity
+        Constant on average, worst case linear in @ref size().
+    */
+    /** @{ */
+    BOOST_JSON_DECL
+    system::result<value&>
+    try_at(string_view key) noexcept;
+
+    BOOST_JSON_DECL
+    system::result<value const&>
+    try_at(string_view key) const noexcept;
+    /** @} */
+
+    /** Access the specified element, with bounds checking.
+
         Returns a reference to the mapped value of the element
         that matches `key`, otherwise throws.
 
@@ -1298,20 +1323,29 @@ public:
 
         @param key The key of the element to find.
 
+        @param loc `source_location` to use in thrown exception; the source
+            location of the call site by default.
+
         @throw `boost::system::system_error` if no such element exists.
     */
     /** @{ */
     inline
     value&
-    at(string_view key) &;
+    at(
+        string_view key,
+        source_location const& loc = BOOST_CURRENT_LOCATION) &;
 
     inline
     value&&
-    at(string_view key) &&;
+    at(
+        string_view key,
+        source_location const& loc = BOOST_CURRENT_LOCATION) &&;
 
-    inline
+    BOOST_JSON_DECL
     value const&
-    at(string_view key) const&;
+    at(
+        string_view key,
+        source_location const& loc = BOOST_CURRENT_LOCATION) const&;
     /** @} */
 
     /** Access or insert the specified element

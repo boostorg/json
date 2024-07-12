@@ -423,6 +423,45 @@ operator=(
 
 //----------------------------------------------------------
 //
+// Lookup
+//
+//----------------------------------------------------------
+
+system::result<value&>
+object::
+try_at(string_view key) noexcept
+{
+    auto it = find(key);
+    if( it != end() )
+        return it->value();
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::out_of_range);
+    return ec;
+}
+
+system::result<value const&>
+object::
+try_at(string_view key) const noexcept
+{
+    auto it = find(key);
+    if( it != end() )
+        return it->value();
+
+    system::error_code ec;
+    BOOST_JSON_FAIL(ec, error::out_of_range);
+    return ec;
+}
+
+value const&
+object::
+at(string_view key, source_location const& loc) const&
+{
+    return try_at(key).value(loc);
+}
+
+//----------------------------------------------------------
+//
 // Modifiers
 //
 //----------------------------------------------------------

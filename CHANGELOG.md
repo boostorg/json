@@ -1,3 +1,13 @@
+Boost 1.86.0
+
+* Support for GCC versions older than version 5.0 is deprecated and **will stop
+  in Boost 1.88.0**.
+* `source_location` parameter was added to throwing accessor functions.
+* Parse option to tolerate invalid UTF-16 surrogate pairs, and
+  produce [WTF-8](https://simonsapin.github.io/wtf-8/).
+* Added accessor functions that return `system::result`.
+* Handle missing error case in direct parsing.
+
 Boost 1.85.0
 
 * Boost.Endian is now used to deal with endianness.

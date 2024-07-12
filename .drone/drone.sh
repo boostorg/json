@@ -76,6 +76,11 @@ common_cmake () {
 
 if [ "$DRONE_JOB_BUILDTYPE" == "boost" ]; then
 
+if [[ $(uname) == "Linux" && ( "$COMMENT" == tsan || "$COMMENT" == asan ) ]]; then
+    echo 0 | sudo tee /proc/sys/kernel/randomize_va_space
+    sudo sysctl vm.mmap_rnd_bits=28
+fi
+
 echo '==================================> INSTALL'
 
 common_install

@@ -342,12 +342,28 @@ walk_pointer(
 } // namespace detail
 
 value const&
-value::at_pointer(string_view ptr) const&
+value::at_pointer(string_view ptr, source_location const& loc) const&
+{
+    return try_at_pointer(ptr).value(loc);
+}
+
+system::result<value const&>
+value::try_at_pointer(string_view ptr) const noexcept
 {
     system::error_code ec;
     auto const found = find_pointer(ptr, ec);
     if( !found )
-        detail::throw_system_error( ec );
+        return ec;
+    return *found;
+}
+
+system::result<value&>
+value::try_at_pointer(string_view ptr) noexcept
+{
+    system::error_code ec;
+    auto const found = find_pointer(ptr, ec);
+    if( !found )
+        return ec;
     return *found;
 }
 
@@ -484,15 +500,24 @@ value::set_at_pointer(
     return result;
 }
 
+system::result<value&>
+value::try_set_at_pointer(
+    string_view sv,
+    value_ref ref,
+    set_pointer_options const& opts )
+{
+    system::error_code ec;
+    value* result = set_at_pointer( sv, ref, ec, opts );
+    if( result )
+        return *result;
+    return ec;
+}
+
 value&
 value::set_at_pointer(
     string_view sv, value_ref ref, set_pointer_options const& opts )
 {
-    system::error_code ec;
-    value* result = set_at_pointer( sv, ref, ec, opts );
-    if( !result )
-        detail::throw_system_error( ec );
-    return *result;
+    return try_set_at_pointer(sv, ref, opts).value();
 }
 
 } // namespace json

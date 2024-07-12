@@ -204,29 +204,17 @@ emplace_back(Arg&& arg)
 
 value&
 array::
-at(std::size_t pos) &
+at(std::size_t pos, source_location const& loc) &
 {
     auto const& self = *this;
-    return const_cast< value& >( self.at(pos) );
+    return const_cast< value& >( self.at(pos, loc) );
 }
 
 value&&
 array::
-at(std::size_t pos) &&
+at(std::size_t pos, source_location const& loc) &&
 {
-    return std::move( at(pos) );
-}
-
-value const&
-array::
-at(std::size_t pos) const&
-{
-    if(pos >= t_->size)
-    {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-        detail::throw_system_error( error::out_of_range, &loc );
-    }
-    return (*t_)[pos];
+    return std::move( at(pos, loc) );
 }
 
 value&

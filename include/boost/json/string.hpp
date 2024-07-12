@@ -876,6 +876,30 @@ public:
 
     /** Return a character with bounds checking.
 
+        Returns `boost::system::result` containing a reference to the character
+        specified at location `pos`, if `pos` is within the range of the
+        string. Otherwise the result contains an `error_code`.
+
+        @par Exception Safety
+        Strong guarantee.
+
+        @param pos A zero-based index to access.
+
+        @par Complexity
+        Constant.
+    */
+    /** @{ */
+    BOOST_JSON_DECL
+    system::result<char&>
+    try_at(std::size_t pos) noexcept;
+
+    BOOST_JSON_DECL
+    system::result<char const&>
+    try_at(std::size_t pos) const noexcept;
+    /** @} */
+
+    /** Return a character with bounds checking.
+
         Returns a reference to the character specified at
         location `pos`.
 
@@ -889,27 +913,23 @@ public:
 
         @param pos A zero-based index to access.
 
+        @param loc `source_location` to use in thrown exception; the source
+            location of the call site by default.
+
         @throw `boost::system::system_error` `pos >= size()`.
     */
     /** @{ */
+    inline
     char&
-    at(std::size_t pos)
-    {
+    at(
+        std::size_t pos,
+        source_location const& loc = BOOST_CURRENT_LOCATION);
 
-        auto const& self = *this;
-        return const_cast< char& >( self.at(pos) );
-    }
-
+    BOOST_JSON_DECL
     char const&
-    at(std::size_t pos) const
-    {
-        if(pos >= size())
-        {
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
-            detail::throw_system_error( error::out_of_range, &loc );
-        }
-        return impl_.data()[pos];
-    }
+    at(
+        std::size_t pos,
+        source_location const& loc = BOOST_CURRENT_LOCATION) const;
     /** @} */
 
     /** Return a character without bounds checking.

@@ -1352,6 +1352,24 @@ public:
             (void)rv;
         }
 
+        // try_at(key) &
+        {
+            BOOST_TEST( o1.try_at("a")->is_number() );
+
+            system::error_code const ec = o1.try_at("d").error();
+            BOOST_TEST( ec == error::out_of_range );
+            BOOST_TEST( ec.has_location() );
+        }
+
+        // try_at(key) const&
+        {
+            BOOST_TEST( co1.try_at("a")->is_number() );
+
+            system::error_code const ec = o1.try_at("d").error();
+            BOOST_TEST( ec == error::out_of_range );
+            BOOST_TEST( ec.has_location() );
+        }
+
         // operator[&](key)
         {
             object o({
