@@ -6,7 +6,7 @@ namespace boost {
 /// !EXTERNAL!
 ///
 /// @see https://www.boost.org/doc/libs/release/libs/assert/doc/html/assert.html#source_location
-using source_location = void;
+struct source_location {};
 
 namespace container {
 namespace pmr {
@@ -15,12 +15,12 @@ namespace pmr {
 ///
 /// @see https://www.boost.org/doc/libs/release/doc/html/boost/container/pmr/polymorphic_allocator.html
 template <class T>
-using polymorphic_allocator = void;
+struct polymorphic_allocator {};
 
 /// !EXTERNAL!
 ///
 /// @see https://www.boost.org/doc/libs/1_85_0/doc/html/boost/container/pmr/memory_resource.html
-using memory_resource = void;
+struct memory_resource {};
 
 } // namespace pmr
 } // namespace container
@@ -30,27 +30,27 @@ namespace system {
 /// !EXTERNAL!
 ///
 /// @see https://www.boost.org/doc/libs/release/libs/system/doc/html/system.html#ref_error_code
-using error_code = void;
+struct error_code {};
 
 /// !EXTERNAL!
 ///
 /// @see https://www.boost.org/doc/libs/release/libs/system/doc/html/system.html#ref_error_category
-using error_category = void;
+struct error_category {};
 
 /// !EXTERNAL!
 ///
 /// @see https://www.boost.org/doc/libs/release/libs/system/doc/html/system.html#ref_error_condition
-using error_condition = void;
+struct error_condition {};
 
 /// !EXTERNAL!
 ///
 /// @see https://www.boost.org/doc/libs/release/libs/system/doc/html/system.html#ref_system_error
-using system_error = void;
+struct system_error {};
 
 /// !EXTERNAL!
 ///
 /// @see https://www.boost.org/doc/libs/release/libs/system/doc/html/system.html#ref_boostsystemresult_hpp
-using result = void;
+struct result {};
 
 } // namespace system
 } // namespace boost
@@ -61,62 +61,62 @@ namespace std {
 ///
 /// @see https://en.cppreference.com/w/cpp/iterator/reverse_iterator
 template <class T>
-using reverse_iterator = void;
+struct reverse_iterator {};
 
 /// !EXTERNAL!
 ///
 /// @see https://en.cppreference.com/w/cpp/types/size_t
-using size_t = void;
+struct size_t {};
 
 /// !EXTERNAL!
 ///
 /// @see https://en.cppreference.com/w/cpp/types/integer
-using uint64_t = void;
+struct uint64_t {};
 
 /// !EXTERNAL!
 ///
 /// @see https://en.cppreference.com/w/cpp/types/integer
-using int64_t = void;
+struct int64_t {};
 
 /// !EXTERNAL!
 ///
 /// @see https://en.cppreference.com/w/cpp/types/nullptr_t
-using nullptr_t = void;
+struct nullptr_t {};
 
 /// !EXTERNAL!
 ///
 /// @see https://en.cppreference.com/w/cpp/types/ptrdiff_t
-using ptrdiff_t = void;
+struct ptrdiff_t {};
 
 /// !EXTERNAL!
 ///
 /// @see https://en.cppreference.com/w/cpp/utility/initializer_list
 template <class T>
-using initializer_list= void;
+struct initializer_list {};
 
 /// !EXTERNAL!
 ///
 /// @see https://en.cppreference.com/w/cpp/error/error_code
-using error_code = void;
+struct error_code {};
 
 /// !EXTERNAL!
 ///
 /// @see https://en.cppreference.com/w/cpp/utility/pair
-using pair = void;
+struct pair {};
 
 /// !EXTERNAL!
 ///
 /// @see https://en.cppreference.com/w/cpp/types/byte
-using byte = void;
+struct byte {};
 
 /// !EXTERNAL!
 ///
 /// @see https://en.cppreference.com/w/cpp/io/basic_ostream
-using ostream = void;
+struct ostream {};
 
 /// !EXTERNAL!
 ///
 /// @see https://en.cppreference.com/w/cpp/io/basic_istream
-using istream = void;
+struct istream {};
 
 } // namespace std

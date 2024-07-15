@@ -38,6 +38,7 @@ docca.pyreference reference.qbk
       <doxygen:param>STRIP_FROM_PATH=$(include-prefix)
 
       <docca:config>config.json
+      <docca:template>reference.jinja
     ;
 
 #-------------------------------------------------------------------------------
