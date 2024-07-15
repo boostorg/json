@@ -258,6 +258,86 @@ tag_invoke(
 }
 
 
+struct id
+{
+    static constexpr auto& id1 = "Id#1";
+    static constexpr auto& id2 = "Id#2";
+
+    std::size_t n;
+};
+
+bool
+operator<(id l, id r) noexcept
+{
+    return l.n < r.n;
+}
+
+struct id_string_repr
+{
+    std::size_t n;
+
+    id_string_repr(id x) noexcept
+        : n(x.n)
+    {}
+
+    id_string_repr(boost::json::string_view sv)
+    {
+        if( sv.data() == id::id1 )
+            n = 1;
+        else if( sv.data() == id::id2 )
+            n = 2;
+        else
+            n = std::size_t(-1);
+    }
+
+    operator id() const noexcept
+    {
+        return {n};
+    }
+
+    operator boost::json::string_view() const noexcept
+    {
+        switch(n)
+        {
+        case 1: return boost::json::string_view(id::id1);
+        case 2: return boost::json::string_view(id::id2);
+        default: return boost::json::string_view("unknown");
+        }
+    }
+};
+
+struct T14
+{
+    id i;
+};
+BOOST_DESCRIBE_STRUCT(T14, (), (i))
+
+struct as_string {};
+
+struct int_as_string
+{
+    std::string s;
+
+    int_as_string(int n) noexcept
+        : s( std::to_string(n) )
+    {}
+
+    int_as_string(boost::json::string_view sv)
+        : s(sv)
+    {}
+
+    operator int() const noexcept
+    {
+        return std::atoi( s.data() );
+    }
+
+    operator boost::json::string_view() const noexcept
+    {
+        return s;
+    }
+};
+
+
 } // namespace value_from_test_ns
 
 template<class T>
@@ -295,6 +375,18 @@ template<>
 struct is_described_class<::value_from_test_ns::T11>
     : std::true_type
 { };
+
+template<>
+struct represent_as<::value_from_test_ns::id>
+{
+    using type = ::value_from_test_ns::id_string_repr;
+};
+
+template <>
+struct represent_as<int, value_from_test_ns::as_string>
+{
+    using type = ::value_from_test_ns::int_as_string;
+};
 
 namespace {
 
@@ -404,6 +496,23 @@ public:
             value b = value_from( a, ctx... );
             BOOST_TEST(b.is_null());
         }
+        {
+            value jv = value_from( value_from_test_ns::id{1}, ctx... );
+            BOOST_TEST( jv == value("Id#1") );
+
+            jv = value_from( value_from_test_ns::id{2}, ctx... );
+            BOOST_TEST( jv == value("Id#2") );
+
+            jv = value_from(
+                std::vector<value_from_test_ns::id>{ {1}, {2}, {2}, {1} },
+                ctx... );
+            BOOST_TEST(( jv == value{"Id#1", "Id#2", "Id#2", "Id#1"} ));
+
+            jv = value_from(
+                std::tuple<value_from_test_ns::id, int>{ {1}, 12 },
+                ctx... );
+            BOOST_TEST(( jv == value{"Id#1", 12} ));
+        }
     }
 
     template< class... Context >
@@ -446,6 +555,12 @@ public:
             BOOST_TEST(!c.is_object());
             BOOST_TEST(a.size() == c.as_array().size());
             BOOST_TEST(b.as_array().size() == c.as_array().size());
+        }
+        {
+            value jv = value_from(
+                std::map<value_from_test_ns::id, int>{ {{1}, 42}, {{2}, 43} },
+                ctx... );
+            BOOST_TEST(( jv == object{ {"Id#1", 42}, {"Id#2", 43} } ));
         }
     }
 
@@ -505,6 +620,9 @@ public:
         ::value_from_test_ns::E1 e1 = ::value_from_test_ns::E1::a;
         BOOST_TEST( value_from( e1, ctx... ) == "a" );
 
+        jv = value_from( value_from_test_ns::T14{ {1} }, ctx... );
+        BOOST_TEST(( jv == object{ {"i", "Id#1"} } ));
+
         e1 = ::value_from_test_ns::E1::b;
         BOOST_TEST( value_from( e1, ctx... ) == "b" );
 
@@ -524,6 +642,11 @@ public:
         BOOST_TEST( jv == (value{1, 2, 3, nullptr, 5}) );
 
         BOOST_TEST( value_from( std::nullopt, ctx... ).is_null() );
+
+        jv = value_from(
+            std::optional<value_from_test_ns::id>(
+                value_from_test_ns::id{1} ), ctx... );
+        BOOST_TEST( jv == value("Id#1") );
 #endif
     }
 
@@ -545,6 +668,12 @@ public:
         v = ::value_from_test_ns::T5{};
         jv = value_from( v, ctx... );
         BOOST_TEST(jv == "T5");
+
+        jv = value_from(
+            std::variant<int, value_from_test_ns::id>(
+                value_from_test_ns::id{2} ),
+            ctx... );
+        BOOST_TEST( jv == value("Id#2") );
 
         BOOST_TEST( value() == value_from( std::monostate(), ctx... ) );
 #endif // BOOST_NO_CXX17_HDR_VARIANT
@@ -611,6 +740,18 @@ public:
                 value_from_test_ns::custom_context(),
                 value_from_test_ns::another_context() ) );
         BOOST_TEST( jv == (object{ {"1", "T12"}, {"2", "T12"} }) );
+
+        jv = value_from(
+            std::map<int, int>{ {1,2}, {2,4}, {3, 8} },
+            value_from_test_ns::as_string() );
+        BOOST_TEST( jv == (object{ {"1", "2"}, {"2", "4"}, {"3", "8"} }) );
+
+        jv = value_from(
+            std::map<int, int>{ {1,2}, {2,4}, {3, 6} },
+            std::make_tuple(
+                value_from_test_ns::as_string(),
+                value_from_test_ns::custom_context() ));
+        BOOST_TEST( jv == (object{ {"1", "2"}, {"2", "4"}, {"3", "6"} }) );
     }
 
     struct run_templated_tests

@@ -45,7 +45,7 @@ struct is_string_like;
 template<class T>
 struct is_sequence_like;
 
-template<class T>
+template<class T, class Context = void>
 struct is_map_like;
 
 template<class T>
