@@ -5,20 +5,22 @@
 
 require-b2 5.2 ;
 
+constant boost_dependencies :
+    /boost/align//boost_align
+    /boost/assert//boost_assert
+    /boost/config//boost_config
+    /boost/container//boost_container
+    /boost/container_hash//boost_container_hash
+    /boost/core//boost_core
+    /boost/describe//boost_describe
+    /boost/endian//boost_endian
+    /boost/mp11//boost_mp11
+    /boost/static_assert//boost_static_assert
+    /boost/system//boost_system
+    /boost/throw_exception//boost_throw_exception ;
+
 project /boost/json
     : common-requirements
-        <library>/boost/align//boost_align
-        <library>/boost/assert//boost_assert
-        <library>/boost/config//boost_config
-        <library>/boost/container//boost_container
-        <library>/boost/container_hash//boost_container_hash
-        <library>/boost/core//boost_core
-        <library>/boost/describe//boost_describe
-        <library>/boost/endian//boost_endian
-        <library>/boost/mp11//boost_mp11
-        <library>/boost/static_assert//boost_static_assert
-        <library>/boost/system//boost_system
-        <library>/boost/throw_exception//boost_throw_exception
         <include>include
     ;
 
@@ -32,3 +34,4 @@ explicit
 call-if : boost-library json
     : install boost_json
     ;
+
