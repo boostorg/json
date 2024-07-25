@@ -29,7 +29,7 @@ namespace json {
     code. It will be removed completely in version 1.87.0.
 */
 typedef boost::system::error_code
-    BOOST_DEPRECATED("Use boost::system::error_code instead")
+    BOOST_JSON_DEPRECATED("Use boost::system::error_code instead")
     error_code;
 
 /** The type of error category used by the library.
@@ -39,7 +39,7 @@ typedef boost::system::error_code
     code. It will be removed completely in version 1.87.0.
 */
 typedef boost::system::error_category
-    BOOST_DEPRECATED("Use boost::system::error_category instead")
+    BOOST_JSON_DEPRECATED("Use boost::system::error_category instead")
     error_category;
 
 /** The type of error condition used by the library.
@@ -50,7 +50,7 @@ typedef boost::system::error_category
     completely in version 1.87.0.
 */
 typedef boost::system::error_condition
-    BOOST_DEPRECATED("Use boost::system::error_condition instead")
+    BOOST_JSON_DEPRECATED("Use boost::system::error_condition instead")
     error_condition;
 
 /** The type of system error thrown by the library.
@@ -60,7 +60,7 @@ typedef boost::system::error_condition
     code. It will be removed completely in version 1.87.0.
 */
 typedef boost::system::system_error
-    BOOST_DEPRECATED("Use boost::system::system_error instead")
+    BOOST_JSON_DEPRECATED("Use boost::system::system_error instead")
     system_error;
 
 /** The type of result returned by library functions
@@ -130,7 +130,7 @@ template< class T >
 using
     result
 #ifndef BOOST_MSVC
-    BOOST_DEPRECATED("Use boost::system::result instead")
+    BOOST_JSON_DEPRECATED("Use boost::system::result instead")
 #endif
     = boost::system::result<T>;
 
