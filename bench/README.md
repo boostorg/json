@@ -5,6 +5,31 @@ fetch the third party repositories. Then run
 the bench program with no arguments for a
 list of command line options.
 
+```
+Usage: bench [options...] <file>...
+
+Options:  -t:[p][s]            Test parsing, serialization or both
+                                 (default both)
+          -i:[b][d][r][c][n]   Test the specified implementations
+                                 (b: Boost.JSON, pool storage)
+                                 (d: Boost.JSON, default storage)
+                                 (u: Boost.JSON, null parser)
+                                 (s: Boost.JSON, convenient functions)
+                                 (o: Boost.JSON, stream operators)
+                                 (r: RapidJSON, memory storage)
+                                 (c: RapidJSON, CRT storage)
+                                 (n: nlohmann/json)
+                                 (default all)
+          -n:<number>          Number of trials (default 6)
+          -b:<branch>          Branch label for boost implementations
+          -m:(i|p|n)           Number parsing mode
+                                 (i: imprecise)
+                                 (p: precise)
+                                 (n: none)
+                                 (default imprecise)
+          -f                   Include file IO into consideration when testing parsers
+```
+
 When building with b2, it is possible to create several different copies of the
 bench program for different build properties (toolset, build variant, etc.).
 Rather than figuring out where those programs are located from b2 output you
