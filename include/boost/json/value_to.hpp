@@ -89,11 +89,16 @@ T
 value_to( value const& jv, Context const& ctx )
 {
     BOOST_STATIC_ASSERT(! std::is_reference<T>::value);
-    using bare_T = detail::remove_cvref<T>;
+
+    using Attrs = detail::value_to_attrs<Context, T>;
     BOOST_STATIC_ASSERT(detail::conversion_round_trips<
-        Context, bare_T, detail::value_to_conversion>::value);
-    using cat = detail::value_to_category<Context, bare_T>;
-    return detail::value_to_impl( cat(), value_to_tag<bare_T>(), jv, ctx );
+        Context,
+        typename Attrs::representation,
+        detail::value_to_conversion>::value);
+
+    using bare_T = detail::remove_cvref<T>;
+    return detail::value_to_impl(
+        typename Attrs::category(), value_to_tag<bare_T>(), jv, ctx);
 }
 
 /** Convert a @ref value to an object of type `T`.
@@ -223,12 +228,16 @@ typename result_for<T, value>::type
 try_value_to( value const& jv, Context const& ctx )
 {
     BOOST_STATIC_ASSERT(! std::is_reference<T>::value);
-    using bare_T = detail::remove_cvref<T>;
+
+    using Attrs = detail::value_to_attrs<Context, T>;
     BOOST_STATIC_ASSERT(detail::conversion_round_trips<
-        Context, bare_T, detail::value_to_conversion>::value);
-    using cat = detail::value_to_category<Context, bare_T>;
+        Context,
+        typename Attrs::representation,
+        detail::value_to_conversion>::value);
+
+    using bare_T = detail::remove_cvref<T>;
     return detail::value_to_impl(
-        cat(), try_value_to_tag<bare_T>(), jv, ctx );
+        typename Attrs::category(), try_value_to_tag<bare_T>(), jv, ctx );
 }
 
 /** Convert a @ref value to a @ref result of `T`.

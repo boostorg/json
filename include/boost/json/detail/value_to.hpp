@@ -928,8 +928,8 @@ value_to_impl( Impl impl, value_to_tag<T>, value const& jv, Ctx const& ctx )
 }
 
 template< class Ctx, class T >
-using value_to_category = conversion_category<
-    Ctx, T, value_to_conversion >;
+using value_to_attrs = conversion_attrs<
+    Ctx, remove_cvref<T>, value_to_conversion>;
 
 } // detail
 

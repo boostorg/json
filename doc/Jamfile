@@ -14,8 +14,8 @@ import boostbook ;
 import ../../../tools/docca/docca.jam ;
 import path ;
 
-local include-prefix = [ path.root $(__file__:D) [ path.pwd ] ] ;
-include-prefix = [ path.native $(include-prefix:D)/include ] ;
+local include-prefix = [ path.join $(__file__:D) .. ]  ;
+include-prefix = [ path.native $(include-prefix)/include ] ;
 docca.pyreference reference.qbk
     : [ glob-tree-ex ../include/boost/json : *.hpp *.ipp : detail impl ]
       externals.hpp
