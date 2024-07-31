@@ -13,7 +13,6 @@
 #include <boost/json/serializer.hpp>
 #include <boost/json/detail/format.hpp>
 #include <boost/json/detail/sse2.hpp>
-#include <ostream>
 
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -353,10 +352,8 @@ do_str3:
     return suspend(state::str3);
 
 do_esc1:
-    if(BOOST_JSON_LIKELY(ss))
-        ss.append(buf_[0]);
-    else
-        return suspend(state::esc1);
+    BOOST_ASSERT(ss);
+    ss.append(buf_[0]);
     goto do_str3;
 
 do_utf1:
@@ -818,6 +815,9 @@ read(char* dest, std::size_t size)
         static value const null;
         jv_ = &null;
     }
+    if(BOOST_JSON_UNLIKELY(size == 0))
+        return {dest, 0};
+
     return read_some(dest, size);
 }
 
