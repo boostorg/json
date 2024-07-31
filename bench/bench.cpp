@@ -36,6 +36,7 @@
 #include <memory>
 #include <numeric>
 #include <cstdio>
+#include <sstream>
 #include <vector>
 
 #include "test_suite.hpp"
@@ -56,6 +57,8 @@ using clock_type = std::chrono::steady_clock;
 std::stringstream strout;
 parse_options popts;
 bool with_file_io = false;
+
+char const* external_command = nullptr;
 
 #if defined(__clang__)
 string_view toolset = "clang";
@@ -174,6 +177,40 @@ print_prefix(
 }
 
 void
+start_external(file_item const& f, any_impl const& i, string_view verb)
+{
+    if( !external_command )
+        return;
+
+    std::stringstream command;
+    command << external_command << " Starting \"";
+    print_prefix(command, f, i, verb ) << '"';
+    std::string const command_s = command.str();
+    (void)std::system( command_s.c_str() );
+}
+
+void
+finish_external(
+    file_item const& f,
+    any_impl const& i,
+    string_view verb,
+    sample const& result)
+{
+    if( !external_command )
+        return;
+
+    std::stringstream command;
+    command << external_command << " Completed \"";
+    print_prefix(command, f, i, verb )
+        << "," << result.calls
+        << "," << result.millis
+        << "," << result.mbs
+        << '"';
+    std::string const command_s = command.str();
+    (void)std::system( command_s.c_str() );
+}
+
+void
 bench(
     string_view verb,
     file_list const& vf,
@@ -203,7 +240,10 @@ bench(
             repeat = 1000;
             for(unsigned k = 0; k < Trials; ++k)
             {
+                start_external(vf[i], *vi[j], verb);
                 auto result = run_for(std::chrono::seconds(5), f);
+                finish_external(vf[i], *vi[j], verb, result);
+
                 result.calls *= repeat;
                 result.mbs = megabytes_per_second(
                     vf[i], result.calls, result.millis);
@@ -1158,6 +1198,8 @@ main(
 
         return 4;
     }
+
+    external_command = std::getenv("BOOST_JSON_BENCH_EXTERNAL_COMMAND");
 
     file_list vf;
 
