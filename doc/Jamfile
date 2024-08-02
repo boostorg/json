@@ -11,7 +11,8 @@
 project json/doc ;
 
 import boostbook ;
-import ../../../tools/docca/docca.jam ;
+import-search /boost/docca ;
+import docca ;
 import path ;
 
 local include-prefix = [ path.root $(__file__:D) [ path.pwd ] ] ;

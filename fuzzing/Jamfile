@@ -16,6 +16,7 @@ import os ;
 import path ;
 import property ;
 import sequence ;
+import testing ;
 
 
 # set the maximum size of the input, to avoid
