@@ -27,7 +27,7 @@ namespace json {
     completely in version 1.87.0.
 */
 typedef boost::container::pmr::memory_resource
-    BOOST_DEPRECATED("Use boost::container::pmr::memory_resource instead")
+    BOOST_JSON_DEPRECATED("Use boost::container::pmr::memory_resource instead")
     memory_resource;
 
 /** The type of polymorphic allocator used by the library.
@@ -41,7 +41,7 @@ template<class T>
 using
     polymorphic_allocator
 #ifndef BOOST_MSVC
-    BOOST_DEPRECATED("Use boost::container::pmr::polymorphic_allocator instead")
+    BOOST_JSON_DEPRECATED("Use boost::container::pmr::polymorphic_allocator instead")
 #endif
     = boost::container::pmr::polymorphic_allocator<T>;
 
