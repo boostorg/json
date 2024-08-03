@@ -26,6 +26,10 @@ namespace json {
 
 namespace detail {
 
+template< class Ctx, class T >
+using value_to_attrs = conversion_attrs<
+    Ctx, remove_cvref<T>, value_to_conversion>;
+
 template<class T>
 using has_reserve_member_helper = decltype(std::declval<T&>().reserve(0));
 template<class T>
@@ -232,11 +236,13 @@ value_to_impl(
     auto ins = detail::inserter(res, inserter_implementation<T>());
     for( key_value_pair const& kv: *obj )
     {
+        using A = value_to_attrs< Ctx, key_type<T> >;
+        using K = typename A::representation;
         auto elem_res = try_value_to<mapped_type<T>>( kv.value(), ctx );
         if( elem_res.has_error() )
             return {boost::system::in_place_error, elem_res.error()};
         *ins++ = value_type<T>{
-            key_type<T>(kv.key()),
+            K(kv.key()),
             std::move(*elem_res)};
     }
     return res;
@@ -816,10 +822,6 @@ value_to_impl( Impl impl, value_to_tag<T>, value const& jv, Ctx const& ctx )
 {
     return value_to_impl(impl, try_value_to_tag<T>(), jv, ctx).value();
 }
-
-template< class Ctx, class T >
-using value_to_attrs = conversion_attrs<
-    Ctx, remove_cvref<T>, value_to_conversion>;
 
 } // detail
 

@@ -196,6 +196,97 @@ tag_invoke(
     return T11( jv.to_number<int>() );
 }
 
+struct id
+{
+    static constexpr char const* id1 = "Id#1";
+    static constexpr char const* id2 = "Id#2";
+
+    std::size_t n;
+};
+
+bool
+operator==(id l, id r) noexcept
+{
+    return l.n == r.n;
+}
+
+bool
+operator!=(id l, id r) noexcept
+{
+    return l.n != r.n;
+}
+
+bool
+operator<(id l, id r) noexcept
+{
+    return l.n < r.n;
+}
+
+struct id_string_repr
+{
+    std::size_t n;
+
+    id_string_repr(id x) noexcept
+        : n(x.n)
+    {}
+
+    id_string_repr(boost::json::string_view sv)
+    {
+        if( sv == boost::json::string_view(id::id1, 4) )
+            n = 1;
+        else if( sv == boost::json::string_view(id::id2, 4) )
+            n = 2;
+        else
+            throw std::runtime_error( "unknown id" );
+    }
+
+    operator id() const noexcept
+    {
+        return {n};
+    }
+
+    operator boost::json::string_view() const noexcept
+    {
+        switch(n)
+        {
+        case 1: return boost::json::string_view(id::id1, 4);
+        case 2: return boost::json::string_view(id::id2, 4);
+        default: return boost::json::string_view("unknown");
+        }
+    }
+};
+
+struct T12
+{
+    id i;
+};
+BOOST_DESCRIBE_STRUCT(T12, (), (i))
+
+struct as_string {};
+
+struct int_as_string
+{
+    std::string s;
+
+    int_as_string(int n) noexcept
+        : s( std::to_string(n) )
+    {}
+
+    int_as_string(boost::json::string_view sv)
+        : s(sv)
+    {}
+
+    operator int() const noexcept
+    {
+        return std::atoi( s.data() );
+    }
+
+    operator boost::json::string_view() const noexcept
+    {
+        return s;
+    }
+};
+
 } // namespace value_to_test_ns
 
 namespace std
@@ -224,6 +315,18 @@ struct is_null_like<::value_to_test_ns::T1> : std::true_type { };
 
 template<>
 struct is_described_class<::value_to_test_ns::T7> : std::true_type { };
+
+template<>
+struct represent_as<::value_to_test_ns::id>
+{
+    using type = ::value_to_test_ns::id_string_repr;
+};
+
+template <>
+struct represent_as<int, value_to_test_ns::as_string>
+{
+    using type = ::value_to_test_ns::int_as_string;
+};
 
 template <class T, class = void>
 struct can_apply_value_to
@@ -334,6 +437,19 @@ public:
             arr.fill(0);
             BOOST_TEST_CONV( arr, ctx... );
         }
+
+        BOOST_TEST((
+            value_to< std::vector<value_to_test_ns::id> >(
+                value{"Id#1", "Id#2", "Id#2", "Id#1"}, ctx... )
+            == std::vector<value_to_test_ns::id>{{1}, {2}, {2}, {1}} ));
+        BOOST_TEST((
+            value_to< std::tuple<value_to_test_ns::id, int> >(
+                value{"Id#1", 12}, ctx... )
+            == std::tuple<value_to_test_ns::id, int>{{1}, 12} ));
+        BOOST_TEST((
+            value_to< std::map<value_to_test_ns::id, int> >(
+                value{ {"Id#1", 42}, {"Id#2", 43} }, ctx... )
+            == std::map<value_to_test_ns::id, int>{ {{1}, 42}, {{2}, 43} } ));
 
         // mismatched type
         BOOST_TEST_THROWS_WITH_LOCATION(
@@ -464,6 +580,11 @@ public:
             BOOST_TEST( e1 == ::value_to_test_ns::E1::b );
         }
 
+        BOOST_TEST((
+            value_to<value_to_test_ns::T12>(
+                value(object{ {"i", "Id#1"} }), ctx... ).i
+            == value_to_test_ns::T12{ {1} }.i ));
+
         BOOST_TEST_THROWS_WITH_LOCATION(
             value_to<::value_to_test_ns::E1>( value(1), ctx... ));
         BOOST_TEST_THROWS_WITH_LOCATION(
@@ -506,6 +627,12 @@ public:
         value_to< std::nullopt_t >(value());
         BOOST_TEST_THROWS_WITH_LOCATION(
             value_to< std::nullopt_t >( jv, ctx... ));
+
+        BOOST_TEST((
+            value_to< std::optional<value_to_test_ns::id> >(
+                value("Id#1"), ctx... )
+            == std::optional<value_to_test_ns::id>(
+                value_to_test_ns::id{1} ) ));
 #endif
     }
 
@@ -550,6 +677,10 @@ public:
         using V_T3_T1 = Variant<value_to_test_ns::T3, value_to_test_ns::T1>;
         auto v_t3_t1 = value_to<V_T3_T1>( jv, ctx... );
         BOOST_TEST( v_t3_t1.index() == 1 );
+
+        BOOST_TEST((
+            value_to< Variant<value_to_test_ns::id> >( value("Id#2"), ctx... )
+            == Variant<value_to_test_ns::id>( value_to_test_ns::id{2} )));
     }
 
     template< class... Context >
@@ -757,6 +888,13 @@ public:
     testUserConversion( Context const& ... ctx )
     {
         value_to<value_to_test_ns::T2>( value("T2"), ctx... );
+
+        auto id = value_to<value_to_test_ns::id>(
+            value("Id#1"), ctx... );
+        BOOST_TEST( id.n == 1 );
+        id = value_to<value_to_test_ns::id>(
+            value("Id#2"), ctx... );
+        BOOST_TEST( id.n == 2 );
     }
 
     void
@@ -769,6 +907,19 @@ public:
             value_to<value_to_test_ns::T9>(
                 value(), value_to_test_ns::custom_context() ),
             system::system_error);
+
+        BOOST_TEST((
+            value_to< std::map<int, int> >(
+                value{ {"1", "2"}, {"2", "4"}, {"3", "8"} },
+                value_to_test_ns::as_string() )
+            == std::map<int, int>{ {1,2}, {2,4}, {3,8} } ));
+        BOOST_TEST((
+            value_to< std::map<int, int> >(
+                value{ {"1", "2"}, {"2", "4"}, {"3", "6"} },
+                std::make_tuple(
+                    value_to_test_ns::as_string(),
+                    value_to_test_ns::custom_context() ))
+            == std::map<int, int>{ {1,2}, {2,4}, {3,6} } ));
     }
 
     struct run_templated_tests
