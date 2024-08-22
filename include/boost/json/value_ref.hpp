@@ -170,6 +170,10 @@ public:
         value_ref const&) = default;
 
     /// Constructor
+    value_ref(
+        value_ref&&) = default;
+
+    /// Constructor
 #ifdef BOOST_JSON_DOCS
     value_ref(string_view s) noexcept;
 #else
