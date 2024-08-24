@@ -56,7 +56,11 @@ rule warn-if-requested ( properties * )
 }
 
 project
-    : common-requirements <use>$(boost_dependencies)/<warnings-as-errors>off
+    : common-requirements
+      <include>../include
+      <use>$(boost_dependencies)/<warnings-as-errors>off
+      <link>shared:<define>BOOST_JSON_DYN_LINK=1
+      <link>static:<define>BOOST_JSON_STATIC_LINK=1
     : requirements
       [ requires
         config/cxx11_constexpr
@@ -68,33 +72,13 @@ project
         # so we have to use a custom check
         cxx11_basic_alignas
       ]
-      <link>shared:<define>BOOST_JSON_DYN_LINK=1
-      <link>static:<define>BOOST_JSON_STATIC_LINK=1
-      <define>BOOST_JSON_SOURCE
       <toolset>msvc:<define>_SCL_SECURE_NO_WARNINGS
     : usage-requirements
-      <link>shared:<define>BOOST_JSON_DYN_LINK=1
-      <link>static:<define>BOOST_JSON_STATIC_LINK=1
-      <toolset>msvc:<define>_SCL_SECURE_NO_WARNINGS
+      <library>/boost/container//boost_container/<warnings-as-errors>off
       <define>BOOST_JSON_NO_LIB=1
     : source-location ../src
     ;
 
-alias json_deps
-   : usage-requirements
-     <library>/boost/container//boost_container/<warnings-as-errors>off
-   ;
-
-alias json_sources
-   : src.cpp
-   : usage-requirements
-     <library>/boost/container//boost_container/<warnings-as-errors>off
-   ;
-
-explicit json_deps json_sources ;
-
-lib boost_json
-   : json_sources
-   : usage-requirements
-     <library>/boost/container//boost_container/<warnings-as-errors>off
-   ;
+alias json_deps ;
+alias json_sources : src.cpp ;
+lib boost_json : json_sources ;

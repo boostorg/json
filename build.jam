@@ -19,17 +19,15 @@ constant boost_dependencies :
     /boost/system//boost_system
     /boost/throw_exception//boost_throw_exception ;
 
-project /boost/json
-    : common-requirements
-        <include>include
-    ;
+project /boost/json ;
 
 alias boost_json : build//boost_json ;
 alias json_deps : build//json_deps ;
 alias json_sources : build//json_sources ;
+
 alias all : boost_json json_deps json_sources bench example fuzzing test ;
 
-call-if : boost-library json
+call-if
+    : boost-library json
     : install boost_json
     ;
-
