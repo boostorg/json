@@ -103,6 +103,10 @@ LLVMFuzzerTestOneInput(
     // select memory strategy to use
     const int strategy=data[1] & 0x3;
 
+    // select number precision to use
+    const int precision=((data[1] & 0xC) >> 2) % 3;
+    fh.opt.numbers = static_cast<number_precision>(precision);
+
     // memory limits
     fh.memlimit1=data[2]*256+data[3];
     fh.memlimit2=data[4]*256+data[5];
@@ -121,7 +125,7 @@ LLVMFuzzerTestOneInput(
             fh.useDefault();
             break;
         case 1:
-            fh.useDefault();
+            fh.useMonotonic();
             break;
         case 2:
             fh.useLocalBuffer();
