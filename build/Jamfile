@@ -8,9 +8,11 @@
 # Official repository: https://github.com/boostorg/json
 #
 
-import modules ;
 import-search /boost/config/checks ;
+
+import boost-pretty-printers ;
 import config ;
+import modules ;
 
 # These make sure we only build on compatible C++11 or later toolchains.
 obj cxx11_basic_alignas : ../check/basic_alignas.cpp ;
@@ -82,3 +84,12 @@ project
 alias json_deps ;
 alias json_sources : src.cpp ;
 lib boost_json : json_sources ;
+
+boost-pretty-printers.gdb-python-header gdb_printers.hpp
+    : boost_json_gdb_printers.py
+    : <location>../include/boost/json/detail
+      <flags>--header-guard=BOOST_JSON_DETAIL_GDB_PRINTERS_HPP
+    ;
+always gdb_printers.hpp ;
+explicit regenerate-printers gdb_printers.hpp ;
+alias regenerate-printers : gdb_printers.hpp ;

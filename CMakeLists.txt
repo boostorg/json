@@ -51,6 +51,16 @@ if(BOOST_JSON_IS_ROOT)
     unset(CMAKE_FOLDER)
 endif()
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/pretty_printers")
+find_package(BoostPrettyPrinters QUIET)
+if(BoostPrettyPrinters_FOUND)
+    boost_pretty_printers_gdb_python_header(
+        TARGET boost_json_regenerate_printers
+        INPUT src/boost_json_gdb_printers.py
+        OUTPUT include/boost/json/detail/gdb_printers.hpp
+        HEADER_GUARD BOOST_JSON_DETAIL_GDB_PRINTERS_HPP
+        EXCLUDE_FROM_ALL)
+endif()
 
 function(boost_json_setup_properties target)
     if(MSVC)

@@ -5,6 +5,11 @@
 
 require-b2 5.2 ;
 
+import path ;
+import-search [ path.join $(__file__:D) pretty_printers ] ;
+
+using boost-pretty-printers ;
+
 constant boost_dependencies :
     /boost/align//boost_align
     /boost/assert//boost_assert

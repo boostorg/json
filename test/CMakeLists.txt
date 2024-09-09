@@ -26,6 +26,7 @@ list(FILTER BOOST_JSON_TESTS_FILES EXCLUDE REGEX cmake-subdir/.*$)
 list(FILTER BOOST_JSON_TESTS_FILES EXCLUDE REGEX intrusive_macros\.cpp$)
 list(FILTER BOOST_JSON_TESTS_FILES EXCLUDE REGEX limits\.cpp$)
 list(FILTER BOOST_JSON_TESTS_FILES EXCLUDE REGEX no_exceptions\.cpp$)
+list(FILTER BOOST_JSON_TESTS_FILES EXCLUDE REGEX printers\.cpp$)
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX "" FILES ${BOOST_JSON_TESTS_FILES})
 add_executable(boost_json-tests ${EXCLUDE_TESTS_FROM_ALL} ${BOOST_JSON_TESTS_FILES})
@@ -75,3 +76,13 @@ target_compile_definitions(boost_json-intrusive-macro-tests PRIVATE
 )
 add_test(NAME boost_json-intrusive-macro-tests COMMAND boost_json-intrusive-macro-tests)
 add_dependencies(tests boost_json-intrusive-macro-tests)
+
+if(BoostPrettyPrinters_HAS_GDB)
+    boost_pretty_printers_test_gdb_printers(
+        TEST boost_json_test_gdb_printers
+        SOURCES printers.cpp
+        ${EXCLUDE_TESTS_FROM_ALL})
+    boost_json_setup_properties(boost_json_test_gdb_printers)
+    target_link_libraries(boost_json_test_gdb_printers PRIVATE Boost::json)
+    add_dependencies(tests boost_json_test_gdb_printers)
+endif()
