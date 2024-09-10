@@ -63,6 +63,7 @@ project
       <include>.
       <toolset>msvc:<define>_SCL_SECURE_NO_WARNINGS
       <toolset>msvc:<define>_CRT_SECURE_NO_WARNINGS
+      <toolset>gcc:<cxxflags>-Wno-restrict # annoying false positives
     ;
 
 for local f in $(SOURCES)

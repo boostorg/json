@@ -304,8 +304,15 @@ try_make_tuple_like(
             typename std::decay<tuple_element_t<Is, T>>::type >(
                 arr[Is], ctx, ec)
             ...);
+#if defined(BOOST_GCC)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
     if( ec.failed() )
         return {boost::system::in_place_error, ec};
+#if defined(BOOST_GCC)
+# pragma GCC diagnostic pop
+#endif
 
     return {
         boost::system::in_place_value, T(std::move(*std::get<Is>(items))...)};
