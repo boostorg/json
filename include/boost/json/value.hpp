@@ -1029,20 +1029,6 @@ public:
         @param sp A pointer to the `boost::container::pmr::memory_resource` to
         use. The container will acquire shared ownership of the memory
         resource.
-
-        @par Note
-        The previous behavior of this constructor was to always
-        construct either an @ref object or an @ref array. In practice though,
-        several C++ implementations did not treat `value{x}` as a constructor
-        from initializer list. This effectively resulted in different behavior
-        on different implementations. <br>
-
-        If you need the legacy behavior define macro
-        `BOOST_JSON_LEGACY_INIT_LIST_BEHAVIOR` when you are building the
-        library. The macro and the functionality will be deprecated in the
-        future and then removed, so we urge you to change your code for the new
-        behavior as soon as possible. The simplest way to create an @ref array
-        with 1 element using an initializer list is via `array{x}`.
     */
     BOOST_JSON_DECL
     value(

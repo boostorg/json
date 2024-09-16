@@ -2398,7 +2398,6 @@ public:
             BOOST_TEST(( jv6 == array{1,2} ));
         }
         {
-#ifndef BOOST_JSON_LEGACY_INIT_LIST_BEHAVIOR
             value jv1{0};
             BOOST_TEST( jv1 == 0 );
 
@@ -2408,7 +2407,6 @@ public:
             value jv3 = value{0};
             BOOST_TEST( jv3 == 0 );
 
-#endif
             value jv4{{0}};
             BOOST_TEST( jv4 == array{0} );
 
