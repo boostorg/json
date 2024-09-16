@@ -23,7 +23,6 @@
 #include <map>
 #include <unordered_map>
 #include <vector>
-#include <iostream>
 
 #ifndef BOOST_NO_CXX17_HDR_VARIANT
 # include <variant>
@@ -485,10 +484,9 @@ public:
 #endif // BOOST_NO_CXX17_HDR_OPTIONAL
         }
 
-        BOOST_TEST_THROWS(
+        BOOST_TEST_THROWS_WITH_LOCATION(
             value_to<::value_to_test_ns::T10>(
-                value{{"n", 0}, {"t3", "t10"}}, ctx... ),
-            std::invalid_argument);
+                value{{"n", 0}, {"t3", "t10"}}, ctx... ));
 #endif // BOOST_DESCRIBE_CXX14
     }
 
