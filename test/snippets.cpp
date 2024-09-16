@@ -1152,6 +1152,10 @@ usingParseInto()
     string_view input = R"( { "even": [2,4,6], "odd": [1,3,5] } )";
     parse_into(vectors, input);
 //]
+
+    std::string output = serialize(vectors);
+    (void)output;
+    assert( output == R"({"even":[2,4,6],"odd":[1,3,5]})" );
 }
 
 } // namespace
