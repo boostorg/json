@@ -15,7 +15,6 @@
 
 #include <boost/json/basic_parser.hpp>
 #include <boost/json/string_view.hpp>
-#include <boost/json/system_error.hpp>
 #include <boost/json/detail/parse_into.hpp>
 #include <boost/system/result.hpp>
 

@@ -24,9 +24,8 @@ and function parameter lists. A __storage_ptr__ has these properties:
   which always uses the equivalent of global operator new
   and delete.
 
-* Storage pointers constructed from a
-  [link json.ref.boost__json__memory_resource `memory_resource*`]
-  or __polymorphic_allocator__ do not acquire ownership; the
+* Storage pointers constructed from a __memory_resource__ or
+  __polymorphic_allocator__ do not acquire ownership; the
   caller is responsible for ensuring that the lifetime of
   the resource extends until it is no longer referenced.
 

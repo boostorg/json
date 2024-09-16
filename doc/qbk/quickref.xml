@@ -35,13 +35,15 @@
           <member><link linkend="json.ref.boost__json__stream_parser">stream_parser</link></member>
           <member><link linkend="json.ref.boost__json__string">string</link></member>
           <member><link linkend="json.ref.boost__json__value">value</link></member>
+          <member><link linkend="json.ref.boost__json__value_ref">value_ref</link></member>
+          <member><link linkend="json.ref.boost__json__value_stack">value_stack</link></member>
         </simplelist>
       </entry>
       <entry valign="top">
-        <bridgehead renderas="sect3">Classes (2/2)</bridgehead>
+        <bridgehead renderas="sect3">Aliases</bridgehead>
         <simplelist type="vert" columns="1">
-          <member><link linkend="json.ref.boost__json__value_ref">value_ref</link></member>
-          <member><link linkend="json.ref.boost__json__value_stack">value_stack</link></member>
+          <member><link linkend="json.ref.boost__json__parser_for">parser_for</link></member>
+          <member><link linkend="json.ref.boost__json__string_view">string_view</link></member>
         </simplelist>
         <bridgehead renderas="sect3">Functions</bridgehead>
         <simplelist type="vert" columns="1">
@@ -103,18 +105,6 @@
         </simplelist>
       </entry>
       <entry valign="top">
-        <bridgehead renderas="sect3">Aliases</bridgehead>
-        <simplelist type="vert" columns="1">
-          <member><link linkend="json.ref.boost__json__error_category"><emphasis role="red">error_category</emphasis></link></member>
-          <member><link linkend="json.ref.boost__json__error_code"><emphasis role="red">error_code</emphasis></link></member>
-          <member><link linkend="json.ref.boost__json__error_condition"><emphasis role="red">error_condition</emphasis></link></member>
-          <member><link linkend="json.ref.boost__json__memory_resource"><emphasis role="red">memory_resource</emphasis></link></member>
-          <member><link linkend="json.ref.boost__json__parser_for">parser_for</link></member>
-          <member><link linkend="json.ref.boost__json__polymorphic_allocator"><emphasis role="red">polymorphic_allocator</emphasis></link></member>
-          <member><link linkend="json.ref.boost__json__result"><emphasis role="red">result</emphasis></link></member>
-          <member><link linkend="json.ref.boost__json__string_view">string_view</link></member>
-          <member><link linkend="json.ref.boost__json__system_error"><emphasis role="red">system_error</emphasis></link></member>
-        </simplelist>
         <bridgehead renderas="sect3">P0308R0</bridgehead>
         <simplelist type="vert" columns="1">
           <member><link linkend="json.ref.boost__json__pilfer">pilfer</link></member>

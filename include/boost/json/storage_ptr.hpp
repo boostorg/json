@@ -12,11 +12,9 @@
 
 #include <boost/container/pmr/polymorphic_allocator.hpp>
 #include <boost/json/detail/config.hpp>
-#include <boost/json/memory_resource.hpp>
 #include <boost/json/detail/shared_resource.hpp>
 #include <boost/json/detail/default_resource.hpp>
 #include <boost/json/is_deallocate_trivial.hpp>
-#include <cstddef>
 #include <new>
 #include <type_traits>
 #include <utility>

@@ -13,7 +13,6 @@
 #include <boost/container/pmr/memory_resource.hpp>
 #include <boost/json/detail/config.hpp>
 #include <boost/json/is_deallocate_trivial.hpp>
-#include <boost/json/memory_resource.hpp>
 #include <cstddef>
 
 namespace boost {

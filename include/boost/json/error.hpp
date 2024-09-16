@@ -11,7 +11,6 @@
 #define BOOST_JSON_ERROR_HPP
 
 #include <boost/json/detail/config.hpp>
-#include <boost/json/system_error.hpp>
 
 namespace boost {
 namespace json {

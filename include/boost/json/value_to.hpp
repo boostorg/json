@@ -148,7 +148,7 @@ value_to(const value& jv)
     return value_to<T>( jv, detail::no_context() );
 }
 
-/** Convert a @ref value to a @ref result of `T`.
+/** Convert a @ref value to a `boost::system::result<T>`.
 
     This function attempts to convert a @ref value
     to `result<T>` using
@@ -231,7 +231,7 @@ try_value_to( value const& jv, Context const& ctx )
         cat(), try_value_to_tag<bare_T>(), jv, ctx );
 }
 
-/** Convert a @ref value to a @ref result of `T`.
+/** Convert a @ref value to a `boost::system::result<T>`.
 
     This function attempts to convert a @ref value
     to `result<T>` using

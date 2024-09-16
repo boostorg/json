@@ -11,7 +11,6 @@
 #define BOOST_JSON_DETAIL_SHARED_RESOURCE_HPP
 
 #include <boost/container/pmr/memory_resource.hpp>
-#include <boost/json/memory_resource.hpp>
 #include <atomic>
 #include <utility>
 

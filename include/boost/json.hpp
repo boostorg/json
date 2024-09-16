@@ -19,7 +19,6 @@
 #include <boost/json/fwd.hpp>
 #include <boost/json/is_deallocate_trivial.hpp>
 #include <boost/json/kind.hpp>
-#include <boost/json/memory_resource.hpp>
 #include <boost/json/monotonic_resource.hpp>
 #include <boost/json/null_resource.hpp>
 #include <boost/json/object.hpp>
@@ -37,7 +36,6 @@
 #include <boost/json/stream_parser.hpp>
 #include <boost/json/string.hpp>
 #include <boost/json/string_view.hpp>
-#include <boost/json/system_error.hpp>
 #include <boost/json/value.hpp>
 #include <boost/json/value_from.hpp>
 #include <boost/json/value_ref.hpp>

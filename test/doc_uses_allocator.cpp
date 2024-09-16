@@ -8,7 +8,6 @@
 //
 
 #include <boost/container/pmr/memory_resource.hpp>
-#include <boost/json/memory_resource.hpp>
 #include <boost/json/monotonic_resource.hpp>
 #include <boost/json/value.hpp>
 #include <vector>

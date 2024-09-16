@@ -20,7 +20,7 @@ namespace boost {
 namespace json {
 
 /**
-   Helper trait that returns @ref result
+   Helper trait that returns `boost::system::result`
 
    The primary template is an incomplete type. The library provides a partial
    specialisation `result_for<T1, value>`, that has nested type alias `type`
@@ -60,16 +60,16 @@ namespace json {
 template <class T1, class T2>
 struct result_for;
 
-/** Create @ref result storing a portable error code
+/** Create `boost::system::result` storing a portable error code
 
     This function constructs a `boost::system::result<T>` that stores
     `boost::system::error_code` with `value()` equal to `e` and `category()`
     equal to `boost::system::generic_category()`. <br>
 
     The main use for this function is in implementation of functions returning
-    @ref result, without including `boost/json/system_error.hpp` or even
-    `<system_error>`. In particular, it may be useful for customizations of
-    @ref try_value_to without creating a physical dependency on Boost.JSON.
+    `boost::system::result`, without including `boost/json/system_error.hpp` or
+    even `<system_error>`. In particular, it may be useful for customizations
+    of @ref try_value_to without creating a physical dependency on Boost.JSON.
     For example:
 
     @code

@@ -19,12 +19,10 @@
 #include <boost/json/detail/except.hpp>
 #include <boost/json/detail/string_impl.hpp>
 #include <boost/json/detail/value.hpp>
-#include <algorithm>
+#include <boost/system/result.hpp>
 #include <cstring>
-#include <initializer_list>
 #include <iosfwd>
 #include <iterator>
-#include <limits>
 #include <new>
 #include <type_traits>
 #include <utility>
