@@ -233,6 +233,8 @@ constexpr T static_const<T>::value;
 # define BOOST_JSON_DEPRECATED(x)
 #endif
 
+#ifndef BOOST_ALL_NO_EMBEDDED_GDB_SCRIPTS
 #include <boost/json/detail/gdb_printers.hpp>
+#endif
 
 #endif

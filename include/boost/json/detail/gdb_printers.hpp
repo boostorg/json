@@ -12,8 +12,6 @@
 #ifndef BOOST_JSON_DETAIL_GDB_PRINTERS_HPP
 #define BOOST_JSON_DETAIL_GDB_PRINTERS_HPP
 
-#ifndef BOOST_ALL_NO_EMBEDDED_GDB_SCRIPTS
-
 #if defined(__ELF__)
 
 #if defined(__clang__)
@@ -342,7 +340,5 @@ __asm__(
 #endif
 
 #endif // defined(__ELF__)
-
-#endif // BOOST_ALL_NO_EMBEDDED_GDB_SCRIPTS
 
 #endif // BOOST_JSON_DETAIL_GDB_PRINTERS_HPP
