@@ -7,7 +7,7 @@
 // Official repository: https://github.com/boostorg/json
 //
 
-#ifndef BOOST_JSON_PRINTERS_HPP
+#ifndef BOOST_JSON_DEBUG_PRINTERS_HPP
 
 #include <boost/json/detail/gdb_printers.hpp>
 
