@@ -89,6 +89,7 @@ boost-pretty-printers.gdb-python-header gdb_printers.hpp
     : boost_json_gdb_printers.py
     : <location>../include/boost/json/detail
       <flags>--header-guard=BOOST_JSON_DETAIL_GDB_PRINTERS_HPP
+      <flags>--disable-macro=
     ;
 always gdb_printers.hpp ;
 explicit regenerate-printers gdb_printers.hpp ;

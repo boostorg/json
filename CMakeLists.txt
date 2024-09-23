@@ -59,6 +59,7 @@ if(BoostPrettyPrinters_FOUND)
         INPUT src/boost_json_gdb_printers.py
         OUTPUT include/boost/json/detail/gdb_printers.hpp
         HEADER_GUARD BOOST_JSON_DETAIL_GDB_PRINTERS_HPP
+        NO_DISABLE_MACRO
         EXCLUDE_FROM_ALL)
 endif()
 

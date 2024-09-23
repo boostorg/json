@@ -23,7 +23,7 @@ set(BoostPrettyPrinters_GDB_TEST_SCRIPT
 set(BoostPrettyPrinters_INCLUDES "${CMAKE_CURRENT_LIST_DIR}/include")
 
 function(boost_pretty_printers_gdb_python_header)
-    set(options EXCLUDE_FROM_ALL)
+    set(options NO_DISABLE_MACRO EXCLUDE_FROM_ALL)
     set(oneValueArgs TARGET INPUT OUTPUT HEADER_GUARD DISABLE_MACRO)
     set(multiValueArgs)
     cmake_parse_arguments(BOOST_PPRINT_GDB_GEN
@@ -42,6 +42,8 @@ function(boost_pretty_printers_gdb_python_header)
     if(DEFINED BOOST_PPRINT_GDB_GEN_DISABLE_MACRO)
         set(BOOST_PPRINT_GDB_GEN_DISABLE_MACRO
             "--disable-macro=${BOOST_PPRINT_GDB_GEN_DISABLE_MACRO}")
+    elseif(BOOST_PPRINT_GDB_GEN_NO_DISABLE_MACRO)
+        set(BOOST_PPRINT_GDB_GEN_DISABLE_MACRO "--disable-macro=")
     endif()
     add_custom_command(
         OUTPUT "${BOOST_PPRINT_GDB_GEN_OUTPUT}"
