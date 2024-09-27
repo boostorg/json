@@ -23,6 +23,113 @@
 
 namespace boost {
 namespace json {
+namespace detail {
+
+struct number
+{
+    uint64_t mant;
+    int bias;
+    int exp;
+    bool frac;
+    bool neg;
+};
+
+enum class parser_state : char
+{
+    doc1,  doc3,
+    com1,  com2,  com3, com4,
+    lit1,
+    str1,  str2,  str3,  str4,
+    str5,  str6,  str7,  str8,
+    sur1,  sur2,  sur3,
+    sur4,  sur5,  sur6,
+    obj1,  obj2,  obj3,  obj4,
+    obj5,  obj6,  obj7,  obj8,
+    obj9,  obj10, obj11,
+    arr1,  arr2,  arr3,
+    arr4,  arr5,  arr6,
+    num1,  num2,  num3,  num4,
+    num5,  num6,  num7,  num8,
+    exp1,  exp2,  exp3,
+    val1,  val2, val3
+};
+
+struct parser_data
+{
+    number num_;
+    system::error_code ec;
+    detail::stack st;
+    parse_options opt;
+    // how many levels deeper the parser can go
+    std::size_t depth_left;
+    char const* end;
+    bool more; // false for final buffer
+    bool done = false; // true on complete parse
+
+    inline
+    void reserve();
+
+    // The sentinel value is returned by parse functions
+    // to indicate that the parser failed, or suspended.
+    // this is used as it is distinct from all valid values
+    // for data in write
+    inline
+    char const*
+    sentinel() noexcept
+    {
+        // the "+1" ensures that the returned pointer is unique even if
+        // the given input buffer borders on this object
+        return reinterpret_cast<char const*>(this) + 1;
+    }
+
+    std::size_t
+    depth() const noexcept
+    {
+        return opt.max_depth - depth_left;
+    }
+
+    BOOST_JSON_DECL
+    char const*
+    continue_finish(parser_state st);
+
+    BOOST_JSON_DECL
+    char const*
+    continue_finish(parser_state st, std::size_t n);
+
+    BOOST_JSON_DECL
+    char const*
+    fail(char const* p) noexcept;
+
+    BOOST_JSON_DECL
+    char const*
+    fail(char const* p, error ev, source_location const* loc) noexcept;
+
+    BOOST_JSON_DECL
+    char const*
+    maybe_suspend(char const* p, parser_state st);
+
+    BOOST_JSON_DECL
+    char const*
+    maybe_suspend(char const* p, parser_state st, std::size_t n);
+
+    BOOST_JSON_DECL
+    char const*
+    maybe_suspend(char const* p, parser_state st, number const& num);
+
+    BOOST_JSON_DECL
+    char const*
+    suspend(char const* p, parser_state st);
+
+    BOOST_JSON_DECL
+    char const*
+    suspend(char const* p, parser_state st, std::size_t n);
+
+    BOOST_JSON_DECL
+    char const*
+    suspend(char const* p, parser_state st, number const& num);
+};
+
+} // namespace detail
 
 /** An incremental SAX parser for serialized JSON.
 
@@ -263,134 +370,26 @@ namespace json {
 template<class Handler>
 class basic_parser
 {
-    enum class state : char
-    {
-        doc1,  doc3,
-        com1,  com2,  com3, com4,
-        lit1,
-        str1,  str2,  str3,  str4,
-        str5,  str6,  str7,  str8,
-        sur1,  sur2,  sur3,
-        sur4,  sur5,  sur6,
-        obj1,  obj2,  obj3,  obj4,
-        obj5,  obj6,  obj7,  obj8,
-        obj9,  obj10, obj11,
-        arr1,  arr2,  arr3,
-        arr4,  arr5,  arr6,
-        num1,  num2,  num3,  num4,
-        num5,  num6,  num7,  num8,
-        exp1,  exp2,  exp3,
-        val1,  val2, val3
-    };
-
-    struct number
-    {
-        uint64_t mant;
-        int bias;
-        int exp;
-        bool frac;
-        bool neg;
-    };
+    using state = detail::parser_state;
+    using number = detail::number;
 
     template< bool StackEmpty_, char First_ >
     struct parse_number_helper;
 
     // optimization: must come first
     Handler h_;
-
-    number num_;
-    system::error_code ec_;
-    detail::stack st_;
+    detail::parser_data data_;
     detail::utf8_sequence seq_;
     unsigned u1_;
     unsigned u2_;
-    bool more_; // false for final buffer
-    bool done_ = false; // true on complete parse
     bool clean_ = true; // write_some exited cleanly
-    const char* end_;
     detail::sbo_buffer<16 + 16 + 1 + 1> num_buf_;
-    parse_options opt_;
-    // how many levels deeper the parser can go
-    std::size_t depth_ = opt_.max_depth;
     unsigned char cur_lit_ = 0;
     unsigned char lit_offset_ = 0;
 
-    inline void reserve();
-    inline const char* sentinel();
-    inline bool incomplete(
-        const detail::const_stream_wrapper& cs);
-
-#ifdef __INTEL_COMPILER
-#pragma warning push
-#pragma warning disable 2196
-#endif
-
-    BOOST_NOINLINE
     inline
-    const char*
-    suspend_or_fail(state st);
-
-    BOOST_NOINLINE
-    inline
-    const char*
-    suspend_or_fail(
-        state st,
-        std::size_t n);
-
-    BOOST_NOINLINE
-    inline
-    const char*
-    fail(const char* p) noexcept;
-
-    BOOST_NOINLINE
-    inline
-    const char*
-    fail(
-        const char* p,
-        error ev,
-        source_location const* loc) noexcept;
-
-    BOOST_NOINLINE
-    inline
-    const char*
-    maybe_suspend(
-        const char* p,
-        state st);
-
-    BOOST_NOINLINE
-    inline
-    const char*
-    maybe_suspend(
-        const char* p,
-        state st,
-        std::size_t n);
-
-    BOOST_NOINLINE
-    inline
-    const char*
-    maybe_suspend(
-        const char* p,
-        state st,
-        const number& num);
-
-    BOOST_NOINLINE
-    inline
-    const char*
-    suspend(
-        const char* p,
-        state st);
-
-    BOOST_NOINLINE
-    inline
-    const char*
-    suspend(
-        const char* p,
-        state st,
-        const number& num);
-
-#ifdef __INTEL_COMPILER
-#pragma warning pop
-#endif
+    bool
+    incomplete(detail::const_stream_wrapper const& cs);
 
     template<bool StackEmpty_/*, bool Terminal_*/>
     const char* parse_comment(const char* p,
@@ -459,13 +458,6 @@ class basic_parser
         std::integral_constant<bool, StackEmpty_> stack_empty,
         std::integral_constant<char, First_> first,
         std::integral_constant<number_precision, Numbers_> numbers);
-
-    // intentionally private
-    std::size_t
-    depth() const noexcept
-    {
-        return opt_.max_depth - depth_;
-    }
 
 public:
     /// Copy constructor (deleted)
@@ -567,7 +559,7 @@ public:
     system::error_code
     last_error() const noexcept
     {
-        return ec_;
+        return data_.ec;
     }
 
     /** Return true if a complete JSON has been parsed.
@@ -591,7 +583,7 @@ public:
     bool
     done() const noexcept
     {
-        return done_;
+        return data_.done;
     }
 
     /** Reset the state, to parse a new document.

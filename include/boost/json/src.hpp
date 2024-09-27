@@ -53,6 +53,7 @@ in a translation unit of the program.
 #include <boost/json/detail/impl/handler.ipp>
 #include <boost/json/detail/impl/stack.ipp>
 #include <boost/json/detail/impl/string_impl.ipp>
+#include <boost/json/detail/impl/basic_parser.ipp>
 
 #include <boost/json/detail/ryu/impl/d2s.ipp>
 #include <boost/json/detail/charconv/impl/from_chars.ipp>
