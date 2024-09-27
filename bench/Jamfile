@@ -14,6 +14,7 @@ import notfile ;
 import os ;
 import path ;
 import property ;
+import bench.jam ;
 
 path-constant HERE : . ;
 
@@ -68,8 +69,12 @@ rule run-bench ( target : sources * : props * )
     }
     LAUNCHER on $(target) = $(launcher) ;
 
-    local files = [ property.select bench.file : $(props) ] ;
-    FILES on $(target) = $(files:G=) ;
+    local files ;
+    for local f in [ property.select bench.file : $(props) ]
+    {
+        files += [ $(f:G=).actualize ] ;
+    }
+    FILES on $(target) = $(files) ;
 
     local dir = [ on $(target) return $(LOCATE) ] ;
     if $(dir)
@@ -81,7 +86,7 @@ rule run-bench ( target : sources * : props * )
     }
 }
 
-actions run-bench
+actions run-bench bind FILES
 {
     $(LAUNCHER)$(>) $(FLAGS) $(FILES)
 }
