@@ -51,7 +51,18 @@ enum class parser_state : char
     num1,  num2,  num3,  num4,
     num5,  num6,  num7,  num8,
     exp1,  exp2,  exp3,
-    val1,  val2, val3
+    val1,  val2, val3,
+
+    com_stop1, com_stop2, com_stop3, com_stop4, com_stop5,
+    lit_stop1,
+    str_stop1, str_stop2, str_stop3, str_stop4,
+    esc_stop1, esc_stop2, esc_stop3,
+    obj_stop1, obj_stop2,
+    arr_stop1, arr_stop2,
+    num_stop1, num_stop2, num_stop3, num_stop4,  num_stop5,  num_stop6,
+    num_stop7, num_stop8, num_stop9, num_stop10, num_stop11, num_stop12,
+    num_stop13,
+    doc_stop1,
 };
 
 struct parser_data
@@ -90,15 +101,15 @@ struct parser_data
 
     BOOST_JSON_DECL
     char const*
-    continue_finish(parser_state st);
+    stop(char const* p) noexcept;
 
     BOOST_JSON_DECL
     char const*
-    continue_finish(parser_state st, std::size_t n);
+    continue_stop(parser_state s);
 
     BOOST_JSON_DECL
     char const*
-    fail(char const* p) noexcept;
+    continue_stop(parser_state s, std::size_t n);
 
     BOOST_JSON_DECL
     char const*
@@ -106,27 +117,27 @@ struct parser_data
 
     BOOST_JSON_DECL
     char const*
-    maybe_suspend(char const* p, parser_state st);
+    maybe_suspend(char const* p, parser_state s);
 
     BOOST_JSON_DECL
     char const*
-    maybe_suspend(char const* p, parser_state st, std::size_t n);
+    maybe_suspend(char const* p, parser_state s, std::size_t n);
 
     BOOST_JSON_DECL
     char const*
-    maybe_suspend(char const* p, parser_state st, number const& num);
+    maybe_suspend(char const* p, parser_state s, number const& num);
 
     BOOST_JSON_DECL
     char const*
-    suspend(char const* p, parser_state st);
+    suspend(char const* p, parser_state s);
 
     BOOST_JSON_DECL
     char const*
-    suspend(char const* p, parser_state st, std::size_t n);
+    suspend(char const* p, parser_state s, std::size_t n);
 
     BOOST_JSON_DECL
     char const*
-    suspend(char const* p, parser_state st, number const& num);
+    suspend(char const* p, parser_state s, number const& num);
 };
 
 } // namespace detail

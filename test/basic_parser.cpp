@@ -17,6 +17,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <iostream>
 
 #include "parse-vectors.hpp"
 #include "test.hpp"
@@ -1750,6 +1751,252 @@ public:
 #pragma warning(pop)
 #endif
 
+    class event_parser
+    {
+    public:
+        enum class event
+        {
+            begin_document,
+            end_document,
+            begin_object,
+            end_object,
+            begin_array,
+            end_array,
+            key_part,
+            key,
+            string_part,
+            string,
+            number_part,
+            int64,
+            uint64,
+            double_,
+            bool_,
+            null,
+            comment_part,
+            comment,
+        };
+
+    private:
+        struct handler
+        {
+            constexpr static std::size_t max_object_size = std::size_t(-1);
+            constexpr static std::size_t max_array_size = std::size_t(-1);
+            constexpr static std::size_t max_key_size = std::size_t(-1);
+            constexpr static std::size_t max_string_size = std::size_t(-1);
+
+            bool on_document_begin(std::error_code&)
+            {
+                ev = event::begin_document;
+                return false;
+            }
+
+            bool on_document_end(std::error_code&)
+            {
+                ev = event::end_document;
+                return false;
+            }
+
+            bool on_object_begin(std::error_code&)
+            {
+                ev = event::begin_object;
+                return false;
+            }
+
+            bool on_object_end(std::size_t n, std::error_code&)
+            {
+                ev = event::end_object;
+                sz = n;
+                return false;
+            }
+
+            bool on_array_begin(std::error_code&)
+            {
+                ev = event::begin_array;
+                return false;
+            }
+
+            bool on_array_end(std::size_t n, std::error_code&)
+            {
+                ev = event::end_array;
+                sz = n;
+                return false;
+            }
+
+            bool on_key_part(string_view sv, std::size_t n, std::error_code&)
+            {
+                ev = event::key_part;
+                this->sv = sv;
+                sz = n;
+                return false;
+            }
+
+            bool on_key(string_view sv, std::size_t n, std::error_code&)
+            {
+                ev = event::key;
+                this->sv = sv;
+                sz = n;
+                return false;
+            }
+
+            bool on_string_part(
+                string_view sv, std::size_t n, std::error_code&)
+            {
+                ev = event::string_part;
+                this->sv = sv;
+                sz = n;
+                return false;
+            }
+
+            bool on_string(string_view sv, std::size_t n, std::error_code&)
+            {
+                ev = event::string;
+                this->sv = sv;
+                sz = n;
+                return false;
+            }
+
+            bool on_number_part(string_view sv, std::error_code&)
+            {
+                ev = event::number_part;
+                this->sv = sv;
+                return false;
+            }
+
+            bool on_int64(std::int64_t v, string_view sv, std::error_code&)
+            {
+                ev = event::int64;
+                this->sv = sv;
+                i = v;
+                return false;
+            }
+
+            bool on_uint64(std::uint64_t v, string_view sv, std::error_code&)
+            {
+                ev = event::uint64;
+                this->sv = sv;
+                u = v;
+                return false;
+            }
+
+            bool on_double(double v, string_view sv, std::error_code& )
+            {
+                ev = event::double_;
+                this->sv = sv;
+                d = v;
+                return false;
+            }
+
+            bool on_bool(bool v, std::error_code&)
+            {
+                ev = event::bool_;
+                b = v;
+                return false;
+            }
+
+            bool on_null(std::error_code&)
+            {
+                ev = event::null;
+                return false;
+            }
+
+            bool on_comment_part(string_view sv, std::error_code&)
+            {
+                ev = event::comment_part;
+                this->sv = sv;
+                return false;
+            }
+
+            bool on_comment(string_view sv, std::error_code&)
+            {
+                ev = event::comment;
+                this->sv = sv;
+                return false;
+            }
+
+            event& ev;
+            std::int64_t& i;
+            std::uint64_t& u;
+            double& d;
+            bool& b;
+            string_view& sv;
+            std::size_t& sz;
+        };
+
+        basic_parser<handler> p_;
+        string_view input_;
+        event ev_;
+
+    public:
+        event_parser(
+            std::int64_t& i, std::uint64_t& u, double& d, bool& b,
+            string_view sv, std::size_t& sz, parse_options po = {})
+            : p_(po, handler{ev_, i, u, d, b, sv, sz})
+        {}
+
+        void
+        reset(string_view sv)
+        {
+            p_.reset();
+            input_ = sv;
+            ev_ = event::begin_document;
+        }
+
+        event
+        next(boost::source_location const& loc = BOOST_CURRENT_LOCATION)
+        {
+            assert( !p_.done() );
+            std::size_t n = 0;
+            system::error_code ec;
+            if( input_.empty() )
+                p_.write_some(false, input_.data(), input_.size(), ec);
+            else
+                n = p_.write_some(true, input_.data(), input_.size(), ec);
+            std::cerr << n << ' ' << int(ev_) << '\n';
+            if( ec.failed() )
+                detail::throw_system_error(ec, loc);
+
+            std::size_t const size = input_.size();
+            input_ = string_view(input_.data() + n, size - n);
+
+            if(n == size)
+                return event::end_document;
+
+            return ev_;
+        }
+    };
+
+    void
+    testEvents()
+    {
+        std::int64_t i;
+        std::uint64_t u;
+        double d;
+        bool b;
+        string_view sv;
+        std::size_t n;
+
+        event_parser p(i, u, d, b, sv, n);
+
+        string_view const input = "[1,2,3,4,5,6,7,8,9,10]";
+        p.reset(input);
+
+        std::size_t counter = 0;
+        std::vector<int> result;
+        using E = event_parser::event;
+        for( auto ev = p.next(); ev != E::end_document; ev = p.next() )
+        {
+            ++counter;
+            switch(ev)
+            {
+            case E::int64: result.push_back(i);
+            default: break;
+            }
+        }
+        BOOST_TEST( result.size() == 10 );
+        BOOST_TEST(( result == std::vector<int>{1,2,3,4,5,6,7,8,9,10} ));
+        BOOST_TEST( counter == 13 );
+    }
+
     void
     run()
     {
@@ -1774,6 +2021,7 @@ public:
         testNumberLiteral();
         testStickyErrors();
         testStdTypes();
+        testEvents();
     }
 };
 

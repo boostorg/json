@@ -245,6 +245,11 @@ parse_comment(const char* p,
             case state::com2: goto do_com2;
             case state::com3: goto do_com3;
             case state::com4: goto do_com4;
+            case state::com_stop1: goto do_com_stop1;
+            case state::com_stop2: goto do_com_stop2;
+            case state::com_stop3: goto do_com_stop3;
+            case state::com_stop4: goto do_com_stop4;
+            case state::com_stop5: goto do_com_stop5;
         }
     }
     BOOST_ASSERT(*cs == '/');
@@ -278,12 +283,14 @@ do_com2:
             {
                 if(BOOST_JSON_UNLIKELY(
                         !h_.on_comment({start, cs.remain(start)}, data_.ec) ))
-                    return data_.fail(cs.end());
+                    return data_.suspend(cs.end(), state::com_stop1);
+do_com_stop1:
                 return cs.end();
             }
             if(BOOST_JSON_UNLIKELY(
                     !h_.on_comment_part({start, cs.remain(start)}, data_.ec) ))
-                return data_.fail(cs.end());
+                return data_.suspend(cs.end(), state::com_stop2);
+do_com_stop2:
             if(terminal)
                 return data_.suspend(cs.end(), state::com2);
             return data_.maybe_suspend(cs.end(), state::com2);
@@ -306,7 +313,8 @@ do_com3:
                 if(BOOST_JSON_UNLIKELY(
                     !h_.on_comment_part(
                         {start, cs.remain(start)}, data_.ec) ))
-                    return data_.fail(cs.end());
+                    return data_.suspend(cs.end(), state::com_stop3);
+do_com_stop3:
                 return data_.maybe_suspend(cs.end(), state::com3);
             }
             // found a asterisk, check if the next char is a slash
@@ -317,7 +325,8 @@ do_com4:
                 if(BOOST_JSON_UNLIKELY(
                     !h_.on_comment_part(
                         {start, cs.used(start)}, data_.ec) ))
-                    return data_.fail(cs.begin());
+                    return data_.suspend(cs.begin(), state::com_stop4);
+do_com_stop4:
                 return data_.maybe_suspend(cs.begin(), state::com4);
             }
         }
@@ -326,7 +335,8 @@ do_com4:
     ++cs;
     if(BOOST_JSON_UNLIKELY(
             !h_.on_comment({start, cs.used(start)}, data_.ec) ))
-        return data_.fail(cs.begin());
+        return data_.suspend(cs.begin(), state::com_stop5 );
+do_com_stop5:
     return cs.begin();
 }
 
@@ -351,8 +361,9 @@ parse_document(const char* p,
         case state::doc3:
                  data_.st.pop(st);
                  goto do_doc3;
-        case state::com1: case state::com2:
-        case state::com3: case state::com4:
+        case state::com1: case state::com2: case state::com3: case state::com4:
+        case state::com_stop1: case state::com_stop2: case state::com_stop3:
+        case state::com_stop4: case state::com_stop5:
                  goto do_doc4;
         }
     }
@@ -493,7 +504,7 @@ loop:
             // can add an overload, change the existing one to take a pointer,
             // or just leave it as is
             if(BOOST_JSON_UNLIKELY(p == data_.sentinel()))
-                return data_.maybe_suspend(p, state::val2);
+                return data_.continue_stop(state::val2);
             // intentional fallthrough
         case ' ':
         case '\t':
@@ -533,31 +544,33 @@ resume_value(const char* p,
     {
     default: BOOST_JSON_UNREACHABLE();
     case state::lit1:
+    case state::lit_stop1:
         return parse_literal(p,  detail::literals_c<detail::literals::resume>() );
 
-    case state::str1: case state::str2:
-    case state::str8:
+    case state::str1: case state::str2: case state::str8:
+    case state::str_stop1: case state::str_stop2:
+    case state::str_stop3: case state::str_stop4:
         return parse_string(p, std::false_type(), std::false_type(), allow_bad_utf8, allow_bad_utf16);
 
-    case state::arr1: case state::arr2:
-    case state::arr3: case state::arr4:
+    case state::arr1: case state::arr2: case state::arr3: case state::arr4:
     case state::arr5: case state::arr6:
+    case state::arr_stop1: case state::arr_stop2:
         return parse_array(p, std::false_type(), allow_comments, allow_trailing, allow_bad_utf8, allow_bad_utf16);
 
-    case state::obj1: case state::obj2:
-    case state::obj3: case state::obj4:
-    case state::obj5: case state::obj6:
-    case state::obj7: case state::obj8:
-    case state::obj9: case state::obj10:
-    case state::obj11:
+    case state::obj1: case state::obj2: case state::obj3: case state::obj4:
+    case state::obj5: case state::obj6: case state::obj7: case state::obj8:
+    case state::obj9: case state::obj10: case state::obj11:
+    case state::obj_stop1: case state::obj_stop2:
         return parse_object(p, std::false_type(), allow_comments, allow_trailing, allow_bad_utf8, allow_bad_utf16);
 
-    case state::num1: case state::num2:
-    case state::num3: case state::num4:
-    case state::num5: case state::num6:
-    case state::num7: case state::num8:
-    case state::exp1: case state::exp2:
-    case state::exp3:
+    case state::num1: case state::num2: case state::num3: case state::num4:
+    case state::num5: case state::num6: case state::num7: case state::num8:
+    case state::exp1: case state::exp2: case state::exp3:
+    case state::num_stop1: case state::num_stop2: case state::num_stop3:
+    case state::num_stop4: case state::num_stop5: case state::num_stop6:
+    case state::num_stop7: case state::num_stop8: case state::num_stop9:
+    case state::num_stop10: case state::num_stop11: case state::num_stop12:
+    case state::num_stop13:
         return mp11::mp_with_index<3>(
             static_cast<unsigned char>(data_.opt.numbers),
             parse_number_helper<false, 0>{ this, p });
@@ -578,7 +591,7 @@ resume_value(const char* p,
         data_.st.pop(st);
         p = parse_comment(p, std::false_type(), std::false_type());
         if(BOOST_JSON_UNLIKELY(p == data_.sentinel()))
-            return data_.maybe_suspend(p, state::val2);
+            return data_.continue_stop(state::val2);
         if(BOOST_JSON_UNLIKELY( p == data_.end ))
             return data_.maybe_suspend(p, state::val3);
         BOOST_ASSERT( data_.st.empty() );
@@ -605,7 +618,18 @@ parse_literal(const char* p, Literal)
     std::size_t offset;
 
     detail::const_stream_wrapper cs(p, data_.end);
-    BOOST_IF_CONSTEXPR( Literal::value != L::resume )
+    BOOST_IF_CONSTEXPR( Literal::value == L::resume )
+    {
+        state st;
+        data_.st.pop(st);
+        if( st == state::lit_stop1)
+            return cs.begin();
+        BOOST_ASSERT( st == state::lit1 );
+
+        cur_lit = cur_lit_;
+        offset = lit_offset_;
+    }
+    else
     {
         constexpr std::size_t index = literal_index(Literal::value);
         constexpr char const* literal = detail::literal_strings[index];
@@ -620,20 +644,21 @@ parse_literal(const char* p, Literal)
                 return data_.fail(cs.begin(), error::syntax, &loc);
             }
 
+            cs += sz;
             BOOST_IF_CONSTEXPR( Literal::value == L::null )
             {
                 if(BOOST_JSON_UNLIKELY( !h_.on_null(data_.ec) ))
-                    return data_.fail(cs.begin());
+                    return data_.suspend(cs.begin(), state::lit_stop1);
             }
             else BOOST_IF_CONSTEXPR( Literal::value == L::true_ )
             {
                 if(BOOST_JSON_UNLIKELY( !h_.on_bool(true, data_.ec) ))
-                    return data_.fail(cs.begin());
+                    return data_.suspend(cs.begin(), state::lit_stop1);
             }
             else BOOST_IF_CONSTEXPR( Literal::value == L::false_ )
             {
                 if(BOOST_JSON_UNLIKELY( !h_.on_bool(false, data_.ec) ))
-                    return data_.fail(cs.begin());
+                    return data_.suspend(cs.begin(), state::lit_stop1);
             }
             else BOOST_IF_CONSTEXPR( Literal::value == L::infinity )
             {
@@ -642,7 +667,7 @@ parse_literal(const char* p, Literal)
                         std::numeric_limits<double>::infinity(),
                         string_view(literal, sz),
                         data_.ec)))
-                    return data_.fail(cs.begin());
+                    return data_.suspend(cs.begin(), state::lit_stop1);
             }
             else BOOST_IF_CONSTEXPR( Literal::value == L::neg_infinity )
             {
@@ -651,7 +676,7 @@ parse_literal(const char* p, Literal)
                         -std::numeric_limits<double>::infinity(),
                         string_view(literal, sz),
                         data_.ec)))
-                    return data_.fail(cs.begin());
+                    return data_.suspend(cs.begin(), state::lit_stop1);
             }
             else BOOST_IF_CONSTEXPR( Literal::value == L::nan )
             {
@@ -660,28 +685,18 @@ parse_literal(const char* p, Literal)
                         std::numeric_limits<double>::quiet_NaN(),
                         string_view(literal, sz),
                         data_.ec)))
-                    return data_.fail(cs.begin());
+                    return data_.suspend(cs.begin(), state::lit_stop1);
             }
             else
             {
                 BOOST_JSON_UNREACHABLE();
             }
 
-            cs += sz;
             return cs.begin();
         }
 
         offset = 0;
         cur_lit = index;
-    }
-    else
-    {
-        state st;
-        data_.st.pop(st);
-        BOOST_ASSERT( st == state::lit1 );
-
-        cur_lit = cur_lit_;
-        offset = lit_offset_;
     }
 
     std::size_t const lit_size = detail::literal_sizes[cur_lit];
@@ -705,19 +720,20 @@ parse_literal(const char* p, Literal)
         return data_.maybe_suspend(cs.begin() + size, state::lit1);
     }
 
+    cs += size;
     switch( static_cast<L>(cur_lit) )
     {
     case L::null:
         if(BOOST_JSON_UNLIKELY( !h_.on_null(data_.ec) ))
-            return data_.fail(cs.begin());
+            return data_.suspend(cs.begin(), state::lit_stop1);
         break;
     case L::true_:
         if(BOOST_JSON_UNLIKELY( !h_.on_bool(true, data_.ec) ))
-            return data_.fail(cs.begin());
+            return data_.suspend(cs.begin(), state::lit_stop1);
         break;
     case L::false_:
         if(BOOST_JSON_UNLIKELY( !h_.on_bool(false, data_.ec) ))
-            return data_.fail(cs.begin());
+            return data_.suspend(cs.begin(), state::lit_stop1);
         break;
     case L::infinity:
         if(BOOST_JSON_UNLIKELY(
@@ -727,7 +743,7 @@ parse_literal(const char* p, Literal)
                     detail::literal_strings[ literal_index(L::infinity) ],
                     detail::literal_sizes[ literal_index(L::infinity) ]),
                 data_.ec)))
-            return data_.fail(cs.begin());
+            return data_.suspend(cs.begin(), state::lit_stop1);
         break;
     case L::neg_infinity:
         if(BOOST_JSON_UNLIKELY(
@@ -737,7 +753,7 @@ parse_literal(const char* p, Literal)
                     detail::literal_strings[ literal_index(L::neg_infinity) ],
                     detail::literal_sizes[ literal_index(L::neg_infinity) ]),
                 data_.ec)))
-            return data_.fail(cs.begin());
+            return data_.suspend(cs.begin(), state::lit_stop1);
         break;
     case L::nan:
         if(BOOST_JSON_UNLIKELY(
@@ -747,12 +763,11 @@ parse_literal(const char* p, Literal)
                     detail::literal_strings[ literal_index(L::nan) ],
                     detail::literal_sizes[ literal_index(L::nan) ]),
                 data_.ec)))
-            return data_.fail(cs.begin());
+            return data_.suspend(cs.begin(), state::lit_stop1);
         break;
     default: BOOST_JSON_UNREACHABLE();
     }
 
-    cs += size;
     return cs.begin();
 }
 
@@ -782,6 +797,10 @@ parse_string(const char* p,
         default: BOOST_JSON_UNREACHABLE();
         case state::str2: goto do_str2;
         case state::str8: goto do_str8;
+        case state::str_stop1: goto do_str_stop1;
+        case state::str_stop2: goto do_str_stop2;
+        case state::str_stop3: goto do_str_stop3;
+        case state::str_stop4: goto do_str_stop4;
         case state::str1: break;
         }
     }
@@ -832,9 +851,10 @@ do_str1:
                     h_.on_string_part( {start, size}, total, data_.ec );
 
                 if(BOOST_JSON_UNLIKELY(!r))
-                    return data_.fail(cs.begin());
+                    return data_.suspend(cs.begin(), state::str_stop1, total);
             }
         }
+do_str_stop1:
         return data_.maybe_suspend(cs.begin(), state::str1, total);
     }
     // at this point all valid characters have been skipped, so any remaining
@@ -858,8 +878,9 @@ do_str1:
                     h_.on_key_part( {start, size}, total, data_.ec ):
                     h_.on_string_part( {start, size}, total, data_.ec );
                 if(BOOST_JSON_UNLIKELY( !r ))
-                    return data_.fail( cs.begin() );
+                    return data_.suspend(cs.begin(), state::str_stop2, total);
             }
+do_str_stop2:
             return data_.maybe_suspend(cs.end(), state::str8, total);
         }
         else if(BOOST_JSON_LIKELY(*cs == '\\'))
@@ -871,12 +892,13 @@ do_str1:
                     h_.on_key_part( {start, size}, total, data_.ec ):
                     h_.on_string_part( {start, size}, total, data_.ec );
                 if(BOOST_JSON_UNLIKELY( !r ))
-                    return data_.fail( cs.begin() );
+                    return data_.suspend(cs.begin(), state::str_stop3, total);
             }
+do_str_stop3:
 do_str2:
             cs = parse_escaped(cs.begin(), total, stack_empty, is_key, allow_bad_utf16);
             if(BOOST_JSON_UNLIKELY( incomplete(cs) ))
-                return data_.continue_finish(state::str2, total);
+                return data_.continue_stop(state::str2, total);
 
             goto do_str1;
         }
@@ -891,9 +913,10 @@ do_str2:
             h_.on_string( {start, size}, total, data_.ec );
 
         if(BOOST_JSON_UNLIKELY(!r))
-            return data_.fail(cs.begin());
+            return data_.suspend(cs.begin(), state::str_stop4, total);
     }
 
+do_str_stop4:
     ++cs;
     return cs.begin();
 
@@ -906,14 +929,15 @@ do_str8:
         BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         return data_.fail(cs.begin(), error::syntax, &loc);
     }
+
+    cs += needed;
     {
         bool const r = is_key?
             h_.on_key_part( {seq_.data(), seq_.length()}, total, data_.ec ):
             h_.on_string_part( {seq_.data(), seq_.length()}, total, data_.ec );
         if(BOOST_JSON_UNLIKELY( !r ))
-            return data_.fail( cs.begin() );
+            return data_.suspend(cs.begin(), state::str1, total);
     }
-    cs += needed;
     goto do_str1;
 }
 
@@ -976,6 +1000,9 @@ parse_escaped(
         case state::sur4: goto do_sur4;
         case state::sur5: goto do_sur5;
         case state::sur6: goto do_sur6;
+        case state::esc_stop1: goto do_esc_stop1;
+        case state::esc_stop2: goto do_esc_stop2;
+        case state::esc_stop3: goto do_esc_stop3;
         }
     }
 
@@ -1004,8 +1031,9 @@ do_str3:
                         : h_.on_string_part(temp.get(), total, data_.ec);
 
                     if(BOOST_JSON_UNLIKELY(!r))
-                        return data_.fail(cs.begin());
+                        return data_.suspend(cs.begin(), state::esc_stop1);
                 }
+do_esc_stop1:
                 temp.clear();
             }
             cs.clip(temp.max_size());
@@ -1250,8 +1278,9 @@ do_str3:
                         : h_.on_string_part(temp.get(), total, data_.ec);
 
                     if(BOOST_JSON_UNLIKELY(!r))
-                        return data_.fail(cs.begin());
+                        return data_.suspend(cs.begin(), state::esc_stop2);
                 }
+do_esc_stop2:
                 temp.clear();
                 cs.clip(temp.max_size());
             }
@@ -1483,9 +1512,10 @@ do_str3:
             ? h_.on_key_part(temp.get(), total, data_.ec)
             : h_.on_string_part(temp.get(), total, data_.ec);
         if(BOOST_JSON_UNLIKELY( !r ))
-            return data_.fail( cs.begin() );
+            return data_.suspend(cs.begin(), state::esc_stop3);
     }
 
+do_esc_stop3:
     return cs.begin();
 }
 
@@ -1528,6 +1558,8 @@ parse_object(const char* p,
         case state::obj9: goto do_obj9;
         case state::obj10: goto do_obj10;
         case state::obj11: goto do_obj11;
+        case state::obj_stop1: goto do_obj_stop1;
+        case state::obj_stop2: goto do_obj_stop2;
         }
     }
     BOOST_ASSERT(*cs == '{');
@@ -1539,7 +1571,8 @@ parse_object(const char* p,
     }
     --data_.depth_left;
     if(BOOST_JSON_UNLIKELY( !h_.on_object_begin(data_.ec) ))
-        return data_.fail(cs.begin());
+        return data_.suspend(cs.begin(), state::obj_stop1, size);
+do_obj_stop1:
     ++cs;
     // object:
     //     '{' *ws '}'
@@ -1557,7 +1590,7 @@ do_obj1:
 do_obj2:
                 cs = parse_comment(cs.begin(), stack_empty, std::false_type());
                 if(BOOST_JSON_UNLIKELY(incomplete(cs)))
-                    return data_.continue_finish(state::obj2, size);
+                    return data_.continue_stop(state::obj2, size);
                 goto do_obj1;
             }
             BOOST_STATIC_CONSTEXPR source_location loc
@@ -1575,7 +1608,7 @@ loop:
 do_obj3:
         cs = parse_string(cs.begin(), stack_empty, std::true_type(), allow_bad_utf8, allow_bad_utf16);
         if(BOOST_JSON_UNLIKELY(incomplete(cs)))
-            return data_.continue_finish(state::obj3, size);
+            return data_.continue_stop(state::obj3, size);
 do_obj4:
         cs = detail::count_whitespace(cs.begin(), cs.end());
         if(BOOST_JSON_UNLIKELY(! cs))
@@ -1587,7 +1620,7 @@ do_obj4:
 do_obj5:
                 cs = parse_comment(cs.begin(), stack_empty, std::false_type());
                 if(BOOST_JSON_UNLIKELY(incomplete(cs)))
-                    return data_.continue_finish(state::obj5, size);
+                    return data_.continue_stop(state::obj5, size);
                 goto do_obj4;
             }
             BOOST_STATIC_CONSTEXPR source_location loc
@@ -1602,7 +1635,7 @@ do_obj6:
 do_obj7:
         cs = parse_value(cs.begin(), stack_empty, allow_comments, allow_trailing, allow_bad_utf8, allow_bad_utf16);
         if(BOOST_JSON_UNLIKELY(incomplete(cs)))
-            return data_.continue_finish(state::obj7, size);
+            return data_.continue_stop(state::obj7, size);
 do_obj8:
         cs = detail::count_whitespace(cs.begin(), cs.end());
         if(BOOST_JSON_UNLIKELY(! cs))
@@ -1625,7 +1658,7 @@ do_obj9:
 do_obj10:
                     cs = parse_comment(cs.begin(), stack_empty, std::false_type());
                     if(BOOST_JSON_UNLIKELY(incomplete(cs)))
-                        return data_.continue_finish(state::obj10, size);
+                        return data_.continue_stop(state::obj10, size);
                     goto do_obj9;
                 }
                 BOOST_STATIC_CONSTEXPR source_location loc
@@ -1640,7 +1673,7 @@ do_obj10:
 do_obj11:
                 cs = parse_comment(cs.begin(), stack_empty, std::false_type());
                 if(BOOST_JSON_UNLIKELY(incomplete(cs)))
-                    return data_.continue_finish(state::obj11, size);
+                    return data_.continue_stop(state::obj11, size);
                 goto do_obj8;
             }
             BOOST_STATIC_CONSTEXPR source_location loc
@@ -1650,7 +1683,8 @@ do_obj11:
         // got closing brace, fall through
     }
     if(BOOST_JSON_UNLIKELY( !h_.on_object_end(size, data_.ec) ))
-        return data_.fail(cs.begin());
+        return data_.suspend(cs.begin(), state::obj_stop2, size);
+do_obj_stop2:
     ++data_.depth_left;
     ++cs;
     return cs.begin();
@@ -1690,6 +1724,8 @@ parse_array(const char* p,
         case state::arr4: goto do_arr4;
         case state::arr5: goto do_arr5;
         case state::arr6: goto do_arr6;
+        case state::arr_stop1: goto do_arr_stop1;
+        case state::arr_stop2: goto do_arr_stop2;
         }
     }
     BOOST_ASSERT(*cs == '[');
@@ -1701,7 +1737,8 @@ parse_array(const char* p,
     }
     --data_.depth_left;
     if(BOOST_JSON_UNLIKELY( !h_.on_array_begin(data_.ec) ))
-        return data_.fail(cs.begin());
+        return data_.suspend(cs.begin(), state::arr_stop1, size);
+do_arr_stop1:
     ++cs;
     // array:
     //     '[' *ws ']'
@@ -1718,7 +1755,7 @@ loop:
 do_arr2:
             cs = parse_comment(cs.begin(), stack_empty, std::false_type());
             if(BOOST_JSON_UNLIKELY(incomplete(cs)))
-                return data_.continue_finish(state::arr2, size);
+                return data_.continue_stop(state::arr2, size);
             goto do_arr1;
         }
         if(BOOST_JSON_UNLIKELY(++size >
@@ -1732,7 +1769,7 @@ do_arr3:
         // array is not empty, value required
         cs = parse_value(cs.begin(), stack_empty, allow_comments, allow_trailing, allow_bad_utf8, allow_bad_utf16);
         if(BOOST_JSON_UNLIKELY(incomplete(cs)))
-            return data_.continue_finish(state::arr3, size);
+            return data_.continue_stop(state::arr3, size);
 do_arr4:
         cs = detail::count_whitespace(cs.begin(), cs.end());
         if(BOOST_JSON_UNLIKELY(! cs))
@@ -1755,7 +1792,7 @@ do_arr5:
 do_arr6:
                 cs = parse_comment(cs.begin(), stack_empty, std::false_type());
                 if(BOOST_JSON_UNLIKELY(incomplete(cs)))
-                    return data_.continue_finish(state::arr6, size);
+                    return data_.continue_stop(state::arr6, size);
                 goto do_arr4;
             }
             BOOST_STATIC_CONSTEXPR source_location loc
@@ -1765,7 +1802,8 @@ do_arr6:
         // got closing bracket; fall through
     }
     if(BOOST_JSON_UNLIKELY( !h_.on_array_end(size, data_.ec) ))
-        return data_.fail(cs.begin());
+        return data_.suspend(cs.begin(), state::arr_stop2, size);
+do_arr_stop2:
     ++data_.depth_left;
     ++cs;
     return cs.begin();
@@ -1943,6 +1981,19 @@ parse_number(const char* p,
         case state::exp1: goto do_exp1;
         case state::exp2: goto do_exp2;
         case state::exp3: goto do_exp3;
+        case state::num_stop1: goto do_num_stop1;
+        case state::num_stop2: goto do_num_stop2;
+        case state::num_stop3: goto do_num_stop3;
+        case state::num_stop4: goto do_num_stop4;
+        case state::num_stop5: goto do_num_stop5;
+        case state::num_stop6: goto do_num_stop6;
+        case state::num_stop7: goto do_num_stop7;
+        case state::num_stop8: goto do_num_stop8;
+        case state::num_stop9: goto do_num_stop9;
+        case state::num_stop10: goto do_num_stop10;
+        case state::num_stop11: goto do_num_stop11;
+        case state::num_stop12: goto do_num_stop12;
+        case state::num_stop13: goto do_num_stop13;
         }
     }
 
@@ -1994,8 +2045,9 @@ do_num1:
     {
         if(BOOST_JSON_UNLIKELY(
                 !h_.on_number_part({begin, cs.used(begin)}, data_.ec) ))
-            return data_.fail(cs.begin());
+            return data_.suspend(cs.begin(), state::num_stop1, num);
 
+do_num_stop1:
         BOOST_IF_CONSTEXPR( precise_parsing )
             num_buf_.append( begin, cs.used(begin) );
         return data_.maybe_suspend(cs.begin(), state::num1, num);
@@ -2018,8 +2070,9 @@ do_num2:
                     if(BOOST_JSON_UNLIKELY(
                         !h_.on_number_part(
                             {begin, cs.used(begin)}, data_.ec)))
-                        return data_.fail(cs.begin());
+                        return data_.suspend(cs.begin(), state::num_stop2, num);
 
+do_num_stop2:
                     BOOST_IF_CONSTEXPR( precise_parsing )
                         num_buf_.append( begin, cs.used(begin) );
                     return data_.suspend(cs.begin(), state::num2, num);
@@ -2053,8 +2106,9 @@ do_num2:
                     if(BOOST_JSON_UNLIKELY(
                         ! h_.on_number_part(
                             {begin, cs.used(begin)}, data_.ec)))
-                        return data_.fail(cs.begin());
+                        return data_.suspend(cs.begin(), state::num_stop3, num);
 
+do_num_stop3:
                     BOOST_IF_CONSTEXPR( precise_parsing )
                         num_buf_.append( begin, cs.used(begin) );
                     return data_.suspend(cs.begin(), state::num2, num);
@@ -2096,8 +2150,9 @@ do_num3:
                 if(BOOST_JSON_UNLIKELY(
                     ! h_.on_number_part(
                         {begin, cs.used(begin)}, data_.ec)))
-                    return data_.fail(cs.begin());
+                    return data_.suspend(cs.begin(), state::num_stop4, num);
 
+do_num_stop4:
                 BOOST_IF_CONSTEXPR( precise_parsing )
                     num_buf_.append( begin, cs.used(begin) );
                 return data_.suspend(cs.begin(), state::num3, num);
@@ -2146,7 +2201,9 @@ do_num4:
         {
             if(BOOST_JSON_UNLIKELY(
                     !h_.on_number_part({begin, cs.used(begin)}, data_.ec) ))
-                return data_.fail(cs.begin());
+                return data_.suspend(cs.begin(), state::num_stop5, num);
+
+do_num_stop5:
 
             BOOST_IF_CONSTEXPR( precise_parsing )
                 num_buf_.append( begin, cs.used(begin) );
@@ -2184,8 +2241,9 @@ do_num5:
                 if(BOOST_JSON_UNLIKELY(
                     !h_.on_number_part(
                         {begin, cs.used(begin)}, data_.ec) ))
-                    return data_.fail(cs.begin());
+                    return data_.suspend(cs.begin(), state::num_stop6, num);
 
+do_num_stop6:
                 BOOST_IF_CONSTEXPR( precise_parsing )
                     num_buf_.append( begin, cs.used(begin) );
                 return data_.suspend(cs.begin(), state::num5, num);
@@ -2222,8 +2280,9 @@ do_num6:
                 if(BOOST_JSON_UNLIKELY(
                     !h_.on_number_part(
                         {begin, cs.used(begin)}, data_.ec) ))
-                    return data_.fail(cs.begin());
+                    return data_.suspend(cs.begin(), state::num_stop7, num);
 
+do_num_stop7:
                 BOOST_IF_CONSTEXPR( precise_parsing )
                     num_buf_.append( begin, cs.used(begin) );
                 return data_.suspend(cs.begin(), state::num6, num);
@@ -2262,8 +2321,9 @@ do_num7:
                 if(BOOST_JSON_UNLIKELY(
                     !h_.on_number_part(
                         {begin, cs.used(begin)}, data_.ec) ))
-                    return data_.fail(cs.begin());
+                    return data_.suspend(cs.begin(), state::num_stop8, num);
 
+do_num_stop8:
                 BOOST_IF_CONSTEXPR( precise_parsing )
                     num_buf_.append( begin, cs.used(begin) );
                 return data_.suspend(cs.begin(), state::num7, num);
@@ -2300,8 +2360,9 @@ do_num8:
                 if(BOOST_JSON_UNLIKELY(
                     !h_.on_number_part(
                         {begin, cs.used(begin)}, data_.ec) ))
-                    return data_.fail(cs.begin());
+                    return data_.suspend(cs.begin(), state::num_stop9, num);
 
+do_num_stop9:
                 BOOST_IF_CONSTEXPR( precise_parsing )
                     num_buf_.append( begin, cs.used(begin) );
                 return data_.suspend(cs.begin(), state::num8, num);
@@ -2352,8 +2413,9 @@ do_exp1:
         if(BOOST_JSON_UNLIKELY(
             !h_.on_number_part(
                 {begin, cs.used(begin)}, data_.ec)))
-            return data_.fail(cs.begin());
+            return data_.suspend(cs.begin(), state::num_stop10, num);
 
+do_num_stop10:
         BOOST_IF_CONSTEXPR( precise_parsing )
             num_buf_.append( begin, cs.used(begin) );
         return data_.maybe_suspend(cs.begin(), state::exp1, num);
@@ -2382,8 +2444,9 @@ do_exp2:
                 if(BOOST_JSON_UNLIKELY(
                     !h_.on_number_part(
                         {begin, cs.used(begin)}, data_.ec) ))
-                    return data_.fail(cs.begin());
+                    return data_.suspend(cs.begin(), state::num_stop11, num);
 
+do_num_stop11:
                 BOOST_IF_CONSTEXPR( precise_parsing )
                     num_buf_.append( begin, cs.used(begin) );
                 return data_.suspend(cs.begin(), state::exp2, num);
@@ -2421,8 +2484,9 @@ do_exp3:
                 if(BOOST_JSON_UNLIKELY(
                     !h_.on_number_part(
                         {begin, cs.used(begin)}, data_.ec)))
-                    return data_.fail(cs.begin());
+                    return data_.suspend(cs.begin(), state::num_stop12, num);
 
+do_num_stop12:
                 BOOST_IF_CONSTEXPR( precise_parsing )
                     num_buf_.append( begin, cs.used(begin) );
                 return data_.suspend(cs.begin(), state::exp3, num);
@@ -2500,7 +2564,8 @@ finish_int:
                 static_cast<int64_t>(~num.mant + 1),
                 {begin, cs.used(begin)},
                 data_.ec)))
-            return data_.fail(cs.begin());
+            return data_.suspend(cs.begin(), state::num_stop13, num);
+do_num_stop13:
         return cs.begin();
     }
     if(num.mant <= INT64_MAX)
@@ -2511,12 +2576,12 @@ finish_signed:
                 static_cast<int64_t>(num.mant),
                 {begin, cs.used(begin)},
                 data_.ec)))
-            return data_.fail(cs.begin());
+            return data_.suspend(cs.begin(), state::num_stop13, num);
         return cs.begin();
     }
     if(BOOST_JSON_UNLIKELY(
             !h_.on_uint64(num.mant, {begin, cs.used(begin)}, data_.ec)))
-        return data_.fail(cs.begin());
+        return data_.suspend(cs.begin(), state::num_stop13, num);
     return cs.begin();
 finish_dub:
     double d;
@@ -2550,7 +2615,7 @@ finish_dub:
             num.neg);
     if(BOOST_JSON_UNLIKELY(
             !h_.on_double(d, {begin, size}, data_.ec)))
-        return data_.fail(cs.begin());
+        return data_.suspend(cs.begin(), state::num_stop13, num);
     return cs.begin();
 }
 
@@ -2631,20 +2696,29 @@ write_some(
     data_.more = more;
     data_.end = data + size;
     const char* p;
-    if(BOOST_JSON_LIKELY(data_.st.empty()))
+    if(BOOST_JSON_LIKELY( data_.st.empty() ))
     {
         // first time
         data_.depth_left = data_.opt.max_depth;
         if(BOOST_JSON_UNLIKELY( !h_.on_document_begin(data_.ec) ))
         {
-            ec = data_.ec;
-            return 0;
+            p = data;
+            data_.suspend(p, state::doc_stop1);
+            goto before_return;
         }
         p = parse_document(data, std::true_type());
     }
     else
     {
-        p = parse_document(data, std::false_type());
+        state st;
+        data_.st.peek(st);
+        if(BOOST_JSON_UNLIKELY( st == state::doc_stop1 ))
+        {
+            data_.st.pop(st);
+            p = parse_document(data, std::true_type());
+        }
+        else
+            p = parse_document(data, std::false_type());
     }
 
     if(BOOST_JSON_LIKELY( p != data_.sentinel() ))
@@ -2680,6 +2754,7 @@ write_some(
         }
         p = data_.end;
     }
+before_return:
     ec = data_.ec;
     clean_ = true;
     return p - data;

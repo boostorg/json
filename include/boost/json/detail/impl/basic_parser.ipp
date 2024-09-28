@@ -40,7 +40,15 @@ parser_data::reserve()
 // They return the canary value to indicate suspension
 // or failure.
 char const*
-parser_data::continue_finish(parser_state s)
+parser_data::stop(char const* p) noexcept
+{
+    BOOST_ASSERT( p != sentinel() );
+    end = p;
+    return sentinel();
+}
+
+char const*
+parser_data::continue_stop(parser_state s)
 {
     if(BOOST_JSON_LIKELY( !ec && more ))
     {
@@ -52,7 +60,7 @@ parser_data::continue_finish(parser_state s)
 }
 
 char const*
-parser_data::continue_finish(parser_state s, std::size_t n)
+parser_data::continue_stop(parser_state s, std::size_t n)
 {
     if(BOOST_JSON_LIKELY( !ec && more ))
     {
@@ -64,34 +72,23 @@ parser_data::continue_finish(parser_state s, std::size_t n)
     return sentinel();
 }
 
-
-char const*
-parser_data::fail(char const* p) noexcept
-{
-    BOOST_ASSERT( p != sentinel() );
-    end = p;
-    return sentinel();
-}
-
 char const*
 parser_data::fail(char const* p, error ev, source_location const* loc) noexcept
 {
     ec.assign(ev, loc);
-    return fail(p);
+    return stop(p);
 }
 
 char const*
 parser_data::maybe_suspend(char const* p, parser_state s)
 {
-    if( p != sentinel() )
-        end = p;
     if(BOOST_JSON_LIKELY(more))
     {
         // suspend
         reserve();
         st.push_unchecked(s);
     }
-    return sentinel();
+    return stop(p);
 }
 
 char const*
@@ -104,7 +101,7 @@ parser_data::maybe_suspend(char const* p, parser_state s, std::size_t n)
         st.push_unchecked(n);
         st.push_unchecked(s);
     }
-    return fail(p);
+    return stop(p);
 }
 
 char const*
@@ -112,7 +109,7 @@ parser_data::maybe_suspend(char const* p, parser_state s, number const& num)
 {
     if(BOOST_JSON_LIKELY(more))
         return suspend(p, s, num);
-    return fail(p);
+    return stop(p);
 }
 
 char const*
@@ -120,7 +117,16 @@ parser_data::suspend(char const* p, parser_state s)
 {
     reserve();
     st.push_unchecked(s);
-    return fail(p);
+    return stop(p);
+}
+
+char const*
+parser_data::suspend(char const* p, parser_state s, std::size_t n)
+{
+    reserve();
+    st.push_unchecked(n);
+    st.push_unchecked(s);
+    return stop(p);
 }
 
 char const*
