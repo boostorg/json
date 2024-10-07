@@ -72,7 +72,6 @@ private:
     BOOST_DESCRIBE_CLASS(Z, (X), (), (), (d))
 };
 
-
 BOOST_DEFINE_ENUM_CLASS(E, x, y, z)
 
 namespace boost {
@@ -287,6 +286,8 @@ public:
             error::not_array, {1, 2, 3} );
         testParseIntoErrors< std::array<int, 4> >(
             error::size_mismatch, {1, 2, 3} );
+        testParseIntoErrors< std::array<int, 4> >(
+            error::size_mismatch, {1, 2, 3, 4, 5, 6, 7, 8} );
 
         testParseInto< std::vector<std::array<int, 4>> >( {arr,arr,arr} );
 

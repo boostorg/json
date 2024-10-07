@@ -158,11 +158,10 @@ public:
 # pragma GCC diagnostic pop
 #endif
 
-    bool signal_end(system::error_code&)
+    bool signal_end(system::error_code& ec)
     {
         inner_active_ = false;
-        parent_->signal_value();
-        return true;
+        return parent_->signal_value(ec);
     }
 
 #define BOOST_JSON_INVOKE_INNER(f) \
@@ -285,7 +284,7 @@ public:
         return true;
     }
 
-    bool on_int64( system::error_code& ec, std::int64_t v )
+    bool on_int64(system::error_code& ec, std::int64_t v)
     {
         if( !integral_in_range<V>( v ) )
         {
@@ -294,23 +293,19 @@ public:
         }
 
         *value_ = static_cast<V>( v );
-
-        this->parent_->signal_value();
-        return true;
+        return this->parent_->signal_value(ec);
     }
 
-    bool on_uint64( system::error_code& ec, std::uint64_t v )
+    bool on_uint64(system::error_code& ec, std::uint64_t v)
     {
-        if( !integral_in_range<V>( v ) )
+        if( !integral_in_range<V>(v) )
         {
             BOOST_JSON_FAIL( ec, error::not_exact );
             return false;
         }
 
-        *value_ = static_cast<V>( v );
-
-        this->parent_->signal_value();
-        return true;
+        *value_ = static_cast<V>(v);
+        return this->parent_->signal_value(ec);
     }
 };
 
@@ -333,28 +328,22 @@ public:
         return true;
     }
 
-    bool on_int64( system::error_code&, std::int64_t v )
+    bool on_int64(system::error_code& ec, std::int64_t v)
     {
-        *value_ = static_cast<V>( v );
-
-        this->parent_->signal_value();
-        return true;
+        *value_ = static_cast<V>(v);
+        return this->parent_->signal_value(ec);
     }
 
-    bool on_uint64( system::error_code&, std::uint64_t v )
+    bool on_uint64(system::error_code& ec, std::uint64_t v)
     {
-        *value_ = static_cast<V>( v );
-
-        this->parent_->signal_value();
-        return true;
+        *value_ = static_cast<V>(v);
+        return this->parent_->signal_value(ec);
     }
 
-    bool on_double( system::error_code&, double v )
+    bool on_double(system::error_code& ec, double v)
     {
-        *value_ = static_cast<V>( v );
-
-        this->parent_->signal_value();
-        return true;
+        *value_ = static_cast<V>(v);
+        return this->parent_->signal_value(ec);
     }
 };
 
@@ -385,7 +374,7 @@ public:
         return true;
     }
 
-    bool on_string( system::error_code&, string_view sv )
+    bool on_string(system::error_code& ec, string_view sv)
     {
         if( !cleared_ )
             value_->clear();
@@ -393,9 +382,7 @@ public:
             cleared_ = false;
 
         value_->append( sv.begin(), sv.end() );
-
-        this->parent_->signal_value();
-        return true;
+        return this->parent_->signal_value(ec);
     }
 };
 
@@ -413,12 +400,10 @@ public:
         , value_(v)
     {}
 
-    bool on_bool( system::error_code&, bool v )
+    bool on_bool(system::error_code& ec, bool v)
     {
         *value_ = v;
-
-        this->parent_->signal_value();
-        return true;
+        return this->parent_->signal_value(ec);
     }
 };
 
@@ -436,12 +421,10 @@ public:
         , value_(v)
     {}
 
-    bool on_null( system::error_code& )
+    bool on_null(system::error_code& ec)
     {
         *value_ = {};
-
-        this->parent_->signal_value();
-        return true;
+        return this->parent_->signal_value(ec);
     }
 };
 
@@ -473,7 +456,7 @@ public:
         return true;
     }
 
-    bool on_string( system::error_code& ec, string_view sv )
+    bool on_string(system::error_code& ec, string_view sv)
     {
         string_view name = sv;
         if( !name_.empty() )
@@ -488,8 +471,7 @@ public:
             return false;
         }
 
-        this->parent_->signal_value();
-        return true;
+        return this->parent_->signal_value(ec);
     }
 
 #endif // BOOST_DESCRIBE_CXX14
@@ -503,13 +485,25 @@ class converting_handler<no_conversion_tag, V, P>
 
 // sequence handler
 template< class It >
-bool check_inserter( It l, It r )
+bool cannot_insert(It i, It e)
 {
-    return l == r;
+    return i == e;
 }
 
 template< class It1, class It2 >
-std::true_type check_inserter( It1, It2 )
+std::false_type cannot_insert(It1, It2)
+{
+    return {};
+}
+
+template< class It >
+bool needs_more_elements(It i, It e)
+{
+    return i != e;
+}
+
+template< class It1, class It2 >
+std::false_type needs_more_elements(It1, It2)
 {
     return {};
 }
@@ -562,8 +556,14 @@ public:
         , inserter( detail::inserter(*value_, inserter_implementation<V>()) )
     {}
 
-    void signal_value()
+    bool signal_value(system::error_code& ec)
     {
+        if(cannot_insert( inserter, value_->end() ))
+        {
+            BOOST_JSON_FAIL( ec, error::size_mismatch );
+            return false;
+        }
+
         *inserter++ = std::move(this->next_value_);
 #if defined(__GNUC__) && __GNUC__ < 5 && !defined(__clang__)
 # pragma GCC diagnostic push
@@ -573,11 +573,12 @@ public:
 #if defined(__GNUC__) && __GNUC__ < 5 && !defined(__clang__)
 # pragma GCC diagnostic pop
 #endif
+        return true;
     }
 
     bool signal_end(system::error_code& ec)
     {
-        if( !check_inserter( inserter, value_->end() ) )
+        if(needs_more_elements( inserter, value_->end() ))
         {
             BOOST_JSON_FAIL( ec, error::size_mismatch );
             return false;
@@ -625,7 +626,7 @@ public:
         : converting_handler::composite_handler(p), value_(v)
     {}
 
-    void signal_value()
+    bool signal_value(system::error_code&)
     {
         value_->emplace( std::move(key_), std::move(this->next_value_) );
 
@@ -633,6 +634,8 @@ public:
         this->next_value_ = {};
 
         this->inner_active_ = false;
+
+        return true;
     }
 
     bool on_object_begin( system::error_code& ec )
@@ -644,13 +647,12 @@ public:
         return true;
     }
 
-    bool on_object_end( system::error_code& ec )
+    bool on_object_end(system::error_code& ec)
     {
         if( this->inner_active_ )
             return this->inner_.on_object_end(ec);
 
-        this->parent_->signal_value();
-        return true;
+        return this->parent_->signal_value(ec);
     }
 
     bool on_array_end( system::error_code& ec )
@@ -815,9 +817,10 @@ public:
         : value_(v) , parent_(p) , handlers_(tuple_accessor(), v, this)
     {}
 
-    void signal_value()
+    bool signal_value(system::error_code&)
     {
         ++inner_active_;
+        return true;
     }
 
     bool signal_end(system::error_code& ec)
@@ -830,8 +833,7 @@ public:
         }
 
         inner_active_ = -1;
-        parent_->signal_value();
-        return true;
+        return parent_->signal_value(ec);
     }
 
 #define BOOST_JSON_HANDLE_EVENT(fn) \
@@ -1027,7 +1029,8 @@ public:
             return !is_optional_like<T>::value;
         }
     };
-    void signal_value()
+
+    bool signal_value(system::error_code&)
     {
         BOOST_ASSERT( inner_active_ >= 0 );
         bool required_member = mp11::mp_with_index< mp11::mp_size<Dm> >(
@@ -1038,14 +1041,14 @@ public:
 
         key_ = {};
         inner_active_ = -1;
+        return true;
     }
 
-    bool signal_end(system::error_code&)
+    bool signal_end(system::error_code& ec)
     {
         key_ = {};
         inner_active_ = -1;
-        parent_->signal_value();
-        return true;
+        return parent_->signal_value(ec);
     }
 
 #define BOOST_JSON_INVOKE_INNER(fn) \
@@ -1082,8 +1085,7 @@ public:
                 return false;
             }
 
-            parent_->signal_value();
-            return true;
+            return parent_->signal_value(ec);
         }
 
         BOOST_JSON_INVOKE_INNER( on_object_end(ec) );
@@ -1356,12 +1358,12 @@ public:
         , parent_( p )
     {}
 
-    void signal_value()
+    bool signal_value(system::error_code& ec)
     {
         inner_.template emplace<0>();
         inner_active_ = -1;
         events_.clear();
-        parent_->signal_value();
+        return parent_->signal_value(ec);
     }
 
     bool signal_end(system::error_code& ec)
@@ -1552,12 +1554,12 @@ public:
         : value_(v), parent_(p), inner_(&inner_value_, this)
     {}
 
-    void signal_value()
+    bool signal_value(system::error_code& ec)
     {
         *value_ = std::move(inner_value_);
 
         inner_active_ = false;
-        parent_->signal_value();
+        return parent_->signal_value(ec);
     }
 
     bool signal_end(system::error_code& ec)
@@ -1638,14 +1640,12 @@ public:
         BOOST_JSON_INVOKE_INNER( on_bool(ec, v) );
     }
 
-    bool on_null( system::error_code& ec )
+    bool on_null(system::error_code& ec)
     {
         if( !inner_active_ )
         {
             *value_ = {};
-
-            this->parent_->signal_value();
-            return true;
+            return this->parent_->signal_value(ec);
         }
         else
         {
@@ -1683,7 +1683,7 @@ public:
         return true;
     }
 
-    bool on_string( system::error_code&, string_view sv )
+    bool on_string(system::error_code& ec, string_view sv)
     {
         if( !cleared_ )
             value_->clear();
@@ -1692,8 +1692,7 @@ public:
 
         value_->concat( sv.begin(), sv.end() );
 
-        this->parent_->signal_value();
-        return true;
+        return this->parent_->signal_value(ec);
     }
 };
 
@@ -1726,8 +1725,9 @@ public:
     {
     }
 
-    void signal_value()
+    bool signal_value(system::error_code&)
     {
+        return true;
     }
 
     bool signal_end(system::error_code&)
