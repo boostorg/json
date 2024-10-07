@@ -157,9 +157,17 @@ public:
 # pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #endif
         system::error_code ec;
-        T t{};
+        T t1{};
         std::string json = serialize(sample);
-        parser_for<T> p( parse_options{}, &t );
+
+        parse_into<T>(t1, json, ec);
+        BOOST_TEST( ec.failed() );
+        BOOST_TEST( ec.has_location() );
+        BOOST_TEST( ec == e );
+
+        T t2{};
+        ec = {};
+        parser_for<T> p( parse_options{}, &t2 );
         for( auto& c: json )
         {
             std::size_t const n = p.write_some( true, &c, 1, ec );
@@ -355,6 +363,8 @@ public:
             error::size_mismatch, {1, 2} );
         testParseIntoErrors< std::tuple<std::vector<int>>  >(
             error::size_mismatch, {{1,2}, {3,4}} );
+        testParseIntoErrors<std::map<std::string, std::tuple<int, int>>>(
+            error::size_mismatch, { {"tup", array()} });
     }
 
     void testStruct()

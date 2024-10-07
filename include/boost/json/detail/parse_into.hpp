@@ -829,7 +829,7 @@ public:
         if( inner_active_ < N )
         {
             BOOST_JSON_FAIL( ec, error::size_mismatch );
-            return true;
+            return false;
         }
 
         inner_active_ = -1;
