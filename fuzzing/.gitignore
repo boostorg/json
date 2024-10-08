@@ -6,6 +6,7 @@ corpus.tar
 fuzzer_basic_parser
 fuzzer_parse
 fuzzer_parser
+fuzzer_direct_parse
 out*/
 fuzz-*.log
 
