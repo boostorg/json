@@ -60,6 +60,7 @@ jobs:
         buildtype: 'boost'
         path: 'head'
         toolset: clang-18
+        cxxstd: 17
         targets: libs/json/fuzzing//run
     - name: Pack the corpus
       working-directory: boost-root/libs/json/fuzzing/

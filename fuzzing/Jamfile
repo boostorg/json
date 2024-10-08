@@ -59,8 +59,8 @@ explicit old-corpus ;
 local initial-corpus = [ glob-tree-ex ../test : *.json ] ;
 
 
-local variants = basic_parser parse parser ;
-for local variant in basic_parser parse parser
+local variants = basic_parser parse parser direct_parse ;
+for local variant in basic_parser parse parser direct_parse
 {
     local $(variant)-runs ;
     local fuzzer = fuzzer_$(variant) ;

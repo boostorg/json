@@ -44,7 +44,7 @@ JOBS=
 # set a timelimit (you may want to adjust this if you run locally)
 MAXTIME="-max_total_time=30"
 
-variants="basic_parser parse parser"
+variants="basic_parser parse parser direct_parse"
 
 for variant in $variants; do
 

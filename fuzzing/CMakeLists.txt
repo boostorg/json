@@ -11,6 +11,7 @@ source_group("" FILES
     fuzz_basic_parser.cpp
     fuzz_parse.cpp
     fuzz_parser.cpp
+    fuzz_direct_parse.cpp
 )
 
 # The fuzzers are built as libraries, to make
@@ -33,3 +34,6 @@ add_library(fuzzerlib_parser fuzz_parser.cpp)
 set_property(TARGET fuzzerlib_parser PROPERTY FOLDER "fuzzing")
 target_link_libraries(fuzzerlib_parser PRIVATE Boost::json)
 
+add_library(fuzzerlib_direct_parse fuzz_direct_parse.cpp)
+set_property(TARGET fuzzerlib_direct_parse PROPERTY FOLDER "fuzzing")
+target_link_libraries(fuzzerlib_direct_parse PRIVATE Boost::json)
