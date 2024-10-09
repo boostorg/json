@@ -81,7 +81,10 @@ file in your project.
 ```
 
 MSVC users must also define the macro `BOOST_JSON_NO_LIB` to disable
-auto-linking.
+auto-linking. Note, that if you also want to avoid linking to Boost.Container,
+which is a dependency of Boost.JSON, you have to define
+`BOOST_CONTAINER_NO_LIB`. In order to disable auto-linking to Boost libraries
+completely you can define `BOOST_ALL_NO_LIB` instead.
 
 ### Embedded
 
