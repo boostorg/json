@@ -317,14 +317,14 @@ using native_conversion_category = mp11::mp_cond<
     std::is_same<T, string>, string_conversion_tag>;
 
 // generic conversions
-template< class T >
+template< class T, class Ctx >
 using generic_conversion_category = mp11::mp_cond<
     std::is_same<T, bool>,     bool_conversion_tag,
     std::is_integral<T>,       integral_conversion_tag,
     std::is_floating_point<T>, floating_point_conversion_tag,
     is_null_like<T>,           null_like_conversion_tag,
     is_string_like<T>,         string_like_conversion_tag,
-    is_map_like<T>,            map_like_conversion_tag,
+    is_map_like<T, Ctx>,       map_like_conversion_tag,
     is_sequence_like<T>,       sequence_conversion_tag,
     is_tuple_like<T>,          tuple_conversion_tag,
     is_described_class<T>,     described_class_conversion_tag,
@@ -338,38 +338,57 @@ using generic_conversion_category = mp11::mp_cond<
 template< class T >
 using nested_type = typename T::type;
 template< class T1, class T2 >
-using conversion_category_impl_helper = mp11::mp_eval_if_not<
+using conversion_category_helper = mp11::mp_eval_if_not<
     std::is_same<detail::no_conversion_tag, T1>,
     T1,
     mp11::mp_eval_or_q, T1, mp11::mp_quote<nested_type>, T2>;
+
+template< class T, class Ctx, class Def = T >
+using representation_helper = mp11::mp_eval_or<Def, represent_as_t, T, Ctx>;
+
 template< class Ctx, class T, class Dir >
-struct conversion_category_impl
+struct conversion_attrs
 {
-    using type = mp11::mp_fold<
+    using representation = representation_helper<T, Ctx>;
+
+    using category = mp11::mp_fold<
         mp11::mp_list<
-            mp11::mp_defer<user_conversion_category, Ctx, T, Dir>,
-            mp11::mp_defer<native_conversion_category, T>,
-            mp11::mp_defer<generic_conversion_category, T>>,
+            mp11::mp_defer<user_conversion_category, Ctx, representation, Dir>,
+            mp11::mp_defer<native_conversion_category, representation>,
+            mp11::mp_defer<generic_conversion_category, representation, Ctx>>,
         no_conversion_tag,
-        conversion_category_impl_helper>;
+        conversion_category_helper>;
 };
-template< class Ctx, class T, class Dir >
-using conversion_category =
-    typename conversion_category_impl< Ctx, T, Dir >::type;
 
 template< class T >
 using any_conversion_tag = mp11::mp_not<
     std::is_same< T, no_conversion_tag > >;
 
+template< class Ctx, class T, class Dir >
+using conversion_category = typename conversion_attrs<Ctx, T, Dir>::category;
+
+template< class U >
+using is_not_void = mp11::mp_bool< !std::is_same<void, U>::value >;
+
 template< class T, class Dir, class... Ctxs >
-struct conversion_category_impl< std::tuple<Ctxs...>, T, Dir >
+struct conversion_attrs< std::tuple<Ctxs...>, T, Dir >
 {
+    using size = mp11::mp_size_t< sizeof...(Ctxs) >;
     using ctxs = mp11::mp_list< remove_cvref<Ctxs>... >;
-    using cats = mp11::mp_list<
-        conversion_category<remove_cvref<Ctxs>, T, Dir>... >;
 
     template< class I >
-    using exists = mp11::mp_less< I, mp11::mp_size<cats> >;
+    using exists = mp11::mp_less<I, size>;
+
+    using reps = mp11::mp_list<
+        representation_helper< T, remove_cvref<Ctxs>, void >... >;
+    using r_index = mp11::mp_find_if< reps, is_not_void >;
+    using representation = mp11::mp_eval_if<
+        mp11::mp_not<exists<r_index>>,
+        T,
+        mp11::mp_at, reps, r_index>;
+
+    using cats = mp11::mp_list<
+        conversion_category<remove_cvref<Ctxs>, representation, Dir>... >;
 
     using context2 = mp11::mp_find< cats, full_context_conversion_tag >;
     using context1 = mp11::mp_find< cats, context_conversion_tag >;
@@ -379,7 +398,7 @@ struct conversion_category_impl< std::tuple<Ctxs...>, T, Dir >
         exists<context1>, context1,
         exists<context0>, context0,
         mp11::mp_true, mp11::mp_find_if< cats, any_conversion_tag > >;
-    using type = mp11::mp_eval_or<
+    using category = mp11::mp_eval_or<
         no_conversion_tag,
         mp11::mp_at, cats, index >;
 };
@@ -459,10 +478,10 @@ template< class T, class Dir, class... Ctxs >
 struct supported_context< std::tuple<Ctxs...>, T, Dir >
 {
     using Ctx = std::tuple<Ctxs...>;
-    using impl = conversion_category_impl<Ctx, T, Dir>;
-    using index = typename impl::index;
+    using Attrs = conversion_attrs<Ctx, T, Dir>;
+    using index = typename Attrs::index;
     using next_supported = supported_context<
-        mp11::mp_at< typename impl::ctxs, index >, T, Dir >;
+        mp11::mp_at< typename Attrs::ctxs, index >, T, Dir >;
     using type = typename next_supported::type;
 
     static
@@ -511,12 +530,14 @@ struct is_sequence_like
         mp11::mp_valid<detail::begin_iterator_category, T>>
 { };
 
-template<class T>
+template<class T, class Ctx>
 struct is_map_like
     : mp11::mp_all<
         is_sequence_like<T>,
         mp11::mp_valid_and_true<detail::is_value_type_pair, T>,
-        is_string_like<detail::key_type<T>>,
+        is_string_like<
+            detail::representation_helper<
+                detail::remove_cvref< detail::key_type<T> >, Ctx>>,
         mp11::mp_valid_and_true<detail::has_unique_keys, T>>
 { };
 
@@ -564,6 +585,11 @@ struct is_optional_like
         mp11::mp_not<std::is_void<
             mp11::mp_eval_or<void, detail::value_result_type, T>>>,
         mp11::mp_valid<detail::can_reset, T>>
+{ };
+
+template< class T >
+struct represent_as<T, detail::no_context>
+    : represent_as<T, void>
 { };
 
 } // namespace json
