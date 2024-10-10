@@ -387,9 +387,6 @@ struct conversion_category_impl< std::tuple<Ctxs...>, T, Dir >
 struct no_context
 {};
 
-struct allow_exceptions
-{};
-
 template <class T, class Dir>
 using can_convert = mp11::mp_not<
     std::is_same<
