@@ -7,15 +7,9 @@
 //
 
 #include <boost/json/parse_into.hpp>
+#include <boost/variant2/variant.hpp>
 #include <boost/describe.hpp>
 #include <map>
-
-#ifndef BOOST_NO_CXX17_HDR_VARIANT
-# include <variant>
-# define IF_CXX17_HDR_VARIANT(...) __VA_ARGS__
-#else
-# define IF_CXX17_HDR_VARIANT(...)
-#endif // BOOST_NO_CXX17_HDR_VARIANT
 
 #ifndef BOOST_NO_CXX17_HDR_OPTIONAL
 # include <optional>
@@ -46,10 +40,7 @@ struct Object
     std::tuple<bool, std::uint64_t, std::int64_t, double, std::string> t1;
     std::tuple<std::array<std::string, 3>, std::array<double, 3>, std::nullptr_t> t2;
     std::tuple<std::vector<std::string>, std::vector<double>> t3;
-
-#ifndef BOOST_NO_CXX17_HDR_VARIANT
-    std::variant<bool, std::uint64_t, std::int64_t, double, std::string> v;
-#endif // BOOST_NO_CXX17_HDR_VARIANT
+    boost::variant2::variant<bool, std::uint64_t, std::int64_t, double, std::string> v;
 
 #ifndef BOOST_NO_CXX17_HDR_OPTIONAL
     std::optional<bool> ob;
@@ -61,8 +52,9 @@ struct Object
 };
 
 BOOST_DESCRIBE_STRUCT(Object, (),
-    (b, i64, u64, f, d, s, v1, v2, v3, a1, a2, a3, m1, m2, m3, t1, t2, t3,
-    IF_CXX17_HDR_OPTIONAL(ob, oi, ou, od, os), IF_CXX17_HDR_OPTIONAL(v)))
+    (b, i64, u64, f, d, s, v1, v2, v3, a1, a2, a3, m1, m2, m3, t1, t2, t3, v,
+    IF_CXX17_HDR_OPTIONAL(ob, oi, ou, od, os)))
+
 
 bool
 fuzz_direct_parse(string_view sv)
