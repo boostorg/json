@@ -124,15 +124,13 @@ public:
         {
             if( !extra.empty() )
                 extra += '+';
-
             extra += "file IO";
         }
 
         if( is_pool )
         {
-            if(  !extra.empty() )
+            if( !extra.empty() )
                 extra = '+' + extra;
-
             extra = "pool" + extra;
         }
 
@@ -179,8 +177,8 @@ public:
     }
 };
 
-using impl_list = std::vector<
-    std::unique_ptr<any_impl const>>;
+using impl_ptr = std::unique_ptr<any_impl const>;
+using impl_list = std::vector<impl_ptr>;
 
 std::string
 load_file(char const* path)
@@ -263,17 +261,34 @@ bench(
             std::size_t repeat = 1;
             auto const f = [&]
             {
-                if(verb == "Serialize")
-                    return vi[j]->serialize(vf[i].text, repeat);
-                else if( vi[j]->with_file_io() )
-                    return vi[j]->parse(vf[i], repeat);
-                else
-                    return vi[j]->parse(vf[i].text, repeat);
+                if(verb == "Parse")
+                {
+                    if( vi[j]->with_file_io() )
+                        return vi[j]->parse(vf[i], repeat);
+                    else
+                        return vi[j]->parse(vf[i].text, repeat);
+                }
 
-                return clock_type::duration();
+                BOOST_ASSERT( verb == "Serialize" );
+                if( vi[j]->with_file_io() )
+                    return clock_type::duration::zero();
+                else
+                    return vi[j]->serialize(vf[i].text, repeat);
             };
-            // helps with the caching, which reduces noise
-            f();
+            // helps with the caching, which reduces noise; also, we determine
+            // if this configuration should be skipped altogether
+            auto const elapsed = f();
+            if( elapsed == std::chrono::milliseconds::zero() )
+            {
+                print_prefix(dout, vf[i], *vi[j], verb)
+                    << "," << "N/A"
+                    << "," << "N/A"
+                    << "," << "N/A"
+                    << "\n";
+                print_prefix(strout, vf[i], *vi[j], verb)
+                    << "," << "N/A" << "\n";
+                continue;
+            }
 
             repeat = 1000;
             for(unsigned k = 0; k < Trials; ++k)
@@ -282,7 +297,7 @@ bench(
                 result.calls *= repeat;
                 result.mbs = megabytes_per_second(
                     vf[i], result.calls, result.millis);
-                print_prefix(dout, vf[i], *vi[j], verb )
+                print_prefix(dout, vf[i], *vi[j], verb)
                     << "," << result.calls
                     << "," << result.millis
                     << "," << result.mbs
@@ -296,43 +311,33 @@ bench(
             std::sort(
                 trial.begin(),
                 trial.end(),
-                []( sample const& lhs,
-                    sample const& rhs)
+                [](sample const& lhs, sample const& rhs)
                 {
                     return lhs.mbs < rhs.mbs;
                 });
             if(Trials >= 6)
             {
                 // discard worst 2
-                trial.erase(
-                    trial.begin(),
-                    trial.begin() + 2);
+                trial.erase(trial.begin(), trial.begin() + 2);
                 // discard best 1
-                trial.resize( trial.size() - 1 );
-
+                trial.resize(trial.size() - 1);
             }
             else if(Trials > 3)
             {
-                trial.erase(
-                    trial.begin(),
-                    trial.begin() + Trials - 3);
+                trial.erase(trial.begin(), trial.begin() + Trials - 3);
             }
             // average
-            auto const calls =
-                std::accumulate(
+            auto const calls = std::accumulate(
                 trial.begin(), trial.end(),
                 std::size_t{},
-                []( std::size_t lhs,
-                    sample const& rhs)
+                [](std::size_t lhs, sample const& rhs)
                 {
                     return lhs + rhs.calls;
                 });
-            auto const millis =
-                std::accumulate(
+            auto const millis = std::accumulate(
                 trial.begin(), trial.end(),
                 std::size_t{},
-                []( std::size_t lhs,
-                    sample const& rhs)
+                [](std::size_t lhs, sample const& rhs)
                 {
                     return lhs + rhs.millis;
                 });
@@ -1004,7 +1009,7 @@ bool add_impl(impl_list & vi, char kind, char alloc, char io, char num)
     bool const with_file_io = io == 'y';
     bool const is_pool = alloc == 'p';
 
-    std::unique_ptr<any_impl const> impl;
+    impl_ptr impl;
     switch( kind )
     {
     case 'b':
@@ -1140,19 +1145,18 @@ main(
                     for( char io: s_file_io )
                         add_impl( vi, impl, alloc, io, num );
 
+        // remove duplicate implementations
         std::sort(
             vi.begin(),
             vi.end(),
-            [](std::unique_ptr<any_impl const> const& l,
-               std::unique_ptr<any_impl const> const& r)
+            [](impl_ptr const& l, impl_ptr const& r)
             {
                 return l->name() < r->name();
             });
         auto const it = std::unique(
             vi.begin(),
             vi.end(),
-            [](std::unique_ptr<any_impl const> const& l,
-               std::unique_ptr<any_impl const> const& r)
+            [](impl_ptr const& l, impl_ptr const& r)
             {
                 return l->name() == r->name();
             });
