@@ -7,17 +7,14 @@
 # Official repository: https://github.com/boostorg/json
 #
 
-import bench ;
+import boost-json-bench ;
 import common ;
 import feature ;
 import notfile ;
 import os ;
 import path ;
 import property ;
-
-path-constant HERE : . ;
-
-.BENCH_FILES = [ os.environ BENCH_FILES ] ;
+import toolset ;
 
 local has_nlohmann_json = [
     glob lib/nlohmann/single_include/nlohmann/json.hpp ] ;
@@ -46,16 +43,12 @@ install bench-local : bench : <location>. <hardcode-dll-paths>true ;
 explicit bench-local ;
 always bench-local ;
 
-local bench-files = [ glob $(HERE)/data/*.json ] ;
+local bench-files = [ glob-tree-ex data : *.json ] ;
 notfile run : @run-bench : bench : : <bench.file>$(bench-files) ;
 explicit run ;
 
 rule run-bench ( target : sources * : props * )
 {
-    local flags = [ property.select flags : $(props) ] ;
-    flags += [ property.select bench.option : $(props) ] ;
-    FLAGS on $(target) = $(flags:G=) ;
-
     local launcher = [ property.select bench.launcher : $(props) ] ;
     if $(launcher)
     {
@@ -67,21 +60,13 @@ rule run-bench ( target : sources * : props * )
         launcher = "" ;
     }
     LAUNCHER on $(target) = $(launcher) ;
-
-    local files = [ property.select bench.file : $(props) ] ;
-    FILES on $(target) = $(files:G=) ;
-
-    local dir = [ on $(target) return $(LOCATE) ] ;
-    if $(dir)
-    {
-        dir = [ path.make $(dir) ] ;
-        dir = $(dir)/$(target:G=) ;
-        common.MkDir $(dir) ;
-        DEPENDS $(target) : $(dir) ;
-    }
 }
 
-actions run-bench
+actions run-bench bind FILES
 {
-    $(LAUNCHER)$(>) $(FLAGS) $(FILES)
+    $(LAUNCHER) $(>) $(FLAGS) $(FILES)
 }
+
+toolset.flags $(__name__).run-bench FLAGS : <flag> ;
+toolset.flags $(__name__).run-bench FLAGS : <bench.option> ;
+toolset.flags $(__name__).run-bench FILES : <bench.file> ;
