@@ -750,10 +750,32 @@ public:
 //----------------------------------------------------------
 
 #ifdef BOOST_JSON_HAS_RAPIDJSON
-struct rapidjson_crt_impl : public any_impl
+template<class Allocator, bool FullPrecision>
+struct rapidjson_impl : public any_impl
 {
-    rapidjson_crt_impl(bool with_file_io)
-        : any_impl("rapidjson", false, false, with_file_io, parse_options() )
+    static constexpr unsigned parse_flags
+        = rapidjson::kParseDefaultFlags
+        | (FullPrecision
+                ? rapidjson::kParseFullPrecisionFlag
+                : rapidjson::kParseNoFlags);
+
+    static
+    parse_options
+    make_parse_options() noexcept
+    {
+        parse_options opts;
+        opts.numbers = FullPrecision
+            ? number_precision::precise : number_precision::imprecise;
+        return opts;
+    }
+
+    rapidjson_impl(bool with_file_io)
+        : any_impl(
+            "rapidjson",
+            false,
+            std::is_same<Allocator, RAPIDJSON_DEFAULT_ALLOCATOR>::value,
+            with_file_io,
+            make_parse_options() )
     {}
 
     clock_type::duration
@@ -763,9 +785,10 @@ struct rapidjson_crt_impl : public any_impl
         auto const start = clock_type::now();
         while(repeat--)
         {
-            CrtAllocator alloc;
-            GenericDocument<UTF8<>, CrtAllocator> d(&alloc);
-            d.Parse( fi.text.data(), fi.text.size() );
+            Allocator alloc;
+            GenericDocument<UTF8<>, Allocator> d(&alloc);
+            d.template Parse<rapidjson_impl::parse_flags>(
+                fi.text.data(), fi.text.size() );
         }
         return clock_type::now() - start;
     }
@@ -784,9 +807,9 @@ struct rapidjson_crt_impl : public any_impl
             FILE* f = fopen(fi.name.data(), "rb");
             std::size_t const sz = fread(s, 1, fi.text.size(), f);
 
-            CrtAllocator alloc;
-            GenericDocument<UTF8<>, CrtAllocator> d(&alloc);
-            d.Parse(s, sz);
+            Allocator alloc;
+            GenericDocument<UTF8<>, Allocator> d(&alloc);
+            d.template Parse<rapidjson_impl::parse_flags>(s, sz);
 
             fclose(f);
         }
@@ -797,67 +820,9 @@ struct rapidjson_crt_impl : public any_impl
     serialize_string(file_item const& fi, std::size_t repeat) const override
     {
         using namespace rapidjson;
-        CrtAllocator alloc;
-        GenericDocument<UTF8<>, CrtAllocator> d(&alloc);
-        d.Parse( fi.text.data(), fi.text.size() );
-
-        auto const start = clock_type::now();
-        rapidjson::StringBuffer st;
-        while(repeat--)
-        {
-            st.Clear();
-            rapidjson::Writer<rapidjson::StringBuffer> wr(st);
-            d.Accept(wr);
-        }
-        return clock_type::now() - start;
-    }
-};
-
-struct rapidjson_memory_impl : public any_impl
-{
-    rapidjson_memory_impl(bool with_file_io)
-        : any_impl("rapidjson", false, true, with_file_io, parse_options() )
-    {}
-
-    clock_type::duration
-    parse_string(file_item const& fi, std::size_t repeat) const override
-    {
-        auto const start = clock_type::now();
-        while(repeat--)
-        {
-            rapidjson::Document d;
-            d.Parse(fi.text.data(), fi.text.size());
-        }
-        return clock_type::now() - start;
-    }
-
-    clock_type::duration
-    parse_file(file_item const& fi, std::size_t repeat) const override
-    {
-        using namespace rapidjson;
-
-        auto const start = clock_type::now();
-        char* s = new char[ fi.text.size() ];
-        std::unique_ptr<char[]> holder(s);
-
-        while(repeat--)
-        {
-            FILE* f = fopen(fi.name.data(), "rb");
-            std::size_t const sz = fread(s, 1, fi.text.size(), f);
-
-            rapidjson::Document d;
-            d.Parse(s, sz);
-
-            fclose(f);
-        }
-        return clock_type::now() - start;
-    }
-
-    clock_type::duration
-    serialize_string(file_item const& fi, std::size_t repeat) const override
-    {
-        rapidjson::Document d;
-        d.Parse( fi.text.data(), fi.text.size() );
+        Allocator alloc;
+        GenericDocument<UTF8<>, Allocator> d(&alloc);
+        d.template Parse<rapidjson_impl::parse_flags>( fi.text.data(), fi.text.size() );
 
         auto const start = clock_type::now();
         rapidjson::StringBuffer st;
@@ -1026,9 +991,25 @@ bool add_impl(impl_list & vi, char kind, char alloc, char io, char num)
 #ifdef BOOST_JSON_HAS_RAPIDJSON
     case 'r':
         if(is_pool)
-            impl = std::make_unique<rapidjson_memory_impl>(with_file_io);
+        {
+            using Allocator = RAPIDJSON_DEFAULT_ALLOCATOR;
+            if(popts.numbers == number_precision::precise)
+                impl = std::make_unique<rapidjson_impl<Allocator, true>>(
+                    with_file_io);
+            else
+                impl = std::make_unique<rapidjson_impl<Allocator, false>>(
+                    with_file_io);
+        }
         else
-            impl = std::make_unique<rapidjson_crt_impl>(with_file_io);
+        {
+            using Allocator = rapidjson::CrtAllocator;
+            if(popts.numbers == number_precision::precise)
+                impl = std::make_unique<rapidjson_impl<Allocator, true>>(
+                    with_file_io);
+            else
+                impl = std::make_unique<rapidjson_impl<Allocator, false>>(
+                    with_file_io);
+        }
         break;
 #endif // BOOST_JSON_HAS_RAPIDJSON
 
