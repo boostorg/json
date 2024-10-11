@@ -35,6 +35,7 @@ exe bench :
     /boost/json//boost_json
     :
     <include>../test
+    <include>../example
     $(has_nlohmann_json)<define>BOOST_JSON_HAS_NLOHMANN_JSON
     $(has_rapidjson)<define>BOOST_JSON_HAS_RAPIDJSON
     ;

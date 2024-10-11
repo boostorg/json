@@ -36,7 +36,10 @@ add_executable(parse_into_citm_catalog
     parse_into_citm_catalog.cpp
 )
 set_property(TARGET parse_into_citm_catalog PROPERTY FOLDER "example")
-target_link_libraries(parse_into_citm_catalog PRIVATE Boost::json)
+target_link_libraries(parse_into_citm_catalog PRIVATE
+    Boost::json
+    Boost::optional
+)
 
 #
 

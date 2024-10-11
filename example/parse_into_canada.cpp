@@ -29,37 +29,11 @@ int main() {}
 #include <chrono>
 #include <fstream>
 #include <iostream>
-#include <iterator>
-#include <map>
-#include <utility>
-#include <vector>
 
-struct geometry_type
-{
-    std::string type;
-    std::vector< std::vector<std::pair<double, double>> > coordinates;
-};
-
-BOOST_DESCRIBE_STRUCT(geometry_type, (), (type, coordinates))
-
-struct feature
-{
-    std::string type;
-    std::map<std::string, std::string> properties;
-    geometry_type geometry;
-};
-
-BOOST_DESCRIBE_STRUCT(feature, (), (type, properties, geometry))
-
-struct canada
-{
-    std::string type;
-    std::vector<feature> features;
-};
-
-BOOST_DESCRIBE_STRUCT(canada, (), (type, features))
+#include "canada.hpp"
 
 using namespace std::chrono_literals;
+using canada = boost::json::canada::data;
 
 int main()
 {

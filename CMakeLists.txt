@@ -45,6 +45,9 @@ if(BOOST_JSON_IS_ROOT)
 
     set(BOOST_INCLUDE_LIBRARIES json)
     set(BOOST_EXCLUDE_LIBRARIES json)
+    if(BOOST_JSON_BUILD_EXAMPLES)
+        list(APPEND BOOST_INCLUDE_LIBRARIES optional)
+    endif()
 
     set(CMAKE_FOLDER _deps)
     add_subdirectory(../.. _deps/boost EXCLUDE_FROM_ALL)
