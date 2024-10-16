@@ -346,17 +346,13 @@ value_to_impl(
         *arr, ctx, boost::mp11::make_index_sequence<N>());
 }
 
-template< class Ctx, class T, bool non_throwing = true >
+template< class Ctx, class T >
 struct to_described_member
 {
     using Ds = described_members<T>;
 
-    using result_type = mp11::mp_eval_if_c<
-        !non_throwing, T, system::result, T>;
-
-    result_type& res;
+    system::result<T>& res;
     object const& obj;
-    std::size_t count;
     Ctx const& ctx;
 
     template< class I >
@@ -375,7 +371,7 @@ struct to_described_member
             BOOST_IF_CONSTEXPR( !is_optional_like<M>::value )
             {
                 system::error_code ec;
-                BOOST_JSON_FAIL(ec, error::unknown_name);
+                BOOST_JSON_FAIL(ec, error::size_mismatch);
                 res = {boost::system::in_place_error, ec};
             }
             return;
@@ -391,10 +387,7 @@ struct to_described_member
 # pragma GCC diagnostic pop
 #endif
         if( member_res )
-        {
             (*res).* D::pointer = std::move(*member_res);
-            ++count;
-        }
         else
             res = {boost::system::in_place_error, member_res.error()};
     }
@@ -421,7 +414,7 @@ value_to_impl(
         return res;
     }
 
-    to_described_member< Ctx, T > member_converter{ res, *obj, 0u, ctx };
+    to_described_member<Ctx, T> member_converter{res, *obj, ctx};
 
     using Ds = typename decltype(member_converter)::Ds;
     constexpr std::size_t N = mp11::mp_size<Ds>::value;
@@ -429,14 +422,6 @@ value_to_impl(
 
     if( !res )
         return res;
-
-    if( member_converter.count != obj->size() )
-    {
-        system::error_code ec;
-        BOOST_JSON_FAIL(ec, error::size_mismatch);
-        res = {boost::system::in_place_error, ec};
-        return res;
-    }
 
     return res;
 }
