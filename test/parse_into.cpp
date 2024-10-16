@@ -13,6 +13,7 @@
 
 #include <boost/json/serialize.hpp>
 #include <boost/json/value_from.hpp>
+#include <boost/json/value_to.hpp>
 #include <boost/describe.hpp>
 
 #include <climits>
@@ -86,14 +87,16 @@ class parse_into_test
 {
 public:
 
-    template<class T> void testParseInto( T const& t )
+    template<class T>
+    void testParseIntoValue( value const& jv )
     {
 #if defined(__GNUC__) && __GNUC__ < 5
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #endif
-        T t1( t );
-        std::string json = serialize( value_from( t1 ) );
+        T t1 = value_to<T>(jv);
+        (void)t1; // older GCC thinks t1 can be unused
+        std::string json = serialize(jv);
 
         T t2{};
         system::error_code jec;
@@ -146,6 +149,12 @@ public:
 #if defined(__GNUC__) && __GNUC__ < 5
 # pragma GCC diagnostic pop
 #endif
+    }
+
+    template<class T>
+    void testParseInto( T const& t )
+    {
+        testParseIntoValue<T>( value_from(t) );
     }
 
     template<class T>
@@ -380,10 +389,18 @@ public:
         testParseInto<Z>( { {1, 3.14f, "hello"}, true } );
 
         testParseIntoErrors<X>( error::not_object, 1 );
-        testParseIntoErrors<X>(
-            error::unknown_name,
-            { {"a", 1}, {"b", 3.14f}, {"c", "hello"}, {"d", 0} } );
         testParseIntoErrors<X>( error::size_mismatch, { {"a", 1} } );
+
+        object jo{ {"a", 1}, {"b", 3.14f}, {"c", "hello"} };
+        jo["e1"] = array{1, ULONG_MAX, "three", array{}, true, .5, nullptr};
+        jo["e2"] = object{ {"one", 1}, {"two", 2}, {"three", object{}} };
+        jo["e3"] = "third extra element";
+        jo["e4"] = 100;
+        jo["e5"] = ULONG_MAX;
+        jo["e6"] = 12.4;
+        jo["e7"] = false;
+        jo["e8"] = nullptr;
+        testParseIntoValue<X>(jo);
 #endif
     }
 
