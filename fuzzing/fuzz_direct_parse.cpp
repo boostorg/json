@@ -6,6 +6,18 @@
 // Official repository: https://github.com/boostorg/json
 //
 
+#include <boost/json.hpp>
+
+#if !defined(BOOST_DESCRIBE_CXX14)
+
+#include <boost/config/pragma_message.hpp>
+
+BOOST_PRAGMA_MESSAGE( "This example requires C++14" )
+
+int main() {}
+
+#else
+
 #include <boost/json/parse_into.hpp>
 #include <boost/variant2/variant.hpp>
 #include <boost/describe.hpp>
@@ -82,3 +94,4 @@ LLVMFuzzerTestOneInput(
     return 0;
 }
 
+#endif // !defined(BOOST_DESCRIBE_CXX14)
