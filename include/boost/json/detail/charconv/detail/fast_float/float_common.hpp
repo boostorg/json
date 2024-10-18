@@ -207,7 +207,8 @@ value128 full_multiplication(uint64_t a, uint64_t b) {
   // But MinGW on ARM64 doesn't have native support for 64-bit multiplications
   answer.high = __umulh(a, b);
   answer.low = a * b;
-#elif defined(BOOST_JSON_FASTFLOAT_32BIT) || (defined(_WIN64) && !defined(__clang__))
+#elif defined(BOOST_JSON_FASTFLOAT_32BIT) ||                            \
+    (defined(_WIN64) && !defined(__clang__) && !defined(_M_ARM64))
   unsigned long long high;
   answer.low = _umul128(a, b, &high); // _umul128 not available on ARM64
   answer.high = static_cast<uint64_t>(high);
