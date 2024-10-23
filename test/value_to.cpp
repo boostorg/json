@@ -564,6 +564,8 @@ public:
         BOOST_TEST(
             paths == (Paths{
                 "from/here", "to/there", "", "c:/" , "..", "../"}) );
+        BOOST_TEST_THROWS_WITH_LOCATION(
+            value_to<std::filesystem::path>( value(1), ctx... ));
 #endif // BOOST_NO_CXX17_HDR_FILESYSTEM
     }
 
