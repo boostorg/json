@@ -412,6 +412,7 @@ public:
         testParseInto<E>( E::z );
 
         testParseIntoErrors< E >( error::not_string, (int)(E::y) );
+        testParseIntoErrors< E >( error::unknown_name, "zoom" );
 #endif // BOOST_DESCRIBE_CXX14
     }
 
@@ -458,6 +459,9 @@ public:
 #ifndef BOOST_NO_CXX17_HDR_OPTIONAL
         testParseInto< std::optional<int> >( std::nullopt );
         testParseInto< std::optional<int> >( 1 );
+        testParseInto< std::optional<std::uint64_t> >( ULONG_MAX );
+        testParseInto< std::optional<bool> >( true );
+        testParseInto< std::optional<double> >( 33.77 );
 
         testParseInto< std::optional<std::vector<std::nullptr_t>> >(
             std::nullopt );
@@ -468,6 +472,9 @@ public:
 
         testParseInto< std::optional<std::vector<std::string>> >(
            std::vector<std::string>{"1", "2", "3"} );
+
+        testParseInto< std::optional< std::map<std::string, int> > >(
+           std::map<std::string, int>{ {"1", 1}, {"2", 2}, {"3", 3} } );
 
         testParseInto< std::vector< std::optional<int> > >(
             {1, 2, 3, std::nullopt, 5, std::nullopt, std::nullopt, 8});
