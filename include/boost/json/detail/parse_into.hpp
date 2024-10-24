@@ -79,7 +79,8 @@ class converting_handler;
 
 // get_handler
 template< class V, class P >
-using get_handler = converting_handler< generic_conversion_category<V>, V, P >;
+using get_handler = converting_handler<
+    generic_conversion_category<V, no_context>, V, P>;
 
 template<error E> class handler_error_base
 {
