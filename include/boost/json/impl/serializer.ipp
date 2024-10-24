@@ -310,10 +310,8 @@ do_str3:
     return w.suspend(writer::state::str3);
 
 do_esc1:
-    if(BOOST_JSON_LIKELY(ss))
-        ss.append(w.buf_[0]);
-    else
-        return w.suspend(writer::state::esc1);
+    BOOST_ASSERT(ss);
+    ss.append(w.buf_[0]);
     goto do_str3;
 
 do_utf1:
@@ -541,6 +539,9 @@ read(char* dest, std::size_t size)
 {
     if( !fn0_ )
         reset(nullptr);
+
+    if(BOOST_JSON_UNLIKELY(size == 0))
+        return {dest, 0};
 
     detail::stream ss(dest, size);
     if(st_.empty())
