@@ -10,7 +10,7 @@
 [/-----------------------------------------------------------------------------]
 
 
-[section Direct parsing]
+[section Direct conversion]
 
 For large inputs parsing into the library's containers followed by conversion
 via __value_to__ (or vice versa __value_from__ followed by serialization from
@@ -26,7 +26,7 @@ members of described `struct`s, and alternatives of variants.
 
 That being said, if your types are default-constructible and you don't need
 the customisability allowed by __value_to__ and __value_from__, then you can
-get a significant performance boost with direct parsing.
+get a significant performance boost with direct conversions.
 
 Direct parsing is performed by the __parse_into__ family of functions. The
 library provides overloads that take either __string_view__ or `std::istream`,
