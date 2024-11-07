@@ -1,3 +1,16 @@
+Boost 1.87.0
+
+* Conversion into structs ignores unknown keys.
+* Exception wrapping behaviour for `value_to` is simplified.
+* Deprecated initilaizer list behavior was removed.
+* Deprecated type aliases were removed.
+* Direct serialization.
+* Add GDB pretty printers for Boost.JSON types.
+* Use correct 64bit full multiplication for MinGW on ARM64.
+* Fix parse_into handling of tuple of the wrong size.
+* Check for input size larger than allowed size of sequence.
+* Fix `value_ref` segfaulting on GCC 14.
+
 Boost 1.86.0
 
 * Support for GCC versions older than version 5.0 is deprecated and **will stop
