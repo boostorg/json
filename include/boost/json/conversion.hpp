@@ -234,7 +234,7 @@ struct is_sequence_like;
 
     @see @ref value_from, @ref value_to
 */
-template<class T>
+template<class T, class Context>
 struct is_map_like;
 
 /** Determine if `T` can be treated like a tuple during conversions.
@@ -436,6 +436,12 @@ struct is_variant_like;
 */
 template<class T>
 struct is_optional_like;
+
+template< class T, class Context = void >
+struct represent_as;
+
+template< class T, class Context = void >
+using represent_as_t = typename represent_as<T>::type;
 
 } // namespace json
 } // namespace boost
