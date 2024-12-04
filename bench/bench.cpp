@@ -57,6 +57,7 @@ std::string s_branch = "";
 std::string s_alloc = "p";
 std::string s_num_mode = "i";
 std::string s_file_io = "n";
+std::string s_conversion = "n";
 
 namespace boost {
 namespace json {
@@ -147,11 +148,121 @@ find_supported_file(file_item const& fi)
     return result;
 }
 
+struct convert_from_value
+{
+    value const& jv;
+
+    template< class I >
+    void operator()(I) const
+    {
+        using data_type = typename supported_file_at<I>::type;
+        auto data = value_to<data_type>(jv);
+        (void)data;
+    }
+};
+
+struct delete_data
+{
+    struct deleter
+    {
+        void* data;
+
+        template< class I >
+        void operator()(I) const
+        {
+            using data_type = typename supported_file_at<I>::type;
+            delete reinterpret_cast<data_type*>(data);
+        }
+    };
+
+    int index;
+
+    void operator()(void* data)
+    {
+        if( index >= 0 )
+            mp11::mp_with_index<supported_file_count>( index, deleter{data} );
+    }
+};
+using data_holder = std::unique_ptr<void, delete_data>;
+
+struct data_constructor
+{
+    data_holder& data;
+    value const& jv;
+
+    template< class I >
+    void operator()(I) const
+    {
+        using data_type = typename supported_file_at<I>::type;
+        auto const ptr = new data_type{};
+        data.reset(ptr);
+        *ptr = value_to<data_type>(jv);
+    }
+};
+
+data_holder
+construct_data(int file_index, value const& jv)
+{
+    data_holder result( nullptr, {file_index} );
+    if( file_index >= 0 )
+        mp11::mp_with_index<supported_file_count>(
+            file_index, data_constructor{result, jv} );
+    return result;
+}
+
+struct convert_to_value
+{
+    data_holder& data;
+    value& jv;
+
+    template< class I >
+    BOOST_NOINLINE
+    void operator()(I) const
+    {
+        using data_type = typename supported_file_at<I>::type;
+        value_from(
+            *reinterpret_cast<data_type*>( data.get() ), jv);
+    }
+};
+
 class any_impl
 {
     std::string name_;
     parse_options popts_;
-    bool with_file_io_ = false;
+    bool with_file_io_;
+    bool with_conversion_;
+    mutable int file_index_ = -1;
+
+    virtual
+    clock_type::duration
+    parse_string(file_item const& fi, std::size_t repeat) const = 0;
+
+    virtual
+    clock_type::duration
+    parse_file(file_item const& fi, std::size_t repeat) const = 0;
+
+    virtual
+    clock_type::duration
+    serialize_string(file_item const& fi, std::size_t repeat) const = 0;
+
+protected:
+    clock_type::duration
+    skip() const
+    {
+        return clock_type::duration::zero();
+    }
+
+    parse_options const&
+    get_parse_options() const noexcept
+    {
+        return popts_;
+    }
+
+    int
+    file_index() const noexcept
+    {
+        return file_index_;
+    }
 
 public:
     using operation = auto (any_impl::*)
@@ -160,12 +271,15 @@ public:
 
     any_impl(
         string_view base_name,
+        string_view flavor,
         bool is_boost,
         bool is_pool,
         bool with_file_io,
+        bool with_conversion,
         parse_options const& popts)
         : popts_(popts)
         , with_file_io_(with_file_io)
+        , with_conversion_(with_conversion)
     {
         std::string extra;
         switch( popts_.numbers )
@@ -178,6 +292,13 @@ public:
             break;
         default:
             break;
+        }
+
+        if( with_conversion )
+        {
+            if( !extra.empty() )
+                extra = '+' + extra;
+            extra = "conversion" + extra;
         }
 
         if( with_file_io_ )
@@ -194,6 +315,13 @@ public:
             extra = "pool" + extra;
         }
 
+        if( !flavor.empty() )
+        {
+            if( !extra.empty() )
+                extra = '+' + extra;
+            extra.insert( extra.begin(), flavor.begin(), flavor.end() );
+        }
+
         if( !extra.empty() )
             extra = " (" + extra + ')';
 
@@ -206,40 +334,40 @@ public:
 
     virtual ~any_impl() = default;
 
-    virtual
     clock_type::duration
-    parse_string(file_item const& fi, std::size_t repeat) const = 0;
-
-    virtual
-    clock_type::duration
-    parse_file(file_item const& fi, std::size_t repeat) const = 0;
-
-    virtual
-    clock_type::duration
-    serialize_string(file_item const& fi, std::size_t repeat) const = 0;
-
-    clock_type::duration
-    skip(file_item const& , std::size_t ) const
+    bench(string_view verb, file_item const& fi, std::size_t repeat) const
     {
-        return clock_type::duration::zero();
+        if( with_conversion_ )
+        {
+            if( ( file_index_ = find_supported_file(fi) ) < 0 )
+                return skip();
+        }
+        else
+        {
+            file_index_ = -1;
+        }
+
+        if(verb == "Parse")
+        {
+            if( with_file_io_ )
+                return parse_file(fi, repeat);
+            else
+                return parse_string(fi, repeat);
+        }
+        else
+        {
+            BOOST_ASSERT( verb == "Serialize" );
+            if( with_file_io_ )
+                return skip();
+            else
+                return serialize_string(fi, repeat);
+        }
     }
 
     string_view
     name() const noexcept
     {
         return name_;
-    }
-
-    bool
-    with_file_io() const noexcept
-    {
-        return with_file_io_;
-    }
-
-    parse_options const&
-    get_parse_options() const noexcept
-    {
-        return popts_;
     }
 };
 
@@ -326,24 +454,9 @@ bench(
             trial.clear();
             std::size_t repeat = 1;
 
-            any_impl::operation op = nullptr;
-            if(verb == "Parse")
-            {
-                if( vi[j]->with_file_io() )
-                    op = &any_impl::parse_file;
-                else
-                    op = &any_impl::parse_string;
-            }
-            else
-            {
-                BOOST_ASSERT( verb == "Serialize" );
-                if( vi[j]->with_file_io() )
-                    op = &any_impl::skip;
-                else
-                    op = &any_impl::serialize_string;
-            }
-
-            auto const f = [&]{ return (vi[j].get()->*op)(vf[i], repeat); };
+            auto const f = [&]{
+                return vi[j].get()->bench(verb, vf[i], repeat);
+            };
 
             // helps with the caching, which reduces noise; also, we determine
             // if this configuration should be skipped altogether
@@ -419,14 +532,59 @@ bench(
 
 //----------------------------------------------------------
 
-class boost_impl : public any_impl
+class base_boost_impl : public any_impl
 {
+protected:
     bool is_pool_;
 
+    BOOST_FORCEINLINE
+    void
+    maybe_convert_from_value(value const& jv) const
+    {
+        if( file_index() >= 0 )
+            mp11::mp_with_index<supported_file_count>(
+                file_index(), convert_from_value{jv});
+    }
+
+    BOOST_FORCEINLINE
+    void
+    maybe_convert_to_value(data_holder& data, value& jv) const
+    {
+        if( file_index() >= 0 )
+            mp11::mp_with_index<supported_file_count>(
+                file_index(), convert_to_value{data, jv});
+    }
+
 public:
-    boost_impl(bool is_pool, bool with_file_io, parse_options const& popts)
-        : any_impl("boost", true, is_pool, with_file_io, popts)
+    base_boost_impl(
+        string_view flavor,
+        bool is_pool,
+        bool with_file_io,
+        bool with_conversion,
+        parse_options const& popts)
+        : any_impl(
+            "boost",
+            flavor,
+            true,
+            is_pool,
+            with_file_io,
+            with_conversion,
+            popts)
         , is_pool_(is_pool)
+    {}
+};
+
+//----------------------------------------------------------
+
+class boost_impl : public base_boost_impl
+{
+public:
+    boost_impl(
+        bool is_pool,
+        bool with_file_io,
+        bool with_conversion,
+        parse_options const& popts)
+        : base_boost_impl("", is_pool, with_file_io, with_conversion, popts)
     {}
 
     clock_type::duration
@@ -443,8 +601,7 @@ public:
             p.reset( std::move(sp) );
 
             p.write( fi.text.data(), fi.text.size() );
-            auto jv = p.release();
-            (void)jv;
+            maybe_convert_from_value( p.release() );
         }
         return clock_type::now() - start;
     }
@@ -479,9 +636,10 @@ public:
 
             p.finish();
             auto jv = p.release();
-            (void)jv;
 
             fclose(f);
+
+            maybe_convert_from_value( jv );
         }
         return clock_type::now() - start;
     }
@@ -493,7 +651,8 @@ public:
         storage_ptr sp;
         if( is_pool_ )
             sp = &mr;
-        auto jv = json::parse( fi.text, std::move(sp) );
+        value jv = json::parse( fi.text, std::move(sp) );
+        data_holder data = construct_data(file_index(), jv);
 
         auto const start = clock_type::now();
         serializer sr;
@@ -501,6 +660,7 @@ public:
         out.reserve(512);
         while(repeat--)
         {
+            maybe_convert_to_value(data, jv);
             sr.reset(&jv);
             out.clear();
             for(;;)
@@ -521,7 +681,7 @@ public:
 
 //----------------------------------------------------------
 
-class boost_null_impl : public any_impl
+class boost_null_impl : public base_boost_impl
 {
     struct null_parser
     {
@@ -596,13 +756,17 @@ class boost_null_impl : public any_impl
     };
 
 public:
-    boost_null_impl(bool with_file_io, parse_options const& popts)
-        : any_impl("boost (null)", true, false, with_file_io, popts)
+    boost_null_impl(
+        bool with_file_io, bool with_conversion, parse_options const& popts)
+        : base_boost_impl("null", false, with_file_io, with_conversion, popts)
     {}
 
     clock_type::duration
     parse_string(file_item const& fi, std::size_t repeat) const override
     {
+        if( file_index() >= 0 )
+            return skip();
+
         auto const start = clock_type::now();
         null_parser p( get_parse_options() );
         while(repeat--)
@@ -619,6 +783,9 @@ public:
     clock_type::duration
     parse_file(file_item const& fi, std::size_t repeat) const override
     {
+        if( file_index() >= 0 )
+            return skip();
+
         auto const start = clock_type::now();
         null_parser p( get_parse_options() );
         char s[ BOOST_JSON_STACK_BUFFER_SIZE];
@@ -655,23 +822,24 @@ public:
     }
 
     clock_type::duration
-    serialize_string(file_item const& fi, std::size_t) const override
+    serialize_string(file_item const& fi, std::size_t repeat) const override
     {
-        return clock_type::duration(0);
+        return skip();
     }
 };
 
 //----------------------------------------------------------
 
-class boost_simple_impl : public any_impl
+class boost_simple_impl : public base_boost_impl
 {
-    bool is_pool_;
-
 public:
     boost_simple_impl(
-        bool is_pool, bool with_file_io, parse_options const& popts)
-        : any_impl("boost (convenient)", true, is_pool, with_file_io, popts)
-        , is_pool_(is_pool)
+        bool is_pool,
+        bool with_file_io,
+        bool with_conversion,
+        parse_options const& popts)
+        : base_boost_impl(
+            "convenient", is_pool, with_file_io, with_conversion, popts)
     {}
 
     clock_type::duration
@@ -687,7 +855,7 @@ public:
 
             auto jv = json::parse(
                 fi.text, std::move(sp), get_parse_options() );
-            (void)jv;
+            maybe_convert_from_value(jv);
         }
         return clock_type::now() - start;
     }
@@ -706,7 +874,7 @@ public:
                 sp = &mr;
 
             auto jv = json::parse( is, std::move(sp), get_parse_options() );
-            (void)jv;
+            maybe_convert_from_value(jv);
         }
         return clock_type::now() - start;
     }
@@ -719,24 +887,31 @@ public:
         if( is_pool_ )
             sp = &mr;
         auto jv = json::parse( fi.text, std::move(sp) );
+        auto data = construct_data(file_index(), jv);
 
         auto const start = clock_type::now();
         std::string out;
         while(repeat--)
+        {
+            maybe_convert_to_value(data, jv);
             out = json::serialize(jv);
+        }
         return clock_type::now() - start;
     }
 };
 
-class boost_operator_impl : public any_impl
-{
-    bool is_pool_;
+//----------------------------------------------------------
 
+class boost_operator_impl : public base_boost_impl
+{
 public:
     boost_operator_impl(
-        bool is_pool, bool with_file_io, parse_options const& popts)
-        : any_impl("boost (operators)", true, is_pool, with_file_io, popts)
-        , is_pool_(is_pool)
+        bool is_pool,
+        bool with_file_io,
+        bool with_conversion,
+        parse_options const& popts)
+        : base_boost_impl(
+            "operators", is_pool, with_file_io, with_conversion, popts)
     {}
 
     clock_type::duration
@@ -756,6 +931,7 @@ public:
             value jv( std::move(sp) );
             is.seekg(0);
             is >> get_parse_options() >> jv;
+            maybe_convert_from_value(jv);
         }
         return clock_type::now() - start;
     }
@@ -776,6 +952,8 @@ public:
 
             value jv( std::move(sp) );
             is >> get_parse_options() >> jv;
+
+            maybe_convert_from_value(jv);
         }
         return clock_type::now() - start;
     }
@@ -789,11 +967,13 @@ public:
             sp = &mr;
 
         auto jv = json::parse( fi.text, std::move(sp) );
+        auto data = construct_data(file_index(), jv);
 
         auto const start = clock_type::now();
         std::string out;
         while(repeat--)
         {
+            maybe_convert_to_value(data, jv);
             std::ostringstream os;
             os.exceptions(std::ios::failbit);
             os << jv;
@@ -803,7 +983,9 @@ public:
     }
 };
 
-class boost_direct_impl : public any_impl
+//----------------------------------------------------------
+
+class boost_direct_impl : public base_boost_impl
 {
     struct string_parser
     {
@@ -814,12 +996,10 @@ class boost_direct_impl : public any_impl
         template< class I >
         clock_type::duration operator()(I) const
         {
-            using supported_file = supported_file_at<I>;
-
             auto const start = clock_type::now();
             while(repeat--)
             {
-                using data_type = typename supported_file::type;
+                using data_type = typename supported_file_at<I>::type;
                 data_type v;
                 system::error_code ec;
                 parser_for<data_type> p(opts, &v);
@@ -844,13 +1024,11 @@ class boost_direct_impl : public any_impl
         template< class I >
         clock_type::duration operator()(I) const
         {
-            using supported_file = supported_file_at<I>;
-
             auto const start = clock_type::now();
             char s[ BOOST_JSON_STACK_BUFFER_SIZE];
             while(repeat--)
             {
-                using data_type = typename supported_file::type;
+                using data_type = typename supported_file_at<I>::type;
                 data_type v;
                 system::error_code ec;
                 parser_for<data_type> p(opts, &v);
@@ -893,8 +1071,7 @@ class boost_direct_impl : public any_impl
         template< class I >
         clock_type::duration operator()(I) const
         {
-            using supported_file = mp11::mp_at_c<supported_files, I::value>;
-            typename supported_file::type v;
+            typename supported_file_at<I>::type v;
             json::parse_into(v, fi.text);
 
             auto const start = clock_type::now();
@@ -920,38 +1097,37 @@ class boost_direct_impl : public any_impl
     };
 
 public:
-    boost_direct_impl(bool with_file_io, parse_options const& popts)
-        : any_impl("boost (direct)", true, false, with_file_io, popts)
+    boost_direct_impl(
+        bool with_file_io, bool with_conversion, parse_options const& popts)
+        : base_boost_impl(
+            "direct", false, with_file_io, with_conversion, popts)
     {}
 
     clock_type::duration
     parse_string(file_item const& fi, std::size_t repeat) const override
     {
-        auto const i = find_supported_file(fi);
-        if( i < 0 )
-            return clock_type::duration::zero();
+        if( file_index() < 0 )
+            return skip();
         return mp11::mp_with_index<supported_file_count>(
-            i, string_parser{fi, get_parse_options(), repeat} );
+            file_index(), string_parser{fi, get_parse_options(), repeat} );
     }
 
     clock_type::duration
     parse_file(file_item const& fi, std::size_t repeat) const override
     {
-        auto const i = find_supported_file(fi);
-        if( i < 0 )
-            return clock_type::duration::zero();
+        if( file_index() < 0 )
+            return skip();
         return mp11::mp_with_index<supported_file_count>(
-            i, file_parser{fi, get_parse_options(), repeat} );
+            file_index(), file_parser{fi, get_parse_options(), repeat} );
     }
 
     clock_type::duration
     serialize_string(file_item const& fi, std::size_t repeat) const override
     {
-        auto const i = find_supported_file(fi);
-        if( i < 0 )
-            return clock_type::duration::zero();
+        if( file_index() < 0 )
+            return skip();
         return mp11::mp_with_index<supported_file_count>(
-            i, string_serializer{fi, get_parse_options(), repeat} );
+            file_index(), string_serializer{fi, get_parse_options(), repeat} );
     }
 };
 
@@ -977,18 +1153,23 @@ struct rapidjson_impl : public any_impl
         return opts;
     }
 
-    rapidjson_impl(bool with_file_io)
+    rapidjson_impl(bool with_file_io, bool with_conversion)
         : any_impl(
             "rapidjson",
+            "",
             false,
             std::is_same<Allocator, RAPIDJSON_DEFAULT_ALLOCATOR>::value,
             with_file_io,
+            with_conversion,
             make_parse_options() )
     {}
 
     clock_type::duration
     parse_string(file_item const& fi, std::size_t repeat) const override
     {
+        if( file_index() >= 0 )
+            return skip();
+
         using namespace rapidjson;
         auto const start = clock_type::now();
         while(repeat--)
@@ -1004,6 +1185,9 @@ struct rapidjson_impl : public any_impl
     clock_type::duration
     parse_file(file_item const& fi, std::size_t repeat) const override
     {
+        if( file_index() >= 0 )
+            return skip();
+
         using namespace rapidjson;
 
         auto const start = clock_type::now();
@@ -1027,6 +1211,9 @@ struct rapidjson_impl : public any_impl
     clock_type::duration
     serialize_string(file_item const& fi, std::size_t repeat) const override
     {
+        if( file_index() >= 0 )
+            return skip();
+
         using namespace rapidjson;
         Allocator alloc;
         GenericDocument<UTF8<>, Allocator> d(&alloc);
@@ -1050,13 +1237,23 @@ struct rapidjson_impl : public any_impl
 #ifdef BOOST_JSON_HAS_NLOHMANN_JSON
 struct nlohmann_impl : public any_impl
 {
-    nlohmann_impl(bool with_file_io)
-        : any_impl("nlohmann", false, false, with_file_io, parse_options() )
+    nlohmann_impl(bool with_file_io, bool with_conversion)
+        : any_impl(
+            "nlohmann",
+            "",
+            false,
+            false,
+            with_file_io,
+            with_conversion,
+            parse_options() )
     {}
 
     clock_type::duration
     parse_string(file_item const& fi, std::size_t repeat) const override
     {
+        if( file_index() >= 0 )
+            return skip();
+
         auto const start = clock_type::now();
         while(repeat--)
         {
@@ -1068,6 +1265,9 @@ struct nlohmann_impl : public any_impl
     clock_type::duration
     parse_file(file_item const& fi, std::size_t repeat) const override
     {
+        if( file_index() >= 0 )
+            return skip();
+
         auto const start = clock_type::now();
         char* s = new char[ fi.text.size() ];
         std::unique_ptr<char[]> holder(s);
@@ -1087,6 +1287,9 @@ struct nlohmann_impl : public any_impl
     clock_type::duration
     serialize_string(file_item const& fi, std::size_t repeat) const override
     {
+        if( file_index() >= 0 )
+            return skip();
+
         auto jv = nlohmann::json::parse( fi.text.begin(), fi.text.end() );
 
         auto const start = clock_type::now();
@@ -1150,12 +1353,17 @@ static bool parse_option( char const* s )
     case 'f':
         s_file_io = s;
         break;
+
+    case 'c':
+        s_conversion = s;
+        break;
     }
 
     return true;
 }
 
-bool add_impl(impl_list & vi, char kind, char alloc, char io, char num)
+bool add_impl(
+    impl_list & vi, char kind, char alloc, char io, char num, char conv)
 {
     parse_options popts;
     switch(num)
@@ -1174,28 +1382,36 @@ bool add_impl(impl_list & vi, char kind, char alloc, char io, char num)
     }
     bool const with_file_io = io == 'y';
     bool const is_pool = alloc == 'p';
+    bool const with_conversion = conv == 'y';
 
     impl_ptr impl;
     switch( kind )
     {
     case 'b':
-        impl.reset( new boost_impl(is_pool, with_file_io, popts) );
+        impl.reset(
+            new boost_impl(is_pool, with_file_io, with_conversion, popts) );
         break;
 
     case 'u':
-        impl.reset( new boost_null_impl(with_file_io, popts) );
+        impl.reset(
+            new boost_null_impl(with_file_io, with_conversion, popts) );
         break;
 
     case 's':
-        impl.reset( new boost_simple_impl(is_pool, with_file_io, popts) );
+        impl.reset(
+            new boost_simple_impl(
+                is_pool, with_file_io, with_conversion, popts) );
         break;
 
     case 'o':
-        impl.reset( new boost_operator_impl(is_pool, with_file_io, popts) );
+        impl.reset(
+            new boost_operator_impl(
+                is_pool, with_file_io, with_conversion, popts) );
         break;
 
     case 'd':
-        impl.reset( new boost_direct_impl(with_file_io, popts) );
+        impl.reset(
+            new boost_direct_impl(with_file_io, with_conversion, popts) );
         break;
 
 #ifdef BOOST_JSON_HAS_RAPIDJSON
@@ -1205,27 +1421,31 @@ bool add_impl(impl_list & vi, char kind, char alloc, char io, char num)
             using Allocator = RAPIDJSON_DEFAULT_ALLOCATOR;
             if(popts.numbers == number_precision::precise)
                 impl.reset(
-                    new rapidjson_impl<Allocator, true>(with_file_io) );
+                    new rapidjson_impl<Allocator, true>(
+                        with_file_io, with_conversion) );
             else
                 impl.reset(
-                    new rapidjson_impl<Allocator, false>(with_file_io) );
+                    new rapidjson_impl<Allocator, false>(
+                        with_file_io, with_conversion) );
         }
         else
         {
             using Allocator = rapidjson::CrtAllocator;
             if(popts.numbers == number_precision::precise)
                 impl.reset(
-                    new rapidjson_impl<Allocator, true>(with_file_io) );
+                    new rapidjson_impl<Allocator, true>(
+                        with_file_io, with_conversion) );
             else
                 impl.reset(
-                    new rapidjson_impl<Allocator, false>(with_file_io) );
+                    new rapidjson_impl<Allocator, false>(
+                        with_file_io, with_conversion) );
         }
         break;
 #endif // BOOST_JSON_HAS_RAPIDJSON
 
 #ifdef BOOST_JSON_HAS_NLOHMANN_JSON
     case 'n':
-        impl.reset( new nlohmann_impl(with_file_io) );
+        impl.reset( new nlohmann_impl(with_file_io, with_conversion) );
         break;
 #endif // BOOST_JSON_HAS_NLOHMANN_JSON
 
@@ -1298,6 +1518,10 @@ main(
             "            (y: yes)\n"
             "            (n: no)\n"
             "            (default no)\n"
+            "         -c:[y][n]                Convert to user-defined type\n"
+            "            (y: yes)\n"
+            "            (n: no)\n"
+            "            (default no)\n"
         ;
 
         return 4;
@@ -1328,7 +1552,8 @@ main(
             for( char alloc: s_alloc )
                 for( char num: s_num_mode )
                     for( char io: s_file_io )
-                        add_impl( vi, impl, alloc, io, num );
+                        for( char conv: s_conversion )
+                            add_impl( vi, impl, alloc, io, num, conv );
 
         // remove duplicate implementations
         std::sort(
