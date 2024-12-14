@@ -14,31 +14,6 @@ import boost-pretty-printers ;
 import config ;
 import modules ;
 
-# These make sure we only build on compatible C++11 or later toolchains.
-obj cxx11_basic_alignas : ../check/basic_alignas.cpp ;
-explicit cxx11_basic_alignas ;
-
-rule requires ( tests + )
-{
-    local result ;
-    for test in $(tests)
-    {
-        local name = $(test:D=) ;
-        local m = $(test:D) ;
-        if $(m)
-        {
-            m = [ modules.binding $(m) ] ;
-            m = $(m:D)// ;
-        }
-        m ?= "" ;
-
-        result += [ check-target-builds $(m)$(name) $(name)
-            : : <build>no <conditional>@warn-if-requested
-        ] ;
-    }
-    return $(result) ;
-}
-
 .warned = ;
 rule warn-if-requested ( properties * )
 {
@@ -64,15 +39,13 @@ project
       <link>shared:<define>BOOST_JSON_DYN_LINK=1
       <link>static:<define>BOOST_JSON_STATIC_LINK=1
     : requirements
-      [ requires
-        config/cxx11_constexpr
-        config/cxx11_decltype
-        config/cxx11_hdr_tuple
-        config/cxx11_template_aliases
-        config/cxx11_variadic_templates
-        # We only require limited alignas support,
-        # so we have to use a custom check
-        cxx11_basic_alignas
+      [ config.requires
+        cxx11_constexpr
+        cxx11_decltype
+        cxx11_hdr_tuple
+        cxx11_template_aliases
+        cxx11_variadic_templates
+        cxx11_alignas
       ]
       <toolset>msvc:<define>_SCL_SECURE_NO_WARNINGS
     : usage-requirements
