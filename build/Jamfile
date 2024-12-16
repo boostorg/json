@@ -14,10 +14,6 @@ import boost-pretty-printers ;
 import config ;
 import modules ;
 
-# These make sure we only build on compatible C++11 or later toolchains.
-obj cxx11_basic_alignas : ../check/basic_alignas.cpp ;
-explicit cxx11_basic_alignas ;
-
 rule requires ( tests + )
 {
     local result ;
@@ -70,13 +66,12 @@ project
         config/cxx11_hdr_tuple
         config/cxx11_template_aliases
         config/cxx11_variadic_templates
-        # We only require limited alignas support,
-        # so we have to use a custom check
-        cxx11_basic_alignas
+        config/cxx11_alignas
       ]
       <toolset>msvc:<define>_SCL_SECURE_NO_WARNINGS
     : usage-requirements
       <library>/boost/container//boost_container/<warnings-as-errors>off
+      <library>/boost/charconv//boost_charconv/<warnings-as-errors>off
       <define>BOOST_JSON_NO_LIB=1
     : source-location ../src
     ;
