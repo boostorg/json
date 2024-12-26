@@ -27,7 +27,7 @@ _top = '''\
 #endif
 
 __asm__(
-  ".pushsection \\\".debug_gdb_scripts\\\", \\\"MS\\\",@progbits,1\\n"
+  ".pushsection \\\".debug_gdb_scripts\\\", \\\"MS\\\",%progbits,1\\n"
   ".ascii \\\"\\\\4gdb.inlined-script.{script_id}\\\\n\\\"\\n"
 '''
 
