@@ -260,8 +260,9 @@ tag_invoke(
 
 struct id
 {
-    static constexpr auto& id1 = "Id#1";
-    static constexpr auto& id2 = "Id#2";
+    // msvc 14.0 doesn't like these being references to char arrays
+    static constexpr char const* id1 = "Id#1";
+    static constexpr char const* id2 = "Id#2";
 
     std::size_t n;
 };
@@ -299,8 +300,8 @@ struct id_string_repr
     {
         switch(n)
         {
-        case 1: return boost::json::string_view(id::id1);
-        case 2: return boost::json::string_view(id::id2);
+        case 1: return boost::json::string_view(id::id1, 4);
+        case 2: return boost::json::string_view(id::id2, 4);
         default: return boost::json::string_view("unknown");
         }
     }
