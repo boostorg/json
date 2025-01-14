@@ -33,10 +33,10 @@ namespace json {
     @tparam T the type to parse into. This type must be
     [*DefaultConstructible*](https://en.cppreference.com/w/cpp/named_req/DefaultConstructible).
 */
-template< class T >
+template< class T, class Ctx = detail::no_context >
 using parser_for =
 #ifndef BOOST_JSON_DOCS
-    basic_parser<detail::into_handler<T>>;
+    basic_parser<detail::into_handler<T, Ctx>>;
 #else
     __see_below__;
 #endif
@@ -70,21 +70,23 @@ using parser_for =
     is omitted, the parser will accept only standard JSON.
 */
 /** @{ */
-template<class V>
+template< class V, class Ctx = detail::no_context >
 void
 parse_into(
     V& v,
     string_view sv,
     system::error_code& ec,
-    parse_options const& opt = {} );
+    parse_options const& opt = {},
+    Ctx const& ctx = Ctx{} );
 
-template<class V>
+template< class V, class Ctx = detail::no_context >
 void
 parse_into(
     V& v,
     string_view sv,
     std::error_code& ec,
-    parse_options const& opt = {} );
+    parse_options const& opt = {},
+    Ctx const& ctx = Ctx{} );
 /** @} */
 
 /** Parse a JSON text into a user-defined object.
@@ -116,12 +118,13 @@ parse_into(
 
     @throw `boost::system::system_error` on failed parse.
 */
-template<class V>
+template< class V, class Ctx = detail::no_context >
 void
 parse_into(
     V& v,
     string_view sv,
-    parse_options const& opt = {} );
+    parse_options const& opt = {},
+    Ctx const& ctx = Ctx{} );
 
 /** Parse a JSON text into a user-defined object.
 
@@ -155,21 +158,23 @@ parse_into(
     is omitted, the parser will accept only standard JSON.
 */
 /** @{ */
-template<class V>
+template< class V, class Ctx = detail::no_context >
 void
 parse_into(
     V& v,
     std::istream& is,
     system::error_code& ec,
-    parse_options const& opt = {} );
+    parse_options const& opt = {},
+    Ctx const& ctx = Ctx{} );
 
-template<class V>
+template< class V, class Ctx = detail::no_context >
 void
 parse_into(
     V& v,
     std::istream& is,
     std::error_code& ec,
-    parse_options const& opt = {} );
+    parse_options const& opt = {},
+    Ctx const& ctx = Ctx{} );
 /** @} */
 
 /** Parse a JSON text into a user-defined object.
@@ -203,12 +208,13 @@ parse_into(
 
     @throw `boost::system::system_error` on failed parse.
 */
-template<class V>
+template< class V, class Ctx = detail::no_context >
 void
 parse_into(
     V& v,
     std::istream& is,
-    parse_options const& opt = {} );
+    parse_options const& opt = {},
+    Ctx const& ctx = Ctx{} );
 
 } // namespace boost
 } // namespace json

@@ -391,7 +391,7 @@ struct conversion_representation_impl< T, std::tuple<Ctxs...> >
 
 template< class T, class Ctx >
 using conversion_representation
-    = typename conversion_representation_impl<T, Ctx>::type;
+    = typename conversion_representation_impl<remove_cvref<T>, Ctx>::type;
 
 template< class Ctx, class T, class Dir >
 struct conversion_attrs
