@@ -198,8 +198,8 @@ tag_invoke(
 
 struct id
 {
-    static constexpr auto& id1 = "Id#1";
-    static constexpr auto& id2 = "Id#2";
+    static constexpr char const* id1 = "Id#1";
+    static constexpr char const* id2 = "Id#2";
 
     std::size_t n;
 };
@@ -232,9 +232,9 @@ struct id_string_repr
 
     id_string_repr(boost::json::string_view sv)
     {
-        if( std::equal( sv.begin(), sv.end(), id::id1) )
+        if( sv == boost::json::string_view(id::id1, 4) )
             n = 1;
-        else if( std::equal( sv.begin(), sv.end(), id::id2) )
+        else if( sv == boost::json::string_view(id::id2, 4) )
             n = 2;
         else
             throw std::runtime_error( "unknown id" );
@@ -249,8 +249,8 @@ struct id_string_repr
     {
         switch(n)
         {
-        case 1: return boost::json::string_view(id::id1);
-        case 2: return boost::json::string_view(id::id2);
+        case 1: return boost::json::string_view(id::id1, 4);
+        case 2: return boost::json::string_view(id::id2, 4);
         default: return boost::json::string_view("unknown");
         }
     }
