@@ -500,6 +500,7 @@ value::delete_at_pointer(
                 obj.erase(kv);
                 return {true, err_position};
             }
+            return {false,err_position};
         }
         case kind::array: {
             auto const index = detail::parse_number_token(previous_segment, ec);
@@ -508,6 +509,7 @@ value::delete_at_pointer(
                 arr.erase(arr.begin() + index);
                 return {true, err_position};
             }
+            return {false,err_position};
         }
         default: {
             BOOST_JSON_FAIL(ec, error::value_is_scalar);
