@@ -454,7 +454,7 @@ value::delete_at_pointer(
         
         switch (result->kind()) 
         {
-            case kind::object: {
+            case boost::json::kind::object: {
                 auto& obj = result->get_object();
 
                 detail::pointer_token const token(segment);
@@ -468,7 +468,7 @@ value::delete_at_pointer(
                 }
                 break;
             }
-            case kind::array: {
+            case boost::json::kind::array: {
                 auto const index = detail::parse_number_token(segment, ec);
                 segment          = detail::next_segment(sv, ec);
 
@@ -492,7 +492,7 @@ value::delete_at_pointer(
 
     switch (previous_result->kind()) 
     {
-        case kind::object: {
+        case boost::json::kind::object: {
             auto& obj = previous_result->get_object();
             detail::pointer_token const token(previous_segment);
             key_value_pair* kv = detail::find_in_object(obj, token).first;
@@ -502,7 +502,7 @@ value::delete_at_pointer(
             }
             return {false,err_position};
         }
-        case kind::array: {
+        case boost::json::kind::array: {
             auto const index = detail::parse_number_token(previous_segment, ec);
             auto& arr = previous_result->get_array();
             if (arr.if_contains(index)){
