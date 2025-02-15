@@ -516,7 +516,6 @@ value::delete_at_pointer(
             return {false, err_position};
         }
     }
-    return {false, err_position};
 }
 
 value*
