@@ -136,7 +136,7 @@ count_valid<false>(
         uint8_t len = first & 0xFF;
         if(BOOST_JSON_UNLIKELY(end - p < len))
             break;
-        if(BOOST_JSON_UNLIKELY(! is_valid_utf8(p, first)))
+        if(BOOST_JSON_UNLIKELY(! is_valid_utf8_no_inline(p, first)))
             break;
         p += len;
     }
@@ -185,7 +185,7 @@ count_valid<false>(
         uint8_t len = first & 0xFF;
         if(BOOST_JSON_UNLIKELY(end - p < len))
             break;
-        if(BOOST_JSON_UNLIKELY(! is_valid_utf8(p, first)))
+        if(BOOST_JSON_UNLIKELY(! is_valid_utf8_no_inline(p, first)))
             break;
         p += len;
     }
