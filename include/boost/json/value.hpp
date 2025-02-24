@@ -3996,6 +3996,13 @@ public:
         set_pointer_options const& opts = {} );
     /** @} */
 
+    /** Remove an element via JSON Pointer.
+     */
+    BOOST_JSON_DECL
+    std::pair<bool, string_view>
+    delete_at_pointer(
+        string_view sv,
+        system::error_code& ec);
     //------------------------------------------------------
 
     /** Return `true` if two values are equal.
