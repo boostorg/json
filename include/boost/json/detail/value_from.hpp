@@ -22,8 +22,11 @@
 
 namespace boost {
 namespace json {
-
 namespace detail {
+
+template< class Ctx, class T >
+using value_from_attrs = conversion_attrs<
+    Ctx, remove_cvref<T>, value_from_conversion>;
 
 template< class Ctx, class T >
 struct append_tuple_element {
@@ -40,6 +43,21 @@ struct append_tuple_element {
             get<I>(std::forward<T>(t)), ctx, arr.storage() ));
     }
 };
+
+template< class T, class Ctx >
+using to_representation_result = mp11::mp_if<
+    std::is_same<
+        remove_cvref<T>, typename value_from_attrs<Ctx, T>::representation >,
+    T&&,
+    typename value_from_attrs<Ctx, T>::representation>;
+
+template< class Ctx, class T >
+to_representation_result< T, Ctx >
+to_representation( T&& t )
+{
+    using R = to_representation_result< T, Ctx >;
+    return static_cast<R>( static_cast<T&&>(t) );
+}
 
 //----------------------------------------------------------
 // User-provided conversion
@@ -107,9 +125,11 @@ value_from_impl( map_like_conversion_tag, value& jv, T&& from, Ctx const& ctx )
     object& obj = jv.emplace_object();
     obj.reserve(detail::try_size(from, size_implementation<T>()));
     for (auto&& elem : from)
+    {
         obj.emplace(
-            get<0>(elem),
+            to_representation<Ctx>( get<0>(elem) ),
             value_from( get<1>(elem), ctx, obj.storage() ));
+    }
 }
 
 // ranges
@@ -256,13 +276,6 @@ value_from_impl( path_conversion_tag, value& jv, T&& from, Ctx const& )
     string_view sv = s;
     jv.emplace_string().assign(sv);
 }
-
-//----------------------------------------------------------
-// Contextual conversions
-
-template< class Ctx, class T >
-using value_from_category = conversion_category<
-    Ctx, T, value_from_conversion >;
 
 } // detail
 
