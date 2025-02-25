@@ -12,6 +12,7 @@
 
 #include <boost/json/detail/config.hpp>
 #include <boost/json/fwd.hpp>
+#include <boost/json/string_view.hpp>
 
 #include <type_traits>
 
@@ -436,6 +437,27 @@ struct is_variant_like;
 */
 template<class T>
 struct is_optional_like;
+
+struct context_key_push_tag{};
+struct context_key_pop_tag{};
+struct context_index_push_tag{};
+struct context_index_pop_tag{};
+
+template< class Ctx >
+void
+context_key_push( Ctx const& ctx, string_view sv );
+
+template< class Ctx >
+void
+context_key_pop( Ctx const& ctx );
+
+template< class Ctx >
+void
+context_index_push( Ctx const& ctx, std::size_t n );
+
+template< class Ctx >
+void
+context_index_pop( Ctx const& ctx );
 
 } // namespace json
 } // namespace boost
