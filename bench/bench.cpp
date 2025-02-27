@@ -822,7 +822,7 @@ public:
     }
 
     clock_type::duration
-    serialize_string(file_item const& fi, std::size_t repeat) const override
+    serialize_string(file_item const&, std::size_t) const override
     {
         return skip();
     }

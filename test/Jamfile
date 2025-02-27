@@ -34,7 +34,6 @@ local SOURCES =
     object.cpp
     parse.cpp
     parser.cpp
-    parse_into.cpp
     pilfer.cpp
     pointer.cpp
     result_for.cpp
@@ -68,13 +67,17 @@ project
 
 for local f in $(SOURCES)
 {
-    local extra-reqs ;
-    if $(f) = parse_into.cpp
-    {
-        extra-reqs += <toolset>msvc:<cxxflags>/bigobj ;
-    }
+    run $(f) main.cpp /boost/json//boost_json ;
+}
 
-    run $(f) main.cpp /boost/json//boost_json : requirements $(extra-reqs) ;
+local HEAVY_SOURCES =
+    parse_into.cpp
+    ;
+for local f in $(HEAVY_SOURCES)
+{
+    run $(f) main.cpp /boost/json//boost_json
+        : requirements <toolset>msvc:<cxxflags>/bigobj
+        ;
 }
 
 run limits.cpp main.cpp /boost/json//json_sources
@@ -99,3 +102,6 @@ boost-pretty-printers.test-gdb-printers gdb-printers
     : <dependency>../src/boost_json_gdb_printers.py
     ;
 explicit gdb-printers ;
+
+alias common : $(SOURCES:B) limits no_exceptions intrusive_macros ;
+alias heavy : $(HEAVY_SOURCES:B) ;

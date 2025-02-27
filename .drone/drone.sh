@@ -89,8 +89,15 @@ echo '==================================> SCRIPT'
 
 printf "add-auto-load-safe-path $PWD/bin.v2\n" > ~/.gdbinit
 
-export B2_TARGETS=${B2_TARGETS:-"libs/$SELF/test libs/$SELF/example"}
+export special_targets=$B2_TARGETS
+export B2_TARGETS=${B2_TARGETS:-"libs/$SELF/test//common libs/$SELF/example libs/$SELF/bench"}
 $BOOST_ROOT/libs/$SELF/ci/travis/build.sh
+
+if [ -z "$special_targets" ]; then
+    export B2_JOBS=1
+    export B2_TARGETS="libs/$SELF/test//heavy"
+    $BOOST_ROOT/libs/$SELF/ci/travis/build.sh
+fi
 
 elif [ "$DRONE_JOB_BUILDTYPE" == "docs" ]; then
 
