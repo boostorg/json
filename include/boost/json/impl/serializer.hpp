@@ -818,7 +818,7 @@ template<class T, bool StackEmpty>
 bool
 write_impl(writer& w, stream& ss)
 {
-    using cat = detail::generic_conversion_category<T>;
+    using cat = detail::generic_conversion_category<T, detail::no_context>;
     return write_impl<T, StackEmpty>( cat(), w, ss );
 }
 
