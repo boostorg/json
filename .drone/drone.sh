@@ -90,7 +90,7 @@ echo '==================================> SCRIPT'
 printf "add-auto-load-safe-path $PWD/bin.v2\n" > ~/.gdbinit
 
 export special_targets=$B2_TARGETS
-export B2_TARGETS=${B2_TARGETS:-"libs/$SELF/test//common libs/$SELF/example"}
+export B2_TARGETS=${B2_TARGETS:-"libs/$SELF/test//common libs/$SELF/example libs/$SELF/bench"}
 $BOOST_ROOT/libs/$SELF/ci/travis/build.sh
 
 if [ -z "$special_targets" ]; then
