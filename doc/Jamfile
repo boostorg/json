@@ -56,6 +56,15 @@ install images
 
 explicit images ;
 
+install scripts
+    :
+        [ glob scripts/*.js ]
+    :
+        <location>html/json
+    ;
+
+explicit scripts ;
+
 xml json_doc
     :
         qbk/main.qbk
@@ -72,6 +81,8 @@ explicit json_doc ;
 #
 #-------------------------------------------------------------------------------
 
+path-constant HERE : . ;
+
 boostbook json
     :
         json_doc
@@ -84,9 +95,12 @@ boostbook json
         <xsl:param>toc.max.depth=8                      # How many levels should be created for each TOC?
         <xsl:param>generate.section.toc.level=8         # Control depth of TOC generation in sections
         <xsl:param>generate.toc="chapter toc,title section nop reference nop"
+        <xsl:path>$(HERE)
         <include>../../../tools/boostbook/dtd
     :
         <dependency>images
+        <dependency>bench.html
+        <dependency>scripts
     ;
 
 #-------------------------------------------------------------------------------
