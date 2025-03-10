@@ -31,7 +31,7 @@
  * handler), and on_document_end (by disabling the nested handler).
  *
  * Every other event is handled by the nested handler, which has the type
- * get_handler< T, into_handler<T> >. The second parameter is the parent
+ * get_handler<T, P, Ctx>. The second parameter is the parent
  * handler (in this case, it's the top handler, into_handler<T>). The type is
  * actually an alias to class template converting_handler, which has a separate
  * specialisation for every conversion category from the list of generic
@@ -74,12 +74,13 @@ namespace boost {
 namespace json {
 namespace detail {
 
-template< class Impl, class T, class Parent >
+template< class Impl, class T, class Parent, class Ctx >
 class converting_handler;
 
 // get_handler
-template< class V, class P >
-using get_handler = converting_handler< generic_conversion_category<V>, V, P >;
+template<class V, class P, class Ctx>
+using get_handler = converting_handler<
+    generic_conversion_category<V, Ctx>, V, P, Ctx>;
 
 template<error E> class handler_error_base
 {
@@ -132,26 +133,27 @@ public:
     }
 };
 
-template< class D, class V, class P, error E >
+template<class D, class V, class P, class Ctx, error E>
 class composite_handler
 {
 protected:
-    using inner_handler_type = get_handler<V, D>;
+    using representation = conversion_representation<V, Ctx>;
+    using inner_handler_type = get_handler<representation, D, Ctx>;
 
     P* parent_;
 #if defined(__GNUC__) && __GNUC__ < 5 && !defined(__clang__)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #endif
-    V next_value_ = {};
+    representation next_value_ = {};
     inner_handler_type inner_;
     bool inner_active_ = false;
 
 public:
-    composite_handler( composite_handler const& ) = delete;
-    composite_handler& operator=( composite_handler const& ) = delete;
+    composite_handler(composite_handler const&) = delete;
+    composite_handler& operator=(composite_handler const&) = delete;
 
-    composite_handler( P* p )
+    composite_handler(P* p)
         : parent_(p), inner_( &next_value_, static_cast<D*>(this) )
     {}
 #if defined(__GNUC__) && __GNUC__ < 5 && !defined(__clang__)
@@ -266,8 +268,8 @@ bool integral_in_range( std::uint64_t v )
     return v <= static_cast<typename std::make_unsigned<V>::type>( (std::numeric_limits<V>::max)() );
 }
 
-template< class V, class P >
-class converting_handler<integral_conversion_tag, V, P>
+template< class V, class P, class Ctx >
+class converting_handler<integral_conversion_tag, V, P, Ctx>
     : public scalar_handler<P, error::not_integer>
 {
 private:
@@ -310,8 +312,8 @@ public:
 };
 
 // floating point handler
-template< class V, class P>
-class converting_handler<floating_point_conversion_tag, V, P>
+template< class V, class P, class Ctx>
+class converting_handler<floating_point_conversion_tag, V, P, Ctx>
     : public scalar_handler<P, error::not_double>
 {
 private:
@@ -348,8 +350,8 @@ public:
 };
 
 // string handler
-template< class V, class P >
-class converting_handler<string_like_conversion_tag, V, P>
+template<class V, class P, class Ctx>
+class converting_handler<string_like_conversion_tag, V, P, Ctx>
     : public scalar_handler<P, error::not_string>
 {
 private:
@@ -387,8 +389,8 @@ public:
 };
 
 // bool handler
-template< class V, class P >
-class converting_handler<bool_conversion_tag, V, P>
+template<class V, class P, class Ctx>
+class converting_handler<bool_conversion_tag, V, P, Ctx>
     : public scalar_handler<P, error::not_bool>
 {
 private:
@@ -408,8 +410,8 @@ public:
 };
 
 // null handler
-template< class V, class P >
-class converting_handler<null_like_conversion_tag, V, P>
+template<class V, class P, class Ctx>
+class converting_handler<null_like_conversion_tag, V, P, Ctx>
     : public scalar_handler<P, error::not_null>
 {
 private:
@@ -429,8 +431,8 @@ public:
 };
 
 // described enum handler
-template< class V, class P >
-class converting_handler<described_enum_conversion_tag, V, P>
+template<class V, class P, class Ctx>
+class converting_handler<described_enum_conversion_tag, V, P, Ctx>
     : public scalar_handler<P, error::not_string>
 {
 #ifndef BOOST_DESCRIBE_CXX14
@@ -477,8 +479,8 @@ public:
 #endif // BOOST_DESCRIBE_CXX14
 };
 
-template< class V, class P >
-class converting_handler<no_conversion_tag, V, P>
+template<class V, class P, class Ctx>
+class converting_handler<no_conversion_tag, V, P, Ctx>
 {
     static_assert( sizeof(V) == 0, "This type is not supported" );
 };
@@ -534,12 +536,13 @@ clear_container(
     target.clear();
 }
 
-template< class V, class P >
-class converting_handler<sequence_conversion_tag, V, P>
+template<class V, class P, class Ctx>
+class converting_handler<sequence_conversion_tag, V, P, Ctx>
     : public composite_handler<
-        converting_handler<sequence_conversion_tag, V, P>,
+        converting_handler<sequence_conversion_tag, V, P, Ctx>,
         detail::value_type<V>,
         P,
+        Ctx,
         error::not_array>
 {
 private:
@@ -609,12 +612,13 @@ public:
 };
 
 // map handler
-template< class V, class P >
-class converting_handler<map_like_conversion_tag, V, P>
+template<class V, class P, class Ctx>
+class converting_handler<map_like_conversion_tag, V, P, Ctx>
     : public composite_handler<
-        converting_handler<map_like_conversion_tag, V, P>,
+        converting_handler<map_like_conversion_tag, V, P, Ctx>,
         detail::mapped_type<V>,
         P,
+        Ctx,
         error::not_object>
 {
 private:
@@ -628,9 +632,11 @@ public:
 
     bool signal_value(system::error_code&)
     {
-        value_->emplace( std::move(key_), std::move(this->next_value_) );
-
-        key_ = {};
+        using key_rep = conversion_representation<detail::key_type<V>, Ctx>;
+        value_->emplace(
+            static_cast<key_rep>( std::move(key_) ),
+            std::move(this->next_value_) );
+        key_.clear();
         this->next_value_ = {};
 
         this->inner_active_ = false;
@@ -685,33 +691,65 @@ public:
 };
 
 // tuple handler
-template<std::size_t I, class T>
+template<
+    std::size_t I,
+    class P,
+    class Ctx,
+    class T,
+    class Rep = conversion_representation<T, Ctx> >
 struct handler_tuple_element
 {
-    template< class... Args >
-    handler_tuple_element( Args&& ... args )
-        : t_( static_cast<Args&&>(args)... )
+    using representation = conversion_representation<T, Ctx>;
+    using handler = get_handler<representation, P, Ctx>;
+
+    handler_tuple_element(T* t, P* p)
+        : t_(std::addressof(rep_), p), tgt_(t)
     {}
 
-    T t_;
+    void
+    finish()
+    {
+        *tgt_ = std::move(rep_);
+    }
+
+    Rep rep_;
+    handler t_;
+    T* tgt_;
 };
 
-template<std::size_t I, class T>
-T&
-get( handler_tuple_element<I, T>& e )
+template<std::size_t I, class P, class Ctx, class T>
+struct handler_tuple_element<I, P, Ctx, T, T>
+{
+    using handler = get_handler<T, P, Ctx>;
+
+    handler_tuple_element(T* t, P* p)
+        : t_(t, p)
+    {}
+
+    void
+    finish() const noexcept
+    {}
+
+    handler t_;
+};
+
+template<std::size_t I, class P, class Ctx, class T>
+typename handler_tuple_element<I, P, Ctx, T>::handler&
+get( handler_tuple_element<I, P, Ctx, T>& e )
 {
     return e.t_;
 }
 
 template<
     class P,
+    class Ctx,
     class LV,
     class S = mp11::make_index_sequence<mp11::mp_size<LV>::value> >
 struct handler_tuple;
 
-template< class P, template<class...> class L, class... V, std::size_t... I >
-struct handler_tuple< P, L<V...>, mp11::index_sequence<I...> >
-    : handler_tuple_element<I, V>
+template< class P, class Ctx, template<class...> class L, class... V, std::size_t... I >
+struct handler_tuple< P, Ctx, L<V...>, mp11::index_sequence<I...> >
+    : handler_tuple_element<I, P, Ctx, V>
     ...
 {
     handler_tuple( handler_tuple const& ) = delete;
@@ -719,11 +757,21 @@ struct handler_tuple< P, L<V...>, mp11::index_sequence<I...> >
 
     template< class Access, class T >
     handler_tuple( Access access, T* pv, P* pp )
-        : handler_tuple_element<I, V>(
+        : handler_tuple_element<I, P, Ctx, V>(
             access( pv, mp11::mp_size_t<I>() ),
             pp )
         ...
     {}
+
+    void
+    finish()
+    {
+        auto _ = {
+            (static_cast< handler_tuple_element<I, P, Ctx, V>* >(this)
+                ->finish(), 0)
+            ...};
+        (void)_;
+    }
 };
 
 #if defined(BOOST_MSVC) && BOOST_MSVC < 1910
@@ -798,17 +846,13 @@ struct tuple_accessor
     }
 };
 
-template< class T, class P >
-class converting_handler<tuple_conversion_tag, T, P>
+template<class T, class P, class Ctx>
+class converting_handler<tuple_conversion_tag, T, P, Ctx>
 {
 
 private:
     using ElementTypes = tuple_element_list<T>;
-
-    template<class V>
-    using ElementHandler = get_handler<V, converting_handler>;
-    using InnerHandlers = mp11::mp_transform<ElementHandler, ElementTypes>;
-    using HandlerTuple = handler_tuple<converting_handler, InnerHandlers>;
+    using HandlerTuple = handler_tuple<converting_handler, Ctx, ElementTypes>;
 
     T* value_;
     P* parent_;
@@ -839,6 +883,7 @@ public:
             return false;
         }
 
+        handlers_.finish();
         inner_active_ = -1;
         return parent_->signal_value(ec);
     }
@@ -1020,7 +1065,7 @@ struct ignoring_handler
     ignoring_handler(ignoring_handler const&) = delete;
     ignoring_handler& operator=(ignoring_handler const&) = delete;
 
-    ignoring_handler(void*, P* p) noexcept
+    ignoring_handler(P* p) noexcept
         : parent_(p)
     {}
 
@@ -1119,8 +1164,8 @@ struct ignoring_handler
     }
 };
 
-template<class V, class P>
-class converting_handler<described_class_conversion_tag, V, P>
+template<class V, class P, class Ctx>
+class converting_handler<described_class_conversion_tag, V, P, Ctx>
 {
 #if !defined(BOOST_DESCRIBE_CXX14)
 
@@ -1132,20 +1177,13 @@ class converting_handler<described_class_conversion_tag, V, P>
 private:
     using Dm = described_members<V>;
     using Dt = struct_element_list<V>;
+    using InnerCount = mp11::mp_size<Dt>;
 
-    template<class T>
-    using MemberHandler = get_handler<T, converting_handler>;
-    using InnerHandlers = mp11::mp_push_back<
-        mp11::mp_transform<MemberHandler, Dt>,
-        ignoring_handler<converting_handler> >;
-    using InnerCount = mp11::mp_size<InnerHandlers>;
-
+    handler_tuple<converting_handler, Ctx, Dt> handlers_;
+    ignoring_handler<converting_handler> ignorer_;
+    std::string key_;
     V* value_;
     P* parent_;
-
-    std::string key_;
-
-    handler_tuple<converting_handler, InnerHandlers> handlers_;
     int inner_active_ = -1;
     std::size_t activated_ = 0;
 
@@ -1154,16 +1192,14 @@ public:
     converting_handler& operator=( converting_handler const& ) = delete;
 
     converting_handler( V* v, P* p )
-        : value_(v), parent_(p), handlers_(struct_accessor(), v, this)
+        : handlers_(struct_accessor(), v, this)
+        , ignorer_(this)
+        , value_(v)
+        , parent_(p)
     {}
 
     struct is_required_checker
     {
-        bool operator()( mp11::mp_size<Dt> ) const noexcept
-        {
-            return false;
-        }
-
         template< class I >
         auto operator()( I ) const noexcept
         {
@@ -1171,15 +1207,17 @@ public:
             return !is_optional_like<T>::value;
         }
     };
-
     bool signal_value(system::error_code&)
     {
         BOOST_ASSERT( inner_active_ >= 0 );
-        bool required_member = mp11::mp_with_index<InnerCount>(
-            inner_active_,
-            is_required_checker{});
-        if( required_member )
-            ++activated_;
+        if( static_cast<std::size_t>(inner_active_) < InnerCount::value )
+        {
+            bool required_member = mp11::mp_with_index<InnerCount>(
+                inner_active_,
+                is_required_checker{});
+            if( required_member )
+                ++activated_;
+        }
 
         key_ = {};
         inner_active_ = -1;
@@ -1199,6 +1237,8 @@ public:
         BOOST_JSON_FAIL( ec, error::not_object ); \
         return false; \
     } \
+    if(inner_active_ == InnerCount::value) \
+        return ignorer_.fn; \
     auto f = [&](auto& handler) { return handler.fn ; }; \
     using F = decltype(f); \
     using H = decltype(handlers_); \
@@ -1226,6 +1266,7 @@ public:
                 return false;
             }
 
+            handlers_.finish();
             return parent_->signal_value(ec);
         }
 
@@ -1270,7 +1311,7 @@ public:
             key = key_;
         }
 
-        inner_active_ = InnerCount::value - 1;
+        inner_active_ = InnerCount::value;
         mp11::mp_for_each<Dm>( struct_key_searcher(key, inner_active_) );
         return true;
     }
@@ -1452,16 +1493,16 @@ struct event_visitor
     }
 };
 
-// L<T...> -> variant< monostate, get_handler<T, P>... >
-template< class P, class L >
+// L<T...> -> variant< monostate, get_handler<T, P, Ctx>... >
+template<class P, class L, class Ctx>
 using inner_handler_variant = mp11::mp_push_front<
     mp11::mp_transform_q<
-        mp11::mp_bind_back<get_handler, P>,
+        mp11::mp_bind_back<get_handler, P, Ctx>,
         mp11::mp_apply<variant2::variant, L>>,
     variant2::monostate>;
 
-template< class T, class P >
-class converting_handler<variant_conversion_tag, T, P>
+template<class T, class P, class Ctx>
+class converting_handler<variant_conversion_tag, T, P, Ctx>
 {
 private:
     using variant_size = mp11::mp_size<T>;
@@ -1471,7 +1512,7 @@ private:
 
     std::string string_;
     std::vector< parse_event > events_;
-    inner_handler_variant<converting_handler, T> inner_;
+    inner_handler_variant<converting_handler, T, Ctx> inner_;
     int inner_active_ = -1;
 
 public:
@@ -1657,17 +1698,19 @@ public:
 };
 
 // optional handler
-template<class V, class P>
-class converting_handler<optional_conversion_tag, V, P>
+template<class V, class P, class Ctx>
+class converting_handler<optional_conversion_tag, V, P, Ctx>
 {
 private:
     using inner_type = value_result_type<V>;
-    using inner_handler_type = get_handler<inner_type, converting_handler>;
+    using inner_rep = conversion_representation<inner_type, Ctx>;
+    using inner_handler_type = get_handler<
+        inner_rep, converting_handler, Ctx>;
 
     V* value_;
     P* parent_;
 
-    inner_type inner_value_ = {};
+    inner_rep inner_value_ = {};
     inner_handler_type inner_;
     bool inner_active_ = false;
 
@@ -1782,8 +1825,8 @@ public:
 };
 
 // path handler
-template< class V, class P >
-class converting_handler<path_conversion_tag, V, P>
+template<class V, class P, class Ctx>
+class converting_handler<path_conversion_tag, V, P, Ctx>
     : public scalar_handler<P, error::not_string>
 {
 private:
@@ -1822,36 +1865,83 @@ public:
 };
 
 // into_handler
-template< class V >
+template<
+    class T, class Ctx, class Rep = conversion_representation<T, Ctx> >
+class direct_target_holder
+{
+    Rep rep_;
+    T* tgt_;
+
+public:
+    using representation = Rep;
+
+    direct_target_holder(T* tgt)
+        : rep_(*tgt)
+        , tgt_(tgt)
+    {}
+
+    representation*
+    target_address(T*) noexcept
+    {
+        return std::addressof(rep_);
+    }
+
+    void
+    finish()
+    {
+        *tgt_ = std::move(rep_);
+    }
+};
+
+template<class T, class Ctx>
+class direct_target_holder<T, Ctx, T>
+{
+public:
+    using representation = T;
+
+    direct_target_holder(T*) noexcept
+    {}
+
+    representation*
+    target_address(T* tgt) const noexcept
+    {
+        return tgt;
+    }
+
+    void
+    finish() const noexcept
+    {}
+};
+
+template<class V, class Ctx>
 class into_handler
+    : direct_target_holder<V, Ctx>
 {
 private:
-
-    using inner_handler_type = get_handler<V, into_handler>;
+    using inner_handler_type = get_handler<
+        typename into_handler::representation, into_handler, Ctx>;
 
     inner_handler_type inner_;
     bool inner_active_ = true;
 
 public:
-
-    into_handler( into_handler const& ) = delete;
-    into_handler& operator=( into_handler const& ) = delete;
-
-public:
-
     static constexpr std::size_t max_object_size = object::max_size();
     static constexpr std::size_t max_array_size = array::max_size();
     static constexpr std::size_t max_key_size = string::max_size();
     static constexpr std::size_t max_string_size = string::max_size();
 
-public:
+    into_handler(into_handler const&) = delete;
+    into_handler& operator=(into_handler const&) = delete;
 
-    explicit into_handler( V* v ): inner_( v, this )
-    {
-    }
+    explicit
+    into_handler( V* v, Ctx const& = Ctx{} )
+        : into_handler::direct_target_holder(v)
+        , inner_(into_handler::target_address(v), this)
+    {}
 
     bool signal_value(system::error_code&)
     {
+        into_handler::finish();
         return true;
     }
 
@@ -1959,7 +2049,6 @@ public:
     {
         return true;
     }
-
 #undef BOOST_JSON_INVOKE_INNER
 };
 

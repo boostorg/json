@@ -75,6 +75,103 @@ private:
 
 BOOST_DEFINE_ENUM_CLASS(E, x, y, z)
 
+struct id
+{
+    static constexpr char const* id1 = "Id#1";
+    static constexpr char const* id2 = "Id#2";
+
+    std::size_t n;
+};
+
+bool
+operator==(id l, id r) noexcept
+{
+    return l.n == r.n;
+}
+
+bool
+operator!=(id l, id r) noexcept
+{
+    return l.n != r.n;
+}
+
+bool
+operator<(id l, id r) noexcept
+{
+    return l.n < r.n;
+}
+
+struct id_string_repr
+{
+    std::string s;
+
+    id_string_repr()
+        : s(::id::id1)
+    {}
+
+    id_string_repr(boost::json::string_view sv) noexcept
+        : s(sv)
+    {}
+
+    id_string_repr(::id x) noexcept
+    {
+        switch(x.n)
+        {
+        case 1:
+            s = ::id::id1;
+            break;
+        case 2:
+            s = ::id::id2;
+            break;
+        }
+    }
+
+    operator id() const
+    {
+        if( s == boost::json::string_view(id::id1, 4) )
+            return {1};
+        else if( s == boost::json::string_view(id::id2, 4) )
+            return {2};
+        throw std::runtime_error("unknown id");
+    }
+
+    operator boost::json::string_view() const noexcept
+    {
+        return s;
+    }
+
+    void
+    clear() noexcept
+    {
+        s.clear();
+    }
+
+    void
+    append( char const* b, char const* e)
+    {
+        s.append(b, e);
+    }
+};
+
+struct W
+{
+    int n;
+    id z;
+};
+BOOST_DESCRIBE_STRUCT(W, (), (n, z))
+
+bool
+operator==( W const& w1, W const& w2 ) noexcept
+{
+    return w1.n == w2.n && w1.z == w2.z;
+}
+
+bool
+operator!=( W const& w1, W const& w2 ) noexcept
+{
+    return !(w1 == w2);
+}
+
 namespace boost {
 namespace json {
 
@@ -83,52 +180,59 @@ struct is_described_class<Z>
     : std::true_type
 { };
 
+template<>
+struct represent_as<::id>
+{
+    using type = ::id_string_repr;
+};
+
 class parse_into_test
 {
 public:
 
-    template<class T>
-    void testParseIntoValue( value const& jv )
+    template<class T, class Ctx = detail::no_context>
+    void testParseIntoValue( value const& jv, Ctx const& ctx = Ctx{} )
     {
+        parse_options opts;
 #if defined(__GNUC__) && __GNUC__ < 5
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #endif
-        T t1 = value_to<T>(jv);
+        T t1 = value_to<T>(jv, ctx);
         (void)t1; // older GCC thinks t1 can be unused
         std::string json = serialize(jv);
 
         T t2{};
         system::error_code jec;
-        parse_into(t2, json, jec);
+        parse_into(t2, json, jec, opts, ctx);
         BOOST_TEST( !jec.failed() ) && BOOST_TEST( t1 == t2 );
 
         T t3{};
         std::error_code ec;
-        parse_into(t3, json, ec);
+        parse_into(t3, json, ec, opts, ctx);
         BOOST_TEST( !ec ) && BOOST_TEST( t1 == t3 );
 
         T t4{};
-        parse_into(t4, json);
+        parse_into(t4, json, opts, ctx);
         BOOST_TEST( t1 == t4 );
 
         std::istringstream is(json);
         T t5{};
         jec = {};
-        parse_into(t5, is, jec);
+        parse_into(t5, is, jec, opts, ctx);
         BOOST_TEST( !jec.failed() ) && BOOST_TEST( t1 == t5 );
 
         is.clear();
         is.seekg(0);
         T t6{};
         ec = {};
-        parse_into(t6, is, ec);
+        parse_into(t6, is, ec, opts, ctx);
         BOOST_TEST( !ec ) && BOOST_TEST( t1 == t6 );
 
         is.str(json);
         is.clear();
         T t7{};
-        parse_into(t7, is);
+        parse_into(t7, is, opts, ctx);
         BOOST_TEST( t1 == t7 );
 
         parse_options opt;
@@ -136,8 +240,8 @@ public:
         json = "// this is a comment\n" + json;
 
         T t8{};
-        parser_for<T> p( opt, &t8 );
-        for( auto& c: json )
+        parser_for<T, Ctx> p(opt, &t8, ctx);
+        for(auto& c: json)
         {
             std::size_t const n = p.write_some( true, &c, 1, jec );
             BOOST_TEST( !jec.failed() );
@@ -151,10 +255,10 @@ public:
 #endif
     }
 
-    template<class T>
-    void testParseInto( T const& t )
+    template<class T, class Ctx = detail::no_context>
+    void testParseInto( T const& t, Ctx const& ctx = Ctx{} )
     {
-        testParseIntoValue<T>( value_from(t) );
+        testParseIntoValue<T>(value_from(t, ctx), ctx);
     }
 
     template<class T>
@@ -226,6 +330,8 @@ public:
         testParseIntoErrors< int >( error::not_integer, true );
         testParseIntoErrors< int >( error::not_exact, LLONG_MIN );
         testParseIntoErrors< int >( error::not_exact, ULONG_MAX );
+
+        testParseInto( ::id{1} );
     }
 
     void testFloatingPoint()
@@ -314,6 +420,8 @@ public:
 
         parse_into(v, "[5,6,7]");
         BOOST_TEST( v.size() == 3 );
+
+        testParseInto< std::vector<::id> >( { {1}, {2}, {1}, {2} } );
     }
 
     void testMap()
@@ -341,6 +449,10 @@ public:
 
         parse_into(m, R"( {"4": 4, "5": 5} )");
         BOOST_TEST( m.size() == 2 );
+
+        testParseInto< std::map<std::string, ::id> >({
+            {"1", {1}}, {"2", {2}}, {"3", {1}}, {"4", {2}} });
+        testParseInto< std::map<::id, ::id> >({ {{2}, {1}}, {{1}, {2}} });
     }
 
     void testTuple()
@@ -374,6 +486,8 @@ public:
             error::size_mismatch, {{1,2}, {3,4}} );
         testParseIntoErrors<std::map<std::string, std::tuple<int, int>>>(
             error::size_mismatch, { {"tup", array()} });
+
+        testParseInto< std::tuple<int, ::id> >( std::make_tuple(10, ::id{2}) );
     }
 
     void testStruct()
@@ -401,6 +515,8 @@ public:
         jo["e7"] = false;
         jo["e8"] = nullptr;
         testParseIntoValue<X>(jo);
+
+        testParseInto<W>( {10, ::id{2}} );
 #endif
     }
 
@@ -478,6 +594,9 @@ public:
 
         testParseInto< std::vector< std::optional<int> > >(
             {1, 2, 3, std::nullopt, 5, std::nullopt, std::nullopt, 8});
+
+        testParseInto< std::optional<::id> >( std::nullopt );
+        testParseInto< std::optional<::id> >( ::id{2} );
 #endif
     }
 

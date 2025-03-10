@@ -83,11 +83,17 @@ value_from(
     Context const& ctx,
     value& jv)
 {
-    using bare_T = detail::remove_cvref<T>;
+    using Attrs = detail::value_from_attrs<Context, T>;
     BOOST_STATIC_ASSERT(detail::conversion_round_trips<
-        Context, bare_T, detail::value_from_conversion>::value);
-    using cat = detail::value_from_category<Context, bare_T>;
-    detail::value_from_impl( cat(), jv, std::forward<T>(t), ctx );
+        Context,
+        typename Attrs::representation,
+        detail::value_from_conversion>::value);
+
+    detail::value_from_impl(
+        typename Attrs::category(),
+        jv,
+        detail::to_representation<Context>( static_cast<T&&>(t) ),
+        ctx );
 }
 
 /** Convert an object of type `T` to @ref value.

@@ -18,59 +18,61 @@
 namespace boost {
 namespace json {
 
-template<class V>
+template< class V, class Ctx >
 void
 parse_into(
     V& v,
     string_view sv,
     system::error_code& ec,
-    parse_options const& opt )
+    parse_options const& opt,
+    Ctx const& ctx )
 {
-    parser_for<V> p( opt, &v );
-
-    std::size_t n = p.write_some( false, sv.data(), sv.size(), ec );
-
+    parser_for<V, Ctx> p(opt, &v, ctx);
+    std::size_t n = p.write_some(false, sv.data(), sv.size(), ec);
     if( !ec && n < sv.size() )
     {
-        BOOST_JSON_FAIL( ec, error::extra_data );
+        BOOST_JSON_FAIL(ec, error::extra_data);
     }
 }
 
-template<class V>
+template< class V, class Ctx >
 void
 parse_into(
     V& v,
     string_view sv,
     std::error_code& ec,
-    parse_options const& opt )
+    parse_options const& opt,
+    Ctx const& ctx )
 {
     system::error_code jec;
-    parse_into(v, sv, jec, opt);
+    parse_into(v, sv, jec, opt, ctx);
     ec = jec;
 }
 
-template<class V>
+template< class V, class Ctx >
 void
 parse_into(
     V& v,
     string_view sv,
-    parse_options const& opt )
+    parse_options const& opt,
+    Ctx const& ctx )
 {
     system::error_code ec;
-    parse_into(v, sv, ec, opt);
+    parse_into(v, sv, ec, opt, ctx);
     if( ec.failed() )
         detail::throw_system_error( ec );
 }
 
-template<class V>
+template< class V, class Ctx >
 void
 parse_into(
     V& v,
     std::istream& is,
     system::error_code& ec,
-    parse_options const& opt )
+    parse_options const& opt,
+    Ctx const& ctx )
 {
-    parser_for<V> p( opt, &v );
+    parser_for<V, Ctx> p(opt, &v, ctx);
 
     char read_buffer[BOOST_JSON_STACK_BUFFER_SIZE];
     do
@@ -99,28 +101,30 @@ parse_into(
     while( !ec.failed() );
 }
 
-template<class V>
+template< class V, class Ctx >
 void
 parse_into(
     V& v,
     std::istream& is,
     std::error_code& ec,
-    parse_options const& opt )
+    parse_options const& opt,
+    Ctx const& ctx )
 {
     system::error_code jec;
-    parse_into(v, is, jec, opt);
+    parse_into(v, is, jec, opt, ctx);
     ec = jec;
 }
 
-template<class V>
+template< class V, class Ctx >
 void
 parse_into(
     V& v,
     std::istream& is,
-    parse_options const& opt )
+    parse_options const& opt,
+    Ctx const& ctx )
 {
     system::error_code ec;
-    parse_into(v, is, ec, opt);
+    parse_into(v, is, ec, opt, ctx);
     if( ec.failed() )
         detail::throw_system_error( ec );
 }
