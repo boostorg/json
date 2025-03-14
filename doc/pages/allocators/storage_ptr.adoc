@@ -1,0 +1,222 @@
+////
+Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+Copyright (c) 2025 Dmitry Arkhipov (grisumbras@yandex.ru)
+
+Distributed under the Boost Software License, Version 1.0. (See accompanying
+file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+Official repository: https://github.com/boostorg/json
+////
+
+= `storage_ptr`
+Variable-length containers in this library all use dynamically allocated memory
+to store their contents. Callers can gain control over the strategy used for
+allocation by specifying a <<ref_storage_ptr>> in select constructors and
+function parameter lists. A <<ref_storage_ptr>> has these properties:
+
+* A storage pointer always points to a valid,
+  type-erased {ref_memory_resource}.
+
+* Default-constructed storage pointers reference the
+  <<default_memory_resource,default resource>>, an implementation-defined
+  instance which always uses the equivalent of global operator new and delete.
+
+* Storage pointers constructed from a {ref_memory_resource} or
+  {ref_polymorphic_allocator} do not acquire ownership; the caller is
+  responsible for ensuring that the lifetime of the resource extends until it
+  is no longer referenced.
+
+* A storage pointer obtained from <<ref_make_shared_resource>> acquires shared
+  ownership of the memory resource; the lifetime of the resource is extended
+  until all copies of the storage pointer are destroyed.
+
+* The storage pointer remembers the value of <<ref_is_deallocate_trivial>>
+  before type-erasing the resource, allowing the value to be queried at
+  run-time.
+
+This lists all of the allocation-related types and functions available when
+using the library:
+
+.Functions and Types
+|===
+|Name|Description
+
+| <<ref_get_null_resource>>
+| Returns a pointer to a memory resource instance which always throws an
+  exception upon allocation. This is used to to achieve the invariant that no
+  parsing or container operation will dynamically allocate memory.
+
+| <<ref_is_deallocate_trivial>>
+| A customization point allowing a memory resource type to indicate that calls
+  to deallocate are trivial.
+
+| <<ref_make_shared_resource>>
+| A function returning a smart pointer with shared ownership of a newly
+  allocated memory resource.
+
+| {ref_memory_resource}
+| The abstract base class representing an allocator.
+
+| <<ref_monotonic_resource>>
+| A memory resource which allocates large blocks of memory and has a trivial
+  deallocate function. Allocated memory is not freed until the resource is
+  destroyed, making it fast for parsing but not suited for performing
+  modifications.
+
+| {ref_polymorphic_allocator}
+| An {req_Allocator} which uses a reference to a {ref_memory_resource} to
+  perform allocations.
+
+| <<ref_static_resource>>
+| A memory resource that uses a single caller provided buffer. No dynamic
+  allocations are used. This is fast for parsing but not suited for
+  performing modifications.
+
+| <<ref_storage_ptr>>
+| A smart pointer through which a {ref_memory_resource} is managed and
+  accessed.
+|===
+
+== Default Memory Resource
+The default memory resource uses the global `operator new` and `operator
+delete` to allocate memory. This resource is not reference counted and has
+a non-trivial deallocate function. All default-constructed <<ref_storage_ptr>>
+objects reference the same memory resource:
+
+[source]
+----
+include::../../../test/doc_storage_ptr.cpp[tag=doc_storage_ptr_1,indent=0]
+----
+
+Default-constructed library containers use the default memory resource:
+
+[source]
+----
+include::../../../test/doc_storage_ptr.cpp[tag=doc_storage_ptr_2,indent=0]
+----
+
+The default memory resource is well suited for general usage. It offers
+reasonable performance for parsing, and conservative memory usage for
+modification of the contents of containers.
+
+[NOTE]
+This memory resource is not guaranteed to be the same as the result of
+`boost::container::pmr::get_default_resource`. It also cannot be changed with
+`boost::container::pmr::set_default_resource`.
+
+== Monotonic Resource
+Consider the pattern of memory allocation during parsing: when an array,
+object, or string is encountered the parser accumulates elements in its
+temporary storage area. When all of the elements are known, a single memory
+allocation is requested from the resource when constructing the value. Thus,
+parsing only allocates and constructs containers at their final size. Memory is
+not reallocated; that is, a memory buffer never needs to grow by allocating
+a new larger buffer and deallocating the previous buffer.
+
+The <<ref_monotonic_resource>> optimizes this memory allocation pattern by
+allocating increasingly large blocks of global memory internally and parceling
+those blocks out in smaller pieces to fulfill allocation requests. It has
+a trivial deallocate function. The monotonic resource does not actually
+deallocate memory until the resource is destroyed. Thus, it is ideally suited
+for the use-case where JSON is parsed, and the resulting value is then
+inspected but not modified.
+
+The resource to use when constructing values may be specified in calls to
+<<ref_parse>> as shown here:
+
+[source]
+----
+include::../../../test/doc_storage_ptr.cpp[tag=doc_storage_ptr_3,indent=0]
+----
+
+Or, to parse into a value with shared ownership of the memory resource:
+
+[source]
+----
+include::../../../test/doc_storage_ptr.cpp[tag=doc_storage_ptr_4,indent=0]
+----
+
+A monotonic resource may be optionally constructed with an initial buffer to
+use first, before going to the heap. This allows the caller to use stack space
+and avoid dynamic allocations for most parsed JSON, falling back to dynamic
+allocation from the heap if the input JSON is larger than average, as shown
+here:
+
+[source]
+----
+include::../../../test/doc_storage_ptr.cpp[tag=doc_storage_ptr_5,indent=0]
+----
+
+== Static Resource
+A <<ref_static_resource>> constructs from a caller-provided buffer, and
+satisfies all memory allocation requests from the buffer. Once the buffer is
+exhausted, subsequent calls to allocate throw the exception `std::bad_alloc`.
+The resource offers a simple invariant: dynamic heap allocations are never
+performed.
+
+To use the resource, construct it with a local buffer:
+
+[source]
+----
+include::../../../test/doc_storage_ptr.cpp[tag=doc_storage_ptr_6,indent=0]
+----
+
+== Null Resource
+The function <<ref_get_null_resource>> returns a global instance of the null
+resource. This resource offers a simple invariant: all calls to allocate will
+throw the exception `std::bad_alloc`. An instance of the null resource can be
+used to make parsing guarantee that allocations from the heap are never made.
+This is explored in more detail in a later section.
+
+== Allocator Propagation
+The containers <<ref_array>>, <<ref_object>>, and <<ref_value>> all propagate
+the memory resource they were constructed with to child elements:
+
+[source]
+----
+include::../../../test/doc_storage_ptr.cpp[tag=doc_storage_ptr_7,indent=0]
+----
+
+This propagation acts recursively, containers within containers will
+all have the resource propagated. Once a container is constructed,
+its memory resource can never be changed.
+
+== Resource Lifetime
+It is important to note that <<ref_storage_ptr>> supports both shared-ownership
+and reference lifetime models. Construction from a memory resource pointer does
+not transfer ownership:
+
+[source]
+----
+include::../../../test/doc_storage_ptr.cpp[tag=doc_storage_ptr_8,indent=0]
+----
+
+When using a memory resource in this fashion, including the case where
+a storage pointer or container is constructed from
+a {ref_polymorphic_allocator}, the caller must ensure that the lifetime of the
+resource is extended until it is no longer referenced by any variables;
+otherwise, undefined behavior is possible.
+
+Shared ownership is achieved using the function <<ref_make_shared_resource>>,
+which creates a new, reference-counted memory resource using a dynamic memory
+allocation and returns it as a <<ref_storage_ptr>>:
+
+[source]
+----
+include::../../../test/doc_storage_ptr.cpp[tag=doc_storage_ptr_9,indent=0]
+----
+
+When a storage pointer is constructed this way, the lifetime of the referenced
+memory resource is extended until all variables which reference it are
+destroyed.
+
+== User-Defined Resource
+To implement custom memory allocation strategies, derive your class from
+{ref_memory_resource} and implement the functions `do_allocate`,
+`do_deallocate`, and `do_is_equal` as seen in this example below, which logs
+each operation it performs to the console:
+
+[source]
+----
+include::../../../test/doc_storage_ptr.cpp[tag=doc_storage_ptr_10,indent=0]
+----

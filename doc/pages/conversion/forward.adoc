@@ -1,0 +1,43 @@
+////
+Copyright (c) 2022 Dmitry Arkhipov (grisumbras@yandex.ru)
+
+Distributed under the Boost Software License, Version 1.0. (See accompanying
+file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+Official repository: https://github.com/boostorg/json
+////
+
+= Avoiding Physical Dependency
+Some users, particularly library authors, may wish to provide conversions
+between their types and <<ref_value>>, but at the same time would prefer to
+avoid having their library depend on Boost.JSON. This is possible to achieve
+with the help of a few forward declarations.
+
+[source]
+----
+include::../../../test/doc_forward_conversion.cpp[tag=doc_forward_conversion_1,indent=0]
+----
+
+Note that <<ref_value_from>> is declared using an out-parameter, rather then
+returning its result. This overload is specifically designed for this use-case.
+
+After that the definitions of `tag_invoke` overloads should be provided. These
+overloads have to be templates, since <<ref_value>> is only forward-declared
+and hence is an incomplete type.
+
+[source]
+----
+include::../../../test/doc_forward_conversion.cpp[tag=doc_forward_conversion_2,indent=0]
+----
+
+As discussed previously, we prefer to define a non-throwing overload of
+`tag_invoke` for <<ref_try_value_to>>, rather then the throwing overload for
+<<ref_value_to>>, as the latter can fallback to the former without performance
+degradation.
+
+Forward declarations of contextual conversions are done very similarly:
+
+[source]
+----
+include::../../../test/doc_forward_conversion.cpp[tag=doc_forward_conversion_3,indent=0]
+----

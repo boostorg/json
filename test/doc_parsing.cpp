@@ -28,22 +28,22 @@ static void set1() {
 
 //----------------------------------------------------------
 {
-//[doc_parsing_1
+// tag::doc_parsing_1[]
 value jv = parse( "[1,2,3,4,5]" );
-//]
+// end::doc_parsing_1[]
 }
 //----------------------------------------------------------
 {
-//[doc_parsing_2
+// tag::doc_parsing_2[]
 boost::system::error_code ec;
 value jv = parse( "[1,2,3,4,5]", ec );
 if( ec )
     std::cout << "Parsing failed: " << ec.message() << "\n";
-//]
+// end::doc_parsing_2[]
 }
 //----------------------------------------------------------
 {
-//[doc_parsing_3
+// tag::doc_parsing_3[]
 try
 {
     boost::system::error_code ec;
@@ -55,50 +55,53 @@ catch( std::bad_alloc const& e)
 {
     std::cout << "Parsing failed: " << e.what() << "\n";
 }
-//]
+// end::doc_parsing_3[]
 }
 //----------------------------------------------------------
 {
-//[doc_parsing_4
-{
+// tag::doc_parsing_4[]
     monotonic_resource mr;
-
     value const jv = parse( "[1,2,3,4,5]", &mr );
-}
-//]
+// end::doc_parsing_4[]
 }
 //----------------------------------------------------------
 {
-//[doc_parsing_5
-parse_options opt;                                  // all extensions default to off
-opt.allow_comments = true;                          // permit C and C++ style comments to appear in whitespace
-opt.allow_trailing_commas = true;                   // allow an additional trailing comma in object and array element lists
-opt.allow_invalid_utf8 = true;                      // skip utf-8 validation of keys and strings
-opt.allow_invalid_utf16 = true;                     // replace invalid surrogate pair UTF-16 code point(s) with the Unicode replacement character
+// tag::doc_parsing_5[]
+parse_options opt;                // all extensions default to off
+opt.allow_comments = true;        // permit C and C++ style comments
+                                  // to appear in whitespace
+opt.allow_trailing_commas = true; // allow an additional trailing comma in
+                                  // object and array element lists
+opt.allow_invalid_utf8 = true;    // skip utf-8 validation of keys and strings
+opt.allow_invalid_utf16 = true;   // replace invalid surrogate pair UTF-16 code point(s)
+                                  // with the Unicode replacement character
 
 value jv = parse( "[1,2,3,] // comment ", storage_ptr(), opt );
-//]
+// end::doc_parsing_5[]
 }
 //----------------------------------------------------------
 {
 #if __cpp_designated_initializers >= 201707L
 {
-//[doc_parsing_6
-value jv = parse( "[1,2,3,] // comment ", storage_ptr(),
+// tag::doc_parsing_6[]
+value jv = parse(
+    "[1,2,3,] // comment ",
+    storage_ptr(),
     {
-        .allow_comments = true,             // permit C and C++ style comments to appear in whitespace
+        .allow_comments = true,             // permit C and C++ style comments
+                                            // to appear in whitespace
         .allow_trailing_commas = true,      // allow a trailing comma in object and array lists
         .allow_invalid_utf8 = true          // skip utf-8 validation of keys and strings
     });
-//]
+// end::doc_parsing_6[]
 }
 {
-//[doc_parsing_15
+// tag::doc_parsing_15[]
 value jv = parse( "{\"command\":\"\\uDF3E\\uDEC2\"}", storage_ptr(),
     {
         .allow_invalid_utf16 = true       // replace illegal leading surrogate pair with ��
     });
-//]
+// end::doc_parsing_15[]
 }
 #endif
 }
@@ -107,22 +110,22 @@ value jv = parse( "{\"command\":\"\\uDF3E\\uDEC2\"}", storage_ptr(),
 } // set1
 
 //----------------------------------------------------------
-//[doc_parsing_7
+// tag::doc_parsing_7[]
 class connection
 {
-    parser p_;                                      // persistent data member
+    parser p_;                    // persistent data member
 
 public:
-    void do_read( string_view s )                   // called for each complete message from the network
+    void do_read( string_view s ) // called for each complete message from the network
     {
-        p_.reset();                                 // start parsing a new JSON using the default resource
-        p_.write( s );                              // parse the buffer, using exceptions to indicate error
-        do_rpc( p_.release() );                     // process the command
+        p_.reset();               // start parsing a new JSON using the default resource
+        p_.write( s );            // parse the buffer, using exceptions to indicate error
+        do_rpc( p_.release() );   // process the command
     }
 
     void do_rpc( value jv );
 };
-//]
+// end::doc_parsing_7[]
 
 //----------------------------------------------------------
 
@@ -130,7 +133,7 @@ static void set2() {
 
 //----------------------------------------------------------
 {
-//[doc_parsing_8
+// tag::doc_parsing_8[]
 stream_parser p;
 boost::system::error_code ec;
 string_view s = "[1,2,3] %HOME%";
@@ -139,24 +142,25 @@ assert( ! ec && p.done() && n == 8 );
 s = s.substr( n );
 value jv = p.release();
 assert( s == "%HOME%" );
-//]
+// end::doc_parsing_8[]
 }
 //----------------------------------------------------------
 {
-//[doc_parsing_9
-parse_options opt;                                  // All extensions default to off
-opt.allow_comments = true;                          // Permit C and C++ style comments to appear in whitespace
-opt.allow_trailing_commas = true;                   // Allow an additional trailing comma in object and array element lists
-opt.allow_invalid_utf8 = true;                      // Skip utf-8 validation of keys and strings
-stream_parser p( storage_ptr(), opt );              // The stream_parser will use the options
-//]
+// tag::doc_parsing_9[]
+parse_options opt;                     // All extensions default to off
+opt.allow_comments = true;             // Permit C and C++ style comments to appear in whitespace
+opt.allow_trailing_commas = true;      // Allow an additional trailing comma in
+                                       // object and array element lists
+opt.allow_invalid_utf8 = true;         // Skip utf-8 validation of keys and strings
+stream_parser p( storage_ptr(), opt ); // The stream_parser will use the options
+// end::doc_parsing_9[]
 }
 //----------------------------------------------------------
 
 } // set2
 
 //----------------------------------------------------------
-//[doc_parsing_10
+// tag::doc_parsing_10[]
 value read_json( std::istream& is, boost::system::error_code& ec )
 {
     stream_parser p;
@@ -172,9 +176,9 @@ value read_json( std::istream& is, boost::system::error_code& ec )
         return nullptr;
     return p.release();
 }
-//]
+// end::doc_parsing_10[]
 
-//[doc_parsing_14
+// tag::doc_parsing_14[]
 std::vector<value> read_jsons( std::istream& is, boost::system::error_code& ec )
 {
     std::vector< value > jvs;
@@ -208,7 +212,7 @@ std::vector<value> read_jsons( std::istream& is, boost::system::error_code& ec )
 
     return jvs;
 }
-//]
+// end::doc_parsing_14[]
 
 //----------------------------------------------------------
 
@@ -216,27 +220,25 @@ static void set3() {
 
 //----------------------------------------------------------
 {
-//[doc_parsing_11
-{
+// tag::doc_parsing_11[]
     monotonic_resource mr;
 
     stream_parser p;
-    p.reset( &mr );                                 // Use mr for the resulting value
-    p.write( "[1,2,3,4,5]" );                       // Parse the input JSON
-    value const jv = p.release();                   // Retrieve the result
-    assert( *jv.storage() == mr );                  // Same memory resource
-}
-//]
+    p.reset( &mr );                // Use mr for the resulting value
+    p.write( "[1,2,3,4,5]" );      // Parse the input JSON
+    value const jv = p.release();  // Retrieve the result
+    assert( *jv.storage() == mr ); // Same memory resource
+// end::doc_parsing_11[]
 }
 //----------------------------------------------------------
 {
-//[doc_parsing_12
-unsigned char temp[ 4096 ];                                 // Declare our buffer
+// tag::doc_parsing_12[]
+unsigned char temp[ 4096 ]; // Declare our buffer
 stream_parser p(
-    storage_ptr(),                                          // Default memory resource
-    parse_options{},                                        // Default parse options (strict parsing)
-    temp);                                                  // Use our buffer for temporary storage
-//]
+    storage_ptr(),          // Default memory resource
+    parse_options{},        // Default parse options (strict parsing)
+    temp);                  // Use our buffer for temporary storage
+// end::doc_parsing_12[]
 }
 //----------------------------------------------------------
 
@@ -244,7 +246,7 @@ stream_parser p(
 
 //----------------------------------------------------------
 
-//[doc_parsing_13
+// tag::doc_parsing_13[]
 /*  Parse JSON and invoke the handler
 
     This function parses the JSON specified in `s`
@@ -264,16 +266,18 @@ stream_parser p(
 template< class Handler >
 void do_rpc( string_view s, Handler&& handler )
 {
-    unsigned char temp[ 4096 ];                 // The parser will use this storage for its temporary needs
-    parser p(                                   // Construct a strict parser using the temp buffer and no dynamic memory
-        get_null_resource(),                    // The null resource never dynamically allocates memory
-        parse_options(),                        // Default constructed parse options allow only standard JSON
+    unsigned char temp[ 4096 ]; // The parser will use this storage for its temporary needs
+    parser p(                   // Construct a strict parser using
+                                // the temp buffer and no dynamic memory
+        get_null_resource(),    // The null resource never dynamically allocates memory
+        parse_options(),        // Default constructed parse options allow only standard JSON
         temp );
 
-    unsigned char buf[ 16384 ];                 // Now we need a buffer to hold the actual JSON values
-    static_resource mr2( buf );                 // The static resource is monotonic, using only a caller-provided buffer
-    p.reset( &mr2 );                            // Use the static resource for producing the value
-    p.write( s );                               // Parse the entire string we received from the network client
+    unsigned char buf[ 16384 ]; // Now we need a buffer to hold the actual JSON values
+    static_resource mr2( buf ); // The static resource is monotonic,
+                                // using only a caller-provided buffer
+    p.reset( &mr2 );            // Use the static resource for producing the value
+    p.write( s );               // Parse the entire string we received from the network client
 
     // Retrieve the value and invoke the handler with it.
     // The value will use `buf` for storage. The handler
@@ -281,18 +285,18 @@ void do_rpc( string_view s, Handler&& handler )
     // are inefficient with mutation.
     handler( p.release() );
 }
-//]
+// end::doc_parsing_13[]
 
 //----------------------------------------------------------
 
 void
 testPrecise()
 {
-    //[doc_parsing_precise
+    // tag::doc_parsing_precise[]
     parse_options opt;
     opt.numbers = number_precision::precise;
     value jv = parse( "1002.9111801605201", storage_ptr(), opt );
-    //]
+    // end::doc_parsing_precise[]
     (void)jv;
     assert( jv == 1002.9111801605201 );
 }

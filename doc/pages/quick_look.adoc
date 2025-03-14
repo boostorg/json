@@ -1,0 +1,277 @@
+////
+Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+Copyright (c) 2025 Dmitry Arkhipov (grisumbras@yandex.ru)
+
+Distributed under the Boost Software License, Version 1.0. (See accompanying
+file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+Official repository: https://github.com/boostorg/json
+////
+
+[pagelevels=1,toclevels=1]
+= Quick Look
+Here we highlight important features through example code to help convey the
+style of the interface. We begin by including the library header file which
+brings all the symbols into scope. Alternatively, individual headers may be
+included to obtain the declarations for specific types:
+
+[source]
+----
+#include <boost/json.hpp>
+----
+
+In order to link your program you will need to link with a built library.
+Alternatively you can use the header-only configuration simply by including
+this header file in any __one__ of your new or existing source files:
+
+[source]
+----
+#include <boost/json/src.hpp>
+----
+
+[NOTE]
+====
+Sample code and identifiers used throughout are written as if the following
+declarations are in effect:
+
+[source]
+----
+#include <boost/json.hpp>
+using namespace boost::json;
+----
+====
+
+[#quick_look_values]
+== Values
+Say you want to recreate this JSON object in a container:
+
+[source,json]
+----
+{
+  "pi": 3.141,
+  "happy": true,
+  "name": "Boost",
+  "nothing": null,
+  "answer": {
+    "everything": 42
+  },
+  "list": [1, 0, 2],
+  "object": {
+    "currency": "USD",
+    "value": 42.99
+  }
+}
+----
+
+In this library the types <<ref_array>>, <<ref_object>>, and <<ref_string>>
+hold JSON arrays, objects, and strings respectively while the type
+<<ref_value>> is a special variant which can hold any JSON element. Here we
+construct an empty object and then insert the elements above:
+
+[source]
+----
+include::../../test/doc_quick_look.cpp[tag=doc_quick_look_1]
+----
+
+While keys are strings, the mapped type of objects and the element type of
+arrays is the aforementioned type <<ref_value>> which can hold any JSON
+element, as seen in the previous assignments. Instead of building the JSON
+document using a series of function calls, we can build it in one statement
+using an initializer list:
+
+[source]
+----
+include::../../test/doc_quick_look.cpp[tag=doc_quick_look_2]
+----
+
+When a <<ref_value>>, <<ref_array>>, or <<ref_object>> is assigned or
+constructed from an initializer list, the creation of the new value happens
+only once. This makes initializer lists equally efficient as using the other
+ways to create a value. The types in this library are first-class, supporting
+copy and move construction and assignment:
+
+[source]
+----
+include::../../test/doc_quick_look.cpp[tag=doc_quick_look_3]
+----
+
+[#quick_look_allocators]
+== Allocators
+To permit custom memory allocation strategies, these containers all allow
+construction with a <<ref_storage_ptr>> which is a smart pointer to
+a {ref_memory_resource}. The constructor signatures have the same ordering as
+their `std` equivalents which use {req_Allocator} parameters. Once a container
+is constructed its memory resource can never change. Here we create an array
+without performing any dynamic allocations:
+
+[source]
+----
+include::../../test/doc_quick_look.cpp[tag=doc_quick_look_4]
+----
+
+The containers in this library enforce the invariant that every element of the
+container will use the same memory resource:
+
+[source]
+----
+include::../../test/doc_quick_look.cpp[tag=doc_quick_look_5]
+----
+
+When a library type is used as the element type of a PMR container; that is, a
+container which uses a {ref_polymorphic_allocator}, the memory resource will
+automatically propagate to the type and all of its children:
+
+[source]
+----
+include::../../test/doc_quick_look.cpp[tag=doc_quick_look_6]
+----
+
+Up until now we have shown how values may be constructed from a memory resource
+pointer, where ownership is not transferred. In this case the caller is
+responsible for ensuring that the lifetime of the resource is extended for the
+life of the container. Sometimes you want the container to acquire shared
+ownership of the resource. This is accomplished with
+<<ref_make_shared_resource>>:
+
+[source]
+----
+include::../../test/doc_quick_look.cpp[tag=doc_quick_look_7]
+----
+
+A counted memory resource will not be destroyed until every container with
+shared ownership of the resource is destroyed.
+
+[#quick_look_parsing]
+== Parsing
+JSON can be parsed into the value container in one step using a free function.
+In the following snippet, a parse error is indicated by a thrown exception:
+
+[source]
+----
+include::../../test/doc_quick_look.cpp[tag=doc_quick_look_8]
+----
+
+Error codes are also possible:
+
+[source]
+----
+include::../../test/doc_quick_look.cpp[tag=doc_quick_look_9]
+----
+
+By default, the parser is strict and only accepts JSON compliant with the
+standard. However this behavior can be relaxed by filling out an options
+structure enabling one or more extensions. Here we use a static buffer and
+enable two non-standard extensions:
+
+[source]
+----
+include::../../test/doc_quick_look.cpp[tag=doc_quick_look_10]
+----
+
+The parser in this library implements a
+https://en.wikipedia.org/wiki/Online_algorithm[__streaming algorithm__]; it can
+process JSON piece-by-piece, without the requirement that the entire input is
+available from the start. The parser uses a temporary memory allocation to do
+its work. If you plan on parsing multiple JSONs, for example in a network
+server, keeping the same parser instance will allow re-use of this temporary
+storage, improving performance.
+
+[source]
+----
+include::../../test/doc_quick_look.cpp[tag=doc_quick_look_11]
+----
+
+With strategic use of the right memory resources, parser instance, and
+calculated upper limits on buffer sizes, it is possible to parse and examine
+JSON without __any__ dynamic memory allocations. This is explored in more
+detail in a later section.
+
+[#quick_look_serializing]
+== Serializing
+Simple free functions are provided for serializing a <<ref_value>> to
+a {std_string} containing JSON:
+
+[source]
+----
+include::../../test/doc_quick_look.cpp[tag=doc_quick_look_12]
+----
+
+The serializer in this library implements
+a https://en.wikipedia.org/wiki/Online_algorithm[__streaming algorithm__]; it
+can output JSON a piece at a time, without the requirement that the entire
+output area is allocated at once:
+
+[source]
+----
+include::../../test/doc_quick_look.cpp[tag=doc_quick_look_13]
+----
+
+[#quick_look_conversion]
+== Value Conversion
+Given a user-defined type:
+
+[source]
+----
+include::../../test/doc_quick_look.cpp[tag=doc_quick_look_14]
+----
+
+We can define a conversion from the user-defined type to a <<ref_value>> by
+defining an overload of `tag_invoke` in the same namespace. This maps
+`customer` to a JSON object:
+
+[source]
+----
+include::../../test/doc_quick_look.cpp[tag=doc_quick_look_15]
+----
+
+This allows us to use the library function <<ref_value_from>> to produce
+a <<ref_value>> from our type:
+
+[source]
+----
+include::../../test/doc_quick_look.cpp[tag=doc_quick_look_16]
+----
+
+The library knows what to do with standard containers. Here we convert an array
+of customers to a value:
+
+[source]
+----
+include::../../test/doc_quick_look.cpp[tag=doc_quick_look_17]
+----
+
+To go from JSON to a user-defined type we use <<ref_value_to>>, which uses
+another overload of `tag_invoke`. This converts a JSON value to a `customer`.
+It throws an exception if the contents of the value do not match what is
+expected:
+
+[source]
+----
+include::../../test/doc_quick_look.cpp[tag=doc_quick_look_18]
+----
+
+The code above defines the convenience function `extract`, which deduces the
+types of the struct members. This works, but requires that the struct is
+{req_DefaultConstructible}. An alternative is to construct the object directly,
+which is a little more verbose but doesn't require default construction:
+
+[source]
+----
+include::../../test/doc_quick_look.cpp[tag=doc_quick_look_19]
+----
+
+Now we can construct customers from JSON:
+
+[source]
+----
+include::../../test/doc_quick_look.cpp[tag=doc_quick_look_20]
+----
+
+The library's generic algorithms recognize when you are converting
+a <<ref_value>> to a container which resembles an array or object, so if you
+wanted to turn a JSON array into a vector of customers you might write:
+
+[source]
+----
+include::../../test/doc_quick_look.cpp[tag=doc_quick_look_21]
+----

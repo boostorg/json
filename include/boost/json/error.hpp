@@ -15,9 +15,7 @@
 namespace boost {
 namespace json {
 
-/** Error codes returned by JSON operations
-
-*/
+/// Error codes returned by JSON operations
 enum class error
 {
     //
@@ -154,8 +152,7 @@ enum class error
     unknown_name,
 };
 
-/** Error conditions corresponding to JSON errors
-*/
+/// Error conditions corresponding to JSON errors
 enum class condition
 {
     /// A parser-related error

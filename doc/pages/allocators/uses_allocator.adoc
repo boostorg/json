@@ -1,0 +1,44 @@
+////
+Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+Copyright (c) 2025 Dmitry Arkhipov (grisumbras@yandex.ru)
+
+Distributed under the Boost Software License, Version 1.0. (See accompanying
+file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+Official repository: https://github.com/boostorg/json
+////
+
+[#uses_allocator]
+= Uses-allocator Construction
+To support code bases which are already using polymorphic allocators, the
+containers in this library support {std_uses_allocator} construction. For
+<<ref_array>>, <<ref_object>>, <<ref_string>>, and <<ref_value>>:
+
+* The nested type `allocator_type` is an alias for
+  a {ref_polymorphic_allocator}.
+
+* All eligible constructors which accept <<ref_storage_ptr>> will also accept
+  an instance of {ref_polymorphic_allocator} in the same argument position.
+
+* The member function `get_allocator` returns an instance of
+ {ref_polymorphic_allocator} constructed from the {ref_memory_resource} used by
+ the container. Ownership of this memory resource is not transferred.
+
+Practically, this means that when a library container type is used in
+a standard container that uses a polymorphic allocator, the allocator will
+propagate to the JSON type. For example:
+
+[source]
+----
+include::../../../test/doc_uses_allocator.cpp[tag=doc_uses_allocator_1,indent=0]
+----
+
+Library containers can be constructed from polymorphic allocators:
+
+[source]
+----
+include::../../../test/doc_uses_allocator.cpp[tag=doc_uses_allocator_2,indent=0]
+----
+
+The polymorphic allocator is propagated recursively. Child elements of child
+elements will use the same memory resource as the parent.

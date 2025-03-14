@@ -1,0 +1,57 @@
+////
+Copyright (c) 2022 Dmitry Arkhipov (grisumbras@yandex.ru)
+
+Distributed under the Boost Software License, Version 1.0. (See accompanying
+file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+Official repository: https://github.com/boostorg/json
+////
+
+= Non-Throwing Conversions
+For the case where throwing exceptions is undesirable, Boost.JSON also provides
+a non-throwing version of <<ref_value_to>>, the function template
+<<ref_try_value_to>>.  It returns {ref_result}, a specialised variant that
+either holds a value or an {ref_error_code}.
+
+[NOTE]
+There's no non-throwing equivalent for <<ref_value_from>>. This is simply
+because we haven't yet encountered a situation where <<ref_value_from>> needed
+to communicate an error to the caller.
+
+The library provides non-throwing conversions for all the categories of types
+it supports with <<ref_value_to>>. If a user wants to use it with custom types,
+an overload of `tag_invoke` of this form needs to be provided:
+
+```
+result_for<T, value>::type
+tag_invoke( const try_value_to_tag< T >&, const value& );
+```
+
+For the class `ip_address` from the section <<custom_conversions>> this
+overload may look like this:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_nothrow_1,indent=0]
+----
+
+The overload lets us use `ip_address` with <<ref_try_value_to>>.
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_nothrow_2,indent=0]
+----
+
+If <<ref_try_value_to>> is used with a type, for which there's no `tag_invoke`
+overload of the form described in this section, but there is one of the form
+intended for <<ref_value_to>>, then the library still tries to perform the
+conversion. It uses the throwing overload, and attempts to convert any thrown
+exception into an {ref_error_code}. Note, though, that such approach will
+likely be slower then a dedicated overload.
+
+The opposite is also true: if there's a `tag_invoke` overload intended for
+<<ref_try_value_to>>, but not for <<ref_value_to>>, then calling
+<<ref_value_to>> will invoke the non-throwing overload, then construct
+a {ref_system_error} from the {ref_error_code} and throw it. Due to these
+fallbacks, it is recommended that users provide the overload from this section,
+rather then the other one, if they ever intend to use <<ref_try_value_to>>.

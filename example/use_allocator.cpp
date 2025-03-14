@@ -7,7 +7,7 @@
 // Official repository: https://github.com/boostorg/json
 //
 
-//[example_use_allocator
+// tag::example_use_allocator[]
 
 /*
     This example uses a context that stores an allocator to create sequences during conversions
@@ -86,4 +86,4 @@ main(int, char**)
     return EXIT_SUCCESS;
 }
 
-//]
+// end::example_use_allocator[]

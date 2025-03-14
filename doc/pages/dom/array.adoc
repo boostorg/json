@@ -1,0 +1,59 @@
+////
+Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+Copyright (c) 2025 Dmitry Arkhipov (grisumbras@yandex.ru)
+
+Distributed under the Boost Software License, Version 1.0. (See accompanying
+file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+Official repository: https://github.com/boostorg/json
+////
+
+[#dom_array]
+= `array`
+A <<ref_value>> stores an instance of <<ref_array>> as the underlying
+representation for a JSON array. Instances of the __array__ type function
+identically to a {std_vector} of <<ref_value>>. Additionally, all values
+inserted into the container will use the same <<ref_storage_ptr>> as the
+container itself.
+
+An empty array may be constructed without incurring any memory allocations
+using the <<default_memory_resource,default memory resource>>.
+A <<ref_storage_ptr>> can also be explicitly specified:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_arrays_1,indent=0]
+----
+
+Initializer lists can be used to construct objects with initial contents. These
+constructors may allocate memory and throw:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_arrays_2,indent=0]
+----
+
+Alternatively, elements may be inserted after construction:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_arrays_3,indent=0]
+----
+
+Similar to its standard library counterpart, elements may be accessed directly
+by their 0-based index with bounds checking using <<ref_array_at>>,
+or without bounds checking using <<ref_array_operator_lb_rb>>:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_arrays_4,indent=0]
+----
+
+For the complete listing of all available member functions and nested
+types, see the reference page for <<ref_array>>.
+
+== Formatted Output
+
+When an <<ref_array>> is formatted to a {std_ostream}, the result is a valid
+JSON. That is, the array will be output with square brackets and the comma
+separated list of values, as per the JSON specification.

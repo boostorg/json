@@ -1,0 +1,22 @@
+////
+Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+Copyright (c) 2025 Dmitry Arkhipov (grisumbras@yandex.ru)
+
+Distributed under the Boost Software License, Version 1.0. (See accompanying
+file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+Official repository: https://github.com/boostorg/json
+////
+
+[#input_output,pagelevels=2]
+= Input/Output
+The library provides parsing and serialization algorithms to transform JSON to
+and from the <<ref_value>> container as needed. This is accomplished through
+free functions and classes, described as follows.
+
+:leveloffset: +1
+
+include::parsing.adoc[]
+include::serializing.adoc[]
+
+:leveloffset: -1

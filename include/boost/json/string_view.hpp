@@ -20,19 +20,17 @@
 namespace boost {
 namespace json {
 
-#ifdef BOOST_JSON_DOCS
 
 /** The type of string view used by the library.
 
-    The type has API equivalent to that of `std::string_view` and is
-    convertible to/from it.
+    The type has API equivalent to that of @ref std::string_view and is
+    convertible to and from it.
 */
-using string_view = __see_below__;
-
+using string_view =
+#ifdef BOOST_JSON_DOCS
+    __see_below__;
 #else
-
-using string_view = boost::core::string_view;
-
+    boost::core::string_view;
 #endif
 
 namespace detail {

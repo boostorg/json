@@ -8,17 +8,28 @@
 # Official repository: https://github.com/boostorg/json
 #
 
-project json/doc ;
+project json/doc
+  : default-build
+    <warnings-as-errors>on
+  ;
 
 import-search /boost/docca ;
+using asciidoctor ;
 
-import boostbook ;
+import common ;
 import docca ;
+import feature ;
 import path ;
+import property-set ;
 
-local include-prefix = [ path.root $(__file__:D) [ path.pwd ] ] ;
-include-prefix = [ path.native $(include-prefix:D)/include ] ;
-docca.pyreference reference.qbk
+if ! ( htmldir in [ feature.values asciidoctor-backend ] )
+{
+    feature.extend asciidoctor-backend : htmldir ;
+}
+
+local here-dir = [ path.root $(__file__:D) [ path.pwd ] ] ;
+local include-prefix = [ path.native $(here-dir:D)/include ] ;
+docca.pyreference entities.adoc
     : [ glob-tree-ex ../include/boost/json : *.hpp *.ipp : detail impl ]
       externals.hpp
     : <doxygen:param>ALIASES="esafe=\"@par Exception Safety\""
@@ -39,32 +50,17 @@ docca.pyreference reference.qbk
       <doxygen:param>EXTRACT_LOCAL_CLASSES=NO
       <doxygen:param>STRIP_FROM_PATH=$(include-prefix)
 
+      <docca:template>reference.adoc.jinja2
       <docca:config>config.json
     ;
 
-#-------------------------------------------------------------------------------
-#
-# Produce the Boost.Book XML from the QuickBook
-#
+generate with-path : entities.adoc : <generating-rule>@with-path ;
 
 install images
-    :
-        [ glob images/*.png ]
-    :
-        <location>html/json/images
+    : [ glob images/*.png ]
+    : <location>html/json/images
     ;
-
 explicit images ;
-
-xml json_doc
-    :
-        qbk/main.qbk
-    :
-        <dependency>reference.qbk
-        <dependency>images
-    ;
-
-explicit json_doc ;
 
 #-------------------------------------------------------------------------------
 #
@@ -72,21 +68,36 @@ explicit json_doc ;
 #
 #-------------------------------------------------------------------------------
 
-boostbook json
-    :
-        json_doc
-    :
-        <xsl:param>boost.root=../../../..
-        <xsl:param>chapter.autolabel=1
-        <xsl:param>chunk.section.depth=8                # Depth to which sections should be chunked
-        <xsl:param>chunk.first.sections=1               # Chunk the first top-level section?
-        <xsl:param>toc.section.depth=8                  # How deep should recursive sections appear in the TOC?
-        <xsl:param>toc.max.depth=8                      # How many levels should be created for each TOC?
-        <xsl:param>generate.section.toc.level=8         # Control depth of TOC generation in sections
-        <xsl:param>generate.toc="chapter toc,title section nop reference nop"
-        <include>../../../tools/boostbook/dtd
-    :
-        <dependency>images
+local backend-module = [ path.root htmldir.rb $(here-dir) ] ;
+html index
+    : pages/main.adoc
+    : <location>html
+      <dependency>images
+      <dependency>with-path
+
+      <use>/boost/boostlook//boostlook
+
+      <asciidoctor-attribute>nofooter
+      <asciidoctor-attribute>nofootnotes
+      <asciidoctor-attribute>pagelevels=2
+      <asciidoctor-attribute>icons=font
+      <asciidoctor-attribute>project-dir=$(here-dir:D)
+      <asciidoctor-attribute>"project-gh=https://github.com/boostorg/json/edit/develop"
+
+      <asciidoctor-attribute>docinfo=shared-head
+      <dependency>pages/docinfo.html
+
+      <asciidoctor-backend>htmldir
+      <dependency>htmldir.rb
+      <flags>"-r $(backend-module)"
+
+      <asciidoctor-attribute>attribute-missing=warn
+      <flags>-v
+      <flags>--trace
+      <warnings>all:<flags>-w
+      <warnings>extra:<flags>-w
+      <warnings>pedantic:<flags>-w
+      <warnings-as-errors>on:<flags>--failure-level=WARN
     ;
 
 #-------------------------------------------------------------------------------
@@ -98,5 +109,23 @@ boostbook json
 alias boostdoc ;
 explicit boostdoc ;
 
-alias boostrelease : json ;
+alias boostrelease : index ;
 explicit boostrelease ;
+
+
+#-------------------------------------------------------------------------------
+#
+# helpers
+#
+
+rule with-path ( project name : ps : src )
+{
+    local pwd = [ path.pwd ] ;
+    local here = [ path.root $(__file__:D) $(pwd) ] ;
+
+    local path = [ path.root [ $(src).name ] [ $(src).path ] ] ;
+    path = [ path.root $(path) $(pwd) ] ;
+    path = [ path.relative-to $(here)/pages $(path) ] ;
+    return [ $(ps).add-raw <asciidoctor-attribute>entities-file=$(path) ]
+        $(src) ;
+}

@@ -7,7 +7,7 @@
 // Official repository: https://github.com/boostorg/json
 //
 
-//[example_pretty
+// tag::example_pretty[]
 
 /*
     This example parses a JSON file and pretty-prints
@@ -155,4 +155,4 @@ main(int argc, char** argv)
     return EXIT_SUCCESS;
 }
 
-//]
+// end::example_pretty[]

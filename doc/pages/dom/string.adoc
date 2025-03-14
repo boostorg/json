@@ -1,0 +1,103 @@
+////
+Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+Copyright (c) 2020 Krystian Stasiowski (sdkrystian@gmail.com)
+Copyright (c) 2025 Dmitry Arkhipov (grisumbras@yandex.ru)
+
+Distributed under the Boost Software License, Version 1.0. (See accompanying
+file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+Official repository: https://github.com/boostorg/json
+////
+
+[#dom_string]
+= `string`
+
+Modifiable sequences of characters are represented using objects of type
+<<ref_string>>.
+
+The interface and functionality of <<ref_string>> is the same as {std_string}
+except that:
+
+* <<ref_string>> is not a class template,
+* <<ref_string>> uses `char` as its character type,
+* redundant overloads for string operations have been replaced
+  with a <<ref_string_view>>-based interface,
+* access to characters in the range `[size(), capacity())` is permitted,
+* <<ref_storage_ptr>> is used instead of {req_Allocator}, and
+* small buffer optimisation is guaranteed, which avoids allocating memory for
+  small strings.
+
+With augmented interface, operations requiring an input string are implemented
+as a single overload with a parameter of type <<ref_string_view>>, and can
+accept most string-like objects. Objects such as null terminated character
+pointers, `std::string`, <<ref_string>>, subranges of strings, and objects
+convertible to <<ref_string_view>> can all be passed to these functions.
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_strings_4,indent=0]
+----
+
+More formally, `std::string` member function overloads that accept any of the
+following parameter combinations as an input string:
+
+* a `std::string` parameter, or
+* a `std::string` parameter and two `size_type` parameters that specify a
+  substring, or
+* a parameter of a type convertible to <<ref_string_view>>, or
+* a parameter of a type convertible to <<ref_string_view>> and two
+  `size_type` parameters that specify a substring, or
+* a `const_pointer` parameter, or
+* a parameter of type `const_pointer` and a `size_type` parameter that
+  specifies the length of the string
+
+are replaced with an overload accepting a <<ref_string_view>> parameter.
+
+This design removes several redundant overloads from the interface. For
+example, the 11 overloads of `std::string::insert` are reduced to just 3 in
+<<ref_string>>, while still providing identical functionality. In addition
+to these changes, overloads taking a `std::initializer_list<char>` parameter
+have been removed. Such overloads have little use, as they serve as little more
+than wrappers for arrays with an inefficient syntax:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_strings_3,indent=0]
+----
+
+With the removal of overloads that specify parameters for a substring, a member
+function `subview` that returns a <<ref_string_view>> is provided to
+facilitate cheap substring operations:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_strings_2,indent=0]
+----
+
+A <<ref_string>> may be constructed using the <<default_memory_resource,default
+memory resource>> without incurring any memory allocations. Alternatively,
+a <<ref_storage_ptr>> can be provided explicitly:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_strings_1,indent=0]
+----
+
+== Formatted Output
+
+When a <<ref_string>> is formatted to a {std_ostream}, the result is a valid
+JSON. That is, the result will be double quoted and the contents properly
+escaped per the JSON specification.
+
+== Accessing Storage Beyond `size()`
+
+<<ref_string>> directly supports access to its storage in the range `[size(),
+capacity())`. This can be used for efficient assembly of a string from several
+parts. After the string is assembled, use the member function
+<<ref_string_grow>> to update the string's size and insert the null terminator.
+For example:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_strings_5,indent=0]
+----

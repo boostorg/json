@@ -37,18 +37,18 @@ template<class T>
 using allocator = ::std::allocator<T>;
 } // std
 
-//[doc_background_1
+// tag::doc_background_1[]
 namespace std {
 
 template< class T, class Allocator = std::allocator< T > >
 class vector;
 
 } // namespace std
-//]
+// end::doc_background_1[]
 
 //----------------------------------------------------------
 
-//[doc_background_2
+// tag::doc_background_2[]
 namespace std {
 
 template< class T, class Allocator >
@@ -58,7 +58,7 @@ public:
     explicit vector( Allocator const& alloc );
 
     //...
-//]
+// end::doc_background_2[]
 };
 
 template<class T, class A>
@@ -67,7 +67,7 @@ vector<T,A>::vector(A const&){}
 
 //----------------------------------------------------------
 
-//[doc_background_3
+// tag::doc_background_3[]
 namespace std {
 namespace pmr {
 
@@ -88,11 +88,11 @@ protected:
 
 } // namespace pmr
 } // namespace std
-//]
+// end::doc_background_3[]
 
 //----------------------------------------------------------
 
-//[doc_background_4
+// tag::doc_background_4[]
 
 namespace std {
 namespace pmr {
@@ -103,7 +103,7 @@ using vector = std::vector< T, boost::container::pmr::polymorphic_allocator< T >
 } // namespace pmr
 } // namespace std
 
-//]
+// end::doc_background_4[]
 
 //----------------------------------------------------------
 
@@ -113,7 +113,7 @@ using namespace background;
 //----------------------------------------------------------
 {
 struct T {};
-//[doc_background_5
+// tag::doc_background_5[]
 // A type of memory resource
 monotonic_resource mr;
 
@@ -122,11 +122,11 @@ vector< T > v1(( boost::container::pmr::polymorphic_allocator< T >(&mr) ));
 
 // Or this way, since construction from memory_resource* is implicit:
 vector< T > v2( &mr );
-//]
+// end::doc_background_5[]
 }
 //----------------------------------------------------------
 {
-//[doc_background_6
+// tag::doc_background_6[]
 {
     // A type of memory resource which uses a stack buffer
     unsigned char temp[4096];
@@ -137,7 +137,7 @@ vector< T > v2( &mr );
 
     // The vector will allocate from `temp` first, and then the heap.
 }
-//]
+// end::doc_background_6[]
 }
 //----------------------------------------------------------
 
@@ -151,7 +151,7 @@ struct my_resource : container::pmr::memory_resource
     void  do_deallocate( void*, size_t, size_t ) override {}
     bool  do_is_equal  ( memory_resource const& ) const noexcept override { return true; }
 };
-//[doc_background_7
+// tag::doc_background_7[]
 namespace my_library {
 
 std::pmr::vector<char> get_chars1()
@@ -163,11 +163,11 @@ std::pmr::vector<char> get_chars1()
 }
 
 } // my_library
-//]
+// end::doc_background_7[]
 
 //----------------------------------------------------------
 
-//[doc_background_8
+// tag::doc_background_8[]
 namespace my_library {
 
 std::pmr::vector<char> get_chars2()
@@ -183,7 +183,7 @@ std::pmr::vector<char> get_chars2()
 }
 
 } // my_library
-//]
+// end::doc_background_8[]
 
 //----------------------------------------------------------
 

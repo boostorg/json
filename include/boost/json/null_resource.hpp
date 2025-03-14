@@ -18,8 +18,8 @@ namespace json {
 
 /** Return a pointer to the null resource.
 
-    This memory resource always throws the exception
-    `std::bad_alloc` in calls to `allocate`.
+    This memory resource always throws the exception @ref std::bad_alloc in
+    calls to `allocate`.
 
     @par Complexity
     Constant.

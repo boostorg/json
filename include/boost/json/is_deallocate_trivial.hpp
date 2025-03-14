@@ -16,19 +16,17 @@ namespace json {
 /** Return true if a memory resource's deallocate function has no effect.
 
     This metafunction may be specialized to indicate to the library that calls
-    to the `deallocate` function of a `boost::container::pmr::memory_resource`
-    have no effect. The implementation will elide such calls when it is safe to
-    do so. By default, the implementation assumes that all memory resources
-    require a call to `deallocate` for each memory region obtained by
-    calling `allocate`.
+    to the `deallocate` function of a @ref
+    boost::container::pmr::memory_resource have no effect. The implementation
+    will elide such calls when it is safe to do so. By default, the
+    implementation assumes that all memory resources require a call to
+    `deallocate` for each memory region obtained by calling `allocate`.
 
     @par Example
-
-    This example specializes the metafuction for `my_resource`,
-    to indicate that calls to deallocate have no effect:
+    This example specializes the metafuction for `my_resource`, to indicate
+    that calls to deallocate have no effect:
 
     @code
-
     // Forward-declaration for a user-defined memory resource
     struct my_resource;
 
@@ -46,17 +44,13 @@ namespace json {
 
     } // namespace json
     } // namespace boost
-
     @endcode
 
-    It is usually not necessary for users to check this trait.
-    Instead, they can call @ref storage_ptr::is_deallocate_trivial
-    to determine if the pointed-to memory resource has a trivial
-    deallocate function.
+    It is usually not necessary for users to check this trait. Instead, they
+    can call @ref storage_ptr::is_deallocate_trivial to determine if the
+    pointed-to memory resource has a trivial deallocate function.
 
-    @see
-        @ref storage_ptr,
-        @ref boost::container::pmr::memory_resource
+    @see @ref storage_ptr, @ref boost::container::pmr::memory_resource.
 */
 template<class T>
 struct is_deallocate_trivial

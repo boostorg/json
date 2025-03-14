@@ -1,0 +1,85 @@
+////
+Copyright (c) 2020 Krystian Stasiowski (sdkrystian@gmail.com)
+Copyright (c) 2025 Dmitry Arkhipov (grisumbras@yandex.ru)
+
+Distributed under the Boost Software License, Version 1.0. (See accompanying
+file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+Official repository: https://github.com/boostorg/json
+////
+
+[#dom_numbers]
+= Numbers
+JSON numbers are represented using `std::int64_t`, `std::uint64_t`, and
+`double`. When a <<ref_value>> is constructed from an unsigned integer, its
+<<ref_kind>> will be `kind::uint64`. Likewise, a <<ref_value>> constructed
+from a signed integer will have `kind::int64`, or `kind::double_` if
+constructed from a floating-point type:
+
+[source]
+----
+include::../../../test/doc_using_numbers.cpp[tag=doc_using_numbers_1,indent=0]
+----
+
+When accessing a number contained within a <<ref_value>>, the function used
+must match the value's <<ref_kind>> exactly; no conversions will be performed.
+For example if `as_double` is called on a <<ref_value>> that contains
+a `std::uint64_t`, an exception is thrown. Similarly, the function `if_double`
+will return `nullptr` and calling `get_double` will result in undefined
+behavior:
+
+[source]
+----
+include::../../../test/doc_using_numbers.cpp[tag=doc_using_numbers_2,indent=0]
+----
+
+In cases where you know that a <<ref_value>> contains a number but don't know
+its <<ref_kind>>, `value::to_number` can be used to convert the
+<<ref_value>> to an arithmetic type:
+
+[source]
+----
+include::../../../test/doc_using_numbers.cpp[tag=doc_using_numbers_3,indent=0]
+----
+
+If the <<ref_value>> does not contain a number, or if the conversion is to an
+integer type `T` and the number cannot be represented exactly by `T`, the
+conversion will fail. Otherwise, the result is the number converted to `T`
+as-if by `static_cast`:
+
+[source]
+----
+include::../../../test/doc_using_numbers.cpp[tag=doc_using_numbers_4,indent=0]
+----
+
+In settings where exceptions cannot be used, an overload of `value::to_number`
+accepting {ref_error_code} can be used instead with identical semantics to its
+throwing counterpart:
+
+[source]
+----
+include::../../../test/doc_using_numbers.cpp[tag=doc_using_numbers_5,indent=0]
+----
+
+When parsing a JSON document, the type used to represent a number is not
+explicitly specified and must be determined from its value. In general, the
+parser will choose the best type which can accurately store the number as it
+appears in the document. Integers (i.e. numbers without decimals or exponents)
+that cannot be represented by `std::uint64_t` and `std::int64_t` will be
+represented as `double` to preserve their magnitude:
+
+[source]
+----
+include::../../../test/doc_using_numbers.cpp[tag=doc_using_numbers_6,indent=0]
+----
+
+More formally, if the number:
+
+* contains a decimal point, or
+* contains an exponent, or
+* is negative and its value is less than `INT64_MIN`, or
+* is positive and its value is greater than `UINT64_MAX`,
+
+then its type is `double`. Otherwise, if the number is positive and its value
+is greater than `INT64_MAX`, then its type is `std::uint64_t`. All other
+numbers are parsed as `std::int64_t`.

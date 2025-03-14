@@ -22,24 +22,21 @@ namespace json {
     extensions. Default-constructed options specify that only standard JSON is
     produced.
 
-    @see
-        @ref serialize,
-        @ref serializer.
+    @see @ref serialize, @ref serializer.
 */
 struct serialize_options
 {
-    /** Non-standard extension option
+    /** Non-standard extension option.
 
         Output `Infinity`, `-Infinity` and `NaN` for positive infinity,
         negative infinity, and "not a number" doubles.
 
-        @see
-            @ref serialize,
-            @ref serializer.
+        @see @ref serialize, @ref serializer.
     */
     bool allow_infinity_and_nan = false;
 
     /** Set JSON serialization options on input stream.
+
         The function stores serialization options in the private storage of the
         stream. If the stream fails to allocate necessary private storage,
         `badbit` will be set on it.
@@ -50,12 +47,10 @@ struct serialize_options
         Amortized constant (due to potential memory allocation by the stream).
 
         @par Exception Safety
-        Strong guarantee.
-        The stream may throw as configured by
-        [`std::ios::exceptions`](https://en.cppreference.com/w/cpp/io/basic_ios/exceptions).
+        Strong guarantee. The stream may throw as configured by @ref
+        std::ios::exceptions.
 
         @param os The output stream.
-
         @param opts The options to store.
     */
     BOOST_JSON_DECL

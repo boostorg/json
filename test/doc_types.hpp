@@ -18,7 +18,7 @@
 
 #include <array>
 
-//[snippet_conv_spec_trait1
+// tag::snippet_conv_spec_trait1[]
 namespace user_ns
 {
 
@@ -62,7 +62,7 @@ struct tuple_element< N, user_ns::ip_address >
 };
 
 } // namespace std
-//]
+// end::snippet_conv_spec_trait1[]
 
 namespace user_ns
 {

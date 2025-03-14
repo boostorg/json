@@ -31,55 +31,46 @@ class string;
 
 /** The type used in initializer lists.
 
-    This type is used in initializer lists for
-    lazy construction of and assignment to the
-    container types @ref value, @ref array,
-    and @ref object. The two types of initializer
-    lists used are:
+    This type is used in initializer lists for lazy construction of and
+    assignment to the container types @ref value, @ref array, and @ref object.
+    The two types of initializer lists used are:
 
-    @li `std::initializer_list< value_ref >` for
-    constructing or assigning a @ref value or
-    @ref array, and
-
-    @li `std::initializer_list< std::pair< string_view, value_ref > >`
-    for constructing or assigning an @ref object.
+    @li `std::initializer_list< value_ref >` for constructing or assigning
+        a @ref value or @ref array, and
+    @li `std::initializer_list< std::pair< string_view, value_ref > >` for
+        constructing or assigning an @ref object.
 
     A `value_ref` uses reference semantics. Creation of the actual container
     from the initializer list is lazily deferred until the list is used. This
-    means that the `boost::container::pmr::memory_resource` used to construct a
-    container can be specified after the point where the initializer list is
-    specified.
+    means that the @ref boost::container::pmr::memory_resource used to
+    construct a container can be specified after the point where the
+    initializer list is specified. Also, the usage of this type allows to avoid
+    constructing a @ref value until it's necessary.
 
     @par Example
-
-    This example demonstrates how a user-defined type
-    containing a JSON value can be constructed from
-    an initializer list:
+    This example demonstrates how a user-defined type containing a JSON value
+    can be constructed from an initializer list:
 
     @code
-
     class my_type
     {
         value jv_;
 
     public:
-        my_type( std::initializer_list< value_ref > init )
+        my_type( std::initializer_list<value_ref> init )
             : jv_(init)
         {
         }
     };
-
     @endcode
 
-    @note Never declare a variable of type
-    `std::initializer_list` except in function
-    parameter lists, otherwise the behavior may
-    be undefined.
+    @warning `value_ref` does not take ownership of the objects it was
+    constructed with. If those objects' lifetimes end before the `value_ref`
+    object is used, you will get undefined behavior. Because of this it is
+    advised against declaring a variable of type
+    `std::initializer_list<value_ref>` except in function parameter lists.
 
-    @see
-        @ref value,
-        @ref array,
-        @ref object
+    @see @ref value, @ref array, @ref object, @ref value::set_at_pointer.
 */
 class value_ref
 {
@@ -165,15 +156,47 @@ class value_ref
     what what_;
 
 public:
-    /// Constructor
+    /** Constructors.
+
+        @li **(1)** copy constructor.
+        @li **(2)** move constructor.
+        @li **(3)** the constructed value stores a reference to `t`'s character
+            array.
+        @li **(4)** the constructed value stores a `const` reference to `t`.
+        @li **(5)** the constructed value stores an rvalue reference to `t`.
+        @li **(6)** the constructed value stores a copy of `b`.
+        @li **(7)**--**(18)** the constructed value stores a copy of `t`.
+        @li **(19)** the constrcuted value stores `nullptr`.
+        @li **(20)** the constrcuted value stores a copy of `init`.
+
+        In addition the constructed object stores a pointer to a function that
+        captures the type information necessary to construct a @ref value from
+        the stored data.
+
+        @warning The overloads that accept references do not take ownership of
+        referenced objects. The caller is responsible for making sure those
+        objects do not go out of scope before the `value_ref` object is used.
+        It is advised you only use `value_ref` (or any type that contains a
+        `value_ref` subobject) as function parameters or take special care to
+        not invoke undefeined behavior.
+
+        @par Complexity
+        @li **(1)**--**(19)** constant.
+        @li **(20)** linear in `init.size()`.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @{
+    */
     value_ref(
         value_ref const&) = default;
 
-    /// Constructor
+    /// Overload
     value_ref(
         value_ref&&) = default;
 
-    /// Constructor
+    /// Overload
 #ifdef BOOST_JSON_DOCS
     value_ref(string_view s) noexcept;
 #else
@@ -189,11 +212,10 @@ public:
         : arg_(string_view(t))
         , what_(what::str)
     {
-
     }
 #endif
 
-    /// Constructor
+    /// Overload
     template<class T>
     value_ref(
         T const& t
@@ -210,7 +232,7 @@ public:
     {
     }
 
-    /// Constructor
+    /// Overload
     template<class T>
     value_ref(
         T&& t
@@ -232,7 +254,7 @@ public:
     {
     }
 
-    /// Constructor
+    /// Overload
 #ifdef BOOST_JSON_DOCS
     value_ref(bool b) noexcept;
 #else
@@ -250,16 +272,7 @@ public:
     }
 #endif
 
-    /// Constructor
-    value_ref(
-        std::initializer_list<
-            value_ref> t) noexcept
-        : arg_(t)
-        , what_(what::ini)
-    {
-    }
-
-    /// Constructor
+    /// Overload
     value_ref(signed char t) noexcept
         : arg_(t)
         , cf_{&from_builtin<signed char>, &arg_.schar_}
@@ -267,7 +280,7 @@ public:
     {
     }
 
-    /// Constructor
+    /// Overload
     value_ref(short t) noexcept
         : arg_(t)
         , cf_{&from_builtin<short>, &arg_.short_}
@@ -275,7 +288,7 @@ public:
     {
     }
 
-    /// Constructor
+    /// Overload
     value_ref(int t) noexcept
         : arg_(t)
         , cf_{&from_builtin<int>, &arg_.int_}
@@ -283,7 +296,7 @@ public:
     {
     }
 
-    /// Constructor
+    /// Overload
     value_ref(long t) noexcept
         : arg_(t)
         , cf_{&from_builtin<
@@ -292,7 +305,7 @@ public:
     {
     }
 
-    /// Constructor
+    /// Overload
     value_ref(long long t) noexcept
         : arg_(t)
         , cf_{&from_builtin<
@@ -301,7 +314,7 @@ public:
     {
     }
 
-    /// Constructor
+    /// Overload
     value_ref(unsigned char t) noexcept
         : arg_(t)
         , cf_{&from_builtin<
@@ -310,7 +323,7 @@ public:
     {
     }
 
-    /// Constructor
+    /// Overload
     value_ref(unsigned short t) noexcept
         : arg_(t)
         , cf_{&from_builtin<
@@ -319,7 +332,7 @@ public:
     {
     }
 
-    /// Constructor
+    /// Overload
     value_ref(unsigned int t) noexcept
         : arg_(t)
         , cf_{&from_builtin<
@@ -328,7 +341,7 @@ public:
     {
     }
 
-    /// Constructor
+    /// Overload
     value_ref(unsigned long t) noexcept
         : arg_(t)
         , cf_{&from_builtin<
@@ -337,7 +350,7 @@ public:
     {
     }
 
-    /// Constructor
+    /// Overload
     value_ref(unsigned long long t) noexcept
         : arg_(t)
         , cf_{&from_builtin<
@@ -346,7 +359,7 @@ public:
     {
     }
 
-    /// Constructor
+    /// Overload
     value_ref(float t) noexcept
         : arg_(t)
         , cf_{&from_builtin<
@@ -355,7 +368,7 @@ public:
     {
     }
 
-    /// Constructor
+    /// Overload
     value_ref(double t) noexcept
         : arg_(t)
         , cf_{&from_builtin<
@@ -364,7 +377,7 @@ public:
     {
     }
 
-    /// Constructor
+    /// Overload
     value_ref(std::nullptr_t) noexcept
         : arg_(nullptr)
         , cf_{&from_builtin<
@@ -372,6 +385,16 @@ public:
         , what_(what::cfunc)
     {
     }
+
+    /// Overload
+    value_ref(
+        std::initializer_list<value_ref> init) noexcept
+        : arg_(init)
+        , what_(what::ini)
+    {
+    }
+
+    /// @}
 
 #ifndef BOOST_JSON_DOCS
 // Not public

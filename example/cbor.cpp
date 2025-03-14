@@ -7,7 +7,7 @@
 // Official repository: https://github.com/boostorg/json
 //
 
-//[example_cbor
+// tag::example_cbor[]
 
 /*
     This example implements simple parsing and serialization of a
@@ -470,4 +470,4 @@ main(int argc, const char** argv)
     return EXIT_SUCCESS;
 }
 
-//]
+// end::example_cbor[]

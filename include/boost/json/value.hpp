@@ -39,18 +39,14 @@ namespace json {
 
 /** The type used to represent any JSON value
 
-    This is a
-    <a href="https://en.cppreference.com/w/cpp/concepts/regular"><em>Regular</em></a>
-    type which works like
-    a variant of the basic JSON data types: array,
+    This is a [Regular](https://en.cppreference.com/w/cpp/concepts/regular)
+    type which works like a variant of the basic JSON data types: array,
     object, string, number, boolean, and null.
 
     @par Thread Safety
-
-    Distinct instances may be accessed concurrently.
-    Non-const member functions of a shared instance
-    may not be called concurrently with any other
-    member functions of that instance.
+    Distinct instances may be accessed concurrently. Non-const member
+    functions of a shared instance may not be called concurrently with any
+    other member functions of that instance.
 */
 class value
 {
@@ -116,9 +112,8 @@ public:
 
     /** Destructor.
 
-        The value and all of its contents are destroyed.
-        Any dynamically allocated memory that was allocated
-        internally is freed.
+        The value and all of its contents are destroyed. Any dynamically
+        allocated memory that was allocated internally is freed.
 
         @par Complexity
         Constant, or linear in size for array or object.
@@ -129,38 +124,114 @@ public:
     BOOST_JSON_DECL
     ~value() noexcept;
 
-    /** Default constructor.
+    /** Constructors.
 
-        The constructed value is null,
-        using the [default memory resource].
+        Construct a new `value`.
+
+        @li **(1)**--**(3)** the constructed value is null.
+        @li **(4)** the constructed value contains a copy of `b`.
+        @li **(5)**--**(9)** the constructed value contains a copy of `i`.
+        @li **(10)**--**(14)** the constructed value contains a copy of `u`.
+        @li **(15)** the constructed value contains a copy of `d`.
+        @li **(16)**, **(19)** the constructed value contains a copy of the
+            string `s`.
+        @li **(17)** the constructed value contains a copy of the
+            null-terminated string `s`.
+        @li **(18)** the constructed value takes ownership of `s`'s storage.
+        @li **(20)** if `*s.storage() == *sp` equivalent to **(18)**, otherwise
+            equivalent to **(19)**.
+        @li **(21)** the constructed value contains an empty string.
+        @li **(22)** the constructed value takes ownership of `arr`'s storage.
+        @li **(23)** the constructed value contains an element-wise copy of the
+            array `arr`.
+        @li **(24)** if `*arr.storage() == *sp` equivalent to **(22)**,
+            otherwise equivalent to **(23)**.
+        @li **(25)** the constructed value contains an empty array.
+        @li **(26)** the constructed value takes ownership of `obj`'s storage.
+        @li **(27)** the constructed value contains an element-wise copy of the
+            object `obj`.
+        @li **(28)** if `*obj.storage() == *sp` equivalent to **(26)**,
+            otherwise equivalent to **(27)**.
+        @li **(29)** the constructed value contains an empty object.
+        @li **(30)** the constructed value's contents are formed by
+            constructing from `init` and `sp` (see \<\<initializer_lists\>\>).
+        @li **(31)**, **(32)** the constructed value contains a copy of the
+            contents of `other`.
+        @li **(33)** the constructed value acquires ownership of the contents
+            of `other`.
+        @li **(34)** equivalent to **(33)** if `*sp == *other.storage()`;
+            otherwise equivalent to **(32)**.
+        @li **(35)** the constructed value acquires ownership of the contents
+            of `other` using pilfer semantics. This is more efficient than move
+            construction, when it is known that the moved-from object will be
+            immediately destroyed afterwards.
+
+        With **(2)**--**(17)**, **(19)**--**(21)**, **(23)**--**(25)**,
+        {sp} **(27)**--**(30)**, **(32)**, and **(34)** the constructed value
+        uses memory resource of `sp`. With **(18)**, **(22)**, **(26)**,
+        {sp} **(31)**, **(33)**, and **(35)** it uses the memory resource of
+        the argument (`s`, `arr`, obj`, or `value`). In either case the value
+        will share the ownership of the memory resource. With **(1)**
+        it uses the \<\<default_memory_resource, default memory resource\>\>.
+
+        After **(18)**, **(22)**, **(26)**, and **(33)** the argument behaves
+        as if newly constructed with its current storage pointer (i.e. becomes
+        an empty string, array, object, or null value).
+
+        After **(35)** `other` is not in a usable state and may only be
+        destroyed.
 
         @par Complexity
-        Constant.
+        @li **(1)**--**(15)**, **(18)**, **(21)**, **(22)**, **(25)**,
+            {sp} **(26)**, **(29)**, **(33)**, **(35)** constant.
+        @li **(16)**, **(19)** linear in `s.size()`.
+        @li **(17)** linear in `std::strlen(s)`.
+        @li **(20)** if `*s.storage() == *sp` constant, otherwise linear
+            in `s.size()`.
+        @li **(23)** linear in `arr.size()`.
+        @li **(24)** if `*arr.storage() == *sp` constant, otherwise linear
+            in `arr.size()`.
+        @li **(27)** linear in `obj.size()`.
+        @li **(28)** if `*obj.storage() == *sp` constant, otherwise linear
+            in `obj.size()`.
+        @li **(30)** linear in `init.size()`.
+        @li **(31)**, **(32)** linear in the size of `other`.
+        @li **(34)** constant if `*sp == *other.storage()`; otherwise linear in
+            the size of `other`.
+
+        The size of `other` is either the size of the underlying container
+        (if there is one), or can be considered to be 1.
 
         @par Exception Safety
-        No-throw guarantee.
+        @li **(1)**--**(15)**, **(18)**, **(21)**, **(22)**, **(25)**,
+            **(26)**, **(29)**, **(33)**, **(35)** no-throw guarantee.
+        @li **(16)**, **(17)**, **(19)**, **(23)**, **(27)**,
+            **(30)**--**(32)** strong guarantee.
+        @li **(20)** if `*s.storage() == *sp` no-throw guarantee, otherwise
+            strong guarantee.
+        @li **(24)** if `*arr.storage() == *sp` no-throw guarantee, otherwise
+            strong guarantee.
+        @li **(28)** if `*obj.storage() == *sp` no-throw guarantee, otherwise
+            strong guarantee.
+        @li **(33)** if `*other.storage() == *sp` no-throw guarantee, otherwise
+            strong guarantee.
 
-        [default memory resource]: json/allocators/storage_ptr.html#json.allocators.storage_ptr.default_memory_resource
+        Calls to `memory_resource::allocate` may throw.
+
+        @see @ref pilfer,
+            [Valueless Variants Considered Harmful](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0308r0.html).
+                                                         //
+        @{
     */
     value() noexcept
         : sca_()
     {
     }
 
-    /** Constructor.
+    /** Overload
 
-        The constructed value is null, using the
-        specified `boost::container::pmr::memory_resource`.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The container will acquire shared ownership of the memory
-        resource.
+        @param sp A pointer to the @ref boost::container::pmr::memory_resource
+               to use.
     */
     explicit
     value(storage_ptr sp) noexcept
@@ -168,156 +239,7 @@ public:
     {
     }
 
-    /** Pilfer constructor.
-
-        The value is constructed by acquiring ownership
-        of the contents of `other` using pilfer semantics.
-        This is more efficient than move construction, when
-        it is known that the moved-from object will be
-        immediately destroyed afterwards.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param other The value to pilfer. After pilfer
-        construction, `other` is not in a usable state
-        and may only be destroyed.
-
-        @see @ref pilfer,
-            <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0308r0.html">
-                Valueless Variants Considered Harmful</a>
-    */
-    value(pilfered<value> other) noexcept
-    {
-        relocate(this, other.get());
-        ::new(&other.get().sca_) scalar();
-    }
-
-    /** Copy constructor.
-
-        The value is constructed with a copy of the
-        contents of `other`, using the same
-        memory resource as `other`.
-
-        @par Complexity
-        Linear in the size of `other`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param other The value to copy.
-    */
-    value(value const& other)
-        : value(other, other.storage())
-    {
-    }
-
-    /** Copy constructor
-
-        The value is constructed with a copy of the
-        contents of `other`, using the
-        specified memory resource.
-
-        @par Complexity
-        Linear in the size of `other`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param other The value to copy.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The container will acquire shared ownership of the memory
-        resource.
-    */
-    BOOST_JSON_DECL
-    value(
-        value const& other,
-        storage_ptr sp);
-
-    /** Move constructor
-
-        The value is constructed by acquiring ownership of
-        the contents of `other` and shared ownership of
-        `other`'s memory resource.
-
-        @note
-
-        After construction, the moved-from value becomes a
-        null value with its current storage pointer.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param other The value to move.
-    */
-    BOOST_JSON_DECL
-    value(value&& other) noexcept;
-
-    /** Move constructor
-
-        The value is constructed with the contents of
-        `other` by move semantics, using the specified
-        memory resource:
-
-        @li If `*other.storage() == *sp`, ownership of
-        the underlying memory is transferred in constant
-        time, with no possibility of exceptions.
-        After construction, the moved-from value becomes
-        a null value with its current storage pointer.
-
-        @li If `*other.storage() != *sp`, an
-        element-wise copy is performed if
-        `other.is_structured() == true`, which may throw.
-        In this case, the moved-from value is not
-        changed.
-
-        @par Complexity
-        Constant or linear in the size of `other`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param other The value to move.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The container will acquire shared ownership of the memory
-        resource.
-    */
-    BOOST_JSON_DECL
-    value(
-        value&& other,
-        storage_ptr sp);
-
-    //------------------------------------------------------
-    //
-    // Conversion
-    //
-    //------------------------------------------------------
-
-    /** Construct a null.
-
-        A null value is a monostate.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The container will acquire shared ownership of the memory
-        resource.
-    */
+    /// Overload
     value(
         std::nullptr_t,
         storage_ptr sp = {}) noexcept
@@ -325,22 +247,10 @@ public:
     {
     }
 
-    /** Construct a bool.
+    /** Overload
 
-        This constructs a `bool` value using
-        the specified memory resource.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param b The initial value.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The container will acquire shared ownership of the memory
-        resource.
+        @param b The boolean to construct with.
+        @param sp
     */
 #ifdef BOOST_JSON_DOCS
     value(
@@ -359,19 +269,10 @@ public:
     }
 #endif
 
-    /** Construct a `std::int64_t`.
+    /** Overload
 
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param i The initial value.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The container will acquire shared ownership of the memory
-        resource.
+        @param i The number to construct with.
+        @param sp
     */
     value(
         signed char i,
@@ -381,20 +282,7 @@ public:
     {
     }
 
-    /** Construct a `std::int64_t`.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param i The initial value.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The container will acquire shared ownership of the memory
-        resource.
-    */
+    /// Overload
     value(
         short i,
         storage_ptr sp = {}) noexcept
@@ -403,20 +291,7 @@ public:
     {
     }
 
-    /** Construct a `std::int64_t`.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param i The initial value.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The container will acquire shared ownership of the memory
-        resource.
-    */
+    /// Overload
     value(
         int i,
         storage_ptr sp = {}) noexcept
@@ -425,20 +300,7 @@ public:
     {
     }
 
-    /** Construct a `std::int64_t`.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param i The initial value.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The container will acquire shared ownership of the memory
-        resource.
-    */
+    /// Overload
     value(
         long i,
         storage_ptr sp = {}) noexcept
@@ -447,20 +309,7 @@ public:
     {
     }
 
-    /** Construct a `std::int64_t`.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param i The initial value.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The container will acquire shared ownership of the memory
-        resource.
-    */
+    /// Overload
     value(
         long long i,
         storage_ptr sp = {}) noexcept
@@ -469,19 +318,10 @@ public:
     {
     }
 
-    /** Construct a `std::uint64_t`.
+    /** Overload
 
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param u The initial value.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The container will acquire shared ownership of the memory
-        resource.
+        @param u The number to construct with.
+        @param sp
     */
     value(
         unsigned char u,
@@ -491,20 +331,7 @@ public:
     {
     }
 
-    /** Construct a `std::uint64_t`.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param u The initial value.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The container will acquire shared ownership of the memory
-        resource.
-    */
+    /// Overload
     value(
         unsigned short u,
         storage_ptr sp = {}) noexcept
@@ -513,20 +340,7 @@ public:
     {
     }
 
-    /** Construct a `std::uint64_t`.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param u The initial value.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The container will acquire shared ownership of the memory
-        resource.
-    */
+    /// Overload
     value(
         unsigned int u,
         storage_ptr sp = {}) noexcept
@@ -535,20 +349,7 @@ public:
     {
     }
 
-    /** Construct a `std::uint64_t`.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param u The initial value.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The container will acquire shared ownership of the memory
-        resource.
-    */
+    /// Overload
     value(
         unsigned long u,
         storage_ptr sp = {}) noexcept
@@ -557,20 +358,7 @@ public:
     {
     }
 
-    /** Construct a `std::uint64_t`.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param u The initial value.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The container will acquire shared ownership of the memory
-        resource.
-    */
+    /// Overload
     value(
         unsigned long long u,
         storage_ptr sp = {}) noexcept
@@ -579,19 +367,10 @@ public:
     {
     }
 
-    /** Construct a `double`.
+    /** Overload
 
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param d The initial value.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The container will acquire shared ownership of the memory
-        resource.
+        @param d The number to construct with.
+        @param sp
     */
     value(
         double d,
@@ -600,23 +379,10 @@ public:
     {
     }
 
-    /** Construct a @ref string.
+    /** Overload
 
-        The string is constructed with a copy of the
-        string view `s`, using the specified memory resource.
-
-        @par Complexity
-        Linear in `s.size()`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param s The string view to construct with.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The container will acquire shared ownership of the memory
-        resource.
+        @param s The string to construct with.
+        @param sp
     */
     value(
         string_view s,
@@ -625,26 +391,7 @@ public:
     {
     }
 
-    /** Construct a @ref string.
-
-        The string is constructed with a copy of the
-        null-terminated string `s`, using the specified
-        memory resource.
-
-        @par Complexity
-        Linear in `std::strlen(s)`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param s The null-terminated string to construct
-        with.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The container will acquire shared ownership of the memory
-        resource.
-    */
+    /// Overload
     value(
         char const* s,
         storage_ptr sp = {})
@@ -652,117 +399,34 @@ public:
     {
     }
 
-    /** Construct a @ref string.
-
-        The value is constructed from `other`, using the
-        same memory resource. To transfer ownership, use `std::move`:
-
-        @par Example
-        @code
-        string str = "The Boost C++ Library Collection";
-
-        // transfer ownership
-        value jv( std::move(str) );
-
-        assert( str.empty() );
-        assert( *str.storage() == *jv.storage() );
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param other The string to construct with.
-    */
+    /// Overload
     value(
-        string other) noexcept
-        : str_(std::move(other))
+        string s) noexcept
+        : str_(std::move(s))
     {
     }
 
-    /** Construct a @ref string.
-
-        The value is copy constructed from `other`,
-        using the specified memory resource.
-
-        @par Complexity
-        Linear in `other.size()`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param other The string to construct with.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The container will acquire shared ownership of the memory
-        resource.
-    */
+    /// Overload
     value(
-        string const& other,
+        string const& s,
         storage_ptr sp)
         : str_(
-            other,
+            s,
             std::move(sp))
     {
     }
 
-    /** Construct a @ref string.
-
-        The value is move constructed from `other`,
-        using the specified memory resource.
-
-        @par Complexity
-        Constant or linear in `other.size()`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param other The string to construct with.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The container will acquire shared ownership of the memory
-        resource.
-    */
+    /// Overload
     value(
-        string&& other,
+        string&& s,
         storage_ptr sp)
         : str_(
-            std::move(other),
+            std::move(s),
             std::move(sp))
     {
     }
 
-    /** Construct a @ref string.
-
-        This is the fastest way to construct
-        an empty string, using the specified
-        memory resource. The variable @ref string_kind
-        may be passed as the first parameter
-        to select this overload:
-
-        @par Example
-        @code
-        // Construct an empty string
-
-        value jv( string_kind );
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The container will acquire shared ownership of the memory
-        resource.
-
-        @see @ref string_kind
-    */
+    /// Overload
     value(
         string_kind_t,
         storage_ptr sp = {}) noexcept
@@ -770,116 +434,36 @@ public:
     {
     }
 
-    /** Construct an @ref array.
+    /** Overload
 
-        The value is constructed from `other`, using the
-        same memory resource. To transfer ownership, use `std::move`:
-
-        @par Example
-        @code
-        array arr( {1, 2, 3, 4, 5} );
-
-        // transfer ownership
-        value jv( std::move(arr) );
-
-        assert( arr.empty() );
-        assert( *arr.storage() == *jv.storage() );
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param other The array to construct with.
+        @param arr The array to construct with.
     */
-    value(array other) noexcept
-        : arr_(std::move(other))
+    value(array arr) noexcept
+        : arr_(std::move(arr))
     {
     }
 
-    /** Construct an @ref array.
-
-        The value is copy constructed from `other`,
-        using the specified memory resource.
-
-        @par Complexity
-        Linear in `other.size()`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param other The array to construct with.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The container will acquire shared ownership of the memory
-        resource.
-    */
+    /// Overload
     value(
-        array const& other,
+        array const& arr,
         storage_ptr sp)
         : arr_(
-            other,
+            arr,
             std::move(sp))
     {
     }
 
-    /** Construct an @ref array.
-
-        The value is move-constructed from `other`,
-        using the specified memory resource.
-
-        @par Complexity
-        Constant or linear in `other.size()`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param other The array to construct with.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The container will acquire shared ownership of the memory
-        resource.
-    */
+    /// Overload
     value(
-        array&& other,
+        array&& arr,
         storage_ptr sp)
         : arr_(
-            std::move(other),
+            std::move(arr),
             std::move(sp))
     {
     }
 
-    /** Construct an @ref array.
-
-        This is the fastest way to construct
-        an empty array, using the specified
-        memory resource. The variable @ref array_kind
-        may be passed as the first parameter
-        to select this overload:
-
-        @par Example
-        @code
-        // Construct an empty array
-
-        value jv( array_kind );
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The container will acquire shared ownership of the memory
-        resource.
-
-        @see @ref array_kind
-    */
+    /// Overload
     value(
         array_kind_t,
         storage_ptr sp = {}) noexcept
@@ -887,116 +471,32 @@ public:
     {
     }
 
-    /** Construct an @ref object.
+    /** Overload
 
-        The value is constructed from `other`, using the
-        same memory resource. To transfer ownership, use `std::move`:
-
-        @par Example
-        @code
-        object obj( {{"a",1}, {"b",2}, {"c"},3}} );
-
-        // transfer ownership
-        value jv( std::move(obj) );
-
-        assert( obj.empty() );
-        assert( *obj.storage() == *jv.storage() );
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param other The object to construct with.
+        @param obj The object to construct with.
     */
-    value(object other) noexcept
-        : obj_(std::move(other))
+    value(object obj) noexcept
+        : obj_(std::move(obj))
     {
     }
 
-    /** Construct an @ref object.
-
-        The value is copy constructed from `other`,
-        using the specified memory resource.
-
-        @par Complexity
-        Linear in `other.size()`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param other The object to construct with.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The container will acquire shared ownership of the memory
-        resource.
-    */
+    /// Overload
     value(
-        object const& other,
+        object const& obj,
         storage_ptr sp)
-        : obj_(
-            other,
-            std::move(sp))
+        : obj_( obj, std::move(sp) )
     {
     }
 
-    /** Construct an @ref object.
-
-        The value is move constructed from `other`,
-        using the specified memory resource.
-
-        @par Complexity
-        Constant or linear in `other.size()`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param other The object to construct with.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The container will acquire shared ownership of the memory
-        resource.
-    */
+    /// Overload
     value(
-        object&& other,
+        object&& obj,
         storage_ptr sp)
-        : obj_(
-            std::move(other),
-            std::move(sp))
+        : obj_( std::move(obj), std::move(sp) )
     {
     }
 
-    /** Construct an @ref object.
-
-        This is the fastest way to construct
-        an empty object, using the specified
-        memory resource. The variable @ref object_kind
-        may be passed as the first parameter
-        to select this overload:
-
-        @par Example
-        @code
-        // Construct an empty object
-
-        value jv( object_kind );
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The container will acquire shared ownership of the memory
-        resource.
-
-        @see @ref object_kind
-    */
+    /// Overload
     value(
         object_kind_t,
         storage_ptr sp = {}) noexcept
@@ -1004,36 +504,48 @@ public:
     {
     }
 
-    /** Construct from an initializer-list
-
-        @li If the initializer list consists of key/value
-        pairs, an @ref object is created; otherwise,
-
-        @li if the size of the initializer list is exactly 1, the object is
-        constructed directly from that sole element; otherwise,
-
-        @li an @ref array is created.
-
-        The contents of the initializer list are copied to the newly
-        constructed value using the specified memory resource.
-
-        @par Complexity
-        Linear in `init.size()`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
+    /** Overload
 
         @param init The initializer list to construct from.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The container will acquire shared ownership of the memory
-        resource.
+        @param sp
     */
     BOOST_JSON_DECL
     value(
         std::initializer_list<value_ref> init,
         storage_ptr sp = {});
+
+    /** Overload
+
+        @param other Another `value`.
+    */
+    value(value const& other)
+        : value(other, other.storage())
+    {
+    }
+
+    /// Overload
+    BOOST_JSON_DECL
+    value(
+        value const& other,
+        storage_ptr sp);
+
+    /// Overload
+    BOOST_JSON_DECL
+    value(value&& other) noexcept;
+
+    /// Overload
+    BOOST_JSON_DECL
+    value(
+        value&& other,
+        storage_ptr sp);
+
+    /// Overload
+    value(pilfered<value> other) noexcept
+    {
+        relocate(this, other.get());
+        ::new(&other.get().sca_) scalar();
+    }
+    /// @}
 
     //------------------------------------------------------
     //
@@ -1041,25 +553,73 @@ public:
     //
     //------------------------------------------------------
 
-    /** Copy assignment.
+    /** Assignment.
 
-        The contents of the value are replaced with an
-        element-wise copy of the contents of `other`.
+        Replaces the contents of this value.
+
+        @li **(1)** replaces with an element-wise copy of the contents of
+            `other`.
+        @li **(2)** replaces with the contents `other` using move semantics
+            (see below).
+        @li **(3)** replaces with the value formed by constructing from `init`
+            and `this->storage()` (see \<\<initializer_lists\>\>).
+        @li **(4)** replaces with null.
+        @li **(5)** replaces with the boolean value `b`.
+        @li **(6)**--**(10)** replaces with the signed integer `i`.
+        @li **(11)**--**(15)** replaces with the unsigned integer `u`.
+        @li **(16)** replaces with the number `d`.
+        @li **(17)**, **(19)** replaces with a copy of the string `s`.
+        @li **(18)**, equivalent to `*this = string_view(s)`.
+        @li **(20)** replaces with the string `s` using move semantics
+            see below.
+        @li **(21)** replaces with a copy of the array `arr`.
+        @li **(22)** replaces with the array `arr` using move semantics
+            (see below).
+        @li **(23)** replaces with a copy of the object `obj`.
+        @li **(24)** replaces with the object `obj` using move semantics
+            (see below).
+
+        Move assignment for `value` never changes the associated memory
+        resource. Because of this if the memory resource of the assigned value
+        differs from that of `*this`, the operation is equivalent to a copy.
+        Otherwise, it replaces the underlying storage in constant time without
+        the possibility of exceptions.
 
         @par Complexity
-        Linear in the size of `*this` plus `other`.
+        @li **(1)** linear in the sizes of `*this` and `other`.
+        @li **(2)** constant if `*this->storage() == *other.storage()`,
+            otherwise linear in the sizes of `*this` and `other`.
+        @li **(3)** linear in the sizes of `*this` and `init`.
+        @li **(4)**--**(16)** linear in the size of `*this`.
+        @li **(17)**, **(19)** linear in the size of `*this` and `s.size()`.
+        @li **(18)** linear in the size of `*this` and `std::strlen(s)`.
+        @li **(22)** constant if `*this->storage() == *s.storage()`,
+            otherwise linear in the size of `*this` and `s.size()`.
+        @li **(21)** linear in the size of `*this` and `arr.size()`.
+        @li **(22)** constant if `*this->storage() == *arr.storage()`,
+            otherwise linear in the size of `*this` and `arr.size()`.
+        @li **(23)** linear in the size of `*this` and `obj.size()`.
+        @li **(24)** constant if `*this->storage() == *obj.storage()`,
+            otherwise linear in the size of `*this` and `obj.size()`.
+
+        The size of `*this` is either the size of the underlying container
+        (if there is one), or can be considered to be 1.
 
         @par Exception Safety
-        Strong guarantee.
+        @li **(1)**--**(3)**, **(17)**--**(24)** strong guarantee.
+        @li **(4)**--**(16)** no-throw guarantee.
+
         Calls to `memory_resource::allocate` may throw.
 
-        @param other The value to copy.
+        @param other The source value.
+
+        @{
     */
     BOOST_JSON_DECL
     value&
     operator=(value const& other);
 
-    /** Move assignment.
+    /** Overload
 
         The contents of the value are replaced with the
         contents of `other` using move semantics:
@@ -1075,37 +635,12 @@ public:
         `other.is_structured() == true`, which may throw.
         In this case, the moved-from value is not
         changed.
-
-        @par Complexity
-        Constant, or linear in
-        `this->size()` plus `other.size()`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param other The value to assign from.
     */
     BOOST_JSON_DECL
     value&
     operator=(value&& other);
 
-    /** Assignment.
-
-        Replace `*this` with the value formed by
-        constructing from `init` and `this->storage()`.
-        If the initializer list consists of key/value
-        pairs, the resulting @ref object is assigned.
-        Otherwise an @ref array is assigned. The contents
-        of the initializer list are moved to `*this`
-        using the existing memory resource.
-
-        @par Complexity
-        Linear in `init.size()`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
+    /** Overload
 
         @param init The initializer list to assign from.
     */
@@ -1114,16 +649,7 @@ public:
     operator=(
         std::initializer_list<value_ref> init);
 
-    /** Assignment.
-
-        Replace `*this` with null.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @par Complexity
-        Linear in the size of `*this`.
-    */
+    /// Overload
     value&
     operator=(std::nullptr_t) noexcept
     {
@@ -1139,15 +665,7 @@ public:
         return *this;
     }
 
-    /** Assignment.
-
-        Replace `*this` with `b`.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @par Complexity
-        Linear in the size of `*this`.
+    /** Overload
 
         @param b The new value.
     */
@@ -1174,43 +692,38 @@ public:
     }
 #endif
 
-    /** Assignment.
-
-        Replace `*this` with `i`.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @par Complexity
-        Linear in the size of `*this`.
+    /** Overload
 
         @param i The new value.
     */
-    /** @{ */
     value& operator=(signed char i) noexcept
     {
         return operator=(
             static_cast<long long>(i));
     }
 
+    /// Overload
     value& operator=(short i) noexcept
     {
         return operator=(
             static_cast<long long>(i));
     }
 
+    /// Overload
     value& operator=(int i) noexcept
     {
         return operator=(
             static_cast<long long>(i));
     }
 
+    /// Overload
     value& operator=(long i) noexcept
     {
         return operator=(
             static_cast<long long>(i));
     }
 
+    /// Overload
     value& operator=(long long i) noexcept
     {
         if(is_scalar())
@@ -1225,45 +738,39 @@ public:
         }
         return *this;
     }
-    /** @} */
 
-    /** Assignment.
-
-        Replace `*this` with `i`.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @par Complexity
-        Linear in the size of `*this`.
+    /** Overload
 
         @param u The new value.
     */
-    /** @{ */
     value& operator=(unsigned char u) noexcept
     {
         return operator=(static_cast<
             unsigned long long>(u));
     }
 
+    /// Overload
     value& operator=(unsigned short u) noexcept
     {
         return operator=(static_cast<
             unsigned long long>(u));
     }
 
+    /// Overload
     value& operator=(unsigned int u) noexcept
     {
         return operator=(static_cast<
             unsigned long long>(u));
     }
 
+    /// Overload
     value& operator=(unsigned long u) noexcept
     {
         return operator=(static_cast<
             unsigned long long>(u));
     }
 
+    /// Overload
     value& operator=(unsigned long long u) noexcept
     {
         if(is_scalar())
@@ -1278,17 +785,8 @@ public:
         }
         return *this;
     }
-    /** @} */
 
-    /** Assignment.
-
-        Replace `*this` with `d`.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @par Complexity
-        Linear in the size of `*this`.
+    /** Overload
 
         @param d The new value.
     */
@@ -1307,26 +805,22 @@ public:
         return *this;
     }
 
-    /** Assignment.
-
-        Replace `*this` with a copy of the string `s`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @par Complexity
-        Linear in the sum of sizes of `*this` and `s`
+    /** Overload
 
         @param s The new string.
     */
-    /** @{ */
-    BOOST_JSON_DECL value& operator=(string_view s);
-    BOOST_JSON_DECL value& operator=(char const* s);
-    BOOST_JSON_DECL value& operator=(string const& s);
-    /** @} */
+    BOOST_JSON_DECL
+    value& operator=(string_view s);
 
-    /** Assignment.
+    /// Overload
+    BOOST_JSON_DECL
+    value& operator=(char const* s);
+
+    /// Overload
+    BOOST_JSON_DECL
+    value& operator=(string const& s);
+
+    /** Overload
 
         The contents of the value are replaced with the
         contents of `s` using move semantics:
@@ -1342,18 +836,12 @@ public:
         In this case, the moved-from string is not
         changed.
 
-        @par Complexity
-        Constant, or linear in the size of `*this` plus `s.size()`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
         @param s The string to move-assign from.
     */
-    BOOST_JSON_DECL value& operator=(string&& s);
+    BOOST_JSON_DECL
+    value& operator=(string&& s);
 
-    /** Assignment.
+    /** Overload
 
         Replace `*this` with a copy of the array `arr`.
 
@@ -1366,9 +854,10 @@ public:
 
         @param arr The new array.
     */
-    BOOST_JSON_DECL value& operator=(array const& arr);
+    BOOST_JSON_DECL
+    value& operator=(array const& arr);
 
-    /** Assignment.
+    /** Overload
 
         The contents of the value are replaced with the
         contents of `arr` using move semantics:
@@ -1393,9 +882,10 @@ public:
 
         @param arr The array to move-assign from.
     */
-    BOOST_JSON_DECL value& operator=(array&& arr);
+    BOOST_JSON_DECL
+    value& operator=(array&& arr);
 
-    /** Assignment.
+    /** Overload
 
         Replace `*this` with a copy of the obect `obj`.
 
@@ -1408,9 +898,10 @@ public:
 
         @param obj The new object.
     */
-    BOOST_JSON_DECL value& operator=(object const& obj);
+    BOOST_JSON_DECL
+    value& operator=(object const& obj);
 
-    /** Assignment.
+    /** Overload
 
         The contents of the value are replaced with the
         contents of `obj` using move semantics:
@@ -1435,7 +926,9 @@ public:
 
         @param obj The object to move-assign from.
     */
-    BOOST_JSON_DECL value& operator=(object&& obj);
+    BOOST_JSON_DECL
+    value& operator=(object&& obj);
+    /// @}
 
     //------------------------------------------------------
     //
@@ -1443,10 +936,10 @@ public:
     //
     //------------------------------------------------------
 
-    /** Change the kind to null, discarding the previous contents.
+    /** Replace with a null value.
 
-        The value is replaced with a null,
-        destroying the previous contents.
+        The current value is destroyed and the kind is changed to kind::null.
+        The associated memeory resource is kept unchanged.
 
         @par Complexity
         Linear in the size of `*this`.
@@ -1460,17 +953,18 @@ public:
         *this = nullptr;
     }
 
-    /** Return a reference to a `bool`, changing the kind and replacing the contents.
+    /** Replace with a `bool` value.
 
-        The value is replaced with a `bool`
-        initialized to `false`, destroying the
-        previous contents.
+        The value is replaced with a `bool` initialized to `false`, destroying
+        the previous contents, but keeping the memeory resource.
 
         @par Complexity
         Linear in the size of `*this`.
 
         @par Exception Safety
         No-throw guarantee.
+
+        @return `this->get_bool()`.
     */
     bool&
     emplace_bool() noexcept
@@ -1479,17 +973,18 @@ public:
         return sca_.b;
     }
 
-    /** Return a reference to a `std::int64_t`, changing the kind and replacing the contents.
+    /** Replace with a `std::int64_t` value.
 
-        The value is replaced with a `std::int64_t`
-        initialized to zero, destroying the
-        previous contents.
+        The value is replaced with a `std::int64_t` initialized to zero,
+        destroying the previous contents, but keeping the memeory resource.
 
         @par Complexity
         Linear in the size of `*this`.
 
         @par Exception Safety
         No-throw guarantee.
+
+        @return `this->get_int64()`.
     */
     std::int64_t&
     emplace_int64() noexcept
@@ -1498,17 +993,18 @@ public:
         return sca_.i;
     }
 
-    /** Return a reference to a `std::uint64_t`, changing the kind and replacing the contents.
+    /** Replace with a `std::uint64_t` value.
 
-        The value is replaced with a `std::uint64_t`
-        initialized to zero, destroying the
-        previous contents.
+        The value is replaced with a `std::uint64_t` initialized to zero,
+        destroying the the previous contents, but keeping the memeory resource.
 
         @par Complexity
         Linear in the size of `*this`.
 
         @par Exception Safety
         No-throw guarantee.
+
+        @return `this->get_uint64()`.
     */
     std::uint64_t&
     emplace_uint64() noexcept
@@ -1517,17 +1013,18 @@ public:
         return sca_.u;
     }
 
-    /** Return a reference to a `double`, changing the kind and replacing the contents.
+    /** Replace with a `double` value.
 
-        The value is replaced with a `double`
-        initialized to zero, destroying the
-        previous contents.
+        The value is replaced with a `double` initialized to zero, destroying
+        the previous contents, but keeping the memeory resource.
 
         @par Complexity
         Linear in the size of `*this`.
 
         @par Exception Safety
         No-throw guarantee.
+
+        @return `this->get_double()`.
     */
     double&
     emplace_double() noexcept
@@ -1536,42 +1033,28 @@ public:
         return sca_.d;
     }
 
-    /** Return a reference to a @ref string, changing the kind and replacing the contents.
+    /** Replace with an empty @ref string.
 
-        The value is replaced with an empty @ref string
-        using the current memory resource, destroying the
-        previous contents.
+        The value is replaced with an empty @ref string using the current
+        memory resource, destroying the previous contents. All previously
+        obtained iterators and references obtained beforehand are invalidated.
 
         @par Complexity
         Linear in the size of `*this`.
 
         @par Exception Safety
         No-throw guarantee.
+
+        @return `this->get_string()`.
     */
     BOOST_JSON_DECL
     string&
     emplace_string() noexcept;
 
-    /** Return a reference to an @ref array, changing the kind and replacing the contents.
+    /** Replace with an empty array.
 
-        The value is replaced with an empty @ref array
-        using the current memory resource, destroying the
-        previous contents.
-
-        @par Complexity
-        Linear in the size of `*this`.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
-    BOOST_JSON_DECL
-    array&
-    emplace_array() noexcept;
-
-    /** Return a reference to an @ref object, changing the kind and replacing the contents.
-
-        The contents are replaced with an empty @ref object using the current
-        `boost::container::pmr::memory_resource`. All previously obtained
+        The value is replaced with an empty @ref array using the current memory
+        resource, destroying the previous contents. All previously obtained
         iterators and references obtained beforehand are invalidated.
 
         @par Complexity
@@ -1579,6 +1062,26 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @return `this->get_array()`.
+    */
+    BOOST_JSON_DECL
+    array&
+    emplace_array() noexcept;
+
+    /** Replace with an empty @ref object.
+
+        The value is replaced with an empty @ref array using the current memory
+        resource, destroying the previous contents. All previously obtained
+        iterators and references obtained beforehand are invalidated.
+
+        @par Complexity
+        Linear in the size of `*this`.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @return `this->get_object()`.
     */
     BOOST_JSON_DECL
     object&
@@ -1587,29 +1090,24 @@ public:
     /** Swap the given values.
 
         Exchanges the contents of this value with another value. Ownership of
-        the respective `boost::container::pmr::memory_resource` objects is not
-        transferred:
+        the respective @ref boost::container::pmr::memory_resource objects is
+        not transferred:
 
-        @li If `*other.storage() == *this->storage()`,
-        ownership of the underlying memory is swapped in
-        constant time, with no possibility of exceptions.
-        All iterators and references remain valid.
-
-        @li If `*other.storage() != *this->storage()`,
-        the contents are logically swapped by making copies,
-        which can throw. In this case all iterators and
-        references are invalidated.
+        @li If `this == &other`, this function has no effect.
+        @li If `*other.storage() == *this->storage()`, ownership of the
+            underlying memory is swapped in constant time, with no possibility
+            of exceptions. All iterators and references remain valid.
+        @li If `*other.storage() != *this->storage()`, the contents are
+            logically swapped by making copies, which can throw. In this case
+            all iterators and references are invalidated.
 
         @par Complexity
-        Constant or linear in the sum of the sizes of
-        the values.
+        Constant or linear in the sum of the sizes of the values.
 
         @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
+        Strong guarantee. Calls to `memory_resource::allocate` may throw.
 
         @param other The value to swap with.
-        If `this == &other`, this function call has no effect.
     */
     BOOST_JSON_DECL
     void
@@ -1618,36 +1116,25 @@ public:
     /** Swap the given values.
 
         Exchanges the contents of value `lhs` with another value `rhs`.
-        Ownership of the respective `boost::container::pmr::memory_resource`
+        Ownership of the respective @ref boost::container::pmr::memory_resource
         objects is not transferred.
 
-        @li If `*lhs.storage() == *rhs.storage()`,
-        ownership of the underlying memory is swapped in
-        constant time, with no possibility of exceptions.
-        All iterators and references remain valid.
-
-        @li If `*lhs.storage() != *rhs.storage`,
-        the contents are logically swapped by a copy,
-        which can throw. In this case all iterators and
-        references are invalidated.
-
-        @par Effects
-        @code
-        lhs.swap( rhs );
-        @endcode
+        @li If `&lhs == &rhs`, this function call has no effect.
+        @li If `*lhs.storage() == *rhs.storage()`, ownership of the underlying
+            memory is swapped in constant time, with no possibility of
+            exceptions. All iterators and references remain valid.
+        @li If `*lhs.storage() != *rhs.storage`, the contents are logically
+            swapped by a copy, which can throw. In this case all iterators and
+            references are invalidated.
 
         @par Complexity
-        Constant or linear in the sum of the sizes of
-        the values.
+        Constant or linear in the sum of the sizes of the values.
 
         @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
+        Strong guarantee. Calls to `memory_resource::allocate` may throw.
 
         @param lhs The value to exchange.
-
         @param rhs The value to exchange.
-        If `&lhs == &rhs`, this function call has no effect.
 
         @see @ref value::swap
     */
@@ -1666,10 +1153,9 @@ public:
 
     /** Returns the kind of this JSON value.
 
-        This function returns the discriminating
-        enumeration constant of type @ref json::kind
-        corresponding to the underlying representation
-        stored in the container.
+        This function returns the discriminating enumeration constant of type
+        @ref json::kind corresponding to the underlying representation stored
+        in the container.
 
         @par Complexity
         Constant.
@@ -1685,15 +1171,11 @@ public:
                 sca_.k) & 0x3f);
     }
 
-    /** Return `true` if this is an array
+    /** Check if this is an @ref array.
 
-        This function is used to determine if the underlying
-        representation is a certain kind.
+        Returns `true` if the value's @ref kind() is `kind::array`.
 
-        @par Effects
-        @code
-        return this->kind() == kind::array;
-        @endcode
+        @returns `this->kind() == kind::array`.
 
         @par Complexity
         Constant.
@@ -1707,15 +1189,11 @@ public:
         return kind() == json::kind::array;
     }
 
-    /** Return `true` if this is an object
+    /** Check if this is an @ref object.
 
-        This function is used to determine if the underlying
-        representation is a certain kind.
+        Returns `true` if the value's @ref kind() is `kind::object`.
 
-        @par Effects
-        @code
-        return this->kind() == kind::object;
-        @endcode
+        @returns `this->kind() == kind::object`.
 
         @par Complexity
         Constant.
@@ -1729,15 +1207,11 @@ public:
         return kind() == json::kind::object;
     }
 
-    /** Return `true` if this is a string
+    /** Check if this is a @ref string.
 
-        This function is used to determine if the underlying
-        representation is a certain kind.
+        Returns `true` if the value's @ref kind() is `kind::string`.
 
-        @par Effects
-        @code
-        return this->kind() == kind::string;
-        @endcode
+        @returns `this->kind() == kind::string`.
 
         @par Complexity
         Constant.
@@ -1751,15 +1225,11 @@ public:
         return kind() == json::kind::string;
     }
 
-    /** Return `true` if this is a signed integer
+    /** Check if this is a `std::int64_t`.
 
-        This function is used to determine if the underlying
-        representation is a certain kind.
+        Returns `true` if the value's @ref kind() is `kind::int64`.
 
-        @par Effects
-        @code
-        return this->kind() == kind::int64;
-        @endcode
+        @returns `this->kind() == kind::int64`.
 
         @par Complexity
         Constant.
@@ -1773,15 +1243,11 @@ public:
         return kind() == json::kind::int64;
     }
 
-    /** Return `true` if this is a unsigned integer
+    /** Checks if this is a `std::uint64_t`.
 
-        This function is used to determine if the underlying
-        representation is a certain kind.
+        Returns `true` if the value's @ref kind() is `kind::uint64`.
 
-        @par Effects
-        @code
-        return this->kind() == kind::uint64;
-        @endcode
+        @returns `this->kind() == kind::uint64`.
 
         @par Complexity
         Constant.
@@ -1795,15 +1261,11 @@ public:
         return kind() == json::kind::uint64;
     }
 
-    /** Return `true` if this is a double
+    /** Check if this is a `double`.
 
-        This function is used to determine if the underlying
-        representation is a certain kind.
+        Returns `true` if the value's @ref kind() is `kind::double_`.
 
-        @par Effects
-        @code
-        return this->kind() == kind::double_;
-        @endcode
+        @returns `this->kind() == kind::double_`.
 
         @par Complexity
         Constant.
@@ -1817,15 +1279,11 @@ public:
         return kind() == json::kind::double_;
     }
 
-    /** Return `true` if this is a bool
+    /** Check if this is a `bool`.
 
-        This function is used to determine if the underlying
-        representation is a certain kind.
+        Returns `true` if the value's @ref kind() is `kind::bool_`.
 
-        @par Effects
-        @code
-        return this->kind() == kind::bool_;
-        @endcode
+        @returns `this->kind() == kind::bool_`.
 
         @par Complexity
         Constant.
@@ -1839,15 +1297,11 @@ public:
         return kind() == json::kind::bool_;
     }
 
-    /** Returns true if this is a null.
+    /** Check if this is a null value.
 
-        This function is used to determine if the underlying
-        representation is a certain kind.
+        Returns `true` if the value's @ref kind() is `kind::null`.
 
-        @par Effects
-        @code
-        return this->kind() == kind::null;
-        @endcode
+        @returns `this->kind() == kind::null`.
 
         @par Complexity
         Constant.
@@ -1861,10 +1315,9 @@ public:
         return kind() == json::kind::null;
     }
 
-    /** Returns true if this is an array or object.
+    /** Checks if this is an @ref array or an @ref object.
 
-        This function returns `true` if
-        @ref kind() is either `kind::object` or
+        This function returns `true` if @ref kind() is either `kind::object` or
         `kind::array`.
 
         @par Complexity
@@ -1882,11 +1335,10 @@ public:
            kind() == json::kind::array;
     }
 
-    /** Returns true if this is not an array or object.
+    /** Check if this is not an @ref array or @ref object.
 
-        This function returns `true` if
-        @ref kind() is neither `kind::object` nor
-        `kind::array`.
+        This function returns `true` if @ref kind() is neither `kind::object`
+        nor `kind::array`.
 
         @par Complexity
         Constant.
@@ -1903,12 +1355,10 @@ public:
            sca_.k != json::kind::array;
     }
 
-    /** Returns true if this is a number.
+    /** Check if this is a number.
 
-        This function returns `true` when
-        @ref kind() is one of the following values:
-        `kind::int64`, `kind::uint64`, or
-        `kind::double_`.
+        This function returns `true` when @ref kind() is one of `kind::int64`,
+        `kind::uint64`, or `kind::double_`.
 
         @par Complexity
         Constant.
@@ -1928,10 +1378,10 @@ public:
 
     //------------------------------------------------------
 
-    /** Return an @ref array pointer if this is an array, else return `nullptr`
+    /** Return a pointer to the underlying @ref array.
 
-        If `this->kind() == kind::array`, returns a pointer
-        to the underlying array. Otherwise, returns `nullptr`.
+        If `this->kind() == kind::array`, returns a pointer to the underlying
+        array. Otherwise, returns `nullptr`.
 
         @par Example
         The return value is used in both a boolean context and
@@ -1946,6 +1396,8 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @{
     */
     array const*
     if_array() const noexcept
@@ -1955,25 +1407,6 @@ public:
         return nullptr;
     }
 
-    /** Return an @ref array pointer if this is an array, else return `nullptr`
-
-        If `this->kind() == kind::array`, returns a pointer
-        to the underlying array. Otherwise, returns `nullptr`.
-
-        @par Example
-        The return value is used in both a boolean context and
-        to assign a variable:
-        @code
-        if( auto p = jv.if_array() )
-            return *p;
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
     array*
     if_array() noexcept
     {
@@ -1981,11 +1414,12 @@ public:
             return &arr_;
         return nullptr;
     }
+    /// @}
 
-    /** Return an @ref object pointer if this is an object, else return `nullptr`
+    /** Return a pointer to the underlying @ref object.
 
-        If `this->kind() == kind::object`, returns a pointer
-        to the underlying object. Otherwise, returns `nullptr`.
+        If `this->kind() == kind::object`, returns a pointer to the underlying
+        object. Otherwise, returns `nullptr`.
 
         @par Example
         The return value is used in both a boolean context and
@@ -2000,6 +1434,8 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @{
     */
     object const*
     if_object() const noexcept
@@ -2009,25 +1445,6 @@ public:
         return nullptr;
     }
 
-    /** Return an @ref object pointer if this is an object, else return `nullptr`
-
-        If `this->kind() == kind::object`, returns a pointer
-        to the underlying object. Otherwise, returns `nullptr`.
-
-        @par Example
-        The return value is used in both a boolean context and
-        to assign a variable:
-        @code
-        if( auto p = jv.if_object() )
-            return *p;
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
     object*
     if_object() noexcept
     {
@@ -2035,11 +1452,12 @@ public:
             return &obj_;
         return nullptr;
     }
+    /// @}
 
-    /** Return a @ref string pointer if this is a string, else return `nullptr`
+    /** Return a pointer to the underlying @ref string.
 
-        If `this->kind() == kind::string`, returns a pointer
-        to the underlying object. Otherwise, returns `nullptr`.
+        If `this->kind() == kind::string`, returns a pointer to the underlying
+        object. Otherwise, returns `nullptr`.
 
         @par Example
         The return value is used in both a boolean context and
@@ -2054,6 +1472,8 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @{
     */
     string const*
     if_string() const noexcept
@@ -2063,25 +1483,6 @@ public:
         return nullptr;
     }
 
-    /** Return a @ref string pointer if this is a string, else return `nullptr`
-
-        If `this->kind() == kind::string`, returns a pointer
-        to the underlying object. Otherwise, returns `nullptr`.
-
-        @par Example
-        The return value is used in both a boolean context and
-        to assign a variable:
-        @code
-        if( auto p = jv.if_string() )
-            return *p;
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
     string*
     if_string() noexcept
     {
@@ -2089,11 +1490,12 @@ public:
             return &str_;
         return nullptr;
     }
+    /// @}
 
-    /** Return an `int64_t` pointer if this is a signed integer, else return `nullptr`
+    /** Return a pointer to the underlying `std::int64_t`.
 
-        If `this->kind() == kind::int64`, returns a pointer
-        to the underlying integer. Otherwise, returns `nullptr`.
+        If `this->kind() == kind::int64`, returns a pointer to the underlying
+        integer. Otherwise, returns `nullptr`.
 
         @par Example
         The return value is used in both a boolean context and
@@ -2108,6 +1510,8 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @{
     */
     std::int64_t const*
     if_int64() const noexcept
@@ -2117,25 +1521,6 @@ public:
         return nullptr;
     }
 
-    /** Return an `int64_t` pointer if this is a signed integer, else return `nullptr`
-
-        If `this->kind() == kind::int64`, returns a pointer
-        to the underlying integer. Otherwise, returns `nullptr`.
-
-        @par Example
-        The return value is used in both a boolean context and
-        to assign a variable:
-        @code
-        if( auto p = jv.if_int64() )
-            return *p;
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
     std::int64_t*
     if_int64() noexcept
     {
@@ -2143,12 +1528,12 @@ public:
             return &sca_.i;
         return nullptr;
     }
+    /// @}
 
-    /** Return a `uint64_t` pointer if this is an unsigned integer, else return `nullptr`
+    /** Return a pointer to the underlying `std::uint64_t`.
 
-        If `this->kind() == kind::uint64`, returns a pointer
-        to the underlying unsigned integer. Otherwise, returns
-        `nullptr`.
+        If `this->kind() == kind::uint64`, returns a pointer to the underlying
+        unsigned integer. Otherwise, returns `nullptr`.
 
         @par Example
         The return value is used in both a boolean context and
@@ -2163,6 +1548,8 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @{
     */
     std::uint64_t const*
     if_uint64() const noexcept
@@ -2172,26 +1559,6 @@ public:
         return nullptr;
     }
 
-    /** Return a `uint64_t` pointer if this is an unsigned integer, else return `nullptr`
-
-        If `this->kind() == kind::uint64`, returns a pointer
-        to the underlying unsigned integer. Otherwise, returns
-        `nullptr`.
-
-        @par Example
-        The return value is used in both a boolean context and
-        to assign a variable:
-        @code
-        if( auto p = jv.if_uint64() )
-            return *p;
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
     std::uint64_t*
     if_uint64() noexcept
     {
@@ -2199,12 +1566,12 @@ public:
             return &sca_.u;
         return nullptr;
     }
+    /// @}
 
-    /** Return a `double` pointer if this is a double, else return `nullptr`
+    /** Return a pointer to the underlying `double`.
 
-        If `this->kind() == kind::double_`, returns a pointer
-        to the underlying double. Otherwise, returns
-        `nullptr`.
+        If `this->kind() == kind::double_`, returns a pointer to the underlying
+        double. Otherwise, returns `nullptr`.
 
         @par Example
         The return value is used in both a boolean context and
@@ -2219,6 +1586,8 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @{
     */
     double const*
     if_double() const noexcept
@@ -2228,26 +1597,6 @@ public:
         return nullptr;
     }
 
-    /** Return a `double` pointer if this is a double, else return `nullptr`
-
-        If `this->kind() == kind::double_`, returns a pointer
-        to the underlying double. Otherwise, returns
-        `nullptr`.
-
-        @par Example
-        The return value is used in both a boolean context and
-        to assign a variable:
-        @code
-        if( auto p = jv.if_double() )
-            return *p;
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
     double*
     if_double() noexcept
     {
@@ -2255,12 +1604,12 @@ public:
             return &sca_.d;
         return nullptr;
     }
+    /// @}
 
-    /** Return a `bool` pointer if this is a boolean, else return `nullptr`
+    /** Return a pointer to the underlying `bool` .
 
-        If `this->kind() == kind::bool_`, returns a pointer
-        to the underlying boolean. Otherwise, returns
-        `nullptr`.
+        If `this->kind() == kind::bool_`, returns a pointer to the underlying
+        boolean. Otherwise, returns `nullptr`.
 
         @par Example
         The return value is used in both a boolean context and
@@ -2275,6 +1624,8 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @{
     */
     bool const*
     if_bool() const noexcept
@@ -2284,26 +1635,6 @@ public:
         return nullptr;
     }
 
-    /** Return a `bool` pointer if this is a boolean, else return `nullptr`
-
-        If `this->kind() == kind::bool_`, returns a pointer
-        to the underlying boolean. Otherwise, returns
-        `nullptr`.
-
-        @par Example
-        The return value is used in both a boolean context and
-        to assign a variable:
-        @code
-        if( auto p = jv.if_bool() )
-            return *p;
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
     bool*
     if_bool() noexcept
     {
@@ -2311,32 +1642,27 @@ public:
             return &sca_.b;
         return nullptr;
     }
+    /// @}
 
     //------------------------------------------------------
 
     /** Return the stored number cast to an arithmetic type.
 
-        This function attempts to return the stored value
-        converted to the arithmetic type `T` which may not
-        be `bool`:
+        This function attempts to return the stored value converted to the
+        arithmetic type `T` which may not be `bool`:
 
-        @li If `T` is an integral type and the stored
-        value is a number which can be losslessly converted,
-        the conversion is performed without error and the
-        converted number is returned.
-
-        @li If `T` is an integral type and the stored value
-        is a number which cannot be losslessly converted,
-        then the operation fails with an error.
-
-        @li If `T` is a floating point type and the stored
-        value is a number, the conversion is performed
-        without error. The converted number is returned,
-        with a possible loss of precision.
-
-        @li Otherwise, if the stored value is not a number;
-        that is, if `this->is_number()` returns `false`, then
-        the operation fails with an error.
+        @li If `T` is an integral type and the stored value is a number which
+            can be losslessly converted, the conversion is performed without
+            error and the converted number is returned.
+        @li If `T` is an integral type and the stored value is a number which
+            cannot be losslessly converted, then the operation fails with
+            an error.
+        @li If `T` is a floating point type and the stored value is a number,
+            the conversion is performed without error. The converted number is
+            returned, with a possible loss of precision.
+        @li Otherwise, if the stored value is not a number; that is, if
+            @ref is_number() returns `false`, then the operation fails with
+            an error.
 
         @par Constraints
         @code
@@ -2347,13 +1673,17 @@ public:
         Constant.
 
         @par Exception Safety
-        No-throw guarantee.
+        @li **(1)**, **(2)** no-throw guarantee.
+        @li **(3)** strong guarantee.
 
         @return The converted number.
 
         @param ec Set to the error, if any occurred.
+
+        @return The converted number.
+
+        @{
     */
-/** @{ */
     template<class T>
 #ifdef BOOST_JSON_DOCS
     T
@@ -2387,9 +1717,28 @@ public:
         ec = jec;
         return result;
     }
-/** @} */
 
-    /** Return the stored number as `boost::system::result<T>`.
+    /** Overload
+
+        @throws boost::system::system_error Overload **(3)** reports errors by
+                throwing an exception.
+    */
+    template<class T>
+#ifdef BOOST_JSON_DOCS
+    T
+#else
+    typename std::enable_if<
+        std::is_arithmetic<T>::value &&
+        ! std::is_same<T, bool>::value,
+            T>::type
+#endif
+    to_number() const
+    {
+        return try_to_number<T>().value();
+    }
+    /// @}
+
+    /** Return the stored number as @ref boost::system::result.
 
         This function attempts to return the stored value converted to the
         arithmetic type `T` which may not be `bool`:
@@ -2397,16 +1746,13 @@ public:
         @li If `T` is an integral type and the stored value is a number which
             can be losslessly converted, the conversion is performed without
             error and `result<T>` containing the converted number is returned.
-
         @li If `T` is an integral type and the stored value is a number which
             cannot be losslessly converted, then `result<T>` containing the
             corresponding `error_code` is returned.
-
         @li If `T` is a floating point type and the stored value is a number,
             the conversion is performed without error. `result<T>` containing
             the converted number, with a possible loss of precision, is
             returned.
-
         @li Otherwise, if the stored value is not a number; that is, if
             `this->is_number()` returns `false`, then `result<T>` containing
             the corresponding `error_code` is returned.
@@ -2423,7 +1769,7 @@ public:
         No-throw guarantee.
 
         @return `boost::system::result<T>` with either the converted number or
-            an `error_code`.
+                an `error_code`.
     */
     template<class T>
 #ifdef BOOST_JSON_DOCS
@@ -2444,56 +1790,6 @@ public:
         return {system::in_place_value, result};
     }
 
-    /** Return the stored number cast to an arithmetic type.
-
-        This function attempts to return the stored value
-        converted to the arithmetic type `T` which may not
-        be `bool`:
-
-        @li If `T` is an integral type and the stored
-        value is a number which can be losslessly converted,
-        the conversion is performed without error and the
-        converted number is returned.
-
-        @li If `T` is an integral type and the stored value
-        is a number which cannot be losslessly converted,
-        then the operation fails with an error.
-
-        @li If `T` is a floating point type and the stored
-        value is a number, the conversion is performed
-        without error. The converted number is returned,
-        with a possible loss of precision.
-
-        @li Otherwise, if the stored value is not a number;
-        that is, if `this->is_number()` returns `false`, then
-        the operation fails with an error.
-
-        @par Constraints
-        @code
-        std::is_arithmetic< T >::value && ! std::is_same< T, bool >::value
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @return The converted number.
-
-        @throw `boost::system::system_error` Thrown on error.
-    */
-    template<class T>
-#ifdef BOOST_JSON_DOCS
-    T
-#else
-    typename std::enable_if<
-        std::is_arithmetic<T>::value &&
-        ! std::is_same<T, bool>::value,
-            T>::type
-#endif
-    to_number() const
-    {
-        return try_to_number<T>().value();
-    }
-
     //------------------------------------------------------
     //
     // Accessors
@@ -2502,8 +1798,8 @@ public:
 
     /** Return the associated memory resource.
 
-        This function returns the `boost::container::pmr::memory_resource` used
-        by the container.
+        This function returns a smart pointer to the
+        @ref boost::container::pmr::memory_resource used by the container.
 
         @par Complexity
         Constant.
@@ -2520,7 +1816,7 @@ public:
     /** Return the associated allocator.
 
         This function returns an instance of @ref allocator_type constructed
-        from the associated `boost::container::pmr::memory_resource`.
+        from the associated @ref boost::container::pmr::memory_resource.
 
         @par Complexity
         Constant.
@@ -2559,8 +1855,9 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @{
     */
-    /** @{ */
     BOOST_JSON_DECL
     system::result<array&>
     try_as_array() noexcept;
@@ -2568,9 +1865,9 @@ public:
     BOOST_JSON_DECL
     system::result<array const&>
     try_as_array() const noexcept;
-    /** @} */
+    /// @}
 
-    /** Return `result` with a reference to the underlying @ref object
+    /** Return `result` with a reference to the underlying @ref object.
 
         If @ref is_object() is `true`, the result contains a reference to the
         underlying @ref object, otherwise it contains an `error_code`.
@@ -2593,8 +1890,9 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @{
     */
-    /** @{ */
     BOOST_JSON_DECL
     system::result<object&>
     try_as_object() noexcept;
@@ -2602,9 +1900,9 @@ public:
     BOOST_JSON_DECL
     system::result<object const&>
     try_as_object() const noexcept;
-    /** @} */
+    /// @}
 
-    /** Return `result` with a reference to the underlying @ref string
+    /** Return `result` with a reference to the underlying @ref string.
 
         If @ref is_string() is `true`, the result contains a reference to the
         underlying @ref string, otherwise it contains an `error_code`.
@@ -2627,8 +1925,9 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @{
     */
-    /** @{ */
     BOOST_JSON_DECL
     system::result<string&>
     try_as_string() noexcept;
@@ -2636,12 +1935,13 @@ public:
     BOOST_JSON_DECL
     system::result<string const&>
     try_as_string() const noexcept;
-    /** @} */
+    /// @}
 
-    /** Return `result` with a reference to the underlying `std::int64_t`
+    /** Return `result` with the underlying `std::int64_t`
 
-        If @ref is_int64() is `true`, the result contains a reference to the
-        underlying `std::int64_t`, otherwise it contains an `error_code`.
+        If @ref is_int64() is `true`, the result contains a reference to **(1)**
+        or a copy of **(2)** the underlying `std::int64_t`, otherwise it
+        contains an `error_code`.
 
         @par Example
         The return value can be used in both a boolean context and
@@ -2661,43 +1961,23 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @{
     */
     BOOST_JSON_DECL
     system::result<std::int64_t&>
     try_as_int64() noexcept;
 
-    /** Return `result` with the underlying `std::int64_t`
-
-        If @ref is_int64() is `true`, the result contains a copy of the
-        underlying `std::int64_t`, otherwise it contains an `error_code`.
-
-        @par Example
-        The return value can be used in both a boolean context and
-        to assign a variable:
-        @code
-        if( auto r = jv.try_as_int64() )
-            return *r;
-        @endcode
-
-        But can also be used to throw an exception on error:
-        @code
-        return jv.try_as_int64().value();
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
     BOOST_JSON_DECL
     system::result<std::int64_t>
     try_as_int64() const noexcept;
+    /// @}
 
-    /** Return `result` with a reference to the underlying `std::uint64_t`
+    /** Return `result` with the underlying `std::uint64_t`.
 
-        If @ref is_uint64() is `true`, the result contains a reference to the
-        underlying `std::uint64_t`, otherwise it contains an `error_code`.
+        If @ref is_uint64() is `true`, the result contains a reference to **(1)**
+        or a copy of **(2)** the underlying `std::uint64_t`, otherwise it
+        contains an `error_code`.
 
         @par Example
         The return value can be used in both a boolean context and
@@ -2717,43 +1997,23 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @{
     */
     BOOST_JSON_DECL
     system::result<std::uint64_t&>
     try_as_uint64() noexcept;
 
-    /** Return `result` with the underlying `std::uint64_t`
-
-        If @ref is_uint64() is `true`, the result contains a copy of the
-        underlying `std::uint64_t`, otherwise it contains an `error_code`.
-
-        @par Example
-        The return value can be used in both a boolean context and
-        to assign a variable:
-        @code
-        if( auto r = jv.try_as_uint64() )
-            return *r;
-        @endcode
-
-        But can also be used to throw an exception on error:
-        @code
-        return jv.try_as_uint64().value();
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
     BOOST_JSON_DECL
     system::result<std::uint64_t>
     try_as_uint64() const noexcept;
+    /// @}
 
-    /** Return `result` with a reference to the underlying `double`
+    /** Return `result` with the underlying `double`
 
-        If @ref is_double() is `true`, the result contains a reference to the
-        underlying `double`, otherwise it contains an `error_code`.
+        If @ref is_double() is `true`, the result contains a reference to **(1)**
+        or a copy of **(2)** the underlying `double`, otherwise it
+        contains an `error_code`.
 
         @par Example
         The return value can be used in both a boolean context and
@@ -2773,43 +2033,23 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @{
     */
     BOOST_JSON_DECL
     system::result<double&>
     try_as_double() noexcept;
 
-    /** Return `result` with the underlying `double`
-
-        If @ref is_double() is `true`, the result contains a copy of the
-        underlying `double`, otherwise it contains an `error_code`.
-
-        @par Example
-        The return value can be used in both a boolean context and
-        to assign a variable:
-        @code
-        if( auto r = jv.try_as_double() )
-            return *r;
-        @endcode
-
-        But can also be used to throw an exception on error:
-        @code
-        return jv.try_as_double().value();
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
     BOOST_JSON_DECL
     system::result<double>
     try_as_double() const noexcept;
+    /// @}
 
-    /** Return `result` with a reference to the underlying `bool`
+    /** Return `result` with the underlying `bool`
 
-        If @ref is_bool() is `true`, the result contains a reference to the
-        underlying `bool`, otherwise it contains an `error_code`.
+        If @ref is_bool() is `true`, the result contains a reference to **(1)**
+        or a copy to **(2)** the underlying `bool`, otherwise it contains an
+        `error_code`.
 
         @par Example
         The return value can be used in both a boolean context and
@@ -2829,40 +2069,19 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @{
     */
     BOOST_JSON_DECL
     system::result<bool&>
     try_as_bool() noexcept;
 
-    /** Return `result` with the underlying `bool`
-
-        If @ref is_bool() is `true`, the result contains a copy of the
-        underlying `bool`, otherwise it contains an `error_code`.
-
-        @par Example
-        The return value can be used in both a boolean context and
-        to assign a variable:
-        @code
-        if( auto r = jv.try_as_bool() )
-            return *r;
-        @endcode
-
-        But can also be used to throw an exception on error:
-        @code
-        return jv.try_as_bool().value();
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
     BOOST_JSON_DECL
     system::result<bool>
     try_as_bool() const noexcept;
+    /// @}
 
-    /** Return engaged `result` if the `value` is null
+    /** Return engaged `result` if the `value` is null.
 
         If @ref is_null() is `true`, the result is engaged, otherwise it
         contains an `error_code`.
@@ -2892,24 +2111,24 @@ public:
 
     //------------------------------------------------------
 
-    /** Return a reference to the underlying `object`, or throw an exception.
+    /** Return the underlying @ref object, or throw an exception.
 
-        If @ref is_object() is `true`, returns
-        a reference to the underlying @ref object,
-        otherwise throws an exception.
+        If @ref is_object() is `true`, returns a reference to the underlying
+        @ref object, otherwise throws an exception.
 
         @par Exception Safety
         Strong guarantee.
 
-        @throw `boost::system::system_error` `! this->is_object()`.
+        @throw boost::system::system_error `! this->is_object()`.
 
-        @param loc `source_location` to use in thrown exception; the source
-            location of the call site by default.
+        @param loc @ref boost::source_location to use in thrown exception; the
+               source location of the call site by default.
 
         @par Complexity
         Constant.
+
+        @{
     */
-    /** @{ */
     object&
     as_object(source_location const& loc = BOOST_CURRENT_LOCATION) &
     {
@@ -2917,35 +2136,37 @@ public:
         return const_cast<object&>( self.as_object(loc) );
     }
 
+    /// Overload
     object&&
     as_object(source_location const& loc = BOOST_CURRENT_LOCATION) &&
     {
         return std::move( as_object(loc) );
     }
 
+    /// Overload
     BOOST_JSON_DECL
     object const&
     as_object(source_location const& loc = BOOST_CURRENT_LOCATION) const&;
-    /** @} */
+    /// @}
 
-    /** Return a reference to the underlying @ref array, or throw an exception.
+    /** Return the underlying @ref array, or throw an exception.
 
-        If @ref is_array() is `true`, returns
-        a reference to the underlying @ref array,
-        otherwise throws an exception.
+        If @ref is_array() is `true`, returns a reference to the underlying
+        @ref array, otherwise throws an exception.
 
         @par Exception Safety
         Strong guarantee.
 
-        @throw `boost::system::system_error` `! this->is_array()`.
+        @throw boost::system::system_error `! this->is_array()`.
 
-        @param loc `source_location` to use in thrown exception; the source
-            location of the call site by default.
+        @param loc @ref boost::source_location to use in thrown exception; the
+               source location of the call site by default.
 
         @par Complexity
         Constant.
+
+        @{
     */
-    /** @{ */
     array&
     as_array(source_location const& loc = BOOST_CURRENT_LOCATION) &
     {
@@ -2953,33 +2174,36 @@ public:
         return const_cast<array&>( self.as_array(loc) );
     }
 
+    /// Overload
     array&&
     as_array(source_location const& loc = BOOST_CURRENT_LOCATION) &&
     {
         return std::move( as_array(loc) );
     }
 
+    /// Overload
     BOOST_JSON_DECL
     array const&
     as_array(source_location const& loc = BOOST_CURRENT_LOCATION) const&;
-    /** @} */
+    /// @}
 
-    /** Return a reference to the underlying `string`, or throw an exception.
+    /** Return the underlying @ref string, or throw an exception.
 
-        If @ref is_string() is `true`, returns
-        a reference to the underlying @ref string,
-        otherwise throws an exception.
+        If @ref is_string() is `true`, returns a reference to the underlying
+        @ref string, otherwise throws an exception.
 
         @par Exception Safety
         Strong guarantee.
 
-        @throw `boost::system::system_error` `! this->is_string()`.
+        @throw boost::system::system_error `! this->is_string()`.
 
-        @param loc `source_location` to use in thrown exception; the source
-            location of the call site by default.
+        @param loc @ref boost::source_location to use in thrown exception; the
+               source location of the call site by default.
 
         @par Complexity
         Constant.
+
+        @{
     */
     string&
     as_string(source_location const& loc = BOOST_CURRENT_LOCATION) &
@@ -2988,232 +2212,160 @@ public:
         return const_cast<string&>( self.as_string(loc) );
     }
 
-    /** Return a reference to the underlying `string`, or throw an exception.
-
-        If @ref is_string() is `true`, returns
-        a reference to the underlying @ref string,
-        otherwise throws an exception.
-
-        @par Exception Safety
-        Strong guarantee.
-
-        @throw `boost::system::system_error` `! this->is_string()`.
-
-        @param loc `source_location` to use in thrown exception; the source
-            location of the call site by default.
-
-        @par Complexity
-        Constant.
-    */
-    /** @{ */
+    /// Overload
     string&&
     as_string(source_location const& loc = BOOST_CURRENT_LOCATION) &&
     {
         return std::move( as_string(loc) );
     }
 
+    /// Overload
     BOOST_JSON_DECL
     string const&
     as_string(source_location const& loc = BOOST_CURRENT_LOCATION) const&;
-
-    BOOST_JSON_DECL
-    std::int64_t&
-    as_int64(source_location const& loc = BOOST_CURRENT_LOCATION);
-    /** @} */
+    /// @}
 
     /** Return the underlying `std::int64_t`, or throw an exception.
 
-        If @ref is_int64() is `true`, returns
-        the underlying `std::int64_t`,
-        otherwise throws an exception.
+        If @ref is_int64() is `true`, returns a reference to **(1)** or a copy
+        of **(2)** the underlying `std::int64_t`, otherwise throws an
+        exception.
+
+        @note This function is the intended for direct access to the underlying
+        object, __if__ it has the type `std::int64_t`. It does not convert the
+        underlying object to the type `std::int64_t` even if a lossless
+        conversion is possible. If you are not sure which kind your `value`
+        has, and you only care about getting a `std::int64_t` number, consider
+        using @ref to_number instead.
 
         @par Exception Safety
         Strong guarantee.
 
-        @throw `boost::system::system_error` `! this->is_int64()`.
+        @throw boost::system::system_error `! this->is_int64()`.
 
-        @param loc `source_location` to use in thrown exception; the source
-            location of the call site by default.
+        @param loc @ref boost::source_location to use in thrown exception; the
+               source location of the call site by default.
 
         @par Complexity
         Constant.
 
-        @par Note
-        This function is the const-qualified overload of @ref as_int64, which
-        is intended for direct access to the underlying object, __if__ it has
-        the type `std::int64_t`. It does not convert the underlying object to
-        type `std::int64_t` even if a lossless conversion is possible. If you
-        are not sure which kind your `value` has, and you only care about
-        getting a `std::int64_t` number, consider using @ref to_number instead.
+        @{
     */
+    BOOST_JSON_DECL
+    std::int64_t&
+    as_int64(source_location const& loc = BOOST_CURRENT_LOCATION);
+
+    /// Overload
     BOOST_JSON_DECL
     std::int64_t
     as_int64(source_location const& loc = BOOST_CURRENT_LOCATION) const;
+    /// @}
 
-    /** Return a reference to the underlying `std::uint64_t`, or throw an exception.
+    /** Return the underlying `std::uint64_t`, or throw an exception.
 
-        If @ref is_uint64() is `true`, returns
-        a reference to the underlying `std::uint64_t`,
-        otherwise throws an exception.
+        If @ref is_uint64() is `true`, returns a reference to **(1)** or a
+        copy of **(2)** the underlying `std::uint64_t`, otherwise throws an
+        exception.
+
+        @note This function is intended for direct access to the underlying
+        object, __if__ it has the type `std::uint64_t`. It does not convert the
+        underlying object to the type `std::uint64_t` even if a lossless
+        conversion is possible. If you are not sure which kind your `value`
+        has, and you only care about getting a `std::uint64_t` number, consider
+        using @ref to_number instead.
 
         @par Exception Safety
         Strong guarantee.
 
-        @throw `boost::system::system_error` `! this->is_uint64()`.
+        @throw boost::system::system_error `! this->is_uint64()`.
 
-        @param loc `source_location` to use in thrown exception; the source
-            location of the call site by default.
+        @param loc @ref boost::source_location to use in thrown exception; the
+               source location of the call site by default.
 
         @par Complexity
         Constant.
 
-        @par Note
-        This function is intended for direct access to the underlying object,
-        __if__ it has the type `std::uint64_t`. It does not convert the
-        underlying object to type `std::uint64_t` even if a lossless conversion
-        is possible. If you are not sure which kind your `value` has, and you
-        only care about getting a `std::uint64_t` number, consider using
-        @ref to_number instead.
+        @{
     */
     BOOST_JSON_DECL
     std::uint64_t&
     as_uint64(source_location const& loc = BOOST_CURRENT_LOCATION);
 
-    /** Return the underlying `std::uint64_t`, or throw an exception.
-
-        If @ref is_uint64() is `true`, returns
-        the underlying `std::uint64_t`,
-        otherwise throws an exception.
-
-        @par Exception Safety
-        Strong guarantee.
-
-        @throw `boost::system::system_error` `! this->is_uint64()`.
-
-        @param loc `source_location` to use in thrown exception; the source
-            location of the call site by default.
-
-        @par Complexity
-        Constant.
-
-        @par Note
-        This function is the const-qualified overload of @ref as_uint64, which
-        is intended for direct access to the underlying object, __if__ it has
-        the type `std::uint64_t`. It does not convert the underlying object to
-        type `std::uint64_t` even if a lossless conversion is possible. If you
-        are not sure which kind your `value` has, and you only care about
-        getting a `std::uint64_t` number, consider using
-        @ref to_number instead.
-    */
+    /// Overload
     BOOST_JSON_DECL
     std::uint64_t
     as_uint64(source_location const& loc = BOOST_CURRENT_LOCATION) const;
+    /// @}
 
-    /** Return a reference to the underlying `double`, or throw an exception.
+    /** Return the underlying `double`, or throw an exception.
 
-        If @ref is_double() is `true`, returns
-        a reference to the underlying `double`,
-        otherwise throws an exception.
+        If @ref is_double() is `true`, returns a reference to **(1)** or a copy
+        of **(2)** the underlying `double`, otherwise throws an exception.
+
+        @note This function is intended for direct access to the underlying
+        object, __if__ it has the type `double`. It does not convert the
+        underlying object to type `double` even if a lossless conversion is
+        possible. If you are not sure which kind your `value` has, and you only
+        care about getting a `double` number, consider using @ref to_number
+        instead.
 
         @par Exception Safety
         Strong guarantee.
 
-        @throw `boost::system::system_error` `! this->is_double()`.
+        @throw boost::system::system_error `! this->is_double()`.
 
-        @param loc `source_location` to use in thrown exception; the source
-            location of the call site by default.
+        @param loc @ref boost::source_location to use in thrown exception; the
+               source location of the call site by default.
 
         @par Complexity
         Constant.
 
-        @par Note
-        This function is intended for direct access to the underlying object,
-        __if__ it has the type `double`. It does not convert the underlying
-        object to type `double` even if a lossless conversion is possible. If
-        you are not sure which kind your `value` has, and you only care about
-        getting a `double` number, consider using @ref to_number instead.
+        @{
     */
     BOOST_JSON_DECL
     double&
     as_double(source_location const& loc = BOOST_CURRENT_LOCATION);
 
-    /** Return the underlying `double`, or throw an exception.
-
-        If @ref is_double() is `true`, returns
-        the underlying `double`,
-        otherwise throws an exception.
-
-        @par Exception Safety
-        Strong guarantee.
-
-        @throw `boost::system::system_error` `! this->is_double()`.
-
-        @param loc `source_location` to use in thrown exception; the source
-            location of the call site by default.
-
-        @par Complexity
-        Constant.
-
-        @par Note
-        This function is the const-qualified overload of @ref as_double, which
-        is intended for direct access to the underlying object, __if__ it has
-        the type `double`. It does not convert the underlying object to type
-        `double` even if a lossless conversion is possible. If you are not sure
-        which kind your `value` has, and you only care about getting a `double`
-        number, consider using @ref to_number instead.
-    */
+    /// Overload
     BOOST_JSON_DECL
     double
     as_double(source_location const& loc = BOOST_CURRENT_LOCATION) const;
+    /// @}
 
-    /** Return a reference to the underlying `bool`, or throw an exception.
+    /** Return the underlying `bool`, or throw an exception.
 
-        If @ref is_bool() is `true`, returns
-        a reference to the underlying `bool`,
-        otherwise throws an exception.
+        If @ref is_bool() is `true`, returns a reference to **(1)** or a copy
+        of **(2)** the underlying `bool`, otherwise throws an exception.
 
         @par Exception Safety
         Strong guarantee.
 
-        @throw `boost::system::system_error` `! this->is_bool()`.
+        @throw boost::system::system_error `! this->is_bool()`.
 
-        @param loc `source_location` to use in thrown exception; the source
-            location of the call site by default.
+        @param loc @ref boost::source_location to use in thrown exception; the
+               source location of the call site by default.
 
         @par Complexity
         Constant.
+
+        @{
     */
     BOOST_JSON_DECL
     bool&
     as_bool(source_location const& loc = BOOST_CURRENT_LOCATION);
 
-    /** Return the underlying `bool`, or throw an exception.
-
-        If @ref is_bool() is `true`, returns
-        the underlying `bool`,
-        otherwise throws an exception.
-
-        @par Exception Safety
-        Strong guarantee.
-
-        @throw `boost::system::system_error` `! this->is_bool()`.
-
-        @param loc `source_location` to use in thrown exception; the source
-            location of the call site by default.
-
-        @par Complexity
-        Constant.
-    */
+    /// Overload
     BOOST_JSON_DECL
     bool
     as_bool(source_location const& loc = BOOST_CURRENT_LOCATION) const;
+    /// @}
 
     //------------------------------------------------------
 
-    /** Return a reference to the underlying `object`, without checking.
+    /** Return the underlying @ref object, without checking.
 
-        This is the fastest way to access the underlying
-        representation when the kind is known in advance.
+        This is the fastest way to access the underlying representation when
+        the kind is known in advance.
 
         @par Preconditions
 
@@ -3226,8 +2378,9 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @{
     */
-    /** @{ */
     object&
     get_object() & noexcept
     {
@@ -3248,12 +2401,12 @@ public:
         BOOST_ASSERT(is_object());
         return obj_;
     }
-    /** @} */
+    /// @}
 
-    /** Return a reference to the underlying `array`, without checking.
+    /** Return the underlying @ref array, without checking.
 
-        This is the fastest way to access the underlying
-        representation when the kind is known in advance.
+        This is the fastest way to access the underlying representation when
+        the kind is known in advance.
 
         @par Preconditions
 
@@ -3266,8 +2419,9 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @{
     */
-    /** @{ */
     array&
     get_array() & noexcept
     {
@@ -3288,12 +2442,12 @@ public:
         BOOST_ASSERT(is_array());
         return arr_;
     }
-    /** @} */
+    /// @}
 
-    /** Return a reference to the underlying `string`, without checking.
+    /** Return the underlying @ref string, without checking.
 
-        This is the fastest way to access the underlying
-        representation when the kind is known in advance.
+        This is the fastest way to access the underlying representation when
+        the kind is known in advance.
 
         @par Preconditions
 
@@ -3306,8 +2460,9 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @{
     */
-    /** @{ */
     string&
     get_string() & noexcept
     {
@@ -3328,12 +2483,12 @@ public:
         BOOST_ASSERT(is_string());
         return str_;
     }
-    /** @} */
+    /// @}
 
-    /** Return a reference to the underlying `std::int64_t`, without checking.
+    /** Return the underlying `std::int64_t`, without checking.
 
-        This is the fastest way to access the underlying
-        representation when the kind is known in advance.
+        This is the fastest way to access the underlying representation when
+        the kind is known in advance.
 
         @par Preconditions
 
@@ -3346,6 +2501,8 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @{
     */
     std::int64_t&
     get_int64() noexcept
@@ -3354,34 +2511,18 @@ public:
         return sca_.i;
     }
 
-    /** Return the underlying `std::int64_t`, without checking.
-
-        This is the fastest way to access the underlying
-        representation when the kind is known in advance.
-
-        @par Preconditions
-
-        @code
-        this->is_int64()
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
     std::int64_t
     get_int64() const noexcept
     {
         BOOST_ASSERT(is_int64());
         return sca_.i;
     }
+    /// @}
 
-    /** Return a reference to the underlying `std::uint64_t`, without checking.
+    /** Return the underlying `std::uint64_t`, without checking.
 
-        This is the fastest way to access the underlying
-        representation when the kind is known in advance.
+        This is the fastest way to access the underlying representation when
+        the kind is known in advance.
 
         @par Preconditions
 
@@ -3394,6 +2535,8 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @{
     */
     std::uint64_t&
     get_uint64() noexcept
@@ -3402,53 +2545,13 @@ public:
         return sca_.u;
     }
 
-    /** Return the underlying `std::uint64_t`, without checking.
-
-        This is the fastest way to access the underlying
-        representation when the kind is known in advance.
-
-        @par Preconditions
-
-        @code
-        this->is_uint64()
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
     std::uint64_t
     get_uint64() const noexcept
     {
         BOOST_ASSERT(is_uint64());
         return sca_.u;
     }
-
-    /** Return a reference to the underlying `double`, without checking.
-
-        This is the fastest way to access the underlying
-        representation when the kind is known in advance.
-
-        @par Preconditions
-
-        @code
-        this->is_double()
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
-    double&
-    get_double() noexcept
-    {
-        BOOST_ASSERT(is_double());
-        return sca_.d;
-    }
+    /// @}
 
     /** Return the underlying `double`, without checking.
 
@@ -3466,18 +2569,28 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @{
     */
+    double&
+    get_double() noexcept
+    {
+        BOOST_ASSERT(is_double());
+        return sca_.d;
+    }
+
     double
     get_double() const noexcept
     {
         BOOST_ASSERT(is_double());
         return sca_.d;
     }
+    /// @}
 
-    /** Return a reference to the underlying `bool`, without checking.
+    /** Return the underlying `bool`, without checking.
 
-        This is the fastest way to access the underlying
-        representation when the kind is known in advance.
+        This is the fastest way to access the underlying representation when
+        the kind is known in advance.
 
         @par Preconditions
 
@@ -3490,6 +2603,8 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @{
     */
     bool&
     get_bool() noexcept
@@ -3498,38 +2613,39 @@ public:
         return sca_.b;
     }
 
-    /** Return the underlying `bool`, without checking.
-
-        This is the fastest way to access the underlying
-        representation when the kind is known in advance.
-
-        @par Preconditions
-
-        @code
-        this->is_bool()
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
     bool
     get_bool() const noexcept
     {
         BOOST_ASSERT(is_bool());
         return sca_.b;
     }
+    /// @}
 
     //------------------------------------------------------
 
     /** Access an element, with bounds checking.
 
         Returns `boost::system::result` containing a reference to the element
-        of the underlying object, if `pos` is within its range. If `pos` is
+        of the underlying ccontainer, if such element exists. If the underlying
+        value is not a container of the suitable type or the container doesn't
+        have a corresponding element the result contains an `error_code`.
+
+        , if `pos` is within its range. If `pos` is
         outside of that range, or the underlying value is not an object the
-        result contains an `error_code`.
+
+        Returns @ref boost::system::result containing a reference to the
+        element of the underlying @ref array, if `pos` is within its range. If
+        `pos` is outside of that range, or the underlying value is not an array
+        the result contains an `error_code`.
+
+        This function is used to access elements of
+        the underlying container, or throw an exception if that could not be
+        done.
+
+        @li **(1)**, **(2)** require the underlying container to be an
+            @ref object, and look for an element with the key `key`.
+        @li **(3)**, **(4)** require the underlying container to be an
+            @ref array, and look  for an element at index `pos`.
 
         @par Exception Safety
         No-throw guarantee.
@@ -3538,8 +2654,12 @@ public:
 
         @par Complexity
         Constant.
+
+        @par Exception Safety
+        No-throw guarantee.
+
+        @{
     */
-    /** @{ */
     BOOST_JSON_DECL
     boost::system::result<value&>
     try_at(string_view key) noexcept;
@@ -3547,13 +2667,32 @@ public:
     BOOST_JSON_DECL
     boost::system::result<value const&>
     try_at(string_view key) const noexcept;
-    /** @} */
+
+    /** Overload
+
+        @param pos A zero-based array index.
+    */
+    BOOST_JSON_DECL
+    boost::system::result<value&>
+    try_at(std::size_t pos) noexcept;
+
+    /// Overload
+    BOOST_JSON_DECL
+    boost::system::result<value const&>
+    try_at(std::size_t pos) const noexcept;
+    /// @}
+
 
     /** Access an element, with bounds checking.
 
         This function is used to access elements of
-        the underlying object, or throw an exception
-        if the value is not an object.
+        the underlying container, or throw an exception if that could not be
+        done.
+
+        @li **(1)**--**(3)** is equivalent to
+            `this->as_object(loc).at(key, loc)`.
+        @li **(4)**--**(6)** is equivalent to
+            `this->as_array(loc).at(pos, loc)`.
 
         @par Complexity
         Constant.
@@ -3562,25 +2701,33 @@ public:
         Strong guarantee.
 
         @param key The key of the element to find.
+        @param loc @ref boost::source_location to use in thrown exception; the
+               source location of the call site by default.
 
-        @param loc `source_location` to use in thrown exception; the source
-            location of the call site by default.
+        @throw boost::system::system_error The underlying type of value is not
+               the container type corresponding to the first argument (i.e.
+               using an index with an @ref object).
+        @throw boost::system::system_error An element corresponding to the
+               first argument was not found.
 
-        @return `this->as_object(loc).at( key, loc )`.
+        @see @ref as_array, @ref as_object.
+
+        @{
     */
-    /** @{ */
     value&
     at(string_view key, source_location const& loc = BOOST_CURRENT_LOCATION) &
     {
         return as_object(loc).at(key, loc);
     }
 
+    /// Overload
     value&&
     at(string_view key, source_location const& loc = BOOST_CURRENT_LOCATION) &&
     {
         return std::move( as_object(loc) ).at(key, loc);
     }
 
+    /// Overload
     value const&
     at(
         string_view key,
@@ -3588,73 +2735,33 @@ public:
     {
         return as_object(loc).at(key, loc);
     }
-    /** @} */
 
-    /** Access an element, with bounds checking.
-
-        Returns `boost::system::result` containing a reference to the element
-        of the underlying array, if `pos` is within its range. If `pos` is
-        outside of that range, or the underlying value is not an array the
-        result contains an `error_code`.
-
-        @par Exception Safety
-        No-throw guarantee.
+    /** Overload
 
         @param pos A zero-based array index.
-
-        @par Complexity
-        Constant.
+        @param loc
     */
-    /** @{ */
-    BOOST_JSON_DECL
-    boost::system::result<value&>
-    try_at(std::size_t pos) noexcept;
-
-    BOOST_JSON_DECL
-    boost::system::result<value const&>
-    try_at(std::size_t pos) const noexcept;
-    /** @} */
-
-    /** Access an element, with bounds checking.
-
-        This function is used to access elements of
-        the underlying array, or throw an exception
-        if the value is not an array.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        Strong guarantee.
-
-        @param pos A zero-based array index.
-
-        @param loc `source_location` to use in thrown exception; the source
-            location of the call site by default.
-
-        @return `this->as_array(loc).at( pos, loc )`.
-    */
-    /** @{ */
     value &
     at(std::size_t pos, source_location const& loc = BOOST_CURRENT_LOCATION) &
     {
         return as_array(loc).at(pos, loc);
     }
 
+    /// Overload
     value&&
     at(std::size_t pos, source_location const& loc = BOOST_CURRENT_LOCATION) &&
     {
         return std::move( as_array(loc) ).at(pos, loc);
     }
 
+    /// Overload
     value const&
-    at(
-        std::size_t pos,
-        source_location const& loc = BOOST_CURRENT_LOCATION) const&
+    at(std::size_t pos,
+       source_location const& loc = BOOST_CURRENT_LOCATION) const&
     {
         return as_array(loc).at(pos, loc);
     }
-    /** @} */
+    /// @}
 
     /** Access an element via JSON Pointer.
 
@@ -3669,106 +2776,89 @@ public:
 
         @param ptr JSON Pointer string.
 
-        @return `boost::system::result<value&>` containing either a reference
-            to the element identified by `ptr` or a corresponding `error_code`.
+        @return @ref boost::system::result containing either a reference to the
+                element identified by `ptr` or a corresponding `error_code`.
 
         @see
             [RFC 6901 - JavaScript Object Notation (JSON) Pointer](https://datatracker.ietf.org/doc/html/rfc6901).
+
+        @{
     */
     BOOST_JSON_DECL
     system::result<value const&>
     try_at_pointer(string_view ptr) const noexcept;
 
+    BOOST_JSON_DECL
+    system::result<value&>
+    try_at_pointer(string_view ptr) noexcept;
+    /// @}
+
     /** Access an element via JSON Pointer.
 
         This function is used to access a (potentially nested) element of the
         value using a JSON Pointer string.
 
         @par Complexity
-        Linear in the sizes of `ptr` and underlying array, object, or string.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param ptr JSON Pointer string.
-
-        @return `boost::system::result<value const&>` containing either a
-            reference to the element identified by `ptr` or a corresponding
-            `error_code`.
-
-        @see
-            [RFC 6901 - JavaScript Object Notation (JSON) Pointer](https://datatracker.ietf.org/doc/html/rfc6901).
-    */
-    BOOST_JSON_DECL
-    system::result<value&>
-    try_at_pointer(string_view ptr) noexcept;
-
-    /** Access an element via JSON Pointer.
-
-        This function is used to access a (potentially nested)
-        element of the value using a JSON Pointer string.
-
-        @par Complexity
-        Linear in the sizes of `ptr` and underlying array, object, or string.
+        Linear in the sizes of `ptr` and the underlying container.
 
         @par Exception Safety
         Strong guarantee.
 
         @param ptr JSON Pointer string.
-
-        @param loc `source_location` to use in thrown exception; the source
-            location of the call site by default.
+        @param loc @ref boost::source_location to use in thrown exception; the
+               source location of the call site by default.
 
         @return reference to the element identified by `ptr`.
 
-        @throw `boost::system::system_error` if an error occurs.
+        @throw boost::system::system_error if an error occurs.
 
         @see
-        <a href="https://datatracker.ietf.org/doc/html/rfc6901">
-            RFC 6901 - JavaScript Object Notation (JSON) Pointer</a>
+            [RFC 6901 - JavaScript Object Notation (JSON) Pointer](https://datatracker.ietf.org/doc/html/rfc6901).
+
+        @{
     */
-    /** @{ */
     BOOST_JSON_DECL
     value const&
     at_pointer(
         string_view ptr,
         source_location const& loc = BOOST_CURRENT_LOCATION) const&;
 
+    /// Overload
     inline
     value&&
     at_pointer(
         string_view ptr,
         source_location const& loc = BOOST_CURRENT_LOCATION) &&;
 
+    /// Overload
     inline
     value&
     at_pointer(
         string_view ptr,
         source_location const& loc = BOOST_CURRENT_LOCATION) &;
-    /** @} */
+    /// @}
 
     /** Access an element via JSON Pointer.
 
-        This function is used to access a (potentially nested)
-        element of the value using a JSON Pointer string.
+        This function is used to access a (potentially nested) element of the
+        value using a JSON Pointer string.
 
         @par Complexity
-        Linear in the sizes of `ptr` and underlying array, object, or string.
+        Linear in the sizes of `ptr` and underlying container.
 
         @par Exception Safety
         No-throw guarantee.
 
         @param ptr JSON Pointer string.
-
         @param ec Set to the error, if any occurred.
 
         @return pointer to the element identified by `ptr`.
 
         @see
-        <a href="https://datatracker.ietf.org/doc/html/rfc6901">
-            RFC 6901 - JavaScript Object Notation (JSON) Pointer</a>
+            [RFC 6901 - JavaScript Object Notation (JSON) Pointer](https://datatracker.ietf.org/doc/html/rfc6901)
+
+        @{
     */
-    /** @{ */
     BOOST_JSON_DECL
     value const*
     find_pointer(string_view ptr, system::error_code& ec) const noexcept;
@@ -3784,7 +2874,7 @@ public:
     BOOST_JSON_DECL
     value*
     find_pointer(string_view ptr, std::error_code& ec) noexcept;
-    /** @} */
+    /// @}
 
     //------------------------------------------------------
 
@@ -3793,7 +2883,6 @@ public:
         This function is used to insert or assign to a potentially nested
         element of the value using a JSON Pointer string. The function may
         create intermediate elements corresponding to pointer segments.
-        <br/>
 
         The particular conditions when and what kind of intermediate element
         is created is governed by the `ptr` parameter.
@@ -3831,17 +2920,14 @@ public:
         or string and `opts.max_created_elements`.
 
         @par Exception Safety
-        Basic guarantee.
-        Calls to `memory_resource::allocate` may throw.
+        Basic guarantee. Calls to `memory_resource::allocate` may throw.
 
         @param sv JSON Pointer string.
-
         @param ref The value to assign to pointed element.
-
         @param opts The options for the algorithm.
 
-        @return `boost::json::result<value&>` containing either a reference to
-            the element identified by `ptr` or a corresponding `error_code`.
+        @return @ref boost::system::result containing either a reference to the
+                element identified by `ptr` or a corresponding `error_code`.
 
         @see
             @ref set_pointer_options,
@@ -3859,7 +2945,6 @@ public:
         This function is used to insert or assign to a potentially nested
         element of the value using a JSON Pointer string. The function may
         create intermediate elements corresponding to pointer segments.
-        <br/>
 
         The particular conditions when and what kind of intermediate element
         is created is governed by the `ptr` parameter.
@@ -3907,9 +2992,13 @@ public:
 
         @return Reference to the element identified by `ptr`.
 
+        @throws boost::system::system_error Overload **(1)** reports errors by
+                throwing exceptions.
+
         @see @ref set_pointer_options,
-        <a href="https://datatracker.ietf.org/doc/html/rfc6901">
-            RFC 6901 - JavaScript Object Notation (JSON) Pointer</a>.
+            [RFC 6901 - JavaScript Object Notation (JSON) Pointer](https://datatracker.ietf.org/doc/html/rfc6901">).
+
+        @{
     */
     BOOST_JSON_DECL
     value&
@@ -3918,67 +3007,13 @@ public:
         value_ref ref,
         set_pointer_options const& opts = {} );
 
-    /** Set an element via JSON Pointer.
-
-        This function is used to insert or assign to a potentially nested
-        element of the value using a JSON Pointer string. The function may
-        create intermediate elements corresponding to pointer segments.
-        <br/>
-
-        The particular conditions when and what kind of intermediate element
-        is created is governed by the `ptr` parameter.
-
-        Each pointer token is considered in sequence. For each token
-
-        - if the containing value is an @ref object, then a new `null`
-          element is created with key equal to unescaped token string;
-          otherwise
-
-        - if the containing value is an @ref array, and the token represents a
-          past-the-end marker, then a `null` element is appended to the array;
-          otherwise
-
-        - if the containing value is an @ref array, and the token represents a
-          number, then if the difference between the number and array's size
-          is smaller than `opts.max_created_elements`, then the size of the
-          array is increased, so that the number can reference an element in the
-          array; otherwise
-
-        - if the containing value is of different @ref kind and
-          `opts.replace_any_scalar` is `true`, or the value is `null`, then
-
-           - if `opts.create_arrays` is `true` and the token either represents
-             past-the-end marker or a number, then the value is replaced with
-             an empty array and the token is considered again; otherwise
-
-           - if `opts.create_objects` is `true`, then the value is replaced
-             with an empty object and the token is considered again; otherwise
-
-        - an error is produced.
-
-        @par Complexity
-        Linear in the sum of size of `ptr`, size of underlying array, object,
-        or string and `opts.max_created_elements`.
-
-        @par Exception Safety
-        Basic guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param sv JSON Pointer string.
-
-        @param ref The value to assign to pointed element.
+    /** Overload
 
         @param ec Set to the error, if any occurred.
-
-        @param opts The options for the algorithm.
-
-        @return Pointer to the element identified by `ptr`.
-
-        @see @ref set_pointer_options,
-        <a href="https://datatracker.ietf.org/doc/html/rfc6901">
-            RFC 6901 - JavaScript Object Notation (JSON) Pointer</a>.
+        @param sv
+        @param ref
+        @param opts
     */
-    /** @{ */
     BOOST_JSON_DECL
     value*
     set_at_pointer(
@@ -3987,6 +3022,7 @@ public:
         system::error_code& ec,
         set_pointer_options const& opts = {} );
 
+    /// Overload
     BOOST_JSON_DECL
     value*
     set_at_pointer(
@@ -3994,21 +3030,19 @@ public:
         value_ref ref,
         std::error_code& ec,
         set_pointer_options const& opts = {} );
-    /** @} */
+    /// @}
 
     //------------------------------------------------------
 
-    /** Return `true` if two values are equal.
+    /** Check if two values are equal.
 
-        Two values are equal when they are the
-        same kind and their referenced values
-        are equal, or when they are both integral
-        types and their integral representations
-        are equal.
+        Two values are equal when they are the same kind and their referenced
+        values are equal, or when they are both integral types and their
+        integral representations are equal.
 
         @par Complexity
-        Constant or linear in the size of
-        the array, object, or string.
+        Constant or linear in the size of the underlying @ref array, @ref object,
+        or @ref string.
 
         @par Exception Safety
         No-throw guarantee.
@@ -4023,17 +3057,15 @@ public:
         return lhs.equal(rhs);
     }
 
-    /** Return `true` if two values are not equal.
+    /** Check if two values are not equal.
 
-        Two values are equal when they are the
-        same kind and their referenced values
-        are equal, or when they are both integral
-        types and their integral representations
-        are equal.
+        Two values are equal when they are the same kind and their referenced
+        values are equal, or when they are both integral types and their
+        integral representations are equal.
 
         @par Complexity
-        Constant or linear in the size of
-        the array, object, or string.
+        Constant or linear in the size of the underlying @ref array,
+        @ref object, or @ref string.
 
         @par Exception Safety
         No-throw guarantee.
@@ -4049,7 +3081,7 @@ public:
 
     /** Serialize @ref value to an output stream.
 
-        This function serializes a `value` as JSON into the output stream.
+        This function serializes a `value` as JSON text into the output stream.
 
         @return Reference to `os`.
 
@@ -4074,13 +3106,14 @@ public:
     /** Parse @ref value from an input stream.
 
         This function parses JSON from an input stream into a `value`. If
-        parsing fails, `std::ios_base::failbit` will be set for `is` and
-        `jv` will be left unchanged. Regardless of whether `skipws` flag is set
-        on `is`, consumes whitespace before and after JSON, because whitespace
-        is considered a part of JSON. Behaves as
+        parsing fails, @ref std::ios_base::failbit will be set for `is` and
+        `jv` will be left unchanged. Regardless of whether @ref
+        std::ios_base::skipws flag is set on `is`, consumes whitespace before
+        and after JSON, because whitespace is considered a part of JSON.
+        Behaves as
         [_FormattedInputFunction_](https://en.cppreference.com/w/cpp/named_req/FormattedInputFunction).
 
-        Note: this operator cannot assume that the stream only contains a
+        @note This operator cannot assume that the stream only contains a
         single JSON document, which may result in **very underwhelming
         performance**, if the stream isn't cooperative. If you know that your
         input consists of a single JSON document, consider using @ref parse
@@ -4094,8 +3127,7 @@ public:
         @par Exception Safety
         Basic guarantee.
         Calls to `memory_resource::allocate` may throw.
-        The stream may throw as configured by
-        [`std::ios::exceptions`](https://en.cppreference.com/w/cpp/io/basic_ios/exceptions).
+        The stream may throw as configured by @ref std::ios::exceptions.
 
         @param is The input stream to parse from.
 
@@ -4110,7 +3142,7 @@ public:
         std::istream& is,
         value& jv);
 
-    /** Helper for `boost::hash` support
+    /** Helper for @ref boost::hash support.
 
         Computes a hash value for `jv`. This function is used by
         `boost::hash<value>`. Similar overloads for @ref array, @ref object,
@@ -4302,8 +3334,7 @@ BOOST_STATIC_ASSERT(sizeof(value) == 16);
 
 /** A key/value pair.
 
-    This is the type of element used by the @ref object
-    container.
+    This is the type of element used by the @ref object container.
 */
 class key_value_pair
 {
@@ -4321,14 +3352,17 @@ class key_value_pair
         pilfered<json::value> v) noexcept;
 
 public:
-    /// Copy assignment (deleted).
+    /** Assignment
+
+        This type is not copy or move-assignable. The copy assignment operator
+        is deleted.
+    */
     key_value_pair&
     operator=(key_value_pair const&) = delete;
 
     /** Destructor.
 
-        The value is destroyed and all internally
-        allocated memory is freed.
+        The value is destroyed and all internally allocated memory is freed.
     */
     ~key_value_pair() noexcept
     {
@@ -4341,119 +3375,52 @@ public:
             len_ + 1, alignof(char));
     }
 
-    /** Copy constructor.
+    /** Constructors.
 
-        This constructs a key/value pair with a
-        copy of another key/value pair, using
-        the same memory resource as `other`.
+        Construct a key/value pair.
 
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
+        @li **(1)** uses a copy of the characters of `key`, and constructs the
+            value as if by `value(std::forward<Args>(args)...)`.
+        @li **(2)** equivalent to `key_value_pair(p.first, p.second, sp)`.
+        @li **(3)** equivalent to
+            `key_value_pair(p.first, std::move(p.second), sp)`.
+        @li **(4)** equivalent to
+            `key_value_pair(other.key(), other.value(), sp)`.
+        @li **(5)** equivalent to
+            `key_value_pair(other.key(), other.value(), other.storage())`.
+        @li **(6)** the pair s constructed by acquiring ownership of the
+            contents of `other` using move semantics.
+        @li **(7)** the pair is constructed by acquiring ownership of the
+            contents of `other` using pilfer semantics. This is more efficient
+            than move construction, when it is known that the moved-from object
+            will be immediately destroyed afterwards.
 
-        @param other The key/value pair to copy.
-    */
-    key_value_pair(
-        key_value_pair const& other)
-        : key_value_pair(other,
-            other.storage())
-    {
-    }
+        With **(2)**, **(3)**, **(4)** the pair uses the memory resource of
+        `sp`. With **(5)**, **(6)**, **(7)** it uses the memory resource of
+        `other.storage()`. With **(1)** it uses whatever memory resource
+        `value(std::forward<Args>(args)...)` would use. In any case the pair
+        acquires shared ownership of its memory resource
 
-    /** Copy constructor.
+        After **(6)** `other` holds an empty key, and a null value with its
+        current storage pointer.
 
-        This constructs a key/value pair with a
-        copy of another key/value pair, using
-        the specified memory resource.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param other The key/value pair to copy.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The element will acquire shared ownership of the memory resource.
-    */
-    BOOST_JSON_DECL
-    key_value_pair(
-        key_value_pair const& other,
-        storage_ptr sp);
-
-    /** Move constructor.
-
-        The pair is constructed by acquiring
-        ownership of the contents of `other` and
-        shared ownership of `other`'s memory resource.
-
-        @note
-
-        After construction, the moved-from pair holds an
-        empty key, and a null value with its current
-        storage pointer.
+        After **(7)** `other` is not in a usable state and may only be destroyed.
 
         @par Complexity
         Constant.
 
         @par Exception Safety
-        No-throw guarantee.
+        Strong guarantee. Calls to `memory_resource::allocate` may throw.
+        @param key The key string to use.
+        @param args Optional arguments forwarded to the @ref value constructor.
 
-        @param other The pair to move.
-    */
-    key_value_pair(
-        key_value_pair&& other) noexcept
-        : value_(std::move(other.value_))
-        , key_(detail::exchange(
-            other.key_, empty_))
-        , len_(detail::exchange(
-            other.len_, 0))
-    {
-    }
-
-    /** Pilfer constructor.
-
-        The pair is constructed by acquiring ownership
-        of the contents of `other` using pilfer semantics.
-        This is more efficient than move construction, when
-        it is known that the moved-from object will be
-        immediately destroyed afterwards.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param other The value to pilfer. After pilfer
-        construction, `other` is not in a usable state
-        and may only be destroyed.
+        @throw boost::system::system_error The size of the key would exceed
+               @ref string::max_size.
 
         @see @ref pilfer,
-            <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0308r0.html">
-                Valueless Variants Considered Harmful</a>
-    */
-    key_value_pair(
-        pilfered<key_value_pair> other) noexcept
-        : value_(pilfer(other.get().value_))
-        , key_(detail::exchange(
-            other.get().key_, empty_))
-        , len_(detail::exchange(
-            other.get().len_, 0))
-    {
-    }
+             [Valueless Variants Considered Harmful](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0308r0.html).
 
-    /** Constructor.
-
-        This constructs a key/value pair.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param key The key string to use.
-
-        @param args Optional arguments forwarded to
-        the @ref value constructor.
+        @{
     */
     template<class... Args>
     explicit
@@ -4477,21 +3444,12 @@ public:
             std::uint32_t>(key.size());
     }
 
-    /** Constructor.
+    /** Overload
 
-        This constructs a key/value pair. A
-        copy of the specified value is made,
-        using the specified memory resource.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param p A `std::pair` with the key
-            string and @ref value to construct with.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The element will acquire shared ownership of the memory resource.
+        @param p A `std::pair` with the key string and @ref value to construct
+               with.
+        @param sp A pointer to the @ref boost::container::pmr::memory_resource
+               to use.
     */
     explicit
     key_value_pair(
@@ -4506,22 +3464,7 @@ public:
     {
     }
 
-    /** Constructor.
-
-        This constructs a key/value pair.
-        Ownership of the specified value is
-        transferred by move construction.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param p A `std::pair` with the key
-            string and @ref value to construct with.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource` to
-        use. The element will acquire shared ownership of the memory resource.
-    */
+    /// Overload
     explicit
     key_value_pair(
         std::pair<
@@ -4535,10 +3478,50 @@ public:
     {
     }
 
-    /** Return the associated memory resource.
+    /** Overload
 
-        This returns a pointer to the memory
-        resource used to construct the value.
+        @param other Another key/value pair.
+        @param sp
+    */
+    BOOST_JSON_DECL
+    key_value_pair(
+        key_value_pair const& other,
+        storage_ptr sp);
+
+    /// Overload
+    key_value_pair(
+        key_value_pair const& other)
+        : key_value_pair(other,
+            other.storage())
+    {
+    }
+
+    /// Overload
+    key_value_pair(
+        key_value_pair&& other) noexcept
+        : value_(std::move(other.value_))
+        , key_(detail::exchange(
+            other.key_, empty_))
+        , len_(detail::exchange(
+            other.len_, 0))
+    {
+    }
+
+    /// Overload
+    key_value_pair(
+        pilfered<key_value_pair> other) noexcept
+        : value_(pilfer(other.get().value_))
+        , key_(detail::exchange(
+            other.get().key_, empty_))
+        , len_(detail::exchange(
+            other.get().len_, 0))
+    {
+    }
+    /// @}
+
+    /** The associated memory resource.
+
+        Returns a pointer to the memory resource used to construct the value.
 
         @par Complexity
         Constant.
@@ -4552,10 +3535,9 @@ public:
         return value_.storage();
     }
 
-    /** Return the key of this element.
+    /** The pair's key.
 
-        After construction, the key may
-        not be modified.
+        After construction, the key may not be modified.
 
         @par Complexity
         Constant.
@@ -4569,7 +3551,7 @@ public:
         return { key_, len_ };
     }
 
-    /** Return the key of this element as a null-terminated string.
+    /** The pair's key as a null-terminated string.
 
         @par Complexity
         Constant.
@@ -4583,15 +3565,16 @@ public:
         return key_;
     }
 
-    /** Return the value of this element.
+    /** The pair's value.
 
         @par Complexity
         Constant.
 
         @par Exception Safety
         No-throw guarantee.
+
+        @{
     */
-    /** @{ */
     json::value const&
     value() const& noexcept
     {
@@ -4609,7 +3592,7 @@ public:
     {
         return value_;
     }
-    /** @} */
+    /// @}
 
 private:
     json::value value_;
@@ -4624,52 +3607,39 @@ private:
 
 /** Tuple-like element access.
 
-    This overload permits the key and value
-    of a `key_value_pair` to be accessed
-    by index. For example:
+    This overload of `get` permits the key and value of a @ref key_value_pair
+    to be accessed by index. For example:
 
     @code
-
     key_value_pair kvp("num", 42);
-
     string_view key = get<0>(kvp);
     value& jv = get<1>(kvp);
-
     @endcode
 
     @par Structured Bindings
-
-    When using C++17 or greater, objects of type
-    @ref key_value_pair may be used to initialize
-    structured bindings:
+    When using C++17 or greater, objects of type @ref key_value_pair may be
+    used to initialize structured bindings:
 
     @code
-
     key_value_pair kvp("num", 42);
-
     auto& [key, value] = kvp;
-
     @endcode
 
     Depending on the value of `I`, the return type will be:
 
     @li `string_view const` if `I == 0`, or
-
     @li `value&`, `value const&`, or `value&&` if `I == 1`.
 
-    Any other value for `I` is ill-formed.
+    Using any other value for `I` is ill-formed.
+
+    @par Constraints
+    `std::is_same_v< std::remove_cvref_t<T>, key_value_pair >`
 
     @tparam I The element index to access.
 
-    @par Constraints
+    @return `kvp.key()` if `I == 0`, or `kvp.value()` if `I == 1`.
 
-    `std::is_same_v< std::remove_cvref_t<T>, key_value_pair >`
-
-    @return `kvp.key()` if `I == 0`, or `kvp.value()`
-    if `I == 1`.
-
-    @param kvp The @ref key_value_pair object
-    to access.
+    @param kvp The @ref key_value_pair object to access.
 */
 template<
     std::size_t I,
