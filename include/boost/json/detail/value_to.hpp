@@ -349,6 +349,10 @@ value_to_impl(
 template< class Ctx, class T >
 struct to_described_member
 {
+    static_assert(
+        uniquely_named_members<T>::value,
+        "The type has several described members with the same name.");
+
     using Ds = described_members<T>;
 
     system::result<T>& res;

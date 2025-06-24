@@ -463,6 +463,10 @@ do_arr4:
 template< class T, bool StackEmpty >
 struct serialize_struct_elem_helper
 {
+    static_assert(
+        uniquely_named_members<T>::value,
+        "The type has several described members with the same name.");
+
     writer& w;
     local_stream& ss;
     T const* pt;

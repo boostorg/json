@@ -155,6 +155,10 @@ value_from_impl( no_conversion_tag, value&, T&&, Ctx const& )
 template< class Ctx, class T >
 struct from_described_member
 {
+    static_assert(
+        uniquely_named_members< remove_cvref<T> >::value,
+        "The type has several described members with the same name.");
+
     using Ds = described_members< remove_cvref<T> >;
 
     object& obj;

@@ -280,25 +280,28 @@ struct is_null_like
 /** Determine if `T` should be treated as a described class.
 
     Described classes are serialised as objects with an element for each
-    described data member. A described class should not have described bases or
-    non-public members.
+    described data member. Described bases are serialized in a flattened way,
+    that is members of bases are serialized as direct elements of the object,
+    and no nested objects are created for bases.
 
-    Or more formally, given `L`, a class template of the form
-    `template<class...> struct L {};`, if
+    A described class should not have non-public described members (including
+    inherited members) or non-public non-empty described bases. Or more
+    formally, given `L`, a class template of the form
+    `template<class...> struct L {}`, if
 
-    - `boost::describe::has_members<T, boost::describe::mod_public>::value` is
-      `true`; and
+    - `boost::describe::has_describe_members<T>::value` is `true`; and
 
     - `boost::describe::describe_members<T, boost::describe::mod_private |
-      boost::describe::mod_protected>` denotes `L<>`; and
-
-    - `boost::describe::describe_bases<T, boost::describe::mod_any_access>`
-      denotes `L<>`; and
+      boost::describe::mod_protected | boost::describe::mod_inherited>` denotes
+      `L<>`; and
 
     - `std::is_union<T>::value` is `false`;
 
     then the trait provides the member constant `value` that is equal to
     `true`. Otherwise, `value` is equal to `false`.
+
+    @note Shadowed members are ignored both for requirements checking and for
+    performing conversions.
 
     Users can specialize the trait for their own types if they don't want them
     to be treated as described classes. For example:
@@ -316,10 +319,8 @@ struct is_null_like
     @endcode
 
     Users can also specialize the trait for their own types _with_ described
-    bases or described non-public data members to enable this conversion
-    implementation. In this case the class will be serialized in a flattened
-    way, that is members of bases will be serialized as direct elements of the
-    object, and no nested objects will be created for bases.
+    non-public data members to enable this conversion implementation. Note that
+    non-public bases are not supported regardless.
 
     @see [Boost.Describe](https://www.boost.org/doc/libs/develop/libs/describe/doc/html/describe.html).
 */

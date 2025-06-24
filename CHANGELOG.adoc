@@ -5,6 +5,11 @@
 
 include::doc/pages/definitions.adoc[]
 
+== Boost 1.89.0
+
+.API Changes
+* {issue}1086[#1086] Described class support is enabled for types with bases.
+
 == Boost 1.87.0
 
 .API Changes
@@ -12,7 +17,6 @@ include::doc/pages/definitions.adoc[]
 * {issue}1041[#1041] Exception wrapping behaviour for `value_to` is simplified.
 * {issue}1040[#1040] Deprecated initilaizer list behavior was removed.
 * {issue}1040[#1040] Deprecated type aliases were removed.
-
 
 .New Features
 * {issue}956[#956] <<direct_conversion,Direct serialization>>.

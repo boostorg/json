@@ -268,10 +268,10 @@ using has_user_conversion3 = mp11::mp_if<
 
 template< class T >
 using described_non_public_members = describe::describe_members<
-    T, describe::mod_private | describe::mod_protected>;
-template< class T >
-using described_bases = describe::describe_bases<
-    T, describe::mod_any_access>;
+    T,
+    describe::mod_private
+        | describe::mod_protected
+        | boost::describe::mod_inherited>;
 
 #if defined(BOOST_MSVC) && BOOST_MSVC < 1920
 
@@ -300,6 +300,45 @@ using described_member_t = remove_cvref<decltype(
 template< class T >
 using described_members = describe::describe_members<
     T, describe::mod_any_access | describe::mod_inherited>;
+
+#ifdef BOOST_DESCRIBE_CXX14
+
+constexpr
+bool
+compare_strings(char const* l, char const* r)
+{
+#if defined(_MSC_VER) && (_MSC_VER <= 1900) && !defined(__clang__)
+    return *l == *r && ( (*l == 0) | compare_strings(l + 1, r + 1) );
+#else
+    do
+    {
+        if( *l != *r )
+            return false;
+        if( *l == 0 )
+            return true;
+        ++l;
+        ++r;
+    } while(true);
+#endif
+}
+
+template< class L, class R >
+struct equal_member_names
+    : mp11::mp_bool< compare_strings(L::name, R::name) >
+{};
+
+template< class T >
+using uniquely_named_members = mp11::mp_same<
+    mp11::mp_unique_if< described_members<T>, equal_member_names >,
+    described_members<T> >;
+
+#else
+
+// we only check this in C++14, but the template should exist nevertheless
+template< class T >
+using uniquely_named_members = std::true_type;
+
+#endif // BOOST_DESCRIBE_CXX14
 
 // user conversion (via tag_invoke)
 template< class Ctx, class T, class Dir >
@@ -541,9 +580,7 @@ struct is_described_class
         mp11::mp_not< std::is_union<T> >,
         mp11::mp_empty<
             mp11::mp_eval_or<
-                mp11::mp_list<>, detail::described_non_public_members, T>>,
-        mp11::mp_empty<
-            mp11::mp_eval_or<mp11::mp_list<>, detail::described_bases, T>>>
+                mp11::mp_list<>, detail::described_non_public_members, T>>>
 { };
 
 template<class T>
