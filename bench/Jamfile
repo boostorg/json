@@ -40,13 +40,21 @@ exe bench :
     $(has_rapidjson)<define>BOOST_JSON_HAS_RAPIDJSON
     ;
 
+exe bench-conv
+    : bench-conv.cpp
+      /boost/json//boost_json
+    : <include>../test
+      <include>../example
+    ;
+
 install bench-local : bench : <location>. <hardcode-dll-paths>true ;
 explicit bench-local ;
 always bench-local ;
 
 local bench-files = [ glob-tree-ex data : *.json ] ;
 notfile run : @run-bench : bench : : <bench.file>$(bench-files) ;
-explicit run ;
+notfile run-conv : @run-bench : bench-conv : : <bench.file>$(bench-files) ;
+explicit run run-conv ;
 
 rule run-bench ( target : sources * : props * )
 {
