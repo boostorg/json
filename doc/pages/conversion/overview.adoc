@@ -70,6 +70,20 @@ a| The result is a number equal to input and has the type
 |The result is a <<ref_string>>.
 |The result is constructed from a <<ref_string_view>>.
 
+|Type satisfying <<ref_is_variant_like>>.
+|`std::variant` and similar types, e.g. `boost::variant2::variant`.
+|The result is equal to the result of conversion of the active variant
+    alternative.
+|The result holds the first alternative for which a conversion succeeds.
+
+|Type satisfying <<ref_is_optional_like>>
+|
+|If the input value is empty, the result is a `null`. Otherwise it is
+    equivalent to conversion of the object stored inside of optional.
+|The result is default constructed if the input value is `null`. Otherwise the
+    result is constructed from the result of conversion of the input to the
+    type stored in optional.
+
 |Type satisfying <<ref_is_map_like>>.
 |A one-to-one mapping (e.g. `std::map`) with string-like keys.
 |The result is an <<ref_object>>.
@@ -98,20 +112,6 @@ a| The result is a number equal to input and has the type
     value converted to its underlying type.
 |The result is the described enumerator, corresponding to the input
     <<ref_string>>.
-
-|Type satisfying <<ref_is_variant_like>>.
-|`std::variant` and similar types, e.g. `boost::variant2::variant`.
-|The result is equal to the result of conversion of the active variant
-    alternative.
-|The result holds the first alternative for which a conversion succeeds.
-
-|Type satisfying <<ref_is_optional_like>>
-|
-|If the input value is empty, the result is a `null`. Otherwise it is
-    equivalent to conversion of the object stored inside of optional.
-|The result is default constructed if the input value is `null`. Otherwise the
-    result is constructed from the result of conversion of the input to the
-    type stored in optional.
 
 |Type satisfying <<ref_is_path_like>>.
 |`std::filesystem::path` and similar types, e.g. `boost::filesystem::path`.

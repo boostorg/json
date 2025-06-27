@@ -363,13 +363,13 @@ using generic_conversion_category = mp11::mp_cond<
     std::is_floating_point<T>, floating_point_conversion_tag,
     is_null_like<T>,           null_like_conversion_tag,
     is_string_like<T>,         string_like_conversion_tag,
+    is_variant_like<T>,        variant_conversion_tag,
+    is_optional_like<T>,       optional_conversion_tag,
     is_map_like<T>,            map_like_conversion_tag,
     is_sequence_like<T>,       sequence_conversion_tag,
     is_tuple_like<T>,          tuple_conversion_tag,
     is_described_class<T>,     described_class_conversion_tag,
     is_described_enum<T>,      described_enum_conversion_tag,
-    is_variant_like<T>,        variant_conversion_tag,
-    is_optional_like<T>,       optional_conversion_tag,
     is_path_like<T>,           path_conversion_tag,
     // failed to find a suitable implementation
     mp11::mp_true,             no_conversion_tag>;
