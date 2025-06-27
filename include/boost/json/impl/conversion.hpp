@@ -600,6 +600,58 @@ struct is_optional_like
         mp11::mp_valid<detail::can_reset, T>>
 { };
 
+inline
+void
+tag_invoke(context_key_push_tag, string_view, ...)
+{
+}
+
+inline
+void
+tag_invoke(context_key_pop_tag, ...)
+{
+}
+
+inline
+void
+tag_invoke(context_index_push_tag, std::size_t, ...)
+{
+}
+
+inline
+void
+tag_invoke(context_index_pop_tag, ...)
+{
+}
+
+template< class Ctx >
+void
+context_key_push(Ctx const& ctx, string_view sv)
+{
+    tag_invoke(context_key_push_tag(), sv, ctx);
+}
+
+template< class Ctx >
+void
+context_key_pop(Ctx const& ctx)
+{
+    tag_invoke(context_key_pop_tag(), ctx);
+}
+
+template< class Ctx >
+void
+context_index_push(Ctx const& ctx, std::size_t n)
+{
+    tag_invoke(context_index_push_tag(), n, ctx);
+}
+
+template< class Ctx >
+void
+context_index_pop(Ctx const& ctx)
+{
+    tag_invoke(context_index_pop_tag(), ctx);
+}
+
 } // namespace json
 } // namespace boost
 
