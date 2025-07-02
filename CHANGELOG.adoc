@@ -7,6 +7,9 @@ include::doc/pages/definitions.adoc[]
 
 == Boost 1.89.0
 
+.Documentation
+* New documentation style. New reference documentation structure.
+
 .API Changes
 * {issue}1050[#1050] Optionals that are ranges are categorised as optionals.
 * {issue}1086[#1086] Described class support is enabled for types with bases.

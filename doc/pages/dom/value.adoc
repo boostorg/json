@@ -78,7 +78,7 @@ include::../../../test/snippets.cpp[tag=snippet_value_4,indent=0]
 ----
 
 The following table shows all of the ways to determine and access the contents
-of a `!value!`:
+of a <<ref_value>>:
 
 .<<ref_value>> Accessors
 [%autowidth,cols=8]

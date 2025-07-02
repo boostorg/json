@@ -322,7 +322,7 @@ struct is_null_like
     non-public data members to enable this conversion implementation. Note that
     non-public bases are not supported regardless.
 
-    @see [Boost.Describe](https://www.boost.org/doc/libs/develop/libs/describe/doc/html/describe.html).
+    @see [Boost.Describe](https://www.boost.org/doc/libs/latest/libs/describe/doc/html/describe.html).
 */
 template<class T>
 struct is_described_class;
@@ -353,7 +353,7 @@ struct is_described_class;
     } // namespace json
     @endcode
 
-    @see [Boost.Describe](https://www.boost.org/doc/libs/develop/libs/describe/doc/html/describe.html).
+    @see [Boost.Describe](https://www.boost.org/doc/libs/latest/libs/describe/doc/html/describe.html).
 */
 template<class T>
 struct is_described_enum;

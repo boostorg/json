@@ -7,13 +7,13 @@ file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 Official repository: https://github.com/boostorg/json
 ////
 
-:ref_memory_resource:       pass:q[https://boost.org/doc/libs/release/doc/html/doxygen/boost_container_header_reference/classboost_1_1container_1_1pmr_1_1memory__resource.html[`memory_resource`]]
-:ref_polymorphic_allocator: pass:q[https://boost.org/doc/libs/release/doc/html/doxygen/boost_container_header_reference/classboost_1_1container_1_1pmr_1_1polymorphic__allocator.html[`polymorphic_allocator`]]
-:ref_error_category:        pass:q[https://boost.org/doc/libs/release/libs/system/doc/html/system.html#ref_error_category[`error_category`]]
-:ref_error_code:            pass:q[https://boost.org/doc/libs/release/libs/system/doc/html/system.html#ref_error_code[`error_code`]]
-:ref_error_condition:       pass:q[https://boost.org/doc/libs/release/libs/system/doc/html/system.html#ref_error_condition[`error_condition`]]
-:ref_result:                pass:q[https://boost.org/doc/libs/release/libs/system/doc/html/system.html#ref_resultt_e[`result`]]
-:ref_system_error:          pass:q[https://boost.org/doc/libs/release/libs/system/doc/html/system.html#ref_system_error[`system_error`]]
+:ref_memory_resource:       pass:q[https://boost.org/doc/libs/latest/doc/html/doxygen/boost_container_header_reference/classboost_1_1container_1_1pmr_1_1memory__resource.html[`memory_resource`]]
+:ref_polymorphic_allocator: pass:q[https://boost.org/doc/libs/latest/doc/html/doxygen/boost_container_header_reference/classboost_1_1container_1_1pmr_1_1polymorphic__allocator.html[`polymorphic_allocator`]]
+:ref_error_category:        pass:q[https://boost.org/doc/libs/latest/libs/system/doc/html/system.html#ref_error_category[`error_category`]]
+:ref_error_code:            pass:q[https://boost.org/doc/libs/latest/libs/system/doc/html/system.html#ref_error_code[`error_code`]]
+:ref_error_condition:       pass:q[https://boost.org/doc/libs/latest/libs/system/doc/html/system.html#ref_error_condition[`error_condition`]]
+:ref_result:                pass:q[https://boost.org/doc/libs/latest/libs/system/doc/html/system.html#ref_resultt_e[`result`]]
+:ref_system_error:          pass:q[https://boost.org/doc/libs/latest/libs/system/doc/html/system.html#ref_system_error[`system_error`]]
 
 :req_Allocator:            pass:q[https://en.cppreference.com/w/cpp/named_req/Allocator[__Allocator__]]
 :req_CopyAssignable:       pass:q[https://en.cppreference.com/w/cpp/named_req/CopyAssignable[__CopyAssignable__]]
