@@ -196,6 +196,45 @@ tag_invoke(
     return T11( jv.to_number<int>() );
 }
 
+struct logging_context
+{
+    std::vector<std::string>& path;
+};
+
+void
+tag_invoke(
+    boost::json::context_key_push_tag,
+    boost::json::string_view sv,
+    logging_context const& ctx)
+{
+    ctx.path.push_back(sv);
+}
+
+void
+tag_invoke(
+    boost::json::context_key_pop_tag,
+    logging_context const& ctx)
+{
+    ctx.path.pop_back();
+}
+
+void
+tag_invoke(
+    boost::json::context_index_push_tag,
+    std::size_t n,
+    logging_context const& ctx)
+{
+    ctx.path.push_back( std::to_string(n) );
+}
+
+void
+tag_invoke(
+    boost::json::context_index_pop_tag,
+    logging_context const& ctx)
+{
+    ctx.path.pop_back();
+}
+
 } // namespace value_to_test_ns
 
 namespace std
@@ -814,6 +853,17 @@ public:
 
         testContext();
         testContainerHelpers();
+
+        value jv = {
+            {{"n", 1}, {"d", 2}},
+            {{"n", 3}, {"d", "4"}}
+        };
+        std::vector<std::string> error_path;
+        value_to_test_ns::logging_context ctx{error_path};
+        auto result = try_value_to< std::vector<value_to_test_ns::T6> >(
+            jv, ctx);
+        BOOST_TEST( result.error().failed() );
+        BOOST_TEST(( std::vector<std::string>{"1", "d"} == error_path ));
     }
 };
 
