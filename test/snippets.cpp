@@ -24,14 +24,13 @@
 #include <algorithm>
 #include <cmath>
 #include <map>
-#include <numeric>
 #include <string>
 #include <vector>
 
 #include "test_suite.hpp"
 #include "doc_types.hpp"
 
-//[snippet_conv_spec_trait2
+// tag::snippet_conv_spec_trait2[]
 namespace boost
 {
 namespace json
@@ -44,7 +43,7 @@ struct is_sequence_like< user_ns::ip_address >
 
 } // namespace json
 } // namespace boost
-//]
+// end::snippet_conv_spec_trait2[]
 
 namespace user_ns2 {
 
@@ -56,7 +55,7 @@ public:
 
 using namespace boost::json;
 
-//[snippet_tag_invoke_1
+// tag::snippet_tag_invoke_1[]
 void
 tag_invoke( const value_from_tag&, value& jv, ip_address const& addr )
 {
@@ -75,9 +74,9 @@ tag_invoke( const value_to_tag< ip_address >&, value const& jv )
         arr.at(2).to_number< unsigned char >(),
         arr.at(3).to_number< unsigned char >() );
 }
-//]
+// end::snippet_tag_invoke_1[]
 
-//[snippet_nothrow_1
+// tag::snippet_nothrow_1[]
 result_for< ip_address, value >::type
 tag_invoke( const try_value_to_tag< ip_address >&, value const& jv )
 {
@@ -110,11 +109,11 @@ tag_invoke( const try_value_to_tag< ip_address >&, value const& jv )
 
     return ip_address{ *oct1, *oct2, *oct3, *oct4 };
 }
-//]
+// end::snippet_nothrow_1[]
 
 } // namespace user_ns
 
-//[doc_context_conversion_1
+// tag::doc_context_conversion_1[]
 namespace user_ns
 {
 
@@ -149,9 +148,9 @@ tag_invoke(
 }
 
 }
-//]
+// end::doc_context_conversion_1[]
 
-//[doc_context_conversion_4
+// tag::doc_context_conversion_4[]
 namespace user_ns
 {
 
@@ -173,9 +172,9 @@ tag_invoke(
 }
 
 }
-//]
+// end::doc_context_conversion_4[]
 
-//[doc_context_conversion_6
+// tag::doc_context_conversion_6[]
 namespace user_ns
 {
 
@@ -199,9 +198,9 @@ tag_invoke(
 }
 
 }
-//]
+// end::doc_context_conversion_6[]
 
-//[doc_context_conversion_10
+// tag::doc_context_conversion_10[]
 namespace user_ns
 {
 
@@ -253,14 +252,13 @@ tag_invoke(
 }
 
 }
-//]
+// end::doc_context_conversion_10[]
 
 namespace boost {
 namespace json {
-
 namespace {
 
-//[snippet_strings_5
+// tag::snippet_strings_5[]
 string greeting( string_view first_name, string_view last_name )
 {
     const char hello[] = "Hello, ";
@@ -278,22 +276,22 @@ string greeting( string_view first_name, string_view last_name )
     js.grow( sz );
     return js;
 }
-//]
+// end::snippet_strings_5[]
 
 void
 usingStrings()
 {
     {
-        //[snippet_strings_1
+        // tag::snippet_strings_1[]
 
         string str1; // empty string, uses the default memory resource
 
         string str2( make_shared_resource<monotonic_resource>() ); // empty string, uses a counted monotonic resource
 
-        //]
+        // end::snippet_strings_1[]
     }
     {
-        //[snippet_strings_2
+        // tag::snippet_strings_2[]
 
         std::string sstr1 = "helloworld";
         std::string sstr2 = "world";
@@ -306,10 +304,10 @@ usingStrings()
         // this is equivalent to
         assert( sstr2.insert(0, sstr1, 0, 5) == "helloworld" );
 
-        //]
+        // end::snippet_strings_2[]
     }
     {
-        //[snippet_strings_3
+        // tag::snippet_strings_3[]
 
         std::string sstr = "hello";
 
@@ -322,11 +320,11 @@ usingStrings()
 
         assert(jstr.append("world") == "helloworld");
 
-        //]
+        // end::snippet_strings_3[]
     }
 
     {
-        //[snippet_strings_4
+        // tag::snippet_strings_4[]
 
         json::string str = "Boost.JSON";
         json::string_view sv = str;
@@ -340,7 +338,7 @@ usingStrings()
 
         str.compare("Boost");
 
-        //]
+        // end::snippet_strings_4[]
     }
 
     {
@@ -356,7 +354,7 @@ void
 usingValues()
 {
     {
-        //[snippet_value_1
+        // tag::snippet_value_1[]
 
         value jv1;
         value jv2( nullptr );
@@ -364,10 +362,10 @@ usingValues()
         assert( jv1.is_null() );
         assert( jv2.is_null() );
 
-        //]
+        // end::snippet_value_1[]
     }
     {
-        //[snippet_value_2
+        // tag::snippet_value_2[]
 
         value jv( object_kind );
 
@@ -375,24 +373,24 @@ usingValues()
         assert( jv.is_object() );
         assert( ! jv.is_number() );
 
-        //]
+        // end::snippet_value_2[]
     }
     {
         auto f = []{
-        //[snippet_value_3
+        // tag::snippet_value_3[]
 
         value jv( object_kind );
 
         if( auto p = jv.if_object() )
             return p->size();
 
-        //]
+        // end::snippet_value_3[]
         return std::size_t(0);
         };
         (void)f;
     }
     {
-        //[snippet_value_4
+        // tag::snippet_value_4[]
 
         value jv;
         jv = value( array_kind );
@@ -403,10 +401,10 @@ usingValues()
 
         assert( jv.is_string() );
 
-        //]
+        // end::snippet_value_4[]
     }
     {
-        //[snippet_value_5
+        // tag::snippet_value_5[]
 
         value jv;
         jv.emplace_string() = "Hello, world!";
@@ -416,35 +414,35 @@ usingValues()
 
         assert( jv.is_int64() );
 
-        //]
+        // end::snippet_value_5[]
     }
     {
         try
         {
-            //[snippet_value_6
+            // tag::snippet_value_6[]
 
             value jv( true );
             jv.as_bool() = true;
 
             jv.as_string() = "Hello, world!"; // throws an exception
 
-            //]
+            // end::snippet_value_6[]
         }
         catch(...)
         {
         }
     }
     {
-        //[snippet_value_7
+        // tag::snippet_value_7[]
 
         value jv( string_kind );
         if( string* str = jv.if_string() )
             *str = "Hello, world!";
 
-        //]
+        // end::snippet_value_7[]
     }
     {
-        //[snippet_value_8
+        // tag::snippet_value_8[]
 
         value jv( string_kind );
 
@@ -452,10 +450,10 @@ usingValues()
         // a null pointer is never dereferenced.
         *jv.if_string() = "Hello, world!";
 
-        //]
+        // end::snippet_value_8[]
     }
     {
-        //[snippet_value_9
+        // tag::snippet_value_9[]
 
         value jv( string_kind );
         if( boost::system::result<string&> str = jv.try_as_string() )
@@ -469,7 +467,7 @@ usingValues()
         {
         }
 
-        //]
+        // end::snippet_value_9[]
     }
 }
 
@@ -479,7 +477,7 @@ void
 usingInitLists()
 {
     {
-        //[snippet_init_list_1
+        // tag::snippet_init_list_1[]
 
         value jv = {
             { "name", "John Doe" },
@@ -488,11 +486,11 @@ usingInitLists()
             { "total-balance", 330.00 },
             { "account-balances", { 84, 120, 126 } } };
 
-        //]
+        // end::snippet_init_list_1[]
     }
 
     {
-        //[snippet_init_list_2
+        // tag::snippet_init_list_2[]
 
         value jv = { true, 2, "hello", nullptr };
 
@@ -502,11 +500,11 @@ usingInitLists()
 
         assert( serialize(jv) == R"([true,2,"hello",null])" );
 
-        //]
+        // end::snippet_init_list_2[]
     }
 
     {
-        //[snippet_init_list_3
+        // tag::snippet_init_list_3[]
 
         value jv = { true, 2, "hello", { "bye", nullptr, false } };
 
@@ -516,20 +514,20 @@ usingInitLists()
 
         assert( serialize(jv) == R"([true,2,"hello",["bye",null,false]])" );
 
-        //]
+        // end::snippet_init_list_3[]
     }
 
     {
-        //[snippet_init_list_4
+        // tag::snippet_init_list_4[]
 
         // Should this be an array or an object?
         value jv = { { "hello", 42 }, { "world", 43 } };
 
-        //]
+        // end::snippet_init_list_4[]
     }
 
     {
-        //[snippet_init_list_5
+        // tag::snippet_init_list_5[]
 
         value jv1 = { { "hello", 42 }, { "world", 43 } };
 
@@ -549,11 +547,11 @@ usingInitLists()
 
         assert( jv2.is_array() && jv3.is_array() && jv4.is_array() );
 
-        //]
+        // end::snippet_init_list_5[]
     }
 
     {
-        //[snippet_init_list_6
+        // tag::snippet_init_list_6[]
 
         value jv = { { "hello", 42 }, array{ "world", 43 } };
 
@@ -565,13 +563,13 @@ usingInitLists()
 
         assert ( serialize(jv) == R"([["hello",42],["world",43]])" );
 
-        //]
+        // end::snippet_init_list_6[]
 
         (void)ja;
     }
 
     {
-        //[snippet_init_list_7
+        // tag::snippet_init_list_7[]
 
         value jv = { { "mercury", 36 }, { "venus", 67 }, { "earth", 93 } };
 
@@ -583,13 +581,13 @@ usingInitLists()
 
         assert( serialize(ja) == R"([["mercury",36],["venus",67],["earth",93]])" );
 
-        //]
+        // end::snippet_init_list_7[]
 
         (void)ja;
     }
 
     {
-        //[snippet_init_list_8
+        // tag::snippet_init_list_8[]
 
         object jo = { { "mercury", { { "distance", 36 } } }, { "venus", { 67, "million miles" } }, { "earth", 93 } };
 
@@ -597,11 +595,11 @@ usingInitLists()
 
         assert( jo["venus"].is_array() );
 
-        //]
+        // end::snippet_init_list_8[]
     }
 
     {
-        //[snippet_init_list_9
+        // tag::snippet_init_list_9[]
 
         object jo1 = { { "john", 100 }, { "dave", 500 }, { "joe", 300 } };
 
@@ -613,7 +611,7 @@ usingInitLists()
 
         assert( serialize(jv) == R"({"clients":{"john":100,"dave":500,"joe":300}})" );
 
-        //]
+        // end::snippet_init_list_9[]
 
         (void)jo2;
     }
@@ -625,24 +623,24 @@ void
 usingArrays()
 {
     {
-        //[snippet_arrays_1
+        // tag::snippet_arrays_1[]
 
         array arr1; // empty array, uses the default memory resource
 
         array arr2( make_shared_resource<monotonic_resource>() ); // empty array, uses a counted monotonic resource
 
-        //]
+        // end::snippet_arrays_1[]
     }
     {
-        //[snippet_arrays_2
+        // tag::snippet_arrays_2[]
 
         array arr( { "Hello", 42, true } );
 
-        //]
+        // end::snippet_arrays_2[]
     }
     try
     {
-        //[snippet_arrays_3
+        // tag::snippet_arrays_3[]
 
         array arr;
 
@@ -650,16 +648,16 @@ usingArrays()
         arr.emplace_back( 42 );
         arr.emplace_back( true );
 
-        //]
+        // end::snippet_arrays_3[]
 
-        //[snippet_arrays_4
+        // tag::snippet_arrays_4[]
 
         assert( arr[0].as_string() == "Hello" );
 
         // The following line throws system_error, since the index is out of range
         arr.at( 3 ) = nullptr;
 
-        //]
+        // end::snippet_arrays_4[]
     }
     catch (...)
     {
@@ -672,23 +670,23 @@ void
 usingObjects()
 {
     {
-        //[snippet_objects_1
+        // tag::snippet_objects_1[]
 
         object obj1; // empty object, uses the default memory resource
 
         object obj2( make_shared_resource<monotonic_resource>() ); // empty object, uses a counted monotonic resource
 
-        //]
+        // end::snippet_objects_1[]
     }
     {
-        //[snippet_objects_2
+        // tag::snippet_objects_2[]
 
         object obj( {{"key1", "value1" }, { "key2", 42 }, { "key3", false }} );
 
-        //]
+        // end::snippet_objects_2[]
     }
     {
-        //[snippet_objects_3
+        // tag::snippet_objects_3[]
 
         object obj;
 
@@ -696,11 +694,11 @@ usingObjects()
         obj.emplace( "key2", 42 );
         obj.emplace( "key3", false );
 
-        //]
+        // end::snippet_objects_3[]
     }
     try
     {
-        //[snippet_objects_4
+        // tag::snippet_objects_4[]
 
         object obj;
 
@@ -711,19 +709,19 @@ usingObjects()
         // The following line throws system_error, since the key does not exist
         obj.at( "key4" );
 
-        //]
+        // end::snippet_objects_4[]
     }
     catch (...)
     {
     }
     {
-        //[snippet_objects_5
+        // tag::snippet_objects_5[]
 
         object obj{{"arr", {1, 11}}};
         value& arr = obj.at("arr");
         obj.emplace("added", "value"); // invalidates arr
 
-        //]
+        // end::snippet_objects_5[]
 
         (void)arr;
     }
@@ -804,7 +802,7 @@ void
 usingExchange()
 {
     {
-        //[snippet_conv_1
+        // tag::snippet_conv_1[]
 
         std::vector< int > v1{ 1, 2, 3, 4 };
 
@@ -816,14 +814,14 @@ usingExchange()
         std::vector< int > v2 = value_to< std::vector< int > >( jv );
         assert( v1 == v2 );
 
-        //]
+        // end::snippet_conv_1[]
 
         (void)v2;
     }
     {
         using namespace user_ns2;
 
-        //[snippet_tag_invoke_3
+        // tag::snippet_tag_invoke_3[]
         std::map< std::string, ip_address > computers = {
             { "Alex", { 192, 168, 1, 1 } },
             { "Blake", { 192, 168, 1, 2 } },
@@ -844,14 +842,14 @@ usingExchange()
             }
             )");
         assert( jv == serialized );
-        //]
+        // end::snippet_tag_invoke_3[]
 
         (void)jv;
     }
     {
         using namespace user_ns2;
 
-        //[snippet_tag_invoke_2
+        // tag::snippet_tag_invoke_2[]
         ip_address addr = { 127, 0, 0, 12 };
         value jv = value_from( addr );
         assert( serialize( jv ) == R"([127,0,0,12])" );
@@ -860,14 +858,14 @@ usingExchange()
         ip_address addr2 = value_to< ip_address >( jv );
         assert(std::equal(
             addr.begin(), addr.end(), addr2.begin() ));
-        //]
+        // end::snippet_tag_invoke_2[]
 
         (void)addr2;
     }
     {
         using namespace user_ns2;
 
-        //[snippet_nothrow_2
+        // tag::snippet_nothrow_2[]
         value jv = parse( R"([127,0,0,12])" );
 
         boost::system::result< ip_address > addr
@@ -881,13 +879,13 @@ usingExchange()
         // this fails without exception
         addr = try_value_to< ip_address >( value() );
         assert( addr.has_error() );
-        //]
+        // end::snippet_nothrow_2[]
 
         (void)addr;
         (void)addr2;
     }
     {
-        //[snippet_conv_recursive
+        // tag::snippet_conv_recursive[]
         std::map< std::string, std::pair<int, bool> > m = {
             {"a", {1, false}},
             {"b", {4, true}},
@@ -901,14 +899,14 @@ usingExchange()
             {"b", array{4, true}},
             {"c", array{5, false}},
         }));
-        //]
+        // end::snippet_conv_recursive[]
     }
 }
 
 void
 usingPointer()
 {
-    //[snippet_pointer_1
+    // tag::snippet_pointer_1[]
     value jv = { {"one", 1}, {"two", 2} };
     assert( jv.at("one") == jv.at_pointer("/one") );
 
@@ -917,11 +915,11 @@ usingPointer()
 
     jv.at_pointer("/one/foo") = {true, 4, "qwerty"};
     assert( jv.at("one").at("foo").at(1) == jv.at_pointer("/one/foo/1") );
-    //]
+    // end::snippet_pointer_1[]
 
     value* elem1 = [&]() -> value*
     {
-        //[snippet_pointer_2
+        // tag::snippet_pointer_2[]
         object* obj = jv.if_object();
         if( !obj )
             return nullptr;
@@ -943,15 +941,15 @@ usingPointer()
             return nullptr;
 
         return arr->if_contains(1);
-        //]
+        // end::snippet_pointer_2[]
     }();
 
     value* elem2 = [&]() -> value*
     {
-        //[snippet_pointer_3
+        // tag::snippet_pointer_3[]
         boost::system::error_code ec;
         return jv.find_pointer("/one/foo/1", ec);
-        //]
+        // end::snippet_pointer_3[]
     }();
 
     (void)elem1;
@@ -963,17 +961,17 @@ usingPointer()
 void
 usingSetAtPointer()
 {
-    //[snippet_pointer_4
+    // tag::snippet_pointer_4[]
     value jv;
     jv.set_at_pointer("/two/bar/0", 12);
     assert( jv.is_object() );
     assert( jv.at_pointer("/two").is_object() );
     assert( jv.at_pointer("/two/bar").is_array() );
     assert( jv.at_pointer("/two/bar/0") == 12 );
-    //]
+    // end::snippet_pointer_4[]
 
     jv = nullptr;
-    //[snippet_pointer_5
+    // tag::snippet_pointer_5[]
     set_pointer_options opts;
     opts.create_arrays = false;
 
@@ -982,7 +980,7 @@ usingSetAtPointer()
     assert( jv.at_pointer("/two").is_object() );
     assert( jv.at_pointer("/two/bar").is_object() ); // object, not array
     assert( jv.at_pointer("/two/bar/0") == 12 );
-    //]
+    // end::snippet_pointer_5[]
 }
 
 BOOST_STATIC_ASSERT(
@@ -992,40 +990,6 @@ BOOST_STATIC_ASSERT(
     has_value_from<user_ns2::ip_address>::value);
 BOOST_STATIC_ASSERT(
     has_value_to<user_ns2::ip_address>::value);
-
-} // (anon)
-
-} // json
-} // boost
-
-//----------------------------------------------------------
-
-
-namespace {
-
-class my_non_deallocating_resource { };
-
-} // (anon)
-
-//[snippet_allocators_14
-namespace boost {
-namespace json {
-
-template<>
-struct is_deallocate_trivial< my_non_deallocating_resource >
-{
-    static constexpr bool value = true;
-};
-
-} // json
-} // boost
-
-//]
-namespace boost {
-namespace json {
-
-namespace
-{
 
 void
 usingSpecializedTrait()
@@ -1042,7 +1006,7 @@ usingContextualConversions()
     using namespace user_ns;
     using namespace boost::json;
     {
-//[doc_context_conversion_2
+// tag::doc_context_conversion_2[]
         ip_address addr( 192, 168, 10, 11 );
 
         value jv = value_from( addr, as_string() );
@@ -1051,12 +1015,12 @@ usingContextualConversions()
         ip_address addr2 = value_to< ip_address >( jv, as_string() );
         assert(std::equal(
             addr.begin(), addr.end(), addr2.begin() ));
-//]
+// end::doc_context_conversion_2[]
         (void)addr2;
     }
 
     {
-//[doc_context_conversion_3
+// tag::doc_context_conversion_3[]
         std::map< std::string, ip_address > computers = {
             { "Alex", { 192, 168, 1, 1 } },
             { "Blake", { 192, 168, 1, 2 } },
@@ -1070,21 +1034,21 @@ usingContextualConversions()
             "    \"Carol\": \"192.168.1.3\"  "
             "}                               "
             ) );
-//]
+// end::doc_context_conversion_3[]
         (void)jv;
     }
 
     {
-//[doc_context_conversion_5
+// tag::doc_context_conversion_5[]
         std::chrono::system_clock::time_point tp;
         value jv = value_from( tp, as_iso_8601() );
         assert( jv == parse(R"( "1970-01-01T00:00:00" )") );
-//]
+// end::doc_context_conversion_5[]
         (void)jv;
     }
 
     {
-//[doc_context_conversion_7
+// tag::doc_context_conversion_7[]
         std::chrono::system_clock::time_point tp;
 
         value jv = value_from( tp, date_format{ "%T %D", 18 } );
@@ -1092,12 +1056,12 @@ usingContextualConversions()
 
         jv = value_from( tp, as_iso_8601() );
         assert( jv == parse(R"( "1970-01-01T00:00:00" )") );
-//]
+// end::doc_context_conversion_7[]
         (void)jv;
     }
 
     {
-//[doc_context_conversion_8
+// tag::doc_context_conversion_8[]
         using time_point = std::chrono::system_clock::time_point;
         time_point start;
         std::vector< std::pair<time_point, ip_address> > log = {
@@ -1114,14 +1078,14 @@ usingContextualConversions()
             "     [ \"1970-01-01T02:14:10\", \"192.168.10.10\" ]  "
             " ]                                                   "
             ) );
-//]
+// end::doc_context_conversion_8[]
         (void)jv;
     }
 
     {
         using time_point = std::chrono::system_clock::time_point;
         time_point start;
-//[doc_context_conversion_9
+// tag::doc_context_conversion_9[]
 
         std::map< time_point, ip_address > log = {
             { start += std::chrono::seconds(10), {192, 168, 10, 11} },
@@ -1139,7 +1103,7 @@ usingContextualConversions()
             "     \"1970-01-01T02:14:10\": \"192.168.10.10\"  "
             " }                                               "
             ) );
-//]
+// end::doc_context_conversion_9[]
         (void)jv;
     }
 }
@@ -1147,11 +1111,11 @@ usingContextualConversions()
 void
 usingParseInto()
 {
-//[doc_parse_into_1
+// tag::doc_parse_into_1[]
     std::map< std::string, std::vector<int> > vectors;
     string_view input = R"( { "even": [2,4,6], "odd": [1,3,5] } )";
     parse_into(vectors, input);
-//]
+// end::doc_parse_into_1[]
 
     std::string output = serialize(vectors);
     (void)output;

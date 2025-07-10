@@ -1,0 +1,39 @@
+////
+Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+Copyright (c) 2025 Dmitry Arkhipov (grisumbras@yandex.ru)
+
+Distributed under the Boost Software License, Version 1.0. (See accompanying
+file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+Official repository: https://github.com/boostorg/json
+////
+
+= Boost.JSON
+(C) 2019--2020 Vinnie Falco; (C) 2020 Krystian Stasiowski; (C) 2022 Dmitry Arkhipov
+:idprefix:
+:sectanchors:
+:toclevels: 2
+:toc: left
+:pagelevels: 2
+:source-highlighter: rouge
+:source-language: c++
+
+include::definitions.adoc[]
+
+include::../../README.adoc[]
+
+:leveloffset: +1
+
+include::quick_look.adoc[]
+include::dom/overview.adoc[]
+include::allocators/overview.adoc[]
+include::io/overview.adoc[]
+include::conversion/overview.adoc[]
+include::examples.adoc[]
+include::faq.adoc[]
+include::benchmarks.adoc[]
+include::comparison.adoc[]
+include::reference.adoc[]
+include::../../CHANGELOG.adoc[]
+
+:leveloffset: -1

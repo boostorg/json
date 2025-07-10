@@ -73,44 +73,62 @@ struct pseudo_multimap1
 
 struct my_null { };
 
-struct described1 { };
-BOOST_DESCRIBE_STRUCT(described1, (), ())
+struct described1 { int n1; };
+BOOST_DESCRIBE_STRUCT(described1, (), (n1))
 
-struct described2 : described1 { };
-BOOST_DESCRIBE_STRUCT(described2, (described1), ())
+struct described2 : described1 { int n2; };
+BOOST_DESCRIBE_STRUCT(described2, (described1), (n2))
 
-struct described3
+struct described3 : private described1 { int n3; };
+BOOST_DESCRIBE_STRUCT(described3, (described1), (n3))
+
+struct described4 : protected described1 { };
+BOOST_DESCRIBE_STRUCT(described4, (described1), ())
+
+struct described5 : private described2, protected described3 { };
+BOOST_DESCRIBE_STRUCT(described5, (), ())
+
+struct described6
 {
     int n;
 
 private:
     int m;
 };
-BOOST_DESCRIBE_STRUCT(described3, (), (n))
+BOOST_DESCRIBE_STRUCT(described6, (), (n))
 
-struct described4
+struct described7
 {
     int n;
 
 private:
     int m;
-    BOOST_DESCRIBE_CLASS(described4, (), (n), (), (m))
+    BOOST_DESCRIBE_CLASS(described7, (), (n), (), (m))
 };
 
-struct described5
+struct described8
 {
     int n;
 
 protected:
     int m;
-    BOOST_DESCRIBE_CLASS(described5, (), (n), (m), ())
+    BOOST_DESCRIBE_CLASS(described8, (), (n), (m), ())
 };
 
-union described6
+union described9
 {
     int n;
 };
-BOOST_DESCRIBE_STRUCT(described6, (), (n))
+BOOST_DESCRIBE_STRUCT(described9, (), (n))
+
+struct base1 {};
+BOOST_DESCRIBE_STRUCT(base1, (), ())
+
+struct base2 : private base1 {};
+BOOST_DESCRIBE_STRUCT(base2, (base1), ())
+
+struct described10 : base2 {};
+BOOST_DESCRIBE_STRUCT(described10, (base2), ())
 
 enum class described_enum { e };
 BOOST_DESCRIBE_ENUM(described_enum, e)
@@ -182,13 +200,17 @@ public:
 
 #ifdef BOOST_DESCRIBE_CXX14
         BOOST_STATIC_ASSERT( is_described_class<described1>::value );
-        BOOST_STATIC_ASSERT( is_described_class<described3>::value );
+        BOOST_STATIC_ASSERT( is_described_class<described2>::value );
+        BOOST_STATIC_ASSERT( is_described_class<described5>::value );
+        BOOST_STATIC_ASSERT( is_described_class<described6>::value );
 
         BOOST_STATIC_ASSERT( !is_described_class<my_null>::value );
-        BOOST_STATIC_ASSERT( !is_described_class<described2>::value );
+        BOOST_STATIC_ASSERT( !is_described_class<described3>::value );
         BOOST_STATIC_ASSERT( !is_described_class<described4>::value );
-        BOOST_STATIC_ASSERT( !is_described_class<described5>::value );
-        BOOST_STATIC_ASSERT( !is_described_class<described6>::value );
+        BOOST_STATIC_ASSERT( !is_described_class<described7>::value );
+        BOOST_STATIC_ASSERT( !is_described_class<described8>::value );
+        BOOST_STATIC_ASSERT( !is_described_class<described9>::value );
+        // BOOST_STATIC_ASSERT( !is_described_class<described10>::value );
 
         BOOST_STATIC_ASSERT( is_described_enum<described_enum>::value );
         BOOST_STATIC_ASSERT( !is_described_enum<my_null>::value );

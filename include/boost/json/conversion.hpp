@@ -27,44 +27,41 @@ struct supported_context;
 
 /** Customization point tag.
 
-    This tag type is used by the function
-    @ref value_from to select overloads
+    This tag type is used by the function @ref value_from to select overloads
     of `tag_invoke`.
 
     @note This type is empty; it has no members.
 
-    @see @ref value_from, @ref value_to, @ref value_to_tag,
-    <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1895r0.pdf">
-        tag_invoke: A general pattern for supporting customisable functions</a>
+    @see
+        @ref value_from, @ref value_to, @ref value_to_tag,
+        [tag_invoke: A general pattern for supporting customisable functions](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1895r0.pdf).
 */
 struct value_from_tag { };
 
 /** Customization point tag type.
 
-    This tag type is used by the function
-    @ref value_to to select overloads
-    of `tag_invoke`.
+    This tag type is used by the function @ref value_to to select overloads of
+    `tag_invoke`.
 
     @note This type is empty; it has no members.
 
-    @see @ref value_from, @ref value_from_tag, @ref value_to,
-    <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1895r0.pdf">
-        tag_invoke: A general pattern for supporting customisable functions</a>
+    @see
+        @ref value_from, @ref value_from_tag, @ref value_to,
+        [tag_invoke: A general pattern for supporting customisable functions](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1895r0.pdf).
 */
 template<class T>
 struct value_to_tag { };
 
 /** Customization point tag type.
 
-    This tag type is used by the function
-    @ref try_value_to to select overloads
+    This tag type is used by the function @ref try_value_to to select overloads
     of `tag_invoke`.
 
     @note This type is empty; it has no members.
 
-    @see @ref value_to, @ref value_to_tag
-    <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1895r0.pdf">
-        tag_invoke: A general pattern for supporting customisable functions</a>
+    @see
+        @ref value_to, @ref value_to_tag,
+        [tag_invoke: A general pattern for supporting customisable functions](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1895r0.pdf).
 */
 template<class T>
 struct try_value_to_tag { };
@@ -73,7 +70,6 @@ struct try_value_to_tag { };
 
     Provides the member constant `value` that is equal to `true`, if `T` is
     convertible to @ref string_view. Otherwise, `value` is equal to `false`.
-    <br>
 
     Users can specialize the trait for their own types if they don't want them
     to be treated like strings. For example:
@@ -91,13 +87,9 @@ struct try_value_to_tag { };
     @endcode
 
     @par Types satisfying the trait
+    @ref string, @ref string_view, @ref std::string, @ref std::string_view.
 
-    @ref string,
-    @ref string_view,
-    <a href="https://en.cppreference.com/w/cpp/string/basic_string"><tt>std::string</tt></a>,
-    <a href="https://en.cppreference.com/w/cpp/string/basic_string_view"><tt>std::string_view</tt></a>.
-
-    @see @ref value_from, @ref value_to
+    @see @ref value_from, @ref value_to.
 */
 template<class T>
 struct is_string_like;
@@ -106,19 +98,19 @@ struct is_string_like;
 
     Given `t`, a glvalue of type `T`, if
 
-    @li given `It`, the type denoted by `decltype(std::begin(t))`,
-        <tt>std::iterator_traits<It>::iterator_category</tt> is well-formed and
-        denotes a type; and
+    - given `It`, the type denoted by `decltype(std::begin(t))`,
+      `std::iterator_traits<It>::iterator_category` is well-formed and denotes
+      a type; and
 
-    @li <tt>std::iterator_traits<It>::value_type</tt> is `T`; and
+    - `std::iterator_traits<It>::value_type` is `T`; and
 
-    @li `T::value_type` is well-formed and denotes a type; and
+    - `T::value_type` is well-formed and denotes a type; and
 
-    @li `T::string_type` is well-formed, denotes a type, and is an alias for
+    - `T::string_type` is well-formed, denotes a type, and is an alias for
     `std::basic_string< T::value_type >`;
 
     then the trait provides the member constant `value` that is equal to
-    `true`. Otherwise, `value` is equal to `false`.<br>
+    `true`. Otherwise, `value` is equal to `false`.
 
     Users can specialize the trait for their own types if they don't want them
     to be treated like filesystem paths. For example:
@@ -135,12 +127,10 @@ struct is_string_like;
     } // namespace json
     @endcode
 
+    @par Types Satisfying the Trait
+    @ref std::filesystem::path, @ref boost::filesystem::path.
 
-    @par Types satisfying the trait
-
-    `std::filesystem::path`, `boost::filesystem::path`.
-
-    @see @ref value_from, @ref value_to
+    @see @ref value_from, @ref value_to.
 */
 template<class T>
 struct is_path_like;
@@ -149,16 +139,16 @@ struct is_path_like;
 
     Given `t`, a glvalue of type `T`, if
 
-    @li given `It`, the type denoted by `decltype(std::begin(t))`,
-        <tt>std::iterator_traits<It>::iterator_category</tt> is well-formed and
-        denotes a type; and
+    - given `It`, the type denoted by `decltype(std::begin(t))`,
+      `std::iterator_traits<It>::iterator_category` is well-formed and denotes
+      a type; and
 
-    @li `decltype(std::end(t))` also denotes the type `It`; and
+    - `decltype(std::end(t))` also denotes the type `It`; and
 
-    @li <tt>std::iterator_traits<It>::value_type</tt> is not `T`; and
+    - `std::iterator_traits<It>::value_type` is not `T`; and
 
     then the trait provides the member constant `value` that is equal to
-    `true`. Otherwise, `value` is equal to `false`.<br>
+    `true`. Otherwise, `value` is equal to `false`.
 
     Users can specialize the trait for their own types if they don't want them
     to be treated like sequences. For example:
@@ -177,9 +167,7 @@ struct is_path_like;
 
 
     @par Types satisfying the trait
-
-    Any <a href="https://en.cppreference.com/w/cpp/named_req/SequenceContainer"><em>SequenceContainer</em></a>,
-    array types.
+    Any {req_SequenceContainer}, array types.
 
     @see @ref value_from, @ref value_to
 */
@@ -191,20 +179,19 @@ struct is_sequence_like;
 
     Given `t`, a glvalue of type `T`, if
 
-    @li <tt>is_sequence_like<T>::value</tt> is `true`; and
+    - `is_sequence_like<T>::value` is `true`; and
 
-    @li given type `It` denoting `decltype(std::begin(t))`, and types `K`
-        and `M`,  <tt>std::iterator_traits<It>::value_type</tt> denotes
-        `std::pair<K, M>`; and
+    - given type `It` denoting `decltype(std::begin(t))`, and types `K` and
+      `M`,  `std::iterator_traits<It>::value_type` denotes `std::pair<K, M>`;
+      and
 
-    @li <tt>std::is_string_like<K>::value</tt> is `true`; and
+    - `std::is_string_like<K>::value` is `true`; and
 
-    @li given `v`, a glvalue of type `V`, and `E`, the type denoted by
-        `decltype(t.emplace(v))`,
-        <tt>std::is_tuple_like<E>::value</tt> is `true`;
+    - given `v`, a glvalue of type `V`, and `E`, the type denoted by
+      `decltype(t.emplace(v))`, `std::is_tuple_like<E>::value` is `true`;
 
-    then the trait provides the member constant `value`
-    that is equal to `true`. Otherwise, `value` is equal to `false`.<br>
+    then the trait provides the member constant `value` that is equal to
+    `true`. Otherwise, `value` is equal to `false`.
 
     Users can specialize the trait for their own types if they don't want them
     to be treated like mappings. For example:
@@ -221,18 +208,13 @@ struct is_sequence_like;
     } // namespace json
     @endcode
 
+    @note The restriction for `t.emplace()` return type ensures that the
+    container does not accept duplicate keys.
 
-    @note
+    @par Types Satisfying The Trait
+    @ref std::map, @ref std::unordered_map.
 
-    The restriction for `t.emplace()` return type ensures that the container
-    does not accept duplicate keys.
-
-    @par Types satisfying the trait
-
-    <a href="https://en.cppreference.com/w/cpp/container/map"><tt>std::map</tt></a>,
-    <a href="https://en.cppreference.com/w/cpp/container/unordered_map"><tt>std::unordered_map</tt></a>.
-
-    @see @ref value_from, @ref value_to
+    @see @ref value_from, @ref value_to.
 */
 template<class T>
 struct is_map_like;
@@ -240,8 +222,8 @@ struct is_map_like;
 /** Determine if `T` can be treated like a tuple during conversions.
 
     Provides the member constant `value` that is equal to `true`, if
-    <tt>std::tuple_size<T>::value</tt> is a positive number. Otherwise, `value`
-    is equal to `false`.<br>
+    `std::tuple_size<T>::value` is a positive number. Otherwise, `value`
+    is equal to `false`.
 
     Users can specialize the trait for their own types if they don't want them
     to be treated like tuples. For example:
@@ -260,11 +242,9 @@ struct is_map_like;
 
 
     @par Types satisfying the trait
+    @ref std::tuple, @ref std::pair.
 
-    <a href="https://en.cppreference.com/w/cpp/utility/tuple"><tt>std::tuple</tt></a>,
-    <a href="https://en.cppreference.com/w/cpp/utility/pair"><tt>std::pair</tt></a>.
-
-    @see @ref value_from, @ref value_to
+    @see @ref value_from, @ref value_to.
 */
 template<class T>
 struct is_tuple_like;
@@ -287,10 +267,8 @@ struct is_tuple_like;
     } // namespace json
     @endcode
 
-
-    @par Types satisfying the trait
-
-    <a href="https://en.cppreference.com/w/cpp/types/nullptr_t"><tt>std::nullptr_t</tt></a>.
+    @par Types Satisfying the Trait
+    @ref std::nullptr_t.
 
     @see @ref value_from, @ref value_to
 */
@@ -299,25 +277,31 @@ struct is_null_like
     : std::false_type
 { };
 
-/** Determine if `T` should be treated as a described class
+/** Determine if `T` should be treated as a described class.
 
     Described classes are serialised as objects with an element for each
-    described data member. A described class should not have described
-    bases or non-public members.<br>
+    described data member. Described bases are serialized in a flattened way,
+    that is members of bases are serialized as direct elements of the object,
+    and no nested objects are created for bases.
 
-    Or more formally, given `L`, a class template
-    of the form `template<class...> struct L {};`, if
+    A described class should not have non-public described members (including
+    inherited members) or non-public non-empty described bases. Or more
+    formally, given `L`, a class template of the form
+    `template<class...> struct L {}`, if
 
-    @li <tt>boost::describe::has_members<T, boost::describe::mod_public>::value</tt> is `true`; and
+    - `boost::describe::has_describe_members<T>::value` is `true`; and
 
-    @li `boost::describe::describe_members<T, boost::describe::mod_private | boost::describe::mod_protected>` denotes `L<>`; and
+    - `boost::describe::describe_members<T, boost::describe::mod_private |
+      boost::describe::mod_protected | boost::describe::mod_inherited>` denotes
+      `L<>`; and
 
-    @li `boost::describe::describe_bases<T, boost::describe::mod_any_access>` denotes `L<>`; and
+    - `std::is_union<T>::value` is `false`;
 
-    @li <tt>std::is_union<T>::value</tt> is `false`;
+    then the trait provides the member constant `value` that is equal to
+    `true`. Otherwise, `value` is equal to `false`.
 
-    then the trait provides the member constant `value`
-    that is equal to `true`. Otherwise, `value` is equal to `false`.<br>
+    @note Shadowed members are ignored both for requirements checking and for
+    performing conversions.
 
     Users can specialize the trait for their own types if they don't want them
     to be treated as described classes. For example:
@@ -335,26 +319,24 @@ struct is_null_like
     @endcode
 
     Users can also specialize the trait for their own types _with_ described
-    bases or described non-public data members to enable this conversion
-    implementation. In this case the class will be serialized in a flattened
-    way, that is members of bases will be serialized as direct elements of the
-    object, and no nested objects will be created for bases.
+    non-public data members to enable this conversion implementation. Note that
+    non-public bases are not supported regardless.
 
-    @see <a href="https://www.boost.org/doc/libs/develop/libs/describe/doc/html/describe.html">Boost.Describe</a>.
+    @see [Boost.Describe](https://www.boost.org/doc/libs/latest/libs/describe/doc/html/describe.html).
 */
 template<class T>
 struct is_described_class;
 
-/** Determine if `T` should be treated as a described enum
+/** Determine if `T` should be treated as a described enum.
 
     Described enums are serialised as strings when their value equals to a
     described enumerator, and as integers otherwise. The reverse operation
     does not convert numbers to enums values, though, and instead produces
-    an error.<br>
+    an error.
 
-    If <tt>boost::describe::has_describe_enumerators<T>::value</tt> is `true`,
-    then the trait provides the member constant `value`
-    that is equal to `true`. Otherwise, `value` is equal to `false`.<br>
+    If `boost::describe::has_describe_enumerators<T>::value` is `true`, then
+    the trait provides the member constant `value` that is equal to `true`.
+    Otherwise, `value` is equal to `false`.
 
     Users can specialize the trait for their own enums if they don't want them
     to be treated as described enums. For example:
@@ -371,21 +353,20 @@ struct is_described_class;
     } // namespace json
     @endcode
 
-    @see <a href="https://www.boost.org/doc/libs/develop/libs/describe/doc/html/describe.html">Boost.Describe</a>.
+    @see [Boost.Describe](https://www.boost.org/doc/libs/latest/libs/describe/doc/html/describe.html).
 */
 template<class T>
 struct is_described_enum;
 
-/** Determine if `T` should be treated as a variant
+/** Determine if `T` should be treated as a variant.
 
     Variants are serialised the same way their active alternative is
     serialised. The opposite conversion selects the first alternative for which
-    conversion succeeds.<br>
+    conversion succeeds.
 
-    Given `t`, a glvalue of type ` const T`, if
-    <tt>t.valueless_by_exception()</tt> is well-formed, then the trait provides
-    the member constant `value` that is equal to `true`. Otherwise, `value` is
-    equal to `false`.<br>
+    Given `t`, a glvalue of type ` const T`, if `t.valueless_by_exception()` is
+    well-formed, then the trait provides the member constant `value` that is
+    equal to `true`. Otherwise, `value` is equal to `false`.
 
     Users can specialize the trait for their own types if they don't want them
     to be treated as variants. For example:
@@ -401,6 +382,9 @@ struct is_described_enum;
     } // namespace boost
     } // namespace json
     @endcode
+
+    @par Types Satisfying the Trait
+    @ref std::variant, @ref boost::variant2::variant.
 */
 template<class T>
 struct is_variant_like;
@@ -408,16 +392,15 @@ struct is_variant_like;
 /** Determine if `T` should be treated as an optional
 
     Optionals are serialised as `null` if empty, or as the stored type
-    otherwise.<br>
+    otherwise.
 
     Given `t`, a glvalue of type `T`, if
 
-    @li <tt>decltype( t.value() )</tt> is well-formed and isn't a void type; and
+    - `decltype( t.value() )` is well-formed and isn't a void type; and
+    - `t.reset()` is well-formed;
 
-    @li <tt>t.reset()</tt> is well-formed;
-
-    then the trait provides the member constant `value`
-    that is equal to `true`. Otherwise, `value` is equal to `false`.<br>
+    then the trait provides the member constant `value` that is equal to
+    `true`. Otherwise, `value` is equal to `false`.
 
     Users can specialize the trait for their own types if they don't want them
     to be treated as optionals. For example:
@@ -433,6 +416,9 @@ struct is_variant_like;
     } // namespace boost
     } // namespace json
     @endcode
+
+    @par Types Satisfying the Trait
+    @ref std::optional, @ref boost::optional.
 */
 template<class T>
 struct is_optional_like;

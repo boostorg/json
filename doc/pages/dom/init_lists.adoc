@@ -1,0 +1,102 @@
+////
+Copyright (c) 2020 Krystian Stasiowski (sdkrystian@gmail.com)
+Copyright (c) 2025 Dmitry Arkhipov (grisumbras@yandex.ru)
+
+Distributed under the Boost Software License, Version 1.0. (See accompanying
+file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+Official repository: https://github.com/boostorg/json
+////
+
+= Initializer Lists
+Initializer lists can be used to construct or assign a <<ref_value>>:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_init_list_1,indent=0]
+----
+
+Simple initializer lists produce an <<ref_array>>:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_init_list_2,indent=0]
+----
+
+Initializer lists can be nested. Here we construct an array as an element of an
+array:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_init_list_3,indent=0]
+----
+
+When a two element initializer list is nested within an enclosing initializer
+list, it is unclear whether it represents an <<ref_array>> or an
+<<ref_object>>:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_init_list_4,indent=0]
+----
+
+In such cases, if every element consists of a string followed by a single
+value, then the enclosing initializer list is interpreted as an <<ref_object>>.
+Otherwise, it is interpreted as an <<ref_array>>.
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_init_list_5,indent=0]
+----
+
+To resolve the ambiguity manually, use an explicit constructor:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_init_list_6,indent=0]
+----
+
+Initializer lists can be used to unambiguously construct or assign an
+<<ref_object>> or <<ref_array>>:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_init_list_7,indent=0]
+----
+
+Similarly, an initializer list for an <<ref_object>> is always interpreted as an
+<<ref_object>>. In such cases, the initializer list must be a list of key-value
+pairs. For example, the following code will not compile because `1` is not
+convertible to a string:
+
+[source]
+----
+object jo = { { 1, 0.39 }, { "venus", 0.72 }, { "earth", 1 } };
+----
+
+The requirement for an initializer list to be interpreted as an <<ref_object>>
+or <<ref_array>> when initializing such an entity only applies to the outermost
+initializer list; subsequent nested elements will follow the usual ambiguity
+resolution rules.
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_init_list_8,indent=0]
+----
+
+Elements that are rvalues will be moved upon initialization:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_init_list_9,indent=0]
+----
+
+[WARNING]
+====
+Do not create variables of type {std_initializer_list}. This may result in
+temporaries being destroyed before the initializer list is used.
+====
+
+In all cases, the <<ref_storage_ptr>> owned by an <<ref_object>>,
+<<ref_array>>, or <<ref_value>> constructed from an initializer list will be
+propagated to each element, recursively.

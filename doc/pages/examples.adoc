@@ -1,0 +1,41 @@
+////
+Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+Copyright (c) 2025 Dmitry Arkhipov (grisumbras@yandex.ru)
+
+Distributed under the Boost Software License, Version 1.0. (See accompanying
+file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+Official repository: https://github.com/boostorg/json
+////
+
+[pagelevels=1]
+= Examples
+
+== Pretty
+
+[source]
+----
+include::../../example/pretty.cpp[tag=example_pretty,indent=0]
+----
+
+[#examples_validate]
+== Validate
+
+[source]
+----
+include::../../example/validate.cpp[tag=example_validate,indent=0]
+----
+
+== Allocator-Aware Conversion
+
+[source]
+----
+include::../../example/use_allocator.cpp[tag=example_use_allocator,indent=0]
+----
+
+== CBOR
+
+[source]
+----
+include::../../example/cbor.cpp[tag=example_cbor,indent=0]
+----

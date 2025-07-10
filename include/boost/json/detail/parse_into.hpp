@@ -1130,6 +1130,10 @@ class converting_handler<described_class_conversion_tag, V, P>
 #else
 
 private:
+    static_assert(
+        uniquely_named_members<V>::value,
+        "The type has several described members with the same name.");
+
     using Dm = described_members<V>;
     using Dt = struct_element_list<V>;
 

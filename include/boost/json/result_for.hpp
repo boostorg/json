@@ -20,7 +20,7 @@ namespace boost {
 namespace json {
 
 /**
-   Helper trait that returns `boost::system::result`
+   Helper trait that returns @ref boost::system::result.
 
    The primary template is an incomplete type. The library provides a partial
    specialisation `result_for<T1, value>`, that has nested type alias `type`
@@ -31,10 +31,8 @@ namespace json {
    example:
 
    @code
-   namespace boost
-   {
-   namespace json
-   {
+   namespace boost {
+   namespace json {
 
    template<class T>
    struct value_to_tag;
@@ -55,16 +53,16 @@ namespace json {
    }
    @endcode
 
-    @see @ref try_value_to, @ref try_value_to_tag
+   @see @ref try_value_to, @ref try_value_to_tag
 */
 template <class T1, class T2>
 struct result_for;
 
-/** Create `boost::system::result` storing a portable error code
+/** Create @ref boost::system::result containing a portable error code.
 
     This function constructs a `boost::system::result<T>` that stores
-    `boost::system::error_code` with `value()` equal to `e` and `category()`
-    equal to `boost::system::generic_category()`. <br>
+    `error_code` with `value()` equal to `e` and `category()` equal to
+    @ref boost::system::generic_category().
 
     The main use for this function is in implementation of functions returning
     `boost::system::result`, without including `boost/json/system_error.hpp` or
@@ -76,10 +74,8 @@ struct result_for;
     #include <cerrno>
     #include <boost/assert/source_location.hpp>
 
-    namespace boost
-    {
-    namespace json
-    {
+    namespace boost {
+    namespace json {
 
     class value;
 
@@ -96,8 +92,7 @@ struct result_for;
     }
     }
 
-    namespace mine
-    {
+    namespace mine {
 
     class my_class;
     ...
@@ -118,19 +113,12 @@ struct result_for;
     Does not throw exceptions.
 
     @tparam T The value type of returned `result`.
-
     @param e The error value.
-
     @param loc The error location.
 
-    @returns `boost::system::error_code` with `value()` equal to `e` and
-    `category()` equal to `boost::system::generic_category()`.
+    @returns A @ref boost::system::result containing an error.
 
-    @see @ref try_value_to_tag, @ref try_value_to, @ref result_for,
-    <a href="https://www.boost.org/doc/libs/develop/libs/system/doc/html/system.html#ref_generic_category">
-        `boost::system::generic_category`</a>,
-    <a href="https://www.boost.org/doc/libs/master/libs/assert/doc/html/assert.html#source_location_support">
-        `boost::source_location`</a>.
+    @see @ref try_value_to_tag, @ref try_value_to, @ref result_for.
 */
 template <class T>
 typename result_for<T, value>::type

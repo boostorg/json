@@ -1,0 +1,38 @@
+////
+Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+Copyright (c) 2025 Dmitry Arkhipov (grisumbras@yandex.ru)
+
+Distributed under the Boost Software License, Version 1.0. (See accompanying
+file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+Official repository: https://github.com/boostorg/json
+////
+
+= Frequently Asked Questions
+
+"Isn't simdjson faster?":: These libraries are not comparable. The output of
+the simdjson parser is a read-only structure. In other words, it can't be
+changed, and the only way to create one is by parsing a JSON string. On the
+other hand, Boost.JSON allows you to modify the container holding the parsed
+JSON, or even build a JSON document from scratch through the container
+interface.
+
+"Why not use a standard {req_Allocator}?:: Using standard allocators would
+require that <<ref_value>> be declared as a class template, which would impose
+an additional compilation burden. By avoiding the template, most of the
+function definitions in the library can be excluded from the headers and
+emitted in a separate static or dynamic library.
+
+"Why use <<ref_storage_ptr>> over {ref_polymorphic_allocator}?::
+{ref_polymorphic_allocator} treats the memory resource as a reference with
+respect to ownership. Boost.JSON uses a reference counted smart pointer
+container to simplify the lifetime management of memory resources. In addition
+to being reference counted, <<ref_storage_ptr>> can function as an uncounted
+reference wrapper around a {ref_memory_resource}.
+
+
+"Why <<ref_string>> instead of {std_string}?":: The string provided by the
+library uses the <<ref_storage_ptr>> allocator model, has the same interface on
+all C++ versions, and has an optimized class layout to keep the size of JSON
+values small. <<ref_string>> also implements an improved interface that
+replaces extraneous overloads with ones that use <<ref_string_view>>.

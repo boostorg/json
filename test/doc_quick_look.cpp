@@ -20,7 +20,7 @@ static void set1() {
 
 //----------------------------------------------------------
 {
-//[doc_quick_look_1
+// tag::doc_quick_look_1[]
 object obj;                                                     // construct an empty object
 obj[ "pi" ] = 3.141;                                            // insert a double
 obj[ "happy" ] = true;                                          // insert a bool
@@ -29,11 +29,11 @@ obj[ "nothing" ] = nullptr;                                     // insert a null
 obj[ "answer" ].emplace_object()["everything"] = 42;            // insert an object with 1 element
 obj[ "list" ] = { 1, 0, 2 };                                    // insert an array with 3 elements
 obj[ "object" ] = { {"currency", "USD"}, {"value", 42.99} };    // insert an object with 2 elements
-//]
+// end::doc_quick_look_1[]
 }
 //----------------------------------------------------------
 {
-//[doc_quick_look_2
+// tag::doc_quick_look_2[]
 value jv = {
     { "pi", 3.141 },
     { "happy", true },
@@ -47,11 +47,11 @@ value jv = {
         { "value", 42.99 }
             } }
     };
-//]
+// end::doc_quick_look_2[]
 }
 //----------------------------------------------------------
 {
-//[doc_quick_look_3
+// tag::doc_quick_look_3[]
 array arr;                                          // construct an empty array
 arr = { 1, 2, 3 };                                  // replace the contents with 3 elements
 value jv1( arr );                                   // this makes a copy of the array
@@ -59,22 +59,22 @@ value jv2( std::move(arr) );                        // this performs a move-cons
 
 assert( arr.empty() );                              // moved-from arrays become empty
 arr = { nullptr, true, "boost" };                   // fill in the array again
-//]
+// end::doc_quick_look_3[]
 }
 //----------------------------------------------------------
 {
-//[doc_quick_look_4
+// tag::doc_quick_look_4[]
 {
     unsigned char buf[ 4096 ];                      // storage for our array
     static_resource mr( buf );                      // memory resource which uses buf
     array arr( &mr );                               // construct using the memory resource
     arr = { 1, 2, 3 };                              // all allocated memory comes from `buf`
 }
-//]
+// end::doc_quick_look_4[]
 }
 //----------------------------------------------------------
 {
-//[doc_quick_look_5
+// tag::doc_quick_look_5[]
 {
     monotonic_resource mr;                          // memory resource optimized for insertion
     array arr( &mr );                               // construct using the memory resource
@@ -82,11 +82,11 @@ arr = { nullptr, true, "boost" };                   // fill in the array again
     arr[ 0 ] = { 1, 2, 3 };                         // assign an array to element 0
     assert( *arr[0].storage() == *arr.storage() );  // same memory resource
 }
-//]
+// end::doc_quick_look_5[]
 }
 //----------------------------------------------------------
 {
-//[doc_quick_look_6
+// tag::doc_quick_look_6[]
 {
     monotonic_resource mr;
     boost::container::pmr::vector< value > vv( &mr );
@@ -97,7 +97,7 @@ arr = { nullptr, true, "boost" };                   // fill in the array again
     assert( *vv.get_allocator().resource() == *vv[1].storage() );
     assert( *vv.get_allocator().resource() == *vv[2].storage() );
 }
-//]
+// end::doc_quick_look_6[]
 }
 //----------------------------------------------------------
 
@@ -105,7 +105,7 @@ arr = { nullptr, true, "boost" };                   // fill in the array again
 
 //----------------------------------------------------------
 
-//[doc_quick_look_7
+// tag::doc_quick_look_7[]
 value f()
 {
     // create a reference-counted memory resource
@@ -120,38 +120,38 @@ value f()
     // The caller receives the value, which still owns the resource
     return jv;
 }
-//]
+// end::doc_quick_look_7[]
 //----------------------------------------------------------
 
 static void set2() {
 
 //----------------------------------------------------------
 {
-//[doc_quick_look_8
+// tag::doc_quick_look_8[]
 value jv = parse( "[1, 2, 3]" );
-//]
+// end::doc_quick_look_8[]
 }
 //----------------------------------------------------------
 {
-//[doc_quick_look_9
+// tag::doc_quick_look_9[]
 boost::system::error_code ec;
 value jv = parse( R"( "Hello, world!" )", ec );
-//]
+// end::doc_quick_look_9[]
 }
 //----------------------------------------------------------
 {
-//[doc_quick_look_10
+// tag::doc_quick_look_10[]
 unsigned char buf[ 4096 ];
 static_resource mr( buf );
 parse_options opt;
 opt.allow_comments = true;
 opt.allow_trailing_commas = true;
 value jv = parse( "[1, 2, 3, ] // array ", &mr, opt );
-//]
+// end::doc_quick_look_10[]
 }
 //----------------------------------------------------------
 {
-//[doc_quick_look_11
+// tag::doc_quick_look_11[]
 stream_parser p;
 boost::system::error_code ec;
 p.reset();
@@ -163,19 +163,19 @@ if( ! ec )
 if( ec )
     return;
 value jv = p.release();
-//]
+// end::doc_quick_look_11[]
 }
 //----------------------------------------------------------
 {
-//[doc_quick_look_12
+// tag::doc_quick_look_12[]
 value jv = { 1, 2, 3 };
 std::string s = serialize( jv );                // produces "[1,2,3]"
-//]
+// end::doc_quick_look_12[]
 }
 //----------------------------------------------------------
 {
 value jv;
-//[doc_quick_look_13
+// tag::doc_quick_look_13[]
 serializer sr;
 sr.reset( &jv );                                // prepare to output `jv`
 do
@@ -184,7 +184,7 @@ do
     std::cout << sr.read( buf );
 }
 while( ! sr.done() );
-//]
+// end::doc_quick_look_13[]
 }
 //----------------------------------------------------------
 
@@ -192,7 +192,7 @@ while( ! sr.done() );
 
 //----------------------------------------------------------
 
-//[doc_quick_look_14
+// tag::doc_quick_look_14[]
 namespace my_app {
 
 struct customer
@@ -203,11 +203,11 @@ struct customer
 };
 
 } // namespace my_app
-//]
+// end::doc_quick_look_14[]
 
 //----------------------------------------------------------
 
-//[doc_quick_look_15
+// tag::doc_quick_look_15[]
 namespace my_app {
 
 void tag_invoke( value_from_tag, value& jv, customer const& c )
@@ -220,24 +220,24 @@ void tag_invoke( value_from_tag, value& jv, customer const& c )
 }
 
 } // namespace my_app
-//]
+// end::doc_quick_look_15[]
 
 static void set3() {
 
 //----------------------------------------------------------
 {
-//[doc_quick_look_16
+// tag::doc_quick_look_16[]
 my_app::customer c{ 1001, "Boost", true };
 std::cout << serialize( value_from( c ) );
-//]
+// end::doc_quick_look_16[]
 }
 //----------------------------------------------------------
 {
-//[doc_quick_look_17
+// tag::doc_quick_look_17[]
 std::vector< my_app::customer > vc;
 //...
 value jv = value_from( vc );
-//]
+// end::doc_quick_look_17[]
 }
 //----------------------------------------------------------
 
@@ -245,7 +245,7 @@ value jv = value_from( vc );
 
 //----------------------------------------------------------
 
-//[doc_quick_look_18
+// tag::doc_quick_look_18[]
 namespace my_app {
 
 // This helper function deduces the type and assigns the value with the matching key
@@ -266,13 +266,13 @@ customer tag_invoke( value_to_tag< customer >, value const& jv )
 }
 
 } // namespace my_app
-//]
+// end::doc_quick_look_18[]
 
 //----------------------------------------------------------
 
 namespace my_app_2 {
 namespace my_app { using boost::json::my_app::customer; }
-//[doc_quick_look_19
+// tag::doc_quick_look_19[]
 namespace my_app {
 
 customer tag_invoke( value_to_tag< customer >, value const& jv )
@@ -286,7 +286,7 @@ customer tag_invoke( value_to_tag< customer >, value const& jv )
 }
 
 } // namespace my_app
-//]
+// end::doc_quick_look_19[]
 } // my_app_2
 
 //----------------------------------------------------------
@@ -296,18 +296,18 @@ using namespace my_app;
 
 //----------------------------------------------------------
 {
-//[doc_quick_look_20
+// tag::doc_quick_look_20[]
 json::value jv;
 //...
 customer c( value_to<customer>(jv) );
-//]
+// end::doc_quick_look_20[]
 }
 //----------------------------------------------------------
 {
 json::value jv;
-//[doc_quick_look_21
+// tag::doc_quick_look_21[]
 std::vector< customer > vc = value_to< std::vector< customer > >( jv );
-//]
+// end::doc_quick_look_21[]
 }
 //----------------------------------------------------------
 

@@ -23,7 +23,7 @@ static void set1() {
 
 //----------------------------------------------------------
 {
-//[doc_uses_allocator_1
+// tag::doc_uses_allocator_1[]
 // We want to use this resource for all the containers
 monotonic_resource mr;
 
@@ -38,11 +38,11 @@ v.emplace_back( "boost" );
 
 // The vector propagates the memory resource to the string
 assert( v[0].storage().get() == &mr );
-//]
+// end::doc_uses_allocator_1[]
 }
 //----------------------------------------------------------
 {
-//[doc_uses_allocator_2
+// tag::doc_uses_allocator_2[]
 // This vector will use the default memory resource
 std::vector< value, boost::container::pmr::polymorphic_allocator < value > > v;
 
@@ -54,7 +54,7 @@ assert( ! jv.storage().is_shared() );
 
 // and deallocate is never null
 assert( ! jv.storage().is_deallocate_trivial() );
-//]
+// end::doc_uses_allocator_2[]
 }
 //----------------------------------------------------------
 

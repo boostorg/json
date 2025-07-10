@@ -89,43 +89,34 @@ echo '==================================> SCRIPT'
 
 printf "add-auto-load-safe-path $PWD/bin.v2\n" > ~/.gdbinit
 
-export B2_TARGETS=${B2_TARGETS:-"libs/$SELF/test libs/$SELF/example"}
+export special_targets=$B2_TARGETS
+export B2_TARGETS=${B2_TARGETS:-"libs/$SELF/test//common libs/$SELF/example libs/$SELF/bench"}
 $BOOST_ROOT/libs/$SELF/ci/travis/build.sh
+
+if [ -z "$special_targets" ]; then
+    export B2_JOBS=1
+    export B2_TARGETS="libs/$SELF/test//heavy"
+    $BOOST_ROOT/libs/$SELF/ci/travis/build.sh
+fi
 
 elif [ "$DRONE_JOB_BUILDTYPE" == "docs" ]; then
 
 echo '==================================> INSTALL'
 
-export SELF=`basename $REPO_NAME`
-
-pwd
-cd ..
-mkdir -p $HOME/cache && cd $HOME/cache
-if [ ! -d doxygen ]; then git clone -b 'Release_1_8_15' --depth 1 https://github.com/doxygen/doxygen.git && echo "not-cached" ; else echo "cached" ; fi
-cd doxygen
-cmake -H. -Bbuild -DCMAKE_BUILD_TYPE=Release
-cd build
-sudo make install
-cd ../..
-cd ..
-BOOST_BRANCH=develop && [ "$TRAVIS_BRANCH" == "master" ] && BOOST_BRANCH=master || true
-git clone -b $BOOST_BRANCH https://github.com/boostorg/boost.git boost-root --depth 1
-cd boost-root
-export BOOST_ROOT=$(pwd)
-git submodule update --init libs/context
-git submodule update --init tools/boostbook
-git submodule update --init tools/boostdep
+common_install
 git submodule update --init tools/docca
-git submodule update --init tools/quickbook
-rsync -av $TRAVIS_BUILD_DIR/ libs/$SELF
-python tools/boostdep/depinst/depinst.py ../tools/quickbook
-./bootstrap.sh
-./b2 headers
+git submodule update --init tools/boostlook
 
 echo '==================================> SCRIPT'
 
-echo "using doxygen ; using boostbook ; using python : : python3 ;" > tools/build/src/user-config.jam
-./b2 -j3 libs/$SELF/doc//boostrelease
+cat >$BOOST_ROOT/tools/build/src/user-config.jam <<EOF
+using doxygen ;
+using asciidoctor ;
+using python : : python3 ;
+EOF
+
+export B2_TARGETS=libs/$SELF/doc//boostrelease
+$BOOST_ROOT/libs/$SELF/ci/travis/build.sh
 
 elif [ "$DRONE_JOB_BUILDTYPE" == "codecov" ]; then
 

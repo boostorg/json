@@ -1,0 +1,53 @@
+////
+Copyright (c) 2022 Dmitry Arkhipov (grisumbras@yandex.ru)
+
+Distributed under the Boost Software License, Version 1.0. (See accompanying
+file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+Official repository: https://github.com/boostorg/json
+////
+
+[#nested_access]
+= Accessing Deeply Nested Elements
+In order to allow conveniently retrieving and changing deeply nested elements
+of <<ref_value>> objects the library implements
+https://datatracker.ietf.org/doc/html/rfc6901[RFC 6901 (JSON Pointer)]:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_pointer_1,indent=0]
+----
+
+This is particularly useful when throwing exceptions is undesirable. For
+example, compare
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_pointer_2,indent=0]
+----
+
+with
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_pointer_3,indent=0]
+----
+
+The library also allows changing and adding deeply nested elements. The
+function <<ref_value_set_at_pointer>> traverses the value similarly to
+<<ref_value_at_pointer>>, but additionally, it can create missing elements in
+certain cases:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_pointer_4,indent=0]
+----
+
+The specific behavior is controlled by an optional parameter of type
+<<ref_set_pointer_options>>. For example, here's the same example with
+a different option:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_pointer_5,indent=0]
+----

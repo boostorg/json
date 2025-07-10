@@ -1,0 +1,44 @@
+////
+Copyright (c) 2025 Dmitry Arkhipov (grisumbras@yandex.ru)
+
+Distributed under the Boost Software License, Version 1.0. (See accompanying
+file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+Official repository: https://github.com/boostorg/json
+////
+
+:ref_memory_resource:       pass:q[https://boost.org/doc/libs/latest/doc/html/doxygen/boost_container_header_reference/classboost_1_1container_1_1pmr_1_1memory__resource.html[`memory_resource`]]
+:ref_polymorphic_allocator: pass:q[https://boost.org/doc/libs/latest/doc/html/doxygen/boost_container_header_reference/classboost_1_1container_1_1pmr_1_1polymorphic__allocator.html[`polymorphic_allocator`]]
+:ref_error_category:        pass:q[https://boost.org/doc/libs/latest/libs/system/doc/html/system.html#ref_error_category[`error_category`]]
+:ref_error_code:            pass:q[https://boost.org/doc/libs/latest/libs/system/doc/html/system.html#ref_error_code[`error_code`]]
+:ref_error_condition:       pass:q[https://boost.org/doc/libs/latest/libs/system/doc/html/system.html#ref_error_condition[`error_condition`]]
+:ref_result:                pass:q[https://boost.org/doc/libs/latest/libs/system/doc/html/system.html#ref_resultt_e[`result`]]
+:ref_system_error:          pass:q[https://boost.org/doc/libs/latest/libs/system/doc/html/system.html#ref_system_error[`system_error`]]
+
+:req_Allocator:            pass:q[https://en.cppreference.com/w/cpp/named_req/Allocator[__Allocator__]]
+:req_CopyAssignable:       pass:q[https://en.cppreference.com/w/cpp/named_req/CopyAssignable[__CopyAssignable__]]
+:req_CopyConstructible:    pass:q[https://en.cppreference.com/w/cpp/named_req/CopyConstructible[__CopyConstructible__]]
+:req_Copyable:             pass:q[https://en.cppreference.com/w/cpp/concepts/copyable[__Copyable__]]
+:req_DefaultConstructible: pass:q[https://en.cppreference.com/w/cpp/named_req/DefaultConstructible[__DefaultConstructible__]]
+:req_Hash:                 pass:q[https://en.cppreference.com/w/cpp/named_req/Hash[__Hash__]]
+:req_InputIterator:        pass:q[https://en.cppreference.com/w/cpp/named_req/InputIterator[__LegacyInputIterator__]]
+:req_ForwardIterator:      pass:q[https://en.cppreference.com/w/cpp/named_req/ForwardIterator[__LegacyForwardIterator__]]
+:req_MoveAssignable:       pass:q[https://en.cppreference.com/w/cpp/named_req/MoveAssignable[__MoveAssignable__]]
+:req_MoveConstructible:    pass:q[https://en.cppreference.com/w/cpp/named_req/MoveConstructible[__MoveConstructible__]]
+:req_Regular:              pass:q[https://en.cppreference.com/w/cpp/concepts/regular[__Regular__]]
+:req_Swappable:            pass:q[https://en.cppreference.com/w/cpp/named_req/Swappable[__Swappable__]]
+:req_SequenceContainer:    pass:q[https://en.cppreference.com/w/cpp/named_req/SequenceContainer[__SequenceContainer__]]
+
+:std_array:                 pass:q[https://en.cppreference.com/w/cpp/container/array[`std::array`]]
+:std_initializer_list:      pass:q[https://en.cppreference.com/w/cpp/utility/initializer_list[`std::initializer_list`]]
+:std_complex:               pass:q[https://en.cppreference.com/w/cpp/numeric/complex[`std::complex`]]
+:std_hash:                  pass:q[https://en.cppreference.com/w/cpp/utility/hash[`std::hash`]]
+:std_memory_resource:       pass:q[https://en.cppreference.com/w/cpp/memory/memory_resource[`std::pmr::memory_resource`]]
+:std_monostate:             pass:q[https://en.cppreference.com/w/cpp/utility/variant/monostate[`std::monostate`]]
+:std_ostream:               pass:q[https://en.cppreference.com/w/cpp/io/basic_ostream[`std::ostream`]]
+:std_polymorphic_allocator: pass:q[https://en.cppreference.com/w/cpp/memory/polymorphic_allocator[`std::pmr::polymorphic_allocator`]]
+:std_string:                pass:q[https://en.cppreference.com/w/cpp/string/basic_string[`std::string`]]
+:std_unordered_map:         pass:q[https://en.cppreference.com/w/cpp/container/unordered_map[`std::unordered_map`]]
+:std_uses_allocator:        pass:q[https://en.cppreference.com/w/cpp/memory/uses_allocator[`std::uses_allocator`]]
+:std_vector:                pass:q[https://en.cppreference.com/w/cpp/container/vector[`std::vector`]]
+:std_tuple:                 pass:q[https://en.cppreference.com/w/cpp/utility/tuple[`std::tuple`]]

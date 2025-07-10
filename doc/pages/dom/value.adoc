@@ -1,0 +1,272 @@
+////
+Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+Copyright (c) 2025 Dmitry Arkhipov (grisumbras@yandex.ru)
+
+Distributed under the Boost Software License, Version 1.0. (See accompanying
+file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+Official repository: https://github.com/boostorg/json
+////
+
+[#dom_value]
+= `value`
+JSON documents are represented in memory as instances of <<ref_value>>: a
+{req_Regular} type which satisfies {req_DefaultConstructible},
+{req_CopyConstructible}, {req_CopyAssignable}, {req_MoveConstructible},
+{req_MoveAssignable}, and many of the requirements of allocator-aware
+containers. It is implemented as a
+https://en.wikipedia.org/wiki/Tagged_union[__variant__] internally, and can
+dynamically store any of the six defined JSON value types:
+
+* **null**: A
+  https://en.cppreference.com/w/cpp/utility/variant/monostate[__monostate__]
+  value, equivalent to `nullptr`.
+
+* **boolean**: A boolean: either `true` or `false`.
+
+* **number**: An integral or floating point value.
+
+* **string**: A sequence of zero or more Unicode characters,
+  similar to {std_string}.
+
+* **array**: An ordered list of values, like {std_vector}.
+
+* **object**: A collection of name/value pairs, also known as an
+  https://en.wikipedia.org/wiki/Associative_array[__associative array__].
+
+== Working With Values
+A <<ref_value>> constructed from `nullptr` or default constructed represents
+a null JSON element:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_value_1,indent=0]
+----
+
+The member function <<ref_value_kind,`value::kind`>> may be used to query the
+kind stored in the value. Alternatively, member functions like
+<<ref_value_is_object,`value::is_object`>>
+<<ref_value_is_number,`value::is_number`>> may be used to check whether or not
+the value is a particular kind:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_value_2,indent=0]
+----
+
+Functions like <<ref_value_if_object,`value::if_object`>> actually return
+a pointer to the object if the value is an object, otherwise they return null.
+This allows them to be used both in boolean contexts as above, and in
+assignments or conditional expressions to capture the value of the pointer:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_value_3,indent=0]
+----
+
+After a <<ref_value>> is constructed, its kind can change depending on what is
+assigned to it, or by calling functions such as
+<<ref_value_emplace_array,`value::emplace_array`>> or
+<<ref_value_emplace_bool,`value::emplace_bool`>>. If the assignment is
+successful, in other words it completes without any exceptions then the value
+is replaced. Otherwise, the value is unchanged. All operations which can fail
+to modify a value offer the strong exception safety guarantee.
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_value_4,indent=0]
+----
+
+The following table shows all of the ways to determine and access the contents
+of a <<ref_value>>:
+
+.<<ref_value>> Accessors
+[%autowidth,cols=8]
+|===
+|Kind
+|Representation
+|Emplacement
+|Kind Test
+|Pointer Access
+|`result` Access
+|Checked Access
+|Unchecked Access
+
+|<<ref_kind,`kind::array`>>
+|<<ref_array>>
+|<<ref_value_emplace_array>>
+|<<ref_value_is_array>>
+|<<ref_value_if_array>>
+|<<ref_value_try_as_array>>
+|<<ref_value_as_array>>
+|<<ref_value_get_array>>
+
+|<<ref_kind,`kind::object`>>
+|<<ref_object>>
+|<<ref_value_emplace_object>>
+|<<ref_value_is_object>>
+|<<ref_value_if_object>>
+|<<ref_value_try_as_object>>
+|<<ref_value_as_object>>
+|<<ref_value_get_object>>
+
+|<<ref_kind,`kind::string`>>
+|<<ref_string>>
+|<<ref_value_emplace_string>>
+|<<ref_value_is_string>>
+|<<ref_value_if_string>>
+|<<ref_value_try_as_string>>
+|<<ref_value_as_string>>
+|<<ref_value_get_string>>
+
+|<<ref_kind,`kind::int64`>>
+|https://en.cppreference.com/w/cpp/types/integer[`std::int64_t`]
+|<<ref_value_emplace_int64>>
+|<<ref_value_is_int64>>
+|<<ref_value_if_int64>>
+|<<ref_value_try_as_int64>>
+|<<ref_value_as_int64>>
+|<<ref_value_get_int64>>
+
+|<<ref_kind,`kind::uint64`>>
+|https://en.cppreference.com/w/cpp/types/integer[`std::uint64_t`]
+|<<ref_value_emplace_uint64>>
+|<<ref_value_is_uint64>>
+|<<ref_value_if_uint64>>
+|<<ref_value_try_as_uint64>>
+|<<ref_value_as_uint64>>
+|<<ref_value_get_uint64>>
+
+|<<ref_kind,`kind::double_`>>
+|https://en.cppreference.com/w/cpp/language/types[`double`]
+|<<ref_value_emplace_double>>
+|<<ref_value_is_double>>
+|<<ref_value_if_double>>
+|<<ref_value_try_as_double>>
+|<<ref_value_as_double>>
+|<<ref_value_get_double>>
+
+|<<ref_kind,`kind::bool_`>>
+|https://en.cppreference.com/w/cpp/language/types[`bool`]
+|<<ref_value_emplace_bool>>
+|<<ref_value_is_bool>>
+|<<ref_value_if_bool>>
+|<<ref_value_try_as_bool>>
+|<<ref_value_as_bool>>
+|<<ref_value_get_bool>>
+
+|<<ref_kind,`kind::null`>>
+|https://en.cppreference.com/w/cpp/language/nullptr[`std::nullptr_t`]
+|<<ref_value_emplace_null>>
+|<<ref_value_is_null>>
+^|&mdash;
+|<<ref_value_try_as_null>>
+^|&mdash;
+^|&mdash;
+
+|===
+
+The emplace members of <<ref_value>> return a typed reference to the underlying
+representation. For example, the call to
+<<ref_value_emplace_string,`value::emplace_string`>> in the previous example
+returns a <<ref_string,`string&`>>. This table shows the underlying type for
+each kind:
+
+|===
+|Kind|Type|Description
+
+| <<ref_kind,`kind::object`>>
+| <<ref_object>>
+| An associative array of string keys mapping to <<ref_value>> elements with an
+  interface similar to {std_unordered_map}, that remembers insertion order.
+
+| <<ref_kind,`kind::array`>>
+| <<ref_array>>
+| An ordered list of <<ref_value>> elements with an interface similar to
+  {std_vector}.
+
+| <<ref_kind,`kind::string`>>
+| <<ref_string>>
+| A https://en.wikipedia.org/wiki/UTF-8[__UTF-8__] encoded
+  https://en.wikipedia.org/wiki/Unicode[Unicode]
+  https://en.wikipedia.org/wiki/String_(computer_science)[string] of characters
+  with an interface similar to {std_string}.
+
+| <<ref_kind,`kind::int64`>>
+| `std::int64_t`
+| A 64 bit signed integer.
+
+| <<ref_kind,`kind::uint64`>>
+| `std::uint64_t`
+| A 64 bit unsigned integer.
+
+| <<ref_kind,`kind::double_`>>
+| `double`
+| A `double` holding a floating-point value.
+
+| <<ref_kind,`kind::bool_`>>
+| https://en.cppreference.com/w/cpp/keyword/bool[`bool`]
+| A `bool` holding `true` or `false`.
+
+| <<ref_kind,`kind::null`>>
+^| &mdash;
+| A monostate value representing null.
+|===
+
+The return value from emplace can be used to perform assignment or to capture a
+reference to the underlying element for later inspection or modification:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_value_5,indent=0]
+----
+
+If the <<ref_kind>> of a <<ref_value>> is known, functions such as
+<<ref_value_as_bool,`value::as_bool`>> or
+<<ref_value_as_string,`value::as_string`>> may be used to obtain a reference to
+the underlying representation without changing the existing value:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_value_6,indent=0]
+----
+
+However, as shown above these functions throw an exception if the kind in the
+<<ref_value>> does not match the kind denoted by the function signature. This
+can be used as a concise form of validation: access values as if they were the
+right type, but handle the resulting exception indicating if the schema of the
+JSON is not valid.
+
+We can query a value for its underlying representation of a particular kind in
+a way that does not throw exceptions by requesting a pointer which may be null,
+instead of a reference. Here we use <<ref_value_if_string,`value::if_string`>>
+to conditionally perform an assignment without using exceptions:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_value_7,indent=0]
+----
+
+[TIP]
+====
+If the value's kind is known statically, a reference to the underlying
+representation may be obtained by dereferencing the pointer without checking.
+This avoids the code overhead of the possible exception when using, for example
+<<ref_value_as_string,`value::as_string`>>:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_value_8,indent=0]
+----
+====
+
+Functions returning {ref_result} allow you to use both approaches:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_value_9,indent=0]
+----
+
+=== Formatted Output
+When a <<ref_value>> is formatted to a {std_ostream}, the result is serialized
+JSON as if by calling <<ref_serialize>>.

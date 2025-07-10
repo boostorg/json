@@ -30,56 +30,50 @@ class value_ref;
 
 /** A dynamically sized array of JSON values
 
-    This is the type used to represent a JSON array as
-    a modifiable container. The interface and performance
-    characteristics are modeled after `std::vector<value>`.
-\n
-    Elements are stored contiguously, which means that
-    they can be accessed not only through iterators, but
-    also using offsets to regular pointers to elements. A
-    pointer to an element of an @ref array may be passed to
-    any function that expects a pointer to @ref value.
-\n
-    The storage of the array is handled automatically, being
-    expanded and contracted as needed. Arrays usually occupy
-    more space than array language constructs, because more
-    memory is allocated to handle future growth. This way an
-    array does not need to reallocate each time an element
-    is inserted, but only when the additional memory is used
-    up. The total amount of allocated memory can be queried
-    using the @ref capacity function. Extra memory can be
-    relinquished by calling @ref shrink_to_fit.
-    \n
+    This is the type used to represent a JSON array as a modifiable container.
+    The interface and performance characteristics are modeled after
+    `std::vector<value>`.
 
-    Reallocations are usually costly operations in terms of
-    performance. The @ref reserve function can be used to
-    eliminate reallocations if the number of elements is
-    known beforehand.
-\n
-    The complexity (efficiency) of common operations on
-    arrays is as follows:
+    Elements are stored contiguously, which means that they can be accessed not
+    only through iterators, but also using offsets to regular pointers to
+    elements. A pointer to an element of an `array` may be passed to any
+    function that expects a pointer to @ref value.
 
-    @li Random access - constant *O(1)*.
-    @li Insertion or removal of elements at the
-        end - amortized constant *O(1)*.
-    @li Insertion or removal of elements - linear in
-        the distance to the end of the array *O(n)*.
+    The storage of the array is handled automatically, being expanded and
+    contracted as needed. Arrays usually occupy more space than array language
+    constructs, because more memory is allocated to handle future growth. This
+    way an array does not need to reallocate each time an element is inserted,
+    but only when the additional memory is used up. The total amount of
+    allocated memory can be queried using the @ref capacity function. Extra
+    memory can be relinquished by calling @ref shrink_to_fit.
+
+
+    Reallocations are usually costly operations in terms of performance. The
+    @ref reserve function can be used to eliminate reallocations if the number
+    of elements is known beforehand.
+
+    The complexity (efficiency) of common operations on arrays is as follows:
+
+    @li Random access---constant *O(1)*.
+    @li Insertion or removal of elements at the end - amortized
+        constant *O(1)*.
+    @li Insertion or removal of elements---linear in the distance to the end of
+        the array *O(n)*.
 
     @par Allocators
 
-    All elements stored in the container, and their
-    children if any, will use the same memory resource
-    that was used to construct the container.
+    All elements stored in the container, and their children if any, will use
+    the same memory resource that was used to construct the container.
 
     @par Thread Safety
 
-    Non-const member functions may not be called
-    concurrently with any other member functions.
+    Non-const member functions may not be called concurrently with any other
+    member functions.
 
     @par Satisfies
-        <a href="https://en.cppreference.com/w/cpp/named_req/ContiguousContainer"><em>ContiguousContainer</em></a>,
-        <a href="https://en.cppreference.com/w/cpp/named_req/ReversibleContainer"><em>ReversibleContainer</em></a>, and
-        <a href="https://en.cppreference.com/w/cpp/named_req/SequenceContainer"><em>SequenceContainer</em></a>.
+        [*ContiguousContainer*](https://en.cppreference.com/w/cpp/named_req/ContiguousContainer),
+        [*ReversibleContainer*](https://en.cppreference.com/w/cpp/named_req/ReversibleContainer), and
+        {req_SequenceContainer}.
 */
 class array
 {
@@ -160,12 +154,12 @@ public:
 
     /** Destructor.
 
-        The destructor for each element is called if needed,
-        any used memory is deallocated, and shared ownership
-        of the `boost::container::pmr::memory_resource` is released.
+        The destructor for each element is called if needed, any used memory is
+        deallocated, and shared ownership of the
+        @ref boost::container::pmr::memory_resource is released.
 
         @par Complexity
-        Constant, or linear in @ref size().
+        Linear in @ref size().
 
         @par Exception Safety
         No-throw guarantee.
@@ -175,38 +169,86 @@ public:
 
     //------------------------------------------------------
 
-    /** Constructor.
+    /** Constructors.
 
-        The constructed array is empty with zero
-        capacity, using the [default memory resource].
+        Constructs an array.
+
+        @li **(1)**, **(2)**  the array is empty and has zero capacity.
+
+        @li **(3)** the array is filled with `count` copies of `jv`.
+
+        @li **(4)** the array is filled with `count` null values.
+
+        @li **(5)** the array is filled with values in the range
+            `[first, last)`, preserving order.
+
+        @li **(6)** the array is filled with copies of the values in `init,
+            preserving order.
+
+        @li **(7)**, **(8)** the array is filled with copies of the elements of
+            `other`, preserving order.
+
+        @li **(9)** the array acquires ownership of the contents of `other`.
+
+        @li **(10)** equivalent to **(9)** if `*sp == *other.storage()`;
+            otherwise equivalent to **(8)**.
+
+        @li **(11)** the array acquires ownership of the contents of `other`
+            using pilfer semantics. This is more efficient than move
+            construction, when it is known that the moved-from object will be
+            immediately destroyed afterwards.
+
+        With **(2)**, **(4)**, **(5)**, **(6)**, **(8)**, **(10)** the
+        constructed array uses memory resource of `sp`. With **(7)**, **(9)**,
+        and **(11)** it uses `other`'s memory resource. In either case the
+        array will share the ownership of the memory resource. With **(1)**
+        and **(3)** it uses the
+        \<\<default_memory_resource, default memory resource\>\>.
+
+        After **(9)** `other` behaves as if newly constructed with its
+        current storage pointer.
+
+        After **(11)** `other` is not in a usable state and may only be
+        destroyed.
+
+        @par Constraints
+
+        @code
+        std::is_constructible_v<value, std::iterator_traits<InputIt>::reference>
+        @endcode
 
         @par Complexity
-        Constant.
+        @li **(1)**, **(2)**, **(9)**, **(11)** constant.
+        @li **(3)**, **(4)** linear in `count`.
+        @li **(5)** linear in `std::distance(first, last)`
+        @li **(6)** linear in `init.size()`.
+        @li **(7)**, **(8)** linear in `other.size()`.
+        @li **(10)** constant if `*sp == *other.storage()`; otherwise linear in
+            `other.size()`.
 
         @par Exception Safety
-        No-throw guarantee.
+        @li **(1)**, **(2)**, **(9)**, **(11)** no-throw guarantee.
+        @li **(3)**, **(4)**, **(6)**--**(8)**, **(10)** strong
+            guarantee.
+        @li **(5)** strong guarantee if `InputIt` satisfies
+        {req_ForwardIterator}, basic guarantee otherwise.
 
-        [default memory resource]: json/allocators/storage_ptr.html#json.allocators.storage_ptr.default_memory_resource
+        Calls to `memory_resource::allocate` may throw.
+
+        @see @ref pilfer,
+            [Valueless Variants Considered Harmful](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0308r0.html).
+                                                         //
+        @{
     */
     array() noexcept
         : t_(&empty_)
     {
     }
 
-    /** Constructor.
-
-        The constructed array is empty with zero
-        capacity, using the specified memory resource.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource`
-        to use. The container will acquire shared
-        ownership of the memory resource.
+    /** Overload
+        @param sp A pointer to the @ref boost::container::pmr::memory_resource
+        to use. The container will acquire shared ownership of the memory
+        resource.
     */
     explicit
     array(storage_ptr sp) noexcept
@@ -216,88 +258,31 @@ public:
     {
     }
 
-    /** Constructor.
-
-        The array is constructed with `count`
-        copies of the value `v`, using the
-        specified memory resource.
-
-        @par Complexity
-        Linear in `count`
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
+    /** Overload
         @param count The number of copies to insert.
-
-        @param v The value to be inserted.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource`
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param jv The value to be inserted.
+        @param sp
     */
     BOOST_JSON_DECL
     array(
         std::size_t count,
-        value const& v,
+        value const& jv,
         storage_ptr sp = {});
 
-    /** Constructor.
-
-        The array is constructed with `count` null values,
-        using the specified memory resource.
-
-        @par Complexity
-        Linear in `count`
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param count The number of nulls to insert.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource`
-        to use. The container will acquire shared
-        ownership of the memory resource.
-    */
+    /// Overload
     BOOST_JSON_DECL
     array(
         std::size_t count,
         storage_ptr sp = {});
 
-    /** Constructor.
+    /** Overload
 
-        The array is constructed with the elements
-        in the range `{first, last)`, preserving order,
-        using the specified memory resource.
+        @param first An input iterator pointing to the first element to insert,
+               or pointing to the end of the range.
+        @param last An input iterator pointing to the end of the range.
+        @param sp
 
-        @par Constraints
-
-        @code
-        std::is_constructible_v<value, std::iterator_traits<InputIt>::reference>
-        @endcode
-
-        @par Complexity
-        Linear in `std::distance(first, last)`
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param first An input iterator pointing to the
-        first element to insert, or pointing to the end
-        of the range.
-
-        @param last An input iterator pointing to the end
-        of the range.
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource`
-        to use. The container will acquire shared
-        ownership of the memory resource.
-
-        @tparam InputIt a type satisfying the requirements
-        of __InputIterator__.
+        @tparam InputIt a type satisfying the {req_InputIterator} requirement.
     */
     template<
         class InputIt
@@ -312,68 +297,28 @@ public:
         InputIt first, InputIt last,
         storage_ptr sp = {});
 
-    /** Copy constructor.
+    /** Overload
+        @param init The initializer list with elements to insert.
+        @param sp
+    */
+    BOOST_JSON_DECL
+    array(
+        std::initializer_list<value_ref> init,
+        storage_ptr sp = {});
 
-        The array is constructed with a copy of the
-        contents of `other`, using `other`'s memory resource.
-
-        @par Complexity
-        Linear in `other.size()`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param other The array to copy
+    /** Overload
+        @param other Another array.
     */
     BOOST_JSON_DECL
     array(array const& other);
 
-    /** Copy constructor.
-
-        The array is constructed with a copy of the
-        contents of `other`, using the specified memory resource.
-
-        @par Complexity
-        Linear in `other.size()`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param other The array to copy
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource`
-        to use. The container will acquire shared
-        ownership of the memory resource.
-    */
+    /// Overload
     BOOST_JSON_DECL
     array(
         array const& other,
         storage_ptr sp);
 
-    /** Pilfer constructor.
-
-        The array is constructed by acquiring ownership
-        of the contents of `other` using pilfer semantics.
-        This is more efficient than move construction, when
-        it is known that the moved-from object will be
-        immediately destroyed afterwards.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param other The value to pilfer. After pilfer
-        construction, `other` is not in a usable state
-        and may only be destroyed.
-
-        @see @ref pilfer,
-            <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0308r0.html">
-                Valueless Variants Considered Harmful</a>
-    */
+    /// Overload
     array(pilfered<array> other) noexcept
         : sp_(std::move(other.get().sp_))
         , t_(detail::exchange(
@@ -381,26 +326,7 @@ public:
     {
     }
 
-    /** Move constructor.
-
-        The array is constructed by acquiring ownership of
-        the contents of `other` and shared ownership of
-        `other`'s memory resource.
-
-        @note
-
-        After construction, the moved-from array behaves
-        as if newly constructed with its current storage
-        pointer.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param other The container to move
-    */
+    /// Overload
     array(array&& other) noexcept
         : sp_(other.sp_)
         , t_(detail::exchange(
@@ -408,142 +334,68 @@ public:
     {
     }
 
-    /** Move constructor.
-
-        The array is constructed with the contents of
-        `other` by move semantics, using the specified
-        memory resource:
-
-        @li If `*other.storage() == *sp`, ownership of
-        the underlying memory is transferred in constant
-        time, with no possibility of exceptions.
-        After construction, the moved-from array behaves
-        as if newly constructed with its current storage
-        pointer.
-
-        @li If `*other.storage() != *sp`, an
-        element-wise copy is performed, which may throw.
-        In this case, the moved-from array is not
-        changed.
-
-        @par Complexity
-        At most, linear in `other.size()`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param other The container to move
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource`
-        to use. The container will acquire shared
-        ownership of the memory resource.
-    */
+    /// Overload
     BOOST_JSON_DECL
     array(
         array&& other,
         storage_ptr sp);
+    /// @}
 
-    /** Constructor.
+    /** Assignment operators.
 
-        The array is constructed with a copy of the values
-        in the initializer-list in order, using the
-        specified memory resource.
+        Replaces the contents of the array.
+        @li **(1)** the contents are replaced with an element-wise copy of
+            `other`.
+        @li **(2)** takes ownership of `other`'s element storage if
+            `*storage() == *other.storage()`; otherwise equivalent to **(1)**.
+        @li **(3)** the contents are replaced with a copy of the values in
+            `init`.
 
-        @par Complexity
-        Linear in `init.size()`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param init The initializer list to insert
-
-        @param sp A pointer to the `boost::container::pmr::memory_resource`
-        to use. The container will acquire shared
-        ownership of the memory resource.
-    */
-    BOOST_JSON_DECL
-    array(
-        std::initializer_list<value_ref> init,
-        storage_ptr sp = {});
-
-    //------------------------------------------------------
-
-    /** Copy assignment.
-
-        The contents of the array are replaced with an
-        element-wise copy of `other`.
+        After **(2)**, the moved-from array behaves as if newly constructed
+        with its current storage pointer.
 
         @par Complexity
-        Linear in @ref size() plus `other.size()`.
+        @li **(1)** linear in `size() + other.size()`.
+        @li **(2)** constant if `*storage() == *other.storage()`; otherwise
+            linear in `size() + other.size()`.
+        @li **(1)** linear in `size() + init.size()`.
 
         @par Exception Safety
-        Strong guarantee.
+        {sp} **(2)** provides strong guarantee if
+        `*storage() != *other.storage()` and no-throw guarantee otherwise.
+        Other overloads provide strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
         @param other The array to copy.
+
+        @return `*this`
+
+        @{
     */
     BOOST_JSON_DECL
     array&
     operator=(array const& other);
 
-    /** Move assignment.
-
-        The contents of the array are replaced with the
-        contents of `other` using move semantics:
-
-        @li If `*other.storage() == *sp`, ownership of
-        the underlying memory is transferred in constant
-        time, with no possibility of exceptions.
-        After assignment, the moved-from array behaves
-        as if newly constructed with its current storage
-        pointer.
-
-        @li If `*other.storage() != *sp`, an
-        element-wise copy is performed, which may throw.
-        In this case, the moved-from array is not
-        changed.
-
-        @par Complexity
-        Constant, or linear in
-        `this->size()` plus `other.size()`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
+    /** Overload
         @param other The array to move.
     */
     BOOST_JSON_DECL
     array&
     operator=(array&& other);
 
-    /** Assignment.
-
-        The contents of the array are replaced with a
-        copy of the values in the initializer-list.
-
-        @par Complexity
-        Linear in `this->size()` plus `init.size()`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
+    /** Overload
         @param init The initializer list to copy.
     */
     BOOST_JSON_DECL
     array&
     operator=(
         std::initializer_list<value_ref> init);
-
-    //------------------------------------------------------
+    /// @}
 
     /** Return the associated memory resource.
 
-        This function returns the `boost::container::pmr::memory_resource` used
-        by the container.
+        This function returns a smart pointer to the
+        @ref boost::container::pmr::memory_resource used by the container.
 
         @par Complexity
         Constant.
@@ -560,7 +412,7 @@ public:
     /** Return the associated allocator.
 
         This function returns an instance of @ref allocator_type constructed
-        from the associated `boost::container::pmr::memory_resource`.
+        from the associated @ref boost::container::pmr::memory_resource.
 
         @par Complexity
         Constant.
@@ -582,9 +434,9 @@ public:
 
     /** Access an element, with bounds checking.
 
-        Returns `boost::system::result` containing a reference to the element
-        specified at location `pos`, if `pos` is within the range of the
-        container. Otherwise the result contains an `error_code`.
+        Returns @ref boost::system::result containing a reference to the
+        element specified at location `pos`, if `pos` is within the range of
+        the container. Otherwise the result contains an `error_code`.
 
         @par Exception Safety
         No-throw guarantee.
@@ -593,8 +445,9 @@ public:
 
         @par Complexity
         Constant.
+
+        @{
     */
-    /** @{ */
     BOOST_JSON_DECL
     system::result<value&>
     try_at(std::size_t pos) noexcept;
@@ -602,14 +455,13 @@ public:
     BOOST_JSON_DECL
     system::result<value const&>
     try_at(std::size_t pos) const noexcept;
-    /** @} */
+    /// @}
 
     /** Access an element, with bounds checking.
 
-        Returns a reference to the element specified at
-        location `pos`, with bounds checking. If `pos` is
-        not within the range of the container, an exception
-        of type `boost::system::system_error` is thrown.
+        Returns a reference to the element specified at location `pos`, with
+        bounds checking. If `pos` is not within the range of the container, an
+        exception of type @ref boost::system::system_error is thrown.
 
         @par Complexity
         Constant.
@@ -620,8 +472,9 @@ public:
             location of the call site by default.
 
         @throw `boost::system::system_error` `pos >= size()`.
+
+        @{
     */
-    /** @{ */
     inline
     value&
     at(
@@ -639,22 +492,22 @@ public:
     at(
         std::size_t pos,
         source_location const& loc = BOOST_CURRENT_LOCATION) const&;
-    /** @} */
+    /// @}
 
     /** Access an element.
 
         Returns a reference to the element specified at
         location `pos`. No bounds checking is performed.
 
-        @par Precondition
-        `pos < size()`
+        @pre `pos < size()`
 
         @par Complexity
         Constant.
 
         @param pos A zero-based index
+
+        @{
     */
-    /** @{ */
     inline
     value&
     operator[](std::size_t pos) & noexcept;
@@ -666,19 +519,19 @@ public:
     inline
     value const&
     operator[](std::size_t pos) const& noexcept;
-    /** @} */
+    /// @}
 
     /** Access the first element.
 
         Returns a reference to the first element.
 
-        @par Precondition
-        `not empty()`
+        @pre `! empty()`
 
         @par Complexity
         Constant.
+
+        @{
     */
-    /** @{ */
     inline
     value&
     front() & noexcept;
@@ -690,19 +543,19 @@ public:
     inline
     value const&
     front() const& noexcept;
-    /** @} */
+    /// @}
 
     /** Access the last element.
 
         Returns a reference to the last element.
 
-        @par Precondition
-        `not empty()`
+        @pre `!empty()`
 
         @par Complexity
         Constant.
+
+        @{
     */
-    /** @{ */
     inline
     value&
     back() & noexcept;
@@ -714,14 +567,17 @@ public:
     inline
     value const&
     back() const& noexcept;
-    /** @} */
+    /// @}
 
     /** Access the underlying array directly.
 
-        Returns a pointer to the underlying array serving
-        as element storage. The value returned is such that
-        the range `{data(), data() + size())` is always a
-        valid range, even if the container is empty.
+        Returns a pointer to the underlying array serving as element storage.
+        The value returned is such that the range `[data(), data() + size())`
+        is always a valid range, even if the container is empty.
+
+        @note
+        If `size() == 0`, the function may or may not return
+        a null pointer.
 
         @par Complexity
         Constant.
@@ -729,42 +585,22 @@ public:
         @par Exception Safety
         No-throw guarantee.
 
-        @note
-
-        If `size() == 0`, the function may or may not return
-        a null pointer.
+        @{
     */
     inline
     value*
     data() noexcept;
 
-    /** Access the underlying array directly.
-
-        Returns a pointer to the underlying array serving
-        as element storage. The value returned is such that
-        the range `{data(), data() + size())` is always a
-        valid range, even if the container is empty.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @note
-
-        If `size() == 0`, the function may or may not return
-        a null pointer.
-    */
     inline
     value const*
     data() const noexcept;
+    /// @}
 
-    /** Return a pointer to an element, or nullptr if the index is invalid
+    /** Return a pointer to an element if it exists.
 
-        This function returns a pointer to the element
-        at index `pos` when the index is less then the size
-        of the container. Otherwise it returns null.
+        This function returns a pointer to the element at index `pos` when the
+        index is less then the size of the container. Otherwise it returns
+        null.
 
         @par Example
         @code
@@ -779,34 +615,17 @@ public:
         No-throw guarantee.
 
         @param pos The index of the element to return.
+
+        @{
     */
     inline
     value const*
     if_contains(std::size_t pos) const noexcept;
 
-    /** Return a pointer to an element, or nullptr if the index is invalid
-
-        This function returns a pointer to the element
-        at index `pos` when the index is less then the size
-        of the container. Otherwise it returns null.
-
-        @par Example
-        @code
-        if( auto p = arr.if_contains( 1 ) )
-            std::cout << *p;
-        @endcode
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param pos The index of the element to return.
-    */
     inline
     value*
     if_contains(std::size_t pos) noexcept;
+    /// @}
 
     //------------------------------------------------------
     //
@@ -823,24 +642,17 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @{
     */
     inline
     iterator
     begin() noexcept;
 
-    /** Return a const iterator to the first element.
-
-        If the container is empty, @ref end() is returned.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
     inline
     const_iterator
     begin() const noexcept;
+    /// @}
 
     /** Return a const iterator to the first element.
 
@@ -856,40 +668,32 @@ public:
     const_iterator
     cbegin() const noexcept;
 
-    /** Return an iterator to the element following the last element.
+    /** Return a const iterator past the last element.
 
-        The element acts as a placeholder; attempting
-        to access it results in undefined behavior.
+        The returned iterator only acts as a sentinel. Dereferencing it results
+        in undefined behavior.
 
         @par Complexity
         Constant.
 
         @par Exception Safety
         No-throw guarantee.
+
+        @{
     */
     inline
     iterator
     end() noexcept;
 
-    /** Return a const iterator to the element following the last element.
-
-        The element acts as a placeholder; attempting
-        to access it results in undefined behavior.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
     inline
     const_iterator
     end() const noexcept;
+    /// @}
 
-    /** Return a const iterator to the element following the last element.
+    /** Return a const iterator past the last element.
 
-        The element acts as a placeholder; attempting
-        to access it results in undefined behavior.
+        The returned iterator only acts as a sentinel. Dereferencing it results
+        in undefined behavior.
 
         @par Complexity
         Constant.
@@ -912,26 +716,17 @@ public:
 
         @par Exception Safety
         No-throw guarantee.
+
+        @{
     */
     inline
     reverse_iterator
     rbegin() noexcept;
 
-    /** Return a const reverse iterator to the first element of the reversed container.
-
-        The pointed-to element corresponds to the
-        last element of the non-reversed container.
-        If the container is empty, @ref rend() is returned.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
     inline
     const_reverse_iterator
     rbegin() const noexcept;
+    /// @}
 
     /** Return a const reverse iterator to the first element of the reversed container.
 
@@ -953,42 +748,31 @@ public:
 
         The pointed-to element corresponds to the element
         preceding the first element of the non-reversed container.
-        The element acts as a placeholder; attempting
-        to access it results in undefined behavior.
+        The returned iterator only acts as a sentinel. Dereferencing it results
+        in undefined behavior.
 
         @par Complexity
         Constant.
 
         @par Exception Safety
         No-throw guarantee.
+
+        @{
     */
     inline
     reverse_iterator
     rend() noexcept;
 
-    /** Return a const reverse iterator to the element following the last element of the reversed container.
-
-        The pointed-to element corresponds to the element
-        preceding the first element of the non-reversed container.
-        The element acts as a placeholder; attempting
-        to access it results in undefined behavior.
-
-        @par Complexity
-        Constant.
-
-        @par Exception Safety
-        No-throw guarantee.
-    */
     inline
     const_reverse_iterator
     rend() const noexcept;
+    /// @}
 
     /** Return a const reverse iterator to the element following the last element of the reversed container.
 
-        The pointed-to element corresponds to the element
-        preceding the first element of the non-reversed container.
-        The element acts as a placeholder; attempting
-        to access it results in undefined behavior.
+        The pointed-to element corresponds to the element preceding the first
+        element of the non-reversed container. The returned iterator only acts
+        as a sentinel. Dereferencing it results in undefined behavior.
 
         @par Complexity
         Constant.
@@ -1022,12 +806,11 @@ public:
     std::size_t
     size() const noexcept;
 
-    /** Return the maximum number of elements any array can hold.
+    /** The maximum number of elements an array can hold.
 
-        The maximum is an implementation-defined number.
-        This value is a theoretical limit; at runtime,
-        the actual maximum size may be less due to
-        resource limits.
+        The maximum is an implementation-defined number. This value is
+        a theoretical limit; at runtime, the actual maximum size may be less
+        due to resource limits.
 
         @par Complexity
         Constant.
@@ -1043,8 +826,9 @@ public:
 
     /** Return the number of elements that can be held in currently allocated memory.
 
-        This number may be larger than the value returned
-        by @ref size().
+        Returns the number of elements that the container has currently
+        allocated space for. This number is never smaller than the value
+        returned by @ref size().
 
         @par Complexity
         Constant.
@@ -1073,18 +857,14 @@ public:
 
     /** Increase the capacity to at least a certain amount.
 
-        This increases the @ref capacity() to a value
-        that is greater than or equal to `new_capacity`.
-        If `new_capacity > capacity()`, new memory is
-        allocated. Otherwise, the call has no effect.
-        The number of elements and therefore the
-        @ref size() of the container is not changed.
-    \n
-        If new memory is allocated, all iterators
-        including any past-the-end iterators, and all
-        references to the elements are invalidated.
-        Otherwise, no iterators or references are
-        invalidated.
+        This increases the @ref capacity() to a value that is greater than or
+        equal to `new_capacity`. If `new_capacity > capacity()`, new memory is
+        allocated. Otherwise, the call has no effect. The number of elements
+        and therefore the @ref size() of the container is not changed.
+
+        If new memory is allocated, all iterators including any past-the-end
+        iterators, and all references to the elements are invalidated.
+        Otherwise, no iterators or references are invalidated.
 
         @par Complexity
         At most, linear in @ref size().
@@ -1095,7 +875,7 @@ public:
 
         @param new_capacity The new capacity of the array.
 
-        @throw `boost::system::system_error` `new_capacity > max_size()`.
+        @throw boost::system::system_error `new_capacity >` @ref max_size().
     */
     inline
     void
@@ -1129,11 +909,9 @@ public:
 
     /** Clear the contents.
 
-        Erases all elements from the container. After this
-        call, @ref size() returns zero but @ref capacity()
-        is unchanged. All references, pointers, or iterators
-        referring to contained elements are invalidated. Any
-        past-the-end iterators are also invalidated.
+        Erases all elements from the container. After this call, @ref size()
+        returns zero but @ref capacity() is unchanged. All references,
+        pointers, and iterators are invalidated
 
         @par Complexity
         Linear in @ref size().
@@ -1147,149 +925,96 @@ public:
 
     /** Insert elements before the specified location.
 
-        This inserts a copy of `v` before `pos`.
-        If `capacity() < size() + 1`, a reallocation
-        occurs first, and all iterators and references
-        are invalidated.
-        Otherwise, only the iterators and references from
-        the insertion point forward are invalidated. All
+        @li **(1)** and **(2)** insert a single new element before
+            `pos`. **(1)** copy-constructs and **(2)** move-constructs the new
+            element from `jv`.
+        @li **(3)** inserts `count` copies of `jv` before `pos`.
+        @li **(4)** the elements in the range `[first, last)` are inserted in
+            order.
+        @li **(5)** the elements of the initializer list `init` are inserted in
+            order.
+
+        Inserted values will be constructed using the container's
+        associated @ref boost::container::pmr::memory_resource.
+
+        @note Overload **(2)** is equivalent to **(1)** if
+        `*jv.storage() != *this->storage()`.
+
+        If the size of the array after insertion would have exceeded
+        @ref capacity(), a reallocation occurs first, and all iterators and
+        references are invalidated. Otherwise, only the iterators and
+        references from the insertion point forward are invalidated. All
         past-the-end iterators are also invalidated.
 
+        @pre
+        `first` and `last` are not iterators into `*this`.
+
+        @par Constraints
+        @code
+        ! std::is_convertible_v<InputIt, value>
+        std::is_constructible_v<value, std::iterator_traits<InputIt>::reference>
+        @endcode
+
         @par Complexity
-        Constant plus linear in `std::distance(pos, end())`.
+        @li **(1)**, **(2)** linear in `std::distance(pos, end())`.
+        @li **(3)** linear in `count + std::distance(pos, end())`.
+        @li **(4)** linear in `std::distance(first, last) +
+            std::distance(pos, end())`.
+        @li **(5)** linear in `init.size() + std::distance(pos, end())`.
 
         @par Exception Safety
-        Strong guarantee.
+        {sp}**(4)** provides strong guarantee if `InputIt` satisfies
+        {req_ForwardIterator}, and basic guarantee otherwise. Other overloads
+        provide strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
-        @param pos Iterator before which the content will
+        @param pos Iterator before which the new elements will
         be inserted. This may be the @ref end() iterator.
 
-        @param v The value to insert. A copy will be made
-        using container's associated `boost::container::pmr::memory_resource`.
+        @param jv The value to insert. A copy will be made
+        using container's associated
+        @ref boost::container::pmr::memory_resource.
 
-        @return An iterator to the inserted value
+        @return An iterator to the first inserted value, or `pos` if no values
+                were inserted.
+
+        @{
     */
     BOOST_JSON_DECL
     iterator
     insert(
         const_iterator pos,
-        value const& v);
+        value const& jv);
 
-    /** Insert elements before the specified location.
-
-        This inserts `v` before `pos` via move-construction.
-        If `capacity() < size() + 1`, a reallocation occurs
-        first, and all iterators and references are
-        invalidated.
-        Otherwise, only the iterators and references from
-        the insertion point forward are invalidated. All
-        past-the-end iterators are also invalidated.
-
-        @par Complexity
-        Constant plus linear in `std::distance(pos, end())`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param pos Iterator before which the content will
-        be inserted. This may be the @ref end() iterator.
-
-        @param v The value to insert. Ownership of the
-        value will be transferred via move construction,
-        using the container's
-        associated `boost::container::pmr::memory_resource`.
-
-        @return An iterator to the inserted value
-    */
+    // Overload
     BOOST_JSON_DECL
     iterator
     insert(
         const_iterator pos,
-        value&& v);
+        value&& jv);
 
-    /** Insert elements before the specified location.
 
-        This inserts `count` copies of `v` before `pos`.
-        If `capacity() < size() + count`, a reallocation
-        occurs first, and all iterators and references are
-        invalidated.
-        Otherwise, only the iterators and references from
-        the insertion point forward are invalidated. All
-        past-the-end iterators are also invalidated.
-
-        @par Complexity
-        Linear in `count + std::distance(pos, end())`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param pos Iterator before which the content will
-        be inserted. This may be the @ref end() iterator.
-
+    /** Overload
         @param count The number of copies to insert.
-
-        @param v The value to insert. Copies will be made
-        using the container's
-        associated `boost::container::pmr::memory_resource`.
-
-        @return An iterator to the first inserted value,
-        or `pos` if `count == 0`.
+        @param pos
+        @param jv
     */
     BOOST_JSON_DECL
     iterator
     insert(
         const_iterator pos,
         std::size_t count,
-        value const& v);
+        value const& jv);
 
-    /** Insert elements before the specified location.
+    /** Overload
 
-        The elements in the range `{first, last)` are
-        inserted in order.
-        If `capacity() < size() + std::distance(first, last)`,
-        a reallocation occurs first, and all iterators and
-        references are invalidated.
-        Otherwise, only the iterators and references from
-        the insertion point forward are invalidated. All
-        past-the-end iterators are also invalidated.
-
-        @par Precondition
-        `first` and `last` are not iterators into `*this`.
-
-        @par Constraints
-        @code
-        not std::is_convertible_v<InputIt, value>
-        @endcode
-
-        @par Mandates
-        @code
-        std::is_constructible_v<value, std::iterator_traits<InputIt>::reference>
-        @endcode
-
-        @par Complexity
-        Linear in `std::distance(first, last) + std::distance(pos, end())`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @return An iterator to the first inserted value, or
-        `pos` if `first == last`.
-
-        @param pos Iterator before which the content will
-        be inserted. This may be the @ref end() iterator.
-
-        @param first An input iterator pointing to the first
-        element to insert, or pointing to the end of the range.
-
-        @param last An input iterator pointing to the end
-        of the range.
+        @param first An input iterator pointing to the first element to insert,
+               or pointing to the end of the range.
+        @param last An input iterator pointing to the end of the range.
+        @param pos
 
         @tparam InputIt a type satisfying the requirements
-        of __InputIterator__.
+        of {req_InputIterator}.
     */
     template<
         class InputIt
@@ -1305,37 +1030,16 @@ public:
         const_iterator pos,
         InputIt first, InputIt last);
 
-    /** Insert elements before the specified location.
-
-        The elements in the initializer list `init` are
-        inserted in order.
-        If `capacity() < size() + init.size()`,
-        a reallocation occurs first, and all iterators and
-        references are invalidated.
-        Otherwise, only the iterators and references from
-        the insertion point forward are invalidated. All
-        past-the-end iterators are also invalidated.
-
-        @par Complexity
-        Linear in `init.size() + std::distance(pos, end())`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param pos Iterator before which the content will
-        be inserted. This may be the @ref end() iterator.
-
+    /** Overload
         @param init The initializer list to insert
-
-        @return An iterator to the first inserted value, or
-        `pos` if `init.size() == 0`.
+        @param pos
     */
     BOOST_JSON_DECL
     iterator
     insert(
         const_iterator pos,
         std::initializer_list<value_ref> init);
+    /// @}
 
     /** Insert a constructed element in-place.
 
@@ -1350,7 +1054,7 @@ public:
         past-the-end iterators are also invalidated.
 
         @par Complexity
-        Constant plus linear in `std::distance(pos, end())`.
+        Linear in `std::distance(pos, end())`.
 
         @par Exception Safety
         Strong guarantee.
@@ -1370,61 +1074,54 @@ public:
         const_iterator pos,
         Arg&& arg);
 
-    /** Erase elements from the container.
+    /** Remove elements from the array.
 
-        The element at `pos` is removed.
+        @li **(1)** the element at `pos` is removed.
+        @li **(2)** the elements in the range `[first, last)` are removed.
 
         @par Complexity
-        Constant plus linear in `std::distance(pos, end())`
+        @li **(1)** linear in `std::distance(pos, end())`.
+        @li **(2)** linear in `std::distance(first, end())`.
 
         @par Exception Safety
         No-throw guarantee.
 
         @param pos Iterator to the element to remove
 
-        @return Iterator following the last removed element.
-        If the iterator `pos` refers to the last element,
-        the @ref end() iterator is returned.
+        @return Iterator following the last removed element. If that was the
+                last element of the array, the @ref end() iterator is returned.
+
+        @{
     */
     BOOST_JSON_DECL
     iterator
     erase(const_iterator pos) noexcept;
 
-    /** Erase elements from the container.
-
-        The elements in the range `{first, last)` are removed.
-
-        @par Complexity
-        Linear in `std::distance(first, end())`
-
-        @par Exception Safety
-        No-throw guarantee.
-
-        @param first An iterator pointing to the first
-        element to erase, or pointing to the end of the range.
-
-        @param last An iterator pointing to one past the
-        last element to erase, or pointing to the end of the
-        range.
-
-        @return Iterator following the last removed element.
-        If the iterator `last` refers to the last element,
-        the @ref end() iterator is returned.
+    /** Overload
+        @param first An iterator pointing to the first element to erase, or
+               pointing to the end of the range.
+        @param last An iterator pointing to one past the last element to erase,
+                    or pointing to the end of the range.
     */
     BOOST_JSON_DECL
     iterator
     erase(
         const_iterator first,
         const_iterator last) noexcept;
+    /// @}
 
     /** Add an element to the end.
 
-        This appends a copy of `v` to the container's
-        elements.
-        If `capacity() < size() + 1`, a reallocation
-        occurs first, and all iterators and references
-        are invalidated. Any past-the-end iterators are
-        always invalidated.
+        Insert a new element at the end of the container. **(1)**
+        copy-constructs the new element from `jv`, **(2)** move-constructs from
+        `jv`.
+
+        If `capacity() < size() + 1`, a reallocation occurs first, and all
+        iterators and references are invalidated. Any past-the-end iterators
+        are always invalidated.
+
+        The new element will be constructed using the container's associated
+        @ref boost::container::pmr::memory_resource.
 
         @par Complexity
         Amortized constant.
@@ -1433,36 +1130,18 @@ public:
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
-        @param v The value to insert. A copy will be made using the container's
-        associated `boost::container::pmr::memory_resource`.
+        @param jv The value to insert.
+
+        @{
     */
     BOOST_JSON_DECL
     void
-    push_back(value const& v);
+    push_back(value const& jv);
 
-    /** Add an element to the end.
-
-        This appends `v` to the container's elements via
-        move-construction.
-        If `capacity() < size() + 1`, a reallocation
-        occurs first, and all iterators and references
-        are invalidated. Any past-the-end iterators are
-        always invalidated.
-
-        @par Complexity
-        Amortized constant.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param v The value to insert. Ownership of the value will be
-        transferred via move construction, using the container's
-        associated `boost::container::pmr::memory_resource`.
-    */
     BOOST_JSON_DECL
     void
-    push_back(value&& v);
+    push_back(value&& jv);
+    /// @}
 
     /** Append a constructed element in-place.
 
@@ -1497,8 +1176,8 @@ public:
 
         The last element of the container is erased.
 
-        @par Precondition
-        `not empty()`
+        @pre
+        `! empty()`
 
         @par Exception Safety
         No-throw guarantee.
@@ -1510,120 +1189,90 @@ public:
     /** Change the number of elements stored.
 
         Resizes the container to contain `count` elements.
-        If `capacity() < size() + count`, a reallocation
-        occurs first, and all iterators and references
-        are invalidated. Any past-the-end iterators are
-        always invalidated.
 
-        @li If `size() > count`, the container is reduced
-        to its first `count` elements.
+        @li If `size() > count`, the container is reduced to its first `count`
+            elements.
+        @li If `size() < count`, additional null values (**(1)**) or copies
+            of `jv` (**(2)**) are appended.
 
-        @li If `size() < count`, additional null values
-        are appended.
+        If `capacity() < count`, a reallocation occurs first, and all iterators
+        and references are invalidated. Any past-the-end iterators are always
+        invalidated.
 
         @par Complexity
-        Linear in `abs(size() - count)`, plus the cost of
-        reallocation if @ref capacity() is less than `count`.
+        Linear in `size() + count`.
 
         @par Exception Safety
         Strong guarantee.
         Calls to `memory_resource::allocate` may throw.
 
         @param count The new size of the container.
+
+        @{
     */
     BOOST_JSON_DECL
     void
     resize(std::size_t count);
 
-    /** Change the number of elements stored.
-
-        Resizes the container to contain `count` elements.
-        If `capacity() < size() + count`, a reallocation
-        occurs first, and all iterators and references
-        are invalidated. Any past-the-end iterators are
-        always invalidated.
-
-        @li If `size() > count`, the container is reduced
-        to its first `count` elements.
-
-        @li If `size() < count`, additional copies of `v`
-        are appended.
-
-        @par Complexity
-        Linear in `abs(size() - count)`, plus the cost of
-        reallocation if @ref capacity() is less than `count`.
-
-        @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
-
-        @param count The new size of the container.
-
-        @param v The @ref value to copy into the new elements.
+    /** Overload
+        @param jv The @ref value to copy into the new elements.
+        @param count
     */
     BOOST_JSON_DECL
     void
     resize(
         std::size_t count,
-        value const& v);
+        value const& jv);
+    /// @}
 
-    /** Swap the contents.
+    /** Swap two arrays.
 
-        Exchanges the contents of this array with another
-        array. Ownership of the respective
-        `boost::container::pmr::memory_resource` objects is not transferred.
+        Exchanges the contents of this array with another array. Ownership of
+        the respective @ref boost::container::pmr::memory_resource objects is
+        not transferred. If `this == &other`, this function call has no effect.
 
-        @li If `*other.storage() == *this->storage()`,
-        ownership of the underlying memory is swapped in
-        constant time, with no possibility of exceptions.
-        All iterators and references remain valid.
+        @li If `*storage() == *other.storage()` all iterators and references
+        remain valid.
 
-        @li If `*other.storage() != *this->storage()`,
-        the contents are logically swapped by making copies,
-        which can throw. In this case all iterators and
-        references are invalidated.
+        @li Otherwise, the contents are logically swapped by making copies,
+        which can throw. In this case all iterators and references are
+        invalidated.
 
         @par Complexity
-        Constant or linear in @ref size() plus `other.size()`.
+        If `*storage() == *other.storage()`, then constant; otherwise linear in
+        `size() + other.size()`.
 
         @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
+        No-throw guarantee if `*storage() == *other.storage()`. Otherwise
+        strong guarantee. Calls to `memory_resource::allocate` may throw.
 
         @param other The value to swap with.
-        If `this == &other`, this function call has no effect.
     */
     BOOST_JSON_DECL
     void
     swap(array& other);
 
-    /** Exchange the given values.
+    /** Swap two arrays.
 
         Exchanges the contents of the array `lhs` with another array `rhs`.
-        Ownership of the respective `boost::container::pmr::memory_resource`
-        objects is not transferred.
+        Ownership of the respective @ref boost::container::pmr::memory_resource
+        objects is not transferred. If `&lhs == &rhs`, this function call has
+        no effect.
 
-        @li If `*lhs.storage() == *rhs.storage()`,
-        ownership of the underlying memory is swapped in
-        constant time, with no possibility of exceptions.
-        All iterators and references remain valid.
+        @li If `*lhs.storage() == *rhs.storage()` all iterators and references
+        remain valid.
 
-        @li If `*lhs.storage() != *rhs.storage()`,
-        the contents are logically swapped by making a copy,
-        which can throw. In this case all iterators and
-        references are invalidated.
-
-        @par Effects
-        @code
-        lhs.swap( rhs );
-        @endcode
+        @li Otherwise, the contents are logically swapped by making copies,
+        which can throw. In this case all iterators and references are
+        invalidated.
 
         @par Complexity
-        Constant or linear in `lhs.size() + rhs.size()`.
+        If `*lhs.storage() == *rhs.storage()`, then constant; otherwise linear
+        in `lhs.size() + rhs.size()`.
 
         @par Exception Safety
-        Strong guarantee.
-        Calls to `memory_resource::allocate` may throw.
+        No-throw guarantee if `*lhs.storage() == *rhs.storage()`. Otherwise
+        strong guarantee. Calls to `memory_resource::allocate` may throw.
 
         @param lhs The array to exchange.
 
@@ -1639,17 +1288,13 @@ public:
         lhs.swap(rhs);
     }
 
-    /** Return `true` if two arrays are equal.
+    /** Compare two arrays for equality.
 
-        Arrays are equal when their sizes are
-        the same, and they are element-for-element
-        equal in order.
-
-        @par Effects
-        `return std::equal( lhs.begin(), lhs.end(), rhs.begin(), rhs.end() );`
+        Arrays are equal when their sizes are the same, and they are
+        element-for-element equal in order.
 
         @par Complexity
-        Constant or linear in `lhs.size()`.
+        Linear in `lhs.size()`.
 
         @par Exception Safety
         No-throw guarantee.
@@ -1664,17 +1309,13 @@ public:
         return lhs.equal(rhs);
     }
 
-    /** Return `true` if two arrays are not equal.
+    /** Compare two arrays for inequality.
 
-        Arrays are equal when their sizes are
-        the same, and they are element-for-element
-        equal in order.
-
-        @par Effects
-        `return ! std::equal( lhs.begin(), lhs.end(), rhs.begin(), rhs.end() );`
+        Arrays are equal when their sizes are the same, and they are
+        element-for-element equal in order.
 
         @par Complexity
-        Constant or linear in `lhs.size()`.
+        Linear in `lhs.size()`.
 
         @par Exception Safety
         No-throw guarantee.
@@ -1689,7 +1330,7 @@ public:
         return ! (lhs == rhs);
     }
 
-    /** Serialize @ref array to an output stream.
+    /** Serialize to an output stream.
 
         This function serializes an `array` as JSON into the output stream.
 

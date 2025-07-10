@@ -185,6 +185,18 @@ struct T11 : T10
     std::string s;
 
     void
+    set_n(int v)
+    {
+        n = v;
+    }
+
+    void
+    set_d(double v)
+    {
+        d = v;
+    }
+
+    void
     set_b(bool v)
     {
         b = v;
@@ -195,6 +207,24 @@ private:
 
     BOOST_DESCRIBE_CLASS(T11, (T10), (s), (), (b))
 };
+
+struct Base1
+{
+    int a = 1;
+};
+BOOST_DESCRIBE_STRUCT(Base1, (), (a))
+
+struct Base2
+{
+    int a = 2;
+};
+BOOST_DESCRIBE_STRUCT(Base2, (), (a))
+
+struct Derived: Base1, Base2
+{
+    int a = 3;
+};
+BOOST_DESCRIBE_STRUCT(Derived, (Base1, Base2), ())
 
 //----------------------------------------------------------
 
@@ -495,10 +525,10 @@ public:
         BOOST_TEST(( jv == value{{"n", 909}, {"d", -1.45}} ));
 
         ::value_from_test_ns::T11 t11;
-        t11.n = 67;
-        t11.d = -.12;
-        t11.s = "qwerty";
+        t11.set_n(67);
+        t11.set_d(-.12);
         t11.set_b(true);
+        t11.s = "qwerty";
         jv = value_from( t11, ctx... );
         BOOST_TEST(( jv == value{{"n", 67}, {"d", -.12}, {"s", "qwerty"}, {"b", true}} ));
 

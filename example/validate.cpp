@@ -7,7 +7,7 @@
 // Official repository: https://github.com/boostorg/json
 //
 
-//[example_validate
+// tag::example_validate[]
 
 /*
     This example verifies that a file contains valid JSON.
@@ -131,4 +131,4 @@ main(int argc, char** argv)
     return EXIT_SUCCESS;
 }
 
-//]
+// end::example_validate[]

@@ -1,0 +1,67 @@
+////
+Copyright (c) 2019 Vinnie Falco (vinnie.falco@gmail.com)
+Copyright (c) 2025 Dmitry Arkhipov (grisumbras@yandex.ru)
+
+Distributed under the Boost Software License, Version 1.0. (See accompanying
+file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+Official repository: https://github.com/boostorg/json
+////
+
+= Serializing
+
+Serialization is the process where a JSON document represented in memory by
+a <<ref_value>> is turned into a sequence of characters. The library provides
+the following free functions and types for serialization:
+
+.Serialization Functions and Types
+|===
+|Name|Description
+
+| <<ref_operator_lt_lt>>
+| Serialize a <<ref_value>>, <<ref_array>>, <<ref_object>>, or <<ref_string>>
+  to a {std_ostream}.
+
+| <<ref_serialize>>
+| Return a {std_string} representing a serialized <<ref_value>>, <<ref_array>>,
+  <<ref_object>>, or <<ref_string>>.
+
+| <<ref_serializer>>
+| A stateful object which may be used to efficiently serialize one or more
+  instances of <<ref_value>>, <<ref_array>>, <<ref_object>>, or <<ref_string>>.
+|===
+
+To facilitate debugging and ease of output, library container types may be
+written to standard output streams using the stream operator:
+
+[source]
+----
+include::../../../test/doc_serializing.cpp[tag=doc_serializing_1,indent=0]
+----
+
+The <<ref_serialize>> function converts a <<ref_value>> into a {std_string}:
+
+[source]
+----
+include::../../../test/doc_serializing.cpp[tag=doc_serializing_2,indent=0]
+----
+
+In situations where serializing a <<ref_value>> in its entirety is inefficient
+or even impossible, <<ref_serializer>> can be used to serialize a <<ref_value>>
+incrementally. This may be done for a variety of reasons, such as to avoid
+buffering the entire output, or to ensure that a fixed amount of work is
+performed in each cycle. Instances of <<ref_serializer>> maintain an output
+state using internal dynamically allocated structures, with an interface to
+retrieve successive buffers of the serialized output into a caller provided
+buffer. Here is an example, demonstrating how <<ref_operator_lt_lt>> may be
+implemented using a <<ref_serializer>>:
+
+[source]
+----
+include::../../../include/boost/json/impl/serialize.ipp[tag=example_operator_lt_lt,indent=0]
+----
+
+As with the parser, the serializer may be reused by calling
+<<ref_serializer_reset>>. This sets up the object to serialize a new instance
+and retains previously allocated memory. This can result in performance
+improvements when multiple variables are serialized.

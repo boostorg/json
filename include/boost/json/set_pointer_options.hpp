@@ -16,13 +16,13 @@ namespace boost {
 namespace json {
 
 /** Options for @ref value::set_at_pointer
- *
- * This structure is used for controlling behavior of
- * @ref value::set_at_pointer regarding creation of intermediate elements.
+
+    This structure is used for controlling behavior of
+    @ref value::set_at_pointer regarding creation of intermediate elements.
  */
 struct set_pointer_options
 {
-    /** Whether to create arrays
+    /** Whether to create arrays.
 
         The option controls whether arrays are created when a pointer token is
         a number or a past-the-end marker.
@@ -36,7 +36,7 @@ struct set_pointer_options
     */
     bool create_objects = true;
 
-    /** Whether to replace non-null scalars
+    /** Whether to replace non-null scalars.
 
         If the option is `true` any non-object, non-array value can be replaced
         by either an @ref object or a @ref array. If it's `false`, only `null`
@@ -45,7 +45,7 @@ struct set_pointer_options
     bool replace_any_scalar = false;
 
 
-    /** Maximum amount of elements added per one pointer token
+    /** Maximum amount of elements added per one pointer token.
 
         When addressing @ref array elements the number represented by pointer
         token can exceed the size of the array. In that case several elements

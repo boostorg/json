@@ -1,0 +1,252 @@
+[pagelevels=1,toclevels=1]
+= Release Notes
+
+:issue: https://github.com/boostorg/json/issues/
+
+include::doc/pages/definitions.adoc[]
+
+== Boost 1.89.0
+
+.Documentation
+* New documentation style. New reference documentation structure.
+
+.API Changes
+* {issue}1050[#1050] Optionals that are ranges are categorised as optionals.
+* {issue}1086[#1086] Described class support is enabled for types with bases.
+
+== Boost 1.87.0
+
+.API Changes
+* {issue}991[#991] Conversion into structs ignores unknown keys.
+* {issue}1041[#1041] Exception wrapping behaviour for `value_to` is simplified.
+* {issue}1040[#1040] Deprecated initilaizer list behavior was removed.
+* {issue}1040[#1040] Deprecated type aliases were removed.
+
+.New Features
+* {issue}956[#956] <<direct_conversion,Direct serialization>>.
+* {issue}644[#644] Add GDB pretty printers for Boost.JSON types.
+
+.Fixes
+* {issue}1057[#1057] Use correct 64bit full multiplication for MinGW on ARM64.
+* {issue}1048[#1048] Fix parse_into handling of tuple of the wrong size.
+* {issue}1047[#1047] Check for input size larger than allowed size of sequence.
+* {issue}1034[#1034] Fix `value_ref` segfaulting on GCC 14.
+
+== Boost 1.86.0
+
+.Deprecation
+* Support for GCC versions older than version 5.0 is deprecated and **will
+  stop in Boost 1.88.0**.
+
+.API Changes
+* {issue}941[#941] `source_location` parameter was added to throwing accessor
+  functions.
+
+.New Features
+* {issue}940[#940] Parse option to tolerate invalid UTF-16 surrogate pairs,
+  and produce https://simonsapin.github.io/wtf-8/[WTF-8].
+* {issue}941[#941] Added accessor functions that return `system::result`.
+
+.Fixes
+* Handle missing error case in direct parsing.
+
+== Boost 1.85.0
+
+.New Dependencies
+* {issue}915[#915] Boost.Endian is now used to deal with endianness.
+
+.API Changes
+* {issue}881[#881] Aliases to Boost.System and Boost.Container components are
+  deprecated and **will be completely removed in 1.87.0**.
+
+.New Features
+* {issue}979[#979] Conversion of described classes supports private members
+* {issue}979[#979] Rvalue reference overload for `visit`.
+* {issue}977[#977] Add conversion support for path-like types.
+
+.Fixes
+* {issue}988[#988] Parsing into described classes correctly considers inherited
+  members.
+* {issue}975[#975] Conversion of self-referential sequences is disabled.
+* {issue}952[#952] Fixed reference handling in visit.
+
+== Boost 1.84.0
+
+.API Changes
+* {issue}925[#925] Add a conversion category for variants.
+* {issue}833[#833] Add a conversion category for optionals.
+* {issue}840[#840] Relax iterator requirements for constructors from iterator
+  pairs.
+
+.New Features
+* {issue}627[#627] Parsing directly into user types. See
+  <<direct_conversion,Direct Parsing>>.
+
+.Fixes
+* {issue}933[#933] Fix reading beyond input buffer.
+* {issue}920[#920] Fix inconsistent choice of init list constructor.
+* Documentation improvements.
+
+== Boost 1.83.0
+
+.API Changes
+* {issue}859[#859] The library now only throws {ref_system_error}, except for
+  when allocation failed, in which case `std::bad_alloc` is thrown.
+* {issue}884[#884] Serialization behavior can now be changed by
+  <<ref_serialize_options,`serialize_options`>>.
+
+.New Features
+* {issue}819[#819] <<contextual_conversions,Contextual conversions>>.
+* {issue}599[#599] <<ref_number_precision,Parser option>> for more precise
+  number parsing.
+* {issue}885[#885] Support <<ref_parse_options,`parse_options`>> in stream
+  `operator<<`.
+* {issue}397[#397] <<ref_parse_options,Parser option>> to allow `Infinity` and
+  `NaN` JSON literals.
+* {issue}901[#901] <<ref_number_precision,Parser mode>> that only validates
+  numbers rather than parsing them.
+* {issue}892[#892] Numbers with exponent larger than `INT_MAX` are accepted by
+  the parser and treated as infinity.
+
+.Fixes
+* {issue}901[#901] Fix `object` member functions that should provide strong
+  guarantee.
+* {issue}887[#887] Fix ambiguity of `end` call when `boost/range.hpp` is
+  included.
+* {issue}902[#902] Fix ASan failures.
+* {issue}904[#904] Fix error message for `error::size_mismatch`.
+* Fix conversion into tuple with const elements.
+
+== Boost 1.82.0
+
+.New Features
+* {issue}800[#800] <<ref_value_set_at_pointer,`set_at_pointer`>>.
+* {issue}570[#570] <<ref_value_hash_value_fr,`boost::hash` support>>.
+
+.Improvements
+* {issue}848[#848] <<ref_serializer_serializer,Caller-provided serializer
+  storage>> .
+* {issue}807[#807] `value_to` supports missing elements for `std::optional`.
+* Documentation improvements.
+
+.Fixes
+* {issue}876[#876] Fix parser suspend inside an escape character.
+* {issue}814[#814] Make sentinel() return a unique pointer.
+
+== Boost 1.81.0
+
+.API Changes
+* {issue}686[#686] Conversion traits were redesigned.
+* {issue}756[#756] Removed `condition::assign_error`.
+* {issue}758[#758] Removed `generic_category` alias.
+
+.New Features
+
+* {issue}749[#749] `object::stable_erase`.
+* {issue}778[#778] Added error condition for generic library errors.
+* {issue}619[#619] Added `parse` overload for `std::istream`.
+* {issue}619[#619] `operator>>` for `value`.
+
+.Improvements
+* {issue}686[#686] Null-like type conversion support (including
+  `std::nullptr_t`).
+* {issue}736[#736] Non-throwing conversion from `value` to user types.
+* {issue}677[#677] `value_to/from` supports `std::optional` and
+  `std::nullopt_t`.
+* {issue}517[#517] `value_to/from` supports `std::variant` and `std::monotype`.
+* {issue}626[#626] `value_to/from` supports supports described classes
+  and enums.
+* {issue}757[#757] Rvalue ref-qualified accessors for `value`.
+
+.Fixes
+* {issue}745[#745] Support for self-swap and self-move in `string`.
+* {issue}747[#747] Support for self-swap and self-move in `array`.
+* {issue}735[#735] Replaced C floating point constants with C++ equivalents.
+* Documentation improvements.
+
+== Boost 1.80.0
+
+.API Changes
+* {issue}703[#703] Add non-const `value::at` overloads.
+* {issue}717[#717] Add the ability to manually choose endianness of the
+  platform.
+* Add `string::subview()` overload.
+
+.Fixes
+* {issue}692[#692] Fix segfault in `array::erase(it)`.
+* {issue}697[#697] Fix low performance of `serialize` on libc{pp}.
+* {issue}708[#708] Fix ambiguous conversion to `std::string_view` on GCC 8.
+* {issue}717[#717] Fix parsing on big-endian platforms.
+* {issue}726[#726] Fix handling of comment after trailing comma.
+* Minor documentation fixes.
+
+== Boost 1.79.0
+
+.API Changes
+* {issue}650[#650] Standalone mode of the library is removed. Users who wish to
+  continue using standalone JSON can switch to
+  https://github.com/CPPAlliance/standalone-json.git[the C++ Alliance fork].
+
+.New Features
+* {issue}480[#480] Add support for JSON Pointer.
+
+.Improvements
+* Add `std::error_code` overloads.
+* {issue}680[#680] Add `boost::source_location` to `error_codes`.
+
+.Fixes
+* {issue}668[#668] Naturally grow string during serialization.
+
+== Boost 1.78.0
+
+.API Changes
+* {issue}628[#628] Standalone mode of the library is removed.
+
+== Boost 1.78.0
+
+.API Changes
+* {issue}628[#628] Standalone mode of the library is deprecated.
+
+.New Features
+* {issue}549[#549] {issue}550[#550] Allow external libraries to forward declare
+  <<ref_value_to,`value_to`>> and <<ref_value_from,`value_from`>>.
+
+.Fixes
+* {issue}608[#608] {issue}612[#612] Fixed signed integer overflow in number
+  parsing.
+* {issue}620[#620] Documentation fixes.
+
+.Improvements
+* {issue}557[#557] Add support for `/Zc:implicitNoexcept-` on MSVC.
+
+== Boost 1.77.0
+
+.New Features
+* {issue}538[#538] <<ref_string_operator_std_string_view,Implicit conversion
+  operator from `string` to `std::string_view`>>.
+* {issue}521[#521] {std_hash} specializations for JSON types.
+
+.Fixes
+* <<ref_object,`object`>> deallocates the correct size.
+* Fixed crash when constructing <<ref_array,`array`>> from a pair of iterators
+  that form an empty range.
+* <<ref_key_value_pair,`key_value_pair`>> allocates with the correct alignment.
+
+.Improvements
+* <<ref_value_to,`value_to`>> supports `TupleLike` types.
+* <<ref_value_to,`value_to`>> and <<ref_value_from,`value_from`>> support
+  {std_array} and similar types.
+
+== Boost 1.76.0
+
+.Fixes
+* {issue}481[#481] Refactored <<ref_value_from,value_from>> implementation;
+  user customizations are now always preferred over library-provided overloads.
+* {issue}484[#484] Fixed imprecise parsing for some floating point numbers.
+* {issue}485[#485] Fixed link errors in standalone mode, when used alongside
+  Boost.
+* {issue}497[#497] Fix Boost.Build builds on GCC 4.8.
+
+== Boost 1.75.0
+
+* Initial release.

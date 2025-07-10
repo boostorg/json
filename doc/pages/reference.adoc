@@ -1,0 +1,98 @@
+////
+Copyright (c) 2025 Dmitry Arkhipov (grisumbras@yandex.ru)
+
+Distributed under the Boost Software License, Version 1.0. (See accompanying
+file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+Official repository: https://github.com/boostorg/json
+////
+
+[#ref,pagelevels=3,toclevels=1]
+= Reference
+
+[cols=4*a,autowidth]
+|===
+4+|JSON
+
+a| *Classes* +
+<<ref_array>> +
+<<ref_basic_parser>> +
+<<ref_key_value_pair>> +
+<<ref_monotonic_resource>> +
+<<ref_object>> +
+<<ref_parser>> +
+<<ref_parse_options>> +
+<<ref_serializer>> +
+<<ref_serialize_options>> +
+<<ref_set_pointer_options>> +
+<<ref_static_resource>> +
+<<ref_storage_ptr>> +
+<<ref_stream_parser>> +
+<<ref_string>> +
+<<ref_value>> +
+<<ref_value_ref>> +
+<<ref_value_stack>>
+
+a| *Functions* +
+<<ref_get>> +
+<<ref_get_null_resource>> +
+<<ref_make_shared_resource>> +
+<<ref_parse>> +
+<<ref_parse_into>> +
+<<ref_result_from_errno>> +
+<<ref_serialize>> +
+<<ref_to_string>> +
+<<ref_try_value_to>> +
+<<ref_value_from>> +
+<<ref_value_to>> +
+<<ref_visit>>
+
+*P0308R0* +
+<<ref_pilfer>> +
+<<ref_pilfered>> +
+<<ref_is_pilfer_constructible>>
+
+| *Operators* +
+<<ref_operator_eq_eq>> +
+<<ref_operator_not_eq>> +
+<<ref_operator_gt>> +
+<<ref_operator_gt_eq>> +
+<<ref_operator_lt>> +
+<<ref_operator_lt_eq>> +
+<<ref_operator_lt_lt>> +
+
+*Aliases* +
+<<ref_parser_for>> +
+<<ref_string_view>>
+
+*Constants* +
+<<ref_array_kind>> +
+<<ref_condition>> +
+<<ref_error>> +
+<<ref_kind>> +
+<<ref_number_precision>> +
+<<ref_object_kind>> +
+<<ref_string_kind>>
+
+| *Type Traits* +
+<<ref_has_value_from>> +
+<<ref_has_value_to>> +
+<<ref_is_deallocate_trivial>> +
+<<ref_is_described_class>> +
+<<ref_is_described_enum>> +
+<<ref_is_map_like>> +
+<<ref_is_null_like>> +
+<<ref_is_optional_like>> +
+<<ref_is_path_like>> +
+<<ref_is_sequence_like>> +
+<<ref_is_string_like>> +
+<<ref_is_tuple_like>> +
+<<ref_is_variant_like>> +
+<<ref_result_for>> +
+<<ref_try_value_to_tag>> +
+<<ref_value_from_tag>> +
+<<ref_value_to_tag>>
+
+|===
+
+include::{entities-file}[leveloffset=+1]
