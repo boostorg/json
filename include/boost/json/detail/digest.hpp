@@ -10,6 +10,10 @@
 #ifndef BOOST_JSON_DETAIL_DIGEST_HPP
 #define BOOST_JSON_DETAIL_DIGEST_HPP
 
+#include <algorithm>
+#include <array>
+#include <cstring>
+
 namespace boost {
 namespace json {
 namespace detail {
@@ -23,15 +27,41 @@ digest(
     std::size_t salt) noexcept
 {
 #if BOOST_JSON_ARCH == 64
-    std::uint64_t const prime = 0x100000001B3ULL;
-    std::uint64_t hash  = 0xcbf29ce484222325ULL;
+    using hash_t = std::uint64_t;
+    hash_t const prime = 0x100000001B3ULL;
+    hash_t hash  = 0xcbf29ce484222325ULL;
 #else
-    std::uint32_t const prime = 0x01000193UL;
-    std::uint32_t hash  = 0x811C9DC5UL;
+    using hash_t = std::uint32_t;
+    hash_t const prime = 0x01000193UL;
+    hash_t hash  = 0x811C9DC5UL;
 #endif
     hash += salt;
-    for(; b != e; ++b)
-        hash = (*b ^ hash) * prime;
+
+    constexpr std::size_t step = sizeof(hash_t);
+    std::size_t n = std::distance(b, e);
+    std::size_t const tail = n & 0x7;
+
+    hash_t batch;
+    if (tail)
+    {
+        batch = 0;
+        std::copy_n( b, tail, reinterpret_cast<unsigned char*>(&batch) );
+        std::advance(b, tail);
+        hash = (batch ^ hash) * prime;
+        n -= tail;
+    }
+
+    while (n)
+    {
+        std::copy_n( b, step, reinterpret_cast<unsigned char*>(&batch) );
+
+        hash = (batch ^ hash) * prime;
+
+        std::advance(b, step);
+        n -= step;
+    }
+    BOOST_ASSERT(n == 0);
+
     return hash;
 }
 
