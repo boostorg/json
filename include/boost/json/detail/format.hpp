@@ -33,7 +33,7 @@ format_int64(
     char* dest, int64_t i) noexcept;
 
 BOOST_JSON_DECL
-unsigned
+std::size_t
 format_double(
     char* dest, double d, bool allow_infinity_and_nan = false) noexcept;
 
