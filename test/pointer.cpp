@@ -363,6 +363,34 @@ public:
     }
 
     void
+    testDigest()
+    {
+        value jv;
+        object& jo = jv.emplace_object();
+        for(auto i = 0; i < 100; ++i)
+            jo[std::to_string(i)] = i;
+
+        for(auto i = 0; i < 4; ++i)
+        {
+            std::string key(i * 4, 'c');
+            jo[key] = 1;
+            BOOST_TEST( jv.at_pointer("/" + key) == 1 );
+
+            key += 'a';
+            jo[key] = 1;
+            BOOST_TEST( jv.at_pointer("/" + key) == 1 );
+
+            key += 'b';
+            jo[key] = 1;
+            BOOST_TEST( jv.at_pointer("/" + key) == 1 );
+
+            key += 'c';
+            jo[key] = 1;
+            BOOST_TEST( jv.at_pointer("/" + key) == 1 );
+        }
+    }
+
+    void
     run()
     {
         testRootPointer();
@@ -376,6 +404,7 @@ public:
         testSetNonThrowing<system::error_code>();
         testSetNonThrowing<std::error_code>();
         testTry();
+        testDigest();
     }
 };
 
