@@ -57,25 +57,11 @@ serialize_impl(
     std::string& s,
     serializer& sr)
 {
-    // serialize to a small buffer to avoid
-    // the first few allocations in std::string
-    char buf[BOOST_JSON_STACK_BUFFER_SIZE];
     string_view sv;
-    sv = sr.read(buf);
-    if(sr.done())
-    {
-        // fast path
-        s.append(
-            sv.data(), sv.size());
-        return;
-    }
-    std::size_t len = sv.size();
-    s.reserve(len * 2);
+    std::size_t len = 0;
+    s.reserve(512);
     s.resize(s.capacity());
-    BOOST_ASSERT(
-        s.size() >= len * 2);
-    std::memcpy(&s[0],
-        sv.data(), sv.size());
+
     auto const lim =
         s.max_size() / 2;
     for(;;)
