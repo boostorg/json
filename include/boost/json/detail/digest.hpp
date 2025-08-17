@@ -38,7 +38,14 @@ digest(ForwardIterator b, ForwardIterator e, std::size_t salt) noexcept
     for( ; b != e; std::advance(b, N) )
     {
         state_type num;
+#ifdef _MSC_VER
+# pragma warning(push)
+# pragma warning(disable: 4996)
+#endif
         std::copy_n( b, N, reinterpret_cast<unsigned char*>(&num) );
+#ifdef _MSC_VER
+# pragma warning(pop)
+#endif
 
         num *= m;
         num ^= num >> r;
