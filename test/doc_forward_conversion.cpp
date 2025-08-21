@@ -128,8 +128,8 @@ tag_invoke(
     auto& js = jv.emplace_string();
     js.resize( 4 * 3 + 3 + 1 ); // XXX.XXX.XXX.XXX\0
     auto it = addr.begin();
-    auto n = std::sprintf(
-        js.data(), "%hhu.%hhu.%hhu.%hhu", it[0], it[1], it[2], it[3] );
+    auto n = std::snprintf(
+        js.data(), js.size(), "%hhu.%hhu.%hhu.%hhu", it[0], it[1], it[2], it[3] );
     js.resize(n);
 }
 
