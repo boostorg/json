@@ -115,18 +115,7 @@ std::size_t
 format_double(
     char* dest, double d, bool allow_infinity_and_nan) noexcept
 {
-    unsigned variant = allow_infinity_and_nan ? 8 : 0;
-    variant |= std::isnan(d) ? 1 : 0;
-    if( std::isinf(d) )
-    {
-        variant |= 2;
-        variant |= std::signbit(d) ? 4 : 0;
-    }
-
-    std::size_t size;
-    switch( variant )
-    {
-    default:
+    if( std::isfinite(d) )
     {
         boost::charconv::to_chars_result result = boost::charconv::to_chars(
             dest,
@@ -134,36 +123,45 @@ format_double(
             d,
             boost::charconv::chars_format::scientific);
         BOOST_ASSERT( result.ec == std::errc() );
-        size = result.ptr - dest;
-        break;
-    }
-    case (8 + 1):
-        std::memcpy(dest, "NaN", 3);
-        size = 3;
-        break;
-    case (0 + 1):
-        std::memcpy(dest, "null", 4);
-        size = 4;
-        break;
-    case (8 + 0 + 2):
-        std::memcpy(dest, "Infinity", 8);
-        size = 8;
-        break;
-    case (8 + 4 + 2):
-        std::memcpy(dest, "-Infinity", 9);
-        size = 9;
-        break;
-    case (0 + 0 + 2):
-        std::memcpy(dest, "1e99999", 7);
-        size = 7;
-        break;
-    case (0 + 4 + 2):
-        std::memcpy(dest, "-1e99999", 8);
-        size = 8;
-        break;
+        return result.ptr - dest;
     }
 
-    return size;
+    if (allow_infinity_and_nan)
+    {
+        if( std::isnan(d) )
+        {
+            std::memcpy(dest, "NaN", 3);
+            return 3;
+        }
+        else if( std::signbit(d) )
+        {
+            BOOST_ASSERT( std::isinf(d) );
+            std::memcpy(dest, "-Infinity", 9);
+            return 9;
+        }
+        else
+        {
+            std::memcpy(dest, "Infinity", 8);
+            return 8;
+        }
+    }
+
+    if( std::isnan(d) )
+    {
+        std::memcpy(dest, "null", 4);
+        return 4;
+    }
+    else if( std::signbit(d) )
+    {
+        BOOST_ASSERT( std::isinf(d) );
+        std::memcpy(dest, "-1e99999", 8);
+        return 8;
+    }
+    else
+    {
+        std::memcpy(dest, "1e99999", 7);
+        return 7;
+    }
 }
 
 } // detail
