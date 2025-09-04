@@ -146,84 +146,84 @@ Compilers and optimization flags: gcc 8.1 (-O3), clang 12.0 (-O3), and msvc
 == Parsing
 
 === Parse apache_builds.json
-image::images/parse_apache_builds.png[width=668,height=712]
+image::images/parse_apache_builds.png[width=668,align="left"]
 
 === Parse canada.json
-image::images/parse_canada.png[width=668,height=712]
+image::images/parse_canada.png[width=668,align="left"]
 
 === Parse citm_catalog.json
-image::images/parse_citm_catalog.png[width=668,height=712px]
+image::images/parse_citm_catalog.png[width=668,align="left"]
 
 === Parse github_events.json
-image::images/parse_github_events.png[width=668,height=712]
+image::images/parse_github_events.png[width=668,align="left"]
 
 === Parse gsoc-2018.json
-image::images/parse_gsoc_2018.png[width=668,height=712]
+image::images/parse_gsoc_2018.png[width=668,align="left"]
 
 === Parse instruments.json
-image::images/parse_instruments.png[width=668,height=712]
+image::images/parse_instruments.png[width=668,align="left"]
 
 === Parse marine_ik.json
-image::images/parse_marine_ik.png[width=668,height=712]
+image::images/parse_marine_ik.png[width=668,align="left"]
 
 === Parse mesh.json
-image::images/parse_mesh.png[width=668,height=712]
+image::images/parse_mesh.png[width=668,align="left"]
 
 === Parse mesh.pretty.json
-image::images/parse_mesh_pretty.png[width=668,height=712]
+image::images/parse_mesh_pretty.png[width=668,align="left"]
 
 === Parse numbers.json
-image::images/parse_numbers.png[width=668,height=712]
+image::images/parse_numbers.png[width=668,align="left"]
 
 === Parse random.json
-image::images/parse_random.png[width=668,height=712]
+image::images/parse_random.png[width=668,align="left"]
 
 === Parse twitter.json
-image::images/parse_twitter.png[width=668,height=712]
+image::images/parse_twitter.png[width=668,align="left"]
 
 === Parse twitterescaped.json
-image::images/parse_twitterescaped.png[width=668,height=712]
+image::images/parse_twitterescaped.png[width=668,align="left"]
 
 === Parse update-center.json
-image::images/parse_update_center.png[width=668,height=712]
+image::images/parse_update_center.png[width=668,align="left"]
 
 == Serialization
 
 === Serialize canada.json
-image::images/serialize_canada.png[width=668,height=712]
+image::images/serialize_canada.png[width=668,align="left"]
 
 === Serialize citm_catalog.json
-image::images/serialize_citm_catalog.png[width=668,height=712]
+image::images/serialize_citm_catalog.png[width=668,align="left"]
 
 === Serialize github_events.json
-image::images/serialize_github_events.png[width=668,height=712]
+image::images/serialize_github_events.png[width=668,align="left"]
 
 === Serialize gsoc-2018.json
-image::images/serialize_gsoc_2018.png[width=668,height=712]
+image::images/serialize_gsoc_2018.png[width=668,align="left"]
 
 === Serialize instruments.json
-image::images/serialize_instruments.png[width=668,height=712]
+image::images/serialize_instruments.png[width=668,align="left"]
 
 === Serialize marine_ik.json
-image::images/serialize_marine_ik.png[width=668,height=712]
+image::images/serialize_marine_ik.png[width=668,align="left"]
 
 === Serialize mesh.json
-image::images/serialize_mesh.png[width=668,height=712]
+image::images/serialize_mesh.png[width=668,align="left"]
 
 === Serialize mesh.pretty.json
-image::images/serialize_mesh_pretty.png[width=668,height=712]
+image::images/serialize_mesh_pretty.png[width=668,align="left"]
 
 === Serialize numbers.json
-image::images/serialize_numbers.png[width=668,height=712]
+image::images/serialize_numbers.png[width=668,align="left"]
 
 === Serialize random.json
-image::images/serialize_random.png[width=668,height=712]
+image::images/serialize_random.png[width=668,align="left"]
 
 === Serialize twitter.json
-image::images/serialize_twitter.png[width=668,height=712]
+image::images/serialize_twitter.png[width=668,align="left"]
 
 === Serialize twitterescaped.json
-image::images/serialize_twitterescaped.png[width=668,height=712]
+image::images/serialize_twitterescaped.png[width=668,align="left"]
 
 === Serialize update-center.json
-image::images/serialize_update_center.png[width=668,height=712px]
+image::images/serialize_update_center.png[width=668,align="left"]

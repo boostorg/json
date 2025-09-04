@@ -58,7 +58,7 @@ generate with-path : entities.adoc : <generating-rule>@with-path ;
 
 install images
     : [ glob images/*.png ]
-    : <location>html/json/images
+    : <location>html/images
     ;
 explicit images ;
 
