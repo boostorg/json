@@ -8,7 +8,7 @@
 # Official repository: https://github.com/boostorg/json
 #
 
-cmake_minimum_required(VERSION 3.15...3.16)
+cmake_minimum_required(VERSION 3.14...3.16)
 
 set(BOOST_JSON_VERSION 2)
 if(BOOST_SUPERPROJECT_VERSION)

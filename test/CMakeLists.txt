@@ -61,7 +61,9 @@ target_compile_definitions(boost_json-no_exceptions PRIVATE
     BOOST_JSON_NO_LIB=1
 )
 target_compile_options(boost_json-no_exceptions PRIVATE
-    $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-fno-exceptions>
+    $<$<CXX_COMPILER_ID:GNU>:-fno-exceptions>
+    $<$<CXX_COMPILER_ID:Clang>:-fno-exceptions>
+    $<$<CXX_COMPILER_ID:AppleClang>:-fno-exceptions>
     $<$<CXX_COMPILER_ID:MSVC>:/wd4530>
     $<$<CXX_COMPILER_ID:MSVC>:/wd4577>
 )
