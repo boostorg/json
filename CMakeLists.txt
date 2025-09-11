@@ -54,16 +54,19 @@ if(BOOST_JSON_IS_ROOT)
     unset(CMAKE_FOLDER)
 endif()
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/pretty_printers")
-find_package(BoostPrettyPrinters QUIET)
-if(BoostPrettyPrinters_FOUND)
-    boost_pretty_printers_gdb_python_header(
-        TARGET boost_json_regenerate_printers
-        INPUT src/boost_json_gdb_printers.py
-        OUTPUT include/boost/json/detail/gdb_printers.hpp
-        HEADER_GUARD BOOST_JSON_DETAIL_GDB_PRINTERS_HPP
-        NO_DISABLE_MACRO
-        EXCLUDE_FROM_ALL)
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.12.0")
+    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/pretty_printers")
+    # Note: find_package(Python3) supported in cmake-3.12 onwards
+    find_package(BoostPrettyPrinters QUIET)
+    if(BoostPrettyPrinters_FOUND)
+        boost_pretty_printers_gdb_python_header(
+            TARGET boost_json_regenerate_printers
+            INPUT src/boost_json_gdb_printers.py
+            OUTPUT include/boost/json/detail/gdb_printers.hpp
+            HEADER_GUARD BOOST_JSON_DETAIL_GDB_PRINTERS_HPP
+            NO_DISABLE_MACRO
+            EXCLUDE_FROM_ALL)
+    endif()
 endif()
 
 function(boost_json_setup_properties target)
