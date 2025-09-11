@@ -65,6 +65,9 @@ common_install () {
 }
 
 common_cmake () {
+    if [ -n "$CMAKE_VERSION" ]; then
+        pip install "cmake == $CMAKE_VERSION"
+    fi
     export CXXFLAGS="-Wall -Wextra -Werror"
     export CMAKE_SHARED_LIBS=${CMAKE_SHARED_LIBS:-1}
     export CMAKE_NO_TESTS=${CMAKE_NO_TESTS:-error}
