@@ -63,15 +63,9 @@ jobs:
         cxxstd: 17
         targets: libs/json/fuzzing//run
     - name: Pack the corpus
-      working-directory: boost-root/libs/json/fuzzing/
+      working-directory: boost-root/libs/json/fuzzing/cmin
       run: |
-        tar cf - cmin > corpus.tar.tmp && mv corpus.tar.tmp "${GITHUB_WORKSPACE}"/head/fuzzing
-    - name: Save the corpus as a github artifact
-      uses: actions/upload-artifact@v4
-      if: success()
-      with:
-        name: corpus
-        path: head/fuzzing/corpus.tar
+        tar cf - * > "$GITHUB_WORKSPACE"/head/fuzzing/corpus.tar
     - name: Archive any crashes as an artifact
       uses: actions/upload-artifact@v4
       if: always()

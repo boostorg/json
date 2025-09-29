@@ -39,32 +39,31 @@ import testing ;
 ] ;
 
 local corpus.tar = [ glob-ex . : corpus.tar ] ;
+local test-corpus ;
 if $(corpus.tar)
 {
     # if an old corpus exists, use it
-    # get it with curl -O --location -J https://bintray.com/pauldreik/boost.json/download_file?file_path=corpus%2Fcorpus.tar
     make old-corpus
         : $(corpus.tar)
         : @untar-corpus
         : <location>oldcorpus
         ;
+    explicit old-corpus ;
 }
 else
 {
-    alias old-corpus ;
+    test-corpus = [ glob-tree-ex ../test : *.json ] ;
 }
-explicit old-corpus ;
 
-
-local initial-corpus = [ glob-tree-ex ../test : *.json ] ;
-
+local old-runs = [ SORT [ glob-tree-ex old_crashes : * ] ] ;
+make old_crashes : : @mkdir : <location>. ;
+explicit old_crashes ;
 
 local variants = basic_parser parse parser direct_parse ;
 for local variant in basic_parser parse parser direct_parse
 {
     local $(variant)-runs ;
     local fuzzer = fuzzer_$(variant) ;
-    lib $(fuzzer) : fuzz_$(variant).cpp /boost/json//boost_json ;
     exe $(fuzzer)
         : fuzz_$(variant).cpp /boost/json//json_sources
         : requirements
@@ -73,44 +72,44 @@ for local variant in basic_parser parse parser direct_parse
         ;
 
     # make sure the old crashes pass without problems
-    local old-runs = [ glob-tree-ex old_crashes/$(variant) : * ] ;
     if $(old-runs)
     {
         run $(fuzzer)
             : target-name $(variant)-run-crashes
-            : input-files [ SORT $(old-runs) ]
+            : input-files $(old-runs)
             ;
+        explicit $(variant)-run-crashes ;
         $(variant)-runs += $(variant)-run-crashes ;
     }
 
+    local old-corpus-deps ;
+    if $(corpus.tar)
+    {
+        old-corpus-deps = old-corpus ;
+    }
+    else
+    {
+        # make an initial corpus from the test data already in the repo
+        for file in $(test-corpus)
+        {
+            local copied = $(variant)/$(file:D=) ;
+            make $(copied) : $(file) : common.copy : <location>oldcorpus ;
+            explicit $(copied) ;
+            old-corpus-deps += $(copied) ;
+        }
+    }
     make oldcorpus/$(variant)
-        : old-corpus
-        : common.MkDir
+        : $(old-corpus-deps)
+        : @mkdir
         : <location>.
         ;
     explicit oldcorpus/$(variant) ;
-
-    # make an initial corpus from the test data already in the repo
-    local seed-corpus ;
-    for file in $(initial-corpus)
-    {
-        local copied = $(variant)/$(file:D=) ;
-        make $(copied) : $(file) : common.copy : <location>seedcorpus ;
-        explicit $(copied) ;
-        seed-corpus += $(copied) ;
-    }
-    make seedcorpus/$(variant)
-        : $(seed-corpus)
-        : common.MkDir
-        : <location>.
-        ;
-    explicit seedcorpus/$(variant) ;
 
     # run the fuzzer for a short while
     make out/$(variant)
         : $(fuzzer)
           oldcorpus/$(variant)
-          seedcorpus/$(variant)
+          old_crashes
         : @run-fuzzer
         : <location>.
           <flags>$(.MAXTIME)
@@ -122,8 +121,9 @@ for local variant in basic_parser parse parser direct_parse
     # minimize the corpus
     make cmin/$(variant)
         : $(fuzzer)
-          oldcorpus/$(variant)
           out/$(variant)
+          oldcorpus/$(variant)
+          old_crashes
         : @run-fuzzer
         : <location>.
           <flags>-merge=1
@@ -138,6 +138,13 @@ for local variant in basic_parser parse parser direct_parse
 alias run : $(variants)-run ;
 explicit run $(variants)-run ;
 
+
+rule mkdir ( target : source * : props * )
+{
+    local dir = [ path.make [ on $(target) return $(LOCATE) ] ] ;
+    dir = [ path.join $(dir) $(target:G=) ] ;
+    common.MkDir $(dir) ;
+}
 
 rule fuzzer-props ( props * )
 {
@@ -169,16 +176,36 @@ rule run-fuzzer ( target : sources * : props * )
     local flags = [ property.select flags : $(props) ] ;
     FLAGS on $(target) = $(flags:G=) ;
 
+    LOG on $(target) = [ path.native [ path.join $(target) _log ] ] ;
+
     local dir = [ path.make [ on $(target) return $(LOCATE) ] ] ;
     dir = $(dir)/$(target:G=) ;
     common.MkDir $(dir) ;
     DEPENDS $(target) : $(dir) ;
+
+    LOG on $(target) = [ path.native [ path.join $(dir) _log ] ] ;
 }
 
+.SET_STATUS = [ modules.peek testing : .SET_STATUS ] ;
+.STATUS = [ modules.peek testing : .STATUS ] ;
+.RUN_OUTPUT_NL = [ modules.peek testing : .RUN_OUTPUT_NL ] ;
+.STATUS_NOT_0 = [ modules.peek testing : .STATUS_NOT_0 ] ;
+.CATENATE = [ modules.peek testing : .CATENATE ] ;
+.ENDIF = [ modules.peek testing : .ENDIF ] ;
+.NULL_OUT = [ modules.peek common : NULL_OUT ] ;
+.RM = [ common.rm-command ] ;
 actions run-fuzzer
 {
     $(.UBSAN_OPTIONS)
-    $(>[1]) $(<) $(>[2]) $(>[3]) $(FLAGS)
+    $(>[1]) $(<) $(>[2-]) $(FLAGS) > "$(LOG)" 2>&1
+    $(.SET_STATUS)
+    if $(.STATUS_NOT_0)
+        echo ====== BEGIN OUTPUT ======
+        $(.CATENATE) "$(LOG)"
+        echo ====== END OUTPUT ======
+        $(RM) $(LOG) $(.NULL_OUT)
+        exit 1
+    $(.ENDIF)
 }
 
 .TOUCH_FILE = [ common.file-touch-command ] ;
