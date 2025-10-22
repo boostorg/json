@@ -10,7 +10,7 @@
 #ifndef BOOST_JSON_DETAIL_IMPL_STACK_HPP
 #define BOOST_JSON_DETAIL_IMPL_STACK_HPP
 
-#include <boost/static_assert.hpp>
+#include <boost/core/detail/static_assert.hpp>
 #include <memory>
 
 namespace boost {
@@ -68,7 +68,7 @@ stack::
 push_unchecked(T const& t)
 {
     constexpr std::size_t n = sizeof(T);
-    BOOST_STATIC_ASSERT( is_trivially_copy_assignable<T>::value );
+    BOOST_CORE_STATIC_ASSERT( is_trivially_copy_assignable<T>::value );
     BOOST_ASSERT( n <= cap_ - size_ );
     std::memcpy( base_ + size_, &t, n );
     size_ += n;
@@ -80,7 +80,7 @@ stack::
 peek(T& t)
 {
     constexpr std::size_t n = sizeof(T);
-    BOOST_STATIC_ASSERT( is_trivially_copy_assignable<T>::value );
+    BOOST_CORE_STATIC_ASSERT( is_trivially_copy_assignable<T>::value );
     BOOST_ASSERT( size_ >= n );
     std::memcpy( &t, base_ + size_ - n, n );
 }
@@ -104,7 +104,7 @@ void
 stack::
 push(T&& t, std::false_type)
 {
-    BOOST_STATIC_ASSERT( ! is_trivially_copy_assignable<T>::value );
+    BOOST_CORE_STATIC_ASSERT( ! is_trivially_copy_assignable<T>::value );
 
     using Holder = non_trivial< remove_cvref<T> >;
     constexpr std::size_t size = sizeof(Holder);

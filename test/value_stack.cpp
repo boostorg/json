@@ -10,6 +10,7 @@
 // Test that header file is self-contained.
 #include <boost/json/value_stack.hpp>
 
+#include <boost/core/detail/static_assert.hpp>
 #include <boost/json/serialize.hpp>
 #include <boost/json/static_resource.hpp>
 
@@ -18,7 +19,7 @@
 namespace boost {
 namespace json {
 
-BOOST_STATIC_ASSERT( std::is_nothrow_destructible<value_stack>::value );
+BOOST_CORE_STATIC_ASSERT( std::is_nothrow_destructible<value_stack>::value );
 
 class value_stack_test
 {

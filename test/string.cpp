@@ -10,6 +10,7 @@
 // Test that header file is self-contained.
 #include <boost/json/string.hpp>
 
+#include <boost/core/detail/static_assert.hpp>
 #include <boost/json/monotonic_resource.hpp>
 #include <boost/json/parse.hpp>
 
@@ -25,8 +26,8 @@
 namespace boost {
 namespace json {
 
-BOOST_STATIC_ASSERT( std::is_nothrow_destructible<string>::value );
-BOOST_STATIC_ASSERT( std::is_nothrow_move_constructible<string>::value );
+BOOST_CORE_STATIC_ASSERT( std::is_nothrow_destructible<string>::value );
+BOOST_CORE_STATIC_ASSERT( std::is_nothrow_move_constructible<string>::value );
 
 class string_test
 {

@@ -12,6 +12,7 @@
 // test that header file is header-guarded properly
 #include <boost/json/conversion.hpp>
 
+#include <boost/core/detail/static_assert.hpp>
 #include <boost/describe/enum.hpp>
 #include <boost/describe/class.hpp>
 
@@ -179,61 +180,61 @@ public:
     void
     run()
     {
-        BOOST_STATIC_ASSERT( is_string_like<pseudo_string1>::value );
-        BOOST_STATIC_ASSERT( !is_string_like<pseudo_string2>::value );
+        BOOST_CORE_STATIC_ASSERT( is_string_like<pseudo_string1>::value );
+        BOOST_CORE_STATIC_ASSERT( !is_string_like<pseudo_string2>::value );
 
-        BOOST_STATIC_ASSERT( is_sequence_like<pseudo_sequence1>::value );
-        BOOST_STATIC_ASSERT( !is_sequence_like<pseudo_sequence2>::value );
+        BOOST_CORE_STATIC_ASSERT( is_sequence_like<pseudo_sequence1>::value );
+        BOOST_CORE_STATIC_ASSERT( !is_sequence_like<pseudo_sequence2>::value );
 
-        BOOST_STATIC_ASSERT( is_tuple_like<pseudo_tuple1>::value );
-        BOOST_STATIC_ASSERT( !is_tuple_like<pseudo_tuple2>::value );
+        BOOST_CORE_STATIC_ASSERT( is_tuple_like<pseudo_tuple1>::value );
+        BOOST_CORE_STATIC_ASSERT( !is_tuple_like<pseudo_tuple2>::value );
 
-        BOOST_STATIC_ASSERT(
+        BOOST_CORE_STATIC_ASSERT(
             is_map_like< pseudo_map1<pseudo_string1> >::value );
-        BOOST_STATIC_ASSERT(
+        BOOST_CORE_STATIC_ASSERT(
             !is_map_like< pseudo_map1<pseudo_string2> >::value );
-        BOOST_STATIC_ASSERT(
+        BOOST_CORE_STATIC_ASSERT(
             !is_map_like< pseudo_multimap1<pseudo_string1> >::value );
 
-        BOOST_STATIC_ASSERT( is_null_like<std::nullptr_t>::value );
-        BOOST_STATIC_ASSERT( is_null_like<my_null>::value );
+        BOOST_CORE_STATIC_ASSERT( is_null_like<std::nullptr_t>::value );
+        BOOST_CORE_STATIC_ASSERT( is_null_like<my_null>::value );
 
 #ifdef BOOST_DESCRIBE_CXX14
-        BOOST_STATIC_ASSERT( is_described_class<described1>::value );
-        BOOST_STATIC_ASSERT( is_described_class<described2>::value );
-        BOOST_STATIC_ASSERT( is_described_class<described5>::value );
-        BOOST_STATIC_ASSERT( is_described_class<described6>::value );
+        BOOST_CORE_STATIC_ASSERT( is_described_class<described1>::value );
+        BOOST_CORE_STATIC_ASSERT( is_described_class<described2>::value );
+        BOOST_CORE_STATIC_ASSERT( is_described_class<described5>::value );
+        BOOST_CORE_STATIC_ASSERT( is_described_class<described6>::value );
 
-        BOOST_STATIC_ASSERT( !is_described_class<my_null>::value );
-        BOOST_STATIC_ASSERT( !is_described_class<described3>::value );
-        BOOST_STATIC_ASSERT( !is_described_class<described4>::value );
-        BOOST_STATIC_ASSERT( !is_described_class<described7>::value );
-        BOOST_STATIC_ASSERT( !is_described_class<described8>::value );
-        BOOST_STATIC_ASSERT( !is_described_class<described9>::value );
-        // BOOST_STATIC_ASSERT( !is_described_class<described10>::value );
+        BOOST_CORE_STATIC_ASSERT( !is_described_class<my_null>::value );
+        BOOST_CORE_STATIC_ASSERT( !is_described_class<described3>::value );
+        BOOST_CORE_STATIC_ASSERT( !is_described_class<described4>::value );
+        BOOST_CORE_STATIC_ASSERT( !is_described_class<described7>::value );
+        BOOST_CORE_STATIC_ASSERT( !is_described_class<described8>::value );
+        BOOST_CORE_STATIC_ASSERT( !is_described_class<described9>::value );
 
-        BOOST_STATIC_ASSERT( is_described_enum<described_enum>::value );
-        BOOST_STATIC_ASSERT( !is_described_enum<my_null>::value );
-        BOOST_STATIC_ASSERT( !is_described_enum<described1>::value );
-        BOOST_STATIC_ASSERT( !is_described_enum<undescribed_enum>::value );
+        BOOST_CORE_STATIC_ASSERT( is_described_enum<described_enum>::value );
+        BOOST_CORE_STATIC_ASSERT( !is_described_enum<my_null>::value );
+        BOOST_CORE_STATIC_ASSERT( !is_described_enum<described1>::value );
+        BOOST_CORE_STATIC_ASSERT(
+            !is_described_enum<undescribed_enum>::value);
 #endif
 
-        BOOST_STATIC_ASSERT(
+        BOOST_CORE_STATIC_ASSERT((
             std::is_same<
                 detail::forwarded_value< std::vector<int>& >,
-                int& >::value );
-        BOOST_STATIC_ASSERT(
+                int& >::value ));
+        BOOST_CORE_STATIC_ASSERT((
             std::is_same<
                 detail::forwarded_value< std::vector<int> const& >,
-                int const& >::value );
-        BOOST_STATIC_ASSERT(
+                int const& >::value ));
+        BOOST_CORE_STATIC_ASSERT((
             std::is_same<
                 detail::forwarded_value< std::vector<int>&& >,
-                int >::value );
-        BOOST_STATIC_ASSERT(
+                int >::value ));
+        BOOST_CORE_STATIC_ASSERT((
             std::is_same<
                 detail::forwarded_value< std::vector<bool>& >,
-                bool >::value );
+                bool >::value ));
     }
 };
 

@@ -10,6 +10,7 @@
 #ifndef BOOST_JSON_IMPL_SERIALIZER_IPP
 #define BOOST_JSON_IMPL_SERIALIZER_IPP
 
+#include <boost/core/detail/static_assert.hpp>
 #include <boost/json/serializer.hpp>
 #include <boost/json/detail/format.hpp>
 #include <boost/json/detail/sse2.hpp>
@@ -70,7 +71,7 @@ writer(
     , opts_(opts)
 {
     // ensure room for \uXXXX escape plus one
-    BOOST_STATIC_ASSERT(sizeof(buf_) >= 7);
+    BOOST_CORE_STATIC_ASSERT( sizeof(buf_) >= 7 );
 }
 
 bool

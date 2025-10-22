@@ -19,6 +19,7 @@
 # pragma GCC diagnostic ignored "-Wunused"
 #endif
 
+#include <boost/core/detail/static_assert.hpp>
 #include <boost/json.hpp>
 
 #include <algorithm>
@@ -983,13 +984,9 @@ usingSetAtPointer()
     // end::snippet_pointer_5[]
 }
 
-BOOST_STATIC_ASSERT(
-    has_value_from<customer>::value);
-
-BOOST_STATIC_ASSERT(
-    has_value_from<user_ns2::ip_address>::value);
-BOOST_STATIC_ASSERT(
-    has_value_to<user_ns2::ip_address>::value);
+BOOST_CORE_STATIC_ASSERT( has_value_from<customer>::value );
+BOOST_CORE_STATIC_ASSERT( has_value_from<user_ns2::ip_address>::value );
+BOOST_CORE_STATIC_ASSERT( has_value_to<user_ns2::ip_address>::value );
 
 void
 usingSpecializedTrait()

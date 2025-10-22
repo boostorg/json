@@ -10,6 +10,7 @@
 #ifndef BOOST_JSON_PILFER_HPP
 #define BOOST_JSON_PILFER_HPP
 
+#include <boost/core/detail/static_assert.hpp>
 #include <boost/json/detail/config.hpp>
 #include <type_traits>
 #include <utility>
@@ -187,8 +188,7 @@ pilfer(T&& t) noexcept ->
 {
     using U =
         typename std::remove_reference<T>::type;
-    static_assert(
-        is_pilfer_constructible<U>::value, "");
+    BOOST_CORE_STATIC_ASSERT( is_pilfer_constructible<U>::value );
     return typename std::conditional<
         std::is_nothrow_constructible<
             U, pilfered<U> >::value &&
@@ -203,8 +203,7 @@ template<class T>
 void
 relocate(T* dest, T& src) noexcept
 {
-    static_assert(
-        is_pilfer_constructible<T>::value, "");
+    BOOST_CORE_STATIC_ASSERT( is_pilfer_constructible<T>::value );
     ::new(dest) T(pilfer(src));
     src.~T();
 }

@@ -10,6 +10,7 @@
 #ifndef BOOST_JSON_IMPL_ARRAY_IPP
 #define BOOST_JSON_IMPL_ARRAY_IPP
 
+#include <boost/core/detail/static_assert.hpp>
 #include <boost/container_hash/hash.hpp>
 #include <boost/json/array.hpp>
 #include <boost/json/pilfer.hpp>
@@ -178,8 +179,7 @@ array::
 array(detail::unchecked_array&& ua)
     : sp_(ua.storage())
 {
-    BOOST_STATIC_ASSERT(
-        alignof(table) == alignof(value));
+    BOOST_CORE_STATIC_ASSERT( alignof(table) == alignof(value) );
     if(ua.size() == 0)
     {
         t_ = &empty_;

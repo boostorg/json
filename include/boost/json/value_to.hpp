@@ -12,6 +12,7 @@
 #ifndef BOOST_JSON_VALUE_TO_HPP
 #define BOOST_JSON_VALUE_TO_HPP
 
+#include <boost/core/detail/static_assert.hpp>
 #include <boost/json/detail/value_to.hpp>
 
 namespace boost {
@@ -96,10 +97,11 @@ template< class T, class Context >
 T
 value_to( value const& jv, Context const& ctx )
 {
-    BOOST_STATIC_ASSERT(! std::is_reference<T>::value);
+    BOOST_CORE_STATIC_ASSERT( ! std::is_reference<T>::value );
     using bare_T = detail::remove_cvref<T>;
-    BOOST_STATIC_ASSERT(detail::conversion_round_trips<
-        Context, bare_T, detail::value_to_conversion>::value);
+    BOOST_CORE_STATIC_ASSERT((
+        detail::conversion_round_trips<
+            Context, bare_T, detail::value_to_conversion>::value));
     using cat = detail::value_to_category<Context, bare_T>;
     return detail::value_to_impl( cat(), value_to_tag<bare_T>(), jv, ctx );
 }
@@ -192,10 +194,11 @@ template< class T, class Context >
 typename result_for<T, value>::type
 try_value_to( value const& jv, Context const& ctx )
 {
-    BOOST_STATIC_ASSERT(! std::is_reference<T>::value);
+    BOOST_CORE_STATIC_ASSERT( ! std::is_reference<T>::value );
     using bare_T = detail::remove_cvref<T>;
-    BOOST_STATIC_ASSERT(detail::conversion_round_trips<
-        Context, bare_T, detail::value_to_conversion>::value);
+    BOOST_CORE_STATIC_ASSERT((
+        detail::conversion_round_trips<
+            Context, bare_T, detail::value_to_conversion>::value));
     using cat = detail::value_to_category<Context, bare_T>;
     return detail::value_to_impl(
         cat(), try_value_to_tag<bare_T>(), jv, ctx );

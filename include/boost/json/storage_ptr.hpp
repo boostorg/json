@@ -10,6 +10,7 @@
 #ifndef BOOST_JSON_STORAGE_PTR_HPP
 #define BOOST_JSON_STORAGE_PTR_HPP
 
+#include <boost/core/detail/static_assert.hpp>
 #include <boost/container/pmr/polymorphic_allocator.hpp>
 #include <boost/json/detail/config.hpp>
 #include <boost/json/detail/shared_resource.hpp>
@@ -424,9 +425,8 @@ make_shared_resource(Args&&... args)
 {
     // If this generates an error, it means that
     // `T` is not a memory resource.
-    BOOST_STATIC_ASSERT(
-        std::is_base_of<
-            container::pmr::memory_resource, U>::value);
+    BOOST_CORE_STATIC_ASSERT((
+        std::is_base_of<container::pmr::memory_resource, U>::value));
     return storage_ptr(new
         detail::shared_resource_impl<U>(
             std::forward<Args>(args)...));

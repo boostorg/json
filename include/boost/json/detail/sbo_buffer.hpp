@@ -11,6 +11,7 @@
 #ifndef BOOST_JSON_DETAIL_SBO_BUFFER_HPP
 #define BOOST_JSON_DETAIL_SBO_BUFFER_HPP
 
+#include <boost/core/detail/static_assert.hpp>
 #include <boost/json/detail/config.hpp>
 #include <boost/json/detail/except.hpp>
 #include <string>
@@ -28,7 +29,7 @@ class sbo_buffer
         std::size_t size;
         char* ptr;
     };
-    BOOST_STATIC_ASSERT( N >= sizeof(size_ptr_pair) );
+    BOOST_CORE_STATIC_ASSERT( N >= sizeof(size_ptr_pair) );
 
     union {
         std::array<char, N> buffer_;

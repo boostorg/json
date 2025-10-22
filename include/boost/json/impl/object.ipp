@@ -10,6 +10,7 @@
 #ifndef BOOST_JSON_IMPL_OBJECT_IPP
 #define BOOST_JSON_IMPL_OBJECT_IPP
 
+#include <boost/core/detail/static_assert.hpp>
 #include <boost/container_hash/hash.hpp>
 #include <boost/json/object.hpp>
 #include <boost/json/detail/digest.hpp>
@@ -128,9 +129,8 @@ allocate(
     std::uintptr_t salt,
     storage_ptr const& sp)
 {
-    BOOST_STATIC_ASSERT(
-        alignof(key_value_pair) >=
-        alignof(index_t));
+    BOOST_CORE_STATIC_ASSERT(
+        alignof(key_value_pair) >= alignof(index_t));
     BOOST_ASSERT(capacity > 0);
     BOOST_ASSERT(capacity <= max_size());
     table* p;

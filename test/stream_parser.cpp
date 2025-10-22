@@ -11,6 +11,7 @@
 // Test that header file is self-contained.
 #include <boost/json/stream_parser.hpp>
 
+#include <boost/core/detail/static_assert.hpp>
 #include <boost/json/monotonic_resource.hpp>
 #include <boost/json/parse.hpp>
 #include <boost/json/serialize.hpp>
@@ -26,7 +27,7 @@
 namespace boost {
 namespace json {
 
-BOOST_STATIC_ASSERT( std::is_nothrow_destructible<stream_parser>::value );
+BOOST_CORE_STATIC_ASSERT( std::is_nothrow_destructible<stream_parser>::value );
 
 class stream_parser_test
 {
@@ -39,11 +40,11 @@ public:
     testCtors()
     {
         // stream_parser(stream_parser const&)
-        BOOST_STATIC_ASSERT(
+        BOOST_CORE_STATIC_ASSERT(
             ! std::is_copy_constructible<stream_parser>::value);
 
         // operator=(stream_parser const&)
-        BOOST_STATIC_ASSERT(
+        BOOST_CORE_STATIC_ASSERT(
             ! std::is_copy_assignable<stream_parser>::value);
 
         // ~stream_parser()

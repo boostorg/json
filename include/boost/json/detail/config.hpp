@@ -13,7 +13,6 @@
 #include <boost/config.hpp>
 #include <boost/config/pragma_message.hpp>
 #include <boost/assert.hpp>
-#include <boost/static_assert.hpp>
 #include <boost/throw_exception.hpp>
 #include <cstdint>
 #include <type_traits>

@@ -19,7 +19,6 @@ constant boost_dependencies :
     /boost/describe//boost_describe
     /boost/endian//boost_endian
     /boost/mp11//boost_mp11
-    /boost/static_assert//boost_static_assert
     /boost/system//boost_system
     /boost/throw_exception//boost_throw_exception ;
 

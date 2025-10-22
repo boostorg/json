@@ -11,6 +11,7 @@
 // Test that header file is self-contained.
 #include <boost/json/monotonic_resource.hpp>
 
+#include <boost/core/detail/static_assert.hpp>
 #include <boost/json/null_resource.hpp>
 #include <boost/json/parse.hpp>
 #include <boost/json/serialize.hpp>
@@ -22,7 +23,8 @@
 namespace boost {
 namespace json {
 
-BOOST_STATIC_ASSERT( std::is_nothrow_destructible<monotonic_resource>::value );
+BOOST_CORE_STATIC_ASSERT(
+    std::is_nothrow_destructible<monotonic_resource>::value);
 
 class monotonic_resource_test
 {

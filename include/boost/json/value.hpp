@@ -11,6 +11,7 @@
 #ifndef BOOST_JSON_VALUE_HPP
 #define BOOST_JSON_VALUE_HPP
 
+#include <boost/core/detail/static_assert.hpp>
 #include <boost/json/detail/config.hpp>
 #include <boost/json/array.hpp>
 #include <boost/json/kind.hpp>
@@ -3323,9 +3324,9 @@ private:
 
 // Make sure things are as big as we think they should be
 #if BOOST_JSON_ARCH == 64
-BOOST_STATIC_ASSERT(sizeof(value) == 24);
+BOOST_CORE_STATIC_ASSERT( sizeof(value) == 24 );
 #elif BOOST_JSON_ARCH == 32
-BOOST_STATIC_ASSERT(sizeof(value) == 16);
+BOOST_CORE_STATIC_ASSERT( sizeof(value) == 16 );
 #else
 # error Unknown architecture
 #endif

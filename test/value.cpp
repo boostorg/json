@@ -11,6 +11,7 @@
 #include <boost/json/value.hpp>
 #include <iostream>
 
+#include <boost/core/detail/static_assert.hpp>
 #include <boost/json/monotonic_resource.hpp>
 
 #include <memory>
@@ -23,8 +24,8 @@
 namespace boost {
 namespace json {
 
-BOOST_STATIC_ASSERT( std::is_nothrow_destructible<value>::value );
-BOOST_STATIC_ASSERT( std::is_nothrow_move_constructible<value>::value );
+BOOST_CORE_STATIC_ASSERT( std::is_nothrow_destructible<value>::value );
+BOOST_CORE_STATIC_ASSERT( std::is_nothrow_move_constructible<value>::value );
 
 namespace {
 
@@ -68,8 +69,6 @@ private:
 class value_test
 {
 public:
-    //BOOST_STATIC_ASSERT(has_value_from<short>::value);
-
     string_view const str_;
 
     value_test()
@@ -2319,13 +2318,14 @@ public:
         BOOST_TEST(std::memcmp(
             v3.key_c_str(), "key\0", 4) == 0);
 
-        BOOST_STATIC_ASSERT(std::tuple_size<key_value_pair>::value == 2);
+        BOOST_CORE_STATIC_ASSERT(std::tuple_size<key_value_pair>::value == 2);
         BOOST_TEST(get<0>(v3) == "key");
         BOOST_TEST(
             get<1>(v3).get_string() == "value");
 
-        BOOST_STATIC_ASSERT(std::is_same<
-            decltype(get<1>(std::declval<kvp>())), json::value&&>::value);
+        BOOST_CORE_STATIC_ASSERT((
+            std::is_same<
+                decltype(get<1>(std::declval<kvp>())), json::value&&>::value));
 
 #if __cplusplus >= 201703L || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
         auto const [kc, vc] = v1;

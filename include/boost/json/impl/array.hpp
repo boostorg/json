@@ -10,6 +10,7 @@
 #ifndef BOOST_JSON_IMPL_ARRAY_HPP
 #define BOOST_JSON_IMPL_ARRAY_HPP
 
+#include <boost/core/detail/static_assert.hpp>
 #include <boost/json/value.hpp>
 #include <boost/json/detail/except.hpp>
 #include <algorithm>
@@ -142,9 +143,8 @@ array(
         std::move(sp),
         iter_cat<InputIt>{})
 {
-    BOOST_STATIC_ASSERT(
-        std::is_constructible<value,
-            decltype(*first)>::value);
+    BOOST_CORE_STATIC_ASSERT((
+        std::is_constructible<value, decltype(*first)>::value));
 }
 
 //----------------------------------------------------------
@@ -161,9 +161,8 @@ insert(
     InputIt first, InputIt last) ->
         iterator
 {
-    BOOST_STATIC_ASSERT(
-        std::is_constructible<value,
-            decltype(*first)>::value);
+    BOOST_CORE_STATIC_ASSERT((
+        std::is_constructible<value, decltype(*first)>::value));
     return insert(pos, first, last,
         iter_cat<InputIt>{});
 }

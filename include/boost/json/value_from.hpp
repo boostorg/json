@@ -12,6 +12,7 @@
 #ifndef BOOST_JSON_VALUE_FROM_HPP
 #define BOOST_JSON_VALUE_FROM_HPP
 
+#include <boost/core/detail/static_assert.hpp>
 #include <boost/json/detail/value_from.hpp>
 
 namespace boost {
@@ -89,8 +90,9 @@ value_from(
     value& jv)
 {
     using bare_T = detail::remove_cvref<T>;
-    BOOST_STATIC_ASSERT(detail::conversion_round_trips<
-        Context, bare_T, detail::value_from_conversion>::value);
+    BOOST_CORE_STATIC_ASSERT((
+        detail::conversion_round_trips<
+            Context, bare_T, detail::value_from_conversion>::value));
     using cat = detail::value_from_category<Context, bare_T>;
     detail::value_from_impl( cat(), jv, std::forward<T>(t), ctx );
 }

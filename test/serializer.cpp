@@ -10,6 +10,7 @@
 // Test that header file is self-contained.
 #include <boost/json/serializer.hpp>
 
+#include <boost/core/detail/static_assert.hpp>
 #include <boost/describe/class.hpp>
 #include <boost/describe/enum.hpp>
 #include <boost/json/detail/stack.hpp>
@@ -52,7 +53,7 @@ BOOST_DESCRIBE_ENUM(my_enum, option_one, option_two, option_three);
 
 } // namespace serializer_test_ns
 
-BOOST_STATIC_ASSERT( std::is_nothrow_destructible<serializer>::value );
+BOOST_CORE_STATIC_ASSERT( std::is_nothrow_destructible<serializer>::value );
 
 class serializer_test
 {

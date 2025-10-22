@@ -11,6 +11,7 @@
 // Test that header file is self-contained.
 #include <boost/json/basic_parser_impl.hpp>
 
+#include <boost/core/detail/static_assert.hpp>
 #include <boost/mp11/algorithm.hpp>
 #include <boost/mp11/bind.hpp>
 
@@ -49,7 +50,8 @@ using enumerate_bit_vectors = mp11::mp_transform_q<
 
 } // namespace
 
-BOOST_STATIC_ASSERT( std::is_nothrow_destructible<basic_parser<int>>::value );
+BOOST_CORE_STATIC_ASSERT(
+    std::is_nothrow_destructible<basic_parser<int>>::value );
 
 namespace base64 {
 

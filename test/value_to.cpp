@@ -10,6 +10,7 @@
 // Test that header file is self-contained.
 #include <boost/json/value_to.hpp>
 
+#include <boost/core/detail/static_assert.hpp>
 #include <boost/json/value_from.hpp>
 #include <boost/core/ignore_unused.hpp>
 #include <boost/describe/class.hpp>
@@ -239,7 +240,7 @@ struct can_apply_value_to<T, detail::void_t<decltype(
 {
 };
 
-BOOST_STATIC_ASSERT(!can_apply_value_to<int>::value);
+BOOST_CORE_STATIC_ASSERT( !can_apply_value_to<int>::value );
 
 class value_to_test
 {
@@ -387,10 +388,11 @@ public:
             detail::try_reserve(
                 v, 10, detail::reserve_implementation<decltype(v)>());
             BOOST_TEST(v.capacity() >= 10);
-            BOOST_STATIC_ASSERT(std::is_same<
-                decltype(detail::inserter(
-                    v, detail::inserter_implementation<decltype(v)>())),
-                decltype(std::back_inserter(v)) >::value);
+            BOOST_CORE_STATIC_ASSERT((
+                std::is_same<
+                    decltype(detail::inserter(
+                        v, detail::inserter_implementation<decltype(v)>())),
+                    decltype(std::back_inserter(v)) >::value));
         }
         {
             std::array<int, 2> arr;
@@ -579,13 +581,12 @@ public:
             // clang 3.8 seems to have some bug when dealing with a lot of
             // template instantiations; this assert magically makes the problem
             // go away, I assume, by instantiating the needed types beforehand
-            BOOST_STATIC_ASSERT(
+            BOOST_CORE_STATIC_ASSERT((
                 detail::conversion_round_trips<
-                    mp11::mp_first<
-                        mp11::mp_list<
-                            Context..., int> >,
+                    mp11::mp_first< mp11::mp_list<Context..., int> >,
                     ::value_to_test_ns::T2,
-                    detail::value_to_conversion>::value );
+                    detail::value_to_conversion
+                >::value));
 
             auto res = try_value_to<::value_to_test_ns::T2>(
                 value(), ctx... );
