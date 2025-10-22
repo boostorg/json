@@ -11,7 +11,6 @@ import-search [ path.join $(__file__:D) pretty_printers ] ;
 using boost-pretty-printers ;
 
 constant boost_dependencies :
-    /boost/align//boost_align
     /boost/assert//boost_assert
     /boost/config//boost_config
     /boost/container//boost_container

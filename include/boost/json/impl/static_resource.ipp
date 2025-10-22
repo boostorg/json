@@ -12,7 +12,6 @@
 
 #include <boost/json/static_resource.hpp>
 #include <boost/throw_exception.hpp>
-#include <boost/align/align.hpp>
 #include <memory>
 
 namespace boost {
@@ -43,8 +42,7 @@ do_allocate(
     std::size_t n,
     std::size_t align)
 {
-    auto p = alignment::align(
-        align, n, p_, n_);
+    auto p = std::align(align, n, p_, n_);
     if(! p)
         throw_exception( std::bad_alloc(), BOOST_CURRENT_LOCATION );
     p_ = reinterpret_cast<char*>(p) + n;

@@ -13,7 +13,6 @@
 
 #include <boost/json/monotonic_resource.hpp>
 #include <boost/json/detail/except.hpp>
-#include <boost/align/align.hpp>
 #include <boost/core/max_align.hpp>
 
 #include <memory>
@@ -120,8 +119,7 @@ do_allocate(
     std::size_t n,
     std::size_t align)
 {
-    auto p = alignment::align(
-        align, n, head_->p, head_->avail);
+    auto p = std::align(align, n, head_->p, head_->avail);
     if(p)
     {
         head_->p = reinterpret_cast<
@@ -141,8 +139,7 @@ do_allocate(
     head_ = b;
     next_size_ = next_pow2(next_size_);
 
-    p = alignment::align(
-        align, n, head_->p, head_->avail);
+    p = std::align(align, n, head_->p, head_->avail);
     BOOST_ASSERT(p);
     head_->p = reinterpret_cast<
         unsigned char*>(p) + n;

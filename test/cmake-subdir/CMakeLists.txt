@@ -13,7 +13,6 @@ project(myproject LANGUAGES CXX)
 
 set(old_BUILD_TESTING ${BUILD_TESTING})
 set(BUILD_TESTING OFF)
-add_subdirectory(../../../align           boostorg/align)
 add_subdirectory(../../../assert          boostorg/assert)
 add_subdirectory(../../../config          boostorg/config)
 add_subdirectory(../../../container       boostorg/container)

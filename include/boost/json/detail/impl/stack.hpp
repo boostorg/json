@@ -10,8 +10,8 @@
 #ifndef BOOST_JSON_DETAIL_IMPL_STACK_HPP
 #define BOOST_JSON_DETAIL_IMPL_STACK_HPP
 
-#include <boost/align/align.hpp>
 #include <boost/static_assert.hpp>
+#include <memory>
 
 namespace boost {
 namespace json {
@@ -117,7 +117,7 @@ push(T&& t, std::false_type)
         std::size_t space = cap_ - size_;
         unsigned char* buf = base_ + size_;
         ptr = buf;
-        if( alignment::align(alignment, size, ptr, space) )
+        if( std::align(alignment, size, ptr, space) )
         {
             offset = (reinterpret_cast<unsigned char*>(ptr) - buf) + size;
             break;
