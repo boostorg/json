@@ -12,7 +12,7 @@ include::doc/pages/definitions.adoc[]
   Boost.StaticAssert.
 
 .Improvements
-* {issue}1094[#1094] Switched to a faster hasing algorithm.
+* {issue}1094[#1094] Switched to a faster hashing algorithm.
 
 .Fixes
 * {issue}1106[#1106] Fixed CMake version 3.8 support
