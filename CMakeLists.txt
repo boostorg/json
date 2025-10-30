@@ -90,6 +90,7 @@ function(boost_json_setup_properties target)
         PUBLIC
             Boost::assert
             Boost::config
+            Boost::charconv
             Boost::container
             Boost::container_hash
             Boost::core

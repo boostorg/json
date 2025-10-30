@@ -50,6 +50,7 @@ project
       <toolset>msvc:<define>_SCL_SECURE_NO_WARNINGS
     : usage-requirements
       <library>/boost/container//boost_container/<warnings-as-errors>off
+      <library>/boost/charconv//boost_charconv/<warnings-as-errors>off
       <define>BOOST_JSON_NO_LIB=1
     : source-location ../src
     ;

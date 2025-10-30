@@ -10,16 +10,15 @@
 #ifndef BOOST_JSON_DETAIL_FORMAT_HPP
 #define BOOST_JSON_DETAIL_FORMAT_HPP
 
+#include <boost/charconv/limits.hpp>
+#include <boost/json/detail/config.hpp>
+
 namespace boost {
 namespace json {
 namespace detail {
 
-int constexpr max_number_chars =
-     1 +    // '-'
-    19 +    // unsigned 64-bit mantissa
-     1 +    // 'e'
-     1 +    // '-'
-     5;     // unsigned 16-bit exponent
+constexpr std::size_t max_number_chars =
+    boost::charconv::limits<double>::max_chars;
 
 BOOST_JSON_DECL
 unsigned
@@ -33,7 +32,7 @@ format_int64(
     char* dest, int64_t i) noexcept;
 
 BOOST_JSON_DECL
-unsigned
+std::size_t
 format_double(
     char* dest, double d, bool allow_infinity_and_nan = false) noexcept;
 

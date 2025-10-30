@@ -11,7 +11,8 @@
 #ifndef BOOST_JSON_DETAIL_IMPL_FORMAT_IPP
 #define BOOST_JSON_DETAIL_IMPL_FORMAT_IPP
 
-#include <boost/json/detail/ryu/ryu.hpp>
+#include <boost/charconv/to_chars.hpp>
+#include <cmath>
 #include <cstring>
 
 namespace boost {
@@ -110,12 +111,57 @@ format_int64(
     return 1 + format_uint64(dest, ui);
 }
 
-unsigned
+std::size_t
 format_double(
     char* dest, double d, bool allow_infinity_and_nan) noexcept
 {
-    return static_cast<int>(
-        ryu::d2s_buffered_n(d, dest, allow_infinity_and_nan));
+    if( std::isfinite(d) )
+    {
+        boost::charconv::to_chars_result result = boost::charconv::to_chars(
+            dest,
+            dest + detail::max_number_chars,
+            d,
+            boost::charconv::chars_format::scientific);
+        BOOST_ASSERT( result.ec == std::errc() );
+        return result.ptr - dest;
+    }
+
+    if (allow_infinity_and_nan)
+    {
+        if( std::isnan(d) )
+        {
+            std::memcpy(dest, "NaN", 3);
+            return 3;
+        }
+        else if( std::signbit(d) )
+        {
+            BOOST_ASSERT( std::isinf(d) );
+            std::memcpy(dest, "-Infinity", 9);
+            return 9;
+        }
+        else
+        {
+            std::memcpy(dest, "Infinity", 8);
+            return 8;
+        }
+    }
+
+    if( std::isnan(d) )
+    {
+        std::memcpy(dest, "null", 4);
+        return 4;
+    }
+    else if( std::signbit(d) )
+    {
+        BOOST_ASSERT( std::isinf(d) );
+        std::memcpy(dest, "-1e99999", 8);
+        return 8;
+    }
+    else
+    {
+        std::memcpy(dest, "1e99999", 7);
+        return 7;
+    }
 }
 
 } // detail
