@@ -5,6 +5,19 @@
 
 include::doc/pages/definitions.adoc[]
 
+== Boost 1.90.0
+
+.API Changes
+* {issue}1117[#1117] Removed dependencies on Boost.Align and
+  Boost.StaticAssert.
+
+.Improvements
+* {issue}1094[#1094] Switched to a faster hasing algorithm.
+
+.Fixes
+* {issue}1106[#1106] Fixed CMake version 3.8 support
+* Documentation fixes.
+
 == Boost 1.89.0
 
 .Documentation
