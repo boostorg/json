@@ -12,11 +12,34 @@
 
 #include <boost/json/value.hpp>
 #include <boost/json/serialize.hpp>
+#include <boost/json/value_from.hpp>
 
 #include "test_suite.hpp"
 
+#include <vector>
+
 namespace boost {
 namespace json {
+
+//----------------------------------------------------------
+
+// UDT for testing value_ref with user-defined types
+struct test_udt
+{
+    int value;
+    std::string name;
+};
+
+// tag_invoke for value_from
+inline
+void
+tag_invoke(
+    value_from_tag,
+    value& jv,
+    test_udt const& t)
+{
+    jv = { {"value", t.value}, {"name", t.name} };
+}
 
 //----------------------------------------------------------
 
@@ -390,6 +413,77 @@ public:
     }
 
     void
+    testUDT()
+    {
+        // Test UDT in value_ref constructor (lvalue)
+        {
+            test_udt udt{42, "test"};
+            value_ref ref(udt);
+            value jv = ref;
+            BOOST_TEST(jv.is_object());
+            BOOST_TEST(jv.at("value").as_int64() == 42);
+            BOOST_TEST(jv.at("name").as_string() == "test");
+        }
+
+        // Test UDT in array initializer list (rvalue)
+        {
+            array arr{test_udt{100, "rvalue"}};
+            BOOST_TEST(arr.size() == 1);
+            BOOST_TEST(arr[0].is_object());
+            BOOST_TEST(arr[0].at("value").as_int64() == 100);
+            BOOST_TEST(arr[0].at("name").as_string() == "rvalue");
+        }
+
+        // Test UDT in array initializer list (lvalue)
+        {
+            test_udt udt1{1, "first"};
+            test_udt udt2{2, "second"};
+            array arr{udt1, udt2, 123};
+            BOOST_TEST(arr.size() == 3);
+            BOOST_TEST(arr[0].is_object());
+            BOOST_TEST(arr[0].at("value").as_int64() == 1);
+            BOOST_TEST(arr[1].at("value").as_int64() == 2);
+            BOOST_TEST(arr[2].as_int64() == 123);
+        }
+
+        // Test UDT in value initializer list
+        {
+            test_udt udt{42, "test"};
+            value jv = {udt, 123};
+            BOOST_TEST(jv.is_array());
+            BOOST_TEST(jv.at(0).is_object());
+            BOOST_TEST(jv.at(1).as_int64() == 123);
+        }
+
+        // Test UDT as object value
+        {
+            test_udt udt{42, "test"};
+            object obj{{"udt", udt}, {"num", 123}};
+            BOOST_TEST(obj.at("udt").is_object());
+            BOOST_TEST(obj.at("udt").at("value").as_int64() == 42);
+            BOOST_TEST(obj.at("num").as_int64() == 123);
+        }
+
+        // Test nested initialization with UDT
+        {
+            test_udt udt{42, "test"};
+            value jv = {{"data", {udt}}, {"count", 1}};
+            BOOST_TEST(jv.is_object());
+            BOOST_TEST(jv.at("data").is_array());
+            BOOST_TEST(jv.at("data").at(0).at("value").as_int64() == 42);
+        }
+
+        // Test vector of UDTs
+        {
+            std::vector<test_udt> udts{{1, "a"}, {2, "b"}};
+            value jv = value_from(udts);
+            BOOST_TEST(jv.is_array());
+            BOOST_TEST(jv.at(0).at("value").as_int64() == 1);
+            BOOST_TEST(jv.at(1).at("value").as_int64() == 2);
+        }
+    }
+
+    void
     run()
     {
         testCtors();
@@ -397,6 +491,7 @@ public:
         testMakeValue();
         testObjects();
         testMoveFrom();
+        testUDT();
     }
 };
 

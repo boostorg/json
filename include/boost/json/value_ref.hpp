@@ -27,6 +27,36 @@ class array;
 class string;
 #endif
 
+namespace detail {
+
+// Trait to detect types that have native value constructors
+// These are types for which value(T, storage_ptr) exists
+template<class T>
+struct is_native_value_type : std::integral_constant<bool,
+    std::is_same<T, value>::value ||
+    std::is_same<T, array>::value ||
+    std::is_same<T, object>::value ||
+    std::is_same<T, string>::value ||
+    std::is_same<T, bool>::value ||
+    std::is_same<T, std::nullptr_t>::value ||
+    std::is_same<T, signed char>::value ||
+    std::is_same<T, short>::value ||
+    std::is_same<T, int>::value ||
+    std::is_same<T, long>::value ||
+    std::is_same<T, long long>::value ||
+    std::is_same<T, unsigned char>::value ||
+    std::is_same<T, unsigned short>::value ||
+    std::is_same<T, unsigned int>::value ||
+    std::is_same<T, unsigned long>::value ||
+    std::is_same<T, unsigned long long>::value ||
+    std::is_same<T, float>::value ||
+    std::is_same<T, double>::value ||
+    std::is_same<T, string_view>::value ||
+    std::is_same<T, char const*>::value
+> {};
+
+} // namespace detail
+
 //----------------------------------------------------------
 
 /** The type used in initializer lists.
