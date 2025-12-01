@@ -43,7 +43,8 @@ from_const_impl(
 }
 
 // UDT implementation: use value_from
-// Note: value_from must be visible at the point of instantiation
+// Note: A suitable tag_invoke overload for value_from_tag must be
+// visible at the point of instantiation for the type T.
 template<class T>
 value
 from_const_impl(
@@ -74,7 +75,8 @@ from_rvalue_impl(
 }
 
 // UDT implementation: use value_from
-// Note: value_from must be visible at the point of instantiation
+// Note: A suitable tag_invoke overload for value_from_tag must be
+// visible at the point of instantiation for the type T.
 template<class T>
 value
 from_rvalue_impl(

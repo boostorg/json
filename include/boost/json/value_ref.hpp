@@ -29,8 +29,13 @@ class string;
 
 namespace detail {
 
-// Trait to detect types that have native value constructors
-// These are types for which value(T, storage_ptr) exists
+// Trait to detect types that have native value constructors.
+// These are types for which value(T, storage_ptr) is well-formed:
+// - JSON types: value, array, object, string
+// - Numeric types: bool, signed/unsigned integers, float, double  
+// - String-like: string_view, char const*
+// - Null: std::nullptr_t
+// Types NOT in this list (user-defined types) require value_from conversion.
 template<class T>
 struct is_native_value_type : std::integral_constant<bool,
     std::is_same<T, value>::value ||
