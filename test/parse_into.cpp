@@ -73,6 +73,18 @@ private:
     BOOST_DESCRIBE_CLASS(Z, (X), (), (), (d))
 };
 
+struct W
+{
+    X x;
+};
+
+BOOST_DESCRIBE_STRUCT(W, (), (x))
+
+bool operator==( W const& w1, W const& w2 )
+{
+    return w1.x == w2.x;
+}
+
 BOOST_DEFINE_ENUM_CLASS(E, x, y, z)
 
 namespace boost {
@@ -401,6 +413,19 @@ public:
         jo["e7"] = false;
         jo["e8"] = nullptr;
         testParseIntoValue<X>(jo);
+
+        object const unexpected_jo{{"x", object{{"unexpectedArray", array{}},
+                                                {"unexpectedObject", object{}},
+                                                {"unexpectedString", "qwerty"},
+                                                {"unexpectedInt", 42},
+                                                {"unexpectedUint", ULONG_MAX},
+                                                {"unexpectedDouble", 2.71},
+                                                {"unexpectedBool", true},
+                                                {"unexpectedNull", nullptr},
+                                                {"a", 1},
+                                                {"b", 3.14f},
+                                                {"c", "hello"}}}};
+        testParseIntoValue<W>(unexpected_jo);
 #endif
     }
 
