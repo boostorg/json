@@ -12,24 +12,43 @@ import-search /boost/config/checks ;
 
 import boost-pretty-printers ;
 import config ;
+import message ;
 import modules ;
 
-.warned = ;
-rule warn-if-requested ( properties * )
+local args = [ modules.peek : ARGV ] ;
+local var = [ modules.peek project-config : libraries ] ;
+if json in [ MATCH ^--with-(json) : $(args) $(var) ]
 {
-    if ! $(.warned)
+    message warn-if-requested
+        : "warning:" Boost.Json was explicitly requested, but will not be
+          built, because it requires C++11.
+        : "note:" To enable C++11 support, use the 'cxxstd=11' command line
+          argument.
+        ;
+}
+else
+{
+    alias warn-if-requested ;
+}
+
+# disabling has to be done via a separate target because b2 eagerly disables
+# targets with <build>no in requirements, so warn-if-requested would never be
+# built and thus would never warn
+alias disable : : <build>no ;
+
+explicit warn-if-requested disable ;
+
+rule requires ( tests + )
+{
+    local m = [ modules.binding config ] ;
+    local result ;
+    for test in $(tests)
     {
-        .warned = true ;
-        local args = [ modules.peek : ARGV ] ;
-        local var = [ modules.peek project-config : libraries ] ;
-        if json in [ MATCH ^--with-(json) : $(args) $(var) ]
-        {
-            echo "warning:" Boost.Json was explicitly requested, but will not
-                be built, because it requires C++11. ;
-            echo "note:" To enable C++11 support, use the 'cxxstd=11' command line
-                argument. ;
-        }
+        result += [ check-target-builds $(m:D)//$(test) $(test)
+            : : <source>warn-if-requested <source>disable
+        ] ;
     }
+    return $(result) ;
 }
 
 project
@@ -39,13 +58,14 @@ project
       <link>shared:<define>BOOST_JSON_DYN_LINK=1
       <link>static:<define>BOOST_JSON_STATIC_LINK=1
     : requirements
-      [ config.requires
+      [ requires
         cxx11_constexpr
         cxx11_decltype
         cxx11_hdr_tuple
         cxx11_template_aliases
         cxx11_variadic_templates
         cxx11_alignas
+        cxx11_std_align
       ]
       <toolset>msvc:<define>_SCL_SECURE_NO_WARNINGS
     : usage-requirements
