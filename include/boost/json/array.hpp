@@ -182,7 +182,7 @@ public:
         @li **(5)** the array is filled with values in the range
             `[first, last)`, preserving order.
 
-        @li **(6)** the array is filled with copies of the values in `init,
+        @li **(6)** the array is filled with copies of the values in `init`,
             preserving order.
 
         @li **(7)**, **(8)** the array is filled with copies of the elements of
@@ -237,7 +237,6 @@ public:
 
         @see @ref pilfer,
             [Valueless Variants Considered Harmful](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0308r0.html).
-                                                         //
         @{
     */
     array() noexcept
@@ -319,14 +318,6 @@ public:
         storage_ptr sp);
 
     /// Overload
-    array(pilfered<array> other) noexcept
-        : sp_(std::move(other.get().sp_))
-        , t_(detail::exchange(
-            other.get().t_, &empty_))
-    {
-    }
-
-    /// Overload
     array(array&& other) noexcept
         : sp_(other.sp_)
         , t_(detail::exchange(
@@ -339,6 +330,14 @@ public:
     array(
         array&& other,
         storage_ptr sp);
+
+    /// Overload
+    array(pilfered<array> other) noexcept
+        : sp_(std::move(other.get().sp_))
+        , t_(detail::exchange(
+            other.get().t_, &empty_))
+    {
+    }
     /// @}
 
     /** Assignment operators.
