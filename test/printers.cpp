@@ -82,7 +82,7 @@ int main()
         static_resource sr(buf);
         // TEST_EXPR( 'sr', 'static_resource [buffer={0}, head={0}, free=1024]', '/a &buf' )
 
-        sr.allocate(200);
+        (void)sr.allocate(200);
         unsigned char* new_head = buf + 200;
         (void)new_head;
         // TEST_EXPR( 'sr', 'static_resource [buffer={0}, head={1}, free=824]', '/a &buf', '/a new_head' )
@@ -113,7 +113,7 @@ int main()
     monotonic_resource mr(buf, 10, sp);
     // TEST_EXPR( 'mr', 'monotonic_resource [buffer={0}, block={0}, head={0}, free=10, upstream=storage_ptr [trivial, shared, refs=2, resource=static_resource [buffer={0}, head={0}, free=1024]]]', '/a &buf' )
 
-    mr.allocate(4);
+    (void)mr.allocate(4);
     unsigned char* new_head = buf + 4;
     (void)new_head;
     // TEST_EXPR( 'mr', 'monotonic_resource [buffer={0}, block={0}, head={1}, free=6, upstream=storage_ptr [trivial, shared, refs=2, resource=static_resource [buffer={0}, head={0}, free=1024]]]', '/a &buf', '/a new_head' )
