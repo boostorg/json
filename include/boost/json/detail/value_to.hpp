@@ -233,12 +233,14 @@ value_to_impl(
     auto ins = detail::inserter(res, inserter_implementation<T>());
     for( key_value_pair const& kv: *obj )
     {
+        json::context_key_push( ctx, kv.key() );
         auto elem_res = try_value_to<mapped_type<T>>( kv.value(), ctx );
         if( elem_res.has_error() )
             return {boost::system::in_place_error, elem_res.error()};
         *ins++ = value_type<T>{
             key_type<T>(kv.key()),
             std::move(*elem_res)};
+        json::context_key_pop(ctx);
     }
     return res;
 }
@@ -273,10 +275,12 @@ value_to_impl(
     auto ins = detail::inserter(result, inserter_implementation<T>());
     for( value const& val: *arr )
     {
+        json::context_index_push( ctx, &val - arr->begin() );
         auto elem_res = try_value_to<value_type<T>>( val, ctx );
         if( elem_res.has_error() )
             return {boost::system::in_place_error, elem_res.error()};
         *ins++ = std::move(*elem_res);
+        json::context_index_pop(ctx);
     }
     return result;
 }
@@ -284,13 +288,17 @@ value_to_impl(
 // tuple-like types
 template< class T, class Ctx >
 system::result<T>
-try_make_tuple_elem(value const& jv, Ctx const& ctx, system::error_code& ec)
+try_make_tuple_elem(
+    value const* b, std::size_t n, Ctx const& ctx, system::error_code& ec)
 {
     if( ec.failed() )
         return {boost::system::in_place_error, ec};
 
-    auto result = try_value_to<T>( jv, ctx );
+    json::context_index_push(ctx, n);
+    auto result = try_value_to<T>( b[n], ctx );
     ec = result.error();
+    if( !ec.failed() )
+        json::context_index_pop(ctx);
     return result;
 }
 
@@ -303,7 +311,7 @@ try_make_tuple_like(
     auto items = std::make_tuple(
         try_make_tuple_elem<
             typename std::decay<tuple_element_t<Is, T>>::type >(
-                arr[Is], ctx, ec)
+                arr.data(), Is, ctx, ec)
             ...);
 #if defined(BOOST_GCC)
 # pragma GCC diagnostic push
@@ -382,6 +390,7 @@ struct to_described_member
             return;
         }
 
+        json::context_key_push(ctx, D::name);
 #if defined(__GNUC__) && BOOST_GCC_VERSION >= 80000 && BOOST_GCC_VERSION < 11000
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wunused"
@@ -392,9 +401,14 @@ struct to_described_member
 # pragma GCC diagnostic pop
 #endif
         if( member_res )
+        {
             (*res).* D::pointer = std::move(*member_res);
+            json::context_key_pop(ctx);
+        }
         else
+        {
             res = {boost::system::in_place_error, member_res.error()};
+        }
     }
 };
 
