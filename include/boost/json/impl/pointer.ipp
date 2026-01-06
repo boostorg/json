@@ -416,7 +416,7 @@ value::find_pointer(string_view ptr, std::error_code& ec) noexcept
 }
 
 std::pair<bool, string_view>
-value::delete_at_pointer(
+value::erase_at_pointer(
     string_view         sv,
     system::error_code& ec) 
 {
