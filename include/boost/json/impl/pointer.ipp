@@ -415,19 +415,20 @@ value::find_pointer(string_view ptr, std::error_code& ec) noexcept
     return const_cast<value*>(self.find_pointer(ptr, ec));
 }
 
-std::pair<bool, string_view>
+bool
 value::erase_at_pointer(
     string_view         sv,
     system::error_code& ec) 
 {
     ec.clear();
-
+    if(sv.empty()){
+        BOOST_JSON_FAIL(ec, error::syntax);
+        return false;
+    }
     
     string_view previous_segment;
-    string_view sv_copy = sv;
-    string_view err_position;
+    
     string_view segment = detail::next_segment(sv, ec);
-    size_t shift = 0;
     
     auto result = this;
     auto previous_result = this;
@@ -435,19 +436,16 @@ value::erase_at_pointer(
     while (true) 
     {
         if (ec.failed())
-            return {false, err_position};
+            return false;
 
         if (!result) 
         {
             BOOST_JSON_FAIL(ec, error::not_found);
-            return {false, err_position};
+            return false;
         }
 
         if( segment.empty() )
             break;
-        
-        shift += segment.size();
-        err_position = sv_copy.substr(0, shift);
         
         previous_segment = segment;
         previous_result = result;
@@ -464,7 +462,7 @@ value::erase_at_pointer(
                 if( !result )
                 {
                     BOOST_JSON_FAIL(ec, error::not_found);
-                    return {false, err_position};
+                    return false;
                 }
                 break;
             }
@@ -477,19 +475,17 @@ value::erase_at_pointer(
                 if( !result )
                 {
                     BOOST_JSON_FAIL(ec, error::past_the_end);
-                    return {false, err_position};
+                    return false;
                 }
                 break;
             }
             default: {
                 BOOST_JSON_FAIL(ec, error::value_is_scalar);
-                return {false, err_position};
+                return false;
             }
         }
     }
     
-    err_position = {};
-
     switch (previous_result->kind()) 
     {
         case boost::json::kind::object: {
@@ -498,22 +494,22 @@ value::erase_at_pointer(
             key_value_pair* kv = detail::find_in_object(obj, token).first;
             if (kv) {
                 obj.erase(kv);
-                return {true, err_position};
+                return true;
             }
-            return {false,err_position};
+            return false;
         }
         case boost::json::kind::array: {
             auto const index = detail::parse_number_token(previous_segment, ec);
             auto& arr = previous_result->get_array();
             if (arr.if_contains(index)){
                 arr.erase(arr.begin() + index);
-                return {true, err_position};
+                return true;
             }
-            return {false,err_position};
+            return false;
         }
         default: {
             BOOST_JSON_FAIL(ec, error::value_is_scalar);
-            return {false, err_position};
+            return false;
         }
     }
 }

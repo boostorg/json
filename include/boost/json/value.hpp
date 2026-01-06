@@ -3035,8 +3035,7 @@ public:
     /** Remove an element via JSON Pointer.
      */
     BOOST_JSON_DECL
-    std::pair<bool, string_view>
-    erase_at_pointer(
+        bool erase_at_pointer(
         string_view sv,
         system::error_code& ec);
     //------------------------------------------------------
