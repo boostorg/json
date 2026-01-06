@@ -3035,6 +3035,19 @@ public:
 
     //------------------------------------------------------
 
+    /** Remove an element via JSON Pointer.
+
+        @{
+    */
+    BOOST_JSON_DECL
+    bool
+    erase_at_pointer(
+        string_view         sv,
+        system::error_code& ec);
+
+    /// @}
+    //------------------------------------------------------
+
     /** Check if two values are equal.
 
         Two values are equal when they are the same kind and their referenced
