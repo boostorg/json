@@ -271,6 +271,22 @@ struct access
     {
         return e.next_;
     }
+
+    template<class Value>
+    static
+    auto
+    get_scalar(Value& jv) -> scalar&
+    {
+        return jv.sca_;
+    }
+
+    template<class Value>
+    static
+    auto
+    get_scalar(Value const& jv) -> scalar const&
+    {
+        return jv.sca_;
+    }
 };
 
 BOOST_JSON_DECL

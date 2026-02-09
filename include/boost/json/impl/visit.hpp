@@ -13,6 +13,13 @@
 namespace boost {
 namespace json {
 
+namespace detail {
+
+extern
+BOOST_JSON_DECL
+std::nullptr_t stable_np;
+
+} // namespace detail
 
 template<class Visitor>
 auto
@@ -31,10 +38,7 @@ visit(
     case kind::int64:   return static_cast<Visitor&&>(v)( jv.get_int64() );
     case kind::uint64:  return static_cast<Visitor&&>(v)( jv.get_uint64() );
     case kind::double_: return static_cast<Visitor&&>(v)( jv.get_double() );
-    case kind::null: {
-        auto np = nullptr;
-        return static_cast<Visitor&&>(v)(np) ;
-    }
+    case kind::null:    return static_cast<Visitor&&>(v)( detail::stable_np ) ;
     }
 }
 
@@ -51,12 +55,12 @@ visit(
     case kind::string:  return static_cast<Visitor&&>(v)( jv.get_string() );
     case kind::array:   return static_cast<Visitor&&>(v)( jv.get_array() );
     case kind::object:  return static_cast<Visitor&&>(v)( jv.get_object() );
-    case kind::bool_:   return static_cast<Visitor&&>(v)( jv.get_bool() );
-    case kind::int64:   return static_cast<Visitor&&>(v)( jv.get_int64() );
-    case kind::uint64:  return static_cast<Visitor&&>(v)( jv.get_uint64() );
-    case kind::double_: return static_cast<Visitor&&>(v)( jv.get_double() );
+    case kind::bool_:   return static_cast<Visitor&&>(v)( detail::access::get_scalar(jv).b );
+    case kind::int64:   return static_cast<Visitor&&>(v)( detail::access::get_scalar(jv).i );
+    case kind::uint64:  return static_cast<Visitor&&>(v)( detail::access::get_scalar(jv).u );
+    case kind::double_: return static_cast<Visitor&&>(v)( detail::access::get_scalar(jv).d );
     case kind::null: {
-        auto const np = nullptr;
+        auto const& np = detail::stable_np;
         return static_cast<Visitor&&>(v)(np) ;
     }
     }
@@ -73,14 +77,14 @@ visit(
     switch(jv.kind())
     {
     default: // unreachable()?
-    case kind::string:  return static_cast<Visitor&&>(v)( std::move( jv.get_string() ) );
-    case kind::array:   return static_cast<Visitor&&>(v)( std::move( jv.get_array() ) );
-    case kind::object:  return static_cast<Visitor&&>(v)( std::move( jv.get_object() ) );
-    case kind::bool_:   return static_cast<Visitor&&>(v)( std::move( jv.get_bool() ) );
-    case kind::int64:   return static_cast<Visitor&&>(v)( std::move( jv.get_int64() ) );
-    case kind::uint64:  return static_cast<Visitor&&>(v)( std::move( jv.get_uint64() ) );
-    case kind::double_: return static_cast<Visitor&&>(v)( std::move( jv.get_double() ) );
-    case kind::null:    return static_cast<Visitor&&>(v)( std::nullptr_t() ) ;
+    case kind::string:  return static_cast<Visitor&&>(v)(std::move( jv.get_string() ));
+    case kind::array:   return static_cast<Visitor&&>(v)(std::move( jv.get_array() ));
+    case kind::object:  return static_cast<Visitor&&>(v)(std::move( jv.get_object() ));
+    case kind::bool_:   return static_cast<Visitor&&>(v)(std::move( detail::access::get_scalar(jv).b ));
+    case kind::int64:   return static_cast<Visitor&&>(v)(std::move( detail::access::get_scalar(jv).i ));
+    case kind::uint64:  return static_cast<Visitor&&>(v)(std::move( detail::access::get_scalar(jv).u ));
+    case kind::double_: return static_cast<Visitor&&>(v)(std::move( detail::access::get_scalar(jv).d ));
+    case kind::null:    return static_cast<Visitor&&>(v)(std::move( detail::stable_np )) ;
     }
 }
 

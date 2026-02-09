@@ -20,31 +20,16 @@ namespace json {
 /** Invoke a function object with the contents of a @ref value.
 
     Invokes `v` as if by `std::forward<Visitor>(v)( X )`, where `X` is
+    a `const` **(2)** or mutable **(1)** lvalue reference, or an rvalue
+    reference **(3)** to
 
-    For overloads **(1)** and **(2)**:
-    @li `jv.get_array()` if `jv.is_array()`, or
-    @li `jv.get_object()` if `jv.is_object()`, or
-    @li `jv.get_string()` if `jv.is_string()`, or
-    @li `jv.get_int64()` if `jv.is_int64()`, or
-    @li `jv.get_uint64()` if `jv.is_uint64()`, or
-    @li `jv.get_double()` if `jv.is_double()`, or
-    @li `jv.get_bool()` if `jv.is_bool()`, or
-    @li a `const` **(2)** or mutable **(1)** reference to an object of type
-        `std::nullptr_t` if `jv.is_null()`.
+    @li the underlying stored value, if `jv.kind()` is not equal to
+        @ref json::kind::null; or
+    @li an object of type @ref std::nullptr_t.
 
-    For overload **(3)**:
-    @li `std::move( jv.get_array() )` if `jv.is_array()`, or
-    @li `std::move( jv.get_object() )` if `jv.is_object()`, or
-    @li `std::move( jv.get_string() )` if `jv.is_string()`, or
-    @li `std::move( jv.get_int64() )` if `jv.is_int64()`, or
-    @li `std::move( jv.get_uint64() )` if `jv.is_uint64()`, or
-    @li `std::move( jv.get_double() )` if `jv.is_double()`, or
-    @li `std::move( jv.get_bool() )` if `jv.is_bool()`, or
-    @li `std::nullptr_t()` if `jv.is_null()`.
+    @returns The result of calling `v`.
 
-    @returns The value returned by `v`.
-
-    @param v The visitation function to invoke
+    @param v The visitation function to invoke.
     @param jv The value to visit.
 
     @{
@@ -53,22 +38,40 @@ template<class Visitor>
 auto
 visit(
     Visitor&& v,
-    value& jv) -> decltype(
-        static_cast<Visitor&&>(v)( std::declval<std::nullptr_t&>() ) );
+    value& jv)
+#ifndef BOOST_JSON_DOCS
+        -> decltype(
+                static_cast<Visitor&&>(v)( std::declval<std::nullptr_t&>() ) )
+#else
+        -> __see_below__
+#endif
+        ;
 
 template<class Visitor>
 auto
 visit(
     Visitor &&v,
-    value const &jv) -> decltype(
-        static_cast<Visitor&&>(v)( std::declval<std::nullptr_t const&>() ) );
+    value const &jv)
+#ifndef BOOST_JSON_DOCS
+        -> decltype(
+                static_cast<Visitor&&>(v)( std::declval<std::nullptr_t const&>() ) )
+#else
+        -> __see_below__
+#endif
+        ;
 
 template<class Visitor>
 auto
 visit(
     Visitor &&v,
-    value&& jv) -> decltype(
-        static_cast<Visitor&&>(v)( std::declval<std::nullptr_t&&>() ) );
+    value&& jv)
+#ifndef BOOST_JSON_DOCS
+        -> decltype(
+            static_cast<Visitor&&>(v)( std::declval<std::nullptr_t&&>() ) )
+#else
+        -> __see_below__
+#endif
+        ;
 /// @}
 
 } // namespace json
