@@ -197,6 +197,23 @@ tag_invoke(
     return T11( jv.to_number<int>() );
 }
 
+struct T12
+{
+    T12(int) {}
+};
+
+T12
+tag_invoke(boost::json::value_to_tag<T12>, boost::json::value const&)
+{
+    return T12(0);
+}
+
+void
+tag_invoke(boost::json::value_from_tag, boost::json::value& jv , T12&)
+{
+    jv.emplace_null();
+}
+
 } // namespace value_to_test_ns
 
 namespace std
@@ -219,6 +236,12 @@ struct tuple_size<value_to_test_ns::T4>
 
 namespace boost {
 namespace json {
+
+template<std::size_t N>
+struct is_sequence_like< std::array<value_to_test_ns::T12, N> >
+    : std::false_type
+{};
+
 
 template<>
 struct is_null_like<::value_to_test_ns::T1> : std::true_type { };
@@ -378,6 +401,8 @@ public:
             (value_to<std::tuple<int, int, int, int>>(
                 value{1, 2, 3}, ctx... )));
 
+        // just check that this compiles
+        value_to< std::array<value_to_test_ns::T12, 3> >( value{1, 2, 3} );
     }
 
     void

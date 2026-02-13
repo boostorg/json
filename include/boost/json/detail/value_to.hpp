@@ -315,8 +315,17 @@ try_make_tuple_like(
 # pragma GCC diagnostic pop
 #endif
 
+#if defined(BOOST_CLANG)
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wmissing-braces"
+#endif
     return {
-        boost::system::in_place_value, T(std::move(*std::get<Is>(items))...)};
+        boost::system::in_place_value,
+        T{ (std::move(*std::get<Is>(items)))... }
+    };
+#if defined(BOOST_CLANG)
+# pragma clang diagnostic pop
+#endif
 }
 
 template< class T, class Ctx >
