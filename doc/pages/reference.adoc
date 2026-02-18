@@ -75,24 +75,36 @@ a| *Functions* +
 <<ref_string_kind>>
 
 | *Type Traits* +
+<<ref_conversion_category_for>> +
+<<ref_described_class_category>> +
+<<ref_described_enum_category>> +
 <<ref_has_value_from>> +
 <<ref_has_value_to>> +
 <<ref_is_deallocate_trivial>> +
-<<ref_is_described_class>> +
-<<ref_is_described_enum>> +
-<<ref_is_map_like>> +
-<<ref_is_null_like>> +
-<<ref_is_optional_like>> +
-<<ref_is_path_like>> +
-<<ref_is_sequence_like>> +
-<<ref_is_string_like>> +
-<<ref_is_tuple_like>> +
-<<ref_is_variant_like>> +
+<<ref_map_category>> +
+<<ref_null_category>> +
+<<ref_optional_category>> +
+<<ref_path_category>> +
+<<ref_sequence_category>> +
+<<ref_string_category>> +
+<<ref_tuple_category>> +
+<<ref_variant_category>> +
 <<ref_result_for>> +
 <<ref_try_value_to_tag>> +
 <<ref_value_from_tag>> +
 <<ref_value_to_tag>>
 
+4+h| Deprecated
+| <<ref_is_described_class>> +
+  <<ref_is_described_enum>> +
+  <<ref_is_map_like>>
+| <<ref_is_null_like>> +
+  <<ref_is_optional_like>>
+| <<ref_is_path_like>> +
+  <<ref_is_sequence_like>> +
+  <<ref_is_string_like>>
+| <<ref_is_tuple_like>> +
+  <<ref_is_variant_like>>
 |===
 
 include::{entities-file}[leveloffset=+1]

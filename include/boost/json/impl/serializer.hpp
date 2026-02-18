@@ -54,7 +54,7 @@ write_impl(writer& w, stream& ss);
 template<class T, bool StackEmpty>
 BOOST_FORCEINLINE
 bool
-write_impl(null_like_conversion_tag, writer& w, stream& ss)
+write_impl(null_category, writer& w, stream& ss)
 {
 #if defined(_MSC_VER)
 # pragma warning( push )
@@ -182,7 +182,7 @@ write_impl(floating_point_conversion_tag, writer& w, stream& ss0)
 template<class T, bool StackEmpty>
 BOOST_FORCEINLINE
 bool
-write_impl(string_like_conversion_tag, writer& w, stream& ss0)
+write_impl(string_category, writer& w, stream& ss0)
 {
 #if defined(_MSC_VER)
 # pragma warning( push )
@@ -204,7 +204,7 @@ write_impl(string_like_conversion_tag, writer& w, stream& ss0)
 template<class T, bool StackEmpty>
 BOOST_FORCEINLINE
 bool
-write_impl(sequence_conversion_tag, writer& w, stream& ss0)
+write_impl(sequence_category, writer& w, stream& ss0)
 {
     using It = iterator_type<T const>;
     using Elem = value_type<T>;
@@ -276,7 +276,7 @@ do_arr4:
 template<class T, bool StackEmpty>
 BOOST_FORCEINLINE
 bool
-write_impl(map_like_conversion_tag, writer& w, stream& ss0)
+write_impl(map_category, writer& w, stream& ss0)
 {
     using It = iterator_type<T const>;
     using Mapped = mapped_type<T>;
@@ -395,7 +395,7 @@ struct serialize_tuple_elem_helper
 template<class T, bool StackEmpty>
 BOOST_FORCEINLINE
 bool
-write_impl(tuple_conversion_tag, writer& w, stream& ss0)
+write_impl(tuple_category, writer& w, stream& ss0)
 {
     T const* pt;
     local_stream ss(ss0);
@@ -522,7 +522,7 @@ do_obj4:
 template<class T, bool StackEmpty>
 BOOST_FORCEINLINE
 bool
-write_impl(described_class_conversion_tag, writer& w, stream& ss0)
+write_impl(described_class_category, writer& w, stream& ss0)
 {
     using Ds = described_members<T>;
 
@@ -598,7 +598,7 @@ do_obj6:
 template<class T, bool StackEmpty>
 BOOST_FORCEINLINE
 bool
-write_impl(described_enum_conversion_tag, writer& w, stream& ss)
+write_impl(described_enum_category, writer& w, stream& ss)
 {
 #ifdef BOOST_DESCRIBE_CXX14
     using Integer = typename std::underlying_type<T>::type;
@@ -682,7 +682,7 @@ struct serialize_variant_elem_helper<T, false>
 template<class T, bool StackEmpty>
 BOOST_FORCEINLINE
 bool
-write_impl(variant_conversion_tag, writer& w, stream& ss)
+write_impl(variant_category, writer& w, stream& ss)
 {
     T const* pt;
 
@@ -726,7 +726,7 @@ write_impl(variant_conversion_tag, writer& w, stream& ss)
 template<class T, bool StackEmpty>
 BOOST_FORCEINLINE
 bool
-write_impl(optional_conversion_tag, writer& w, stream& ss)
+write_impl(optional_category, writer& w, stream& ss)
 {
     using Elem = value_result_type<T>;
 
@@ -775,7 +775,7 @@ write_impl(optional_conversion_tag, writer& w, stream& ss)
 template<class T, bool StackEmpty>
 BOOST_FORCEINLINE
 bool
-write_impl(path_conversion_tag, writer& w, stream& ss)
+write_impl(path_category, writer& w, stream& ss)
 {
 #if defined(_MSC_VER)
 # pragma warning( push )
@@ -823,8 +823,8 @@ template<class T, bool StackEmpty>
 bool
 write_impl(writer& w, stream& ss)
 {
-    using cat = detail::generic_conversion_category<T>;
-    return write_impl<T, StackEmpty>( cat(), w, ss );
+    using Cat = conversion_category_for_t<T>;
+    return write_impl<T, StackEmpty>( Cat(), w, ss );
 }
 
 } // namespace detail

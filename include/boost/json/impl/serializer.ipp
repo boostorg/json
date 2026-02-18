@@ -362,7 +362,7 @@ write_value(writer& w, stream& ss);
 template< class T, bool StackEmpty >
 BOOST_FORCEINLINE
 bool
-write_impl(no_conversion_tag, writer& w, stream& ss)
+write_impl(unknown_category, writer& w, stream& ss)
 {
     return write_value<StackEmpty>(w, ss);
 }
@@ -371,14 +371,14 @@ template<bool StackEmpty>
 bool
 write_array(writer& w, stream& ss)
 {
-    return write_impl<array, StackEmpty>(sequence_conversion_tag(), w, ss);
+    return write_impl<array, StackEmpty>(sequence_category(), w, ss);
 }
 
 template<bool StackEmpty>
 bool
 write_object(writer& w, stream& ss)
 {
-    return write_impl<object, StackEmpty>(map_like_conversion_tag(), w, ss);
+    return write_impl<object, StackEmpty>(map_category(), w, ss);
 }
 
 template<bool StackEmpty>

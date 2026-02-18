@@ -173,11 +173,7 @@ value_to_impl(
 // null-like conversion
 template< class T, class Ctx >
 system::result<T>
-value_to_impl(
-    null_like_conversion_tag,
-    try_value_to_tag<T>,
-    value const& jv,
-    Ctx const& )
+value_to_impl(null_category, try_value_to_tag<T>, value const& jv, Ctx const&)
 {
     if( jv.is_null() )
         return {boost::system::in_place_value, T{}};
@@ -190,10 +186,7 @@ value_to_impl(
 template< class T, class Ctx >
 system::result<T>
 value_to_impl(
-    string_like_conversion_tag,
-    try_value_to_tag<T>,
-    value const& jv,
-    Ctx const& )
+    string_category, try_value_to_tag<T>, value const& jv, Ctx const&)
 {
     auto str = jv.if_string();
     if( str )
@@ -207,10 +200,7 @@ value_to_impl(
 template< class T, class Ctx >
 system::result<T>
 value_to_impl(
-    map_like_conversion_tag,
-    try_value_to_tag<T>,
-    value const& jv,
-    Ctx const& ctx )
+    map_category, try_value_to_tag<T>, value const& jv, Ctx const& ctx)
 {
     object const* obj = jv.if_object();
     if( !obj )
@@ -247,10 +237,7 @@ value_to_impl(
 template< class T, class Ctx >
 system::result<T>
 value_to_impl(
-    sequence_conversion_tag,
-    try_value_to_tag<T>,
-    value const& jv,
-    Ctx const& ctx )
+    sequence_category, try_value_to_tag<T>, value const& jv, Ctx const& ctx)
 {
     array const* arr = jv.if_array();
     if( !arr )
@@ -331,10 +318,7 @@ try_make_tuple_like(
 template< class T, class Ctx >
 system::result<T>
 value_to_impl(
-    tuple_conversion_tag,
-    try_value_to_tag<T>,
-    value const& jv,
-    Ctx const& ctx )
+    tuple_category, try_value_to_tag<T>, value const& jv, Ctx const& ctx)
 {
     system::error_code ec;
 
@@ -411,7 +395,7 @@ struct to_described_member
 template< class T, class Ctx >
 system::result<T>
 value_to_impl(
-    described_class_conversion_tag,
+    described_class_category,
     try_value_to_tag<T>,
     value const& jv,
     Ctx const& ctx )
@@ -444,10 +428,7 @@ value_to_impl(
 template< class T, class Ctx >
 system::result<T>
 value_to_impl(
-    described_enum_conversion_tag,
-    try_value_to_tag<T>,
-    value const& jv,
-    Ctx const& )
+    described_enum_category, try_value_to_tag<T>, value const& jv, Ctx const&)
 {
     T val = {};
     (void)jv;
@@ -475,10 +456,7 @@ value_to_impl(
 template< class T, class Ctx >
 system::result<T>
 value_to_impl(
-    optional_conversion_tag,
-    try_value_to_tag<T>,
-    value const& jv,
-    Ctx const& ctx)
+    optional_category, try_value_to_tag<T>, value const& jv, Ctx const& ctx)
 {
     using Inner = value_result_type<T>;
     if( jv.is_null() )
@@ -551,10 +529,7 @@ struct alternative_converter
 template< class T, class Ctx >
 system::result<T>
 value_to_impl(
-    variant_conversion_tag,
-    try_value_to_tag<T>,
-    value const& jv,
-    Ctx const& ctx)
+    variant_category, try_value_to_tag<T>, value const& jv, Ctx const& ctx)
 {
     system::error_code ec;
     BOOST_JSON_FAIL(ec, error::exhausted_variants);
@@ -568,8 +543,7 @@ value_to_impl(
 
 template< class T, class Ctx >
 system::result<T>
-value_to_impl(
-    path_conversion_tag, try_value_to_tag<T>, value const& jv, Ctx const& )
+value_to_impl(path_category, try_value_to_tag<T>, value const& jv, Ctx const&)
 {
     auto str = jv.if_string();
     if( !str )
@@ -816,7 +790,7 @@ value_to_impl(
 // no suitable conversion implementation
 template< class T, class Ctx >
 T
-value_to_impl( no_conversion_tag, value_to_tag<T>, value const&, Ctx const& )
+value_to_impl(unknown_category, value_to_tag<T>, value const&, Ctx const&)
 {
     static_assert(
         !std::is_same<T, T>::value,
