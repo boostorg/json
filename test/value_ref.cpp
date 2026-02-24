@@ -390,6 +390,27 @@ public:
     }
 
     void
+    testAutoConversion()
+    {
+        value jv = { 1, false, std::vector<int>{1,2,3} };
+        auto& ja = jv.as_array();
+        BOOST_TEST(ja.size() == 3);
+        BOOST_TEST(ja[0] == 1);
+        BOOST_TEST(ja[1] == false);
+        BOOST_TEST(( ja[2].as_array() == array{1,2,3} ));
+
+        jv = { {"a", std::vector<int>{1,2,3}}, {"b", std::string("foo")} };
+        auto& jo = jv.as_object();
+        BOOST_TEST(jo.size() == 2);
+        BOOST_TEST(( jo["a"] == array{1,2,3} ));
+        BOOST_TEST(( jo["b"] == "foo" ));
+
+        jv = {std::string("bar")};
+        BOOST_TEST( jv.is_string() );
+        BOOST_TEST(( jv == "bar" ));
+    }
+
+    void
     run()
     {
         testCtors();
@@ -397,6 +418,7 @@ public:
         testMakeValue();
         testObjects();
         testMoveFrom();
+        testAutoConversion();
     }
 };
 

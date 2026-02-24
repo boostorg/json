@@ -12,7 +12,6 @@
 #define BOOST_JSON_IMPL_CONVERSION_HPP
 
 #include <boost/json/fwd.hpp>
-#include <boost/json/value.hpp>
 #include <boost/json/string_view.hpp>
 #include <boost/describe/enumerators.hpp>
 #include <boost/describe/members.hpp>
@@ -30,6 +29,9 @@
 
 namespace boost {
 namespace json {
+
+class value_ref;
+
 namespace detail {
 
 #ifdef __cpp_lib_nonmember_container_access
@@ -196,6 +198,7 @@ struct object_conversion_tag : native_conversion_tag { };
 struct array_conversion_tag : native_conversion_tag { };
 struct string_conversion_tag : native_conversion_tag { };
 struct bool_conversion_tag : native_conversion_tag { };
+struct value_ref_tag : native_conversion_tag { };
 struct number_conversion_tag : native_conversion_tag { };
 struct integral_conversion_tag : number_conversion_tag { };
 struct floating_point_conversion_tag : number_conversion_tag { };
@@ -358,6 +361,9 @@ using native_conversion_category = mp11::mp_cond<
 // generic conversions
 template< class T >
 using generic_conversion_category = mp11::mp_cond<
+    // std::is_same<T,std::initializer_list<value_ref>>, init_list_tag,
+    std::is_same<T, value_ref>, value_ref_tag,
+
     std::is_same<T, bool>,     bool_conversion_tag,
     std::is_integral<T>,       integral_conversion_tag,
     std::is_floating_point<T>, floating_point_conversion_tag,

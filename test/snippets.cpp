@@ -616,6 +616,20 @@ usingInitLists()
 
         (void)jo2;
     }
+
+    {
+        // tag::snippet_init_list_10[]
+
+        value jv = { { "fibs", std::vector<int>{1,2,3,5,8} } };
+
+        array& fibs = jv.at("fibs").as_array();
+
+        assert(( fibs == array{1,2,3,5,8} ));
+
+        // end::snippet_init_list_10[]
+
+        (void)fibs;
+    }
 }
 
 //----------------------------------------------------------

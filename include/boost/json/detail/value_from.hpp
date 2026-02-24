@@ -12,6 +12,7 @@
 #ifndef BOOST_JSON_DETAIL_VALUE_FROM_HPP
 #define BOOST_JSON_DETAIL_VALUE_FROM_HPP
 
+#include <boost/json/value.hpp>
 #include <boost/json/conversion.hpp>
 #include <boost/describe/enum_to_string.hpp>
 #include <boost/mp11/algorithm.hpp>

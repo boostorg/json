@@ -10,46 +10,30 @@
 #ifndef BOOST_JSON_IMPL_VALUE_REF_HPP
 #define BOOST_JSON_IMPL_VALUE_REF_HPP
 
+#include <boost/json/value_from.hpp>
+
 namespace boost {
 namespace json {
 
 template<class T>
 value
-value_ref::
-from_builtin(
-    void const* p,
-    storage_ptr sp) noexcept
+value_ref::from_builtin(void const* p, storage_ptr sp) noexcept
 {
-    return value(
-        *reinterpret_cast<
-            T const*>(p),
-        std::move(sp));
+    return value( *reinterpret_cast<T const*>(p), std::move(sp) );
 }
 
 template<class T>
 value
-value_ref::
-from_const(
-    void const* p,
-    storage_ptr sp)
+value_ref::from_const(void const* p, storage_ptr sp)
 {
-    return value(
-        *reinterpret_cast<
-            T const*>(p),
-        std::move(sp));
+    return value_from( *reinterpret_cast<T const*>(p), std::move(sp) );
 }
 
 template<class T>
 value
-value_ref::
-from_rvalue(
-    void* p,
-    storage_ptr sp)
+value_ref::from_rvalue(void* p, storage_ptr sp)
 {
-    return value(
-        std::move(
-            *reinterpret_cast<T*>(p)),
-        std::move(sp));
+    return value_from( std::move(*reinterpret_cast<T*>(p)), std::move(sp) );
 }
 
 } // namespace json

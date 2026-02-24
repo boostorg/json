@@ -97,6 +97,14 @@ Do not create variables of type {std_initializer_list}. This may result in
 temporaries being destroyed before the initializer list is used.
 ====
 
+Initializer lists use <<ref_value_from>> conversion under the hood if the
+element is not natively convertible to `value`. For example:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_init_list_10,indent=0]
+----
+
 In all cases, the <<ref_storage_ptr>> owned by an <<ref_object>>,
 <<ref_array>>, or <<ref_value>> constructed from an initializer list will be
 propagated to each element, recursively.

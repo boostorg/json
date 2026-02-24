@@ -15,6 +15,7 @@
 
 #include <boost/json/error.hpp>
 #include <boost/json/conversion.hpp>
+#include <boost/json/value.hpp>
 #include <boost/describe/enum_from_string.hpp>
 
 #include <vector>
