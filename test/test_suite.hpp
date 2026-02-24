@@ -241,8 +241,18 @@ public:
     virtual void on_end() = 0;
 
     virtual void note(char const* msg) = 0;
-    virtual void pass(char const* expr, char const* file, int line, char const* func) = 0;
-    virtual void fail(char const* expr, char const* file, int line, char const* func) = 0;
+    virtual void pass(
+        char const* expr,
+        char const* file,
+        int line,
+        char const* func,
+        boost::source_location const& loc) = 0;
+    virtual void fail(
+        char const* expr,
+        char const* file,
+        int line,
+        char const* func,
+        boost::source_location const& loc) = 0;
 
     template<class T
 #if 0
@@ -256,14 +266,15 @@ public:
         char const* expr,
         char const* file,
         int line,
-        char const* func)
+        char const* func,
+        boost::source_location const& loc)
     {
         if(!!cond)
         {
-            pass(expr, file, line, func);
+            pass(expr, file, line, func, loc);
             return true;
         }
-        fail(expr, file, line, func);
+        fail(expr, file, line, func, loc);
         return false;
     }
 
@@ -404,30 +415,13 @@ public:
         log_ << msg << "\n";
     }
 
-    char const*
-    filename(
-        char const* file)
-    {
-        auto const p0 = file;
-        auto p = p0 + std::strlen(file);
-        while(p-- != p0)
-        {
-        #ifdef _MSC_VER
-            if(*p == '\\')
-        #else
-            if(*p == '/')
-        #endif
-                break;
-        }
-        return p + 1;
-    }
-
     void
     pass(
         char const*,
         char const*,
         int,
-        char const*) override
+        char const*,
+        boost::source_location const&) override
     {
         ++all_.total;
         ++v_.back().total;
@@ -438,27 +432,38 @@ public:
         char const* expr,
         char const* file,
         int line,
-        char const*) override
+        char const* func,
+        boost::source_location const& user_loc) override
     {
+        boost::source_location loc;
+        if( user_loc.line() )
+        {
+            loc = user_loc;
+        }
+        else
+        {
+            loc = boost::source_location(
+                file, static_cast<uint_least32_t>(line), func);
+        }
+
         ++all_.failed;
         ++v_.back().total;
         ++v_.back().failed;
         auto const id = ++all_.total;
-        auto const cp =
-            checkpoint::current();
+        auto const cp = checkpoint::current();
+
+        log_ << loc.file_name()
+             << ": in function `" << loc.function_name() << "'\n";
+        log_ << loc.file_name()  << ':' << loc.line()
+             << ": failed: " << expr
+             << " (#" << id << ")\n";
+
         if(cp)
-            log_ <<
-                "case " << cp->id <<
-                "(#" << id << ") " <<
-                filename(cp->file) <<
-                "(" << cp->line << ") "
-                "failed: " << expr << "\n";
-        else
-            log_ <<
-                "#" << id <<
-                " " << filename(file) <<
-                "(" << line << ") "
-                "failed: " << expr << "\n";
+        {
+            log_ << cp->file << ':' << cp->line
+                 << ": last checkpoint (#" << cp->id << ") here \n";
+        }
+
     }
 };
 
@@ -638,66 +643,75 @@ using log_type = detail::log_ostream<char>;
         BOOST_JSON_PP_CONCAT(_BOOST_TEST_CHECKPOINT, __LINE__) ( \
             __FILE__, __LINE__, __VA_ARGS__ + 0)
 
-#define BOOST_TEST(expr) \
+#define BOOST_TEST(expr, ...) \
     ::test_suite::detail::current()->maybe_fail( \
-        (expr), #expr, __FILE__, __LINE__, TEST_SUITE_FUNCTION)
+        (expr), #expr, __FILE__, __LINE__, TEST_SUITE_FUNCTION, \
+        boost::source_location(__VA_ARGS__))
 
-#define BOOST_ERROR(msg) \
+#define BOOST_ERROR(msg, ...) \
     ::test_suite::detail::current()->fail( \
-        msg, __FILE__, __LINE__, TEST_SUITE_FUNCTION)
+        msg, __FILE__, __LINE__, TEST_SUITE_FUNCTION, \
+        boost::source_location(__VA_ARGS__))
 
-#define BOOST_TEST_PASS() \
+#define BOOST_TEST_PASS(...) \
     ::test_suite::detail::current()->pass( \
-        "", __FILE__, __LINE__, TEST_SUITE_FUNCTION)
+        "", __FILE__, __LINE__, TEST_SUITE_FUNCTION, \
+        boost::source_location(__VA_ARGS__))
 
-#define BOOST_TEST_FAIL() \
+#define BOOST_TEST_FAIL(...) \
     ::test_suite::detail::current()->fail( \
-        "", __FILE__, __LINE__, TEST_SUITE_FUNCTION)
+        "", __FILE__, __LINE__, TEST_SUITE_FUNCTION, \
+        boost::source_location(__VA_ARGS__))
 
-#define BOOST_TEST_NOT(expr) BOOST_TEST(!(expr))
+#define BOOST_TEST_NOT(expr, ...) \
+    BOOST_TEST(!(expr), boost::source_location(__VA_ARGS__))
 
 #ifndef BOOST_NO_EXCEPTIONS
-# define BOOST_TEST_THROWS( expr, except ) \
-    try { \
+# define BOOST_TEST_THROWS(expr, except, ...) \
+    try \
+    { \
         (void)(expr); \
         ::test_suite::detail::current()->fail ( \
-            #except, __FILE__, __LINE__, \
-            TEST_SUITE_FUNCTION); \
+            #except, __FILE__, __LINE__, TEST_SUITE_FUNCTION, \
+            boost::source_location(__VA_ARGS__)); \
     } \
-    catch(except const&) { \
+    catch(except const&) \
+    { \
         ::test_suite::detail::current()->pass( \
-            #except, __FILE__, __LINE__, \
-            TEST_SUITE_FUNCTION); \
+            #except, __FILE__, __LINE__, TEST_SUITE_FUNCTION, \
+            boost::source_location(__VA_ARGS__)); \
     } \
-    catch(...) { \
+    catch(...) \
+    { \
         ::test_suite::detail::current()->fail( \
-            #except, __FILE__, __LINE__, \
-            TEST_SUITE_FUNCTION); \
+            #except, __FILE__, __LINE__, TEST_SUITE_FUNCTION, \
+            boost::source_location(__VA_ARGS__)); \
     }
 
-# define BOOST_TEST_THROWS_WITH_LOCATION( expr ) \
+# define BOOST_TEST_THROWS_WITH_LOCATION(expr, ...) \
     try \
     { \
         expr; \
         ::test_suite::detail::current()->fail( \
-            "system_error", __FILE__, __LINE__, \
-            TEST_SUITE_FUNCTION); \
+            "system_error", __FILE__, __LINE__, TEST_SUITE_FUNCTION, \
+            boost::source_location(__VA_ARGS__)); \
     } \
     catch (::boost::system::system_error const& exc) \
     { \
         ::test_suite::detail::current()->maybe_fail( \
             exc.code().has_location(), "has_location()", __FILE__, __LINE__, \
-            TEST_SUITE_FUNCTION); \
+            TEST_SUITE_FUNCTION, boost::source_location(__VA_ARGS__)); \
     } \
-    catch(...) { \
+    catch(...) \
+    { \
         ::test_suite::detail::current()->fail( \
-            "system_error", __FILE__, __LINE__, \
-            TEST_SUITE_FUNCTION); \
+            "system_error", __FILE__, __LINE__, TEST_SUITE_FUNCTION, \
+            boost::source_location(__VA_ARGS__)); \
     }
 
 #else
-   #define BOOST_TEST_THROWS( expr, except )
-   #define BOOST_TEST_THROWS_WITH_LOCATION(expr)
+   #define BOOST_TEST_THROWS( expr, except, ... )
+   #define BOOST_TEST_THROWS_WITH_LOCATION(expr, ...)
 #endif
 
 #define TEST_SUITE(type, name) \
