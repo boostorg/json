@@ -30,6 +30,10 @@ struct visitor_checker<value const&>
     { return {kind::null, &n}; }
 
     std::pair<kind, void const*>
+    operator()(bool&)
+    { BOOST_TEST_FAIL(); return {(kind)50, nullptr}; }
+
+    std::pair<kind, void const*>
     operator()(bool const& b) const
     { return {kind::bool_, &b}; }
 
@@ -60,17 +64,17 @@ struct visitor_checker<value const&>
     template<class T>
     std::pair<kind, void const*>
     operator()(T&&) const&
-    { return {(kind)1000000, nullptr}; }
+    { return {(kind)40, nullptr}; }
 
     template<class T>
     std::pair<kind, void const*>
     operator()(T&&) &
-    { return {(kind)1000000, nullptr}; }
+    { return {(kind)41, nullptr}; }
 
     template<class T>
     std::pair<kind, void const*>
     operator()(T&&) &&
-    { return {(kind)1000000, nullptr}; }
+    { return {(kind)42, nullptr}; }
 };
 
 template<>
@@ -115,17 +119,17 @@ struct visitor_checker<value&>
     template<class T>
     std::pair<kind, void const*>
     operator()(T&&) const&
-    { return {(kind)1000000, nullptr}; }
+    { return {(kind)40, nullptr}; }
 
     template<class T>
     std::pair<kind, void const*>
     operator()(T&&) &
-    { return {(kind)1000000, nullptr}; }
+    { return {(kind)41, nullptr}; }
 
     template<class T>
     std::pair<kind, void const*>
     operator()(T&&) &&
-    { return {(kind)1000000, nullptr}; }
+    { return {(kind)42, nullptr}; }
 };
 
 template<>
@@ -170,17 +174,17 @@ struct visitor_checker<value&&>
     template<class T>
     std::pair<kind, void const*>
     operator()(T&&) const&
-    { return {(kind)1000000, nullptr}; }
+    { static_assert( !std::is_same<T, T>::value, "" ); return {(kind)40, nullptr}; }
 
     template<class T>
     std::pair<kind, void const*>
     operator()(T&&) &
-    { return {(kind)1000000, nullptr}; }
+    { static_assert( !std::is_same<T, T>::value, "" ); return {(kind)41, nullptr}; }
 
     template<class T>
     std::pair<kind, void const*>
     operator()(T&&) &&
-    { return {(kind)1000000, nullptr}; }
+    { static_assert( !std::is_same<T, T>::value, "" ); return {(kind)42, nullptr}; }
 };
 
 class visit_test
@@ -288,6 +292,7 @@ public:
 
     void run()
     {
+        value const jv;
         visitor_ref_tester()();
 
         BOOST_TEST_CHECKPOINT();
