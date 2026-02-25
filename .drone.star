@@ -14,6 +14,7 @@ windowsglobalimage="cppalliance/dronevs2019"
 
 def main(ctx):
   return [
+  linux_cxx("Clang preview - reflection", "clang++", buildtype="boost", buildscript="drone", image="cppalliance/2404-p2996:1", environment={'B2_TOOLSET': 'clang', 'B2_CXXSTD': '20,23,2c'}, globalenv=globalenv),
   linux_cxx("Clang 12 s390x", "clang++-12", packages="clang-12 libstdc++-9-dev", llvm_os="focal", llvm_ver="12", buildtype="boost", buildscript="drone", image="cppalliance/droneubuntu2004:multiarch", environment={'B2_TOOLSET': 'clang-12', 'B2_CXXSTD': '17,20'}, arch="s390x", globalenv=globalenv),
   linux_cxx("gcc 11 s390x", "g++-11", packages="g++-11", buildtype="boost", buildscript="drone", image="cppalliance/droneubuntu2004:multiarch", environment={'B2_TOOLSET': 'gcc-11', 'B2_CXXSTD': '17,2a'}, arch="s390x", globalenv=globalenv),
   linux_cxx("Clang 12 arm64", "clang++-12", packages="clang-12 libstdc++-9-dev", llvm_os="focal", llvm_ver="12", buildtype="boost", buildscript="drone", image="cppalliance/droneubuntu2004:multiarch", environment={'B2_TOOLSET': 'clang-12', 'B2_CXXSTD': '17,20', 'DRONE_JOB_UUID': '7719a1c783m'}, arch="arm64", globalenv=globalenv),
