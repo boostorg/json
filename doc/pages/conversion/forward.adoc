@@ -41,3 +41,18 @@ Forward declarations of contextual conversions are done very similarly:
 ----
 include::../../../test/doc_forward_conversion.cpp[tag=doc_forward_conversion_3,indent=0]
 ----
+
+
+== Checking for Conversion Support
+
+In some cases it might be necessary for you to check if a type is supported by
+JSON's conversion functions. For example, you want to provide a fallback
+overload for types that do not have such support. The type traits
+<<ref_has_value_from>> and <<ref_has_value_to>> are intended for such checks.
+They can also be forward-declared in case a physical dependency on JSON is
+not desirable.
+
+[source]
+----
+include::../../../test/doc_forward_conversion.cpp[tag=doc_forward_conversion_4,indent=0]
+----
