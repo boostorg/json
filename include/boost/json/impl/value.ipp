@@ -531,7 +531,7 @@ value::try_at(string_view key) noexcept
     auto r = try_as_object();
     if( !r )
         return r.error();
-    return r->try_at(key);
+    return r.unsafe_value().try_at(key);
 }
 
 boost::system::result<value const&>
@@ -540,7 +540,7 @@ value::try_at(string_view key) const noexcept
     auto r = try_as_object();
     if( !r )
         return r.error();
-    return r->try_at(key);
+    return r.unsafe_value().try_at(key);
 }
 
 boost::system::result<value&>
@@ -549,7 +549,7 @@ value::try_at(std::size_t pos) noexcept
     auto r = try_as_array();
     if( !r )
         return r.error();
-    return r->try_at(pos);
+    return r.unsafe_value().try_at(pos);
 }
 
 boost::system::result<value const&>
@@ -558,7 +558,7 @@ value::try_at(std::size_t pos) const noexcept
     auto r = try_as_array();
     if( !r )
         return r.error();
-    return r->try_at(pos);
+    return r.unsafe_value().try_at(pos);
 }
 
 object const&
