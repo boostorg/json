@@ -2,6 +2,7 @@
 
 require 'asciidoctor'
 require 'asciidoctor/converter/html5'
+require 'fileutils'
 require 'pathname'
 
 class Asciidoctor::AbstractBlock
