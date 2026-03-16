@@ -520,6 +520,110 @@ value::set_at_pointer(
     return try_set_at_pointer(sv, ref, opts).value();
 }
 
+bool
+value::erase_at_pointer(
+    string_view         sv,
+    system::error_code& ec)
+{
+    ec.clear();
+    if(sv.empty()){
+        BOOST_JSON_FAIL(ec, error::syntax);
+        return false;
+    }
+
+    string_view previous_segment;
+
+    string_view segment = detail::next_segment(sv, ec);
+
+    auto result = this;
+    auto previous_result = this;
+
+    while (true)
+    {
+        if (ec.failed())
+            return false;
+
+        if (!result)
+        {
+            BOOST_JSON_FAIL(ec, error::not_found);
+            return false;
+        }
+
+        if( segment.empty() )
+            break;
+
+        previous_segment = segment;
+        previous_result = result;
+
+        switch (result->kind())
+        {
+            case boost::json::kind::object: {
+                auto& obj = result->get_object();
+
+                detail::pointer_token const token(segment);
+                segment = detail::next_segment(sv, ec);
+                if (ec.failed())
+                    return false;
+                
+                result = detail::if_contains_token(obj, token);
+                if( !result )
+                {
+                    BOOST_JSON_FAIL(ec, error::not_found);
+                    return false;
+                }
+                break;
+            }
+            case boost::json::kind::array: {
+                auto const index = detail::parse_number_token(segment, ec);
+                segment          = detail::next_segment(sv, ec);
+                if (ec.failed())
+                    return false;
+                
+                auto& arr = result->get_array();
+                result    = arr.if_contains(index);
+                if( !result )
+                {
+                    BOOST_JSON_FAIL(ec, error::past_the_end);
+                    return false;
+                }
+                break;
+            }
+            default: {
+                BOOST_JSON_FAIL(ec, error::value_is_scalar);
+                return false;
+            }
+        }
+    }
+
+    switch (previous_result->kind())
+    {
+        case boost::json::kind::object: {
+            auto& obj = previous_result->get_object();
+            detail::pointer_token const token(previous_segment);
+            key_value_pair* kv = detail::find_in_object(obj, token).first;
+            if (kv) {
+                obj.erase(kv);
+                return true;
+            }
+            return false;
+        }
+        case boost::json::kind::array: {
+            auto const index = detail::parse_number_token(previous_segment, ec);
+            auto& arr = previous_result->get_array();
+            if (arr.if_contains(index)){
+                arr.erase(arr.begin() + index);
+                return true;
+            }
+            return false;
+        }
+        default: {
+            BOOST_JSON_FAIL(ec, error::value_is_scalar);
+            return false;
+        }
+    }
+}
+
+
 } // namespace json
 } // namespace boost
 
