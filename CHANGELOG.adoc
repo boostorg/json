@@ -5,6 +5,22 @@
 
 include::doc/pages/definitions.adoc[]
 
+== Boost 1.91.0
+
+.Improvements
+* {issue}1146[#1146] Changed <<ref_value>> construction from
+  `std::initializer_list` to use <<ref_value_from>>. This allows constructing
+  `value` from user-defined types.
+* {issue}1140[#1140] Changed <<ref_value_to>> to construct tuples using curly
+  braces. This adds support for more tuple-like types.
+
+.Fixes
+* {issue}1143[#1143] Changed <<ref_visit>> to always pass references to
+  persistent objects. This is particularly important when the visitor is a
+  coroutine.
+* {issue}1129[#1129] Fixed direct parsing of unexpected arrays in nested
+  described structs.
+
 == Boost 1.90.0
 
 .API Changes
