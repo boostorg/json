@@ -238,7 +238,7 @@ value_to_impl(
             return {boost::system::in_place_error, elem_res.error()};
         *ins++ = value_type<T>{
             key_type<T>(kv.key()),
-            std::move(*elem_res)};
+            std::move(elem_res.unsafe_value())};
     }
     return res;
 }
@@ -276,7 +276,7 @@ value_to_impl(
         auto elem_res = try_value_to<value_type<T>>( val, ctx );
         if( elem_res.has_error() )
             return {boost::system::in_place_error, elem_res.error()};
-        *ins++ = std::move(*elem_res);
+        *ins++ = std::move(elem_res.unsafe_value());
     }
     return result;
 }
@@ -401,7 +401,7 @@ struct to_described_member
 # pragma GCC diagnostic pop
 #endif
         if( member_res )
-            (*res).* D::pointer = std::move(*member_res);
+            (*res).* D::pointer = std::move(member_res.unsafe_value());
         else
             res = {boost::system::in_place_error, member_res.error()};
     }
@@ -637,7 +637,7 @@ value_to_impl(
     auto res = tag_invoke(try_value_to_tag<T>(), jv);
     if( res.has_error() )
         throw_system_error( res.error() );
-    return std::move(*res);
+    return std::move(res.unsafe_value());
 }
 
 template<
@@ -655,7 +655,7 @@ value_to_impl(
     auto res = tag_invoke( try_value_to_tag<T>(), jv, Sup::get(ctx) );
     if( res.has_error() )
         throw_system_error( res.error() );
-    return std::move(*res);
+    return std::move(res.unsafe_value());
 }
 
 template<
@@ -676,7 +676,7 @@ value_to_impl(
     auto res = tag_invoke(try_value_to_tag<T>(), jv, Sup::get(ctx), ctx);
     if( res.has_error() )
         throw_system_error( res.error() );
-    return std::move(*res);
+    return std::move(res.unsafe_value());
 }
 
 //----------------------------------------------------------

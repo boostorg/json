@@ -60,7 +60,7 @@ tag_invoke( try_value_to_tag<T>, const value& jv, const use_allocator_t<Alloc>& 
         auto elem_res = try_value_to<ValueType>( val, full_ctx );
         if( elem_res.has_error() )
             return {boost::system::in_place_error, elem_res.error()};
-        *ins++ = std::move(*elem_res);
+        *ins++ = std::move(elem_res.unsafe_value());
     }
     return result;
 }
