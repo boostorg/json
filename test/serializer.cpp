@@ -839,7 +839,7 @@ public:
 #ifdef BOOST_DESCRIBE_CXX14
         {
             serializer_test_ns::my_struct s{"some string", 1424, 12.4};
-            check_udt(s, R"({"s":"some string","n":1424,"d":1.24E1})");
+            check_udt(s, R"({"s":"some string","n":1424,"d":1.24E+01})");
         }
         {
             check_udt(
@@ -854,7 +854,7 @@ public:
             check_udt( v, "112" );
 
             v = 0.5;
-            check_udt( v, "5E-1" );
+            check_udt( v, "5E-01" );
 
             v = "this is a string";
             check_udt(v, R"("this is a string")");
