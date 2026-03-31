@@ -79,7 +79,7 @@ target_compile_definitions(boost_json-intrusive-macro-tests PRIVATE
 add_test(NAME boost_json-intrusive-macro-tests COMMAND boost_json-intrusive-macro-tests)
 add_dependencies(tests boost_json-intrusive-macro-tests)
 
-if(BoostPrettyPrinters_HAS_GDB)
+if(BoostPrettyPrinters_HAS_GDB AND (CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))
     boost_pretty_printers_test_gdb_printers(
         TEST boost_json_test_gdb_printers
         SOURCES printers.cpp
