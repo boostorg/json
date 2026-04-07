@@ -31,7 +31,6 @@ common_install () {
   export SELF=`basename $REPO_NAME`
   export BOOST_CI_TARGET_BRANCH="$TRAVIS_BRANCH"
   export BOOST_CI_SRC_FOLDER=$(pwd)
-  : ${B2_DONT_BOOTSTRAP:=$B2_SEPARATE_BOOTSTRAP}
 
   . ./ci/common_install.sh
 
@@ -54,13 +53,6 @@ common_install () {
       sudo -E apt-get -o Acquire::Retries=3 update
 
       popd
-  fi
-
-  if [ "$B2_SEPARATE_BOOTSTRAP" = 1 ]; then
-    pushd tools/build
-    B2_TOOLSET= ./bootstrap.sh
-    popd
-    cp tools/build/b2 .
   fi
 }
 
