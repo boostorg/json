@@ -564,40 +564,94 @@ _supported_compilers = {
         },
     },
     'clang': {
-        'versions': ['16', '15', '14', '13', '12', '11', '10', '9', '8', '7', '6.0', '5.0', '4.0', '3.8'],
+        'versions': ['23', '22', '21', '20', '19', '18', '17', '16', '15', '14', '13', '12', '11', '10', '9', '8', '7', '6.0', '5.0', '4.0', '3.8'],
         'display_name': 'Clang',
         'executable': 'clang++',
+        '23': {
+            'latest_cpp':  2026,
+            'platforms': {
+                ('linux', 'x86_64'): {
+                    'image': 'cppalliance/droneubuntu2404:1',
+                    'packages': ['clang-23'],
+                    'llvm_os': 'noble',
+                },
+            },
+        },
         '22': {
             'latest_cpp':  2026,
-            'platforms': {},
+            'platforms': {
+                ('linux', 'x86_64'): {
+                    'image': 'cppalliance/droneubuntu2404:1',
+                    'packages': ['clang-22'],
+                    'llvm_os': 'noble',
+                    'llvm_ver': '22',
+                },
+            },
         },
         '21': {
             'latest_cpp':  2026,
-            'platforms': {},
+            'platforms': {
+                ('linux', 'x86_64'): {
+                    'image': 'cppalliance/droneubuntu2404:1',
+                    'packages': ['clang-21'],
+                    'llvm_os': 'noble',
+                    'llvm_ver': '21',
+                },
+            },
         },
         '20': {
             'latest_cpp':  2026,
-            'platforms': {},
+            'platforms': {
+                ('linux', 'x86_64'): {
+                    'image': 'cppalliance/droneubuntu2404:1',
+                    'packages': ['clang-20'],
+                    'llvm_os': 'noble',
+                    'llvm_ver': '20',
+                },
+            },
         },
         '19': {
             'latest_cpp':  2026,
-            'platforms': {},
+            'platforms': {
+                ('linux', 'x86_64'): {
+                    'image': 'cppalliance/droneubuntu2404:1',
+                    'packages': ['clang-19'],
+                    'llvm_os': 'noble',
+                    'llvm_ver': '19',
+                },
+            },
         },
         '18': {
             'latest_cpp':  2026,
-            'platforms': {},
+            'platforms': {
+                ('linux', 'x86_64'): {
+                    'image': 'cppalliance/droneubuntu2404:1',
+                    'packages': ['clang-18'],
+                    'llvm_os': 'noble',
+                    'llvm_ver': '18',
+                },
+            },
         },
         '17': {
             'latest_cpp':  2026,
-            'platforms': {},
+            'platforms': {
+                ('linux', 'x86_64'): {
+                    'image': 'cppalliance/droneubuntu2404:1',
+                    'packages': ['clang-17'],
+                    'llvm_os': 'noble',
+                    'llvm_ver': '17',
+                },
+            },
         },
         '16': {
             'latest_cpp':  2023,
             'custom_cpp': { 2023: '2b' },
             'platforms': {
                 ('linux', 'x86_64'): {
-                    'image': 'cppalliance/droneubuntu2404:1',
+                    'image': 'cppalliance/droneubuntu2204:1',
                     'packages': ['clang-16'],
+                    'llvm_os': 'jammy',
+                    'llvm_ver': '16',
                 },
             },
         },
