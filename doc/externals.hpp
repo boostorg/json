@@ -214,6 +214,16 @@ struct map {};
 
 /// !EXTERNAL!
 ///
+/// @see https://en.cppreference.com/cpp/utility/variant/monostate
+struct monostate {};
+
+/// !EXTERNAL!
+///
+/// @see https://en.cppreference.com/w/cpp/container/multimap
+struct multimap {};
+
+/// !EXTERNAL!
+///
 /// @see https://en.cppreference.com/w/cpp/container/unordered_map
 struct unordered_map {};
 

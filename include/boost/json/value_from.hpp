@@ -20,42 +20,60 @@ namespace json {
 
 /** Convert an object of type `T` to @ref value.
 
-    This function attempts to convert an object
-    of type `T` to @ref value using
+    This function attempts to convert an object of type `T` to @ref value using
 
-    @li one of @ref value's constructors,
+    - one of @ref value's constructors,
+    - a library-provided generic conversion, or
+    - a user-provided overload of `tag_invoke`.
 
-    @li a library-provided generic conversion, or
+    In order to perform the conversion the function selects an appropriate
+    implementation based on the types `T` and `Context` (if provided).
 
-    @li a user-provided overload of `tag_invoke`.
+    1. If `Context` is available and is not `std::tuple<C...>`
 
-    Out of the function supports default constructible types satisfying
-    {req_SequenceContainer}, arrays, arithmetic types, `bool`, `std::tuple`,
-    `std::pair`, `std::optional`, `std::variant`, `std::nullptr_t`, and structs
-    and enums described using Boost.Describe.
+       a. check if `use_category<T, Context>::value` is not
+          @ref conversion_category::unknown; otherwise
 
-    Conversion of other types is done by calling an overload of `tag_invoke`
-    found by argument-dependent lookup. Its signature should be similar to:
+       b. check if a `tag_invoke` overload from the list below that takes a
+          `Context const&` exists.
+
+    2. Otherwise, if `Context` is available, and is `std::tuple<C...>` repeat
+       steps **1** and **2** recursively for every `C` until either
+       step **1.a** or **1.b** succeeds for some `C`.
+
+    3. Failing that,
+
+       a. check if `use_category<T>::value` is not
+          @ref conversion_category::unknown; otherwise
+
+       b. check if a `tag_invoke` overload from the list below that takes only
+          2 parameters exists; otherwise
+
+       c. check if `T` is one of @ref value, @ref array, @ref object,
+          or @ref string; otherwise
+
+       d. check if `T` matches one of the categories of types described in the
+          table "Conversion categories" in \<\<Value Conversion>> section.
+
+    These steps determine both the appropriate category of conversion for `T`,
+    and, if necessary, the effective context `C` that will be used for
+    conversion. If the category is selected on steps **1.a**, **3.a**, **3.c**,
+    or **3.d**, the library provides a suitable conversion implementation.
+    If the category is selected on steps **2.b** or **3.b**, then a
+    user-provided `tag_invoke` overload is used.
+
+    The overloads of `tag_invoke` that will be considered by this function
+    are in the following list. Overloads that appear higher in the list have
+    higher priority.
 
     @code
     template< class FullContext >
     void tag_invoke( value_from_tag, value&, T, const Context&, const FullContext& );
-    @endcode
 
-    or
-
-    @code
     void tag_invoke( value_from_tag, value&, T, const Context& );
-    @endcode
 
-    or
-
-    @code
     void tag_invoke( value_from_tag, value&, T );
     @endcode
-
-    The overloads are checked for existence in that order and the first that
-    matches will be selected. <br>
 
     The `ctx` argument can be used either as a tag type to provide conversions
     for third-party types, or to pass extra data to the conversion function.
@@ -90,9 +108,6 @@ value_from(
     value& jv)
 {
     using bare_T = detail::remove_cvref<T>;
-    BOOST_CORE_STATIC_ASSERT((
-        detail::conversion_round_trips<
-            Context, bare_T, detail::value_from_conversion>::value));
     using cat = detail::value_from_category<Context, bare_T>;
     detail::value_from_impl( cat(), jv, std::forward<T>(t), ctx );
 }
