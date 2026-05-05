@@ -7,7 +7,7 @@
 
 
 def main(ctx):
-    globalenv={'B2_CI_VERSION': '1', 'B2_FLAGS': 'warnings=extra warnings-as-errors=on', 'DEPINST': '--reject-cycles'}
+    globalenv={'B2_CI_VERSION': '1', 'ADD_UBUNTU_TOOLCHAIN_PPA': 'true', 'B2_FLAGS': 'warnings=extra warnings-as-errors=on', 'DEPINST': '--reject-cycles'}
     with_stdxxfs = { 'B2_LINKFLAGS': '-lstdc++fs', }
     cmake_env = { 'CMAKE_VERSION': '3.8.2'}
 
@@ -121,7 +121,7 @@ def generate(
     oses=["linux", "windows", "macos", 'freebsd'],
     architectures=["x86_64", "arm64", "s390x"],
     script='drone',
-    globalenv={},
+    globalenv={'ADD_UBUNTU_TOOLCHAIN_PPA': 'true'},
     overrides=[],
     extras=[],
 ):
