@@ -2033,6 +2033,34 @@ public:
                 BOOST_TEST(s == t.s2 + t.s1.substr(2, 3));
             });
         }
+
+        // self-append with aliased source forcing reallocation
+        {
+            fail_loop([&](storage_ptr const& sp)
+            {
+                string s(sp);
+                s.append(t.v2);
+                // consume any spare capacity so the next append reallocates
+                while(s.size() < s.capacity())
+                    s.push_back('*');
+                std::string cs(s.data(), s.size());
+                s.append(s);
+                cs.append(cs);
+                BOOST_TEST(s == cs);
+            });
+
+            fail_loop([&](storage_ptr const& sp)
+            {
+                string s(sp);
+                s.append(t.v2);
+                while(s.size() < s.capacity())
+                    s.push_back('*');
+                std::string cs(s.data(), s.size());
+                s.append(s.subview(3));
+                cs.append(cs.substr(3));
+                BOOST_TEST(s == cs);
+            });
+        }
     }
 
     void

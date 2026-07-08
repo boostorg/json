@@ -27,6 +27,12 @@ class string;
 
 namespace detail {
 
+bool
+ptr_in_range(
+    const char* first,
+    const char* last,
+    const char* ptr) noexcept;
+
 class string_impl
 {
     struct table
