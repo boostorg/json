@@ -23,9 +23,14 @@
 #include <iterator>
 #include <tuple>
 #include <utility>
+
 #ifndef BOOST_NO_CXX17_HDR_VARIANT
 # include <variant>
 #endif // BOOST_NO_CXX17_HDR_VARIANT
+
+#ifdef BOOST_DESCRIBE_HAS_REFLECTION
+# include <meta>
+#endif // BOOST_DESCRIBE_HAS_REFLECTION
 
 namespace boost {
 namespace json {
@@ -411,6 +416,28 @@ struct deduced_category
 
 struct no_context {};
 
+#ifdef BOOST_DESCRIBE_HAS_REFLECTION
+
+template<class T, class Ctx>
+constexpr
+conversion_category
+annotated_category_impl()
+{
+    static constexpr auto annotations = std::define_static_array(
+        std::meta::annotations_of_with_type(^^T, ^^conversion_category));
+    template for (constexpr std::meta::info a_info: annotations)
+    {
+        return std::meta::extract<conversion_category>(a_info);
+    }
+    return conversion_category::unknown;
+}
+
+template <class T, class Ctx>
+using annotated_category = std::integral_constant<
+    conversion_category, annotated_category_impl<T, Ctx>()>;
+
+#endif // BOOST_DESCRIBE_HAS_REFLECTION
+       //
 template <class T, class Ctx>
 using use_category_helper = use_category<
     T, mp11::mp_if<std::is_same<Ctx, no_context>, void, Ctx>>;
@@ -421,6 +448,9 @@ struct all_custom_checks
     template <class T, class Ctx>
     using fn = mp11::mp_list<
         mp11::mp_defer<use_category_helper, T, Ctx>,
+#ifdef BOOST_DESCRIBE_HAS_REFLECTION
+        mp11::mp_defer<annotated_category, T, Ctx>,
+#endif // BOOST_DESCRIBE_HAS_REFLECTION
         mp11::mp_defer<tag_invoke_with_context_category, T, Ctx, Dir>>;
 };
 
@@ -430,6 +460,9 @@ struct all_fallback_checks
     template <class T>
     using fn = mp11::mp_list<
         mp11::mp_defer<use_category_helper, T, void>,
+#ifdef BOOST_DESCRIBE_HAS_REFLECTION
+        mp11::mp_defer<annotated_category, T, void>,
+#endif // BOOST_DESCRIBE_HAS_REFLECTION
         mp11::mp_defer<tag_invoke_category, T, Dir>,
         mp11::mp_defer<native_conversion_category, T>,
         mp11::mp_defer<deduced_category, T>>;
@@ -437,11 +470,19 @@ struct all_fallback_checks
 
 template <class T, class Ctx>
 using direct_custom_checks = mp11::mp_list<
-    mp11::mp_defer<use_category_helper, T, Ctx>>;
+    mp11::mp_defer<use_category_helper, T, Ctx>
+#ifdef BOOST_DESCRIBE_HAS_REFLECTION
+        ,
+        mp11::mp_defer<annotated_category, T, Ctx>
+#endif // BOOST_DESCRIBE_HAS_REFLECTION
+       >;
 
 template <class T>
 using direct_fallback_checks = mp11::mp_list<
     mp11::mp_defer<use_category_helper, T, void>,
+#ifdef BOOST_DESCRIBE_HAS_REFLECTION
+        mp11::mp_defer<annotated_category, T, void>,
+#endif // BOOST_DESCRIBE_HAS_REFLECTION
     mp11::mp_defer<deduced_category, T>>;
 
 template <class>
