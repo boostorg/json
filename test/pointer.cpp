@@ -231,6 +231,14 @@ public:
         jv.find_pointer(s, ec);
         BOOST_TEST(ec == error::token_overflow);
         BOOST_TEST(hasLocation(ec));
+
+        // a token an order of magnitude past max() still overflows size_t
+        string s2 = "/foo/";
+        s2 += std::to_string((std::numeric_limits<std::size_t>::max)());
+        s2 += '9';
+        jv.find_pointer(s2, ec);
+        BOOST_TEST(ec == error::token_overflow);
+        BOOST_TEST(hasLocation(ec));
     }
 
     void

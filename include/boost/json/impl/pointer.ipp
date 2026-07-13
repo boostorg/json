@@ -200,14 +200,14 @@ parse_number_token(
             return {};
         }
 
-        std::size_t new_result = result * 10 + d;
-        if( new_result < result )
+        // guard against std::size_t overflow in result * 10 + d
+        if( result > (std::size_t(-1) - d) / 10 )
         {
             BOOST_JSON_FAIL(ec, error::token_overflow);
             return {};
         }
 
-        result = new_result;
+        result = result * 10 + d;
 
     }
     return result;
