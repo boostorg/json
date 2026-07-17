@@ -195,24 +195,42 @@ append(
     InputIt last,
     std::random_access_iterator_tag)
 {
-
     auto const n = static_cast<
         size_type>(last - first);
-    if(n > impl_.capacity() - impl_.size())
+    auto const size = impl_.size();
+    detail::string_impl tmp;
+    char* p = impl_.data();
+    if(n > impl_.capacity() - size)
     {
-        // appending forces a reallocation that frees our storage; if
-        // [first, last) aliases it the copy below would read freed memory,
-        // so buffer the characters first
-        append(first, last, std::input_iterator_tag{});
-        return;
+        // [first, last) may alias the current
+        // storage, so copy the new characters
+        // into the new storage before freeing it
+        tmp = detail::string_impl(
+            detail::string_impl::growth(
+                size + n, impl_.capacity()),
+            sp_);
+        p = tmp.data();
     }
-    char* out = impl_.append(n, sp_);
+
+    char* out = p + size;
 #if defined(_MSC_VER) && _MSC_VER <= 1900
     while( first != last )
         *out++ = *first++;
 #else
     std::copy(first, last, out);
 #endif
+
+    if(p != impl_.data())
+    {
+        std::memcpy(p, impl_.data(), size);
+        tmp.term(size + n);
+        impl_.destroy(sp_);
+        impl_ = tmp;
+    }
+    else
+    {
+        impl_.term(size + n);
+    }
 }
 
 template<class InputIt>
