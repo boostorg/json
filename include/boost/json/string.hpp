@@ -559,6 +559,19 @@ public:
         return sp_.get();
     }
 
+    constexpr
+    bool
+    is_seamless() const noexcept
+    {
+        return impl_.is_seamless();
+    }
+
+    void
+    set_seamless(bool on) noexcept
+    {
+        impl_.set_seamless(on);
+    }
+
     //------------------------------------------------------
     //
     // Element Access

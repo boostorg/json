@@ -426,26 +426,19 @@ replace_unchecked(
 }
 
 void
-string_impl::
-shrink_to_fit(
-    storage_ptr const& sp) noexcept
+string_impl::shrink_to_fit(storage_ptr const& sp) noexcept
 {
-    if(s_.k == short_string_)
+    if( is_short() )
         return;
+
     auto const t = p_.t;
     if(t->size <= sbo_chars_)
     {
-        s_.k = short_string_;
-        std::memcpy(
-            s_.buf, data(), t->size);
-        s_.buf[sbo_chars_] =
-            static_cast<char>(
-                sbo_chars_ - t->size);
+        set_storage_kind(short_flag);
+        std::memcpy(s_.buf, data(), t->size);
+        s_.buf[sbo_chars_] = static_cast<char>(sbo_chars_ - t->size);
         s_.buf[t->size] = 0;
-        sp->deallocate(t,
-            sizeof(table) +
-                t->capacity + 1,
-            alignof(table));
+        sp->deallocate(t, sizeof(table) + t->capacity + 1, alignof(table));
         return;
     }
     if(t->size >= t->capacity)

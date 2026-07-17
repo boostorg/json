@@ -195,6 +195,7 @@ write_impl(string_like_conversion_tag, writer& w, stream& ss0)
     {
         string_view const sv = *reinterpret_cast<T const*>(w.p_);
         w.cs0_ = { sv.data(), sv.size() };
+        w.buf_[2] = false;
         return write_string(w, ss0);
     }
 
@@ -331,6 +332,7 @@ do_obj1:
             using std::get;
             string_view const sv = get<0>(*it);
             w.cs0_ = { sv.data(), sv.size() };
+            w.buf_[2] = false;
         }
         if( true )
         {
@@ -492,6 +494,7 @@ struct serialize_struct_elem_helper
         {
             string_view const sv = D::name;
             w.cs0_ = { sv.data(), sv.size() };
+            w.buf_[2] = false;
         }
         if( true )
         {
@@ -619,6 +622,7 @@ write_impl(described_enum_conversion_tag, writer& w, stream& ss)
         {
             string_view const sv = name;
             w.cs0_ = { sv.data(), sv.size() };
+            w.buf_[2] = false;
             return write_string(w, ss);
         }
         else
@@ -777,6 +781,7 @@ BOOST_FORCEINLINE
 bool
 write_impl(path_conversion_tag, writer& w, stream& ss)
 {
+    w.buf_[2] = false;
 #if defined(_MSC_VER)
 # pragma warning( push )
 # pragma warning( disable : 4127 )

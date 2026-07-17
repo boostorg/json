@@ -2643,6 +2643,22 @@ public:
     }
 
     void
+    testSeamless()
+    {
+        string s;
+        BOOST_TEST( !s.is_seamless() );
+
+        s.set_seamless(false);
+        BOOST_TEST( !s.is_seamless() );
+
+        s.set_seamless(true);
+        BOOST_TEST( s.is_seamless() );
+
+        s.set_seamless(false);
+        BOOST_TEST( !s.is_seamless() );
+    }
+
+    void
     testFind()
     {
         test_vectors const t;
@@ -2889,6 +2905,7 @@ public:
         testCopy();
         testResize();
         testSwap();
+        testSeamless();
 
         testFind();
         testRfind();

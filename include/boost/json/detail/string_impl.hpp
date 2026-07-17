@@ -52,13 +52,33 @@ class string_impl
 # error Unknown architecture
 #endif
 
+    static constexpr
+    unsigned char
+    short_flag = 0x80;
+
+    static constexpr
+    unsigned char
+    key_flag = 0x40;
+
+    static constexpr
+    unsigned char
+    seamless_flag = 0x20;
+
+    void
+    set_storage_kind(unsigned char storage_kind)
+    {
+        unsigned char current = static_cast<unsigned char>(s_.k);
+        current = current & 0x2F;
+        s_.k = static_cast<kind>(current | storage_kind);
+    }
+
     static
     constexpr
     kind
     short_string_ =
         static_cast<kind>(
             ((unsigned char)
-            kind::string) | 0x80);
+            kind::string) | short_flag);
 
     static
     constexpr
@@ -66,7 +86,7 @@ class string_impl
     key_string_ =
         static_cast<kind>(
             ((unsigned char)
-            kind::string) | 0x40);
+            kind::string) | key_flag);
 
     struct sbo
     {
@@ -235,8 +255,8 @@ public:
     release_key(
         std::size_t& n) noexcept
     {
-        BOOST_ASSERT(
-            k_.k == key_string_);
+        BOOST_ASSERT( is_key() );
+        BOOST_ASSERT( ! is_seamless() );
         n = k_.n;
         auto const s = k_.s;
         // prevent deallocate
@@ -245,29 +265,24 @@ public:
     }
 
     void
-    destroy(
-        storage_ptr const& sp) noexcept
+    destroy(storage_ptr const& sp) noexcept
     {
-        if(s_.k == kind::string)
-        {
-            sp->deallocate(p_.t,
-                sizeof(table) +
-                    p_.t->capacity + 1,
-                alignof(table));
-        }
-        else if(s_.k != key_string_)
+        if( is_short() )
         {
             // do nothing
         }
-        else
+        else if( is_key() )
         {
-            BOOST_ASSERT(
-                s_.k == key_string_);
             // VFALCO unfortunately the key string
             // kind increases the cost of the destructor.
             // This function should be skipped when using
             // monotonic_resource.
             sp->deallocate(k_.s, k_.n + 1);
+        }
+        else
+        {
+            sp->deallocate(
+                p_.t, sizeof(table) + p_.t->capacity + 1, alignof(table));
         }
     }
 
@@ -323,17 +338,14 @@ public:
     void
     term(std::size_t n) noexcept
     {
-        if(s_.k == short_string_)
+        if( is_short() )
         {
-            s_.buf[sbo_chars_] =
-                static_cast<char>(
-                    sbo_chars_ - n);
+            s_.buf[sbo_chars_] = static_cast<char>(sbo_chars_ - n);
             s_.buf[n] = 0;
         }
         else
         {
-            p_.t->size = static_cast<
-                std::uint32_t>(n);
+            p_.t->size = static_cast<std::uint32_t>(n);
             data()[n] = 0;
         }
     }
@@ -341,19 +353,17 @@ public:
     char*
     data() noexcept
     {
-        if(s_.k == short_string_)
+        if( is_short() )
             return s_.buf;
-        return reinterpret_cast<
-            char*>(p_.t + 1);
+        return reinterpret_cast<char*>(p_.t + 1);
     }
 
     char const*
     data() const noexcept
     {
-        if(s_.k == short_string_)
+        if( is_short() )
             return s_.buf;
-        return reinterpret_cast<
-            char const*>(p_.t + 1);
+        return reinterpret_cast<char const*>(p_.t + 1);
     }
 
     char*
@@ -366,6 +376,39 @@ public:
     end() const noexcept
     {
         return data() + size();
+    }
+
+    inline
+    constexpr
+    bool
+    is_short() const noexcept
+    {
+        return static_cast<unsigned char>(s_.k) & short_flag;
+    }
+
+    inline
+    constexpr
+    bool
+    is_key() const noexcept
+    {
+        return static_cast<unsigned char>(s_.k) & key_flag;
+    }
+
+    inline
+    constexpr
+    bool
+    is_seamless() const noexcept
+    {
+        return static_cast<unsigned char>(s_.k) & seamless_flag;
+    }
+
+    void
+    set_seamless(bool on) noexcept
+    {
+        unsigned char const seamless = on ? seamless_flag : 0;
+        unsigned char current = static_cast<unsigned char>(s_.k);
+        current = current & 0xCF;
+        s_.k = static_cast<kind>(current | seamless);
     }
 };
 

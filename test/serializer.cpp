@@ -435,6 +435,29 @@ public:
         check("{\"x\":1,\"y\":null}");
     }
 
+    void
+    testSeamless()
+    {
+        try
+        {
+            string s = "1234";
+            s.set_seamless(true);
+
+            value jv = s;
+            grind("1234", jv, "");
+
+            jv = {"1234", s};
+            grind("[\"1234\",1234]", jv, "");
+
+            jv = { {"a", "1234"}, {"b", s} };
+            grind("{\"a\":\"1234\",\"b\":1234]", jv, "");
+        }
+        catch(std::exception const&)
+        {
+            BOOST_TEST_FAIL();
+        }
+    }
+
     //------------------------------------------------------
 
     void
@@ -907,6 +930,7 @@ public:
         testNumber();
         testArray();
         testObject();
+        testSeamless();
 
         testMembers();
         testVectors();

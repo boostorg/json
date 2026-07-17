@@ -212,11 +212,14 @@ do_write_string(writer& w, stream& ss0)
         "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 
     // opening quote
+    if(w.buf_[2] == false)
+    {
 do_str1:
-    if(BOOST_JSON_LIKELY(ss))
-        ss.append('\x22'); // '"'
-    else
-        return w.suspend(writer::state::str1);
+        if(BOOST_JSON_LIKELY(ss))
+            ss.append('\x22'); // '"'
+        else
+            return w.suspend(writer::state::str1);
+    }
 
     // fast loop,
     // copy unescaped
@@ -242,7 +245,8 @@ do_str2:
         }
         else
         {
-            ss.append('\x22'); // '"'
+            if(w.buf_[2] == false)
+                ss.append('\x22'); // '"'
             return true;
         }
     }
@@ -304,7 +308,10 @@ do_str3:
         }
         else
         {
-            ss.append('\x22'); // '"'
+            if(w.buf_[2] == false)
+            {
+                ss.append('\x22'); // '"'
+            }
             return true;
         }
     }
@@ -404,6 +411,7 @@ write_value(writer& w, stream& ss)
         {
             auto const& js = pv->get_string();
             w.cs0_ = { js.data(), js.size() };
+            w.buf_[2] = js.is_seamless();
             return do_write_string<true>(w, ss);
         }
 
@@ -507,6 +515,7 @@ serializer::
 reset(string const* p) noexcept
 {
     cs0_ = { p->data(), p->size() };
+    buf_[2] = p->is_seamless();
     fn0_ = &detail::do_write_string<true>;
     fn1_ = &detail::do_write_string<false>;
     st_.clear();
@@ -518,6 +527,7 @@ serializer::
 reset(string_view sv) noexcept
 {
     cs0_ = { sv.data(), sv.size() };
+    buf_[2] = false;
     fn0_ = &detail::do_write_string<true>;
     fn1_ = &detail::do_write_string<false>;
     st_.clear();
