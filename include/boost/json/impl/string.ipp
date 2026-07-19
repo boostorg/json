@@ -176,9 +176,18 @@ assign(
     char const* s,
     size_type count)
 {
-    std::char_traits<char>::copy(
-        impl_.assign(count, sp_),
-        s, count);
+    auto const p = impl_.data();
+    if(detail::ptr_in_range(p, p + impl_.size(), s))
+    {
+        std::char_traits<char>::move(p, s, count);
+        impl_.term(count);
+    }
+    else
+    {
+        std::char_traits<char>::copy(
+            impl_.assign(count, sp_),
+            s, count);
+    }
     return *this;
 }
 

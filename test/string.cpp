@@ -840,6 +840,36 @@ public:
             });
         };
 
+        // assign(char const*, size_type) self-referencing
+        {
+            // non-SBO: assign from a substring of itself
+            {
+                string s("abcdefghijklmnopqrstuvwxyz0123456789");
+                string_view sub(s.data() + 3, s.size() - 3);
+                std::string expected(sub.data(), sub.size());
+                s.assign(sub);
+                BOOST_TEST(s == expected);
+            }
+
+            // non-SBO: assign from beginning (prefix)
+            {
+                string s("abcdefghijklmnopqrstuvwxyz0123456789");
+                string_view sub(s.data(), 10);
+                std::string expected(sub.data(), sub.size());
+                s.assign(sub);
+                BOOST_TEST(s == expected);
+            }
+
+            // non-SBO: self-assign via string_view
+            {
+                string s("abcdefghijklmnopqrstuvwxyz0123456789");
+                string_view sub(s.data(), s.size());
+                std::string expected(sub.data(), sub.size());
+                s.assign(sub);
+                BOOST_TEST(s == expected);
+            }
+        }
+
         // assign(char const* s)
         {
             fail_loop([&](storage_ptr const& sp)
