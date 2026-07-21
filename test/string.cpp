@@ -1368,6 +1368,38 @@ public:
             s.shrink_to_fit();
             BOOST_TEST(s.capacity() < cap);
         });
+
+        // shrink_to_fit() preserves the contents across reallocation
+        {
+            std::size_t const sbo = string{}.capacity();
+
+            // heap -> SBO: shrink a dynamic string down to fit in the SBO
+            {
+                std::string big(sbo * 3, '\0');
+                std::iota(big.begin(), big.end(), 'a');
+                string s(big.data(), big.size());
+                BOOST_TEST(s.capacity() > sbo);
+                std::size_t const n = sbo / 2;
+                s.resize(n);
+                s.shrink_to_fit();
+                BOOST_TEST(s.size() == n);
+                BOOST_TEST(s == string_view(big.data(), n));
+                BOOST_TEST(s.c_str()[s.size()] == '\0');
+            }
+
+            // heap -> smaller heap: still larger than the SBO after shrinking
+            {
+                std::string big(sbo * 4, '\0');
+                std::iota(big.begin(), big.end(), 'A');
+                string s(big.data(), big.size());
+                std::size_t const n = sbo * 2;
+                s.resize(n);
+                s.shrink_to_fit();
+                BOOST_TEST(s.size() == n);
+                BOOST_TEST(s == string_view(big.data(), n));
+                BOOST_TEST(s.c_str()[s.size()] == '\0');
+            }
+        }
     }
 
     void
