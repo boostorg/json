@@ -223,14 +223,10 @@ append(
     if(p != impl_.data())
     {
         std::memcpy(p, impl_.data(), size);
-        tmp.term(size + n);
         impl_.destroy(sp_);
         impl_ = tmp;
     }
-    else
-    {
-        impl_.term(size + n);
-    }
+    impl_.term(size + n);
 }
 
 template<class InputIt>
