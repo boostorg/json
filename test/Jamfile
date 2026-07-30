@@ -37,6 +37,7 @@ local SOURCES =
     pilfer.cpp
     pointer.cpp
     result_for.cpp
+    sbo_buffer.cpp
     serialize.cpp
     serializer.cpp
     snippets.cpp

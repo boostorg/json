@@ -151,6 +151,9 @@ public:
         }
 
         std::size_t const old_capacity = this->capacity();
+        if( size <= old_capacity - size_ )
+            return;
+
         std::size_t new_capacity = size_ + size;
 
         // growth factor 2
