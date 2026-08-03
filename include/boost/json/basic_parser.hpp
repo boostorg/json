@@ -205,7 +205,6 @@ namespace json {
         ///
         /// @return `true` on success.
         /// @param b The value
-        /// @param s The remaining characters
         /// @param ec Set to the error, if any occurred.
         ///
         bool on_bool( bool b, error_code& ec );
