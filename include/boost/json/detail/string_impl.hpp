@@ -267,7 +267,7 @@ public:
             // kind increases the cost of the destructor.
             // This function should be skipped when using
             // monotonic_resource.
-            sp->deallocate(k_.s, k_.n + 1);
+            sp->deallocate(k_.s, k_.n + 1, alignof(char));
         }
     }
 
