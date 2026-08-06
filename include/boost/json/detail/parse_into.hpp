@@ -18,6 +18,7 @@
 #include <boost/json/value.hpp>
 #include <boost/describe/enum_from_string.hpp>
 
+#include <array>
 #include <vector>
 
 /*
@@ -1153,6 +1154,7 @@ private:
     handler_tuple<converting_handler, InnerHandlers> handlers_;
     int inner_active_ = -1;
     std::size_t activated_ = 0;
+    std::array<bool, mp11::mp_size<Dt>::value> seen_ = {};
 
 public:
     converting_handler( converting_handler const& ) = delete;
@@ -1183,8 +1185,11 @@ public:
         bool required_member = mp11::mp_with_index<InnerCount>(
             inner_active_,
             is_required_checker{});
-        if( required_member )
+        if( required_member && !seen_[inner_active_] )
+        {
+            seen_[inner_active_] = true;
             ++activated_;
+        }
 
         key_ = {};
         inner_active_ = -1;
@@ -1214,7 +1219,11 @@ public:
     bool on_object_begin( system::error_code& ec )
     {
         if( inner_active_ < 0 )
+        {
+            activated_ = 0;
+            seen_ = {};
             return true;
+        }
 
         BOOST_JSON_INVOKE_INNER( on_object_begin(ec) );
     }

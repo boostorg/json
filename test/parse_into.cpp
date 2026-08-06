@@ -426,6 +426,24 @@ public:
                                                 {"b", 3.14f},
                                                 {"c", "hello"}}}};
         testParseIntoValue<W>(unexpected_jo);
+
+        system::error_code ec;
+        X x{};
+        parse_into(x, R"( {"a": 1, "a": 2, "a": 3} )", ec);
+        BOOST_TEST( ec == error::size_mismatch );
+
+        std::vector<X> v;
+        ec = {};
+        parse_into(
+            v, R"( [{"a": 1, "b": 1, "c": "one"}, {"a": 2}] )", ec);
+        BOOST_TEST( ec == error::size_mismatch );
+
+        ec = {};
+        parse_into(
+            v,
+            R"( [{"a": 1, "b": 1, "c": "one"}, {"a": 2, "b": 2, "c": "two"}] )",
+            ec);
+        BOOST_TEST( !ec.failed() ) && BOOST_TEST( v.size() == 2 );
 #endif
     }
 
