@@ -240,9 +240,8 @@ value(
     {
         if( init.size() == 1 )
         {
-            ::new(&sca_) scalar();
-            value temp = init.begin()->make_value( std::move(sp) );
-            swap(temp);
+            ::new(this) value(
+                init.begin()->make_value( std::move(sp) ));
         }
         else
         {

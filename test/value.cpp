@@ -545,6 +545,13 @@ public:
                 BOOST_TEST(jv.is_object());
                 BOOST_TEST(*jv.storage() == *sp);
             }
+            {
+                // a single-element list unwraps to that element and
+                // must still adopt the supplied storage
+                value jv({{1, 2, 3}}, sp);
+                BOOST_TEST(jv.is_array());
+                BOOST_TEST(*jv.storage() == *sp);
+            }
         }
     }
 
