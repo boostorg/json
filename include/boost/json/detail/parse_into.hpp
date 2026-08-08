@@ -18,7 +18,7 @@
 #include <boost/json/value.hpp>
 #include <boost/describe/enum_from_string.hpp>
 
-#include <array>
+#include <bitset>
 #include <vector>
 
 /*
@@ -1154,7 +1154,7 @@ private:
     handler_tuple<converting_handler, InnerHandlers> handlers_;
     int inner_active_ = -1;
     std::size_t activated_ = 0;
-    std::array<bool, mp11::mp_size<Dt>::value> seen_ = {};
+    std::bitset<mp11::mp_size<Dt>::value> seen_;
 
 public:
     converting_handler( converting_handler const& ) = delete;
@@ -1221,7 +1221,7 @@ public:
         if( inner_active_ < 0 )
         {
             activated_ = 0;
-            seen_ = {};
+            seen_.reset();
             return true;
         }
 
