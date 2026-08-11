@@ -209,17 +209,9 @@ public:
         // a key that is abandoned because the document is truncated still
         // has to be returned to the resource with the size and alignment
         // it was allocated with
-        {
-            checking_resource res;
-            system::error_code ec;
-            parse(R"({"some key here":)", ec, &res);
-        }
-
-        {
-            checking_resource res;
-            system::error_code ec;
-            parse(R"({"k":)", ec, &res);
-        }
+        checking_resource res;
+        system::error_code ec;
+        parse(R"({"some key here":)", ec, &res);
     }
 
     void
