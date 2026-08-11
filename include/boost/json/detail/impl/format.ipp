@@ -11,7 +11,9 @@
 #ifndef BOOST_JSON_DETAIL_IMPL_FORMAT_IPP
 #define BOOST_JSON_DETAIL_IMPL_FORMAT_IPP
 
-#include <boost/json/detail/ryu/ryu.hpp>
+#include <boost/json/detail/dragonbox/dragonbox.hpp>
+#include <boost/json/detail/format.hpp>
+#include <cmath>
 #include <cstring>
 
 namespace boost {
@@ -110,12 +112,81 @@ format_int64(
     return 1 + format_uint64(dest, ui);
 }
 
-unsigned
+std::size_t
 format_double(
     char* dest, double d, bool allow_infinity_and_nan) noexcept
 {
-    return static_cast<int>(
-        ryu::d2s_buffered_n(d, dest, allow_infinity_and_nan));
+    using Traits = dragonbox_float_traits<double>;
+
+    auto const bits = dragonbox_float_bits<double, Traits>(d);
+    auto const exponent_bits = bits.extract_exponent_bits();
+    auto const s = bits.remove_exponent_bits(exponent_bits);
+
+    if( bits.is_finite(exponent_bits) )
+    {
+        bool is_negative;
+        if(( is_negative = s.is_negative() ))
+        {
+            *dest = '-';
+            ++dest;
+        }
+
+        if( bits.is_nonzero() )
+        {
+            auto const decimal = to_decimal<double, Traits>(
+                s, exponent_bits);
+            std::size_t const size = to_chars_detail::dragon_box_print_chars(
+                decimal.significand,
+                decimal.exponent,
+                dest,
+                dest + detail::max_number_chars);
+            BOOST_ASSERT( size );
+            return size + is_negative;
+        }
+        else
+        {
+            std::memcpy(dest, "0E0", 3);
+            return 3 + is_negative;
+        }
+    }
+
+
+    if( allow_infinity_and_nan )
+    {
+        if( s.has_all_zero_significand_bits() )
+        {
+            if( s.is_negative() )
+            {
+                std::memcpy(dest, "-Infinity", 9);
+                return 9;
+            }
+            else
+            {
+                std::memcpy(dest, "Infinity", 8);
+                return 8;
+            }
+        }
+
+        std::memcpy(dest, "NaN", 3);
+        return 3;
+    }
+
+    if( s.has_all_zero_significand_bits() )
+    {
+        if( s.is_negative() )
+        {
+            std::memcpy(dest, "-1e99999", 8);
+            return 8;
+        }
+        else
+        {
+            std::memcpy(dest, "1e99999", 7);
+            return 7;
+        }
+    }
+
+    std::memcpy(dest, "null", 4);
+    return 4;
 }
 
 } // detail
