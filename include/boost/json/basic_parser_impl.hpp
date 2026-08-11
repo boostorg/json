@@ -1109,6 +1109,30 @@ do_str8:
         return fail(cs.begin(), error::syntax, &loc);
     }
     {
+        std::size_t const n = seq_.length();
+        if(is_key)
+        {
+            BOOST_ASSERT(total <= Handler::max_key_size);
+            if(BOOST_JSON_UNLIKELY(n >
+                Handler::max_key_size - total))
+            {
+                BOOST_STATIC_CONSTEXPR source_location loc
+                    = BOOST_CURRENT_LOCATION;
+                return fail(cs.begin(), error::key_too_large, &loc);
+            }
+        }
+        else
+        {
+            BOOST_ASSERT(total <= Handler::max_string_size);
+            if(BOOST_JSON_UNLIKELY(n >
+                Handler::max_string_size - total))
+            {
+                BOOST_STATIC_CONSTEXPR source_location loc
+                    = BOOST_CURRENT_LOCATION;
+                return fail(cs.begin(), error::string_too_large, &loc);
+            }
+        }
+        total += n;
         bool const r = is_key?
             h_.on_key_part( {seq_.data(), seq_.length()}, total, ec_ ):
             h_.on_string_part( {seq_.data(), seq_.length()}, total, ec_ );
