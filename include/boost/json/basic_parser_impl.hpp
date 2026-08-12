@@ -1110,6 +1110,7 @@ do_str8:
     }
     {
         std::size_t const n = seq_.length();
+        bool r;
         if(is_key)
         {
             BOOST_ASSERT(total <= Handler::max_key_size);
@@ -1120,6 +1121,8 @@ do_str8:
                     = BOOST_CURRENT_LOCATION;
                 return fail(cs.begin(), error::key_too_large, &loc);
             }
+            total += n;
+            r = h_.on_key_part( {seq_.data(), n}, total, ec_ );
         }
         else
         {
@@ -1131,11 +1134,9 @@ do_str8:
                     = BOOST_CURRENT_LOCATION;
                 return fail(cs.begin(), error::string_too_large, &loc);
             }
+            total += n;
+            r = h_.on_string_part( {seq_.data(), n}, total, ec_ );
         }
-        total += n;
-        bool const r = is_key?
-            h_.on_key_part( {seq_.data(), seq_.length()}, total, ec_ ):
-            h_.on_string_part( {seq_.data(), seq_.length()}, total, ec_ );
         if(BOOST_JSON_UNLIKELY( !r ))
             return fail( cs.begin() );
     }

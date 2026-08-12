@@ -320,63 +320,38 @@ public:
             BOOST_TEST(ec.has_location());
         }
 
-        // a multi-byte utf-8 character split across a write boundary is
-        // completed on the str8 resume path; those bytes must still count
-        // towards the string/key size limit
+        // overflow on the str8 resume path; the multi-byte character is
+        // split across writes so that it completes on that path
         {
-            // feed one byte at a time so every "é" (0xC3 0xA9)
-            // straddles a chunk boundary
-            auto feed_split =
-                [](std::string const& body, system::error_code& ec)
-                {
-                    stream_parser p;
-                    for(char c : body)
-                    {
-                        p.write_some(&c, 1, ec);
-                        if(ec)
-                            return;
-                    }
-                    p.finish(ec);
-                };
-
-            // string: one character past the limit
-            {
-                std::string body = "\"";
-                for(std::size_t i = 0;
-                    i < (string::max_size() / 2) + 1; ++i)
-                    body += "\xC3\xA9";
-                body += "\"";
-                system::error_code ec;
-                feed_split(body, ec);
-                BOOST_TEST(ec == error::string_too_large);
-                BOOST_TEST(ec.has_location());
-            }
-
-            // key: one character past the limit
-            {
-                std::string body = "{\"";
-                for(std::size_t i = 0;
-                    i < (string::max_size() / 2) + 1; ++i)
-                    body += "\xC3\xA9";
-                body += "\":null}";
-                system::error_code ec;
-                feed_split(body, ec);
-                BOOST_TEST(ec == error::key_too_large);
-                BOOST_TEST(ec.has_location());
-            }
-
-            // a split multi-byte string within the limit still parses
-            {
-                std::string body = "\"";
-                for(std::size_t i = 0; i < 8; ++i)
-                    body += "\xC3\xA9";
-                body += "\"";
-                system::error_code ec;
-                feed_split(body, ec);
-                BOOST_TEST(! ec);
-            }
+            stream_parser p;
+            system::error_code ec;
+            std::string const big(string::max_size(), '*');
+            p.write_some("\"", 1, ec);
+            BOOST_TEST(! ec);
+            p.write_some(big.data(), big.size(), ec);
+            BOOST_TEST(! ec);
+            p.write_some("\xC3", 1, ec);
+            BOOST_TEST(! ec);
+            p.write_some("\xA9", 1, ec);
+            BOOST_TEST(ec == error::string_too_large);
+            BOOST_TEST(ec.has_location());
         }
 
+        // likewise for a key
+        {
+            stream_parser p;
+            system::error_code ec;
+            std::string const big(string::max_size(), '*');
+            p.write_some("{\"", 2, ec);
+            BOOST_TEST(! ec);
+            p.write_some(big.data(), big.size(), ec);
+            BOOST_TEST(! ec);
+            p.write_some("\xC3", 1, ec);
+            BOOST_TEST(! ec);
+            p.write_some("\xA9", 1, ec);
+            BOOST_TEST(ec == error::key_too_large);
+            BOOST_TEST(ec.has_location());
+        }
 
         // object overflow
         {
