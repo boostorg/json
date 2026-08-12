@@ -1153,7 +1153,6 @@ private:
 
     handler_tuple<converting_handler, InnerHandlers> handlers_;
     int inner_active_ = -1;
-    std::size_t activated_ = 0;
     std::bitset<mp11::mp_size<Dt>::value> seen_;
 
 public:
@@ -1185,11 +1184,8 @@ public:
         bool required_member = mp11::mp_with_index<InnerCount>(
             inner_active_,
             is_required_checker{});
-        if( required_member && !seen_[inner_active_] )
-        {
+        if( required_member )
             seen_[inner_active_] = true;
-            ++activated_;
-        }
 
         key_ = {};
         inner_active_ = -1;
@@ -1220,7 +1216,6 @@ public:
     {
         if( inner_active_ < 0 )
         {
-            activated_ = 0;
             seen_.reset();
             return true;
         }
@@ -1234,7 +1229,7 @@ public:
         {
             using C = mp11::mp_count_if<Dt, is_optional_like>;
             constexpr int N = mp11::mp_size<Dt>::value - C::value;
-            if( activated_ < N )
+            if( seen_.count() < N )
             {
                 BOOST_JSON_FAIL( ec, error::size_mismatch );
                 return false;
