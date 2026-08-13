@@ -434,7 +434,7 @@ parse_comment(const char* p,
         st_.pop(st);
         switch(st)
         {
-            default: BOOST_JSON_UNREACHABLE();
+            default: BOOST_JSON_UNREACHABLE(); // LCOV_EXCL_LINE
             case state::com1: goto do_com1;
             case state::com2: goto do_com2;
             case state::com3: goto do_com3;
@@ -723,7 +723,7 @@ resume_value(const char* p,
     st_.peek(st);
     switch(st)
     {
-    default: BOOST_JSON_UNREACHABLE();
+    default: BOOST_JSON_UNREACHABLE(); // LCOV_EXCL_LINE
     case state::lit1:
         return parse_literal(p,  detail::literals_c<detail::literals::resume>() );
 
@@ -859,7 +859,7 @@ parse_literal(const char* p, Literal)
             }
             else
             {
-                BOOST_JSON_UNREACHABLE();
+                BOOST_JSON_UNREACHABLE(); // LCOV_EXCL_LINE
             }
 
             cs += sz;
@@ -947,7 +947,7 @@ parse_literal(const char* p, Literal)
                 ec_)))
             return fail(cs.begin());
         break;
-    default: BOOST_JSON_UNREACHABLE();
+    default: BOOST_JSON_UNREACHABLE(); // LCOV_EXCL_LINE
     }
 
     cs += size;
@@ -977,7 +977,7 @@ parse_string(const char* p,
         st_.pop(total);
         switch(st)
         {
-        default: BOOST_JSON_UNREACHABLE();
+        default: BOOST_JSON_UNREACHABLE(); // LCOV_EXCL_LINE
         case state::str2: goto do_str2;
         case state::str8: goto do_str8;
         case state::str1: break;
@@ -1191,7 +1191,7 @@ parse_escaped(
         st_.pop(st);
         switch(st)
         {
-        default: BOOST_JSON_UNREACHABLE();
+        default: BOOST_JSON_UNREACHABLE(); // LCOV_EXCL_LINE
         case state::str3: goto do_str3;
         case state::str4: goto do_str4;
         case state::str5: goto do_str5;
@@ -1739,7 +1739,7 @@ parse_object(const char* p,
         st_.pop(size);
         switch(st)
         {
-        default: BOOST_JSON_UNREACHABLE();
+        default: BOOST_JSON_UNREACHABLE(); // LCOV_EXCL_LINE
         case state::obj1: goto do_obj1;
         case state::obj2: goto do_obj2;
         case state::obj3: goto do_obj3;
@@ -1908,7 +1908,7 @@ parse_array(const char* p,
         st_.pop(size);
         switch(st)
         {
-        default: BOOST_JSON_UNREACHABLE();
+        default: BOOST_JSON_UNREACHABLE(); // LCOV_EXCL_LINE
         case state::arr1: goto do_arr1;
         case state::arr2: goto do_arr2;
         case state::arr3: goto do_arr3;
@@ -2158,7 +2158,7 @@ parse_number(const char* p,
         st_.pop(st);
         switch(st)
         {
-        default: BOOST_JSON_UNREACHABLE();
+        default: BOOST_JSON_UNREACHABLE(); // LCOV_EXCL_LINE
         case state::num1: goto do_num1;
         case state::num2: goto do_num2;
         case state::num3: goto do_num3;
