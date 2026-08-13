@@ -272,6 +272,17 @@ public:
         {
             object o;
         }
+        {
+            key_value_pair kp("a", "b");
+        }
+        {
+            // this test is mostly for getting more test coverage
+            monotonic_resource mr;
+            std::pair<string_view, json::value> p("k", "v");
+            key_value_pair kp(p, &mr);
+            BOOST_TEST(kp.key() == "k");
+            BOOST_TEST(kp.value() == "v");
+        }
     }
 
     void
