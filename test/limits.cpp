@@ -353,6 +353,26 @@ public:
             BOOST_TEST(ec.has_location());
         }
 
+        // a key that reaches the limit exactly when the split multi-byte
+        // character completes on the str8 resume path is not an error
+        {
+            stream_parser p;
+            system::error_code ec;
+            std::string const big(string::max_size() - 2, '*');
+            p.write_some("{\"", 2, ec);
+            BOOST_TEST(! ec);
+            p.write_some(big.data(), big.size(), ec);
+            BOOST_TEST(! ec);
+            p.write_some("\xC3", 1, ec);
+            BOOST_TEST(! ec);
+            p.write_some("\xA9", 1, ec);
+            BOOST_TEST(! ec);
+            p.write_some("\":null}", 7, ec);
+            BOOST_TEST(! ec);
+            p.finish(ec);
+            BOOST_TEST(! ec);
+        }
+
         // object overflow
         {
             system::error_code ec;
