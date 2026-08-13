@@ -1216,7 +1216,14 @@ public:
     {
         if( inner_active_ < 0 )
         {
-            seen_.reset();
+            // optional members count as seen from the start, so that at the
+            // end of the object seen_.all() means no required member is
+            // missing
+            mp11::mp_for_each< mp11::mp_iota< mp11::mp_size<Dt> > >(
+                [&](auto I) {
+                    using T = mp11::mp_at< Dt, decltype(I) >;
+                    seen_[I] = is_optional_like<T>::value;
+                });
             return true;
         }
 
@@ -1227,9 +1234,7 @@ public:
     {
         if( inner_active_ < 0 )
         {
-            using C = mp11::mp_count_if<Dt, is_optional_like>;
-            constexpr int N = mp11::mp_size<Dt>::value - C::value;
-            if( seen_.count() < N )
+            if( !seen_.all() )
             {
                 BOOST_JSON_FAIL( ec, error::size_mismatch );
                 return false;
