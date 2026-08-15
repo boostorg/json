@@ -1201,6 +1201,17 @@ public:
                     { "k3", 3 },
                     { "k4", 2 }}));
             }
+
+            // rvalue is moved, not copied, on the assign branch
+            {
+                object o = {
+                    { "k1", 1 },
+                    { "k2", { 1, 2, 3 } } };
+                value v = { 4, 5, 6 };
+                o.insert_or_assign("k2", std::move(v));
+                BOOST_TEST(o.at("k2") == (array{4, 5, 6}));
+                BOOST_TEST(v.as_array().empty());
+            }
         }
 
         // emplace(key, arg)

@@ -398,7 +398,7 @@ insert_or_assign(
         key, key, static_cast<M&&>(m) );
     if( !result.second )
     {
-        value(static_cast<M>(m), sp_).swap(
+        value(static_cast<M&&>(m), sp_).swap(
             result.first->value());
     }
     return result;
