@@ -220,6 +220,52 @@ public:
             BOOST_TEST(ec.has_location());
         }
 
+        // string in parser, fails at the beginning of the 2nd escape sequence
+        {
+            stream_parser p;
+            system::error_code ec;
+            p.write_some("\"", 1, ec);
+            BOOST_TEST( !ec.failed() );
+            for(std::size_t i = 0; i < string::max_size(); ++i)
+            {
+                p.write_some("0", 1, ec);
+            }
+            p.write_some("\\n\\", 3, ec);
+            BOOST_TEST(ec == error::string_too_large);
+            BOOST_TEST(ec.has_location());
+        }
+
+        // string in parser, fails at the beginning of the 2nd
+        // (unicode) escape sequence
+        {
+            stream_parser p;
+            system::error_code ec;
+            p.write_some("\"", 1, ec);
+            BOOST_TEST( !ec.failed() );
+            for(std::size_t i = 0; i < string::max_size(); ++i)
+            {
+                p.write_some("0", 1, ec);
+            }
+            p.write_some("\\n\\u", 4, ec);
+            BOOST_TEST(ec == error::string_too_large);
+            BOOST_TEST(ec.has_location());
+        }
+
+        // string in parser, fails after the last escape
+        {
+            stream_parser p;
+            system::error_code ec;
+            p.write_some("\"", 1, ec);
+            BOOST_TEST( !ec.failed() );
+            for(std::size_t i = 0; i < string::max_size(); ++i)
+            {
+                p.write_some("0", 1, ec);
+            }
+            p.write_some("\\n0", 3, ec);
+            BOOST_TEST(ec == error::string_too_large);
+            BOOST_TEST(ec.has_location());
+        }
+
         // key in parser
         {
             stream_parser p;
@@ -353,30 +399,104 @@ public:
     testNumber()
     {
         // very long floating point number
-        std::array<char, string::max_size() + 1> buffer;
-        buffer.fill('0');
-        buffer.data()[1] = '.';
+        {
+            std::array<char, string::max_size() + 1> buffer;
+            buffer.fill('0');
+            buffer.data()[1] = '.';
 
-        parse_options precise;
-        precise.numbers = number_precision::precise;
+            parse_options precise;
+            precise.numbers = number_precision::precise;
 
-        stream_parser p( {}, precise );
-        system::error_code ec;
-        p.write( buffer.data(), 1, ec );
-        BOOST_TEST_THROWS_WITH_LOCATION(
-            p.write( buffer.data() + 1, buffer.size() - 1, ec ));
-        BOOST_TEST( !ec );
+            stream_parser p( {}, precise );
+            system::error_code ec;
+            p.write( buffer.data(), 1, ec );
+            BOOST_TEST_THROWS_WITH_LOCATION(
+                p.write( buffer.data() + 1, buffer.size() - 1, ec ));
+            BOOST_TEST( !ec );
 
-        // now we make the number one character shorter
-        p.reset();
-        p.write( buffer.data(), 1, ec );
-        BOOST_TEST( !ec );
+            // now we make the number one character shorter
+            p.reset();
+            p.write( buffer.data(), 1, ec );
+            BOOST_TEST( !ec );
 
-        p.write( buffer.data() + 1, buffer.size() - 2, ec );
-        BOOST_TEST( !ec );
+            p.write( buffer.data() + 1, buffer.size() - 2, ec );
+            BOOST_TEST( !ec );
 
-        auto jv = p.release();
-        BOOST_TEST( jv.as_double() == 0 );
+            auto jv = p.release();
+            BOOST_TEST( jv.as_double() == 0 );
+        }
+
+#ifndef BOOST_JSON_NO_LONG_TESTS
+        // number with too many digits before decimal point
+        {
+            stream_parser p;
+            system::error_code ec;
+            std::string number(static_cast<std::size_t>(INT_MAX) + 19, '1');
+            p.write_some(number, ec);
+            BOOST_TEST( !ec.failed() );
+
+            p.write_some("1", 1, ec);
+            BOOST_TEST(ec == error::exponent_overflow);
+            BOOST_TEST(ec.has_location());
+        }
+
+        // number with too many digits after decimal point
+        {
+            stream_parser p;
+            system::error_code ec;
+            p.write_some("0.", 2, ec);
+            BOOST_TEST( !ec.failed() );
+            std::string number(static_cast<std::size_t>(INT_MAX), '0');
+            p.write_some(number, ec);
+            BOOST_TEST( !ec.failed() );
+
+            p.write_some("0", 1, ec);
+            BOOST_TEST(ec == error::exponent_overflow);
+            BOOST_TEST(ec.has_location());
+        }
+
+        // number with non-zero mantissa, many digits after decimal point,
+        // and overflowing negative exponent
+        {
+            stream_parser p;
+            system::error_code ec;
+            p.write_some("0.", 2, ec);
+            BOOST_TEST( !ec.failed() );
+            std::string number(static_cast<std::size_t>(INT_MAX) - 308, '0');
+            p.write_some(number, ec);
+            BOOST_TEST( !ec.failed() );
+            p.write_some("1e-", 3, ec);
+            BOOST_TEST( !ec.failed() );
+            p.write_some("2147483647", 10, ec);
+            BOOST_TEST( !ec.failed() );
+            // 0.(INT_MAX - 308 zeroes)1e-2147483647
+
+            p.write_some(" ", 1, ec);
+            BOOST_TEST(ec == error::exponent_overflow);
+            BOOST_TEST(ec.has_location());
+        }
+
+        // number with non-zero mantissa, many digits before decimal point,
+        // and overflowing positive exponent
+        {
+            stream_parser p;
+            system::error_code ec;
+            p.write_some("1", 1, ec);
+            BOOST_TEST( !ec.failed() );
+            std::string number(static_cast<std::size_t>(INT_MAX) - 289, '0');
+            p.write_some(number, ec);
+            BOOST_TEST( !ec.failed() );
+            p.write_some("1e+", 3, ec);
+            BOOST_TEST( !ec.failed() );
+            p.write_some("2147483647", 10, ec);
+            BOOST_TEST( !ec.failed() );
+            // 1(INT_MAX - 289 zeroes)1e+2147483647
+
+            p.write_some(" ", 1, ec);
+            BOOST_TEST(ec == error::exponent_overflow);
+            BOOST_TEST(ec.has_location());
+        }
+#endif // BOOST_JSON_NO_LONG_TESTS
     }
 
     void
