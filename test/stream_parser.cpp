@@ -1296,79 +1296,87 @@ R"xx({
     void
     testLongNumberOverlfow()
     {
-#ifdef BOOST_JSON_EXPENSIVE_TESTS
-        std::array<char, 1000> zeroes;
+#ifndef BOOST_JSON_NO_LONG_TESTS
+        std::array<char, 1024> zeroes;
         zeroes.fill('0');
 
         stream_parser p;
         {
-            p.write("1", 1);
+            // number with too many digits before decimal point
+            p.write("1111111111111111111", 19);
 
             std::size_t count = 0;
-            while( static_cast<std::size_t>( INT_MAX - zeroes.size() ) > count )
+            std::size_t const n
+                = static_cast<std::size_t>(INT_MAX) - zeroes.size();
+            while(n > count)
                 count += p.write( zeroes.data(), zeroes.size() );
+            p.write(zeroes.data(), static_cast<std::size_t>(INT_MAX) - count);
 
             system::error_code ec;
-            p.write(zeroes.data(), zeroes.size(), ec);
-            BOOST_TEST( ec == error::exponent_overflow );
+            p.write("1", 1, ec);
+            BOOST_TEST(ec == error::exponent_overflow);
+            BOOST_TEST(ec.has_location());
         }
 
         p.reset();
         {
+            // number with too many digits after decimal point
             p.write("0.", 2);
 
             std::size_t count = 0;
-            while( static_cast<std::size_t>( INT_MAX - zeroes.size() ) > count )
+            std::size_t const n
+                = static_cast<std::size_t>(INT_MAX) - zeroes.size();
+            while(n > count)
                 count += p.write( zeroes.data(), zeroes.size() );
+            p.write(zeroes.data(), static_cast<std::size_t>(INT_MAX) - count);
 
             system::error_code ec;
-            p.write(zeroes.data(), zeroes.size(), ec);
-            BOOST_TEST( ec == error::exponent_overflow );
+            p.write_some("0", 1, ec);
+            BOOST_TEST(ec == error::exponent_overflow);
+            BOOST_TEST(ec.has_location());
         }
 
         p.reset();
         {
+            // number with non-zero mantissa, many digits after decimal point,
+            // and overflowing negative exponent
             p.write("0.", 2);
 
             int count = INT_MIN;
-            while( static_cast<int>( count + zeroes.size() ) < 0 )
+            while( static_cast<int>(count + zeroes.size()) < 0 )
                 count += static_cast<int>(
                     p.write( zeroes.data(), zeroes.size() ));
-
             p.write(zeroes.data(), -2 - count);
-            p.write("1e", 2);
-            // at this point we've filled bias to the brim
 
-            std::string const int_min = std::to_string(INT_MIN);
-            p.write( int_min.data(), int_min.size() );
+            p.write("1e-2147483647", 13);
+            // 0.((-INT_MIN) - 2 zeroes)1e-2147483647
 
             system::error_code ec;
             p.finish(ec);
-            BOOST_TEST( ec == error::exponent_overflow );
+            BOOST_TEST(ec == error::exponent_overflow);
+            BOOST_TEST(ec.has_location());
         }
 
         p.reset();
         {
-            std::string const uint64_max
-                = std::to_string(18446744073709551615U);
-            p.write( uint64_max.data(), uint64_max.size() );
+            // number with non-zero mantissa, many digits before decimal point,
+            // and overflowing positive exponent
+            p.write("1111111111111111111", 19);
 
-            std::size_t count = INT_MAX;
+            std::size_t count = INT_MAX - (308 - 19);
             while( static_cast<int>( count - zeroes.size() ) > 0 )
                 count -= p.write( zeroes.data(), zeroes.size() );
+            p.write(zeroes.data(), count);
 
-            p.write(zeroes.data(), count - 1);
-            // at this point we've filled bias to the brim
-
-            p.write("e", 1);
-            std::string const int_max = std::to_string(INT_MAX);
-            p.write( int_max.data(), int_max.size() );
+            p.write("1e+2147483647", 13);
+            // 1(INT_MAX - 289 zeroes)1e+2147483647
 
             system::error_code ec;
             p.finish(ec);
-            BOOST_TEST( ec == error::exponent_overflow );
+            BOOST_TEST(ec == error::exponent_overflow);
+            BOOST_TEST(ec.has_location());
         }
-#endif
+#endif // BOOST_JSON_NO_LONG_TESTS
     }
 
     //------------------------------------------------------

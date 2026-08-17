@@ -98,7 +98,6 @@ def main(ctx):
                   'LCOV_BRANCH_COVERAGE': '0',
                   'B2_CXXSTD': '23',
                   'B2_VARIANT': 'debug',
-                  'B2_DEFINES': 'BOOST_JSON_EXPENSIVE_TESTS',
                   'CODECOV_TOKEN': {'from_secret': 'codecov_token'},
               },
             },
@@ -122,9 +121,15 @@ def main(ctx):
             },
             { 'match': {'compiler': 'clang =latest', 'os': 'linux'},
               'special': 'valgrind',
+              'environment': {
+                  'B2_DEFINES': 'BOOST_JSON_NO_LONG_TESTS',
+              },
             },
             { 'match': {'compiler': 'gcc =latest', 'os': 'linux'},
               'special': 'valgrind',
+              'environment': {
+                  'B2_DEFINES': 'BOOST_JSON_NO_LONG_TESTS',
+              },
             },
         ],
     ) + [
