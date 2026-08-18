@@ -1742,6 +1742,62 @@ public:
     }
 
     void
+    testInsertRollback()
+    {
+        // A bulk insert that needs no new storage still links each new element
+        // into a hash bucket as it goes. If a later element throws, the
+        // rollback in ~revert_insert has to unlink those entries, not merely
+        // restore the size; otherwise a bucket head is left pointing at a slot
+        // that has just been destroyed, and the next lookup reads a freed key.
+        for( std::size_t k = 1; k < 40; ++k )
+        {
+            fail_resource fr;
+            fr.fail_max = 100000; // don't fail while the object is built
+            {
+                object o( &fr );
+                o.reserve( detail::small_object_size_ + 8 ); // hash mode + spare
+                for( std::size_t i = 0; i <= detail::small_object_size_; ++i )
+                    o.emplace( std::to_string(i), i );
+                std::size_t const n0 = o.size();
+                std::size_t const cap = o.capacity();
+                BOOST_TEST( cap > detail::small_object_size_ );
+
+                std::vector< std::pair<string_view, value> > in{
+                    { "insert_a", value( std::string(300, 'a') ) },
+                    { "insert_b", value( std::string(301, 'b') ) },
+                    { "insert_c", value( std::string(302, 'c') ) } };
+
+                fr.fail_max = fr.fail + k; // fail on the k-th insert allocation
+                bool threw = false;
+                try
+                {
+                    o.insert( in.begin(), in.end() );
+                }
+                catch( test_failure const& )
+                {
+                    threw = true;
+                }
+                fr.fail_max = 100000;
+
+                // looking up the rolled-back keys must not touch freed memory,
+                // and every surviving element must stay reachable through its
+                // bucket
+                (void)o.find( "insert_a" );
+                (void)o.find( "insert_b" );
+                (void)o.find( "insert_c" );
+                for( auto const& kv : o )
+                    BOOST_TEST( o.find( kv.key() ) != o.end() );
+
+                if( threw )
+                {
+                    BOOST_TEST( o.size() == n0 );
+                    BOOST_TEST( o.capacity() == cap ); // no reallocation
+                }
+            }
+        }
+    }
+
+    void
     run()
     {
         testDtor();
@@ -1757,6 +1813,7 @@ public:
         testAllocation();
         testHash();
         testStrongGurantee();
+        testInsertRollback();
     }
 };
 
