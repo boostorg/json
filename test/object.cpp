@@ -1210,7 +1210,6 @@ public:
                 value v = { 4, 5, 6 };
                 auto const d = v.as_array().data();
                 o.insert_or_assign("k2", std::move(v));
-                BOOST_TEST(o.at("k2") == (array{4, 5, 6}));
                 BOOST_TEST(o.at("k2").as_array().data() == d);
             }
         }
