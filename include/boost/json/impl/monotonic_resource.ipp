@@ -14,8 +14,10 @@
 #include <boost/json/monotonic_resource.hpp>
 #include <boost/json/detail/except.hpp>
 #include <boost/core/max_align.hpp>
+#include <boost/throw_exception.hpp>
 
 #include <memory>
+#include <new>
 
 namespace boost {
 namespace json {
@@ -128,8 +130,15 @@ do_allocate(
         return p;
     }
 
-    if(next_size_ < n)
-        next_size_ = round_pow2(n);
+    // a new block is only aligned to alignof(block), so an
+    // over-aligned request may need up to align - alignof(block)
+    // bytes of padding in addition to n
+    std::size_t const pad = align > alignof(block)
+        ? align - alignof(block) : 0;
+    if(n > max_size() - pad)
+        throw_exception( std::bad_alloc(), BOOST_CURRENT_LOCATION );
+    if(next_size_ < n + pad)
+        next_size_ = round_pow2(n + pad);
     auto b = ::new(upstream_->allocate(
         sizeof(block) + next_size_)) block;
     b->p = b + 1;
