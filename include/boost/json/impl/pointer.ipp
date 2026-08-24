@@ -455,6 +455,12 @@ value::set_at_pointer(
                 if( n >= opts.max_created_elements )
                     return nullptr;
 
+                // arr.size() + n + 1 equals index + 1; reject the value that
+                // would wrap so the resize count and the returned pointer stay
+                // in bounds
+                if( index == std::size_t(-1) )
+                    return nullptr;
+
                 arr.resize( arr.size() + n + 1 );
             }
 
