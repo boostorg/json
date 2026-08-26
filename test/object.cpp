@@ -14,6 +14,7 @@
 #include <boost/json/monotonic_resource.hpp>
 #include <boost/json/parse.hpp>
 #include <boost/json/serialize.hpp>
+#include <boost/json/static_resource.hpp>
 
 #include <cmath>
 #include <forward_list>
@@ -39,13 +40,15 @@ struct throws_on_convert
     // the line is reachable in other instantiations
     bool should_throw = true;
 
+    string_view k;
+
     throws_on_convert() = default;
 
     operator key_value_pair()
     {
         if( should_throw )
             throw std::invalid_argument("");
-        return key_value_pair( "", nullptr);
+        return key_value_pair( k, nullptr);
     }
 };
 
@@ -1747,54 +1750,41 @@ public:
         // A bulk insert that needs no new storage still links each new element
         // into a hash bucket as it goes. If a later element throws, the
         // rollback in ~revert_insert has to unlink those entries, not merely
-        // restore the size; otherwise a bucket head is left pointing at a slot
-        // that has just been destroyed, and the next lookup reads a freed key.
-        for( std::size_t k = 1; k < 40; ++k )
-        {
-            fail_resource fr;
-            fr.fail_max = 100000; // don't fail while the object is built
-            {
-                object o( &fr );
-                o.reserve( detail::small_object_size_ + 8 ); // hash mode + spare
-                for( std::size_t i = 0; i <= detail::small_object_size_; ++i )
-                    o.emplace( std::to_string(i), i );
-                std::size_t const n0 = o.size();
-                std::size_t const cap = o.capacity();
-                BOOST_TEST( cap > detail::small_object_size_ );
+        // restore the size; otherwise a bucket head is left pointing past the
+        // end of the object and the next lookup reads a destroyed slot.
 
-                std::vector< std::pair<string_view, value> > in{
-                    { "insert_a", value( std::string(300, 'a') ) },
-                    { "insert_b", value( std::string(301, 'b') ) },
-                    { "insert_c", value( std::string(302, 'c') ) } };
+        // static_resource is important because it doesn't deallocate before
+        // its destructor, so the stale bucket entry finds the old key bytes
+        // still in place instead of tripping a sanitizer
+        unsigned char buf[1024];
+        static_resource mr( buf, sizeof(buf) );
 
-                fr.fail_max = fr.fail + k; // fail on the k-th insert allocation
-                bool threw = false;
-                try
-                {
-                    o.insert( in.begin(), in.end() );
-                }
-                catch( test_failure const& )
-                {
-                    threw = true;
-                }
-                fr.fail_max = 100000;
+        object jo( &mr );
+        jo.reserve(20); // reserve more than "small object"
 
-                // looking up the rolled-back keys must not touch freed memory,
-                // and every surviving element must stay reachable through its
-                // bucket
-                (void)o.find( "insert_a" );
-                (void)o.find( "insert_b" );
-                (void)o.find( "insert_c" );
-                for( auto const& kv : o )
-                    BOOST_TEST( o.find( kv.key() ) != o.end() );
+        jo["1"] = 1; // add one element so that we remain not empty
 
-                if( threw )
-                {
-                    BOOST_TEST( o.size() == n0 );
-                    BOOST_TEST( o.capacity() == cap ); // no reallocation
-                }
-            }
-        }
+        std::array<throws_on_convert, 3> input;
+        input[0].k = "2";
+        input[0].should_throw = false;
+
+        input[1].k = "3";
+        input[1].should_throw = false;
+
+        input[2].k = "4";
+        input[2].should_throw = true; // third element throws on conversion
+
+        BOOST_TEST_THROWS(
+            jo.insert( input.begin(), input.end() ),
+            std::invalid_argument );
+
+        // the rolled-back elements must not stay reachable through stale
+        // bucket entries pointing past the end of the object
+        BOOST_TEST( jo.find("2") == jo.end() );
+        BOOST_TEST( jo.find("3") == jo.end() );
+        BOOST_TEST( jo.find("4") == jo.end() );
+        BOOST_TEST( jo.size() == 1 );
+        BOOST_TEST( jo.find("1") != jo.end() );
     }
 
     void
