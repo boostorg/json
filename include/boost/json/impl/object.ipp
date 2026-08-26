@@ -200,9 +200,10 @@ destroy() noexcept
             obj_->remove( obj_->t_->bucket( last->key() ), *last );
         }
     }
-    obj_->destroy(
-        &(*obj_->t_)[size_],
-        obj_->end());
+    if(! obj_->sp_.is_not_shared_and_deallocate_is_trivial())
+        obj_->destroy(
+            &(*obj_->t_)[size_],
+            obj_->end());
 }
 
 //----------------------------------------------------------
