@@ -327,7 +327,7 @@ public:
             system::error_code ec;
             result = jv.set_at_pointer(ptr, 1, ec, opts);
             BOOST_TEST( !result );
-            BOOST_TEST( ec == error::not_found );
+            BOOST_TEST( ec == error::array_too_large );
             BOOST_TEST( hasLocation(ec) );
             BOOST_TEST(( jv == array{0} ));
         }
