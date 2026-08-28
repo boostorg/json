@@ -118,9 +118,27 @@ public:
     }
 
     void
+    testAlignment()
+    {
+        // a caller-supplied buffer is used to store `value`s, so the stack
+        // must cope with a buffer that is not aligned for one. Offsetting an
+        // aligned buffer by 1 makes it misaligned; before the fix that
+        // constructs a `value` at a misaligned address (UBSan: misaligned
+        // constructor call).
+        alignas(value) unsigned char buf[1024];
+        value_stack st(
+            storage_ptr(), buf + 1, sizeof(buf) - 1);
+        st.reset();
+        st.push_int64(1);
+        value const jv = st.release();
+        BOOST_TEST(serialize(jv) == "1");
+    }
+
+    void
     run()
     {
         testValueStack();
+        testAlignment();
     }
 };
 
