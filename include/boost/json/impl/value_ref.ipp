@@ -97,11 +97,11 @@ make_value(
     case what::func:
         return f_.f(f_.p,
             std::move(sp));
-    
+
     case what::strfunc:
         return f_.f(f_.p,
             std::move(sp));
-    
+
     case what::cfunc:
         return cf_.f(cf_.p,
             std::move(sp));
