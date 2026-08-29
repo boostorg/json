@@ -80,9 +80,7 @@ serialize_impl(
         s.max_size() / 2;
     for(;;)
     {
-        sv = sr.read(
-            &s[0] + len,
-            s.size() - len);
+        sv = sr.read(&s[0] + len, s.size() - len);
         len += sv.size();
         if(sr.done())
             break;

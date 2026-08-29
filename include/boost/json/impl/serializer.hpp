@@ -193,7 +193,7 @@ write_impl(string_like_conversion_tag, writer& w, stream& ss0)
 # pragma warning( pop )
 #endif
     {
-        string_view const sv = *reinterpret_cast<T const*>(w.p_);
+        string_view const sv = *reinterpret_cast<T const*>(w.p_); // LCOV_EXCL_LINE
         w.cs0_ = { sv.data(), sv.size() };
         return write_string(w, ss0);
     }
