@@ -225,30 +225,19 @@ value(
 //
 //----------------------------------------------------------
 
-value::
-value(
-    std::initializer_list<value_ref> init,
-    storage_ptr sp)
+value::value(std::initializer_list<value_ref> init, storage_ptr sp)
 {
-    if(value_ref::maybe_object(init))
+    if( value_ref::maybe_object(init) )
     {
-        ::new(&obj_) object(
-            value_ref::make_object(
-                init, std::move(sp)));
+        ::new(&obj_) object( value_ref::make_object(init, std::move(sp)) );
+    }
+    else if( init.size() == 1 )
+    {
+        ::new(this) value( init.begin()->make_value(std::move(sp)) );
     }
     else
     {
-        if( init.size() == 1 )
-        {
-            ::new(this) value(
-                init.begin()->make_value( std::move(sp) ));
-        }
-        else
-        {
-            ::new(&arr_) array(
-                value_ref::make_array(
-                    init, std::move(sp)));
-        }
+        ::new(&arr_) array( value_ref::make_array(init, std::move(sp)) );
     }
 }
 
