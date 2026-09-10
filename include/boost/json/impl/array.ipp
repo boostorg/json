@@ -516,10 +516,6 @@ insert(
         value_ref> init) ->
     iterator
 {
-    BOOST_ASSERT(
-        pos >= begin() && pos <= end());
-    if(init.size() == 0)
-        return data() + (pos - data());
     // the value_refs in init may point into this
     // array, whose storage revert_insert can
     // relocate and free, so buffer them first

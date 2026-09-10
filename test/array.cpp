@@ -1035,35 +1035,30 @@ public:
         }
 
         // insert(const_iterator, init_list)
+        fail_loop([&](storage_ptr const& sp)
         {
-            fail_loop([&](storage_ptr const& sp)
-            {
-                array a({0, 3, 4}, sp);
-                auto it = a.insert(
-                    a.begin() + 1, {1, str_});
-                BOOST_TEST(it == a.begin() + 1);
-                BOOST_TEST(a[0].as_int64() == 0);
-                BOOST_TEST(a[1].as_int64() == 1);
-                BOOST_TEST(a[2].as_string() == str_);
-                BOOST_TEST(a[3].as_int64() == 3);
-                BOOST_TEST(a[4].as_int64() == 4);
-            });
+            array a({0, 3, 4}, sp);
+            auto it = a.insert(
+                a.begin() + 1, {1, str_});
+            BOOST_TEST(it == a.begin() + 1);
+            BOOST_TEST(a[0].as_int64() == 0);
+            BOOST_TEST(a[1].as_int64() == 1);
+            BOOST_TEST(a[2].as_string() == str_);
+            BOOST_TEST(a[3].as_int64() == 3);
+            BOOST_TEST(a[4].as_int64() == 4);
 
             // elements of init alias *this and
             // insertion reallocates
-            fail_loop([&](storage_ptr const& sp)
-            {
-                array a({1, str_}, sp);
-                BOOST_TEST(a.capacity() == a.size());
-                a.insert(a.begin(), {a[0], a[1]});
-                BOOST_TEST(a.size() == 4);
-                BOOST_TEST(a[0].as_int64() == 1);
-                BOOST_TEST(a[1].as_string() == str_);
-                BOOST_TEST(a[2].as_int64() == 1);
-                BOOST_TEST(a[3].as_string() == str_);
-                check_storage(a, sp);
-            });
-        }
+            array b({1, str_}, sp);
+            BOOST_TEST(b.capacity() == b.size());
+            b.insert(b.begin(), {b[0], b[1]});
+            BOOST_TEST(b.size() == 4);
+            BOOST_TEST(b[0].as_int64() == 1);
+            BOOST_TEST(b[1].as_string() == str_);
+            BOOST_TEST(b[2].as_int64() == 1);
+            BOOST_TEST(b[3].as_string() == str_);
+            check_storage(b, sp);
+        });
 
         // emplace(const_iterator, arg)
         fail_loop([&](storage_ptr const& sp)
