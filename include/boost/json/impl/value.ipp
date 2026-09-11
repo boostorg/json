@@ -527,37 +527,26 @@ value::try_as_null() const noexcept
 boost::system::result<value&>
 value::try_at(string_view key) noexcept
 {
-    auto r = try_as_object();
-    if( !r )
-        return r.error();
-    return r.unsafe_value().try_at(key);
+    return try_as_object() & [key](object& jo) { return jo.try_at(key); };
 }
 
 boost::system::result<value const&>
 value::try_at(string_view key) const noexcept
 {
-    auto r = try_as_object();
-    if( !r )
-        return r.error();
-    return r.unsafe_value().try_at(key);
+    return try_as_object()
+        & [key](object const& jo) { return jo.try_at(key); };
 }
 
 boost::system::result<value&>
 value::try_at(std::size_t pos) noexcept
 {
-    auto r = try_as_array();
-    if( !r )
-        return r.error();
-    return r.unsafe_value().try_at(pos);
+    return try_as_array() & [pos](array& ja) { return ja.try_at(pos); };
 }
 
 boost::system::result<value const&>
 value::try_at(std::size_t pos) const noexcept
 {
-    auto r = try_as_array();
-    if( !r )
-        return r.error();
-    return r.unsafe_value().try_at(pos);
+    return try_as_array() & [pos](array const& ja) { return ja.try_at(pos); };
 }
 
 object const&
