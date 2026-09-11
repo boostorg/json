@@ -312,6 +312,26 @@ public:
         BOOST_TEST( *result == 0 );
         BOOST_TEST( result == &jv.at_pointer("/4") );
 
+        // an index equal to std::size_t(-1) makes the element count index + 1
+        // wrap to zero; the array must not be resized and no pointer past its
+        // end may be returned
+        opts = {};
+        opts.max_created_elements = std::size_t(-1);
+        jv = array{0};
+        {
+            std::string const ptr =
+                "/" + std::to_string(std::size_t(-1));
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.set_at_pointer(ptr, 1, opts) );
+            BOOST_TEST(( jv == array{0} ));
+
+            system::error_code ec;
+            result = jv.set_at_pointer(ptr, 1, ec, opts);
+            BOOST_TEST( !result );
+            BOOST_TEST( ec == error::array_too_large );
+            BOOST_TEST( hasLocation(ec) );
+            BOOST_TEST(( jv == array{0} ));
+        }
+
         opts = {};
         opts.create_arrays = false;
         opts.create_objects = false;

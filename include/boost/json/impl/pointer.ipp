@@ -455,6 +455,14 @@ value::set_at_pointer(
                 if( n >= opts.max_created_elements )
                     return nullptr;
 
+                // the resulting size, index + 1, would either exceed the
+                // array's size limit or wrap to 0 when index == size_t(-1)
+                if( index >= array::max_size() )
+                {
+                    BOOST_JSON_FAIL( ec, error::array_too_large );
+                    return nullptr;
+                }
+
                 arr.resize( arr.size() + n + 1 );
             }
 
