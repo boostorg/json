@@ -519,9 +519,12 @@ value::try_set_at_pointer(
 
 value&
 value::set_at_pointer(
-    string_view sv, value_ref ref, set_pointer_options const& opts )
+    string_view sv,
+    value_ref ref,
+    set_pointer_options const& opts,
+    source_location const& loc)
 {
-    return try_set_at_pointer(sv, ref, opts).value();
+    return try_set_at_pointer(sv, ref, opts).value(loc);
 }
 
 } // namespace json
