@@ -31,8 +31,7 @@ default_resource::instance_;
 // this is here so that ~memory_resource
 // is emitted in the library instead of
 // the user's TU.
-default_resource::
-~default_resource() = default;
+default_resource::~default_resource() = default; // LCOV_EXCL_LINE
 
 void*
 default_resource::

@@ -24,18 +24,6 @@ value() const
     return make_value({});
 }
 
-value
-value_ref::
-from_init_list(
-    void const* p,
-    storage_ptr sp)
-{
-    return make_value(
-        *reinterpret_cast<
-            init_list const*>(p),
-        std::move(sp));
-}
-
 bool
 value_ref::
 is_key_value_pair() const noexcept
@@ -97,11 +85,11 @@ make_value(
     case what::func:
         return f_.f(f_.p,
             std::move(sp));
-    
+
     case what::strfunc:
         return f_.f(f_.p,
             std::move(sp));
-    
+
     case what::cfunc:
         return cf_.f(cf_.p,
             std::move(sp));

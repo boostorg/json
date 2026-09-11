@@ -431,13 +431,6 @@ private:
         void* p,
         storage_ptr sp);
 
-    static
-    BOOST_JSON_DECL
-    value
-    from_init_list(
-        void const* p,
-        storage_ptr sp);
-
     inline
     bool
     is_key_value_pair() const noexcept;

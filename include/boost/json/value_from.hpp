@@ -124,7 +124,7 @@ value_from(
     value jv(std::move(sp));
     value_from( static_cast<T&&>(t), ctx, jv );
     return jv;
-}
+} // LCOV_EXCL_LINE
 
 /// Overload
 template<class T>

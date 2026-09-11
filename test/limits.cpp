@@ -220,6 +220,52 @@ public:
             BOOST_TEST(ec.has_location());
         }
 
+        // string in parser, fails at the beginning of the 2nd escape sequence
+        {
+            stream_parser p;
+            system::error_code ec;
+            p.write_some("\"", 1, ec);
+            BOOST_TEST( !ec.failed() );
+            for(std::size_t i = 0; i < string::max_size(); ++i)
+            {
+                p.write_some("0", 1, ec);
+            }
+            p.write_some("\\n\\", 3, ec);
+            BOOST_TEST(ec == error::string_too_large);
+            BOOST_TEST(ec.has_location());
+        }
+
+        // string in parser, fails at the beginning of the 2nd
+        // (unicode) escape sequence
+        {
+            stream_parser p;
+            system::error_code ec;
+            p.write_some("\"", 1, ec);
+            BOOST_TEST( !ec.failed() );
+            for(std::size_t i = 0; i < string::max_size(); ++i)
+            {
+                p.write_some("0", 1, ec);
+            }
+            p.write_some("\\n\\u", 4, ec);
+            BOOST_TEST(ec == error::string_too_large);
+            BOOST_TEST(ec.has_location());
+        }
+
+        // string in parser, fails after the last escape
+        {
+            stream_parser p;
+            system::error_code ec;
+            p.write_some("\"", 1, ec);
+            BOOST_TEST( !ec.failed() );
+            for(std::size_t i = 0; i < string::max_size(); ++i)
+            {
+                p.write_some("0", 1, ec);
+            }
+            p.write_some("\\n0", 3, ec);
+            BOOST_TEST(ec == error::string_too_large);
+            BOOST_TEST(ec.has_location());
+        }
+
         // key in parser
         {
             stream_parser p;

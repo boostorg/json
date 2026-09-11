@@ -118,6 +118,22 @@ public:
             mr.release();
             (void)mr.allocate(10,1);
         }
+
+        // misc
+        {
+            unsigned char b1[1];
+            static_resource mr1(b1, 1);
+
+            unsigned char b2[2];
+            static_resource mr2(b2, 1);
+
+            BOOST_TEST(mr1 != mr2);
+            BOOST_TEST(mr1 == mr1);
+
+            // this is for higher coverage
+            auto const ptr = mr1.allocate(1, 1);
+            mr1.deallocate(ptr, 1);
+        }
     }
 
     void

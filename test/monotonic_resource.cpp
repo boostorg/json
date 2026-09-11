@@ -186,6 +186,14 @@ public:
             (void)mr.allocate(10,1);
         }
 
+        // equality comparison
+        {
+            monotonic_resource mr1;
+            monotonic_resource mr2;
+            BOOST_TEST(mr1 != mr2);
+            BOOST_TEST(mr1 == mr1);
+        }
+
         // coverage
         {
             monotonic_resource mr(std::size_t(-1)-2);

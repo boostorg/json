@@ -48,7 +48,7 @@ parse(
     value result = parse(s, jec, std::move(sp), opt);
     ec = jec;
     return result;
-}
+} // LCOV_EXCL_LINE
 
 value
 parse(
@@ -114,7 +114,7 @@ parse(
     value result = parse(is, jec, std::move(sp), opt);
     ec = jec;
     return result;
-}
+} // LCOV_EXCL_LINE
 
 value
 parse(

@@ -37,8 +37,8 @@ public:
 #if defined(BOOST_GCC) && BOOST_GCC >= 160000
 # pragma GCC diagnostic pop
 #endif
-        BOOST_TEST(
-            mr == *get_null_resource());
+        BOOST_TEST( mr == *get_null_resource() );
+        BOOST_TEST( mr.is_equal(*get_null_resource()) );
     }
 
     void
