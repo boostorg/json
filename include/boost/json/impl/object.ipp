@@ -186,9 +186,24 @@ object::
 revert_insert::
 destroy() noexcept
 {
-    obj_->destroy(
-        &(*obj_->t_)[size_],
-        obj_->end());
+    // when no reallocation happened, insert_impl linked each rolled-back
+    // element into a bucket of the live table; unlink them while their keys
+    // are still valid, otherwise a bucket head is left pointing at a slot
+    // that is about to be destroyed
+    if( !t_ && !obj_->t_->is_small() )
+    {
+        key_value_pair* const first = &(*obj_->t_)[size_];
+        key_value_pair* last = obj_->end();
+        while( last != first )
+        {
+            --last;
+            obj_->remove( obj_->t_->bucket( last->key() ), *last );
+        }
+    }
+    if(! obj_->sp_.is_not_shared_and_deallocate_is_trivial())
+        obj_->destroy(
+            &(*obj_->t_)[size_],
+            obj_->end());
 }
 
 //----------------------------------------------------------
