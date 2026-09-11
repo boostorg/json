@@ -1601,7 +1601,7 @@ public:
 
     bool on_array_end( system::error_code& ec )
     {
-        if( !inner_active_ )
+        if( inner_active_ < 0 )
             return signal_end(ec);
 
         BOOST_JSON_INVOKE_INNER( array_end_handler_event{}, ec );
