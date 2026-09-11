@@ -524,6 +524,84 @@ value::set_at_pointer(
     return try_set_at_pointer(sv, ref, opts).value();
 }
 
+bool
+value::erase_at_pointer (
+    string_view sv,
+    system::error_code& ec) noexcept
+{
+    ec.clear();
+    if(sv.empty()){
+        BOOST_JSON_FAIL(ec, error::missing_slash);
+        return false;
+    }
+
+    string_view walk = sv;
+    string_view last_segment;
+    while (true)
+    {
+        last_segment = detail::next_segment(walk, ec);
+        if (ec.failed())
+            return false;
+        if (walk.empty())
+            break;
+    }
+
+    string_view const parent_sv(
+        sv.data(),
+        static_cast<std::size_t>(last_segment.data() - sv.data()));
+
+    value* parent = detail::walk_pointer(
+        *this,
+        parent_sv,
+        ec,
+        []( object& obj, detail::pointer_token token )
+        {
+            return detail::if_contains_token(obj, token);
+        },
+        []( array& arr, std::size_t index, system::error_code& ec ) -> value*
+        {
+            if( ec )
+                return nullptr;
+
+            return arr.if_contains(index);
+        },
+        []( value&, string_view)
+        {
+            return std::false_type();
+        });
+
+    if (!parent)
+        return false;
+
+    switch (parent->kind())
+    {
+        case boost::json::kind::object: {
+            auto& obj = parent->get_object();
+            detail::pointer_token const token(last_segment);
+            key_value_pair* kv = detail::find_in_object(obj, token).first;
+            if (kv) {
+                obj.erase(kv);
+                return true;
+            }
+            return false;
+        }
+        case boost::json::kind::array: {
+            auto const index = detail::parse_number_token(last_segment, ec);
+            auto& arr = parent->get_array();
+            if (arr.if_contains(index)){
+                arr.erase(arr.begin() + index);
+                return true;
+            }
+            return false;
+        }
+        default: {
+            BOOST_JSON_FAIL(ec, error::value_is_scalar);
+            return false;
+        }
+    }
+}
+
+
 } // namespace json
 } // namespace boost
 
