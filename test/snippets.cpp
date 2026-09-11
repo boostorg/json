@@ -32,14 +32,11 @@
 #include "doc_types.hpp"
 
 // tag::snippet_conv_spec_trait2[]
-namespace boost
-{
-namespace json
-{
+namespace boost {
+namespace json {
 
 template<>
-struct is_sequence_like< user_ns::ip_address >
-    : std::false_type
+struct use_category<user_ns::ip_address> : tuple_category
 { };
 
 } // namespace json
@@ -78,7 +75,7 @@ tag_invoke( const value_to_tag< ip_address >&, value const& jv )
 // end::snippet_tag_invoke_1[]
 
 // tag::snippet_nothrow_1[]
-result_for< ip_address, value >::type
+boost::system::result<ip_address>
 tag_invoke( const try_value_to_tag< ip_address >&, value const& jv )
 {
     if( !jv.is_array() )

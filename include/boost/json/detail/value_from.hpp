@@ -47,14 +47,14 @@ struct append_tuple_element {
 
 template< class T, class Ctx >
 void
-value_from_impl( user_conversion_tag, value& jv, T&& from, Ctx const& )
+value_from_impl( user_category, value& jv, T&& from, Ctx const& )
 {
     tag_invoke( value_from_tag(), jv, static_cast<T&&>(from) );
 }
 
 template< class T, class Ctx >
 void
-value_from_impl( context_conversion_tag, value& jv, T&& from, Ctx const& ctx)
+value_from_impl( user_context_category, value& jv, T&& from, Ctx const& ctx)
 {
     using Sup = supported_context<Ctx, T, value_from_conversion>;
     tag_invoke( value_from_tag(), jv, static_cast<T&&>(from), Sup::get(ctx) );
@@ -63,7 +63,7 @@ value_from_impl( context_conversion_tag, value& jv, T&& from, Ctx const& ctx)
 template< class T, class Ctx >
 void
 value_from_impl(
-    full_context_conversion_tag, value& jv, T&& from, Ctx const& ctx)
+    user_full_context_category, value& jv, T&& from, Ctx const& ctx)
 {
     using Sup = supported_context<Ctx, T, value_from_conversion>;
     tag_invoke(
@@ -73,9 +73,14 @@ value_from_impl(
 //----------------------------------------------------------
 // Native conversion
 
-template< class T, class Ctx >
+template< class Cat, class T, class Ctx >
 void
-value_from_impl( native_conversion_tag, value& jv, T&& from, Ctx const& )
+value_from_impl(
+    Cat,
+    value& jv,
+    T&& from,
+    Ctx const&,
+    typename std::enable_if<is_native_conversion<Cat>::value>* = nullptr)
 {
     jv = std::forward<T>(from);
 }
@@ -83,7 +88,7 @@ value_from_impl( native_conversion_tag, value& jv, T&& from, Ctx const& )
 // null-like types
 template< class T, class Ctx >
 void
-value_from_impl( null_like_conversion_tag, value& jv, T&&, Ctx const& )
+value_from_impl( null_category, value& jv, T&&, Ctx const& )
 {
     // do nothing
     BOOST_ASSERT(jv.is_null());
@@ -93,7 +98,7 @@ value_from_impl( null_like_conversion_tag, value& jv, T&&, Ctx const& )
 // string-like types
 template< class T, class Ctx >
 void
-value_from_impl( string_like_conversion_tag, value& jv, T&& from, Ctx const& )
+value_from_impl( string_category, value& jv, T&& from, Ctx const& )
 {
     auto sv = static_cast<string_view>(from);
     jv.emplace_string().assign(sv);
@@ -102,7 +107,7 @@ value_from_impl( string_like_conversion_tag, value& jv, T&& from, Ctx const& )
 // map-like types
 template< class T, class Ctx >
 void
-value_from_impl( map_like_conversion_tag, value& jv, T&& from, Ctx const& ctx )
+value_from_impl( map_category, value& jv, T&& from, Ctx const& ctx )
 {
     using std::get;
     object& obj = jv.emplace_object();
@@ -116,7 +121,7 @@ value_from_impl( map_like_conversion_tag, value& jv, T&& from, Ctx const& ctx )
 // ranges
 template< class T, class Ctx >
 void
-value_from_impl( sequence_conversion_tag, value& jv, T&& from, Ctx const& ctx )
+value_from_impl( sequence_category, value& jv, T&& from, Ctx const& ctx )
 {
     array& result = jv.emplace_array();
     result.reserve(detail::try_size(from, size_implementation<T>()));
@@ -133,7 +138,7 @@ value_from_impl( sequence_conversion_tag, value& jv, T&& from, Ctx const& ctx )
 // tuple-like types
 template< class T, class Ctx >
 void
-value_from_impl( tuple_conversion_tag, value& jv, T&& from, Ctx const& ctx )
+value_from_impl( tuple_category, value& jv, T&& from, Ctx const& ctx )
 {
     constexpr std::size_t n =
         std::tuple_size<remove_cvref<T>>::value;
@@ -146,7 +151,7 @@ value_from_impl( tuple_conversion_tag, value& jv, T&& from, Ctx const& ctx )
 // no suitable conversion implementation
 template< class T, class Ctx >
 void
-value_from_impl( no_conversion_tag, value&, T&&, Ctx const& )
+value_from_impl( unknown_category, value&, T&&, Ctx const& )
 {
     static_assert(
         !std::is_same<T, T>::value,
@@ -184,7 +189,7 @@ struct from_described_member
 template< class T, class Ctx >
 void
 value_from_impl(
-    described_class_conversion_tag, value& jv, T&& from, Ctx const& ctx )
+    described_class_category, value& jv, T&& from, Ctx const& ctx )
 {
     object& obj = jv.emplace_object();
     from_described_member<Ctx, T> member_converter{
@@ -199,8 +204,7 @@ value_from_impl(
 // described enums
 template< class T, class Ctx >
 void
-value_from_impl(
-    described_enum_conversion_tag, value& jv, T from, Ctx const& )
+value_from_impl( described_enum_category, value& jv, T from, Ctx const& )
 {
     (void)jv;
     (void)from;
@@ -222,8 +226,7 @@ value_from_impl(
 // optionals
 template< class T, class Ctx >
 void
-value_from_impl(
-    optional_conversion_tag, value& jv, T&& from, Ctx const& ctx )
+value_from_impl( optional_category, value& jv, T&& from, Ctx const& ctx )
 {
     if( from )
         value_from( *from, ctx, jv );
@@ -248,14 +251,14 @@ struct value_from_visitor
 
 template< class Ctx, class T >
 void
-value_from_impl( variant_conversion_tag, value& jv, T&& from, Ctx const& ctx )
+value_from_impl( variant_category, value& jv, T&& from, Ctx const& ctx )
 {
     visit( value_from_visitor<Ctx>{ jv, ctx }, static_cast<T&&>(from) );
 }
 
 template< class Ctx, class T >
 void
-value_from_impl( path_conversion_tag, value& jv, T&& from, Ctx const& )
+value_from_impl( path_category, value& jv, T&& from, Ctx const& )
 {
     std::string s = from.generic_string();
     string_view sv = s;
@@ -266,8 +269,11 @@ value_from_impl( path_conversion_tag, value& jv, T&& from, Ctx const& )
 // Contextual conversions
 
 template< class Ctx, class T >
-using value_from_category = conversion_category<
-    Ctx, T, value_from_conversion >;
+using value_from_category = get_conversion_category<
+    T,
+    Ctx,
+    all_custom_checks<value_from_conversion>::fn,
+    all_fallback_checks<value_from_conversion>::fn>;
 
 } // detail
 

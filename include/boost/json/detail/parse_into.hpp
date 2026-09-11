@@ -37,9 +37,9 @@
  * handler (in this case, it's the top handler, into_handler<T>). The type is
  * actually an alias to class template converting_handler, which has a separate
  * specialisation for every conversion category from the list of generic
- * conversion categories (e.g. sequence_conversion_tag, tuple_conversion_tag,
- * etc.) Instantiations of the template store a pointer to the parent handler
- * and a pointer to the value T.
+ * conversion categories (e.g. sequence_category, tuple_category, etc.)
+ * Instantiations of the template store a pointer to the parent handler and a
+ * pointer to the value T.
  *
  * The nested handler handles specific parser events by setting error_code to
  * an appropriate value, if it receives an event it isn't supposed to handle
@@ -76,12 +76,16 @@ namespace boost {
 namespace json {
 namespace detail {
 
-template< class Impl, class T, class Parent >
+template< conversion_category C, class T, class Parent >
 class converting_handler;
 
 // get_handler
 template< class V, class P >
-using get_handler = converting_handler< generic_conversion_category<V>, V, P >;
+using get_handler = converting_handler<
+    get_conversion_category<
+        V, void, direct_custom_checks, direct_fallback_checks>::value,
+    V,
+    P>;
 
 template<error E> class handler_error_base
 {
@@ -269,7 +273,7 @@ bool integral_in_range( std::uint64_t v )
 }
 
 template< class V, class P >
-class converting_handler<integral_conversion_tag, V, P>
+class converting_handler<conversion_category::integer, V, P>
     : public scalar_handler<P, error::not_integer>
 {
 private:
@@ -313,7 +317,7 @@ public:
 
 // floating point handler
 template< class V, class P>
-class converting_handler<floating_point_conversion_tag, V, P>
+class converting_handler<conversion_category::floating_point, V, P>
     : public scalar_handler<P, error::not_double>
 {
 private:
@@ -351,7 +355,7 @@ public:
 
 // string handler
 template< class V, class P >
-class converting_handler<string_like_conversion_tag, V, P>
+class converting_handler<string_category::value, V, P>
     : public scalar_handler<P, error::not_string>
 {
 private:
@@ -390,7 +394,7 @@ public:
 
 // bool handler
 template< class V, class P >
-class converting_handler<bool_conversion_tag, V, P>
+class converting_handler<conversion_category::boolean, V, P>
     : public scalar_handler<P, error::not_bool>
 {
 private:
@@ -411,7 +415,7 @@ public:
 
 // null handler
 template< class V, class P >
-class converting_handler<null_like_conversion_tag, V, P>
+class converting_handler<null_category::value, V, P>
     : public scalar_handler<P, error::not_null>
 {
 private:
@@ -432,7 +436,7 @@ public:
 
 // described enum handler
 template< class V, class P >
-class converting_handler<described_enum_conversion_tag, V, P>
+class converting_handler<described_enum_category::value, V, P>
     : public scalar_handler<P, error::not_string>
 {
 #ifndef BOOST_DESCRIBE_CXX14
@@ -480,7 +484,7 @@ public:
 };
 
 template< class V, class P >
-class converting_handler<no_conversion_tag, V, P>
+class converting_handler<unknown_category::value, V, P>
 {
     static_assert( sizeof(V) == 0, "This type is not supported" );
 };
@@ -537,9 +541,9 @@ clear_container(
 }
 
 template< class V, class P >
-class converting_handler<sequence_conversion_tag, V, P>
+class converting_handler<sequence_category::value, V, P>
     : public composite_handler<
-        converting_handler<sequence_conversion_tag, V, P>,
+        converting_handler<sequence_category::value, V, P>,
         detail::value_type<V>,
         P,
         error::not_array>
@@ -612,9 +616,9 @@ public:
 
 // map handler
 template< class V, class P >
-class converting_handler<map_like_conversion_tag, V, P>
+class converting_handler<map_category::value, V, P>
     : public composite_handler<
-        converting_handler<map_like_conversion_tag, V, P>,
+        converting_handler<map_category::value, V, P>,
         detail::mapped_type<V>,
         P,
         error::not_object>
@@ -801,7 +805,7 @@ struct tuple_accessor
 };
 
 template< class T, class P >
-class converting_handler<tuple_conversion_tag, T, P>
+class converting_handler<tuple_category::value, T, P>
 {
 
 private:
@@ -1122,7 +1126,7 @@ struct ignoring_handler
 };
 
 template<class V, class P>
-class converting_handler<described_class_conversion_tag, V, P>
+class converting_handler<described_class_category::value, V, P>
 {
 #if !defined(BOOST_DESCRIBE_CXX14)
 
@@ -1470,7 +1474,7 @@ using inner_handler_variant = mp11::mp_push_front<
     variant2::monostate>;
 
 template< class T, class P >
-class converting_handler<variant_conversion_tag, T, P>
+class converting_handler<variant_category::value, T, P>
 {
 private:
     using variant_size = mp11::mp_size<T>;
@@ -1667,7 +1671,7 @@ public:
 
 // optional handler
 template<class V, class P>
-class converting_handler<optional_conversion_tag, V, P>
+class converting_handler<optional_category::value, V, P>
 {
 private:
     using inner_type = value_result_type<V>;
@@ -1792,7 +1796,7 @@ public:
 
 // path handler
 template< class V, class P >
-class converting_handler<path_conversion_tag, V, P>
+class converting_handler<path_category::value, V, P>
     : public scalar_handler<P, error::not_string>
 {
 private:

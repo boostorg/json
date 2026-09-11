@@ -18,7 +18,7 @@ The drawback of this approach is that fully custom type representations are
 not supported, only the library-provided conversions are. Also all objects that
 should be populated by parsing have to be default constructible types. This
 includes not only the top-level object, but e.g. elements of containers,
-members of described `struct`s, and alternatives of variants.
+members of described ``struct``s, and alternatives of variants.
 
 That being said, if your types are default-constructible and you don't need the
 customisability allowed by <<ref_value_to>> and <<ref_value_from>>, then you
