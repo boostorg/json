@@ -153,17 +153,15 @@ value_from(
     If `T` can be converted to @ref value via a call to @ref value_from, the
     static data member `value` is defined as `true`. Otherwise, `value` is
     defined as `false`.
-
-    @see @ref value_from.
 */
-#ifdef BOOST_JSON_DOCS
 template<class T>
-using has_value_from = __see_below__;
-#else
-template<class T>
-using has_value_from = detail::can_convert<
-    detail::remove_cvref<T>, detail::value_from_conversion>;
+struct has_value_from
+#ifndef BOOST_JSON_DOCS
+    : detail::can_convert<
+        detail::remove_cvref<T>, detail::value_from_conversion>
+{}
 #endif
+;
 
 } // namespace json
 } // namespace boost
