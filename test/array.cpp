@@ -1046,6 +1046,18 @@ public:
             BOOST_TEST(a[2].as_string() == str_);
             BOOST_TEST(a[3].as_int64() == 3);
             BOOST_TEST(a[4].as_int64() == 4);
+
+            // elements of init alias *this and
+            // insertion reallocates
+            array b({1, str_}, sp);
+            BOOST_TEST(b.capacity() == b.size());
+            b.insert(b.begin(), {b[0], b[1]});
+            BOOST_TEST(b.size() == 4);
+            BOOST_TEST(b[0].as_int64() == 1);
+            BOOST_TEST(b[1].as_string() == str_);
+            BOOST_TEST(b[2].as_int64() == 1);
+            BOOST_TEST(b[3].as_string() == str_);
+            check_storage(b, sp);
         });
 
         // emplace(const_iterator, arg)
