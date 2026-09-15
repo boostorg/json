@@ -198,175 +198,240 @@ public:
 #pragma warning(disable: 4456) // non dll-interface class used as base for dll-interface class
 #endif
 
-#define TEST_GRIND_ONE(s, good, po) \
-    do { \
-        string_view _test_gr1_s = s; \
-        system::error_code ec; \
-        fail_parser p((po)); \
-        auto sz = p.write(false, _test_gr1_s.data(), _test_gr1_s.size(), ec); \
-        if(good) \
-        { \
-            if(! BOOST_TEST(!ec) ) \
-            { \
-                log << "  " << ec.what() << " after " << sz << " characters of " << _test_gr1_s << '\n'; \
-            } \
-        } \
-        else \
-            BOOST_TEST(ec); \
-    } while (false)
+    void
+    grind_one(
+        string_view s,
+        bool good,
+        parse_options const& po,
+        source_location const& loc = BOOST_CURRENT_LOCATION)
+    {
+        string_view test_gr1_s = s;
+        system::error_code ec;
+        fail_parser p((po));
+        auto sz = p.write(false, test_gr1_s.data(), test_gr1_s.size(), ec);
+        if(good)
+        {
+            if(! BOOST_TEST(!ec, loc) )
+            {
+                log << "  " << ec.what() << " after " << sz << " characters of " << test_gr1_s << '\n';
+            }
+        }
+        else
+        {
+            BOOST_TEST(ec, loc);
+        }
+    }
 
-#define TEST_GRIND(s, good, po) \
-    do { \
-        TEST_GRIND_ONE((s), (good), (po)); \
-        string_view _test_gr_s = s; \
-        /* split/errors matrix*/ \
-        if(! _test_gr_s.empty()) \
-        { \
-            for(std::size_t i = 1; i < _test_gr_s.size(); ++i) \
-            { \
-                for(std::size_t j = 1;;++j) \
-                { \
-                    system::error_code ec; \
-                    fail_parser p(j, (po)); \
-                    auto sz = p.write(true, _test_gr_s.data(), i, ec); \
-                    if(ec == error::test_failure) \
-                        continue; \
-                    if(! ec) \
-                    { \
-                        sz += p.write(false, \
-                            _test_gr_s.data() + i, \
-                            _test_gr_s.size() - i, \
-                            ec); \
-                        if(ec == error::test_failure) \
-                            continue; \
-                    } \
-                    if(good) \
-                    { \
-                        if(! BOOST_TEST(!ec) ) \
-                        { \
-                            log << "  " << ec.what() << " after " << sz << " characters of " << _test_gr_s << '\n'; \
-                        } \
-                    } \
-                    else \
-                        BOOST_TEST(ec); \
-                    break; \
-                } \
-            } \
-        } \
-        /* split/exceptions matrix */ \
-        if(! _test_gr_s.empty()) \
-        { \
-            for(std::size_t i = 1; i < _test_gr_s.size(); ++i) \
-            { \
-                for(std::size_t j = 1;;++j) \
-                { \
-                    system::error_code ec; \
-                    throw_parser p(j, (po)); \
-                    try \
-                    { \
-                        auto sz = p.write(true, _test_gr_s.data(), i, ec); \
-                        if(! ec) \
-                            sz += p.write(false, \
-                                _test_gr_s.data() + i, \
-                                _test_gr_s.size() - i, \
-                                ec); \
-                        if(good) \
-                        { \
-                            if(! BOOST_TEST(!ec) ) \
-                            { \
-                                log << "  " << ec.what() << " after " << sz << " characters of " << _test_gr_s << '\n'; \
-                            } \
-                        } \
-                        else \
-                            BOOST_TEST(ec); \
-                        break; \
-                    } \
-                    catch(test_exception const&) \
-                    { \
-                        continue; \
-                    } \
-                    catch(std::exception const& e) \
-                    { \
-                        BOOST_TEST_FAIL(); \
-                        log << "  " << e.what() << std::endl; \
-                    } \
-                } \
-            } \
-        } \
-    } while (false)
+    void
+    grind(
+        string_view s,
+        bool good,
+        parse_options const& po,
+        source_location const& loc = BOOST_CURRENT_LOCATION)
+    {
+        grind_one(s, good, po, loc);
+        string_view _test_gr_s = s;
+        // split/errors matrix
+        if(! _test_gr_s.empty())
+        {
+            for(std::size_t i = 1; i < _test_gr_s.size(); ++i)
+            {
+                for(std::size_t j = 1;;++j)
+                {
+                    system::error_code ec;
+                    fail_parser p(j, (po));
+                    auto sz = p.write(true, _test_gr_s.data(), i, ec);
+                    if(ec == error::test_failure)
+                        continue;
+                    if(! ec)
+                    {
+                        sz += p.write(false,
+                            _test_gr_s.data() + i,
+                            _test_gr_s.size() - i,
+                            ec);
+                        if(ec == error::test_failure)
+                            continue;
+                    }
+                    if(good)
+                    {
+                        if(! BOOST_TEST(!ec) )
+                        {
+                            log << "  " << ec.what() << " after " << sz << " characters of " << _test_gr_s << '\n';
+                        }
+                    }
+                    else
+                        BOOST_TEST(ec);
+                    break;
+                }
+            }
+        }
+        // split/exceptions matrix
+        if(! _test_gr_s.empty())
+        {
+            for(std::size_t i = 1; i < _test_gr_s.size(); ++i)
+            {
+                for(std::size_t j = 1;;++j)
+                {
+                    system::error_code ec;
+                    throw_parser p(j, (po));
+                    try
+                    {
+                        auto sz = p.write(true, _test_gr_s.data(), i, ec);
+                        if(! ec)
+                            sz += p.write(false,
+                                _test_gr_s.data() + i,
+                                _test_gr_s.size() - i,
+                                ec);
+                        if(good)
+                        {
+                            if(! BOOST_TEST(!ec) )
+                            {
+                                log << "  " << ec.what() << " after " << sz << " characters of " << _test_gr_s << '\n';
+                            }
+                        }
+                        else
+                            BOOST_TEST(ec);
+                        break;
+                    }
+                    catch(test_exception const&)
+                    {
+                        continue;
+                    }
+                    catch(std::exception const& e)
+                    {
+                        BOOST_TEST_FAIL();
+                        log << "  " << e.what() << std::endl;
+                    }
+                }
+            }
+        }
+    }
 
-#define TEST_BAD_EXT(s, po) TEST_GRIND((s), false, (po))
-#define TEST_BAD_ONE_EXT(s, po) TEST_GRIND_ONE((s), false, (po))
-#define TEST_BAD(s) TEST_BAD_EXT((s), parse_options())
-#define TEST_BAD_ONE(s) TEST_BAD_ONE_EXT((s), parse_options())
+    void
+    bad(
+        string_view s,
+        parse_options const& po,
+        source_location const& loc = BOOST_CURRENT_LOCATION)
+    {
+        grind(s, false, po, loc);
+    }
 
-#define TEST_GOOD_EXT(s, po) TEST_GRIND((s), true, (po))
-#define TEST_GOOD_ONE_EXT(s, po) TEST_GRIND_ONE((s), true, (po))
-#define TEST_GOOD(s) TEST_GOOD_EXT((s), parse_options())
-#define TEST_GOOD_ONE(s) TEST_GOOD_ONE_EXT((s), parse_options())
+    void
+    bad(string_view s, source_location const& loc = BOOST_CURRENT_LOCATION)
+    {
+        bad(s, parse_options(), loc);
+    }
+
+    void
+    bad_one(
+        string_view s,
+        parse_options const& po,
+        source_location const& loc = BOOST_CURRENT_LOCATION)
+    {
+        grind_one(s, false, po, loc);
+    }
+
+    void
+    bad_one(
+        string_view s, source_location const& loc = BOOST_CURRENT_LOCATION)
+    {
+        bad_one(s, parse_options(), loc);
+    }
+
+    void
+    good(
+        string_view s,
+        parse_options const& po,
+        source_location const& loc = BOOST_CURRENT_LOCATION)
+    {
+        grind(s, true, po, loc);
+    }
+
+    void
+    good(
+        string_view s, source_location const& loc = BOOST_CURRENT_LOCATION)
+    {
+        good(s, parse_options(), loc);
+    }
+
+    void
+    good_one(
+        string_view s,
+        parse_options const& po,
+        source_location const& loc = BOOST_CURRENT_LOCATION)
+    {
+        grind_one(s, true, po, loc);
+    }
+
+    void
+    good_one(
+        string_view s, source_location const& loc = BOOST_CURRENT_LOCATION)
+    {
+        good_one(s, parse_options(), loc);
+    }
 
     //------------------------------------------------------
 
     void
     testNull()
     {
-        TEST_GOOD("null");
-        TEST_GOOD(" null");
-        TEST_GOOD("null ");
-        TEST_GOOD("\tnull");
-        TEST_GOOD("null\t");
-        TEST_GOOD("\r\n\t null\r\n\t ");
+        good("null");
+        good(" null");
+        good("null ");
+        good("\tnull");
+        good("null\t");
+        good("\r\n\t null\r\n\t ");
 
-        TEST_BAD ("n     ");
-        TEST_BAD ("nu    ");
-        TEST_BAD ("nul   ");
-        TEST_BAD ("n---  ");
-        TEST_BAD ("nu--  ");
-        TEST_BAD ("nul-  ");
+        bad("n     ");
+        bad("nu    ");
+        bad("nul   ");
+        bad("n---  ");
+        bad("nu--  ");
+        bad("nul-  ");
 
-        TEST_BAD ("NULL");
-        TEST_BAD ("Null");
-        TEST_BAD ("nulls");
+        bad("NULL");
+        bad("Null");
+        bad("nulls");
     }
 
     void
     testBoolean()
     {
-        TEST_GOOD("true");
-        TEST_GOOD(" true");
-        TEST_GOOD("true ");
-        TEST_GOOD("\ttrue");
-        TEST_GOOD("true\t");
-        TEST_GOOD("\r\n\t true\r\n\t ");
+        good("true");
+        good(" true");
+        good("true ");
+        good("\ttrue");
+        good("true\t");
+        good("\r\n\t true\r\n\t ");
 
-        TEST_BAD ("t     ");
-        TEST_BAD ("tr    ");
-        TEST_BAD ("tru   ");
-        TEST_BAD ("t---  ");
-        TEST_BAD ("tr--  ");
-        TEST_BAD ("tru-  ");
-        TEST_BAD ("TRUE");
-        TEST_BAD ("True");
-        TEST_BAD ("truer");
+        bad("t     ");
+        bad("tr    ");
+        bad("tru   ");
+        bad("t---  ");
+        bad("tr--  ");
+        bad("tru-  ");
+        bad("TRUE");
+        bad("True");
+        bad("truer");
 
-        TEST_GOOD("false");
-        TEST_GOOD(" false");
-        TEST_GOOD("false ");
-        TEST_GOOD("\tfalse");
-        TEST_GOOD("false\t");
-        TEST_GOOD("\r\n\t false\r\n\t ");
+        good("false");
+        good(" false");
+        good("false ");
+        good("\tfalse");
+        good("false\t");
+        good("\r\n\t false\r\n\t ");
 
-        TEST_BAD ("f     ");
-        TEST_BAD ("fa    ");
-        TEST_BAD ("fal   ");
-        TEST_BAD ("fals  ");
-        TEST_BAD ("f---- ");
-        TEST_BAD ("fa--- ");
-        TEST_BAD ("fal-- ");
-        TEST_BAD ("fals- ");
-        TEST_BAD ("FALSE");
-        TEST_BAD ("False");
-        TEST_BAD ("falser");
+        bad("f     ");
+        bad("fa    ");
+        bad("fal   ");
+        bad("fals  ");
+        bad("f---- ");
+        bad("fa--- ");
+        bad("fal-- ");
+        bad("fals- ");
+        bad("FALSE");
+        bad("False");
+        bad("falser");
     }
 
     void
@@ -375,336 +440,337 @@ public:
         parse_options with_special_numbers;
         with_special_numbers.allow_infinity_and_nan = true;
 
-        TEST_GOOD_EXT("Infinity", with_special_numbers);
-        TEST_GOOD_EXT(" Infinity", with_special_numbers);
-        TEST_GOOD_EXT("Infinity ", with_special_numbers);
-        TEST_GOOD_EXT("\tInfinity", with_special_numbers);
-        TEST_GOOD_EXT("Infinity\t", with_special_numbers);
-        TEST_GOOD_EXT("\r\n\t Infinity\r\n\t ", with_special_numbers);
+        good("Infinity", with_special_numbers);
+        good(" Infinity", with_special_numbers);
+        good("Infinity ", with_special_numbers);
+        good("\tInfinity", with_special_numbers);
+        good("Infinity\t", with_special_numbers);
+        good("\r\n\t Infinity\r\n\t ", with_special_numbers);
 
-        TEST_BAD_EXT("I       ", with_special_numbers);
-        TEST_BAD_EXT("In      ", with_special_numbers);
-        TEST_BAD_EXT("Inf     ", with_special_numbers);
-        TEST_BAD_EXT("Infi    ", with_special_numbers);
-        TEST_BAD_EXT("Infin   ", with_special_numbers);
-        TEST_BAD_EXT("Infini  ", with_special_numbers);
-        TEST_BAD_EXT("Infinit ", with_special_numbers);
+        bad("I       ", with_special_numbers);
+        bad("In      ", with_special_numbers);
+        bad("Inf     ", with_special_numbers);
+        bad("Infi    ", with_special_numbers);
+        bad("Infin   ", with_special_numbers);
+        bad("Infini  ", with_special_numbers);
+        bad("Infinit ", with_special_numbers);
 
-        TEST_BAD_EXT("I------- ", with_special_numbers);
-        TEST_BAD_EXT("In------ ", with_special_numbers);
-        TEST_BAD_EXT("Inf----- ", with_special_numbers);
-        TEST_BAD_EXT("Infi---- ", with_special_numbers);
-        TEST_BAD_EXT("Infin--- ", with_special_numbers);
-        TEST_BAD_EXT("Infini-- ", with_special_numbers);
-        TEST_BAD_EXT("Infinit- ", with_special_numbers);
+        bad("I------- ", with_special_numbers);
+        bad("In------ ", with_special_numbers);
+        bad("Inf----- ", with_special_numbers);
+        bad("Infi---- ", with_special_numbers);
+        bad("Infin--- ", with_special_numbers);
+        bad("Infini-- ", with_special_numbers);
+        bad("Infinit- ", with_special_numbers);
 
-        TEST_BAD_EXT("INFINITY", with_special_numbers);
-        TEST_BAD_EXT("infinity", with_special_numbers);
-        TEST_BAD_EXT("Infinitys", with_special_numbers);
+        bad("INFINITY", with_special_numbers);
+        bad("infinity", with_special_numbers);
+        bad("Infinitys", with_special_numbers);
 
-        TEST_GOOD_EXT("-Infinity", with_special_numbers);
-        TEST_GOOD_EXT(" -Infinity", with_special_numbers);
-        TEST_GOOD_EXT("-Infinity ", with_special_numbers);
-        TEST_GOOD_EXT("\t-Infinity", with_special_numbers);
-        TEST_GOOD_EXT("-Infinity\t", with_special_numbers);
-        TEST_GOOD_EXT("\r\n\t -Infinity\r\n\t ", with_special_numbers);
+        good("-Infinity", with_special_numbers);
+        good(" -Infinity", with_special_numbers);
+        good("-Infinity ", with_special_numbers);
+        good("\t-Infinity", with_special_numbers);
+        good("-Infinity\t", with_special_numbers);
+        good("\r\n\t -Infinity\r\n\t ", with_special_numbers);
         // trigger fast path
-        TEST_GOOD_EXT("-Infinity                          ", with_special_numbers);
+        good("-Infinity                          ", with_special_numbers);
 
-        TEST_BAD_EXT("-I       ", with_special_numbers);
-        TEST_BAD_EXT("-In      ", with_special_numbers);
-        TEST_BAD_EXT("-Inf     ", with_special_numbers);
-        TEST_BAD_EXT("-Infi    ", with_special_numbers);
-        TEST_BAD_EXT("-Infin   ", with_special_numbers);
-        TEST_BAD_EXT("-Infini  ", with_special_numbers);
-        TEST_BAD_EXT("-Infinit ", with_special_numbers);
+        bad("-I       ", with_special_numbers);
+        bad("-In      ", with_special_numbers);
+        bad("-Inf     ", with_special_numbers);
+        bad("-Infi    ", with_special_numbers);
+        bad("-Infin   ", with_special_numbers);
+        bad("-Infini  ", with_special_numbers);
+        bad("-Infinit ", with_special_numbers);
 
-        TEST_BAD_EXT("-I------- ", with_special_numbers);
-        TEST_BAD_EXT("-In------ ", with_special_numbers);
-        TEST_BAD_EXT("-Inf----- ", with_special_numbers);
-        TEST_BAD_EXT("-Infi---- ", with_special_numbers);
-        TEST_BAD_EXT("-Infin--- ", with_special_numbers);
-        TEST_BAD_EXT("-Infini-- ", with_special_numbers);
-        TEST_BAD_EXT("-Infinit- ", with_special_numbers);
+        bad("-I------- ", with_special_numbers);
+        bad("-In------ ", with_special_numbers);
+        bad("-Inf----- ", with_special_numbers);
+        bad("-Infi---- ", with_special_numbers);
+        bad("-Infin--- ", with_special_numbers);
+        bad("-Infini-- ", with_special_numbers);
+        bad("-Infinit- ", with_special_numbers);
 
-        TEST_BAD_EXT("-INFINITY", with_special_numbers);
-        TEST_BAD_EXT("-infinity", with_special_numbers);
-        TEST_BAD_EXT("-Infinitys", with_special_numbers);
+        bad("-INFINITY", with_special_numbers);
+        bad("-infinity", with_special_numbers);
+        bad("-Infinitys", with_special_numbers);
 
-        TEST_GOOD_EXT("NaN", with_special_numbers);
-        TEST_GOOD_EXT(" NaN", with_special_numbers);
-        TEST_GOOD_EXT("NaN ", with_special_numbers);
-        TEST_GOOD_EXT("\tNaN", with_special_numbers);
-        TEST_GOOD_EXT("NaN\t", with_special_numbers);
-        TEST_GOOD_EXT("\r\n\t NaN\r\n\t ", with_special_numbers);
+        good("NaN", with_special_numbers);
+        good(" NaN", with_special_numbers);
+        good("NaN ", with_special_numbers);
+        good("\tNaN", with_special_numbers);
+        good("NaN\t", with_special_numbers);
+        good("\r\n\t NaN\r\n\t ", with_special_numbers);
 
-        TEST_BAD_EXT("N  ", with_special_numbers);
-        TEST_BAD_EXT("Na ", with_special_numbers);
+        bad("N  ", with_special_numbers);
+        bad("Na ", with_special_numbers);
 
-        TEST_BAD_EXT("N-- ", with_special_numbers);
-        TEST_BAD_EXT("Na- ", with_special_numbers);
+        bad("N-- ", with_special_numbers);
+        bad("Na- ", with_special_numbers);
 
-        TEST_BAD_EXT("NAN", with_special_numbers);
-        TEST_BAD_EXT("nan", with_special_numbers);
+        bad("NAN", with_special_numbers);
+        bad("nan", with_special_numbers);
     }
 
     void
     testString()
     {
-        TEST_GOOD(R"jv( "x"   )jv");
-        TEST_GOOD(R"jv( "xy"  )jv");
-        TEST_GOOD(R"jv( "x y" )jv");
+        good(R"jv( "x"   )jv");
+        good(R"jv( "xy"  )jv");
+        good(R"jv( "x y" )jv");
 
         // escapes
-        TEST_GOOD(R"jv(" \" ")jv");
-        TEST_GOOD(R"jv(" \\ ")jv");
-        TEST_GOOD(R"jv(" \/ ")jv");
-        TEST_GOOD(R"jv(" \b ")jv");
-        TEST_GOOD(R"jv(" \f ")jv");
-        TEST_GOOD(R"jv(" \n ")jv");
-        TEST_GOOD(R"jv(" \r ")jv");
-        TEST_GOOD(R"jv(" \t ")jv");
+        good(R"jv(" \" ")jv");
+        good(R"jv(" \\ ")jv");
+        good(R"jv(" \/ ")jv");
+        good(R"jv(" \b ")jv");
+        good(R"jv(" \f ")jv");
+        good(R"jv(" \n ")jv");
+        good(R"jv(" \r ")jv");
+        good(R"jv(" \t ")jv");
 
         // utf-16 escapes
-        TEST_GOOD(R"jv( " \u0000 "       )jv");
-        TEST_GOOD(R"jv( " \ud7ff "       )jv");
-        TEST_GOOD(R"jv( " \ue000 "       )jv");
-        TEST_GOOD(R"jv( " \uffff "       )jv");
-        TEST_GOOD(R"jv( " \ud800\udc00 " )jv");
-        TEST_GOOD(R"jv( " \udbff\udfff " )jv");
-        TEST_GOOD(R"jv( " \n\u0000     " )jv");
+        good(R"jv( " \u0000 "       )jv");
+        good(R"jv( " \ud7ff "       )jv");
+        good(R"jv( " \ue000 "       )jv");
+        good(R"jv( " \uffff "       )jv");
+        good(R"jv( " \ud800\udc00 " )jv");
+        good(R"jv( " \udbff\udfff " )jv");
+        good(R"jv( " \n\u0000     " )jv");
 
         // escape in key
-        TEST_GOOD(R"jv( {" \n":null} )jv");
+        good(R"jv( {" \n":null} )jv");
 
         // incomplete
-        TEST_BAD ("\"");
+        bad("\"");
 
         // illegal control character
-        TEST_BAD ((string_view{ "\"" "\x00" "\"", 3 }));
-        TEST_BAD ("\"" "\x1f" "\"");
-        TEST_BAD ("\"" "\\n" "\x1f" "\"");
+        bad((string_view{ "\"" "\x00" "\"", 3 }));
+        bad("\"" "\x1f" "\"");
+        bad("\"" "\\n" "\x1f" "\"");
 
         // incomplete escape
-        TEST_BAD (R"jv( "\" )jv");
+        bad(R"jv( "\" )jv");
 
         // invalid escape
-        TEST_BAD (R"jv( "\z" )jv");
+        bad(R"jv( "\z" )jv");
 
         // utf-16 escape, fast path,
         // invalid surrogate
-        TEST_BAD (R"jv( " \u----       " )jv");
-        TEST_BAD (R"jv( " \ud---       " )jv");
-        TEST_BAD (R"jv( " \ud8--       " )jv");
-        TEST_BAD (R"jv( " \ud80-       " )jv");
+        bad(R"jv( " \u----       " )jv");
+        bad(R"jv( " \ud---       " )jv");
+        bad(R"jv( " \ud8--       " )jv");
+        bad(R"jv( " \ud80-       " )jv");
         // invalid low surrogate
-        TEST_BAD (R"jv( " \ud800------ " )jv");
-        TEST_BAD (R"jv( " \ud800\----- " )jv");
-        TEST_BAD (R"jv( " \ud800\u---- " )jv");
-        TEST_BAD (R"jv( " \ud800\ud--- " )jv");
-        TEST_BAD (R"jv( " \ud800\udc-- " )jv");
-        TEST_BAD (R"jv( " \ud800\udc0- " )jv");
+        bad(R"jv( " \ud800------ " )jv");
+        bad(R"jv( " \ud800\----- " )jv");
+        bad(R"jv( " \ud800\u---- " )jv");
+        bad(R"jv( " \ud800\ud--- " )jv");
+        bad(R"jv( " \ud800\udc-- " )jv");
+        bad(R"jv( " \ud800\udc0- " )jv");
         // illegal leading surrogate
-        TEST_BAD (R"jv( " \udc00       " )jv");
-        TEST_BAD (R"jv( " \udfff       " )jv");
+        bad(R"jv( " \udc00       " )jv");
+        bad(R"jv( " \udfff       " )jv");
         // illegal trailing surrogate
-        TEST_BAD (R"jv( " \ud800\udbff " )jv");
-        TEST_BAD (R"jv( " \ud800\ue000 " )jv");
+        bad(R"jv( " \ud800\udbff " )jv");
+        bad(R"jv( " \ud800\ue000 " )jv");
     }
 
     void
     testNumber()
     {
-        TEST_GOOD("0");
-        TEST_GOOD("0                                ");
-        TEST_GOOD("0e0                              ");
-        TEST_GOOD("0E0                              ");
-        TEST_GOOD("0e00                             ");
-        TEST_GOOD("0E01                             ");
-        TEST_GOOD("0e+0                             ");
-        TEST_GOOD("0e-0                             ");
-        TEST_GOOD("0.0                              ");
-        TEST_GOOD("0.01                             ");
-        TEST_GOOD("0.0e0                            ");
-        TEST_GOOD("0.01e+0                          ");
-        TEST_GOOD("0.02E-0                          ");
-        TEST_GOOD("1                                ");
-        TEST_GOOD("12                               ");
-        TEST_GOOD("1e0                              ");
-        TEST_GOOD("1E0                              ");
-        TEST_GOOD("1e00                             ");
-        TEST_GOOD("1E01                             ");
-        TEST_GOOD("1e+0                             ");
-        TEST_GOOD("1e-0                             ");
-        TEST_GOOD("1.0                              ");
-        TEST_GOOD("1.01                             ");
-        TEST_GOOD("1.0e0                            ");
-        TEST_GOOD("1.01e+0                          ");
-        TEST_GOOD("1.02E-0                          ");
-        TEST_GOOD("1.0");
+        good("0");
+        good("0                                ");
+        good("0e0                              ");
+        good("0E0                              ");
+        good("0e00                             ");
+        good("0E01                             ");
+        good("0e+0                             ");
+        good("0e-0                             ");
+        good("0.0                              ");
+        good("0.01                             ");
+        good("0.0e0                            ");
+        good("0.01e+0                          ");
+        good("0.02E-0                          ");
+        good("1                                ");
+        good("12                               ");
+        good("1e0                              ");
+        good("1E0                              ");
+        good("1e00                             ");
+        good("1E01                             ");
+        good("1e+0                             ");
+        good("1e-0                             ");
+        good("1.0                              ");
+        good("1.01                             ");
+        good("1.0e0                            ");
+        good("1.01e+0                          ");
+        good("1.02E-0                          ");
+        good("1.0");
 
-        TEST_GOOD("-0                               ");
-        TEST_GOOD("-0e0                             ");
-        TEST_GOOD("-0E0                             ");
-        TEST_GOOD("-0e00                            ");
-        TEST_GOOD("-0E01                            ");
-        TEST_GOOD("-0e+0                            ");
-        TEST_GOOD("-0e-0                            ");
-        TEST_GOOD("-0.0                             ");
-        TEST_GOOD("-0.01                            ");
-        TEST_GOOD("-0.0e0                           ");
-        TEST_GOOD("-0.01e+0                         ");
-        TEST_GOOD("-0.02E-0                         ");
-        TEST_GOOD("-1                               ");
-        TEST_GOOD("-12                              ");
-        TEST_GOOD("-1                               ");
-        TEST_GOOD("-1e0                             ");
-        TEST_GOOD("-1E0                             ");
-        TEST_GOOD("-1e00                            ");
-        TEST_GOOD("-1E01                            ");
-        TEST_GOOD("-1e+0                            ");
-        TEST_GOOD("-1e-0                            ");
-        TEST_GOOD("-1.0                             ");
-        TEST_GOOD("-1.01                            ");
-        TEST_GOOD("-1.0e0                           ");
-        TEST_GOOD("-1.01e+0                         ");
-        TEST_GOOD("-1.02E-0                         ");
-        TEST_GOOD("-1.0");
+        good("-0                               ");
+        good("-0e0                             ");
+        good("-0E0                             ");
+        good("-0e00                            ");
+        good("-0E01                            ");
+        good("-0e+0                            ");
+        good("-0e-0                            ");
+        good("-0.0                             ");
+        good("-0.01                            ");
+        good("-0.0e0                           ");
+        good("-0.01e+0                         ");
+        good("-0.02E-0                         ");
+        good("-1                               ");
+        good("-12                              ");
+        good("-1                               ");
+        good("-1e0                             ");
+        good("-1E0                             ");
+        good("-1e00                            ");
+        good("-1E01                            ");
+        good("-1e+0                            ");
+        good("-1e-0                            ");
+        good("-1.0                             ");
+        good("-1.01                            ");
+        good("-1.0e0                           ");
+        good("-1.01e+0                         ");
+        good("-1.02E-0                         ");
+        good("-1.0");
 
-        TEST_GOOD("1.1e309                          ");
-        TEST_GOOD("9223372036854775807              ");
-        TEST_GOOD("-9223372036854775807             ");
-        TEST_GOOD("18446744073709551615             ");
-        TEST_GOOD("-18446744073709551615            ");
+        good("1.1e309                          ");
+        good("9223372036854775807              ");
+        good("-9223372036854775807             ");
+        good("18446744073709551615             ");
+        good("-18446744073709551615            ");
 
-        TEST_GOOD("1234567890123456");
-        TEST_GOOD("-1234567890123456");
-        TEST_GOOD("10000000000000000000000000");
+        good("1234567890123456");
+        good("-1234567890123456");
+        good("10000000000000000000000000");
 
-        TEST_GOOD("0.900719925474099178             ");
-        TEST_GOOD("0.0e2147483648");
-        TEST_GOOD("10.0e2147483648");
-        TEST_GOOD("0.01e-2147483648");
+        good("0.900719925474099178             ");
+        good("0.0e2147483648");
+        good("10.0e2147483648");
+        good("0.01e-2147483648");
 
         // non-significant digits
-        TEST_GOOD("1000000000000000000000000        ");
-        TEST_GOOD("1000000000000000000000000e1      ");
-        TEST_GOOD("1000000000000000000000000.0      ");
-        TEST_GOOD("1000000000000000000000000.00     ");
-        TEST_GOOD("1000000000000000000000000.000000000001");
-        TEST_GOOD("1000000000000000000000000.0e1    ");
-        TEST_GOOD("1000000000000000000000000.0      ");
+        good("1000000000000000000000000        ");
+        good("1000000000000000000000000e1      ");
+        good("1000000000000000000000000.0      ");
+        good("1000000000000000000000000.00     ");
+        good("1000000000000000000000000.000000000001");
+        good("1000000000000000000000000.0e1    ");
+        good("1000000000000000000000000.0      ");
 
-        TEST_GOOD("1000000000.1000000000            ");
+        good("1000000000.1000000000            ");
 
-        TEST_BAD("");
-        TEST_BAD("-                                 ");
-        TEST_BAD("00                                ");
-        TEST_BAD("01                                ");
-        TEST_BAD("00.                               ");
-        TEST_BAD("00.0                              ");
-        TEST_BAD("-00                               ");
-        TEST_BAD("-01                               ");
-        TEST_BAD("-00.                              ");
-        TEST_BAD("-00.0                             ");
-        TEST_BAD("1a                                ");
-        TEST_BAD("-a                                ");
-        TEST_BAD(".                                 ");
-        TEST_BAD("1.                                ");
-        TEST_BAD("1+                                ");
-        TEST_BAD("0.0+                              ");
-        TEST_BAD("0.0e+                             ");
-        TEST_BAD("0.0e-                             ");
-        TEST_BAD("0.0e0-                            ");
-        TEST_BAD("0.0e                              ");
-        TEST_BAD("1eX                               ");
-        TEST_BAD("1000000000000000000000000.e       ");
-        TEST_BAD("0.");
-        TEST_BAD("0.0e+");
+        bad("");
+        bad("-                                 ");
+        bad("00                                ");
+        bad("01                                ");
+        bad("00.                               ");
+        bad("00.0                              ");
+        bad("-00                               ");
+        bad("-01                               ");
+        bad("-00.                              ");
+        bad("-00.0                             ");
+        bad("1a                                ");
+        bad("-a                                ");
+        bad(".                                 ");
+        bad("1.                                ");
+        bad("1+                                ");
+        bad("0.0+                              ");
+        bad("0.0e+                             ");
+        bad("0.0e-                             ");
+        bad("0.0e0-                            ");
+        bad("0.0e                              ");
+        bad("1eX                               ");
+        bad("1000000000000000000000000.e       ");
+        bad("0.");
+        bad("0.0e+");
     }
 
     void
     testArray()
     {
-        TEST_GOOD("[]");
-        TEST_GOOD("[ ]");
-        TEST_GOOD("[ \t ]");
-        TEST_GOOD("[ \"\" ]");
-        TEST_GOOD("[ \" \" ]");
-        TEST_GOOD("[ \"x\" ]");
-        TEST_GOOD("[ \"x\", \"y\" ]");
-        TEST_GOOD("[1,2,3]");
-        TEST_GOOD(" [1,2,3]");
-        TEST_GOOD("[1,2,3] ");
-        TEST_GOOD(" [1,2,3] ");
-        TEST_GOOD("[1,2,3]");
-        TEST_GOOD("[ 1,2,3]");
-        TEST_GOOD("[1 ,2,3]");
-        TEST_GOOD("[1, 2,3]");
-        TEST_GOOD("[1,2 ,3]");
-        TEST_GOOD("[1,2, 3]");
-        TEST_GOOD("[1,2,3 ]");
-        TEST_GOOD(" [  1 , 2 \t\n ,  \n3]");
+        good("[]");
+        good("[ ]");
+        good("[ \t ]");
+        good("[ \"\" ]");
+        good("[ \" \" ]");
+        good("[ \"x\" ]");
+        good("[ \"x\", \"y\" ]");
+        good("[1,2,3]");
+        good(" [1,2,3]");
+        good("[1,2,3] ");
+        good(" [1,2,3] ");
+        good("[1,2,3]");
+        good("[ 1,2,3]");
+        good("[1 ,2,3]");
+        good("[1, 2,3]");
+        good("[1,2 ,3]");
+        good("[1,2, 3]");
+        good("[1,2,3 ]");
+        good(" [  1 , 2 \t\n ,  \n3]");
 
-        TEST_BAD ("[");
-        TEST_BAD (" [");
-        TEST_BAD (" []]");
-        TEST_BAD ("[{]");
-        TEST_BAD (R"jv( [ null ; 1 ] )jv");
+        bad("[");
+        bad(" [");
+        bad(" []]");
+        bad("[{]");
+        bad(R"jv( [ null ; 1 ] )jv");
     }
 
     void
     testObject()
     {
-        TEST_GOOD("{}");
-        TEST_GOOD("{ }");
-        TEST_GOOD("{ \t }");
-        TEST_GOOD("{\"x\":null}");
-        TEST_GOOD("{ \"x\":null}");
-        TEST_GOOD("{\"x\" :null}");
-        TEST_GOOD("{\"x\": null}");
-        TEST_GOOD("{\"x\":null }");
-        TEST_GOOD("{ \"x\" : null }");
-        TEST_GOOD("{ \"x\" : {} }");
-        TEST_GOOD("{ \"x\" : [] }");
-        TEST_GOOD("{ \"x\" : { \"y\" : null } }");
-        TEST_GOOD("{ \"x\" : [{}] }");
-        TEST_GOOD("{\"x\\ny\\u0022\":null}");
-        TEST_GOOD("{ \"x\":1, \"y\":null}");
-        TEST_GOOD("{\"x\":1,\"y\":2,\"z\":3}");
-        TEST_GOOD(" {\"x\":1,\"y\":2,\"z\":3}");
-        TEST_GOOD("{\"x\":1,\"y\":2,\"z\":3} ");
-        TEST_GOOD(" {\"x\":1,\"y\":2,\"z\":3} ");
-        TEST_GOOD("{ \"x\":1,\"y\":2,\"z\":3}");
-        TEST_GOOD("{\"x\" :1,\"y\":2,\"z\":3}");
-        TEST_GOOD("{\"x\":1 ,\"y\":2,\"z\":3}");
-        TEST_GOOD("{\"x\":1,\"y\" :2,\"z\":3}");
-        TEST_GOOD("{\"x\":1,\"y\": 2,\"z\":3}");
-        TEST_GOOD("{\"x\":1,\"y\":2 ,\"z\":3}");
-        TEST_GOOD("{\"x\":1,\"y\":2, \"z\":3}");
-        TEST_GOOD("{\"x\":1,\"y\":2, \"z\" :3}");
-        TEST_GOOD("{\"x\":1,\"y\":2, \"z\": 3}");
-        TEST_GOOD("{\"x\":1,\"y\":2, \"z\":3 }");
-        TEST_GOOD(" \t { \"x\" \n  :   1, \"y\" :2, \"z\" : 3} \n");
+        good("{}");
+        good("{ }");
+        good("{ \t }");
+        good("{\"x\":null}");
+        good("{ \"x\":null}");
+        good("{\"x\" :null}");
+        good("{\"x\": null}");
+        good("{\"x\":null }");
+        good("{ \"x\" : null }");
+        good("{ \"x\" : {} }");
+        good("{ \"x\" : [] }");
+        good("{ \"x\" : { \"y\" : null } }");
+        good("{ \"x\" : [{}] }");
+        good("{\"x\\ny\\u0022\":null}");
+        good("{ \"x\":1, \"y\":null}");
+        good("{\"x\":1,\"y\":2,\"z\":3}");
+        good(" {\"x\":1,\"y\":2,\"z\":3}");
+        good("{\"x\":1,\"y\":2,\"z\":3} ");
+        good(" {\"x\":1,\"y\":2,\"z\":3} ");
+        good("{ \"x\":1,\"y\":2,\"z\":3}");
+        good("{\"x\" :1,\"y\":2,\"z\":3}");
+        good("{\"x\":1 ,\"y\":2,\"z\":3}");
+        good("{\"x\":1,\"y\" :2,\"z\":3}");
+        good("{\"x\":1,\"y\": 2,\"z\":3}");
+        good("{\"x\":1,\"y\":2 ,\"z\":3}");
+        good("{\"x\":1,\"y\":2, \"z\":3}");
+        good("{\"x\":1,\"y\":2, \"z\" :3}");
+        good("{\"x\":1,\"y\":2, \"z\": 3}");
+        good("{\"x\":1,\"y\":2, \"z\":3 }");
+        good(" \t { \"x\" \n  :   1, \"y\" :2, \"z\" : 3} \n");
 
-        TEST_GOOD("[{\"x\":[{\"y\":null}]}]");
+        good("[{\"x\":[{\"y\":null}]}]");
 
-        TEST_BAD ("{");
-        TEST_BAD (" {");
-        TEST_BAD (" {}}");
-        TEST_BAD ("{{}}");
-        TEST_BAD ("{[]}");
+        bad("{");
+        bad(" {");
+        bad(" {}}");
+        bad("{{}}");
+        bad("{[]}");
 
-        TEST_BAD (R"jv( {"x";null} )jv");
-        TEST_BAD (R"jv( {"x":null . "y":0} )jv");
+        bad(R"jv( {"x";null} )jv");
+        bad(R"jv( {"x":null . "y":0} )jv");
     }
 
     void
     testParser()
     {
-        auto const check =
-        [this]( string_view s,
-            bool done)
+        auto const check = [this](
+            string_view s,
+            bool done,
+            source_location const& loc = BOOST_CURRENT_LOCATION)
         {
             fail_parser p;
             system::error_code ec;
@@ -712,12 +778,12 @@ public:
                 true,
                 s.data(), s.size(),
                 ec);
-            if(! BOOST_TEST(! ec))
+            if(! BOOST_TEST(! ec, loc))
             {
                 log << "    failed to parse: " << s << '\n';
                 return;
             }
-            BOOST_TEST(done == p.done());
+            BOOST_TEST(done == p.done(), loc);
         };
 
         // done()
@@ -774,7 +840,7 @@ public:
                         BOOST_JSON_STACK_BUFFER_SIZE-4, '*') + esc;
                     std::string const s =
                         "{\"" + big + "\":\"" + big + "\"}";
-                    TEST_GOOD_ONE(s);
+                    good_one(s);
                 }
             }
             {
@@ -784,7 +850,7 @@ public:
                         BOOST_JSON_STACK_BUFFER_SIZE+ 1, '*');
                 std::string s;
                 s = "{\"" + big + "\":\"" + big + "\"}";
-                TEST_GOOD_ONE(s);
+                good_one(s);
             }
         }
 
@@ -850,14 +916,14 @@ public:
                         v.text.size(),
                         ec);
                     if(! ec)
-                        TEST_GOOD_ONE_EXT(v.text, po);
+                        good_one(v.text, po);
                     else
-                        TEST_BAD_ONE_EXT(v.text, po);
+                        bad_one(v.text, po);
                 }
                 else if(v.result == 'y')
-                    TEST_GOOD_ONE_EXT(v.text, po);
+                    good_one(v.text, po);
                 else
-                    TEST_BAD_ONE_EXT(v.text, po);
+                    bad_one(v.text, po);
             }
         }
     }
@@ -951,7 +1017,7 @@ public:
             "<i>B</i>, also written as <i>A</i> \\\\ <i>B</i>, i.e. {<i>x</i> | <i>x</i> \\u2208 "
             "<i>A</i> and <i>x</i> \\u2209 <i>B</i>}<br>\\r\\n      example: [0, 2) \\u2212 (1, "
             "3) = [0, 1]\\r\\n    </li>\\r\\n  </ul>\\r\\n</ul>\\r\\n</section>\\r\\n\"\n";
-        TEST_GOOD_ONE(s);
+        good_one(s);
     }
 
     class comment_parser
@@ -1027,8 +1093,8 @@ public:
         parse_options enabled;
         enabled.allow_comments = true;
 
-        const auto replace_and_test =
-            [&](string_view s)
+        auto const replace_and_test = [&](
+            string_view s, source_location const& loc = BOOST_CURRENT_LOCATION)
         {
             static std::vector<string_view> comments =
             {
@@ -1066,16 +1132,16 @@ public:
                 }
                 formatted += c;
             }
-            TEST_BAD_EXT(formatted, disabled);
-            TEST_GOOD_EXT(formatted, enabled);
+            bad(formatted, disabled, loc);
+            good(formatted, enabled, loc);
 
             {
                 // test the handler
                 comment_parser p;
                 system::error_code ec;
                 p.write( formatted.data(), formatted.size(), ec );
-                BOOST_TEST(! ec);
-                BOOST_TEST(p.captured() == just_comments);
+                BOOST_TEST(! ec, loc);
+                BOOST_TEST(p.captured() == just_comments, loc);
             }
         };
 
@@ -1096,21 +1162,21 @@ public:
         replace_and_test("@{@\"a\"@:@1@,@\"b\"@:@2@}");
 
         // no following token
-        TEST_BAD_EXT("1/", enabled);
+        bad("1/", enabled);
         // bad second token
-        TEST_BAD_EXT("1/x", enabled);
+        bad("1/x", enabled);
         // no comment close
-        TEST_BAD_EXT("1/*", enabled);
-        TEST_BAD_EXT("1/**", enabled);
-        TEST_BAD_EXT("[1 //, 2]", enabled);
+        bad("1/*", enabled);
+        bad("1/**", enabled);
+        bad("[1 //, 2]", enabled);
 
         // just comment
-        TEST_BAD_EXT("//\n", enabled);
-        TEST_BAD_EXT("//", enabled);
-        TEST_BAD_EXT("/**/", enabled);
+        bad("//\n", enabled);
+        bad("//", enabled);
+        bad("/**/", enabled);
 
         // no newline at EOF
-        TEST_GOOD_EXT("1//", enabled);
+        good("1//", enabled);
 
         {
             parse_options po;
@@ -1134,37 +1200,37 @@ public:
         parse_options enabled;
         enabled.allow_trailing_commas = true;
 
-        TEST_BAD_EXT("[1,]", disabled);
-        TEST_GOOD_EXT("[1,]", enabled);
+        bad("[1,]", disabled);
+        good("[1,]", enabled);
 
-        TEST_BAD_EXT("[1,[],]", disabled);
-        TEST_GOOD_EXT("[1,[],]", enabled);
+        bad("[1,[],]", disabled);
+        good("[1,[],]", enabled);
 
-        TEST_BAD_EXT("[1,{},]", disabled);
-        TEST_GOOD_EXT("[1,{},]", enabled);
+        bad("[1,{},]", disabled);
+        good("[1,{},]", enabled);
 
-        TEST_BAD_EXT("[1,{\"a\":1,},]", disabled);
-        TEST_GOOD_EXT("[1,{\"a\":1,},]", enabled);
+        bad("[1,{\"a\":1,},]", disabled);
+        good("[1,{\"a\":1,},]", enabled);
 
-        TEST_BAD_EXT("{\"a\":1,}", disabled);
-        TEST_GOOD_EXT("{\"a\":1,}", enabled);
+        bad("{\"a\":1,}", disabled);
+        good("{\"a\":1,}", enabled);
 
-        TEST_BAD_EXT("{\"a\":[1,],}", disabled);
-        TEST_GOOD_EXT("{\"a\":[1,],}", enabled);
+        bad("{\"a\":[1,],}", disabled);
+        good("{\"a\":[1,],}", enabled);
 
-        TEST_BAD_EXT("{\"a\":[],}", disabled);
-        TEST_GOOD_EXT("{\"a\":[],}", enabled);
+        bad("{\"a\":[],}", disabled);
+        good("{\"a\":[],}", enabled);
 
-        TEST_BAD_EXT("{\"a\":[{}, [1,]],}", disabled);
-        TEST_GOOD_EXT("{\"a\":[{}, [1,]],}", enabled);
+        bad("{\"a\":[{}, [1,]],}", disabled);
+        good("{\"a\":[{}, [1,]],}", enabled);
 
-        TEST_BAD_EXT("[[[[[[[],],],],],],]", disabled);
-        TEST_GOOD_EXT("[[[[[[[],],],],],],]", enabled);
+        bad("[[[[[[[],],],],],],]", disabled);
+        good("[[[[[[[],],],],],],]", enabled);
 
-        TEST_BAD_EXT(
+        bad(
             "{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{},},},},},},}",
             disabled);
-        TEST_GOOD_EXT(
+        good(
             "{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{},},},},},},}",
             enabled);
     }
@@ -1239,171 +1305,172 @@ public:
     void
     testUTF8Validation()
     {
-        TEST_GOOD("\"\xc2\x80----------\"");
-        TEST_GOOD("\"\xc2\xbf----------\"");
-        TEST_GOOD("\"\xdf\x80----------\"");
-        TEST_GOOD("\"\xdf\xbf----------\"");
+        good("\"\xc2\x80----------\"");
+        good("\"\xc2\xbf----------\"");
+        good("\"\xdf\x80----------\"");
+        good("\"\xdf\xbf----------\"");
 
-        TEST_GOOD("\"\xcf\x90----------\"");
+        good("\"\xcf\x90----------\"");
 
-        TEST_GOOD("\"\xe0\xa0\x80----------\"");
-        TEST_GOOD("\"\xe0\xa0\xbf----------\"");
-        TEST_GOOD("\"\xe0\xbf\x80----------\"");
-        TEST_GOOD("\"\xe0\xbf\xbf----------\"");
+        good("\"\xe0\xa0\x80----------\"");
+        good("\"\xe0\xa0\xbf----------\"");
+        good("\"\xe0\xbf\x80----------\"");
+        good("\"\xe0\xbf\xbf----------\"");
 
-        TEST_GOOD("\"\xe0\xb0\x90----------\"");
+        good("\"\xe0\xb0\x90----------\"");
 
-        TEST_GOOD("\"\xe1\x80\x80----------\"");
-        TEST_GOOD("\"\xe1\xbf\x80----------\"");
-        TEST_GOOD("\"\xec\x80\x80----------\"");
-        TEST_GOOD("\"\xec\xbf\x80----------\"");
-        TEST_GOOD("\"\xe1\x80\xbf----------\"");
-        TEST_GOOD("\"\xe1\xbf\xbf----------\"");
-        TEST_GOOD("\"\xec\x80\xbf----------\"");
-        TEST_GOOD("\"\xec\xbf\xbf----------\"");
+        good("\"\xe1\x80\x80----------\"");
+        good("\"\xe1\xbf\x80----------\"");
+        good("\"\xec\x80\x80----------\"");
+        good("\"\xec\xbf\x80----------\"");
+        good("\"\xe1\x80\xbf----------\"");
+        good("\"\xe1\xbf\xbf----------\"");
+        good("\"\xec\x80\xbf----------\"");
+        good("\"\xec\xbf\xbf----------\"");
 
-        TEST_GOOD("\"\xe6\x90\x90----------\"");
+        good("\"\xe6\x90\x90----------\"");
 
-        TEST_GOOD("\"\xed\x80\x80----------\"");
-        TEST_GOOD("\"\xed\x80\xbf----------\"");
-        TEST_GOOD("\"\xed\x9f\x80----------\"");
-        TEST_GOOD("\"\xed\x9f\xbf----------\"");
+        good("\"\xed\x80\x80----------\"");
+        good("\"\xed\x80\xbf----------\"");
+        good("\"\xed\x9f\x80----------\"");
+        good("\"\xed\x9f\xbf----------\"");
 
-        TEST_GOOD("\"\xed\x90\x90----------\"");
+        good("\"\xed\x90\x90----------\"");
 
-        TEST_GOOD("\"\xee\x80\x80----------\"");
-        TEST_GOOD("\"\xee\xbf\x80----------\"");
-        TEST_GOOD("\"\xef\x80\x80----------\"");
-        TEST_GOOD("\"\xef\xbf\x80----------\"");
-        TEST_GOOD("\"\xee\x80\xbf----------\"");
-        TEST_GOOD("\"\xee\xbf\xbf----------\"");
-        TEST_GOOD("\"\xef\x80\xbf----------\"");
-        TEST_GOOD("\"\xef\xbf\xbf----------\"");
+        good("\"\xee\x80\x80----------\"");
+        good("\"\xee\xbf\x80----------\"");
+        good("\"\xef\x80\x80----------\"");
+        good("\"\xef\xbf\x80----------\"");
+        good("\"\xee\x80\xbf----------\"");
+        good("\"\xee\xbf\xbf----------\"");
+        good("\"\xef\x80\xbf----------\"");
+        good("\"\xef\xbf\xbf----------\"");
 
-        TEST_GOOD("\"\xee\x90\x90----------\"");
-        TEST_GOOD("\"\xef\x90\x90----------\"");
+        good("\"\xee\x90\x90----------\"");
+        good("\"\xef\x90\x90----------\"");
 
-        TEST_GOOD("\"\xf0\x90\x80\x80----------\"");
-        TEST_GOOD("\"\xf0\x90\xbf\x80----------\"");
-        TEST_GOOD("\"\xf0\x90\xbf\xbf----------\"");
-        TEST_GOOD("\"\xf0\x90\x80\xbf----------\"");
-        TEST_GOOD("\"\xf0\xbf\x80\x80----------\"");
-        TEST_GOOD("\"\xf0\xbf\xbf\x80----------\"");
-        TEST_GOOD("\"\xf0\xbf\xbf\xbf----------\"");
-        TEST_GOOD("\"\xf0\xbf\x80\xbf----------\"");
+        good("\"\xf0\x90\x80\x80----------\"");
+        good("\"\xf0\x90\xbf\x80----------\"");
+        good("\"\xf0\x90\xbf\xbf----------\"");
+        good("\"\xf0\x90\x80\xbf----------\"");
+        good("\"\xf0\xbf\x80\x80----------\"");
+        good("\"\xf0\xbf\xbf\x80----------\"");
+        good("\"\xf0\xbf\xbf\xbf----------\"");
+        good("\"\xf0\xbf\x80\xbf----------\"");
 
-        TEST_GOOD("\"\xf0\xA0\x90\x90----------\"");
+        good("\"\xf0\xA0\x90\x90----------\"");
 
-        TEST_GOOD("\"\xf4\x80\x80\x80----------\"");
-        TEST_GOOD("\"\xf4\x80\xbf\x80----------\"");
-        TEST_GOOD("\"\xf4\x80\xbf\xbf----------\"");
-        TEST_GOOD("\"\xf4\x80\x80\xbf----------\"");
-        TEST_GOOD("\"\xf4\x8f\x80\x80----------\"");
-        TEST_GOOD("\"\xf4\x8f\xbf\x80----------\"");
-        TEST_GOOD("\"\xf4\x8f\xbf\xbf----------\"");
-        TEST_GOOD("\"\xf4\x8f\x80\xbf----------\"");
+        good("\"\xf4\x80\x80\x80----------\"");
+        good("\"\xf4\x80\xbf\x80----------\"");
+        good("\"\xf4\x80\xbf\xbf----------\"");
+        good("\"\xf4\x80\x80\xbf----------\"");
+        good("\"\xf4\x8f\x80\x80----------\"");
+        good("\"\xf4\x8f\xbf\x80----------\"");
+        good("\"\xf4\x8f\xbf\xbf----------\"");
+        good("\"\xf4\x8f\x80\xbf----------\"");
 
-        TEST_GOOD("\"\xf4\x88\x90\x90----------\"");
+        good("\"\xf4\x88\x90\x90----------\"");
 
-        TEST_GOOD("\"\xf1\x80\x80\x80----------\"");
-        TEST_GOOD("\"\xf1\x80\xbf\x80----------\"");
-        TEST_GOOD("\"\xf1\x80\xbf\xbf----------\"");
-        TEST_GOOD("\"\xf1\x80\x80\xbf----------\"");
-        TEST_GOOD("\"\xf1\xbf\x80\x80----------\"");
-        TEST_GOOD("\"\xf1\xbf\xbf\x80----------\"");
-        TEST_GOOD("\"\xf1\xbf\xbf\xbf----------\"");
-        TEST_GOOD("\"\xf1\xbf\x80\xbf----------\"");
-        TEST_GOOD("\"\xf3\x80\x80\x80----------\"");
-        TEST_GOOD("\"\xf3\x80\xbf\x80----------\"");
-        TEST_GOOD("\"\xf3\x80\xbf\xbf----------\"");
-        TEST_GOOD("\"\xf3\x80\x80\xbf----------\"");
-        TEST_GOOD("\"\xf3\xbf\x80\x80----------\"");
-        TEST_GOOD("\"\xf3\xbf\xbf\x80----------\"");
-        TEST_GOOD("\"\xf3\xbf\xbf\xbf----------\"");
-        TEST_GOOD("\"\xf3\xbf\x80\xbf----------\"");
+        good("\"\xf1\x80\x80\x80----------\"");
+        good("\"\xf1\x80\xbf\x80----------\"");
+        good("\"\xf1\x80\xbf\xbf----------\"");
+        good("\"\xf1\x80\x80\xbf----------\"");
+        good("\"\xf1\xbf\x80\x80----------\"");
+        good("\"\xf1\xbf\xbf\x80----------\"");
+        good("\"\xf1\xbf\xbf\xbf----------\"");
+        good("\"\xf1\xbf\x80\xbf----------\"");
+        good("\"\xf3\x80\x80\x80----------\"");
+        good("\"\xf3\x80\xbf\x80----------\"");
+        good("\"\xf3\x80\xbf\xbf----------\"");
+        good("\"\xf3\x80\x80\xbf----------\"");
+        good("\"\xf3\xbf\x80\x80----------\"");
+        good("\"\xf3\xbf\xbf\x80----------\"");
+        good("\"\xf3\xbf\xbf\xbf----------\"");
+        good("\"\xf3\xbf\x80\xbf----------\"");
 
-        TEST_GOOD("\"\xf2\x90\x90\x90----------\"");
+        good("\"\xf2\x90\x90\x90----------\"");
 
-        TEST_BAD("\"\xc0\x80----------\"");
-        TEST_BAD("\"\xc2\xc0----------\"");
-        TEST_BAD("\"\xef\x80----------\"");
-        TEST_BAD("\"\xdf\x70----------\"");
+        bad("\"\xc0\x80----------\"");
+        bad("\"\xc2\xc0----------\"");
+        bad("\"\xef\x80----------\"");
+        bad("\"\xdf\x70----------\"");
 
-        TEST_BAD("\"\xff\x90----------\"");
+        bad("\"\xff\x90----------\"");
 
-        TEST_BAD("\"\xe0\x9f\x80----------\"");
-        TEST_BAD("\"\xe0\xa0\xfe----------\"");
-        TEST_BAD("\"\xc0\xff\xff----------\"");
-        TEST_BAD("\"\xc0\xbf\x76----------\"");
+        bad("\"\xe0\x9f\x80----------\"");
+        bad("\"\xe0\xa0\xfe----------\"");
+        bad("\"\xc0\xff\xff----------\"");
+        bad("\"\xc0\xbf\x76----------\"");
 
-        TEST_BAD("\"\xe0\xde\x90----------\"");
+        bad("\"\xe0\xde\x90----------\"");
 
-        TEST_BAD("\"\xe1\x80\x7f----------\"");
-        TEST_BAD("\"\xe1\x7f\x80----------\"");
-        TEST_BAD("\"\xec\xff\x80----------\"");
-        TEST_BAD("\"\xef\x7f\x80----------\"");
-        TEST_BAD("\"\xe1\x80\xff----------\"");
-        TEST_BAD("\"\xe1\xbf\x0f----------\"");
-        TEST_BAD("\"\xec\x01\xff----------\"");
-        TEST_BAD("\"\xec\xff\xff----------\"");
+        bad("\"\xe1\x80\x7f----------\"");
+        bad("\"\xe1\x7f\x80----------\"");
+        bad("\"\xec\xff\x80----------\"");
+        bad("\"\xef\x7f\x80----------\"");
+        bad("\"\xe1\x80\xff----------\"");
+        bad("\"\xe1\xbf\x0f----------\"");
+        bad("\"\xec\x01\xff----------\"");
+        bad("\"\xec\xff\xff----------\"");
 
-        TEST_BAD("\"\xe6\x60\x90----------\"");
+        bad("\"\xe6\x60\x90----------\"");
 
-        TEST_BAD("\"\xed\x7f\x80----------\"");
-        TEST_BAD("\"\xed\xa0\xbf----------\"");
-        TEST_BAD("\"\xed\xbf\x80----------\"");
-        TEST_BAD("\"\xed\x9f\x7f----------\"");
+        bad("\"\xed\x7f\x80----------\"");
+        bad("\"\xed\xa0\xbf----------\"");
+        bad("\"\xed\xbf\x80----------\"");
+        bad("\"\xed\x9f\x7f----------\"");
 
-        TEST_BAD("\"\xed\xce\xbf----------\"");
+        bad("\"\xed\xce\xbf----------\"");
 
-        TEST_BAD("\"\xee\x7f\x80----------\"");
-        TEST_BAD("\"\xee\xcc\x80----------\"");
-        TEST_BAD("\"\xef\x80\xcc----------\"");
-        TEST_BAD("\"\xef\xbf\x0a----------\"");
-        TEST_BAD("\"\xee\x50\xbf----------\"");
-        TEST_BAD("\"\xee\xef\xbf----------\"");
-        TEST_BAD("\"\xef\xf0\xff----------\"");
-        TEST_BAD("\"\xef\xaa\xee----------\"");
+        bad("\"\xee\x7f\x80----------\"");
+        bad("\"\xee\xcc\x80----------\"");
+        bad("\"\xef\x80\xcc----------\"");
+        bad("\"\xef\xbf\x0a----------\"");
+        bad("\"\xee\x50\xbf----------\"");
+        bad("\"\xee\xef\xbf----------\"");
+        bad("\"\xef\xf0\xff----------\"");
+        bad("\"\xef\xaa\xee----------\"");
 
-        TEST_BAD("\"\xc0\x90\x90----------\"");
-        TEST_BAD("\"\xc1\x90\x90----------\"");
+        bad("\"\xc0\x90\x90----------\"");
+        bad("\"\xc1\x90\x90----------\"");
 
-        TEST_BAD("\"\xff\x90\x80\x80----------\"");
-        TEST_BAD("\"\xfe\x90\xbf\x80----------\"");
-        TEST_BAD("\"\xfd\x90\xbf\xbf----------\"");
-        TEST_BAD("\"\xf0\xff\x80\xbf----------\"");
-        TEST_BAD("\"\xf0\xfe\x80\x80----------\"");
-        TEST_BAD("\"\xf0\xfd\xbf\x80----------\"");
-        TEST_BAD("\"\xf0\x90\x80\xff----------\"");
-        TEST_BAD("\"\xf0\x90\x5f\x80----------\"");
+        bad("\"\xff\x90\x80\x80----------\"");
+        bad("\"\xfe\x90\xbf\x80----------\"");
+        bad("\"\xfd\x90\xbf\xbf----------\"");
+        bad("\"\xf0\xff\x80\xbf----------\"");
+        bad("\"\xf0\xfe\x80\x80----------\"");
+        bad("\"\xf0\xfd\xbf\x80----------\"");
+        bad("\"\xf0\x90\x80\xff----------\"");
+        bad("\"\xf0\x90\x5f\x80----------\"");
 
-        TEST_BAD("\"\xf4\x70\x80\x80----------\"");
-        TEST_BAD("\"\xf4\x80\x70\x80----------\"");
-        TEST_BAD("\"\xf4\x80\xbf\x70----------\"");
-        TEST_BAD("\"\xf4\xce\x80\xbf----------\"");
-        TEST_BAD("\"\xf4\x8f\xce\x80----------\"");
-        TEST_BAD("\"\xf4\x8f\xbf\xce----------\"");
+        bad("\"\xf4\x70\x80\x80----------\"");
+        bad("\"\xf4\x80\x70\x80----------\"");
+        bad("\"\xf4\x80\xbf\x70----------\"");
+        bad("\"\xf4\xce\x80\xbf----------\"");
+        bad("\"\xf4\x8f\xce\x80----------\"");
+        bad("\"\xf4\x8f\xbf\xce----------\"");
 
-        TEST_BAD("\"\xf1\x7f\xbf\xbf----------\"");
-        TEST_BAD("\"\xf2\x80\x7f\xbf----------\"");
-        TEST_BAD("\"\xf3\x80\xbf\xce----------\"");
+        bad("\"\xf1\x7f\xbf\xbf----------\"");
+        bad("\"\xf2\x80\x7f\xbf----------\"");
+        bad("\"\xf3\x80\xbf\xce----------\"");
 
         // utf8 after escape
-        TEST_GOOD("\"\\u0000 \xf3\xbf\x80\xbf\xf3\xbf\x80\xbf\"");
-        TEST_GOOD("\"\\ud7ff\xf4\x80\xbf\xbf       \"");
-        TEST_GOOD("\"\\ue000            \xef\xbf\x80\"");
-        TEST_GOOD("\"\xef\xbf\x80 \\uffff \xef\xbf\x80\"");
-        TEST_GOOD("\"\xc2\x80\xc2\x80\xc2\x80\xc2\x80\xc2\x80\\ud800\\udc00 \"");
-        TEST_GOOD("\"\\udbff\\udfff \xe1\x80\xbf  \\udbff\\udfff \xe1\x80\xbf\"");
-        TEST_GOOD("\"\\u0000\xe1\x80\xbf     \"");
-        TEST_BAD("\"\\t\\t\xf4\x70\x80\x80----------\"");
-        TEST_BAD("\"\\n\xf4\x80\x70\x80----------\"");
-        TEST_BAD("\"\\n\xf4\x80\xbf\x70-\\n\xf4\x80\xbf\x70\"");
+        good("\"\\u0000 \xf3\xbf\x80\xbf\xf3\xbf\x80\xbf\"");
+        good("\"\\ud7ff\xf4\x80\xbf\xbf       \"");
+        good("\"\\ue000            \xef\xbf\x80\"");
+        good("\"\xef\xbf\x80 \\uffff \xef\xbf\x80\"");
+        good("\"\xc2\x80\xc2\x80\xc2\x80\xc2\x80\xc2\x80\\ud800\\udc00 \"");
+        good("\"\\udbff\\udfff \xe1\x80\xbf  \\udbff\\udfff \xe1\x80\xbf\"");
+        good("\"\\u0000\xe1\x80\xbf     \"");
+        bad("\"\\t\\t\xf4\x70\x80\x80----------\"");
+        bad("\"\\n\xf4\x80\x70\x80----------\"");
+        bad("\"\\n\xf4\x80\xbf\x70-\\n\xf4\x80\xbf\x70\"");
 
-        const auto check =
-            [this](string_view expected)
+        auto const check = [this](
+            string_view expected,
+            source_location const& loc = BOOST_CURRENT_LOCATION)
         {
-            TEST_GOOD(expected);
+            good(expected, loc);
             for (std::size_t write_size : {2, 4, 8})
             {
                 utf8_parser p;
@@ -1414,11 +1481,12 @@ public:
                     auto more = (i < expected.size() - write_size);
                     auto written = p.write(more,
                             expected.data() + i, write_size, ec);
-                    BOOST_TEST(written == write_size);
-                    BOOST_TEST(! ec);
+                    BOOST_TEST(written == write_size, loc);
+                    BOOST_TEST(! ec, loc);
                 }
-                BOOST_TEST(p.captured() ==
-                    expected.substr(1, expected.size() - 2));
+                BOOST_TEST(
+                    p.captured() == expected.substr(1, expected.size() - 2),
+                    loc);
             }
         };
 
@@ -1431,29 +1499,29 @@ public:
     testUTF16Validation()
     {
         // Invalid surrogate pair cases
-        TEST_BAD("{\"command\":\"\\uDF3E\\uDEC2\"}");     // Illegal leading surrogate
-        TEST_BAD("{\"command\":\"\\uD83D\\uD83D\"}");     // Illegal trailing surrogate
-        TEST_BAD("{\"command\":\"\\uDF3E\\uD83D\"}");     // Illegal leading & trailing surrogate
-        TEST_BAD("{\"command\":\"\\uD83D\"}");            // Half a surrogate (Valid leading surrogate)
-        TEST_BAD("{\"command\":\"\\uDF3E\"}");            // Half a surrogate (Illegal leading surrogate)
+        bad("{\"command\":\"\\uDF3E\\uDEC2\"}");     // Illegal leading surrogate
+        bad("{\"command\":\"\\uD83D\\uD83D\"}");     // Illegal trailing surrogate
+        bad("{\"command\":\"\\uDF3E\\uD83D\"}");     // Illegal leading & trailing surrogate
+        bad("{\"command\":\"\\uD83D\"}");            // Half a surrogate (Valid leading surrogate)
+        bad("{\"command\":\"\\uDF3E\"}");            // Half a surrogate (Illegal leading surrogate)
 
         // Allow invalid UTF-16
         parse_options opt;
         opt.allow_invalid_utf16 = true;
 
-        TEST_GOOD_EXT("{\"command\":\"\\uDF3E\\uDEC2\"}", opt);  // Illegal leading surrogate
-        TEST_GOOD_EXT("{\"command\":\"\\uD83D\\uD83D\"}", opt);  // Illegal trailing surrogate
-        TEST_GOOD_EXT("{\"command\":\"\\uDF3E\\uD83D\"}", opt);  // Illegal leading & trailing surrogate
-        TEST_GOOD_EXT("{\"command\":\"\\uD83D\"}", opt);         // Half a surrogate (Valid leading surrogate)
-        TEST_GOOD_EXT("{\"command\":\"\\uDF3E\"}", opt);         // Half a surrogate (Illegal leading surrogate)
-        TEST_GOOD_EXT("{\"command\":\"\\uD800uDC00\"}", opt);    // Unseparated surrogates
-        TEST_GOOD_EXT("{\"command\":\"\\uD800\\n\"}", opt);             // Half a surrogate (Valid leading surrogate), followed by a newline character
-        TEST_GOOD_EXT("{\"command\":\"\\uD800\\n\\uDC00\"}", opt);      // Half a surrogate (Valid leading surrogate), followed by a newline character, followed by a half surrogate
-        TEST_GOOD_EXT("{\"command\":\"\\uD800\\uD800\\uDC00\"}", opt);  // Half a surrogate (Valid leading surrogate), followed by a valid surrogate pair
-        TEST_GOOD_EXT("{\"command\":\"\\uDC00\\uD800\\uDC00\"}", opt);  // Half a surrogate (Illegal leading surrogate), followed by a valid surrogate pair
-        TEST_GOOD_EXT("{\"command\":\"\\uD800\\uE000\\uDC00\"}", opt);  // Half a surrogate (Valid leading surrogate), followed by a valid utf-8, followed by a half surrogate
-        TEST_GOOD_EXT("{\"command\":\"\\uD800\\uDC00\\uD800\\uE000\"}", opt);    // Valid surrogate pair, followed by a half surrogate, followed by a valid utf-8
-        TEST_GOOD_EXT("{\"command\":\"\\uD800\\uDC00\\uD800\\uD800\\uDC00\"}", opt);    // Valid surrogate pair, followed by a half surrogate, followed by a valid surrogate pair
+        good("{\"command\":\"\\uDF3E\\uDEC2\"}", opt);  // Illegal leading surrogate
+        good("{\"command\":\"\\uD83D\\uD83D\"}", opt);  // Illegal trailing surrogate
+        good("{\"command\":\"\\uDF3E\\uD83D\"}", opt);  // Illegal leading & trailing surrogate
+        good("{\"command\":\"\\uD83D\"}", opt);         // Half a surrogate (Valid leading surrogate)
+        good("{\"command\":\"\\uDF3E\"}", opt);         // Half a surrogate (Illegal leading surrogate)
+        good("{\"command\":\"\\uD800uDC00\"}", opt);    // Unseparated surrogates
+        good("{\"command\":\"\\uD800\\n\"}", opt);             // Half a surrogate (Valid leading surrogate), followed by a newline character
+        good("{\"command\":\"\\uD800\\n\\uDC00\"}", opt);      // Half a surrogate (Valid leading surrogate), followed by a newline character, followed by a half surrogate
+        good("{\"command\":\"\\uD800\\uD800\\uDC00\"}", opt);  // Half a surrogate (Valid leading surrogate), followed by a valid surrogate pair
+        good("{\"command\":\"\\uDC00\\uD800\\uDC00\"}", opt);  // Half a surrogate (Illegal leading surrogate), followed by a valid surrogate pair
+        good("{\"command\":\"\\uD800\\uE000\\uDC00\"}", opt);  // Half a surrogate (Valid leading surrogate), followed by a valid utf-8, followed by a half surrogate
+        good("{\"command\":\"\\uD800\\uDC00\\uD800\\uE000\"}", opt);    // Valid surrogate pair, followed by a half surrogate, followed by a valid utf-8
+        good("{\"command\":\"\\uD800\\uDC00\\uD800\\uD800\\uDC00\"}", opt);    // Valid surrogate pair, followed by a half surrogate, followed by a valid surrogate pair
     }
 
     void
@@ -1584,8 +1652,9 @@ public:
     void
     testNumberLiteral()
     {
-        const auto check =
-        [](string_view expected)
+        auto const check = [](
+            string_view expected,
+            source_location const& loc = BOOST_CURRENT_LOCATION)
         {
             string_view sv = expected;
             sv.remove_suffix(1);
@@ -1599,14 +1668,14 @@ public:
                     p.write(true,
                         sv.data(), i, ec);
                 }
-                if(BOOST_TEST(! ec))
+                if(BOOST_TEST(! ec, loc))
                 {
                     p.write(false,
                         sv.data() + i,
                         sv.size() - i, ec);
                 }
-                BOOST_TEST(! ec);
-                BOOST_TEST(p.captured() == expected);
+                BOOST_TEST(! ec, loc);
+                BOOST_TEST(p.captured() == expected, loc);
             }
         };
 

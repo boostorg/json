@@ -249,28 +249,29 @@ public:
     {
         char* str_end;
         double const need = std::strtod(s.c_str(), &str_end);
-        for (bool is_precise: {false, true})
+        for (number_precision numbers : {
+            number_precision::imprecise,
+            number_precision::imprecise,
+            number_precision::none})
         {
             parse_options po;
-            po.numbers = is_precise ?
-                number_precision::precise : number_precision::imprecise;
-            double const got = f(s, po);
-            bool const same = got == need;
-            bool const close = same ? true : within_1ulp(got, need);
+            po.numbers = numbers;
 
-            if( !BOOST_TEST(close, loc) )
+            double const got = f(s, po);
+            if( numbers != number_precision::none)
             {
-                log << "Failure on '" << s << "' ("
-                    << (is_precise? "precise" : "imprecise") << "): "
-                    << got << " != " << need << "\n";
+                bool const same = got == need;
+                bool const close = same ? true : within_1ulp(got, need);
+
+                if( !BOOST_TEST(close, loc) )
+                {
+                    char const* mode = numbers == number_precision::precise
+                        ? "precise" : "imprecise" ;
+                    log << "Failure on '" << s << "' (" << mode << "): "
+                        << got << " != " << need << "\n";
+                }
             }
         }
-
-        // test that number_precision::none works
-        parse_options po;
-        po.numbers = number_precision::none;
-        double const got = f(s, po);
-        (void)got;
     }
 
     void
