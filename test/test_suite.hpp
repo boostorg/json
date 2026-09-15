@@ -435,28 +435,21 @@ public:
         char const* func,
         boost::source_location const& user_loc) override
     {
-        boost::source_location loc;
-        if( user_loc.line() )
-        {
-            loc = user_loc;
-        }
-        else
-        {
-            loc = boost::source_location(
-                file, static_cast<uint_least32_t>(line), func);
-        }
-
         ++all_.failed;
         ++v_.back().total;
         ++v_.back().failed;
         auto const id = ++all_.total;
         auto const cp = checkpoint::current();
 
-        log_ << loc.file_name()
-             << ": in function `" << loc.function_name() << "'\n";
-        log_ << loc.file_name()  << ':' << loc.line()
-             << ": failed: " << expr
-             << " (#" << id << ")\n";
+        if( user_loc.line() )
+        {
+            log_ << user_loc.file_name()  << ':' << user_loc.line()
+                 << ": required from here\n";
+        }
+
+        log_ << file << ": in function `" << func << "'\n"
+             << file  << ':' << line
+             << ": failed: " << expr << " (#" << id << ")\n";
 
         if(cp)
         {
