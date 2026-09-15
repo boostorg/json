@@ -16,7 +16,6 @@
 #include <random>
 #include <cinttypes>
 
-#include "parse-vectors.hpp"
 #include "test.hpp"
 #include "test_suite.hpp"
 
@@ -40,8 +39,12 @@ sprintf(char (&buf)[N],
 class double_test
 {
 public:
+    ::test_suite::log_type log;
+
     struct f_boost
     {
+        source_location const& loc;
+
         static
         string_view
         name() noexcept
@@ -56,13 +59,13 @@ public:
             system::error_code ec;
             stream_parser p({}, po);
             p.write(s.data(), s.size(), ec);
-            if(BOOST_TEST(! ec))
+            if(BOOST_TEST(! ec, loc))
                 p.finish(ec);
-            if(! BOOST_TEST(! ec))
+            if(! BOOST_TEST(! ec, loc))
                 return 0;
             auto const jv = p.release();
             double const d = jv.as_double();
-            grind_double(s, d, po);
+            grind_double(s, d, po, loc);
             return d;
         }
     };
@@ -91,65 +94,77 @@ public:
     value
     from_string_test(
         string_view s,
-        storage_ptr sp = {},
-        const parse_options& po = parse_options())
+        storage_ptr sp,
+        parse_options const& po,
+        source_location const& loc = BOOST_CURRENT_LOCATION)
     {
         stream_parser p(storage_ptr(), po);
         system::error_code ec;
         p.reset(std::move(sp));
         p.write(s.data(), s.size(), ec);
-        if(BOOST_TEST(! ec))
+        if(BOOST_TEST(! ec, loc))
             p.finish(ec);
-        BOOST_TEST(! ec);
+        BOOST_TEST(! ec, loc);
         return p.release();
     }
 
-    void
     static
-    check_round_trip(value const& jv1,
-        const parse_options& po = parse_options())
+    void
+    check_round_trip(
+        value const& jv1,
+        parse_options const& po,
+        source_location const& loc = BOOST_CURRENT_LOCATION)
     {
         auto const s2 = serialize(jv1);
-        auto jv2 = from_string_test(s2, {}, po);
-        BOOST_TEST(equal(jv1, jv2));
+        auto jv2 = from_string_test(s2, {}, po, loc);
+        BOOST_TEST(equal(jv1, jv2), loc);
     }
 
     template<class F>
-    void
     static
+    void
     grind_one(
         string_view s,
         storage_ptr sp,
         F const& f,
-        const parse_options& po = parse_options())
+        parse_options const& po,
+        source_location const& loc = BOOST_CURRENT_LOCATION)
     {
-        auto const jv =
-            from_string_test(s, sp, po);
+        auto const jv = from_string_test(s, sp, po, loc);
         f(jv, po);
     }
 
     static
     void
-    grind_one(string_view s)
+    grind_one(
+        string_view s, source_location const& loc = BOOST_CURRENT_LOCATION)
     {
-        auto const jv =
-            from_string_test(s);
-        check_round_trip(jv);
+        grind_one(
+            s,
+            storage_ptr(),
+            [&loc](value const& jv, parse_options const& po)
+            {
+                check_round_trip(jv, po, loc);
+            },
+            parse_options());
     }
 
     template<class F>
     static
     void
-    grind(string_view s, F const& f,
-        const parse_options& po = parse_options())
+    grind(
+        string_view s,
+        F const& f,
+        parse_options const & po = {},
+        source_location const& loc = BOOST_CURRENT_LOCATION)
     {
         try
         {
-            grind_one(s, {}, f, po);
+            grind_one(s, {}, f, po, loc);
 
             fail_loop([&](storage_ptr const& sp)
             {
-                grind_one(s, sp, f, po);
+                grind_one(s, sp, f, po, loc);
             });
 
             if(s.size() > 1)
@@ -165,50 +180,61 @@ public:
                     system::error_code ec;
                     p.reset(&mr);
                     p.write(s.data(), i, ec);
-                    if(BOOST_TEST(! ec))
+                    if(BOOST_TEST(! ec, loc))
                         p.write(
                             s.data() + i,
                             s.size() - i, ec);
-                    if(BOOST_TEST(! ec))
+                    if(BOOST_TEST(! ec, loc))
                         p.finish(ec);
-                    if(BOOST_TEST(! ec))
+                    if(BOOST_TEST(! ec, loc))
                         f(p.release(), po);
                 }
             }
         }
         catch(std::exception const&)
         {
-            BOOST_TEST_FAIL();
+            BOOST_TEST_FAIL(loc);
         }
     }
 
     static
     void
-    grind(string_view s,
-        const parse_options& po = parse_options())
+    grind(
+        string_view s,
+        parse_options const& po,
+        source_location const& loc = BOOST_CURRENT_LOCATION)
     {
-        grind(s,
-            [](value const& jv, const parse_options& po)
+        grind(
+            s,
+            [&loc](value const& jv, parse_options const& po)
             {
-                check_round_trip(jv, po);
-            }, po);
+                check_round_trip(jv, po, loc);
+            },
+            po,
+            loc);
     }
 
     static
     void
-    grind_double(string_view s, double v, parse_options const& po = {})
+    grind_double(
+        string_view s,
+        double v,
+        parse_options const& po = {},
+        source_location const& loc = BOOST_CURRENT_LOCATION)
     {
-        grind(s,
-            [v](value const& jv, const parse_options&)
+        grind(
+            s,
+            [v, &loc](value const& jv, parse_options const&)
             {
-                if(! BOOST_TEST(jv.is_double()))
+                if(! BOOST_TEST( jv.is_double(), loc ))
                     return;
                 if( std::isnan(v) )
-                    BOOST_TEST( std::isnan( jv.get_double() ) );
+                    BOOST_TEST( std::isnan( jv.get_double() ), loc );
                 else
-                    BOOST_TEST( jv.get_double() == v );
+                    BOOST_TEST( jv.get_double() == v, loc );
             },
-            po);
+            po,
+            loc);
     }
 
     // Verify that f converts to the
@@ -216,25 +242,25 @@ public:
     // Requires `s` is not represented by an integral type.
     template<class F>
     void
-    fc(std::string const& s, F const& f)
+    fc(
+        std::string const& s,
+        F const& f,
+        source_location const& loc = BOOST_CURRENT_LOCATION)
     {
         char* str_end;
-        double const need =
-            std::strtod(s.c_str(), &str_end);
-        // BOOST_TEST(str_end == &s.back() + 1);
+        double const need = std::strtod(s.c_str(), &str_end);
         for (bool is_precise: {false, true})
         {
             parse_options po;
             po.numbers = is_precise ?
                 number_precision::precise : number_precision::imprecise;
             double const got = f(s, po);
-            auto same = got == need;
-            auto close = same ?
-                true : within_1ulp(got, need);
+            bool const same = got == need;
+            bool const close = same ? true : within_1ulp(got, need);
 
-            if( !BOOST_TEST(close) )
+            if( !BOOST_TEST(close, loc) )
             {
-                std::cerr << "Failure on '" << s << "' ("
+                log << "Failure on '" << s << "' ("
                     << (is_precise? "precise" : "imprecise") << "): "
                     << got << " != " << need << "\n";
             }
@@ -248,10 +274,37 @@ public:
     }
 
     void
-    fc(std::string const& s)
+    fc(
+        std::string const& s,
+        source_location const& loc = BOOST_CURRENT_LOCATION)
     {
-        fc(s, f_boost{});
-        fc(s + std::string( 64, ' ' ), f_boost{});
+        fc(s, f_boost{loc}, loc);
+        fc(s + std::string(64, ' '), f_boost{loc}, loc);
+    }
+
+    void checkAccuracy(
+        char const* nm,
+        int max_ulp,
+        parse_options const& opts = {},
+        source_location const& loc = BOOST_CURRENT_LOCATION)
+    {
+        double x = std::strtod( nm, 0 );
+        double y = boost::json::parse( nm, {}, opts ).as_double();
+        std::uint64_t bx, by;
+        std::memcpy( &bx, &x, sizeof(x) );
+        std::memcpy( &by, &y, sizeof(y) );
+        std::int64_t diff = bx - by;
+        if (!BOOST_TEST(std::abs(diff) <= max_ulp, loc))
+        {
+            char buf[1024];
+            sprintf(
+                buf,
+                "%s: difference %" PRId64 " ulp\n"
+                "  strtod:       %.13a %.16g\n"
+                "  boost.json:   %.13a %.16g\n\n",
+                nm, diff, x, x, y, y );
+            log << buf;
+        }
     }
 
     void
@@ -391,23 +444,6 @@ public:
            "00000000000000000000000000000000000000000000000000"
            "00000000000000000000000000000000000000000000000000" // 500 zeroes
         );
-    }
-
-    void checkAccuracy(
-        const char* nm, int max_ulp, parse_options const& opts = {})
-    {
-        double x = std::strtod( nm, 0 );
-        double y = boost::json::parse( nm, {}, opts ).as_double();
-        std::uint64_t bx, by;
-        std::memcpy( &bx, &x, sizeof(x) );
-        std::memcpy( &by, &y, sizeof(y) );
-        std::int64_t diff = bx - by;
-        if (!BOOST_TEST(std::abs( diff ) <= max_ulp))
-            std::fprintf(stderr,
-                         "%s: difference %" PRId64 " ulp\n"
-                         "  strtod:       %.13a %.16g\n"
-                         "  boost.json:   %.13a %.16g\n\n",
-                         nm, diff, x, x, y, y );
     }
 
     void
