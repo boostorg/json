@@ -1721,6 +1721,9 @@ public:
 
     /** Overload
 
+        @param loc @ref boost::source_location to use in thrown exception; the
+               source location of the call site by default.
+
         @throws boost::system::system_error Overload **(3)** reports errors by
                 throwing an exception.
     */
@@ -1733,9 +1736,9 @@ public:
         ! std::is_same<T, bool>::value,
             T>::type
 #endif
-    to_number() const
+    to_number(source_location const& loc = BOOST_CURRENT_LOCATION) const
     {
-        return try_to_number<T>().value();
+        return try_to_number<T>().value(loc);
     }
     /// @}
 
@@ -2991,6 +2994,9 @@ public:
 
         @param opts The options for the algorithm.
 
+        @param loc @ref boost::source_location to use in thrown exception; the
+               source location of the call site by default.
+
         @return Reference to the element identified by `ptr`.
 
         @throws boost::system::system_error Overload **(1)** reports errors by
@@ -3006,7 +3012,8 @@ public:
     set_at_pointer(
         string_view sv,
         value_ref ref,
-        set_pointer_options const& opts = {} );
+        set_pointer_options const& opts = {},
+        source_location const& loc = BOOST_CURRENT_LOCATION);
 
     /** Overload
 
