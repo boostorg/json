@@ -12,6 +12,7 @@
 
 #include <boost/json/value_stack.hpp>
 #include <cstring>
+#include <memory>
 #include <stdexcept>
 #include <utility>
 
@@ -40,11 +41,15 @@ stack(
     void* temp,
     std::size_t size) noexcept
     : sp_(std::move(sp))
-    , temp_(temp)
 {
-    if(size >= min_size_ *
-        sizeof(value))
+    // the buffer stores `value`s, so it has to be aligned for one;
+    // align it up the same way static_resource does for its buffer
+    if(std::align(
+        alignof(value),
+        min_size_ * sizeof(value),
+        temp, size))
     {
+        temp_ = temp;
         begin_ = reinterpret_cast<
             value*>(temp);
         top_ = begin_;
@@ -53,6 +58,7 @@ stack(
     }
     else
     {
+        temp_ = temp;
         begin_ = nullptr;
         top_ = nullptr;
         end_ = nullptr;

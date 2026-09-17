@@ -118,9 +118,32 @@ public:
     }
 
     void
+    testAlignment()
+    {
+        // a caller-supplied buffer is used to store `value`s, so the stack
+        // must cope with a buffer that is not aligned for one. Walk every
+        // misalignment; before the fix the odd offsets construct a `value`
+        // at a misaligned address (UBSan: misaligned constructor call).
+        alignas(value) unsigned char buf[4096 + alignof(value)];
+        for(std::size_t off = 0; off < alignof(value); ++off)
+        {
+            value_stack st(
+                storage_ptr(), buf + off, sizeof(buf) - off);
+            st.reset();
+            st.push_int64(1);
+            st.push_int64(2);
+            st.push_int64(3);
+            st.push_array(3);
+            value const jv = st.release();
+            BOOST_TEST(serialize(jv) == "[1,2,3]");
+        }
+    }
+
+    void
     run()
     {
         testValueStack();
+        testAlignment();
     }
 };
 
