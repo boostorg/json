@@ -76,7 +76,7 @@ try_reserve(
 template< class Ctx >
 system::result<value>
 value_to_impl(
-    value_conversion_tag,
+    json_value_category,
     try_value_to_tag<value>,
     value const& jv,
     Ctx const& )
@@ -87,7 +87,7 @@ value_to_impl(
 template< class Ctx >
 value
 value_to_impl(
-    value_conversion_tag, value_to_tag<value>, value const& jv, Ctx const& )
+    json_value_category, value_to_tag<value>, value const& jv, Ctx const& )
 {
     return jv;
 }
@@ -96,7 +96,7 @@ value_to_impl(
 template< class Ctx >
 system::result<object>
 value_to_impl(
-    object_conversion_tag,
+    json_object_category,
     try_value_to_tag<object>,
     value const& jv,
     Ctx const& )
@@ -113,7 +113,7 @@ value_to_impl(
 template< class Ctx >
 system::result<array>
 value_to_impl(
-    array_conversion_tag,
+    json_array_category,
     try_value_to_tag<array>,
     value const& jv,
     Ctx const& )
@@ -130,7 +130,7 @@ value_to_impl(
 template< class Ctx >
 system::result<string>
 value_to_impl(
-    string_conversion_tag,
+    json_string_category,
     try_value_to_tag<string>,
     value const& jv,
     Ctx const& )
@@ -147,7 +147,7 @@ value_to_impl(
 template< class Ctx >
 system::result<bool>
 value_to_impl(
-    bool_conversion_tag, try_value_to_tag<bool>, value const& jv, Ctx const& )
+    boolean_category, try_value_to_tag<bool>, value const& jv, Ctx const& )
 {
     auto b = jv.if_bool();
     if( b )
@@ -157,11 +157,17 @@ value_to_impl(
     return {boost::system::in_place_error, ec};
 }
 
-// integral and floating point
-template< class T, class Ctx >
+template< class Cat, class T, class Ctx >
 system::result<T>
 value_to_impl(
-    number_conversion_tag, try_value_to_tag<T>, value const& jv, Ctx const& )
+    Cat,
+    try_value_to_tag<T>,
+    value const& jv,
+    Ctx const&,
+    typename std::enable_if<
+        Cat::value == conversion_category::integer
+        || Cat::value == conversion_category::floating_point>::type* = nullptr
+    )
 {
     system::error_code ec;
     auto const n = jv.to_number<T>(ec);
@@ -174,7 +180,7 @@ value_to_impl(
 template< class T, class Ctx >
 system::result<T>
 value_to_impl(
-    null_like_conversion_tag,
+    null_category,
     try_value_to_tag<T>,
     value const& jv,
     Ctx const& )
@@ -190,10 +196,7 @@ value_to_impl(
 template< class T, class Ctx >
 system::result<T>
 value_to_impl(
-    string_like_conversion_tag,
-    try_value_to_tag<T>,
-    value const& jv,
-    Ctx const& )
+    string_category, try_value_to_tag<T>, value const& jv, Ctx const& )
 {
     auto str = jv.if_string();
     if( str )
@@ -207,7 +210,7 @@ value_to_impl(
 template< class T, class Ctx >
 system::result<T>
 value_to_impl(
-    map_like_conversion_tag,
+    map_category,
     try_value_to_tag<T>,
     value const& jv,
     Ctx const& ctx )
@@ -247,10 +250,7 @@ value_to_impl(
 template< class T, class Ctx >
 system::result<T>
 value_to_impl(
-    sequence_conversion_tag,
-    try_value_to_tag<T>,
-    value const& jv,
-    Ctx const& ctx )
+    sequence_category, try_value_to_tag<T>, value const& jv, Ctx const& ctx )
 {
     array const* arr = jv.if_array();
     if( !arr )
@@ -331,10 +331,7 @@ try_make_tuple_like(
 template< class T, class Ctx >
 system::result<T>
 value_to_impl(
-    tuple_conversion_tag,
-    try_value_to_tag<T>,
-    value const& jv,
-    Ctx const& ctx )
+    tuple_category, try_value_to_tag<T>, value const& jv, Ctx const& ctx )
 {
     system::error_code ec;
 
@@ -411,7 +408,7 @@ struct to_described_member
 template< class T, class Ctx >
 system::result<T>
 value_to_impl(
-    described_class_conversion_tag,
+    described_class_category,
     try_value_to_tag<T>,
     value const& jv,
     Ctx const& ctx )
@@ -444,7 +441,7 @@ value_to_impl(
 template< class T, class Ctx >
 system::result<T>
 value_to_impl(
-    described_enum_conversion_tag,
+    described_enum_category,
     try_value_to_tag<T>,
     value const& jv,
     Ctx const& )
@@ -475,7 +472,7 @@ value_to_impl(
 template< class T, class Ctx >
 system::result<T>
 value_to_impl(
-    optional_conversion_tag,
+    optional_category,
     try_value_to_tag<T>,
     value const& jv,
     Ctx const& ctx)
@@ -552,7 +549,7 @@ struct alternative_converter
 template< class T, class Ctx >
 system::result<T>
 value_to_impl(
-    variant_conversion_tag,
+    variant_category,
     try_value_to_tag<T>,
     value const& jv,
     Ctx const& ctx)
@@ -570,7 +567,7 @@ value_to_impl(
 template< class T, class Ctx >
 system::result<T>
 value_to_impl(
-    path_conversion_tag, try_value_to_tag<T>, value const& jv, Ctx const& )
+    path_category, try_value_to_tag<T>, value const& jv, Ctx const& )
 {
     auto str = jv.if_string();
     if( !str )
@@ -589,7 +586,7 @@ value_to_impl(
 template< class T, class Ctx >
 mp11::mp_if< mp11::mp_valid<has_user_conversion_to_impl, T>, T >
 value_to_impl(
-    user_conversion_tag, value_to_tag<T> tag, value const& jv, Ctx const&)
+    user_category, value_to_tag<T> tag, value const& jv, Ctx const&)
 {
     return tag_invoke(tag, jv);
 }
@@ -602,7 +599,7 @@ template<
 mp11::mp_if<
     mp11::mp_valid< has_context_conversion_to_impl, typename Sup::type, T>, T >
 value_to_impl(
-    context_conversion_tag,
+    user_context_category,
     value_to_tag<T> tag,
     value const& jv,
     Ctx const& ctx )
@@ -620,7 +617,7 @@ mp11::mp_if<
         has_full_context_conversion_to_impl, typename Sup::type, T>,
     T>
 value_to_impl(
-    full_context_conversion_tag,
+    user_full_context_category,
     value_to_tag<T> tag,
     value const& jv,
     Ctx const& ctx )
@@ -633,7 +630,7 @@ value_to_impl(
 template< class T, class Ctx >
 mp11::mp_if_c< !mp11::mp_valid<has_user_conversion_to_impl, T>::value, T>
 value_to_impl(
-    user_conversion_tag, value_to_tag<T>, value const& jv, Ctx const& )
+    user_category, value_to_tag<T>, value const& jv, Ctx const& )
 {
     return tag_invoke(try_value_to_tag<T>(), jv).value();
 }
@@ -648,7 +645,7 @@ mp11::mp_if_c<
         has_context_conversion_to_impl, typename Sup::type, T>::value,
     T>
 value_to_impl(
-    context_conversion_tag, value_to_tag<T>, value const& jv, Ctx const& ctx )
+    user_context_category, value_to_tag<T>, value const& jv, Ctx const& ctx )
 {
     return tag_invoke( try_value_to_tag<T>(), jv, Sup::get(ctx) ).value();
 }
@@ -663,7 +660,7 @@ mp11::mp_if_c<
         has_full_context_conversion_to_impl, typename Sup::type, T>::value,
     T>
 value_to_impl(
-    full_context_conversion_tag,
+    user_full_context_category,
     value_to_tag<T>,
     value const& jv,
     Ctx const& ctx )
@@ -678,7 +675,7 @@ mp11::mp_if<
     mp11::mp_valid<
         has_nonthrowing_user_conversion_to_impl, T>, system::result<T> >
 value_to_impl(
-    user_conversion_tag, try_value_to_tag<T>, value const& jv, Ctx const& )
+    user_category, try_value_to_tag<T>, value const& jv, Ctx const& )
 {
     return tag_invoke(try_value_to_tag<T>(), jv);
 }
@@ -693,7 +690,7 @@ mp11::mp_if<
         has_nonthrowing_context_conversion_to_impl, typename Sup::type, T>,
     system::result<T> >
 value_to_impl(
-    context_conversion_tag,
+    user_context_category,
     try_value_to_tag<T> tag,
     value const& jv,
     Ctx const& ctx )
@@ -713,7 +710,7 @@ mp11::mp_if<
         T>,
     system::result<T> >
 value_to_impl(
-    full_context_conversion_tag,
+    user_full_context_category,
     try_value_to_tag<T> tag,
     value const& jv,
     Ctx const& ctx )
@@ -759,7 +756,7 @@ mp11::mp_if_c<
     !mp11::mp_valid<has_nonthrowing_user_conversion_to_impl, T>::value,
     system::result<T> >
 value_to_impl(
-    user_conversion_tag, try_value_to_tag<T>, value const& jv, Ctx const& )
+    user_category, try_value_to_tag<T>, value const& jv, Ctx const& )
 {
     return wrap_conversion_exceptions(value_to_tag<T>(), jv);
 }
@@ -776,7 +773,7 @@ mp11::mp_if_c<
         T>::value,
     system::result<T> >
 value_to_impl(
-    context_conversion_tag,
+    user_context_category,
     try_value_to_tag<T>,
     value const& jv,
     Ctx const& ctx )
@@ -796,7 +793,7 @@ mp11::mp_if_c<
         T>::value,
     system::result<T> >
 value_to_impl(
-    full_context_conversion_tag,
+    user_full_context_category,
     try_value_to_tag<T>,
     value const& jv,
     Ctx const& ctx )
@@ -808,7 +805,7 @@ value_to_impl(
 // no suitable conversion implementation
 template< class T, class Ctx >
 T
-value_to_impl( no_conversion_tag, value_to_tag<T>, value const&, Ctx const& )
+value_to_impl( unknown_category, value_to_tag<T>, value const&, Ctx const& )
 {
     static_assert(
         !std::is_same<T, T>::value,
@@ -824,8 +821,11 @@ value_to_impl( Impl impl, value_to_tag<T>, value const& jv, Ctx const& ctx )
 }
 
 template< class Ctx, class T >
-using value_to_category = conversion_category<
-    Ctx, T, value_to_conversion >;
+using value_to_category = get_conversion_category<
+    T,
+    Ctx,
+    all_custom_checks<value_to_conversion>::fn,
+    all_fallback_checks<value_to_conversion>::fn>;
 
 } // detail
 

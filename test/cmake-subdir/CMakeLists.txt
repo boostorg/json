@@ -30,6 +30,8 @@ add_subdirectory(../../../system          boostorg/system)
 add_subdirectory(../../../throw_exception boostorg/throw_exception)
 add_subdirectory(../../../variant2        boostorg/variant2)
 add_subdirectory(../../../winapi          boostorg/winapi)
+# test dependencies
+add_subdirectory(../../../optional        boostorg/optional)
 set(BUILD_TESTING ${old_BUILD_TESTING})
 
 add_subdirectory(../../../json            boostorg/json)
