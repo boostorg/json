@@ -17,6 +17,7 @@
 #include <boost/json/serialize.hpp>
 #include <boost/core/max_align.hpp>
 #include <iostream>
+#include <new>
 
 #include "checking_resource.hpp"
 #include "test_suite.hpp"
@@ -318,12 +319,36 @@ R"xx({
     }
 
     void
+    testOverAligned()
+    {
+        // an over-aligned request that fills a fresh block needs
+        // room for the padding in addition to the requested size
+        for(std::size_t align = 2 * alignof(core::max_align_t);
+            align <= 4096; align *= 2)
+        {
+            monotonic_resource mr;
+            void* p = mr.allocate(1024, align);
+            BOOST_TEST(p != nullptr);
+            BOOST_TEST(
+                !(reinterpret_cast<std::uintptr_t>(p) % align));
+        }
+        // the padding must not make the request overflow
+        {
+            monotonic_resource mr;
+            BOOST_TEST_THROWS(
+                mr.allocate(std::size_t(-1) - 100, 4096),
+                std::bad_alloc);
+        }
+    }
+
+    void
     run()
     {
         testMembers();
         testStorage();
         testGeneral();
         testAllocation();
+        testOverAligned();
     }
 };
 
