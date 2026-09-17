@@ -434,7 +434,7 @@ push_string(
 void
 value_stack::
 push_int64(
-    int64_t i)
+    std::int64_t i)
 {
     st_.push(i, sp_);
 }
@@ -442,7 +442,7 @@ push_int64(
 void
 value_stack::
 push_uint64(
-    uint64_t u)
+    std::uint64_t u)
 {
     st_.push(u, sp_);
 }
