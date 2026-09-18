@@ -1864,10 +1864,14 @@ public:
         return true;
     }
 
+    // LCOV_EXCL_START
+    // the top handler is never inside an array, so nested handlers have no
+    // array end to forward to it
     bool signal_end(system::error_code&)
     {
         return true;
     }
+    // LCOV_EXCL_STOP
 
     bool on_document_begin( system::error_code& )
     {
