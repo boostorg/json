@@ -659,8 +659,8 @@ public:
         good("1000000000000000000000000.000000000001");
         good("1000000000000000000000000.0e1    ");
         good("1000000000000000000000000.0      ");
-
         good("1000000000.1000000000            ");
+        good("100000000000000000000e+2147483647");
 
         bad("");
         bad("-                                 ");
@@ -1453,6 +1453,7 @@ public:
         bad("\"\xf1\x7f\xbf\xbf----------\"");
         bad("\"\xf2\x80\x7f\xbf----------\"");
         bad("\"\xf3\x80\xbf\xce----------\"");
+        bad("\"\xf3\x80\xbf");
 
         // utf8 after escape
         good("\"\\u0000 \xf3\xbf\x80\xbf\xf3\xbf\x80\xbf\"");
@@ -1821,6 +1822,60 @@ public:
 #pragma warning(pop)
 #endif
 
+    struct null_handler
+    {
+        constexpr static std::size_t max_object_size = std::size_t(-1);
+        constexpr static std::size_t max_array_size = std::size_t(-1);
+        constexpr static std::size_t max_key_size = std::size_t(-1);
+        constexpr static std::size_t max_string_size = std::size_t(-1);
+
+        bool on_document_begin( system::error_code& ) { return true; }
+        bool on_document_end( system::error_code& ) { return true; }
+        bool on_object_begin( system::error_code& ) { return true; }
+        bool on_object_end( std::size_t, system::error_code& ) { return true; }
+        bool on_array_begin( system::error_code& ) { return true; }
+        bool on_array_end( std::size_t, system::error_code& ) { return true; }
+        bool on_key_part( string_view, std::size_t, system::error_code& ) { return true; }
+        bool on_key( string_view, std::size_t, system::error_code& ) { return true; }
+        bool on_string_part( string_view, std::size_t, system::error_code& ) { return true; }
+        bool on_string( string_view, std::size_t, system::error_code& ) { return true; }
+        bool on_number_part( string_view, system::error_code&) { return true; }
+        bool on_int64( std::int64_t, string_view, system::error_code& ) { return true; }
+        bool on_uint64( std::uint64_t, string_view, system::error_code& ) { return true; }
+        bool on_double( double, string_view, system::error_code& ) { return true; }
+        bool on_bool( bool, system::error_code& ) { return true; }
+        bool on_null( system::error_code& ) { return true; }
+        bool on_comment_part( string_view, system::error_code& ) { return true; }
+        bool on_comment( string_view, system::error_code& ) { return true; }
+    };
+
+    void
+    testManualFail()
+    {
+        basic_parser<null_handler> p({});
+        p.fail( system::error_code() );
+        BOOST_TEST( !p.done() );
+        BOOST_TEST( p.last_error() == error::incomplete );
+        BOOST_TEST( p.last_error().has_location() );
+
+        p.reset();
+
+        system::error_code ec;
+        p.write_some(false, "null", 4, ec);
+        BOOST_TEST( p.done() );
+        p.fail( make_error_code(error::array_too_large) );
+        BOOST_TEST( !p.done() );
+        BOOST_TEST( p.last_error() == error::array_too_large );
+    }
+
+    void
+    testWhitespace()
+    {
+        parse_options opts;
+        opts.allow_comments = true;
+        bad("//\n  ", opts);
+    }
+
     void
     run()
     {
@@ -1845,6 +1900,8 @@ public:
         testNumberLiteral();
         testStickyErrors();
         testStdTypes();
+        testManualFail();
+        testWhitespace();
     }
 };
 

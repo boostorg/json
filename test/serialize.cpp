@@ -56,6 +56,14 @@ public:
             BOOST_TEST(serialize(str) == "\"123\"");
             BOOST_TEST(print(str) == "\"123\"");
         }
+        {
+            string const str(BOOST_JSON_STACK_BUFFER_SIZE, '0');
+            string str_quoted = str;
+            str_quoted.insert(0, '"');
+            str_quoted.append(1, '"');
+            BOOST_TEST(serialize(str) == str_quoted);
+            BOOST_TEST(print(str) == str_quoted);
+        }
     }
 
     void

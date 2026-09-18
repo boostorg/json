@@ -802,7 +802,8 @@ public:
             double d = 3.12;
             check_udt(d, "3.12e+00");
 
-#if defined(BOOST_HAS_INT128) && defined(__GLIBCXX_TYPE_INT_N_0)
+#if defined(BOOST_HAS_INT128) \
+    && defined(BOOST_GCC) && BOOST_GCC_VERSION >= 160000
             boost::int128_type ii =
                 (std::numeric_limits<std::uint64_t>::max)();
             ii += 1;

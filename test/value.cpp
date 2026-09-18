@@ -2268,6 +2268,9 @@ public:
         BOOST_TEST_THROWS_WITH_LOCATION( cjvo.at("null") );
         BOOST_TEST( cjvo.try_at("null").error() == error::out_of_range );
 
+        BOOST_TEST_THROWS_WITH_LOCATION( jvo.try_at(1)->as_string() );
+        BOOST_TEST_THROWS_WITH_LOCATION( cjvo.try_at(1)->as_string() );
+
         // array
         value jva{true,2,"3"};
         value const& cjva = jva;
@@ -2281,6 +2284,9 @@ public:
         auto&& elem2 = std::move(jva).at(1);
         BOOST_TEST( &elem2 == &jva.at(1) );
         BOOST_TEST( &elem2 == &*jva.try_at(1) );
+
+        BOOST_TEST_THROWS_WITH_LOCATION( jva.try_at("k1")->as_string() );
+        BOOST_TEST_THROWS_WITH_LOCATION( cjva.try_at("k1")->as_string() );
 
         BOOST_TEST_THROWS_WITH_LOCATION( value({false,2,false}).at(4) );
         BOOST_TEST_THROWS_WITH_LOCATION( value({false,2,"3"}).at(4) );
