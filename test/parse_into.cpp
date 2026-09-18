@@ -16,6 +16,7 @@
 #include <boost/json/value_to.hpp>
 #include <boost/describe.hpp>
 
+#include <array>
 #include <climits>
 #include <map>
 
@@ -478,6 +479,16 @@ public:
 
         testParseInto< std::vector< Variant<int, std::string> > >(
             {1, 2, 3, "four", 5, "six", "seven", 8});
+
+        // an array-like first alternative nested in a composite
+        testParseInto< std::vector< Variant<std::vector<int>, int> > >(
+            { std::vector<int>{1}, 2 } );
+        testParseInto< std::map<std::string, Variant<std::vector<int>, int> > >(
+            { { "a", std::vector<int>{1, 2} }, { "b", 3 } } );
+
+        // an incomplete array must not satisfy a fixed-size alternative
+        testParseIntoErrors< Variant< std::array<int, 3> > >(
+            error::exhausted_variants, {1} );
 
         using V = Variant<
             std::vector< int >,
