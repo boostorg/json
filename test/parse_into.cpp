@@ -454,6 +454,8 @@ public:
         testParseInto<E>( E::y );
         testParseInto<E>( E::z );
 
+        testParseInto< std::vector<E> >( {E::x, E::y, E::z} );
+
         testParseIntoErrors< E >( error::not_string, (int)(E::y) );
         testParseIntoErrors< E >( error::unknown_name, "zoom" );
 #endif // BOOST_DESCRIBE_CXX14

@@ -473,6 +473,7 @@ public:
             return false;
         }
 
+        name_.clear();
         return this->parent_->signal_value(ec);
     }
 
