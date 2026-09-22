@@ -192,19 +192,12 @@ public:
                     (s.insert(0, s.subview(0, 10))) );
             }
 
-    #if 0
             {
-                // VFALCO tsan doesn't like this
+                // capacity overflow
                 string s;
-                try
-                {
-                    s.resize(s.max_size() - 1);
-                }
-                catch(std::exception const&)
-                {
-                }
+                s.reserve(s.max_size() - 1);
+                s.reserve(s.max_size());
             }
-    #endif
         }
 
         // string in parser
