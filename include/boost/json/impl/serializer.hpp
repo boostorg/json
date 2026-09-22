@@ -73,7 +73,7 @@ BOOST_FORCEINLINE
 bool
 write_impl(bool_conversion_tag, writer& w, stream& ss)
 {
-    BOOST_ASSERT( w.p_ );
+    BOOST_ASSERT( w.p_ ); // LCOV_EXCL_LINE
     auto const t = *reinterpret_cast<T const*>(w.p_);
 
 #if defined(_MSC_VER)
