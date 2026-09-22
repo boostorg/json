@@ -1395,6 +1395,14 @@ public:
             BOOST_TEST(s.size() == n);
             BOOST_TEST(s.capacity() == sbo_capacity);
             BOOST_TEST(s == string_view(copy.data(), n));
+
+            s.resize(sbo_capacity + 1);
+            cap = s.capacity();
+            s.resize(cap);
+            s.shrink_to_fit();
+            BOOST_TEST(s.capacity() == cap);
+            s.shrink_to_fit();
+            BOOST_TEST(s.capacity() == cap);
         });
     }
 
