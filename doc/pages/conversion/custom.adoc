@@ -9,18 +9,23 @@ Official repository: https://github.com/boostorg/json
 
 = Custom Conversions
 Boost.JSON uses two mechanisms to customize conversion between <<ref_value>>
-and user types. One mechanism involves specializing type traits. The other one
-is more powerful and requires defining overloads of `tag_invoke`. Both
-mechanisms will be further explained in this section.
+and user types. One mechanism involves specializing <<ref_use_category>>. The
+other one is more powerful and requires defining overloads of `tag_invoke`.
+Both mechanisms will be further explained in this section.
 
-== Conversion Traits
-Previously a number of conversion type traits, like <<ref_is_tuple_like>> or
-<<ref_is_sequence_like>>,  were introduced. The library tries the traits one
-after another and uses the implementation that corresponds to the first
-matching trait. In some cases, though, a type would match a trait with a higher
-priority, but the user intends for it to belong to a lower priority category.
-If this happens the user can specialize the trait that's not supposed to match
-for that type to be an equivalent of `std::false_type`.
+== `use_category`
+
+The library generally deduces the appropriate implementation of conversion for
+a given type using internal type traits. These type traits attempt to deduce
+the correct conversion category by checking if the type satisfies the
+requirements associated with that category. The categories are checked one by
+one, in the order of their appearance in the table in the previous subsection,
+and the first one whose requirements are satisfied is selected.
+
+In some cases, though, a type would match a category with a higher priority,
+but the user intends for it to belong to a lower priority category. If this
+happens the user can specialize the template `use_category` for that type to be
+equivalent to the intended category.
 
 Consider this type:
 
@@ -33,9 +38,9 @@ It exposes both a sequence API and a tuple API. But converting from
 <<ref_value>> to `user_ns::ip_address` would not be able to use implementation
 for sequences, since those are constructed empty and then populated one element
 at a time, while `ip_address` has a fixed size of 4. The tuple conversion would
-fit, though. The only problem is that <<ref_is_tuple_like>> has a lower
-priority than <<ref_is_sequence_like>>. In order to circumvent this, the user
-only needs to specialize <<ref_is_sequence_like>> to not match `ip_address`.
+fit, though. The only problem is that `tuple_category` has a lower priority
+than `sequence_category`. In order to circumvent this, the user only needs to
+specialize `use_category` for `ip_address`.
 
 [source]
 ----
@@ -84,7 +89,7 @@ include::../../../test/snippets.cpp[tag=snippet_tag_invoke_1,indent=0]
 ----
 
 Since the type being converted is embedded into the function's signature,
-user-provided overloads are visible to argument-dependent lookup and will be
+user-provided overloads are visible to argument-dependent lookup and become
 candidates when a conversion is performed:
 
 [source]
