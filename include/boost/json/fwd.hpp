@@ -84,6 +84,9 @@ template<class T>
 typename result_for<T, value>::type
 result_from_errno( int e, boost::source_location const* loc ) noexcept;
 
+template<class T, class Ctx, class Enable>
+struct use_category;
+
 #endif
 
 } // namespace json

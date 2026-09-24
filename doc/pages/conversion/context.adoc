@@ -12,7 +12,7 @@ Previously in this section we've been assuming that there is a particular
 fitting JSON representation for a type. But this is not always the case. Often
 one needs to represent particular value with JSON of certain format in one
 situation and with another format in a different situation. This can be
-achieved with Boost.JSON by providing an extra argument---context.
+achieved with Boost.JSON by providing an extra argument--context.
 
 Let's implement conversion from `user_ns::ip_address` to a JSON string:
 
@@ -125,13 +125,12 @@ contexts to conversions of nested objects. And in the case when you want to
 provide your own conversion function for a composite type enabled by a
 particular context, you usually also need to do that.
 
-Consider this example. As was discussed in a previous section,
-<<ref_is_map_like>> requires that your key type satisfies
-<<ref_is_string_like>>. Now, let's say your keys are not string-like, but they
-do convert to <<ref_string>>. You can make such maps to also convert to objects
-using a context. But if you want to also use another context for values, you
-need a way to pass the full combined context to map elements. So, you want the
-following test to succeed.
+Consider this example. <<ref_map_category>> requires that your key type is of
+<<ref_string_category>>. Now, let's say your keys' category is different but
+they do convert to <<ref_string>>. You can make such maps to also convert to
+objects using a context. But if you want to also use another context for
+values, you need a way to pass the full combined context to map elements. So,
+you want the following test to succeed.
 
 [source]
 ----
