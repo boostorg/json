@@ -1602,7 +1602,7 @@ public:
 
     bool on_array_end( system::error_code& ec )
     {
-        if( !inner_active_ )
+        if( inner_active_ < 0 )
             return signal_end(ec);
 
         BOOST_JSON_INVOKE_INNER( array_end_handler_event{}, ec );
@@ -1865,10 +1865,14 @@ public:
         return true;
     }
 
+    // LCOV_EXCL_START
+    // the top handler is never inside an array, so nested handlers have no
+    // array end to forward to it
     bool signal_end(system::error_code&)
     {
         return true;
     }
+    // LCOV_EXCL_STOP
 
     bool on_document_begin( system::error_code& )
     {
