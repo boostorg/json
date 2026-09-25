@@ -488,7 +488,7 @@ public:
 
         // an incomplete array must not satisfy a fixed-size alternative
         testParseIntoErrors< Variant< std::array<int, 3> > >(
-            error::exhausted_variants, {1} );
+            error::exhausted_variants, {1, 2} );
 
         using V = Variant<
             std::vector< int >,
