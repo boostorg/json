@@ -461,7 +461,7 @@ value_to_impl(
         return {system::in_place_error, ec};
     }
 
-    if( !describe::enum_from_string(str->data(), val) )
+    if( !describe::enum_from_string(str->subview(), val) )
     {
         BOOST_JSON_FAIL(ec, error::unknown_name);
         return {system::in_place_error, ec};
