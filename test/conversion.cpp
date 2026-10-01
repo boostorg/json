@@ -205,7 +205,6 @@ public:
         BOOST_CORE_STATIC_ASSERT( is_described_class<described5>::value );
         BOOST_CORE_STATIC_ASSERT( is_described_class<described6>::value );
 
-        BOOST_CORE_STATIC_ASSERT( !is_described_class<my_null>::value );
         BOOST_CORE_STATIC_ASSERT( !is_described_class<described3>::value );
         BOOST_CORE_STATIC_ASSERT( !is_described_class<described4>::value );
         BOOST_CORE_STATIC_ASSERT( !is_described_class<described7>::value );
@@ -215,9 +214,16 @@ public:
         BOOST_CORE_STATIC_ASSERT( is_described_enum<described_enum>::value );
         BOOST_CORE_STATIC_ASSERT( !is_described_enum<my_null>::value );
         BOOST_CORE_STATIC_ASSERT( !is_described_enum<described1>::value );
+
+# ifdef BOOST_DESCRIBE_HAS_REFLECTION
+        BOOST_CORE_STATIC_ASSERT( is_described_class<my_null>::value );
+        BOOST_CORE_STATIC_ASSERT( is_described_enum<undescribed_enum>::value );
+# else
+        BOOST_CORE_STATIC_ASSERT( !is_described_class<my_null>::value );
         BOOST_CORE_STATIC_ASSERT(
-            !is_described_enum<undescribed_enum>::value);
-#endif
+            !is_described_enum<undescribed_enum>::value );
+# endif // BOOST_DESCRIBE_HAS_REFLECTION
+#endif // BOOST_DESCRIBE_CXX14
 
         BOOST_CORE_STATIC_ASSERT((
             std::is_same<

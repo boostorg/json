@@ -81,8 +81,6 @@ struct T3
 {
 };
 
-BOOST_CORE_STATIC_ASSERT( ! ::boost::json::has_value_from<T3>::value );
-
 struct T4
 {
     operator ::boost::json::value()
@@ -91,7 +89,13 @@ struct T4
     }
 };
 
+#ifdef BOOST_DESCRIBE_HAS_REFLECTION
+BOOST_CORE_STATIC_ASSERT( ::boost::json::has_value_from<T3>::value );
+BOOST_CORE_STATIC_ASSERT( ::boost::json::has_value_from<T4>::value );
+#else
+BOOST_CORE_STATIC_ASSERT( ! ::boost::json::has_value_from<T3>::value );
 BOOST_CORE_STATIC_ASSERT( ! ::boost::json::has_value_from<T4>::value );
+#endif // BOOST_DESCRIBE_HAS_REFLECTION
 
 //----------------------------------------------------------
 
