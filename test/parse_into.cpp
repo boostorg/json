@@ -491,6 +491,18 @@ public:
                 "five",
                 std::map<std::string, double>{ {"one", 1}, {"pi", 3.14} }));
 
+        // the closing bracket of an array that belongs to an alternative has to
+        // be handed to that alternative, not treated as the end of the array
+        // the variant itself is an element of
+        testParseInto< Variant< std::vector<std::vector<int>> > >(
+            std::vector<std::vector<int>>{ {1, 2}, {3} } );
+        testParseInto< std::vector< Variant<std::vector<int>, int> > >(
+            { std::vector<int>{1}, std::vector<int>{2} } );
+#if defined(BOOST_DESCRIBE_CXX14)
+        testParseIntoErrors< Variant<X, int> >(
+            error::exhausted_variants, object{ {"z", array{ array{0} }} } );
+#endif // BOOST_DESCRIBE_CXX14
+
         testParseIntoErrors< Variant<Monostate> >(
             error::exhausted_variants, "a" );
         testParseIntoErrors< Variant<int> >(
