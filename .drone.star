@@ -442,7 +442,7 @@ _supported_compilers = {
             'latest_cpp': 2026,
             'platforms': {
                 ('linux', 'x86_64'): {
-                    'image': 'cppalliance/droneubuntu2604:1',
+                    'image': 'cppalliance/droneubuntu2610:1',
                     'packages': ['g++-16', 'binutils-gold'],
                 }
             },
