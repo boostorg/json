@@ -14,6 +14,7 @@
 #include <boost/json/serialize.hpp>
 #include <boost/json/value_from.hpp>
 #include <boost/json/value_to.hpp>
+#include <boost/container/flat_set.hpp>
 #include <boost/describe.hpp>
 
 #include <climits>
@@ -326,6 +327,17 @@ public:
 
         parse_into(v, "[5,6,7]");
         BOOST_TEST( v.size() == 3 );
+
+        // containers that are filled through an insert iterator
+        testParseInto< std::vector<container::flat_set<int>> >(
+            { {}, { 1 }, { 2, 3 }, { 4, 5, 6 } } );
+
+        container::flat_set<int> s;
+        parse_into(s, "[1,2,3,4]");
+        BOOST_TEST( s.size() == 4 );
+
+        parse_into(s, "[5,6,7]");
+        BOOST_TEST( s.size() == 3 );
     }
 
     void testMap()
