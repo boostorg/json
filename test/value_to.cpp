@@ -603,16 +603,6 @@ public:
     {
         // using result
         {
-            // clang 3.8 seems to have some bug when dealing with a lot of
-            // template instantiations; this assert magically makes the problem
-            // go away, I assume, by instantiating the needed types beforehand
-            BOOST_CORE_STATIC_ASSERT((
-                detail::conversion_round_trips<
-                    mp11::mp_first< mp11::mp_list<Context..., int> >,
-                    ::value_to_test_ns::T2,
-                    detail::value_to_conversion
-                >::value));
-
             auto res = try_value_to<::value_to_test_ns::T2>(
                 value(), ctx... );
             BOOST_TEST( res.has_error() );

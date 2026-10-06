@@ -186,33 +186,60 @@ inserter(
     return std::inserter( target, target.end() );
 }
 
+using boolean_category = std::integral_constant<
+    conversion_category, conversion_category::boolean>;
+
+using integer_category = std::integral_constant<
+    conversion_category, conversion_category::integer>;
+
+using floating_point_category = std::integral_constant<
+    conversion_category, conversion_category::floating_point>;
+
+} // namespace detail
+
+
+template<class T, class Ctx, class Enable>
+struct use_category : unknown_category {};
+
+namespace detail {
+
 using value_from_conversion = mp11::mp_true;
 using value_to_conversion = mp11::mp_false;
 
-struct user_conversion_tag { };
-struct context_conversion_tag : user_conversion_tag { };
-struct full_context_conversion_tag : context_conversion_tag { };
-struct native_conversion_tag { };
-struct value_conversion_tag : native_conversion_tag { };
-struct object_conversion_tag : native_conversion_tag { };
-struct array_conversion_tag : native_conversion_tag { };
-struct string_conversion_tag : native_conversion_tag { };
-struct bool_conversion_tag : native_conversion_tag { };
-struct value_ref_tag : native_conversion_tag { };
-struct number_conversion_tag : native_conversion_tag { };
-struct integral_conversion_tag : number_conversion_tag { };
-struct floating_point_conversion_tag : number_conversion_tag { };
-struct null_like_conversion_tag { };
-struct string_like_conversion_tag { };
-struct map_like_conversion_tag { };
-struct path_conversion_tag { };
-struct sequence_conversion_tag { };
-struct tuple_conversion_tag { };
-struct described_class_conversion_tag { };
-struct described_enum_conversion_tag { };
-struct variant_conversion_tag { };
-struct optional_conversion_tag { };
-struct no_conversion_tag { };
+using user_category = std::integral_constant<
+    conversion_category, conversion_category::user>;
+using user_context_category = std::integral_constant<
+    conversion_category, conversion_category::user_context>;
+using user_full_context_category = std::integral_constant<
+    conversion_category, conversion_category::user_full_context>;
+using json_value_category = std::integral_constant<
+    conversion_category, conversion_category::json_value>;
+using json_object_category = std::integral_constant<
+    conversion_category, conversion_category::json_object>;
+using json_array_category = std::integral_constant<
+    conversion_category, conversion_category::json_array>;
+using json_string_category = std::integral_constant<
+    conversion_category, conversion_category::json_string>;
+using json_value_ref_category = std::integral_constant<
+    conversion_category, conversion_category::json_value_ref>;
+
+template< class Cat >
+using is_user_conversion = mp11::mp_bool<
+       Cat::value == conversion_category::user
+    || Cat::value == conversion_category::user_context
+    || Cat::value == conversion_category::user_full_context>;
+
+template< class Cat >
+using is_native_conversion = mp11::mp_bool<
+       Cat::value == conversion_category::user
+    || Cat::value == conversion_category::json_value
+    || Cat::value == conversion_category::json_object
+    || Cat::value == conversion_category::json_array
+    || Cat::value == conversion_category::json_string
+    || Cat::value == conversion_category::json_value_ref
+    || Cat::value == conversion_category::boolean
+    || Cat::value == conversion_category::integer
+    || Cat::value == conversion_category::floating_point>;
 
 template<class... Args>
 using supports_tag_invoke = decltype(tag_invoke( std::declval<Args>()... ));
@@ -344,109 +371,153 @@ using uniquely_named_members = std::true_type;
 #endif // BOOST_DESCRIBE_CXX14
 
 // user conversion (via tag_invoke)
-template< class Ctx, class T, class Dir >
-using user_conversion_category = mp11::mp_cond<
-    has_user_conversion3<Ctx, T, Dir>, full_context_conversion_tag,
-    has_user_conversion2<Ctx, T, Dir>, context_conversion_tag,
-    has_user_conversion1<T, Dir>,      user_conversion_tag>;
+template< class T, class Ctx, class Dir >
+using tag_invoke_with_context_category = mp11::mp_cond<
+    has_user_conversion3<Ctx, T, Dir>, user_full_context_category,
+    has_user_conversion2<Ctx, T, Dir>, user_context_category>;
+
+template< class T, class Dir >
+using tag_invoke_category = mp11::mp_cond<
+    has_user_conversion1<T, Dir>,      user_category>;
 
 // native conversions (constructors and member functions of value)
 template< class T >
 using native_conversion_category = mp11::mp_cond<
-    std::is_same<T, value>,  value_conversion_tag,
-    std::is_same<T, array>,  array_conversion_tag,
-    std::is_same<T, object>, object_conversion_tag,
-    std::is_same<T, string>, string_conversion_tag>;
+    std::is_same<T, value_ref>, json_value_ref_category,
+    std::is_same<T, value>,     json_value_category,
+    std::is_same<T, array>,     json_array_category,
+    std::is_same<T, object>,    json_object_category,
+    std::is_same<T, string>,    json_string_category>;
 
-// generic conversions
-template< class T >
-using generic_conversion_category = mp11::mp_cond<
-    // std::is_same<T,std::initializer_list<value_ref>>, init_list_tag,
-    std::is_same<T, value_ref>, value_ref_tag,
+template<class T>
+struct deduced_category
+    : mp11::mp_cond<
+        std::is_same<T, bool>,     detail::boolean_category,
+        std::is_integral<T>,       detail::integer_category,
+        std::is_floating_point<T>, detail::floating_point_category,
+        is_null_like<T>,           null_category,
+        is_string_like<T>,         string_category,
+        is_variant_like<T>,        variant_category,
+        is_optional_like<T>,       optional_category,
+        is_map_like<T>,            map_category,
+        is_sequence_like<T>,       sequence_category,
+        is_tuple_like<T>,          tuple_category,
+        is_described_class<T>,     described_class_category,
+        is_described_enum<T>,      described_enum_category,
+        is_path_like<T>,           path_category,
+        // failed to find a suitable implementation
+        mp11::mp_true,             unknown_category>
+{ };
 
-    std::is_same<T, bool>,     bool_conversion_tag,
-    std::is_integral<T>,       integral_conversion_tag,
-    std::is_floating_point<T>, floating_point_conversion_tag,
-    is_null_like<T>,           null_like_conversion_tag,
-    is_string_like<T>,         string_like_conversion_tag,
-    is_variant_like<T>,        variant_conversion_tag,
-    is_optional_like<T>,       optional_conversion_tag,
-    is_map_like<T>,            map_like_conversion_tag,
-    is_sequence_like<T>,       sequence_conversion_tag,
-    is_tuple_like<T>,          tuple_conversion_tag,
-    is_described_class<T>,     described_class_conversion_tag,
-    is_described_enum<T>,      described_enum_conversion_tag,
-    is_path_like<T>,           path_conversion_tag,
-    // failed to find a suitable implementation
-    mp11::mp_true,             no_conversion_tag>;
+struct no_context {};
+
+template <class T, class Ctx>
+using use_category_helper = use_category<
+    T, mp11::mp_if<std::is_same<Ctx, no_context>, void, Ctx>>;
+
+template< class Dir >
+struct all_custom_checks
+{
+    template <class T, class Ctx>
+    using fn = mp11::mp_list<
+        mp11::mp_defer<use_category_helper, T, Ctx>,
+        mp11::mp_defer<tag_invoke_with_context_category, T, Ctx, Dir>>;
+};
+
+template< class Dir >
+struct all_fallback_checks
+{
+    template <class T>
+    using fn = mp11::mp_list<
+        mp11::mp_defer<use_category_helper, T, void>,
+        mp11::mp_defer<tag_invoke_category, T, Dir>,
+        mp11::mp_defer<native_conversion_category, T>,
+        mp11::mp_defer<deduced_category, T>>;
+};
+
+template <class T, class Ctx>
+using direct_custom_checks = mp11::mp_list<
+    mp11::mp_defer<use_category_helper, T, Ctx>>;
+
+template <class T>
+using direct_fallback_checks = mp11::mp_list<
+    mp11::mp_defer<use_category_helper, T, void>,
+    mp11::mp_defer<deduced_category, T>>;
+
+template <class>
+using no_checks = mp11::mp_list<>;
 
 template< class T >
 using nested_type = typename T::type;
+
 template< class T1, class T2 >
-using conversion_category_impl_helper = mp11::mp_eval_if_not<
-    std::is_same<detail::no_conversion_tag, T1>,
+using get_conversion_category_helper = mp11::mp_eval_if_c<
+    conversion_category::unknown != T1::value,
     T1,
     mp11::mp_eval_or_q, T1, mp11::mp_quote<nested_type>, T2>;
-template< class Ctx, class T, class Dir >
-struct conversion_category_impl
+
+template<
+    class T,
+    class Ctx,
+    template<class, class> class CustomChecks,
+    template<class> class FallbackChecks>
+struct get_conversion_category_impl
 {
-    using type = mp11::mp_fold<
-        mp11::mp_list<
-            mp11::mp_defer<user_conversion_category, Ctx, T, Dir>,
-            mp11::mp_defer<native_conversion_category, T>,
-            mp11::mp_defer<generic_conversion_category, T>>,
-        no_conversion_tag,
-        conversion_category_impl_helper>;
+    using type = std::integral_constant<
+        conversion_category,
+        mp11::mp_fold<
+            mp11::mp_append< CustomChecks<T, Ctx>, FallbackChecks<T> >,
+            unknown_category,
+            get_conversion_category_helper>::value>;
 };
-template< class Ctx, class T, class Dir >
-using conversion_category =
-    typename conversion_category_impl< Ctx, T, Dir >::type;
+
+template<
+    class T,
+    class Ctx,
+    template<class, class> class CustomChecks,
+    template<class> class FallbackChecks>
+using get_conversion_category = typename get_conversion_category_impl<
+    T, Ctx, CustomChecks, FallbackChecks>::type;
 
 template< class T >
-using any_conversion_tag = mp11::mp_not<
-    std::is_same< T, no_conversion_tag > >;
+using any_conversion_tag = mp11::mp_not< std::is_same<T, unknown_category> >;
 
-template< class T, class Dir, class... Ctxs >
-struct conversion_category_impl< std::tuple<Ctxs...>, T, Dir >
+template<
+    class T,
+    template<class, class> class CustomChecks,
+    template<class> class FallbackChecks,
+    class... Ctxs >
+struct get_conversion_category_impl<
+    T, std::tuple<Ctxs...>, CustomChecks, FallbackChecks>
 {
     using ctxs = mp11::mp_list< remove_cvref<Ctxs>... >;
     using cats = mp11::mp_list<
-        conversion_category<remove_cvref<Ctxs>, T, Dir>... >;
+        get_conversion_category<
+            T, remove_cvref<Ctxs>, CustomChecks, no_checks>... >;
 
-    template< class I >
-    using exists = mp11::mp_less< I, mp11::mp_size<cats> >;
+    using custom_index = mp11::mp_find_if< cats, any_conversion_tag >;
+    using is_custom = mp11::mp_less< custom_index, mp11::mp_size<cats> >;
 
-    using context2 = mp11::mp_find< cats, full_context_conversion_tag >;
-    using context1 = mp11::mp_find< cats, context_conversion_tag >;
-    using context0 = mp11::mp_find< cats, user_conversion_tag >;
-    using index = mp11::mp_cond<
-        exists<context2>, context2,
-        exists<context1>, context1,
-        exists<context0>, context0,
-        mp11::mp_true, mp11::mp_find_if< cats, any_conversion_tag > >;
-    using type = mp11::mp_eval_or<
-        no_conversion_tag,
-        mp11::mp_at, cats, index >;
+    using index = mp11::mp_if< is_custom, custom_index, mp11::mp_size_t<0> >;
+
+    using fallback_cat = mp11::mp_fold<
+        FallbackChecks<T>, unknown_category, get_conversion_category_helper>;
+
+    using type = std::integral_constant<
+        conversion_category,
+        mp11::mp_eval_if_not<
+            is_custom, fallback_cat, mp11::mp_at, cats, index>::value>;
 };
-
-struct no_context
-{};
 
 template <class T, class Dir>
 using can_convert = mp11::mp_not<
     std::is_same<
-        detail::conversion_category<no_context, T, Dir>,
-        detail::no_conversion_tag>>;
-
-template<class Impl1, class Impl2>
-using conversion_round_trips_helper = mp11::mp_or<
-    std::is_same<Impl1, Impl2>,
-    std::is_base_of<user_conversion_tag, Impl1>,
-    std::is_base_of<user_conversion_tag, Impl2>>;
-template< class Ctx, class T, class Dir >
-using conversion_round_trips  = conversion_round_trips_helper<
-    conversion_category<Ctx, T, Dir>,
-    conversion_category<Ctx, T, mp11::mp_not<Dir>>>;
+        get_conversion_category<
+            T,
+            no_context,
+            all_custom_checks<Dir>::template fn,
+            all_fallback_checks<Dir>::template fn>,
+        unknown_category>>;
 
 template< class T1, class T2 >
 struct copy_cref_helper
@@ -501,7 +572,11 @@ template< class T, class Dir, class... Ctxs >
 struct supported_context< std::tuple<Ctxs...>, T, Dir >
 {
     using Ctx = std::tuple<Ctxs...>;
-    using impl = conversion_category_impl<Ctx, T, Dir>;
+    using impl = get_conversion_category_impl<
+        T,
+        Ctx,
+        all_custom_checks<Dir>::template fn,
+        all_fallback_checks<Dir>::template fn>;
     using index = typename impl::index;
     using next_supported = supported_context<
         mp11::mp_at< typename impl::ctxs, index >, T, Dir >;
