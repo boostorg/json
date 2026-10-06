@@ -497,6 +497,14 @@ public:
             value_to<::value_to_test_ns::E1>( value("x"), ctx... ));
 
         {
+            // an embedded null must not truncate the enumerator name
+            value const jv( string_view("a\0", 2) );
+            BOOST_TEST( jv.as_string().size() == 2 );
+            BOOST_TEST_THROWS_WITH_LOCATION(
+                value_to<::value_to_test_ns::E1>( jv, ctx... ));
+        }
+
+        {
 #ifndef BOOST_NO_CXX17_HDR_OPTIONAL
             value jv = {{"n", -78}, {"d", 0.125}};
             auto res = try_value_to<::value_to_test_ns::T8>(
