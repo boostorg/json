@@ -232,6 +232,10 @@ constexpr T static_const<T>::value;
 # define BOOST_JSON_DEPRECATED(x)
 #endif
 
+#if defined(__cpp_impl_reflection) && __cpp_impl_reflection >= 202506L
+#define BOOST_JSON_HAS_REFLECTION
+#endif
+
 #ifndef BOOST_ALL_NO_EMBEDDED_GDB_SCRIPTS
 #include <boost/json/detail/gdb_printers.hpp>
 #endif

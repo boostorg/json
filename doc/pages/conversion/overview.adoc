@@ -15,31 +15,27 @@ While the <<ref_value>> container makes it easy to create ad-hoc structures,
 often it is necessary to convert between JSON and user-defined types or types
 from the standard library.
 
-The function template <<ref_value_from>> provides an interface to construct
-a <<ref_value>> from a type `T`. The function template <<ref_value_to>>
-converts in the opposite direction, from a type `T` to <<ref_value>>. Both
-support a wide variety of different
+Boost.JSON provides several components to achieve this. For example, the
+function template <<ref_value_from>> provides an interface to construct
+a <<ref_value>> from a type `T`, and the function template <<ref_value_to>>
+converts in the opposite direction, from a type `T` to <<ref_value>>. These
+components support a wide variety of different
 https://en.cppreference.com/w/cpp/language/types[fundamental types], such as
-`int` or `double`, standard library types, such as `std::string` or
-`std::vector<T>`, and can be extended to support user-defined types.
+`int` or `double`, standard library types, such as {std_string} or
+{std_vector}, and can be extended to support user-defined types.
 
 [source]
 ----
 include::../../../test/snippets.cpp[tag=snippet_conv_1,indent=0]
 ----
 
-For the type `T`, the appropriate conversion approach is chosen from the
-following list of categories. The first matching category is selected.
+For a type `T` the library chooses a conversion implementation that corresponds
+to the first matching category from the following list.
 
 .Conversion categories
 [%autowidth,cols=4]
 |===
 |Category of T|Comment|`value_from` behavior|`value_to` behavior
-
-|Custom conversion.
-|
-|Custom behavior.
-|Custom behavior.
 
 |Boost.JSON container.
 |
@@ -55,57 +51,57 @@ following list of categories. The first matching category is selected.
 |
 a| The result is a number equal to input and has the type
 
-* `std::int64_t`, if `T` is a signed integer'; or
+* `std::int64_t`, if `T` is a signed integer; or
 * `std::uint64_t`, if `T` is an unsigned integer; or
 * `double` otherwise.
 |The result is created via <<ref_value_to_number>>.
 
-|Type satisfying <<ref_is_null_like>>
+|<<ref_null_category>>
 |Intended for types like {std_monostate}.
 |The result is a null value.
 |The result is default-constructed.
 
-|Type satisfying <<ref_is_string_like>>.
-|A sequence of `char`s, e.g. `std::string`.
+|<<ref_string_category>>
+|A sequence of ``char``s, e.g. {std_string}.
 |The result is a <<ref_string>>.
 |The result is constructed from a <<ref_string_view>>.
 
-|Type satisfying <<ref_is_variant_like>>.
-|`std::variant` and similar types, e.g. `boost::variant2::variant`.
+|<<ref_variant_category>>
+|{std_variant} and similar types, e.g. {ref_variant}.
 |The result is equal to the result of conversion of the active variant
     alternative.
 |The result holds the first alternative for which a conversion succeeds.
 
-|Type satisfying <<ref_is_optional_like>>
-|
+|<<ref_optional_category>>
+|{std_optional} and similar types, e.g. {ref_optional}.
 |If the input value is empty, the result is a `null`. Otherwise it is
     equivalent to conversion of the object stored inside of optional.
 |The result is default constructed if the input value is `null`. Otherwise the
     result is constructed from the result of conversion of the input to the
     type stored in optional.
 
-|Type satisfying <<ref_is_map_like>>.
-|A one-to-one mapping (e.g. `std::map`) with string-like keys.
+|<<ref_map_category>>
+|A one-to-one mapping (e.g. {std_map}) with string-like keys.
 |The result is an <<ref_object>>.
 |The result is default-constructed, and elements are `insert`-ed at the end.
 
-|Type satisfying <<ref_is_sequence_like>>.
-|A sequence of elements, e.g. `std::vector`.
+|<<ref_sequence_category>>
+|A sequence of elements, e.g. {std_vector}.
 |The result is an <<ref_array>>.
 |The result is default-constructed, and elements are `insert`-ed at the end.
 
-|Type satisfying <<ref_is_tuple_like>>.
-|A heterogenous sequence with fixed size, e.g. `std::tuple` and `std::pair`.
+|<<ref_tuple_category>>
+|A heterogenous sequence with fixed size, e.g. {std_tuple} and {std_pair}.
 |The result is an <<ref_array>>.
 |The result is constructed with the array elements as constructor arguments.
 
-|Type satisfying <<ref_is_described_class>>
+|<<ref_described_class_category>>
 |
 |The result is an <<ref_object>> with described members' names as keys.
 |The result is default-constructed and described members are assigned
     corresponding values.
 
-|Type satisfying <<ref_is_described_enum>>
+|<<ref_described_enum_category>>
 |
 |If the input value is equal to one of the described enumerators, the result is
     a <<ref_string>>, containing its name. Otherwise it's equal to the input
@@ -113,8 +109,8 @@ a| The result is a number equal to input and has the type
 |The result is the described enumerator, corresponding to the input
     <<ref_string>>.
 
-|Type satisfying <<ref_is_path_like>>.
-|`std::filesystem::path` and similar types, e.g. `boost::filesystem::path`.
+|<<ref_path_category>>
+|{std_path} and similar types, e.g. {ref_path}.
 |The result is equal to the result of `path::generic_string`.
 |The result is constructed from two pointers to `const char`.
 |===
@@ -127,11 +123,11 @@ contained objects is applied recursively. For example:
 include::../../../test/snippets.cpp[tag=snippet_conv_recursive,indent=0]
 ----
 
-Here, the map is converted into an <<ref_object>>, since it matches
-<<ref_is_map_like>>. Each of its keys is converted into a <<ref_string>>, as
-`std::string` matches <<ref_is_string_like>>, and each of its values is
-converted into an <<ref_array>>, as `std::pair` matches <<ref_is_tuple_like>>.
-Finally, elements of pairs are converted into a `std::int64_t` number and
+Here, the map is converted to an <<ref_object>>, since its conversion category
+is <<ref_map_category>>. Each of its keys is converted into a <<ref_string>>,
+as `std::string` is of <<ref_string_category>>, and each of its values is
+converted into an <<ref_array>>, as `std::pair` is of <<ref_tuple_category>>.
+Finally, elements of pairs are converted to a `std::int64_t` number and
 a `bool`.
 
 :leveloffset: +1
@@ -140,8 +136,8 @@ include::custom.adoc[]
 include::nothrow.adoc[]
 include::alloc.adoc[]
 include::context.adoc[]
-include::forward.adoc[]
 include::direct.adoc[]
+include::forward.adoc[]
 include::guidelines.adoc[]
 
 :leveloffset: -1

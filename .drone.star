@@ -46,6 +46,13 @@ def main(ctx):
         ],
         extras=[
             { 'match': {'compiler': 'gcc =latest', 'os': 'linux'},
+              'name': 'GCC reflection',
+              'environment': {
+                'B2_CXXSTD': '26',
+                'B2_FLAGS': 'cxxflags=-freflection warnings=extra warnings-as-errors=on',
+              },
+            },
+            { 'match': {'compiler': 'gcc =latest', 'os': 'linux'},
               'name': 'GCC static linking',
               'environment': {'B2_LINK': 'static'},
             },
