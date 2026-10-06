@@ -49,6 +49,13 @@ def main(ctx):
               'name': 'GCC static linking',
               'environment': {'B2_LINK': 'static'},
             },
+            { 'match': {'compiler': 'gcc =latest', 'os': 'linux'},
+              'name': 'GCC reflection',
+              'environment': {
+                'B2_CXXFLAGS': '-freflection',
+                'B2_CXXSTD': '26',
+              },
+            },
             { 'match': {'compiler': 'gcc =15', 'os': 'linux'},
               'name': 'GCC 15 32bit',
               'packages': ["g++-15-multilib"],
@@ -435,7 +442,7 @@ _supported_compilers = {
             'latest_cpp': 2026,
             'platforms': {
                 ('linux', 'x86_64'): {
-                    'image': 'cppalliance/droneubuntu2604:1',
+                    'image': 'cppalliance/droneubuntu2610:1',
                     'packages': ['g++-16', 'binutils-gold'],
                 }
             },
