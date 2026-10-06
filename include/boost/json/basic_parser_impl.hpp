@@ -210,6 +210,17 @@ parse_number_helper
             std::integral_constant<
                 number_precision, static_cast<number_precision>(N)>() );
     }
+
+    char const*
+    operator()(
+        mp11::mp_size_t<static_cast<std::size_t>(number_precision::none)> )
+        const
+    {
+        return parser->skip_number(
+            p,
+            std::integral_constant<bool, StackEmpty_>(),
+            std::integral_constant<char, First_>() );
+    }
 };
 
 //----------------------------------------------------------
@@ -2002,15 +2013,15 @@ do_arr6:
 
 template<class Handler>
 template<bool StackEmpty_, char First_, number_precision Numbers_>
-const char*
-basic_parser<Handler>::
-parse_number(const char* p,
+char const*
+basic_parser<Handler>::parse_number(
+    char const* p,
     std::integral_constant<bool, StackEmpty_> stack_empty,
     std::integral_constant<char, First_> first,
     std::integral_constant<number_precision, Numbers_> mode)
 {
+    BOOST_CORE_STATIC_ASSERT(Numbers_ != number_precision::none);
     constexpr bool precise_parsing = mode == number_precision::precise;
-    constexpr bool no_parsing = mode == number_precision::none;
 
     // only one of these will be true if we are not resuming
     // if negative then !zero_first && !nonzero_first
@@ -2069,11 +2080,7 @@ parse_number(const char* p,
                     return fail(cs.begin(), error::syntax, &loc);
                 }
 
-                BOOST_IF_CONSTEXPR( !no_parsing )
-                    num.mant = detail::parse_unsigned( 0, cs.begin(), n1 );
-                else
-                    num.mant = 0;
-
+                num.mant = detail::parse_unsigned( 0, cs.begin(), n1 );
                 cs += n1;
 
                 // integer or floating-point with
@@ -2100,7 +2107,7 @@ parse_number(const char* p,
                         ++cs;
                         goto do_exp1;
                     }
-                    BOOST_IF_CONSTEXPR( negative && !no_parsing )
+                    BOOST_IF_CONSTEXPR( negative )
                         num.mant = ~num.mant + 1;
                     goto finish_signed;
                 }
@@ -2127,11 +2134,8 @@ parse_number(const char* p,
                 goto do_num7;
             }
 
-            BOOST_IF_CONSTEXPR( !no_parsing )
-                num.mant = detail::parse_unsigned( num.mant, cs.begin(), n2 );
-
+            num.mant = detail::parse_unsigned( num.mant, cs.begin(), n2 );
             BOOST_ASSERT(num.bias == 0);
-
             num.bias -= n2;
 
             cs += n2;
@@ -2264,8 +2268,7 @@ do_num2:
                 if( num.mant  > 922337203685477580 || (
                     num.mant == 922337203685477580 && c > '8'))
                     break;
-                BOOST_IF_CONSTEXPR( !no_parsing )
-                    num.mant = 10 * num.mant + ( c - '0' );
+                num.mant = 10 * num.mant + ( c - '0' );
                 continue;
             }
             goto do_num6; // [.eE]
@@ -2299,8 +2302,7 @@ do_num2:
                 if( num.mant  > 1844674407370955161 || (
                     num.mant == 1844674407370955161 && c > '5'))
                     break;
-                BOOST_IF_CONSTEXPR( !no_parsing )
-                    num.mant = 10 * num.mant + ( c - '0' );
+                num.mant = 10 * num.mant + ( c - '0' );
             }
             else
             {
@@ -2544,8 +2546,7 @@ do_num8:
             c >= '0' && c <= '9'))
         {
             ++cs;
-            if(!no_parsing && BOOST_JSON_LIKELY(
-                num.mant <= 9007199254740991)) // 2^53-1
+            if(BOOST_JSON_LIKELY( num.mant <= 9007199254740991 )) // 2^53-1
             {
                 if(BOOST_JSON_UNLIKELY( num.bias - 1 == INT_MIN ))
                 {
@@ -2670,7 +2671,7 @@ do_exp3:
                     (num.exp == 214748364 && c > '7')
                 ))
                     num.exp = INT_MAX;
-                else BOOST_IF_CONSTEXPR( !no_parsing )
+                else
                     num.exp = 10 * num.exp + ( c - '0' );
 
                 ++cs;
@@ -2766,8 +2767,6 @@ finish_dub:
         BOOST_ASSERT( err.ptr == data + full_size );
         (void)err;
     }
-    else BOOST_IF_CONSTEXPR( no_parsing )
-        d = 0;
     else
         d = detail::dec_to_float(
             num.mant,
@@ -2776,6 +2775,588 @@ finish_dub:
             num.neg);
     if(BOOST_JSON_UNLIKELY(
         ! h_.on_double(d, {begin, size}, ec_)))
+        return fail(cs.begin());
+    return cs.begin();
+}
+
+//----------------------------------------------------------
+
+template<class Handler>
+template<bool StackEmpty_, char First_>
+char const*
+basic_parser<Handler>::skip_number(
+    char const* p,
+    std::integral_constant<bool, StackEmpty_> stack_empty,
+    std::integral_constant<char, First_> first)
+{
+    // only one of these will be true if we are not resuming
+    // if negative then !zero_first && !nonzero_first
+    // if zero_first then !nonzero_first && !negative
+    // if nonzero_first then !zero_first && !negative
+    bool negative = first == '-';
+    bool const zero_first = first == '0';
+    bool const nonzero_first = first == '+';
+    detail::const_stream_wrapper cs(p, end_);
+    const char* begin = cs.begin();
+    if(stack_empty || st_.empty())
+    {
+        //----------------------------------
+        //
+        // '-'
+        // leading minus sign
+        //
+        BOOST_ASSERT(cs);
+        if(negative)
+            ++cs;
+
+        // fast path
+        if( cs.remain() >= 16 + 1 + 16 ) // digits . digits
+        {
+            int n1;
+
+            if( nonzero_first || (negative && *cs != '0') )
+            {
+                n1 = detail::count_digits( cs.begin() );
+                BOOST_ASSERT(n1 >= 0 && n1 <= 16);
+
+                if( negative && n1 == 0 && opt_.allow_infinity_and_nan )
+                    return parse_literal(
+                        p - 1,
+                        detail::literals_c<detail::literals::neg_infinity>());
+
+                if( ! nonzero_first && n1 == 0 )
+                {
+                    // digit required
+                    BOOST_STATIC_CONSTEXPR source_location loc
+                        = BOOST_CURRENT_LOCATION;
+                    return fail(cs.begin(), error::syntax, &loc);
+                }
+
+                cs += n1;
+
+                // integer or floating-point with
+                // >= 16 leading digits
+                if( n1 == 16 )
+                    goto do_num2;
+            }
+            else
+            {
+                // 0. floating-point or 0e integer
+                n1 = 0;
+                ++cs;
+            }
+
+            {
+                const char c = *cs;
+                if(c != '.')
+                {
+                    if((c | 32) == 'e')
+                    {
+                        ++cs;
+                        goto do_exp1;
+                    }
+                    goto finish_signed;
+                }
+            }
+
+            // floating-point number
+
+            ++cs;
+
+            int n2 = detail::count_digits( cs.begin() );
+            BOOST_ASSERT(n2 >= 0 && n2 <= 16);
+
+            if( n2 == 0 )
+            {
+                // digit required
+                BOOST_STATIC_CONSTEXPR source_location loc
+                    = BOOST_CURRENT_LOCATION;
+                return fail(cs.begin(), error::syntax, &loc);
+            }
+
+            // floating-point mantissa overflow
+            if( n1 + n2 >= 19 )
+                goto do_num7;
+
+            cs += n2;
+
+            char ch = *cs;
+            if( (ch | 32) == 'e' )
+            {
+                ++cs;
+                goto do_exp1;
+            }
+            else if( ch >= '0' && ch <= '9' )
+            {
+                goto do_num8;
+            }
+
+            goto finish_dub;
+        }
+    }
+    else
+    {
+        negative = num_.neg;
+        state st;
+        st_.pop(st);
+        switch(st)
+        {
+        default: BOOST_JSON_UNREACHABLE();
+        case state::num1: goto do_num1;
+        case state::num2: goto do_num2;
+        case state::num3: goto do_num3;
+        case state::num4: goto do_num4;
+        case state::num5: goto do_num5;
+        case state::num6: goto do_num6;
+        case state::num7: goto do_num7;
+        case state::num8: goto do_num8;
+        case state::exp1: goto do_exp1;
+        case state::exp2: goto do_exp2;
+        case state::exp3: goto do_exp3;
+        }
+    }
+
+    //----------------------------------
+    //
+    // DIGIT
+    // first digit
+    //
+do_num1:
+    if( zero_first || nonzero_first || BOOST_JSON_LIKELY(cs) )
+    {
+        char const c = *cs;
+        if(zero_first)
+        {
+            ++cs;
+            goto do_num6;
+        }
+        else if( nonzero_first || BOOST_JSON_LIKELY(c >= '1' && c <= '9') )
+        {
+            ++cs;
+        }
+        else if(BOOST_JSON_UNLIKELY( c == '0' ))
+        {
+            ++cs;
+            goto do_num6;
+        }
+        else if( negative && opt_.allow_infinity_and_nan )
+        {
+            st_.push(state::lit1);
+            cur_lit_ = literal_index(detail::literals::neg_infinity);
+            lit_offset_ = 1;
+            return parse_literal(
+                cs.begin(), detail::literals_c<detail::literals::resume>() );
+        }
+        else
+        {
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
+            return fail(cs.begin(), error::syntax, &loc);
+        }
+    }
+    else
+    {
+        if(BOOST_JSON_UNLIKELY(
+            ! h_.on_number_part( {begin, cs.used(begin)}, ec_ )))
+            return fail(cs.begin());
+
+        number num;
+        num.neg = negative;
+        return maybe_suspend(cs.begin(), state::num1, num);
+    }
+
+    //----------------------------------
+    //
+    // 1*DIGIT
+    // significant digits left of decimal
+    //
+do_num2:
+    if(negative || (!stack_empty && negative))
+    {
+        for(;;)
+        {
+            if(BOOST_JSON_UNLIKELY(! cs))
+            {
+                if(BOOST_JSON_UNLIKELY(more_))
+                {
+                    if(BOOST_JSON_UNLIKELY(
+                        ! h_.on_number_part( {begin, cs.used(begin)}, ec_ )))
+                        return fail(cs.begin());
+
+                    number num;
+                    num.neg = negative;
+                    return suspend(cs.begin(), state::num2, num);
+                }
+                goto finish_int;
+            }
+            char const c = *cs;
+            if(BOOST_JSON_LIKELY( c >= '0' && c <= '9' ))
+            {
+                ++cs;
+                continue;
+            }
+            goto do_num6; // [.eE]
+        }
+    }
+    else
+    {
+        for(;;)
+        {
+            if(BOOST_JSON_UNLIKELY(! cs))
+            {
+                if(BOOST_JSON_UNLIKELY(more_))
+                {
+                    if(BOOST_JSON_UNLIKELY(
+                        ! h_.on_number_part( {begin, cs.used(begin)}, ec_ )))
+                        return fail(cs.begin());
+
+                    number num;
+                    num.neg = negative;
+                    return suspend(cs.begin(), state::num2, num);
+                }
+                goto finish_int;
+            }
+            char const c = *cs;
+            if(BOOST_JSON_LIKELY( c >= '0' && c <= '9' ))
+                ++cs;
+            else
+                goto do_num6; // [.eE]
+        }
+    }
+
+    //----------------------------------
+    //
+    // 1*DIGIT
+    // non-significant digits left of decimal
+    //
+do_num3:
+    for(;;)
+    {
+        if(BOOST_JSON_UNLIKELY(! cs))
+        {
+            if(BOOST_JSON_UNLIKELY(more_))
+            {
+                if(BOOST_JSON_UNLIKELY(
+                    ! h_.on_number_part( {begin, cs.used(begin)}, ec_ )))
+                    return fail(cs.begin());
+
+                number num;
+                num.neg = negative;
+                return suspend(cs.begin(), state::num3, num);
+            }
+            goto finish_dub;
+        }
+        char const c = *cs;
+        if(BOOST_JSON_UNLIKELY( c >= '0' && c <= '9' ))
+        {
+            ++cs;
+        }
+        else if(BOOST_JSON_LIKELY( c == '.' ))
+        {
+            ++cs;
+            break;
+        }
+        else if( (c | 32) == 'e' )
+        {
+            ++cs;
+            goto do_exp1;
+        }
+        else
+        {
+            goto finish_dub;
+        }
+    }
+
+    //----------------------------------
+    //
+    // DIGIT
+    // first non-significant digit
+    // to the right of decimal
+    //
+do_num4:
+    {
+        if(BOOST_JSON_UNLIKELY(! cs))
+        {
+            if(BOOST_JSON_UNLIKELY(
+                ! h_.on_number_part( {begin, cs.used(begin)}, ec_ )))
+                return fail(cs.begin());
+
+            number num;
+            num.neg = negative;
+            return maybe_suspend(cs.begin(), state::num4, num);
+        }
+        char const c = *cs;
+        if(BOOST_JSON_LIKELY( c >= '0' && c <= '9' ))
+        {
+            ++cs;
+        }
+        else
+        {
+            // digit required
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
+            return fail(cs.begin(), error::syntax, &loc);
+        }
+    }
+
+    //----------------------------------
+    //
+    // 1*DIGIT
+    // non-significant digits
+    // to the right of decimal
+    //
+do_num5:
+    for(;;)
+    {
+        if(BOOST_JSON_UNLIKELY(! cs))
+        {
+            if(BOOST_JSON_UNLIKELY(more_))
+            {
+                if(BOOST_JSON_UNLIKELY(
+                    ! h_.on_number_part( {begin, cs.used(begin)}, ec_ )))
+                    return fail(cs.begin());
+
+                number num;
+                num.neg = negative;
+                return suspend(cs.begin(), state::num5, num);
+            }
+            goto finish_dub;
+        }
+        char const c = *cs;
+        if(BOOST_JSON_LIKELY( c >= '0' && c <= '9' ))
+        {
+            ++cs;
+        }
+        else if( (c | 32) == 'e' )
+        {
+            ++cs;
+            goto do_exp1;
+        }
+        else
+        {
+            goto finish_dub;
+        }
+    }
+
+    //----------------------------------
+    //
+    // [.eE]
+    //
+do_num6:
+    {
+        if(BOOST_JSON_UNLIKELY(! cs))
+        {
+            if(BOOST_JSON_UNLIKELY(more_))
+            {
+                if(BOOST_JSON_UNLIKELY(
+                    ! h_.on_number_part( {begin, cs.used(begin)}, ec_ )))
+                    return fail(cs.begin());
+
+                number num;
+                num.neg = negative;
+                return suspend(cs.begin(), state::num6, num);
+            }
+            goto finish_int;
+        }
+        char const c = *cs;
+        if(BOOST_JSON_LIKELY(
+            c == '.'))
+        {
+            ++cs;
+        }
+        else if( (c | 32) == 'e' )
+        {
+            ++cs;
+            goto do_exp1;
+        }
+        else
+        {
+            goto finish_int;
+        }
+    }
+
+    //----------------------------------
+    //
+    // DIGIT
+    // first significant digit
+    // to the right of decimal
+    //
+do_num7:
+    {
+        if(BOOST_JSON_UNLIKELY(! cs))
+        {
+            if(BOOST_JSON_UNLIKELY(more_))
+            {
+                if(BOOST_JSON_UNLIKELY(
+                    ! h_.on_number_part( {begin, cs.used(begin)}, ec_ )))
+                    return fail(cs.begin());
+
+                number num;
+                num.neg = negative;
+                return suspend(cs.begin(), state::num7, num);
+            }
+            // digit required
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
+            return fail(cs.begin(), error::syntax, &loc);
+        }
+        char const c = *cs;
+        if(BOOST_JSON_UNLIKELY( c < '0' || c > '9' ))
+        {
+            // digit required
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
+            return fail(cs.begin(), error::syntax, &loc);
+        }
+    }
+
+    //----------------------------------
+    //
+    // 1*DIGIT
+    // significant digits
+    // to the right of decimal
+    //
+do_num8:
+    for(;;)
+    {
+        if(BOOST_JSON_UNLIKELY(! cs))
+        {
+            if(BOOST_JSON_UNLIKELY(more_))
+            {
+                if(BOOST_JSON_UNLIKELY(
+                    ! h_.on_number_part( {begin, cs.used(begin)}, ec_ )))
+                    return fail(cs.begin());
+
+                number num;
+                num.neg = negative;
+                return suspend(cs.begin(), state::num8, num);
+            }
+            goto finish_dub;
+        }
+        char const c = *cs;
+        if(BOOST_JSON_LIKELY( c >= '0' && c <= '9' ))
+        {
+            ++cs;
+            goto do_num5;
+        }
+        else if( (c | 32) == 'e' )
+        {
+            ++cs;
+            goto do_exp1;
+        }
+        else
+        {
+            goto finish_dub;
+        }
+    }
+
+    //----------------------------------
+    //
+    // *[+-]
+    //
+do_exp1:
+    if(BOOST_JSON_UNLIKELY(! cs))
+    {
+        if(BOOST_JSON_UNLIKELY(
+            ! h_.on_number_part( {begin, cs.used(begin)}, ec_ )))
+            return fail(cs.begin());
+
+        number num;
+        num.neg = negative;
+        return maybe_suspend(cs.begin(), state::exp1, num);
+    }
+    if(*cs == '+')
+    {
+        ++cs;
+    }
+    else if(*cs == '-')
+    {
+        ++cs;
+    }
+
+    //----------------------------------
+    //
+    // DIGIT
+    // first digit of the exponent
+    //
+do_exp2:
+    {
+        if(BOOST_JSON_UNLIKELY(! cs))
+        {
+            if(BOOST_JSON_UNLIKELY(more_))
+            {
+                if(BOOST_JSON_UNLIKELY(
+                    ! h_.on_number_part( {begin, cs.used(begin)}, ec_ )))
+                    return fail(cs.begin());
+
+                number num;
+                num.neg = negative;
+                return suspend(cs.begin(), state::exp2, num);
+            }
+            // digit required
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
+            return fail(cs.begin(), error::syntax, &loc);
+        }
+        char const c = *cs;
+        if(BOOST_JSON_UNLIKELY( c < '0' || c > '9' ))
+        {
+            // digit required
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
+            return fail(cs.begin(), error::syntax, &loc);
+        }
+        ++cs;
+    }
+
+    //----------------------------------
+    //
+    // 1*DIGIT
+    // subsequent digits in the exponent
+    //
+do_exp3:
+    for(;;)
+    {
+        if(BOOST_JSON_UNLIKELY(! cs))
+        {
+            if(BOOST_JSON_UNLIKELY(more_))
+            {
+                if(BOOST_JSON_UNLIKELY(
+                    ! h_.on_number_part( {begin, cs.used(begin)}, ec_ )))
+                    return fail(cs.begin());
+
+                number num;
+                num.neg = negative;
+                return suspend(cs.begin(), state::exp3, num);
+            }
+        }
+        else
+        {
+            char const c = *cs;
+            if(BOOST_JSON_LIKELY( c >= '0' && c <= '9' ))
+            {
+                ++cs;
+                continue;
+            }
+        }
+        goto finish_dub;
+    }
+
+finish_int:
+    if(negative)
+    {
+        if(BOOST_JSON_UNLIKELY(
+            ! h_.on_int64(0, {begin, cs.used(begin)}, ec_)))
+            return fail(cs.begin());
+        return cs.begin();
+    }
+finish_signed:
+    if(BOOST_JSON_UNLIKELY(
+        ! h_.on_uint64(0, {begin, cs.used(begin)}, ec_)))
+        return fail(cs.begin());
+    return cs.begin();
+finish_dub:
+    if(BOOST_JSON_UNLIKELY( !h_.on_double(0, {begin, cs.used(begin)}, ec_) ))
         return fail(cs.begin());
     return cs.begin();
 }
