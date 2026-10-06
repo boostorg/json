@@ -374,9 +374,9 @@ using generic_conversion_category = mp11::mp_cond<
     is_map_like<T>,            map_like_conversion_tag,
     is_sequence_like<T>,       sequence_conversion_tag,
     is_tuple_like<T>,          tuple_conversion_tag,
-    is_described_class<T>,     described_class_conversion_tag,
-    is_described_enum<T>,      described_enum_conversion_tag,
     is_path_like<T>,           path_conversion_tag,
+    is_described_enum<T>,      described_enum_conversion_tag,
+    is_described_class<T>,     described_class_conversion_tag,
     // failed to find a suitable implementation
     mp11::mp_true,             no_conversion_tag>;
 
