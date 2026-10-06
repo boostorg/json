@@ -313,52 +313,87 @@ inline int count_digits( char const* p ) noexcept
 
 // parse_unsigned
 
+inline
+uint64_t
+parse_four_digits(void const* p) noexcept
+{
+#ifdef BOOST_JSON_USE_SSE2
+# if defined(__GNUC__) && (__GNUC__ >= 11 )
+#  define BOOST_JSON_USE_INTRINSICS
+# elif defined(__clang__) && (BOOST_CLANG_VERSION >= 80000 )
+#  define BOOST_JSON_USE_INTRINSICS
+# elif defined(_MSC_VER)
+#  define BOOST_JSON_USE_INTRINSICS
+# endif
+#endif
+
+#ifdef BOOST_JSON_USE_INTRINSICS
+# undef BOOST_JSON_USE_INTRINSICS
+    auto const c0 = _mm_cvtsi32_si128(0x0F0F0F0F);
+    auto v0 = _mm_and_si128(_mm_loadu_si32(p), c0);
+
+    // auto const c1 = _mm_cvtsi64_si128(0x0001'000A'0064'03E8);
+    auto const c1 = _mm_setr_epi16(1000, 100, 10, 1, 0, 0, 0, 0);
+
+    auto v1 = _mm_unpacklo_epi8( v0, _mm_setzero_si128() );
+    auto v2 = _mm_madd_epi16(v1, c1);
+    auto v3 = _mm_srli_epi64(v2, 32);
+    auto v4 = _mm_add_epi32(v2, v3);
+    return static_cast<uint32_t>( _mm_cvtsi128_si32(v4) );
+#else // BOOST_JSON_USE_INTRINSICS
+    uint32_t v;
+    std::memcpy( &v, p, 4 );
+    endian::native_to_little_inplace(v);
+    v = (v & 0x0F0F0F0F) * 2561 >> 8;
+    v = (v & 0x00FF00FF) * 6553601 >> 16;
+    return v;
+#endif // BOOST_JSON_USE_INTRINSICS
+}
+
 inline uint64_t parse_unsigned( uint64_t r, char const * p, std::size_t n ) noexcept
 {
-    while( n >= 4 )
+    auto const e = p + n;
+
+    if(n & 2)
     {
-        // faster on on clang for x86,
-        // slower on gcc
-#ifdef __clang__
-        r = r * 10 + p[0] - '0';
-        r = r * 10 + p[1] - '0';
-        r = r * 10 + p[2] - '0';
-        r = r * 10 + p[3] - '0';
-#else
-        uint32_t v;
-        std::memcpy( &v, p, 4 );
-        endian::native_to_little_inplace(v);
+        uint32_t v0 = 0;
+        std::memcpy( &v0, p, 2 );
+        endian::native_to_little_inplace(v0);
+        v0 = v0 & 0x0F0F;
+        r = (r * 100) + ((v0 & 0xFF) * 10) + (v0 >> 8);
+        p += 2;
+    }
+    if(n & 1)
+    {
+        r = (r * 10) + (p[0] & 0x0F);
+        p += 1;
+    }
 
-        v -= 0x30303030;
-
-        unsigned w0 = v & 0xFF;
-        unsigned w1 = (v >> 8) & 0xFF;
-        unsigned w2 = (v >> 16) & 0xFF;
-        unsigned w3 = (v >> 24);
-
-        r = (((r * 10 + w0) * 10 + w1) * 10 + w2) * 10 + w3;
+#if defined(BOOST_JSON_USE_SSE2) || (BOOST_JSON_ARCH == 64)
+    while(p < e)
+#else // !defined(BOOST_JSON_USE_SSE2) && (BOOST_JSON_ARCH == 32)
+    if( n & 4 )
 #endif
+    {
+        r = r * 10000 + parse_four_digits(p);
         p += 4;
-        n -= 4;
     }
 
-    switch( n )
+#if BOOST_JSON_ARCH == 64
+    while( p < e )
     {
-    case 0:
-        break;
-    case 1:
-        r = r * 10 + p[0] - '0';
-        break;
-    case 2:
-        r = r * 10 + p[0] - '0';
-        r = r * 10 + p[1] - '0';
-        break;
-    case 3:
-        r = r * 10 + p[0] - '0';
-        r = r * 10 + p[1] - '0';
-        r = r * 10 + p[2] - '0';
-        break;
+        uint64_t v;
+        std::memcpy( &v, p, 8 );
+        endian::native_to_little_inplace(v);
+        v = (v & 0x0F0F0F0F0F0F0F0F) * 2561 >> 8;
+        v = (v & 0x00FF00FF00FF00FF) * 6553601 >> 16;
+        v = (v & 0x0000FFFF0000FFFF) * 42949672960001 >> 32;
+
+        r = r * 100000000 + v;
+        p += 8;
     }
+#endif
+
     return r;
 }
 
