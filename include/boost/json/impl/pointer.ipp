@@ -426,6 +426,11 @@ value::set_at_pointer(
     system::error_code& ec,
     set_pointer_options const& opts )
 {
+    // ref can refer to an element of this document, which the walk below
+    // can replace or relocate while it creates missing elements, so the new
+    // value is created before the document is modified
+    value new_value = ref.make_value( storage() );
+
     value* result = detail::walk_pointer(
         *this,
         sv,
@@ -495,7 +500,7 @@ value::set_at_pointer(
         });
 
     if( result )
-        *result = ref.make_value( storage() );
+        *result = std::move(new_value);
     return result;
 }
 
