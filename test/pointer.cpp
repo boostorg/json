@@ -340,6 +340,50 @@ public:
         BOOST_TEST(( jv == object{ {"x", 1} } ));
         BOOST_TEST( *result == 1 );
         BOOST_TEST( result == &jv.at_pointer("/x") );
+
+        // the new value has to be created before the walk, because the walk
+        // replaces and reallocates elements the value_ref can refer to
+        opts = {};
+        jv = object{ {"c", nullptr} };
+        result = &jv.set_at_pointer( "/c/x", jv.at("c"), opts );
+        BOOST_TEST(( jv == object{ {"c", object{ {"x", nullptr} }} } ));
+        BOOST_TEST( result == &jv.at_pointer("/c/x") );
+
+        jv = object{ {"c", nullptr} };
+        result = &jv.set_at_pointer( "/c/0", jv.at("c"), opts );
+        BOOST_TEST(( jv == object{ {"c", array{nullptr}} } ));
+        BOOST_TEST( result == &jv.at_pointer("/c/0") );
+
+        jv = value();
+        result = &jv.set_at_pointer( "/x", jv, opts );
+        BOOST_TEST(( jv == object{ {"x", nullptr} } ));
+        BOOST_TEST( result == &jv.at_pointer("/x") );
+
+        opts.replace_any_scalar = true;
+        jv = object{ {"c", "a string that does not fit in the SBO buffer"} };
+        result = &jv.set_at_pointer( "/c/x", jv.at("c"), opts );
+        BOOST_TEST((
+            jv == object{ {"c", object{
+                {"x", "a string that does not fit in the SBO buffer"} }} } ));
+        BOOST_TEST( result == &jv.at_pointer("/c/x") );
+
+        // growing the object frees the table the value_ref points into
+        opts = {};
+        jv = object{ {"b", array{1, 2, 3}} };
+        BOOST_TEST( jv.get_object().capacity() == jv.get_object().size() );
+        result = &jv.set_at_pointer( "/a", jv.at("b"), opts );
+        BOOST_TEST(( jv == object{
+            {"b", array{1, 2, 3}}, {"a", array{1, 2, 3}} } ));
+        BOOST_TEST( result == &jv.at_pointer("/a") );
+
+        // growing the array frees the table the value_ref points into
+        opts.max_created_elements = 100;
+        jv = array{ array{9, 8}, 1 };
+        BOOST_TEST( jv.get_array().capacity() == jv.get_array().size() );
+        result = &jv.set_at_pointer( "/5", jv.at_pointer("/0"), opts );
+        BOOST_TEST(( jv == array{
+            array{9, 8}, 1, nullptr, nullptr, nullptr, array{9, 8} } ));
+        BOOST_TEST( result == &jv.at_pointer("/5") );
     }
 
     template<class ErrorCode>
