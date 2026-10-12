@@ -334,7 +334,7 @@ public:
         {
             p_.t->size = static_cast<
                 std::uint32_t>(n);
-            data()[n] = 0;
+            reinterpret_cast<char*>(p_.t + 1)[n] = 0;
         }
     }
 

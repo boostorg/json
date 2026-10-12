@@ -22,6 +22,7 @@ namespace detail {
 
 string_impl::
 string_impl() noexcept
+    : s_{}
 {
     s_.k = short_string_;
     s_.buf[sbo_chars_] =
@@ -34,6 +35,7 @@ string_impl::
 string_impl(
     std::size_t size,
     storage_ptr const& sp)
+    : s_{}
 {
     if(size <= sbo_chars_)
     {
