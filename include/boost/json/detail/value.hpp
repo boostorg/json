@@ -122,7 +122,7 @@ class to_number_limit
     static constexpr
     double min2s(std::true_type)
     {
-        return -9223372036854774784.0;
+        return -9223372036854775808.0;
     }
 
     static constexpr
