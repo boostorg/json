@@ -32,7 +32,9 @@ list(FILTER BOOST_JSON_TESTS_FILES EXCLUDE REGEX printers\.cpp$)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} PREFIX "" FILES ${BOOST_JSON_TESTS_FILES})
 add_executable(boost_json-tests ${EXCLUDE_TESTS_FROM_ALL} ${BOOST_JSON_TESTS_FILES})
 target_include_directories(boost_json-tests PRIVATE .)
-target_link_libraries(boost_json-tests PRIVATE Boost::json)
+target_link_libraries(boost_json-tests PRIVATE Boost::json
+    Boost::optional
+)
 target_compile_options(boost_json-tests PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:/bigobj>
 )
