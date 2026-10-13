@@ -155,6 +155,11 @@ dec_to_float(
     if(neg)
         x = -x;
 
+    // pow10 returns infinity for large exponents,
+    // and zero times infinity is NaN
+    if(m == 0)
+        return x;
+
     if(e < -305)
     {
         x *= 1e-305 ;
