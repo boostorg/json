@@ -23,7 +23,7 @@ it supports with <<ref_value_to>>. If a user wants to use it with custom types,
 an overload of `tag_invoke` of this form needs to be provided:
 
 ```
-result_for<T, value>::type
+boost::system::result<T>
 tag_invoke( const try_value_to_tag< T >&, const value& );
 ```
 
