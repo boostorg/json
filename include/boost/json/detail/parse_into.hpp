@@ -587,8 +587,6 @@ public:
             return false;
         }
 
-        inserter = detail::inserter(*value_, inserter_implementation<V>());
-
         return converting_handler::composite_handler::signal_end(ec);
     }
 
@@ -599,6 +597,7 @@ public:
 
         this->inner_active_ = true;
         clear_container( *value_, inserter_implementation<V>() );
+        inserter = detail::inserter(*value_, inserter_implementation<V>());
         return true;
     }
 
