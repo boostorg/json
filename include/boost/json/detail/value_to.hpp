@@ -38,37 +38,34 @@ using reserve_implementation = mp11::mp_cond<
     mp11::mp_true,         mp11::mp_int<0>>;
 
 template<class T>
-error
-try_reserve(
-    T&,
-    std::size_t size,
-    mp11::mp_int<2>)
+system::result<T&>
+try_reserve(T& cnt, std::size_t size, mp11::mp_int<2>)
+    noexcept
 {
     constexpr std::size_t N = std::tuple_size<remove_cvref<T>>::value;
     if ( N != size )
-        return error::size_mismatch;
-    return error();
+    {
+        system::error_code ec;
+        BOOST_JSON_FAIL(ec, error::size_mismatch);
+        return {boost::system::in_place_error, ec};
+    }
+    return cnt;
 }
 
 template<typename T>
-error
-try_reserve(
-    T& cont,
-    std::size_t size,
-    mp11::mp_int<1>)
+system::result<T&>
+try_reserve(T& cnt, std::size_t size, mp11::mp_int<1>)
 {
-    cont.reserve(size);
-    return error();
+    cnt.reserve(size);
+    return cnt;
 }
 
 template<typename T>
-error
-try_reserve(
-    T&,
-    std::size_t,
-    mp11::mp_int<0>)
+system::result<T&>
+try_reserve(T& cnt, std::size_t, mp11::mp_int<0>)
+    noexcept
 {
-    return error();
+    return cnt;
 }
 
 
@@ -212,35 +209,28 @@ value_to_impl(
     value const& jv,
     Ctx const& ctx )
 {
-    object const* obj = jv.if_object();
-    if( !obj )
-    {
-        system::error_code ec;
-        BOOST_JSON_FAIL(ec, error::not_object);
-        return {boost::system::in_place_error, ec};
-    }
-
     T res;
-    error const e = detail::try_reserve(
-        res, obj->size(), reserve_implementation<T>());
-    if( e != error() )
+    return jv.try_as_object() & [&](object const& jo)
     {
-        system::error_code ec;
-        BOOST_JSON_FAIL( ec, e );
-        return {boost::system::in_place_error, ec};
-    }
-
-    auto ins = detail::inserter(res, inserter_implementation<T>());
-    for( key_value_pair const& kv: *obj )
-    {
-        auto elem_res = try_value_to<mapped_type<T>>( kv.value(), ctx );
-        if( elem_res.has_error() )
-            return {boost::system::in_place_error, elem_res.error()};
-        *ins++ = value_type<T>{
-            key_type<T>(kv.key()),
-            std::move(elem_res.unsafe_value())};
-    }
-    return res;
+        return detail::try_reserve(
+            res, jo.size(), reserve_implementation<T>())
+            & [&](T& res) -> system::result<T>
+            {
+                auto ins = detail::inserter(res, inserter_implementation<T>());
+                for(key_value_pair const& kv: jo)
+                {
+                    auto elem_res = try_value_to<mapped_type<T>>(
+                        kv.value(), ctx);
+                    if( elem_res.has_error() )
+                        return {
+                            boost::system::in_place_error, elem_res.error()};
+                    *ins++ = value_type<T>{
+                        key_type<T>(kv.key()),
+                        std::move( elem_res.unsafe_value() )};
+                }
+                return std::move(res);
+            };
+    };
 }
 
 // all other containers
@@ -252,33 +242,25 @@ value_to_impl(
     value const& jv,
     Ctx const& ctx )
 {
-    array const* arr = jv.if_array();
-    if( !arr )
+    T res;
+    return jv.try_as_array() & [&](array const& ja)
     {
-        system::error_code ec;
-        BOOST_JSON_FAIL(ec, error::not_array);
-        return {boost::system::in_place_error, ec};
-    }
-
-    T result;
-    error const e = detail::try_reserve(
-        result, arr->size(), reserve_implementation<T>());
-    if( e != error() )
-    {
-        system::error_code ec;
-        BOOST_JSON_FAIL( ec, e );
-        return {boost::system::in_place_error, ec};
-    }
-
-    auto ins = detail::inserter(result, inserter_implementation<T>());
-    for( value const& val: *arr )
-    {
-        auto elem_res = try_value_to<value_type<T>>( val, ctx );
-        if( elem_res.has_error() )
-            return {boost::system::in_place_error, elem_res.error()};
-        *ins++ = std::move(elem_res.unsafe_value());
-    }
-    return result;
+        return detail::try_reserve(
+            res, ja.size(), reserve_implementation<T>())
+            & [&](T& res) -> system::result<T>
+            {
+                auto ins = detail::inserter(res, inserter_implementation<T>());
+                for(value const& val: ja)
+                {
+                    auto elem_res = try_value_to<value_type<T>>(val, ctx);
+                    if( elem_res.has_error() )
+                        return {
+                            boost::system::in_place_error, elem_res.error()};
+                    *ins++ = std::move( elem_res.unsafe_value() );
+                }
+                return std::move(res);
+            };
+    };
 }
 
 // tuple-like types
