@@ -340,6 +340,14 @@ public:
         BOOST_TEST(( jv == object{ {"x", 1} } ));
         BOOST_TEST( *result == 1 );
         BOOST_TEST( result == &jv.at_pointer("/x") );
+
+        // the new value has to be created before the walk, because the walk
+        // replaces and reallocates elements the value_ref can refer to
+        opts = {};
+        jv = object{ {"c", nullptr} };
+        result = &jv.set_at_pointer( "/c/x", jv.at("c"), opts );
+        BOOST_TEST(( jv == object{ {"c", object{ {"x", nullptr} }} } ));
+        BOOST_TEST( result == &jv.at_pointer("/c/x") );
     }
 
     template<class ErrorCode>
