@@ -99,11 +99,10 @@ a| The result is a number equal to input and has the type
 |The result is an <<ref_array>>.
 |The result is constructed with the array elements as constructor arguments.
 
-|Type satisfying <<ref_is_described_class>>
-|
-|The result is an <<ref_object>> with described members' names as keys.
-|The result is default-constructed and described members are assigned
-    corresponding values.
+|Type satisfying <<ref_is_path_like>>.
+|`std::filesystem::path` and similar types, e.g. `boost::filesystem::path`.
+|The result is equal to the result of `path::generic_string`.
+|The result is constructed from two pointers to `const char`.
 
 |Type satisfying <<ref_is_described_enum>>
 |
@@ -113,10 +112,11 @@ a| The result is a number equal to input and has the type
 |The result is the described enumerator, corresponding to the input
     <<ref_string>>.
 
-|Type satisfying <<ref_is_path_like>>.
-|`std::filesystem::path` and similar types, e.g. `boost::filesystem::path`.
-|The result is equal to the result of `path::generic_string`.
-|The result is constructed from two pointers to `const char`.
+|Type satisfying <<ref_is_described_class>>
+|
+|The result is an <<ref_object>> with described members' names as keys.
+|The result is default-constructed and described members are assigned
+    corresponding values.
 |===
 
 For composite types (sequences, tuples, described classes, etc.) conversion of
