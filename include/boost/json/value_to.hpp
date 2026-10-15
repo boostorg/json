@@ -215,21 +215,18 @@ try_value_to(const value& jv)
 
 /** Determine if a @ref value can be converted to `T`.
 
-    If @ref value can be converted to `T` via a
-    call to @ref value_to, the static data member `value`
-    is defined as `true`. Otherwise, `value` is
+    If @ref value can be converted to `T` via a call to @ref value_to, the
+    static data member `value` is defined as `true`. Otherwise, `value` is
     defined as `false`.
-
-    @see @ref value_to
 */
-#ifdef BOOST_JSON_DOCS
 template<class T>
-using has_value_to = __see_below__;
-#else
-template<class T>
-using has_value_to = detail::can_convert<
-    detail::remove_cvref<T>, detail::value_to_conversion>;
+struct has_value_to
+#ifndef BOOST_JSON_DOCS
+    : detail::can_convert<
+        detail::remove_cvref<T>, detail::value_to_conversion>
+{}
 #endif
+;
 
 } // namespace json
 } // namespace boost
