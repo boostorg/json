@@ -332,10 +332,7 @@ public:
         testParseInto< std::vector<container::flat_set<int>> >(
             { {}, { 1 }, { 2, 3 }, { 4, 5, 6 } } );
 
-        container::flat_set<int> s;
-        parse_into(s, "[1,2,3,4]");
-        BOOST_TEST( s.size() == 4 );
-
+        container::flat_set<int> s = { 1, 2, 3, 4 };
         parse_into(s, "[5,6,7]");
         BOOST_TEST( s.size() == 3 );
     }
