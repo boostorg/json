@@ -32,6 +32,20 @@ try_value_to( const value& jv );
 }
 // end::doc_forward_conversion_1[]
 
+// tag::doc_forward_conversion_4[]
+namespace boost {
+namespace json {
+
+template< class T >
+struct has_value_from;
+
+template< class T >
+struct has_value_to;
+
+}
+}
+// end::doc_forward_conversion_4[]
+
 // tag::doc_forward_conversion_3[]
 namespace boost {
 namespace json {
@@ -156,6 +170,35 @@ tag_invoke(
 }
 // end::doc_forward_conversion_3[]
 
+// tag::doc_forward_conversion_4[]
+
+namespace third_party
+{
+
+struct json_storage
+{
+    boost::json::value& jv;
+
+    template< class T >
+    friend
+    typename std::enable_if< boost::json::has_value_from<T>::value >::type
+    process(json_storage& s, T const& t)
+    {
+        boost::json::value_from(t, s.jv);
+    }
+
+    template< class T >
+    friend
+    typename std::enable_if< ! boost::json::has_value_from<T>::value >::type
+    process(json_storage& s, T const&)
+    {
+        boost::json::value_from("unknown value", s.jv);
+    }
+};
+
+}
+// end::doc_forward_conversion_4[]
+
 #include <boost/json/value_from.hpp>
 #include <boost/json/value_to.hpp>
 
@@ -193,6 +236,16 @@ public:
         BOOST_TEST( get<1>(addr2) == 115 );
         BOOST_TEST( get<2>(addr2) == 81 );
         BOOST_TEST( get<3>(addr2) == 22 );
+
+        jv.emplace_null();
+        third_party::json_storage s{jv};
+        process(s, addr2);
+        BOOST_TEST(( jv == value{ 212, 115, 81, 22 } ));
+
+        struct some_struct {};
+        jv.emplace_null();
+        process(s, some_struct{});
+        BOOST_TEST(( jv == value{ "unknown value" } ));
     }
 };
 
