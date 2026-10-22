@@ -17,15 +17,15 @@ namespace json {
 namespace detail {
 
 #ifndef BOOST_JSON_WEAK_CONSTINIT
-# ifndef BOOST_JSON_NO_DESTROY
+# ifdef BOOST_JSON_NO_ATTRIBUTE_NO_DESTROY
 BOOST_JSON_REQUIRE_CONST_INIT
 default_resource::holder
 default_resource::instance_;
-# else
+# else // BOOST_JSON_NO_ATTRIBUTE_NO_DESTROY
 BOOST_JSON_REQUIRE_CONST_INIT
 default_resource
 default_resource::instance_;
-# endif
+# endif // BOOST_JSON_NO_ATTRIBUTE_NO_DESTROY
 #endif
 
 // this is here so that ~memory_resource
