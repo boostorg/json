@@ -33,12 +33,12 @@ default_resource final
     union holder;
 
 #ifndef BOOST_JSON_WEAK_CONSTINIT
-# ifndef BOOST_JSON_NO_DESTROY
+# ifdef BOOST_JSON_NO_ATTRIBUTE_NO_DESTROY
     static holder instance_;
-# else
-    BOOST_JSON_NO_DESTROY
+# else // BOOST_JSON_NO_ATTRIBUTE_NO_DESTROY
+    BOOST_JSON_ATTRIBUTE_NO_DESTROY
     static default_resource instance_;
-# endif
+# endif // BOOST_JSON_NO_ATTRIBUTE_NO_DESTROY
 #endif
 
 public:
