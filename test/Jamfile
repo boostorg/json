@@ -33,6 +33,13 @@ local SOURCES =
     null_resource.cpp
     object.cpp
     parse.cpp
+    parse_into/maps.cpp
+    parse_into/optionals.cpp
+    parse_into/scalars.cpp
+    parse_into/sequences.cpp
+    parse_into/structs.cpp
+    parse_into/tuples.cpp
+    parse_into/variants.cpp
     parser.cpp
     pilfer.cpp
     pointer.cpp
@@ -65,17 +72,13 @@ project
 
 for local f in $(SOURCES)
 {
-    run $(f) main.cpp /boost/json//boost_json ;
-}
+    local props ;
+    if $(f) = parse_into/variants.cpp
+    {
+        props += <toolset>msvc:<cxxflags>/bigobj ;
+    }
 
-local HEAVY_SOURCES =
-    parse_into.cpp
-    ;
-for local f in $(HEAVY_SOURCES)
-{
-    run $(f) main.cpp /boost/json//boost_json
-        : requirements <toolset>msvc:<cxxflags>/bigobj
-        ;
+    run $(f) main.cpp /boost/json//boost_json : requirements $(props) ;
 }
 
 run limits.cpp main.cpp /boost/json//json_sources
@@ -106,6 +109,3 @@ boost-pretty-printers.test-gdb-printers gdb-printers
     : <dependency>../src/boost_json_gdb_printers.py
     ;
 explicit gdb-printers ;
-
-alias common : $(SOURCES:B) limits header_only no_exceptions intrusive_macros ;
-alias heavy : $(HEAVY_SOURCES:B) ;
