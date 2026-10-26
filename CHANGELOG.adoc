@@ -5,6 +5,46 @@
 
 include::doc/pages/definitions.adoc[]
 
+== Boost 1.93.0
+
+Special thanks to Ramya Eliger for contributing a lot of fixes for this
+release!
+
+.API Changes
+* {issue}993[#993] Added dependency on Boost.Charconv.
+* {issue}1205[#1205] Described classes category is now ranked lowest.
+* {issue}1156[#1156] Added <<ref_use_category>> for conversion category selection.
+
+.Fixes
+* {issue}1172[#1172] Fixed use of incorrect memory resource in `array::insert`.
+* {issue}1177[#1177] Fixed string corruption in `string::shrink_to_fit`.
+* {issue}1178[#1178] Fixed unnecessary allocation in `basic_parser`.
+* {issue}1175[#1175] Fixed undefined behavior caused by self-assign with `string::assign`.
+* {issue}1171[#1171] Fixed incorrect overflow check in JSON Pointer functions.
+* {issue}1179[#1179] Fixed incorrect deallocate size in `monotonic_resource::release`.
+* {issue}1184[#1184] Use correct memory resource in `value::value`.
+* {issue}1181[#1181] Use correct alignment value in the destructor of `string`.
+* {issue}1185[#1185] Fix size check in JSON string parsing algorithm.
+* {issue}1186[#1186] Forward mapped value in `object::insert_or_assign`.
+* {issue}1182[#1182] Fix required member check for described structs in `parse_into`.
+* {issue}1188[#1188] Fix cleanup on failed insert into `object`.
+* {issue}1174[#1174] Fix undefined behaviour caused by self-insert in `array::insert`.
+* {issue}1192[#1192] Fix array index overflow in `set_at_pointer`.
+* {issue}1197[#1197] Fix compilation error on some platforms.
+* {issue}1200[#1200] Clear accumulated name in `parse_into` enum handler.
+* {issue}1195[#1195] Fix array end handling for first variant alternative in `parse_into`.
+* {issue}1201[#1201] Fix string to enum conversion in `value_to`.
+* {issue}1202[#1202] Fix parsing JSON numbers with large exponent and zero mantissa.
+* {issue}1193[#1193] Align caller-supplied buffer in `value_stack` constructor.
+* {issue}1208[#1208] Fix undefined behavior caused by self-insert in `set_at_pointer`.
+* {issue}1207[#1207] Fix undefined behavior for some sequences in `parse_into`.
+* {issue}1213[#1213] Disabled usage of `clang::no_destroy` in clang-cl.
+* {issue}1213[#1213] Fixed ``value::to_number``'s incorrect lower bound when converting from double to `std::int64_t`.
+
+.Documentation
+* {issue}1180[#1180] Fixed documentation for `basic_parser` handler.
+* {issue}1183[#1183] Updated CI information in Readme and documentation.
+
 == Boost 1.92.0
 
 .Fixes
@@ -14,13 +54,6 @@ include::doc/pages/definitions.adoc[]
 * {issue}1168[#1168] Fixed self-append in `string::append`.
 
 == Boost 1.91.0
-
-.Fixes
-* {issue}1143[#1143] Changed <<ref_visit>> to always pass references to
-  persistent objects. This is particularly important when the visitor is a
-  coroutine.
-* {issue}1129[#1129] Fixed direct parsing of unexpected arrays in nested
-  described structs.
 
 .Improvements
 * {issue}1146[#1146] Changed <<ref_value>> construction from
