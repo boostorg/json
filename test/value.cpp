@@ -1440,11 +1440,6 @@ public:
     void
     testToNumber()
     {
-#define EQAL(T) BOOST_TEST(jv.to_number<T>() == V)
-#define EQUS(T) BOOST_TEST((V >= 0) && jv.to_number<T>() == static_cast<std::uint64_t>(V))
-#define EQUF(T) BOOST_TEST(static_cast<float>(V) == static_cast<float>(jv.to_number<T>()))
-#define THRO(T) BOOST_TEST_THROWS_WITH_LOCATION(jv.to_number<T>());
-
         BOOST_TEST_THROWS_WITH_LOCATION(value(nullptr).to_number<int>());
         BOOST_TEST_THROWS_WITH_LOCATION(value(false).to_number<int>());
         BOOST_TEST_THROWS_WITH_LOCATION(value(string_kind).to_number<int>());
@@ -1464,231 +1459,289 @@ public:
         BOOST_TEST_THROWS_WITH_LOCATION(value(object_kind).to_number<double>());
 
         {
-            unsigned char V = 0;
-            value const jv(V);
-            EQAL(std::int8_t);
-            EQAL(std::int16_t);
-            EQAL(std::int32_t);
-            EQAL(std::int64_t);
-            EQAL(std::uint8_t);
-            EQAL(std::uint16_t);
-            EQAL(std::uint32_t);
-            EQAL(std::uint64_t);
-            EQAL(float);
-            EQAL(double);
+            unsigned char v = 0;
+            value const jv(v);
+            BOOST_TEST( jv.to_number<std::int8_t>() == v );
+            BOOST_TEST( jv.to_number<std::int16_t>() == v );
+            BOOST_TEST( jv.to_number<std::int32_t>() == v );
+            BOOST_TEST( jv.to_number<std::int64_t>() == v );
+            BOOST_TEST( jv.to_number<std::uint8_t>() == v );
+            BOOST_TEST( jv.to_number<std::uint16_t>() == v );
+            BOOST_TEST( jv.to_number<std::uint32_t>() == v );
+            BOOST_TEST( jv.to_number<std::uint64_t>() == v );
+            BOOST_TEST( jv.to_number<float>() == v );
+            BOOST_TEST( jv.to_number<double>() == v );
         }
         {
-            auto V = max_of<std::int8_t>();
-            value const jv(V);
-            EQAL(std::int8_t);
-            EQAL(std::int16_t);
-            EQAL(std::int32_t);
-            EQAL(std::int64_t);
-            EQAL(std::uint8_t);
-            EQAL(std::uint16_t);
-            EQUS(std::uint32_t);
-            EQUS(std::uint64_t);
-            EQAL(float);
-            EQAL(double);
+            auto v = max_of<std::int8_t>();
+            value const jv(v);
+            BOOST_TEST( jv.to_number<std::int8_t>() == v );
+            BOOST_TEST( jv.to_number<std::int16_t>() == v );
+            BOOST_TEST( jv.to_number<std::int32_t>() == v );
+            BOOST_TEST( jv.to_number<std::int64_t>() == v );
+            BOOST_TEST( jv.to_number<std::uint8_t>() == v );
+            BOOST_TEST( jv.to_number<std::uint16_t>() == v );
+            BOOST_TEST(
+                jv.to_number<std::uint32_t>()
+                == static_cast<std::uint32_t>(v) );
+            BOOST_TEST(
+                jv.to_number<std::uint64_t>()
+                == static_cast<std::uint64_t>(v) );
+            BOOST_TEST( jv.to_number<float>() == v );
+            BOOST_TEST( jv.to_number<double>() == v );
         }
         {
-            auto V = max_of<std::int16_t>();
-            value const jv(V);
-            THRO(std::int8_t);
-            EQAL(std::int16_t);
-            EQAL(std::int32_t);
-            EQAL(std::int64_t);
-            THRO(std::uint8_t);
-            EQAL(std::uint16_t);
-            EQUS(std::uint32_t);
-            EQUS(std::uint64_t);
-            EQAL(float);
-            EQAL(double);
+            auto v = max_of<std::int16_t>();
+            value const jv(v);
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int8_t>() );
+            BOOST_TEST( jv.to_number<std::int16_t>() == v );
+            BOOST_TEST( jv.to_number<std::int32_t>() == v );
+            BOOST_TEST( jv.to_number<std::int64_t>() == v );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint8_t>() );
+            BOOST_TEST( jv.to_number<std::uint16_t>() == v );
+            BOOST_TEST(
+                jv.to_number<std::uint32_t>()
+                == static_cast<std::uint32_t>(v) );
+            BOOST_TEST(
+                jv.to_number<std::uint64_t>()
+                == static_cast<std::uint64_t>(v) );
+            BOOST_TEST( jv.to_number<float>() == v );
+            BOOST_TEST( jv.to_number<double>() == v );
         }
         {
-            auto V = max_of<std::int32_t>();
-            value const jv(V);
-            THRO(std::int8_t);
-            THRO(std::int16_t);
-            EQAL(std::int32_t);
-            EQAL(std::int64_t);
-            THRO(std::uint8_t);
-            THRO(std::uint16_t);
-            EQUS(std::uint32_t);
-            EQUS(std::uint64_t);
-            EQUF(float);
-            EQAL(double);
+            auto v = max_of<std::int32_t>();;
+            value const jv(v);
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int8_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int16_t>() );
+            BOOST_TEST( jv.to_number<std::int32_t>() == v );
+            BOOST_TEST( jv.to_number<std::int64_t>() == v );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint8_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint16_t>() );
+            BOOST_TEST(
+                jv.to_number<std::uint32_t>()
+                == static_cast<std::uint32_t>(v) );
+            BOOST_TEST(
+                jv.to_number<std::uint64_t>()
+                == static_cast<std::uint64_t>(v) );
+            BOOST_TEST( static_cast<float>(v) == jv.to_number<float>() );
+            BOOST_TEST( jv.to_number<double>() == v );
         }
         {
-            auto V = max_of<std::int64_t>();
-            value const jv(V);
-            THRO(std::int8_t);
-            THRO(std::int16_t);
-            THRO(std::int32_t);
-            EQAL(std::int64_t);
-            THRO(std::uint8_t);
-            THRO(std::uint16_t);
-            THRO(std::uint32_t);
-            EQUS(std::uint64_t);
-            EQUF(float);
-            EQUF(double);
-        }
-        //---
-        {
-            auto V = max_of<std::uint8_t>();
-            value const jv(V);
-            THRO(std::int8_t);
-            EQAL(std::int16_t);
-            EQAL(std::int32_t);
-            EQAL(std::int64_t);
-            EQAL(std::uint8_t);
-            EQAL(std::uint16_t);
-            EQAL(std::uint32_t);
-            EQAL(std::uint64_t);
-            EQAL(float);
-            EQAL(double);
-        }
-        {
-            auto V = max_of<std::uint16_t>();
-            value const jv(V);
-            THRO(std::int8_t);
-            THRO(std::int16_t);
-            EQAL(std::int32_t);
-            EQAL(std::int64_t);
-            THRO(std::uint8_t);
-            EQAL(std::uint16_t);
-            EQAL(std::uint32_t);
-            EQAL(std::uint64_t);
-            EQAL(float);
-            EQAL(double);
-        }
-        {
-            auto V = max_of<std::uint32_t>();
-            value const jv(V);
-            THRO(std::int8_t);
-            THRO(std::int16_t);
-            THRO(std::int32_t);
-            EQAL(std::int64_t);
-            THRO(std::uint8_t);
-            THRO(std::uint16_t);
-            EQAL(std::uint32_t);
-            EQAL(std::uint64_t);
-            EQUF(float);
-            EQAL(double);
-        }
-        {
-            auto V = max_of<std::uint64_t>();
-            value const jv(V);
-            THRO(std::int8_t);
-            THRO(std::int16_t);
-            THRO(std::int32_t);
-            THRO(std::int64_t);
-            THRO(std::uint8_t);
-            THRO(std::uint16_t);
-            THRO(std::uint32_t);
-            EQAL(std::uint64_t);
-            EQUF(float);
-            EQUF(double);
+            auto v = max_of<std::int64_t>();
+            value const jv(v);
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int8_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int16_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int32_t>() );
+            BOOST_TEST( jv.to_number<std::int64_t>() == v );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint8_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint16_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint32_t>() );
+            BOOST_TEST(
+                jv.to_number<std::uint64_t>()
+                == static_cast<std::uint64_t>(v) );
+            BOOST_TEST( static_cast<float>(v) == jv.to_number<float>() );
+            BOOST_TEST( static_cast<double>(v) == jv.to_number<double>() );
         }
         //---
         {
-            auto V = min_of<std::int8_t>();
-            value const jv(V);
-            EQAL(std::int8_t);
-            EQAL(std::int16_t);
-            EQAL(std::int32_t);
-            EQAL(std::int64_t);
-            THRO(std::uint8_t);
-            THRO(std::uint16_t);
-            THRO(std::uint32_t);
-            THRO(std::uint64_t);
-            EQAL(float);
-            EQAL(double);
+            auto v = max_of<std::uint8_t>();
+            value const jv(v);
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int8_t>() );
+            BOOST_TEST( jv.to_number<std::int16_t>() == v );
+            BOOST_TEST( jv.to_number<std::int32_t>() == v );
+            BOOST_TEST( jv.to_number<std::int64_t>() == v );
+            BOOST_TEST( jv.to_number<std::uint8_t>() == v );
+            BOOST_TEST( jv.to_number<std::uint16_t>() == v );
+            BOOST_TEST( jv.to_number<std::uint32_t>() == v );
+            BOOST_TEST( jv.to_number<std::uint64_t>() == v );
+            BOOST_TEST( jv.to_number<float>() == v );
+            BOOST_TEST( jv.to_number<double>() == v );
         }
         {
-            auto V = min_of<std::int16_t>();
-            value const jv(V);
-            THRO(std::int8_t);
-            EQAL(std::int16_t);
-            EQAL(std::int32_t);
-            EQAL(std::int64_t);
-            THRO(std::uint8_t);
-            THRO(std::uint16_t);
-            THRO(std::uint32_t);
-            THRO(std::uint64_t);
-            EQAL(float);
-            EQAL(double);
+            auto v = max_of<std::uint16_t>();
+            value const jv(v);
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int8_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int16_t>() );
+            BOOST_TEST( jv.to_number<std::int32_t>() == v );
+            BOOST_TEST( jv.to_number<std::int64_t>() == v );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint8_t>() );
+            BOOST_TEST( jv.to_number<std::uint16_t>() == v );
+            BOOST_TEST( jv.to_number<std::uint32_t>() == v );
+            BOOST_TEST( jv.to_number<std::uint64_t>() == v );
+            BOOST_TEST( jv.to_number<float>() == v );
+            BOOST_TEST( jv.to_number<double>() == v );
         }
         {
-            auto V = min_of<std::int32_t>();
-            value const jv(V);
-            THRO(std::int8_t);
-            THRO(std::int16_t);
-            EQAL(std::int32_t);
-            EQAL(std::int64_t);
-            THRO(std::uint8_t);
-            THRO(std::uint16_t);
-            THRO(std::uint32_t);
-            THRO(std::uint64_t);
-            EQUF(float);
-            EQAL(double);
+            auto v = max_of<std::uint32_t>();;
+            value const jv(v);
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int8_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int16_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int32_t>() );
+            BOOST_TEST( jv.to_number<std::int64_t>() == v );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint8_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint16_t>() );
+            BOOST_TEST( jv.to_number<std::uint32_t>() == v );
+            BOOST_TEST( jv.to_number<std::uint64_t>() == v );
+            BOOST_TEST( static_cast<float>(v) == jv.to_number<float>() );
+            BOOST_TEST( jv.to_number<double>() == v );
         }
         {
-            auto V = min_of<std::int64_t>();
-            value const jv(V);
-            THRO(std::int8_t);
-            THRO(std::int16_t);
-            THRO(std::int32_t);
-            EQAL(std::int64_t);
-            THRO(std::uint8_t);
-            THRO(std::uint16_t);
-            THRO(std::uint32_t);
-            THRO(std::uint64_t);
-            EQUF(float);
-            EQUF(double);
+            auto v = max_of<std::uint64_t>();
+            value const jv(v);
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int8_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int16_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int32_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int64_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint8_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint16_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint32_t>() );
+            BOOST_TEST( jv.to_number<std::uint64_t>() == v );
+            BOOST_TEST( static_cast<float>(v) == jv.to_number<float>() );
+            BOOST_TEST( static_cast<double>(v) == jv.to_number<double>() );
         }
         //---
         {
-            auto V = double(1.5);
-            value const jv(V);
-            THRO(std::int8_t);
-            THRO(std::int16_t);
-            THRO(std::int32_t);
-            THRO(std::int64_t);
-            THRO(std::uint8_t);
-            THRO(std::uint16_t);
-            THRO(std::uint32_t);
-            THRO(std::uint64_t);
-            EQAL(float);
-            EQAL(double);
+            auto v = min_of<std::int8_t>();
+            value const jv(v);
+            BOOST_TEST( jv.to_number<std::int8_t>() == v );
+            BOOST_TEST( jv.to_number<std::int16_t>() == v );
+            BOOST_TEST( jv.to_number<std::int32_t>() == v );
+            BOOST_TEST( jv.to_number<std::int64_t>() == v );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint8_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint16_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint32_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint64_t>() );
+            BOOST_TEST( jv.to_number<float>() == v );
+            BOOST_TEST( jv.to_number<double>() == v );
         }
         {
-            auto V = double(2.0);
-            value const jv(V);
-            EQAL(std::int8_t);
-            EQAL(std::int16_t);
-            EQAL(std::int32_t);
-            EQAL(std::int64_t);
-            EQAL(std::uint8_t);
-            EQAL(std::uint16_t);
-            EQAL(std::uint32_t);
-            EQAL(std::uint64_t);
-            EQAL(float);
-            EQAL(double);
+            auto v = min_of<std::int16_t>();
+            value const jv(v);
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int8_t>() );
+            BOOST_TEST( jv.to_number<std::int16_t>() == v );
+            BOOST_TEST( jv.to_number<std::int32_t>() == v );
+            BOOST_TEST( jv.to_number<std::int64_t>() == v );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint8_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint16_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint32_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint64_t>() );
+            BOOST_TEST( jv.to_number<float>() == v );
+            BOOST_TEST( jv.to_number<double>() == v );
         }
         {
-            auto V = double(-4.0);
-            value const jv(V);
-            EQAL(std::int8_t);
-            EQAL(std::int16_t);
-            EQAL(std::int32_t);
-            EQAL(std::int64_t);
-            THRO(std::uint8_t);
-            THRO(std::uint16_t);
-            THRO(std::uint32_t);
-            THRO(std::uint64_t);
-            EQAL(float);
-            EQAL(double);
+            auto v = min_of<std::int32_t>();
+            value const jv(v);
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int8_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int16_t>() );
+            BOOST_TEST( jv.to_number<std::int32_t>() == v );
+            BOOST_TEST( jv.to_number<std::int64_t>() == v );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint8_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint16_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint32_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint64_t>() );
+            BOOST_TEST( static_cast<float>(v) == jv.to_number<float>() );
+            BOOST_TEST( jv.to_number<double>() == v );
+        }
+        {
+            auto v = min_of<std::int64_t>();
+            value const jv(v);
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int8_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION(jv.to_number<std::int16_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION(jv.to_number<std::int32_t>() );
+            BOOST_TEST(jv.to_number<std::int64_t>() == v);
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint8_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint16_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint32_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint64_t>() );
+            BOOST_TEST( static_cast<float>(v) == jv.to_number<float>() );
+            BOOST_TEST( v == jv.to_number<double>() );
+        }
+        //---
+        {
+            auto v = double(1.5);
+            value const jv(v);
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int8_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int16_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int32_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int64_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint8_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint16_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint32_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint64_t>() );
+            BOOST_TEST( jv.to_number<float>() == v );
+            BOOST_TEST( jv.to_number<double>() == v );
+        }
+        {
+            auto v = double(2.0);
+            value const jv(v);
+            BOOST_TEST( jv.to_number<std::int8_t>() == v );
+            BOOST_TEST( jv.to_number<std::int16_t>() == v );
+            BOOST_TEST( jv.to_number<std::int32_t>() == v );
+            BOOST_TEST( jv.to_number<std::int64_t>() == v );
+            BOOST_TEST( jv.to_number<std::uint8_t>() == v );
+            BOOST_TEST( jv.to_number<std::uint16_t>() == v );
+            BOOST_TEST( jv.to_number<std::uint32_t>() == v );
+            BOOST_TEST( jv.to_number<std::uint64_t>() == v );
+            BOOST_TEST( jv.to_number<float>() == v );
+            BOOST_TEST( jv.to_number<double>() == v );
+        }
+        {
+            auto v = double(-4.0);
+            value const jv(v);
+            BOOST_TEST( jv.to_number<std::int8_t>() == v );
+            BOOST_TEST( jv.to_number<std::int16_t>() == v );
+            BOOST_TEST( jv.to_number<std::int32_t>() == v );
+            BOOST_TEST( jv.to_number<std::int64_t>() == v );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint8_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint16_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint32_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint64_t>() );
+            BOOST_TEST( jv.to_number<float>() == v );
+            BOOST_TEST( jv.to_number<double>() == v );
+        }
+        {
+            std::uint64_t v = 18446744073709549568ul;
+            value const jv( static_cast<double>(v) );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int8_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int16_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int32_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int64_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint8_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint16_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint32_t>() );
+            BOOST_TEST( jv.to_number<std::uint64_t>() == v );
+            BOOST_TEST( static_cast<float>(v) == jv.to_number<float>() );
+            BOOST_TEST( jv.to_number<double>() == v );
+        }
+        {
+            std::int64_t v = 9223372036854774784;
+            value const jv( static_cast<double>(v) );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int8_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int16_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int32_t>() );
+            BOOST_TEST( jv.to_number<std::int64_t>() == v );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint8_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint16_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint32_t>() );
+            BOOST_TEST(
+                jv.to_number<std::uint64_t>()
+                == static_cast<std::uint64_t>(v) );
+            BOOST_TEST( static_cast<float>(v) == jv.to_number<float>() );
+            BOOST_TEST( jv.to_number<double>() == v );
+        }
+        {
+            std::int64_t v = (std::numeric_limits<std::int64_t>::min)();
+            value const jv( static_cast<double>(v) );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int8_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int16_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::int32_t>() );
+            BOOST_TEST( jv.to_number<std::int64_t>() == v );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint8_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint16_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint32_t>() );
+            BOOST_TEST_THROWS_WITH_LOCATION( jv.to_number<std::uint64_t>() );
+            BOOST_TEST( static_cast<float>(v) == jv.to_number<float>() );
+            BOOST_TEST( jv.to_number<double>() == v );
         }
 
         {

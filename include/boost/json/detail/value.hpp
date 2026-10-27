@@ -26,60 +26,10 @@ struct key_t
 {
 };
 
-#if 0
-template<class T>
-struct to_number_limit
-    : std::numeric_limits<T>
-{
-};
-
-template<class T>
-struct to_number_limit<T const>
-    : to_number_limit<T>
-{
-};
-
-template<>
-struct to_number_limit<long long>
-{
-    static constexpr long long (min)() noexcept
-    {
-        return -9223372036854774784;
-    }
-
-    static constexpr long long (max)() noexcept
-    {
-        return 9223372036854774784;
-    }
-};
-
-template<>
-struct to_number_limit<unsigned long long>
-{
-    static constexpr
-    unsigned long long (min)() noexcept
-    {
-        return 0;
-    }
-
-    static constexpr
-    unsigned long long (max)() noexcept
-    {
-        return 18446744073709549568ULL;
-    }
-};
-#else
-
 template<class T>
 class to_number_limit
 {
     // unsigned
-
-    static constexpr
-    double min1(std::false_type)
-    {
-        return 0.0;
-    }
 
     static constexpr
     double max1(std::false_type)
@@ -99,31 +49,11 @@ class to_number_limit
     static constexpr
     double max2u(std::true_type)
     {
+        // largest uint64_t value exactly representable as double
         return 18446744073709549568.0;
     }
 
     // signed
-
-    static constexpr
-    double min1(std::true_type)
-    {
-        return min2s(std::integral_constant<
-            bool, (std::numeric_limits<T>::max)() ==
-            INT64_MAX>{});
-    }
-
-    static constexpr
-    double min2s(std::false_type)
-    {
-        return static_cast<double>(
-            (std::numeric_limits<T>::min)());
-    }
-
-    static constexpr
-    double min2s(std::true_type)
-    {
-        return -9223372036854774784.0;
-    }
 
     static constexpr
     double max1(std::true_type)
@@ -143,6 +73,7 @@ class to_number_limit
     static constexpr
     double max2s(std::true_type)
     {
+        // largest int64_t value exactly representable as double
         return 9223372036854774784.0;
     }
 
@@ -150,7 +81,7 @@ public:
     static constexpr
     double (min)() noexcept
     {
-        return min1(std::is_signed<T>{});
+        return static_cast<double>( (std::numeric_limits<T>::min)() );
     }
 
     static constexpr
@@ -159,8 +90,6 @@ public:
         return max1(std::is_signed<T>{});
     }
 };
-
-#endif
 
 struct scalar
 {
