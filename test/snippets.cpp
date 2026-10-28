@@ -45,67 +45,41 @@ struct use_category<user_ns::ip_address> : tuple_category
 
 namespace user_ns2 {
 
+using namespace boost::json;
+
 class ip_address : public user_ns::ip_address
 {
 public:
     using user_ns::ip_address::ip_address;
+
+    // tag::snippet_tag_invoke_1[]
+    friend
+    void
+    tag_invoke( const value_from_tag&, value& jv, ip_address const& addr )
+    {
+        // Store the IP address as a 4-element array of octets
+        value_from(addr.octets_, jv);
+    }
+
+    friend
+    ip_address
+    tag_invoke( const value_to_tag< ip_address >&, value const& jv )
+    {
+        auto arr = value_to< std::array<unsigned char, 4> >(jv);
+        return ip_address( arr[0], arr[1], arr[2], arr[3] );
+    }
+    // end::snippet_tag_invoke_1[]
 };
-
-using namespace boost::json;
-
-// tag::snippet_tag_invoke_1[]
-void
-tag_invoke( const value_from_tag&, value& jv, ip_address const& addr )
-{
-    // Store the IP address as a 4-element array of octets
-    const unsigned char* b = addr.begin();
-    jv = { b[0], b[1], b[2], b[3] };
-}
-
-ip_address
-tag_invoke( const value_to_tag< ip_address >&, value const& jv )
-{
-    array const& arr = jv.as_array();
-    return ip_address(
-        arr.at(0).to_number< unsigned char >(),
-        arr.at(1).to_number< unsigned char >(),
-        arr.at(2).to_number< unsigned char >(),
-        arr.at(3).to_number< unsigned char >() );
-}
-// end::snippet_tag_invoke_1[]
 
 // tag::snippet_nothrow_1[]
 boost::system::result<ip_address>
 tag_invoke( const try_value_to_tag< ip_address >&, value const& jv )
 {
-    if( !jv.is_array() )
-        return make_error_code( std::errc::invalid_argument );
-
-    array const& arr = jv.get_array();
-    if( arr.size() != 4 )
-        return make_error_code( std::errc::invalid_argument );
-
-    boost::system::result< unsigned char > oct1
-        = try_value_to< unsigned char >( arr[0] );
-    if( !oct1 )
-        return make_error_code( std::errc::invalid_argument );
-
-    boost::system::result< unsigned char > oct2
-        = try_value_to< unsigned char >( arr[1] );
-    if( !oct2 )
-        return make_error_code( std::errc::invalid_argument );
-
-    boost::system::result< unsigned char > oct3
-        = try_value_to< unsigned char >( arr[2] );
-    if( !oct3 )
-        return make_error_code( std::errc::invalid_argument );
-
-    boost::system::result< unsigned char > oct4
-        = try_value_to< unsigned char >( arr[3] );
-    if( !oct4 )
-        return make_error_code( std::errc::invalid_argument );
-
-    return ip_address{ *oct1, *oct2, *oct3, *oct4 };
+    auto octets = try_value_to< std::array<unsigned char, 4> >(jv);
+    return octets & [](const std::array<unsigned char, 4>& octets)
+    {
+        return ip_address{octets[0], octets[1], octets[2], octets[3]};
+    };
 }
 // end::snippet_nothrow_1[]
 
@@ -251,6 +225,83 @@ tag_invoke(
 
 }
 // end::doc_context_conversion_10[]
+
+namespace user_ns3 {
+
+using namespace boost::json;
+
+class ip_address : public user_ns::ip_address
+{
+public:
+    using user_ns::ip_address::ip_address;
+
+    // tag::snippet_tag_invoke_4[]
+    friend
+    void
+    tag_invoke( const value_from_tag&, value& jv, ip_address const& addr )
+    {
+        jv = value_from(addr.octets_);
+    }
+    // end::snippet_tag_invoke_4[]
+
+# if defined(_MSC_VER)
+# pragma warning( push )
+# pragma warning( disable : 4244 )
+# endif
+    // tag::snippet_tag_invoke_5[]
+    friend
+    ip_address
+    tag_invoke( const value_to_tag< ip_address >&, value const& jv )
+    {
+        auto& arr = jv.as_array();
+        return ip_address(
+            arr.at(0).as_uint64(),
+            arr.at(1).as_uint64(),
+            arr.at(2).as_uint64(),
+            arr.at(3).as_uint64());
+    }
+    // end::snippet_tag_invoke_5[]
+# if defined(_MSC_VER)
+#  pragma warning( pop )
+# endif
+};
+
+} // namespace user_ns3
+
+namespace user_ns4 {
+
+using namespace boost::json;
+
+class ip_address : public user_ns::ip_address
+{
+public:
+    using user_ns::ip_address::ip_address;
+
+    friend
+    void
+    tag_invoke( const value_from_tag&, value& jv, ip_address const& addr )
+    {
+        // tag::snippet_tag_invoke_6[]
+        jv = value_from(addr.octets_, jv.storage());
+        // end::snippet_tag_invoke_6[]
+    }
+
+    friend
+    ip_address
+    tag_invoke( const value_to_tag< ip_address >&, value const& jv )
+    {
+        // tag::snippet_tag_invoke_7[]
+        auto& arr = jv.as_array();
+        return ip_address(
+            arr.at(0).to_number<unsigned char>(),
+            arr.at(1).to_number<unsigned char>(),
+            arr.at(2).to_number<unsigned char>(),
+            arr.at(3).to_number<unsigned char>());
+        // end::snippet_tag_invoke_7[]
+    }
+};
+
+} // namespace user_ns4
 
 namespace boost {
 namespace json {
@@ -912,6 +963,30 @@ usingExchange()
             {"c", array{5, false}},
         }));
         // end::snippet_conv_recursive[]
+    }
+
+    {
+        using namespace user_ns3;
+        ip_address addr = { 127, 0, 0, 12 };
+        value jv = value_from( addr );
+        assert(( value{127,0,0,12} == jv ));
+
+        ip_address addr2 = value_to< ip_address >( jv );
+        assert(std::equal(
+            addr.begin(), addr.end(), addr2.begin() ));
+        (void)addr2;
+    }
+
+    {
+        using namespace user_ns4;
+        ip_address addr = { 127, 0, 0, 12 };
+        value jv = value_from( addr );
+        assert(( value{127,0,0,12} == jv ));
+
+        ip_address addr2 = value_to< ip_address >( jv );
+        assert(std::equal(
+            addr.begin(), addr.end(), addr2.begin() ));
+        (void)addr2;
     }
 }
 

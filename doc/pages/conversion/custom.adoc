@@ -31,7 +31,8 @@ Consider this type:
 
 [source]
 ----
-include::../../../test/doc_types.hpp[tag=snippet_conv_spec_trait1,indent=0]
+include::../../../test/doc_types.hpp[tag=snippet_conv_spec_trait1_1,indent=0]
+include::../../../test/doc_types.hpp[tag=snippet_conv_spec_trait1_2,indent=0]
 ----
 
 It exposes both a sequence API and a tuple API. But converting from
@@ -88,6 +89,16 @@ approach, it would look like this:
 include::../../../test/snippets.cpp[tag=snippet_tag_invoke_1,indent=0]
 ----
 
+Note, the `tag_invoke` overloads used here are inline friend functions, also
+known as "hidden friends". They have the benefit of not showing up in overload
+sets unless found via ADL. This can speed up compilation. Also, the first
+overload being a friend, it has access to ``ip_address``'s private data member.
+
+The overloads delegate most of the implementation to `value_to` and
+`value_from` calls that deal with the underlying type. In general this is
+preferrable to reimplementing everything by hand, as those functions take care
+of error checking, memory resource selection, etc.
+
 Since the type being converted is embedded into the function's signature,
 user-provided overloads are visible to argument-dependent lookup and become
 candidates when a conversion is performed:
@@ -104,3 +115,58 @@ library-provided conversions. The library handles them correctly:
 ----
 include::../../../test/snippets.cpp[tag=snippet_tag_invoke_3,indent=0]
 ----
+
+== `tag_invoke` Pitfalls
+
+Let's also discuss some pitfalls when implementing `tag_invoke` overloads.
+
+Consider this implementation:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_tag_invoke_4,indent=0]
+----
+
+On the surface it looks almost exactly like the one suggested in the previous
+subsection. In fact, not only will it compile, but also the result will be the
+same. But there is an important difference. `value_from(addr.octets_)` creates
+a temporary `value` that uses the default memory resource. Then, when that
+`value` is assigned to `jv`, it will be reallocated using the memory resource
+of `js`. The most direct fix is to use the correct memory resource explicitly:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_tag_invoke_6,indent=0]
+----
+
+This version is fully equivalent to the original one provided in the previous
+subsection, but is arguably unnecessarily explicit.
+
+Now, lets consider this `tag_invoke` overload for `value_to`:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_tag_invoke_5,indent=4]
+----
+
+It may look correct, but there's multiple issues with it. First of all, even
+a positive integral number will not necessarily be parsed as a `std::uint64_t`.
+On the other hand, the source document may erroneously contain integers outside
+of ``unsigned char``'s range (your compiler might even warn about the
+possibility of such lossy conversion), and this implementation never checks for
+that. To fix both of these problems we'll use <<ref_value_to_number>>:
+
+[source]
+----
+include::../../../test/snippets.cpp[tag=snippet_tag_invoke_7,indent=4]
+----
+
+Unfortunately, this implementation still fails to check for one more thing: the
+size of the source array. While, `arr.at(3)` ensures that the array has at
+least 4 elements, nothing ensures there's not more than 4. We could check for
+that manually, and then throw an exception. Or we could just request
+a conversion to `std::array<unsigned char, 4>`, just like the implementation
+shown in the previous subsection.
+
+To summarise, the easiest way to avoid most pitfalls is to delegate as much as
+possible to invocations of `value_to` and `value_from`.

@@ -18,7 +18,7 @@
 
 #include <array>
 
-// tag::snippet_conv_spec_trait1[]
+// tag::snippet_conv_spec_trait1_1[]
 namespace user_ns
 {
 
@@ -38,6 +38,9 @@ public:
     end() const;
 
 private:
+// end::snippet_conv_spec_trait1_1[]
+protected:
+// tag::snippet_conv_spec_trait1_2[]
     std::array<unsigned char, 4> octets_;
 };
 
@@ -62,7 +65,7 @@ struct tuple_element< N, user_ns::ip_address >
 };
 
 } // namespace std
-// end::snippet_conv_spec_trait1[]
+// end::snippet_conv_spec_trait1_2[]
 
 namespace user_ns
 {
