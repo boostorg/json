@@ -49,6 +49,12 @@ struct my_null1 { };
 struct my_null2 { };
 struct my_null3 { };
 
+#ifdef BOOST_DESCRIBE_HAS_REFLECTION
+struct
+    [[=boost::json::conversion_category::null]]
+my_null4 {};
+#endif // BOOST_DESCRIBE_HAS_REFLECTION
+
 struct custom1 { };
 struct custom2 { };
 struct custom3 { };
@@ -1272,6 +1278,15 @@ public:
             std::is_same<
                 detail::forwarded_value< std::vector<bool>& >,
                 bool >::value ));
+
+#ifdef BOOST_DESCRIBE_HAS_REFLECTION
+        BOOST_CORE_STATIC_ASSERT((
+            is_category<get_category1<my_null4>, null_category>() ));
+        BOOST_CORE_STATIC_ASSERT((
+            is_category<get_category2<my_null4>, null_category>() ));
+        BOOST_CORE_STATIC_ASSERT((
+            is_category<get_category3<my_null4>, null_category>() ));
+#endif // BOOST_DESCRIBE_HAS_REFLECTION
     }
 };
 
