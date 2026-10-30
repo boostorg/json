@@ -103,17 +103,20 @@ function(boost_json_setup_properties target)
 endfunction()
 
 
-file(GLOB_RECURSE BOOST_JSON_HEADERS CONFIGURE_DEPENDS
-    include/boost/*.hpp
-    include/boost/*.ipp
-    include/boost/*.natvis
-)
+if(CMAKE_GENERATOR MATCHES "Visual Studio")
+    file(GLOB_RECURSE BOOST_JSON_HEADERS CONFIGURE_DEPENDS
+        include/boost/*.hpp
+        include/boost/*.ipp
+        include/boost/*.natvis
+    )
+
+    set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/include/boost PREFIX "" FILES ${BOOST_JSON_HEADERS})
+endif()
 
 set(BOOST_JSON_SOURCES src/src.cpp)
 
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/include/boost PREFIX "" FILES ${BOOST_JSON_HEADERS})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX "" FILES ${BOOST_JSON_SOURCES})
 
 
