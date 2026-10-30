@@ -103,7 +103,7 @@ function(boost_json_setup_properties target)
 endfunction()
 
 
-file(GLOB_RECURSE BOOST_JSON_HEADERS CONFIGURE_DEPENDS
+file(GLOB_RECURSE BOOST_JSON_HEADERS ${BOOST_CONFIGURE_DEPENDS}
     include/boost/*.hpp
     include/boost/*.ipp
     include/boost/*.natvis
@@ -114,6 +114,7 @@ set(BOOST_JSON_SOURCES src/src.cpp)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/include/boost PREFIX "" FILES ${BOOST_JSON_HEADERS})
+
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX "" FILES ${BOOST_JSON_SOURCES})
 
 
