@@ -59,7 +59,7 @@ namespace json {
     and, if necessary, the effective context `C` that will be used for
     conversion. If the category is selected on steps **1.a**, **3.a**, **3.c**,
     or **3.d**, the library provides a suitable conversion implementation.
-    If the category is selected on steps **2.b** or **3.b**, then a
+    If the category is selected on steps **1.b** or **3.b**, then a
     user-provided `tag_invoke` overload is used.
 
     The overloads of `tag_invoke` that will be considered by this function

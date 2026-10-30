@@ -35,6 +35,10 @@ overload may look like this:
 include::../../../test/snippets.cpp[tag=snippet_nothrow_1,indent=0]
 ----
 
+Notice how the implementation itself used `try_value_to`, and also a
+https://boost.org/doc/libs/latest/libs/system/doc/html/system.html#ref_operator_3[
+result chaining operator from the Boost.System library].
+
 The overload lets us use `ip_address` with <<ref_try_value_to>>.
 
 [source]
