@@ -40,6 +40,7 @@ release!
 * {issue}1207[#1207] Fix undefined behavior for some sequences in `parse_into`.
 * {issue}1213[#1213] Disabled usage of `clang::no_destroy` in clang-cl.
 * {issue}1213[#1213] Fixed ``value::to_number``'s incorrect lower bound when converting from double to `std::int64_t`.
+* {issue}1191[#1191] Fixed treatment of overaligned types by `monotonic_resource`.
 
 .Documentation
 * {issue}1180[#1180] Fixed documentation for `basic_parser` handler.
