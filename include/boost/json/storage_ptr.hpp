@@ -83,14 +83,14 @@ class storage_ptr
     using default_resource =
         detail::default_resource;
 
-    std::uintptr_t i_;
+    void* p_;
 
     shared_resource*
     get_shared() const noexcept
     {
+        auto const i = reinterpret_cast<std::uintptr_t>(p_) & ~3;
         return static_cast<shared_resource*>(
-            reinterpret_cast<container::pmr::memory_resource*>(
-                i_ & ~3));
+            reinterpret_cast<container::pmr::memory_resource*>(i));
     }
 
     void
@@ -116,9 +116,10 @@ class storage_ptr
     template<class T>
     storage_ptr(
         detail::shared_resource_impl<T>* p) noexcept
-        : i_(reinterpret_cast<std::uintptr_t>(
-                static_cast<container::pmr::memory_resource*>(p)) + 1 +
-            (json::is_deallocate_trivial<T>::value ? 2 : 0))
+        : p_(reinterpret_cast<void*>(
+                reinterpret_cast<std::uintptr_t>(
+                    static_cast<container::pmr::memory_resource*>(p))
+             + 1 + (json::is_deallocate_trivial<T>::value ? 2 : 0)))
     {
         BOOST_ASSERT(p);
     }
@@ -184,7 +185,7 @@ public:
         @{
     */
     storage_ptr() noexcept
-        : i_(0)
+        : p_(nullptr)
     {
     }
 
@@ -201,9 +202,10 @@ public:
 #endif
     >
     storage_ptr(T* r) noexcept
-        : i_(reinterpret_cast<std::uintptr_t>(
-                static_cast<container::pmr::memory_resource *>(r)) +
-            (json::is_deallocate_trivial<T>::value ? 2 : 0))
+        : p_(reinterpret_cast<void*>(
+                reinterpret_cast<std::uintptr_t>(
+                    static_cast<container::pmr::memory_resource*>(r))
+            + (json::is_deallocate_trivial<T>::value ? 2 : 0)))
     {
         BOOST_ASSERT(r);
     }
@@ -217,8 +219,7 @@ public:
     template<class V>
     storage_ptr(
         container::pmr::polymorphic_allocator<V> const& alloc) noexcept
-        : i_(reinterpret_cast<std::uintptr_t>(
-            alloc.resource()))
+        : p_(alloc.resource())
     {
     }
 
@@ -228,7 +229,7 @@ public:
     */
     storage_ptr(
         storage_ptr&& other) noexcept
-        : i_(detail::exchange(other.i_, 0))
+        : p_(detail::exchange(other.p_, nullptr))
     {
     }
 
@@ -238,7 +239,7 @@ public:
     */
     storage_ptr(
         storage_ptr const& other) noexcept
-        : i_(other.i_)
+        : p_(other.p_)
     {
         addref();
     }
@@ -277,7 +278,7 @@ public:
         storage_ptr&& other) noexcept
     {
         release();
-        i_ = detail::exchange(other.i_, 0);
+        p_ = detail::exchange(other.p_, nullptr);
         return *this;
     }
 
@@ -287,7 +288,7 @@ public:
     {
         other.addref();
         release();
-        i_ = other.i_;
+        p_ = other.p_;
         return *this;
     }
     /// @}
@@ -300,7 +301,8 @@ public:
     bool
     is_shared() const noexcept
     {
-        return (i_ & 1) != 0;
+        auto const i = reinterpret_cast<std::uintptr_t>(p_);
+        return (i & 1) != 0;
     }
 
     /** Check if calling `deallocate` on the memory resource has no effect.
@@ -313,7 +315,8 @@ public:
     bool
     is_deallocate_trivial() const noexcept
     {
-        return (i_ & 2) != 0;
+        auto const i = reinterpret_cast<std::uintptr_t>(p_);
+        return (i & 2) != 0;
     }
 
     /** Check if ownership of the memory resource is not shared and deallocate is trivial.
@@ -325,7 +328,8 @@ public:
     bool
     is_not_shared_and_deallocate_is_trivial() const noexcept
     {
-        return (i_ & 3) == 2;
+        auto const i = reinterpret_cast<std::uintptr_t>(p_);
+        return (i & 3) == 2;
     }
 
     /** Return a pointer to the memory resource.
@@ -342,9 +346,11 @@ public:
     container::pmr::memory_resource*
     get() const noexcept
     {
-        if(i_ != 0)
-            return reinterpret_cast<
-                container::pmr::memory_resource*>(i_ & ~3);
+        if(p_)
+        {
+            auto const i = reinterpret_cast<std::uintptr_t>(p_) & ~3;
+            return reinterpret_cast<container::pmr::memory_resource*>(i);
+        }
         return default_resource::get();
     }
 
