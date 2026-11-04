@@ -2032,9 +2032,6 @@ parse_number(
     std::integral_constant<bool, StackEmpty_> stack_empty,
     std::integral_constant<char, First_> first)
 {
-    constexpr bool precise_parsing = false;
-    constexpr bool no_parsing = false;
-
     // only one of these will be true if we are not resuming
     // if negative then !zero_first && !nonzero_first
     // if zero_first then !nonzero_first && !negative
@@ -2092,11 +2089,7 @@ parse_number(
                     return fail(cs.begin(), error::syntax, &loc);
                 }
 
-                BOOST_IF_CONSTEXPR( !no_parsing )
-                    num.mant = detail::parse_unsigned( 0, cs.begin(), n1 );
-                else
-                    num.mant = 0;
-
+                num.mant = detail::parse_unsigned( 0, cs.begin(), n1 );
                 cs += n1;
 
                 // integer or floating-point with
@@ -2123,7 +2116,7 @@ parse_number(
                         ++cs;
                         goto do_exp1;
                     }
-                    BOOST_IF_CONSTEXPR( negative && !no_parsing )
+                    BOOST_IF_CONSTEXPR( negative )
                         num.mant = ~num.mant + 1;
                     goto finish_signed;
                 }
@@ -2150,8 +2143,7 @@ parse_number(
                 goto do_num7;
             }
 
-            BOOST_IF_CONSTEXPR( !no_parsing )
-                num.mant = detail::parse_unsigned( num.mant, cs.begin(), n2 );
+            num.mant = detail::parse_unsigned( num.mant, cs.begin(), n2 );
 
             BOOST_ASSERT(num.bias == 0);
 
@@ -2247,8 +2239,6 @@ do_num1:
                 {begin, cs.used(begin)}, ec_)))
             return fail(cs.begin());
 
-        BOOST_IF_CONSTEXPR( precise_parsing )
-            num_buf_.append( begin, cs.used(begin) );
         return maybe_suspend(
             cs.begin(), state::num1, num);
     }
@@ -2272,8 +2262,6 @@ do_num2:
                             {begin, cs.used(begin)}, ec_)))
                         return fail(cs.begin());
 
-                    BOOST_IF_CONSTEXPR( precise_parsing )
-                        num_buf_.append( begin, cs.used(begin) );
                     return suspend(cs.begin(), state::num2, num);
                 }
                 goto finish_int;
@@ -2287,8 +2275,7 @@ do_num2:
                 if( num.mant  > 922337203685477580 || (
                     num.mant == 922337203685477580 && c > '8'))
                     break;
-                BOOST_IF_CONSTEXPR( !no_parsing )
-                    num.mant = 10 * num.mant + ( c - '0' );
+                num.mant = 10 * num.mant + ( c - '0' );
                 continue;
             }
             goto do_num6; // [.eE]
@@ -2307,8 +2294,6 @@ do_num2:
                             {begin, cs.used(begin)}, ec_)))
                         return fail(cs.begin());
 
-                    BOOST_IF_CONSTEXPR( precise_parsing )
-                        num_buf_.append( begin, cs.used(begin) );
                     return suspend(cs.begin(), state::num2, num);
                 }
                 goto finish_int;
@@ -2322,8 +2307,7 @@ do_num2:
                 if( num.mant  > 1844674407370955161 || (
                     num.mant == 1844674407370955161 && c > '5'))
                     break;
-                BOOST_IF_CONSTEXPR( !no_parsing )
-                    num.mant = 10 * num.mant + ( c - '0' );
+                num.mant = 10 * num.mant + ( c - '0' );
             }
             else
             {
@@ -2350,8 +2334,6 @@ do_num3:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                BOOST_IF_CONSTEXPR( precise_parsing )
-                    num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num3, num);
             }
             goto finish_dub;
@@ -2401,8 +2383,6 @@ do_num4:
                     {begin, cs.used(begin)}, ec_)))
                 return fail(cs.begin());
 
-            BOOST_IF_CONSTEXPR( precise_parsing )
-                num_buf_.append( begin, cs.used(begin) );
             return maybe_suspend(
                 cs.begin(), state::num4, num);
         }
@@ -2440,8 +2420,6 @@ do_num5:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                BOOST_IF_CONSTEXPR( precise_parsing )
-                    num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num5, num);
             }
             goto finish_dub;
@@ -2478,8 +2456,6 @@ do_num6:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                BOOST_IF_CONSTEXPR( precise_parsing )
-                    num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num6, num);
             }
             goto finish_int;
@@ -2518,8 +2494,6 @@ do_num7:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                BOOST_IF_CONSTEXPR( precise_parsing )
-                    num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num7, num);
             }
             // digit required
@@ -2556,8 +2530,6 @@ do_num8:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                BOOST_IF_CONSTEXPR( precise_parsing )
-                    num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num8, num);
             }
             goto finish_dub;
@@ -2567,8 +2539,7 @@ do_num8:
             c >= '0' && c <= '9'))
         {
             ++cs;
-            if(!no_parsing && BOOST_JSON_LIKELY(
-                num.mant <= 9007199254740991)) // 2^53-1
+            if(BOOST_JSON_LIKELY( num.mant <= 9007199254740991 )) // 2^53-1
             {
                 if(BOOST_JSON_UNLIKELY( num.bias - 1 == INT_MIN ))
                 {
@@ -2607,8 +2578,6 @@ do_exp1:
                 {begin, cs.used(begin)}, ec_)))
             return fail(cs.begin());
 
-        BOOST_IF_CONSTEXPR( precise_parsing )
-            num_buf_.append( begin, cs.used(begin) );
         return maybe_suspend(
             cs.begin(), state::exp1, num);
     }
@@ -2638,8 +2607,6 @@ do_exp2:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                BOOST_IF_CONSTEXPR( precise_parsing )
-                    num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::exp2, num);
             }
             // digit required
@@ -2677,8 +2644,6 @@ do_exp3:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                BOOST_IF_CONSTEXPR( precise_parsing )
-                    num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::exp3, num);
             }
         }
@@ -2693,7 +2658,7 @@ do_exp3:
                     (num.exp == 214748364 && c > '7')
                 ))
                     num.exp = INT_MAX;
-                else BOOST_IF_CONSTEXPR( !no_parsing )
+                else
                     num.exp = 10 * num.exp + ( c - '0' );
 
                 ++cs;
@@ -2770,33 +2735,11 @@ finish_signed:
 finish_dub:
     double d;
     std::size_t const size = cs.used(begin);
-    BOOST_ASSERT( !num_buf_.size() || precise_parsing );
-    BOOST_IF_CONSTEXPR( precise_parsing )
-    {
-        char const* data = begin;
-        std::size_t full_size = size;
-         // if we previously suspended or if the current input ends with the
-         // number, we need to copy the current part of the number to the
-         // temporary buffer
-        if(BOOST_JSON_UNLIKELY( num_buf_.size() ))
-        {
-            data = num_buf_.append( begin, size );
-            full_size = num_buf_.size();
-        }
-        auto const err = detail::charconv::from_chars(
-            data, data + full_size, d );
-        BOOST_ASSERT( err.ec != std::errc::invalid_argument );
-        BOOST_ASSERT( err.ptr == data + full_size );
-        (void)err;
-    }
-    else BOOST_IF_CONSTEXPR( no_parsing )
-        d = 0;
-    else
-        d = detail::dec_to_float(
-            num.mant,
-            num.bias + (num.frac ?
-                -num.exp : num.exp),
-            num.neg);
+    d = detail::dec_to_float(
+        num.mant,
+        num.bias + (num.frac ?
+            -num.exp : num.exp),
+        num.neg);
     if(BOOST_JSON_UNLIKELY(
         ! h_.on_double(d, {begin, size}, ec_)))
         return fail(cs.begin());
@@ -2812,9 +2755,6 @@ parse_number_precise(
     std::integral_constant<bool, StackEmpty_> stack_empty,
     std::integral_constant<char, First_> first)
 {
-    constexpr bool precise_parsing = true;
-    constexpr bool no_parsing = false;
-
     // only one of these will be true if we are not resuming
     // if negative then !zero_first && !nonzero_first
     // if zero_first then !nonzero_first && !negative
@@ -2872,10 +2812,7 @@ parse_number_precise(
                     return fail(cs.begin(), error::syntax, &loc);
                 }
 
-                BOOST_IF_CONSTEXPR( !no_parsing )
-                    num.mant = detail::parse_unsigned( 0, cs.begin(), n1 );
-                else
-                    num.mant = 0;
+                num.mant = detail::parse_unsigned( 0, cs.begin(), n1 );
 
                 cs += n1;
 
@@ -2903,7 +2840,7 @@ parse_number_precise(
                         ++cs;
                         goto do_exp1;
                     }
-                    BOOST_IF_CONSTEXPR( negative && !no_parsing )
+                    BOOST_IF_CONSTEXPR( negative )
                         num.mant = ~num.mant + 1;
                     goto finish_signed;
                 }
@@ -2930,8 +2867,7 @@ parse_number_precise(
                 goto do_num7;
             }
 
-            BOOST_IF_CONSTEXPR( !no_parsing )
-                num.mant = detail::parse_unsigned( num.mant, cs.begin(), n2 );
+            num.mant = detail::parse_unsigned( num.mant, cs.begin(), n2 );
 
             BOOST_ASSERT(num.bias == 0);
 
@@ -3027,8 +2963,7 @@ do_num1:
                 {begin, cs.used(begin)}, ec_)))
             return fail(cs.begin());
 
-        BOOST_IF_CONSTEXPR( precise_parsing )
-            num_buf_.append( begin, cs.used(begin) );
+        num_buf_.append( begin, cs.used(begin) );
         return maybe_suspend(
             cs.begin(), state::num1, num);
     }
@@ -3052,8 +2987,7 @@ do_num2:
                             {begin, cs.used(begin)}, ec_)))
                         return fail(cs.begin());
 
-                    BOOST_IF_CONSTEXPR( precise_parsing )
-                        num_buf_.append( begin, cs.used(begin) );
+                    num_buf_.append( begin, cs.used(begin) );
                     return suspend(cs.begin(), state::num2, num);
                 }
                 goto finish_int;
@@ -3067,8 +3001,7 @@ do_num2:
                 if( num.mant  > 922337203685477580 || (
                     num.mant == 922337203685477580 && c > '8'))
                     break;
-                BOOST_IF_CONSTEXPR( !no_parsing )
-                    num.mant = 10 * num.mant + ( c - '0' );
+                num.mant = 10 * num.mant + ( c - '0' );
                 continue;
             }
             goto do_num6; // [.eE]
@@ -3087,8 +3020,7 @@ do_num2:
                             {begin, cs.used(begin)}, ec_)))
                         return fail(cs.begin());
 
-                    BOOST_IF_CONSTEXPR( precise_parsing )
-                        num_buf_.append( begin, cs.used(begin) );
+                    num_buf_.append( begin, cs.used(begin) );
                     return suspend(cs.begin(), state::num2, num);
                 }
                 goto finish_int;
@@ -3102,8 +3034,7 @@ do_num2:
                 if( num.mant  > 1844674407370955161 || (
                     num.mant == 1844674407370955161 && c > '5'))
                     break;
-                BOOST_IF_CONSTEXPR( !no_parsing )
-                    num.mant = 10 * num.mant + ( c - '0' );
+                num.mant = 10 * num.mant + ( c - '0' );
             }
             else
             {
@@ -3130,8 +3061,7 @@ do_num3:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                BOOST_IF_CONSTEXPR( precise_parsing )
-                    num_buf_.append( begin, cs.used(begin) );
+                num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num3, num);
             }
             goto finish_dub;
@@ -3181,8 +3111,7 @@ do_num4:
                     {begin, cs.used(begin)}, ec_)))
                 return fail(cs.begin());
 
-            BOOST_IF_CONSTEXPR( precise_parsing )
-                num_buf_.append( begin, cs.used(begin) );
+            num_buf_.append( begin, cs.used(begin) );
             return maybe_suspend(
                 cs.begin(), state::num4, num);
         }
@@ -3220,8 +3149,7 @@ do_num5:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                BOOST_IF_CONSTEXPR( precise_parsing )
-                    num_buf_.append( begin, cs.used(begin) );
+                num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num5, num);
             }
             goto finish_dub;
@@ -3258,8 +3186,7 @@ do_num6:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                BOOST_IF_CONSTEXPR( precise_parsing )
-                    num_buf_.append( begin, cs.used(begin) );
+                num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num6, num);
             }
             goto finish_int;
@@ -3298,8 +3225,7 @@ do_num7:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                BOOST_IF_CONSTEXPR( precise_parsing )
-                    num_buf_.append( begin, cs.used(begin) );
+                num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num7, num);
             }
             // digit required
@@ -3336,8 +3262,7 @@ do_num8:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                BOOST_IF_CONSTEXPR( precise_parsing )
-                    num_buf_.append( begin, cs.used(begin) );
+                num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num8, num);
             }
             goto finish_dub;
@@ -3347,8 +3272,7 @@ do_num8:
             c >= '0' && c <= '9'))
         {
             ++cs;
-            if(!no_parsing && BOOST_JSON_LIKELY(
-                num.mant <= 9007199254740991)) // 2^53-1
+            if(BOOST_JSON_LIKELY( num.mant <= 9007199254740991 )) // 2^53-1
             {
                 if(BOOST_JSON_UNLIKELY( num.bias - 1 == INT_MIN ))
                 {
@@ -3387,8 +3311,7 @@ do_exp1:
                 {begin, cs.used(begin)}, ec_)))
             return fail(cs.begin());
 
-        BOOST_IF_CONSTEXPR( precise_parsing )
-            num_buf_.append( begin, cs.used(begin) );
+        num_buf_.append( begin, cs.used(begin) );
         return maybe_suspend(
             cs.begin(), state::exp1, num);
     }
@@ -3418,8 +3341,7 @@ do_exp2:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                BOOST_IF_CONSTEXPR( precise_parsing )
-                    num_buf_.append( begin, cs.used(begin) );
+                num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::exp2, num);
             }
             // digit required
@@ -3457,8 +3379,7 @@ do_exp3:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                BOOST_IF_CONSTEXPR( precise_parsing )
-                    num_buf_.append( begin, cs.used(begin) );
+                num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::exp3, num);
             }
         }
@@ -3473,7 +3394,7 @@ do_exp3:
                     (num.exp == 214748364 && c > '7')
                 ))
                     num.exp = INT_MAX;
-                else BOOST_IF_CONSTEXPR( !no_parsing )
+                else
                     num.exp = 10 * num.exp + ( c - '0' );
 
                 ++cs;
@@ -3550,36 +3471,22 @@ finish_signed:
 finish_dub:
     double d;
     std::size_t const size = cs.used(begin);
-    BOOST_ASSERT( !num_buf_.size() || precise_parsing );
-    BOOST_IF_CONSTEXPR( precise_parsing )
+    char const* data = begin;
+    std::size_t full_size = size;
+    // if we previously suspended or if the current input ends with the
+    // number, we need to copy the current part of the number to the
+    // temporary buffer
+    if(BOOST_JSON_UNLIKELY( num_buf_.size() ))
     {
-        char const* data = begin;
-        std::size_t full_size = size;
-         // if we previously suspended or if the current input ends with the
-         // number, we need to copy the current part of the number to the
-         // temporary buffer
-        if(BOOST_JSON_UNLIKELY( num_buf_.size() ))
-        {
-            data = num_buf_.append( begin, size );
-            full_size = num_buf_.size();
-        }
-        auto const err = detail::charconv::from_chars(
-            data, data + full_size, d );
-        BOOST_ASSERT( err.ec != std::errc::invalid_argument );
-        BOOST_ASSERT( err.ptr == data + full_size );
-        (void)err;
+        data = num_buf_.append(begin, size);
+        full_size = num_buf_.size();
     }
-    else BOOST_IF_CONSTEXPR( no_parsing )
-        d = 0;
-    else
-        d = detail::dec_to_float(
-            num.mant,
-            num.bias + (num.frac ?
-                -num.exp : num.exp),
-            num.neg);
-    if(BOOST_JSON_UNLIKELY(
-        ! h_.on_double(d, {begin, size}, ec_)))
-        return fail(cs.begin());
+    auto const err = detail::charconv::from_chars(data, data + full_size, d);
+    BOOST_ASSERT( err.ec != std::errc::invalid_argument );
+    BOOST_ASSERT( err.ptr == data + full_size );
+    (void)err;
+    if(BOOST_JSON_UNLIKELY( !h_.on_double(d, {begin, size}, ec_) ))
+        return fail( cs.begin() );
     return cs.begin();
 }
 
@@ -3592,9 +3499,6 @@ skip_number(
     std::integral_constant<bool, StackEmpty_> stack_empty,
     std::integral_constant<char, First_> first)
 {
-    constexpr bool precise_parsing = false;
-    constexpr bool no_parsing = true;
-
     // only one of these will be true if we are not resuming
     // if negative then !zero_first && !nonzero_first
     // if zero_first then !nonzero_first && !negative
@@ -3652,11 +3556,7 @@ skip_number(
                     return fail(cs.begin(), error::syntax, &loc);
                 }
 
-                BOOST_IF_CONSTEXPR( !no_parsing )
-                    num.mant = detail::parse_unsigned( 0, cs.begin(), n1 );
-                else
-                    num.mant = 0;
-
+                num.mant = 0;
                 cs += n1;
 
                 // integer or floating-point with
@@ -3683,8 +3583,6 @@ skip_number(
                         ++cs;
                         goto do_exp1;
                     }
-                    BOOST_IF_CONSTEXPR( negative && !no_parsing )
-                        num.mant = ~num.mant + 1;
                     goto finish_signed;
                 }
             }
@@ -3709,9 +3607,6 @@ skip_number(
             {
                 goto do_num7;
             }
-
-            BOOST_IF_CONSTEXPR( !no_parsing )
-                num.mant = detail::parse_unsigned( num.mant, cs.begin(), n2 );
 
             BOOST_ASSERT(num.bias == 0);
 
@@ -3807,8 +3702,6 @@ do_num1:
                 {begin, cs.used(begin)}, ec_)))
             return fail(cs.begin());
 
-        BOOST_IF_CONSTEXPR( precise_parsing )
-            num_buf_.append( begin, cs.used(begin) );
         return maybe_suspend(
             cs.begin(), state::num1, num);
     }
@@ -3832,8 +3725,6 @@ do_num2:
                             {begin, cs.used(begin)}, ec_)))
                         return fail(cs.begin());
 
-                    BOOST_IF_CONSTEXPR( precise_parsing )
-                        num_buf_.append( begin, cs.used(begin) );
                     return suspend(cs.begin(), state::num2, num);
                 }
                 goto finish_int;
@@ -3847,8 +3738,6 @@ do_num2:
                 if( num.mant  > 922337203685477580 || (
                     num.mant == 922337203685477580 && c > '8'))
                     break;
-                BOOST_IF_CONSTEXPR( !no_parsing )
-                    num.mant = 10 * num.mant + ( c - '0' );
                 continue;
             }
             goto do_num6; // [.eE]
@@ -3867,8 +3756,6 @@ do_num2:
                             {begin, cs.used(begin)}, ec_)))
                         return fail(cs.begin());
 
-                    BOOST_IF_CONSTEXPR( precise_parsing )
-                        num_buf_.append( begin, cs.used(begin) );
                     return suspend(cs.begin(), state::num2, num);
                 }
                 goto finish_int;
@@ -3882,8 +3769,6 @@ do_num2:
                 if( num.mant  > 1844674407370955161 || (
                     num.mant == 1844674407370955161 && c > '5'))
                     break;
-                BOOST_IF_CONSTEXPR( !no_parsing )
-                    num.mant = 10 * num.mant + ( c - '0' );
             }
             else
             {
@@ -3910,8 +3795,6 @@ do_num3:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                BOOST_IF_CONSTEXPR( precise_parsing )
-                    num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num3, num);
             }
             goto finish_dub;
@@ -3961,8 +3844,6 @@ do_num4:
                     {begin, cs.used(begin)}, ec_)))
                 return fail(cs.begin());
 
-            BOOST_IF_CONSTEXPR( precise_parsing )
-                num_buf_.append( begin, cs.used(begin) );
             return maybe_suspend(
                 cs.begin(), state::num4, num);
         }
@@ -4000,8 +3881,6 @@ do_num5:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                BOOST_IF_CONSTEXPR( precise_parsing )
-                    num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num5, num);
             }
             goto finish_dub;
@@ -4038,8 +3917,6 @@ do_num6:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                BOOST_IF_CONSTEXPR( precise_parsing )
-                    num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num6, num);
             }
             goto finish_int;
@@ -4078,8 +3955,6 @@ do_num7:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                BOOST_IF_CONSTEXPR( precise_parsing )
-                    num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num7, num);
             }
             // digit required
@@ -4116,8 +3991,6 @@ do_num8:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                BOOST_IF_CONSTEXPR( precise_parsing )
-                    num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::num8, num);
             }
             goto finish_dub;
@@ -4127,22 +4000,7 @@ do_num8:
             c >= '0' && c <= '9'))
         {
             ++cs;
-            if(!no_parsing && BOOST_JSON_LIKELY(
-                num.mant <= 9007199254740991)) // 2^53-1
-            {
-                if(BOOST_JSON_UNLIKELY( num.bias - 1 == INT_MIN ))
-                {
-                    BOOST_STATIC_CONSTEXPR source_location loc
-                        = BOOST_CURRENT_LOCATION;
-                    return fail(cs.begin(), error::exponent_overflow, &loc);
-                }
-                --num.bias;
-                num.mant = 10 * num.mant + ( c - '0' );
-            }
-            else
-            {
-                goto do_num5;
-            }
+            goto do_num5;
         }
         else if((c | 32) == 'e')
         {
@@ -4167,8 +4025,6 @@ do_exp1:
                 {begin, cs.used(begin)}, ec_)))
             return fail(cs.begin());
 
-        BOOST_IF_CONSTEXPR( precise_parsing )
-            num_buf_.append( begin, cs.used(begin) );
         return maybe_suspend(
             cs.begin(), state::exp1, num);
     }
@@ -4198,8 +4054,6 @@ do_exp2:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                BOOST_IF_CONSTEXPR( precise_parsing )
-                    num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::exp2, num);
             }
             // digit required
@@ -4237,8 +4091,6 @@ do_exp3:
                         {begin, cs.used(begin)}, ec_)))
                     return fail(cs.begin());
 
-                BOOST_IF_CONSTEXPR( precise_parsing )
-                    num_buf_.append( begin, cs.used(begin) );
                 return suspend(cs.begin(), state::exp3, num);
             }
         }
@@ -4247,15 +4099,6 @@ do_exp3:
             char const c = *cs;
             if(BOOST_JSON_LIKELY( c >= '0' && c <= '9' ))
             {
-                if(BOOST_JSON_UNLIKELY(
-                //              2147483647 INT_MAX
-                    num.exp  >  214748364 ||
-                    (num.exp == 214748364 && c > '7')
-                ))
-                    num.exp = INT_MAX;
-                else BOOST_IF_CONSTEXPR( !no_parsing )
-                    num.exp = 10 * num.exp + ( c - '0' );
-
                 ++cs;
                 continue;
             }
@@ -4328,37 +4171,8 @@ finish_signed:
         return fail(cs.begin());
     return cs.begin();
 finish_dub:
-    double d;
     std::size_t const size = cs.used(begin);
-    BOOST_ASSERT( !num_buf_.size() || precise_parsing );
-    BOOST_IF_CONSTEXPR( precise_parsing )
-    {
-        char const* data = begin;
-        std::size_t full_size = size;
-         // if we previously suspended or if the current input ends with the
-         // number, we need to copy the current part of the number to the
-         // temporary buffer
-        if(BOOST_JSON_UNLIKELY( num_buf_.size() ))
-        {
-            data = num_buf_.append( begin, size );
-            full_size = num_buf_.size();
-        }
-        auto const err = detail::charconv::from_chars(
-            data, data + full_size, d );
-        BOOST_ASSERT( err.ec != std::errc::invalid_argument );
-        BOOST_ASSERT( err.ptr == data + full_size );
-        (void)err;
-    }
-    else BOOST_IF_CONSTEXPR( no_parsing )
-        d = 0;
-    else
-        d = detail::dec_to_float(
-            num.mant,
-            num.bias + (num.frac ?
-                -num.exp : num.exp),
-            num.neg);
-    if(BOOST_JSON_UNLIKELY(
-        ! h_.on_double(d, {begin, size}, ec_)))
+    if(BOOST_JSON_UNLIKELY( !h_.on_double(0, {begin, size}, ec_) ))
         return fail(cs.begin());
     return cs.begin();
 }
