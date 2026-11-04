@@ -1,0 +1,1 @@
+{"b":"not a bool","i64":"not an int","v2":[1,"two",3],"a1":[true,true],"t1":[1,2,3,4,5],"v":{"not":"a variant kind"}}
