@@ -144,6 +144,7 @@ def main(ctx):
         ],
     ) + [
         linux_cxx("docs", "g++", buildtype="docs", buildscript="drone", image="cppalliance/boost_superproject_build:24.04-v3", environment={'COMMENT': 'docs'}, globalenv=globalenv),
+        linux_cxx("Clang preview - reflection", "clang++", buildtype="boost", buildscript="drone", image="cppalliance/2404-p2996:1", environment={'B2_TOOLSET': 'clang', 'B2_CXXSTD': '20,23,2c'}, globalenv=globalenv),
     ]
 
 def generate(
