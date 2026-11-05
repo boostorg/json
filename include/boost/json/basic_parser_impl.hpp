@@ -2879,8 +2879,6 @@ parse_number_precise(
         case state::num1: goto do_num1;
         case state::num2: goto do_num2;
         case state::num3: goto do_num3;
-        case state::num4: goto do_num4;
-        case state::num5: goto do_num5;
         case state::num6: goto do_num6;
         case state::num7: goto do_num7;
         case state::num8: goto do_num8;
@@ -3029,80 +3027,9 @@ do_num3:
         {
             ++cs;
         }
-        else if(BOOST_JSON_LIKELY( c == '.' ))
-        {
-            ++cs;
-            break;
-        }
-        else if( (c | 32) == 'e' )
-        {
-            ++cs;
-            goto do_exp1;
-        }
         else
         {
-            goto finish_dub;
-        }
-    }
-
-    // DIGIT
-    // first non-significant digit to the right of decimal
-do_num4:
-    {
-        if(BOOST_JSON_UNLIKELY( !cs ))
-        {
-            if(BOOST_JSON_UNLIKELY(
-                !h_.on_number_part({begin, cs.used(begin)}, ec_) ))
-                return fail(cs.begin());
-
-            num_buf_.append( begin, cs.used(begin) );
-            return maybe_suspend(cs.begin(), state::num4, num);
-        }
-        char const c = *cs;
-        if(BOOST_JSON_LIKELY( c >= '0' && c <= '9' ))
-        {
-            ++cs;
-        }
-        else
-        {
-            // digit required
-            BOOST_STATIC_CONSTEXPR source_location loc
-                = BOOST_CURRENT_LOCATION;
-            return fail(cs.begin(), error::syntax, &loc);
-        }
-    }
-
-    // 1*DIGIT
-    // non-significant digits to the right of decimal
-do_num5:
-    for(;;)
-    {
-        if(BOOST_JSON_UNLIKELY( !cs ))
-        {
-            if(BOOST_JSON_UNLIKELY( more_ ))
-            {
-                if(BOOST_JSON_UNLIKELY(
-                    !h_.on_number_part({begin, cs.used(begin)}, ec_) ))
-                    return fail(cs.begin());
-
-                num_buf_.append( begin, cs.used(begin) );
-                return suspend(cs.begin(), state::num5, num);
-            }
-            goto finish_dub;
-        }
-        char const c = *cs;
-        if(BOOST_JSON_LIKELY( c >= '0' && c <= '9' ))
-        {
-            ++cs;
-        }
-        else if( (c | 32) == 'e' )
-        {
-            ++cs;
-            goto do_exp1;
-        }
-        else
-        {
-            goto finish_dub;
+            goto do_num6; // [.eE]
         }
     }
 
@@ -3204,7 +3131,7 @@ do_num8:
 
     // *[+-]
 do_exp1:
-    if(BOOST_JSON_UNLIKELY(! cs))
+    if(BOOST_JSON_UNLIKELY( !cs ))
     {
         if(BOOST_JSON_UNLIKELY(
             !h_.on_number_part({begin, cs.used(begin)}, ec_) ))
@@ -3282,7 +3209,7 @@ finish_int:
     if( negative || (!stack_empty && num.neg) )
     {
         if(BOOST_JSON_UNLIKELY(
-            ! h_.on_int64(
+            !h_.on_int64(
                 static_cast<int64_t>(~num.mant + 1),
                 {begin, cs.used(begin)},
                 ec_) ))
@@ -3293,7 +3220,7 @@ finish_int:
     {
 finish_signed:
         if(BOOST_JSON_UNLIKELY(
-            ! h_.on_int64(
+            !h_.on_int64(
                 static_cast<int64_t>(num.mant),
                 {begin, cs.used(begin)},
                 ec_) ))
