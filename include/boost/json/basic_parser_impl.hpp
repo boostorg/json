@@ -2047,7 +2047,7 @@ parse_number(
         num.bias = 0;
         num.exp = 0;
         num.frac = false;
-        num_buf_.clear();
+        num.neg = negative;
 
         //----------------------------------
         //
@@ -2057,11 +2057,6 @@ parse_number(
         BOOST_ASSERT(cs);
         if(negative)
             ++cs;
-
-        num.neg = negative;
-        num.frac = false;
-        num.exp = 0;
-        num.bias = 0;
 
         // fast path
         if( cs.remain() >= 16 + 1 + 16 ) // digits . digits
