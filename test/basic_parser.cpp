@@ -254,13 +254,13 @@ public:
                     }
                     if(good)
                     {
-                        if(! BOOST_TEST(!ec) )
+                        if(! BOOST_TEST(!ec, loc) )
                         {
                             log << "  " << ec.what() << " after " << sz << " characters of " << _test_gr_s << '\n';
                         }
                     }
                     else
-                        BOOST_TEST(ec);
+                        BOOST_TEST(ec, loc);
                     break;
                 }
             }
@@ -437,80 +437,88 @@ public:
     void
     testSpecialNumbers()
     {
-        parse_options with_special_numbers;
-        with_special_numbers.allow_infinity_and_nan = true;
 
-        good("Infinity", with_special_numbers);
-        good(" Infinity", with_special_numbers);
-        good("Infinity ", with_special_numbers);
-        good("\tInfinity", with_special_numbers);
-        good("Infinity\t", with_special_numbers);
-        good("\r\n\t Infinity\r\n\t ", with_special_numbers);
+        for (number_precision numbers : {
+            number_precision::imprecise,
+            number_precision::precise,
+            number_precision::none})
+        {
+            parse_options po;
+            po.allow_infinity_and_nan = true;
+            po.numbers = numbers;
 
-        bad("I       ", with_special_numbers);
-        bad("In      ", with_special_numbers);
-        bad("Inf     ", with_special_numbers);
-        bad("Infi    ", with_special_numbers);
-        bad("Infin   ", with_special_numbers);
-        bad("Infini  ", with_special_numbers);
-        bad("Infinit ", with_special_numbers);
+            good("Infinity", po);
+            good(" Infinity", po);
+            good("Infinity ", po);
+            good("\tInfinity", po);
+            good("Infinity\t", po);
+            good("\r\n\t Infinity\r\n\t ", po);
 
-        bad("I------- ", with_special_numbers);
-        bad("In------ ", with_special_numbers);
-        bad("Inf----- ", with_special_numbers);
-        bad("Infi---- ", with_special_numbers);
-        bad("Infin--- ", with_special_numbers);
-        bad("Infini-- ", with_special_numbers);
-        bad("Infinit- ", with_special_numbers);
+            bad("I       ", po);
+            bad("In      ", po);
+            bad("Inf     ", po);
+            bad("Infi    ", po);
+            bad("Infin   ", po);
+            bad("Infini  ", po);
+            bad("Infinit ", po);
 
-        bad("INFINITY", with_special_numbers);
-        bad("infinity", with_special_numbers);
-        bad("Infinitys", with_special_numbers);
+            bad("I------- ", po);
+            bad("In------ ", po);
+            bad("Inf----- ", po);
+            bad("Infi---- ", po);
+            bad("Infin--- ", po);
+            bad("Infini-- ", po);
+            bad("Infinit- ", po);
 
-        good("-Infinity", with_special_numbers);
-        good(" -Infinity", with_special_numbers);
-        good("-Infinity ", with_special_numbers);
-        good("\t-Infinity", with_special_numbers);
-        good("-Infinity\t", with_special_numbers);
-        good("\r\n\t -Infinity\r\n\t ", with_special_numbers);
-        // trigger fast path
-        good("-Infinity                          ", with_special_numbers);
+            bad("INFINITY", po);
+            bad("infinity", po);
+            bad("Infinitys", po);
 
-        bad("-I       ", with_special_numbers);
-        bad("-In      ", with_special_numbers);
-        bad("-Inf     ", with_special_numbers);
-        bad("-Infi    ", with_special_numbers);
-        bad("-Infin   ", with_special_numbers);
-        bad("-Infini  ", with_special_numbers);
-        bad("-Infinit ", with_special_numbers);
+            good("-Infinity", po);
+            good(" -Infinity", po);
+            good("-Infinity ", po);
+            good("\t-Infinity", po);
+            good("-Infinity\t", po);
+            good("\r\n\t -Infinity\r\n\t ", po);
+            // trigger fast path
+            good("-Infinity                          ", po);
 
-        bad("-I------- ", with_special_numbers);
-        bad("-In------ ", with_special_numbers);
-        bad("-Inf----- ", with_special_numbers);
-        bad("-Infi---- ", with_special_numbers);
-        bad("-Infin--- ", with_special_numbers);
-        bad("-Infini-- ", with_special_numbers);
-        bad("-Infinit- ", with_special_numbers);
+            bad("-I       ", po);
+            bad("-In      ", po);
+            bad("-Inf     ", po);
+            bad("-Infi    ", po);
+            bad("-Infin   ", po);
+            bad("-Infini  ", po);
+            bad("-Infinit ", po);
 
-        bad("-INFINITY", with_special_numbers);
-        bad("-infinity", with_special_numbers);
-        bad("-Infinitys", with_special_numbers);
+            bad("-I------- ", po);
+            bad("-In------ ", po);
+            bad("-Inf----- ", po);
+            bad("-Infi---- ", po);
+            bad("-Infin--- ", po);
+            bad("-Infini-- ", po);
+            bad("-Infinit- ", po);
 
-        good("NaN", with_special_numbers);
-        good(" NaN", with_special_numbers);
-        good("NaN ", with_special_numbers);
-        good("\tNaN", with_special_numbers);
-        good("NaN\t", with_special_numbers);
-        good("\r\n\t NaN\r\n\t ", with_special_numbers);
+            bad("-INFINITY", po);
+            bad("-infinity", po);
+            bad("-Infinitys", po);
 
-        bad("N  ", with_special_numbers);
-        bad("Na ", with_special_numbers);
+            good("NaN", po);
+            good(" NaN", po);
+            good("NaN ", po);
+            good("\tNaN", po);
+            good("NaN\t", po);
+            good("\r\n\t NaN\r\n\t ", po);
 
-        bad("N-- ", with_special_numbers);
-        bad("Na- ", with_special_numbers);
+            bad("N  ", po);
+            bad("Na ", po);
 
-        bad("NAN", with_special_numbers);
-        bad("nan", with_special_numbers);
+            bad("N-- ", po);
+            bad("Na- ", po);
+
+            bad("NAN", po);
+            bad("nan", po);
+        }
     }
 
     void
@@ -580,112 +588,121 @@ public:
     void
     testNumber()
     {
-        good("0");
-        good("0                                ");
-        good("0e0                              ");
-        good("0E0                              ");
-        good("0e00                             ");
-        good("0E01                             ");
-        good("0e+0                             ");
-        good("0e-0                             ");
-        good("0.0                              ");
-        good("0.01                             ");
-        good("0.0e0                            ");
-        good("0.01e+0                          ");
-        good("0.02E-0                          ");
-        good("1                                ");
-        good("12                               ");
-        good("1e0                              ");
-        good("1E0                              ");
-        good("1e00                             ");
-        good("1E01                             ");
-        good("1e+0                             ");
-        good("1e-0                             ");
-        good("1.0                              ");
-        good("1.01                             ");
-        good("1.0e0                            ");
-        good("1.01e+0                          ");
-        good("1.02E-0                          ");
-        good("1.0");
+        for (number_precision numbers : {
+            number_precision::imprecise,
+            number_precision::precise,
+            number_precision::none})
+        {
+            parse_options po;
+            po.numbers = numbers;
 
-        good("-0                               ");
-        good("-0e0                             ");
-        good("-0E0                             ");
-        good("-0e00                            ");
-        good("-0E01                            ");
-        good("-0e+0                            ");
-        good("-0e-0                            ");
-        good("-0.0                             ");
-        good("-0.01                            ");
-        good("-0.0e0                           ");
-        good("-0.01e+0                         ");
-        good("-0.02E-0                         ");
-        good("-1                               ");
-        good("-12                              ");
-        good("-1                               ");
-        good("-1e0                             ");
-        good("-1E0                             ");
-        good("-1e00                            ");
-        good("-1E01                            ");
-        good("-1e+0                            ");
-        good("-1e-0                            ");
-        good("-1.0                             ");
-        good("-1.01                            ");
-        good("-1.0e0                           ");
-        good("-1.01e+0                         ");
-        good("-1.02E-0                         ");
-        good("-1.0");
+            good("0", po);
+            good("0                                ", po);
+            good("0e0                              ", po);
+            good("0E0                              ", po);
+            good("0e00                             ", po);
+            good("0E01                             ", po);
+            good("0e+0                             ", po);
+            good("0e-0                             ", po);
+            good("0.0                              ", po);
+            good("0.01                             ", po);
+            good("0.0e0                            ", po);
+            good("0.01e+0                          ", po);
+            good("0.02E-0                          ", po);
+            good("1                                ", po);
+            good("12                               ", po);
+            good("1e0                              ", po);
+            good("1E0                              ", po);
+            good("1e00                             ", po);
+            good("1E01                             ", po);
+            good("1e+0                             ", po);
+            good("1e-0                             ", po);
+            good("1.0                              ", po);
+            good("1.01                             ", po);
+            good("1.0e0                            ", po);
+            good("1.01e+0                          ", po);
+            good("1.02E-0                          ", po);
+            good("1.0", po);
 
-        good("1.1e309                          ");
-        good("9223372036854775807              ");
-        good("-9223372036854775807             ");
-        good("18446744073709551615             ");
-        good("-18446744073709551615            ");
+            good("-0                               ", po);
+            good("-0e0                             ", po);
+            good("-0E0                             ", po);
+            good("-0e00                            ", po);
+            good("-0E01                            ", po);
+            good("-0e+0                            ", po);
+            good("-0e-0                            ", po);
+            good("-0.0                             ", po);
+            good("-0.01                            ", po);
+            good("-0.0e0                           ", po);
+            good("-0.01e+0                         ", po);
+            good("-0.02E-0                         ", po);
+            good("-1                               ", po);
+            good("-12                              ", po);
+            good("-1                               ", po);
+            good("-1e0                             ", po);
+            good("-1E0                             ", po);
+            good("-1e00                            ", po);
+            good("-1E01                            ", po);
+            good("-1e+0                            ", po);
+            good("-1e-0                            ", po);
+            good("-1.0                             ", po);
+            good("-1.01                            ", po);
+            good("-1.0e0                           ", po);
+            good("-1.01e+0                         ", po);
+            good("-1.02E-0                         ", po);
+            good("-1.0", po);
 
-        good("1234567890123456");
-        good("-1234567890123456");
-        good("10000000000000000000000000");
+            good("1.1e309                          ", po);
+            good("9223372036854775807              ", po);
+            good("-9223372036854775807             ", po);
+            good("18446744073709551615             ", po);
+            good("-18446744073709551615            ", po);
 
-        good("0.900719925474099178             ");
-        good("0.0e2147483648");
-        good("10.0e2147483648");
-        good("0.01e-2147483648");
+            good("1234567890123456", po);
+            good("-1234567890123456", po);
+            good("10000000000000000000000000", po);
 
-        // non-significant digits
-        good("1000000000000000000000000        ");
-        good("1000000000000000000000000e1      ");
-        good("1000000000000000000000000.0      ");
-        good("1000000000000000000000000.00     ");
-        good("1000000000000000000000000.000000000001");
-        good("1000000000000000000000000.0e1    ");
-        good("1000000000000000000000000.0      ");
-        good("1000000000.1000000000            ");
-        good("100000000000000000000e+2147483647");
+            good("0.900719925474099178             ", po);
+            good("0.0e2147483648", po);
+            good("10.0e2147483648", po);
+            good("0.01e-2147483648", po);
 
-        bad("");
-        bad("-                                 ");
-        bad("00                                ");
-        bad("01                                ");
-        bad("00.                               ");
-        bad("00.0                              ");
-        bad("-00                               ");
-        bad("-01                               ");
-        bad("-00.                              ");
-        bad("-00.0                             ");
-        bad("1a                                ");
-        bad("-a                                ");
-        bad(".                                 ");
-        bad("1.                                ");
-        bad("1+                                ");
-        bad("0.0+                              ");
-        bad("0.0e+                             ");
-        bad("0.0e-                             ");
-        bad("0.0e0-                            ");
-        bad("0.0e                              ");
-        bad("1eX                               ");
-        bad("1000000000000000000000000.e       ");
-        bad("0.");
-        bad("0.0e+");
+            // non-significant digits
+            good("1000000000000000000000000        ", po);
+            good("1000000000000000000000000e1      ", po);
+            good("1000000000000000000000000.0      ", po);
+            good("1000000000000000000000000.00     ", po);
+            good("1000000000000000000000000.000000000001", po);
+            good("1000000000000000000000000.0e1    ", po);
+            good("1000000000000000000000000.0      ", po);
+            good("1000000000.1000000000            ", po);
+            good("100000000000000000000e+2147483647", po);
+
+            bad("", po);
+            bad("-                                 ", po);
+            bad("00                                ", po);
+            bad("01                                ", po);
+            bad("00.                               ", po);
+            bad("00.0                              ", po);
+            bad("-00                               ", po);
+            bad("-01                               ", po);
+            bad("-00.                              ", po);
+            bad("-00.0                             ", po);
+            bad("1a                                ", po);
+            bad("-a                                ", po);
+            bad(".                                 ", po);
+            bad("1.                                ", po);
+            bad("1+                                ", po);
+            bad("0.0+                              ", po);
+            bad("0.0e+                             ", po);
+            bad("0.0e-                             ", po);
+            bad("0.0e0-                            ", po);
+            bad("0.0e                              ", po);
+            bad("1eX                               ", po);
+            bad("1000000000000000000000000.e       ", po);
+            bad("0.", po);
+            bad("0.0e+", po);
+        }
     }
 
     void

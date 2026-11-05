@@ -45,13 +45,6 @@ public:
     {
         source_location const& loc;
 
-        static
-        string_view
-        name() noexcept
-        {
-            return "boost";
-        }
-
         double
         operator()(string_view s, parse_options const& po = {}) const
         {
@@ -65,7 +58,7 @@ public:
                 return 0;
             auto const jv = p.release();
             double const d = jv.as_double();
-            grind_double(s, d, po, loc);
+            grind(s, d, po, loc);
             return d;
         }
     };
@@ -92,7 +85,7 @@ public:
 
     static
     value
-    from_string_test(
+    parse_once(
         string_view s,
         storage_ptr sp,
         parse_options const& po,
@@ -116,7 +109,7 @@ public:
         source_location const& loc = BOOST_CURRENT_LOCATION)
     {
         auto const s2 = serialize(jv1);
-        auto jv2 = from_string_test(s2, {}, po, loc);
+        auto jv2 = parse_once(s2, {}, po, loc);
         BOOST_TEST(equal(jv1, jv2), loc);
     }
 
@@ -130,7 +123,7 @@ public:
         parse_options const& po,
         source_location const& loc = BOOST_CURRENT_LOCATION)
     {
-        auto const jv = from_string_test(s, sp, po, loc);
+        auto const jv = parse_once(s, sp, po, loc);
         f(jv, po);
     }
 
@@ -149,15 +142,28 @@ public:
             parse_options());
     }
 
-    template<class F>
     static
     void
     grind(
         string_view s,
-        F const& f,
+        double v,
         parse_options const & po = {},
         source_location const& loc = BOOST_CURRENT_LOCATION)
     {
+        auto f = [v, &loc](value const& jv, parse_options const& po)
+        {
+            if( po.numbers == number_precision::none )
+                BOOST_TEST(
+                    jv.kind() == kind::double_ || jv.kind() == kind::int64,
+                    loc );
+            else if(! BOOST_TEST( jv.is_double(), loc ))
+                return;
+            else if( std::isnan(v) )
+                BOOST_TEST( std::isnan( jv.get_double() ), loc );
+            else
+                BOOST_TEST( jv.get_double() == v, loc );
+        };
+
         try
         {
             grind_one(s, {}, f, po, loc);
@@ -197,24 +203,6 @@ public:
         }
     }
 
-    static
-    void
-    grind(
-        string_view s,
-        parse_options const& po,
-        source_location const& loc = BOOST_CURRENT_LOCATION)
-    {
-        grind(
-            s,
-            [&loc](value const& jv, parse_options const& po)
-            {
-                check_round_trip(jv, po, loc);
-            },
-            po,
-            loc);
-    }
-
-    static
     void
     grind_double(
         string_view s,
@@ -222,19 +210,15 @@ public:
         parse_options const& po = {},
         source_location const& loc = BOOST_CURRENT_LOCATION)
     {
-        grind(
-            s,
-            [v, &loc](value const& jv, parse_options const&)
-            {
-                if(! BOOST_TEST( jv.is_double(), loc ))
-                    return;
-                if( std::isnan(v) )
-                    BOOST_TEST( std::isnan( jv.get_double() ), loc );
-                else
-                    BOOST_TEST( jv.get_double() == v, loc );
-            },
-            po,
-            loc);
+        for (number_precision numbers : {
+            number_precision::imprecise,
+            number_precision::precise,
+            number_precision::none})
+        {
+            parse_options po1 = po;
+            po1.numbers = numbers;
+            grind(s, v, po1, loc);
+        }
     }
 
     // Verify that f converts to the
@@ -251,7 +235,7 @@ public:
         double const need = std::strtod(s.c_str(), &str_end);
         for (number_precision numbers : {
             number_precision::imprecise,
-            number_precision::imprecise,
+            number_precision::precise,
             number_precision::none})
         {
             parse_options po;
