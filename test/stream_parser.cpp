@@ -1114,6 +1114,17 @@ R"xx({
         grind("[1] // c++ \n", enabled);
         grind("[1] // c++", enabled);
         grind("[// c++ \n1]", enabled);
+
+        {
+            stream_parser p({}, enabled);
+            system::error_code ec;
+            p.write_some("//", 2, ec);
+            BOOST_TEST(! ec);
+            p.write_some("c\n", 2, ec);
+            BOOST_TEST(! ec);
+            p.finish(ec);
+            BOOST_TEST(ec == error::incomplete);
+        }
         grind("[1// c++ \n]", enabled);
         grind("[1// c++ \n, 2]", enabled);
         grind("[1, // c++ \n 2]", enabled);

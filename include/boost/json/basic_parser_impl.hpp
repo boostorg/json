@@ -785,6 +785,8 @@ resume_value(const char* p,
     case state::val3:
     {
         st_.pop(st);
+        if(BOOST_JSON_UNLIKELY(p == end_))
+            return maybe_suspend(p, state::val1);
         return parse_value(p, std::true_type(), std::true_type(), allow_trailing, allow_bad_utf8, allow_bad_utf16);
     }
     }
