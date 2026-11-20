@@ -101,6 +101,11 @@ void
 monotonic_resource::
 release() noexcept
 {
+    // start over with the size of the last block, so that
+    // reuse settles on one block that is large enough
+    if(head_ != &buffer_)
+        next_size_ = head_->size;
+
     auto p = head_;
     while(p != &buffer_)
     {

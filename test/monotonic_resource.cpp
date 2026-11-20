@@ -20,6 +20,7 @@
 #include <new>
 
 #include "checking_resource.hpp"
+#include "test.hpp"
 #include "test_suite.hpp"
 
 namespace boost {
@@ -348,6 +349,40 @@ R"xx({
     }
 
     void
+    testRelease()
+    {
+        // after release() the first block has the size of the last block
+        // before it, so repeating the same allocations ends up with one
+        // block that does not grow any further
+        fail_resource up;
+        up.fail_max = std::size_t(-1);
+        monotonic_resource mr(1024, &up);
+        auto const allocate = [&mr]
+        {
+            (void)mr.allocate(1000);
+            (void)mr.allocate(2000);
+            (void)mr.allocate(4000);
+        };
+
+        allocate();
+        auto const nalloc = up.nalloc;
+        mr.release();
+
+        allocate();
+        BOOST_TEST(up.nalloc < nalloc);
+        mr.release();
+
+        allocate();
+        BOOST_TEST(up.nalloc == 1);
+        auto const bytes = up.bytes;
+        mr.release();
+
+        allocate();
+        BOOST_TEST(up.nalloc == 1);
+        BOOST_TEST(up.bytes == bytes);
+    }
+
+    void
     run()
     {
         testMembers();
@@ -355,6 +390,7 @@ R"xx({
         testGeneral();
         testAllocation();
         testOverAligned();
+        testRelease();
     }
 };
 
