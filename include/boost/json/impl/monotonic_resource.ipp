@@ -81,6 +81,7 @@ monotonic_resource(
     : buffer_{
         nullptr, 0, 0, nullptr}
     , next_size_(round_pow2(initial_size))
+    , initial_size_(next_size_)
     , upstream_(std::move(upstream))
 {
 }
@@ -93,6 +94,7 @@ monotonic_resource(
     : buffer_{
         buffer, size, size, nullptr}
     , next_size_(next_pow2(size))
+    , initial_size_(next_size_)
     , upstream_(std::move(upstream))
 {
 }
@@ -113,6 +115,7 @@ release() noexcept
             buffer_.size - buffer_.avail);
     buffer_.avail = buffer_.size;
     head_ = &buffer_;
+    next_size_ = initial_size_;
 }
 
 void*

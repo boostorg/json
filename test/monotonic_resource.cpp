@@ -348,6 +348,65 @@ R"xx({
     }
 
     void
+    testRelease()
+    {
+        // after release() the resource starts over: the blocks it asks the
+        // upstream for do not keep growing from one round to the next
+        struct recording_resource
+            : container::pmr::memory_resource
+        {
+            std::size_t last = 0;
+
+            void*
+            do_allocate(std::size_t n, std::size_t align) override
+            {
+                last = n;
+                return storage_ptr()->allocate(n, align);
+            }
+
+            void
+            do_deallocate(
+                void* p, std::size_t n, std::size_t align) override
+            {
+                storage_ptr()->deallocate(p, n, align);
+            }
+
+            bool
+            do_is_equal(
+                memory_resource const& mr) const noexcept override
+            {
+                return this == &mr;
+            }
+        };
+
+        {
+            recording_resource up;
+            monotonic_resource mr(1024, &up);
+            (void)mr.allocate(4000);
+            std::size_t const first = up.last;
+            for(int i = 0; i < 4; ++i)
+            {
+                mr.release();
+                (void)mr.allocate(4000);
+                BOOST_TEST(up.last == first);
+            }
+        }
+        {
+            unsigned char buf[256];
+            recording_resource up;
+            monotonic_resource mr(buf, sizeof(buf), &up);
+            (void)mr.allocate(4000);
+            std::size_t const first = up.last;
+            for(int i = 0; i < 4; ++i)
+            {
+                mr.release();
+                (void)mr.allocate(4000);
+                BOOST_TEST(up.last == first);
+            }
+        }
+    }
+
+    void
     run()
     {
         testMembers();
@@ -355,6 +414,7 @@ R"xx({
         testGeneral();
         testAllocation();
         testOverAligned();
+        testRelease();
     }
 };
 

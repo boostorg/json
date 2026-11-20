@@ -93,6 +93,7 @@ monotonic_resource final
     block_base buffer_;
     block_base* head_ = &buffer_;
     std::size_t next_size_ = 1024;
+    std::size_t initial_size_ = 1024;
     storage_ptr upstream_;
 
     static constexpr std::size_t min_size_ = 1024;
