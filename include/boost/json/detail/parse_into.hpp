@@ -1842,6 +1842,7 @@ private:
 
     using inner_handler_type = get_handler<V, into_handler>;
 
+    V* value_;
     inner_handler_type inner_;
     bool inner_active_ = true;
 
@@ -1859,7 +1860,7 @@ public:
 
 public:
 
-    explicit into_handler( V* v ): inner_( v, this )
+    explicit into_handler( V* v ): value_( v ), inner_( v, this )
     {
     }
 
@@ -1879,6 +1880,13 @@ public:
 
     bool on_document_begin( system::error_code& )
     {
+        // basic_parser::reset does not touch the handler, so the previous
+        // document may have left the nested handlers in the middle of a value
+        // (or deactivated after on_document_end); start every document from
+        // the state the handlers had on construction
+        inner_.~inner_handler_type();
+        ::new( &inner_ ) inner_handler_type( value_, this );
+        inner_active_ = true;
         return true;
     }
 
