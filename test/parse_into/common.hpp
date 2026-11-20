@@ -87,6 +87,23 @@ void testParseIntoValue(
     p.write_some(false, nullptr, 0, jec);
     BOOST_TEST( !jec.failed(), loc );
     BOOST_TEST( t1 == t8, loc );
+
+    // the parser can be reused after reset, both after a complete document
+    // and after one that stopped in the middle of a value
+    p.reset();
+    p.write_some(false, json.data(), json.size(), jec);
+    BOOST_TEST( !jec.failed(), loc );
+    BOOST_TEST( p.done(), loc );
+    BOOST_TEST( t1 == t8, loc );
+
+    p.reset();
+    p.write_some(true, json.data(), json.size() - 1, jec);
+    BOOST_TEST( !jec.failed(), loc );
+    p.reset();
+    p.write_some(false, json.data(), json.size(), jec);
+    BOOST_TEST( !jec.failed(), loc );
+    BOOST_TEST( p.done(), loc );
+    BOOST_TEST( t1 == t8, loc );
 #if defined(__GNUC__) && __GNUC__ < 5
 # pragma GCC diagnostic pop
 #endif
