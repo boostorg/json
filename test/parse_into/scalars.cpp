@@ -165,6 +165,25 @@ public:
         }
 
         {
+            // a new document requires a reset
+            int n = 0;
+            parser_for<int> p( parse_options{}, &n );
+            system::error_code ec;
+            p.write_some(false, "12", 2, ec);
+            BOOST_TEST( !ec.failed() );
+            BOOST_TEST( n == 12 );
+
+            p.write_some(false, "34", 2, ec);
+            BOOST_TEST( ec == error::extra_data );
+            BOOST_TEST( n == 12 );
+
+            p.reset();
+            p.write_some(false, "34", 2, ec);
+            BOOST_TEST( !ec.failed() );
+            BOOST_TEST( n == 34 );
+        }
+
+        {
             int n;
             std::stringstream is("1");
             is.setstate( std::ios::failbit );

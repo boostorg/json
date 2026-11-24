@@ -29,8 +29,8 @@
  * At the core of parse_into is the specialisation basic_parser<
  * detail::into_handler<T> >. detail::into_handler<T> is a handler for
  * basic_parser. It directly handles events on_comment_part and on_comment (by
- * ignoring them), on_document_begin (by enabling the nested dedicated
- * handler), and on_document_end (by disabling the nested handler).
+ * ignoring them), on_document_begin (by resetting and enabling the nested
+ * dedicated handler), and on_document_end (by disabling the nested handler).
  *
  * Every other event is handled by the nested handler, which has the type
  * get_handler< T, into_handler<T> >. The second parameter is the parent
@@ -63,13 +63,18 @@
  * complex types you will get a tree of handlers with into_handler<T> as the
  * root and handlers for scalars as leaves.
  *
+ * Every handler has a reset member function that returns it to the state it had
+ * after construction. Handlers for composites also reset their nested handlers.
+ * into_handler resets the whole tree from on_document_begin, as the previous
+ * document could have been abandoned at any point.
+ *
  * To reiterate, only into_handler has to handle on_comment_part, on_comment,
  * on_document_begin, and on_document_end; only handlers for composites and
  * into_handler has to provide signal_value and signal_end; all handlers
  * except for into_handler have to call their parent's signal_end from
  * their on_array_begin, if they don't handle it themselves; once a handler
  * receives an event that finishes its current value, it should call its
- * parent's signal_value.
+ * parent's signal_value; all handlers have to provide reset.
  */
 
 namespace boost {
@@ -132,6 +137,9 @@ public:
     scalar_handler(P* p): parent_( p )
     {}
 
+    void reset()
+    {}
+
     bool on_array_end( system::error_code& ec )
     {
         return parent_->signal_end(ec);
@@ -160,6 +168,13 @@ public:
     composite_handler( P* p )
         : parent_(p), inner_( &next_value_, static_cast<D*>(this) )
     {}
+
+    void reset()
+    {
+        next_value_ = {};
+        inner_.reset();
+        inner_active_ = false;
+    }
 #if defined(__GNUC__) && __GNUC__ < 5 && !defined(__clang__)
 # pragma GCC diagnostic pop
 #endif
@@ -368,6 +383,11 @@ public:
         , value_(v)
     {}
 
+    void reset()
+    {
+        cleared_ = false;
+    }
+
     bool on_string_part( system::error_code&, string_view sv )
     {
         if( !cleared_ )
@@ -455,6 +475,11 @@ public:
         : converting_handler::scalar_handler(p)
         , value_(v)
     {}
+
+    void reset()
+    {
+        name_.clear();
+    }
 
     bool on_string_part( system::error_code&, string_view sv )
     {
@@ -632,6 +657,12 @@ public:
         : converting_handler::composite_handler(p), value_(v)
     {}
 
+    void reset()
+    {
+        converting_handler::composite_handler::reset();
+        key_.clear();
+    }
+
     bool signal_value(system::error_code&)
     {
         value_->emplace( std::move(key_), std::move(this->next_value_) );
@@ -730,6 +761,12 @@ struct handler_tuple< P, L<V...>, mp11::index_sequence<I...> >
             pp )
         ...
     {}
+
+    void reset()
+    {
+        int const unused[] = { 0, ( get<I>(*this).reset(), 0 )... };
+        (void)unused;
+    }
 };
 
 #if defined(BOOST_MSVC) && BOOST_MSVC < 1910
@@ -829,6 +866,12 @@ public:
     converting_handler( T* v, P* p )
         : value_(v) , parent_(p) , handlers_(tuple_accessor(), v, this)
     {}
+
+    void reset()
+    {
+        handlers_.reset();
+        inner_active_ = -1;
+    }
 
     bool signal_value(system::error_code&)
     {
@@ -1030,6 +1073,12 @@ struct ignoring_handler
         : parent_(p)
     {}
 
+    void reset()
+    {
+        array_depth_ = 0;
+        object_depth_ = 0;
+    }
+
     bool on_object_begin(system::error_code&)
     {
         ++object_depth_;
@@ -1166,6 +1215,14 @@ public:
     converting_handler( V* v, P* p )
         : value_(v), parent_(p), handlers_(struct_accessor(), v, this)
     {}
+
+    void reset()
+    {
+        key_.clear();
+        handlers_.reset();
+        inner_active_ = -1;
+        seen_.reset();
+    }
 
     struct is_required_checker
     {
@@ -1496,6 +1553,14 @@ public:
         , parent_( p )
     {}
 
+    void reset()
+    {
+        string_.clear();
+        events_.clear();
+        inner_.template emplace<0>();
+        inner_active_ = -1;
+    }
+
     bool signal_value(system::error_code& ec)
     {
         inner_.template emplace<0>();
@@ -1692,6 +1757,13 @@ public:
         : value_(v), parent_(p), inner_(&inner_value_, this)
     {}
 
+    void reset()
+    {
+        inner_value_ = inner_type();
+        inner_.reset();
+        inner_active_ = false;
+    }
+
     bool signal_value(system::error_code& ec)
     {
         *value_ = std::move(inner_value_);
@@ -1809,6 +1881,11 @@ public:
         , value_(v)
     {}
 
+    void reset()
+    {
+        cleared_ = false;
+    }
+
     bool on_string_part( system::error_code&, string_view sv )
     {
         if( !cleared_ )
@@ -1863,6 +1940,12 @@ public:
     {
     }
 
+    void reset()
+    {
+        inner_.reset();
+        inner_active_ = true;
+    }
+
     bool signal_value(system::error_code&)
     {
         return true;
@@ -1879,6 +1962,7 @@ public:
 
     bool on_document_begin( system::error_code& )
     {
+        reset();
         return true;
     }
 

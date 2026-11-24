@@ -46,6 +46,20 @@ public:
 
         testParseInto< std::vector< std::optional<int> > >(
             {1, 2, 3, std::nullopt, 5, std::nullopt, std::nullopt, 8});
+
+        // reset after an error
+        {
+            std::optional<int> o = 1;
+            parser_for< std::optional<int> > p( parse_options{}, &o );
+            system::error_code ec;
+            p.write_some(false, "true", 4, ec);
+            BOOST_TEST( ec == error::not_integer );
+
+            p.reset();
+            p.write_some(false, "null", 4, ec);
+            BOOST_TEST( !ec.failed() );
+            BOOST_TEST( !o );
+        }
 #endif
     }
 };
