@@ -433,11 +433,26 @@ class basic_parser
         bool is_key,
         bool allow_bad_utf16);
 
-    template<bool StackEmpty_, char First_, number_precision Numbers_>
-    const char* parse_number(const char* p,
+    template<bool StackEmpty_, char First_>
+    char const*
+    parse_number(
+        char const* p,
         std::integral_constant<bool, StackEmpty_> stack_empty,
-        std::integral_constant<char, First_> first,
-        std::integral_constant<number_precision, Numbers_> numbers);
+        std::integral_constant<char, First_> first);
+
+    template<bool StackEmpty_, char First_>
+    char const*
+    parse_number_precise(
+        char const* p,
+        std::integral_constant<bool, StackEmpty_> stack_empty,
+        std::integral_constant<char, First_> first);
+
+    template<bool StackEmpty_, char First_>
+    char const*
+    skip_number(
+        char const* p,
+        std::integral_constant<bool, StackEmpty_> stack_empty,
+        std::integral_constant<char, First_> first);
 
     // intentionally private
     std::size_t
