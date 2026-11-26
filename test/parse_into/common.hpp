@@ -87,6 +87,29 @@ void testParseIntoValue(
     p.write_some(false, nullptr, 0, jec);
     BOOST_TEST( !jec.failed(), loc );
     BOOST_TEST( t1 == t8, loc );
+
+    // after reset the parser can be used for another document, regardless of
+    // whether the previous one was complete, ...
+    t8 = T{};
+    p.reset();
+    p.write_some(false, json.data(), json.size(), jec);
+    BOOST_TEST( !jec.failed(), loc );
+    BOOST_TEST( p.done(), loc );
+    BOOST_TEST( t1 == t8, loc );
+
+    // ... or was abandoned at any point
+    for( std::size_t n = 0; n < json.size(); ++n )
+    {
+        p.reset();
+        p.write_some(true, json.data(), n, jec);
+        BOOST_TEST( !jec.failed(), loc );
+
+        p.reset();
+        p.write_some(false, json.data(), json.size(), jec);
+        BOOST_TEST( !jec.failed(), loc );
+        BOOST_TEST( p.done(), loc );
+        BOOST_TEST( t1 == t8, loc );
+    }
 #if defined(__GNUC__) && __GNUC__ < 5
 # pragma GCC diagnostic pop
 #endif
@@ -134,6 +157,12 @@ testParseIntoErrors(
 
     BOOST_TEST( ec.failed(), loc );
     BOOST_TEST( ec.has_location(), loc );
+    BOOST_TEST( ec == e, loc );
+
+    // after reset the same document results in the same error
+    p.reset();
+    ec = {};
+    p.write_some(false, json.data(), json.size(), ec);
     BOOST_TEST( ec == e, loc );
 #if defined(__GNUC__) && __GNUC__ < 5
 # pragma GCC diagnostic pop

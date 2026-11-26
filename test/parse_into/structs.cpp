@@ -17,6 +17,9 @@
 #include <boost/json/parse_into.hpp>
 
 #include <map>
+#ifndef BOOST_NO_CXX17_HDR_OPTIONAL
+# include <optional>
+#endif
 #include <string>
 #include <vector>
 
@@ -82,6 +85,18 @@ bool operator==( W const& w1, W const& w2 )
 {
     return w1.x == w2.x;
 }
+
+#ifndef BOOST_NO_CXX17_HDR_OPTIONAL
+
+struct U
+{
+    std::optional<int> a;
+    std::optional<int> b;
+};
+
+BOOST_DESCRIBE_STRUCT(U, (), (a, b))
+
+#endif // BOOST_NO_CXX17_HDR_OPTIONAL
 
 } // namespace
 
@@ -154,6 +169,38 @@ public:
             R"( [{"a": 1, "b": 1, "c": "one"}, {"a": 2, "b": 2, "c": "two"}] )",
             ec);
         BOOST_TEST( !ec.failed() ) && BOOST_TEST( v.size() == 2 );
+
+#ifndef BOOST_NO_CXX17_HDR_OPTIONAL
+        // members from an abandoned document do not end up in the next one
+        {
+            std::vector<U> us;
+            parser_for< std::vector<U> > p( parse_options{}, &us );
+            string_view s = R"( [{"a": 1, )";
+            ec = {};
+            p.write_some(true, s.data(), s.size(), ec);
+            BOOST_TEST( !ec.failed() );
+
+            p.reset();
+            s = R"( [{"b": 2}] )";
+            p.write_some(false, s.data(), s.size(), ec);
+            BOOST_TEST( !ec.failed() );
+            BOOST_TEST( us.size() == 1 ) && BOOST_TEST( !us[0].a );
+        }
+        {
+            std::optional<U> u;
+            parser_for< std::optional<U> > p( parse_options{}, &u );
+            string_view s = R"( {"a": 1, )";
+            ec = {};
+            p.write_some(true, s.data(), s.size(), ec);
+            BOOST_TEST( !ec.failed() );
+
+            p.reset();
+            s = R"( {"b": 2} )";
+            p.write_some(false, s.data(), s.size(), ec);
+            BOOST_TEST( !ec.failed() );
+            BOOST_TEST( u ) && BOOST_TEST( !u->a );
+        }
+#endif // BOOST_NO_CXX17_HDR_OPTIONAL
     }
 };
 #else // BOOST_DESCRIBE_CXX14

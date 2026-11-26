@@ -2866,8 +2866,10 @@ write_some(
     {
         // first time
         depth_ = opt_.max_depth;
+        // without a reset, data after a complete
+        // document does not begin a new one
         if(BOOST_JSON_UNLIKELY(
-            ! h_.on_document_begin(ec_)))
+            ! done_ && ! h_.on_document_begin(ec_)))
         {
             ec = ec_;
             return 0;
